@@ -1,6 +1,7 @@
 namespace BlazorShop.Infrastructure.Data.CommerceNode
 {
     using BlazorShop.Application.DTOs;
+    using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Application.Mapping;
     using BlazorShop.Application.Options;
     using BlazorShop.Application.Services;
@@ -62,6 +63,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddMemoryCache();
             services.Configure<RecommendationOptions>(configuration.GetSection(RecommendationOptions.SectionName));
             services.Configure<IdentityConfirmationOptions>(configuration.GetSection(IdentityConfirmationOptions.SectionName));
+            services.Configure<BankTransferSettings>(configuration.GetSection("BankTransfer"));
             services.AddOptions<ClientAppOptions>()
                 .Bind(configuration.GetSection(ClientAppOptions.SectionName));
             services.AddOptions<EmailSettings>()
@@ -76,6 +78,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IProductRecommendationRepository, CommerceNodeProductRecommendationRepository>();
             services.AddScoped<ICategoryRepository, CommerceNodeCategoryRepository>();
             services.AddScoped<IPaymentMethod, CommerceNodePaymentMethodRepository>();
+            services.AddScoped<ICart, CommerceNodeCartRepository>();
             services.AddScoped<IOrderRepository, CommerceNodeOrderRepository>();
             services.AddScoped<INewsletterSubscriberRepository, CommerceNodeNewsletterSubscriberRepository>();
             services.AddScoped<ISeoSettingsRepository, CommerceNodeSeoSettingsRepository>();
@@ -91,9 +94,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IPublicCatalogService, PublicCatalogService>();
             services.AddScoped<IProductRecommendationService, ProductRecommendationService>();
             services.AddScoped<IPaymentMethodService, PaymentMethodService>();
+            services.AddScoped<IStripeCheckoutSessionService, StripeCheckoutSessionService>();
+            services.AddScoped<IPaymentService, StripePaymentService>();
             services.AddScoped<IPayPalPaymentService, PayPalPaymentService>();
             services.AddScoped<INewsletterService, NewsletterService>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
+            services.AddScoped<ICartService, CartService>();
+            services.AddScoped<IOrderQueryService, OrderQueryService>();
             services.AddScoped<IAdminInventoryService, CommerceNodeAdminInventoryService>();
             services.AddScoped<IOrderTrackingService, CommerceNodeOrderTrackingService>();
             services.AddScoped<IAdminOrderService, CommerceNodeAdminOrderService>();
@@ -105,6 +112,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<ISeoRedirectResolutionService, SeoRedirectResolutionService>();
             services.AddScoped<ISeoRedirectAutomationService, SeoRedirectAutomationService>();
             services.AddScoped<IMetricsService, MetricsService>();
+            Stripe.StripeConfiguration.ApiKey = configuration["Stripe:SecretKey"];
             services.AddDefaultIdentity<AppUser>(
                     options =>
                     {

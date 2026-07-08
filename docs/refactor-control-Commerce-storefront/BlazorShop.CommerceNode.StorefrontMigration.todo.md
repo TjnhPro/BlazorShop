@@ -490,25 +490,25 @@ Database:
 
 API:
 
-- [ ] Add `StorefrontCartController`.
-- [ ] Add `StorefrontOrdersController`.
-- [ ] Migrate `CartController.Checkout`.
-- [ ] Migrate `CartController.SaveCheckout`.
-- [ ] Migrate `CartController.ConfirmOrder`.
-- [ ] Migrate `CartController.GetUserOrderItems`.
-- [ ] Migrate `CartController.GetUserOrders`.
-- [ ] Do not migrate legacy `CartController.GetAllOrders` into Storefront unless review proves it is used.
-- [ ] Do not migrate legacy `CartController.UpdateTracking` into Storefront unless review proves it is used.
-- [ ] Do not migrate legacy `CartController.UpdateShippingStatus` into Storefront unless review proves it is used.
+- [x] Add `StorefrontCartController`.
+- [x] Add `StorefrontOrdersController`.
+- [x] Migrate `CartController.Checkout`.
+- [x] Migrate `CartController.SaveCheckout`.
+- [x] Migrate `CartController.ConfirmOrder`.
+- [x] Migrate `CartController.GetUserOrderItems`.
+- [x] Migrate `CartController.GetUserOrders`.
+- [x] Do not migrate legacy `CartController.GetAllOrders` into Storefront unless review proves it is used.
+- [x] Do not migrate legacy `CartController.UpdateTracking` into Storefront unless review proves it is used.
+- [x] Do not migrate legacy `CartController.UpdateShippingStatus` into Storefront unless review proves it is used.
 
 Services:
 
-- [ ] Add `CommerceNodeCartRepository`.
-- [ ] Reuse `CartService` if `IAppUserManager` and repository bindings work with Commerce Node auth/database.
-- [ ] Add Commerce Node order query service variant if existing `OrderQueryService` still assumes legacy users.
-- [ ] Reuse `CommerceNodeOrderRepository`.
-- [ ] Reuse `CommerceNodeOrderTrackingService` only if needed by reviewed legacy shortcuts.
-- [ ] Review email side effects for bank transfer instructions.
+- [x] Add `CommerceNodeCartRepository`.
+- [x] Reuse `CartService` if `IAppUserManager` and repository bindings work with Commerce Node auth/database.
+- [x] Reuse existing `OrderQueryService` with Commerce Node repository/user bindings.
+- [x] Reuse `CommerceNodeOrderRepository`.
+- [x] Skip `CommerceNodeOrderTrackingService` for Storefront because reviewed admin shortcuts were not migrated.
+- [x] Review email side effects for bank transfer instructions.
 
 QA:
 
