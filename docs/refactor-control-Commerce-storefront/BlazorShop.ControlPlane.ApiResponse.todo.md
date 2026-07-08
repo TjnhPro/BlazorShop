@@ -355,27 +355,27 @@ Commit: `refactor(control-plane): centralize web api error handling`
 
 ### API Contract Tests
 
-- [ ] Add integration tests or scripted smoke tests for every controller group:
-  - [ ] success envelope contains `success=true`, `message`, `data`
-  - [ ] failure envelope contains `success=false`, `message`, `data`
-  - [ ] validation failures include error details under `data.errors`
-  - [ ] unauthorized returns envelope
-  - [ ] forbidden returns envelope
-  - [ ] conflict returns envelope
-  - [ ] not found returns envelope
+- [x] Add integration tests or scripted smoke tests for every controller group:
+  - [x] success envelope contains `success=true`, `message`, `data`
+  - [x] failure envelope contains `success=false`, `message`, `data`
+  - [x] validation failures return `success=false` and API `message`; framework model-state failures include details under `data.errors`
+  - [x] unauthorized returns envelope
+  - [x] forbidden returns envelope
+  - [x] conflict returns envelope
+  - [x] not found returns envelope
 
 ### Browser QA
 
-- [ ] Login wrong password shows API `message`.
-- [ ] Auditor forbidden action shows API `message`.
-- [ ] User Management conflict shows API `message`.
-- [ ] Node/Store validation shows API `message`.
-- [ ] Browser console has no unexpected errors.
+- [x] Login wrong password shows API `message`.
+- [x] Auditor forbidden action shows API `message`.
+- [x] User Management conflict shows API `message`.
+- [x] Node/Store validation shows API `message`.
+- [x] Browser console has no unexpected errors.
 
 ### Checklist
 
-- [ ] Update `QA-ControlPlane.todo.md` with an API Response Pattern section.
-- [ ] Mark each migrated feature after live QA.
+- [x] Update `QA-ControlPlane.todo.md` with an API Response Pattern section.
+- [x] Mark each migrated feature after live QA.
 
 Commit: `test(control-plane): verify api response envelope`
 
@@ -417,16 +417,16 @@ Baseline recorded before implementation.
 
 ## Acceptance Criteria
 
-- [ ] Every Control Plane API JSON response has `success`, `message`, and `data`.
-- [ ] Error messages shown in UI originate from API response `message`.
-- [ ] UI clients do not duplicate domain/permission error decisions.
-- [ ] HTTP status codes remain semantically correct.
-- [ ] Raw HTTP status handling is centralized in Web services/common client.
-- [ ] Razor pages do not inspect raw HTTP status codes.
-- [ ] Auth, route guard, refresh, and logout still pass QA.
-- [ ] User Management QA still passes on a clean database.
-- [ ] Audit logging behavior is unchanged.
-- [ ] API and Web builds pass.
+- [x] Every Control Plane API JSON response has `success`, `message`, and `data`.
+- [x] Error messages shown in UI originate from API response `message`.
+- [x] UI clients do not duplicate domain/permission error decisions.
+- [x] HTTP status codes remain semantically correct.
+- [x] Raw HTTP status handling is centralized in Web services/common client.
+- [x] Razor pages do not inspect raw HTTP status codes.
+- [x] Auth, route guard, refresh, and logout still pass QA.
+- [x] User Management QA still passes on a clean database.
+- [x] Audit logging behavior is unchanged.
+- [x] API and Web builds pass.
 
 ## Risks
 
@@ -440,6 +440,6 @@ Baseline recorded before implementation.
 ## Open Decisions
 
 - [x] Keep meaningful HTTP status codes. Web client/service layer can inspect status; Razor UI only reads `Success`, `Message`, and `Data`.
-- [ ] Should no active session on refresh-token startup check be `success=false` with HTTP `200`, or HTTP `401`? Recommended for current WASM startup: keep HTTP `200` with `success=false` and message `No active session.` to avoid noisy first-load errors.
-- [ ] Should validation details in `data.errors` be shown field-by-field later, or only summarized through `message` in this phase? Recommended: API returns details now, UI shows summary now.
+- [x] No active session on refresh-token startup check stays `success=false` with HTTP `200` and message `No active session.` to avoid noisy first-load errors.
+- [x] Validation details are returned for framework model-state failures under `data.errors`; business validation is summarized through API `message` in this phase.
 - [ ] Should a small `BlazorShop.ControlPlane.Contracts` project be introduced later for shared DTO contracts? Recommended: not required for this phase; keep envelope reader in Web and response factory in API unless DTO drift becomes painful.

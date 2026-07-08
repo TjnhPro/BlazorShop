@@ -44,6 +44,14 @@ Status legend:
 - [x] Protected pages redirect or block unauthenticated users. 2026-07-08: `/nodes` redirects to `/login/nodes` with no protected API call noise.
 - [~] Expired/invalid token state is handled without a broken UI. 2026-07-08: unauthenticated/no-session refresh handled without console error; expired token not tested.
 
+## API Response Pattern
+
+- [x] Success responses return `success=true`, `message`, and `data`. 2026-07-08: verified `system/info`, admin login, dashboard summary, and user create on clean `blazorshop_controlplane_api_response_qa`.
+- [x] Failure responses return `success=false`, `message`, and `data`. 2026-07-08: verified wrong login, unauthorized dashboard request, auditor forbidden users request, missing node, node validation, and duplicate user conflict.
+- [x] HTTP status codes remain meaningful while UI consumes `Success`, `Message`, and `Data`. 2026-07-08: verified `400`, `401`, `403`, `404`, and `409` keep envelope bodies.
+- [x] Web client unwraps envelope for authenticated pages. 2026-07-08: browser smoke logged in as seeded admin, loaded Dashboard, loaded Users, and showed 0 console errors.
+- [x] Response message originates from API for visible failures. 2026-07-08: API smoke confirmed failure `message` values for auth, permission, validation, not found, and conflict.
+
 ## Users And Permissions
 
 ### Admin User
@@ -208,3 +216,4 @@ Status legend:
 | 2026-07-08 | Codex | Seeded admin/user account QA and authenticated browser/API flows | Partial | Added two-account dev seeding, verified admin/user login, logout, refresh persistence, Dashboard/Nodes/Stores/Health/Actions/Audit page loads, admin node/store/credential mutations, auditor 403 denials, and audit persistence on clean `blazorshop_controlplane_seed_qa`. Fixed misleading 403 UI message. Remaining UX follow-up: hide/disable write controls for users without write permissions. |
 | 2026-07-08 | Codex | User Management implementation verification | Partial | Implemented database/API/Web phases and committed each phase. `dotnet build` passed for ControlPlane API and Web; migration applied successfully on clean `blazorshop_controlplane_user_management_qa`. Live browser/API QA for User Management remains pending. |
 | 2026-07-08 | Codex | User Management QA on clean database | Passed | Verified API and browser Users flows on clean `blazorshop_controlplane_user_management_live_qa3`. Found and fixed ISSUE-001 user-create transaction execution strategy and ISSUE-002 disabled Control Plane login blocking. API-backed Audit Logs search remains not implemented. |
+| 2026-07-08 | Codex | API response envelope migration | Passed | Verified `success/message/data` envelopes on clean `blazorshop_controlplane_api_response_qa` for success, validation, unauthorized, forbidden, not found, and conflict responses. Browser smoke verified admin login, Dashboard, Users page, and 0 console errors. |
