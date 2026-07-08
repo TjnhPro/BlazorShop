@@ -15,7 +15,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var service = new ControlPlaneNodeService(context);
 
-            var result = await service.CreateAsync(new CreateControlPlaneNodeRequest("vn-main", "VN Main", null, "not-a-url"));
+            var result = await service.CreateAsync(new CreateControlPlaneNodeRequest("vn-main", "test-node-secret", "VN Main", null, "not-a-url"));
 
             Assert.False(result.Success);
             Assert.Equal(ControlPlaneNodeOperationFailure.Validation, result.Failure);
@@ -27,8 +27,8 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var service = new ControlPlaneNodeService(context);
 
-            var first = await service.CreateAsync(new CreateControlPlaneNodeRequest("vn-main", "VN Main", null, "http://localhost:5180/api/controlpanel"));
-            var duplicate = await service.CreateAsync(new CreateControlPlaneNodeRequest("vn-main", "VN Duplicate", null, "http://localhost:5280/api/controlpanel"));
+            var first = await service.CreateAsync(new CreateControlPlaneNodeRequest("vn-main", "test-node-secret", "VN Main", null, "http://localhost:5180/api/controlpanel"));
+            var duplicate = await service.CreateAsync(new CreateControlPlaneNodeRequest("vn-main", "test-node-secret", "VN Duplicate", null, "http://localhost:5280/api/controlpanel"));
 
             Assert.True(first.Success);
             Assert.False(duplicate.Success);
@@ -40,8 +40,8 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
         {
             await using var context = CreateContext();
             var service = new ControlPlaneNodeService(context);
-            await service.CreateAsync(new CreateControlPlaneNodeRequest("node-a", "Node A", null, "http://localhost:5180/api/controlpanel"));
-            await service.CreateAsync(new CreateControlPlaneNodeRequest("node-b", "Node B", null, "http://localhost:5280/api/controlpanel"));
+            await service.CreateAsync(new CreateControlPlaneNodeRequest("node-a", "test-node-secret", "Node A", null, "http://localhost:5180/api/controlpanel"));
+            await service.CreateAsync(new CreateControlPlaneNodeRequest("node-b", "test-node-secret", "Node B", null, "http://localhost:5280/api/controlpanel"));
 
             var firstPage = await service.ListAsync(new ControlPlaneNodeListQuery(Limit: 1));
             var secondPage = await service.ListAsync(new ControlPlaneNodeListQuery(Cursor: firstPage.NextCursor, Limit: 1));
@@ -57,7 +57,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
         {
             await using var context = CreateContext();
             var service = new ControlPlaneNodeService(context);
-            var created = await service.CreateAsync(new CreateControlPlaneNodeRequest("vn-main", "VN Main", null, "http://localhost:5180/api/controlpanel"));
+            var created = await service.CreateAsync(new CreateControlPlaneNodeRequest("vn-main", "test-node-secret", "VN Main", null, "http://localhost:5180/api/controlpanel"));
 
             var disabled = await service.DisableAsync(created.Payload!.PublicId);
 

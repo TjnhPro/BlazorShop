@@ -122,6 +122,8 @@ namespace BlazorShop.ControlPlane.Web.Services.Nodes
         string Status,
         string? Description,
         string? ControlApiUrl,
+        bool HasNodeSecret,
+        DateTimeOffset? NodeSecretUpdatedAt,
         DateTimeOffset? LastSeenAt,
         DateTimeOffset CreatedAt,
         DateTimeOffset UpdatedAt,
@@ -134,6 +136,8 @@ namespace BlazorShop.ControlPlane.Web.Services.Nodes
         string Status,
         string? Description,
         string? ControlApiUrl,
+        bool HasNodeSecret,
+        DateTimeOffset? NodeSecretUpdatedAt,
         DateTimeOffset? LastSeenAt,
         DateTimeOffset CreatedAt,
         DateTimeOffset UpdatedAt,
@@ -142,9 +146,9 @@ namespace BlazorShop.ControlPlane.Web.Services.Nodes
 
     public sealed record NodeEndpoint(long Id, string Kind, string Url, bool IsPrimary, DateTimeOffset? DisabledAt);
 
-    public sealed record NodeCreateRequest(string NodeKey, string Name, string? Description, string ControlApiUrl);
+    public sealed record NodeCreateRequest(string NodeKey, string NodeSecret, string Name, string? Description, string ControlApiUrl);
 
-    public sealed record NodeUpdateRequest(string Name, string? Description, string ControlApiUrl);
+    public sealed record NodeUpdateRequest(string Name, string? Description, string ControlApiUrl, string? NodeSecret = null);
 
     public sealed record NodeMutationResult(bool Success, string? Message = null, NodeDetail? Node = null);
 }

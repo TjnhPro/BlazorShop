@@ -8,6 +8,7 @@ namespace BlazorShop.Application.ControlPlane.Nodes
 
     public sealed record CreateControlPlaneNodeRequest(
         string NodeKey,
+        string NodeSecret,
         string Name,
         string? Description,
         string ControlApiUrl);
@@ -15,7 +16,8 @@ namespace BlazorShop.Application.ControlPlane.Nodes
     public sealed record UpdateControlPlaneNodeRequest(
         string Name,
         string? Description,
-        string ControlApiUrl);
+        string ControlApiUrl,
+        string? NodeSecret = null);
 
     public sealed record ControlPlaneNodeListResponse(
         IReadOnlyList<ControlPlaneNodeSummary> Items,
@@ -28,6 +30,8 @@ namespace BlazorShop.Application.ControlPlane.Nodes
         string Status,
         string? Description,
         string? ControlApiUrl,
+        bool HasNodeSecret,
+        DateTimeOffset? NodeSecretUpdatedAt,
         DateTimeOffset? LastSeenAt,
         DateTimeOffset CreatedAt,
         DateTimeOffset UpdatedAt,
@@ -40,6 +44,8 @@ namespace BlazorShop.Application.ControlPlane.Nodes
         string Status,
         string? Description,
         string? ControlApiUrl,
+        bool HasNodeSecret,
+        DateTimeOffset? NodeSecretUpdatedAt,
         DateTimeOffset? LastSeenAt,
         DateTimeOffset CreatedAt,
         DateTimeOffset UpdatedAt,

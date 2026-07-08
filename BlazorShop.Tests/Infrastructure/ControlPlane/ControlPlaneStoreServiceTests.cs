@@ -126,6 +126,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             var nodeService = new ControlPlaneNodeService(context);
             var created = await nodeService.CreateAsync(new CreateControlPlaneNodeRequest(
                 nodeKey,
+                "test-node-secret",
                 nodeKey,
                 null,
                 $"http://{nodeKey}.example/api/controlpanel"));

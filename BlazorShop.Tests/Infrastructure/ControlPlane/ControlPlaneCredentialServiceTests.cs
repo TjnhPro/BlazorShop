@@ -88,6 +88,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             var nodeKey = ($"node-{Guid.NewGuid():N}")[..12];
             var created = await nodeService.CreateAsync(new CreateControlPlaneNodeRequest(
                 nodeKey,
+                "test-node-secret",
                 "Test Node",
                 null,
                 "http://localhost:5180/api/controlpanel"));

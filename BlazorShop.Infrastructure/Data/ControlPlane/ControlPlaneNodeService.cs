@@ -99,6 +99,8 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             var node = new CommerceNode
             {
                 NodeKey = nodeKey,
+                NodeSecret = request.NodeSecret.Trim(),
+                NodeSecretUpdatedAt = now,
                 Name = request.Name.Trim(),
                 Description = NormalizeOptionalText(request.Description),
                 Status = "unknown",
@@ -149,6 +151,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             node.Name = request.Name.Trim();
             node.Description = NormalizeOptionalText(request.Description);
             node.UpdatedAt = now;
+
+            if (!string.IsNullOrWhiteSpace(request.NodeSecret))
+            {
+                node.NodeSecret = request.NodeSecret.Trim();
+                node.NodeSecretUpdatedAt = now;
+            }
 
             var endpoint = node.Endpoints.FirstOrDefault(endpoint =>
                 endpoint.Kind == ControlApiEndpointKind
@@ -227,14 +235,35 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 return "Node key must be 3-64 characters and contain only lowercase letters, digits, and hyphens.";
             }
 
-            return ValidateCommonFields(request.Name, request.ControlApiUrl);
+            var secretValidation = ValidateNodeSecret(request.NodeSecret, required: true);
+            return secretValidation ?? ValidateCommonFields(request.Name, request.ControlApiUrl);
         }
 
         private static string? ValidateUpdateRequest(UpdateControlPlaneNodeRequest request)
         {
-            return request is null
-                ? "Request body is required."
-                : ValidateCommonFields(request.Name, request.ControlApiUrl);
+            if (request is null)
+            {
+                return "Request body is required.";
+            }
+
+            var secretValidation = ValidateNodeSecret(request.NodeSecret, required: false);
+            return secretValidation ?? ValidateCommonFields(request.Name, request.ControlApiUrl);
+        }
+
+        private static string? ValidateNodeSecret(string? nodeSecret, bool required)
+        {
+            if (string.IsNullOrWhiteSpace(nodeSecret))
+            {
+                return required ? "Node secret is required." : null;
+            }
+
+            var trimmedSecret = nodeSecret.Trim();
+            if (trimmedSecret.Length < 8 || trimmedSecret.Length > 512)
+            {
+                return "Node secret must be between 8 and 512 characters.";
+            }
+
+            return null;
         }
 
         private static string? ValidateCommonFields(string name, string controlApiUrl)
@@ -267,6 +296,8 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 node.Status,
                 node.Description,
                 GetPrimaryControlApiUrl(node),
+                !string.IsNullOrWhiteSpace(node.NodeSecret),
+                node.NodeSecretUpdatedAt,
                 node.LastSeenAt,
                 node.CreatedAt,
                 node.UpdatedAt,
@@ -282,6 +313,8 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 node.Status,
                 node.Description,
                 GetPrimaryControlApiUrl(node),
+                !string.IsNullOrWhiteSpace(node.NodeSecret),
+                node.NodeSecretUpdatedAt,
                 node.LastSeenAt,
                 node.CreatedAt,
                 node.UpdatedAt,
