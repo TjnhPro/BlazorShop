@@ -1,10 +1,13 @@
 namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using BlazorShop.Domain.Entities.ControlPlane;
+    using BlazorShop.Domain.Entities.Identity;
 
+    using Microsoft.AspNetCore.Identity;
+    using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore;
 
-    public sealed class ControlPlaneDbContext : DbContext
+    public sealed class ControlPlaneDbContext : IdentityDbContext<AppUser>
     {
         private static readonly DateTimeOffset SeedCreatedAt = new(2026, 7, 8, 0, 0, 0, TimeSpan.Zero);
 
@@ -13,9 +16,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
         }
 
+        public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
         public DbSet<ControlPlaneAdminUser> AdminUsers => Set<ControlPlaneAdminUser>();
 
-        public DbSet<ControlPlaneRole> Roles => Set<ControlPlaneRole>();
+        public DbSet<ControlPlaneRole> ControlPlaneRoles => Set<ControlPlaneRole>();
 
         public DbSet<ControlPlanePermission> Permissions => Set<ControlPlanePermission>();
 
@@ -41,8 +46,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
             modelBuilder.HasPostgresExtension("pgcrypto");
 
+            ConfigureIdentity(modelBuilder);
+            ConfigureRefreshTokens(modelBuilder);
             ConfigureAdminUsers(modelBuilder);
             ConfigureRolesAndPermissions(modelBuilder);
             ConfigureNodes(modelBuilder);
@@ -50,6 +58,74 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             ConfigureActions(modelBuilder);
             ConfigureAudit(modelBuilder);
             SeedAuthorization(modelBuilder);
+        }
+
+        private static void ConfigureIdentity(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<IdentityUserLogin<string>>()
+                .Property(login => login.LoginProvider)
+                .HasMaxLength(128);
+
+            modelBuilder.Entity<IdentityUserLogin<string>>()
+                .Property(login => login.ProviderKey)
+                .HasMaxLength(128);
+
+            modelBuilder.Entity<IdentityUserToken<string>>()
+                .Property(token => token.LoginProvider)
+                .HasMaxLength(128);
+
+            modelBuilder.Entity<IdentityUserToken<string>>()
+                .Property(token => token.Name)
+                .HasMaxLength(128);
+
+            modelBuilder.Entity<AppUser>()
+                .Property(user => user.CreatedOn)
+                .HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            modelBuilder.Entity<AppUser>()
+                .Property(user => user.RequirePasswordChange)
+                .HasDefaultValue(false);
+
+            modelBuilder.Entity<IdentityRole>().HasData(
+                new IdentityRole
+                {
+                    Id = "93f5cdac-43de-4895-8426-2048c228e76d",
+                    ConcurrencyStamp = "02d86d56-8e63-4d2e-92f8-81b154ba0532",
+                    Name = "Admin",
+                    NormalizedName = "ADMIN"
+                },
+                new IdentityRole
+                {
+                    Id = "b7af6842-02fa-4af4-8f61-ae04a49644a2",
+                    ConcurrencyStamp = "75e8afa8-8df5-4431-a220-ac56b1fd0cda",
+                    Name = "User",
+                    NormalizedName = "USER"
+                });
+        }
+
+        private static void ConfigureRefreshTokens(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<RefreshToken>(entity =>
+            {
+                entity.ToTable("RefreshTokens");
+                entity.HasKey(token => token.Id);
+                entity.Property(token => token.TokenHash).HasMaxLength(64).IsRequired();
+                entity.Property(token => token.ReplacedByTokenHash).HasMaxLength(64);
+                entity.Property(token => token.CreatedByIp).HasMaxLength(64);
+                entity.Property(token => token.RevokedByIp).HasMaxLength(64);
+                entity.Property(token => token.UserAgent).HasMaxLength(512);
+                entity.Property(token => token.CreatedAtUtc).HasColumnType("timestamp with time zone");
+                entity.Property(token => token.ExpiresAtUtc).HasColumnType("timestamp with time zone");
+                entity.Property(token => token.RevokedAtUtc).HasColumnType("timestamp with time zone");
+                entity.HasIndex(token => token.TokenHash).IsUnique();
+                entity.HasIndex(token => new { token.UserId, token.RevokedAtUtc });
+                entity.HasIndex(token => token.ExpiresAtUtc);
+                entity.HasOne<AppUser>()
+                    .WithMany()
+                    .HasForeignKey(token => token.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
         }
 
         private static void ConfigureAdminUsers(ModelBuilder modelBuilder)

@@ -140,7 +140,7 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
             });
 
             context.Permissions.Add(permission);
-            context.Roles.Add(role);
+            context.ControlPlaneRoles.Add(role);
             context.AdminUsers.Add(adminUser);
             context.SaveChanges();
         }
