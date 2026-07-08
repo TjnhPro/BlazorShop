@@ -8,6 +8,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
     using BlazorShop.Application.Validations.Seo;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Contracts.CategoryPersistence;
+    using BlazorShop.Domain.Contracts.Payment;
     using BlazorShop.Domain.Contracts.Seo;
     using BlazorShop.Infrastructure.Data.CommerceNode.Repositories;
     using BlazorShop.Infrastructure.Data.CommerceNode.Services;
@@ -55,6 +56,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IProductVariantService, ProductVariantService>();
             services.AddScoped<IAdminInventoryService, CommerceNodeAdminInventoryService>();
+            services.AddScoped<IOrderTrackingService, CommerceNodeOrderTrackingService>();
+            services.AddScoped<IAdminOrderService, CommerceNodeAdminOrderService>();
             services.AddScoped<IProductSeoService, ProductSeoService>();
             services.AddScoped<ICategorySeoService, CategorySeoService>();
             services.AddScoped<ISeoSettingsService, SeoSettingsService>();

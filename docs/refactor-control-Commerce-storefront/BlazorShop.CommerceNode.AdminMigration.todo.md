@@ -490,22 +490,22 @@ QA:
 
 Database:
 
-- [ ] Use existing `Orders` and `OrderLines`.
-- [ ] Review whether order customer snapshot fields are needed before full Storefront migration.
-- [ ] Keep `Order.AdminNote` max length.
+- [x] Use existing `Orders` and `OrderLines`.
+- [x] Review whether order customer snapshot fields are needed before full Storefront migration.
+- [x] Keep `Order.AdminNote` max length.
 
 API:
 
-- [ ] Migrate `AdminOrdersController`.
-- [ ] Do not migrate any `CartController` action in Admin-first.
-- [ ] Treat legacy `CartController` Admin-only actions as Storefront/shared-auth leftovers unless a later review proves they are still needed.
+- [x] Migrate `AdminOrdersController`.
+- [x] Do not migrate any `CartController` action in Admin-first.
+- [x] Treat legacy `CartController` Admin-only actions as Storefront/shared-auth leftovers unless a later review proves they are still needed.
 
 Services:
 
-- [ ] Adapt `AdminOrderService` to `CommerceNodeDbContext`.
-- [ ] Adapt `OrderTrackingService` to `CommerceNodeDbContext`.
-- [ ] Remove direct query dependency on legacy `_db.Users`.
-- [ ] Decide whether email notification side effects remain enabled in Commerce Node MVP.
+- [x] Adapt `AdminOrderService` to `CommerceNodeDbContext`.
+- [x] Adapt `OrderTrackingService` to `CommerceNodeDbContext`.
+- [x] Remove direct query dependency on legacy `_db.Users`.
+- [x] Decide whether email notification side effects remain enabled in Commerce Node MVP. MVP keeps DB updates and audit logs only; email notification is deferred until Storefront customer/email ownership is migrated.
 
 QA:
 
