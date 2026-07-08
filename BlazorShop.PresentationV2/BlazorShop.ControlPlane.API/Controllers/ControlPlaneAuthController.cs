@@ -75,8 +75,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             if (string.IsNullOrWhiteSpace(refreshToken))
             {
                 DeleteRefreshTokenCookie();
-                await this.WriteAuditAsync("auth.refresh", "failure", cancellationToken: cancellationToken);
-                return BadRequest(new LoginResponse { Message = "Invalid token." });
+                return Ok(new LoginResponse { Message = "No active session." });
             }
 
             var result = await this.authenticationService.ReviveToken(refreshToken, GetClientIpAddress(), GetUserAgent());

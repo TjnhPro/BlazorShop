@@ -63,7 +63,8 @@ builder.Services.AddCors(options =>
             {
                 policy.WithOrigins(allowedOrigins)
                     .AllowAnyHeader()
-                    .AllowAnyMethod();
+                    .AllowAnyMethod()
+                    .AllowCredentials();
             }
             else
             {
@@ -77,6 +78,11 @@ builder.Services.AddSharedAuthenticationInfrastructure(builder.Configuration);
 builder.Services.AddControlPlaneInfrastructure(builder.Configuration);
 
 var app = builder.Build();
+
+if (ShouldMigrateDatabase(app))
+{
+    await BlazorShop.ControlPlane.API.ControlPlaneDatabaseBootstrapper.MigrateAsync(app.Services);
+}
 
 if (!app.Environment.IsDevelopment())
 {
@@ -138,4 +144,9 @@ static void ValidateProductionConfiguration(IConfiguration configuration, IWebHo
     {
         throw new InvalidOperationException($"Control Plane production configuration is missing or unsafe: {string.Join(", ", missing)}.");
     }
+}
+
+static bool ShouldMigrateDatabase(WebApplication app)
+{
+    return app.Configuration.GetValue("ControlPlane:Database:MigrateOnStartup", app.Environment.IsDevelopment());
 }
