@@ -905,17 +905,30 @@ Verification:
 
 ### Phase 11 - Legacy Cutover Readiness
 
-- [ ] Verify Control Plane does not reference legacy `BlazorShop.Presentation` UI/API/Storefront projects.
-- [ ] Verify any `BlazorShop.Web.Shared` dependency is limited to the approved generic helper allowlist.
-- [ ] Verify Control Plane can reference shared `BlazorShop.Application`, `BlazorShop.Infrastructure`, and `BlazorShop.Domain` only through additive ControlPlane slices and existing reusable auth contracts.
-- [ ] Verify Control Plane tests do not depend on legacy admin UI.
-- [ ] Decide when Commerce Node V2 starts.
-- [ ] Document conditions for removing legacy `BlazorShop.Presentation` from the solution.
+- [x] Verify Control Plane does not reference legacy `BlazorShop.Presentation` UI/API/Storefront projects.
+- [x] Verify any `BlazorShop.Web.Shared` dependency is limited to the approved generic helper allowlist.
+- [x] Verify Control Plane can reference shared `BlazorShop.Application`, `BlazorShop.Infrastructure`, and `BlazorShop.Domain` only through additive ControlPlane slices and existing reusable auth contracts.
+- [x] Verify Control Plane tests do not depend on legacy admin UI.
+- [x] Decide when Commerce Node V2 starts.
+- [x] Document conditions for removing legacy `BlazorShop.Presentation` from the solution.
+
+Implementation notes:
+
+- Added `ControlPlaneArchitectureBoundaryTests` to enforce PresentationV2 dependency boundaries.
+- `BlazorShop.ControlPlane.API` and `BlazorShop.ControlPlane.Web` must not reference legacy presentation projects except the approved `BlazorShop.Web.Shared` helper project.
+- Control Plane Web may use only the explicit `BlazorShop.Web.Shared` helper namespace allowlist.
+- Control Plane tests must not reference legacy presentation UI namespaces.
+- Added `legacy-cutover-readiness.md` to define Commerce Node V2 start conditions and legacy removal conditions.
+
+Verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~ControlPlaneArchitectureBoundaryTests|FullyQualifiedName~ControlPlaneAuthorizationTests"` passes 8 tests.
+- `dotnet build BlazorShop.sln` passes with existing legacy dependency warnings.
 
 Acceptance:
 
-- Control Plane can ship while legacy remains frozen.
-- Removal of legacy is explicitly deferred until Commerce Node and StorefrontV2 have their own parity plans.
+- [x] Control Plane can ship while legacy remains frozen.
+- [x] Removal of legacy is explicitly deferred until Commerce Node and StorefrontV2 have their own parity plans.
 
 ## UI Screen Map
 
