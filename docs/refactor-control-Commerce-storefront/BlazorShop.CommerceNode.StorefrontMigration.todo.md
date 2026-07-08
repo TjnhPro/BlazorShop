@@ -303,19 +303,19 @@ Database:
 
 API:
 
-- [ ] Do not add middleware for `api/internal/*`.
-- [ ] Confirm `api/internal/*` routes are not covered by `CommerceNodeCredentialMiddleware`.
-- [ ] Add a lightweight `StorefrontInternalControllerBase` for consistent response handling.
-- [ ] Document that `api/internal/*` must be bound privately by deployment config.
-- [ ] Customer-specific `api/internal/*` routes will use JWT auth after Storefront auth migration.
+- [x] Do not add middleware for `api/internal/*`.
+- [x] Confirm `api/internal/*` routes are not covered by `CommerceNodeCredentialMiddleware`.
+- [x] Add a lightweight `StorefrontInternalControllerBase` for consistent response handling.
+- [x] Document that `api/internal/*` must be bound privately by deployment config.
+- [x] Customer-specific `api/internal/*` routes will use JWT auth after Storefront auth migration.
 
 Services:
 
-- [ ] Keep middleware separate from `CommerceNodeCredentialMiddleware`.
+- [x] Keep middleware separate from `CommerceNodeCredentialMiddleware`.
 
 QA:
 
-- [ ] `api/internal/*` does not require Control Plane node key headers.
+- [x] `api/internal/*` does not require Control Plane node key headers.
 - [ ] `api/internal/*` remains absent from public reverse-proxy exposure checklist.
 - [ ] `api/commerce/*` still uses node key + node secret.
 
