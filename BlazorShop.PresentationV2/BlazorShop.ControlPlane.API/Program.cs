@@ -4,7 +4,6 @@ using System.Threading.RateLimiting;
 using BlazorShop.Application.ControlPlane;
 using BlazorShop.ControlPlane.API.Authorization;
 using BlazorShop.ControlPlane.API.Middleware;
-using BlazorShop.Infrastructure;
 using BlazorShop.Infrastructure.Data.ControlPlane;
 
 using Microsoft.AspNetCore.HttpOverrides;
@@ -74,7 +73,6 @@ builder.Services.AddCors(options =>
         });
 });
 builder.Services.AddControlPlaneApplication(builder.Configuration);
-builder.Services.AddSharedAuthenticationInfrastructure(builder.Configuration);
 builder.Services.AddControlPlaneInfrastructure(builder.Configuration);
 
 var app = builder.Build();
