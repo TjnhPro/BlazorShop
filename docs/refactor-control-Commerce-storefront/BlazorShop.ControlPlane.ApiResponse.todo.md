@@ -179,21 +179,21 @@ Commit: `feat(control-plane): add api response envelope infrastructure`
 
 ### Client Contract
 
-- [ ] Add `ControlPlaneApiEnvelope<TData>` in the Web project:
-  - [ ] `bool Success`
-  - [ ] `string Message`
-  - [ ] `TData? Data`
-- [ ] Add `ControlPlaneClientResult<TData>` for page-facing client methods:
-  - [ ] `bool Success`
-  - [ ] `string Message`
-  - [ ] `TData? Data`
-  - [ ] `HttpStatusCode? StatusCode`
-- [ ] Add one shared reader:
-  - [ ] `ReadEnvelopeAsync<TData>(HttpResponseMessage response, string fallbackMessage)`
-  - [ ] `GetAsync<TData>(route, fallbackMessage)`
-  - [ ] `PostAsync<TRequest,TData>(route, request, fallbackMessage)`
-  - [ ] `PutAsync<TRequest,TData>(route, request, fallbackMessage)`
-  - [ ] `DeleteAsync<TData>(route, fallbackMessage)`
+- [x] Add `ControlPlaneApiEnvelope<TData>` in the Web project:
+  - [x] `bool Success`
+  - [x] `string Message`
+  - [x] `TData? Data`
+- [x] Add `ControlPlaneClientResult<TData>` for page-facing client methods:
+  - [x] `bool Success`
+  - [x] `string Message`
+  - [x] `TData? Data`
+  - [x] `HttpStatusCode? StatusCode`
+- [x] Add one shared reader:
+  - [x] `ReadEnvelopeAsync<TData>(HttpResponseMessage response, string fallbackMessage)`
+  - [x] `GetAsync<TData>(route, fallbackMessage)`
+  - [x] `PostAsync<TRequest,TData>(route, request, fallbackMessage)`
+  - [x] `PutAsync<TRequest,TData>(route, request, fallbackMessage)`
+  - [x] `DeleteAsync<TData>(route, fallbackMessage)`
 
 Recommended location:
 
@@ -202,13 +202,13 @@ Recommended location:
 
 ### UI Rule
 
-- [ ] Razor pages show `result.Message`.
-- [ ] Razor pages check only `result.Success` and `result.Data`.
-- [ ] Razor pages do not inspect raw HTTP status or parse JSON errors.
-- [ ] Razor pages do not know whether a business failure came from `400`, `403`, `404`, or `409`.
-- [ ] `ControlPlaneApiClient` is the only layer that reads HTTP status for generic behavior.
-- [ ] Feature clients may expose `StatusCode` for diagnostics, but pages should not use it for business UI branching.
-- [ ] Network failure fallback is allowed in `ControlPlaneApiClient`, not pages.
+- [x] Razor pages show `result.Message`.
+- [x] Razor pages check only `result.Success` and `result.Data`.
+- [x] Razor pages do not inspect raw HTTP status or parse JSON errors.
+- [x] Razor pages do not know whether a business failure came from `400`, `403`, `404`, or `409`.
+- [x] `ControlPlaneApiClient` is the only layer that reads HTTP status for generic behavior.
+- [x] Feature clients may expose `StatusCode` for diagnostics, but pages should not use it for business UI branching.
+- [x] Network failure fallback is allowed in `ControlPlaneApiClient`, not pages.
 
 Commit: `feat(control-plane): add web api envelope reader`
 

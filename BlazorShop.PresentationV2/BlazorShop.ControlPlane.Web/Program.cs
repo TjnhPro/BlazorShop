@@ -13,6 +13,7 @@ using BlazorShop.Web.Shared.Services;
 using BlazorShop.Web.Shared.Services.Contracts;
 using BlazorShop.ControlPlane.Web.Services.Authentication;
 using BlazorShop.ControlPlane.Web.Services.Actions;
+using BlazorShop.ControlPlane.Web.Services.Common;
 using BlazorShop.ControlPlane.Web.Services.Credentials;
 using BlazorShop.ControlPlane.Web.Services.Dashboard;
 using BlazorShop.ControlPlane.Web.Services.Health;
@@ -45,6 +46,7 @@ builder.Services.AddScoped<IAuthenticationSessionSyncService, AuthenticationSess
 builder.Services.AddScoped<BrowserCredentialsHandler>();
 builder.Services.AddScoped<RefreshTokenHandler>();
 builder.Services.AddScoped<IControlPlaneActionClient, ControlPlaneActionClient>();
+builder.Services.AddScoped<IControlPlaneApiClient, ControlPlaneApiClient>();
 builder.Services.AddScoped<IControlPlaneCredentialClient, ControlPlaneCredentialClient>();
 builder.Services.AddScoped<IControlPlaneDashboardClient, ControlPlaneDashboardClient>();
 builder.Services.AddScoped<IControlPlaneHealthClient, ControlPlaneHealthClient>();
