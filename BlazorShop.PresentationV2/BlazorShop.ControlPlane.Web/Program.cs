@@ -18,6 +18,7 @@ using BlazorShop.ControlPlane.Web.Services.Dashboard;
 using BlazorShop.ControlPlane.Web.Services.Health;
 using BlazorShop.ControlPlane.Web.Services.Nodes;
 using BlazorShop.ControlPlane.Web.Services.Stores;
+using BlazorShop.ControlPlane.Web.Services.Users;
 using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -49,6 +50,7 @@ builder.Services.AddScoped<IControlPlaneDashboardClient, ControlPlaneDashboardCl
 builder.Services.AddScoped<IControlPlaneHealthClient, ControlPlaneHealthClient>();
 builder.Services.AddScoped<IControlPlaneNodeClient, ControlPlaneNodeClient>();
 builder.Services.AddScoped<IControlPlaneStoreClient, ControlPlaneStoreClient>();
+builder.Services.AddScoped<IControlPlaneUserClient, ControlPlaneUserClient>();
 builder.Services.AddHttpClient(
     Constant.ApiClient.PublicName,
     client => client.BaseAddress = apiBaseAddress)
