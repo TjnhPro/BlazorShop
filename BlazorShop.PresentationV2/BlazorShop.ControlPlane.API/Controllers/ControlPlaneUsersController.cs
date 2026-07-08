@@ -60,7 +60,10 @@ namespace BlazorShop.ControlPlane.API.Controllers
 
             if (result.Success && result.Payload is not null)
             {
-                return CreatedAtAction(nameof(Get), new { publicId = result.Payload.User.PublicId }, result.Payload);
+                return CreatedAtAction(
+                    nameof(Get),
+                    new { publicId = result.Payload.User.PublicId },
+                    ControlPlaneApiResponse<CreateControlPlaneUserResponse>.Succeeded(result.Payload, "User created."));
             }
 
             return ToFailureActionResult(result);
@@ -202,7 +205,10 @@ namespace BlazorShop.ControlPlane.API.Controllers
         {
             if (result.Success)
             {
-                return Ok(result.Payload);
+                return ControlPlaneApiResponseWriter.Success(
+                    StatusCodes.Status200OK,
+                    result.Payload,
+                    string.IsNullOrWhiteSpace(result.Message) ? "User request completed." : result.Message);
             }
 
             return ToFailureActionResult(result);
@@ -210,13 +216,12 @@ namespace BlazorShop.ControlPlane.API.Controllers
 
         private IActionResult ToFailureActionResult<TPayload>(ControlPlaneUserOperationResult<TPayload> result)
         {
-            var body = new { message = result.Message };
             return result.Failure switch
             {
-                ControlPlaneUserOperationFailure.NotFound => NotFound(body),
-                ControlPlaneUserOperationFailure.Conflict => Conflict(body),
-                ControlPlaneUserOperationFailure.Validation => BadRequest(body),
-                _ => BadRequest(body)
+                ControlPlaneUserOperationFailure.NotFound => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status404NotFound, result.Message),
+                ControlPlaneUserOperationFailure.Conflict => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status409Conflict, result.Message),
+                ControlPlaneUserOperationFailure.Validation => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message),
+                _ => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message)
             };
         }
 

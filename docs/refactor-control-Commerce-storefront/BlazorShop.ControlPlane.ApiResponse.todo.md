@@ -314,24 +314,24 @@ Commit: `feat(control-plane): wrap mutation api responses`
 
 User Management has the most permission and conflict rules, so keep it as a separate phase.
 
-- [ ] `GET /users/{publicId}`
-- [ ] `POST /users`
-- [ ] `PUT /users/{publicId}`
-- [ ] `POST /users/{publicId}/disable`
-- [ ] `POST /users/{publicId}/enable`
-- [ ] `POST /users/{publicId}/roles`
-- [ ] `DELETE /users/{publicId}/roles/{roleKey}`
-- [ ] `POST /users/{publicId}/permissions`
-- [ ] `DELETE /users/{publicId}/permissions/{permissionKey}`
+- [x] `GET /users/{publicId}`
+- [x] `POST /users`
+- [x] `PUT /users/{publicId}`
+- [x] `POST /users/{publicId}/disable`
+- [x] `POST /users/{publicId}/enable`
+- [x] `POST /users/{publicId}/roles`
+- [x] `DELETE /users/{publicId}/roles/{roleKey}`
+- [x] `POST /users/{publicId}/permissions`
+- [x] `DELETE /users/{publicId}/permissions/{permissionKey}`
 
 Acceptance:
 
-- [ ] Duplicate email response is `409` with `success=false`.
-- [ ] Last platform owner response is `409` with `success=false`.
-- [ ] Permission denial is `403` with `success=false`.
-- [ ] Disabled login is still blocked.
-- [ ] Web client reads status for generic handling but User page only consumes `Success`, `Message`, and `Data`.
-- [ ] User page uses only API messages for visible failure text.
+- [x] Duplicate email response is `409` with `success=false`.
+- [x] Last platform owner response is `409` with `success=false`.
+- [x] Permission denial is `403` with `success=false`.
+- [x] Disabled login is still blocked.
+- [x] Web client reads status for generic handling but User page only consumes `Success`, `Message`, and `Data`.
+- [x] User page uses only API messages for visible failure text.
 
 Commit: `feat(control-plane): wrap user management api responses`
 

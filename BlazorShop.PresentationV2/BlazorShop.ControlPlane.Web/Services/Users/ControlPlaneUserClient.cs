@@ -83,20 +83,22 @@ namespace BlazorShop.ControlPlane.Web.Services.Users
 
         public async Task<UserDetail?> GetAsync(Guid publicId, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.GetAsync($"api/control-plane/users/{publicId}", cancellationToken);
+            var result = await this.apiClient.GetPrivateAsync<UserDetail>(
+                $"api/control-plane/users/{publicId}",
+                "Unable to load user details.",
+                cancellationToken);
 
-            if (response.StatusCode == HttpStatusCode.NotFound)
+            if (result.StatusCode == HttpStatusCode.NotFound)
             {
                 return null;
             }
 
-            if (response.IsSuccessStatusCode)
+            if (result.Success)
             {
-                return await response.Content.ReadFromJsonAsync<UserDetail>(SerializerOptions, cancellationToken);
+                return result.Data;
             }
 
-            throw new InvalidOperationException(await ResolveErrorMessageAsync(response, "Unable to load user details."));
+            throw new InvalidOperationException(result.Message);
         }
 
         public async Task<RoleCatalogResponse> ListRolesAsync(CancellationToken cancellationToken = default)
@@ -131,81 +133,95 @@ namespace BlazorShop.ControlPlane.Web.Services.Users
 
         public async Task<CreateUserResult> CreateAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PostAsJsonAsync("api/control-plane/users", request, SerializerOptions, cancellationToken);
+            var result = await this.apiClient.PostPrivateAsync<CreateUserRequest, CreateUserResponse>(
+                "api/control-plane/users",
+                request,
+                "Unable to create user.",
+                cancellationToken);
 
-            if (response.IsSuccessStatusCode)
+            if (result.Success)
             {
-                var payload = await response.Content.ReadFromJsonAsync<CreateUserResponse>(SerializerOptions, cancellationToken);
-                return payload is null
+                return result.Data is null
                     ? new CreateUserResult(false, "Invalid create user response.")
-                    : new CreateUserResult(true, Payload: payload);
+                    : new CreateUserResult(true, result.Message, result.Data);
             }
 
-            return new CreateUserResult(false, await ResolveErrorMessageAsync(response, "Unable to create user."));
+            return new CreateUserResult(false, result.Message);
         }
 
         public async Task<UserMutationResult> UpdateAsync(Guid publicId, UpdateUserRequest request, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PutAsJsonAsync($"api/control-plane/users/{publicId}", request, SerializerOptions, cancellationToken);
-            return await ToMutationResultAsync(response, "Unable to update user.", cancellationToken);
+            var result = await this.apiClient.PutPrivateAsync<UpdateUserRequest, UserDetail>(
+                $"api/control-plane/users/{publicId}",
+                request,
+                "Unable to update user.",
+                cancellationToken);
+
+            return new UserMutationResult(result.Success, result.Message, result.Data);
         }
 
         public async Task<UserMutationResult> DisableAsync(Guid publicId, ChangeUserStatusRequest request, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PostAsJsonAsync($"api/control-plane/users/{publicId}/disable", request, SerializerOptions, cancellationToken);
-            return await ToMutationResultAsync(response, "Unable to disable user.", cancellationToken);
+            var result = await this.apiClient.PostPrivateAsync<ChangeUserStatusRequest, UserDetail>(
+                $"api/control-plane/users/{publicId}/disable",
+                request,
+                "Unable to disable user.",
+                cancellationToken);
+
+            return new UserMutationResult(result.Success, result.Message, result.Data);
         }
 
         public async Task<UserMutationResult> EnableAsync(Guid publicId, ChangeUserStatusRequest request, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PostAsJsonAsync($"api/control-plane/users/{publicId}/enable", request, SerializerOptions, cancellationToken);
-            return await ToMutationResultAsync(response, "Unable to enable user.", cancellationToken);
+            var result = await this.apiClient.PostPrivateAsync<ChangeUserStatusRequest, UserDetail>(
+                $"api/control-plane/users/{publicId}/enable",
+                request,
+                "Unable to enable user.",
+                cancellationToken);
+
+            return new UserMutationResult(result.Success, result.Message, result.Data);
         }
 
         public async Task<UserMutationResult> AssignRoleAsync(Guid publicId, AssignRoleRequest request, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PostAsJsonAsync($"api/control-plane/users/{publicId}/roles", request, SerializerOptions, cancellationToken);
-            return await ToMutationResultAsync(response, "Unable to assign role.", cancellationToken);
+            var result = await this.apiClient.PostPrivateAsync<AssignRoleRequest, UserDetail>(
+                $"api/control-plane/users/{publicId}/roles",
+                request,
+                "Unable to assign role.",
+                cancellationToken);
+
+            return new UserMutationResult(result.Success, result.Message, result.Data);
         }
 
         public async Task<UserMutationResult> RemoveRoleAsync(Guid publicId, string roleKey, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.DeleteAsync($"api/control-plane/users/{publicId}/roles/{Uri.EscapeDataString(roleKey)}", cancellationToken);
-            return await ToMutationResultAsync(response, "Unable to remove role.", cancellationToken);
+            var result = await this.apiClient.DeletePrivateAsync<UserDetail>(
+                $"api/control-plane/users/{publicId}/roles/{Uri.EscapeDataString(roleKey)}",
+                "Unable to remove role.",
+                cancellationToken);
+
+            return new UserMutationResult(result.Success, result.Message, result.Data);
         }
 
         public async Task<UserMutationResult> AssignPermissionAsync(Guid publicId, AssignPermissionRequest request, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PostAsJsonAsync($"api/control-plane/users/{publicId}/permissions", request, SerializerOptions, cancellationToken);
-            return await ToMutationResultAsync(response, "Unable to assign permission.", cancellationToken);
+            var result = await this.apiClient.PostPrivateAsync<AssignPermissionRequest, UserDetail>(
+                $"api/control-plane/users/{publicId}/permissions",
+                request,
+                "Unable to assign permission.",
+                cancellationToken);
+
+            return new UserMutationResult(result.Success, result.Message, result.Data);
         }
 
         public async Task<UserMutationResult> RemovePermissionAsync(Guid publicId, string permissionKey, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.DeleteAsync($"api/control-plane/users/{publicId}/permissions/{Uri.EscapeDataString(permissionKey)}", cancellationToken);
-            return await ToMutationResultAsync(response, "Unable to remove permission.", cancellationToken);
-        }
+            var result = await this.apiClient.DeletePrivateAsync<UserDetail>(
+                $"api/control-plane/users/{publicId}/permissions/{Uri.EscapeDataString(permissionKey)}",
+                "Unable to remove permission.",
+                cancellationToken);
 
-        private static async Task<UserMutationResult> ToMutationResultAsync(
-            HttpResponseMessage response,
-            string defaultErrorMessage,
-            CancellationToken cancellationToken)
-        {
-            if (response.IsSuccessStatusCode)
-            {
-                var user = await response.Content.ReadFromJsonAsync<UserDetail>(SerializerOptions, cancellationToken);
-                return new UserMutationResult(true, User: user);
-            }
-
-            return new UserMutationResult(false, await ResolveErrorMessageAsync(response, defaultErrorMessage));
+            return new UserMutationResult(result.Success, result.Message, result.Data);
         }
 
         private static void AddQuery(ICollection<string> query, string key, string? value)
