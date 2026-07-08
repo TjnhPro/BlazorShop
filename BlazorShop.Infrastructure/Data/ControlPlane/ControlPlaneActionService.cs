@@ -6,6 +6,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using BlazorShop.Domain.Entities.ControlPlane;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Logging;
 
     public sealed class ControlPlaneActionService : IControlPlaneActionService
     {
@@ -23,10 +24,14 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         };
 
         private readonly ControlPlaneDbContext dbContext;
+        private readonly ILogger<ControlPlaneActionService>? logger;
 
-        public ControlPlaneActionService(ControlPlaneDbContext dbContext)
+        public ControlPlaneActionService(
+            ControlPlaneDbContext dbContext,
+            ILogger<ControlPlaneActionService>? logger = null)
         {
             this.dbContext = dbContext;
+            this.logger = logger;
         }
 
         public async Task<ControlPlaneActionListResponse> ListAsync(
@@ -171,6 +176,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
             if (existing is not null)
             {
+                this.logger?.LogInformation(
+                    "Control action enqueue deduplicated for node {NodePublicId}, idempotency key {IdempotencyKey}, existing action {ActionPublicId}.",
+                    node.PublicId,
+                    idempotencyKey,
+                    existing.PublicId);
+
                 return new ControlPlaneActionOperationResult<ControlPlaneActionDetail>(
                     true,
                     "Duplicate idempotency key matched an existing action.",
@@ -201,6 +212,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
             this.dbContext.Actions.Add(action);
             await this.dbContext.SaveChangesAsync(cancellationToken);
+
+            this.logger?.LogInformation(
+                "Enqueued Control Plane action {ActionPublicId} of type {ActionType} for node {NodePublicId} and store {StorePublicId}.",
+                action.PublicId,
+                action.ActionType,
+                node.PublicId,
+                store?.PublicId);
 
             return Succeeded(MapDetail((await this.LoadActionAsync(action.PublicId, cancellationToken))!));
         }
@@ -268,6 +286,14 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             action.ErrorMessage = status == "failed" ? NormalizeOptionalText(request.ErrorMessage) : null;
 
             await this.dbContext.SaveChangesAsync(cancellationToken);
+            this.logger?.LogInformation(
+                "Recorded attempt {AttemptNumber} for Control Plane action {ActionPublicId} with status {AttemptStatus}, HTTP {HttpStatusCode}, duration {DurationMs} ms.",
+                attempt.AttemptNumber,
+                action.PublicId,
+                attempt.Status,
+                attempt.HttpStatusCode,
+                attempt.DurationMs);
+
             return Succeeded(MapDetail(action));
         }
 
@@ -297,6 +323,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             }
 
             await this.dbContext.SaveChangesAsync(cancellationToken);
+            this.logger?.LogInformation(
+                "Cancelled Control Plane action {ActionPublicId} with current status {ActionStatus}.",
+                action.PublicId,
+                action.Status);
+
             return Succeeded(MapDetail(action));
         }
 

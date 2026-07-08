@@ -7,19 +7,23 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using BlazorShop.Domain.Entities.ControlPlane;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Logging;
 
     public sealed class ControlPlaneHealthService : IControlPlaneHealthService
     {
         private const string ControlApiEndpointKind = "control_api";
         private readonly ControlPlaneDbContext dbContext;
         private readonly ICommerceNodeControlClient controlClient;
+        private readonly ILogger<ControlPlaneHealthService>? logger;
 
         public ControlPlaneHealthService(
             ControlPlaneDbContext dbContext,
-            ICommerceNodeControlClient controlClient)
+            ICommerceNodeControlClient controlClient,
+            ILogger<ControlPlaneHealthService>? logger = null)
         {
             this.dbContext = dbContext;
             this.controlClient = controlClient;
+            this.logger = logger;
         }
 
         public async Task<ControlPlaneHealthListResponse> ListAsync(CancellationToken cancellationToken = default)
@@ -78,6 +82,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 return ValidationFailed<ControlPlaneProbeResult>("Node does not have an active primary Control API endpoint.");
             }
 
+            this.logger?.LogInformation(
+                "Starting Control Plane health probe for node {NodePublicId} at {ControlApiUrl}.",
+                node.PublicId,
+                endpoint.Url);
+
             var probe = await this.controlClient.ProbeAsync(endpoint.Url, cancellationToken);
             var now = DateTimeOffset.UtcNow;
             var health = new NodeHealthSnapshot
@@ -132,6 +141,25 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             }
 
             await this.dbContext.SaveChangesAsync(cancellationToken);
+
+            if (probe.HealthStatus is "healthy" or "warning")
+            {
+                this.logger?.LogInformation(
+                    "Completed Control Plane health probe for node {NodePublicId} with status {HealthStatus} in {DurationMs} ms. CapabilityChanged={CapabilityChanged}.",
+                    node.PublicId,
+                    probe.HealthStatus,
+                    probe.DurationMs,
+                    capabilityChanged);
+            }
+            else
+            {
+                this.logger?.LogWarning(
+                    "Control Plane health probe for node {NodePublicId} ended with status {HealthStatus}, error {ErrorCode}, duration {DurationMs} ms.",
+                    node.PublicId,
+                    probe.HealthStatus,
+                    probe.HealthErrorCode,
+                    probe.DurationMs);
+            }
 
             return Succeeded(new ControlPlaneProbeResult(
                 MapHealth(health),

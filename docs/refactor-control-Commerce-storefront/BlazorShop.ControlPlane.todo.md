@@ -880,20 +880,28 @@ Verification:
 
 ### Phase 10 - Hardening
 
-- [ ] Add rate limiting to Control Plane API.
-- [ ] Configure forwarded headers for production topology.
-- [ ] Add ProblemDetails responses.
-- [ ] Add request correlation middleware.
-- [ ] Add structured logs for node probes and control actions.
-- [ ] Add health checks for Control Plane DB.
-- [ ] Add production appsettings example.
-- [ ] Add runbook for first node registration, credential rotation, and failed probe triage.
+- [x] Add rate limiting to Control Plane API.
+- [x] Configure forwarded headers for production topology.
+- [x] Add ProblemDetails responses.
+- [x] Add request correlation middleware.
+- [x] Add structured logs for node probes and control actions.
+- [x] Add health checks for Control Plane DB.
+- [x] Add production appsettings example.
+- [x] Add runbook for first node registration, credential rotation, and failed probe triage.
 
 Acceptance:
 
 - Production configuration fails fast on missing required settings.
 - Logs contain correlation id for API request -> control action -> node call.
 - Runbook can be followed by a new operator.
+
+Verification:
+
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj` passes with 0 warnings.
+- Control Plane API now registers rate limiting, forwarded headers, ProblemDetails/status-code handling, and `X-Correlation-ID` middleware.
+- Production startup validates `ConnectionStrings:ControlPlaneConnection`, `Jwt:Key`, and `ControlPlane:Cors:AllowedOrigins`.
+- `appsettings.Production.example.json` documents required production settings.
+- `control-plane-runbook.md` covers first node registration, credential rotation, failed probe triage, and production startup checks.
 
 ### Phase 11 - Legacy Cutover Readiness
 
