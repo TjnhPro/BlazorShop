@@ -1,4 +1,5 @@
 using BlazorShop.CommerceNode.API.Configuration;
+using BlazorShop.CommerceNode.API.Middleware;
 using BlazorShop.Infrastructure.Data.CommerceNode;
 
 using Microsoft.Extensions.Options;
@@ -26,6 +27,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapGet("/", () => Results.Redirect("/swagger"));
+app.UseWhen(
+    context => context.Request.Path.StartsWithSegments("/api/commerce"),
+    branch => branch.UseMiddleware<CommerceNodeCredentialMiddleware>());
 app.MapDefaultEndpoints();
 
 app.Run();
