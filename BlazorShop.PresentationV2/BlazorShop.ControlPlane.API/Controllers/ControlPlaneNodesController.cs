@@ -60,7 +60,10 @@ namespace BlazorShop.ControlPlane.API.Controllers
             if (result.Success && result.Payload is not null)
             {
                 await this.WriteNodeAuditAsync("nodes.create", "success", result.Payload, cancellationToken);
-                return CreatedAtAction(nameof(Get), new { publicId = result.Payload.PublicId }, result.Payload);
+                return CreatedAtAction(
+                    nameof(Get),
+                    new { publicId = result.Payload.PublicId },
+                    ControlPlaneApiResponse<ControlPlaneNodeDetail>.Succeeded(result.Payload, "Node created."));
             }
 
             await this.WriteNodeAuditAsync("nodes.create", "failure", result.Payload, cancellationToken);
@@ -99,16 +102,18 @@ namespace BlazorShop.ControlPlane.API.Controllers
         {
             if (result.Success)
             {
-                return Ok(result.Payload);
+                return ControlPlaneApiResponseWriter.Success(
+                    StatusCodes.Status200OK,
+                    result.Payload,
+                    string.IsNullOrWhiteSpace(result.Message) ? "Node loaded." : result.Message);
             }
 
-            var body = new { message = result.Message };
             return result.Failure switch
             {
-                ControlPlaneNodeOperationFailure.NotFound => NotFound(body),
-                ControlPlaneNodeOperationFailure.Conflict => Conflict(body),
-                ControlPlaneNodeOperationFailure.Validation => BadRequest(body),
-                _ => BadRequest(body)
+                ControlPlaneNodeOperationFailure.NotFound => ControlPlaneApiResponseWriter.Failure<ControlPlaneNodeDetail>(StatusCodes.Status404NotFound, result.Message),
+                ControlPlaneNodeOperationFailure.Conflict => ControlPlaneApiResponseWriter.Failure<ControlPlaneNodeDetail>(StatusCodes.Status409Conflict, result.Message),
+                ControlPlaneNodeOperationFailure.Validation => ControlPlaneApiResponseWriter.Failure<ControlPlaneNodeDetail>(StatusCodes.Status400BadRequest, result.Message),
+                _ => ControlPlaneApiResponseWriter.Failure<ControlPlaneNodeDetail>(StatusCodes.Status400BadRequest, result.Message)
             };
         }
 

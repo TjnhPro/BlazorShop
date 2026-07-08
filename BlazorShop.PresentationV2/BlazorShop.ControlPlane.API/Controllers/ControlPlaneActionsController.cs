@@ -58,7 +58,10 @@ namespace BlazorShop.ControlPlane.API.Controllers
             await this.WriteActionAuditAsync("actions.enqueue", result, result.Payload, cancellationToken);
 
             return result.Success && result.Payload is not null && !result.AlreadyExists
-                ? CreatedAtAction(nameof(Get), new { publicId = result.Payload.PublicId }, result.Payload)
+                ? CreatedAtAction(
+                    nameof(Get),
+                    new { publicId = result.Payload.PublicId },
+                    ControlPlaneApiResponse<ControlPlaneActionDetail>.Succeeded(result.Payload, "Control action enqueued."))
                 : ToActionResult(result);
         }
 
@@ -87,16 +90,18 @@ namespace BlazorShop.ControlPlane.API.Controllers
         {
             if (result.Success)
             {
-                return Ok(result.Payload);
+                return ControlPlaneApiResponseWriter.Success(
+                    StatusCodes.Status200OK,
+                    result.Payload,
+                    string.IsNullOrWhiteSpace(result.Message) ? "Control action request completed." : result.Message);
             }
 
-            var body = new { message = result.Message };
             return result.Failure switch
             {
-                ControlPlaneActionOperationFailure.NotFound => NotFound(body),
-                ControlPlaneActionOperationFailure.Conflict => Conflict(body),
-                ControlPlaneActionOperationFailure.Validation => BadRequest(body),
-                _ => BadRequest(body)
+                ControlPlaneActionOperationFailure.NotFound => ControlPlaneApiResponseWriter.Failure<ControlPlaneActionDetail>(StatusCodes.Status404NotFound, result.Message),
+                ControlPlaneActionOperationFailure.Conflict => ControlPlaneApiResponseWriter.Failure<ControlPlaneActionDetail>(StatusCodes.Status409Conflict, result.Message),
+                ControlPlaneActionOperationFailure.Validation => ControlPlaneApiResponseWriter.Failure<ControlPlaneActionDetail>(StatusCodes.Status400BadRequest, result.Message),
+                _ => ControlPlaneApiResponseWriter.Failure<ControlPlaneActionDetail>(StatusCodes.Status400BadRequest, result.Message)
             };
         }
 

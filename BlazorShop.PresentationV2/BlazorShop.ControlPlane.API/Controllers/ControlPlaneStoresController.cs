@@ -55,7 +55,10 @@ namespace BlazorShop.ControlPlane.API.Controllers
             await this.WriteStoreAuditAsync("stores.create", result, result.Payload, cancellationToken);
 
             return result.Success && result.Payload is not null
-                ? CreatedAtAction(nameof(Get), new { publicId = result.Payload.PublicId }, result.Payload)
+                ? CreatedAtAction(
+                    nameof(Get),
+                    new { publicId = result.Payload.PublicId },
+                    ControlPlaneApiResponse<ControlPlaneStoreDetail>.Succeeded(result.Payload, "Store created."))
                 : ToActionResult(result);
         }
 
@@ -108,16 +111,18 @@ namespace BlazorShop.ControlPlane.API.Controllers
         {
             if (result.Success)
             {
-                return Ok(result.Payload);
+                return ControlPlaneApiResponseWriter.Success(
+                    StatusCodes.Status200OK,
+                    result.Payload,
+                    string.IsNullOrWhiteSpace(result.Message) ? "Store request completed." : result.Message);
             }
 
-            var body = new { message = result.Message };
             return result.Failure switch
             {
-                ControlPlaneStoreOperationFailure.NotFound => NotFound(body),
-                ControlPlaneStoreOperationFailure.Conflict => Conflict(body),
-                ControlPlaneStoreOperationFailure.Validation => BadRequest(body),
-                _ => BadRequest(body)
+                ControlPlaneStoreOperationFailure.NotFound => ControlPlaneApiResponseWriter.Failure<ControlPlaneStoreDetail>(StatusCodes.Status404NotFound, result.Message),
+                ControlPlaneStoreOperationFailure.Conflict => ControlPlaneApiResponseWriter.Failure<ControlPlaneStoreDetail>(StatusCodes.Status409Conflict, result.Message),
+                ControlPlaneStoreOperationFailure.Validation => ControlPlaneApiResponseWriter.Failure<ControlPlaneStoreDetail>(StatusCodes.Status400BadRequest, result.Message),
+                _ => ControlPlaneApiResponseWriter.Failure<ControlPlaneStoreDetail>(StatusCodes.Status400BadRequest, result.Message)
             };
         }
 

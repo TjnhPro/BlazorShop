@@ -45,34 +45,32 @@ namespace BlazorShop.ControlPlane.Web.Services.Health
 
         public async Task<HealthDetail?> GetAsync(Guid nodePublicId, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.GetAsync($"api/control-plane/health/nodes/{nodePublicId}", cancellationToken);
+            var result = await this.apiClient.GetPrivateAsync<HealthDetail>(
+                $"api/control-plane/health/nodes/{nodePublicId}",
+                "Unable to load health detail.",
+                cancellationToken);
 
-            if (response.StatusCode == HttpStatusCode.NotFound)
+            if (result.StatusCode == HttpStatusCode.NotFound)
             {
                 return null;
             }
 
-            if (response.IsSuccessStatusCode)
+            if (result.Success)
             {
-                return await response.Content.ReadFromJsonAsync<HealthDetail>(SerializerOptions, cancellationToken);
+                return result.Data;
             }
 
-            throw new InvalidOperationException(await ResolveErrorMessageAsync(response, "Unable to load health detail."));
+            throw new InvalidOperationException(result.Message);
         }
 
         public async Task<ProbeMutationResult> ProbeAsync(Guid nodePublicId, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PostAsync($"api/control-plane/health/nodes/{nodePublicId}/probe", content: null, cancellationToken);
+            var result = await this.apiClient.PostPrivateAsync<ProbeResult>(
+                $"api/control-plane/health/nodes/{nodePublicId}/probe",
+                "Unable to run probe.",
+                cancellationToken);
 
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<ProbeResult>(SerializerOptions, cancellationToken);
-                return new ProbeMutationResult(true, Probe: result);
-            }
-
-            return new ProbeMutationResult(false, await ResolveErrorMessageAsync(response, "Unable to run probe."));
+            return new ProbeMutationResult(result.Success, result.Message, result.Data);
         }
 
         private static async Task<string> ResolveErrorMessageAsync(HttpResponseMessage response, string defaultMessage)

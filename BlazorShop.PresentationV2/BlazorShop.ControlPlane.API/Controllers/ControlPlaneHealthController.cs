@@ -68,15 +68,17 @@ namespace BlazorShop.ControlPlane.API.Controllers
         {
             if (result.Success)
             {
-                return Ok(result.Payload);
+                return ControlPlaneApiResponseWriter.Success(
+                    StatusCodes.Status200OK,
+                    result.Payload,
+                    string.IsNullOrWhiteSpace(result.Message) ? "Health request completed." : result.Message);
             }
 
-            var body = new { message = result.Message };
             return result.Failure switch
             {
-                ControlPlaneHealthOperationFailure.NotFound => NotFound(body),
-                ControlPlaneHealthOperationFailure.Validation => BadRequest(body),
-                _ => BadRequest(body)
+                ControlPlaneHealthOperationFailure.NotFound => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status404NotFound, result.Message),
+                ControlPlaneHealthOperationFailure.Validation => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message),
+                _ => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message)
             };
         }
     }

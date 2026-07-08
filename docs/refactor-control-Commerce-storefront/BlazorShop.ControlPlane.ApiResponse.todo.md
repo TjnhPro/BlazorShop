@@ -266,47 +266,47 @@ Migrate business mutation endpoints after auth/read routes are stable.
 
 ### Nodes
 
-- [ ] `GET /nodes/{publicId}`
-- [ ] `POST /nodes`
-- [ ] `PUT /nodes/{publicId}`
-- [ ] `POST /nodes/{publicId}/disable`
+- [x] `GET /nodes/{publicId}`
+- [x] `POST /nodes`
+- [x] `PUT /nodes/{publicId}`
+- [x] `POST /nodes/{publicId}/disable`
 
 ### Credentials
 
-- [ ] `GET /nodes/{nodePublicId}/credentials`
-- [ ] `POST /nodes/{nodePublicId}/credentials`
-- [ ] `POST /nodes/{nodePublicId}/credentials/{keyId}/revoke`
-- [ ] `POST /nodes/{nodePublicId}/credentials/{keyId}/rotate`
+- [x] `GET /nodes/{nodePublicId}/credentials`
+- [x] `POST /nodes/{nodePublicId}/credentials`
+- [x] `POST /nodes/{nodePublicId}/credentials/{keyId}/revoke`
+- [x] `POST /nodes/{nodePublicId}/credentials/{keyId}/rotate`
 
 ### Stores
 
-- [ ] `GET /stores/{publicId}`
-- [ ] `POST /stores`
-- [ ] `PUT /stores/{publicId}`
-- [ ] `POST /stores/{publicId}/archive`
-- [ ] `POST /stores/{publicId}/domains`
-- [ ] `POST /stores/{publicId}/domains/{domainId}/verify`
-- [ ] `POST /stores/{publicId}/domains/{domainId}/disable`
+- [x] `GET /stores/{publicId}`
+- [x] `POST /stores`
+- [x] `PUT /stores/{publicId}`
+- [x] `POST /stores/{publicId}/archive`
+- [x] `POST /stores/{publicId}/domains`
+- [x] `POST /stores/{publicId}/domains/{domainId}/verify`
+- [x] `POST /stores/{publicId}/domains/{domainId}/disable`
 
 ### Health
 
-- [ ] `GET /health/{nodePublicId}`
-- [ ] `POST /health/{nodePublicId}/probe`
+- [x] `GET /health/{nodePublicId}`
+- [x] `POST /health/{nodePublicId}/probe`
 
 ### Actions
 
-- [ ] `GET /actions/{publicId}`
-- [ ] `POST /actions`
-- [ ] `POST /actions/{publicId}/attempts`
-- [ ] `POST /actions/{publicId}/cancel`
+- [x] `GET /actions/{publicId}`
+- [x] `POST /actions`
+- [x] `POST /actions/{publicId}/attempts`
+- [x] `POST /actions/{publicId}/cancel`
 
 For each mutation:
 
-- [ ] API maps service `Message` into envelope `message`.
-- [ ] API maps service `Payload` into envelope `data`.
-- [ ] Web client returns `ControlPlaneClientResult<TData>`.
-- [ ] Page displays `result.Message` only.
-- [ ] Audit behavior remains unchanged.
+- [x] API maps service `Message` into envelope `message`.
+- [x] API maps service `Payload` into envelope `data`.
+- [x] Web client returns `ControlPlaneClientResult<TData>`.
+- [x] Page displays `result.Message` only.
+- [x] Audit behavior remains unchanged.
 
 Commit: `feat(control-plane): wrap mutation api responses`
 

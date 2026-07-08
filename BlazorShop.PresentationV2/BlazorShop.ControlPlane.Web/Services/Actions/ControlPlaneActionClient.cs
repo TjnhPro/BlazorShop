@@ -88,48 +88,43 @@ namespace BlazorShop.ControlPlane.Web.Services.Actions
 
         public async Task<ActionDetail?> GetAsync(Guid publicId, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.GetAsync($"api/control-plane/actions/{publicId}", cancellationToken);
+            var result = await this.apiClient.GetPrivateAsync<ActionDetail>(
+                $"api/control-plane/actions/{publicId}",
+                "Unable to load action detail.",
+                cancellationToken);
 
-            if (response.StatusCode == HttpStatusCode.NotFound)
+            if (result.StatusCode == HttpStatusCode.NotFound)
             {
                 return null;
             }
 
-            if (response.IsSuccessStatusCode)
+            if (result.Success)
             {
-                return await response.Content.ReadFromJsonAsync<ActionDetail>(SerializerOptions, cancellationToken);
+                return result.Data;
             }
 
-            throw new InvalidOperationException(await ResolveErrorMessageAsync(response, "Unable to load action detail."));
+            throw new InvalidOperationException(result.Message);
         }
 
         public async Task<ActionMutationResult> EnqueueAsync(ActionEnqueueRequest request, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PostAsJsonAsync("api/control-plane/actions", request, SerializerOptions, cancellationToken);
-            return await ToMutationResultAsync(response, "Unable to enqueue control action.", cancellationToken);
+            var result = await this.apiClient.PostPrivateAsync<ActionEnqueueRequest, ActionDetail>(
+                "api/control-plane/actions",
+                request,
+                "Unable to enqueue control action.",
+                cancellationToken);
+
+            return new ActionMutationResult(result.Success, result.Message, result.Data);
         }
 
         public async Task<ActionMutationResult> CancelAsync(Guid publicId, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PostAsync($"api/control-plane/actions/{publicId}/cancel", content: null, cancellationToken);
-            return await ToMutationResultAsync(response, "Unable to cancel control action.", cancellationToken);
-        }
+            var result = await this.apiClient.PostPrivateAsync<ActionDetail>(
+                $"api/control-plane/actions/{publicId}/cancel",
+                "Unable to cancel control action.",
+                cancellationToken);
 
-        private static async Task<ActionMutationResult> ToMutationResultAsync(
-            HttpResponseMessage response,
-            string defaultMessage,
-            CancellationToken cancellationToken)
-        {
-            if (response.IsSuccessStatusCode)
-            {
-                var action = await response.Content.ReadFromJsonAsync<ActionDetail>(SerializerOptions, cancellationToken);
-                return new ActionMutationResult(true, Action: action);
-            }
-
-            return new ActionMutationResult(false, await ResolveErrorMessageAsync(response, defaultMessage));
+            return new ActionMutationResult(result.Success, result.Message, result.Data);
         }
 
         private static async Task<string> ResolveErrorMessageAsync(HttpResponseMessage response, string defaultMessage)

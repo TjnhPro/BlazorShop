@@ -73,76 +73,85 @@ namespace BlazorShop.ControlPlane.Web.Services.Stores
 
         public async Task<StoreDetail?> GetAsync(Guid publicId, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.GetAsync($"api/control-plane/stores/{publicId}", cancellationToken);
+            var result = await this.apiClient.GetPrivateAsync<StoreDetail>(
+                $"api/control-plane/stores/{publicId}",
+                "Unable to load store detail.",
+                cancellationToken);
 
-            if (response.StatusCode == HttpStatusCode.NotFound)
+            if (result.StatusCode == HttpStatusCode.NotFound)
             {
                 return null;
             }
 
-            if (response.IsSuccessStatusCode)
+            if (result.Success)
             {
-                return await response.Content.ReadFromJsonAsync<StoreDetail>(SerializerOptions, cancellationToken);
+                return result.Data;
             }
 
-            throw new InvalidOperationException(await ResolveErrorMessageAsync(response, "Unable to load store detail."));
+            throw new InvalidOperationException(result.Message);
         }
 
         public async Task<StoreMutationResult> CreateAsync(StoreCreateRequest request, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PostAsJsonAsync("api/control-plane/stores", request, SerializerOptions, cancellationToken);
-            return await ToMutationResultAsync(response, "Unable to create store.", cancellationToken);
+            var result = await this.apiClient.PostPrivateAsync<StoreCreateRequest, StoreDetail>(
+                "api/control-plane/stores",
+                request,
+                "Unable to create store.",
+                cancellationToken);
+
+            return new StoreMutationResult(result.Success, result.Message, result.Data);
         }
 
         public async Task<StoreMutationResult> UpdateAsync(Guid publicId, StoreUpdateRequest request, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PutAsJsonAsync($"api/control-plane/stores/{publicId}", request, SerializerOptions, cancellationToken);
-            return await ToMutationResultAsync(response, "Unable to update store.", cancellationToken);
+            var result = await this.apiClient.PutPrivateAsync<StoreUpdateRequest, StoreDetail>(
+                $"api/control-plane/stores/{publicId}",
+                request,
+                "Unable to update store.",
+                cancellationToken);
+
+            return new StoreMutationResult(result.Success, result.Message, result.Data);
         }
 
         public async Task<StoreMutationResult> ArchiveAsync(Guid publicId, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PostAsync($"api/control-plane/stores/{publicId}/archive", content: null, cancellationToken);
-            return await ToMutationResultAsync(response, "Unable to archive store.", cancellationToken);
+            var result = await this.apiClient.PostPrivateAsync<StoreDetail>(
+                $"api/control-plane/stores/{publicId}/archive",
+                "Unable to archive store.",
+                cancellationToken);
+
+            return new StoreMutationResult(result.Success, result.Message, result.Data);
         }
 
         public async Task<StoreMutationResult> AddDomainAsync(Guid publicId, StoreDomainCreateRequest request, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PostAsJsonAsync($"api/control-plane/stores/{publicId}/domains", request, SerializerOptions, cancellationToken);
-            return await ToMutationResultAsync(response, "Unable to add domain.", cancellationToken);
+            var result = await this.apiClient.PostPrivateAsync<StoreDomainCreateRequest, StoreDetail>(
+                $"api/control-plane/stores/{publicId}/domains",
+                request,
+                "Unable to add domain.",
+                cancellationToken);
+
+            return new StoreMutationResult(result.Success, result.Message, result.Data);
         }
 
         public async Task<StoreMutationResult> VerifyDomainAsync(Guid publicId, long domainId, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PostAsync($"api/control-plane/stores/{publicId}/domains/{domainId}/verify", content: null, cancellationToken);
-            return await ToMutationResultAsync(response, "Unable to verify domain.", cancellationToken);
+            var result = await this.apiClient.PostPrivateAsync<StoreDetail>(
+                $"api/control-plane/stores/{publicId}/domains/{domainId}/verify",
+                "Unable to verify domain.",
+                cancellationToken);
+
+            return new StoreMutationResult(result.Success, result.Message, result.Data);
         }
 
         public async Task<StoreMutationResult> DisableDomainAsync(Guid publicId, long domainId, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PostAsync($"api/control-plane/stores/{publicId}/domains/{domainId}/disable", content: null, cancellationToken);
-            return await ToMutationResultAsync(response, "Unable to disable domain.", cancellationToken);
-        }
+            var result = await this.apiClient.PostPrivateAsync<StoreDetail>(
+                $"api/control-plane/stores/{publicId}/domains/{domainId}/disable",
+                "Unable to disable domain.",
+                cancellationToken);
 
-        private static async Task<StoreMutationResult> ToMutationResultAsync(
-            HttpResponseMessage response,
-            string defaultMessage,
-            CancellationToken cancellationToken)
-        {
-            if (response.IsSuccessStatusCode)
-            {
-                var store = await response.Content.ReadFromJsonAsync<StoreDetail>(SerializerOptions, cancellationToken);
-                return new StoreMutationResult(true, Store: store);
-            }
-
-            return new StoreMutationResult(false, await ResolveErrorMessageAsync(response, defaultMessage));
+            return new StoreMutationResult(result.Success, result.Message, result.Data);
         }
 
         private static async Task<string> ResolveErrorMessageAsync(HttpResponseMessage response, string defaultMessage)

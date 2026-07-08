@@ -68,55 +68,54 @@ namespace BlazorShop.ControlPlane.Web.Services.Nodes
 
         public async Task<NodeDetail?> GetAsync(Guid publicId, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.GetAsync($"api/control-plane/nodes/{publicId}", cancellationToken);
+            var result = await this.apiClient.GetPrivateAsync<NodeDetail>(
+                $"api/control-plane/nodes/{publicId}",
+                "Unable to load node details.",
+                cancellationToken);
 
-            if (response.StatusCode == HttpStatusCode.NotFound)
+            if (result.StatusCode == HttpStatusCode.NotFound)
             {
                 return null;
             }
 
-            if (response.IsSuccessStatusCode)
+            if (result.Success)
             {
-                return await response.Content.ReadFromJsonAsync<NodeDetail>(SerializerOptions, cancellationToken);
+                return result.Data;
             }
 
-            throw new InvalidOperationException(await ResolveErrorMessageAsync(response, "Unable to load node details."));
+            throw new InvalidOperationException(result.Message);
         }
 
         public async Task<NodeMutationResult> CreateAsync(NodeCreateRequest request, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PostAsJsonAsync("api/control-plane/nodes", request, SerializerOptions, cancellationToken);
-            return await ToMutationResultAsync(response, "Unable to create node.", cancellationToken);
+            var result = await this.apiClient.PostPrivateAsync<NodeCreateRequest, NodeDetail>(
+                "api/control-plane/nodes",
+                request,
+                "Unable to create node.",
+                cancellationToken);
+
+            return new NodeMutationResult(result.Success, result.Message, result.Data);
         }
 
         public async Task<NodeMutationResult> UpdateAsync(Guid publicId, NodeUpdateRequest request, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PutAsJsonAsync($"api/control-plane/nodes/{publicId}", request, SerializerOptions, cancellationToken);
-            return await ToMutationResultAsync(response, "Unable to update node.", cancellationToken);
+            var result = await this.apiClient.PutPrivateAsync<NodeUpdateRequest, NodeDetail>(
+                $"api/control-plane/nodes/{publicId}",
+                request,
+                "Unable to update node.",
+                cancellationToken);
+
+            return new NodeMutationResult(result.Success, result.Message, result.Data);
         }
 
         public async Task<NodeMutationResult> DisableAsync(Guid publicId, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PostAsync($"api/control-plane/nodes/{publicId}/disable", content: null, cancellationToken);
-            return await ToMutationResultAsync(response, "Unable to disable node.", cancellationToken);
-        }
+            var result = await this.apiClient.PostPrivateAsync<NodeDetail>(
+                $"api/control-plane/nodes/{publicId}/disable",
+                "Unable to disable node.",
+                cancellationToken);
 
-        private static async Task<NodeMutationResult> ToMutationResultAsync(
-            HttpResponseMessage response,
-            string defaultErrorMessage,
-            CancellationToken cancellationToken)
-        {
-            if (response.IsSuccessStatusCode)
-            {
-                var node = await response.Content.ReadFromJsonAsync<NodeDetail>(SerializerOptions, cancellationToken);
-                return new NodeMutationResult(true, Node: node);
-            }
-
-            return new NodeMutationResult(false, await ResolveErrorMessageAsync(response, defaultErrorMessage));
+            return new NodeMutationResult(result.Success, result.Message, result.Data);
         }
 
         private static async Task<string> ResolveErrorMessageAsync(HttpResponseMessage response, string defaultMessage)

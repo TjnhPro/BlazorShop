@@ -5,6 +5,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
     using BlazorShop.Application.ControlPlane.Audit;
     using BlazorShop.Application.ControlPlane.Credentials;
     using BlazorShop.Application.ControlPlane.Security;
+    using BlazorShop.ControlPlane.API.Responses;
 
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
@@ -97,16 +98,18 @@ namespace BlazorShop.ControlPlane.API.Controllers
         {
             if (result.Success)
             {
-                return Ok(result.Payload);
+                return ControlPlaneApiResponseWriter.Success(
+                    StatusCodes.Status200OK,
+                    result.Payload,
+                    string.IsNullOrWhiteSpace(result.Message) ? "Credential request completed." : result.Message);
             }
 
-            var body = new { message = result.Message };
             return result.Failure switch
             {
-                ControlPlaneCredentialOperationFailure.NotFound => NotFound(body),
-                ControlPlaneCredentialOperationFailure.Conflict => Conflict(body),
-                ControlPlaneCredentialOperationFailure.Validation => BadRequest(body),
-                _ => BadRequest(body)
+                ControlPlaneCredentialOperationFailure.NotFound => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status404NotFound, result.Message),
+                ControlPlaneCredentialOperationFailure.Conflict => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status409Conflict, result.Message),
+                ControlPlaneCredentialOperationFailure.Validation => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message),
+                _ => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message)
             };
         }
 

@@ -4,6 +4,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Credentials
     using System.Net.Http.Json;
     using System.Text.Json;
 
+    using BlazorShop.ControlPlane.Web.Services.Common;
     using BlazorShop.Web.Shared.Helper.Contracts;
 
     public interface IControlPlaneCredentialClient
@@ -21,66 +22,63 @@ namespace BlazorShop.ControlPlane.Web.Services.Credentials
     {
         private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
         private readonly IHttpClientHelper httpClientHelper;
+        private readonly IControlPlaneApiClient apiClient;
 
-        public ControlPlaneCredentialClient(IHttpClientHelper httpClientHelper)
+        public ControlPlaneCredentialClient(IHttpClientHelper httpClientHelper, IControlPlaneApiClient apiClient)
         {
             this.httpClientHelper = httpClientHelper;
+            this.apiClient = apiClient;
         }
 
         public async Task<CredentialListResponse> ListAsync(Guid nodePublicId, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.GetAsync($"api/control-plane/nodes/{nodePublicId}/credentials", cancellationToken);
+            var result = await this.apiClient.GetPrivateAsync<CredentialListResponse>(
+                $"api/control-plane/nodes/{nodePublicId}/credentials",
+                "Unable to load credentials.",
+                cancellationToken);
 
-            if (response.IsSuccessStatusCode)
+            if (result.Success)
             {
-                return await response.Content.ReadFromJsonAsync<CredentialListResponse>(SerializerOptions, cancellationToken)
-                       ?? new CredentialListResponse([]);
+                return result.Data ?? new CredentialListResponse([]);
             }
 
-            throw new InvalidOperationException(await ResolveErrorMessageAsync(response, "Unable to load credentials."));
+            throw new InvalidOperationException(result.Message);
         }
 
         public async Task<CredentialSecretResult> CreateAsync(Guid nodePublicId, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PostAsJsonAsync($"api/control-plane/nodes/{nodePublicId}/credentials", new { }, SerializerOptions, cancellationToken);
+            var result = await this.apiClient.PostPrivateAsync<object, CredentialSecretResult>(
+                $"api/control-plane/nodes/{nodePublicId}/credentials",
+                new { },
+                "Unable to create credential.",
+                cancellationToken);
 
-            if (response.IsSuccessStatusCode)
+            if (result.Success && result.Data is not null)
             {
-                return await response.Content.ReadFromJsonAsync<CredentialSecretResult>(SerializerOptions, cancellationToken)
-                       ?? throw new InvalidOperationException("Credential response was empty.");
+                return result.Data;
             }
 
-            throw new InvalidOperationException(await ResolveErrorMessageAsync(response, "Unable to create credential."));
+            throw new InvalidOperationException(result.Message);
         }
 
         public async Task<CredentialMutationResult> RevokeAsync(Guid nodePublicId, string keyId, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PostAsync($"api/control-plane/nodes/{nodePublicId}/credentials/{Uri.EscapeDataString(keyId)}/revoke", content: null, cancellationToken);
+            var result = await this.apiClient.PostPrivateAsync<CredentialSummary>(
+                $"api/control-plane/nodes/{nodePublicId}/credentials/{Uri.EscapeDataString(keyId)}/revoke",
+                "Unable to revoke credential.",
+                cancellationToken);
 
-            if (response.IsSuccessStatusCode)
-            {
-                var credential = await response.Content.ReadFromJsonAsync<CredentialSummary>(SerializerOptions, cancellationToken);
-                return new CredentialMutationResult(true, Credential: credential);
-            }
-
-            return new CredentialMutationResult(false, await ResolveErrorMessageAsync(response, "Unable to revoke credential."));
+            return new CredentialMutationResult(result.Success, result.Message, result.Data);
         }
 
         public async Task<CredentialSecretMutationResult> RotateAsync(Guid nodePublicId, string keyId, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.PostAsync($"api/control-plane/nodes/{nodePublicId}/credentials/{Uri.EscapeDataString(keyId)}/rotate", content: null, cancellationToken);
+            var result = await this.apiClient.PostPrivateAsync<CredentialSecretResult>(
+                $"api/control-plane/nodes/{nodePublicId}/credentials/{Uri.EscapeDataString(keyId)}/rotate",
+                "Unable to rotate credential.",
+                cancellationToken);
 
-            if (response.IsSuccessStatusCode)
-            {
-                var credential = await response.Content.ReadFromJsonAsync<CredentialSecretResult>(SerializerOptions, cancellationToken);
-                return new CredentialSecretMutationResult(true, Credential: credential);
-            }
-
-            return new CredentialSecretMutationResult(false, await ResolveErrorMessageAsync(response, "Unable to rotate credential."));
+            return new CredentialSecretMutationResult(result.Success, result.Message, result.Data);
         }
 
         private static async Task<string> ResolveErrorMessageAsync(HttpResponseMessage response, string defaultMessage)

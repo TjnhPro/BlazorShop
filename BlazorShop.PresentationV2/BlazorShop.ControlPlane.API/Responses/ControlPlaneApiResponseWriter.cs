@@ -11,10 +11,10 @@ namespace BlazorShop.ControlPlane.API.Responses
         public static ObjectResult Result<TData>(
             int statusCode,
             bool success,
-            string message,
+            string? message,
             TData? data = default)
         {
-            return new ObjectResult(new ControlPlaneApiResponse<TData>(success, message, data))
+            return new ObjectResult(new ControlPlaneApiResponse<TData>(success, NormalizeMessage(message), data))
             {
                 StatusCode = statusCode
             };
@@ -23,14 +23,14 @@ namespace BlazorShop.ControlPlane.API.Responses
         public static ObjectResult Success<TData>(
             int statusCode,
             TData? data,
-            string message)
+            string? message)
         {
             return Result(statusCode, success: true, message, data);
         }
 
         public static ObjectResult Failure<TData>(
             int statusCode,
-            string message,
+            string? message,
             TData? data = default)
         {
             return Result(statusCode, success: false, message, data);
@@ -39,7 +39,7 @@ namespace BlazorShop.ControlPlane.API.Responses
         public static async Task WriteFailureAsync<TData>(
             HttpContext context,
             int statusCode,
-            string message,
+            string? message,
             TData? data = default,
             CancellationToken cancellationToken = default)
         {
@@ -51,7 +51,7 @@ namespace BlazorShop.ControlPlane.API.Responses
             context.Response.StatusCode = statusCode;
             context.Response.ContentType = JsonContentType;
             await context.Response.WriteAsJsonAsync(
-                ControlPlaneApiResponse<TData>.Failed(message, data),
+                ControlPlaneApiResponse<TData>.Failed(NormalizeMessage(message), data),
                 cancellationToken);
         }
 
@@ -63,6 +63,13 @@ namespace BlazorShop.ControlPlane.API.Responses
                     ? correlationId?.ToString()
                     : context.TraceIdentifier
             };
+        }
+
+        private static string NormalizeMessage(string? message)
+        {
+            return string.IsNullOrWhiteSpace(message)
+                ? "The Control Plane request could not be completed."
+                : message;
         }
     }
 }
