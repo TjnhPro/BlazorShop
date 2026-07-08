@@ -5,6 +5,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using BlazorShop.Application.ControlPlane.Health;
     using BlazorShop.Application.ControlPlane.Nodes;
     using BlazorShop.Application.ControlPlane.Security;
+    using BlazorShop.Application.ControlPlane.Stores;
 
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
@@ -39,6 +40,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             services.AddScoped<IControlPlaneNodeService, ControlPlaneNodeService>();
             services.AddScoped<IControlPlaneCredentialService, ControlPlaneCredentialService>();
             services.AddScoped<IControlPlaneHealthService, ControlPlaneHealthService>();
+            services.AddScoped<IControlPlaneStoreService, ControlPlaneStoreService>();
             services.AddHostedService<ControlPlaneProbeBackgroundService>();
             services.AddHttpClient<ICommerceNodeControlClient, CommerceNodeControlClient>(
                 client =>

@@ -811,18 +811,26 @@ Verification:
 
 ### Phase 7 - Store Registry Metadata
 
-- [ ] Implement store registry create/update/archive.
-- [ ] Implement store domain registry create/verify/disable placeholder flow.
-- [ ] Link stores to node.
-- [ ] Do not write to Commerce Node commerce DB.
-- [ ] Add UI: Stores list, Store detail, Domains panel.
-- [ ] Add audit for store metadata changes.
+- [x] Implement store registry create/update/archive.
+- [x] Implement store domain registry create/verify/disable placeholder flow.
+- [x] Link stores to node.
+- [x] Do not write to Commerce Node commerce DB.
+- [x] Add UI: Stores list, Store detail, Domains panel.
+- [x] Add audit for store metadata changes.
 
 Acceptance:
 
 - Store metadata can exist before Commerce Node supports real store creation.
 - Domain uniqueness prevents two active stores claiming same domain.
 - Archived store does not appear in active selectors by default.
+
+Verification:
+
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj` passes with 0 warnings.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj` passes with 0 warnings; Tailwind emits only the existing Browserslist database warning.
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~ControlPlaneStoreServiceTests|FullyQualifiedName~ControlPlaneAuthorizationTests"` passes 11 tests.
+- Store Registry API exposes list, detail, create, update, archive, add-domain, verify-domain, and disable-domain endpoints behind `stores.read`/`stores.write`.
+- Control Plane Web Stores page uses real API-backed list/create/detail/domain flows and keeps Commerce Node database writes out of scope.
 
 ### Phase 8 - Control Actions
 

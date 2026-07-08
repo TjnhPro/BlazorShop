@@ -13,6 +13,7 @@ using BlazorShop.Web.Shared.Services.Contracts;
 using BlazorShop.ControlPlane.Web.Services.Credentials;
 using BlazorShop.ControlPlane.Web.Services.Health;
 using BlazorShop.ControlPlane.Web.Services.Nodes;
+using BlazorShop.ControlPlane.Web.Services.Stores;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -30,6 +31,7 @@ builder.Services.AddSingleton<IToastService, ToastService>();
 builder.Services.AddScoped<IControlPlaneCredentialClient, ControlPlaneCredentialClient>();
 builder.Services.AddScoped<IControlPlaneHealthClient, ControlPlaneHealthClient>();
 builder.Services.AddScoped<IControlPlaneNodeClient, ControlPlaneNodeClient>();
+builder.Services.AddScoped<IControlPlaneStoreClient, ControlPlaneStoreClient>();
 builder.Services.AddHttpClient(
     Constant.ApiClient.PublicName,
     client => client.BaseAddress = apiBaseAddress);
