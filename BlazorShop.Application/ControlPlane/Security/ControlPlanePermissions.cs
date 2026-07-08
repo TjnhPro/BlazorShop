@@ -10,6 +10,10 @@ namespace BlazorShop.Application.ControlPlane.Security
         public const string HealthRead = "health.read";
         public const string ActionsRead = "actions.read";
         public const string AuditRead = "audit.read";
+        public const string UsersRead = "users.read";
+        public const string UsersWrite = "users.write";
+        public const string RolesAssign = "roles.assign";
+        public const string PermissionsManage = "permissions.manage";
 
         public static readonly string[] All =
         [
@@ -20,7 +24,11 @@ namespace BlazorShop.Application.ControlPlane.Security
             StoresWrite,
             HealthRead,
             ActionsRead,
-            AuditRead
+            AuditRead,
+            UsersRead,
+            UsersWrite,
+            RolesAssign,
+            PermissionsManage
         ];
     }
 }

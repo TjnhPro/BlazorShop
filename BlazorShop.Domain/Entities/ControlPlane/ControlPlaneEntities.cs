@@ -4,6 +4,8 @@ namespace BlazorShop.Domain.Entities.ControlPlane
     {
         public long Id { get; set; }
 
+        public Guid PublicId { get; set; } = Guid.NewGuid();
+
         public string IdentityUserId { get; set; } = string.Empty;
 
         public string Email { get; set; } = string.Empty;
@@ -14,6 +16,14 @@ namespace BlazorShop.Domain.Entities.ControlPlane
 
         public DateTimeOffset? LastLoginAt { get; set; }
 
+        public DateTimeOffset? StatusChangedAt { get; set; }
+
+        public long? StatusChangedByAdminUserId { get; set; }
+
+        public ControlPlaneAdminUser? StatusChangedByAdminUser { get; set; }
+
+        public string? StatusReason { get; set; }
+
         public DateTimeOffset CreatedAt { get; set; }
 
         public DateTimeOffset UpdatedAt { get; set; }
@@ -21,6 +31,10 @@ namespace BlazorShop.Domain.Entities.ControlPlane
         public DateTimeOffset? DeletedAt { get; set; }
 
         public ICollection<ControlPlaneAdminUserRole> Roles { get; set; } = new List<ControlPlaneAdminUserRole>();
+
+        public ICollection<ControlPlaneAdminUserPermission> DirectPermissions { get; set; } = new List<ControlPlaneAdminUserPermission>();
+
+        public ICollection<ControlPlaneAdminUserPermission> CreatedDirectPermissionGrants { get; set; } = new List<ControlPlaneAdminUserPermission>();
     }
 
     public sealed class ControlPlaneRole
@@ -55,6 +69,8 @@ namespace BlazorShop.Domain.Entities.ControlPlane
         public DateTimeOffset CreatedAt { get; set; }
 
         public ICollection<ControlPlaneRolePermission> Roles { get; set; } = new List<ControlPlaneRolePermission>();
+
+        public ICollection<ControlPlaneAdminUserPermission> DirectUsers { get; set; } = new List<ControlPlaneAdminUserPermission>();
     }
 
     public sealed class ControlPlaneAdminUserRole
@@ -81,6 +97,23 @@ namespace BlazorShop.Domain.Entities.ControlPlane
         public ControlPlanePermission? Permission { get; set; }
 
         public DateTimeOffset CreatedAt { get; set; }
+    }
+
+    public sealed class ControlPlaneAdminUserPermission
+    {
+        public long AdminUserId { get; set; }
+
+        public ControlPlaneAdminUser? AdminUser { get; set; }
+
+        public long PermissionId { get; set; }
+
+        public ControlPlanePermission? Permission { get; set; }
+
+        public DateTimeOffset CreatedAt { get; set; }
+
+        public long? CreatedByAdminUserId { get; set; }
+
+        public ControlPlaneAdminUser? CreatedByAdminUser { get; set; }
     }
 
     public sealed class CommerceNode
