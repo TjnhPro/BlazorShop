@@ -15,8 +15,11 @@ builder.Services.AddOptions<CommerceNodeOptions>()
     .Bind(builder.Configuration.GetSection(CommerceNodeOptions.SectionName))
     .ValidateOnStart();
 builder.Services.AddSingleton<IValidateOptions<CommerceNodeOptions>, CommerceNodeOptionsValidator>();
+builder.Services.AddOptions<CommerceNodeRuntimeOptions>()
+    .Bind(builder.Configuration.GetSection(CommerceNodeRuntimeOptions.SectionName));
 builder.Services.AddCommerceNodeInfrastructure(builder.Configuration);
 builder.Services.AddControllers();
+builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -38,6 +41,8 @@ app.MapGet("/", () => Results.Redirect("/swagger"));
 app.UseWhen(
     context => context.Request.Path.StartsWithSegments("/api/commerce"),
     branch => branch.UseMiddleware<CommerceNodeCredentialMiddleware>());
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapCommerceHealthEndpoints();
 app.MapControllers();
 app.MapDefaultEndpoints();

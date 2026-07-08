@@ -431,35 +431,35 @@ Stop gate: Storefront non-auth utility APIs run from Commerce Node.
 
 Database:
 
-- [ ] Change `CommerceNodeDbContext` from `DbContext` to `IdentityDbContext<AppUser>`.
-- [ ] Configure Identity tables for `AppUser` inside `CommerceNodeDbContext`.
-- [ ] Add and configure `RefreshToken` inside `CommerceNodeDbContext`.
-- [ ] Seed Storefront roles.
-- [ ] Create auth migration against Commerce Node database.
+- [x] Change `CommerceNodeDbContext` from `DbContext` to `IdentityDbContext<AppUser>`.
+- [x] Configure Identity tables for `AppUser` inside `CommerceNodeDbContext`.
+- [x] Add and configure `RefreshToken` inside `CommerceNodeDbContext`.
+- [x] Seed Storefront roles.
+- [x] Create auth migration against Commerce Node database.
 
 API:
 
-- [ ] Add `StorefrontAuthController`.
-- [ ] Migrate `AuthenticationController.CreateUser`.
-- [ ] Migrate `AuthenticationController.LoginUser`.
-- [ ] Migrate `AuthenticationController.RefreshToken`.
-- [ ] Migrate `AuthenticationController.Logout`.
-- [ ] Migrate `AuthenticationController.ChangePassword`.
-- [ ] Migrate `AuthenticationController.ConfirmEmail`.
-- [ ] Migrate `AuthenticationController.UpdateProfile`.
-- [ ] Preserve refresh-token cookie behavior.
+- [x] Add `StorefrontAuthController`.
+- [x] Migrate `AuthenticationController.CreateUser`.
+- [x] Migrate `AuthenticationController.LoginUser`.
+- [x] Migrate `AuthenticationController.RefreshToken`.
+- [x] Migrate `AuthenticationController.Logout`.
+- [x] Migrate `AuthenticationController.ChangePassword`.
+- [x] Migrate `AuthenticationController.ConfirmEmail`.
+- [x] Migrate `AuthenticationController.UpdateProfile`.
+- [x] Preserve refresh-token cookie behavior.
 
 Services:
 
-- [ ] Reuse `AuthenticationService` if possible.
-- [ ] Add Commerce Node auth DI method that registers Identity against `CommerceNodeDbContext`.
-- [ ] Add Commerce Node versions or generic versions of:
+- [x] Reuse `AuthenticationService` if possible.
+- [x] Add Commerce Node auth DI method that registers Identity against `CommerceNodeDbContext`.
+- [x] Add Commerce Node versions or generic versions of:
   - `IAppUserManager`
   - `IAppTokenManager`
   - `IAppRoleManager`
-- [ ] Avoid depending on `AppDbContext`.
-- [ ] Use only `CommerceNodeConnection`.
-- [ ] Decide whether first Storefront user should become `Admin` or always `User`.
+- [x] Avoid depending on `AppDbContext`.
+- [x] Use only `CommerceNodeConnection`.
+- [x] Decide whether first Storefront user should become `Admin` or always `User`.
 
 QA:
 
