@@ -523,20 +523,20 @@ Stop gate: Admin order management no longer depends on `AppDbContext`.
 
 Database:
 
-- [ ] Use `AdminSettings` in `CommerceNodeDbContext`.
+- [x] Use `AdminSettings` in `CommerceNodeDbContext`.
 
 API:
 
-- [ ] Migrate Admin settings get/update store.
-- [ ] Migrate Admin settings update orders.
-- [ ] Migrate Admin settings update notifications.
-- [ ] Migrate image upload endpoint as `api/commerce/admin/media/images`.
+- [x] Migrate Admin settings get/update store.
+- [x] Migrate Admin settings update orders.
+- [x] Migrate Admin settings update notifications.
+- [x] Migrate image upload endpoint as `api/commerce/admin/media/images`.
 
 Services:
 
-- [ ] Adapt `AdminSettingsService` to `CommerceNodeDbContext`.
-- [ ] Review runtime/system metadata fields for Commerce Node.
-- [ ] Keep file upload local to node for MVP unless a storage abstraction is required.
+- [x] Adapt `AdminSettingsService` to `CommerceNodeDbContext`.
+- [x] Review runtime/system metadata fields for Commerce Node.
+- [x] Keep file upload local to node for MVP unless a storage abstraction is required.
 
 QA:
 

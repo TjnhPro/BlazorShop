@@ -1,5 +1,6 @@
 namespace BlazorShop.Infrastructure.Data.CommerceNode
 {
+    using BlazorShop.Application.DTOs;
     using BlazorShop.Application.Mapping;
     using BlazorShop.Application.Services;
     using BlazorShop.Application.Services.Contracts;
@@ -42,6 +43,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddHttpContextAccessor();
             services.AddAutoMapper(cfg => cfg.AddProfile<MappingConfig>());
             services.AddValidatorsFromAssemblyContaining<SeoRedirectDtoValidator>();
+            services.AddOptions<EmailSettings>()
+                .Bind(configuration.GetSection("EmailSettings"));
             services.AddScoped(typeof(IGenericRepository<>), typeof(CommerceNodeGenericRepository<>));
             services.AddScoped<IProductReadRepository, CommerceNodeProductReadRepository>();
             services.AddScoped<ICategoryRepository, CommerceNodeCategoryRepository>();
@@ -58,6 +61,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IAdminInventoryService, CommerceNodeAdminInventoryService>();
             services.AddScoped<IOrderTrackingService, CommerceNodeOrderTrackingService>();
             services.AddScoped<IAdminOrderService, CommerceNodeAdminOrderService>();
+            services.AddScoped<IAdminSettingsService, CommerceNodeAdminSettingsService>();
             services.AddScoped<IProductSeoService, ProductSeoService>();
             services.AddScoped<ICategorySeoService, CategorySeoService>();
             services.AddScoped<ISeoSettingsService, SeoSettingsService>();

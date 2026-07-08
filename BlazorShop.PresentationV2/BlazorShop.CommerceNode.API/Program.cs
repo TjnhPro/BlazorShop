@@ -3,6 +3,8 @@ using BlazorShop.CommerceNode.API.Endpoints;
 using BlazorShop.CommerceNode.API.Middleware;
 using BlazorShop.Infrastructure.Data.CommerceNode;
 
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +30,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
+Directory.CreateDirectory(uploadsPath);
+app.UseStaticFiles(CreateUploadsStaticFileOptions(uploadsPath));
+
 app.MapGet("/", () => Results.Redirect("/swagger"));
 app.UseWhen(
     context => context.Request.Path.StartsWithSegments("/api/commerce"),
@@ -37,3 +43,27 @@ app.MapControllers();
 app.MapDefaultEndpoints();
 
 app.Run();
+
+static StaticFileOptions CreateUploadsStaticFileOptions(string uploadsPath)
+{
+    var contentTypeProvider = new FileExtensionContentTypeProvider();
+    contentTypeProvider.Mappings.Clear();
+    contentTypeProvider.Mappings[".jpg"] = "image/jpeg";
+    contentTypeProvider.Mappings[".jpeg"] = "image/jpeg";
+    contentTypeProvider.Mappings[".png"] = "image/png";
+    contentTypeProvider.Mappings[".webp"] = "image/webp";
+    contentTypeProvider.Mappings[".gif"] = "image/gif";
+    contentTypeProvider.Mappings[".bmp"] = "image/bmp";
+
+    return new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(uploadsPath),
+        RequestPath = "/uploads",
+        ContentTypeProvider = contentTypeProvider,
+        OnPrepareResponse = context =>
+        {
+            context.Context.Response.Headers.CacheControl = "public, max-age=31536000, immutable";
+            context.Context.Response.Headers.XContentTypeOptions = "nosniff";
+        },
+    };
+}
