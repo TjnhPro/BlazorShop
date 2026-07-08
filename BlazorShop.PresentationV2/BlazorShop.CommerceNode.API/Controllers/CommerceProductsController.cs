@@ -8,11 +8,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/commerce/admin/products")]
-    public sealed class ProductsController : CommerceAdminControllerBase
+    public sealed class CommerceProductsController : CommerceAdminControllerBase
     {
         private readonly IProductService productService;
 
-        public ProductsController(IProductService productService)
+        public CommerceProductsController(IProductService productService)
         {
             this.productService = productService;
         }

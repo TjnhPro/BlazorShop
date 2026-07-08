@@ -7,11 +7,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/commerce/admin/seo/settings")]
-    public sealed class SeoSettingsController : CommerceAdminControllerBase
+    public sealed class CommerceSeoSettingsController : CommerceAdminControllerBase
     {
         private readonly ISeoSettingsService seoSettingsService;
 
-        public SeoSettingsController(ISeoSettingsService seoSettingsService)
+        public CommerceSeoSettingsController(ISeoSettingsService seoSettingsService)
         {
             this.seoSettingsService = seoSettingsService;
         }

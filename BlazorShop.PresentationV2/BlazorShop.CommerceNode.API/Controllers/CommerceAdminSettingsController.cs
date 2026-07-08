@@ -7,11 +7,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/commerce/admin/settings")]
-    public sealed class AdminSettingsController : CommerceAdminControllerBase
+    public sealed class CommerceAdminSettingsController : CommerceAdminControllerBase
     {
         private readonly IAdminSettingsService adminSettingsService;
 
-        public AdminSettingsController(IAdminSettingsService adminSettingsService)
+        public CommerceAdminSettingsController(IAdminSettingsService adminSettingsService)
         {
             this.adminSettingsService = adminSettingsService;
         }

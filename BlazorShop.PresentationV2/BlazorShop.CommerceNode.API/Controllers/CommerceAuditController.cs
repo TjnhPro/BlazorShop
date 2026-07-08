@@ -7,11 +7,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/commerce/admin/audit")]
-    public sealed class AdminAuditController : CommerceAdminControllerBase
+    public sealed class CommerceAuditController : CommerceAdminControllerBase
     {
         private readonly IAdminAuditService adminAuditService;
 
-        public AdminAuditController(IAdminAuditService adminAuditService)
+        public CommerceAuditController(IAdminAuditService adminAuditService)
         {
             this.adminAuditService = adminAuditService;
         }

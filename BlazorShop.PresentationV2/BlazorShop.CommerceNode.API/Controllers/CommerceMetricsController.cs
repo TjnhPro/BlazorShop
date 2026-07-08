@@ -8,11 +8,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/commerce/admin/metrics")]
-    public sealed class MetricsController : CommerceAdminControllerBase
+    public sealed class CommerceMetricsController : CommerceAdminControllerBase
     {
         private readonly IMetricsService metricsService;
 
-        public MetricsController(IMetricsService metricsService)
+        public CommerceMetricsController(IMetricsService metricsService)
         {
             this.metricsService = metricsService;
         }

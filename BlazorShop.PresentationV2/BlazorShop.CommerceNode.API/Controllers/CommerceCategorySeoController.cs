@@ -7,11 +7,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/commerce/admin/categories/{id:guid}/seo")]
-    public sealed class CategorySeoController : CommerceAdminControllerBase
+    public sealed class CommerceCategorySeoController : CommerceAdminControllerBase
     {
         private readonly ICategorySeoService categorySeoService;
 
-        public CategorySeoController(ICategorySeoService categorySeoService)
+        public CommerceCategorySeoController(ICategorySeoService categorySeoService)
         {
             this.categorySeoService = categorySeoService;
         }

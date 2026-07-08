@@ -7,11 +7,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/commerce/admin/products/{productId:guid}/variants")]
-    public sealed class ProductVariantsController : CommerceAdminControllerBase
+    public sealed class CommerceProductVariantsController : CommerceAdminControllerBase
     {
         private readonly IProductVariantService variantService;
 
-        public ProductVariantsController(IProductVariantService variantService)
+        public CommerceProductVariantsController(IProductVariantService variantService)
         {
             this.variantService = variantService;
         }

@@ -245,16 +245,16 @@ Admin order management already exists under `api/commerce/admin/orders`.
 
 Database:
 
-- [ ] Confirm `compose.commercenode.yml` will use host port `5434`.
-- [ ] Confirm one physical Commerce Node database with one `CommerceNodeConnection`.
-- [ ] Confirm `CommerceNodeDbContext` will own Storefront auth tables when auth is migrated.
+- [x] Confirm `compose.commercenode.yml` will use host port `5434`.
+- [x] Confirm one physical Commerce Node database with one `CommerceNodeConnection`.
+- [x] Confirm `CommerceNodeDbContext` will own Storefront auth tables when auth is migrated.
 
 API:
 
-- [ ] Rename existing Commerce Admin controller classes/files to `Commerce*Controller`.
-- [ ] Keep existing `api/commerce/admin/*` routes unchanged.
-- [ ] Add `Storefront*Controller` naming rule for new internal controllers.
-- [ ] Confirm `api/internal/*` route prefix.
+- [x] Rename existing Commerce Admin controller classes/files to `Commerce*Controller`.
+- [x] Keep existing `api/commerce/admin/*` routes unchanged.
+- [x] Add `Storefront*Controller` naming rule for new internal controllers.
+- [x] Confirm `api/internal/*` route prefix.
 
 Services:
 
@@ -263,7 +263,7 @@ Services:
 
 QA:
 
-- [ ] Build solution after controller class/file renames.
+- [x] Build solution after controller class/file renames.
 - [ ] Verify Swagger still exposes existing Commerce Admin routes.
 
 Stop gate: naming cleanup is complete with no route changes.
@@ -272,10 +272,10 @@ Stop gate: naming cleanup is complete with no route changes.
 
 Database:
 
-- [ ] Add `compose.commercenode.yml`.
-- [ ] Add `commercenode-postgres` service.
-- [ ] Add `commercenode_postgres_data` volume.
-- [ ] Move Commerce Node local default connection from port `5433` to `5434`.
+- [x] Add `compose.commercenode.yml`.
+- [x] Add `commercenode-postgres` service.
+- [x] Add `commercenode_postgres_data` volume.
+- [x] Move Commerce Node local default connection from port `5433` to `5434`.
 - [ ] Document startup command:
 
 ```powershell
@@ -284,8 +284,8 @@ docker compose -f compose.commercenode.yml up -d
 
 API:
 
-- [ ] Ensure `BlazorShop.CommerceNode.API` reads `CommerceNodeConnection`.
-- [ ] Ensure no `CommerceNodeAuthConnection`, `AuthConnection`, or `DefaultConnection` fallback is used by Commerce Node.
+- [x] Ensure `BlazorShop.CommerceNode.API` reads `CommerceNodeConnection`.
+- [x] Ensure no `CommerceNodeAuthConnection`, `AuthConnection`, or `DefaultConnection` fallback is used by Commerce Node.
 
 QA:
 

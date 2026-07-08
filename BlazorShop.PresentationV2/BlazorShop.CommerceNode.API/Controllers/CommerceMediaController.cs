@@ -7,7 +7,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/commerce/admin/media")]
-    public sealed class MediaController : CommerceAdminControllerBase
+    public sealed class CommerceMediaController : CommerceAdminControllerBase
     {
         private const long MaxFileSizeBytes = 5 * 1024 * 1024;
 
@@ -22,7 +22,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         private readonly IWebHostEnvironment environment;
 
-        public MediaController(IWebHostEnvironment environment)
+        public CommerceMediaController(IWebHostEnvironment environment)
         {
             this.environment = environment;
         }

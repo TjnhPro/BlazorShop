@@ -30,7 +30,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             ArgumentNullException.ThrowIfNull(configuration);
 
             var connectionString = configuration.GetConnectionString("CommerceNodeConnection")
-                                   ?? "Host=localhost;Port=5433;Database=blazorshop_commerce_node;Username=blazorshop_commerce_node;Password=blazorshop_commerce_node_dev";
+                                   ?? "Host=localhost;Port=5434;Database=blazorshop_commerce_node;Username=blazorshop_commerce_node;Password=blazorshop_commerce_node_dev";
 
             services.AddDbContext<CommerceNodeDbContext>(
                 options => options.UseNpgsql(

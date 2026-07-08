@@ -7,11 +7,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/commerce/admin/seo/redirects")]
-    public sealed class SeoRedirectsController : CommerceAdminControllerBase
+    public sealed class CommerceSeoRedirectsController : CommerceAdminControllerBase
     {
         private readonly ISeoRedirectService seoRedirectService;
 
-        public SeoRedirectsController(ISeoRedirectService seoRedirectService)
+        public CommerceSeoRedirectsController(ISeoRedirectService seoRedirectService)
         {
             this.seoRedirectService = seoRedirectService;
         }

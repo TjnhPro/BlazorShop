@@ -7,11 +7,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/commerce/admin/inventory")]
-    public sealed class InventoryController : CommerceAdminControllerBase
+    public sealed class CommerceInventoryController : CommerceAdminControllerBase
     {
         private readonly IAdminInventoryService inventoryService;
 
-        public InventoryController(IAdminInventoryService inventoryService)
+        public CommerceInventoryController(IAdminInventoryService inventoryService)
         {
             this.inventoryService = inventoryService;
         }
