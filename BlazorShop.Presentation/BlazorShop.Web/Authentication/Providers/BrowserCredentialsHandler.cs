@@ -1,13 +1,6 @@
 namespace BlazorShop.Web.Authentication.Providers
 {
-    using Microsoft.AspNetCore.Components.WebAssembly.Http;
-
-    public class BrowserCredentialsHandler : DelegatingHandler
+    public class BrowserCredentialsHandler : BlazorShop.Web.Shared.Authentication.BrowserCredentialsHandler
     {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
-            return base.SendAsync(request, cancellationToken);
-        }
     }
 }

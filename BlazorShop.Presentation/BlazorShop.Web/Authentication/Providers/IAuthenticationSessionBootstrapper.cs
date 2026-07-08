@@ -1,7 +1,6 @@
 namespace BlazorShop.Web.Authentication.Providers
 {
-    public interface IAuthenticationSessionBootstrapper
+    public interface IAuthenticationSessionBootstrapper : BlazorShop.Web.Shared.Authentication.IAuthenticationSessionBootstrapper
     {
-        Task RestoreAsync();
     }
 }

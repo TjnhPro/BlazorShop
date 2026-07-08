@@ -1,7 +1,6 @@
 namespace BlazorShop.Web.Authentication.Providers
 {
-    public interface IAuthenticationStateNotifier
+    public interface IAuthenticationStateNotifier : BlazorShop.Web.Shared.Authentication.IAuthenticationStateNotifier
     {
-        void NotifyAuthenticationState();
     }
 }
