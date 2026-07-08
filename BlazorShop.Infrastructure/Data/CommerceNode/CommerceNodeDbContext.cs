@@ -3,6 +3,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
     using BlazorShop.Domain.Entities;
     using BlazorShop.Domain.Entities.Payment;
     using BlazorShop.Infrastructure.Data.Configurations;
+    using BlazorShop.Infrastructure.Data.Configurations.Admin;
 
     using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +15,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
         }
 
         public DbSet<Category> Categories => Set<Category>();
+
+        public DbSet<AdminAuditLog> AdminAuditLogs => Set<AdminAuditLog>();
+
+        public DbSet<AdminSettings> AdminSettings => Set<AdminSettings>();
 
         public DbSet<Product> Products => Set<Product>();
 
@@ -41,6 +46,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             modelBuilder.ApplyConfiguration(new ProductConfiguration());
             modelBuilder.ApplyConfiguration(new SeoRedirectConfiguration());
             modelBuilder.ApplyConfiguration(new SeoSettingsConfiguration());
+            modelBuilder.ApplyConfiguration(new AdminAuditLogConfiguration());
+            modelBuilder.ApplyConfiguration(new AdminSettingsConfiguration());
 
             modelBuilder.Entity<ProductVariant>()
                 .HasIndex(variant => new { variant.ProductId, variant.SizeScale, variant.SizeValue })

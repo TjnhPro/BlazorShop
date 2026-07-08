@@ -1,5 +1,12 @@
 namespace BlazorShop.Infrastructure.Data.CommerceNode
 {
+    using BlazorShop.Application.Mapping;
+    using BlazorShop.Application.Services.Contracts;
+    using BlazorShop.Application.Services.Contracts.Admin;
+    using BlazorShop.Domain.Contracts;
+    using BlazorShop.Infrastructure.Data.CommerceNode.Repositories;
+    using BlazorShop.Infrastructure.Data.CommerceNode.Services;
+
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +30,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                         npgsqlOptions.MigrationsAssembly(typeof(CommerceNodeDbContext).Assembly.FullName);
                         npgsqlOptions.EnableRetryOnFailure();
                     }));
+
+            services.AddHttpContextAccessor();
+            services.AddAutoMapper(cfg => cfg.AddProfile<MappingConfig>());
+            services.AddScoped(typeof(IGenericRepository<>), typeof(CommerceNodeGenericRepository<>));
+            services.AddScoped<IApplicationTransactionManager, CommerceNodeTransactionManager>();
+            services.AddScoped<ICommerceNodeAuditActorAccessor, CommerceNodeAuditActorAccessor>();
+            services.AddScoped<IAdminAuditService, CommerceNodeAdminAuditService>();
 
             return services;
         }

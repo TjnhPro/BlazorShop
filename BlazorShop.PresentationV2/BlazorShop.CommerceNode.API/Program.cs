@@ -14,6 +14,7 @@ builder.Services.AddOptions<CommerceNodeOptions>()
     .ValidateOnStart();
 builder.Services.AddSingleton<IValidateOptions<CommerceNodeOptions>, CommerceNodeOptionsValidator>();
 builder.Services.AddCommerceNodeInfrastructure(builder.Configuration);
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -32,6 +33,7 @@ app.UseWhen(
     context => context.Request.Path.StartsWithSegments("/api/commerce"),
     branch => branch.UseMiddleware<CommerceNodeCredentialMiddleware>());
 app.MapCommerceHealthEndpoints();
+app.MapControllers();
 app.MapDefaultEndpoints();
 
 app.Run();
