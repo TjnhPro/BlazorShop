@@ -760,20 +760,28 @@ Verification:
 
 ### Phase 5 - Credential Lifecycle
 
-- [ ] Generate credential key id and one-time raw secret.
-- [ ] Store only hash and metadata.
-- [ ] Show raw secret once in UI.
-- [ ] Implement credential revoke.
-- [ ] Implement credential rotation draft flow.
-- [ ] Add audit for create, reveal, revoke, rotate.
-- [ ] Add tests for one-time secret reveal behavior.
+- [x] Generate credential key id and one-time raw secret.
+- [x] Store only hash and metadata.
+- [x] Show raw secret once in UI.
+- [x] Implement credential revoke.
+- [x] Implement credential rotation draft flow.
+- [x] Add audit for create, reveal, revoke, rotate.
+- [x] Add tests for one-time secret reveal behavior.
 
 Acceptance:
 
 - Raw credential cannot be read back after creation.
-- Revoked credential cannot be used by mock Control API client.
+- Revoked and rotated credentials cannot pass the Control Plane credential verifier. Full mock Commerce Node HTTP client enforcement remains in Phase 6.
 - Audit shows who created/revoked/rotated a credential.
 - No HMAC signing is implemented in this phase.
+
+Verification:
+
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj` passes with 0 warnings.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj` passes with 0 warnings; Tailwind emits only the existing Browserslist database warning.
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~ControlPlaneCredentialServiceTests|FullyQualifiedName~ControlPlaneAuthorizationTests"` passes 9 tests.
+- Credential API now exposes list, create, revoke, and rotate endpoints behind `credentials.rotate`.
+- Control Plane Web has a Credentials page with node selection, empty/loading/error states, one-time secret callout, revoke, and rotate actions.
 
 ### Phase 6 - Health And Capabilities
 
