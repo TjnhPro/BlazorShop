@@ -24,7 +24,7 @@ Status legend:
 
 - [x] QA-CP-001: Wrong-password login is testable against Control Plane PostgreSQL on port 5433. 2026-07-08: fixed startup auth schema migration and verified safe 400 response.
 - [x] QA-CP-002: Control Plane Web login/logout routes exist. 2026-07-08: `/login` renders the sign-in form; seeded admin logout returns to `/login` and clears header session state.
-- [~] QA-CP-003: Control Plane User Management UI/API is implemented, but live browser/API QA is still pending. 2026-07-08: API/Web builds passed; clean QA database migration applied through `ControlPlaneUserManagement`.
+- [x] QA-CP-003: Control Plane User Management UI/API is implemented and live QA passed. 2026-07-08: verified on clean `blazorshop_controlplane_user_management_live_qa3` with seeded admin/user accounts; API and browser Users page flows passed after fixing ISSUE-001 transaction strategy and ISSUE-002 disabled-login blocking.
 - [n/a] QA-CP-004: Audit Logs page is a static placeholder; action/actor search is not backed by an API yet.
 - [x] QA-CP-005: Protected pages redirect unauthenticated users through the login route guard. 2026-07-08: `/nodes` redirected to `/login/nodes` with 0 console errors.
 - [x] QA-CP-006: Valid login is unblocked on a clean ControlPlane database when development account seeds are enabled. 2026-07-08: QA DB seeded `admin@example.local` as `platform_owner` and `user@example.local` as `auditor`; both valid logins returned 200 with JWT and login success was audited.
@@ -78,27 +78,27 @@ Status legend:
 
 ### User Management
 
-- [ ] User list loads.
-- [ ] User detail loads.
-- [ ] User role and permission catalogs load.
-- [ ] Create user succeeds.
-- [ ] Duplicate user email is rejected.
-- [ ] Update user display name succeeds.
-- [ ] Assign user role succeeds.
-- [ ] Remove user role succeeds.
-- [ ] Enable user succeeds.
-- [ ] Disable user succeeds.
-- [ ] Assign permission succeeds.
-- [ ] Remove permission succeeds.
-- [ ] Removing a direct permission does not remove inherited role permission.
-- [ ] Admin cannot disable own account.
-- [ ] Admin cannot disable or remove the last active `platform_owner`.
-- [ ] Standard user without `users.read` cannot list users.
-- [ ] Standard user without `users.write` cannot create/update/enable/disable users.
-- [ ] Standard user without `roles.assign` cannot assign/remove roles.
-- [ ] Standard user without `permissions.manage` cannot assign/remove direct permissions.
-- [~] Disabled user cannot log in. Authorization service tests cover disabled Control Plane profile; live disabled-account login was not exercised in this run.
-- [ ] User/role/permission changes are audited.
+- [x] User list loads. 2026-07-08: admin API list returned seeded and QA-created users; browser Users page rendered table rows and summary counters.
+- [x] User detail loads. 2026-07-08: admin API detail returned 200; browser row selection opened the detail panel.
+- [x] User role and permission catalogs load. 2026-07-08: API role/permission catalogs returned 200 and browser filters/forms populated.
+- [x] Create user succeeds. 2026-07-08: API create returned 201 and browser create form saved `UI QA User`.
+- [x] Duplicate user email is rejected. 2026-07-08: duplicate API create returned 409.
+- [x] Update user display name succeeds. 2026-07-08: API update returned 200 and persisted the new display name.
+- [x] Assign user role succeeds. 2026-07-08: API role assignment returned 200.
+- [x] Remove user role succeeds. 2026-07-08: API role removal returned 200 for a non-owner QA user.
+- [x] Enable user succeeds. 2026-07-08: API enable returned 200 and changed status back to `active`.
+- [x] Disable user succeeds. 2026-07-08: API disable returned 200 and changed status to `disabled`.
+- [x] Assign permission succeeds. 2026-07-08: API direct permission assignment returned 200.
+- [x] Remove permission succeeds. 2026-07-08: API direct permission removal returned 200.
+- [x] Removing a direct permission does not remove inherited role permission. 2026-07-08: removing direct `nodes.read` left role-inherited effective `nodes.read` intact.
+- [x] Admin cannot disable own account. 2026-07-08: self-disable API call returned 409.
+- [x] Admin cannot disable or remove the last active `platform_owner`. 2026-07-08: last-owner role removal returned 409; self-disable protection also returned 409.
+- [x] Standard user without `users.read` cannot list users. 2026-07-08: seeded auditor list request returned 403.
+- [x] Standard user without `users.write` cannot create/update/enable/disable users. 2026-07-08: seeded auditor create/update/enable/disable requests returned 403.
+- [x] Standard user without `roles.assign` cannot assign/remove roles. 2026-07-08: seeded auditor assign-role and remove-role requests returned 403.
+- [x] Standard user without `permissions.manage` cannot assign/remove direct permissions. 2026-07-08: seeded auditor assign-permission and remove-permission requests returned 403.
+- [x] Disabled user cannot log in. 2026-07-08: disabled QA user login returned safe 400 after ISSUE-002 fix.
+- [x] User/role/permission changes are audited. 2026-07-08: clean QA DB recorded `users.create`, `users.update`, `users.disable`, `users.enable`, `users.role.assign`, `users.role.remove`, `users.permission.assign`, and `users.permission.remove`.
 
 ## Nodes
 
@@ -161,6 +161,7 @@ Status legend:
 - [x] Node create/update/disable is audited. 2026-07-08: DB recorded `nodes.create` and `nodes.disable` for seeded admin.
 - [x] Credential create/reveal/revoke/rotate is audited. 2026-07-08: DB recorded `credentials.create`, `credentials.reveal`, and `credentials.rotate`.
 - [x] Store create/update/archive/domain changes are audited. 2026-07-08: DB recorded `stores.create`; update/archive/domain audit still needs dedicated UI/API exercise.
+- [x] User create/update/disable/enable/role/permission changes are audited. 2026-07-08: DB query on clean User Management QA database found success/failure audit rows for user creation, profile updates, status changes, role changes, and direct permission changes.
 - [~] Health probe is audited. API code writes audit; live probe was not exercised in this run.
 - [~] Action enqueue/attempt/cancel is audited. API code writes audit; live action mutation was not exercised in this run.
 - [x] Audit log payload does not expose raw API secrets or passwords. 2026-07-08: direct DB assertion found 0 audit metadata payloads containing raw `bs_cp_` secrets or QA seed passwords.
@@ -206,3 +207,4 @@ Status legend:
 | 2026-07-08 | Codex | Control Plane isolated auth DB implementation | Partial | Built API/Web and ran tests. Runtime smoke used clean QA database with `ControlPlaneDbContext` migrations only; verified no legacy tables, seeded admin, valid login, wrong-password rejection, refresh token persistence, and login success/failure audit. Browser authenticated pages and logout still need full Playwright QA after resetting the local dev DB. |
 | 2026-07-08 | Codex | Seeded admin/user account QA and authenticated browser/API flows | Partial | Added two-account dev seeding, verified admin/user login, logout, refresh persistence, Dashboard/Nodes/Stores/Health/Actions/Audit page loads, admin node/store/credential mutations, auditor 403 denials, and audit persistence on clean `blazorshop_controlplane_seed_qa`. Fixed misleading 403 UI message. Remaining UX follow-up: hide/disable write controls for users without write permissions. |
 | 2026-07-08 | Codex | User Management implementation verification | Partial | Implemented database/API/Web phases and committed each phase. `dotnet build` passed for ControlPlane API and Web; migration applied successfully on clean `blazorshop_controlplane_user_management_qa`. Live browser/API QA for User Management remains pending. |
+| 2026-07-08 | Codex | User Management QA on clean database | Passed | Verified API and browser Users flows on clean `blazorshop_controlplane_user_management_live_qa3`. Found and fixed ISSUE-001 user-create transaction execution strategy and ISSUE-002 disabled Control Plane login blocking. API-backed Audit Logs search remains not implemented. |
