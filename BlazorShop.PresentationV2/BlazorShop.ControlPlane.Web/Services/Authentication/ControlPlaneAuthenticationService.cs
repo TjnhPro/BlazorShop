@@ -1,9 +1,6 @@
 namespace BlazorShop.ControlPlane.Web.Services.Authentication
 {
-    using System.Net.Http.Json;
-    using System.Text.Json;
-
-    using BlazorShop.Web.Shared.Helper.Contracts;
+    using BlazorShop.ControlPlane.Web.Services.Common;
     using BlazorShop.Web.Shared.Models;
     using BlazorShop.Web.Shared.Models.Authentication;
     using BlazorShop.Web.Shared.Services.Contracts;
@@ -14,12 +11,11 @@ namespace BlazorShop.ControlPlane.Web.Services.Authentication
         private const string RefreshRoute = "api/control-plane/auth/refresh-token";
         private const string LogoutRoute = "api/control-plane/auth/logout";
 
-        private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
-        private readonly IHttpClientHelper httpClientHelper;
+        private readonly IControlPlaneApiClient apiClient;
 
-        public ControlPlaneAuthenticationService(IHttpClientHelper httpClientHelper)
+        public ControlPlaneAuthenticationService(IControlPlaneApiClient apiClient)
         {
-            this.httpClientHelper = httpClientHelper;
+            this.apiClient = apiClient;
         }
 
         public Task<ServiceResponse> CreateUser(CreateUser user)
@@ -29,83 +25,36 @@ namespace BlazorShop.ControlPlane.Web.Services.Authentication
 
         public async Task<LoginResponse> LoginUser(LoginUser user)
         {
-            var client = this.httpClientHelper.GetPublicClient();
+            var result = await this.apiClient.PostPublicAsync<LoginUser, LoginResponse>(
+                LoginRoute,
+                user,
+                "Unable to sign in with those credentials.");
 
-            try
-            {
-                using var response = await client.PostAsJsonAsync(LoginRoute, user, SerializerOptions);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    return await response.Content.ReadFromJsonAsync<LoginResponse>(SerializerOptions)
-                           ?? new LoginResponse(Message: "Invalid login response.");
-                }
-
-                return await ReadLoginFailureAsync(response, "Unable to sign in with those credentials.");
-            }
-            catch (HttpRequestException)
-            {
-                return new LoginResponse(Message: "Unable to reach the Control Plane API.");
-            }
-            catch (OperationCanceledException)
-            {
-                return new LoginResponse(Message: "The sign-in request timed out.");
-            }
+            return result.Success && result.Data is not null
+                ? result.Data
+                : new LoginResponse(Message: result.Message);
         }
 
         public async Task<QueryResult<LoginResponse>> ReviveToken()
         {
-            var client = this.httpClientHelper.GetPublicClient();
+            var result = await this.apiClient.PostPublicAsync<LoginResponse>(
+                RefreshRoute,
+                "Session refresh failed.");
 
-            try
-            {
-                using var response = await client.PostAsync(RefreshRoute, content: null);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>(SerializerOptions);
-                    return loginResponse is null
-                        ? QueryResult<LoginResponse>.Failed("Invalid refresh response.")
-                        : QueryResult<LoginResponse>.Succeeded(loginResponse);
-                }
-
-                var failure = await ReadLoginFailureAsync(response, "Session refresh failed.");
-                return QueryResult<LoginResponse>.Failed(failure.Message, response.StatusCode);
-            }
-            catch (HttpRequestException)
-            {
-                return QueryResult<LoginResponse>.Failed("Unable to reach the Control Plane API.");
-            }
-            catch (OperationCanceledException)
-            {
-                return QueryResult<LoginResponse>.Failed("The session refresh request timed out.");
-            }
+            return result.Success && result.Data is not null
+                ? QueryResult<LoginResponse>.Succeeded(result.Data)
+                : QueryResult<LoginResponse>.Failed(result.Message, result.StatusCode);
         }
 
         public async Task<ServiceResponse> Logout()
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
+            var result = await this.apiClient.PostPrivateAsync<ServiceResponse>(
+                LogoutRoute,
+                "Server logout failed.");
 
-            try
-            {
-                using var response = await client.PostAsync(LogoutRoute, content: null);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    return await response.Content.ReadFromJsonAsync<ServiceResponse>(SerializerOptions)
-                           ?? new ServiceResponse(Success: true, Message: "Signed out.");
-                }
-
-                return new ServiceResponse(Message: "Server logout failed.");
-            }
-            catch (HttpRequestException)
-            {
-                return new ServiceResponse(Message: "Unable to reach the Control Plane API.");
-            }
-            catch (OperationCanceledException)
-            {
-                return new ServiceResponse(Message: "The logout request timed out.");
-            }
+            return result.Success
+                ? result.Data ?? new ServiceResponse(Success: true, Message: result.Message)
+                : new ServiceResponse(Message: result.Message);
         }
 
         public Task<ServiceResponse> ChangePassword(PasswordChangeModel changePasswordDto)
@@ -123,26 +72,5 @@ namespace BlazorShop.ControlPlane.Web.Services.Authentication
             return Task.FromResult(new ServiceResponse(Message: "Control Plane profile updates are not available from this client."));
         }
 
-        private static async Task<LoginResponse> ReadLoginFailureAsync(HttpResponseMessage response, string fallbackMessage)
-        {
-            if (response.Content is null)
-            {
-                return new LoginResponse(Message: fallbackMessage);
-            }
-
-            try
-            {
-                var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>(SerializerOptions);
-                if (!string.IsNullOrWhiteSpace(loginResponse?.Message))
-                {
-                    return loginResponse;
-                }
-            }
-            catch (JsonException)
-            {
-            }
-
-            return new LoginResponse(Message: fallbackMessage);
-        }
     }
 }

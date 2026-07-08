@@ -238,25 +238,25 @@ Commit: `feat(control-plane): wrap read api responses`
 
 Auth must be migrated carefully because login, refresh, logout, route guard, and session sync depend on it.
 
-- [ ] `POST /api/control-plane/auth/login`
-  - [ ] Success: `data` contains existing login response/token fields.
-  - [ ] Failure: `success=false`, safe `message`, no account existence leak.
-- [ ] `POST /api/control-plane/auth/refresh-token`
-  - [ ] No-session startup check returns envelope and does not create console noise.
-  - [ ] Expired/invalid access token is handled by Web client infrastructure through `401` and refresh retry.
-  - [ ] Invalid refresh returns failure envelope and clears cookie.
-- [ ] `POST /api/control-plane/auth/logout`
-  - [ ] Success envelope with `data=null`.
-- [ ] `GET /api/control-plane/auth/me`
-  - [ ] Success envelope with profile data.
-  - [ ] Inactive profile returns `403` with envelope.
+- [x] `POST /api/control-plane/auth/login`
+  - [x] Success: `data` contains existing login response/token fields.
+  - [x] Failure: `success=false`, safe `message`, no account existence leak.
+- [x] `POST /api/control-plane/auth/refresh-token`
+  - [x] No-session startup check returns envelope and does not create console noise.
+  - [x] Expired/invalid access token is handled by Web client infrastructure through `401` and refresh retry.
+  - [x] Invalid refresh returns failure envelope and clears cookie.
+- [x] `POST /api/control-plane/auth/logout`
+  - [x] Success envelope with `data=null`.
+- [x] `GET /api/control-plane/auth/me`
+  - [x] Success envelope with profile data.
+  - [x] Inactive profile returns `403` with envelope.
 
 Web changes:
 
-- [ ] `ControlPlaneAuthenticationService` reads envelope.
-- [ ] Login page displays API `message`.
-- [ ] Route guard behavior remains unchanged.
-- [ ] Session refresh no longer requires custom failure parsing.
+- [x] `ControlPlaneAuthenticationService` reads envelope.
+- [x] Login page displays API `message`.
+- [x] Route guard behavior remains unchanged.
+- [x] Session refresh no longer requires custom failure parsing.
 
 Commit: `feat(control-plane): wrap auth api responses`
 

@@ -8,6 +8,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.UserIdentity;
     using BlazorShop.Application.Services.Contracts.Authentication;
+    using BlazorShop.ControlPlane.API.Responses;
 
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
@@ -42,13 +43,17 @@ namespace BlazorShop.ControlPlane.API.Controllers
             if (!result.Success)
             {
                 await this.WriteAuditAsync("auth.login", "failure", actorEmail: user.Email, cancellationToken: cancellationToken);
-                return BadRequest(SanitizeLoginResponse(result));
+                return ControlPlaneApiResponseWriter.Failure<LoginResponse>(
+                    StatusCodes.Status400BadRequest,
+                    SanitizeLoginResponse(result).Message);
             }
 
             if (string.IsNullOrWhiteSpace(result.Token) || string.IsNullOrWhiteSpace(result.RefreshToken))
             {
                 await this.WriteAuditAsync("auth.login", "failure", actorEmail: user.Email, cancellationToken: cancellationToken);
-                return StatusCode(StatusCodes.Status500InternalServerError, new LoginResponse { Message = "Error occurred in login." });
+                return ControlPlaneApiResponseWriter.Failure<LoginResponse>(
+                    StatusCodes.Status500InternalServerError,
+                    "Error occurred in login.");
             }
 
             var profile = await this.EnsureProfileFromTokenAsync(result.Token, cancellationToken);
@@ -57,7 +62,9 @@ namespace BlazorShop.ControlPlane.API.Controllers
                 await this.authenticationService.Logout(result.RefreshToken, GetClientIpAddress());
                 DeleteRefreshTokenCookie();
                 await this.WriteAuditAsync("auth.login", "failure", profile.AdminUserId, profile.IdentityUserId, profile.Email, cancellationToken);
-                return BadRequest(new LoginResponse { Message = "Invalid credentials." });
+                return ControlPlaneApiResponseWriter.Failure<LoginResponse>(
+                    StatusCodes.Status400BadRequest,
+                    "Invalid credentials.");
             }
 
             AppendRefreshTokenCookie(result.RefreshToken);
@@ -70,7 +77,10 @@ namespace BlazorShop.ControlPlane.API.Controllers
                 profile.Email,
                 cancellationToken);
 
-            return Ok(SanitizeLoginResponse(result));
+            return ControlPlaneApiResponseWriter.Success(
+                StatusCodes.Status200OK,
+                SanitizeLoginResponse(result),
+                string.IsNullOrWhiteSpace(result.Message) ? "Signed in." : result.Message);
         }
 
         [HttpPost("refresh-token")]
@@ -83,7 +93,9 @@ namespace BlazorShop.ControlPlane.API.Controllers
             if (string.IsNullOrWhiteSpace(refreshToken))
             {
                 DeleteRefreshTokenCookie();
-                return Ok(new LoginResponse { Message = "No active session." });
+                return ControlPlaneApiResponseWriter.Failure<LoginResponse>(
+                    StatusCodes.Status200OK,
+                    "No active session.");
             }
 
             var result = await this.authenticationService.ReviveToken(refreshToken, GetClientIpAddress(), GetUserAgent());
@@ -92,7 +104,9 @@ namespace BlazorShop.ControlPlane.API.Controllers
             {
                 DeleteRefreshTokenCookie();
                 await this.WriteAuditAsync("auth.refresh", "failure", cancellationToken: cancellationToken);
-                return BadRequest(SanitizeLoginResponse(result));
+                return ControlPlaneApiResponseWriter.Failure<LoginResponse>(
+                    StatusCodes.Status400BadRequest,
+                    SanitizeLoginResponse(result).Message);
             }
 
             var profile = await this.EnsureProfileFromTokenAsync(result.Token, cancellationToken);
@@ -101,7 +115,9 @@ namespace BlazorShop.ControlPlane.API.Controllers
                 await this.authenticationService.Logout(result.RefreshToken, GetClientIpAddress());
                 DeleteRefreshTokenCookie();
                 await this.WriteAuditAsync("auth.refresh", "failure", profile.AdminUserId, profile.IdentityUserId, profile.Email, cancellationToken);
-                return BadRequest(new LoginResponse { Message = "Session is no longer active." });
+                return ControlPlaneApiResponseWriter.Failure<LoginResponse>(
+                    StatusCodes.Status400BadRequest,
+                    "Session is no longer active.");
             }
 
             AppendRefreshTokenCookie(result.RefreshToken);
@@ -114,7 +130,10 @@ namespace BlazorShop.ControlPlane.API.Controllers
                 profile.Email,
                 cancellationToken);
 
-            return Ok(SanitizeLoginResponse(result));
+            return ControlPlaneApiResponseWriter.Success(
+                StatusCodes.Status200OK,
+                SanitizeLoginResponse(result),
+                string.IsNullOrWhiteSpace(result.Message) ? "Session refreshed." : result.Message);
         }
 
         [HttpPost("logout")]
@@ -128,20 +147,28 @@ namespace BlazorShop.ControlPlane.API.Controllers
             DeleteRefreshTokenCookie();
             await this.WriteAuditAsync("auth.logout", "success", cancellationToken: cancellationToken);
 
-            return Ok(result);
+            return ControlPlaneApiResponseWriter.Success(
+                StatusCodes.Status200OK,
+                result,
+                string.IsNullOrWhiteSpace(result.Message) ? "Signed out." : result.Message);
         }
 
         [HttpGet("me")]
         [Authorize]
-        public async Task<ActionResult<ControlPlaneProfileResponse>> Me(CancellationToken cancellationToken)
+        public async Task<IActionResult> Me(CancellationToken cancellationToken)
         {
             var profile = await this.EnsureProfileFromClaimsAsync(User.Claims, cancellationToken);
             if (!IsActiveProfile(profile))
             {
-                return Forbid();
+                return ControlPlaneApiResponseWriter.Failure<ControlPlaneProfileResponse>(
+                    StatusCodes.Status403Forbidden,
+                    "Session is no longer active.");
             }
 
-            return Ok(new ControlPlaneProfileResponse(profile.AdminUserId, profile.Email, profile.DisplayName));
+            return ControlPlaneApiResponseWriter.Success(
+                StatusCodes.Status200OK,
+                new ControlPlaneProfileResponse(profile.AdminUserId, profile.Email, profile.DisplayName),
+                "Control Plane profile loaded.");
         }
 
         private async Task<ControlPlaneProfileResult> EnsureProfileFromTokenAsync(
