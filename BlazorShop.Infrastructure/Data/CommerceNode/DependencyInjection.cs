@@ -9,6 +9,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
     using BlazorShop.Application.Validations.Seo;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Contracts.CategoryPersistence;
+    using BlazorShop.Domain.Contracts.Newsletters;
     using BlazorShop.Domain.Contracts.Payment;
     using BlazorShop.Domain.Contracts.Seo;
     using BlazorShop.Infrastructure.Data.CommerceNode.Repositories;
@@ -48,6 +49,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped(typeof(IGenericRepository<>), typeof(CommerceNodeGenericRepository<>));
             services.AddScoped<IProductReadRepository, CommerceNodeProductReadRepository>();
             services.AddScoped<ICategoryRepository, CommerceNodeCategoryRepository>();
+            services.AddScoped<IOrderRepository, CommerceNodeOrderRepository>();
+            services.AddScoped<INewsletterSubscriberRepository, CommerceNodeNewsletterSubscriberRepository>();
             services.AddScoped<ISeoSettingsRepository, CommerceNodeSeoSettingsRepository>();
             services.AddScoped<ISeoRedirectRepository, CommerceNodeSeoRedirectRepository>();
             services.AddScoped<IApplicationTransactionManager, CommerceNodeTransactionManager>();
@@ -67,6 +70,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<ISeoSettingsService, SeoSettingsService>();
             services.AddScoped<ISeoRedirectService, SeoRedirectService>();
             services.AddScoped<ISeoRedirectAutomationService, SeoRedirectAutomationService>();
+            services.AddScoped<IMetricsService, MetricsService>();
 
             return services;
         }

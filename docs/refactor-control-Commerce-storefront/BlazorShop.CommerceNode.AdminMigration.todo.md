@@ -552,21 +552,21 @@ QA:
 
 Database:
 
-- [ ] Use `AdminAuditLogs`.
-- [ ] Use `Orders` for sales metrics.
-- [ ] Use `NewsletterSubscribers` for current traffic proxy.
+- [x] Use `AdminAuditLogs`.
+- [x] Use `Orders` for sales metrics.
+- [x] Use `NewsletterSubscribers` for current traffic proxy.
 
 API:
 
-- [ ] Migrate Admin audit list/detail.
-- [ ] Migrate metrics sales.
-- [ ] Migrate metrics traffic.
+- [x] Migrate Admin audit list/detail.
+- [x] Migrate metrics sales.
+- [x] Migrate metrics traffic.
 
 Services:
 
-- [ ] Adapt `AdminAuditService` to `CommerceNodeDbContext`.
-- [ ] Reuse `MetricsService` with Commerce Node repositories.
-- [ ] Confirm whether newsletter count is still acceptable as `traffic`.
+- [x] Adapt `AdminAuditService` to `CommerceNodeDbContext`.
+- [x] Reuse `MetricsService` with Commerce Node repositories.
+- [x] Confirm whether newsletter count is still acceptable as `traffic`.
 
 QA:
 
