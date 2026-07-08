@@ -1,0 +1,6 @@
+@BlazorShop.ControlPlane.API_HostAddress = http://localhost:5280
+
+GET {{BlazorShop.ControlPlane.API_HostAddress}}/api/control-plane/system/info
+Accept: application/json
+
+###

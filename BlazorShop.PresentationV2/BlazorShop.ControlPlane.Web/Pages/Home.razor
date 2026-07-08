@@ -1,0 +1,74 @@
+@page "/"
+
+<PageTitle>Control Plane Dashboard</PageTitle>
+
+<section class="space-y-6">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <p class="text-sm font-semibold text-control-700">Dashboard</p>
+            <h1 class="text-2xl font-bold text-ink-900">Operational summary</h1>
+            <p class="mt-1 text-sm text-ink-500">Counters will summarize persisted Control Plane node and store state.</p>
+        </div>
+        <button class="cp-button cp-button-primary">
+            <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+            Refresh
+        </button>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        @foreach (var metric in Metrics)
+        {
+            <div class="cp-card p-4">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-ink-500">@metric.Label</p>
+                        <p class="mt-2 text-3xl font-bold text-ink-900">@metric.Value</p>
+                    </div>
+                    <span class="@metric.IconClass">
+                        <i class="@metric.Icon" aria-hidden="true"></i>
+                    </span>
+                </div>
+                <p class="mt-3 text-xs text-ink-500">@metric.Hint</p>
+            </div>
+        }
+    </div>
+
+    <div class="grid gap-4 xl:grid-cols-2">
+        <section class="cp-card p-5">
+            <div class="flex items-center justify-between">
+                <h2 class="text-base font-bold text-ink-900">Recent unhealthy nodes</h2>
+                <a class="text-sm font-semibold text-control-700 hover:text-control-500" href="nodes">View nodes</a>
+            </div>
+            <div class="mt-6 rounded-md border border-dashed border-ink-300 p-6 text-center">
+                <i class="fa-solid fa-server mb-3 text-xl text-ink-400" aria-hidden="true"></i>
+                <p class="text-sm font-semibold text-ink-700">No node health snapshots yet</p>
+                <p class="mt-1 text-sm text-ink-500">Phase 2 and later will persist node state before this list is populated.</p>
+            </div>
+        </section>
+
+        <section class="cp-card p-5">
+            <div class="flex items-center justify-between">
+                <h2 class="text-base font-bold text-ink-900">Recent audit actions</h2>
+                <a class="text-sm font-semibold text-control-700 hover:text-control-500" href="audit-logs">View audit</a>
+            </div>
+            <div class="mt-6 rounded-md border border-dashed border-ink-300 p-6 text-center">
+                <i class="fa-solid fa-clipboard-list mb-3 text-xl text-ink-400" aria-hidden="true"></i>
+                <p class="text-sm font-semibold text-ink-700">No audit entries yet</p>
+                <p class="mt-1 text-sm text-ink-500">Security-sensitive actions will appear here after the audit store exists.</p>
+            </div>
+        </section>
+    </div>
+</section>
+
+@code {
+    private static readonly MetricModel[] Metrics =
+    [
+        new("Total Nodes", "0", "Registered Commerce Nodes", "fa-solid fa-server", "grid size-10 place-items-center rounded-md bg-ink-100 text-ink-700"),
+        new("Healthy Nodes", "0", "Latest persisted status is healthy", "fa-solid fa-circle-check", "grid size-10 place-items-center rounded-md bg-emerald-50 text-emerald-700"),
+        new("Warning Nodes", "0", "Latest persisted status is warning", "fa-solid fa-triangle-exclamation", "grid size-10 place-items-center rounded-md bg-amber-50 text-amber-700"),
+        new("Down Nodes", "0", "Latest persisted status is down", "fa-solid fa-circle-xmark", "grid size-10 place-items-center rounded-md bg-red-50 text-red-700"),
+        new("Total Stores", "0", "Registered store metadata", "fa-solid fa-store", "grid size-10 place-items-center rounded-md bg-blue-50 text-blue-700")
+    ];
+
+    private sealed record MetricModel(string Label, string Value, string Hint, string Icon, string IconClass);
+}
