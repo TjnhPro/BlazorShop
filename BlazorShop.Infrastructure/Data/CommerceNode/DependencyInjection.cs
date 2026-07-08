@@ -4,10 +4,15 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
     using BlazorShop.Application.Services;
     using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Application.Services.Contracts.Admin;
+    using BlazorShop.Application.Validations;
+    using BlazorShop.Application.Validations.Seo;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Contracts.CategoryPersistence;
+    using BlazorShop.Domain.Contracts.Seo;
     using BlazorShop.Infrastructure.Data.CommerceNode.Repositories;
     using BlazorShop.Infrastructure.Data.CommerceNode.Services;
+
+    using FluentValidation;
 
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
@@ -35,16 +40,26 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
             services.AddHttpContextAccessor();
             services.AddAutoMapper(cfg => cfg.AddProfile<MappingConfig>());
+            services.AddValidatorsFromAssemblyContaining<SeoRedirectDtoValidator>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(CommerceNodeGenericRepository<>));
             services.AddScoped<IProductReadRepository, CommerceNodeProductReadRepository>();
             services.AddScoped<ICategoryRepository, CommerceNodeCategoryRepository>();
+            services.AddScoped<ISeoSettingsRepository, CommerceNodeSeoSettingsRepository>();
+            services.AddScoped<ISeoRedirectRepository, CommerceNodeSeoRedirectRepository>();
             services.AddScoped<IApplicationTransactionManager, CommerceNodeTransactionManager>();
             services.AddScoped<ICommerceNodeAuditActorAccessor, CommerceNodeAuditActorAccessor>();
             services.AddScoped<IAdminAuditService, CommerceNodeAdminAuditService>();
+            services.AddSingleton<ISlugService, SlugService>();
+            services.AddScoped<IValidationService, ValidationService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IProductVariantService, ProductVariantService>();
             services.AddScoped<IAdminInventoryService, CommerceNodeAdminInventoryService>();
+            services.AddScoped<IProductSeoService, ProductSeoService>();
+            services.AddScoped<ICategorySeoService, CategorySeoService>();
+            services.AddScoped<ISeoSettingsService, SeoSettingsService>();
+            services.AddScoped<ISeoRedirectService, SeoRedirectService>();
+            services.AddScoped<ISeoRedirectAutomationService, SeoRedirectAutomationService>();
 
             return services;
         }

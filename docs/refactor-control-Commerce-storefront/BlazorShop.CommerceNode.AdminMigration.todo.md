@@ -456,28 +456,29 @@ QA:
 
 Database:
 
-- [ ] Use existing `SeoSettings`.
-- [ ] Use existing `SeoRedirects`.
-- [ ] Use product/category SEO fields already on existing entities.
+- [x] Use existing `SeoSettings`.
+- [x] Use existing `SeoRedirects`.
+- [x] Use product/category SEO fields already on existing entities.
 
 API:
 
-- [ ] Migrate product SEO read/update.
-- [ ] Migrate category SEO read/update.
-- [ ] Migrate SEO settings read/update.
-- [ ] Migrate SEO redirect CRUD/deactivate/delete.
+- [x] Migrate product SEO read/update.
+- [x] Migrate category SEO read/update.
+- [x] Migrate SEO settings read/update.
+- [x] Migrate SEO redirect CRUD/deactivate/delete.
 
 Services:
 
-- [ ] Reuse `ProductSeoService`.
-- [ ] Reuse `CategorySeoService`.
-- [ ] Reuse `SeoSettingsService`.
-- [ ] Reuse `SeoRedirectService`.
-- [ ] Reuse `SeoRedirectAutomationService`.
-- [ ] Provide Commerce Node versions of SEO repositories and transaction manager.
+- [x] Reuse `ProductSeoService`.
+- [x] Reuse `CategorySeoService`.
+- [x] Reuse `SeoSettingsService`.
+- [x] Reuse `SeoRedirectService`.
+- [x] Reuse `SeoRedirectAutomationService`.
+- [x] Provide Commerce Node versions of SEO repositories and transaction manager.
 
 QA:
 
+- [x] Commerce Node API builds successfully.
 - [ ] Product SEO get/update.
 - [ ] Category SEO get/update.
 - [ ] SEO settings get/update.
