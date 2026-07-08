@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using BlazorShop.Application.ControlPlane.Audit;
     using BlazorShop.Application.ControlPlane.Credentials;
+    using BlazorShop.Application.ControlPlane.Health;
     using BlazorShop.Application.ControlPlane.Nodes;
     using BlazorShop.Application.ControlPlane.Security;
 
@@ -37,6 +38,14 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             services.AddScoped<IControlPlaneProfileService, ControlPlaneProfileService>();
             services.AddScoped<IControlPlaneNodeService, ControlPlaneNodeService>();
             services.AddScoped<IControlPlaneCredentialService, ControlPlaneCredentialService>();
+            services.AddScoped<IControlPlaneHealthService, ControlPlaneHealthService>();
+            services.AddHostedService<ControlPlaneProbeBackgroundService>();
+            services.AddHttpClient<ICommerceNodeControlClient, CommerceNodeControlClient>(
+                client =>
+                {
+                    var timeoutSeconds = Math.Clamp(configuration.GetValue("ControlPlane:Probes:TimeoutSeconds", 10), 1, 60);
+                    client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
+                });
 
             return services;
         }

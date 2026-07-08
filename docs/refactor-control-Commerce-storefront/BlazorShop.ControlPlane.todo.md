@@ -785,14 +785,14 @@ Verification:
 
 ### Phase 6 - Health And Capabilities
 
-- [ ] Implement typed HTTP client for Commerce Node control endpoints.
-- [ ] Implement mock Commerce Node handler for tests.
-- [ ] Implement manual health probe.
-- [ ] Implement scheduled health probe background service.
-- [ ] Persist `node_health_snapshot`.
-- [ ] Persist `node_capability_snapshot` only when checksum changes or after explicit refresh.
-- [ ] Update `commerce_node.last_seen_at` and status from probe results.
-- [ ] Add UI: health timeline, latest status, capabilities viewer.
+- [x] Implement typed HTTP client for Commerce Node control endpoints.
+- [x] Implement mock Commerce Node handler for tests.
+- [x] Implement manual health probe.
+- [x] Implement scheduled health probe background service.
+- [x] Persist `node_health_snapshot`.
+- [x] Persist `node_capability_snapshot` only when checksum changes or after explicit refresh.
+- [x] Update `commerce_node.last_seen_at` and status from probe results.
+- [x] Add UI: health timeline, latest status, capabilities viewer.
 
 Acceptance:
 
@@ -800,6 +800,14 @@ Acceptance:
 - Probe failures produce operator-safe error messages.
 - Repeated identical capability responses do not create noisy current snapshots.
 - Node list can filter by status.
+
+Verification:
+
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj` passes with 0 warnings.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj` passes with 0 warnings; Tailwind emits only the existing Browserslist database warning.
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~ControlPlaneHealthServiceTests|FullyQualifiedName~ControlPlaneAuthorizationTests"` passes 10 tests.
+- Scheduled probe background service is implemented and registered, but disabled by default with `ControlPlane:Probes:ScheduledEnabled=false`.
+- Health API now exposes list, detail, and manual probe endpoints; manual probe requires `nodes.write` because it writes snapshots and calls a remote node.
 
 ### Phase 7 - Store Registry Metadata
 

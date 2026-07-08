@@ -11,6 +11,7 @@ using BlazorShop.Web.Shared.Helper.Contracts;
 using BlazorShop.Web.Shared.Services;
 using BlazorShop.Web.Shared.Services.Contracts;
 using BlazorShop.ControlPlane.Web.Services.Credentials;
+using BlazorShop.ControlPlane.Web.Services.Health;
 using BlazorShop.ControlPlane.Web.Services.Nodes;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -27,6 +28,7 @@ builder.Services.AddScoped<IHttpClientHelper, HttpClientHelper>();
 builder.Services.AddScoped<IApiCallHelper, ApiCallHelper>();
 builder.Services.AddSingleton<IToastService, ToastService>();
 builder.Services.AddScoped<IControlPlaneCredentialClient, ControlPlaneCredentialClient>();
+builder.Services.AddScoped<IControlPlaneHealthClient, ControlPlaneHealthClient>();
 builder.Services.AddScoped<IControlPlaneNodeClient, ControlPlaneNodeClient>();
 builder.Services.AddHttpClient(
     Constant.ApiClient.PublicName,

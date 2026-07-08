@@ -1,17 +1,313 @@
 @page "/health"
+@inject IControlPlaneHealthClient HealthClient
 
 <PageTitle>Health</PageTitle>
 
 <section class="space-y-5">
-    <div>
-        <p class="text-sm font-semibold text-control-700">Health</p>
-        <h1 class="text-2xl font-bold text-ink-900">Node health</h1>
-        <p class="mt-1 text-sm text-ink-500">Inspect latest heartbeat and dependency status for each node.</p>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <p class="text-sm font-semibold text-control-700">Health</p>
+            <h1 class="text-2xl font-bold text-ink-900">Node health</h1>
+            <p class="mt-1 text-sm text-ink-500">Inspect latest heartbeat, dependency status, and capability snapshots.</p>
+        </div>
+        <button class="cp-button cp-button-secondary" @onclick="LoadAsync" disabled="@isLoading">
+            <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+            Refresh
+        </button>
     </div>
 
-    <div class="cp-card p-8 text-center">
-        <i class="fa-solid fa-heart-pulse mb-3 text-2xl text-ink-400" aria-hidden="true"></i>
-        <p class="text-sm font-semibold text-ink-700">No health snapshots yet</p>
-        <p class="mt-1 text-sm text-ink-500">Manual and scheduled probes are planned for Phase 6.</p>
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            @errorMessage
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            @successMessage
+        </div>
+    }
+
+    <div class="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
+        <aside class="cp-card overflow-hidden">
+            <div class="border-b border-ink-200 p-4">
+                <h2 class="text-sm font-semibold text-ink-900">Nodes</h2>
+            </div>
+
+            @if (isLoading)
+            {
+                <div class="p-6 text-center text-sm text-ink-500">Loading health...</div>
+            }
+            else if (nodes.Count == 0)
+            {
+                <div class="p-6 text-center">
+                    <i class="fa-solid fa-heart-pulse mb-3 text-2xl text-ink-400" aria-hidden="true"></i>
+                    <p class="text-sm font-semibold text-ink-700">No nodes registered</p>
+                    <p class="mt-1 text-sm text-ink-500">Create a node before probing health.</p>
+                </div>
+            }
+            else
+            {
+                <div class="divide-y divide-ink-100">
+                    @foreach (var node in nodes)
+                    {
+                        <button class="@GetNodeButtonClass(node.PublicId)" @onclick="() => SelectNodeAsync(node.PublicId)">
+                            <span class="flex items-center justify-between gap-3">
+                                <span class="min-w-0">
+                                    <span class="block truncate font-semibold">@node.Name</span>
+                                    <span class="mt-1 block truncate text-xs opacity-75">@node.NodeKey</span>
+                                </span>
+                                <span class="@GetStatusBadgeClass(node.Status)">@node.Status</span>
+                            </span>
+                            <span class="mt-2 block text-xs text-ink-500">
+                                @(node.LatestHealth is null ? "No heartbeat" : $"{node.LatestHealth.CheckedAt.LocalDateTime:yyyy-MM-dd HH:mm} / {node.LatestHealth.DurationMs} ms")
+                            </span>
+                        </button>
+                    }
+                </div>
+            }
+        </aside>
+
+        <div class="space-y-5">
+            <div class="cp-card p-4">
+                @if (selectedDetail is null)
+                {
+                    <div class="p-6 text-center">
+                        <i class="fa-solid fa-circle-info mb-3 text-2xl text-ink-400" aria-hidden="true"></i>
+                        <p class="text-sm font-semibold text-ink-700">Select a node</p>
+                        <p class="mt-1 text-sm text-ink-500">Choose a node to inspect health details.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                            <h2 class="text-base font-semibold text-ink-900">@selectedDetail.Name</h2>
+                            <p class="mt-1 text-xs text-ink-500">@selectedDetail.NodeKey</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="@GetStatusBadgeClass(selectedDetail.Status)">@selectedDetail.Status</span>
+                            <button class="cp-button cp-button-primary" disabled="@(selectedDetail.Status == "disabled" || isProbing)" @onclick="ProbeSelectedAsync">
+                                <i class="fa-solid fa-heart-pulse" aria-hidden="true"></i>
+                                Probe
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 grid gap-3 md:grid-cols-3">
+                        <div class="rounded-md border border-ink-200 p-3">
+                            <p class="text-xs font-semibold uppercase text-ink-500">Latest heartbeat</p>
+                            <p class="mt-2 text-sm font-semibold text-ink-900">@(selectedDetail.RecentHealth.FirstOrDefault()?.CheckedAt.LocalDateTime.ToString("yyyy-MM-dd HH:mm") ?? "No sample")</p>
+                        </div>
+                        <div class="rounded-md border border-ink-200 p-3">
+                            <p class="text-xs font-semibold uppercase text-ink-500">Latency</p>
+                            <p class="mt-2 text-sm font-semibold text-ink-900">@(selectedDetail.RecentHealth.FirstOrDefault()?.DurationMs.ToString() ?? "-") ms</p>
+                        </div>
+                        <div class="rounded-md border border-ink-200 p-3">
+                            <p class="text-xs font-semibold uppercase text-ink-500">Capabilities</p>
+                            <p class="mt-2 text-sm font-semibold text-ink-900">@(selectedDetail.CurrentCapability?.SchemaVersion ?? "No snapshot")</p>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (selectedDetail is not null)
+            {
+                <div class="grid gap-5 xl:grid-cols-2">
+                    <section class="cp-card overflow-hidden">
+                        <div class="border-b border-ink-200 p-4">
+                            <h2 class="text-sm font-semibold text-ink-900">Health timeline</h2>
+                        </div>
+                        @if (selectedDetail.RecentHealth.Count == 0)
+                        {
+                            <div class="p-8 text-center">
+                                <i class="fa-solid fa-clock-rotate-left mb-3 text-2xl text-ink-400" aria-hidden="true"></i>
+                                <p class="text-sm font-semibold text-ink-700">No health samples</p>
+                                <p class="mt-1 text-sm text-ink-500">Run a probe to create the first snapshot.</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="divide-y divide-ink-100">
+                                @foreach (var snapshot in selectedDetail.RecentHealth)
+                                {
+                                    <div class="p-4">
+                                        <div class="flex items-center justify-between gap-3">
+                                            <span class="@GetStatusBadgeClass(snapshot.Status)">@snapshot.Status</span>
+                                            <span class="text-xs text-ink-500">@snapshot.CheckedAt.LocalDateTime.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                                        </div>
+                                        <div class="mt-2 text-sm text-ink-600">
+                                            HTTP @(snapshot.HttpStatusCode?.ToString() ?? "-") / @snapshot.DurationMs ms
+                                        </div>
+                                        @if (!string.IsNullOrWhiteSpace(snapshot.ErrorMessage))
+                                        {
+                                            <p class="mt-2 text-sm text-red-700">@snapshot.ErrorMessage</p>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(snapshot.DependencyStatusJson))
+                                        {
+                                            <pre class="mt-2 max-h-32 overflow-auto rounded-md bg-ink-950 p-3 text-xs text-white">@snapshot.DependencyStatusJson</pre>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </section>
+
+                    <section class="cp-card overflow-hidden">
+                        <div class="border-b border-ink-200 p-4">
+                            <h2 class="text-sm font-semibold text-ink-900">Current capabilities</h2>
+                        </div>
+                        @if (selectedDetail.CurrentCapability is null)
+                        {
+                            <div class="p-8 text-center">
+                                <i class="fa-solid fa-code-branch mb-3 text-2xl text-ink-400" aria-hidden="true"></i>
+                                <p class="text-sm font-semibold text-ink-700">No capability snapshot</p>
+                                <p class="mt-1 text-sm text-ink-500">Capability data is captured during successful probes.</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="space-y-3 p-4">
+                                <div class="flex flex-wrap gap-2 text-xs">
+                                    <span class="rounded-full bg-blue-50 px-2 py-1 font-semibold text-blue-700">schema @selectedDetail.CurrentCapability.SchemaVersion</span>
+                                    <span class="rounded-full bg-ink-100 px-2 py-1 font-mono text-ink-700">@ShortChecksum(selectedDetail.CurrentCapability.Checksum)</span>
+                                </div>
+                                <pre class="max-h-[420px] overflow-auto rounded-md bg-ink-950 p-3 text-xs text-white">@selectedDetail.CurrentCapability.CapabilitiesJson</pre>
+                            </div>
+                        }
+                    </section>
+                </div>
+            }
+        </div>
     </div>
 </section>
+
+@code {
+    private readonly List<HealthNodeSummary> nodes = [];
+    private HealthDetail? selectedDetail;
+    private Guid? selectedNodePublicId;
+    private string? errorMessage;
+    private string? successMessage;
+    private bool isLoading;
+    private bool isProbing;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            var response = await HealthClient.ListAsync();
+            nodes.Clear();
+            nodes.AddRange(response.Items);
+
+            if (selectedNodePublicId is null && nodes.Count > 0)
+            {
+                selectedNodePublicId = nodes[0].PublicId;
+            }
+
+            if (selectedNodePublicId is not null)
+            {
+                await LoadDetailAsync(selectedNodePublicId.Value);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SelectNodeAsync(Guid publicId)
+    {
+        selectedNodePublicId = publicId;
+        successMessage = null;
+        await LoadDetailAsync(publicId);
+    }
+
+    private async Task LoadDetailAsync(Guid publicId)
+    {
+        try
+        {
+            selectedDetail = await HealthClient.GetAsync(publicId);
+            if (selectedDetail is null)
+            {
+                errorMessage = "Node was not found.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private async Task ProbeSelectedAsync()
+    {
+        if (selectedNodePublicId is null)
+        {
+            return;
+        }
+
+        isProbing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var result = await HealthClient.ProbeAsync(selectedNodePublicId.Value);
+            if (!result.Success)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            successMessage = result.Probe?.CapabilityChanged == true
+                ? "Probe completed and capabilities changed."
+                : "Probe completed.";
+
+            await LoadAsync();
+        }
+        finally
+        {
+            isProbing = false;
+        }
+    }
+
+    private string GetNodeButtonClass(Guid publicId)
+    {
+        var selected = selectedNodePublicId == publicId;
+        return selected
+            ? "block w-full px-4 py-3 text-left text-sm bg-control-50 text-control-800"
+            : "block w-full px-4 py-3 text-left text-sm text-ink-700 hover:bg-ink-50";
+    }
+
+    private static string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "healthy" => "rounded-full bg-green-50 px-2 py-1 text-xs font-semibold text-green-700",
+            "warning" => "rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700",
+            "down" => "rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-700",
+            "timeout" => "rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-700",
+            "malformed" => "rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-700",
+            "disabled" => "rounded-full bg-ink-100 px-2 py-1 text-xs font-semibold text-ink-600",
+            _ => "rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700"
+        };
+    }
+
+    private static string ShortChecksum(string checksum)
+    {
+        return checksum[..Math.Min(12, checksum.Length)];
+    }
+}
