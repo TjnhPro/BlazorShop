@@ -12,6 +12,28 @@ namespace BlazorShop.Application.ControlPlane.Users
         IReadOnlyList<ControlPlaneUserSummary> Items,
         string? NextCursor);
 
+    public sealed record CreateControlPlaneUserRequest(
+        string Email,
+        string DisplayName,
+        string? IdentityRole,
+        IReadOnlyList<string>? ControlPlaneRoleKeys,
+        IReadOnlyList<string>? DirectPermissionKeys,
+        string? TemporaryPassword);
+
+    public sealed record CreateControlPlaneUserResponse(
+        ControlPlaneUserDetail User,
+        string? TemporaryPassword);
+
+    public sealed record UpdateControlPlaneUserRequest(
+        string DisplayName);
+
+    public sealed record ChangeControlPlaneUserStatusRequest(
+        string? Reason);
+
+    public sealed record ControlPlaneUserActor(
+        string? IdentityUserId,
+        string? Email);
+
     public sealed record ControlPlaneUserSummary(
         Guid PublicId,
         string Email,

@@ -1,22 +1,34 @@
 namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
+    using System.Security.Cryptography;
     using System.Text;
 
     using BlazorShop.Application.ControlPlane.Users;
     using BlazorShop.Domain.Entities.ControlPlane;
+    using BlazorShop.Domain.Entities.Identity;
 
+    using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
 
     public sealed class ControlPlaneUserManagementService : IControlPlaneUserManagementService
     {
         private const int DefaultLimit = 25;
         private const int MaxLimit = 100;
+        private const string DefaultIdentityRole = "User";
+        private const string PlatformOwnerRoleKey = "platform_owner";
 
         private readonly ControlPlaneDbContext dbContext;
+        private readonly UserManager<AppUser> userManager;
+        private readonly RoleManager<IdentityRole> roleManager;
 
-        public ControlPlaneUserManagementService(ControlPlaneDbContext dbContext)
+        public ControlPlaneUserManagementService(
+            ControlPlaneDbContext dbContext,
+            UserManager<AppUser> userManager,
+            RoleManager<IdentityRole> roleManager)
         {
             this.dbContext = dbContext;
+            this.userManager = userManager;
+            this.roleManager = roleManager;
         }
 
         public async Task<ControlPlaneUserListResponse> ListAsync(
@@ -100,6 +112,244 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return Succeeded(MapDetail(user, identityRoleLookup));
         }
 
+        public async Task<ControlPlaneUserOperationResult<CreateControlPlaneUserResponse>> CreateAsync(
+            CreateControlPlaneUserRequest request,
+            ControlPlaneUserActor actor,
+            CancellationToken cancellationToken = default)
+        {
+            var validation = ValidateCreateRequest(request);
+            if (validation is not null)
+            {
+                return Failed<CreateControlPlaneUserResponse>(validation, ControlPlaneUserOperationFailure.Validation);
+            }
+
+            var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+            var displayName = request.DisplayName.Trim();
+            var identityRole = string.IsNullOrWhiteSpace(request.IdentityRole)
+                ? DefaultIdentityRole
+                : request.IdentityRole.Trim();
+            var controlPlaneRoleKeys = NormalizeKeys(request.ControlPlaneRoleKeys);
+            var directPermissionKeys = NormalizeKeys(request.DirectPermissionKeys);
+
+            if (!IsAllowedIdentityRole(identityRole) || !await this.roleManager.RoleExistsAsync(identityRole))
+            {
+                return Failed<CreateControlPlaneUserResponse>("Identity role is invalid.", ControlPlaneUserOperationFailure.Validation);
+            }
+
+            if (await this.userManager.FindByEmailAsync(normalizedEmail) is not null
+                || await this.dbContext.AdminUsers.AnyAsync(user => user.Email == normalizedEmail && user.DeletedAt == null, cancellationToken))
+            {
+                return Failed<CreateControlPlaneUserResponse>("A Control Plane user with this email already exists.", ControlPlaneUserOperationFailure.Conflict);
+            }
+
+            var roles = await LoadRolesByKeyAsync(controlPlaneRoleKeys, cancellationToken);
+            if (roles.Count != controlPlaneRoleKeys.Count)
+            {
+                return Failed<CreateControlPlaneUserResponse>("One or more Control Plane roles are invalid.", ControlPlaneUserOperationFailure.Validation);
+            }
+
+            var permissions = await LoadPermissionsByKeyAsync(directPermissionKeys, cancellationToken);
+            if (permissions.Count != directPermissionKeys.Count)
+            {
+                return Failed<CreateControlPlaneUserResponse>("One or more Control Plane permissions are invalid.", ControlPlaneUserOperationFailure.Validation);
+            }
+
+            var actorAdminUserId = await ResolveActorAdminUserIdAsync(actor, cancellationToken);
+            var temporaryPassword = string.IsNullOrWhiteSpace(request.TemporaryPassword)
+                ? GenerateTemporaryPassword()
+                : request.TemporaryPassword;
+            var now = DateTimeOffset.UtcNow;
+
+            await using var transaction = await this.dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+            var appUser = new AppUser
+            {
+                Email = normalizedEmail,
+                UserName = normalizedEmail,
+                FullName = displayName,
+                EmailConfirmed = true,
+                LockoutEnabled = true,
+                RequirePasswordChange = true,
+                CreatedOn = DateTime.UtcNow
+            };
+
+            var createResult = await this.userManager.CreateAsync(appUser, temporaryPassword);
+            if (!createResult.Succeeded)
+            {
+                return Failed<CreateControlPlaneUserResponse>(
+                    FormatIdentityErrors(createResult),
+                    ControlPlaneUserOperationFailure.Validation);
+            }
+
+            var roleResult = await this.userManager.AddToRoleAsync(appUser, identityRole);
+            if (!roleResult.Succeeded)
+            {
+                return Failed<CreateControlPlaneUserResponse>(
+                    FormatIdentityErrors(roleResult),
+                    ControlPlaneUserOperationFailure.Validation);
+            }
+
+            var profile = new ControlPlaneAdminUser
+            {
+                IdentityUserId = appUser.Id,
+                Email = normalizedEmail,
+                DisplayName = displayName,
+                Status = "active",
+                CreatedAt = now,
+                UpdatedAt = now
+            };
+
+            foreach (var role in roles)
+            {
+                profile.Roles.Add(new ControlPlaneAdminUserRole
+                {
+                    RoleId = role.Id,
+                    CreatedAt = now
+                });
+            }
+
+            foreach (var permission in permissions)
+            {
+                profile.DirectPermissions.Add(new ControlPlaneAdminUserPermission
+                {
+                    PermissionId = permission.Id,
+                    CreatedAt = now,
+                    CreatedByAdminUserId = actorAdminUserId
+                });
+            }
+
+            this.dbContext.AdminUsers.Add(profile);
+            await this.dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            var created = await this.GetAsync(profile.PublicId, cancellationToken);
+            return created.Success && created.Payload is not null
+                ? Succeeded(new CreateControlPlaneUserResponse(created.Payload, string.IsNullOrWhiteSpace(request.TemporaryPassword) ? temporaryPassword : null))
+                : Failed<CreateControlPlaneUserResponse>("Control Plane user was created but could not be loaded.", ControlPlaneUserOperationFailure.Conflict);
+        }
+
+        public async Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> UpdateAsync(
+            Guid publicId,
+            UpdateControlPlaneUserRequest request,
+            ControlPlaneUserActor actor,
+            CancellationToken cancellationToken = default)
+        {
+            if (request is null || string.IsNullOrWhiteSpace(request.DisplayName))
+            {
+                return Failed<ControlPlaneUserDetail>("Display name is required.", ControlPlaneUserOperationFailure.Validation);
+            }
+
+            if (request.DisplayName.Trim().Length > 160)
+            {
+                return Failed<ControlPlaneUserDetail>("Display name must be 160 characters or fewer.", ControlPlaneUserOperationFailure.Validation);
+            }
+
+            var user = await LoadUserForMutationAsync(publicId, cancellationToken);
+            if (user is null)
+            {
+                return NotFound();
+            }
+
+            var displayName = request.DisplayName.Trim();
+            user.DisplayName = displayName;
+            user.UpdatedAt = DateTimeOffset.UtcNow;
+
+            var appUser = await this.userManager.FindByIdAsync(user.IdentityUserId);
+            if (appUser is not null)
+            {
+                appUser.FullName = displayName;
+                var updateResult = await this.userManager.UpdateAsync(appUser);
+                if (!updateResult.Succeeded)
+                {
+                    return Failed<ControlPlaneUserDetail>(
+                        FormatIdentityErrors(updateResult),
+                        ControlPlaneUserOperationFailure.Validation);
+                }
+            }
+
+            await this.dbContext.SaveChangesAsync(cancellationToken);
+            return await ReloadDetailAsync(publicId, cancellationToken);
+        }
+
+        public async Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> DisableAsync(
+            Guid publicId,
+            ChangeControlPlaneUserStatusRequest request,
+            ControlPlaneUserActor actor,
+            CancellationToken cancellationToken = default)
+        {
+            var user = await LoadUserForMutationAsync(publicId, cancellationToken);
+            if (user is null)
+            {
+                return NotFound();
+            }
+
+            if (!string.IsNullOrWhiteSpace(actor.IdentityUserId) && user.IdentityUserId == actor.IdentityUserId)
+            {
+                return Failed<ControlPlaneUserDetail>("You cannot disable your own Control Plane account.", ControlPlaneUserOperationFailure.Conflict);
+            }
+
+            if (user.Roles.Any(userRole => userRole.Role?.Key == PlatformOwnerRoleKey)
+                && await CountActivePlatformOwnersAsync(cancellationToken) <= 1)
+            {
+                return Failed<ControlPlaneUserDetail>("Cannot disable the last active platform owner.", ControlPlaneUserOperationFailure.Conflict);
+            }
+
+            if (user.Status == "disabled")
+            {
+                return await ReloadDetailAsync(publicId, cancellationToken);
+            }
+
+            var now = DateTimeOffset.UtcNow;
+            var actorAdminUserId = await ResolveActorAdminUserIdAsync(actor, cancellationToken);
+            user.Status = "disabled";
+            user.StatusChangedAt = now;
+            user.StatusChangedByAdminUserId = actorAdminUserId;
+            user.StatusReason = NormalizeOptionalText(request?.Reason);
+            user.UpdatedAt = now;
+
+            var nowUtc = DateTime.UtcNow;
+            var activeTokens = await this.dbContext.RefreshTokens
+                .Where(token => token.UserId == user.IdentityUserId && token.RevokedAtUtc == null)
+                .ToListAsync(cancellationToken);
+
+            foreach (var token in activeTokens)
+            {
+                token.RevokedAtUtc = nowUtc;
+            }
+
+            await this.dbContext.SaveChangesAsync(cancellationToken);
+            return await ReloadDetailAsync(publicId, cancellationToken);
+        }
+
+        public async Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> EnableAsync(
+            Guid publicId,
+            ChangeControlPlaneUserStatusRequest request,
+            ControlPlaneUserActor actor,
+            CancellationToken cancellationToken = default)
+        {
+            var user = await LoadUserForMutationAsync(publicId, cancellationToken);
+            if (user is null)
+            {
+                return NotFound();
+            }
+
+            if (user.Status == "active")
+            {
+                return await ReloadDetailAsync(publicId, cancellationToken);
+            }
+
+            var now = DateTimeOffset.UtcNow;
+            var actorAdminUserId = await ResolveActorAdminUserIdAsync(actor, cancellationToken);
+            user.Status = "active";
+            user.StatusChangedAt = now;
+            user.StatusChangedByAdminUserId = actorAdminUserId;
+            user.StatusReason = NormalizeOptionalText(request?.Reason);
+            user.UpdatedAt = now;
+
+            await this.dbContext.SaveChangesAsync(cancellationToken);
+            return await ReloadDetailAsync(publicId, cancellationToken);
+        }
+
         public async Task<ControlPlaneRoleCatalogResponse> ListRolesAsync(
             CancellationToken cancellationToken = default)
         {
@@ -135,6 +385,83 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return new ControlPlanePermissionCatalogResponse(permissions);
         }
 
+        private async Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> ReloadDetailAsync(
+            Guid publicId,
+            CancellationToken cancellationToken)
+        {
+            return await this.GetAsync(publicId, cancellationToken);
+        }
+
+        private async Task<ControlPlaneAdminUser?> LoadUserForMutationAsync(
+            Guid publicId,
+            CancellationToken cancellationToken)
+        {
+            return await this.dbContext.AdminUsers
+                .AsSplitQuery()
+                .Include(user => user.Roles)
+                    .ThenInclude(userRole => userRole.Role)
+                    .ThenInclude(role => role!.Permissions)
+                    .ThenInclude(rolePermission => rolePermission.Permission)
+                .Include(user => user.DirectPermissions)
+                    .ThenInclude(userPermission => userPermission.Permission)
+                .FirstOrDefaultAsync(user => user.PublicId == publicId && user.DeletedAt == null, cancellationToken);
+        }
+
+        private async Task<IReadOnlyList<ControlPlaneRole>> LoadRolesByKeyAsync(
+            IReadOnlyCollection<string> roleKeys,
+            CancellationToken cancellationToken)
+        {
+            if (roleKeys.Count == 0)
+            {
+                return [];
+            }
+
+            return await this.dbContext.ControlPlaneRoles
+                .Where(role => roleKeys.Contains(role.Key))
+                .ToListAsync(cancellationToken);
+        }
+
+        private async Task<IReadOnlyList<ControlPlanePermission>> LoadPermissionsByKeyAsync(
+            IReadOnlyCollection<string> permissionKeys,
+            CancellationToken cancellationToken)
+        {
+            if (permissionKeys.Count == 0)
+            {
+                return [];
+            }
+
+            return await this.dbContext.Permissions
+                .Where(permission => permissionKeys.Contains(permission.Key))
+                .ToListAsync(cancellationToken);
+        }
+
+        private async Task<long?> ResolveActorAdminUserIdAsync(
+            ControlPlaneUserActor actor,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(actor.IdentityUserId))
+            {
+                return null;
+            }
+
+            return await this.dbContext.AdminUsers
+                .AsNoTracking()
+                .Where(user => user.IdentityUserId == actor.IdentityUserId && user.DeletedAt == null)
+                .Select(user => (long?)user.Id)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        private async Task<int> CountActivePlatformOwnersAsync(CancellationToken cancellationToken)
+        {
+            return await this.dbContext.AdminUsers
+                .AsNoTracking()
+                .CountAsync(
+                    user => user.Status == "active"
+                            && user.DeletedAt == null
+                            && user.Roles.Any(userRole => userRole.Role!.Key == PlatformOwnerRoleKey),
+                    cancellationToken);
+        }
+
         private IQueryable<ControlPlaneAdminUser> BaseUserQuery()
         {
             return this.dbContext.AdminUsers
@@ -147,6 +474,68 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 .Include(user => user.DirectPermissions)
                     .ThenInclude(userPermission => userPermission.Permission)
                 .Where(user => user.DeletedAt == null);
+        }
+
+        private static string? ValidateCreateRequest(CreateControlPlaneUserRequest request)
+        {
+            if (request is null)
+            {
+                return "Request body is required.";
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Email) || !request.Email.Contains('@', StringComparison.Ordinal))
+            {
+                return "Email is required.";
+            }
+
+            if (request.Email.Trim().Length > 256)
+            {
+                return "Email must be 256 characters or fewer.";
+            }
+
+            if (string.IsNullOrWhiteSpace(request.DisplayName))
+            {
+                return "Display name is required.";
+            }
+
+            if (request.DisplayName.Trim().Length > 160)
+            {
+                return "Display name must be 160 characters or fewer.";
+            }
+
+            return null;
+        }
+
+        private static IReadOnlyList<string> NormalizeKeys(IReadOnlyList<string>? keys)
+        {
+            return (keys ?? [])
+                .Where(key => !string.IsNullOrWhiteSpace(key))
+                .Select(key => key.Trim().ToLowerInvariant())
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+        }
+
+        private static bool IsAllowedIdentityRole(string identityRole)
+        {
+            return string.Equals(identityRole, "Admin", StringComparison.Ordinal)
+                   || string.Equals(identityRole, "User", StringComparison.Ordinal);
+        }
+
+        private static string GenerateTemporaryPassword()
+        {
+            Span<byte> bytes = stackalloc byte[12];
+            RandomNumberGenerator.Fill(bytes);
+            return $"Cp!{Convert.ToHexString(bytes)}a1";
+        }
+
+        private static string FormatIdentityErrors(IdentityResult result)
+        {
+            return string.Join("; ", result.Errors.Select(error => $"{error.Code}: {error.Description}"));
+        }
+
+        private static string? NormalizeOptionalText(string? value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
 
         private async Task<Dictionary<string, IReadOnlyList<string>>> LoadIdentityRoleLookupAsync(
@@ -336,17 +725,26 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             }
         }
 
-        private static ControlPlaneUserOperationResult<ControlPlaneUserDetail> Succeeded(ControlPlaneUserDetail payload)
+        private static ControlPlaneUserOperationResult<TPayload> Succeeded<TPayload>(TPayload payload)
         {
-            return new ControlPlaneUserOperationResult<ControlPlaneUserDetail>(true, Payload: payload);
+            return new ControlPlaneUserOperationResult<TPayload>(true, Payload: payload);
         }
 
         private static ControlPlaneUserOperationResult<ControlPlaneUserDetail> NotFound()
         {
-            return new ControlPlaneUserOperationResult<ControlPlaneUserDetail>(
-                false,
+            return Failed<ControlPlaneUserDetail>(
                 "Control Plane user was not found.",
-                Failure: ControlPlaneUserOperationFailure.NotFound);
+                ControlPlaneUserOperationFailure.NotFound);
+        }
+
+        private static ControlPlaneUserOperationResult<TPayload> Failed<TPayload>(
+            string message,
+            ControlPlaneUserOperationFailure failure)
+        {
+            return new ControlPlaneUserOperationResult<TPayload>(
+                false,
+                message,
+                Failure: failure);
         }
 
         private sealed class EffectivePermissionBuilder
