@@ -1,0 +1,435 @@
+@page "/actions"
+@inject IControlPlaneActionClient ActionClient
+@inject IControlPlaneNodeClient NodeClient
+@inject IControlPlaneStoreClient StoreClient
+
+<PageTitle>Actions</PageTitle>
+
+<section class="space-y-5">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <p class="text-sm font-semibold text-control-700">Actions</p>
+            <h1 class="text-2xl font-bold text-ink-900">Control actions</h1>
+            <p class="mt-1 text-sm text-ink-500">Queue node commands and inspect attempts, failures, and retry context.</p>
+        </div>
+        <button class="cp-button cp-button-primary" @onclick="OpenEnqueueForm">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i>
+            Enqueue action
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">@errorMessage</div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">@successMessage</div>
+    }
+
+    @if (showEnqueueForm)
+    {
+        <div class="cp-card">
+            <div class="border-b border-ink-200 p-4">
+                <h2 class="text-sm font-semibold text-ink-900">Enqueue control action</h2>
+            </div>
+            <div class="grid gap-4 p-4 lg:grid-cols-2">
+                <label class="space-y-1 text-sm">
+                    <span class="font-medium text-ink-700">Action type</span>
+                    <select class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="enqueueActionType">
+                        <option value="probe_health">probe_health</option>
+                        <option value="fetch_capabilities">fetch_capabilities</option>
+                        <option value="sync_store_placeholder">sync_store_placeholder</option>
+                    </select>
+                </label>
+                <label class="space-y-1 text-sm">
+                    <span class="font-medium text-ink-700">Node</span>
+                    <select class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="enqueueNodePublicId">
+                        <option value="">Select node</option>
+                        @foreach (var node in nodes)
+                        {
+                            <option value="@node.PublicId">@node.Name (@node.NodeKey)</option>
+                        }
+                    </select>
+                </label>
+                <label class="space-y-1 text-sm">
+                    <span class="font-medium text-ink-700">Store</span>
+                    <select class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="enqueueStorePublicId" disabled="@(enqueueActionType != "sync_store_placeholder")">
+                        <option value="">No store</option>
+                        @foreach (var store in stores.Where(StoreBelongsToSelectedNode))
+                        {
+                            <option value="@store.PublicId">@store.Name (@store.StoreKey)</option>
+                        }
+                    </select>
+                </label>
+                <label class="space-y-1 text-sm">
+                    <span class="font-medium text-ink-700">Idempotency key</span>
+                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="enqueueIdempotencyKey" />
+                </label>
+                <label class="space-y-1 text-sm">
+                    <span class="font-medium text-ink-700">Correlation id</span>
+                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="enqueueCorrelationId" />
+                </label>
+                <label class="space-y-1 text-sm lg:col-span-2">
+                    <span class="font-medium text-ink-700">Payload JSON</span>
+                    <textarea class="min-h-24 w-full rounded-md border border-ink-300 px-3 py-2 font-mono text-xs outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="enqueuePayloadJson"></textarea>
+                </label>
+            </div>
+            <div class="flex justify-end gap-2 border-t border-ink-200 p-4">
+                <button class="cp-button cp-button-secondary" @onclick="CloseEnqueueForm">Cancel</button>
+                <button class="cp-button cp-button-primary" disabled="@isSaving" @onclick="EnqueueAsync">
+                    <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+                    Enqueue
+                </button>
+            </div>
+        </div>
+    }
+
+    <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_460px]">
+        <div class="cp-card overflow-hidden">
+            <div class="grid gap-3 border-b border-ink-200 p-4 md:grid-cols-[180px_220px_auto]">
+                <select class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="filterStatus">
+                    <option value="">All statuses</option>
+                    <option value="queued">Queued</option>
+                    <option value="running">Running</option>
+                    <option value="failed">Failed</option>
+                    <option value="succeeded">Succeeded</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+                <select class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="filterActionType">
+                    <option value="">All action types</option>
+                    <option value="probe_health">probe_health</option>
+                    <option value="fetch_capabilities">fetch_capabilities</option>
+                    <option value="sync_store_placeholder">sync_store_placeholder</option>
+                </select>
+                <button class="cp-button cp-button-secondary" @onclick="LoadActionsAsync" disabled="@isLoading">
+                    <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                    Refresh
+                </button>
+            </div>
+
+            @if (isLoading)
+            {
+                <div class="p-8 text-center text-sm text-ink-500">Loading actions...</div>
+            }
+            else if (actions.Count == 0)
+            {
+                <div class="p-8 text-center">
+                    <i class="fa-solid fa-list-check mb-3 text-2xl text-ink-400" aria-hidden="true"></i>
+                    <p class="text-sm font-semibold text-ink-700">No control actions</p>
+                    <p class="mt-1 text-sm text-ink-500">Queue an action after registering at least one node.</p>
+                </div>
+            }
+            else
+            {
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-ink-200 text-left text-sm">
+                        <thead class="bg-ink-50 text-xs font-semibold uppercase text-ink-500">
+                            <tr>
+                                <th class="px-4 py-3">Action</th>
+                                <th class="px-4 py-3">Target</th>
+                                <th class="px-4 py-3">Status</th>
+                                <th class="px-4 py-3 text-right">Attempts</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-ink-100">
+                            @foreach (var action in actions)
+                            {
+                                <tr class="cursor-pointer hover:bg-ink-50" @onclick="() => LoadDetailAsync(action.PublicId)">
+                                    <td class="px-4 py-3">
+                                        <div class="font-semibold text-ink-900">@action.ActionType</div>
+                                        <div class="text-xs text-ink-500">@action.CorrelationId</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="text-ink-700">@action.NodeKey</div>
+                                        <div class="text-xs text-ink-500">@(action.StoreKey ?? "node action")</div>
+                                    </td>
+                                    <td class="px-4 py-3"><span class="@GetStatusBadgeClass(action.Status)">@action.Status</span></td>
+                                    <td class="px-4 py-3 text-right text-ink-600">@action.AttemptCount</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <aside class="cp-card min-h-[420px]">
+            @if (selectedAction is null)
+            {
+                <div class="flex h-full min-h-[420px] flex-col items-center justify-center p-6 text-center">
+                    <i class="fa-solid fa-circle-info mb-3 text-2xl text-ink-400" aria-hidden="true"></i>
+                    <p class="text-sm font-semibold text-ink-700">No action selected</p>
+                    <p class="mt-1 text-sm text-ink-500">Select an action to inspect attempts and retry context.</p>
+                </div>
+            }
+            else
+            {
+                <div class="border-b border-ink-200 p-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <h2 class="text-base font-semibold text-ink-900">@selectedAction.ActionType</h2>
+                            <p class="mt-1 text-xs text-ink-500">@selectedAction.CorrelationId</p>
+                        </div>
+                        <span class="@GetStatusBadgeClass(selectedAction.Status)">@selectedAction.Status</span>
+                    </div>
+                </div>
+                <div class="space-y-4 p-4 text-sm">
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div class="rounded-md border border-ink-200 p-3">
+                            <p class="text-xs font-semibold uppercase text-ink-500">Node</p>
+                            <p class="mt-1 font-semibold text-ink-800">@selectedAction.NodeName</p>
+                            <p class="text-xs text-ink-500">@selectedAction.NodeKey</p>
+                        </div>
+                        <div class="rounded-md border border-ink-200 p-3">
+                            <p class="text-xs font-semibold uppercase text-ink-500">Store</p>
+                            <p class="mt-1 font-semibold text-ink-800">@(selectedAction.StoreName ?? "No store")</p>
+                            <p class="text-xs text-ink-500">@(selectedAction.StoreKey ?? "-")</p>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(selectedAction.ErrorMessage))
+                    {
+                        <div class="rounded-md border border-red-200 bg-red-50 p-3 text-red-700">
+                            <p class="font-semibold">@selectedAction.ErrorCode</p>
+                            <p class="mt-1">@selectedAction.ErrorMessage</p>
+                            @if (!string.IsNullOrWhiteSpace(selectedAction.SuggestedFix))
+                            {
+                                <p class="mt-2 text-xs font-semibold">@selectedAction.SuggestedFix</p>
+                            }
+                        </div>
+                    }
+
+                    <div>
+                        <p class="text-xs font-semibold uppercase text-ink-500">Payload</p>
+                        <pre class="mt-2 max-h-40 overflow-auto rounded-md bg-ink-950 p-3 text-xs text-white">@(selectedAction.PayloadJson ?? "{}")</pre>
+                    </div>
+
+                    <div class="border-t border-ink-200 pt-4">
+                        <div class="flex items-center justify-between gap-3">
+                            <h3 class="text-sm font-semibold text-ink-900">Attempts</h3>
+                            <button class="cp-button cp-button-danger" disabled="@(!CanCancelSelected || isSaving)" @onclick="CancelSelectedAsync">
+                                <i class="fa-solid fa-ban" aria-hidden="true"></i>
+                                Cancel
+                            </button>
+                        </div>
+
+                        @if (selectedAction.Attempts.Count == 0)
+                        {
+                            <div class="mt-3 rounded-md border border-ink-200 p-4 text-center text-sm text-ink-500">No attempts recorded.</div>
+                        }
+                        else
+                        {
+                            <div class="mt-3 space-y-2">
+                                @foreach (var attempt in selectedAction.Attempts)
+                                {
+                                    <div class="rounded-md border border-ink-200 p-3">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <span class="font-semibold text-ink-800">Attempt @attempt.AttemptNumber</span>
+                                            <span class="@GetStatusBadgeClass(attempt.Status)">@attempt.Status</span>
+                                        </div>
+                                        <p class="mt-1 text-xs text-ink-500">HTTP @(attempt.HttpStatusCode?.ToString() ?? "-") / @attempt.DurationMs ms</p>
+                                        @if (!string.IsNullOrWhiteSpace(attempt.ErrorMessage))
+                                        {
+                                            <p class="mt-2 text-sm text-red-700">@attempt.ErrorMessage</p>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(attempt.SuggestedFix))
+                                        {
+                                            <p class="mt-2 text-xs font-semibold text-ink-600">@attempt.SuggestedFix</p>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </aside>
+    </div>
+</section>
+
+@code {
+    private readonly List<ActionSummary> actions = [];
+    private readonly List<NodeSummary> nodes = [];
+    private readonly List<StoreSummary> stores = [];
+    private ActionDetail? selectedAction;
+    private string? filterStatus;
+    private string? filterActionType;
+    private string? errorMessage;
+    private string? successMessage;
+    private bool isLoading;
+    private bool isSaving;
+    private bool showEnqueueForm;
+    private string enqueueActionType = "probe_health";
+    private string enqueueNodePublicId = string.Empty;
+    private string enqueueStorePublicId = string.Empty;
+    private string enqueueIdempotencyKey = string.Empty;
+    private string enqueueCorrelationId = string.Empty;
+    private string enqueuePayloadJson = "{}";
+
+    private bool CanCancelSelected => selectedAction?.Status is "queued" or "running" or "failed";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReferenceDataAsync();
+        await LoadActionsAsync();
+    }
+
+    private async Task LoadReferenceDataAsync()
+    {
+        try
+        {
+            var nodeResponse = await NodeClient.ListAsync(search: null, status: null, cursor: null);
+            nodes.Clear();
+            nodes.AddRange(nodeResponse.Items.Where(node => node.Status != "disabled"));
+
+            var storeResponse = await StoreClient.ListAsync(status: "active");
+            stores.Clear();
+            stores.AddRange(storeResponse.Items);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private async Task LoadActionsAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            var response = await ActionClient.ListAsync(filterStatus, filterActionType);
+            actions.Clear();
+            actions.AddRange(response.Items);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OpenEnqueueForm()
+    {
+        showEnqueueForm = true;
+        enqueueNodePublicId = nodes.FirstOrDefault()?.PublicId.ToString() ?? string.Empty;
+        enqueueCorrelationId = Guid.NewGuid().ToString("N");
+        enqueueIdempotencyKey = string.Empty;
+        enqueuePayloadJson = "{}";
+    }
+
+    private void CloseEnqueueForm()
+    {
+        showEnqueueForm = false;
+    }
+
+    private async Task EnqueueAsync()
+    {
+        if (!Guid.TryParse(enqueueNodePublicId, out var nodePublicId))
+        {
+            errorMessage = "Select a node.";
+            return;
+        }
+
+        Guid? storePublicId = null;
+        if (enqueueActionType == "sync_store_placeholder")
+        {
+            if (!Guid.TryParse(enqueueStorePublicId, out var parsedStorePublicId))
+            {
+                errorMessage = "Select a store for sync_store_placeholder.";
+                return;
+            }
+
+            storePublicId = parsedStorePublicId;
+        }
+
+        isSaving = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var result = await ActionClient.EnqueueAsync(new ActionEnqueueRequest(
+                nodePublicId,
+                enqueueActionType,
+                string.IsNullOrWhiteSpace(enqueueIdempotencyKey) ? null : enqueueIdempotencyKey,
+                storePublicId,
+                enqueuePayloadJson,
+                string.IsNullOrWhiteSpace(enqueueCorrelationId) ? null : enqueueCorrelationId));
+
+            if (!result.Success)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            selectedAction = result.Action;
+            successMessage = "Action queued.";
+            showEnqueueForm = false;
+            await LoadActionsAsync();
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task LoadDetailAsync(Guid publicId)
+    {
+        errorMessage = null;
+        selectedAction = await ActionClient.GetAsync(publicId);
+        if (selectedAction is null)
+        {
+            errorMessage = "Action was not found.";
+        }
+    }
+
+    private async Task CancelSelectedAsync()
+    {
+        if (selectedAction is null)
+        {
+            return;
+        }
+
+        isSaving = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var result = await ActionClient.CancelAsync(selectedAction.PublicId);
+            selectedAction = result.Action ?? selectedAction;
+            successMessage = result.Success ? "Action cancelled." : null;
+            errorMessage = result.Success ? null : result.Message;
+            await LoadActionsAsync();
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private bool StoreBelongsToSelectedNode(StoreSummary store)
+    {
+        return Guid.TryParse(enqueueNodePublicId, out var nodePublicId) && store.NodePublicId == nodePublicId;
+    }
+
+    private static string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "queued" => "rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700",
+            "running" => "rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700",
+            "succeeded" => "rounded-full bg-green-50 px-2 py-1 text-xs font-semibold text-green-700",
+            "failed" => "rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-700",
+            "cancelled" => "rounded-full bg-ink-100 px-2 py-1 text-xs font-semibold text-ink-600",
+            _ => "rounded-full bg-ink-100 px-2 py-1 text-xs font-semibold text-ink-600"
+        };
+    }
+}

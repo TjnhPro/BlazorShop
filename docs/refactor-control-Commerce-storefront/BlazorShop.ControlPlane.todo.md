@@ -834,18 +834,26 @@ Verification:
 
 ### Phase 8 - Control Actions
 
-- [ ] Implement `control_action` enqueue for `probe_health`, `fetch_capabilities`, and placeholder store sync.
-- [ ] Implement `control_action_attempt` retry recording.
-- [ ] Add idempotency key handling.
-- [ ] Add UI: Actions list and action detail.
-- [ ] Add correlation id propagation.
-- [ ] Add tests for retry, timeout, cancellation, duplicate idempotency.
+- [x] Implement `control_action` enqueue for `probe_health`, `fetch_capabilities`, and placeholder store sync.
+- [x] Implement `control_action_attempt` retry recording.
+- [x] Add idempotency key handling.
+- [x] Add UI: Actions list and action detail.
+- [x] Add correlation id propagation.
+- [x] Add tests for retry, timeout, cancellation, duplicate idempotency.
 
 Acceptance:
 
 - Duplicate action with same node/idempotency key does not dispatch twice.
 - Every attempt is visible in action detail.
 - Failed actions have problem, cause, and suggested fix.
+
+Verification:
+
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj` passes with 0 warnings.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj` passes with 0 warnings; Tailwind emits only the existing Browserslist database warning.
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~ControlPlaneActionServiceTests|FullyQualifiedName~ControlPlaneAuthorizationTests"` passes 11 tests.
+- Control Action API exposes list, detail, enqueue, attempt recording, and cancel endpoints behind `actions.read` and `nodes.write` policies.
+- Control Plane Web now has an Actions page with API-backed filtering, enqueue form, action detail, attempts, failure guidance, and cancellation.
 
 ### Phase 9 - Operator Dashboard
 
