@@ -398,21 +398,21 @@ Database:
 
 API:
 
-- [ ] Add `StorefrontRecommendationsController`.
-- [ ] Add `StorefrontPaymentsController`.
-- [ ] Add `StorefrontNewsletterController`.
-- [ ] Migrate `ProductRecommendationController.GetRecommendations`.
-- [ ] Migrate `PaymentController.GetPaymentMethods`.
-- [ ] Review and migrate `PaymentController.CapturePayPal`.
-- [ ] Migrate `NewsletterController.Subscribe`.
+- [x] Add `StorefrontRecommendationsController`.
+- [x] Add `StorefrontPaymentsController`.
+- [x] Add `StorefrontNewsletterController`.
+- [x] Migrate `ProductRecommendationController.GetRecommendations`.
+- [x] Migrate `PaymentController.GetPaymentMethods`.
+- [x] Review and migrate `PaymentController.CapturePayPal`.
+- [x] Migrate `NewsletterController.Subscribe`.
 
 Services:
 
-- [ ] Add `CommerceNodeProductRecommendationRepository`.
-- [ ] Add `CommerceNodePaymentMethodRepository`.
-- [ ] Reuse `ProductRecommendationService`.
-- [ ] Reuse `PaymentMethodService`.
-- [ ] Reuse `NewsletterService` if email side effects are acceptable.
+- [x] Add `CommerceNodeProductRecommendationRepository`.
+- [x] Add `CommerceNodePaymentMethodRepository`.
+- [x] Reuse `ProductRecommendationService`.
+- [x] Reuse `PaymentMethodService`.
+- [x] Reuse `NewsletterService` if email side effects are acceptable.
 - [ ] If email side effects are not ready, add Commerce Node newsletter service variant that stores subscription and defers email.
 
 QA:

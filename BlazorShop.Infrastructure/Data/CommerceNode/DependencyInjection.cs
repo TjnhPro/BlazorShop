@@ -2,9 +2,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 {
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.Mapping;
+    using BlazorShop.Application.Options;
     using BlazorShop.Application.Services;
     using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Application.Services.Contracts.Admin;
+    using BlazorShop.Application.Services.Contracts.Logging;
+    using BlazorShop.Application.Services.Contracts.Payment;
+    using BlazorShop.Application.Services.Payment;
     using BlazorShop.Application.Validations;
     using BlazorShop.Application.Validations.Seo;
     using BlazorShop.Domain.Contracts;
@@ -14,6 +18,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
     using BlazorShop.Domain.Contracts.Seo;
     using BlazorShop.Infrastructure.Data.CommerceNode.Repositories;
     using BlazorShop.Infrastructure.Data.CommerceNode.Services;
+    using BlazorShop.Infrastructure.Services;
 
     using FluentValidation;
 
@@ -44,11 +49,19 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddHttpContextAccessor();
             services.AddAutoMapper(cfg => cfg.AddProfile<MappingConfig>());
             services.AddValidatorsFromAssemblyContaining<SeoRedirectDtoValidator>();
+            services.AddMemoryCache();
+            services.Configure<RecommendationOptions>(configuration.GetSection(RecommendationOptions.SectionName));
+            services.AddOptions<ClientAppOptions>()
+                .Bind(configuration.GetSection(ClientAppOptions.SectionName));
             services.AddOptions<EmailSettings>()
                 .Bind(configuration.GetSection("EmailSettings"));
+            services.AddScoped(typeof(IAppLogger<>), typeof(LoggerAdapter<>));
+            services.AddTransient<IEmailService, EmailService>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(CommerceNodeGenericRepository<>));
             services.AddScoped<IProductReadRepository, CommerceNodeProductReadRepository>();
+            services.AddScoped<IProductRecommendationRepository, CommerceNodeProductRecommendationRepository>();
             services.AddScoped<ICategoryRepository, CommerceNodeCategoryRepository>();
+            services.AddScoped<IPaymentMethod, CommerceNodePaymentMethodRepository>();
             services.AddScoped<IOrderRepository, CommerceNodeOrderRepository>();
             services.AddScoped<INewsletterSubscriberRepository, CommerceNodeNewsletterSubscriberRepository>();
             services.AddScoped<ISeoSettingsRepository, CommerceNodeSeoSettingsRepository>();
@@ -62,6 +75,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IProductVariantService, ProductVariantService>();
             services.AddScoped<IPublicCatalogService, PublicCatalogService>();
+            services.AddScoped<IProductRecommendationService, ProductRecommendationService>();
+            services.AddScoped<IPaymentMethodService, PaymentMethodService>();
+            services.AddScoped<IPayPalPaymentService, PayPalPaymentService>();
+            services.AddScoped<INewsletterService, NewsletterService>();
             services.AddScoped<IAdminInventoryService, CommerceNodeAdminInventoryService>();
             services.AddScoped<IOrderTrackingService, CommerceNodeOrderTrackingService>();
             services.AddScoped<IAdminOrderService, CommerceNodeAdminOrderService>();
