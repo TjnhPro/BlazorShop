@@ -3,6 +3,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using BlazorShop.Application.ControlPlane.Audit;
     using BlazorShop.Application.ControlPlane.Actions;
     using BlazorShop.Application.ControlPlane.Credentials;
+    using BlazorShop.Application.ControlPlane.Dashboard;
     using BlazorShop.Application.ControlPlane.Health;
     using BlazorShop.Application.ControlPlane.Nodes;
     using BlazorShop.Application.ControlPlane.Security;
@@ -41,6 +42,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             services.AddScoped<IControlPlaneProfileService, ControlPlaneProfileService>();
             services.AddScoped<IControlPlaneNodeService, ControlPlaneNodeService>();
             services.AddScoped<IControlPlaneCredentialService, ControlPlaneCredentialService>();
+            services.AddScoped<IControlPlaneDashboardService, ControlPlaneDashboardService>();
             services.AddScoped<IControlPlaneHealthService, ControlPlaneHealthService>();
             services.AddScoped<IControlPlaneStoreService, ControlPlaneStoreService>();
             services.AddHostedService<ControlPlaneProbeBackgroundService>();

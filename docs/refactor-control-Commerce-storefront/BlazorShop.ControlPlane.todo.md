@@ -857,11 +857,11 @@ Verification:
 
 ### Phase 9 - Operator Dashboard
 
-- [ ] Full dashboard analytics are deferred.
-- [ ] Add the minimum shell/navigation needed to reach implemented pages.
-- [ ] Add dashboard counters: Total Nodes, Healthy Nodes, Warning Nodes, Down Nodes, Total Stores.
-- [ ] Link every counter to its filtered operational page.
-- [ ] Show empty and API unavailable states without fake health data.
+- [x] Full dashboard analytics are deferred.
+- [x] Add the minimum shell/navigation needed to reach implemented pages.
+- [x] Add dashboard counters: Total Nodes, Healthy Nodes, Warning Nodes, Down Nodes, Total Stores.
+- [x] Link every counter to its filtered operational page.
+- [x] Show empty and API unavailable states without fake health data.
 
 Acceptance:
 
@@ -869,6 +869,14 @@ Acceptance:
 - Dashboard only summarizes persisted node/store state.
 - Dashboard does not pretend platform health is complete before probes have produced snapshots.
 - Full dashboard is tracked as a later UX milestone.
+
+Verification:
+
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj` passes with 0 warnings.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj` passes with 0 warnings; Tailwind emits only the existing Browserslist database warning.
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~ControlPlaneDashboardServiceTests|FullyQualifiedName~ControlPlaneAuthorizationTests"` passes 6 tests.
+- Dashboard API summarizes persisted node/store counts from PostgreSQL-backed Control Plane data.
+- Control Plane Web dashboard now loads real counters, handles API errors, and links node status counters to filtered Nodes views.
 
 ### Phase 10 - Hardening
 

@@ -202,6 +202,9 @@
 
 @code {
     private readonly List<NodeSummary> nodes = [];
+    [SupplyParameterFromQuery(Name = "status")]
+    public string? StatusFromQuery { get; set; }
+
     private string? search;
     private string? status;
     private string? nextCursor;
@@ -211,6 +214,7 @@
     private bool isSaving;
     private bool showCreateForm;
     private NodeDetail? selectedNode;
+    private bool initialized;
 
     private string createNodeKey = string.Empty;
     private string createName = string.Empty;
@@ -219,7 +223,24 @@
 
     protected override async Task OnInitializedAsync()
     {
+        status = StatusFromQuery;
+        initialized = true;
         await LoadNodesAsync(reset: true);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!initialized)
+        {
+            status = StatusFromQuery;
+            return;
+        }
+
+        if (!string.Equals(status, StatusFromQuery, StringComparison.Ordinal))
+        {
+            status = StatusFromQuery;
+            await LoadNodesAsync(reset: true);
+        }
     }
 
     private async Task ApplyFiltersAsync()

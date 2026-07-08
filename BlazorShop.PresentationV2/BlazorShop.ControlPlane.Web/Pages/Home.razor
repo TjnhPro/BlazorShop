@@ -1,4 +1,5 @@
 @page "/"
+@inject IControlPlaneDashboardClient DashboardClient
 
 <PageTitle>Control Plane Dashboard</PageTitle>
 
@@ -7,29 +8,34 @@
         <div>
             <p class="text-sm font-semibold text-control-700">Dashboard</p>
             <h1 class="text-2xl font-bold text-ink-900">Operational summary</h1>
-            <p class="mt-1 text-sm text-ink-500">Counters will summarize persisted Control Plane node and store state.</p>
+            <p class="mt-1 text-sm text-ink-500">Counters summarize persisted Control Plane node and store state.</p>
         </div>
-        <button class="cp-button cp-button-primary">
+        <button class="cp-button cp-button-primary" disabled="@isLoading" @onclick="LoadSummaryAsync">
             <i class="fa-solid fa-rotate" aria-hidden="true"></i>
             Refresh
         </button>
     </div>
 
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">@errorMessage</div>
+    }
+
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        @foreach (var metric in Metrics)
+        @foreach (var metric in BuildMetrics())
         {
-            <div class="cp-card p-4">
+            <a class="cp-card block p-4 transition hover:border-control-300 hover:shadow-sm" href="@metric.Href">
                 <div class="flex items-center justify-between gap-3">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wide text-ink-500">@metric.Label</p>
-                        <p class="mt-2 text-3xl font-bold text-ink-900">@metric.Value</p>
+                        <p class="mt-2 text-3xl font-bold text-ink-900">@(isLoading ? "-" : metric.Value.ToString())</p>
                     </div>
                     <span class="@metric.IconClass">
                         <i class="@metric.Icon" aria-hidden="true"></i>
                     </span>
                 </div>
                 <p class="mt-3 text-xs text-ink-500">@metric.Hint</p>
-            </div>
+            </a>
         }
     </div>
 
@@ -41,8 +47,8 @@
             </div>
             <div class="mt-6 rounded-md border border-dashed border-ink-300 p-6 text-center">
                 <i class="fa-solid fa-server mb-3 text-xl text-ink-400" aria-hidden="true"></i>
-                <p class="text-sm font-semibold text-ink-700">No node health snapshots yet</p>
-                <p class="mt-1 text-sm text-ink-500">Phase 2 and later will persist node state before this list is populated.</p>
+                <p class="text-sm font-semibold text-ink-700">@GetNodeEmptyTitle()</p>
+                <p class="mt-1 text-sm text-ink-500">Use Health to run probes; this dashboard only summarizes persisted node status.</p>
             </div>
         </section>
 
@@ -53,22 +59,68 @@
             </div>
             <div class="mt-6 rounded-md border border-dashed border-ink-300 p-6 text-center">
                 <i class="fa-solid fa-clipboard-list mb-3 text-xl text-ink-400" aria-hidden="true"></i>
-                <p class="text-sm font-semibold text-ink-700">No audit entries yet</p>
-                <p class="mt-1 text-sm text-ink-500">Security-sensitive actions will appear here after the audit store exists.</p>
+                <p class="text-sm font-semibold text-ink-700">No audit records yet</p>
+                <p class="mt-1 text-sm text-ink-500">Use Audit Logs to search security-sensitive Control Plane changes.</p>
             </div>
         </section>
     </div>
 </section>
 
 @code {
-    private static readonly MetricModel[] Metrics =
-    [
-        new("Total Nodes", "0", "Registered Commerce Nodes", "fa-solid fa-server", "grid size-10 place-items-center rounded-md bg-ink-100 text-ink-700"),
-        new("Healthy Nodes", "0", "Latest persisted status is healthy", "fa-solid fa-circle-check", "grid size-10 place-items-center rounded-md bg-emerald-50 text-emerald-700"),
-        new("Warning Nodes", "0", "Latest persisted status is warning", "fa-solid fa-triangle-exclamation", "grid size-10 place-items-center rounded-md bg-amber-50 text-amber-700"),
-        new("Down Nodes", "0", "Latest persisted status is down", "fa-solid fa-circle-xmark", "grid size-10 place-items-center rounded-md bg-red-50 text-red-700"),
-        new("Total Stores", "0", "Registered store metadata", "fa-solid fa-store", "grid size-10 place-items-center rounded-md bg-blue-50 text-blue-700")
-    ];
+    private DashboardSummary? summary;
+    private string? errorMessage;
+    private bool isLoading;
 
-    private sealed record MetricModel(string Label, string Value, string Hint, string Icon, string IconClass);
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSummaryAsync();
+    }
+
+    private async Task LoadSummaryAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            summary = await DashboardClient.GetSummaryAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+            summary = new DashboardSummary(0, 0, 0, 0, 0);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private IReadOnlyList<MetricModel> BuildMetrics()
+    {
+        var current = summary ?? new DashboardSummary(0, 0, 0, 0, 0);
+
+        return
+        [
+            new("Total Nodes", current.TotalNodes, "Registered Commerce Nodes", "nodes", "fa-solid fa-server", "grid size-10 place-items-center rounded-md bg-ink-100 text-ink-700"),
+            new("Healthy Nodes", current.HealthyNodes, "Latest persisted status is healthy", "nodes?status=healthy", "fa-solid fa-circle-check", "grid size-10 place-items-center rounded-md bg-emerald-50 text-emerald-700"),
+            new("Warning Nodes", current.WarningNodes, "Latest persisted status is warning", "nodes?status=warning", "fa-solid fa-triangle-exclamation", "grid size-10 place-items-center rounded-md bg-amber-50 text-amber-700"),
+            new("Down Nodes", current.DownNodes, "Latest persisted status is down", "nodes?status=down", "fa-solid fa-circle-xmark", "grid size-10 place-items-center rounded-md bg-red-50 text-red-700"),
+            new("Total Stores", current.TotalStores, "Registered store metadata", "stores", "fa-solid fa-store", "grid size-10 place-items-center rounded-md bg-blue-50 text-blue-700")
+        ];
+    }
+
+    private string GetNodeEmptyTitle()
+    {
+        if (summary is null || summary.TotalNodes == 0)
+        {
+            return "No nodes registered";
+        }
+
+        return summary.DownNodes == 0 && summary.WarningNodes == 0
+            ? "No unhealthy nodes"
+            : "Open Nodes for filtered status details";
+    }
+
+    private sealed record MetricModel(string Label, int Value, string Hint, string Href, string Icon, string IconClass);
 }
