@@ -124,6 +124,10 @@ namespace BlazorShop.Domain.Entities.ControlPlane
 
         public string NodeKey { get; set; } = string.Empty;
 
+        public string? NodeSecret { get; set; }
+
+        public DateTimeOffset? NodeSecretUpdatedAt { get; set; }
+
         public string Name { get; set; } = string.Empty;
 
         public string Status { get; set; } = "unknown";

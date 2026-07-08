@@ -287,6 +287,8 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 entity.Property(node => node.Id).HasColumnName("id").UseIdentityAlwaysColumn();
                 entity.Property(node => node.PublicId).HasColumnName("public_id").HasDefaultValueSql("gen_random_uuid()");
                 entity.Property(node => node.NodeKey).HasColumnName("node_key").HasColumnType("text").IsRequired();
+                entity.Property(node => node.NodeSecret).HasColumnName("node_secret").HasColumnType("text");
+                entity.Property(node => node.NodeSecretUpdatedAt).HasColumnName("node_secret_updated_at").HasColumnType("timestamp with time zone");
                 entity.Property(node => node.Name).HasColumnName("name").HasColumnType("text").IsRequired();
                 entity.Property(node => node.Status).HasColumnName("status").HasColumnType("text").IsRequired();
                 entity.Property(node => node.Description).HasColumnName("description").HasColumnType("text");
