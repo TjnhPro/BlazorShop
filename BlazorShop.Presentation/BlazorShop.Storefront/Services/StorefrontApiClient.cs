@@ -25,6 +25,12 @@ namespace BlazorShop.Storefront.Services
         private const string InternalCategoriesRoute = InternalCatalogBaseRoute + "/categories";
         private const string InternalProductsRoute = InternalCatalogBaseRoute + "/products";
         private const string SeoSettingsRoute = InternalSeoBaseRoute + "/settings";
+        private const string LegacyCatalogBaseRoute = "public/catalog";
+        private const string LegacySeoRedirectsBaseRoute = "public/seo/redirects";
+        private const string LegacyCatalogSitemapRoute = LegacyCatalogBaseRoute + "/sitemap";
+        private const string LegacyCategoriesRoute = LegacyCatalogBaseRoute + "/categories";
+        private const string LegacyProductsRoute = LegacyCatalogBaseRoute + "/products";
+        private const string LegacySeoSettingsRoute = "seo/settings";
 
         private readonly HttpClient _httpClient;
 
@@ -35,7 +41,11 @@ namespace BlazorShop.Storefront.Services
 
         public async Task<StorefrontApiResult<IReadOnlyList<GetCategory>>> GetPublishedCategoriesAsync(CancellationToken cancellationToken = default)
         {
-            var result = await GetAsync<List<GetCategory>>(InternalCategoriesRoute, cancellationToken, []);
+            var result = await GetAsyncWithFallback<List<GetCategory>>(
+                InternalCategoriesRoute,
+                LegacyCategoriesRoute,
+                cancellationToken,
+                []);
 
             return result.IsSuccess && result.Value is not null
                 ? StorefrontApiResult<IReadOnlyList<GetCategory>>.Success(result.Value)
@@ -46,22 +56,40 @@ namespace BlazorShop.Storefront.Services
 
         public Task<StorefrontApiResult<GetPublicCatalogSitemap>> GetPublishedSitemapAsync(CancellationToken cancellationToken = default)
         {
-            return GetAsync(InternalCatalogSitemapRoute, cancellationToken, new GetPublicCatalogSitemap(), CatalogRequestTimeout);
+            return GetAsyncWithFallback(
+                InternalCatalogSitemapRoute,
+                LegacyCatalogSitemapRoute,
+                cancellationToken,
+                new GetPublicCatalogSitemap(),
+                CatalogRequestTimeout);
         }
 
         public Task<StorefrontApiResult<PagedResult<GetCatalogProduct>>> GetPublishedCatalogPageAsync(ProductCatalogQuery query, CancellationToken cancellationToken = default)
         {
-            return GetAsync(BuildCatalogRoute(query), cancellationToken, new PagedResult<GetCatalogProduct>(), CatalogRequestTimeout);
+            return GetAsyncWithFallback(
+                BuildCatalogRoute(query, InternalProductsRoute),
+                BuildCatalogRoute(query, LegacyProductsRoute),
+                cancellationToken,
+                new PagedResult<GetCatalogProduct>(),
+                CatalogRequestTimeout);
         }
 
         public Task<StorefrontApiResult<GetCategoryPage>> GetPublishedCategoryBySlugAsync(string slug, CancellationToken cancellationToken = default)
         {
-            return GetMaybeNotFoundAsync<GetCategoryPage>($"{InternalCategoriesRoute}/slug/{Uri.EscapeDataString(slug)}", cancellationToken, CatalogRequestTimeout);
+            return GetMaybeNotFoundWithFallbackAsync<GetCategoryPage>(
+                $"{InternalCategoriesRoute}/slug/{Uri.EscapeDataString(slug)}",
+                $"{LegacyCategoriesRoute}/slug/{Uri.EscapeDataString(slug)}",
+                cancellationToken,
+                CatalogRequestTimeout);
         }
 
         public Task<StorefrontApiResult<GetProduct>> GetPublishedProductBySlugAsync(string slug, CancellationToken cancellationToken = default)
         {
-            return GetMaybeNotFoundAsync<GetProduct>($"{InternalProductsRoute}/slug/{Uri.EscapeDataString(slug)}", cancellationToken, CatalogRequestTimeout);
+            return GetMaybeNotFoundWithFallbackAsync<GetProduct>(
+                $"{InternalProductsRoute}/slug/{Uri.EscapeDataString(slug)}",
+                $"{LegacyProductsRoute}/slug/{Uri.EscapeDataString(slug)}",
+                cancellationToken,
+                CatalogRequestTimeout);
         }
 
         public Task<StorefrontApiResult<GetProduct>> GetProductByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -71,17 +99,74 @@ namespace BlazorShop.Storefront.Services
                 return Task.FromResult(StorefrontApiResult<GetProduct>.NotFound());
             }
 
-            return GetMaybeNotFoundAsync<GetProduct>($"{InternalProductsRoute}/{id}", cancellationToken, CatalogRequestTimeout);
+            return GetMaybeNotFoundWithFallbackAsync<GetProduct>(
+                $"{InternalProductsRoute}/{id}",
+                $"product/single/{id}",
+                cancellationToken,
+                CatalogRequestTimeout);
         }
 
         public Task<StorefrontApiResult<GetSeoSettings>> GetSeoSettingsAsync(CancellationToken cancellationToken = default)
         {
-            return GetAsync<GetSeoSettings>(SeoSettingsRoute, cancellationToken, requestTimeout: SeoSettingsRequestTimeout);
+            return GetAsyncWithFallback<GetSeoSettings>(
+                SeoSettingsRoute,
+                LegacySeoSettingsRoute,
+                cancellationToken,
+                requestTimeout: SeoSettingsRequestTimeout);
         }
 
         public Task<StorefrontApiResult<SeoRedirectResolutionDto>> GetRedirectResolutionAsync(string path, CancellationToken cancellationToken = default)
         {
-            return GetMaybeNotFoundAsync<SeoRedirectResolutionDto>($"{InternalSeoBaseRoute}/redirects/resolve?path={Uri.EscapeDataString(path)}", cancellationToken, RedirectResolutionRequestTimeout);
+            return GetMaybeNotFoundWithFallbackAsync<SeoRedirectResolutionDto>(
+                $"{InternalSeoBaseRoute}/redirects/resolve?path={Uri.EscapeDataString(path)}",
+                $"{LegacySeoRedirectsBaseRoute}/resolve?path={Uri.EscapeDataString(path)}",
+                cancellationToken,
+                RedirectResolutionRequestTimeout);
+        }
+
+        private async Task<StorefrontApiResult<T>> GetAsyncWithFallback<T>(
+            string route,
+            string fallbackRoute,
+            CancellationToken cancellationToken,
+            T? fallbackValue = default,
+            TimeSpan? requestTimeout = null)
+        {
+            var result = await GetAsync<T>(route, cancellationToken, requestTimeout: requestTimeout);
+            if (result.IsSuccess)
+            {
+                return result;
+            }
+
+            try
+            {
+                return await GetAsync(fallbackRoute, cancellationToken, fallbackValue, requestTimeout);
+            }
+            catch (ObjectDisposedException)
+            {
+                return result;
+            }
+        }
+
+        private async Task<StorefrontApiResult<T>> GetMaybeNotFoundWithFallbackAsync<T>(
+            string route,
+            string fallbackRoute,
+            CancellationToken cancellationToken,
+            TimeSpan requestTimeout)
+        {
+            var result = await GetMaybeNotFoundAsync<T>(route, cancellationToken, requestTimeout);
+            if (result.IsSuccess)
+            {
+                return result;
+            }
+
+            try
+            {
+                return await GetMaybeNotFoundAsync<T>(fallbackRoute, cancellationToken, requestTimeout);
+            }
+            catch (ObjectDisposedException)
+            {
+                return result;
+            }
         }
 
         private async Task<StorefrontApiResult<T>> GetAsync<T>(string route, CancellationToken cancellationToken, T? fallbackValue = default, TimeSpan? requestTimeout = null)
@@ -156,7 +241,7 @@ namespace BlazorShop.Storefront.Services
             return requestTimeoutToken;
         }
 
-        private static string BuildCatalogRoute(ProductCatalogQuery query)
+        private static string BuildCatalogRoute(ProductCatalogQuery query, string productsRoute)
         {
             var parameters = new List<string>
             {
@@ -180,7 +265,7 @@ namespace BlazorShop.Storefront.Services
                 parameters.Add($"createdAfterUtc={Uri.EscapeDataString(query.CreatedAfterUtc.Value.ToString("O", CultureInfo.InvariantCulture))}");
             }
 
-            return $"{InternalProductsRoute}?{string.Join("&", parameters)}";
+            return $"{productsRoute}?{string.Join("&", parameters)}";
         }
 
         private static async Task<T?> ReadPayloadAsync<T>(HttpResponseMessage response, CancellationToken cancellationToken)
