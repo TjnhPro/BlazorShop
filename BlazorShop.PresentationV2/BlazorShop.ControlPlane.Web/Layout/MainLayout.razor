@@ -17,10 +17,24 @@
                         <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
                         API Ready
                     </span>
-                    <button class="cp-button" title="User menu">
-                        <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
-                        <span class="hidden sm:inline">Operator</span>
-                    </button>
+                    <AuthorizeView>
+                        <Authorized Context="authContext">
+                            <div class="hidden min-w-0 text-right sm:block">
+                                <div class="truncate text-sm font-semibold text-ink-800">@ResolveActor(authContext.User)</div>
+                                <div class="text-xs text-ink-500">Signed in</div>
+                            </div>
+                            <a class="cp-button" href="logout" title="Sign out">
+                                <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+                                <span class="hidden sm:inline">Logout</span>
+                            </a>
+                        </Authorized>
+                        <NotAuthorized>
+                            <a class="cp-button" href="login" title="Sign in">
+                                <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+                                <span class="hidden sm:inline">Login</span>
+                            </a>
+                        </NotAuthorized>
+                    </AuthorizeView>
                 </div>
             </div>
         </div>
@@ -34,3 +48,13 @@
         </article>
     </main>
 </div>
+
+@code {
+    private static string ResolveActor(System.Security.Claims.ClaimsPrincipal user)
+    {
+        return user.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+               ?? user.FindFirst("email")?.Value
+               ?? user.Identity?.Name
+               ?? "Operator";
+    }
+}

@@ -6,16 +6,19 @@ using BlazorShop.Web.Shared.BrowserStorage;
 using BlazorShop.Web.Shared.BrowserStorage.Contracts;
 using BlazorShop.Web.Shared.CookieStorage;
 using BlazorShop.Web.Shared.CookieStorage.Contracts;
+using BlazorShop.Web.Shared.Authentication;
 using BlazorShop.Web.Shared.Helper;
 using BlazorShop.Web.Shared.Helper.Contracts;
 using BlazorShop.Web.Shared.Services;
 using BlazorShop.Web.Shared.Services.Contracts;
+using BlazorShop.ControlPlane.Web.Services.Authentication;
 using BlazorShop.ControlPlane.Web.Services.Actions;
 using BlazorShop.ControlPlane.Web.Services.Credentials;
 using BlazorShop.ControlPlane.Web.Services.Dashboard;
 using BlazorShop.ControlPlane.Web.Services.Health;
 using BlazorShop.ControlPlane.Web.Services.Nodes;
 using BlazorShop.ControlPlane.Web.Services.Stores;
+using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -30,6 +33,16 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IHttpClientHelper, HttpClientHelper>();
 builder.Services.AddScoped<IApiCallHelper, ApiCallHelper>();
 builder.Services.AddSingleton<IToastService, ToastService>();
+builder.Services.AddScoped<BlazorShop.Web.Shared.Services.Contracts.IAuthenticationService, ControlPlaneAuthenticationService>();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+builder.Services.AddScoped<IAuthenticationStateNotifier, AuthenticationStateNotifier>();
+builder.Services.AddScoped<IAuthenticatedClientStateCleaner, AuthenticatedClientStateCleaner>();
+builder.Services.AddScoped<IAuthenticationSessionRefresher, AuthenticationSessionRefresher>();
+builder.Services.AddScoped<IAuthenticationSessionBootstrapper, AuthenticationSessionBootstrapper>();
+builder.Services.AddScoped<IAuthenticationSessionEventPublisher, AuthenticationSessionEventPublisher>();
+builder.Services.AddScoped<IAuthenticationSessionSyncService, AuthenticationSessionSyncService>();
+builder.Services.AddScoped<BrowserCredentialsHandler>();
+builder.Services.AddScoped<RefreshTokenHandler>();
 builder.Services.AddScoped<IControlPlaneActionClient, ControlPlaneActionClient>();
 builder.Services.AddScoped<IControlPlaneCredentialClient, ControlPlaneCredentialClient>();
 builder.Services.AddScoped<IControlPlaneDashboardClient, ControlPlaneDashboardClient>();
@@ -38,12 +51,19 @@ builder.Services.AddScoped<IControlPlaneNodeClient, ControlPlaneNodeClient>();
 builder.Services.AddScoped<IControlPlaneStoreClient, ControlPlaneStoreClient>();
 builder.Services.AddHttpClient(
     Constant.ApiClient.PublicName,
-    client => client.BaseAddress = apiBaseAddress);
+    client => client.BaseAddress = apiBaseAddress)
+    .AddHttpMessageHandler<BrowserCredentialsHandler>();
 builder.Services.AddHttpClient(
     Constant.ApiClient.PrivateName,
-    client => client.BaseAddress = apiBaseAddress);
+    client => client.BaseAddress = apiBaseAddress)
+    .AddHttpMessageHandler<BrowserCredentialsHandler>()
+    .AddHttpMessageHandler<RefreshTokenHandler>();
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddAuthorizationCore();
 
-await builder.Build().RunAsync();
+var host = builder.Build();
+await host.Services.GetRequiredService<IAuthenticationSessionBootstrapper>().RestoreAsync();
+await host.RunAsync();
 
 static Uri ResolveApiBaseAddress(WebAssemblyHostBuilder builder)
 {
