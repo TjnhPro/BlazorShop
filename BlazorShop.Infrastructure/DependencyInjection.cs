@@ -84,10 +84,12 @@
 
         public static IServiceCollection AddSharedAuthenticationInfrastructure(this IServiceCollection services, IConfiguration config)
         {
+            var authConnectionString = ResolveAuthConnectionString(config);
+
             services.AddDbContext<AppDbContext>(
                 opt => opt
                     .UseNpgsql(
-                        config.GetConnectionString("DefaultConnection"),
+                        authConnectionString,
                         npgsqlOptions =>
                             {
                                 npgsqlOptions.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName);
@@ -145,6 +147,12 @@
             services.AddTransient<IEmailService, EmailService>();
 
             return services;
+        }
+
+        private static string? ResolveAuthConnectionString(IConfiguration config)
+        {
+            return config.GetConnectionString("AuthConnection")
+                   ?? config.GetConnectionString("DefaultConnection");
         }
 
         public static IApplicationBuilder UseInfrastructure(this IApplicationBuilder app)

@@ -19,7 +19,8 @@ namespace BlazorShop.Infrastructure.Data
                 .AddEnvironmentVariables();
 
             var configuration = builder.Build();
-            var connectionString = configuration.GetConnectionString("DefaultConnection")
+            var connectionString = configuration.GetConnectionString("AuthConnection")
+                                   ?? configuration.GetConnectionString("DefaultConnection")
                                    ?? "Host=localhost;Port=5432;Database=blazorshop;Username=postgres;Password=change-me";
 
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
