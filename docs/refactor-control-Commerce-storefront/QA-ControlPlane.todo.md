@@ -112,9 +112,12 @@ Status legend:
 
 - [x] Node list loads. 2026-07-08: authenticated admin and auditor browser sessions loaded persisted QA nodes.
 - [n/a] Empty node list state is readable. 2026-07-08: QA DB contains seeded/test nodes; empty state not exercised in this run.
-- [x] Node create succeeds with valid data. 2026-07-08: admin browser created `qa-ui-node-*`; API created additional QA nodes.
+- [x] Node create succeeds with valid data. 2026-07-08: admin browser created `qa-ui-node-*`; API created additional QA nodes. 2026-07-08 Commerce Node phase: service/API contract now requires `node_secret`.
 - [x] Node create validates required fields. 2026-07-08: empty browser submit showed node-key validation message.
+- [x] Node create requires Commerce Node secret. 2026-07-08: `dotnet test` covers updated create validation path and all node fixtures use `test-node-secret`.
 - [~] Node create rejects duplicate node key. Service tests pass; live duplicate UI submit was not exercised in this run.
+- [x] Node edit can update name, description, Control API URL, and optionally node secret. 2026-07-08: Web Nodes detail panel now includes edit mode; solution build passed.
+- [x] Node detail does not expose raw node secret. 2026-07-08: DTO/Web expose only `HasNodeSecret` and `NodeSecretUpdatedAt`.
 - [x] Node detail loads. 2026-07-08: browser View opened node detail panel.
 - [x] Node detail shows endpoint/status metadata. 2026-07-08: browser detail panel showed status, Control API, description, and primary endpoint.
 - [x] Rotate API key succeeds. 2026-07-08: admin API rotate returned 200.
@@ -144,9 +147,24 @@ Status legend:
 - [n/a] Latest heartbeat is visible when available. 2026-07-08: no successful heartbeat sample existed in QA DB.
 - [x] Missing heartbeat state is readable. 2026-07-08: Health page showed `No heartbeat` / `No sample` states.
 - [n/a] Node dependency status is visible when available. 2026-07-08: no dependency snapshot existed in QA DB.
-- [~] Manual probe handles reachable node. Service tests pass; live reachable-node probe was not exercised in this run.
-- [~] Manual probe handles unreachable node. Service tests pass; live unreachable-node probe was not exercised in this run.
+- [x] Manual probe handles reachable node. 2026-07-08: service test verifies Control Plane calls `/api/commerce/healthz` with `X-Node-Key` and `X-Node-Secret`, parses success envelope, and persists healthy snapshot.
+- [x] Manual probe handles invalid Commerce Node credential. 2026-07-08: service test maps Commerce Node 401 envelope to `down` snapshot with `invalid_credentials`.
+- [~] Manual probe handles unreachable node. Service tests pass for request failure/timeouts; live unreachable-node probe was not exercised in this run.
 - [x] Health failure state does not break the page. 2026-07-08: unauthenticated 401 state renders without app crash.
+
+## Commerce Node MVP
+
+- [x] Commerce Node API project exists under `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API`. 2026-07-08: solution build includes the new project.
+- [x] Commerce Node uses a separate ecom DB boundary. 2026-07-08: `CommerceNodeDbContext` uses `CommerceNodeConnection` and does not inherit `AppDbContext`.
+- [x] Commerce Node DB context does not include Control Plane auth/registry tables. 2026-07-08: context exposes ecom DbSets only.
+- [x] Commerce Node options bind `NodeKey`, `NodeSecret`, and `AllowedControlPlaneIps`. 2026-07-08: options validate on startup.
+- [x] `GET /api/commerce/healthz` exists. 2026-07-08: project build passed with endpoint registered under `api/commerce`.
+- [x] `healthz` returns API response envelope. 2026-07-08: endpoint uses `CommerceNodeApiResponseWriter.Success`.
+- [x] Commerce Node rejects missing/wrong key or secret with envelope 401. 2026-07-08: local HTTP smoke returned 401 envelope for wrong `X-Node-Secret`.
+- [x] Commerce Node rejects disallowed IP with envelope 403. 2026-07-08: local HTTP smoke with allowlist excluding `127.0.0.1` returned 403 envelope.
+- [x] Control Plane probe uses `api/commerce/healthz`. 2026-07-08: `CommerceNodeControlClient` appends `/api/commerce/healthz`.
+- [x] Control Plane probe sends `X-Node-Key` and `X-Node-Secret`. 2026-07-08: service test asserts both headers.
+- [x] Control Plane probe no longer calls `/health` or `/capabilities` for MVP. 2026-07-08: capability snapshots are not created by MVP healthz tests.
 
 ## Actions
 
@@ -205,6 +223,8 @@ Status legend:
 - [ ] Add API integration tests for User Management list/create/status/role/permission flows.
 - [ ] Add Playwright smoke tests for User Management admin and restricted-user flows.
 - [ ] Add contract tests for Commerce Node heartbeat/probe payloads.
+- [ ] Add integration tests for Commerce Node `healthz` valid, invalid credential, and IP allowlist paths.
+- [ ] Add migration test for `commerce_node.node_secret` and `node_secret_updated_at`.
 
 ## QA Run History
 
@@ -217,3 +237,4 @@ Status legend:
 | 2026-07-08 | Codex | User Management implementation verification | Partial | Implemented database/API/Web phases and committed each phase. `dotnet build` passed for ControlPlane API and Web; migration applied successfully on clean `blazorshop_controlplane_user_management_qa`. Live browser/API QA for User Management remains pending. |
 | 2026-07-08 | Codex | User Management QA on clean database | Passed | Verified API and browser Users flows on clean `blazorshop_controlplane_user_management_live_qa3`. Found and fixed ISSUE-001 user-create transaction execution strategy and ISSUE-002 disabled Control Plane login blocking. API-backed Audit Logs search remains not implemented. |
 | 2026-07-08 | Codex | API response envelope migration | Passed | Verified `success/message/data` envelopes on clean `blazorshop_controlplane_api_response_qa` for success, validation, unauthorized, forbidden, not found, and conflict responses. Browser smoke verified admin login, Dashboard, Users page, and 0 console errors. |
+| 2026-07-08 | Codex | Commerce Node foundation implementation | Passed | Added Commerce Node API shell, ecom DB context boundary, credential/IP guard, `api/commerce/healthz`, Control Plane node secret storage/UI, and Control Plane healthz probe client. `dotnet test BlazorShop.Tests --no-restore` passed: 475 passed, 10 skipped. Local Commerce Node HTTP smoke passed: 200 valid, 401 wrong secret, 403 disallowed IP. |
