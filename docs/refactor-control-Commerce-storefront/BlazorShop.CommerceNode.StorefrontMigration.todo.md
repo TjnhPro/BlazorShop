@@ -332,22 +332,22 @@ Database:
 
 API:
 
-- [ ] Add `StorefrontCatalogController`.
-- [ ] Migrate `PublicCatalogController.GetCategories`.
-- [ ] Migrate `PublicCatalogController.GetSitemap`.
-- [ ] Migrate `PublicCatalogController.GetCategoryBySlug`.
-- [ ] Migrate `PublicCatalogController.GetProducts`.
-- [ ] Migrate `PublicCatalogController.GetProductBySlug`.
-- [ ] Migrate `ProductController.GetCatalog`.
-- [ ] Migrate `ProductController.GetSingle`.
-- [ ] Migrate `CategoryController.GetAll`.
-- [ ] Migrate `CategoryController.GetById`.
-- [ ] Migrate `CategoryController.GetProductsByCategory`.
+- [x] Add `StorefrontCatalogController`.
+- [x] Migrate `PublicCatalogController.GetCategories`.
+- [x] Migrate `PublicCatalogController.GetSitemap`.
+- [x] Migrate `PublicCatalogController.GetCategoryBySlug`.
+- [x] Migrate `PublicCatalogController.GetProducts`.
+- [x] Migrate `PublicCatalogController.GetProductBySlug`.
+- [x] Migrate `ProductController.GetCatalog`.
+- [x] Migrate `ProductController.GetSingle`.
+- [x] Migrate `CategoryController.GetAll`.
+- [x] Migrate `CategoryController.GetById`.
+- [x] Migrate `CategoryController.GetProductsByCategory`.
 
 Services:
 
-- [ ] Reuse `PublicCatalogService`.
-- [ ] Ensure `IPublicCatalogService` is registered in Commerce Node DI.
+- [x] Reuse `PublicCatalogService`.
+- [x] Ensure `IPublicCatalogService` is registered in Commerce Node DI.
 
 QA:
 
@@ -372,15 +372,15 @@ Database:
 
 API:
 
-- [ ] Add `StorefrontSeoController`.
-- [ ] Migrate `SeoSettingsController.Get`.
-- [ ] Migrate `PublicSeoRedirectsController.Resolve`.
+- [x] Add `StorefrontSeoController`.
+- [x] Migrate `SeoSettingsController.Get`.
+- [x] Migrate `PublicSeoRedirectsController.Resolve`.
 
 Services:
 
-- [ ] Reuse `SeoSettingsService`.
-- [ ] Reuse `SeoRedirectResolutionService`.
-- [ ] Ensure repository bindings point to Commerce Node.
+- [x] Reuse `SeoSettingsService`.
+- [x] Reuse `SeoRedirectResolutionService`.
+- [x] Ensure repository bindings point to Commerce Node.
 
 QA:
 

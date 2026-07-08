@@ -61,6 +61,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IProductVariantService, ProductVariantService>();
+            services.AddScoped<IPublicCatalogService, PublicCatalogService>();
             services.AddScoped<IAdminInventoryService, CommerceNodeAdminInventoryService>();
             services.AddScoped<IOrderTrackingService, CommerceNodeOrderTrackingService>();
             services.AddScoped<IAdminOrderService, CommerceNodeAdminOrderService>();
@@ -69,6 +70,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<ICategorySeoService, CategorySeoService>();
             services.AddScoped<ISeoSettingsService, SeoSettingsService>();
             services.AddScoped<ISeoRedirectService, SeoRedirectService>();
+            services.AddScoped<ISeoRedirectResolutionService, SeoRedirectResolutionService>();
             services.AddScoped<ISeoRedirectAutomationService, SeoRedirectAutomationService>();
             services.AddScoped<IMetricsService, MetricsService>();
 
