@@ -1,11 +1,8 @@
 namespace BlazorShop.ControlPlane.Web.Services.Actions
 {
     using System.Net;
-    using System.Net.Http.Json;
-    using System.Text.Json;
 
     using BlazorShop.ControlPlane.Web.Services.Common;
-    using BlazorShop.Web.Shared.Helper.Contracts;
 
     public interface IControlPlaneActionClient
     {
@@ -27,13 +24,10 @@ namespace BlazorShop.ControlPlane.Web.Services.Actions
 
     public sealed class ControlPlaneActionClient : IControlPlaneActionClient
     {
-        private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
-        private readonly IHttpClientHelper httpClientHelper;
         private readonly IControlPlaneApiClient apiClient;
 
-        public ControlPlaneActionClient(IHttpClientHelper httpClientHelper, IControlPlaneApiClient apiClient)
+        public ControlPlaneActionClient(IControlPlaneApiClient apiClient)
         {
-            this.httpClientHelper = httpClientHelper;
             this.apiClient = apiClient;
         }
 
@@ -125,40 +119,6 @@ namespace BlazorShop.ControlPlane.Web.Services.Actions
                 cancellationToken);
 
             return new ActionMutationResult(result.Success, result.Message, result.Data);
-        }
-
-        private static async Task<string> ResolveErrorMessageAsync(HttpResponseMessage response, string defaultMessage)
-        {
-            if (response.StatusCode == HttpStatusCode.Unauthorized)
-            {
-                return "Sign in with a Control Plane account that can manage actions.";
-            }
-
-            if (response.StatusCode == HttpStatusCode.Forbidden)
-            {
-                return "Your Control Plane account does not have permission for this action.";
-            }
-
-            if (response.Content is null)
-            {
-                return defaultMessage;
-            }
-
-            try
-            {
-                using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-                if (document.RootElement.TryGetProperty("message", out var messageElement)
-                    && messageElement.ValueKind == JsonValueKind.String
-                    && !string.IsNullOrWhiteSpace(messageElement.GetString()))
-                {
-                    return messageElement.GetString()!;
-                }
-            }
-            catch (JsonException)
-            {
-            }
-
-            return defaultMessage;
         }
     }
 

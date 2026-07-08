@@ -337,17 +337,17 @@ Commit: `feat(control-plane): wrap user management api responses`
 
 ## Phase 7 - Remove Old Client Error Parsing
 
-- [ ] Delete per-client `ResolveErrorMessageAsync` methods from:
-  - [ ] Node client
-  - [ ] Store client
-  - [ ] Credential client
-  - [ ] Health client
-  - [ ] Action client
-  - [ ] User client
-  - [ ] Authentication service
-- [ ] Remove duplicate local mutation result records where `ControlPlaneClientResult<T>` can replace them.
-- [ ] Keep feature-specific result types only where they add real domain meaning.
-- [ ] Ensure pages do not contain hard-coded permission/business error messages that duplicate API logic.
+- [x] Delete per-client `ResolveErrorMessageAsync` methods from:
+  - [x] Node client
+  - [x] Store client
+  - [x] Credential client
+  - [x] Health client
+  - [x] Action client
+  - [x] User client
+  - [x] Authentication service
+- [x] Remove duplicate local mutation result records where `ControlPlaneClientResult<T>` can replace them.
+- [x] Keep feature-specific result types only where they add real domain meaning.
+- [x] Ensure pages do not contain hard-coded permission/business error messages that duplicate API logic.
 
 Commit: `refactor(control-plane): centralize web api error handling`
 
