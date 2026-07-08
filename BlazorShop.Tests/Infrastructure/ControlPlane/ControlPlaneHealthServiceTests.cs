@@ -13,44 +13,46 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
     public class ControlPlaneHealthServiceTests
     {
         [Fact]
-        public async Task ProbeAsync_PersistsHealthySnapshotAndCapability()
+        public async Task ProbeAsync_PersistsHealthySnapshot()
         {
             await using var context = CreateContext();
             var node = await CreateNodeAsync(context);
             var service = CreateService(context, request =>
-                request.RequestUri!.AbsolutePath.EndsWith("/health", StringComparison.Ordinal)
-                    ? JsonResponse("""{"status":"healthy","dependencies":{"postgres":"healthy"}}""")
-                    : JsonResponse("""{"schemaVersion":"v1","features":["stores","health"]}"""));
+            {
+                Assert.Equal("/api/commerce/healthz", request.RequestUri!.AbsolutePath);
+                Assert.True(request.Headers.TryGetValues("X-Node-Key", out var nodeKeyValues));
+                Assert.Equal(node.NodeKey, Assert.Single(nodeKeyValues));
+                Assert.True(request.Headers.TryGetValues("X-Node-Secret", out var nodeSecretValues));
+                Assert.Equal("test-node-secret", Assert.Single(nodeSecretValues));
+                return JsonResponse("""{"success":true,"message":"Commerce Node is healthy.","data":{"status":"healthy","dependencies":{"postgres":"healthy"}}}""");
+            });
 
             var result = await service.ProbeAsync(node.PublicId);
             var persistedNode = await context.Nodes.SingleAsync();
 
             Assert.True(result.Success);
             Assert.Equal("healthy", result.Payload!.Health.Status);
-            Assert.True(result.Payload.CapabilityChanged);
+            Assert.False(result.Payload.CapabilityChanged);
             Assert.Equal("healthy", persistedNode.Status);
             Assert.NotNull(persistedNode.LastSeenAt);
             Assert.Equal(1, await context.NodeHealthSnapshots.CountAsync());
-            Assert.Equal(1, await context.NodeCapabilitySnapshots.CountAsync());
+            Assert.Equal(0, await context.NodeCapabilitySnapshots.CountAsync());
         }
 
         [Fact]
-        public async Task ProbeAsync_DoesNotDuplicateUnchangedCapabilitySnapshot()
+        public async Task ProbeAsync_DoesNotCreateCapabilitySnapshotForMvpHealthz()
         {
             await using var context = CreateContext();
             var node = await CreateNodeAsync(context);
-            var service = CreateService(context, request =>
-                request.RequestUri!.AbsolutePath.EndsWith("/health", StringComparison.Ordinal)
-                    ? JsonResponse("""{"status":"healthy"}""")
-                    : JsonResponse("""{"schemaVersion":"v1","features":["health"]}"""));
+            var service = CreateService(context, _ => JsonResponse("""{"success":true,"message":"ok","data":{"status":"healthy"}}"""));
 
             var first = await service.ProbeAsync(node.PublicId);
             var second = await service.ProbeAsync(node.PublicId);
 
-            Assert.True(first.Payload!.CapabilityChanged);
+            Assert.False(first.Payload!.CapabilityChanged);
             Assert.False(second.Payload!.CapabilityChanged);
             Assert.Equal(2, await context.NodeHealthSnapshots.CountAsync());
-            Assert.Equal(1, await context.NodeCapabilitySnapshots.CountAsync());
+            Assert.Equal(0, await context.NodeCapabilitySnapshots.CountAsync());
         }
 
         [Fact]
@@ -75,14 +77,17 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
         {
             await using var context = CreateContext();
             var node = await CreateNodeAsync(context);
-            var service = CreateService(context, _ => new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+            var service = CreateService(context, _ => new HttpResponseMessage(HttpStatusCode.Unauthorized)
+            {
+                Content = new StringContent("""{"success":false,"message":"Invalid Commerce Node credential.","data":null}""", System.Text.Encoding.UTF8, "application/json")
+            });
 
             var result = await service.ProbeAsync(node.PublicId);
 
             Assert.True(result.Success);
             Assert.Equal("down", result.Payload!.Health.Status);
-            Assert.Equal(503, result.Payload.Health.HttpStatusCode);
-            Assert.Equal("http_status", result.Payload.Health.ErrorCode);
+            Assert.Equal(401, result.Payload.Health.HttpStatusCode);
+            Assert.Equal("invalid_credentials", result.Payload.Health.ErrorCode);
         }
 
         [Fact]
@@ -117,7 +122,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
                 "test-node-secret",
                 "Test Node",
                 null,
-                "http://node.example/api/controlpanel"));
+                "http://node.example"));
 
             Assert.True(created.Success);
             return created.Payload!;

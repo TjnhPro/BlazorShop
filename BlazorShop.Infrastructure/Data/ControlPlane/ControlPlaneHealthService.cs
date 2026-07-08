@@ -82,12 +82,21 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 return ValidationFailed<ControlPlaneProbeResult>("Node does not have an active primary Control API endpoint.");
             }
 
+            if (string.IsNullOrWhiteSpace(node.NodeSecret))
+            {
+                return ValidationFailed<ControlPlaneProbeResult>("Node does not have a Commerce Node secret configured.");
+            }
+
             this.logger?.LogInformation(
                 "Starting Control Plane health probe for node {NodePublicId} at {ControlApiUrl}.",
                 node.PublicId,
                 endpoint.Url);
 
-            var probe = await this.controlClient.ProbeAsync(endpoint.Url, cancellationToken);
+            var probe = await this.controlClient.ProbeAsync(
+                endpoint.Url,
+                node.NodeKey,
+                node.NodeSecret,
+                cancellationToken);
             var now = DateTimeOffset.UtcNow;
             var health = new NodeHealthSnapshot
             {

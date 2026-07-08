@@ -4,6 +4,8 @@ namespace BlazorShop.Application.ControlPlane.Health
     {
         Task<CommerceNodeControlProbeResponse> ProbeAsync(
             string controlApiBaseUrl,
+            string nodeKey,
+            string nodeSecret,
             CancellationToken cancellationToken = default);
     }
 
