@@ -18,7 +18,7 @@ namespace BlazorShop.ControlPlane.API
             if (environment.IsDevelopment())
             {
                 var developmentSeeder = scope.ServiceProvider.GetRequiredService<ControlPlaneDevelopmentSeeder>();
-                await developmentSeeder.SeedPlatformOwnerAsync(cancellationToken);
+                await developmentSeeder.SeedConfiguredAccountsAsync(cancellationToken);
             }
         }
     }

@@ -10,16 +10,22 @@ Host=localhost;Port=5433;Database=blazorshop_controlplane;Username=blazorshop_co
 
 Control Plane auth tables are part of `ControlPlaneDbContext`. Do not run `AppDbContext` migrations against this database.
 
-To create a development platform owner, set seed values outside source control before starting the API:
+To create development admin and standard-user accounts, set seed values outside source control before starting the API:
 
 ```powershell
 $env:ControlPlane__SeedAdmin__Enabled = 'true'
 $env:ControlPlane__SeedAdmin__Email = 'admin@example.local'
 $env:ControlPlane__SeedAdmin__Password = '<dev-only-password>'
 $env:ControlPlane__SeedAdmin__DisplayName = 'Control Plane Admin'
+$env:ControlPlane__SeedAdmin__ControlPlaneRoleKey = 'platform_owner'
+$env:ControlPlane__SeedUser__Enabled = 'true'
+$env:ControlPlane__SeedUser__Email = 'user@example.local'
+$env:ControlPlane__SeedUser__Password = '<dev-only-password>'
+$env:ControlPlane__SeedUser__DisplayName = 'Control Plane User'
+$env:ControlPlane__SeedUser__ControlPlaneRoleKey = 'auditor'
 ```
 
-Then start `BlazorShop.ControlPlane.API`. Development startup applies `ControlPlaneDbContext` migrations and seeds the admin if the seed password is present.
+Then start `BlazorShop.ControlPlane.API`. Development startup applies `ControlPlaneDbContext` migrations and seeds the configured accounts when their seed passwords are present.
 
 If the local database was previously contaminated by `AppDbContext` migrations, reset it only after confirming local data can be discarded:
 

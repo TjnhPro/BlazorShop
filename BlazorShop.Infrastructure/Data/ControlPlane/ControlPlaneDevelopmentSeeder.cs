@@ -26,16 +26,51 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             this.configuration = configuration;
         }
 
-        public async Task SeedPlatformOwnerAsync(CancellationToken cancellationToken = default)
+        public async Task SeedConfiguredAccountsAsync(CancellationToken cancellationToken = default)
         {
-            if (!this.configuration.GetValue("ControlPlane:SeedAdmin:Enabled", false))
+            await this.SeedAccountAsync(
+                "SeedAdmin",
+                "Admin",
+                "platform_owner",
+                "Control Plane development admin seed failed",
+                cancellationToken);
+
+            await this.SeedAccountAsync(
+                "SeedUser",
+                "User",
+                "auditor",
+                "Control Plane development user seed failed",
+                cancellationToken);
+        }
+
+        public Task SeedPlatformOwnerAsync(CancellationToken cancellationToken = default)
+        {
+            return this.SeedAccountAsync(
+                "SeedAdmin",
+                "Admin",
+                "platform_owner",
+                "Control Plane development admin seed failed",
+                cancellationToken);
+        }
+
+        private async Task SeedAccountAsync(
+            string sectionName,
+            string defaultIdentityRoleName,
+            string defaultControlPlaneRoleKey,
+            string errorPrefix,
+            CancellationToken cancellationToken)
+        {
+            var sectionPath = $"ControlPlane:{sectionName}";
+            if (!this.configuration.GetValue($"{sectionPath}:Enabled", false))
             {
                 return;
             }
 
-            var email = this.configuration["ControlPlane:SeedAdmin:Email"];
-            var password = this.configuration["ControlPlane:SeedAdmin:Password"];
-            var displayName = this.configuration["ControlPlane:SeedAdmin:DisplayName"];
+            var email = this.configuration[$"{sectionPath}:Email"];
+            var password = this.configuration[$"{sectionPath}:Password"];
+            var displayName = this.configuration[$"{sectionPath}:DisplayName"];
+            var identityRoleName = this.configuration[$"{sectionPath}:IdentityRole"];
+            var controlPlaneRoleKey = this.configuration[$"{sectionPath}:ControlPlaneRoleKey"];
 
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
             {
@@ -43,8 +78,9 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             }
 
             displayName = string.IsNullOrWhiteSpace(displayName) ? email : displayName;
+            identityRoleName = string.IsNullOrWhiteSpace(identityRoleName) ? defaultIdentityRoleName : identityRoleName;
+            controlPlaneRoleKey = string.IsNullOrWhiteSpace(controlPlaneRoleKey) ? defaultControlPlaneRoleKey : controlPlaneRoleKey;
 
-            const string identityRoleName = "Admin";
             if (!await this.roleManager.RoleExistsAsync(identityRoleName))
             {
                 await this.roleManager.CreateAsync(new IdentityRole(identityRoleName));
@@ -67,7 +103,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 if (!createResult.Succeeded)
                 {
                     var errors = string.Join("; ", createResult.Errors.Select(error => $"{error.Code}: {error.Description}"));
-                    throw new InvalidOperationException($"Control Plane development admin seed failed: {errors}");
+                    throw new InvalidOperationException($"{errorPrefix}: {errors}");
                 }
             }
             else
@@ -83,7 +119,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 await this.userManager.AddToRoleAsync(user, identityRoleName);
             }
 
-            await this.EnsurePlatformOwnerProfileAsync(user, displayName, cancellationToken);
+            await this.EnsureControlPlaneProfileAsync(user, displayName, controlPlaneRoleKey, cancellationToken);
         }
 
         public async Task SeedLocalMockNodeAsync(CancellationToken cancellationToken = default)
@@ -121,9 +157,19 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             await this.dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        private async Task EnsurePlatformOwnerProfileAsync(AppUser user, string displayName, CancellationToken cancellationToken)
+        private async Task EnsureControlPlaneProfileAsync(
+            AppUser user,
+            string displayName,
+            string controlPlaneRoleKey,
+            CancellationToken cancellationToken)
         {
-            const long platformOwnerRoleId = 1;
+            var controlPlaneRole = await this.dbContext.ControlPlaneRoles
+                .FirstOrDefaultAsync(role => role.Key == controlPlaneRoleKey, cancellationToken);
+
+            if (controlPlaneRole is null)
+            {
+                throw new InvalidOperationException($"Control Plane role '{controlPlaneRoleKey}' is not seeded.");
+            }
 
             var now = DateTimeOffset.UtcNow;
             var profile = await this.dbContext.AdminUsers
@@ -145,7 +191,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 profile.Roles.Add(
                     new ControlPlaneAdminUserRole
                     {
-                        RoleId = platformOwnerRoleId,
+                        RoleId = controlPlaneRole.Id,
                         CreatedAt = now
                     });
 
@@ -159,13 +205,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             profile.Status = "active";
             profile.UpdatedAt = now;
 
-            if (profile.Roles.All(role => role.RoleId != platformOwnerRoleId))
+            if (profile.Roles.All(role => role.RoleId != controlPlaneRole.Id))
             {
                 profile.Roles.Add(
                     new ControlPlaneAdminUserRole
                     {
                         AdminUserId = profile.Id,
-                        RoleId = platformOwnerRoleId,
+                        RoleId = controlPlaneRole.Id,
                         CreatedAt = now
                     });
             }
