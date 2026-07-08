@@ -73,9 +73,14 @@ namespace BlazorShop.ControlPlane.Web.Services.Health
 
         private static async Task<string> ResolveErrorMessageAsync(HttpResponseMessage response, string defaultMessage)
         {
-            if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
                 return "Sign in with a Control Plane account that can inspect node health.";
+            }
+
+            if (response.StatusCode == HttpStatusCode.Forbidden)
+            {
+                return "Your Control Plane account does not have permission for this action.";
             }
 
             if (response.Content is null)
