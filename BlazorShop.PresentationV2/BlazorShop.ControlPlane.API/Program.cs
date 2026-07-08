@@ -1,4 +1,6 @@
 using BlazorShop.Application.ControlPlane;
+using BlazorShop.ControlPlane.API.Authorization;
+using BlazorShop.Infrastructure;
 using BlazorShop.Infrastructure.Data.ControlPlane;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,7 +13,7 @@ builder.AddServiceDefaults();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddAuthorization();
+builder.Services.AddControlPlaneAuthorization();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(
@@ -32,6 +34,7 @@ builder.Services.AddCors(options =>
         });
 });
 builder.Services.AddControlPlaneApplication(builder.Configuration);
+builder.Services.AddSharedAuthenticationInfrastructure(builder.Configuration);
 builder.Services.AddControlPlaneInfrastructure(builder.Configuration);
 
 var app = builder.Build();
@@ -46,6 +49,7 @@ app.UseHttpsRedirection();
 
 app.UseCors("ControlPlaneWeb");
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

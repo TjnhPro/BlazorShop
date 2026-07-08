@@ -708,12 +708,15 @@ Verification:
 
 ### Phase 3 - Operator Auth And Authorization
 
-- [ ] Reuse existing auth flow from `BlazorShop.Application` where possible.
-- [ ] Reuse existing token/session/client helper patterns where compatible with Control Plane Web WASM.
-- [ ] Implement profile mapping to `control_plane_admin_user`.
-- [ ] Implement policies for `nodes.read`, `nodes.write`, `credentials.rotate`, `stores.read`, `stores.write`, `audit.read`.
-- [ ] Add authorization tests for every Control Plane API route group/controller.
-- [ ] Add audit logging for sign-in, role changes, credential creation, credential rotation, node status changes.
+- [x] Reuse existing auth flow from `BlazorShop.Application` where possible.
+- [x] Reuse existing token/session/client helper patterns where compatible with Control Plane Web WASM.
+- [x] Implement profile mapping to `control_plane_admin_user`.
+- [x] Implement policies for `nodes.read`, `nodes.write`, `credentials.rotate`, `stores.read`, `stores.write`, `audit.read`.
+- [x] Add authorization tests for every Control Plane API route group/controller.
+- [x] Add audit logging for sign-in/session actions.
+- [ ] Add audit logging for role changes when role management endpoints exist.
+- [ ] Add audit logging for credential creation and credential rotation in Phase 5.
+- [ ] Add audit logging for node status changes in Phase 4 and Phase 6.
 
 Acceptance:
 
@@ -722,6 +725,13 @@ Acceptance:
 - Permission gaps return 403, not 500.
 - Audit logs are written for security-sensitive actions.
 - Auth integration does not fork duplicate login/business logic from existing `BlazorShop.Application`.
+
+Verification:
+
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj` passes with 0 warnings.
+- `dotnet build BlazorShop.Presentation/BlazorShop.API/BlazorShop.API.csproj` still passes; only existing legacy `Microsoft.OpenApi` package warning remains.
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter FullyQualifiedName~ControlPlaneAuthorizationTests` passes 5 tests.
+- Control Plane API now calls shared auth infrastructure, runs `UseAuthentication()` before `UseAuthorization()`, and uses Control Plane profile/permission policies backed by PostgreSQL.
 
 ### Phase 4 - Node Registry
 

@@ -1,9 +1,11 @@
 namespace BlazorShop.ControlPlane.API.Controllers
 {
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
 
     [ApiController]
     [Route("api/control-plane/system")]
+    [AllowAnonymous]
     public sealed class SystemController : ControllerBase
     {
         [HttpGet("info")]

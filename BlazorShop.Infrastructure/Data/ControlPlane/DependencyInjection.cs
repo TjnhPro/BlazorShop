@@ -1,5 +1,8 @@
 namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
+    using BlazorShop.Application.ControlPlane.Audit;
+    using BlazorShop.Application.ControlPlane.Security;
+
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +31,8 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 .AddCheck<ControlPlaneDbContextHealthCheck>("controlplane_database", tags: ["ready"]);
 
             services.AddScoped<ControlPlaneDevelopmentSeeder>();
+            services.AddScoped<IControlPlaneAuditService, ControlPlaneAuditService>();
+            services.AddScoped<IControlPlaneProfileService, ControlPlaneProfileService>();
 
             return services;
         }
