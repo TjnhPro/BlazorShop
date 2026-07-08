@@ -1,5 +1,47 @@
 # Control Plane Runbook
 
+## Local Development Database
+
+Use one PostgreSQL database for Control Plane:
+
+```text
+Host=localhost;Port=5433;Database=blazorshop_controlplane;Username=blazorshop_controlplane
+```
+
+Control Plane auth tables are part of `ControlPlaneDbContext`. Do not run `AppDbContext` migrations against this database.
+
+To create a development platform owner, set seed values outside source control before starting the API:
+
+```powershell
+$env:ControlPlane__SeedAdmin__Enabled = 'true'
+$env:ControlPlane__SeedAdmin__Email = 'admin@example.local'
+$env:ControlPlane__SeedAdmin__Password = '<dev-only-password>'
+$env:ControlPlane__SeedAdmin__DisplayName = 'Control Plane Admin'
+```
+
+Then start `BlazorShop.ControlPlane.API`. Development startup applies `ControlPlaneDbContext` migrations and seeds the admin if the seed password is present.
+
+If the local database was previously contaminated by `AppDbContext` migrations, reset it only after confirming local data can be discarded:
+
+```powershell
+docker exec blazorshop-controlplane-postgres dropdb -U blazorshop_controlplane --if-exists blazorshop_controlplane
+docker exec blazorshop-controlplane-postgres createdb -U blazorshop_controlplane blazorshop_controlplane
+```
+
+Expected table groups after a clean migration:
+
+- `AspNet*`
+- `RefreshTokens`
+- `control_plane_*`
+- `commerce_node*`
+- `node_*`
+- `store_*`
+
+Forbidden table groups:
+
+- legacy `Products`, `Categories`, `Orders`, `PaymentMethods`
+- legacy `Seo*`, `AdminSettings`, `Newsletter*`
+
 ## First Node Registration
 
 1. Start PostgreSQL and apply the Control Plane migration.

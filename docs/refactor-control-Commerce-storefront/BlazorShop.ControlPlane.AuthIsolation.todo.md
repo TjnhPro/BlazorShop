@@ -21,6 +21,19 @@ Ket luan moi:
 | Design | Login/logout UI hien co co the giu, nhung backend store phai doi ve ControlPlane DB. | UX khong can viet lai; loi nam o persistence boundary. |
 | DX/QA | Local dev phai de nhin: chi can PostgreSQL `5433`, migrate mot context, seed mot admin. | Giam nham lan `DefaultConnection`, `AuthConnection`, `ControlPlaneConnection`. |
 
+## Implementation Status
+
+| Phase | Status | Commit |
+| --- | --- | --- |
+| Plan artifact | Done | `213bddb docs(control-plane): plan isolated auth database boundary` |
+| Stop `AppDbContext` leak | Done | `e35ac23 refactor(control-plane): remove AppDbContext from auth startup` |
+| Identity in `ControlPlaneDbContext` | Done | `b84abbe feat(control-plane): host identity auth in ControlPlaneDbContext` |
+| ControlPlane-specific auth DI | Done | `2d46a8d feat(control-plane): add isolated auth infrastructure` |
+| Identity migration and dev admin seed | Done | `af222c9 feat(control-plane): add identity migration and dev admin seed` |
+| QA/runbook update | Done | `docs(qa): update Control Plane auth isolation checks` |
+
+Runtime verification on 2026-07-08 used a clean QA database `blazorshop_controlplane_isolation_qa` so the contaminated local dev database did not need to be dropped.
+
 ## Target Architecture
 
 ```text

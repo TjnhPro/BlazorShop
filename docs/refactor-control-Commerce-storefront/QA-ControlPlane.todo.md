@@ -17,6 +17,8 @@ Status legend:
 - [x] Control Plane Web starts successfully.
 - [x] Browser console has no unexpected errors on initial load. 2026-07-08: login page, route guard, and mobile login smoke tests had 0 console errors after refresh/CORS fixes.
 - [x] API health endpoint responds. 2026-07-08: verified `GET /api/control-plane/system/info`.
+- [x] Control Plane API does not resolve `AppDbContext`. 2026-07-08: grep verified no `AppDbContext`, `AddSharedAuthenticationInfrastructure`, `AuthConnection`, or `DefaultConnection` usage in ControlPlane API/ControlPlane infrastructure scope.
+- [x] Control Plane clean database does not contain legacy Commerce/Storefront tables. 2026-07-08: QA DB contained `AspNet*`, `RefreshTokens`, and ControlPlane tables only; no `Products`, `Categories`, `Orders`, `PaymentMethods`, `Seo*`, or legacy admin/storefront tables.
 
 ## Open QA Findings
 
@@ -25,14 +27,15 @@ Status legend:
 - [n/a] QA-CP-003: Control Plane User Management UI/API is not implemented yet.
 - [n/a] QA-CP-004: Audit Logs page is a static placeholder; action/actor search is not backed by an API yet.
 - [x] QA-CP-005: Protected pages redirect unauthenticated users through the login route guard. 2026-07-08: `/nodes` redirected to `/login/nodes` with 0 console errors.
-- [~] QA-CP-006: Valid login, role, permission, and authenticated mutation QA is blocked in the current local database because `AspNetUsers` has 0 rows. Seed an admin/user account before running the authenticated checklist.
+- [x] QA-CP-006: Valid login is unblocked on a clean ControlPlane database when the development platform-owner seed is enabled. 2026-07-08: QA DB seeded one admin, valid login returned 200 with JWT, login success was audited.
+- [~] QA-CP-007: Existing local dev database may still be contaminated by the earlier `AppDbContext` migration. Reset `blazorshop_controlplane` before local browser QA if `AspNet*` tables already exist without matching ControlPlane migration history.
 
 ## Auth
 
 - [x] Login page/form is reachable. 2026-07-08: `/login` renders email/password fields and submit button.
-- [~] Valid admin login succeeds. 2026-07-08: blocked because the Control Plane auth DB has no seeded admin user (`AspNetUsers = 0`).
+- [x] Valid admin login succeeds. 2026-07-08: API login passed on clean ControlPlane QA DB with seeded platform owner.
 - [~] Logged-in state is preserved on page refresh. 2026-07-08: blocked by missing login session.
-- [~] Current session/profile status is visible or API-verifiable. 2026-07-08: `me` endpoint exists, but no authenticated session was available.
+- [x] Current session/profile status is visible or API-verifiable. 2026-07-08: successful login created/loaded `control_plane_admin_user` profile for the seeded admin.
 - [~] Logout clears session state. 2026-07-08: route exists, but live verification is blocked by missing valid login session.
 - [x] Wrong password is rejected with a safe error message. 2026-07-08: UI shows `Invalid credentials.` and API returns 400 without sensitive detail.
 - [x] Repeated wrong-password attempts are rejected consistently. 2026-07-08: repeated API attempts returned the same safe 400 response.
@@ -139,7 +142,7 @@ Status legend:
 - [x] Audit Logs page loads. 2026-07-08: placeholder page loads with no console errors.
 - [n/a] Audit log search by action works. Page has static search controls, no API-backed search implementation yet.
 - [n/a] Audit log search by actor works. Page has static search controls, no API-backed search implementation yet.
-- [~] Login success is audited. API code writes audit, but live login is blocked by missing seeded Control Plane auth user.
+- [x] Login success is audited. 2026-07-08: clean ControlPlane QA DB recorded `auth.login` success for the seeded admin.
 - [x] Login failure is audited. 2026-07-08: wrong-password UI/API attempts wrote `auth.login` failure entries for the submitted actor email.
 - [~] Logout is audited. API code writes audit, but live logout blocked by missing authenticated session.
 - [~] Node create/update/disable is audited. API code writes audit; live mutation blocked by missing seeded Control Plane auth user.
@@ -176,6 +179,7 @@ Status legend:
 - [ ] Add Playwright smoke tests for Dashboard, Nodes, Stores, Health, Actions, Audit Logs.
 - [ ] Add audit-log assertions to mutation endpoint tests.
 - [ ] Add database migration test that validates seed roles and permissions.
+- [ ] Add database migration test that fails if ControlPlane DB contains legacy Commerce/Storefront tables.
 - [ ] Add contract tests for Commerce Node heartbeat/probe payloads.
 
 ## QA Run History
@@ -184,3 +188,4 @@ Status legend:
 | --- | --- | --- | --- | --- |
 | 2026-07-08 | Codex | Initial Control Plane QA checklist creation and unauthenticated smoke verification | Partial | Fixed Web dev API base URL and Blazor static asset startup. Auth/live mutations blocked by missing shared legacy PostgreSQL on `localhost:5432`; User Management and API-backed Audit Logs are not implemented yet. |
 | 2026-07-08 | Codex | Control Plane auth QA after AuthConnection/login implementation | Partial | Fixed auth schema startup migration, credentialed CORS, and no-session refresh console error. Verified login page, wrong-password rejection, repeated failure behavior, route guard, login failure audit, and mobile smoke. Valid login/admin/user flows blocked because `AspNetUsers` has 0 rows; User Management and API-backed Audit Logs are not implemented yet. |
+| 2026-07-08 | Codex | Control Plane isolated auth DB implementation | Partial | Built API/Web and ran tests. Runtime smoke used clean QA database with `ControlPlaneDbContext` migrations only; verified no legacy tables, seeded admin, valid login, wrong-password rejection, refresh token persistence, and login success/failure audit. Browser authenticated pages and logout still need full Playwright QA after resetting the local dev DB. |
