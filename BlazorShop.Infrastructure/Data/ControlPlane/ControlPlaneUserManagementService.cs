@@ -160,72 +160,76 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 : request.TemporaryPassword;
             var now = DateTimeOffset.UtcNow;
 
-            await using var transaction = await this.dbContext.Database.BeginTransactionAsync(cancellationToken);
-
-            var appUser = new AppUser
+            var strategy = this.dbContext.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
             {
-                Email = normalizedEmail,
-                UserName = normalizedEmail,
-                FullName = displayName,
-                EmailConfirmed = true,
-                LockoutEnabled = true,
-                RequirePasswordChange = true,
-                CreatedOn = DateTime.UtcNow
-            };
+                await using var transaction = await this.dbContext.Database.BeginTransactionAsync(cancellationToken);
 
-            var createResult = await this.userManager.CreateAsync(appUser, temporaryPassword);
-            if (!createResult.Succeeded)
-            {
-                return Failed<CreateControlPlaneUserResponse>(
-                    FormatIdentityErrors(createResult),
-                    ControlPlaneUserOperationFailure.Validation);
-            }
-
-            var roleResult = await this.userManager.AddToRoleAsync(appUser, identityRole);
-            if (!roleResult.Succeeded)
-            {
-                return Failed<CreateControlPlaneUserResponse>(
-                    FormatIdentityErrors(roleResult),
-                    ControlPlaneUserOperationFailure.Validation);
-            }
-
-            var profile = new ControlPlaneAdminUser
-            {
-                IdentityUserId = appUser.Id,
-                Email = normalizedEmail,
-                DisplayName = displayName,
-                Status = "active",
-                CreatedAt = now,
-                UpdatedAt = now
-            };
-
-            foreach (var role in roles)
-            {
-                profile.Roles.Add(new ControlPlaneAdminUserRole
+                var appUser = new AppUser
                 {
-                    RoleId = role.Id,
-                    CreatedAt = now
-                });
-            }
+                    Email = normalizedEmail,
+                    UserName = normalizedEmail,
+                    FullName = displayName,
+                    EmailConfirmed = true,
+                    LockoutEnabled = true,
+                    RequirePasswordChange = true,
+                    CreatedOn = DateTime.UtcNow
+                };
 
-            foreach (var permission in permissions)
-            {
-                profile.DirectPermissions.Add(new ControlPlaneAdminUserPermission
+                var createResult = await this.userManager.CreateAsync(appUser, temporaryPassword);
+                if (!createResult.Succeeded)
                 {
-                    PermissionId = permission.Id,
+                    return Failed<CreateControlPlaneUserResponse>(
+                        FormatIdentityErrors(createResult),
+                        ControlPlaneUserOperationFailure.Validation);
+                }
+
+                var roleResult = await this.userManager.AddToRoleAsync(appUser, identityRole);
+                if (!roleResult.Succeeded)
+                {
+                    return Failed<CreateControlPlaneUserResponse>(
+                        FormatIdentityErrors(roleResult),
+                        ControlPlaneUserOperationFailure.Validation);
+                }
+
+                var profile = new ControlPlaneAdminUser
+                {
+                    IdentityUserId = appUser.Id,
+                    Email = normalizedEmail,
+                    DisplayName = displayName,
+                    Status = "active",
                     CreatedAt = now,
-                    CreatedByAdminUserId = actorAdminUserId
-                });
-            }
+                    UpdatedAt = now
+                };
 
-            this.dbContext.AdminUsers.Add(profile);
-            await this.dbContext.SaveChangesAsync(cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
+                foreach (var role in roles)
+                {
+                    profile.Roles.Add(new ControlPlaneAdminUserRole
+                    {
+                        RoleId = role.Id,
+                        CreatedAt = now
+                    });
+                }
 
-            var created = await this.GetAsync(profile.PublicId, cancellationToken);
-            return created.Success && created.Payload is not null
-                ? Succeeded(new CreateControlPlaneUserResponse(created.Payload, string.IsNullOrWhiteSpace(request.TemporaryPassword) ? temporaryPassword : null))
-                : Failed<CreateControlPlaneUserResponse>("Control Plane user was created but could not be loaded.", ControlPlaneUserOperationFailure.Conflict);
+                foreach (var permission in permissions)
+                {
+                    profile.DirectPermissions.Add(new ControlPlaneAdminUserPermission
+                    {
+                        PermissionId = permission.Id,
+                        CreatedAt = now,
+                        CreatedByAdminUserId = actorAdminUserId
+                    });
+                }
+
+                this.dbContext.AdminUsers.Add(profile);
+                await this.dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+
+                var created = await this.GetAsync(profile.PublicId, cancellationToken);
+                return created.Success && created.Payload is not null
+                    ? Succeeded(new CreateControlPlaneUserResponse(created.Payload, string.IsNullOrWhiteSpace(request.TemporaryPassword) ? temporaryPassword : null))
+                    : Failed<CreateControlPlaneUserResponse>("Control Plane user was created but could not be loaded.", ControlPlaneUserOperationFailure.Conflict);
+            });
         }
 
         public async Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> UpdateAsync(
