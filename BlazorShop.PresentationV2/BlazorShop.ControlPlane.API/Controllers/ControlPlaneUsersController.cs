@@ -5,6 +5,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
     using BlazorShop.Application.ControlPlane.Audit;
     using BlazorShop.Application.ControlPlane.Security;
     using BlazorShop.Application.ControlPlane.Users;
+    using BlazorShop.ControlPlane.API.Responses;
 
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
@@ -26,7 +27,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ControlPlaneUserListResponse>> List(
+        public async Task<IActionResult> List(
             [FromQuery] string? search,
             [FromQuery] string? status,
             [FromQuery] string? roleKey,
@@ -39,7 +40,10 @@ namespace BlazorShop.ControlPlane.API.Controllers
                 new ControlPlaneUserListQuery(search, status, roleKey, permissionKey, cursor, limit),
                 cancellationToken);
 
-            return Ok(response);
+            return ControlPlaneApiResponseWriter.Success(
+                StatusCodes.Status200OK,
+                response,
+                "Users loaded.");
         }
 
         [HttpPost]
@@ -175,17 +179,23 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpGet("roles")]
-        public async Task<ActionResult<ControlPlaneRoleCatalogResponse>> ListRoles(CancellationToken cancellationToken)
+        public async Task<IActionResult> ListRoles(CancellationToken cancellationToken)
         {
             var response = await this.userManagementService.ListRolesAsync(cancellationToken);
-            return Ok(response);
+            return ControlPlaneApiResponseWriter.Success(
+                StatusCodes.Status200OK,
+                response,
+                "Control Plane roles loaded.");
         }
 
         [HttpGet("permissions")]
-        public async Task<ActionResult<ControlPlanePermissionCatalogResponse>> ListPermissions(CancellationToken cancellationToken)
+        public async Task<IActionResult> ListPermissions(CancellationToken cancellationToken)
         {
             var response = await this.userManagementService.ListPermissionsAsync(cancellationToken);
-            return Ok(response);
+            return ControlPlaneApiResponseWriter.Success(
+                StatusCodes.Status200OK,
+                response,
+                "Control Plane permissions loaded.");
         }
 
         private IActionResult ToActionResult(ControlPlaneUserOperationResult<ControlPlaneUserDetail> result)

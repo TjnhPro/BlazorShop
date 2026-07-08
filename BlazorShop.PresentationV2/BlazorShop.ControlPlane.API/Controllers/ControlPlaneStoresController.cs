@@ -5,6 +5,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
     using BlazorShop.Application.ControlPlane.Audit;
     using BlazorShop.Application.ControlPlane.Security;
     using BlazorShop.Application.ControlPlane.Stores;
+    using BlazorShop.ControlPlane.API.Responses;
 
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
@@ -26,15 +27,18 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ControlPlaneStoreListResponse>> List(
+        public async Task<IActionResult> List(
             [FromQuery] string? search,
             [FromQuery] string? status,
             [FromQuery] Guid? nodePublicId,
             CancellationToken cancellationToken)
         {
-            return Ok(await this.storeService.ListAsync(
-                new ControlPlaneStoreListQuery(search, status, nodePublicId),
-                cancellationToken));
+            return ControlPlaneApiResponseWriter.Success(
+                StatusCodes.Status200OK,
+                await this.storeService.ListAsync(
+                    new ControlPlaneStoreListQuery(search, status, nodePublicId),
+                    cancellationToken),
+                "Stores loaded.");
         }
 
         [HttpGet("{publicId:guid}")]

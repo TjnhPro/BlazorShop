@@ -216,20 +216,20 @@ Commit: `feat(control-plane): add web api envelope reader`
 
 Migrate read-only or simple response endpoints first.
 
-- [ ] `SystemController.GetInfo`
-- [ ] `ControlPlaneDashboardController.Summary`
-- [ ] `ControlPlaneNodesController.List`
-- [ ] `ControlPlaneStoresController.List`
-- [ ] `ControlPlaneHealthController.List`
-- [ ] `ControlPlaneActionsController.List`
-- [ ] `ControlPlaneUsersController.ListRoles`
-- [ ] `ControlPlaneUsersController.ListPermissions`
+- [x] `SystemController.GetInfo`
+- [x] `ControlPlaneDashboardController.Summary`
+- [x] `ControlPlaneNodesController.List`
+- [x] `ControlPlaneStoresController.List`
+- [x] `ControlPlaneHealthController.List`
+- [x] `ControlPlaneActionsController.List`
+- [x] `ControlPlaneUsersController.ListRoles`
+- [x] `ControlPlaneUsersController.ListPermissions`
 
 For each endpoint:
 
-- [ ] API returns `{ success=true, message, data }`.
-- [ ] Web client reads `data`.
-- [ ] Page behavior is unchanged.
+- [x] API returns `{ success=true, message, data }`.
+- [x] Web client reads `data`.
+- [x] Page behavior is unchanged.
 - [ ] Direct API smoke verifies the envelope.
 
 Commit: `feat(control-plane): wrap read api responses`

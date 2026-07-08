@@ -4,6 +4,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Nodes
     using System.Net.Http.Json;
     using System.Text.Json;
 
+    using BlazorShop.ControlPlane.Web.Services.Common;
     using BlazorShop.Web.Shared.Helper.Contracts;
 
     public interface IControlPlaneNodeClient
@@ -23,15 +24,16 @@ namespace BlazorShop.ControlPlane.Web.Services.Nodes
     {
         private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
         private readonly IHttpClientHelper httpClientHelper;
+        private readonly IControlPlaneApiClient apiClient;
 
-        public ControlPlaneNodeClient(IHttpClientHelper httpClientHelper)
+        public ControlPlaneNodeClient(IHttpClientHelper httpClientHelper, IControlPlaneApiClient apiClient)
         {
             this.httpClientHelper = httpClientHelper;
+            this.apiClient = apiClient;
         }
 
         public async Task<NodeListResponse> ListAsync(string? search, string? status, string? cursor, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
             var query = new List<string>();
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -51,15 +53,17 @@ namespace BlazorShop.ControlPlane.Web.Services.Nodes
 
             query.Add("limit=25");
             var route = $"api/control-plane/nodes?{string.Join("&", query)}";
-            using var response = await client.GetAsync(route, cancellationToken);
+            var result = await this.apiClient.GetPrivateAsync<NodeListResponse>(
+                route,
+                "Unable to load nodes.",
+                cancellationToken);
 
-            if (response.IsSuccessStatusCode)
+            if (result.Success)
             {
-                return await response.Content.ReadFromJsonAsync<NodeListResponse>(SerializerOptions, cancellationToken)
-                       ?? new NodeListResponse([], null);
+                return result.Data ?? new NodeListResponse([], null);
             }
 
-            throw new InvalidOperationException(await ResolveErrorMessageAsync(response, "Unable to load nodes."));
+            throw new InvalidOperationException(result.Message);
         }
 
         public async Task<NodeDetail?> GetAsync(Guid publicId, CancellationToken cancellationToken = default)

@@ -4,6 +4,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Users
     using System.Net.Http.Json;
     using System.Text.Json;
 
+    using BlazorShop.ControlPlane.Web.Services.Common;
     using BlazorShop.Web.Shared.Helper.Contracts;
 
     public interface IControlPlaneUserClient
@@ -43,10 +44,12 @@ namespace BlazorShop.ControlPlane.Web.Services.Users
     {
         private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
         private readonly IHttpClientHelper httpClientHelper;
+        private readonly IControlPlaneApiClient apiClient;
 
-        public ControlPlaneUserClient(IHttpClientHelper httpClientHelper)
+        public ControlPlaneUserClient(IHttpClientHelper httpClientHelper, IControlPlaneApiClient apiClient)
         {
             this.httpClientHelper = httpClientHelper;
+            this.apiClient = apiClient;
         }
 
         public async Task<UserListResponse> ListAsync(
@@ -57,7 +60,6 @@ namespace BlazorShop.ControlPlane.Web.Services.Users
             string? cursor,
             CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
             var query = new List<string> { "limit=25" };
 
             AddQuery(query, "search", search);
@@ -66,15 +68,17 @@ namespace BlazorShop.ControlPlane.Web.Services.Users
             AddQuery(query, "permissionKey", permissionKey);
             AddQuery(query, "cursor", cursor);
 
-            using var response = await client.GetAsync($"api/control-plane/users?{string.Join("&", query)}", cancellationToken);
+            var result = await this.apiClient.GetPrivateAsync<UserListResponse>(
+                $"api/control-plane/users?{string.Join("&", query)}",
+                "Unable to load users.",
+                cancellationToken);
 
-            if (response.IsSuccessStatusCode)
+            if (result.Success)
             {
-                return await response.Content.ReadFromJsonAsync<UserListResponse>(SerializerOptions, cancellationToken)
-                       ?? new UserListResponse([], null);
+                return result.Data ?? new UserListResponse([], null);
             }
 
-            throw new InvalidOperationException(await ResolveErrorMessageAsync(response, "Unable to load users."));
+            throw new InvalidOperationException(result.Message);
         }
 
         public async Task<UserDetail?> GetAsync(Guid publicId, CancellationToken cancellationToken = default)
@@ -97,30 +101,32 @@ namespace BlazorShop.ControlPlane.Web.Services.Users
 
         public async Task<RoleCatalogResponse> ListRolesAsync(CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.GetAsync("api/control-plane/users/roles", cancellationToken);
+            var result = await this.apiClient.GetPrivateAsync<RoleCatalogResponse>(
+                "api/control-plane/users/roles",
+                "Unable to load roles.",
+                cancellationToken);
 
-            if (response.IsSuccessStatusCode)
+            if (result.Success)
             {
-                return await response.Content.ReadFromJsonAsync<RoleCatalogResponse>(SerializerOptions, cancellationToken)
-                       ?? new RoleCatalogResponse([]);
+                return result.Data ?? new RoleCatalogResponse([]);
             }
 
-            throw new InvalidOperationException(await ResolveErrorMessageAsync(response, "Unable to load roles."));
+            throw new InvalidOperationException(result.Message);
         }
 
         public async Task<PermissionCatalogResponse> ListPermissionsAsync(CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.GetAsync("api/control-plane/users/permissions", cancellationToken);
+            var result = await this.apiClient.GetPrivateAsync<PermissionCatalogResponse>(
+                "api/control-plane/users/permissions",
+                "Unable to load permissions.",
+                cancellationToken);
 
-            if (response.IsSuccessStatusCode)
+            if (result.Success)
             {
-                return await response.Content.ReadFromJsonAsync<PermissionCatalogResponse>(SerializerOptions, cancellationToken)
-                       ?? new PermissionCatalogResponse([]);
+                return result.Data ?? new PermissionCatalogResponse([]);
             }
 
-            throw new InvalidOperationException(await ResolveErrorMessageAsync(response, "Unable to load permissions."));
+            throw new InvalidOperationException(result.Message);
         }
 
         public async Task<CreateUserResult> CreateAsync(CreateUserRequest request, CancellationToken cancellationToken = default)

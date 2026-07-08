@@ -1,5 +1,7 @@
 namespace BlazorShop.ControlPlane.API.Controllers
 {
+    using BlazorShop.ControlPlane.API.Responses;
+
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
 
@@ -9,12 +11,15 @@ namespace BlazorShop.ControlPlane.API.Controllers
     public sealed class SystemController : ControllerBase
     {
         [HttpGet("info")]
-        public ActionResult<SystemInfoResponse> GetInfo()
+        public IActionResult GetInfo()
         {
-            return Ok(new SystemInfoResponse(
+            return ControlPlaneApiResponseWriter.Success(
+                StatusCodes.Status200OK,
+                new SystemInfoResponse(
                 Name: "BlazorShop Control Plane",
                 Status: "starting",
-                Version: typeof(SystemController).Assembly.GetName().Version?.ToString() ?? "0.0.0"));
+                    Version: typeof(SystemController).Assembly.GetName().Version?.ToString() ?? "0.0.0"),
+                "Control Plane system info loaded.");
         }
     }
 

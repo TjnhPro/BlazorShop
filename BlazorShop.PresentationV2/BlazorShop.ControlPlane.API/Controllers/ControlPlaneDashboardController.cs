@@ -2,6 +2,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
 {
     using BlazorShop.Application.ControlPlane.Dashboard;
     using BlazorShop.Application.ControlPlane.Security;
+    using BlazorShop.ControlPlane.API.Responses;
 
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
@@ -20,9 +21,12 @@ namespace BlazorShop.ControlPlane.API.Controllers
 
         [HttpGet("summary")]
         [Authorize(Policy = ControlPlanePolicyNames.StoresRead)]
-        public async Task<ActionResult<ControlPlaneDashboardSummary>> Summary(CancellationToken cancellationToken)
+        public async Task<IActionResult> Summary(CancellationToken cancellationToken)
         {
-            return Ok(await this.dashboardService.GetSummaryAsync(cancellationToken));
+            return ControlPlaneApiResponseWriter.Success(
+                StatusCodes.Status200OK,
+                await this.dashboardService.GetSummaryAsync(cancellationToken),
+                "Dashboard summary loaded.");
         }
     }
 }

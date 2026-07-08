@@ -4,6 +4,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Health
     using System.Net.Http.Json;
     using System.Text.Json;
 
+    using BlazorShop.ControlPlane.Web.Services.Common;
     using BlazorShop.Web.Shared.Helper.Contracts;
 
     public interface IControlPlaneHealthClient
@@ -19,24 +20,27 @@ namespace BlazorShop.ControlPlane.Web.Services.Health
     {
         private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
         private readonly IHttpClientHelper httpClientHelper;
+        private readonly IControlPlaneApiClient apiClient;
 
-        public ControlPlaneHealthClient(IHttpClientHelper httpClientHelper)
+        public ControlPlaneHealthClient(IHttpClientHelper httpClientHelper, IControlPlaneApiClient apiClient)
         {
             this.httpClientHelper = httpClientHelper;
+            this.apiClient = apiClient;
         }
 
         public async Task<HealthListResponse> ListAsync(CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
-            using var response = await client.GetAsync("api/control-plane/health/nodes", cancellationToken);
+            var result = await this.apiClient.GetPrivateAsync<HealthListResponse>(
+                "api/control-plane/health/nodes",
+                "Unable to load node health.",
+                cancellationToken);
 
-            if (response.IsSuccessStatusCode)
+            if (result.Success)
             {
-                return await response.Content.ReadFromJsonAsync<HealthListResponse>(SerializerOptions, cancellationToken)
-                       ?? new HealthListResponse([]);
+                return result.Data ?? new HealthListResponse([]);
             }
 
-            throw new InvalidOperationException(await ResolveErrorMessageAsync(response, "Unable to load node health."));
+            throw new InvalidOperationException(result.Message);
         }
 
         public async Task<HealthDetail?> GetAsync(Guid nodePublicId, CancellationToken cancellationToken = default)

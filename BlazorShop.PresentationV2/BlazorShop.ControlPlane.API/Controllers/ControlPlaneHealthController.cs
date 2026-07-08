@@ -5,6 +5,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
     using BlazorShop.Application.ControlPlane.Audit;
     using BlazorShop.Application.ControlPlane.Health;
     using BlazorShop.Application.ControlPlane.Security;
+    using BlazorShop.ControlPlane.API.Responses;
 
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
@@ -26,9 +27,12 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpGet("nodes")]
-        public async Task<ActionResult<ControlPlaneHealthListResponse>> List(CancellationToken cancellationToken)
+        public async Task<IActionResult> List(CancellationToken cancellationToken)
         {
-            return Ok(await this.healthService.ListAsync(cancellationToken));
+            return ControlPlaneApiResponseWriter.Success(
+                StatusCodes.Status200OK,
+                await this.healthService.ListAsync(cancellationToken),
+                "Node health loaded.");
         }
 
         [HttpGet("nodes/{nodePublicId:guid}")]

@@ -4,6 +4,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Stores
     using System.Net.Http.Json;
     using System.Text.Json;
 
+    using BlazorShop.ControlPlane.Web.Services.Common;
     using BlazorShop.Web.Shared.Helper.Contracts;
 
     public interface IControlPlaneStoreClient
@@ -29,15 +30,16 @@ namespace BlazorShop.ControlPlane.Web.Services.Stores
     {
         private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
         private readonly IHttpClientHelper httpClientHelper;
+        private readonly IControlPlaneApiClient apiClient;
 
-        public ControlPlaneStoreClient(IHttpClientHelper httpClientHelper)
+        public ControlPlaneStoreClient(IHttpClientHelper httpClientHelper, IControlPlaneApiClient apiClient)
         {
             this.httpClientHelper = httpClientHelper;
+            this.apiClient = apiClient;
         }
 
         public async Task<StoreListResponse> ListAsync(string? search = null, string? status = null, Guid? nodePublicId = null, CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
             var query = new List<string>();
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -56,15 +58,17 @@ namespace BlazorShop.ControlPlane.Web.Services.Stores
             }
 
             var route = query.Count == 0 ? "api/control-plane/stores" : $"api/control-plane/stores?{string.Join("&", query)}";
-            using var response = await client.GetAsync(route, cancellationToken);
+            var result = await this.apiClient.GetPrivateAsync<StoreListResponse>(
+                route,
+                "Unable to load stores.",
+                cancellationToken);
 
-            if (response.IsSuccessStatusCode)
+            if (result.Success)
             {
-                return await response.Content.ReadFromJsonAsync<StoreListResponse>(SerializerOptions, cancellationToken)
-                       ?? new StoreListResponse([]);
+                return result.Data ?? new StoreListResponse([]);
             }
 
-            throw new InvalidOperationException(await ResolveErrorMessageAsync(response, "Unable to load stores."));
+            throw new InvalidOperationException(result.Message);
         }
 
         public async Task<StoreDetail?> GetAsync(Guid publicId, CancellationToken cancellationToken = default)

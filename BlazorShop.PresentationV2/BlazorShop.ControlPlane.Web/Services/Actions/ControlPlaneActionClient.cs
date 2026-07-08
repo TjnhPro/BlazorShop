@@ -4,6 +4,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Actions
     using System.Net.Http.Json;
     using System.Text.Json;
 
+    using BlazorShop.ControlPlane.Web.Services.Common;
     using BlazorShop.Web.Shared.Helper.Contracts;
 
     public interface IControlPlaneActionClient
@@ -28,10 +29,12 @@ namespace BlazorShop.ControlPlane.Web.Services.Actions
     {
         private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
         private readonly IHttpClientHelper httpClientHelper;
+        private readonly IControlPlaneApiClient apiClient;
 
-        public ControlPlaneActionClient(IHttpClientHelper httpClientHelper)
+        public ControlPlaneActionClient(IHttpClientHelper httpClientHelper, IControlPlaneApiClient apiClient)
         {
             this.httpClientHelper = httpClientHelper;
+            this.apiClient = apiClient;
         }
 
         public async Task<ActionListResponse> ListAsync(
@@ -43,7 +46,6 @@ namespace BlazorShop.ControlPlane.Web.Services.Actions
             int limit = 100,
             CancellationToken cancellationToken = default)
         {
-            var client = await this.httpClientHelper.GetPrivateClientAsync();
             var query = new List<string> { $"limit={limit}" };
 
             if (!string.IsNullOrWhiteSpace(status))
@@ -71,14 +73,17 @@ namespace BlazorShop.ControlPlane.Web.Services.Actions
                 query.Add($"beforeId={beforeId}");
             }
 
-            using var response = await client.GetAsync($"api/control-plane/actions?{string.Join("&", query)}", cancellationToken);
-            if (response.IsSuccessStatusCode)
+            var result = await this.apiClient.GetPrivateAsync<ActionListResponse>(
+                $"api/control-plane/actions?{string.Join("&", query)}",
+                "Unable to load control actions.",
+                cancellationToken);
+
+            if (result.Success)
             {
-                return await response.Content.ReadFromJsonAsync<ActionListResponse>(SerializerOptions, cancellationToken)
-                       ?? new ActionListResponse([], null);
+                return result.Data ?? new ActionListResponse([], null);
             }
 
-            throw new InvalidOperationException(await ResolveErrorMessageAsync(response, "Unable to load control actions."));
+            throw new InvalidOperationException(result.Message);
         }
 
         public async Task<ActionDetail?> GetAsync(Guid publicId, CancellationToken cancellationToken = default)

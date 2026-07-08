@@ -5,6 +5,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
     using BlazorShop.Application.ControlPlane.Actions;
     using BlazorShop.Application.ControlPlane.Audit;
     using BlazorShop.Application.ControlPlane.Security;
+    using BlazorShop.ControlPlane.API.Responses;
 
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
@@ -26,7 +27,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ControlPlaneActionListResponse>> List(
+        public async Task<IActionResult> List(
             [FromQuery] string? status,
             [FromQuery] string? actionType,
             [FromQuery] Guid? nodePublicId,
@@ -35,9 +36,12 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromQuery] int limit = 100,
             CancellationToken cancellationToken = default)
         {
-            return Ok(await this.actionService.ListAsync(
-                new ControlPlaneActionListQuery(status, actionType, nodePublicId, storePublicId, beforeId, limit),
-                cancellationToken));
+            return ControlPlaneApiResponseWriter.Success(
+                StatusCodes.Status200OK,
+                await this.actionService.ListAsync(
+                    new ControlPlaneActionListQuery(status, actionType, nodePublicId, storePublicId, beforeId, limit),
+                    cancellationToken),
+                "Control actions loaded.");
         }
 
         [HttpGet("{publicId:guid}")]
