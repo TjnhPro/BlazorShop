@@ -42,7 +42,7 @@ namespace BlazorShop.Storefront.Services
                 return StorefrontSessionInfo.Anonymous;
             }
 
-            using var request = new HttpRequestMessage(HttpMethod.Post, "authentication/refresh-token");
+            using var request = new HttpRequestMessage(HttpMethod.Post, GetRefreshTokenRoute());
             request.Headers.TryAddWithoutValidation("Cookie", $"{cookieName}={Uri.EscapeDataString(refreshToken)}");
 
             var userAgent = httpContext.Request.Headers.UserAgent.ToString();
@@ -59,7 +59,7 @@ namespace BlazorShop.Storefront.Services
                 return StorefrontSessionInfo.Anonymous;
             }
 
-            var payload = await response.Content.ReadFromJsonAsync<LoginResponse>(cancellationToken: cancellationToken);
+            var payload = await ReadLoginResponseAsync(response, cancellationToken);
             if (payload is null || !payload.Success || string.IsNullOrWhiteSpace(payload.Token))
             {
                 return StorefrontSessionInfo.Anonymous;
@@ -73,6 +73,13 @@ namespace BlazorShop.Storefront.Services
             return string.IsNullOrWhiteSpace(_configuration["Api:RefreshTokenCookieName"])
                 ? DefaultRefreshTokenCookieName
                 : _configuration["Api:RefreshTokenCookieName"]!;
+        }
+
+        private string GetRefreshTokenRoute()
+        {
+            return string.IsNullOrWhiteSpace(_configuration["Api:RefreshTokenRoute"])
+                ? "internal/auth/refresh-token"
+                : _configuration["Api:RefreshTokenRoute"]!;
         }
 
         private static void CopySetCookieHeaders(HttpResponseMessage response, HttpResponse storefrontResponse)
@@ -162,6 +169,23 @@ namespace BlazorShop.Storefront.Services
             };
 
             return Encoding.UTF8.GetString(Convert.FromBase64String(padded));
+        }
+
+        private static async Task<LoginResponse?> ReadLoginResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+        {
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+
+            using var document = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
+            if (document.RootElement.ValueKind == JsonValueKind.Object
+                && document.RootElement.TryGetProperty("success", out _)
+                && document.RootElement.TryGetProperty("data", out var dataProperty))
+            {
+                return dataProperty.ValueKind == JsonValueKind.Null
+                    ? null
+                    : dataProperty.Deserialize<LoginResponse>(new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            }
+
+            return document.RootElement.Deserialize<LoginResponse>(new JsonSerializerOptions(JsonSerializerDefaults.Web));
         }
     }
 }

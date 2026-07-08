@@ -533,14 +533,14 @@ Database:
 
 API:
 
-- [ ] Add typed client/service in Storefront for `api/internal/*`.
-- [ ] Update Storefront API base URL config to Commerce Node internal API.
-- [ ] Keep legacy API config available as fallback until parity is verified.
+- [x] Add typed client/service in Storefront for `api/internal/*`.
+- [x] Update Storefront API base URL config to Commerce Node internal API.
+- [x] Keep legacy API config available as fallback until parity is verified.
 
 Services:
 
-- [ ] Ensure Storefront calls Commerce Node over same-node private networking.
-- [ ] Ensure customer auth token/cookie flow still works through Storefront.
+- [x] Ensure Storefront calls Commerce Node over same-node private networking.
+- [x] Ensure customer auth token/cookie flow still works through Storefront.
 
 QA:
 
