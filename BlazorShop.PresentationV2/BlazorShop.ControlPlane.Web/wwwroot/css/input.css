@@ -34,6 +34,14 @@
     @apply border-control-700 bg-control-700 text-white hover:bg-control-500;
   }
 
+  .cp-button-secondary {
+    @apply border-ink-300 bg-white text-ink-700 hover:bg-ink-50;
+  }
+
+  .cp-button-danger {
+    @apply border-red-700 bg-red-700 text-white hover:bg-red-600 disabled:border-ink-300 disabled:bg-ink-100 disabled:text-ink-500;
+  }
+
   .cp-badge {
     @apply inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold;
   }

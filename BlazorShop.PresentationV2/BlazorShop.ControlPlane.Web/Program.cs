@@ -10,6 +10,7 @@ using BlazorShop.Web.Shared.Helper;
 using BlazorShop.Web.Shared.Helper.Contracts;
 using BlazorShop.Web.Shared.Services;
 using BlazorShop.Web.Shared.Services.Contracts;
+using BlazorShop.ControlPlane.Web.Services.Nodes;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -24,6 +25,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IHttpClientHelper, HttpClientHelper>();
 builder.Services.AddScoped<IApiCallHelper, ApiCallHelper>();
 builder.Services.AddSingleton<IToastService, ToastService>();
+builder.Services.AddScoped<IControlPlaneNodeClient, ControlPlaneNodeClient>();
 builder.Services.AddHttpClient(
     Constant.ApiClient.PublicName,
     client => client.BaseAddress = apiBaseAddress);

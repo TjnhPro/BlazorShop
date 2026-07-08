@@ -735,20 +735,28 @@ Verification:
 
 ### Phase 4 - Node Registry
 
-- [ ] Implement create/update/disable node use cases.
-- [ ] Implement endpoint management for control API URL.
-- [ ] Validate node key uniqueness and URL shape.
-- [ ] Add cursor-paginated node list.
-- [ ] Add node detail endpoint.
-- [ ] Add UI pages: Nodes list, Create node, Node detail, Disable node.
-- [ ] Add empty/loading/error states in UI.
+- [x] Implement create/update/disable node use cases.
+- [x] Implement endpoint management for control API URL.
+- [x] Validate node key uniqueness and URL shape.
+- [x] Add cursor-paginated node list.
+- [x] Add node detail endpoint.
+- [x] Add UI pages: Nodes list, Create node, Node detail, Disable node.
+- [x] Add empty/loading/error states in UI.
 
 Acceptance:
 
 - Operator can register a node without touching Commerce Node code.
 - Duplicate active `node_key` fails predictably.
-- Disabled node cannot receive new control actions.
+- Disabled node cannot be updated through the node registry. Control action enqueue enforcement is deferred to Phase 8 because `control_action` dispatch does not exist yet.
 - UI shows clear state when no nodes exist.
+
+Verification:
+
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj` passes with 0 warnings.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj` passes with 0 warnings; Tailwind emits only the existing Browserslist database warning.
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~ControlPlaneNodeServiceTests|FullyQualifiedName~ControlPlaneAuthorizationTests"` passes 9 tests.
+- Node registry API now exposes create, update, disable, list, and detail endpoints behind `nodes.read`/`nodes.write` policies.
+- Control Plane Web nodes page now uses the shared WASM HTTP helper stack and shows real API-backed loading, empty, validation, access-denied, and error states.
 
 ### Phase 5 - Credential Lifecycle
 

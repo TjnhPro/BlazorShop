@@ -1,4 +1,5 @@
 @page "/nodes"
+@inject IControlPlaneNodeClient NodeClient
 
 <PageTitle>Nodes</PageTitle>
 
@@ -7,31 +8,361 @@
         <div>
             <p class="text-sm font-semibold text-control-700">Nodes</p>
             <h1 class="text-2xl font-bold text-ink-900">Commerce nodes</h1>
-            <p class="mt-1 text-sm text-ink-500">Register, inspect, disable, and rotate credentials for remote nodes.</p>
+            <p class="mt-1 text-sm text-ink-500">Register, inspect, and disable remote commerce nodes.</p>
         </div>
-        <button class="cp-button cp-button-primary">
+        <button class="cp-button cp-button-primary" @onclick="OpenCreateForm">
             <i class="fa-solid fa-plus" aria-hidden="true"></i>
             Create node
         </button>
     </div>
 
-    <div class="cp-card">
-        <div class="border-b border-ink-200 p-4">
-            <div class="flex flex-col gap-3 md:flex-row md:items-center">
-                <input class="min-h-10 flex-1 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Search node name or key" />
-                <select class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100">
-                    <option>All statuses</option>
-                    <option>Healthy</option>
-                    <option>Warning</option>
-                    <option>Down</option>
-                    <option>Disabled</option>
-                </select>
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            @errorMessage
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            @successMessage
+        </div>
+    }
+
+    @if (showCreateForm)
+    {
+        <div class="cp-card">
+            <div class="border-b border-ink-200 p-4">
+                <h2 class="text-sm font-semibold text-ink-900">Create node</h2>
+            </div>
+            <div class="grid gap-4 p-4 lg:grid-cols-2">
+                <label class="space-y-1 text-sm">
+                    <span class="font-medium text-ink-700">Node key</span>
+                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="createNodeKey" />
+                </label>
+                <label class="space-y-1 text-sm">
+                    <span class="font-medium text-ink-700">Name</span>
+                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="createName" />
+                </label>
+                <label class="space-y-1 text-sm lg:col-span-2">
+                    <span class="font-medium text-ink-700">Control API URL</span>
+                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="createControlApiUrl" />
+                </label>
+                <label class="space-y-1 text-sm lg:col-span-2">
+                    <span class="font-medium text-ink-700">Description</span>
+                    <textarea class="min-h-24 w-full rounded-md border border-ink-300 px-3 py-2 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="createDescription"></textarea>
+                </label>
+            </div>
+            <div class="flex justify-end gap-2 border-t border-ink-200 p-4">
+                <button class="cp-button cp-button-secondary" @onclick="CloseCreateForm">Cancel</button>
+                <button class="cp-button cp-button-primary" disabled="@isSaving" @onclick="CreateNodeAsync">
+                    <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                    Save
+                </button>
             </div>
         </div>
-        <div class="p-8 text-center">
-            <i class="fa-solid fa-server mb-3 text-2xl text-ink-400" aria-hidden="true"></i>
-            <p class="text-sm font-semibold text-ink-700">No nodes registered</p>
-            <p class="mt-1 text-sm text-ink-500">Node registry data will appear after Phase 4.</p>
+    }
+
+    <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <div class="cp-card overflow-hidden">
+            <div class="border-b border-ink-200 p-4">
+                <div class="flex flex-col gap-3 md:flex-row md:items-center">
+                    <input class="min-h-10 flex-1 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Search node name or key" @bind="search" />
+                    <select class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="status">
+                        <option value="">All statuses</option>
+                        <option value="unknown">Unknown</option>
+                        <option value="healthy">Healthy</option>
+                        <option value="warning">Warning</option>
+                        <option value="down">Down</option>
+                        <option value="disabled">Disabled</option>
+                    </select>
+                    <button class="cp-button cp-button-secondary" @onclick="ApplyFiltersAsync">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                        Search
+                    </button>
+                </div>
+            </div>
+
+            @if (isLoading)
+            {
+                <div class="p-8 text-center text-sm text-ink-500">Loading nodes...</div>
+            }
+            else if (nodes.Count == 0)
+            {
+                <div class="p-8 text-center">
+                    <i class="fa-solid fa-server mb-3 text-2xl text-ink-400" aria-hidden="true"></i>
+                    <p class="text-sm font-semibold text-ink-700">No nodes registered</p>
+                    <p class="mt-1 text-sm text-ink-500">Create a node to start the registry.</p>
+                </div>
+            }
+            else
+            {
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-ink-200 text-left text-sm">
+                        <thead class="bg-ink-50 text-xs font-semibold uppercase text-ink-500">
+                            <tr>
+                                <th class="px-4 py-3">Node</th>
+                                <th class="px-4 py-3">Status</th>
+                                <th class="px-4 py-3">Control API</th>
+                                <th class="px-4 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-ink-100">
+                            @foreach (var node in nodes)
+                            {
+                                <tr class="hover:bg-ink-50">
+                                    <td class="px-4 py-3">
+                                        <div class="font-semibold text-ink-900">@node.Name</div>
+                                        <div class="text-xs text-ink-500">@node.NodeKey</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <span class="@GetStatusBadgeClass(node.Status)">@node.Status</span>
+                                    </td>
+                                    <td class="max-w-[280px] truncate px-4 py-3 text-ink-600">@node.ControlApiUrl</td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button class="cp-button cp-button-secondary" @onclick="() => LoadDetailAsync(node.PublicId)">
+                                            <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                                            View
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(nextCursor))
+            {
+                <div class="border-t border-ink-200 p-4 text-right">
+                    <button class="cp-button cp-button-secondary" @onclick="LoadMoreAsync">Load more</button>
+                </div>
+            }
         </div>
+
+        <aside class="cp-card min-h-[360px]">
+            @if (selectedNode is null)
+            {
+                <div class="flex h-full min-h-[360px] flex-col items-center justify-center p-6 text-center">
+                    <i class="fa-solid fa-circle-info mb-3 text-2xl text-ink-400" aria-hidden="true"></i>
+                    <p class="text-sm font-semibold text-ink-700">No node selected</p>
+                    <p class="mt-1 text-sm text-ink-500">Select a node to view endpoint and status details.</p>
+                </div>
+            }
+            else
+            {
+                <div class="border-b border-ink-200 p-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <h2 class="text-base font-semibold text-ink-900">@selectedNode.Name</h2>
+                            <p class="mt-1 text-xs text-ink-500">@selectedNode.NodeKey</p>
+                        </div>
+                        <span class="@GetStatusBadgeClass(selectedNode.Status)">@selectedNode.Status</span>
+                    </div>
+                </div>
+                <div class="space-y-4 p-4 text-sm">
+                    <div>
+                        <p class="text-xs font-semibold uppercase text-ink-500">Control API</p>
+                        <p class="mt-1 break-all text-ink-800">@selectedNode.ControlApiUrl</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase text-ink-500">Description</p>
+                        <p class="mt-1 text-ink-700">@(string.IsNullOrWhiteSpace(selectedNode.Description) ? "No description" : selectedNode.Description)</p>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase text-ink-500">Endpoints</p>
+                        <div class="mt-2 space-y-2">
+                            @foreach (var endpoint in selectedNode.Endpoints)
+                            {
+                                <div class="rounded-md border border-ink-200 p-3">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="font-medium text-ink-800">@endpoint.Kind</span>
+                                        @if (endpoint.IsPrimary)
+                                        {
+                                            <span class="rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">primary</span>
+                                        }
+                                    </div>
+                                    <p class="mt-1 break-all text-xs text-ink-500">@endpoint.Url</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="border-t border-ink-200 pt-4">
+                        <button class="cp-button cp-button-danger w-full justify-center" disabled="@(selectedNode.Status == "disabled" || isSaving)" @onclick="DisableSelectedAsync">
+                            <i class="fa-solid fa-ban" aria-hidden="true"></i>
+                            Disable node
+                        </button>
+                    </div>
+                </div>
+            }
+        </aside>
     </div>
 </section>
+
+@code {
+    private readonly List<NodeSummary> nodes = [];
+    private string? search;
+    private string? status;
+    private string? nextCursor;
+    private string? errorMessage;
+    private string? successMessage;
+    private bool isLoading;
+    private bool isSaving;
+    private bool showCreateForm;
+    private NodeDetail? selectedNode;
+
+    private string createNodeKey = string.Empty;
+    private string createName = string.Empty;
+    private string createDescription = string.Empty;
+    private string createControlApiUrl = "http://localhost:5180/api/controlpanel";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadNodesAsync(reset: true);
+    }
+
+    private async Task ApplyFiltersAsync()
+    {
+        await LoadNodesAsync(reset: true);
+    }
+
+    private async Task LoadMoreAsync()
+    {
+        await LoadNodesAsync(reset: false);
+    }
+
+    private async Task LoadNodesAsync(bool reset)
+    {
+        isLoading = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var response = await NodeClient.ListAsync(search, status, reset ? null : nextCursor);
+            if (reset)
+            {
+                nodes.Clear();
+            }
+
+            nodes.AddRange(response.Items);
+            nextCursor = response.NextCursor;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OpenCreateForm()
+    {
+        showCreateForm = true;
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private void CloseCreateForm()
+    {
+        showCreateForm = false;
+    }
+
+    private async Task CreateNodeAsync()
+    {
+        isSaving = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var result = await NodeClient.CreateAsync(new NodeCreateRequest(createNodeKey, createName, createDescription, createControlApiUrl));
+            if (!result.Success)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            successMessage = "Node created.";
+            showCreateForm = false;
+            createNodeKey = string.Empty;
+            createName = string.Empty;
+            createDescription = string.Empty;
+            createControlApiUrl = "http://localhost:5180/api/controlpanel";
+            await LoadNodesAsync(reset: true);
+
+            if (result.Node is not null)
+            {
+                selectedNode = result.Node;
+            }
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task LoadDetailAsync(Guid publicId)
+    {
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            selectedNode = await NodeClient.GetAsync(publicId);
+            if (selectedNode is null)
+            {
+                errorMessage = "Node was not found.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private async Task DisableSelectedAsync()
+    {
+        if (selectedNode is null)
+        {
+            return;
+        }
+
+        isSaving = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var result = await NodeClient.DisableAsync(selectedNode.PublicId);
+            if (!result.Success)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            selectedNode = result.Node;
+            successMessage = "Node disabled.";
+            await LoadNodesAsync(reset: true);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private static string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "healthy" => "rounded-full bg-green-50 px-2 py-1 text-xs font-semibold text-green-700",
+            "warning" => "rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700",
+            "down" => "rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-700",
+            "disabled" => "rounded-full bg-ink-100 px-2 py-1 text-xs font-semibold text-ink-600",
+            _ => "rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700"
+        };
+    }
+}
