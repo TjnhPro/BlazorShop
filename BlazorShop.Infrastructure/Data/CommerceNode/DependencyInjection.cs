@@ -1,9 +1,11 @@
 namespace BlazorShop.Infrastructure.Data.CommerceNode
 {
     using BlazorShop.Application.Mapping;
+    using BlazorShop.Application.Services;
     using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Application.Services.Contracts.Admin;
     using BlazorShop.Domain.Contracts;
+    using BlazorShop.Domain.Contracts.CategoryPersistence;
     using BlazorShop.Infrastructure.Data.CommerceNode.Repositories;
     using BlazorShop.Infrastructure.Data.CommerceNode.Services;
 
@@ -34,9 +36,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddHttpContextAccessor();
             services.AddAutoMapper(cfg => cfg.AddProfile<MappingConfig>());
             services.AddScoped(typeof(IGenericRepository<>), typeof(CommerceNodeGenericRepository<>));
+            services.AddScoped<IProductReadRepository, CommerceNodeProductReadRepository>();
+            services.AddScoped<ICategoryRepository, CommerceNodeCategoryRepository>();
             services.AddScoped<IApplicationTransactionManager, CommerceNodeTransactionManager>();
             services.AddScoped<ICommerceNodeAuditActorAccessor, CommerceNodeAuditActorAccessor>();
             services.AddScoped<IAdminAuditService, CommerceNodeAdminAuditService>();
+            services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<ICategoryService, CategoryService>();
 
             return services;
         }

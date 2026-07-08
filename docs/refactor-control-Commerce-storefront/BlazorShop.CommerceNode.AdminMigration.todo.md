@@ -385,29 +385,30 @@ QA:
 
 Database:
 
-- [ ] Use existing `Products` and `Categories`.
-- [ ] Verify indexes/constraints from existing configurations are applied in `CommerceNodeDbContext`.
+- [x] Use existing `Products` and `Categories`.
+- [x] Verify indexes/constraints from existing configurations are applied in `CommerceNodeDbContext`.
 
 API:
 
-- [ ] Migrate `ProductController.GetAll` from `GET api/Product/all`.
-- [ ] Migrate `ProductController.Add` from `POST api/Product/add`.
-- [ ] Migrate `ProductController.Update` from `PUT api/Product/update`.
-- [ ] Migrate `ProductController.Delete` from `DELETE api/Product/delete/{id}`.
-- [ ] Migrate `CategoryController.GetAllForAdmin` from `GET api/Category/all/admin`.
-- [ ] Migrate `CategoryController.Add` from `POST api/Category/add`.
-- [ ] Migrate `CategoryController.Update` from `PUT api/Category/update`.
-- [ ] Migrate `CategoryController.Delete` from `DELETE api/Category/delete/{id}`.
-- [ ] Do not migrate storefront catalog reads in this phase.
+- [x] Migrate `ProductController.GetAll` from `GET api/Product/all`.
+- [x] Migrate `ProductController.Add` from `POST api/Product/add`.
+- [x] Migrate `ProductController.Update` from `PUT api/Product/update`.
+- [x] Migrate `ProductController.Delete` from `DELETE api/Product/delete/{id}`.
+- [x] Migrate `CategoryController.GetAllForAdmin` from `GET api/Category/all/admin`.
+- [x] Migrate `CategoryController.Add` from `POST api/Category/add`.
+- [x] Migrate `CategoryController.Update` from `PUT api/Category/update`.
+- [x] Migrate `CategoryController.Delete` from `DELETE api/Category/delete/{id}`.
+- [x] Do not migrate storefront catalog reads in this phase.
 
 Services:
 
-- [ ] Reuse `ProductService` and `CategoryService` if they can run against Commerce Node repository bindings.
-- [ ] Add Commerce Node repository implementations or generic repository binding for `CommerceNodeDbContext`.
-- [ ] Keep existing audit calls, backed by Commerce Node `AdminAuditLogs`.
+- [x] Reuse `ProductService` and `CategoryService` if they can run against Commerce Node repository bindings.
+- [x] Add Commerce Node repository implementations or generic repository binding for `CommerceNodeDbContext`.
+- [x] Keep existing audit calls, backed by Commerce Node `AdminAuditLogs`.
 
 QA:
 
+- [x] Commerce Node API builds successfully.
 - [ ] List products.
 - [ ] Create product.
 - [ ] Update product.
