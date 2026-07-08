@@ -24,7 +24,7 @@ Status legend:
 
 - [x] QA-CP-001: Wrong-password login is testable against Control Plane PostgreSQL on port 5433. 2026-07-08: fixed startup auth schema migration and verified safe 400 response.
 - [x] QA-CP-002: Control Plane Web login/logout routes exist. 2026-07-08: `/login` renders the sign-in form; seeded admin logout returns to `/login` and clears header session state.
-- [n/a] QA-CP-003: Control Plane User Management UI/API is not implemented yet.
+- [~] QA-CP-003: Control Plane User Management UI/API is implemented, but live browser/API QA is still pending. 2026-07-08: API/Web builds passed; clean QA database migration applied through `ControlPlaneUserManagement`.
 - [n/a] QA-CP-004: Audit Logs page is a static placeholder; action/actor search is not backed by an API yet.
 - [x] QA-CP-005: Protected pages redirect unauthenticated users through the login route guard. 2026-07-08: `/nodes` redirected to `/login/nodes` with 0 console errors.
 - [x] QA-CP-006: Valid login is unblocked on a clean ControlPlane database when development account seeds are enabled. 2026-07-08: QA DB seeded `admin@example.local` as `platform_owner` and `user@example.local` as `auditor`; both valid logins returned 200 with JWT and login success was audited.
@@ -78,15 +78,27 @@ Status legend:
 
 ### User Management
 
-- [n/a] User list loads. No Control Plane user-management UI/API exists yet.
-- [n/a] Create user succeeds. No Control Plane user-management UI/API exists yet.
-- [n/a] Assign user role succeeds. No Control Plane user-management UI/API exists yet.
-- [n/a] Enable user succeeds. No Control Plane user-management UI/API exists yet.
-- [n/a] Disable user succeeds. No Control Plane user-management UI/API exists yet.
-- [n/a] Assign permission succeeds. No Control Plane user-management UI/API exists yet.
-- [n/a] Remove permission succeeds. No Control Plane user-management UI/API exists yet.
+- [ ] User list loads.
+- [ ] User detail loads.
+- [ ] User role and permission catalogs load.
+- [ ] Create user succeeds.
+- [ ] Duplicate user email is rejected.
+- [ ] Update user display name succeeds.
+- [ ] Assign user role succeeds.
+- [ ] Remove user role succeeds.
+- [ ] Enable user succeeds.
+- [ ] Disable user succeeds.
+- [ ] Assign permission succeeds.
+- [ ] Remove permission succeeds.
+- [ ] Removing a direct permission does not remove inherited role permission.
+- [ ] Admin cannot disable own account.
+- [ ] Admin cannot disable or remove the last active `platform_owner`.
+- [ ] Standard user without `users.read` cannot list users.
+- [ ] Standard user without `users.write` cannot create/update/enable/disable users.
+- [ ] Standard user without `roles.assign` cannot assign/remove roles.
+- [ ] Standard user without `permissions.manage` cannot assign/remove direct permissions.
 - [~] Disabled user cannot log in. Authorization service tests cover disabled Control Plane profile; live disabled-account login was not exercised in this run.
-- [n/a] User/role/permission changes are audited. No Control Plane user-management mutation flow exists yet.
+- [ ] User/role/permission changes are audited.
 
 ## Nodes
 
@@ -181,6 +193,8 @@ Status legend:
 - [ ] Add audit-log assertions to mutation endpoint tests.
 - [ ] Add database migration test that validates seed roles and permissions.
 - [ ] Add database migration test that fails if ControlPlane DB contains legacy Commerce/Storefront tables.
+- [ ] Add API integration tests for User Management list/create/status/role/permission flows.
+- [ ] Add Playwright smoke tests for User Management admin and restricted-user flows.
 - [ ] Add contract tests for Commerce Node heartbeat/probe payloads.
 
 ## QA Run History
@@ -191,3 +205,4 @@ Status legend:
 | 2026-07-08 | Codex | Control Plane auth QA after AuthConnection/login implementation | Partial | Fixed auth schema startup migration, credentialed CORS, and no-session refresh console error. Verified login page, wrong-password rejection, repeated failure behavior, route guard, login failure audit, and mobile smoke. Valid login/admin/user flows blocked because `AspNetUsers` has 0 rows; User Management and API-backed Audit Logs are not implemented yet. |
 | 2026-07-08 | Codex | Control Plane isolated auth DB implementation | Partial | Built API/Web and ran tests. Runtime smoke used clean QA database with `ControlPlaneDbContext` migrations only; verified no legacy tables, seeded admin, valid login, wrong-password rejection, refresh token persistence, and login success/failure audit. Browser authenticated pages and logout still need full Playwright QA after resetting the local dev DB. |
 | 2026-07-08 | Codex | Seeded admin/user account QA and authenticated browser/API flows | Partial | Added two-account dev seeding, verified admin/user login, logout, refresh persistence, Dashboard/Nodes/Stores/Health/Actions/Audit page loads, admin node/store/credential mutations, auditor 403 denials, and audit persistence on clean `blazorshop_controlplane_seed_qa`. Fixed misleading 403 UI message. Remaining UX follow-up: hide/disable write controls for users without write permissions. |
+| 2026-07-08 | Codex | User Management implementation verification | Partial | Implemented database/API/Web phases and committed each phase. `dotnet build` passed for ControlPlane API and Web; migration applied successfully on clean `blazorshop_controlplane_user_management_qa`. Live browser/API QA for User Management remains pending. |
