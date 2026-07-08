@@ -5,5 +5,6 @@ namespace BlazorShop.Application.ControlPlane.Security
         string IdentityUserId,
         string Email,
         string DisplayName,
+        string Status,
         bool Created);
 }

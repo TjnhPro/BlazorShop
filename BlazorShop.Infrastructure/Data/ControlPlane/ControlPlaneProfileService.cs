@@ -34,12 +34,16 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             {
                 profile.Email = normalizedEmail;
                 profile.DisplayName = string.IsNullOrWhiteSpace(displayName) ? normalizedEmail : displayName.Trim();
-                profile.LastLoginAt = DateTimeOffset.UtcNow;
+                if (profile.Status == "active")
+                {
+                    profile.LastLoginAt = DateTimeOffset.UtcNow;
+                }
+
                 profile.UpdatedAt = DateTimeOffset.UtcNow;
 
                 await this.dbContext.SaveChangesAsync(cancellationToken);
 
-                return new ControlPlaneProfileResult(profile.Id, profile.IdentityUserId, profile.Email, profile.DisplayName, Created: false);
+                return new ControlPlaneProfileResult(profile.Id, profile.IdentityUserId, profile.Email, profile.DisplayName, profile.Status, Created: false);
             }
 
             var isFirstAdminProfile = !await this.dbContext.AdminUsers.AnyAsync(cancellationToken);
@@ -68,7 +72,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             this.dbContext.AdminUsers.Add(profile);
             await this.dbContext.SaveChangesAsync(cancellationToken);
 
-            return new ControlPlaneProfileResult(profile.Id, profile.IdentityUserId, profile.Email, profile.DisplayName, Created: true);
+            return new ControlPlaneProfileResult(profile.Id, profile.IdentityUserId, profile.Email, profile.DisplayName, profile.Status, Created: true);
         }
     }
 }

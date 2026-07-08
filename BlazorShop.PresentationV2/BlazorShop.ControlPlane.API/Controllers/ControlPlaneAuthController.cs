@@ -52,6 +52,14 @@ namespace BlazorShop.ControlPlane.API.Controllers
             }
 
             var profile = await this.EnsureProfileFromTokenAsync(result.Token, cancellationToken);
+            if (!IsActiveProfile(profile))
+            {
+                await this.authenticationService.Logout(result.RefreshToken, GetClientIpAddress());
+                DeleteRefreshTokenCookie();
+                await this.WriteAuditAsync("auth.login", "failure", profile.AdminUserId, profile.IdentityUserId, profile.Email, cancellationToken);
+                return BadRequest(new LoginResponse { Message = "Invalid credentials." });
+            }
+
             AppendRefreshTokenCookie(result.RefreshToken);
 
             await this.WriteAuditAsync(
@@ -88,6 +96,14 @@ namespace BlazorShop.ControlPlane.API.Controllers
             }
 
             var profile = await this.EnsureProfileFromTokenAsync(result.Token, cancellationToken);
+            if (!IsActiveProfile(profile))
+            {
+                await this.authenticationService.Logout(result.RefreshToken, GetClientIpAddress());
+                DeleteRefreshTokenCookie();
+                await this.WriteAuditAsync("auth.refresh", "failure", profile.AdminUserId, profile.IdentityUserId, profile.Email, cancellationToken);
+                return BadRequest(new LoginResponse { Message = "Session is no longer active." });
+            }
+
             AppendRefreshTokenCookie(result.RefreshToken);
 
             await this.WriteAuditAsync(
@@ -120,6 +136,11 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<ActionResult<ControlPlaneProfileResponse>> Me(CancellationToken cancellationToken)
         {
             var profile = await this.EnsureProfileFromClaimsAsync(User.Claims, cancellationToken);
+            if (!IsActiveProfile(profile))
+            {
+                return Forbid();
+            }
+
             return Ok(new ControlPlaneProfileResponse(profile.AdminUserId, profile.Email, profile.DisplayName));
         }
 
@@ -146,6 +167,11 @@ namespace BlazorShop.ControlPlane.API.Controllers
             }
 
             return await this.profileService.EnsureProfileAsync(identityUserId, email, displayName ?? email, cancellationToken);
+        }
+
+        private static bool IsActiveProfile(ControlPlaneProfileResult profile)
+        {
+            return string.Equals(profile.Status, "active", StringComparison.Ordinal);
         }
 
         private async Task WriteAuditAsync(
