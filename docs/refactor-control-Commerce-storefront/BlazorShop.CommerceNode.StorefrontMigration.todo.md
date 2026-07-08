@@ -555,10 +555,39 @@ Stop gate: Storefront can run without calling legacy API for migrated surfaces.
 
 ## Phase 9 - Legacy Storefront API Decommission Plan
 
-- [ ] Mark migrated legacy Storefront routes as deprecated in docs.
-- [ ] Keep legacy API physically present until full QA is complete.
-- [ ] Remove legacy API calls from Storefront config only after cutover.
-- [ ] Remove legacy Storefront API routes only in a separate approved phase.
+- [x] Mark migrated legacy Storefront routes as deprecated in docs.
+- [x] Keep legacy API physically present until full QA is complete.
+- [x] Remove legacy API calls from Storefront config only after cutover.
+- [x] Remove legacy Storefront API routes only in a separate approved phase.
+
+### Deprecated Legacy Storefront Routes
+
+These legacy routes are superseded by Commerce Node internal routes for Storefront traffic. They must remain physically present until clean DB QA and production-like cutover verification are complete.
+
+| Legacy Route | Commerce Node Route |
+|---|---|
+| `api/public/catalog/categories` | `api/internal/catalog/categories` |
+| `api/public/catalog/sitemap` | `api/internal/catalog/sitemap` |
+| `api/public/catalog/categories/slug/{slug}` | `api/internal/catalog/categories/slug/{slug}` |
+| `api/public/catalog/products` | `api/internal/catalog/products` |
+| `api/public/catalog/products/slug/{slug}` | `api/internal/catalog/products/slug/{slug}` |
+| `api/Product/catalog` | `api/internal/catalog/products` |
+| `api/Product/single/{id}` | `api/internal/catalog/products/{id}` |
+| `api/Category/all` | `api/internal/catalog/categories` |
+| `api/Category/single/{id}` | `api/internal/catalog/categories/{id}` |
+| `api/Category/products-by-category/{categoryId}` | `api/internal/catalog/categories/{categoryId}/products` |
+| `api/seo/settings` | `api/internal/seo/settings` |
+| `api/public/seo/redirects/resolve` | `api/internal/seo/redirects/resolve` |
+| `api/ProductRecommendation/{productId}` | `api/internal/recommendations/products/{productId}` |
+| `api/Payment/methods` | `api/internal/payments/methods` |
+| `api/Payment/paypal/capture` | `api/internal/payments/paypal/capture` |
+| `api/Newsletter/subscribe` | `api/internal/newsletter/subscribe` |
+| `api/Authentication/*` | `api/internal/auth/*` |
+| `api/Cart/checkout` | `api/internal/cart/checkout` |
+| `api/Cart/save-checkout` | `api/internal/cart/save-checkout` |
+| `api/Cart/confirm-order` | `api/internal/orders/confirm` |
+| `api/Cart/user/orders` | `api/internal/orders/current-user` |
+| `api/Cart/user/order-items` | `api/internal/orders/current-user/items` |
 
 ## Service Migration Notes
 
