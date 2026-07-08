@@ -1,5 +1,6 @@
 namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
+    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
 
@@ -10,6 +11,23 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             IConfiguration configuration)
         {
             ArgumentNullException.ThrowIfNull(configuration);
+
+            var connectionString = configuration.GetConnectionString("ControlPlaneConnection")
+                                   ?? "Host=localhost;Port=5433;Database=blazorshop_controlplane;Username=blazorshop_controlplane;Password=blazorshop_controlplane_dev";
+
+            services.AddDbContext<ControlPlaneDbContext>(
+                options => options.UseNpgsql(
+                    connectionString,
+                    npgsqlOptions =>
+                    {
+                        npgsqlOptions.MigrationsAssembly(typeof(ControlPlaneDbContext).Assembly.FullName);
+                        npgsqlOptions.EnableRetryOnFailure();
+                    }));
+
+            services.AddHealthChecks()
+                .AddCheck<ControlPlaneDbContextHealthCheck>("controlplane_database", tags: ["ready"]);
+
+            services.AddScoped<ControlPlaneDevelopmentSeeder>();
 
             return services;
         }

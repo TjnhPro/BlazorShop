@@ -649,24 +649,24 @@ Acceptance:
 
 ### Phase 1 - Solution Skeleton
 
-- [ ] Create `BlazorShop.PresentationV2` directory.
-- [ ] Create `BlazorShop.ControlPlane.API` ASP.NET Core Web API.
-- [ ] Create `BlazorShop.ControlPlane.Web` Blazor WASM admin UI.
-- [ ] Configure Tailwind CSS for `BlazorShop.ControlPlane.Web`.
-- [ ] Configure Font Awesome for `BlazorShop.ControlPlane.Web`.
-- [ ] Add projects to solution.
-- [ ] Reference `BlazorShop.Web.Shared` from `BlazorShop.ControlPlane.Web` for approved generic helper reuse.
-- [ ] Register only approved shared helper services: API call, HTTP client, token, browser storage, cookie storage, JS module, toast.
-- [ ] Add `BlazorShop.Application/ControlPlane` folder for use cases, DTOs, contracts, validators.
-- [ ] Add `BlazorShop.Domain/Entities/ControlPlane` folder for new Control Plane entities.
-- [ ] Add `BlazorShop.Infrastructure/Data/ControlPlane` folder for EF configuration and repositories.
-- [ ] Wire Control Plane API to existing `AddApplication`/`AddInfrastructure` style, extending registration with ControlPlane services.
-- [ ] Wire Control Plane Web to existing WASM auth/token/client helper patterns where compatible.
-- [ ] Reference `BlazorShop.ServiceDefaults` from API.
-- [ ] Keep `BlazorShop.ControlPlane.Web` WASM free of server-only ServiceDefaults dependencies.
-- [ ] Add `appsettings.Development.json` examples with no secrets.
-- [ ] Add `compose.controlplane.yml` or extend local compose docs for PostgreSQL development database.
-- [ ] Add health endpoints for API.
+- [x] Create `BlazorShop.PresentationV2` directory.
+- [x] Create `BlazorShop.ControlPlane.API` ASP.NET Core Web API.
+- [x] Create `BlazorShop.ControlPlane.Web` Blazor WASM admin UI.
+- [x] Configure Tailwind CSS for `BlazorShop.ControlPlane.Web`.
+- [x] Configure Font Awesome for `BlazorShop.ControlPlane.Web`.
+- [x] Add projects to solution.
+- [x] Reference `BlazorShop.Web.Shared` from `BlazorShop.ControlPlane.Web` for approved generic helper reuse.
+- [x] Register only approved shared helper services: API call, HTTP client, token, browser storage, cookie storage, JS module, toast.
+- [x] Add `BlazorShop.Application/ControlPlane` folder for use cases, DTOs, contracts, validators.
+- [x] Add `BlazorShop.Domain/Entities/ControlPlane` folder for new Control Plane entities.
+- [x] Add `BlazorShop.Infrastructure/Data/ControlPlane` folder for EF configuration and repositories.
+- [x] Wire Control Plane API to existing `AddApplication`/`AddInfrastructure` style, extending registration with ControlPlane services.
+- [x] Wire Control Plane Web to existing WASM auth/token/client helper patterns where compatible.
+- [x] Reference `BlazorShop.ServiceDefaults` from API.
+- [x] Keep `BlazorShop.ControlPlane.Web` WASM free of server-only ServiceDefaults dependencies.
+- [x] Add `appsettings.Development.json` examples with no secrets.
+- [x] Add `compose.controlplane.yml` or extend local compose docs for PostgreSQL development database.
+- [x] Add health endpoints for API.
 
 Acceptance:
 
@@ -681,15 +681,15 @@ Acceptance:
 
 ### Phase 2 - Control Plane Database Foundation
 
-- [ ] Add Control Plane DbContext in Infrastructure.
-- [ ] Add EF Core migrations for admin profile, roles, permissions, node registry, endpoints, credentials, health, capabilities, stores, actions, attempts, audit.
-- [ ] Use snake_case table and column names.
-- [ ] Add indexes listed in this plan.
-- [ ] Add seed data for system roles and permissions.
-- [ ] Add development seed for one local mock node.
-- [ ] Add Docker PostgreSQL local setup and documented connection string.
-- [ ] Add migration test that validates FK indexes exist.
-- [ ] Add test that no credential raw secret is persisted.
+- [x] Add Control Plane DbContext in Infrastructure.
+- [x] Add EF Core migrations for admin profile, roles, permissions, node registry, endpoints, credentials, health, capabilities, stores, actions, attempts, audit.
+- [x] Use snake_case table and column names.
+- [x] Add indexes listed in this plan.
+- [x] Add seed data for system roles and permissions.
+- [x] Add development seed for one local mock node.
+- [x] Add Docker PostgreSQL local setup and documented connection string.
+- [x] Add migration test that validates FK indexes exist.
+- [x] Add test that no credential raw secret is persisted.
 
 Acceptance:
 
@@ -697,6 +697,14 @@ Acceptance:
 - All FK columns are indexed.
 - Audit and health list queries use keyset/cursor pagination shape.
 - No table stores raw API key material.
+
+Verification:
+
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj` passes with 0 warnings.
+- `dotnet ef database update --context ControlPlaneDbContext` applied to Docker PostgreSQL.
+- PostgreSQL verification found 15 Control Plane tables, `pgcrypto`, 3 seeded roles, 8 seeded permissions, 20 role-permission mappings, and 0 missing FK indexes.
+- Added opt-in `ControlPlaneDevelopmentSeeder` for one local mock node without polluting production migrations.
+- Added model tests for indexed FK columns and hash-only credential persistence.
 
 ### Phase 3 - Operator Auth And Authorization
 
