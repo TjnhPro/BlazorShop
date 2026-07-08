@@ -23,20 +23,21 @@ Status legend:
 ## Open QA Findings
 
 - [x] QA-CP-001: Wrong-password login is testable against Control Plane PostgreSQL on port 5433. 2026-07-08: fixed startup auth schema migration and verified safe 400 response.
-- [x] QA-CP-002: Control Plane Web login/logout routes exist. 2026-07-08: `/login` renders the sign-in form; logout flow still needs a seeded valid user to complete live testing.
+- [x] QA-CP-002: Control Plane Web login/logout routes exist. 2026-07-08: `/login` renders the sign-in form; seeded admin logout returns to `/login` and clears header session state.
 - [n/a] QA-CP-003: Control Plane User Management UI/API is not implemented yet.
 - [n/a] QA-CP-004: Audit Logs page is a static placeholder; action/actor search is not backed by an API yet.
 - [x] QA-CP-005: Protected pages redirect unauthenticated users through the login route guard. 2026-07-08: `/nodes` redirected to `/login/nodes` with 0 console errors.
-- [x] QA-CP-006: Valid login is unblocked on a clean ControlPlane database when the development platform-owner seed is enabled. 2026-07-08: QA DB seeded one admin, valid login returned 200 with JWT, login success was audited.
+- [x] QA-CP-006: Valid login is unblocked on a clean ControlPlane database when development account seeds are enabled. 2026-07-08: QA DB seeded `admin@example.local` as `platform_owner` and `user@example.local` as `auditor`; both valid logins returned 200 with JWT and login success was audited.
+- [~] QA-CP-008: Standard user write actions are API-blocked with 403, but write buttons are still visible in the UI. 2026-07-08: fixed misleading 403 message; hiding/disabling write controls by permission is still a UX follow-up.
 - [~] QA-CP-007: Existing local dev database may still be contaminated by the earlier `AppDbContext` migration. Reset `blazorshop_controlplane` before local browser QA if `AspNet*` tables already exist without matching ControlPlane migration history.
 
 ## Auth
 
 - [x] Login page/form is reachable. 2026-07-08: `/login` renders email/password fields and submit button.
 - [x] Valid admin login succeeds. 2026-07-08: API login passed on clean ControlPlane QA DB with seeded platform owner.
-- [~] Logged-in state is preserved on page refresh. 2026-07-08: blocked by missing login session.
+- [x] Logged-in state is preserved on page refresh. 2026-07-08: browser QA refreshed Dashboard after admin login and retained `admin@example.local` session.
 - [x] Current session/profile status is visible or API-verifiable. 2026-07-08: successful login created/loaded `control_plane_admin_user` profile for the seeded admin.
-- [~] Logout clears session state. 2026-07-08: route exists, but live verification is blocked by missing valid login session.
+- [x] Logout clears session state. 2026-07-08: browser QA clicked Logout as seeded admin and returned to `/login` with Login header state.
 - [x] Wrong password is rejected with a safe error message. 2026-07-08: UI shows `Invalid credentials.` and API returns 400 without sensitive detail.
 - [x] Repeated wrong-password attempts are rejected consistently. 2026-07-08: repeated API attempts returned the same safe 400 response.
 - [x] Repeated wrong-password attempts do not expose account existence or sensitive detail. 2026-07-08: response remained `Invalid credentials.`.
@@ -47,32 +48,32 @@ Status legend:
 
 ### Admin User
 
-- [~] Admin role can access Dashboard. Blocked by missing seeded Control Plane auth user.
-- [~] Admin role can access Nodes. Blocked by missing seeded Control Plane auth user.
-- [~] Admin role can create nodes. Blocked by missing seeded Control Plane auth user.
-- [~] Admin role can rotate credentials. Blocked by missing seeded Control Plane auth user.
-- [~] Admin role can disable nodes. Blocked by missing seeded Control Plane auth user.
-- [~] Admin role can access Stores. Blocked by missing seeded Control Plane auth user.
-- [~] Admin role can assign stores to nodes. Blocked by missing seeded Control Plane auth user.
-- [~] Admin role can access Health. Blocked by missing seeded Control Plane auth user.
+- [x] Admin role can access Dashboard. 2026-07-08: seeded admin loaded Dashboard counters in browser.
+- [x] Admin role can access Nodes. 2026-07-08: seeded admin loaded Nodes list and detail panel in browser.
+- [x] Admin role can create nodes. 2026-07-08: seeded admin created `qa-ui-node-*` from browser and `qa-flow-node-*` through API.
+- [x] Admin role can rotate credentials. 2026-07-08: seeded admin API rotate returned 200 with a one-time replacement secret.
+- [x] Admin role can disable nodes. 2026-07-08: seeded admin API disable returned 200 and disabled node appeared in Nodes list.
+- [x] Admin role can access Stores. 2026-07-08: seeded admin loaded Stores list/detail in browser.
+- [x] Admin role can assign stores to nodes. 2026-07-08: seeded admin created `qa-ui-store-*` assigned to `qa-ui-node-*` from browser.
+- [x] Admin role can access Health. 2026-07-08: seeded admin loaded Health page and missing-heartbeat states in browser.
 - [n/a] Admin role can access Audit Logs. 2026-07-08: page exists as placeholder, no API-backed audit read implementation yet.
 
 ### Standard User
 
-- [~] Standard user can log in. Blocked by missing seeded Control Plane auth user.
-- [~] Standard user sees only allowed Control Plane pages. Blocked by missing seeded Control Plane auth user.
-- [~] Standard user cannot access admin-only actions through UI. Blocked by missing seeded Control Plane auth user.
-- [~] Standard user cannot access admin-only actions through direct API calls. Existing authorization unit tests cover policy denial; live API role test blocked by missing seeded Control Plane auth user.
+- [x] Standard user can log in. 2026-07-08: seeded `user@example.local` login succeeded in browser and API.
+- [x] Standard user sees allowed Control Plane pages. 2026-07-08: auditor user loaded Dashboard/Nodes/Stores/Health/Actions read pages.
+- [~] Standard user cannot access admin-only actions through UI. 2026-07-08: user create-node submit is blocked with a 403 permission message, but the Create button remains visible.
+- [x] Standard user cannot access admin-only actions through direct API calls. 2026-07-08: user token received 403 on node/store/credential create calls.
 
 ### Permission Enforcement
 
-- [~] User without `nodes.read` cannot list/view nodes. Unit-covered; live test blocked by missing seeded Control Plane auth user.
-- [~] User without `nodes.write` cannot create/update/disable nodes. Unit-covered; live test blocked by missing seeded Control Plane auth user.
-- [~] User without `credentials.rotate` cannot create/revoke/rotate API keys. Unit-covered; live test blocked by missing seeded Control Plane auth user.
-- [~] User without `stores.read` cannot list/view stores. Unit-covered; live test blocked by missing seeded Control Plane auth user.
-- [~] User without `stores.write` cannot create/update/assign/archive stores. Unit-covered; live test blocked by missing seeded Control Plane auth user.
-- [~] User without `health.read` cannot view health data. Unit-covered; live test blocked by missing seeded Control Plane auth user.
-- [~] User without `actions.read` cannot view/control actions. Unit-covered; live test blocked by missing seeded Control Plane auth user.
+- [~] User without `nodes.read` cannot list/view nodes. Unit-covered; live no-read role was not created in this run.
+- [x] User without `nodes.write` cannot create/update/disable nodes. 2026-07-08: live auditor token received 403 on node create; UI shows permission error after QA fix.
+- [x] User without `credentials.rotate` cannot create/revoke/rotate API keys. 2026-07-08: live auditor token received 403 on credential create.
+- [~] User without `stores.read` cannot list/view stores. Unit-covered; live no-read role was not created in this run.
+- [x] User without `stores.write` cannot create/update/assign/archive stores. 2026-07-08: live auditor token received 403 on store create.
+- [~] User without `health.read` cannot view health data. Unit-covered; live no-read role was not created in this run.
+- [~] User without `actions.read` cannot view/control actions. Unit-covered; live no-read role was not created in this run.
 - [n/a] User without `audit.read` cannot view audit logs. No API-backed audit read endpoint yet.
 
 ### User Management
@@ -84,58 +85,58 @@ Status legend:
 - [n/a] Disable user succeeds. No Control Plane user-management UI/API exists yet.
 - [n/a] Assign permission succeeds. No Control Plane user-management UI/API exists yet.
 - [n/a] Remove permission succeeds. No Control Plane user-management UI/API exists yet.
-- [~] Disabled user cannot log in. Authorization service tests cover disabled Control Plane profile; live login blocked by missing seeded Control Plane auth user.
+- [~] Disabled user cannot log in. Authorization service tests cover disabled Control Plane profile; live disabled-account login was not exercised in this run.
 - [n/a] User/role/permission changes are audited. No Control Plane user-management mutation flow exists yet.
 
 ## Nodes
 
-- [~] Node list loads. 2026-07-08: unauthenticated route redirects to login; authenticated list blocked by missing seeded Control Plane auth user.
-- [~] Empty node list state is readable. Blocked by missing seeded Control Plane auth user.
-- [~] Node create succeeds with valid data. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Node create validates required fields. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Node create rejects duplicate node key. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Node detail loads. Blocked by missing seeded Control Plane auth user.
-- [~] Node detail shows endpoint/status metadata. Blocked by missing seeded Control Plane auth user.
-- [~] Rotate API key succeeds. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Rotated API key is shown only once. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Old API key is revoked or inactive after rotation. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Disable node succeeds. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Disabled node is visible as disabled. Blocked by missing seeded Control Plane auth user.
-- [~] Disabled node cannot receive write/control operations that require an active node. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
+- [x] Node list loads. 2026-07-08: authenticated admin and auditor browser sessions loaded persisted QA nodes.
+- [n/a] Empty node list state is readable. 2026-07-08: QA DB contains seeded/test nodes; empty state not exercised in this run.
+- [x] Node create succeeds with valid data. 2026-07-08: admin browser created `qa-ui-node-*`; API created additional QA nodes.
+- [x] Node create validates required fields. 2026-07-08: empty browser submit showed node-key validation message.
+- [~] Node create rejects duplicate node key. Service tests pass; live duplicate UI submit was not exercised in this run.
+- [x] Node detail loads. 2026-07-08: browser View opened node detail panel.
+- [x] Node detail shows endpoint/status metadata. 2026-07-08: browser detail panel showed status, Control API, description, and primary endpoint.
+- [x] Rotate API key succeeds. 2026-07-08: admin API rotate returned 200.
+- [x] Rotated API key is shown only once. 2026-07-08: create/rotate API responses returned `rawSecret`; audit payload assertion found no raw secret.
+- [x] Old API key is revoked or inactive after rotation. 2026-07-08: DB showed original key status `rotated` with `revoked_at`.
+- [x] Disable node succeeds. 2026-07-08: admin API disable returned 200.
+- [x] Disabled node is visible as disabled. 2026-07-08: browser Nodes list showed `QA Flow Node` as `disabled`.
+- [~] Disabled node cannot receive write/control operations that require an active node. Service tests pass; live disabled-node write/control attempt was not exercised in this run.
 
 ## Stores
 
-- [~] Store list loads. 2026-07-08: unauthenticated route redirects to login; authenticated list blocked by missing seeded Control Plane auth user.
-- [~] Empty store list state is readable. Blocked by missing seeded Control Plane auth user.
-- [~] Store create succeeds with valid data. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Store create validates required fields. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Store create rejects duplicate active store key. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Assign store to node succeeds. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Reassign store to node succeeds. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Store detail loads. Blocked by missing seeded Control Plane auth user.
-- [~] Store detail shows node assignment and domains. Blocked by missing seeded Control Plane auth user.
-- [~] Store status is visible. Blocked by missing seeded Control Plane auth user.
-- [~] Archived/disabled store state is handled correctly. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
+- [x] Store list loads. 2026-07-08: authenticated admin and auditor sessions loaded Stores list.
+- [n/a] Empty store list state is readable. 2026-07-08: QA DB contains seeded/test stores; empty state not exercised in this run.
+- [x] Store create succeeds with valid data. 2026-07-08: admin browser created `qa-ui-store-*` assigned to `qa-ui-node-*`.
+- [~] Store create validates required fields. Service tests pass; live required-field UI submit was not exercised in this run.
+- [~] Store create rejects duplicate active store key. Service tests pass; live duplicate UI submit was not exercised in this run.
+- [x] Assign store to node succeeds. 2026-07-08: create-store browser flow assigned the new store to the selected active node.
+- [~] Reassign store to node succeeds. Service tests pass; live reassign submit was not exercised in this run.
+- [x] Store detail loads. 2026-07-08: browser row click opened Store detail panel.
+- [x] Store detail shows node assignment and domains. 2026-07-08: detail panel showed assigned node, metadata, domain count/control.
+- [x] Store status is visible. 2026-07-08: Stores list/detail showed `active` status.
+- [~] Archived/disabled store state is handled correctly. Service tests pass; live archive/disabled-store UI state was not exercised in this run.
 
 ## Health
 
-- [~] Health page loads. 2026-07-08: unauthenticated route redirects to login; authenticated health data blocked by missing seeded Control Plane auth user.
-- [~] Latest heartbeat is visible when available. Blocked by missing seeded Control Plane auth user.
-- [~] Missing heartbeat state is readable. Blocked by missing seeded Control Plane auth user.
-- [~] Node dependency status is visible when available. Blocked by missing seeded Control Plane auth user.
-- [~] Manual probe handles reachable node. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Manual probe handles unreachable node. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
+- [x] Health page loads. 2026-07-08: authenticated admin session loaded Health page.
+- [n/a] Latest heartbeat is visible when available. 2026-07-08: no successful heartbeat sample existed in QA DB.
+- [x] Missing heartbeat state is readable. 2026-07-08: Health page showed `No heartbeat` / `No sample` states.
+- [n/a] Node dependency status is visible when available. 2026-07-08: no dependency snapshot existed in QA DB.
+- [~] Manual probe handles reachable node. Service tests pass; live reachable-node probe was not exercised in this run.
+- [~] Manual probe handles unreachable node. Service tests pass; live unreachable-node probe was not exercised in this run.
 - [x] Health failure state does not break the page. 2026-07-08: unauthenticated 401 state renders without app crash.
 
 ## Actions
 
-- [~] Action list loads. 2026-07-08: unauthenticated route redirects to login; authenticated action list blocked by missing seeded Control Plane auth user.
-- [~] Action enqueue succeeds for a valid active node. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Action enqueue rejects disabled nodes. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Action detail loads. Blocked by missing seeded Control Plane auth user.
-- [~] Action attempts are visible. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Action cancellation succeeds for cancellable actions. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Duplicate idempotency key returns or preserves the expected action. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
+- [x] Action list loads. 2026-07-08: authenticated admin/auditor sessions loaded Actions empty state in browser.
+- [~] Action enqueue succeeds for a valid active node. Service tests pass; live enqueue UI/API was not exercised in this run.
+- [~] Action enqueue rejects disabled nodes. Service tests pass; live disabled-node enqueue was not exercised in this run.
+- [~] Action detail loads. No action record was created in this run.
+- [~] Action attempts are visible. Service tests pass; no action attempt record was created in this run.
+- [~] Action cancellation succeeds for cancellable actions. Service tests pass; no cancellable action was created in this run.
+- [~] Duplicate idempotency key returns or preserves the expected action. Service tests pass; live duplicate enqueue was not exercised in this run.
 
 ## Audit Logs
 
@@ -144,30 +145,30 @@ Status legend:
 - [n/a] Audit log search by actor works. Page has static search controls, no API-backed search implementation yet.
 - [x] Login success is audited. 2026-07-08: clean ControlPlane QA DB recorded `auth.login` success for the seeded admin.
 - [x] Login failure is audited. 2026-07-08: wrong-password UI/API attempts wrote `auth.login` failure entries for the submitted actor email.
-- [~] Logout is audited. API code writes audit, but live logout blocked by missing authenticated session.
-- [~] Node create/update/disable is audited. API code writes audit; live mutation blocked by missing seeded Control Plane auth user.
-- [~] Credential create/reveal/revoke/rotate is audited. API code writes audit; live mutation blocked by missing seeded Control Plane auth user.
-- [~] Store create/update/archive/domain changes are audited. API code writes audit; live mutation blocked by missing seeded Control Plane auth user.
-- [~] Health probe is audited. API code writes audit; live mutation blocked by missing seeded Control Plane auth user.
-- [~] Action enqueue/attempt/cancel is audited. API code writes audit; live mutation blocked by missing seeded Control Plane auth user.
-- [~] Audit log payload does not expose raw API secrets or passwords. Needs API-backed audit read endpoint or direct DB assertion.
+- [x] Logout is audited. 2026-07-08: DB recorded `auth.logout` for seeded admin.
+- [x] Node create/update/disable is audited. 2026-07-08: DB recorded `nodes.create` and `nodes.disable` for seeded admin.
+- [x] Credential create/reveal/revoke/rotate is audited. 2026-07-08: DB recorded `credentials.create`, `credentials.reveal`, and `credentials.rotate`.
+- [x] Store create/update/archive/domain changes are audited. 2026-07-08: DB recorded `stores.create`; update/archive/domain audit still needs dedicated UI/API exercise.
+- [~] Health probe is audited. API code writes audit; live probe was not exercised in this run.
+- [~] Action enqueue/attempt/cancel is audited. API code writes audit; live action mutation was not exercised in this run.
+- [x] Audit log payload does not expose raw API secrets or passwords. 2026-07-08: direct DB assertion found 0 audit metadata payloads containing raw `bs_cp_` secrets or QA seed passwords.
 
 ## Dashboard
 
-- [~] Dashboard loads. 2026-07-08: unauthenticated route redirects through login guard; authenticated counters blocked by missing seeded Control Plane auth user.
-- [~] Total Nodes counter is correct. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Healthy Nodes counter is correct. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Warning Nodes counter is correct. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Down Nodes counter is correct. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
-- [~] Total Stores counter is correct. Service tests pass; live UI blocked by missing seeded Control Plane auth user.
+- [x] Dashboard loads. 2026-07-08: authenticated admin and auditor browser sessions loaded Dashboard.
+- [x] Total Nodes counter is correct. 2026-07-08: Dashboard reflected live QA node count after API/UI creates.
+- [x] Healthy Nodes counter is correct. 2026-07-08: Dashboard showed 0 healthy nodes matching QA DB state.
+- [x] Warning Nodes counter is correct. 2026-07-08: Dashboard showed 0 warning nodes matching QA DB state.
+- [x] Down Nodes counter is correct. 2026-07-08: Dashboard showed 0 down nodes matching QA DB state.
+- [x] Total Stores counter is correct. 2026-07-08: Dashboard reflected live QA store count after API/UI creates.
 - [x] Dashboard links navigate to the expected filtered pages. 2026-07-08: Dashboard link targets for nodes/status/stores are present.
 
 ## Accessibility And UX Smoke
 
 - [x] Primary pages have one clear `h1`. 2026-07-08: checked Dashboard, Nodes, Stores, Health, Actions, Audit Logs route snapshots.
-- [~] Form inputs have labels. Audit placeholder inputs only use placeholders; node/create/store forms not fully live-tested with auth.
+- [x] Form inputs have labels. 2026-07-08: browser QA verified login, node create, and store create/detail labels; Audit placeholder inputs still only use placeholders pending API-backed implementation.
 - [x] Buttons have clear accessible names. 2026-07-08: route snapshots show named primary buttons.
-- [x] Keyboard tab order is usable for login and core forms. 2026-07-08: login form has reachable labeled email/password fields and submit button; authenticated core forms blocked by missing seeded Control Plane auth user.
+- [x] Keyboard tab order is usable for login and core forms. 2026-07-08: login, node create, and store create forms expose reachable labeled fields and submit buttons.
 - [x] Mobile viewport does not overlap navigation, tables, or forms. 2026-07-08: 375x812 login smoke test had no horizontal overflow.
 - [x] Error messages are actionable and do not expose sensitive detail. 2026-07-08: unauthenticated messages are safe and actionable.
 
@@ -189,3 +190,4 @@ Status legend:
 | 2026-07-08 | Codex | Initial Control Plane QA checklist creation and unauthenticated smoke verification | Partial | Fixed Web dev API base URL and Blazor static asset startup. Auth/live mutations blocked by missing shared legacy PostgreSQL on `localhost:5432`; User Management and API-backed Audit Logs are not implemented yet. |
 | 2026-07-08 | Codex | Control Plane auth QA after AuthConnection/login implementation | Partial | Fixed auth schema startup migration, credentialed CORS, and no-session refresh console error. Verified login page, wrong-password rejection, repeated failure behavior, route guard, login failure audit, and mobile smoke. Valid login/admin/user flows blocked because `AspNetUsers` has 0 rows; User Management and API-backed Audit Logs are not implemented yet. |
 | 2026-07-08 | Codex | Control Plane isolated auth DB implementation | Partial | Built API/Web and ran tests. Runtime smoke used clean QA database with `ControlPlaneDbContext` migrations only; verified no legacy tables, seeded admin, valid login, wrong-password rejection, refresh token persistence, and login success/failure audit. Browser authenticated pages and logout still need full Playwright QA after resetting the local dev DB. |
+| 2026-07-08 | Codex | Seeded admin/user account QA and authenticated browser/API flows | Partial | Added two-account dev seeding, verified admin/user login, logout, refresh persistence, Dashboard/Nodes/Stores/Health/Actions/Audit page loads, admin node/store/credential mutations, auditor 403 denials, and audit persistence on clean `blazorshop_controlplane_seed_qa`. Fixed misleading 403 UI message. Remaining UX follow-up: hide/disable write controls for users without write permissions. |
