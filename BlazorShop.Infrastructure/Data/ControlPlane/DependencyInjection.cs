@@ -8,6 +8,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using BlazorShop.Application.ControlPlane.Nodes;
     using BlazorShop.Application.ControlPlane.Security;
     using BlazorShop.Application.ControlPlane.Stores;
+    using BlazorShop.Application.ControlPlane.Users;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.Services.Contracts.Logging;
     using BlazorShop.Domain.Contracts;
@@ -58,6 +59,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             services.AddScoped<IControlPlaneDashboardService, ControlPlaneDashboardService>();
             services.AddScoped<IControlPlaneHealthService, ControlPlaneHealthService>();
             services.AddScoped<IControlPlaneStoreService, ControlPlaneStoreService>();
+            services.AddScoped<IControlPlaneUserManagementService, ControlPlaneUserManagementService>();
             services.AddHostedService<ControlPlaneProbeBackgroundService>();
             services.AddHttpClient<ICommerceNodeControlClient, CommerceNodeControlClient>(
                 client =>
