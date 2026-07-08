@@ -30,6 +30,12 @@ namespace BlazorShop.Application.ControlPlane.Users
     public sealed record ChangeControlPlaneUserStatusRequest(
         string? Reason);
 
+    public sealed record AssignControlPlaneRoleRequest(
+        string RoleKey);
+
+    public sealed record AssignControlPlanePermissionRequest(
+        string PermissionKey);
+
     public sealed record ControlPlaneUserActor(
         string? IdentityUserId,
         string? Email);

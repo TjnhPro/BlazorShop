@@ -350,6 +350,170 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return await ReloadDetailAsync(publicId, cancellationToken);
         }
 
+        public async Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> AssignRoleAsync(
+            Guid publicId,
+            AssignControlPlaneRoleRequest request,
+            ControlPlaneUserActor actor,
+            CancellationToken cancellationToken = default)
+        {
+            if (request is null || string.IsNullOrWhiteSpace(request.RoleKey))
+            {
+                return Failed<ControlPlaneUserDetail>("Role key is required.", ControlPlaneUserOperationFailure.Validation);
+            }
+
+            var roleKey = request.RoleKey.Trim().ToLowerInvariant();
+            var user = await LoadUserForMutationAsync(publicId, cancellationToken);
+            if (user is null)
+            {
+                return NotFound();
+            }
+
+            var role = await this.dbContext.ControlPlaneRoles
+                .FirstOrDefaultAsync(role => role.Key == roleKey, cancellationToken);
+
+            if (role is null)
+            {
+                return Failed<ControlPlaneUserDetail>("Control Plane role is invalid.", ControlPlaneUserOperationFailure.Validation);
+            }
+
+            if (user.Roles.Any(userRole => userRole.RoleId == role.Id))
+            {
+                return await ReloadDetailAsync(publicId, cancellationToken);
+            }
+
+            user.Roles.Add(new ControlPlaneAdminUserRole
+            {
+                AdminUserId = user.Id,
+                RoleId = role.Id,
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+            user.UpdatedAt = DateTimeOffset.UtcNow;
+
+            await this.dbContext.SaveChangesAsync(cancellationToken);
+            return await ReloadDetailAsync(publicId, cancellationToken);
+        }
+
+        public async Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> RemoveRoleAsync(
+            Guid publicId,
+            string roleKey,
+            ControlPlaneUserActor actor,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(roleKey))
+            {
+                return Failed<ControlPlaneUserDetail>("Role key is required.", ControlPlaneUserOperationFailure.Validation);
+            }
+
+            var normalizedRoleKey = roleKey.Trim().ToLowerInvariant();
+            var user = await LoadUserForMutationAsync(publicId, cancellationToken);
+            if (user is null)
+            {
+                return NotFound();
+            }
+
+            var userRole = user.Roles.FirstOrDefault(role => role.Role?.Key == normalizedRoleKey);
+            if (userRole is null)
+            {
+                return await ReloadDetailAsync(publicId, cancellationToken);
+            }
+
+            if (normalizedRoleKey == PlatformOwnerRoleKey && await CountActivePlatformOwnersAsync(cancellationToken) <= 1)
+            {
+                return Failed<ControlPlaneUserDetail>("Cannot remove the last active platform owner.", ControlPlaneUserOperationFailure.Conflict);
+            }
+
+            this.dbContext.Remove(userRole);
+            user.UpdatedAt = DateTimeOffset.UtcNow;
+
+            await this.dbContext.SaveChangesAsync(cancellationToken);
+            return await ReloadDetailAsync(publicId, cancellationToken);
+        }
+
+        public async Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> AssignPermissionAsync(
+            Guid publicId,
+            AssignControlPlanePermissionRequest request,
+            ControlPlaneUserActor actor,
+            CancellationToken cancellationToken = default)
+        {
+            if (request is null || string.IsNullOrWhiteSpace(request.PermissionKey))
+            {
+                return Failed<ControlPlaneUserDetail>("Permission key is required.", ControlPlaneUserOperationFailure.Validation);
+            }
+
+            var permissionKey = request.PermissionKey.Trim().ToLowerInvariant();
+            var user = await LoadUserForMutationAsync(publicId, cancellationToken);
+            if (user is null)
+            {
+                return NotFound();
+            }
+
+            var permission = await this.dbContext.Permissions
+                .FirstOrDefaultAsync(permission => permission.Key == permissionKey, cancellationToken);
+
+            if (permission is null)
+            {
+                return Failed<ControlPlaneUserDetail>("Control Plane permission is invalid.", ControlPlaneUserOperationFailure.Validation);
+            }
+
+            if (user.DirectPermissions.Any(userPermission => userPermission.PermissionId == permission.Id))
+            {
+                return await ReloadDetailAsync(publicId, cancellationToken);
+            }
+
+            var actorAdminUserId = await ResolveActorAdminUserIdAsync(actor, cancellationToken);
+            user.DirectPermissions.Add(new ControlPlaneAdminUserPermission
+            {
+                AdminUserId = user.Id,
+                PermissionId = permission.Id,
+                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedByAdminUserId = actorAdminUserId
+            });
+            user.UpdatedAt = DateTimeOffset.UtcNow;
+
+            await this.dbContext.SaveChangesAsync(cancellationToken);
+            return await ReloadDetailAsync(publicId, cancellationToken);
+        }
+
+        public async Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> RemovePermissionAsync(
+            Guid publicId,
+            string permissionKey,
+            ControlPlaneUserActor actor,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(permissionKey))
+            {
+                return Failed<ControlPlaneUserDetail>("Permission key is required.", ControlPlaneUserOperationFailure.Validation);
+            }
+
+            var normalizedPermissionKey = permissionKey.Trim().ToLowerInvariant();
+            var user = await LoadUserForMutationAsync(publicId, cancellationToken);
+            if (user is null)
+            {
+                return NotFound();
+            }
+
+            var directPermission = user.DirectPermissions.FirstOrDefault(userPermission => userPermission.Permission?.Key == normalizedPermissionKey);
+            if (directPermission is null)
+            {
+                return await ReloadDetailAsync(publicId, cancellationToken);
+            }
+
+            if (IsSelf(actor, user)
+                && IsCriticalAccessPermission(normalizedPermissionKey)
+                && !HasRolePermission(user, normalizedPermissionKey))
+            {
+                return Failed<ControlPlaneUserDetail>(
+                    "Cannot remove your own final role or permission management access.",
+                    ControlPlaneUserOperationFailure.Conflict);
+            }
+
+            this.dbContext.Remove(directPermission);
+            user.UpdatedAt = DateTimeOffset.UtcNow;
+
+            await this.dbContext.SaveChangesAsync(cancellationToken);
+            return await ReloadDetailAsync(publicId, cancellationToken);
+        }
+
         public async Task<ControlPlaneRoleCatalogResponse> ListRolesAsync(
             CancellationToken cancellationToken = default)
         {
@@ -519,6 +683,24 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
             return string.Equals(identityRole, "Admin", StringComparison.Ordinal)
                    || string.Equals(identityRole, "User", StringComparison.Ordinal);
+        }
+
+        private static bool IsSelf(ControlPlaneUserActor actor, ControlPlaneAdminUser user)
+        {
+            return !string.IsNullOrWhiteSpace(actor.IdentityUserId)
+                   && string.Equals(actor.IdentityUserId, user.IdentityUserId, StringComparison.Ordinal);
+        }
+
+        private static bool IsCriticalAccessPermission(string permissionKey)
+        {
+            return string.Equals(permissionKey, "roles.assign", StringComparison.Ordinal)
+                   || string.Equals(permissionKey, "permissions.manage", StringComparison.Ordinal);
+        }
+
+        private static bool HasRolePermission(ControlPlaneAdminUser user, string permissionKey)
+        {
+            return user.Roles.Any(userRole => userRole.Role!.Permissions
+                .Any(rolePermission => rolePermission.Permission!.Key == permissionKey));
         }
 
         private static string GenerateTemporaryPassword()

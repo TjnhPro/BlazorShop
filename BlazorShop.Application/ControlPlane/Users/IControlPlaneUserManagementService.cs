@@ -33,6 +33,30 @@ namespace BlazorShop.Application.ControlPlane.Users
             ControlPlaneUserActor actor,
             CancellationToken cancellationToken = default);
 
+        Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> AssignRoleAsync(
+            Guid publicId,
+            AssignControlPlaneRoleRequest request,
+            ControlPlaneUserActor actor,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> RemoveRoleAsync(
+            Guid publicId,
+            string roleKey,
+            ControlPlaneUserActor actor,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> AssignPermissionAsync(
+            Guid publicId,
+            AssignControlPlanePermissionRequest request,
+            ControlPlaneUserActor actor,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> RemovePermissionAsync(
+            Guid publicId,
+            string permissionKey,
+            ControlPlaneUserActor actor,
+            CancellationToken cancellationToken = default);
+
         Task<ControlPlaneRoleCatalogResponse> ListRolesAsync(
             CancellationToken cancellationToken = default);
 

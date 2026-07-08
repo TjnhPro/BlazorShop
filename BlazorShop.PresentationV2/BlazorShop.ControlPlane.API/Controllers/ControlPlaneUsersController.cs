@@ -107,6 +107,66 @@ namespace BlazorShop.ControlPlane.API.Controllers
             return ToActionResult(result);
         }
 
+        [HttpPost("{publicId:guid}/roles")]
+        [Authorize(Policy = ControlPlanePolicyNames.RolesAssign)]
+        public async Task<IActionResult> AssignRole(Guid publicId, AssignControlPlaneRoleRequest request, CancellationToken cancellationToken)
+        {
+            var result = await this.userManagementService.AssignRoleAsync(publicId, request, GetActor(), cancellationToken);
+
+            await this.WriteUserAuditAsync(
+                "users.role.assign",
+                result.Success ? "success" : "failure",
+                publicId,
+                cancellationToken);
+
+            return ToActionResult(result);
+        }
+
+        [HttpDelete("{publicId:guid}/roles/{roleKey}")]
+        [Authorize(Policy = ControlPlanePolicyNames.RolesAssign)]
+        public async Task<IActionResult> RemoveRole(Guid publicId, string roleKey, CancellationToken cancellationToken)
+        {
+            var result = await this.userManagementService.RemoveRoleAsync(publicId, roleKey, GetActor(), cancellationToken);
+
+            await this.WriteUserAuditAsync(
+                "users.role.remove",
+                result.Success ? "success" : "failure",
+                publicId,
+                cancellationToken);
+
+            return ToActionResult(result);
+        }
+
+        [HttpPost("{publicId:guid}/permissions")]
+        [Authorize(Policy = ControlPlanePolicyNames.PermissionsManage)]
+        public async Task<IActionResult> AssignPermission(Guid publicId, AssignControlPlanePermissionRequest request, CancellationToken cancellationToken)
+        {
+            var result = await this.userManagementService.AssignPermissionAsync(publicId, request, GetActor(), cancellationToken);
+
+            await this.WriteUserAuditAsync(
+                "users.permission.assign",
+                result.Success ? "success" : "failure",
+                publicId,
+                cancellationToken);
+
+            return ToActionResult(result);
+        }
+
+        [HttpDelete("{publicId:guid}/permissions/{permissionKey}")]
+        [Authorize(Policy = ControlPlanePolicyNames.PermissionsManage)]
+        public async Task<IActionResult> RemovePermission(Guid publicId, string permissionKey, CancellationToken cancellationToken)
+        {
+            var result = await this.userManagementService.RemovePermissionAsync(publicId, permissionKey, GetActor(), cancellationToken);
+
+            await this.WriteUserAuditAsync(
+                "users.permission.remove",
+                result.Success ? "success" : "failure",
+                publicId,
+                cancellationToken);
+
+            return ToActionResult(result);
+        }
+
         [HttpGet("{publicId:guid}")]
         public async Task<IActionResult> Get(Guid publicId, CancellationToken cancellationToken)
         {
