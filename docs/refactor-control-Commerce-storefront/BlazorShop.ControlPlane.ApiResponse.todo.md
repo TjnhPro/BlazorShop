@@ -137,16 +137,16 @@ Commit: `docs(control-plane): inventory api response shapes`
 
 ### API Contract
 
-- [ ] Add `ControlPlaneApiResponse<TData>`:
-  - [ ] `bool Success`
-  - [ ] `string Message`
-  - [ ] `TData? Data`
-- [ ] Add optional non-generic factory helpers:
-  - [ ] `Ok(data, message)`
-  - [ ] `Created(data, message)`
-  - [ ] `Failed(message, statusCode, data = null)`
-  - [ ] `ValidationFailed(errors)`
-- [ ] Keep JSON property names as camelCase: `success`, `message`, `data`.
+- [x] Add `ControlPlaneApiResponse<TData>`:
+  - [x] `bool Success`
+  - [x] `string Message`
+  - [x] `TData? Data`
+- [x] Add optional non-generic factory helpers:
+  - [x] `Ok(data, message)`
+  - [x] `Created(data, message)`
+  - [x] `Failed(message, statusCode, data = null)`
+  - [x] `ValidationFailed(errors)`
+- [x] Keep JSON property names as camelCase: `success`, `message`, `data`.
 
 Recommended location:
 
@@ -157,21 +157,21 @@ Rationale: the envelope is a presentation/API boundary concern. Application serv
 
 ### Controller Helper
 
-- [ ] Add a shared helper or base controller to remove duplicate mapping:
-  - [ ] Map success result to `Ok(ApiResponse.Success(data, message))`
-  - [ ] Map created result to `CreatedAtAction(..., ApiResponse.Success(data, message))`
-  - [ ] Map `NotFound` to `success=false`
-  - [ ] Map `Conflict` to `success=false`
-  - [ ] Map validation to `success=false`
-- [ ] Do not hide HTTP status code behind `success=false`.
+- [x] Add a shared helper or base controller to remove duplicate mapping:
+  - [x] Map success result to `Ok(ApiResponse.Success(data, message))`
+  - [x] Map created result to `CreatedAtAction(..., ApiResponse.Success(data, message))`
+  - [x] Map `NotFound` to `success=false`
+  - [x] Map `Conflict` to `success=false`
+  - [x] Map validation to `success=false`
+- [x] Do not hide HTTP status code behind `success=false`.
 
 ### Global API Failures
 
-- [ ] Configure `[ApiController]` invalid model state responses to return the envelope.
-- [ ] Configure exception handling to return the envelope with a generic safe message.
-- [ ] Configure `401` and `403` responses to return the envelope body.
-- [ ] Configure rate limit `429` response to return the envelope body.
-- [ ] Keep correlation id available in error `data`.
+- [x] Configure `[ApiController]` invalid model state responses to return the envelope.
+- [x] Configure exception handling to return the envelope with a generic safe message.
+- [x] Configure `401` and `403` responses to return the envelope body.
+- [x] Configure rate limit `429` response to return the envelope body.
+- [x] Keep correlation id available in error `data`.
 
 Commit: `feat(control-plane): add api response envelope infrastructure`
 

@@ -4,9 +4,12 @@ using System.Threading.RateLimiting;
 using BlazorShop.Application.ControlPlane;
 using BlazorShop.ControlPlane.API.Authorization;
 using BlazorShop.ControlPlane.API.Middleware;
+using BlazorShop.ControlPlane.API.Responses;
 using BlazorShop.Infrastructure.Data.ControlPlane;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,7 +22,28 @@ builder.AddServiceDefaults();
 ValidateProductionConfiguration(builder.Configuration, builder.Environment, allowedOrigins);
 
 builder.Services.AddProblemDetails();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(
+        options =>
+        {
+            options.InvalidModelStateResponseFactory = context =>
+            {
+                var errors = context.ModelState
+                    .Where(entry => entry.Value?.Errors.Count > 0)
+                    .ToDictionary(
+                        entry => entry.Key,
+                        entry => entry.Value?.Errors
+                            .Select(error => string.IsNullOrWhiteSpace(error.ErrorMessage)
+                                ? "The request value is invalid."
+                                : error.ErrorMessage)
+                            .ToArray() ?? []);
+
+                return ControlPlaneApiResponseWriter.Failure(
+                    StatusCodes.Status400BadRequest,
+                    "Validation failed.",
+                    new { errors });
+            };
+        });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.Configure<ForwardedHeadersOptions>(
@@ -41,6 +65,16 @@ builder.Services.AddRateLimiter(
     options =>
     {
         options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+        options.OnRejected = async (context, cancellationToken) =>
+        {
+            await ControlPlaneApiResponseWriter.WriteFailureAsync(
+                context.HttpContext,
+                StatusCodes.Status429TooManyRequests,
+                "Too many Control Plane requests. Try again shortly.",
+                ControlPlaneApiResponseWriter.CreateCorrelationData(context.HttpContext),
+                cancellationToken);
+        };
+
         options.AddFixedWindowLimiter(
             "control-plane-api",
             limiterOptions =>
@@ -74,6 +108,30 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddControlPlaneApplication(builder.Configuration);
 builder.Services.AddControlPlaneInfrastructure(builder.Configuration);
+builder.Services.Configure<JwtBearerOptions>(
+    JwtBearerDefaults.AuthenticationScheme,
+    options =>
+    {
+        options.Events ??= new JwtBearerEvents();
+        options.Events.OnChallenge = async context =>
+        {
+            context.HandleResponse();
+            await ControlPlaneApiResponseWriter.WriteFailureAsync(
+                context.HttpContext,
+                StatusCodes.Status401Unauthorized,
+                "Sign in with a Control Plane account to continue.",
+                ControlPlaneApiResponseWriter.CreateCorrelationData(context.HttpContext));
+        };
+
+        options.Events.OnForbidden = async context =>
+        {
+            await ControlPlaneApiResponseWriter.WriteFailureAsync(
+                context.HttpContext,
+                StatusCodes.Status403Forbidden,
+                "Your Control Plane account does not have permission for this action.",
+                ControlPlaneApiResponseWriter.CreateCorrelationData(context.HttpContext));
+        };
+    });
 
 var app = builder.Build();
 
@@ -82,12 +140,44 @@ if (ShouldMigrateDatabase(app))
     await BlazorShop.ControlPlane.API.ControlPlaneDatabaseBootstrapper.MigrateAsync(app.Services);
 }
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler();
-}
+app.UseExceptionHandler(
+    exceptionApp =>
+    {
+        exceptionApp.Run(
+            async context =>
+            {
+                var logger = context.RequestServices.GetRequiredService<ILoggerFactory>()
+                    .CreateLogger("BlazorShop.ControlPlane.API.ExceptionHandler");
+                logger.LogError(
+                    "Unhandled Control Plane API exception for {Method} {Path}.",
+                    context.Request.Method,
+                    context.Request.Path);
 
-app.UseStatusCodePages();
+                await ControlPlaneApiResponseWriter.WriteFailureAsync(
+                    context,
+                    StatusCodes.Status500InternalServerError,
+                    "An unexpected Control Plane error occurred.",
+                    ControlPlaneApiResponseWriter.CreateCorrelationData(context));
+            });
+    });
+
+app.UseStatusCodePages(
+    async context =>
+    {
+        var httpContext = context.HttpContext;
+        if (httpContext.Response.HasStarted
+            || httpContext.Response.ContentLength.HasValue
+            || !ShouldWriteStatusCodeEnvelope(httpContext.Response.StatusCode))
+        {
+            return;
+        }
+
+        await ControlPlaneApiResponseWriter.WriteFailureAsync(
+            httpContext,
+            httpContext.Response.StatusCode,
+            ResolveStatusCodeMessage(httpContext.Response.StatusCode),
+            ControlPlaneApiResponseWriter.CreateCorrelationData(httpContext));
+    });
 app.UseForwardedHeaders();
 app.UseMiddleware<ControlPlaneCorrelationIdMiddleware>();
 
@@ -147,4 +237,24 @@ static void ValidateProductionConfiguration(IConfiguration configuration, IWebHo
 static bool ShouldMigrateDatabase(WebApplication app)
 {
     return app.Configuration.GetValue("ControlPlane:Database:MigrateOnStartup", app.Environment.IsDevelopment());
+}
+
+static bool ShouldWriteStatusCodeEnvelope(int statusCode)
+{
+    return statusCode is >= 400 and < 600;
+}
+
+static string ResolveStatusCodeMessage(int statusCode)
+{
+    return statusCode switch
+    {
+        StatusCodes.Status400BadRequest => "The Control Plane request is invalid.",
+        StatusCodes.Status401Unauthorized => "Sign in with a Control Plane account to continue.",
+        StatusCodes.Status403Forbidden => "Your Control Plane account does not have permission for this action.",
+        StatusCodes.Status404NotFound => "The requested Control Plane resource was not found.",
+        StatusCodes.Status409Conflict => "The Control Plane request conflicts with the current state.",
+        StatusCodes.Status429TooManyRequests => "Too many Control Plane requests. Try again shortly.",
+        StatusCodes.Status500InternalServerError => "An unexpected Control Plane error occurred.",
+        _ => "The Control Plane request could not be completed."
+    };
 }
