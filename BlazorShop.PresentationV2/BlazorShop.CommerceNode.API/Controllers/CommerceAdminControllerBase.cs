@@ -5,8 +5,6 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     using Microsoft.AspNetCore.Mvc;
 
-    [ApiController]
-    [Route("api/commerce/admin/[controller]")]
     public abstract class CommerceAdminControllerBase : ControllerBase
     {
         protected IActionResult Success<TData>(TData? data, string message)

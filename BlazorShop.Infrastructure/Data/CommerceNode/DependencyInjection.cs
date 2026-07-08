@@ -43,6 +43,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IAdminAuditService, CommerceNodeAdminAuditService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IProductVariantService, ProductVariantService>();
+            services.AddScoped<IAdminInventoryService, CommerceNodeAdminInventoryService>();
 
             return services;
         }

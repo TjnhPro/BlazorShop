@@ -6,6 +6,8 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     using Microsoft.AspNetCore.Mvc;
 
+    [ApiController]
+    [Route("api/commerce/admin/categories")]
     public sealed class CategoriesController : CommerceAdminControllerBase
     {
         private readonly ICategoryService categoryService;

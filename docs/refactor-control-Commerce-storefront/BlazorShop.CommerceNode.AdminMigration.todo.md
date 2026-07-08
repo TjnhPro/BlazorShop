@@ -425,22 +425,23 @@ Stop gate: Control Plane can manage basic catalog records through Commerce Node.
 
 Database:
 
-- [ ] Use existing `ProductVariants`.
-- [ ] Confirm unique index on product + size scale + size value exists.
+- [x] Use existing `ProductVariants`.
+- [x] Confirm unique index on product + size scale + size value exists.
 
 API:
 
-- [ ] Migrate `ProductVariantController` Admin endpoints.
-- [ ] Migrate `AdminInventoryController`.
+- [x] Migrate `ProductVariantController` Admin endpoints.
+- [x] Migrate `AdminInventoryController`.
 
 Services:
 
-- [ ] Reuse `ProductVariantService`.
-- [ ] Adapt `AdminInventoryService` to `CommerceNodeDbContext`.
-- [ ] Keep inventory audit logs.
+- [x] Reuse `ProductVariantService`.
+- [x] Adapt `AdminInventoryService` to `CommerceNodeDbContext`.
+- [x] Keep inventory audit logs.
 
 QA:
 
+- [x] Commerce Node API builds successfully.
 - [ ] List variants by product.
 - [ ] Create variant.
 - [ ] Update variant.
