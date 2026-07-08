@@ -41,9 +41,12 @@ namespace BlazorShop.ControlPlane.API.Authorization
                     adminUser.IdentityUserId == identityUserId
                     && adminUser.Status == "active"
                     && adminUser.DeletedAt == null)
-                .SelectMany(adminUser => adminUser.Roles)
-                .SelectMany(userRole => userRole.Role!.Permissions)
-                .AnyAsync(rolePermission => rolePermission.Permission!.Key == requirement.Permission);
+                .AnyAsync(adminUser =>
+                    adminUser.Roles
+                        .Any(userRole => userRole.Role!.Permissions
+                            .Any(rolePermission => rolePermission.Permission!.Key == requirement.Permission))
+                    || adminUser.DirectPermissions
+                        .Any(userPermission => userPermission.Permission!.Key == requirement.Permission));
 
             if (hasPermission)
             {
