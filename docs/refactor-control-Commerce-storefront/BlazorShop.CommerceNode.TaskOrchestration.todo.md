@@ -376,13 +376,13 @@ Stop gate:
 
 ### Phase 2 - Task API
 
-- [ ] Add `CommerceTasksController`.
-- [ ] Add enqueue endpoint.
-- [ ] Add list/detail endpoints.
-- [ ] Add cancel endpoint.
-- [ ] Add retry endpoint.
-- [ ] Apply `api/commerce/*` auth.
-- [ ] Return existing API response envelope.
+- [x] Add `CommerceTasksController`.
+- [x] Add enqueue endpoint.
+- [x] Add list/detail endpoints.
+- [x] Add cancel endpoint.
+- [x] Add retry endpoint.
+- [x] Apply `api/commerce/*` auth.
+- [x] Return existing API response envelope.
 
 Stop gate:
 
