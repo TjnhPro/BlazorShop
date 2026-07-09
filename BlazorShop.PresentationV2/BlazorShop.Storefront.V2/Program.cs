@@ -45,6 +45,11 @@ builder.Services.AddHttpClient<IStorefrontSessionResolver, StorefrontSessionReso
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
     client.BaseAddress = ResolveApiBaseAddress(configuration);
 });
+builder.Services.AddHttpClient<IStorefrontAuthClient, StorefrontAuthClient>((serviceProvider, client) =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    client.BaseAddress = ResolveApiBaseAddress(configuration);
+});
 builder.Services.AddHttpClient<StorefrontApiClient>((serviceProvider, client) =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();

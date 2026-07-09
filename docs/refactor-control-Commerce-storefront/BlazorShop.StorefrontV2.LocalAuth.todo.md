@@ -217,18 +217,18 @@ Recommended MVP:
 
 ## Phase 1 - Storefront Auth Client
 
-- [ ] Add `StorefrontAuthClient` for Commerce Node auth API calls.
-- [ ] Add DTO/result wrappers for auth response and `Set-Cookie` propagation.
-- [ ] Reuse existing `CreateUser`, `LoginUser`, and `LoginResponse` models where practical.
-- [ ] Add tests for:
-  - login success parses envelope and captures cookie headers
-  - login failure returns API message
-  - register success returns API message
-  - Commerce Node unavailable returns safe failure
+- [x] Add `StorefrontAuthClient` for Commerce Node auth API calls.
+- [x] Add DTO/result wrappers for auth response and `Set-Cookie` propagation.
+- [x] Reuse existing `CreateUser`, `LoginUser`, and `LoginResponse` models where practical.
+- [x] Add tests for:
+  - [x] login success parses envelope and captures cookie headers
+  - [x] login failure returns API message
+  - [x] register success returns API message
+  - [x] Commerce Node unavailable returns safe failure
 
 Stop gate:
 
-- Storefront V2 can call auth endpoints through a typed client without rendering pages yet.
+- Storefront V2 can call auth endpoints through a typed client without rendering pages yet. 2026-07-09: `StorefrontV2AuthClientTests` passed 4/4.
 
 ## Phase 2 - Local Login Page
 
