@@ -390,13 +390,13 @@ Stop gate:
 
 ### Phase 3 - Worker And Dispatch
 
-- [ ] Add `CommerceTaskWorker`.
-- [ ] Add task locking.
-- [ ] Add handler registry.
-- [ ] Add task heartbeat.
-- [ ] Add step recording.
-- [ ] Add retry handling.
-- [ ] Add cancellation checks.
+- [x] Add `CommerceTaskWorker`.
+- [x] Add task locking.
+- [x] Add handler registry.
+- [x] Add task heartbeat.
+- [x] Add step recording.
+- [x] Add retry handling.
+- [x] Add cancellation checks.
 
 Stop gate:
 

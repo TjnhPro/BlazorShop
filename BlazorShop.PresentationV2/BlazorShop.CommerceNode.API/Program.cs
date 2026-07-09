@@ -1,6 +1,9 @@
 using BlazorShop.CommerceNode.API.Configuration;
 using BlazorShop.CommerceNode.API.Endpoints;
 using BlazorShop.CommerceNode.API.Middleware;
+using BlazorShop.CommerceNode.API.Tasks;
+using BlazorShop.CommerceNode.API.Workers;
+using BlazorShop.Application.CommerceNode.Tasks;
 using BlazorShop.Infrastructure.Data.CommerceNode;
 
 using Microsoft.AspNetCore.StaticFiles;
@@ -17,7 +20,13 @@ builder.Services.AddOptions<CommerceNodeOptions>()
 builder.Services.AddSingleton<IValidateOptions<CommerceNodeOptions>, CommerceNodeOptionsValidator>();
 builder.Services.AddOptions<CommerceNodeRuntimeOptions>()
     .Bind(builder.Configuration.GetSection(CommerceNodeRuntimeOptions.SectionName));
+builder.Services.AddOptions<CommerceTaskWorkerOptions>()
+    .Bind(builder.Configuration.GetSection(CommerceTaskWorkerOptions.SectionName));
 builder.Services.AddCommerceNodeInfrastructure(builder.Configuration);
+builder.Services.AddScoped<ICommerceTaskHandler, CompleteTestCommerceTaskHandler>();
+builder.Services.AddScoped<ICommerceTaskHandler, FailTestCommerceTaskHandler>();
+builder.Services.AddScoped<ICommerceTaskHandler, WaitTestCommerceTaskHandler>();
+builder.Services.AddHostedService<CommerceTaskWorker>();
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
