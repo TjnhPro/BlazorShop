@@ -140,8 +140,37 @@ dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrast
 - [x] Register success redirects to `/signin?registered=1` and preserves safe return URL. 2026-07-09: covered by host smoke test.
 - [x] Local `/logout` calls Commerce Node `api/internal/auth/logout` and copies expired refresh cookie back to the browser. 2026-07-09: covered by auth client and host smoke tests.
 - [x] Authenticated account menu shows local logout and does not link customer to legacy `BlazorShop.Web`.
-- [~] Browser console has no unexpected errors on `/signin`, `/register`, and logout. Not rerun in browser during local auth implementation; keep for next Playwright/browser QA pass.
+- [x] Browser console has no unexpected errors on `/signin`, `/register`, login, register, and logout. 2026-07-09: Playwright local-auth QA run reported 0 current console errors.
 - [~] Missing Commerce Node auth endpoint degrades to anonymous and does not crash. Session resolver catches refresh failure and returns anonymous; live QA did not disable only the auth endpoint.
+
+## Local Auth Browser QA
+
+Use this checklist whenever Storefront V2 auth UI or Commerce Node auth API changes.
+
+- [x] `GET /signin` renders Storefront V2 page with local form and no redirect to legacy Web. 2026-07-09: Playwright verified `http://localhost:18598/signin`.
+- [x] `GET /register` renders Storefront V2 page with local form and no redirect to legacy Web. 2026-07-09: Playwright verified `http://localhost:18598/register`.
+- [x] Register empty/invalid required fields stay browser-validatable and do not call Commerce Node. 2026-07-09: empty submit stayed on `/register`; invalid required fields were `FullName`, `Email`, `Password`, `ConfirmPassword`.
+- [x] Register password mismatch returns safe Storefront error message. 2026-07-09: returned `Passwords do not match.`
+- [x] Register new customer succeeds against Commerce Node `api/internal/auth/create`. 2026-07-09: registered `qa-browser-1783577745900@example.local`.
+- [x] Duplicate register returns safe Storefront/API error message. 2026-07-09: duplicate returned `User already exists.`
+- [x] Login wrong password returns safe Storefront/API error message. 2026-07-09: wrong password returned `Invalid credentials.`
+- [x] Login correct credentials succeeds against Commerce Node `api/internal/auth/login`. 2026-07-09: QA customer login redirected to `/terms`.
+- [x] Login success sets `__Host-blazorshop-refresh` on Storefront response. 2026-07-09: Playwright cookie list contained `__Host-blazorshop-refresh`.
+- [x] Login success redirects to safe `returnUrl` when provided. 2026-07-09: `/signin?returnUrl=/terms` redirected to `/terms`.
+- [x] Unsafe absolute `returnUrl` is rejected and redirects to `/`. 2026-07-09: covered by automated Storefront V2 host smoke test.
+- [x] Anonymous `/checkout` redirects to `/signin?returnUrl=/checkout`. 2026-07-09: Playwright verified final URL.
+- [x] After login, account menu shows signed-in customer identity. 2026-07-09: menu showed `QA Browser Customer` and the QA email.
+- [x] Logout calls Storefront local `/logout`, clears refresh cookie, and returns anonymous account menu. 2026-07-09: refresh cookie removed and menu returned `Sign in`/`Register`.
+- [x] Browser console has no unexpected errors during `/signin`, `/register`, login, register, and logout. 2026-07-09: current Playwright console error list was empty.
+- [x] Network/browser QA shows no navigation/request to legacy `BlazorShop.Web` or legacy `BlazorShop.API` for auth UI. 2026-07-09: browser performance entries had no suspicious legacy URL/port entries.
+
+2026-07-09 local-auth QA run:
+
+- [x] Automated Storefront V2 auth tests rerun. 2026-07-09: `FullyQualifiedName~PresentationV2.Storefront` passed 23/23.
+- [x] Browser QA for `/signin` rerun. Screenshot: `.gstack/qa-reports/storefrontv2-signin-2026-07-09.png`.
+- [x] Browser QA for `/register` rerun. Screenshot: `.gstack/qa-reports/storefrontv2-register-2026-07-09.png`.
+- [x] Browser QA for successful register/login/logout rerun. Signed-in menu screenshot: `.gstack/qa-reports/storefrontv2-signed-in-menu-2026-07-09.png`.
+- [x] Browser QA console checked. 2026-07-09: no current console errors.
 
 ## SEO And Discovery
 
