@@ -404,12 +404,12 @@ Stop gate:
 
 ### Phase 4 - Docker Deployment Service
 
-- [ ] Add typed deployment options.
-- [ ] Add generated container naming.
-- [ ] Add Storefront image whitelist.
-- [ ] Add env file rendering.
-- [ ] Add container create/update/start/stop/remove operations.
-- [ ] Add health probe call to Storefront `/healthz`.
+- [x] Add typed deployment options.
+- [x] Add generated container naming.
+- [x] Add Storefront image whitelist.
+- [x] Add env file rendering.
+- [x] Add container create/update/start/stop/remove operations.
+- [x] Add health probe call to Storefront `/healthz`.
 
 Stop gate:
 

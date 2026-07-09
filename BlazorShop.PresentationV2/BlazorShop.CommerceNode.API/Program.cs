@@ -1,4 +1,5 @@
 using BlazorShop.CommerceNode.API.Configuration;
+using BlazorShop.CommerceNode.API.Deployment;
 using BlazorShop.CommerceNode.API.Endpoints;
 using BlazorShop.CommerceNode.API.Middleware;
 using BlazorShop.CommerceNode.API.Tasks;
@@ -22,7 +23,11 @@ builder.Services.AddOptions<CommerceNodeRuntimeOptions>()
     .Bind(builder.Configuration.GetSection(CommerceNodeRuntimeOptions.SectionName));
 builder.Services.AddOptions<CommerceTaskWorkerOptions>()
     .Bind(builder.Configuration.GetSection(CommerceTaskWorkerOptions.SectionName));
+builder.Services.AddOptions<StorefrontDeploymentOptions>()
+    .Bind(builder.Configuration.GetSection(StorefrontDeploymentOptions.SectionName));
 builder.Services.AddCommerceNodeInfrastructure(builder.Configuration);
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<IStorefrontDockerDeploymentService, StorefrontDockerDeploymentService>();
 builder.Services.AddScoped<ICommerceTaskHandler, CompleteTestCommerceTaskHandler>();
 builder.Services.AddScoped<ICommerceTaskHandler, FailTestCommerceTaskHandler>();
 builder.Services.AddScoped<ICommerceTaskHandler, WaitTestCommerceTaskHandler>();
