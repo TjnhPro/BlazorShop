@@ -172,8 +172,8 @@ Create `BlazorShop.Storefront.V2` as a copy of the existing Storefront project w
 
 Tasks:
 
-- [ ] Create folder `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`.
-- [ ] Copy from `BlazorShop.Presentation/BlazorShop.Storefront`:
+- [x] Create folder `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`.
+- [x] Copy from `BlazorShop.Presentation/BlazorShop.Storefront`:
   - `Components/`
   - `Configuration/`
   - `Options/`
@@ -188,20 +188,20 @@ Tasks:
   - `appsettings.json`
   - `appsettings.Development.json`
   - `Dockerfile`
-- [ ] Create/rename project file to `BlazorShop.Storefront.V2.csproj`.
-- [ ] Keep project references:
+- [x] Create/rename project file to `BlazorShop.Storefront.V2.csproj`.
+- [x] Keep project references:
   - `BlazorShop.Application`
   - `BlazorShop.ServiceDefaults`
   - `BlazorShop.Web.Shared`
-- [ ] Adjust linked shared web assets path from V2 project location:
+- [x] Adjust linked shared web assets path from V2 project location:
   - source should still be `BlazorShop.Presentation/BlazorShop.Web/wwwroot`.
-- [ ] Update project/assembly root namespace to `BlazorShop.Storefront.V2` if required by compiler.
-- [ ] Add project to `BlazorShop.sln` under solution folder `BlazorShop.PresentationV2`.
+- [x] Update project/assembly root namespace to `BlazorShop.Storefront.V2` if required by compiler. 2026-07-09: assembly/project is V2; Razor root namespace intentionally remains `BlazorShop.Storefront` for copy-first compatibility.
+- [x] Add project to `BlazorShop.sln` under solution folder `BlazorShop.PresentationV2`.
 
 QA gate:
 
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj`
-- [ ] `dotnet build BlazorShop.sln`
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj`
+- [x] `dotnet build BlazorShop.sln`
 
 Commit gate:
 
