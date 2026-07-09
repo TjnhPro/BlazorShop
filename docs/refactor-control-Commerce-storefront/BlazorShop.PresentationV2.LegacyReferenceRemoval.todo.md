@@ -208,14 +208,14 @@ Recommended options:
 
 Recommended for MVP independence: Option C.
 
-- [ ] Change `StorefrontClientAppUrlResolver` to use only `ClientApp:BaseUrl`.
-- [ ] Change validator error text to remove `Services:adminclient`.
-- [ ] If Aspire/apphost later needs service discovery, add a V2-specific key in that phase.
-- [ ] Add/update tests proving no `adminclient` string remains under `BlazorShop.PresentationV2`.
+- [x] Change `StorefrontClientAppUrlResolver` to use only `ClientApp:BaseUrl`.
+- [x] Change validator error text to remove `Services:adminclient`.
+- [x] If Aspire/apphost later needs service discovery, add a V2-specific key in that phase.
+- [x] Add/update tests proving no `adminclient` string remains under `BlazorShop.PresentationV2`; 2026-07-09: runtime/source no-hit verified here and automated guard is added in Phase 6.
 
 Stop gate:
 
-- `rg "adminclient" BlazorShop.PresentationV2 --glob '!**/bin/**' --glob '!**/obj/**'` returns no hits.
+- `rg "adminclient" BlazorShop.PresentationV2 --glob '!**/bin/**' --glob '!**/obj/**'` returns no hits. 2026-07-09: no hits outside generated folders.
 
 ## Phase 6 - Verification Guardrails
 

@@ -50,12 +50,10 @@ namespace BlazorShop.Storefront.Configuration
 
     public sealed class StorefrontClientAppOptionsValidator : IValidateOptions<ClientAppOptions>
     {
-        private readonly IConfiguration _configuration;
         private readonly IHostEnvironment _hostEnvironment;
 
-        public StorefrontClientAppOptionsValidator(IConfiguration configuration, IHostEnvironment hostEnvironment)
+        public StorefrontClientAppOptionsValidator(IHostEnvironment hostEnvironment)
         {
-            _configuration = configuration;
             _hostEnvironment = hostEnvironment;
         }
 
@@ -66,20 +64,14 @@ namespace BlazorShop.Storefront.Configuration
                 return ValidateOptionsResult.Fail("ClientApp:BaseUrl must be an absolute http or https URL when configured.");
             }
 
-            if (_hostEnvironment.IsDevelopment() || HasServiceDiscoveryEndpoint("adminclient"))
+            if (_hostEnvironment.IsDevelopment())
             {
                 return ValidateOptionsResult.Success;
             }
 
             return string.IsNullOrWhiteSpace(options.BaseUrl)
-                ? ValidateOptionsResult.Fail("ClientApp:BaseUrl is required outside Development when Services:adminclient:* is not configured.")
+                ? ValidateOptionsResult.Fail("ClientApp:BaseUrl is required outside Development when checkout or account redirects need an external client app.")
                 : ValidateOptionsResult.Success;
-        }
-
-        private bool HasServiceDiscoveryEndpoint(string serviceName)
-        {
-            return IsAbsoluteHttpUrl(_configuration[$"Services:{serviceName}:https:0"])
-                || IsAbsoluteHttpUrl(_configuration[$"Services:{serviceName}:http:0"]);
         }
 
         private static bool IsAbsoluteHttpUrl(string? value)

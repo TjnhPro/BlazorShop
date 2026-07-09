@@ -3,25 +3,20 @@ namespace BlazorShop.Storefront.Services
     using BlazorShop.Application.Options;
     using BlazorShop.Storefront.Services.Contracts;
 
-    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Options;
 
     public class StorefrontClientAppUrlResolver : IStorefrontClientAppUrlResolver
     {
-        private readonly IConfiguration _configuration;
         private readonly IOptions<ClientAppOptions> _options;
 
-        public StorefrontClientAppUrlResolver(IConfiguration configuration, IOptions<ClientAppOptions> options)
+        public StorefrontClientAppUrlResolver(IOptions<ClientAppOptions> options)
         {
-            _configuration = configuration;
             _options = options;
         }
 
         public string? ResolveBaseUrl()
         {
-            return NormalizeBaseUrl(_configuration["Services:adminclient:https:0"])
-                ?? NormalizeBaseUrl(_configuration["Services:adminclient:http:0"])
-                ?? NormalizeBaseUrl(_options.Value.BaseUrl);
+            return NormalizeBaseUrl(_options.Value.BaseUrl);
         }
 
         public string ResolveUrl(string? relativeOrAbsoluteUrl)
