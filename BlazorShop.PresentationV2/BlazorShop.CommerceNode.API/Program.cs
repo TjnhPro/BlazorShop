@@ -34,6 +34,7 @@ builder.Services.AddSingleton<INginxDeploymentService, NginxDeploymentService>()
 builder.Services.AddScoped<ICommerceTaskHandler, CompleteTestCommerceTaskHandler>();
 builder.Services.AddScoped<ICommerceTaskHandler, FailTestCommerceTaskHandler>();
 builder.Services.AddScoped<ICommerceTaskHandler, WaitTestCommerceTaskHandler>();
+builder.Services.AddScoped<ICommerceTaskHandler, StoreCreateAndDeployTaskHandler>();
 builder.Services.AddHostedService<CommerceTaskWorker>();
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();

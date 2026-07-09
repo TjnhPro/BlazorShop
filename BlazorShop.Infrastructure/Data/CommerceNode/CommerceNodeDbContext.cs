@@ -50,6 +50,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
         public DbSet<StoreDeployment> StoreDeployments => Set<StoreDeployment>();
 
+        public DbSet<CommerceStore> CommerceStores => Set<CommerceStore>();
+
+        public DbSet<CommerceStoreDomain> CommerceStoreDomains => Set<CommerceStoreDomain>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -284,6 +288,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                     .HasForeignKey(deployment => deployment.TaskId)
                     .OnDelete(DeleteBehavior.SetNull);
 
+                entity.HasOne(deployment => deployment.Store)
+                    .WithOne()
+                    .HasForeignKey<StoreDeployment>(deployment => deployment.StoreId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
                 entity.HasIndex(deployment => deployment.StoreId).IsUnique();
                 entity.HasIndex(deployment => deployment.ContainerName).IsUnique();
                 entity.HasIndex(deployment => deployment.Status);
@@ -292,6 +301,74 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                     table => table.HasCheckConstraint(
                         "ck_store_deployment_status",
                         "status in ('provisioning', 'active', 'failed', 'disabled', 'removed')"));
+            });
+
+            modelBuilder.Entity<CommerceStore>(entity =>
+            {
+                entity.ToTable("commerce_store");
+                entity.HasKey(store => store.Id);
+                entity.Property(store => store.Id).HasColumnName("id");
+                entity.Property(store => store.PublicId).HasColumnName("public_id");
+                entity.Property(store => store.ControlPlaneStorePublicId).HasColumnName("control_plane_store_public_id");
+                entity.Property(store => store.StoreKey).HasColumnName("store_key").IsRequired();
+                entity.Property(store => store.Name).HasColumnName("name").HasMaxLength(400).IsRequired();
+                entity.Property(store => store.Status).HasColumnName("status").IsRequired();
+                entity.Property(store => store.BaseUrl).HasColumnName("base_url");
+                entity.Property(store => store.DefaultCurrencyCode).HasColumnName("default_currency_code").HasMaxLength(3).IsRequired();
+                entity.Property(store => store.DefaultCulture).HasColumnName("default_culture").HasMaxLength(20).IsRequired();
+                entity.Property(store => store.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(store => store.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(store => store.ArchivedAt).HasColumnName("archived_at").HasColumnType("timestamp with time zone");
+
+                entity.HasIndex(store => store.PublicId).IsUnique();
+                entity.HasIndex(store => store.ControlPlaneStorePublicId);
+                entity.HasIndex(store => store.Status);
+                entity.HasIndex(store => store.StoreKey)
+                    .IsUnique()
+                    .HasFilter("archived_at IS NULL");
+
+                entity.ToTable(
+                    table => table.HasCheckConstraint(
+                        "ck_commerce_store_status",
+                        "status in ('active', 'disabled', 'archived')"));
+                entity.ToTable(
+                    table => table.HasCheckConstraint(
+                        "ck_commerce_store_default_currency_code",
+                        "char_length(default_currency_code) = 3"));
+            });
+
+            modelBuilder.Entity<CommerceStoreDomain>(entity =>
+            {
+                entity.ToTable("commerce_store_domain");
+                entity.HasKey(domain => domain.Id);
+                entity.Property(domain => domain.Id).HasColumnName("id");
+                entity.Property(domain => domain.StoreId).HasColumnName("store_id");
+                entity.Property(domain => domain.Domain).HasColumnName("domain").IsRequired();
+                entity.Property(domain => domain.NormalizedDomain).HasColumnName("normalized_domain").IsRequired();
+                entity.Property(domain => domain.IsPrimary).HasColumnName("is_primary");
+                entity.Property(domain => domain.Status).HasColumnName("status").IsRequired();
+                entity.Property(domain => domain.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(domain => domain.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(domain => domain.VerifiedAt).HasColumnName("verified_at").HasColumnType("timestamp with time zone");
+                entity.Property(domain => domain.DisabledAt).HasColumnName("disabled_at").HasColumnType("timestamp with time zone");
+
+                entity.HasOne(domain => domain.Store)
+                    .WithMany(store => store.Domains)
+                    .HasForeignKey(domain => domain.StoreId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(domain => domain.StoreId);
+                entity.HasIndex(domain => domain.NormalizedDomain)
+                    .IsUnique()
+                    .HasFilter("disabled_at IS NULL");
+                entity.HasIndex(domain => new { domain.StoreId, domain.IsPrimary })
+                    .IsUnique()
+                    .HasFilter("is_primary = true AND disabled_at IS NULL");
+
+                entity.ToTable(
+                    table => table.HasCheckConstraint(
+                        "ck_commerce_store_domain_status",
+                        "status in ('pending', 'verified', 'disabled')"));
             });
         }
     }

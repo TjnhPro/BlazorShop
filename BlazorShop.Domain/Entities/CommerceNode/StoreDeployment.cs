@@ -6,6 +6,8 @@ namespace BlazorShop.Domain.Entities.CommerceNode
 
         public Guid StoreId { get; set; }
 
+        public CommerceStore? Store { get; set; }
+
         public Guid? TaskId { get; set; }
 
         public CommerceTask? Task { get; set; }

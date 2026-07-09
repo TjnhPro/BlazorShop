@@ -430,16 +430,16 @@ Stop gate:
 
 ### Phase 6 - Store Create And Deploy Handler
 
-- [ ] Implement `store.create_and_deploy`.
-- [ ] Validate payload.
-- [ ] Create or update `CommerceStore`.
-- [ ] Create or update primary domain.
-- [ ] Render Storefront env.
-- [ ] Create/start Storefront container.
-- [ ] Render/reload Nginx config.
-- [ ] Health check Storefront.
-- [ ] Activate store only after health succeeds.
-- [ ] Roll back on failure.
+- [x] Implement `store.create_and_deploy`.
+- [x] Validate payload.
+- [x] Create or update `CommerceStore`.
+- [x] Create or update primary domain.
+- [x] Render Storefront env.
+- [x] Create/start Storefront container.
+- [x] Render/reload Nginx config.
+- [x] Health check Storefront.
+- [x] Activate store only after health succeeds.
+- [x] Roll back on failure.
 
 Stop gate:
 
