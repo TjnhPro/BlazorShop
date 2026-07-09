@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
 {
     using System.Linq.Expressions;
 
+    using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities;
 
@@ -10,10 +11,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
     public sealed class CommerceNodeProductReadRepository : IProductReadRepository
     {
         private readonly CommerceNodeDbContext context;
+        private readonly ICommerceStoreContext storeContext;
 
-        public CommerceNodeProductReadRepository(CommerceNodeDbContext context)
+        public CommerceNodeProductReadRepository(
+            CommerceNodeDbContext context,
+            ICommerceStoreContext storeContext)
         {
             this.context = context;
+            this.storeContext = storeContext;
         }
 
         public async Task<IEnumerable<Product>> GetCatalogProductsAsync()
@@ -74,15 +79,15 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
             var pageNumber = query.GetNormalizedPageNumber();
             var pageSize = query.GetNormalizedPageSize();
 
-            IQueryable<Product> products = BuildCatalogQuery(
-                this.context.Products
-                    .AsNoTracking()
-                    .Where(product => product.IsPublished
-                        && product.PublishedOn != null
-                        && product.Slug != null
-                        && product.Slug != string.Empty
-                        && product.Category != null
-                        && product.Category.IsPublished),
+            var scopedProducts = await this.GetCurrentStoreProductsAsync();
+            IQueryable<Product> products = BuildCatalogQuery(scopedProducts
+                .Where(product => product.IsPublished
+                    && product.PublishedOn != null
+                    && product.Slug != null
+                    && product.Slug != string.Empty
+                    && product.Category != null
+                    && product.Category.IsPublished
+                    && product.Category.StoreId == product.StoreId),
                 query);
 
             var totalCount = await products.CountAsync();
@@ -103,14 +108,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
 
         public async Task<IReadOnlyList<PublishedProductSitemapEntryReadModel>> GetPublishedProductSitemapEntriesAsync()
         {
-            return await this.context.Products
+            var scopedProducts = await this.GetCurrentStoreProductsAsync();
+            return await scopedProducts
                 .AsNoTracking()
                 .Where(product => product.IsPublished
                     && product.PublishedOn != null
                     && product.Slug != null
                     && product.Slug != string.Empty
                     && product.Category != null
-                    && product.Category.IsPublished)
+                    && product.Category.IsPublished
+                    && product.Category.StoreId == product.StoreId)
                 .OrderBy(product => product.PublishedOn)
                 .ThenBy(product => product.Id)
                 .Select(product => new PublishedProductSitemapEntryReadModel
@@ -132,7 +139,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
 
         public async Task<Product?> GetPublishedProductDetailsByIdAsync(Guid id)
         {
-            return await this.context.Products
+            var scopedProducts = await this.GetCurrentStoreProductsAsync();
+            return await scopedProducts
                 .AsNoTracking()
                 .Include(product => product.Category)
                 .Include(product => product.Variants)
@@ -142,12 +150,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                     && product.Slug != null
                     && product.Slug != string.Empty
                     && product.Category != null
-                    && product.Category.IsPublished);
+                    && product.Category.IsPublished
+                    && product.Category.StoreId == product.StoreId);
         }
 
         public async Task<Product?> GetPublishedProductBySlugAsync(string slug)
         {
-            return await this.context.Products
+            var scopedProducts = await this.GetCurrentStoreProductsAsync();
+            return await scopedProducts
                 .AsNoTracking()
                 .Include(product => product.Category)
                 .Include(product => product.Variants)
@@ -155,12 +165,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                     && product.PublishedOn != null
                     && product.Slug == slug
                     && product.Category != null
-                    && product.Category.IsPublished);
+                    && product.Category.IsPublished
+                    && product.Category.StoreId == product.StoreId);
         }
 
         public async Task<IReadOnlyList<CatalogProductReadModel>> GetPublishedProductsByCategoryAsync(Guid categoryId)
         {
-            return await this.context.Products
+            var scopedProducts = await this.GetCurrentStoreProductsAsync();
+            return await scopedProducts
                 .AsNoTracking()
                 .Where(product => product.CategoryId == categoryId
                     && product.IsPublished
@@ -168,7 +180,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                     && product.Slug != null
                     && product.Slug != string.Empty
                     && product.Category != null
-                    && product.Category.IsPublished)
+                    && product.Category.IsPublished
+                    && product.Category.StoreId == product.StoreId)
                 .OrderByDescending(product => product.CreatedOn)
                 .ThenBy(product => product.Id)
                 .Select(MapCatalogProduct())
@@ -250,6 +263,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 CategorySlug = product.Category != null && product.Category.IsPublished ? product.Category.Slug : null,
                 HasVariants = product.Variants.Any(),
             };
+        }
+
+        private async Task<IQueryable<Product>> GetCurrentStoreProductsAsync()
+        {
+            var storeResult = await this.storeContext.GetCurrentStoreIdAsync();
+            if (!storeResult.Success)
+            {
+                return this.context.Products.Where(product => false);
+            }
+
+            var storeId = storeResult.Payload;
+            return this.context.Products
+                .AsNoTracking()
+                .Where(product => product.StoreId == storeId);
         }
     }
 }

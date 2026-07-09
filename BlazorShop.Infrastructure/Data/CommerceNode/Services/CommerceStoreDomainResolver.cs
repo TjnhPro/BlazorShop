@@ -45,6 +45,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return await this.ResolveSingleActiveStoreAsync(cancellationToken);
         }
 
+        public async Task<CommerceStoreOperationResult<Guid>> ResolveStoreIdAsync(
+            string? storeKey = null,
+            string? host = null,
+            CancellationToken cancellationToken = default)
+        {
+            var storeResult = await this.ResolveStoreAsync(storeKey, host, cancellationToken);
+            return storeResult.Success && storeResult.Payload is not null
+                ? new CommerceStoreOperationResult<Guid>(true, "Current store id resolved.", storeResult.Payload.Id)
+                : new CommerceStoreOperationResult<Guid>(
+                    false,
+                    storeResult.Message,
+                    Failure: storeResult.Failure);
+        }
+
         private async Task<CommerceStoreOperationResult<CommerceCurrentStore>> ResolveByStoreKeyAsync(
             string storeKey,
             CancellationToken cancellationToken)
@@ -123,6 +137,58 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 .Where(store => store.ArchivedAt == null && store.Status == CommerceStoreStatuses.Active);
         }
 
+        private async Task<CommerceStoreOperationResult<CommerceStore>> ResolveStoreAsync(
+            string? storeKey,
+            string? host,
+            CancellationToken cancellationToken)
+        {
+            if (!string.IsNullOrWhiteSpace(storeKey))
+            {
+                var normalizedStoreKey = storeKey.Trim().ToLowerInvariant();
+                var store = await this.ActiveStoreQuery()
+                    .FirstOrDefaultAsync(entity => entity.StoreKey == normalizedStoreKey, cancellationToken);
+
+                return store is null
+                    ? FailedStore(CommerceStoreOperationFailure.NotFound, "Store was not found.")
+                    : SucceededStore(store);
+            }
+
+            if (!string.IsNullOrWhiteSpace(host))
+            {
+                var normalizedHost = CommerceStoreService.NormalizeDomain(host);
+                if (normalizedHost is null)
+                {
+                    return FailedStore(CommerceStoreOperationFailure.Validation, "Store host is invalid.");
+                }
+
+                var store = await this.ActiveStoreQuery()
+                    .FirstOrDefaultAsync(
+                        entity => entity.Domains.Any(
+                            domain =>
+                                domain.NormalizedDomain == normalizedHost &&
+                                domain.DisabledAt == null &&
+                                domain.Status == CommerceStoreDomainStatuses.Verified),
+                        cancellationToken);
+
+                return store is null
+                    ? FailedStore(CommerceStoreOperationFailure.NotFound, "Store host was not found.")
+                    : SucceededStore(store);
+            }
+
+            var stores = await this.ActiveStoreQuery()
+                .OrderBy(store => store.DisplayOrder)
+                .ThenBy(store => store.Name)
+                .Take(2)
+                .ToListAsync(cancellationToken);
+
+            return stores.Count switch
+            {
+                1 => SucceededStore(stores[0]),
+                0 => FailedStore(CommerceStoreOperationFailure.NotFound, "No active store is configured."),
+                _ => FailedStore(CommerceStoreOperationFailure.Conflict, "Multiple active stores require an explicit store key or host."),
+            };
+        }
+
         private static CommerceCurrentStore MapCurrentStore(CommerceStore store)
         {
             var primaryDomain = store.Domains.FirstOrDefault(domain => domain.IsPrimary && domain.DisabledAt == null);
@@ -160,6 +226,18 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             string message)
         {
             return new CommerceStoreOperationResult<CommerceCurrentStore>(false, message, Failure: failure);
+        }
+
+        private static CommerceStoreOperationResult<CommerceStore> SucceededStore(CommerceStore store)
+        {
+            return new CommerceStoreOperationResult<CommerceStore>(true, "Current store resolved.", store);
+        }
+
+        private static CommerceStoreOperationResult<CommerceStore> FailedStore(
+            CommerceStoreOperationFailure failure,
+            string message)
+        {
+            return new CommerceStoreOperationResult<CommerceStore>(false, message, Failure: failure);
         }
     }
 }

@@ -4,5 +4,8 @@ namespace BlazorShop.Application.CommerceNode.Stores
     {
         Task<CommerceStoreOperationResult<CommerceCurrentStore>> GetCurrentStoreAsync(
             CancellationToken cancellationToken = default);
+
+        Task<CommerceStoreOperationResult<Guid>> GetCurrentStoreIdAsync(
+            CancellationToken cancellationToken = default);
     }
 }

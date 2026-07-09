@@ -11,8 +11,10 @@ namespace BlazorShop.Infrastructure.Data.Configurations
         public void Configure(EntityTypeBuilder<Product> builder)
         {
             builder.HasIndex(product => new { product.CategoryId, product.CreatedOn });
-            builder.HasIndex(product => product.Slug)
-                .IsUnique();
+            builder.HasIndex(product => product.StoreId);
+            builder.HasIndex(product => new { product.StoreId, product.Slug })
+                .IsUnique()
+                .HasFilter("\"StoreId\" IS NOT NULL AND \"Slug\" IS NOT NULL");
 
             builder.Property(product => product.Slug)
                 .HasMaxLength(SeoConstraints.SlugMaxLength);

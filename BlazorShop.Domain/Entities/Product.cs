@@ -45,6 +45,8 @@
 
         public DateTime? PublishedOn { get; set; } = DateTime.UtcNow;
 
+        public Guid? StoreId { get; set; }
+
         public Guid CategoryId { get; set; }
 
         public Category? Category { get; set; }

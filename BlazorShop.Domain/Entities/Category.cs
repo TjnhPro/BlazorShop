@@ -31,6 +31,8 @@
 
         public bool IsPublished { get; set; } = true;
 
+        public Guid? StoreId { get; set; }
+
         public ICollection<Product>? Products { get; set; }
     }
 }

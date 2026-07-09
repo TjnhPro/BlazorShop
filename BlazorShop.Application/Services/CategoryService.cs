@@ -4,6 +4,7 @@
 
     using AutoMapper;
 
+    using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
     using BlazorShop.Application.DTOs.Category;
@@ -20,13 +21,20 @@
         private readonly IMapper _mapper;
         private readonly ICategoryRepository _categoryRepository;
         private readonly IAdminAuditService? _auditService;
+        private readonly ICommerceStoreContext? _storeContext;
 
-        public CategoryService(IGenericRepository<Category> genericRepository, IMapper mapper, ICategoryRepository categoryRepository, IAdminAuditService? auditService = null)
+        public CategoryService(
+            IGenericRepository<Category> genericRepository,
+            IMapper mapper,
+            ICategoryRepository categoryRepository,
+            IAdminAuditService? auditService = null,
+            ICommerceStoreContext? storeContext = null)
         {
             _genericRepository = genericRepository;
             _mapper = mapper;
             _categoryRepository = categoryRepository;
             _auditService = auditService;
+            _storeContext = storeContext;
         }
 
         public async Task<IEnumerable<GetCategory>> GetAllAsync()
@@ -44,6 +52,7 @@
         public async Task<ServiceResponse> AddAsync(CreateCategory category)
         {
             var entity = _mapper.Map<Category>(category);
+            entity.StoreId ??= await ResolveCurrentStoreIdAsync();
             int result = await _genericRepository.AddAsync(entity);
 
             if (result <= 0)
@@ -111,6 +120,17 @@
                 Summary = summary,
                 MetadataJson = JsonSerializer.Serialize(metadata),
             });
+        }
+
+        private async Task<Guid?> ResolveCurrentStoreIdAsync()
+        {
+            if (_storeContext is null)
+            {
+                return null;
+            }
+
+            var result = await _storeContext.GetCurrentStoreIdAsync();
+            return result.Success ? result.Payload : null;
         }
     }
 }

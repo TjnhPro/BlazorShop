@@ -559,13 +559,15 @@ Stop gate:
 
 ### Phase 9 - Store Scope Catalog MVP
 
-- [ ] Add `StoreId` to Category.
-- [ ] Add `StoreId` to Product.
+- [x] Add `StoreId` to Category.
+- [x] Add `StoreId` to Product.
 - [ ] Add `StoreId` to SEO settings/redirects if needed.
-- [ ] Backfill existing catalog to default store.
-- [ ] Apply current-store filter to Storefront catalog APIs.
-- [ ] Ensure admin APIs require explicit/current store.
-- [ ] Add tests that product/category from store A cannot leak into store B.
+- [x] Backfill existing catalog to default store.
+- [x] Apply current-store filter to Storefront catalog APIs.
+- [x] Ensure admin APIs require explicit/current store.
+- [x] Add tests that product/category from store A cannot leak into store B.
+
+2026-07-09 verification: CommerceNode migration `CommerceNodeStoreScopeCatalog` adds nullable `StoreId` to Product/Category, backfills existing rows to `default`, and changes slug uniqueness to `(StoreId, Slug)`. `api/internal/catalog/products` was smoke-tested with `X-Store-Key: default` and `X-Store-Key: qa-store-20260709214646`; each store only returned its own seeded product.
 
 Stop gate:
 
@@ -611,7 +613,7 @@ Stop gate:
 - [ ] Multiple active stores require explicit key/host.
 - [x] Maintenance mode returns safe Storefront state.
 - [x] Storefront V2 loads current store config.
-- [ ] Product/category does not leak between stores after Phase 8.
+- [x] Product/category does not leak between stores after Phase 8.
 - [ ] Order/cart does not leak between stores after Phase 9.
 
 ## Risks

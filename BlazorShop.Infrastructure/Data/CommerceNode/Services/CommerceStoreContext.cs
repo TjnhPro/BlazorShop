@@ -20,13 +20,28 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         public Task<CommerceStoreOperationResult<CommerceCurrentStore>> GetCurrentStoreAsync(
             CancellationToken cancellationToken = default)
         {
+            var (storeKey, host) = this.ResolveRequestStoreHints();
+
+            return this.resolver.ResolveAsync(storeKey, host, cancellationToken);
+        }
+
+        public Task<CommerceStoreOperationResult<Guid>> GetCurrentStoreIdAsync(
+            CancellationToken cancellationToken = default)
+        {
+            var (storeKey, host) = this.ResolveRequestStoreHints();
+
+            return this.resolver.ResolveStoreIdAsync(storeKey, host, cancellationToken);
+        }
+
+        private (string? StoreKey, string? Host) ResolveRequestStoreHints()
+        {
             var request = this.httpContextAccessor.HttpContext?.Request;
             var storeKey = FirstHeaderValue(request, "X-Store-Key");
             var host = FirstHeaderValue(request, "X-Store-Host")
                        ?? FirstHeaderValue(request, "X-Forwarded-Host")
                        ?? request?.Host.Value;
 
-            return this.resolver.ResolveAsync(storeKey, host, cancellationToken);
+            return (storeKey, host);
         }
 
         private static string? FirstHeaderValue(HttpRequest? request, string headerName)

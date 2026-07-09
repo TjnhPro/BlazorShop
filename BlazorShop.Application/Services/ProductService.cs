@@ -4,6 +4,7 @@
 
     using AutoMapper;
 
+    using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
     using BlazorShop.Application.DTOs.Product;
@@ -18,13 +19,20 @@
         private readonly IGenericRepository<Product> _productRepository;
         private readonly IMapper _mapper;
         private readonly IAdminAuditService? _auditService;
+        private readonly ICommerceStoreContext? _storeContext;
 
-        public ProductService(IProductReadRepository productReadRepository, IGenericRepository<Product> productRepository, IMapper mapper, IAdminAuditService? auditService = null)
+        public ProductService(
+            IProductReadRepository productReadRepository,
+            IGenericRepository<Product> productRepository,
+            IMapper mapper,
+            IAdminAuditService? auditService = null,
+            ICommerceStoreContext? storeContext = null)
         {
             _productReadRepository = productReadRepository;
             _productRepository = productRepository;
             _mapper = mapper;
             _auditService = auditService;
+            _storeContext = storeContext;
         }
 
         public async Task<IEnumerable<GetProduct>> GetAllAsync()
@@ -59,6 +67,7 @@
         public async Task<ServiceResponse> AddAsync(CreateProduct product)
         {
             var mappedData = _mapper.Map<Product>(product);
+            mappedData.StoreId ??= await ResolveCurrentStoreIdAsync();
             int result = await _productRepository.AddAsync(mappedData);
 
             if (result <= 0)
@@ -120,6 +129,17 @@
                 Summary = summary,
                 MetadataJson = JsonSerializer.Serialize(metadata),
             });
+        }
+
+        private async Task<Guid?> ResolveCurrentStoreIdAsync()
+        {
+            if (_storeContext is null)
+            {
+                return null;
+            }
+
+            var result = await _storeContext.GetCurrentStoreIdAsync();
+            return result.Success ? result.Payload : null;
         }
     }
 }
