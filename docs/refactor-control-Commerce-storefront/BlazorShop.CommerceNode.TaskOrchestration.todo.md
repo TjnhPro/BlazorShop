@@ -459,9 +459,9 @@ Stop gate:
 
 ### Phase 8 - QA And Runbook
 
-- [ ] Add `QA-CommerceNode-TaskOrchestration.todo.md` or extend existing CommerceNode QA file.
-- [ ] Document clean DB setup.
-- [ ] Document Docker/Nginx local prerequisites.
+- [x] Add `QA-CommerceNode-TaskOrchestration.todo.md` or extend existing CommerceNode QA file.
+- [x] Document clean DB setup.
+- [x] Document Docker/Nginx local prerequisites.
 - [ ] Test enqueue/list/detail/cancel/retry.
 - [ ] Test successful store deploy.
 - [ ] Test validation failure.
