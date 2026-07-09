@@ -400,16 +400,16 @@ Bring enough automated coverage to protect V2 without duplicating every old test
 
 Recommended MVP coverage:
 
-- [ ] V2 project build test through solution.
-- [ ] V2 API client test for:
+- [x] V2 project build test through solution. 2026-07-09: `dotnet test BlazorShop.sln` built and tested the solution.
+- [x] V2 API client test for:
   - envelope parsing
   - Commerce Node internal route success
   - legacy fallback disabled by default
   - service unavailable behavior
 - [ ] V2 route SEO audit smoke test.
-- [ ] V2 cart route test.
-- [ ] V2 sitemap and robots tests.
-- [ ] V2 checkout redirect tests.
+- [x] V2 cart route test.
+- [x] V2 sitemap and robots tests.
+- [x] V2 checkout redirect tests.
 
 Do not duplicate all existing Storefront tests blindly. Start with tests that cover V2-specific risk:
 
@@ -420,9 +420,9 @@ Do not duplicate all existing Storefront tests blindly. Start with tests that co
 
 QA gate:
 
-- [ ] `dotnet test BlazorShop.sln`
-- [ ] Existing Storefront tests still pass.
-- [ ] V2 tests pass.
+- [x] `dotnet test BlazorShop.sln`. 2026-07-09: passed with 482 passed, 10 skipped.
+- [x] Existing Storefront tests still pass.
+- [x] V2 tests pass. 2026-07-09: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter FullyQualifiedName~PresentationV2.Storefront` passed 7/7.
 
 Commit gate:
 
