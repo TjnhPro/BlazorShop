@@ -1,4 +1,4 @@
-namespace BlazorShop.Web.SharedV2V2.BrowserStorage.Contracts
+namespace BlazorShop.Web.SharedV2.BrowserStorage.Contracts
 {
     public interface IBrowserSessionStorageService
     {

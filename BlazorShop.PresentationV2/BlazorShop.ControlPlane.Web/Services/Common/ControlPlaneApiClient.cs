@@ -4,7 +4,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Common
     using System.Net.Http.Json;
     using System.Text.Json;
 
-    using BlazorShop.Web.Shared.Helper.Contracts;
+    using BlazorShop.Web.SharedV2.Helper.Contracts;
 
     public sealed class ControlPlaneApiClient : IControlPlaneApiClient
     {

@@ -1,6 +1,6 @@
-namespace BlazorShop.Web.SharedV2V2.Authentication
+namespace BlazorShop.Web.SharedV2.Authentication
 {
-    using BlazorShop.Web.SharedV2V2.Models;
+    using BlazorShop.Web.SharedV2.Models;
 
     public interface IAuthenticationSessionRefresher
     {

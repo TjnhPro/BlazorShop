@@ -1,8 +1,8 @@
 @page "/login"
 @page "/login/{*Route}"
 @attribute [AllowAnonymous]
-@inject BlazorShop.Web.Shared.Services.Contracts.IAuthenticationService AuthenticationService
-@inject BlazorShop.Web.Shared.Helper.Contracts.ITokenService TokenService
+@inject BlazorShop.Web.SharedV2.Services.Contracts.IAuthenticationService AuthenticationService
+@inject BlazorShop.Web.SharedV2.Helper.Contracts.ITokenService TokenService
 @inject IAuthenticationStateNotifier AuthenticationStateNotifier
 @inject IAuthenticationSessionEventPublisher SessionEventPublisher
 @inject AuthenticationStateProvider AuthStateProvider
@@ -99,7 +99,7 @@
                 return;
             }
 
-            await TokenService.StoreJwtTokenAsync(BlazorShop.Web.Shared.Constant.TokenStorage.Key, result.Token);
+            await TokenService.StoreJwtTokenAsync(BlazorShop.Web.SharedV2.AuthStorageConstants.JwtTokenKey, result.Token);
             AuthenticationStateNotifier.NotifyAuthenticationState();
             await SessionEventPublisher.PublishSignedInAsync();
 

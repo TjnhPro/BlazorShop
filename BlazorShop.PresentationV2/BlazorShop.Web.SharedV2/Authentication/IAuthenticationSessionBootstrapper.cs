@@ -1,4 +1,4 @@
-namespace BlazorShop.Web.SharedV2V2.Authentication
+namespace BlazorShop.Web.SharedV2.Authentication
 {
     public interface IAuthenticationSessionBootstrapper
     {

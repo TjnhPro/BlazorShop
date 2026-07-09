@@ -1,4 +1,4 @@
-namespace BlazorShop.Web.SharedV2V2.Interop.Contracts
+namespace BlazorShop.Web.SharedV2.Interop.Contracts
 {
     using System;
     using System.Threading.Tasks;

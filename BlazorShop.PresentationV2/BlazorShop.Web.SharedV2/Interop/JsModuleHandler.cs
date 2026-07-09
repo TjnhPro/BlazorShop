@@ -1,9 +1,9 @@
-namespace BlazorShop.Web.SharedV2V2.Interop
+namespace BlazorShop.Web.SharedV2.Interop
 {
     using System;
     using System.Threading.Tasks;
 
-    using BlazorShop.Web.SharedV2V2.Interop.Contracts;
+    using BlazorShop.Web.SharedV2.Interop.Contracts;
 
     using Microsoft.JSInterop;
 

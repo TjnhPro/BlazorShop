@@ -1,7 +1,7 @@
-namespace BlazorShop.Web.SharedV2V2.Services
+namespace BlazorShop.Web.SharedV2.Services
 {
-    using BlazorShop.Web.SharedV2V2.Services.Contracts;
-    using BlazorShop.Web.SharedV2V2.Toast;
+    using BlazorShop.Web.SharedV2.Services.Contracts;
+    using BlazorShop.Web.SharedV2.Toast;
 
     public class ToastService : IToastService
     {

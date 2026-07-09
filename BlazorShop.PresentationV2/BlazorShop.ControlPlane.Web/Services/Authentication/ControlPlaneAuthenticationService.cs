@@ -1,9 +1,9 @@
 namespace BlazorShop.ControlPlane.Web.Services.Authentication
 {
     using BlazorShop.ControlPlane.Web.Services.Common;
-    using BlazorShop.Web.Shared.Models;
-    using BlazorShop.Web.Shared.Models.Authentication;
-    using BlazorShop.Web.Shared.Services.Contracts;
+    using BlazorShop.Web.SharedV2.Models;
+    using BlazorShop.Web.SharedV2.Models.Authentication;
+    using BlazorShop.Web.SharedV2.Services.Contracts;
 
     public sealed class ControlPlaneAuthenticationService : IAuthenticationService
     {

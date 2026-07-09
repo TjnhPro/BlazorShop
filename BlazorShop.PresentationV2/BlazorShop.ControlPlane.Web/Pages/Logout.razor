@@ -1,7 +1,7 @@
 @page "/logout"
 @attribute [Authorize]
-@inject BlazorShop.Web.Shared.Services.Contracts.IAuthenticationService AuthenticationService
-@inject BlazorShop.Web.Shared.Helper.Contracts.ITokenService TokenService
+@inject BlazorShop.Web.SharedV2.Services.Contracts.IAuthenticationService AuthenticationService
+@inject BlazorShop.Web.SharedV2.Helper.Contracts.ITokenService TokenService
 @inject IAuthenticatedClientStateCleaner ClientStateCleaner
 @inject IAuthenticationStateNotifier AuthenticationStateNotifier
 @inject IAuthenticationSessionEventPublisher SessionEventPublisher
@@ -22,7 +22,7 @@
     protected override async Task OnInitializedAsync()
     {
         await AuthenticationService.Logout();
-        await TokenService.RemoveJwtTokenAsync(BlazorShop.Web.Shared.Constant.TokenStorage.Key);
+        await TokenService.RemoveJwtTokenAsync(BlazorShop.Web.SharedV2.AuthStorageConstants.JwtTokenKey);
         await ClientStateCleaner.ClearAsync();
         AuthenticationStateNotifier.NotifyAuthenticationState();
         await SessionEventPublisher.PublishSignedOutAsync();

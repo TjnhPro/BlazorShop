@@ -1,10 +1,10 @@
-namespace BlazorShop.Web.SharedV2V2.CookieStorage
+namespace BlazorShop.Web.SharedV2.CookieStorage
 {
     using System;
     using System.Threading.Tasks;
 
-    using BlazorShop.Web.SharedV2V2.CookieStorage.Contracts;
-    using BlazorShop.Web.SharedV2V2.Interop;
+    using BlazorShop.Web.SharedV2.CookieStorage.Contracts;
+    using BlazorShop.Web.SharedV2.Interop;
 
     using Microsoft.JSInterop;
 

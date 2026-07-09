@@ -1,4 +1,4 @@
-namespace BlazorShop.Web.SharedV2V2
+namespace BlazorShop.Web.SharedV2
 {
     public static class StorefrontCookieNames
     {

@@ -327,18 +327,19 @@ feat(shared-v2): copy v2 shared models
 
 ## Phase 3 - Migrate ControlPlane Web
 
-- [ ] Change project reference in `BlazorShop.ControlPlane.Web.csproj` from legacy shared to `SharedV2`.
-- [ ] Update namespaces:
-  - [ ] `BlazorShop.Web.Shared` -> `BlazorShop.Web.SharedV2`
-  - [ ] `BlazorShop.Web.Shared.Authentication` -> `BlazorShop.Web.SharedV2.Authentication`
-  - [ ] `BlazorShop.Web.Shared.Helper` -> `BlazorShop.Web.SharedV2.Helper`
-  - [ ] `BlazorShop.Web.Shared.Services.Contracts` -> `BlazorShop.Web.SharedV2.Services.Contracts`
-- [ ] Replace constants:
-  - [ ] `Constant.ApiClient.PublicName` -> `HttpClientNames.Public`
-  - [ ] `Constant.ApiClient.PrivateName` -> `HttpClientNames.Private`
-  - [ ] `Constant.TokenStorage.Key` -> `AuthStorageConstants.JwtTokenKey`
-- [ ] Confirm `ControlPlaneAuthenticationService` compiles against `SharedV2` response/auth models.
-- [ ] Build ControlPlane Web.
+- [x] Change project reference in `BlazorShop.ControlPlane.Web.csproj` from legacy shared to `SharedV2`.
+- [x] Update namespaces:
+  - [x] `BlazorShop.Web.Shared` -> `BlazorShop.Web.SharedV2`
+  - [x] `BlazorShop.Web.Shared.Authentication` -> `BlazorShop.Web.SharedV2.Authentication`
+  - [x] `BlazorShop.Web.Shared.Helper` -> `BlazorShop.Web.SharedV2.Helper`
+  - [x] `BlazorShop.Web.Shared.Services.Contracts` -> `BlazorShop.Web.SharedV2.Services.Contracts`
+- [x] Replace constants:
+  - [x] `Constant.ApiClient.PublicName` -> `HttpClientNames.Public`
+  - [x] `Constant.ApiClient.PrivateName` -> `HttpClientNames.Private`
+  - [x] `Constant.TokenStorage.Key` -> `AuthStorageConstants.JwtTokenKey`
+- [x] Confirm `ControlPlaneAuthenticationService` compiles against `SharedV2` response/auth models.
+- [x] Build ControlPlane Web.
+  - 2026-07-09: passed.
 
 Verification:
 
@@ -346,6 +347,8 @@ Verification:
 dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj
 dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter FullyQualifiedName~ControlPlane
 ```
+
+2026-07-09: `ControlPlane` tests passed 37/37.
 
 Commit:
 

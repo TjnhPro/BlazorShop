@@ -1,4 +1,4 @@
-namespace BlazorShop.Web.SharedV2V2.Authentication
+namespace BlazorShop.Web.SharedV2.Authentication
 {
     using Microsoft.AspNetCore.Components.Authorization;
     using Microsoft.Extensions.DependencyInjection;

@@ -1,6 +1,6 @@
-namespace BlazorShop.Web.SharedV2V2.Models
+namespace BlazorShop.Web.SharedV2.Models
 {
-    using BlazorShop.Web.SharedV2V2.Toast;
+    using BlazorShop.Web.SharedV2.Toast;
 
     public class ToastModel
     {
