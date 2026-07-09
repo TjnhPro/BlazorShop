@@ -137,6 +137,93 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task Register_ReturnsStorefrontRegisterPage()
+        {
+            using var client = CreateClient(services =>
+            {
+                services.RemoveAll<IStorefrontSessionResolver>();
+                services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
+            });
+
+            using var response = await client.GetAsync(StorefrontRoutes.Register);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("Create account", content, StringComparison.Ordinal);
+            Assert.Contains("method=\"post\"", content, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public async Task Register_PostPasswordMismatch_RedirectsWithMessageWithoutCallingApi()
+        {
+            var authClient = new StubStorefrontAuthClient(registerResult: StorefrontAuthResult<object>.Succeeded(new object(), "Created.", []));
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontSessionResolver>();
+                    services.RemoveAll<IStorefrontAuthClient>();
+                    services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
+                    services.AddScoped<IStorefrontAuthClient>(_ => authClient);
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.Register);
+            using var request = CreateRegisterPost(token, cookieHeader, "/checkout", confirmPassword: "Different123!");
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/register?returnUrl=%2Fcheckout&error=Passwords%20do%20not%20match.", response.Headers.Location?.ToString());
+            Assert.Equal(0, authClient.RegisterCalls);
+        }
+
+        [Fact]
+        public async Task Register_PostFailure_RedirectsWithApiMessage()
+        {
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontSessionResolver>();
+                    services.RemoveAll<IStorefrontAuthClient>();
+                    services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
+                    services.AddScoped<IStorefrontAuthClient>(_ => new StubStorefrontAuthClient(
+                        registerResult: StorefrontAuthResult<object>.Failed("Email already exists.")));
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.Register);
+            using var request = CreateRegisterPost(token, cookieHeader, "/checkout");
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/register?returnUrl=%2Fcheckout&error=Email%20already%20exists.", response.Headers.Location?.ToString());
+        }
+
+        [Fact]
+        public async Task Register_PostSuccess_RedirectsToSignInWithRegisteredState()
+        {
+            var authClient = new StubStorefrontAuthClient(registerResult: StorefrontAuthResult<object>.Succeeded(new object(), "Created.", []));
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontSessionResolver>();
+                    services.RemoveAll<IStorefrontAuthClient>();
+                    services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
+                    services.AddScoped<IStorefrontAuthClient>(_ => authClient);
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.Register);
+            using var request = CreateRegisterPost(token, cookieHeader, "/checkout");
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/signin?returnUrl=%2Fcheckout&registered=1", response.Headers.Location?.ToString());
+            Assert.Equal(1, authClient.RegisterCalls);
+            Assert.Equal("Customer One", authClient.LastRegisteredUser?.FullName);
+            Assert.Equal("customer@example.test", authClient.LastRegisteredUser?.Email);
+        }
+
+        [Fact]
         public async Task Robots_ReturnsTextDocument()
         {
             using var client = CreateClient(services =>
@@ -239,6 +326,30 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             return request;
         }
 
+        private static HttpRequestMessage CreateRegisterPost(
+            string antiforgeryToken,
+            string cookieHeader,
+            string returnUrl,
+            string confirmPassword = "Password123!")
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, StorefrontRoutes.Register)
+            {
+                Content = new FormUrlEncodedContent(
+                [
+                    new KeyValuePair<string, string>("__RequestVerificationToken", antiforgeryToken),
+                    new KeyValuePair<string, string>("FullName", "Customer One"),
+                    new KeyValuePair<string, string>("Email", "customer@example.test"),
+                    new KeyValuePair<string, string>("Password", "Password123!"),
+                    new KeyValuePair<string, string>("ConfirmPassword", confirmPassword),
+                    new KeyValuePair<string, string>("ReturnUrl", returnUrl),
+                ]),
+            };
+
+            request.Headers.Add("Cookie", cookieHeader);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            return request;
+        }
+
         private sealed class StubStorefrontSessionResolver : IStorefrontSessionResolver
         {
             private readonly StorefrontSessionInfo _sessionInfo;
@@ -277,11 +388,19 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private sealed class StubStorefrontAuthClient : IStorefrontAuthClient
         {
             private readonly StorefrontAuthResult<LoginResponse> loginResult;
+            private readonly StorefrontAuthResult<object> registerResult;
 
-            public StubStorefrontAuthClient(StorefrontAuthResult<LoginResponse> loginResult)
+            public StubStorefrontAuthClient(
+                StorefrontAuthResult<LoginResponse>? loginResult = null,
+                StorefrontAuthResult<object>? registerResult = null)
             {
-                this.loginResult = loginResult;
+                this.loginResult = loginResult ?? StorefrontAuthResult<LoginResponse>.Failed("Login is not used by this test.");
+                this.registerResult = registerResult ?? StorefrontAuthResult<object>.Failed("Register is not used by this test.");
             }
+
+            public int RegisterCalls { get; private set; }
+
+            public CreateUser? LastRegisteredUser { get; private set; }
 
             public Task<StorefrontAuthResult<LoginResponse>> LoginAsync(LoginUser user, CancellationToken cancellationToken = default)
             {
@@ -290,7 +409,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             public Task<StorefrontAuthResult<object>> RegisterAsync(CreateUser user, CancellationToken cancellationToken = default)
             {
-                return Task.FromResult(StorefrontAuthResult<object>.Failed("Register is not used by this test."));
+                this.RegisterCalls++;
+                this.LastRegisteredUser = user;
+                return Task.FromResult(this.registerResult);
             }
         }
 

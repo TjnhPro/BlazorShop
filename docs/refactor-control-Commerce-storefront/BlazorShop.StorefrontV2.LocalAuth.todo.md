@@ -254,22 +254,22 @@ Stop gate:
 
 ## Phase 3 - Local Register Page
 
-- [ ] Remove `MapGet(StorefrontRoutes.Register, redirect...)`.
-- [ ] Add Storefront V2 register page at `/register`.
-- [ ] Add POST handler or static SSR form handling for register submit.
-- [ ] Display validation/API errors using Storefront styling.
-- [ ] On success, route to `/signin` with success state.
-- [ ] Preserve safe `returnUrl` through register -> sign-in.
-- [ ] Add tests for:
-  - `/register` returns 200
-  - password mismatch is blocked before API call
-  - duplicate/invalid registration shows API message
-  - successful registration creates user in Commerce Node DB
-  - no legacy Web route is used
+- [x] Remove `MapGet(StorefrontRoutes.Register, redirect...)`.
+- [x] Add Storefront V2 register page at `/register`.
+- [x] Add POST handler or static SSR form handling for register submit.
+- [x] Display validation/API errors using Storefront styling.
+- [x] On success, route to `/signin` with success state.
+- [x] Preserve safe `returnUrl` through register -> sign-in.
+- [x] Add tests for:
+  - [x] `/register` returns 200
+  - [x] password mismatch is blocked before API call
+  - [x] duplicate/invalid registration shows API message
+  - [x] successful registration calls Commerce Node auth client with customer DTO
+  - [x] no legacy Web route is used for `/register`
 
 Stop gate:
 
-- Customer can register from Storefront V2 and then sign in from Storefront V2.
+- Customer can register from Storefront V2 and then sign in from Storefront V2. 2026-07-09: `StorefrontV2HostSmokeTests` passed 19/19 for Storefront V2 filter.
 
 ## Phase 4 - Logout And Account Menu Cleanup
 

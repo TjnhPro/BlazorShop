@@ -100,8 +100,42 @@ app.MapPost(StorefrontRoutes.SignIn, async (
     StorefrontCookieBridge.CopySetCookieHeaders(result.SetCookieHeaders, httpContext.Response);
     return Results.Redirect(safeReturnUrl);
 });
-app.MapGet(StorefrontRoutes.Register, (IStorefrontClientAppUrlResolver clientAppUrlResolver) =>
-    CreateClientRedirectResult(clientAppUrlResolver, "/authentication/register"));
+app.MapPost(StorefrontRoutes.Register, async (
+    [FromForm] StorefrontRegisterForm form,
+    IStorefrontAuthClient authClient,
+    CancellationToken cancellationToken) =>
+{
+    var safeReturnUrl = StorefrontReturnUrl.Normalize(form.ReturnUrl);
+    if (string.IsNullOrWhiteSpace(form.FullName)
+        || string.IsNullOrWhiteSpace(form.Email)
+        || string.IsNullOrWhiteSpace(form.Password)
+        || string.IsNullOrWhiteSpace(form.ConfirmPassword))
+    {
+        return Results.Redirect(StorefrontReturnUrl.BuildRegisterUrl(safeReturnUrl, "All fields are required."));
+    }
+
+    if (!string.Equals(form.Password, form.ConfirmPassword, StringComparison.Ordinal))
+    {
+        return Results.Redirect(StorefrontReturnUrl.BuildRegisterUrl(safeReturnUrl, "Passwords do not match."));
+    }
+
+    var result = await authClient.RegisterAsync(
+        new CreateUser
+        {
+            FullName = form.FullName.Trim(),
+            Email = form.Email.Trim(),
+            Password = form.Password,
+            ConfirmPassword = form.ConfirmPassword,
+        },
+        cancellationToken);
+
+    if (!result.Success)
+    {
+        return Results.Redirect(StorefrontReturnUrl.BuildRegisterUrl(safeReturnUrl, result.Message));
+    }
+
+    return Results.Redirect(StorefrontReturnUrl.BuildSignInUrl(safeReturnUrl, registered: true));
+});
 app.MapGet(StorefrontRoutes.Checkout, async (HttpContext httpContext, IStorefrontClientAppUrlResolver clientAppUrlResolver, IStorefrontSessionResolver sessionResolver, CancellationToken cancellationToken) =>
 {
     StorefrontResponseHeaders.ApplyPrivatePage(httpContext);

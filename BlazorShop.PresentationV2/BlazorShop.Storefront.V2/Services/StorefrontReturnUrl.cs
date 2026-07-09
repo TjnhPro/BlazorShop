@@ -47,5 +47,24 @@ namespace BlazorShop.Storefront.Services
                 ? StorefrontRoutes.SignIn
                 : $"{StorefrontRoutes.SignIn}{QueryString.Create(query)}";
         }
+
+        public static string BuildRegisterUrl(string? returnUrl = null, string? error = null)
+        {
+            var query = new Dictionary<string, string?>();
+            var safeReturnUrl = Normalize(returnUrl, fallback: string.Empty);
+            if (!string.IsNullOrWhiteSpace(safeReturnUrl))
+            {
+                query["returnUrl"] = safeReturnUrl;
+            }
+
+            if (!string.IsNullOrWhiteSpace(error))
+            {
+                query["error"] = error;
+            }
+
+            return query.Count == 0
+                ? StorefrontRoutes.Register
+                : $"{StorefrontRoutes.Register}{QueryString.Create(query)}";
+        }
     }
 }
