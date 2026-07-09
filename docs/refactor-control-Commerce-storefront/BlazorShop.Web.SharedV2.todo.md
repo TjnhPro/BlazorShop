@@ -256,20 +256,22 @@ Exit criteria:
 
 ## Phase 1 - Scaffold SharedV2 Project
 
-- [ ] Create `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2`.
-- [ ] Add `BlazorShop.Web.SharedV2.csproj`.
-- [ ] Add project to `BlazorShop.sln`.
-- [ ] Create namespace root `BlazorShop.Web.SharedV2`.
-- [ ] Copy generic infrastructure folders:
-  - [ ] `BrowserStorage`
-  - [ ] `CookieStorage`
-  - [ ] `Helper`
-  - [ ] `Interop` only if needed by copied auth/session code
-  - [ ] `Authentication`
-  - [ ] `Toast`
-- [ ] Rename namespaces and using statements inside copied files.
-- [ ] Replace copied `Constant.cs` with focused V2 constants.
-- [ ] Build only `SharedV2`.
+- [x] Create `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2`.
+- [x] Add `BlazorShop.Web.SharedV2.csproj`.
+- [x] Add project to `BlazorShop.sln`.
+- [x] Create namespace root `BlazorShop.Web.SharedV2`.
+- [x] Copy generic infrastructure folders:
+  - [x] `BrowserStorage`
+  - [x] `CookieStorage`
+  - [x] `Helper`
+  - [x] `Interop` only if needed by copied auth/session code
+    - 2026-07-09: needed by browser/cookie storage.
+  - [x] `Authentication`
+  - [x] `Toast`
+- [x] Rename namespaces and using statements inside copied files.
+- [x] Replace copied `Constant.cs` with focused V2 constants.
+- [x] Build only `SharedV2`.
+  - 2026-07-09: passed.
 
 Verification:
 
