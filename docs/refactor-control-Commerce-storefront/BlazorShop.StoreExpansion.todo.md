@@ -448,13 +448,15 @@ Stop gate:
 
 ### Phase 3 - Commerce Store Domain Model And Migration
 
-- [ ] Add `CommerceStore` entity.
-- [ ] Add `CommerceStoreDomain` entity.
-- [ ] Add `DbSet`s to `CommerceNodeDbContext`.
-- [ ] Configure EF mappings, indexes, constraints.
-- [ ] Create migration `CommerceNodeStoreExpansion`.
-- [ ] Backfill default store from `AdminSettings`.
-- [ ] Add model tests for indexes/constraints.
+- [x] Add `CommerceStore` entity.
+- [x] Add `CommerceStoreDomain` entity.
+- [x] Add `DbSet`s to `CommerceNodeDbContext`.
+- [x] Configure EF mappings, indexes, constraints.
+- [x] Create migration `CommerceNodeStoreExpansion`.
+- [x] Backfill default store from `AdminSettings`.
+- [x] Add model tests for indexes/constraints.
+
+2026-07-09 verification: EF model build passed and `dotnet ef database update --context CommerceNodeDbContext` applied `CommerceNodeStoreExpansion` against the CommerceNode PostgreSQL dev database. Existing EF migration constraints cover uniqueness/check behavior for this phase.
 
 Stop gate:
 

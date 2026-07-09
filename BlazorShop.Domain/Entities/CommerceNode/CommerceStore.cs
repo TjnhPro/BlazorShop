@@ -16,9 +16,43 @@ namespace BlazorShop.Domain.Entities.CommerceNode
 
         public string? BaseUrl { get; set; }
 
+        public bool ForceHttps { get; set; } = true;
+
+        public bool SslEnabled { get; set; } = true;
+
+        public int? SslPort { get; set; }
+
+        public int DisplayOrder { get; set; }
+
+        public string? HtmlBodyId { get; set; }
+
+        public string? CdnHost { get; set; }
+
+        public string? LogoUrl { get; set; }
+
+        public string? FaviconUrl { get; set; }
+
+        public string? PngIconUrl { get; set; }
+
+        public string? AppleTouchIconUrl { get; set; }
+
+        public string? MsTileImageUrl { get; set; }
+
+        public string? MsTileColor { get; set; }
+
         public string DefaultCurrencyCode { get; set; } = "USD";
 
         public string DefaultCulture { get; set; } = "en-US";
+
+        public string? SupportEmail { get; set; }
+
+        public string? SupportPhone { get; set; }
+
+        public bool MaintenanceModeEnabled { get; set; }
+
+        public string? MaintenanceMessage { get; set; }
+
+        public string? MetadataJson { get; set; }
 
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
