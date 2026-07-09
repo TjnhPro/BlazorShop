@@ -1,4 +1,4 @@
-namespace BlazorShop.Web.SharedV2.Toast
+namespace BlazorShop.Web.SharedV2V2.Toast
 {
     public enum ToastIcon
     {

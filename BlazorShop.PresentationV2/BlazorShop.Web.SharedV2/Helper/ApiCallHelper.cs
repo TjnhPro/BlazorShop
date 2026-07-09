@@ -1,11 +1,11 @@
-namespace BlazorShop.Web.SharedV2.Helper
+namespace BlazorShop.Web.SharedV2V2.Helper
 {
     using System.Net;
     using System.Net.Http.Json;
     using System.Text.Json;
 
-    using BlazorShop.Web.SharedV2.Helper.Contracts;
-    using BlazorShop.Web.SharedV2.Models;
+    using BlazorShop.Web.SharedV2V2.Helper.Contracts;
+    using BlazorShop.Web.SharedV2V2.Models;
 
     using Microsoft.Extensions.Logging;
 

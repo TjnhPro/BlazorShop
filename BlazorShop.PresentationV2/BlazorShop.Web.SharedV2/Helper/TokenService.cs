@@ -1,7 +1,7 @@
-namespace BlazorShop.Web.SharedV2.Helper
+namespace BlazorShop.Web.SharedV2V2.Helper
 {
-    using BlazorShop.Web.SharedV2.BrowserStorage.Contracts;
-    using BlazorShop.Web.SharedV2.Helper.Contracts;
+    using BlazorShop.Web.SharedV2V2.BrowserStorage.Contracts;
+    using BlazorShop.Web.SharedV2V2.Helper.Contracts;
 
     public class TokenService : ITokenService
     {

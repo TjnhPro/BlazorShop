@@ -1,9 +1,9 @@
-namespace BlazorShop.Web.SharedV2.Helper
+namespace BlazorShop.Web.SharedV2V2.Helper
 {
     using System.Net.Http.Headers;
 
-    using BlazorShop.Web.SharedV2;
-    using BlazorShop.Web.SharedV2.Helper.Contracts;
+    using BlazorShop.Web.SharedV2V2;
+    using BlazorShop.Web.SharedV2V2.Helper.Contracts;
 
     public class HttpClientHelper : IHttpClientHelper
     {

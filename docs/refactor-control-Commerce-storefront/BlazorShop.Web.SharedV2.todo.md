@@ -287,29 +287,31 @@ feat(shared-v2): scaffold web shared v2
 
 ## Phase 2 - Copy Required Shared Models
 
-- [ ] Copy basic models:
-  - [ ] `ApiCall`
-  - [ ] `ServiceResponse`
-  - [ ] `ServiceResponseType`
-  - [ ] `QueryResult`
-  - [ ] `PagedResult`
-  - [ ] `LoginResponse`
-  - [ ] `ToastModel`
-  - [ ] `Unit`
-- [ ] Copy auth models:
-  - [ ] `AuthenticationBase`
-  - [ ] `CreateUser`
-  - [ ] `LoginUser`
-  - [ ] `PasswordChangeModel`
-  - [ ] `UpdateProfileModel`
-- [ ] Copy Storefront DTO folders used by V2:
-  - [ ] `Models/Category`
-  - [ ] `Models/Product`
-  - [ ] `Models/Discovery`
-  - [ ] `Models/Seo`
-  - [ ] selected `Models/Payment`: `ProcessCart`, `GetOrder`, `GetOrderItem`, `GetOrderLine`, `GetPaymentMethod`, `Checkout`, `CreateOrderItem` only if referenced
-- [ ] Rename namespaces to `BlazorShop.Web.SharedV2.*`.
-- [ ] Build `SharedV2`.
+- [x] Copy basic models:
+  - [x] `ApiCall`
+  - [x] `ServiceResponse`
+  - [x] `ServiceResponseType`
+  - [x] `QueryResult`
+  - [x] `PagedResult`
+  - [x] `LoginResponse`
+  - [x] `ToastModel`
+  - [x] `Unit`
+- [x] Copy auth models:
+  - [x] `AuthenticationBase`
+  - [x] `CreateUser`
+  - [x] `LoginUser`
+  - [x] `PasswordChangeModel`
+  - [x] `UpdateProfileModel`
+- [x] Copy Storefront DTO folders used by V2:
+  - [x] `Models/Category`
+  - [x] `Models/Product`
+  - [x] `Models/Discovery`
+  - [x] `Models/Seo`
+  - [x] selected `Models/Payment`: `ProcessCart`, `GetOrder`, `GetOrderItem`, `GetOrderLine`, `GetPaymentMethod`, `Checkout`, `CreateOrderItem` only if referenced
+    - 2026-07-09: copied the payment DTO folder only; no payment service clients were copied.
+- [x] Rename namespaces to `BlazorShop.Web.SharedV2.*`.
+- [x] Build `SharedV2`.
+  - 2026-07-09: passed.
 
 Verification:
 

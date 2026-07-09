@@ -1,4 +1,4 @@
-namespace BlazorShop.Web.SharedV2.Helper.Contracts
+namespace BlazorShop.Web.SharedV2V2.Helper.Contracts
 {
     public interface IHttpClientHelper
     {

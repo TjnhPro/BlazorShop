@@ -1,4 +1,4 @@
-namespace BlazorShop.Web.SharedV2
+namespace BlazorShop.Web.SharedV2V2
 {
     public static class HttpClientNames
     {

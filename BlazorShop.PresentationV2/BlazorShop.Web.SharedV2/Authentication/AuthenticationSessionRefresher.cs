@@ -1,10 +1,10 @@
-namespace BlazorShop.Web.SharedV2.Authentication
+namespace BlazorShop.Web.SharedV2V2.Authentication
 {
     using System.Net;
 
-    using BlazorShop.Web.SharedV2.Helper.Contracts;
-    using BlazorShop.Web.SharedV2.Models;
-    using BlazorShop.Web.SharedV2.Services.Contracts;
+    using BlazorShop.Web.SharedV2V2.Helper.Contracts;
+    using BlazorShop.Web.SharedV2V2.Models;
+    using BlazorShop.Web.SharedV2V2.Services.Contracts;
 
     public class AuthenticationSessionRefresher : IAuthenticationSessionRefresher
     {

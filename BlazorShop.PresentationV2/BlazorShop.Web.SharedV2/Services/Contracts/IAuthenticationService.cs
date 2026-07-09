@@ -1,7 +1,7 @@
-namespace BlazorShop.Web.SharedV2.Services.Contracts
+namespace BlazorShop.Web.SharedV2V2.Services.Contracts
 {
-    using BlazorShop.Web.SharedV2.Models;
-    using BlazorShop.Web.SharedV2.Models.Authentication;
+    using BlazorShop.Web.SharedV2V2.Models;
+    using BlazorShop.Web.SharedV2V2.Models.Authentication;
 
     public interface IAuthenticationService
     {

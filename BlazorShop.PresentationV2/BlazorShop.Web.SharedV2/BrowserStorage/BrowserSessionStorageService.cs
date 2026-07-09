@@ -1,10 +1,10 @@
-namespace BlazorShop.Web.SharedV2.BrowserStorage
+namespace BlazorShop.Web.SharedV2V2.BrowserStorage
 {
     using System;
     using System.Threading.Tasks;
 
-    using BlazorShop.Web.SharedV2.BrowserStorage.Contracts;
-    using BlazorShop.Web.SharedV2.Interop;
+    using BlazorShop.Web.SharedV2V2.BrowserStorage.Contracts;
+    using BlazorShop.Web.SharedV2V2.Interop;
 
     using Microsoft.JSInterop;
 

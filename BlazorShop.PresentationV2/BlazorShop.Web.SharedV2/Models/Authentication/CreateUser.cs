@@ -1,4 +1,4 @@
-namespace BlazorShop.Web.SharedV2.Models.Authentication
+namespace BlazorShop.Web.SharedV2V2.Models.Authentication
 {
     using System.ComponentModel.DataAnnotations;
 

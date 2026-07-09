@@ -1,4 +1,4 @@
-namespace BlazorShop.Web.SharedV2.Models
+namespace BlazorShop.Web.SharedV2V2.Models
 {
     public enum ServiceResponseType
     {

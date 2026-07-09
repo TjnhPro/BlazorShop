@@ -1,8 +1,8 @@
-namespace BlazorShop.Web.SharedV2.Helper.Contracts
+namespace BlazorShop.Web.SharedV2V2.Helper.Contracts
 {
     using System.Net.Http;
 
-    using BlazorShop.Web.SharedV2.Models;
+    using BlazorShop.Web.SharedV2V2.Models;
 
     public interface IApiCallHelper
     {
