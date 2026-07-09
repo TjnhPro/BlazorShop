@@ -1,23 +1,10 @@
 namespace BlazorShop.Web.Authentication.Providers
 {
-    using Microsoft.AspNetCore.Components.Authorization;
-    using Microsoft.Extensions.DependencyInjection;
-
-    public sealed class AuthenticationStateNotifier : IAuthenticationStateNotifier
+    public sealed class AuthenticationStateNotifier : BlazorShop.Web.Shared.Authentication.AuthenticationStateNotifier, IAuthenticationStateNotifier
     {
-        private readonly IServiceProvider _serviceProvider;
-
         public AuthenticationStateNotifier(IServiceProvider serviceProvider)
+            : base(serviceProvider)
         {
-            _serviceProvider = serviceProvider;
-        }
-
-        public void NotifyAuthenticationState()
-        {
-            if (_serviceProvider.GetService<AuthenticationStateProvider>() is CustomAuthStateProvider authStateProvider)
-            {
-                authStateProvider.NotifyAuthenticationState();
-            }
         }
     }
 }

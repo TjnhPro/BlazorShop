@@ -1,0 +1,49 @@
+@inject IStorefrontSessionResolver SessionResolver
+
+<details class="bs-storefront-account-menu">
+    <summary class="bs-storefront-icon-button bs-storefront-account-menu__summary" aria-label="Account menu" title="Account">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+    </summary>
+
+    <div class="bs-storefront-account-menu__panel">
+        @if (_session.IsAuthenticated)
+        {
+            <div class="bs-storefront-account-menu__intro">
+                <div class="bs-storefront-account-menu__title">@(_session.DisplayName ?? "Signed in")</div>
+                @if (!string.IsNullOrWhiteSpace(_session.Email))
+                {
+                    <div class="bs-storefront-account-menu__meta">@_session.Email</div>
+                }
+            </div>
+
+            <div class="bs-storefront-account-menu__links">
+                <form method="post" action="@StorefrontRoutes.Logout">
+                    <AntiforgeryToken />
+                    <input type="hidden" name="ReturnUrl" value="@StorefrontRoutes.Home" />
+                    <button type="submit" class="bs-storefront-account-menu__link bs-storefront-account-menu__button">Sign out</button>
+                </form>
+            </div>
+        }
+        else
+        {
+            <div class="bs-storefront-account-menu__intro">
+                <div class="bs-storefront-account-menu__title">Account access</div>
+                <div class="bs-storefront-account-menu__meta">Sign in for your customer workspace, or register before you continue to checkout.</div>
+            </div>
+
+            <div class="bs-storefront-account-menu__links">
+                <a href="@StorefrontRoutes.SignIn" class="bs-storefront-account-menu__link">Sign in</a>
+                <a href="@StorefrontRoutes.Register" class="bs-storefront-account-menu__link">Register</a>
+            </div>
+        }
+    </div>
+</details>
+
+@code {
+    private StorefrontSessionInfo _session = StorefrontSessionInfo.Anonymous;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _session = await SessionResolver.GetCurrentUserAsync();
+    }
+}

@@ -1,7 +1,6 @@
 namespace BlazorShop.Web.Authentication.Providers
 {
-    public interface IAuthenticationSessionSyncService : IAsyncDisposable
+    public interface IAuthenticationSessionSyncService : BlazorShop.Web.Shared.Authentication.IAuthenticationSessionSyncService
     {
-        Task InitializeAsync();
     }
 }

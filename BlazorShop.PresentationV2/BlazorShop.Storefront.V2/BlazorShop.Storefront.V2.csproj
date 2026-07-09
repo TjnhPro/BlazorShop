@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>BlazorShop.Storefront</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BlazorShop.Application\BlazorShop.Application.csproj" />
+    <ProjectReference Include="..\..\BlazorShop.ServiceDefaults\BlazorShop.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\BlazorShop.Web.SharedV2\BlazorShop.Web.SharedV2.csproj" />
+  </ItemGroup>
+
+</Project>

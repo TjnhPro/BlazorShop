@@ -1,0 +1,31 @@
+@page "/logout"
+@attribute [Authorize]
+@inject BlazorShop.Web.SharedV2.Services.Contracts.IAuthenticationService AuthenticationService
+@inject BlazorShop.Web.SharedV2.Helper.Contracts.ITokenService TokenService
+@inject IAuthenticatedClientStateCleaner ClientStateCleaner
+@inject IAuthenticationStateNotifier AuthenticationStateNotifier
+@inject IAuthenticationSessionEventPublisher SessionEventPublisher
+@inject NavigationManager NavigationManager
+
+<PageTitle>Signing out - Control Plane</PageTitle>
+
+<div class="grid min-h-screen place-items-center bg-ink-50 text-ink-700">
+    <div class="text-center">
+        <div class="mx-auto mb-4 grid size-12 place-items-center rounded-md border border-ink-200 bg-white shadow-sm">
+            <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+        </div>
+        <div class="text-sm font-semibold">Signing out</div>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthenticationService.Logout();
+        await TokenService.RemoveJwtTokenAsync(BlazorShop.Web.SharedV2.AuthStorageConstants.JwtTokenKey);
+        await ClientStateCleaner.ClearAsync();
+        AuthenticationStateNotifier.NotifyAuthenticationState();
+        await SessionEventPublisher.PublishSignedOutAsync();
+        NavigationManager.NavigateTo("/login", replace: true);
+    }
+}

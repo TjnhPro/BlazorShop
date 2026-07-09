@@ -1,11 +1,6 @@
 namespace BlazorShop.Web.Authentication.Providers
 {
-    public interface IAuthenticationSessionEventPublisher
+    public interface IAuthenticationSessionEventPublisher : BlazorShop.Web.Shared.Authentication.IAuthenticationSessionEventPublisher
     {
-        Task PublishSignedInAsync();
-
-        Task PublishSignedOutAsync();
-
-        Task PublishSessionRefreshedAsync();
     }
 }

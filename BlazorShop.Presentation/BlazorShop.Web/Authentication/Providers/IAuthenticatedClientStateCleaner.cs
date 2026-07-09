@@ -1,7 +1,6 @@
 namespace BlazorShop.Web.Authentication.Providers
 {
-    public interface IAuthenticatedClientStateCleaner
+    public interface IAuthenticatedClientStateCleaner : BlazorShop.Web.Shared.Authentication.IAuthenticatedClientStateCleaner
     {
-        Task ClearAsync();
     }
 }

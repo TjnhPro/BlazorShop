@@ -1,0 +1,55 @@
+<div class="flex h-full flex-col">
+    <div class="border-b border-ink-200 px-5 py-5">
+        <a class="flex items-center gap-3" href="">
+            <span class="grid size-9 place-items-center rounded-md bg-control-700 text-white">
+                <i class="fa-solid fa-network-wired" aria-hidden="true"></i>
+            </span>
+            <span class="min-w-0">
+                <span class="block text-sm font-bold text-ink-900">BlazorShop</span>
+                <span class="block text-xs font-semibold uppercase tracking-wide text-control-700">Control Plane</span>
+            </span>
+        </a>
+    </div>
+
+    <nav class="grid gap-1 p-3">
+        <NavLink class="cp-nav-link" href="" Match="NavLinkMatch.All">
+            <i class="fa-solid fa-gauge-high w-4" aria-hidden="true"></i>
+            <span>Dashboard</span>
+        </NavLink>
+        <NavLink class="cp-nav-link" href="nodes">
+            <i class="fa-solid fa-server w-4" aria-hidden="true"></i>
+            <span>Nodes</span>
+        </NavLink>
+        <NavLink class="cp-nav-link" href="credentials">
+            <i class="fa-solid fa-key w-4" aria-hidden="true"></i>
+            <span>Credentials</span>
+        </NavLink>
+        <NavLink class="cp-nav-link" href="stores">
+            <i class="fa-solid fa-store w-4" aria-hidden="true"></i>
+            <span>Stores</span>
+        </NavLink>
+        <NavLink class="cp-nav-link" href="users">
+            <i class="fa-solid fa-users-gear w-4" aria-hidden="true"></i>
+            <span>Users</span>
+        </NavLink>
+        <NavLink class="cp-nav-link" href="health">
+            <i class="fa-solid fa-heart-pulse w-4" aria-hidden="true"></i>
+            <span>Health</span>
+        </NavLink>
+        <NavLink class="cp-nav-link" href="actions">
+            <i class="fa-solid fa-list-check w-4" aria-hidden="true"></i>
+            <span>Actions</span>
+        </NavLink>
+        <NavLink class="cp-nav-link" href="audit-logs">
+            <i class="fa-solid fa-clipboard-list w-4" aria-hidden="true"></i>
+            <span>Audit Logs</span>
+        </NavLink>
+    </nav>
+
+    <div class="mt-auto border-t border-ink-200 p-4">
+        <div class="rounded-md bg-ink-50 p-3 text-xs text-ink-500">
+            <div class="font-semibold text-ink-700">Phase 1</div>
+            <div>V2 shell and shared helper wiring</div>
+        </div>
+    </div>
+</div>

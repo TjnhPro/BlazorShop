@@ -1,0 +1,21 @@
+services:
+  controlplane-postgres:
+    image: postgres:17-alpine
+    container_name: blazorshop-controlplane-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: blazorshop_controlplane
+      POSTGRES_USER: blazorshop_controlplane
+      POSTGRES_PASSWORD: blazorshop_controlplane_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - controlplane_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U blazorshop_controlplane -d blazorshop_controlplane"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  controlplane_postgres_data:

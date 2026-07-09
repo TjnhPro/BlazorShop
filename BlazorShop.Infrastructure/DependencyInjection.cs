@@ -39,10 +39,57 @@
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
         {
+            services.AddSharedAuthenticationInfrastructure(config);
+
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddScoped<IProductReadRepository, ProductReadRepository>();
+
+            services.AddScoped<IPaymentMethod, PaymentMethodRepository>();
+            services.AddScoped<IStripeCheckoutSessionService, StripeCheckoutSessionService>();
+            services.AddScoped<IPaymentService, StripePaymentService>();
+            services.AddScoped<IPayPalPaymentService, PayPalPaymentService>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<IOrderTrackingService, OrderTrackingService>();
+            services.AddScoped<IOrderQueryService, OrderQueryService>();
+            services.AddScoped<INewsletterSubscriberRepository, NewsletterSubscriberRepository>();
+            services.AddScoped<ISeoSettingsRepository, SeoSettingsRepository>();
+            services.AddScoped<ISeoRedirectRepository, SeoRedirectRepository>();
+            services.AddScoped<IApplicationTransactionManager, ApplicationTransactionManager>();
+            services.AddScoped<IAdminAuditService, AdminAuditService>();
+            services.AddScoped<IAdminUserService, AdminUserService>();
+            services.AddScoped<IAdminSettingsService, AdminSettingsService>();
+            services.AddScoped<IAdminInventoryService, AdminInventoryService>();
+            services.AddScoped<IAdminOrderService, AdminOrderService>();
+
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+
+            services.AddScoped<ICart, CartRepository>();
+
+            // Product recommendations
+            services.AddScoped<IProductRecommendationRepository, ProductRecommendationRepository>();
+
+            // Add memory cache for recommendations
+            services.AddMemoryCache();
+
+            Stripe.StripeConfiguration.ApiKey = config["Stripe:SecretKey"];
+
+            services.AddSingleton<IValidateOptions<EmailSettings>, EmailSettingsOptionsValidator>();
+            services.AddOptions<EmailSettings>()
+                .Bind(config.GetSection("EmailSettings"))
+                .ValidateOnStart();
+            services.Configure<BankTransferSettings>(config.GetSection("BankTransfer"));
+
+            return services;
+        }
+
+        public static IServiceCollection AddSharedAuthenticationInfrastructure(this IServiceCollection services, IConfiguration config)
+        {
+            var authConnectionString = ResolveAuthConnectionString(config);
+
             services.AddDbContext<AppDbContext>(
                 opt => opt
                     .UseNpgsql(
-                        config.GetConnectionString("DefaultConnection"),
+                        authConnectionString,
                         npgsqlOptions =>
                             {
                                 npgsqlOptions.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName);
@@ -50,8 +97,6 @@
                             })
             );
 
-            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            services.AddScoped<IProductReadRepository, ProductReadRepository>();
             services.AddScoped(typeof(IAppLogger<>), typeof(LoggerAdapter<>));
 
             services.AddDefaultIdentity<AppUser>(
@@ -96,45 +141,18 @@
             services.AddScoped<IAppUserManager, AppUserManager>();
             services.AddScoped<IAppTokenManager, AppTokenManager>();
             services.AddScoped<IAppRoleManager, AppRoleManager>();
-
-            services.AddScoped<IPaymentMethod, PaymentMethodRepository>();
-            services.AddScoped<IStripeCheckoutSessionService, StripeCheckoutSessionService>();
-            services.AddScoped<IPaymentService, StripePaymentService>();
-            services.AddScoped<IPayPalPaymentService, PayPalPaymentService>();
-            services.AddScoped<IOrderRepository, OrderRepository>();
-            services.AddScoped<IOrderTrackingService, OrderTrackingService>();
-            services.AddScoped<IOrderQueryService, OrderQueryService>();
-            services.AddScoped<INewsletterSubscriberRepository, NewsletterSubscriberRepository>();
-            services.AddScoped<ISeoSettingsRepository, SeoSettingsRepository>();
-            services.AddScoped<ISeoRedirectRepository, SeoRedirectRepository>();
-            services.AddScoped<IApplicationTransactionManager, ApplicationTransactionManager>();
             services.AddHttpContextAccessor();
-            services.AddScoped<IAdminAuditService, AdminAuditService>();
-            services.AddScoped<IAdminUserService, AdminUserService>();
-            services.AddScoped<IAdminSettingsService, AdminSettingsService>();
-            services.AddScoped<IAdminInventoryService, AdminInventoryService>();
-            services.AddScoped<IAdminOrderService, AdminOrderService>();
-
-            services.AddScoped<ICategoryRepository, CategoryRepository>();
-
-            services.AddScoped<ICart, CartRepository>();
-
-            // Product recommendations
-            services.AddScoped<IProductRecommendationRepository, ProductRecommendationRepository>();
-
-            // Add memory cache for recommendations
-            services.AddMemoryCache();
-
-            Stripe.StripeConfiguration.ApiKey = config["Stripe:SecretKey"];
-
-            services.AddSingleton<IValidateOptions<EmailSettings>, EmailSettingsOptionsValidator>();
             services.AddOptions<EmailSettings>()
-                .Bind(config.GetSection("EmailSettings"))
-                .ValidateOnStart();
-            services.Configure<BankTransferSettings>(config.GetSection("BankTransfer"));
+                .Bind(config.GetSection("EmailSettings"));
             services.AddTransient<IEmailService, EmailService>();
 
             return services;
+        }
+
+        private static string? ResolveAuthConnectionString(IConfiguration config)
+        {
+            return config.GetConnectionString("AuthConnection")
+                   ?? config.GetConnectionString("DefaultConnection");
         }
 
         public static IApplicationBuilder UseInfrastructure(this IApplicationBuilder app)

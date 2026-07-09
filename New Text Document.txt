@@ -1,0 +1,5 @@
+BlazorShop.AppHost -> local dev
+BlazorShop.Application -> dto,validate,service
+BlazorShop.Domain -> const,contract,entitie
+BlazorShop.Infrastructure -> db,migration,DependencyInjection
+BlazorShop.Presentation -> webhost, runtime

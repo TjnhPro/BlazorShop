@@ -370,3 +370,8 @@ FodyWeavers.xsd
 /BlazorShop.Presentation/BlazorShop.Web/wwwroot/images/bg1.png
 /BlazorShop.Presentation/BlazorShop.Web/wwwroot/images/bg2.png
 /BlazorShop.Presentation/BlazorShop.Web/wwwroot/images/bg-image.jpg
+
+.playwright-mcp/
+.playwright-cli/
+output/
+.gstack/

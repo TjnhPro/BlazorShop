@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    @apply min-h-full bg-ink-50 text-ink-900 antialiased;
+  }
+
+  body {
+    @apply overflow-x-hidden;
+  }
+}
+
+@layer components {
+  .cp-nav-link {
+    @apply flex min-h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-ink-600 transition hover:bg-ink-100 hover:text-ink-900;
+  }
+
+  .cp-nav-link.active {
+    @apply bg-control-50 text-control-700 ring-1 ring-control-100;
+  }
+
+  .cp-card {
+    @apply rounded-md border border-ink-200 bg-white shadow-sm;
+  }
+
+  .cp-button {
+    @apply inline-flex min-h-9 items-center justify-center gap-2 rounded-md border border-ink-300 bg-white px-3 text-sm font-semibold text-ink-700 shadow-sm transition hover:bg-ink-50;
+  }
+
+  .cp-button-primary {
+    @apply border-control-700 bg-control-700 text-white hover:bg-control-500;
+  }
+
+  .cp-button-secondary {
+    @apply border-ink-300 bg-white text-ink-700 hover:bg-ink-50;
+  }
+
+  .cp-button-danger {
+    @apply border-red-700 bg-red-700 text-white hover:bg-red-600 disabled:border-ink-300 disabled:bg-ink-100 disabled:text-ink-500;
+  }
+
+  .cp-badge {
+    @apply inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold;
+  }
+}

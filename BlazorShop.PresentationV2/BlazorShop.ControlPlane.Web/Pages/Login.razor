@@ -1,0 +1,123 @@
+@page "/login"
+@page "/login/{*Route}"
+@attribute [AllowAnonymous]
+@inject BlazorShop.Web.SharedV2.Services.Contracts.IAuthenticationService AuthenticationService
+@inject BlazorShop.Web.SharedV2.Helper.Contracts.ITokenService TokenService
+@inject IAuthenticationStateNotifier AuthenticationStateNotifier
+@inject IAuthenticationSessionEventPublisher SessionEventPublisher
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+
+<PageTitle>Sign in - Control Plane</PageTitle>
+
+<section class="grid min-h-screen place-items-center bg-ink-50 px-4 py-8">
+    <div class="w-full max-w-[420px]">
+        <div class="cp-card overflow-hidden">
+            <div class="border-b border-ink-200 px-6 py-6">
+                <div class="flex items-center gap-3">
+                    <span class="grid size-10 place-items-center rounded-md bg-control-700 text-white">
+                        <i class="fa-solid fa-network-wired" aria-hidden="true"></i>
+                    </span>
+                    <div class="min-w-0">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-control-700">Control Plane</p>
+                        <h1 class="text-xl font-bold text-ink-900">Sign in</h1>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-6">
+                @if (!string.IsNullOrWhiteSpace(errorMessage))
+                {
+                    <div class="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+                        @errorMessage
+                    </div>
+                }
+
+                <EditForm Model="User" OnValidSubmit="LoginAsync">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="mb-4 text-sm text-red-700" />
+
+                    <div class="space-y-4">
+                        <label class="block">
+                            <span class="text-sm font-semibold text-ink-700">Email</span>
+                            <InputText class="mt-2 min-h-10 w-full rounded-md border border-ink-300 bg-white px-3 text-sm text-ink-900 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind-Value="User.Email" autocomplete="username" />
+                            <ValidationMessage For="@(() => User.Email)" class="mt-1 text-sm text-red-700" />
+                        </label>
+
+                        <label class="block">
+                            <span class="text-sm font-semibold text-ink-700">Password</span>
+                            <InputText type="password" class="mt-2 min-h-10 w-full rounded-md border border-ink-300 bg-white px-3 text-sm text-ink-900 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind-Value="User.Password" autocomplete="current-password" />
+                            <ValidationMessage For="@(() => User.Password)" class="mt-1 text-sm text-red-700" />
+                        </label>
+                    </div>
+
+                    <button type="submit" class="cp-button cp-button-primary mt-6 w-full" disabled="@isSubmitting">
+                        <i class="fa-solid @(isSubmitting ? "fa-circle-notch fa-spin" : "fa-right-to-bracket")" aria-hidden="true"></i>
+                        <span>@(isSubmitting ? "Signing in" : "Sign in")</span>
+                    </button>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    [Parameter]
+    public string? Route { get; set; }
+
+    private LoginUser User { get; } = new();
+    private bool isSubmitting;
+    private string? errorMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var authenticationState = await AuthStateProvider.GetAuthenticationStateAsync();
+        if (authenticationState.User.Identity?.IsAuthenticated == true)
+        {
+            NavigationManager.NavigateTo(ResolveTargetRoute(), replace: true);
+        }
+    }
+
+    private async Task LoginAsync()
+    {
+        if (isSubmitting)
+        {
+            return;
+        }
+
+        isSubmitting = true;
+        errorMessage = null;
+
+        try
+        {
+            var result = await AuthenticationService.LoginUser(User);
+            if (!result.Success || string.IsNullOrWhiteSpace(result.Token))
+            {
+                errorMessage = string.IsNullOrWhiteSpace(result.Message)
+                    ? "Unable to sign in with those credentials."
+                    : result.Message;
+                return;
+            }
+
+            await TokenService.StoreJwtTokenAsync(BlazorShop.Web.SharedV2.AuthStorageConstants.JwtTokenKey, result.Token);
+            AuthenticationStateNotifier.NotifyAuthenticationState();
+            await SessionEventPublisher.PublishSignedInAsync();
+
+            NavigationManager.NavigateTo(ResolveTargetRoute(), replace: true);
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private string ResolveTargetRoute()
+    {
+        return ProtectedRouteRedirectResolver.ResolvePostLoginPath(
+            Route,
+            isAdmin: true,
+            adminPath: "/",
+            accountPath: "/",
+            blockedAdminFallbackPath: "/");
+    }
+}

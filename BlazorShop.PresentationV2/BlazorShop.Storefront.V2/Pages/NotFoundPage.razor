@@ -1,0 +1,25 @@
+@page "/{*Path:nonfile}"
+@inject IStorefrontSeoComposer SeoComposer
+@inject IHttpContextAccessor HttpContextAccessor
+
+<SeoHead Metadata="_metadata" />
+
+<NotFoundState Title="Page not found"
+               Message="The page you requested does not exist in the current storefront surface." />
+
+@code {
+    private SeoMetadataDto _metadata = new();
+
+    [Parameter]
+    public string? Path { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        StorefrontResponseHeaders.ApplyNotFound(HttpContextAccessor.HttpContext);
+
+        _metadata = await SeoComposer.ComposeNotFoundPageAsync(
+            "Page not found",
+            "/not-found",
+            "The page you requested does not exist in the current storefront surface.");
+    }
+}

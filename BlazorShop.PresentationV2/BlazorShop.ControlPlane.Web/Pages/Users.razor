@@ -1,0 +1,641 @@
+@page "/users"
+@attribute [Authorize]
+@inject IControlPlaneUserClient UserClient
+
+<PageTitle>Users</PageTitle>
+
+<section class="space-y-5">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <p class="text-sm font-semibold text-control-700">Users</p>
+            <h1 class="text-2xl font-bold text-ink-900">User Management</h1>
+            <p class="mt-1 text-sm text-ink-500">Manage Control Plane access, roles, and direct permissions.</p>
+        </div>
+        <button class="cp-button cp-button-primary" @onclick="OpenCreateForm">
+            <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
+            Create user
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">@errorMessage</div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">@successMessage</div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(createdTemporaryPassword))
+    {
+        <div class="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+            <div class="font-semibold">Temporary password</div>
+            <div class="mt-1 font-mono text-xs">@createdTemporaryPassword</div>
+        </div>
+    }
+
+    @if (showCreateForm)
+    {
+        <div class="cp-card">
+            <div class="border-b border-ink-200 p-4">
+                <h2 class="text-sm font-semibold text-ink-900">Create user</h2>
+            </div>
+            <div class="grid gap-4 p-4 lg:grid-cols-2">
+                <label class="space-y-1 text-sm">
+                    <span class="font-medium text-ink-700">Email</span>
+                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="createEmail" />
+                </label>
+                <label class="space-y-1 text-sm">
+                    <span class="font-medium text-ink-700">Display name</span>
+                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="createDisplayName" />
+                </label>
+                <label class="space-y-1 text-sm">
+                    <span class="font-medium text-ink-700">Identity role</span>
+                    <select class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="createIdentityRole">
+                        <option value="User">User</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </label>
+                <label class="space-y-1 text-sm">
+                    <span class="font-medium text-ink-700">Control Plane role</span>
+                    <select class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="createRoleKey">
+                        <option value="">No role</option>
+                        @foreach (var role in roleCatalog)
+                        {
+                            <option value="@role.Key">@role.Name</option>
+                        }
+                    </select>
+                </label>
+                <label class="space-y-1 text-sm">
+                    <span class="font-medium text-ink-700">Direct permission</span>
+                    <select class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="createPermissionKey">
+                        <option value="">No direct permission</option>
+                        @foreach (var permission in permissionCatalog)
+                        {
+                            <option value="@permission.Key">@permission.Key</option>
+                        }
+                    </select>
+                </label>
+                <label class="space-y-1 text-sm">
+                    <span class="font-medium text-ink-700">Temporary password</span>
+                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Leave blank to generate" @bind="createTemporaryPassword" />
+                </label>
+            </div>
+            <div class="flex justify-end gap-2 border-t border-ink-200 p-4">
+                <button class="cp-button cp-button-secondary" @onclick="CloseCreateForm">Cancel</button>
+                <button class="cp-button cp-button-primary" disabled="@isSaving" @onclick="CreateUserAsync">
+                    <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                    Save
+                </button>
+            </div>
+        </div>
+    }
+
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="cp-card p-4">
+            <p class="text-xs font-semibold uppercase text-ink-500">Total users</p>
+            <p class="mt-2 text-2xl font-bold text-ink-900">@users.Count</p>
+        </div>
+        <div class="cp-card p-4">
+            <p class="text-xs font-semibold uppercase text-ink-500">Active users</p>
+            <p class="mt-2 text-2xl font-bold text-green-700">@users.Count(user => user.Status == "active")</p>
+        </div>
+        <div class="cp-card p-4">
+            <p class="text-xs font-semibold uppercase text-ink-500">Disabled users</p>
+            <p class="mt-2 text-2xl font-bold text-ink-700">@users.Count(user => user.Status == "disabled")</p>
+        </div>
+        <div class="cp-card p-4">
+            <p class="text-xs font-semibold uppercase text-ink-500">Platform owners</p>
+            <p class="mt-2 text-2xl font-bold text-control-700">@users.Count(user => user.ControlPlaneRoles.Any(role => role.Key == "platform_owner"))</p>
+        </div>
+    </div>
+
+    <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <div class="cp-card overflow-hidden">
+            <div class="grid gap-3 border-b border-ink-200 p-4 lg:grid-cols-[minmax(0,1fr)_160px_180px_220px_auto]">
+                <input class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Search email or display name" @bind="search" />
+                <select class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="status">
+                    <option value="">All statuses</option>
+                    <option value="active">Active</option>
+                    <option value="disabled">Disabled</option>
+                    <option value="invited">Invited</option>
+                </select>
+                <select class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="roleKey">
+                    <option value="">All roles</option>
+                    @foreach (var role in roleCatalog)
+                    {
+                        <option value="@role.Key">@role.Name</option>
+                    }
+                </select>
+                <select class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="permissionKey">
+                    <option value="">All permissions</option>
+                    @foreach (var permission in permissionCatalog)
+                    {
+                        <option value="@permission.Key">@permission.Key</option>
+                    }
+                </select>
+                <button class="cp-button cp-button-secondary lg:col-start-5" @onclick="ApplyFiltersAsync">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    Search
+                </button>
+            </div>
+
+            @if (isLoading)
+            {
+                <div class="p-8 text-center text-sm text-ink-500">Loading users...</div>
+            }
+            else if (users.Count == 0)
+            {
+                <div class="p-8 text-center">
+                    <i class="fa-solid fa-users-gear mb-3 text-2xl text-ink-400" aria-hidden="true"></i>
+                    <p class="text-sm font-semibold text-ink-700">No users found</p>
+                    <p class="mt-1 text-sm text-ink-500">Adjust filters or create a Control Plane user.</p>
+                </div>
+            }
+            else
+            {
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-ink-200 text-left text-sm">
+                        <thead class="bg-ink-50 text-xs font-semibold uppercase text-ink-500">
+                            <tr>
+                                <th class="px-4 py-3">User</th>
+                                <th class="px-4 py-3">Status</th>
+                                <th class="px-4 py-3">Roles</th>
+                                <th class="px-4 py-3">Direct permissions</th>
+                                <th class="px-4 py-3 text-right">Last login</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-ink-100">
+                            @foreach (var user in users)
+                            {
+                                <tr class="cursor-pointer hover:bg-ink-50" @onclick="() => LoadDetailAsync(user.PublicId)">
+                                    <td class="px-4 py-3">
+                                        <div class="font-semibold text-ink-900">@user.DisplayName</div>
+                                        <div class="text-xs text-ink-500">@user.Email</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <span class="@GetStatusBadgeClass(user.Status)">@user.Status</span>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex max-w-[260px] flex-wrap gap-1">
+                                            @foreach (var role in user.ControlPlaneRoles)
+                                            {
+                                                <span class="rounded-full bg-control-50 px-2 py-1 text-xs font-semibold text-control-700">@role.Key</span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-xs text-ink-600">@FormatCount(user.DirectPermissionKeys.Count, "direct")</td>
+                                    <td class="px-4 py-3 text-right text-xs text-ink-500">@FormatDate(user.LastLoginAt)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(nextCursor))
+            {
+                <div class="border-t border-ink-200 p-4 text-right">
+                    <button class="cp-button cp-button-secondary" @onclick="LoadMoreAsync">Load more</button>
+                </div>
+            }
+        </div>
+
+        <aside class="cp-card min-h-[420px]">
+            @if (selectedUser is null)
+            {
+                <div class="flex h-full min-h-[420px] flex-col items-center justify-center p-6 text-center">
+                    <i class="fa-solid fa-user-shield mb-3 text-2xl text-ink-400" aria-hidden="true"></i>
+                    <p class="text-sm font-semibold text-ink-700">No user selected</p>
+                    <p class="mt-1 text-sm text-ink-500">Select a user to inspect roles and effective permissions.</p>
+                </div>
+            }
+            else
+            {
+                <div class="border-b border-ink-200 p-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <h2 class="truncate text-base font-semibold text-ink-900">@selectedUser.DisplayName</h2>
+                            <p class="mt-1 truncate text-xs text-ink-500">@selectedUser.Email</p>
+                        </div>
+                        <span class="@GetStatusBadgeClass(selectedUser.Status)">@selectedUser.Status</span>
+                    </div>
+                </div>
+                <div class="space-y-5 p-4 text-sm">
+                    <section class="space-y-3">
+                        <label class="space-y-1 text-sm">
+                            <span class="font-medium text-ink-700">Display name</span>
+                            <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="editDisplayName" />
+                        </label>
+                        <div class="flex gap-2">
+                            <button class="cp-button cp-button-secondary flex-1 justify-center" disabled="@isSaving" @onclick="UpdateSelectedAsync">
+                                <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                                Save
+                            </button>
+                            @if (selectedUser.Status == "disabled")
+                            {
+                                <button class="cp-button cp-button-primary flex-1 justify-center" disabled="@isSaving" @onclick="EnableSelectedAsync">
+                                    <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                                    Enable
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="cp-button cp-button-danger flex-1 justify-center" disabled="@isSaving" @onclick="DisableSelectedAsync">
+                                    <i class="fa-solid fa-ban" aria-hidden="true"></i>
+                                    Disable
+                                </button>
+                            }
+                        </div>
+                    </section>
+
+                    <section>
+                        <p class="text-xs font-semibold uppercase text-ink-500">Identity roles</p>
+                        <div class="mt-2 flex flex-wrap gap-1">
+                            @foreach (var role in selectedUser.IdentityRoles)
+                            {
+                                <span class="rounded-full bg-ink-100 px-2 py-1 text-xs font-semibold text-ink-700">@role</span>
+                            }
+                        </div>
+                    </section>
+
+                    <section>
+                        <p class="text-xs font-semibold uppercase text-ink-500">Control Plane roles</p>
+                        <div class="mt-2 flex gap-2">
+                            <select class="min-h-10 min-w-0 flex-1 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="assignRoleKey">
+                                <option value="">Select role</option>
+                                @foreach (var role in roleCatalog.Where(role => selectedUser.ControlPlaneRoles.All(current => current.Key != role.Key)))
+                                {
+                                    <option value="@role.Key">@role.Name</option>
+                                }
+                            </select>
+                            <button class="cp-button cp-button-secondary" disabled="@isSaving" @onclick="AssignRoleAsync">
+                                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2 space-y-2">
+                            @foreach (var role in selectedUser.ControlPlaneRoles)
+                            {
+                                <div class="rounded-md border border-ink-200 p-3">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div>
+                                            <div class="font-semibold text-ink-900">@role.Name</div>
+                                            <div class="text-xs text-ink-500">@role.Key</div>
+                                        </div>
+                                        <button class="rounded-md px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50" disabled="@isSaving" @onclick="() => RemoveRoleAsync(role.Key)">Remove</button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </section>
+
+                    <section>
+                        <p class="text-xs font-semibold uppercase text-ink-500">Direct permissions</p>
+                        <div class="mt-2 flex gap-2">
+                            <select class="min-h-10 min-w-0 flex-1 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="assignPermissionKey">
+                                <option value="">Select permission</option>
+                                @foreach (var permission in permissionCatalog.Where(permission => selectedUser.DirectPermissions.All(current => current.Key != permission.Key)))
+                                {
+                                    <option value="@permission.Key">@permission.Key</option>
+                                }
+                            </select>
+                            <button class="cp-button cp-button-secondary" disabled="@isSaving" @onclick="AssignPermissionAsync">
+                                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2 flex flex-wrap gap-1">
+                            @foreach (var permission in selectedUser.DirectPermissions)
+                            {
+                                <button class="rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100" disabled="@isSaving" @onclick="() => RemovePermissionAsync(permission.Key)">
+                                    @permission.Key
+                                    <i class="fa-solid fa-xmark ml-1" aria-hidden="true"></i>
+                                </button>
+                            }
+                            @if (selectedUser.DirectPermissions.Count == 0)
+                            {
+                                <span class="text-xs text-ink-500">No direct grants</span>
+                            }
+                        </div>
+                    </section>
+
+                    <section>
+                        <p class="text-xs font-semibold uppercase text-ink-500">Effective permissions</p>
+                        <div class="mt-2 flex max-h-56 flex-wrap gap-1 overflow-y-auto">
+                            @foreach (var permission in selectedUser.EffectivePermissions)
+                            {
+                                <span class="rounded-full bg-green-50 px-2 py-1 text-xs font-semibold text-green-700">@permission.Key</span>
+                            }
+                        </div>
+                    </section>
+                </div>
+            }
+        </aside>
+    </div>
+</section>
+
+@code {
+    private readonly List<UserSummary> users = [];
+    private IReadOnlyList<RoleCatalogItem> roleCatalog = [];
+    private IReadOnlyList<PermissionCatalogItem> permissionCatalog = [];
+    private UserDetail? selectedUser;
+    private string? search;
+    private string? status;
+    private string? roleKey;
+    private string? permissionKey;
+    private string? successMessage;
+    private string? nextCursor;
+    private string? errorMessage;
+    private string? createdTemporaryPassword;
+    private string? createEmail;
+    private string? createDisplayName;
+    private string createIdentityRole = "User";
+    private string? createRoleKey;
+    private string? createPermissionKey;
+    private string? createTemporaryPassword;
+    private string? editDisplayName;
+    private string? assignRoleKey;
+    private string? assignPermissionKey;
+    private bool isLoading;
+    private bool isSaving;
+    private bool showCreateForm;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInitialAsync();
+    }
+
+    private async Task LoadInitialAsync()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+            var rolesTask = UserClient.ListRolesAsync();
+            var permissionsTask = UserClient.ListPermissionsAsync();
+            var usersTask = UserClient.ListAsync(search, status, roleKey, permissionKey, null);
+
+            await Task.WhenAll(rolesTask, permissionsTask, usersTask);
+
+            roleCatalog = rolesTask.Result.Items;
+            permissionCatalog = permissionsTask.Result.Items;
+            users.Clear();
+            users.AddRange(usersTask.Result.Items);
+            nextCursor = usersTask.Result.NextCursor;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ApplyFiltersAsync()
+    {
+        selectedUser = null;
+        await LoadInitialAsync();
+    }
+
+    private async Task LoadMoreAsync()
+    {
+        if (string.IsNullOrWhiteSpace(nextCursor))
+        {
+            return;
+        }
+
+        try
+        {
+            errorMessage = null;
+            var response = await UserClient.ListAsync(search, status, roleKey, permissionKey, nextCursor);
+            users.AddRange(response.Items);
+            nextCursor = response.NextCursor;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private async Task LoadDetailAsync(Guid publicId)
+    {
+        try
+        {
+            errorMessage = null;
+            selectedUser = await UserClient.GetAsync(publicId);
+            editDisplayName = selectedUser?.DisplayName;
+            assignRoleKey = null;
+            assignPermissionKey = null;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void OpenCreateForm()
+    {
+        showCreateForm = true;
+        successMessage = null;
+        errorMessage = null;
+        createdTemporaryPassword = null;
+    }
+
+    private void CloseCreateForm()
+    {
+        showCreateForm = false;
+    }
+
+    private async Task CreateUserAsync()
+    {
+        try
+        {
+            isSaving = true;
+            errorMessage = null;
+            successMessage = null;
+            createdTemporaryPassword = null;
+
+            var request = new CreateUserRequest(
+                createEmail ?? string.Empty,
+                createDisplayName ?? string.Empty,
+                createIdentityRole,
+                string.IsNullOrWhiteSpace(createRoleKey) ? [] : [createRoleKey],
+                string.IsNullOrWhiteSpace(createPermissionKey) ? [] : [createPermissionKey],
+                string.IsNullOrWhiteSpace(createTemporaryPassword) ? null : createTemporaryPassword);
+
+            var result = await UserClient.CreateAsync(request);
+            if (!result.Success || result.Payload is null)
+            {
+                errorMessage = result.Message ?? "Unable to create user.";
+                return;
+            }
+
+            createdTemporaryPassword = result.Payload.TemporaryPassword;
+            successMessage = "User created.";
+            showCreateForm = false;
+            createEmail = null;
+            createDisplayName = null;
+            createIdentityRole = "User";
+            createRoleKey = null;
+            createPermissionKey = null;
+            createTemporaryPassword = null;
+            await LoadInitialAsync();
+            await LoadDetailAsync(result.Payload.User.PublicId);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task UpdateSelectedAsync()
+    {
+        if (selectedUser is null)
+        {
+            return;
+        }
+
+        await RunSelectedMutationAsync(
+            () => UserClient.UpdateAsync(selectedUser.PublicId, new UpdateUserRequest(editDisplayName ?? string.Empty)),
+            "User updated.");
+    }
+
+    private async Task DisableSelectedAsync()
+    {
+        if (selectedUser is null)
+        {
+            return;
+        }
+
+        await RunSelectedMutationAsync(
+            () => UserClient.DisableAsync(selectedUser.PublicId, new ChangeUserStatusRequest("Disabled from User Management UI.")),
+            "User disabled.");
+    }
+
+    private async Task EnableSelectedAsync()
+    {
+        if (selectedUser is null)
+        {
+            return;
+        }
+
+        await RunSelectedMutationAsync(
+            () => UserClient.EnableAsync(selectedUser.PublicId, new ChangeUserStatusRequest("Enabled from User Management UI.")),
+            "User enabled.");
+    }
+
+    private async Task AssignRoleAsync()
+    {
+        if (selectedUser is null || string.IsNullOrWhiteSpace(assignRoleKey))
+        {
+            return;
+        }
+
+        await RunSelectedMutationAsync(
+            () => UserClient.AssignRoleAsync(selectedUser.PublicId, new AssignRoleRequest(assignRoleKey)),
+            "Role assigned.");
+        assignRoleKey = null;
+    }
+
+    private async Task RemoveRoleAsync(string key)
+    {
+        if (selectedUser is null)
+        {
+            return;
+        }
+
+        await RunSelectedMutationAsync(
+            () => UserClient.RemoveRoleAsync(selectedUser.PublicId, key),
+            "Role removed.");
+    }
+
+    private async Task AssignPermissionAsync()
+    {
+        if (selectedUser is null || string.IsNullOrWhiteSpace(assignPermissionKey))
+        {
+            return;
+        }
+
+        await RunSelectedMutationAsync(
+            () => UserClient.AssignPermissionAsync(selectedUser.PublicId, new AssignPermissionRequest(assignPermissionKey)),
+            "Permission assigned.");
+        assignPermissionKey = null;
+    }
+
+    private async Task RemovePermissionAsync(string key)
+    {
+        if (selectedUser is null)
+        {
+            return;
+        }
+
+        await RunSelectedMutationAsync(
+            () => UserClient.RemovePermissionAsync(selectedUser.PublicId, key),
+            "Permission removed.");
+    }
+
+    private async Task RunSelectedMutationAsync(Func<Task<UserMutationResult>> mutation, string message)
+    {
+        if (selectedUser is null)
+        {
+            return;
+        }
+
+        var publicId = selectedUser.PublicId;
+
+        try
+        {
+            isSaving = true;
+            errorMessage = null;
+            successMessage = null;
+            var result = await mutation();
+
+            if (!result.Success || result.User is null)
+            {
+                errorMessage = result.Message ?? "Unable to update user.";
+                return;
+            }
+
+            successMessage = message;
+            await LoadInitialAsync();
+            selectedUser = result.User;
+            editDisplayName = selectedUser.DisplayName;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+            selectedUser = await UserClient.GetAsync(publicId);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private static string FormatCount(int count, string label)
+    {
+        return count == 1 ? $"1 {label}" : $"{count} {label}";
+    }
+
+    private static string FormatDate(DateTimeOffset? value)
+    {
+        return value?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "Never";
+    }
+
+    private static string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "active" => "rounded-full bg-green-50 px-2 py-1 text-xs font-semibold text-green-700",
+            "disabled" => "rounded-full bg-ink-100 px-2 py-1 text-xs font-semibold text-ink-700",
+            "invited" => "rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700",
+            _ => "rounded-full bg-ink-100 px-2 py-1 text-xs font-semibold text-ink-700"
+        };
+    }
+}

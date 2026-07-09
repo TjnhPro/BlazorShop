@@ -1,0 +1,60 @@
+@inherits LayoutComponentBase
+
+<div class="min-h-screen bg-ink-50">
+    <div class="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-ink-200 bg-white lg:block">
+        <NavMenu />
+    </div>
+
+    <main class="min-w-0 lg:pl-64">
+        <div class="sticky top-0 z-20 border-b border-ink-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6 lg:px-8">
+            <div class="flex min-h-12 items-center justify-between gap-4">
+                <div class="min-w-0">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-control-700">Control Plane</p>
+                    <p class="truncate text-sm text-ink-500">Multi-node operations workspace</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="cp-badge bg-emerald-50 text-emerald-700">
+                        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                        API Ready
+                    </span>
+                    <AuthorizeView>
+                        <Authorized Context="authContext">
+                            <div class="hidden min-w-0 text-right sm:block">
+                                <div class="truncate text-sm font-semibold text-ink-800">@ResolveActor(authContext.User)</div>
+                                <div class="text-xs text-ink-500">Signed in</div>
+                            </div>
+                            <a class="cp-button" href="logout" title="Sign out">
+                                <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+                                <span class="hidden sm:inline">Logout</span>
+                            </a>
+                        </Authorized>
+                        <NotAuthorized>
+                            <a class="cp-button" href="login" title="Sign in">
+                                <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+                                <span class="hidden sm:inline">Login</span>
+                            </a>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-b border-ink-200 bg-white px-4 py-3 lg:hidden">
+            <NavMenu />
+        </div>
+
+        <article class="px-4 py-6 sm:px-6 lg:px-8">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    private static string ResolveActor(System.Security.Claims.ClaimsPrincipal user)
+    {
+        return user.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+               ?? user.FindFirst("email")?.Value
+               ?? user.Identity?.Name
+               ?? "Operator";
+    }
+}

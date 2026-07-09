@@ -1,0 +1,24 @@
+services:
+  commercenode-postgres:
+    image: postgres:17-alpine
+    container_name: blazorshop-commercenode-postgres
+    environment:
+      POSTGRES_DB: blazorshop_commerce_node
+      POSTGRES_USER: blazorshop_commerce_node
+      POSTGRES_PASSWORD: blazorshop_commerce_node_dev
+    ports:
+      - "5434:5432"
+    volumes:
+      - commercenode_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U blazorshop_commerce_node -d blazorshop_commerce_node",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  commercenode_postgres_data:
