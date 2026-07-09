@@ -54,9 +54,9 @@ dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrast
 - [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj`
 - [x] `dotnet build BlazorShop.sln`
 - [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter FullyQualifiedName~PresentationV2.Storefront`
-  - 2026-07-09: passed 7/7.
+  - 2026-07-09: passed 23/23 after Storefront V2 local auth implementation.
 - [x] `dotnet test BlazorShop.sln`
-  - 2026-07-09: passed with 482 passed, 10 skipped.
+  - 2026-07-09: passed with 501 passed, 10 skipped after Storefront V2 local auth implementation.
 - [x] API client parses API response envelope.
 - [x] API client calls Commerce Node internal catalog route.
 - [x] API client does not call legacy fallback when `Api:EnableLegacyFallback=false`.
@@ -129,9 +129,18 @@ dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrast
   - `__Host-blazorshop-refresh`
 - [x] Storefront V2 calls `api/internal/auth/refresh-token`. 2026-07-09: verified `StorefrontSessionResolver` uses configured `Api:RefreshTokenRoute=internal/auth/refresh-token`.
 - [~] Authenticated `/checkout` redirects to client app checkout. Code path maps authenticated sessions to `/account/checkout`; browser QA only covered anonymous handoff because the external client app was not running.
-- [x] Anonymous `/checkout` redirects to client app login checkout path.
-- [x] `/signin` redirects to client app login.
-- [x] `/register` redirects to client app register.
+- [x] Anonymous `/checkout` redirects to local `/signin?returnUrl=/checkout`.
+- [x] `/signin` renders Storefront V2 local login page.
+- [x] `/register` renders Storefront V2 local register page.
+- [x] Login success copies Commerce Node `Set-Cookie` refresh cookie to Storefront response. 2026-07-09: covered by host smoke test with auth client stub.
+- [x] Login wrong password/API failure redirects back to `/signin` with safe API message. 2026-07-09: covered by host smoke test.
+- [x] Login return URL rejects unsafe absolute URLs. 2026-07-09: covered by host smoke test.
+- [x] Register password mismatch is blocked before Commerce Node API call. 2026-07-09: covered by host smoke test.
+- [x] Duplicate/invalid register shows safe API message. 2026-07-09: covered by host smoke test.
+- [x] Register success redirects to `/signin?registered=1` and preserves safe return URL. 2026-07-09: covered by host smoke test.
+- [x] Local `/logout` calls Commerce Node `api/internal/auth/logout` and copies expired refresh cookie back to the browser. 2026-07-09: covered by auth client and host smoke tests.
+- [x] Authenticated account menu shows local logout and does not link customer to legacy `BlazorShop.Web`.
+- [~] Browser console has no unexpected errors on `/signin`, `/register`, and logout. Not rerun in browser during local auth implementation; keep for next Playwright/browser QA pass.
 - [~] Missing Commerce Node auth endpoint degrades to anonymous and does not crash. Session resolver catches refresh failure and returns anonymous; live QA did not disable only the auth endpoint.
 
 ## SEO And Discovery

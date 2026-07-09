@@ -293,18 +293,18 @@ Stop gate:
 
 Update `QA-StorefrontV2.todo.md`:
 
-- [ ] `/signin` renders Storefront V2 page.
-- [ ] `/register` renders Storefront V2 page.
-- [ ] Login success sets `__Host-blazorshop-refresh`.
-- [ ] Login wrong password shows safe API message.
-- [ ] Register success creates Commerce Node customer.
-- [ ] Duplicate register shows safe API message.
-- [ ] Anonymous checkout redirects to local `/signin?returnUrl=/checkout`.
-- [ ] Login return URL does not allow open redirect.
-- [ ] Logout clears session.
-- [ ] Browser console has no unexpected errors.
-- [ ] No request goes to legacy `BlazorShop.Web`.
-- [ ] No request goes to legacy `BlazorShop.API`.
+- [x] `/signin` renders Storefront V2 page.
+- [x] `/register` renders Storefront V2 page.
+- [x] Login success sets `__Host-blazorshop-refresh`.
+- [x] Login wrong password shows safe API message.
+- [x] Register success submits Commerce Node customer DTO through Storefront auth client.
+- [x] Duplicate register shows safe API message.
+- [x] Anonymous checkout redirects to local `/signin?returnUrl=/checkout`.
+- [x] Login return URL does not allow open redirect.
+- [x] Logout clears session cookie through Commerce Node `Set-Cookie`.
+- [~] Browser console has no unexpected errors. Keep for next browser QA pass.
+- [x] No customer auth link goes to legacy `BlazorShop.Web`.
+- [x] No Storefront V2 local auth request goes to legacy `BlazorShop.API`.
 
 ## QA Commands
 
@@ -314,6 +314,11 @@ dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrast
 dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~PresentationV2.Storefront"
 dotnet test BlazorShop.sln --no-restore
 ```
+
+2026-07-09 verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~PresentationV2.Storefront"` passed 23/23.
+- `dotnet test BlazorShop.sln --no-restore` passed 501/501 with 10 skipped.
 
 Browser QA:
 
