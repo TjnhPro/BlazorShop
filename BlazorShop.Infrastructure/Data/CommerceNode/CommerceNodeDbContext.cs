@@ -1,6 +1,7 @@
 namespace BlazorShop.Infrastructure.Data.CommerceNode
 {
     using BlazorShop.Domain.Entities;
+    using BlazorShop.Domain.Entities.CommerceNode;
     using BlazorShop.Domain.Entities.Identity;
     using BlazorShop.Domain.Entities.Payment;
     using BlazorShop.Infrastructure.Data.Configurations;
@@ -42,6 +43,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
         public DbSet<SeoRedirect> SeoRedirects => Set<SeoRedirect>();
 
         public DbSet<SeoSettings> SeoSettings => Set<SeoSettings>();
+
+        public DbSet<CommerceTask> CommerceTasks => Set<CommerceTask>();
+
+        public DbSet<CommerceTaskStep> CommerceTaskSteps => Set<CommerceTaskStep>();
+
+        public DbSet<StoreDeployment> StoreDeployments => Set<StoreDeployment>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -174,6 +181,118 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 .WithOne(line => line.Order!)
                 .HasForeignKey(line => line.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CommerceTask>(entity =>
+            {
+                entity.ToTable("commerce_task");
+                entity.HasKey(task => task.Id);
+                entity.Property(task => task.Id).HasColumnName("id");
+                entity.Property(task => task.PublicId).HasColumnName("public_id");
+                entity.Property(task => task.TaskType).HasColumnName("task_type").IsRequired();
+                entity.Property(task => task.Status).HasColumnName("status").IsRequired();
+                entity.Property(task => task.IdempotencyKey).HasColumnName("idempotency_key");
+                entity.Property(task => task.LockKey).HasColumnName("lock_key");
+                entity.Property(task => task.PayloadSchemaVersion).HasColumnName("payload_schema_version").IsRequired();
+                entity.Property(task => task.PayloadJson).HasColumnName("payload_json").HasColumnType("jsonb").IsRequired();
+                entity.Property(task => task.ResultJson).HasColumnName("result_json").HasColumnType("jsonb");
+                entity.Property(task => task.ErrorCode).HasColumnName("error_code");
+                entity.Property(task => task.ErrorMessage).HasColumnName("error_message");
+                entity.Property(task => task.AttemptCount).HasColumnName("attempt_count");
+                entity.Property(task => task.MaxAttempts).HasColumnName("max_attempts");
+                entity.Property(task => task.NextAttemptAt).HasColumnName("next_attempt_at").HasColumnType("timestamp with time zone");
+                entity.Property(task => task.StartedAt).HasColumnName("started_at").HasColumnType("timestamp with time zone");
+                entity.Property(task => task.CompletedAt).HasColumnName("completed_at").HasColumnType("timestamp with time zone");
+                entity.Property(task => task.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(task => task.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(task => task.CreatedBy).HasColumnName("created_by");
+                entity.Property(task => task.CorrelationId).HasColumnName("correlation_id");
+                entity.Property(task => task.CancelRequestedAt).HasColumnName("cancel_requested_at").HasColumnType("timestamp with time zone");
+                entity.Property(task => task.CancelReason).HasColumnName("cancel_reason");
+                entity.Property(task => task.WorkerId).HasColumnName("worker_id");
+                entity.Property(task => task.LastHeartbeatAt).HasColumnName("last_heartbeat_at").HasColumnType("timestamp with time zone");
+
+                entity.HasIndex(task => task.PublicId).IsUnique();
+                entity.HasIndex(task => task.IdempotencyKey).IsUnique().HasFilter("idempotency_key IS NOT NULL");
+                entity.HasIndex(task => new { task.Status, task.NextAttemptAt });
+                entity.HasIndex(task => task.TaskType);
+                entity.HasIndex(task => new { task.LockKey, task.Status });
+                entity.HasIndex(task => task.CorrelationId);
+
+                entity.ToTable(
+                    table => table.HasCheckConstraint(
+                        "ck_commerce_task_status",
+                        "status in ('pending', 'running', 'waiting_retry', 'succeeded', 'failed', 'cancelled', 'dead')"));
+                entity.ToTable(
+                    table => table.HasCheckConstraint("ck_commerce_task_attempt_count", "attempt_count >= 0"));
+                entity.ToTable(
+                    table => table.HasCheckConstraint("ck_commerce_task_max_attempts", "max_attempts >= 1"));
+            });
+
+            modelBuilder.Entity<CommerceTaskStep>(entity =>
+            {
+                entity.ToTable("commerce_task_step");
+                entity.HasKey(step => step.Id);
+                entity.Property(step => step.Id).HasColumnName("id");
+                entity.Property(step => step.TaskId).HasColumnName("task_id");
+                entity.Property(step => step.StepKey).HasColumnName("step_key").IsRequired();
+                entity.Property(step => step.Status).HasColumnName("status").IsRequired();
+                entity.Property(step => step.AttemptNumber).HasColumnName("attempt_number");
+                entity.Property(step => step.ResultJson).HasColumnName("result_json").HasColumnType("jsonb");
+                entity.Property(step => step.ErrorCode).HasColumnName("error_code");
+                entity.Property(step => step.ErrorMessage).HasColumnName("error_message");
+                entity.Property(step => step.StartedAt).HasColumnName("started_at").HasColumnType("timestamp with time zone");
+                entity.Property(step => step.CompletedAt).HasColumnName("completed_at").HasColumnType("timestamp with time zone");
+
+                entity.HasOne(step => step.Task)
+                    .WithMany(task => task.Steps)
+                    .HasForeignKey(step => step.TaskId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(step => step.TaskId);
+                entity.HasIndex(step => new { step.TaskId, step.StepKey, step.AttemptNumber });
+
+                entity.ToTable(
+                    table => table.HasCheckConstraint(
+                        "ck_commerce_task_step_status",
+                        "status in ('pending', 'running', 'succeeded', 'failed', 'skipped', 'rolled_back')"));
+            });
+
+            modelBuilder.Entity<StoreDeployment>(entity =>
+            {
+                entity.ToTable("store_deployment");
+                entity.HasKey(deployment => deployment.Id);
+                entity.Property(deployment => deployment.Id).HasColumnName("id");
+                entity.Property(deployment => deployment.StoreId).HasColumnName("store_id");
+                entity.Property(deployment => deployment.TaskId).HasColumnName("task_id");
+                entity.Property(deployment => deployment.StorefrontImage).HasColumnName("storefront_image").IsRequired();
+                entity.Property(deployment => deployment.ContainerName).HasColumnName("container_name").IsRequired();
+                entity.Property(deployment => deployment.NetworkName).HasColumnName("network_name");
+                entity.Property(deployment => deployment.PublicUrl).HasColumnName("public_url");
+                entity.Property(deployment => deployment.InternalUrl).HasColumnName("internal_url");
+                entity.Property(deployment => deployment.NginxServerName).HasColumnName("nginx_server_name");
+                entity.Property(deployment => deployment.NginxConfigPath).HasColumnName("nginx_config_path");
+                entity.Property(deployment => deployment.EnvFilePath).HasColumnName("env_file_path");
+                entity.Property(deployment => deployment.Status).HasColumnName("status").IsRequired();
+                entity.Property(deployment => deployment.LastHealthStatus).HasColumnName("last_health_status");
+                entity.Property(deployment => deployment.LastHealthAt).HasColumnName("last_health_at").HasColumnType("timestamp with time zone");
+                entity.Property(deployment => deployment.DeployedAt).HasColumnName("deployed_at").HasColumnType("timestamp with time zone");
+                entity.Property(deployment => deployment.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(deployment => deployment.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasOne(deployment => deployment.Task)
+                    .WithMany()
+                    .HasForeignKey(deployment => deployment.TaskId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasIndex(deployment => deployment.StoreId).IsUnique();
+                entity.HasIndex(deployment => deployment.ContainerName).IsUnique();
+                entity.HasIndex(deployment => deployment.Status);
+
+                entity.ToTable(
+                    table => table.HasCheckConstraint(
+                        "ck_store_deployment_status",
+                        "status in ('provisioning', 'active', 'failed', 'disabled', 'removed')"));
+            });
         }
     }
 }
