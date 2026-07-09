@@ -99,6 +99,30 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Empty(result.SetCookieHeaders);
         }
 
+        [Fact]
+        public async Task LogoutAsync_SendsRefreshCookieAndCapturesExpiredCookie()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal("/api/internal/auth/logout", request.RequestUri?.AbsolutePath);
+                Assert.Equal("__Host-blazorshop-refresh=abc", request.Headers.GetValues("Cookie").Single());
+                Assert.Equal("Storefront QA", request.Headers.UserAgent.ToString());
+
+                var response = JsonResponse(HttpStatusCode.OK, """{"success":true,"message":"Signed out.","data":null}""");
+                response.Headers.TryAddWithoutValidation("Set-Cookie", "__Host-blazorshop-refresh=; expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; Secure; HttpOnly");
+                return response;
+            });
+
+            var authClient = new StorefrontAuthClient(CreateClient(handler));
+
+            var result = await authClient.LogoutAsync("__Host-blazorshop-refresh=abc", "Storefront QA");
+
+            Assert.True(result.Success);
+            Assert.Equal("Signed out.", result.Message);
+            Assert.Contains("__Host-blazorshop-refresh=;", result.SetCookieHeaders.Single(), StringComparison.Ordinal);
+            Assert.Equal(["/api/internal/auth/logout"], handler.RequestPaths);
+        }
+
         private static HttpClient CreateClient(HttpMessageHandler handler)
         {
             return new HttpClient(handler)

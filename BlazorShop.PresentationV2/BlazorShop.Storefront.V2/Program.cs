@@ -136,6 +136,35 @@ app.MapPost(StorefrontRoutes.Register, async (
 
     return Results.Redirect(StorefrontReturnUrl.BuildSignInUrl(safeReturnUrl, registered: true));
 });
+app.MapPost(StorefrontRoutes.Logout, async (
+    [FromForm] StorefrontLogoutForm form,
+    IStorefrontAuthClient authClient,
+    IConfiguration configuration,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    var safeReturnUrl = StorefrontReturnUrl.Normalize(form.ReturnUrl);
+    var cookieHeader = StorefrontAuthCookies.BuildRefreshTokenCookieHeader(httpContext.Request, configuration);
+    var userAgent = httpContext.Request.Headers.UserAgent.ToString();
+
+    var result = await authClient.LogoutAsync(cookieHeader, userAgent, cancellationToken);
+    StorefrontCookieBridge.CopySetCookieHeaders(result.SetCookieHeaders, httpContext.Response);
+
+    if (result.SetCookieHeaders.Count == 0)
+    {
+        httpContext.Response.Cookies.Delete(
+            StorefrontAuthCookies.GetRefreshTokenCookieName(configuration),
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Path = "/",
+            });
+    }
+
+    return Results.Redirect(safeReturnUrl);
+});
 app.MapGet(StorefrontRoutes.Checkout, async (HttpContext httpContext, IStorefrontClientAppUrlResolver clientAppUrlResolver, IStorefrontSessionResolver sessionResolver, CancellationToken cancellationToken) =>
 {
     StorefrontResponseHeaders.ApplyPrivatePage(httpContext);

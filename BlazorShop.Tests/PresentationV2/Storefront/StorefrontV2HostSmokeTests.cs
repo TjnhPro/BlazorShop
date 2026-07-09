@@ -224,6 +224,96 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task AccountMenu_WhenAnonymous_UsesLocalAuthLinks()
+        {
+            using var client = CreateClient(services =>
+            {
+                services.RemoveAll<IStorefrontSessionResolver>();
+                services.RemoveAll<StorefrontApiClient>();
+                services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
+                services.AddScoped(_ => new StorefrontApiClient(
+                    new HttpClient(new ServiceUnavailableHandler())
+                    {
+                        BaseAddress = new Uri("https://commerce-node.example/api/"),
+                    },
+                    Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+            });
+
+            using var response = await client.GetAsync(StorefrontRoutes.Terms);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("href=\"/signin\"", content, StringComparison.Ordinal);
+            Assert.Contains("href=\"/register\"", content, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task AccountMenu_WhenAuthenticated_ShowsLocalLogoutWithoutLegacyLinks()
+        {
+            var session = new StorefrontSessionInfo(true, false, "Customer One", "customer@example.test");
+            using var client = CreateClient(services =>
+            {
+                services.RemoveAll<IStorefrontSessionResolver>();
+                services.RemoveAll<StorefrontApiClient>();
+                services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
+                services.AddScoped(_ => new StorefrontApiClient(
+                    new HttpClient(new ServiceUnavailableHandler())
+                    {
+                        BaseAddress = new Uri("https://commerce-node.example/api/"),
+                    },
+                    Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+            });
+
+            using var response = await client.GetAsync(StorefrontRoutes.Terms);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("Customer One", content, StringComparison.Ordinal);
+            Assert.Contains("action=\"/logout\"", content, StringComparison.Ordinal);
+            Assert.Contains("Sign out", content, StringComparison.Ordinal);
+            Assert.DoesNotContain("My Account", content, StringComparison.Ordinal);
+            Assert.DoesNotContain("Admin Panel", content, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task Logout_PostCallsCommerceNodeAndCopiesExpiredCookie()
+        {
+            var authClient = new StubStorefrontAuthClient(
+                logoutResult: StorefrontAuthResult<object>.Succeeded(
+                    null,
+                    "Signed out.",
+                    ["__Host-blazorshop-refresh=; expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; Secure; HttpOnly"]));
+            var session = new StorefrontSessionInfo(true, false, "Customer One", "customer@example.test");
+
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontSessionResolver>();
+                    services.RemoveAll<IStorefrontAuthClient>();
+                    services.RemoveAll<StorefrontApiClient>();
+                    services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
+                    services.AddScoped<IStorefrontAuthClient>(_ => authClient);
+                    services.AddScoped(_ => new StorefrontApiClient(
+                        new HttpClient(new ServiceUnavailableHandler())
+                        {
+                            BaseAddress = new Uri("https://commerce-node.example/api/"),
+                        },
+                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.Terms);
+            using var request = CreateLogoutPost(token, AppendCookie(cookieHeader, "__Host-blazorshop-refresh=abc"));
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/", response.Headers.Location?.ToString());
+            Assert.Equal(1, authClient.LogoutCalls);
+            Assert.Equal("__Host-blazorshop-refresh=abc", authClient.LastLogoutCookieHeader);
+            Assert.Contains(response.Headers.GetValues("Set-Cookie"), value => value.Contains("__Host-blazorshop-refresh=;", StringComparison.Ordinal));
+        }
+
+        [Fact]
         public async Task Robots_ReturnsTextDocument()
         {
             using var client = CreateClient(services =>
@@ -350,6 +440,29 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             return request;
         }
 
+        private static HttpRequestMessage CreateLogoutPost(string antiforgeryToken, string cookieHeader)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, StorefrontRoutes.Logout)
+            {
+                Content = new FormUrlEncodedContent(
+                [
+                    new KeyValuePair<string, string>("__RequestVerificationToken", antiforgeryToken),
+                    new KeyValuePair<string, string>("ReturnUrl", StorefrontRoutes.Home),
+                ]),
+            };
+
+            request.Headers.Add("Cookie", cookieHeader);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            return request;
+        }
+
+        private static string AppendCookie(string cookieHeader, string cookie)
+        {
+            return string.IsNullOrWhiteSpace(cookieHeader)
+                ? cookie
+                : $"{cookieHeader}; {cookie}";
+        }
+
         private sealed class StubStorefrontSessionResolver : IStorefrontSessionResolver
         {
             private readonly StorefrontSessionInfo _sessionInfo;
@@ -389,18 +502,25 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             private readonly StorefrontAuthResult<LoginResponse> loginResult;
             private readonly StorefrontAuthResult<object> registerResult;
+            private readonly StorefrontAuthResult<object> logoutResult;
 
             public StubStorefrontAuthClient(
                 StorefrontAuthResult<LoginResponse>? loginResult = null,
-                StorefrontAuthResult<object>? registerResult = null)
+                StorefrontAuthResult<object>? registerResult = null,
+                StorefrontAuthResult<object>? logoutResult = null)
             {
                 this.loginResult = loginResult ?? StorefrontAuthResult<LoginResponse>.Failed("Login is not used by this test.");
                 this.registerResult = registerResult ?? StorefrontAuthResult<object>.Failed("Register is not used by this test.");
+                this.logoutResult = logoutResult ?? StorefrontAuthResult<object>.Failed("Logout is not used by this test.");
             }
 
             public int RegisterCalls { get; private set; }
 
+            public int LogoutCalls { get; private set; }
+
             public CreateUser? LastRegisteredUser { get; private set; }
+
+            public string? LastLogoutCookieHeader { get; private set; }
 
             public Task<StorefrontAuthResult<LoginResponse>> LoginAsync(LoginUser user, CancellationToken cancellationToken = default)
             {
@@ -412,6 +532,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 this.RegisterCalls++;
                 this.LastRegisteredUser = user;
                 return Task.FromResult(this.registerResult);
+            }
+
+            public Task<StorefrontAuthResult<object>> LogoutAsync(string? cookieHeader, string? userAgent, CancellationToken cancellationToken = default)
+            {
+                this.LogoutCalls++;
+                this.LastLogoutCookieHeader = cookieHeader;
+                return Task.FromResult(this.logoutResult);
             }
         }
 

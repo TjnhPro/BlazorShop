@@ -1,5 +1,4 @@
 @inject IStorefrontSessionResolver SessionResolver
-@inject IStorefrontClientAppUrlResolver ClientAppUrlResolver
 
 <details class="bs-storefront-account-menu">
     <summary class="bs-storefront-icon-button bs-storefront-account-menu__summary" aria-label="Account menu" title="Account">
@@ -18,11 +17,11 @@
             </div>
 
             <div class="bs-storefront-account-menu__links">
-                <a href="@ClientAppUrlResolver.ResolveUrl("/account")" class="bs-storefront-account-menu__link">My Account</a>
-                @if (_session.IsAdmin)
-                {
-                    <a href="@ClientAppUrlResolver.ResolveUrl("/admin")" class="bs-storefront-account-menu__link">Admin Panel</a>
-                }
+                <form method="post" action="@StorefrontRoutes.Logout">
+                    <AntiforgeryToken />
+                    <input type="hidden" name="ReturnUrl" value="@StorefrontRoutes.Home" />
+                    <button type="submit" class="bs-storefront-account-menu__link bs-storefront-account-menu__button">Sign out</button>
+                </form>
             </div>
         }
         else

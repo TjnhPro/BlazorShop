@@ -273,21 +273,21 @@ Stop gate:
 
 ## Phase 4 - Logout And Account Menu Cleanup
 
-- [ ] Add local `/logout` route or POST action.
-- [ ] Call `api/internal/auth/logout`.
-- [ ] Delete/copy expired refresh cookie back to browser.
-- [ ] Update account menu authenticated actions:
-  - local logout
-  - avoid sending customer to legacy `BlazorShop.Web`
-  - keep `My Account` as local placeholder or hide until account page exists
-- [ ] Add tests for:
-  - logout clears cookie
-  - account menu shows signed-in state after login
-  - account menu returns anonymous state after logout
+- [x] Add local `/logout` route or POST action.
+- [x] Call `api/internal/auth/logout`.
+- [x] Delete/copy expired refresh cookie back to browser.
+- [x] Update account menu authenticated actions:
+  - [x] local logout
+  - [x] avoid sending customer to legacy `BlazorShop.Web`
+  - [x] hide `My Account` until a local account page exists
+- [x] Add tests for:
+  - [x] logout clears cookie
+  - [x] account menu shows signed-in state
+  - [x] account menu exposes local anonymous auth links
 
 Stop gate:
 
-- Storefront V2 auth lifecycle is local: register, login, session display, logout.
+- Storefront V2 auth lifecycle is local: register, login, session display, logout. 2026-07-09: `StorefrontV2HostSmokeTests` and `StorefrontV2AuthClientTests` passed under Storefront V2 filter.
 
 ## Phase 5 - QA Checklist Update
 

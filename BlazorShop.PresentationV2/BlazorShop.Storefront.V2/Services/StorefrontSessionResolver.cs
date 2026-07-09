@@ -14,8 +14,6 @@ namespace BlazorShop.Storefront.Services
 
     public sealed class StorefrontSessionResolver : IStorefrontSessionResolver
     {
-        private const string DefaultRefreshTokenCookieName = "__Host-blazorshop-refresh";
-
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConfiguration _configuration;
@@ -70,9 +68,7 @@ namespace BlazorShop.Storefront.Services
 
         private string GetRefreshTokenCookieName()
         {
-            return string.IsNullOrWhiteSpace(_configuration["Api:RefreshTokenCookieName"])
-                ? DefaultRefreshTokenCookieName
-                : _configuration["Api:RefreshTokenCookieName"]!;
+            return StorefrontAuthCookies.GetRefreshTokenCookieName(_configuration);
         }
 
         private string GetRefreshTokenRoute()
