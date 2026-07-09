@@ -25,9 +25,12 @@ builder.Services.AddOptions<CommerceTaskWorkerOptions>()
     .Bind(builder.Configuration.GetSection(CommerceTaskWorkerOptions.SectionName));
 builder.Services.AddOptions<StorefrontDeploymentOptions>()
     .Bind(builder.Configuration.GetSection(StorefrontDeploymentOptions.SectionName));
+builder.Services.AddOptions<NginxDeploymentOptions>()
+    .Bind(builder.Configuration.GetSection(NginxDeploymentOptions.SectionName));
 builder.Services.AddCommerceNodeInfrastructure(builder.Configuration);
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IStorefrontDockerDeploymentService, StorefrontDockerDeploymentService>();
+builder.Services.AddSingleton<INginxDeploymentService, NginxDeploymentService>();
 builder.Services.AddScoped<ICommerceTaskHandler, CompleteTestCommerceTaskHandler>();
 builder.Services.AddScoped<ICommerceTaskHandler, FailTestCommerceTaskHandler>();
 builder.Services.AddScoped<ICommerceTaskHandler, WaitTestCommerceTaskHandler>();

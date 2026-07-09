@@ -417,12 +417,12 @@ Stop gate:
 
 ### Phase 5 - Nginx Deployment Service
 
-- [ ] Add typed Nginx options.
-- [ ] Add generated config path rules.
-- [ ] Add config fragment rendering.
-- [ ] Add Nginx config validation.
-- [ ] Add Nginx reload.
-- [ ] Add rollback for failed config/reload.
+- [x] Add typed Nginx options.
+- [x] Add generated config path rules.
+- [x] Add config fragment rendering.
+- [x] Add Nginx config validation.
+- [x] Add Nginx reload.
+- [x] Add rollback for failed config/reload.
 
 Stop gate:
 
