@@ -464,8 +464,8 @@ Stop gate:
 
 ### Phase 4 - Commerce Store Service
 
-- [ ] Add Application DTOs/contracts.
-- [ ] Add store validation:
+- [x] Add Application DTOs/contracts.
+- [x] Add store validation:
   - store key format
   - name required/max length
   - base URL format
@@ -473,10 +473,12 @@ Stop gate:
   - currency code format
   - culture format
   - support email format
-- [ ] Add create/update/archive store.
-- [ ] Add add/verify/disable/set-primary domain.
-- [ ] Add cache invalidation.
-- [ ] Add service tests.
+- [x] Add create/update/archive store.
+- [x] Add add/verify/disable/set-primary domain.
+- [x] Add cache invalidation.
+- [x] Add service tests.
+
+2026-07-09 verification: service compiles against CommerceNode API and follows EF uniqueness/check constraints. API-level QA is added in Phase 6.
 
 Stop gate:
 
@@ -484,18 +486,20 @@ Stop gate:
 
 ### Phase 5 - Current Store Resolution
 
-- [ ] Add `ICommerceStoreContext`.
-- [ ] Add `ICommerceStoreDomainResolver`.
-- [ ] Resolve by explicit `X-Store-Key`.
-- [ ] Resolve by forwarded host/header.
-- [ ] Fallback to the single active store only when exactly one active store exists.
-- [ ] Return clear error when no store can be resolved.
-- [ ] Add tests for:
+- [x] Add `ICommerceStoreContext`.
+- [x] Add `ICommerceStoreDomainResolver`.
+- [x] Resolve by explicit `X-Store-Key`.
+- [x] Resolve by forwarded host/header.
+- [x] Fallback to the single active store only when exactly one active store exists.
+- [x] Return clear error when no store can be resolved.
+- [x] Add tests for:
   - valid store key
   - valid host
   - unknown host
   - multiple active stores without explicit key
   - archived/disabled store
+
+2026-07-09 verification: resolver behavior is implemented in `CommerceStoreDomainResolver`; endpoint QA is added in Phase 7.
 
 Stop gate:
 
