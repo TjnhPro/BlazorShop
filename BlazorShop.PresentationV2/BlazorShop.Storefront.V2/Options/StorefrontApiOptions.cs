@@ -5,5 +5,7 @@ namespace BlazorShop.Storefront.Options
         public const string SectionName = "Api";
 
         public string? BaseUrl { get; set; }
+
+        public bool EnableLegacyFallback { get; set; }
     }
 }

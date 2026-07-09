@@ -8,9 +8,12 @@ namespace BlazorShop.Storefront.Services
     using BlazorShop.Web.Shared.Models.Discovery;
     using BlazorShop.Web.Shared.Models;
     using BlazorShop.Application.DTOs.Seo;
+    using BlazorShop.Storefront.Options;
     using BlazorShop.Web.Shared.Models.Category;
     using BlazorShop.Web.Shared.Models.Product;
     using BlazorShop.Web.Shared.Models.Seo;
+
+    using Microsoft.Extensions.Options;
 
     public class StorefrontApiClient
     {
@@ -33,10 +36,12 @@ namespace BlazorShop.Storefront.Services
         private const string LegacySeoSettingsRoute = "seo/settings";
 
         private readonly HttpClient _httpClient;
+        private readonly bool _enableLegacyFallback;
 
-        public StorefrontApiClient(HttpClient httpClient)
+        public StorefrontApiClient(HttpClient httpClient, IOptions<StorefrontApiOptions> options)
         {
             _httpClient = httpClient;
+            _enableLegacyFallback = options.Value.EnableLegacyFallback;
         }
 
         public async Task<StorefrontApiResult<IReadOnlyList<GetCategory>>> GetPublishedCategoriesAsync(CancellationToken cancellationToken = default)
@@ -137,6 +142,11 @@ namespace BlazorShop.Storefront.Services
                 return result;
             }
 
+            if (!_enableLegacyFallback)
+            {
+                return result;
+            }
+
             try
             {
                 return await GetAsync(fallbackRoute, cancellationToken, fallbackValue, requestTimeout);
@@ -155,6 +165,11 @@ namespace BlazorShop.Storefront.Services
         {
             var result = await GetMaybeNotFoundAsync<T>(route, cancellationToken, requestTimeout);
             if (result.IsSuccess)
+            {
+                return result;
+            }
+
+            if (!_enableLegacyFallback)
             {
                 return result;
             }

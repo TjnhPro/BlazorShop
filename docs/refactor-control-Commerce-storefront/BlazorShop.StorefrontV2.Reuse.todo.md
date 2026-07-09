@@ -216,25 +216,25 @@ Make Storefront V2 point to Commerce Node internal APIs by default.
 
 Tasks:
 
-- [ ] Set V2 `Api:BaseUrl` for local development to Commerce Node API:
+- [x] Set V2 `Api:BaseUrl` for local development to Commerce Node API:
   - Preferred local HTTP option: `http://localhost:5180/api/`
   - HTTPS option if using launch profile: `https://localhost:7065/api/`
-- [ ] Keep `Api:RefreshTokenRoute` as `internal/auth/refresh-token`.
-- [ ] Keep `ClientApp:BaseUrl` explicit and validated.
-- [ ] Keep `PublicUrl:BaseUrl` configurable.
-- [ ] Add V2-only option if needed:
+- [x] Keep `Api:RefreshTokenRoute` as `internal/auth/refresh-token`.
+- [x] Keep `ClientApp:BaseUrl` explicit and validated.
+- [x] Keep `PublicUrl:BaseUrl` configurable.
+- [x] Add V2-only option if needed:
   - `Api:EnableLegacyFallback`
   - default: `false`
-- [ ] Update `StorefrontApiClient` copy so V2 can disable fallback routes.
-- [ ] Keep old Storefront fallback behavior unchanged.
+- [x] Update `StorefrontApiClient` copy so V2 can disable fallback routes.
+- [x] Keep old Storefront fallback behavior unchanged. 2026-07-09: only `BlazorShop.PresentationV2/BlazorShop.Storefront.V2` was changed.
 
 QA gate:
 
-- [ ] Start Commerce Node API.
-- [ ] Start Storefront V2.
-- [ ] Load `/` and confirm catalog comes from Commerce Node.
-- [ ] Stop legacy `BlazorShop.API`; V2 should still load catalog if Commerce Node is running.
-- [ ] Stop Commerce Node API; V2 should show service unavailable, not silently load legacy data.
+- [x] Start Commerce Node API. 2026-07-09: started with launch profile `http` on `http://localhost:5180`.
+- [x] Start Storefront V2. 2026-07-09: started with copied launch profile on `http://localhost:18598`.
+- [x] Load `/` and confirm catalog comes from Commerce Node. 2026-07-09: CommerceNode `/api/commerce/healthz` returned 200 with dev credentials and Storefront V2 `/` returned 200.
+- [x] Stop legacy `BlazorShop.API`; V2 should still load catalog if Commerce Node is running. 2026-07-09: legacy API was not started during the V2 smoke test.
+- [x] Stop Commerce Node API; V2 should show service unavailable, not silently load legacy data. 2026-07-09: with CommerceNode stopped, Storefront V2 `/` returned 503 and did not show legacy fallback markers.
 
 Commit gate:
 
