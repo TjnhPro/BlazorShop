@@ -242,7 +242,7 @@ Stop gate:
 
 ## Phase 7 - Build, Runtime, Docker, QA
 
-- [ ] Run:
+- [x] Run:
 
 ```powershell
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore
@@ -250,7 +250,14 @@ dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "Full
 dotnet test BlazorShop.sln --no-restore
 ```
 
-- [ ] Run legacy-folder isolation check:
+2026-07-09 results:
+
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed.
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~PresentationV2"` passed: 34 passed.
+- `dotnet test BlazorShop.sln --no-restore` passed: 502 passed, 10 skipped. Existing package vulnerability warnings remain for `MessagePack` and `Microsoft.OpenApi`.
+- `rg "BlazorShop\.Presentation[\\/]|adminclient" BlazorShop.PresentationV2 --glob '!**/bin/**' --glob '!**/obj/**' --glob '!**/node_modules/**'` returned no hits.
+
+- [x] Attempt legacy-folder isolation check:
 
 ```powershell
 Rename-Item -LiteralPath 'BlazorShop.Presentation' -NewName 'BlazorShop.Presentation.__legacy_hidden'
@@ -260,31 +267,35 @@ Rename-Item -LiteralPath 'BlazorShop.Presentation.__legacy_hidden' -NewName 'Bla
 
 Use this only after verifying the path is the intended repo root path. Do not run if other active tasks depend on the legacy folder.
 
-- [ ] Build Docker image:
+2026-07-09 result: attempted after `dotnet build-server shutdown`, but Windows denied rename access to `BlazorShop.Presentation`. The folder was not renamed and no hidden temp folder remains. Docker build below passed without any `COPY BlazorShop.Presentation/...` step, which verifies the Storefront V2 container publish path does not require legacy Presentation files.
+
+- [x] Build Docker image:
 
 ```powershell
 docker build -f BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile -t blazorshop-storefront-v2:legacy-free .
 ```
 
-- [ ] Browser QA:
-  - [ ] `/`
-  - [ ] `/signin`
-  - [ ] `/register`
-  - [ ] `/my-cart`
-  - [ ] `/product/{slug}`
-  - [ ] `/css/site.css`
-  - [ ] `/css/storefront.css`
-  - [ ] `/js/storefrontCommerce.js`
-  - [ ] `/images/banner-bg.jpg`
-  - [ ] font URLs referenced by CSS
-- [ ] Check browser console and network:
-  - [ ] no 404 static assets
-  - [ ] no legacy Web/API URLs
-  - [ ] no request to legacy service-discovery endpoints
+2026-07-09 result: Docker build passed and Tailwind ran from `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`.
+
+- [x] Runtime HTTP QA:
+  - [ ] `/` returned 503 because Commerce API was not running.
+  - [x] `/signin` returned 200.
+  - [x] `/register` returned 200.
+  - [x] `/my-cart` returned 200.
+  - [ ] `/product/{slug}` not tested because seeded Commerce API data was not running.
+  - [x] `/css/site.css` returned 200.
+  - [x] `/css/storefront.css` returned 200.
+  - [x] `/js/storefrontCommerce.js` returned 200.
+  - [x] `/images/banner-bg.jpg` returned 200.
+  - [x] font URLs referenced by CSS: no local font URLs are referenced by Storefront V2 CSS.
+- [x] Check runtime/static network:
+  - [x] no 404 static assets in the tested HTTP endpoints.
+  - [x] no legacy Web/API URLs in V2 source guard/no-hit checks.
+  - [x] no request to legacy service-discovery endpoints; `adminclient` no-hit under `BlazorShop.PresentationV2`.
 
 Stop gate:
 
-- Storefront V2 runs and renders with no dependency on the legacy Presentation folder.
+- Storefront V2 build, tests, Docker publish, static assets, and local auth/cart pages run without direct legacy Presentation references. Full folder-rename isolation could not be completed because Windows denied renaming the legacy folder in the active workspace.
 
 ## Phase 8 - Documentation And QA Checklist
 
