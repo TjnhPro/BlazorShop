@@ -2,6 +2,8 @@ namespace BlazorShop.CommerceNode.API.Deployment
 {
     public sealed record StorefrontDeploymentRequest(
         Guid StoreId,
+        Guid StorePublicId,
+        Guid TaskPublicId,
         string StoreKey,
         string StorefrontImage,
         string? NetworkName,
@@ -11,6 +13,9 @@ namespace BlazorShop.CommerceNode.API.Deployment
         string StoreKey,
         string ContainerName,
         string StorefrontImage,
+        Guid StoreId,
+        Guid StorePublicId,
+        Guid TaskPublicId,
         string? NetworkName,
         int ContainerPort,
         string EnvFilePath,

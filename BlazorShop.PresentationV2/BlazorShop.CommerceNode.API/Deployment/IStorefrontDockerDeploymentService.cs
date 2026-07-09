@@ -14,15 +14,15 @@ namespace BlazorShop.CommerceNode.API.Deployment
             CancellationToken cancellationToken = default);
 
         Task<StorefrontDeploymentCommandResult> StartContainerAsync(
-            string containerName,
+            StorefrontContainerPlan plan,
             CancellationToken cancellationToken = default);
 
         Task<StorefrontDeploymentCommandResult> StopContainerAsync(
-            string containerName,
+            StorefrontContainerPlan plan,
             CancellationToken cancellationToken = default);
 
         Task<StorefrontDeploymentCommandResult> RemoveContainerAsync(
-            string containerName,
+            StorefrontContainerPlan plan,
             CancellationToken cancellationToken = default);
 
         Task<StorefrontHealthProbeResult> ProbeHealthAsync(

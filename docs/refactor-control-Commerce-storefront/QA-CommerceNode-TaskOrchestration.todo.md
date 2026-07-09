@@ -98,7 +98,7 @@ dotnet ef database update --project BlazorShop.Infrastructure --startup-project 
 
 ### Successful Deploy
 
-- [ ] Enqueue `store.create_and_deploy` with valid payload:
+- [x] Enqueue `store.create_and_deploy` with valid payload:
 
 ```json
 {
@@ -114,6 +114,8 @@ dotnet ef database update --project BlazorShop.Infrastructure --startup-project 
 }
 ```
 
+- [x] Omitting `storefrontImage` resolves the default image from `storefront_deployment_image`.
+- [x] `store_deployment.storefront_image` stores the resolved Docker image.
 - [x] `commerce_store` row is created or updated.
 - [x] `commerce_store_domain` primary domain is created or updated.
 - [x] Storefront env file is generated.
@@ -125,6 +127,26 @@ dotnet ef database update --project BlazorShop.Infrastructure --startup-project 
 - [x] `store_deployment.status=active`.
 - [x] `commerce_store.status=active`.
 - [x] Task reaches `succeeded`.
+
+### Storefront Image Config
+
+- [x] `storefront_deployment_image` migration applies.
+- [x] Default image row exists for `storefront-v2`.
+- [x] Valid deploy without `storefrontImage` uses the default DB image.
+- [x] Unknown image selector reaches `failed`.
+- [x] Unknown image selector returns `errorCode=storefront_image_not_allowed`.
+- [x] Unknown image selector does not create a Storefront container.
+
+### Container Ownership Guard
+
+- [x] Storefront container has `blazorshop.owner=commercenode`.
+- [x] Storefront container has `blazorshop.kind=storefront`.
+- [x] Storefront container has `blazorshop.store_key`.
+- [x] Storefront container has `blazorshop.store_id`.
+- [x] Storefront container has `blazorshop.store_public_id`.
+- [x] Storefront container has `blazorshop.task_public_id`.
+- [x] Existing unmanaged container with matching generated name is not removed.
+- [x] Task fails with `docker_create_failed` when generated name is occupied by unmanaged container.
 
 ### Docker Failure Rollback
 
@@ -161,7 +183,7 @@ dotnet ef database update --project BlazorShop.Infrastructure --startup-project 
 
 ## QA Run Results - 2026-07-09
 
-Status: completed for CommerceNode task API and happy-path Storefront deployment; rollback and ControlPlane proxy cases remain pending.
+Status: completed for CommerceNode task API, happy-path Storefront deployment, DB-backed image config, and container ownership guard; rollback and ControlPlane proxy cases remain pending.
 
 ### Environment
 
@@ -186,6 +208,8 @@ Status: completed for CommerceNode task API and happy-path Storefront deployment
 
 - [x] Invalid `store.create_and_deploy` payload reaches failed.
 - [x] No Storefront container created for invalid payload.
+- [x] Unknown Storefront image selector reaches failed before runtime mutation.
+- [x] Existing unmanaged container with generated name is preserved.
 
 ### Deferred Runtime Deployment
 
@@ -197,6 +221,9 @@ Status: completed for CommerceNode task API and happy-path Storefront deployment
 Notes:
 
 - Successful deploy verified with task `f1ab26eb-2a39-43a6-9d96-bc5a8827e332`, store `qa-store-20260709214646`, container `blazorshop-storefront-qa-store-20260709214646`, and Nginx proxy `http://localhost:8088/` with Host `qa-store-20260709214646.local`.
+- DB image config verified with task `9dc3de47-b23f-41b7-b848-b4ec8fb0d71c`, store `qa-dbimage-20260709223814`, omitted `storefrontImage`, and deployed `blazorshop-storefront-v2:latest`.
+- Unknown image rejection verified with task `01f16e98-ab0c-4e66-922c-f70ce37c0928`, `errorCode=storefront_image_not_allowed`, and no container created.
+- Container ownership guard verified with task `aaa8e49e-d58c-4d2f-8a97-29e183e263bd`; unmanaged container survived until explicit QA cleanup.
 - Runtime deploy fixes found during QA: missing Storefront container env values, host-to-Docker health probe mismatch, Storefront health path mismatch, and UTF-8 BOM in generated Nginx config.
 - Rollback failure cases and ControlPlane proxy tests were not executed in this run.
 

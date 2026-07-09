@@ -49,6 +49,9 @@ namespace BlazorShop.CommerceNode.API.Deployment
                 request.StoreKey,
                 containerName,
                 request.StorefrontImage,
+                request.StoreId,
+                request.StorePublicId,
+                request.TaskPublicId,
                 networkName,
                 Math.Max(1, this.options.ContainerPort),
                 envFilePath,
@@ -101,7 +104,13 @@ namespace BlazorShop.CommerceNode.API.Deployment
 
             if (inspect.Success)
             {
-                var remove = await this.RemoveContainerAsync(plan.ContainerName, cancellationToken);
+                var guard = await this.EnsureManagedContainerAsync(plan, cancellationToken);
+                if (!guard.Success)
+                {
+                    return guard;
+                }
+
+                var remove = await this.RemoveContainerAsync(plan, cancellationToken);
                 if (!remove.Success)
                 {
                     return remove;
@@ -116,7 +125,17 @@ namespace BlazorShop.CommerceNode.API.Deployment
                 "--env-file",
                 plan.EnvFilePath,
                 "--label",
+                "blazorshop.owner=commercenode",
+                "--label",
+                "blazorshop.kind=storefront",
+                "--label",
                 $"blazorshop.store_key={plan.StoreKey}",
+                "--label",
+                $"blazorshop.store_id={plan.StoreId:D}",
+                "--label",
+                $"blazorshop.store_public_id={plan.StorePublicId:D}",
+                "--label",
+                $"blazorshop.task_public_id={plan.TaskPublicId:D}",
             };
 
             if (!string.IsNullOrWhiteSpace(plan.NetworkName))
@@ -131,24 +150,36 @@ namespace BlazorShop.CommerceNode.API.Deployment
         }
 
         public Task<StorefrontDeploymentCommandResult> StartContainerAsync(
-            string containerName,
+            StorefrontContainerPlan plan,
             CancellationToken cancellationToken = default)
         {
-            return this.RunDockerAsync(new[] { "start", containerName }, cancellationToken);
+            return this.RunDockerAsync(new[] { "start", plan.ContainerName }, cancellationToken);
         }
 
-        public Task<StorefrontDeploymentCommandResult> StopContainerAsync(
-            string containerName,
+        public async Task<StorefrontDeploymentCommandResult> StopContainerAsync(
+            StorefrontContainerPlan plan,
             CancellationToken cancellationToken = default)
         {
-            return this.RunDockerAsync(new[] { "stop", containerName }, cancellationToken, allowFailure: true);
+            var guard = await this.EnsureManagedContainerAsync(plan, cancellationToken);
+            if (!guard.Success)
+            {
+                return guard;
+            }
+
+            return await this.RunDockerAsync(new[] { "stop", plan.ContainerName }, cancellationToken, allowFailure: true);
         }
 
-        public Task<StorefrontDeploymentCommandResult> RemoveContainerAsync(
-            string containerName,
+        public async Task<StorefrontDeploymentCommandResult> RemoveContainerAsync(
+            StorefrontContainerPlan plan,
             CancellationToken cancellationToken = default)
         {
-            return this.RunDockerAsync(new[] { "rm", "-f", containerName }, cancellationToken, allowFailure: true);
+            var guard = await this.EnsureManagedContainerAsync(plan, cancellationToken);
+            if (!guard.Success)
+            {
+                return guard;
+            }
+
+            return await this.RunDockerAsync(new[] { "rm", "-f", plan.ContainerName }, cancellationToken, allowFailure: true);
         }
 
         public async Task<StorefrontHealthProbeResult> ProbeHealthAsync(
@@ -256,6 +287,47 @@ namespace BlazorShop.CommerceNode.API.Deployment
                 standardOutput,
                 standardError,
                 process.ExitCode);
+        }
+
+        private async Task<StorefrontDeploymentCommandResult> EnsureManagedContainerAsync(
+            StorefrontContainerPlan plan,
+            CancellationToken cancellationToken)
+        {
+            var inspect = await this.RunDockerAsync(
+                new[]
+                {
+                    "container",
+                    "inspect",
+                    plan.ContainerName,
+                    "--format",
+                    "{{ index .Config.Labels \"blazorshop.owner\" }}|{{ index .Config.Labels \"blazorshop.kind\" }}|{{ index .Config.Labels \"blazorshop.store_key\" }}",
+                },
+                cancellationToken,
+                allowFailure: true);
+
+            if (inspect.ExitCode != 0)
+            {
+                return new StorefrontDeploymentCommandResult(
+                    true,
+                    "Container does not exist.",
+                    inspect.StandardOutput,
+                    inspect.StandardError,
+                    inspect.ExitCode);
+            }
+
+            var labelLine = inspect.StandardOutput?.Trim();
+            var expected = $"commercenode|storefront|{plan.StoreKey}";
+            if (!string.Equals(labelLine, expected, StringComparison.OrdinalIgnoreCase))
+            {
+                return new StorefrontDeploymentCommandResult(
+                    false,
+                    $"Container '{plan.ContainerName}' is not owned by this CommerceNode store deployment.",
+                    null,
+                    null,
+                    inspect.ExitCode);
+            }
+
+            return new StorefrontDeploymentCommandResult(true, "Container ownership verified.");
         }
 
         private string ResolveConfiguredPath(string configuredPath)

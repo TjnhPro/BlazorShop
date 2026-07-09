@@ -60,6 +60,13 @@ namespace BlazorShop.CommerceNode.API.Tasks
 
             var now = DateTimeOffset.UtcNow;
             var normalizedDomain = NormalizeDomain(payload.PrimaryDomain!);
+            var imageResolution = await this.ResolveStorefrontImageAsync(payload.StorefrontImage, cancellationToken);
+            if (!imageResolution.Success)
+            {
+                return CommerceTaskHandlerResult.Failed(
+                    imageResolution.Message,
+                    "storefront_image_not_allowed");
+            }
 
             var store = await this.context.CommerceStores
                 .Include(entity => entity.Domains)
@@ -131,7 +138,7 @@ namespace BlazorShop.CommerceNode.API.Tasks
             }
 
             deployment.TaskId = context.TaskId;
-            deployment.StorefrontImage = payload.StorefrontImage!.Trim();
+            deployment.StorefrontImage = imageResolution.Image!;
             deployment.Status = StoreDeploymentStatuses.Provisioning;
             deployment.UpdatedAt = now;
             await this.context.SaveChangesAsync(cancellationToken);
@@ -165,8 +172,10 @@ namespace BlazorShop.CommerceNode.API.Tasks
 
                 var deploymentRequest = new StorefrontDeploymentRequest(
                     store.Id,
+                    store.PublicId,
+                    context.PublicId,
                     store.StoreKey,
-                    payload.StorefrontImage!.Trim(),
+                    imageResolution.Image!,
                     payload.NetworkName,
                     environment);
 
@@ -197,7 +206,7 @@ namespace BlazorShop.CommerceNode.API.Tasks
                         cancellationToken);
                 }
 
-                var startContainer = await this.dockerDeployment.StartContainerAsync(containerPlan.ContainerName, cancellationToken);
+                var startContainer = await this.dockerDeployment.StartContainerAsync(containerPlan, cancellationToken);
                 if (!startContainer.Success)
                 {
                     return await this.FailDeploymentAsync(
@@ -331,8 +340,8 @@ namespace BlazorShop.CommerceNode.API.Tasks
 
             if (containerPlan is not null)
             {
-                await this.dockerDeployment.StopContainerAsync(containerPlan.ContainerName, cancellationToken);
-                await this.dockerDeployment.RemoveContainerAsync(containerPlan.ContainerName, cancellationToken);
+                await this.dockerDeployment.StopContainerAsync(containerPlan, cancellationToken);
+                await this.dockerDeployment.RemoveContainerAsync(containerPlan, cancellationToken);
             }
 
             store.Status = CommerceStoreStatuses.Disabled;
@@ -399,12 +408,52 @@ namespace BlazorShop.CommerceNode.API.Tasks
                 return "Default culture is required.";
             }
 
-            if (string.IsNullOrWhiteSpace(payload.StorefrontImage))
+            return null;
+        }
+
+        private async Task<StorefrontImageResolution> ResolveStorefrontImageAsync(
+            string? imageSelector,
+            CancellationToken cancellationToken)
+        {
+            var enabledImages = await this.context.StorefrontDeploymentImages
+                .AsNoTracking()
+                .Where(image => image.IsEnabled)
+                .OrderByDescending(image => image.IsDefault)
+                .ThenBy(image => image.Key)
+                .ToListAsync(cancellationToken);
+
+            if (!string.IsNullOrWhiteSpace(imageSelector))
             {
-                return "Storefront image is required.";
+                var selector = imageSelector.Trim();
+                var configuredImage = enabledImages.FirstOrDefault(
+                    image =>
+                        string.Equals(image.Key, selector, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(image.Image, selector, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(image.Version, selector, StringComparison.OrdinalIgnoreCase));
+
+                if (configuredImage is not null)
+                {
+                    return StorefrontImageResolution.Succeeded(configuredImage.Image);
+                }
+
+                if (this.deploymentOptions.AllowedImages.Contains(selector, StringComparer.OrdinalIgnoreCase))
+                {
+                    return StorefrontImageResolution.Succeeded(selector);
+                }
+
+                return StorefrontImageResolution.Failed("Storefront image is not configured for this Commerce Node.");
             }
 
-            return null;
+            var defaultImage = enabledImages.FirstOrDefault(image => image.IsDefault) ?? enabledImages.FirstOrDefault();
+            if (defaultImage is not null)
+            {
+                return StorefrontImageResolution.Succeeded(defaultImage.Image);
+            }
+
+            var fallbackImage = this.deploymentOptions.AllowedImages.FirstOrDefault();
+            return string.IsNullOrWhiteSpace(fallbackImage)
+                ? StorefrontImageResolution.Failed("No Storefront image is configured for this Commerce Node.")
+                : StorefrontImageResolution.Succeeded(fallbackImage);
         }
 
         private static string NormalizeDomain(string domain)
@@ -429,7 +478,7 @@ namespace BlazorShop.CommerceNode.API.Tasks
             string message,
             StorefrontDeploymentCommandResult result)
         {
-            return AppendCommandOutput(message, result.StandardError, result.StandardOutput);
+            return AppendCommandOutput($"{message} {result.Message}", result.StandardError, result.StandardOutput);
         }
 
         private static string BuildNginxFailureMessage(
@@ -482,6 +531,19 @@ namespace BlazorShop.CommerceNode.API.Tasks
             public string? ClientAppBaseUrl { get; set; }
 
             public string? PublicUrlBaseUrl { get; set; }
+        }
+
+        private sealed record StorefrontImageResolution(bool Success, string? Image, string Message)
+        {
+            public static StorefrontImageResolution Succeeded(string image)
+            {
+                return new StorefrontImageResolution(true, image, "Storefront image resolved.");
+            }
+
+            public static StorefrontImageResolution Failed(string message)
+            {
+                return new StorefrontImageResolution(false, null, message);
+            }
         }
     }
 }
