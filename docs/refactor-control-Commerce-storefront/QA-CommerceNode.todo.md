@@ -12,7 +12,7 @@ Database target:
 - Database: `blazorshop_commerce_node`
 - User: `blazorshop_commerce_node`
 
-Last verified: 2026-07-08
+Last verified: 2026-07-09
 
 ## Environment Checklist
 
@@ -172,9 +172,9 @@ Last verified: 2026-07-08
 
 ## Deferred/Manual Checks
 
-- [ ] `POST /api/commerce/admin/media/images` with multipart image upload.
-- [ ] PayPal capture redirect, because current PayPal service is a stub.
-- [ ] Email delivery for newsletter/bank transfer, because SMTP may not be configured locally.
+- [x] `POST /api/commerce/admin/media/images` with multipart image upload. 2026-07-09: curl multipart upload returned `success=true`; uploaded PNG was reachable under `/uploads`.
+- [n/a] PayPal capture redirect, because current PayPal service is a stub in this MVP.
+- [n/a] Email delivery for newsletter/bank transfer, because SMTP is not configured for local MVP QA.
 
 ## QA Notes
 
@@ -185,6 +185,7 @@ Last verified: 2026-07-08
 - Local HTTP clients may not resend the refresh cookie automatically because it is `Secure=true`; QA verified refresh by replaying the `Set-Cookie` value as a `Cookie` header.
 - Missing JWT on `[Authorize]` Storefront routes returns HTTP `401` from ASP.NET auth middleware, with an empty body.
 - `api/internal/cart/save-checkout` and `api/internal/orders/confirm` expect a top-level JSON array. When using PowerShell, send raw JSON for single-item arrays to avoid `ConvertTo-Json` collapsing the array.
+- `api/internal/cart/save-checkout` currently also requires a `userId` field in the request body even though the authenticated customer is resolved from JWT; QA supplied a harmless placeholder. This is a cleanup candidate for the later Storefront auth contract pass.
 - `api/internal/recommendations/products/{productId}` requires at least one related published product; a single product in a category correctly returns a not-found response.
 
 ## Fixes Applied During QA
@@ -198,4 +199,4 @@ Last verified: 2026-07-08
 - `dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrastructure.csproj --startup-project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --context CommerceNodeDbContext`
 - `dotnet test BlazorShop.sln`
 
-Latest test result: 475 passed, 10 skipped.
+Latest test result: 2026-07-09 full solution test passed: 485 passed, 10 skipped. Independent API smoke passed for ControlPlane -> CommerceNode health probe, Commerce admin catalog/media, Storefront internal auth/cart/order, and admin order visibility.

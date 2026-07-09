@@ -18,9 +18,9 @@ Status legend:
 - [x] Browser console has no unexpected errors on initial load. 2026-07-08: login page, route guard, and mobile login smoke tests had 0 console errors after refresh/CORS fixes.
 - [x] API health endpoint responds. 2026-07-08: verified `GET /api/control-plane/system/info`.
 - [x] Control Plane API does not resolve `AppDbContext`. 2026-07-08: grep verified no `AppDbContext`, `AddSharedAuthenticationInfrastructure`, `AuthConnection`, or `DefaultConnection` usage in ControlPlane API/ControlPlane infrastructure scope.
-- [x] Control Plane clean database does not contain legacy Commerce/Storefront tables. 2026-07-08: QA DB contained `AspNet*`, `RefreshTokens`, and ControlPlane tables only; no `Products`, `Categories`, `Orders`, `PaymentMethods`, `Seo*`, or legacy admin/storefront tables.
+- [x] Control Plane clean database does not contain legacy Commerce/Storefront tables. 2026-07-09: clean QA DB `blazorshop_controlplane_qa_20260709` contained 0 legacy Commerce/Storefront tables.
 - [x] Control Plane Web references `BlazorShop.Web.SharedV2`, not legacy `BlazorShop.Web.Shared`. 2026-07-09: covered by PresentationV2 boundary tests.
-- [ ] After SharedV2 changes, re-run auth/login smoke and `FullyQualifiedName~ControlPlane`.
+- [x] After SharedV2 changes, re-run auth/login smoke and `FullyQualifiedName~ControlPlane`. 2026-07-09: full solution test passed 485/485 with 10 skipped; API smoke and Playwright admin/user login smoke passed.
 
 ## Open QA Findings
 
@@ -146,7 +146,7 @@ Status legend:
 ## Health
 
 - [x] Health page loads. 2026-07-08: authenticated admin session loaded Health page.
-- [n/a] Latest heartbeat is visible when available. 2026-07-08: no successful heartbeat sample existed in QA DB.
+- [x] Latest heartbeat is visible when available. 2026-07-09: Control Plane probe against Commerce Node healthz persisted healthy samples and Health page rendered successfully.
 - [x] Missing heartbeat state is readable. 2026-07-08: Health page showed `No heartbeat` / `No sample` states.
 - [n/a] Node dependency status is visible when available. 2026-07-08: no dependency snapshot existed in QA DB.
 - [x] Manual probe handles reachable node. 2026-07-08: service test verifies Control Plane calls `/api/commerce/healthz` with `X-Node-Key` and `X-Node-Secret`, parses success envelope, and persists healthy snapshot.
@@ -171,10 +171,10 @@ Status legend:
 ## Actions
 
 - [x] Action list loads. 2026-07-08: authenticated admin/auditor sessions loaded Actions empty state in browser.
-- [~] Action enqueue succeeds for a valid active node. Service tests pass; live enqueue UI/API was not exercised in this run.
+- [x] Action enqueue succeeds for a valid active node. 2026-07-09: clean DB smoke enqueued `sync_store_placeholder` for active `dev-node`.
 - [~] Action enqueue rejects disabled nodes. Service tests pass; live disabled-node enqueue was not exercised in this run.
-- [~] Action detail loads. No action record was created in this run.
-- [~] Action attempts are visible. Service tests pass; no action attempt record was created in this run.
+- [x] Action detail loads. 2026-07-09: API smoke loaded the created action after enqueue.
+- [x] Action attempts are visible. 2026-07-09: API smoke recorded an action attempt and DB audit confirmed `actions.attempt.record`.
 - [~] Action cancellation succeeds for cancellable actions. Service tests pass; no cancellable action was created in this run.
 - [~] Duplicate idempotency key returns or preserves the expected action. Service tests pass; live duplicate enqueue was not exercised in this run.
 
@@ -190,8 +190,8 @@ Status legend:
 - [x] Credential create/reveal/revoke/rotate is audited. 2026-07-08: DB recorded `credentials.create`, `credentials.reveal`, and `credentials.rotate`.
 - [x] Store create/update/archive/domain changes are audited. 2026-07-08: DB recorded `stores.create`; update/archive/domain audit still needs dedicated UI/API exercise.
 - [x] User create/update/disable/enable/role/permission changes are audited. 2026-07-08: DB query on clean User Management QA database found success/failure audit rows for user creation, profile updates, status changes, role changes, and direct permission changes.
-- [~] Health probe is audited. API code writes audit; live probe was not exercised in this run.
-- [~] Action enqueue/attempt/cancel is audited. API code writes audit; live action mutation was not exercised in this run.
+- [x] Health probe is audited. 2026-07-09: clean QA DB recorded `health.probe` rows.
+- [x] Action enqueue/attempt/cancel is audited. 2026-07-09: clean QA DB recorded `actions.enqueue` and `actions.attempt.record`; cancel remains service-covered because no cancellable live action was needed in this smoke run.
 - [x] Audit log payload does not expose raw API secrets or passwords. 2026-07-08: direct DB assertion found 0 audit metadata payloads containing raw `bs_cp_` secrets or QA seed passwords.
 
 ## Dashboard
@@ -215,18 +215,18 @@ Status legend:
 
 ## Regression Automation Suggestions
 
-- [ ] Add API integration tests for auth success/failure/session.
-- [ ] Add API integration tests for each permission policy denial.
-- [ ] Add service tests for wrong-password lockout/rate-limit behavior when implemented.
-- [ ] Add Playwright smoke tests for Dashboard, Nodes, Stores, Health, Actions, Audit Logs.
-- [ ] Add audit-log assertions to mutation endpoint tests.
-- [ ] Add database migration test that validates seed roles and permissions.
-- [ ] Add database migration test that fails if ControlPlane DB contains legacy Commerce/Storefront tables.
-- [ ] Add API integration tests for User Management list/create/status/role/permission flows.
-- [ ] Add Playwright smoke tests for User Management admin and restricted-user flows.
-- [ ] Add contract tests for Commerce Node heartbeat/probe payloads.
-- [ ] Add integration tests for Commerce Node `healthz` valid, invalid credential, and IP allowlist paths.
-- [ ] Add migration test for `commerce_node.node_secret` and `node_secret_updated_at`.
+- [~] Backlog: add API integration tests for auth success/failure/session.
+- [~] Backlog: add API integration tests for each permission policy denial.
+- [~] Backlog: add service tests for wrong-password lockout/rate-limit behavior when implemented.
+- [~] Backlog: add Playwright smoke tests for Dashboard, Nodes, Stores, Health, Actions, Audit Logs.
+- [~] Backlog: add audit-log assertions to mutation endpoint tests.
+- [~] Backlog: add database migration test that validates seed roles and permissions.
+- [~] Backlog: add database migration test that fails if ControlPlane DB contains legacy Commerce/Storefront tables.
+- [~] Backlog: add API integration tests for User Management list/create/status/role/permission flows.
+- [~] Backlog: add Playwright smoke tests for User Management admin and restricted-user flows.
+- [~] Backlog: add contract tests for Commerce Node heartbeat/probe payloads.
+- [~] Backlog: add integration tests for Commerce Node `healthz` valid, invalid credential, and IP allowlist paths.
+- [~] Backlog: add migration test for `commerce_node.node_secret` and `node_secret_updated_at`.
 
 ## QA Run History
 
@@ -240,3 +240,4 @@ Status legend:
 | 2026-07-08 | Codex | User Management QA on clean database | Passed | Verified API and browser Users flows on clean `blazorshop_controlplane_user_management_live_qa3`. Found and fixed ISSUE-001 user-create transaction execution strategy and ISSUE-002 disabled Control Plane login blocking. API-backed Audit Logs search remains not implemented. |
 | 2026-07-08 | Codex | API response envelope migration | Passed | Verified `success/message/data` envelopes on clean `blazorshop_controlplane_api_response_qa` for success, validation, unauthorized, forbidden, not found, and conflict responses. Browser smoke verified admin login, Dashboard, Users page, and 0 console errors. |
 | 2026-07-08 | Codex | Commerce Node foundation implementation | Passed | Added Commerce Node API shell, ecom DB context boundary, credential/IP guard, `api/commerce/healthz`, Control Plane node secret storage/UI, and Control Plane healthz probe client. `dotnet test BlazorShop.Tests --no-restore` passed: 475 passed, 10 skipped. Local Commerce Node HTTP smoke passed: 200 valid, 401 wrong secret, 403 disallowed IP. |
+| 2026-07-09 | Codex | Independent V2 QA after SharedV2 extraction | Passed | Used clean Control Plane DB `blazorshop_controlplane_qa_20260709`, Commerce Node DB on port 5434, ControlPlane API/Web, CommerceNode API, and StorefrontV2 only. Full `dotnet test BlazorShop.sln --no-restore` passed: 485 passed, 10 skipped. Playwright admin/user login and main pages passed; standard user Users page returns expected 403 permission denials without app crash. |

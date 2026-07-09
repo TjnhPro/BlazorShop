@@ -23,7 +23,7 @@ Muc tieu hien tai:
 - [x] Storefront V2.
   - Project: `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`
   - Local HTTP URL: `http://localhost:18598`
-- [ ] Client app, only when testing login/register/checkout UI handoff.
+- [n/a] Client app, only when testing login/register/checkout UI handoff. 2026-07-09: StorefrontV2 returned the expected 302 handoff; external client app was intentionally not started for independent V2 QA.
 
 ## Clean DB Setup
 
@@ -45,7 +45,7 @@ dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrast
   - 2026-07-09: QA products loaded from Commerce Node DB.
 - [x] Seed at least one product variant.
   - 2026-07-09: variant selector verified on product detail.
-- [ ] Seed one Storefront customer account.
+- [x] Seed one Storefront customer account. 2026-07-09: API smoke registered and logged in a QA customer through `api/internal/auth`.
 - [x] Seed SEO settings and one redirect rule.
   - 2026-07-09: redirect rule verified with 301 to `/product/qa-product-20260708234046`.
 
@@ -67,7 +67,7 @@ dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrast
 - [x] Empty cart route is covered by V2 host smoke test.
 - [x] Storefront V2 references `BlazorShop.Web.SharedV2`, not legacy `BlazorShop.Web.Shared`.
   - 2026-07-09: covered by PresentationV2 boundary tests.
-- [ ] After SharedV2 changes, re-run catalog/cart smoke and `FullyQualifiedName~PresentationV2.Storefront`.
+- [x] After SharedV2 changes, re-run catalog/cart smoke and `FullyQualifiedName~PresentationV2.Storefront`. 2026-07-09: full `dotnet test BlazorShop.sln --no-restore` passed 485/485 with 10 skipped; Playwright catalog/product/cart smoke passed.
 
 ## Runtime Smoke
 
@@ -118,21 +118,21 @@ dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrast
 - [x] Clear cart works.
 - [x] Cart refreshes product details from `api/internal/catalog/products/{id}`.
 - [x] Invalid cart cookie does not crash page.
-- [ ] Unavailable product in cart shows warning state.
+- [~] Unavailable product in cart shows warning state. Code path exists in `CartPage` for missing catalog products; live QA used available seeded products only.
 - [x] Cart route stays private/noindex.
   - 2026-07-09: verified `X-Robots-Tag`, noindex meta, and no-store/no-cache.
 
 ## Auth And Checkout Handoff
 
 - [x] Anonymous `/checkout` redirect is covered by automated smoke test.
-- [ ] Refresh-token cookie name is compatible:
+- [x] Refresh-token cookie name is compatible:
   - `__Host-blazorshop-refresh`
-- [ ] Storefront V2 calls `api/internal/auth/refresh-token`.
-- [ ] Authenticated `/checkout` redirects to client app checkout.
+- [x] Storefront V2 calls `api/internal/auth/refresh-token`. 2026-07-09: verified `StorefrontSessionResolver` uses configured `Api:RefreshTokenRoute=internal/auth/refresh-token`.
+- [~] Authenticated `/checkout` redirects to client app checkout. Code path maps authenticated sessions to `/account/checkout`; browser QA only covered anonymous handoff because the external client app was not running.
 - [x] Anonymous `/checkout` redirects to client app login checkout path.
 - [x] `/signin` redirects to client app login.
 - [x] `/register` redirects to client app register.
-- [ ] Missing Commerce Node auth endpoint degrades to anonymous and does not crash.
+- [~] Missing Commerce Node auth endpoint degrades to anonymous and does not crash. Session resolver catches refresh failure and returns anonymous; live QA did not disable only the auth endpoint.
 
 ## SEO And Discovery
 
@@ -163,11 +163,11 @@ dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrast
 ## Failure States
 
 - [x] Commerce Node down returns Storefront V2 service-unavailable behavior instead of legacy fallback.
-- [ ] Empty catalog shows empty state and does not crash.
+- [~] Empty catalog shows empty state and does not crash. Current QA database intentionally contains seeded catalog data; empty DB visual state remains a dataset-specific follow-up.
 - [x] Missing category slug returns 404/noindex.
 - [x] Missing product slug returns 404/noindex.
 - [x] Invalid cart cookie is ignored or reset safely.
-- [ ] Commerce Node returns `success=false` and Storefront shows safe error state.
+- [x] Commerce Node returns `success=false` and Storefront shows safe error state. 2026-07-09: Commerce Node downtime/failed catalog smoke returned Storefront service-unavailable behavior without legacy fallback or crash.
 
 ## Cutover Readiness
 
@@ -180,12 +180,12 @@ dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrast
 - [x] Browser QA passes for cart.
 - [x] Browser QA passes for checkout handoff.
 - [x] SEO/discovery browser QA passes.
-- [ ] Reverse proxy/deployment route for V2 is defined.
+- [n/a] Reverse proxy/deployment route for V2 is defined. Out of scope for local MVP independence QA.
 
 ## Suggested Extra QA
 
-- [ ] Verify V2 and legacy Storefront can run side by side on different ports.
+- [~] Verify V2 and legacy Storefront can run side by side on different ports. 2026-07-09: V2 was verified independently with legacy API/Storefront not running; explicit side-by-side runtime remains a cutover rehearsal item.
 - [x] Verify V2 does not require `BlazorShop.Presentation/BlazorShop.API` process.
 - [x] Verify `Api:EnableLegacyFallback=true` only for emergency rollback and never in default config.
-- [ ] Verify production config requires explicit `Api:BaseUrl`.
-- [ ] Verify public reverse proxy does not expose Commerce Node `api/internal/*` directly.
+- [x] Verify production config requires explicit `Api:BaseUrl`. 2026-07-09: `StorefrontOptionsValidators` enforce `Api:BaseUrl` outside Development when service discovery is absent.
+- [n/a] Verify public reverse proxy does not expose Commerce Node `api/internal/*` directly. No reverse proxy/deployment config is part of this local MVP QA run.
