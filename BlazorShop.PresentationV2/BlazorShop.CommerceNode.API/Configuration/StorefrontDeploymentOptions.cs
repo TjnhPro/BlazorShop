@@ -14,9 +14,21 @@ namespace BlazorShop.CommerceNode.API.Configuration
 
         public int ContainerPort { get; set; } = 8080;
 
-        public string HealthPath { get; set; } = "/healthz";
+        public string HealthPath { get; set; } = "/";
 
         public int HealthTimeoutSeconds { get; set; } = 5;
+
+        public int HealthProbeAttempts { get; set; } = 10;
+
+        public int HealthProbeDelaySeconds { get; set; } = 2;
+
+        public bool UseDockerExecHealthProbe { get; set; }
+
+        public string HealthProbeContainerName { get; set; } = "blazorshop-commercenode-nginx";
+
+        public string? StorefrontApiBaseUrl { get; set; }
+
+        public string? ClientAppBaseUrl { get; set; }
 
         public List<string> AllowedImages { get; set; } = new()
         {

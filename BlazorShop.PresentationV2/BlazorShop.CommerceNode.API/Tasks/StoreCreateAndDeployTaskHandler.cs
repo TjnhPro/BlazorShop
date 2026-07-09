@@ -3,11 +3,13 @@ namespace BlazorShop.CommerceNode.API.Tasks
     using System.Text.Json;
 
     using BlazorShop.Application.CommerceNode.Tasks;
+    using BlazorShop.CommerceNode.API.Configuration;
     using BlazorShop.CommerceNode.API.Deployment;
     using BlazorShop.Domain.Entities.CommerceNode;
     using BlazorShop.Infrastructure.Data.CommerceNode;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Options;
 
     public sealed class StoreCreateAndDeployTaskHandler : ICommerceTaskHandler
     {
@@ -16,15 +18,18 @@ namespace BlazorShop.CommerceNode.API.Tasks
         private readonly CommerceNodeDbContext context;
         private readonly IStorefrontDockerDeploymentService dockerDeployment;
         private readonly INginxDeploymentService nginxDeployment;
+        private readonly StorefrontDeploymentOptions deploymentOptions;
 
         public StoreCreateAndDeployTaskHandler(
             CommerceNodeDbContext context,
             IStorefrontDockerDeploymentService dockerDeployment,
-            INginxDeploymentService nginxDeployment)
+            INginxDeploymentService nginxDeployment,
+            IOptions<StorefrontDeploymentOptions> deploymentOptions)
         {
             this.context = context;
             this.dockerDeployment = dockerDeployment;
             this.nginxDeployment = nginxDeployment;
+            this.deploymentOptions = deploymentOptions.Value;
         }
 
         public string TaskType => "store.create_and_deploy";
@@ -136,19 +141,34 @@ namespace BlazorShop.CommerceNode.API.Tasks
 
             try
             {
+                var publicBaseUrl = string.IsNullOrWhiteSpace(store.BaseUrl)
+                    ? $"https://{normalizedDomain}"
+                    : store.BaseUrl.Trim();
+                var apiBaseUrl = ResolveOptionalValue(payload.StorefrontApiBaseUrl, this.deploymentOptions.StorefrontApiBaseUrl);
+                var clientAppBaseUrl = ResolveOptionalValue(payload.ClientAppBaseUrl, this.deploymentOptions.ClientAppBaseUrl) ?? publicBaseUrl;
+                var publicUrlBaseUrl = ResolveOptionalValue(payload.PublicUrlBaseUrl, publicBaseUrl) ?? publicBaseUrl;
+                var environment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["STORE_PUBLIC_ID"] = store.PublicId.ToString("D"),
+                    ["STORE_BASE_URL"] = publicBaseUrl,
+                    ["STORE_PRIMARY_DOMAIN"] = normalizedDomain,
+                    ["DEFAULT_CURRENCY_CODE"] = store.DefaultCurrencyCode,
+                    ["DEFAULT_CULTURE"] = store.DefaultCulture,
+                    ["ClientApp__BaseUrl"] = clientAppBaseUrl,
+                    ["PublicUrl__BaseUrl"] = publicUrlBaseUrl,
+                };
+
+                if (!string.IsNullOrWhiteSpace(apiBaseUrl))
+                {
+                    environment["Api__BaseUrl"] = apiBaseUrl;
+                }
+
                 var deploymentRequest = new StorefrontDeploymentRequest(
                     store.Id,
                     store.StoreKey,
                     payload.StorefrontImage!.Trim(),
                     payload.NetworkName,
-                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        ["STORE_PUBLIC_ID"] = store.PublicId.ToString("D"),
-                        ["STORE_BASE_URL"] = store.BaseUrl ?? string.Empty,
-                        ["STORE_PRIMARY_DOMAIN"] = normalizedDomain,
-                        ["DEFAULT_CURRENCY_CODE"] = store.DefaultCurrencyCode,
-                        ["DEFAULT_CULTURE"] = store.DefaultCulture,
-                    });
+                    environment);
 
                 containerPlan = this.dockerDeployment.CreatePlan(deploymentRequest);
                 var envFilePath = await this.dockerDeployment.RenderEnvironmentFileAsync(
@@ -172,7 +192,7 @@ namespace BlazorShop.CommerceNode.API.Tasks
                         deployment,
                         containerPlan,
                         null,
-                        "Docker container could not be created.",
+                        BuildCommandFailureMessage("Docker container could not be created.", createContainer),
                         "docker_create_failed",
                         cancellationToken);
                 }
@@ -185,8 +205,25 @@ namespace BlazorShop.CommerceNode.API.Tasks
                         deployment,
                         containerPlan,
                         null,
-                        "Docker container could not be started.",
+                        BuildCommandFailureMessage("Docker container could not be started.", startContainer),
                         "docker_start_failed",
+                        cancellationToken);
+                }
+
+                var startupHealth = await this.WaitForHealthyStorefrontAsync(containerPlan, cancellationToken);
+                deployment.LastHealthStatus = startupHealth.Healthy ? "healthy" : "unhealthy";
+                deployment.LastHealthAt = DateTimeOffset.UtcNow;
+                deployment.UpdatedAt = DateTimeOffset.UtcNow;
+                await this.context.SaveChangesAsync(cancellationToken);
+                if (!startupHealth.Healthy)
+                {
+                    return await this.FailDeploymentAsync(
+                        store,
+                        deployment,
+                        containerPlan,
+                        null,
+                        $"Storefront health check failed: {startupHealth.Message}",
+                        "storefront_health_failed",
                         cancellationToken);
                 }
 
@@ -206,7 +243,7 @@ namespace BlazorShop.CommerceNode.API.Tasks
                         deployment,
                         containerPlan,
                         nginxPlan,
-                        "Nginx config validation failed.",
+                        BuildNginxFailureMessage("Nginx config validation failed.", validateNginx),
                         "nginx_validate_failed",
                         cancellationToken);
                 }
@@ -219,7 +256,7 @@ namespace BlazorShop.CommerceNode.API.Tasks
                         deployment,
                         containerPlan,
                         nginxPlan,
-                        "Nginx reload failed.",
+                        BuildNginxFailureMessage("Nginx reload failed.", reloadNginx),
                         "nginx_reload_failed",
                         cancellationToken);
                 }
@@ -308,6 +345,28 @@ namespace BlazorShop.CommerceNode.API.Tasks
             return CommerceTaskHandlerResult.Failed(message, errorCode);
         }
 
+        private async Task<StorefrontHealthProbeResult> WaitForHealthyStorefrontAsync(
+            StorefrontContainerPlan containerPlan,
+            CancellationToken cancellationToken)
+        {
+            var attempts = Math.Max(1, this.deploymentOptions.HealthProbeAttempts);
+            var delay = TimeSpan.FromSeconds(Math.Max(1, this.deploymentOptions.HealthProbeDelaySeconds));
+            StorefrontHealthProbeResult? lastResult = null;
+
+            for (var attempt = 1; attempt <= attempts; attempt++)
+            {
+                lastResult = await this.dockerDeployment.ProbeHealthAsync(containerPlan, cancellationToken);
+                if (lastResult.Healthy || attempt == attempts)
+                {
+                    return lastResult;
+                }
+
+                await Task.Delay(delay, cancellationToken);
+            }
+
+            return lastResult ?? new StorefrontHealthProbeResult(false, null, "Storefront health check did not run.");
+        }
+
         private static string? ValidatePayload(StoreCreateAndDeployPayload payload)
         {
             if (!string.Equals(payload.SchemaVersion, "v1", StringComparison.OrdinalIgnoreCase))
@@ -359,6 +418,43 @@ namespace BlazorShop.CommerceNode.API.Tasks
             return normalized.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? normalized;
         }
 
+        private static string? ResolveOptionalValue(params string?[] values)
+        {
+            return values
+                .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))
+                ?.Trim();
+        }
+
+        private static string BuildCommandFailureMessage(
+            string message,
+            StorefrontDeploymentCommandResult result)
+        {
+            return AppendCommandOutput(message, result.StandardError, result.StandardOutput);
+        }
+
+        private static string BuildNginxFailureMessage(
+            string message,
+            NginxDeploymentCommandResult result)
+        {
+            return AppendCommandOutput(message, result.StandardError, result.StandardOutput);
+        }
+
+        private static string AppendCommandOutput(
+            string message,
+            string? standardError,
+            string? standardOutput)
+        {
+            var details = string.Join(
+                " ",
+                new[] { standardError, standardOutput }
+                    .Where(value => !string.IsNullOrWhiteSpace(value))
+                    .Select(value => value!.Trim()));
+
+            return string.IsNullOrWhiteSpace(details)
+                ? message
+                : $"{message} {details}";
+        }
+
         private sealed class StoreCreateAndDeployPayload
         {
             public string SchemaVersion { get; set; } = "v1";
@@ -380,6 +476,12 @@ namespace BlazorShop.CommerceNode.API.Tasks
             public string? StorefrontImage { get; set; }
 
             public string? NetworkName { get; set; }
+
+            public string? StorefrontApiBaseUrl { get; set; }
+
+            public string? ClientAppBaseUrl { get; set; }
+
+            public string? PublicUrlBaseUrl { get; set; }
         }
     }
 }

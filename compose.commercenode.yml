@@ -2,6 +2,7 @@ services:
   commercenode-postgres:
     image: postgres:17-alpine
     container_name: blazorshop-commercenode-postgres
+    restart: unless-stopped
     environment:
       POSTGRES_DB: blazorshop_commerce_node
       POSTGRES_USER: blazorshop_commerce_node
@@ -10,6 +11,8 @@ services:
       - "5434:5432"
     volumes:
       - commercenode_postgres_data:/var/lib/postgresql/data
+    networks:
+      - blazorshop-commercenode
     healthcheck:
       test:
         [
@@ -20,5 +23,28 @@ services:
       timeout: 5s
       retries: 5
 
+  commercenode-nginx:
+    image: nginx:1.27-alpine
+    container_name: blazorshop-commercenode-nginx
+    restart: unless-stopped
+    ports:
+      - "8088:80"
+    volumes:
+      - ./BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/nginx/conf.d:/etc/nginx/conf.d
+      - ./BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/nginx/logs:/var/log/nginx
+      - commercenode_nginx_cache:/var/cache/nginx
+    networks:
+      - blazorshop-commercenode
+    healthcheck:
+      test: ["CMD-SHELL", "nginx -t"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   commercenode_postgres_data:
+  commercenode_nginx_cache:
+
+networks:
+  blazorshop-commercenode:
+    name: blazorshop-commercenode

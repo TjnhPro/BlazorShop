@@ -155,6 +155,11 @@ namespace BlazorShop.CommerceNode.API.Deployment
             StorefrontContainerPlan plan,
             CancellationToken cancellationToken = default)
         {
+            if (this.options.UseDockerExecHealthProbe)
+            {
+                return await this.ProbeHealthFromDockerContainerAsync(plan, cancellationToken);
+            }
+
             var client = this.httpClientFactory.CreateClient(nameof(StorefrontDockerDeploymentService));
             client.Timeout = TimeSpan.FromSeconds(Math.Max(1, this.options.HealthTimeoutSeconds));
 
@@ -175,6 +180,42 @@ namespace BlazorShop.CommerceNode.API.Deployment
             {
                 return new StorefrontHealthProbeResult(false, null, ex.Message);
             }
+        }
+
+        private async Task<StorefrontHealthProbeResult> ProbeHealthFromDockerContainerAsync(
+            StorefrontContainerPlan plan,
+            CancellationToken cancellationToken)
+        {
+            var path = this.options.HealthPath.StartsWith("/", StringComparison.Ordinal)
+                ? this.options.HealthPath
+                : $"/{this.options.HealthPath}";
+            var uri = $"{plan.InternalUrl.TrimEnd('/')}{path}";
+            var probeContainer = string.IsNullOrWhiteSpace(this.options.HealthProbeContainerName)
+                ? "blazorshop-commercenode-nginx"
+                : this.options.HealthProbeContainerName.Trim();
+
+            var result = await this.RunDockerAsync(
+                new[]
+                {
+                    "exec",
+                    probeContainer,
+                    "wget",
+                    "-q",
+                    "-O",
+                    "-",
+                    "--timeout",
+                    Math.Max(1, this.options.HealthTimeoutSeconds).ToString(CultureInfo.InvariantCulture),
+                    uri,
+                },
+                cancellationToken,
+                allowFailure: true);
+
+            return new StorefrontHealthProbeResult(
+                result.ExitCode == 0,
+                null,
+                result.ExitCode == 0
+                    ? "Storefront health check passed."
+                    : string.Join(" ", new[] { result.StandardError, result.StandardOutput }.Where(value => !string.IsNullOrWhiteSpace(value))));
         }
 
         private async Task<StorefrontDeploymentCommandResult> RunDockerAsync(

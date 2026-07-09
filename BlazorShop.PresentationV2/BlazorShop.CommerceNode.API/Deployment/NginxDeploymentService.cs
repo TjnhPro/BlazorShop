@@ -11,6 +11,8 @@ namespace BlazorShop.CommerceNode.API.Deployment
 
     public sealed partial class NginxDeploymentService : INginxDeploymentService
     {
+        private static readonly Encoding Utf8WithoutBom = new UTF8Encoding(false);
+
         private readonly NginxDeploymentOptions options;
         private readonly IWebHostEnvironment environment;
 
@@ -68,7 +70,7 @@ namespace BlazorShop.CommerceNode.API.Deployment
                 .AppendLine("}")
                 .ToString();
 
-            await File.WriteAllTextAsync(plan.ConfigPath, config, Encoding.UTF8, cancellationToken);
+            await File.WriteAllTextAsync(plan.ConfigPath, config, Utf8WithoutBom, cancellationToken);
             return plan.ConfigPath;
         }
 
@@ -102,14 +104,21 @@ namespace BlazorShop.CommerceNode.API.Deployment
         {
             var startInfo = new ProcessStartInfo
             {
-                FileName = string.IsNullOrWhiteSpace(this.options.NginxExecutable)
-                    ? "nginx"
-                    : this.options.NginxExecutable,
+                FileName = this.ResolveExecutable(),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
             };
+
+            if (this.options.UseDockerExec)
+            {
+                startInfo.ArgumentList.Add("exec");
+                startInfo.ArgumentList.Add(this.ResolveContainerName());
+                startInfo.ArgumentList.Add(string.IsNullOrWhiteSpace(this.options.NginxExecutable)
+                    ? "nginx"
+                    : this.options.NginxExecutable);
+            }
 
             foreach (var argument in arguments)
             {
@@ -132,6 +141,27 @@ namespace BlazorShop.CommerceNode.API.Deployment
                 standardOutput,
                 standardError,
                 process.ExitCode);
+        }
+
+        private string ResolveExecutable()
+        {
+            if (this.options.UseDockerExec)
+            {
+                return string.IsNullOrWhiteSpace(this.options.DockerExecutable)
+                    ? "docker"
+                    : this.options.DockerExecutable;
+            }
+
+            return string.IsNullOrWhiteSpace(this.options.NginxExecutable)
+                ? "nginx"
+                : this.options.NginxExecutable;
+        }
+
+        private string ResolveContainerName()
+        {
+            return string.IsNullOrWhiteSpace(this.options.ContainerName)
+                ? "blazorshop-commercenode-nginx"
+                : this.options.ContainerName.Trim();
         }
 
         private string ResolveConfiguredPath(string configuredPath)

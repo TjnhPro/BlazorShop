@@ -52,7 +52,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             {
                 Id = Guid.NewGuid(),
                 PublicId = Guid.NewGuid(),
-                TaskType = request.TaskType.Trim(),
+                TaskType = request.TaskType!.Trim(),
                 Status = CommerceTaskStatuses.Pending,
                 IdempotencyKey = NormalizeOptional(request.IdempotencyKey),
                 LockKey = NormalizeOptional(request.LockKey),

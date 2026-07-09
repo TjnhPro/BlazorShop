@@ -33,6 +33,12 @@ Future task types can reuse this foundation:
 - Storefront containers receive `STORE_ID`/`STORE_KEY` style environment values.
 - Nginx is part of the CommerceNode service cluster and reverse proxies to Storefront containers.
 - Rollback is required for failed deployment steps.
+- CommerceNode acts as the MVP deployment agent. API, task worker, Docker control, and Nginx control stay in one service for now; a separate agent process can be extracted later.
+- Production-like CommerceNode deployments mount Docker socket access into the CommerceNode runtime, e.g. `/var/run/docker.sock:/var/run/docker.sock`.
+- CommerceNode owns a dedicated Docker network for the node cluster. Nginx, Storefront containers, and future shared node services join that network.
+- Storefront image/version selection is DB-backed deployment configuration. Appsettings may keep bootstrap defaults for local development, but the deploy task should resolve the approved image from CommerceNode DB config.
+- CommerceNode manages only containers it created, identified by generated names and labels. Runtime operations such as stat/start/stop/remove must be scoped to that identity.
+- Persisted runtime config volumes are accepted as the future production shape. MVP can keep the current local runtime directories until a dedicated volume layout is required.
 
 ## Non Goals
 
@@ -154,7 +160,7 @@ Purpose: track the deployed runtime artifacts for one Storefront container.
 | `nginx_config_path` | `text` | yes | Generated config path. |
 | `env_file_path` | `text` | yes | Generated env file path. |
 | `status` | `text` | no | `provisioning`, `active`, `failed`, `disabled`, `removed`. |
-| `last_health_status` | `text` | yes | Last `/healthz` result. |
+| `last_health_status` | `text` | yes | Last Storefront liveness probe result. |
 | `last_health_at` | `timestamp with time zone` | yes | Last health check time. |
 | `deployed_at` | `timestamp with time zone` | yes | Successful deploy time. |
 | `created_at` | `timestamp with time zone` | no | Created time. |
@@ -169,6 +175,36 @@ Indexes:
 Check constraints:
 
 - `status in ('provisioning', 'active', 'failed', 'disabled', 'removed')`
+
+### Commerce Node DB: `storefront_deployment_image`
+
+Purpose: controlled catalog of Storefront images that CommerceNode is allowed to deploy.
+
+This keeps image/version selection operationally configurable without letting ControlPlane send arbitrary Docker image names. Appsettings can still provide local bootstrap defaults, but runtime deployment should prefer this table.
+
+| Column | Type | Nullable | Notes |
+| --- | --- | --- | --- |
+| `id` | `uuid` | no | Primary key. |
+| `key` | `text` | no | Stable logical image key, e.g. `storefront-v2`. |
+| `image` | `text` | no | Full Docker image reference, e.g. `registry.example.com/blazorshop/storefront:v2.0.1`. |
+| `version` | `text` | yes | Human-readable version/tag used for audit and UI. |
+| `is_default` | `boolean` | no | Default image for new store deployments. |
+| `is_enabled` | `boolean` | no | Disabled images cannot be selected for new tasks. |
+| `created_at` | `timestamp with time zone` | no | Created time. |
+| `updated_at` | `timestamp with time zone` | no | Updated time. |
+
+Indexes:
+
+- unique `key`
+- unique `image`
+- index `(is_enabled, is_default)`
+
+Rules:
+
+- Only one enabled default image is allowed.
+- Store deploy payload may omit image and use the default DB image.
+- If a payload includes an image key/version for testing, CommerceNode resolves it through this table before deploying.
+- `store_deployment.storefront_image` stores the resolved image actually deployed for audit.
 
 ## API Design
 
@@ -304,11 +340,16 @@ The task handler owns deployment mechanics. StoreExpansion owns the `CommerceSto
 
 Docker:
 
+- CommerceNode must run with Docker control in the node environment. For containerized CommerceNode this means mounting `/var/run/docker.sock:/var/run/docker.sock`.
+- All CommerceNode-managed runtime containers join a dedicated node network, for example `blazorshop-commercenode`.
 - Use generated container names only, e.g. `blazorshop-storefront-{storeKey}`.
-- Whitelist Storefront image names/tags.
+- Add stable labels to every managed container, including store key, store public id, task id, and an owner marker.
+- Storefront image names/tags are resolved from CommerceNode DB deployment config. Do not rely on ControlPlane-submitted arbitrary image names.
+- Appsettings image allowlist is acceptable only as a local bootstrap/default guard in MVP.
 - Generate env files from typed payload and node config.
 - Do not accept raw env file content from ControlPlane.
 - Keep one Storefront container per store.
+- Container stat/start/stop/remove operations must verify the expected owner label and generated name before mutating runtime state.
 
 Nginx:
 
@@ -353,11 +394,12 @@ Cancel requested:
 ## Security Rules
 
 - CommerceNode API is protected by node key, node secret, and IP allowlist.
-- Docker socket/control is never exposed outside the node.
+- Docker socket/control is available only inside the node deployment boundary and is never exposed outside the node.
 - ControlPlane cannot submit raw shell commands.
-- ControlPlane cannot submit arbitrary image names unless they pass whitelist validation.
+- ControlPlane cannot submit arbitrary image names. The node resolves approved Storefront images from DB-backed deployment config.
 - Generated file paths must be under configured CommerceNode directories.
 - Store keys must be normalized before being used in container/file names.
+- Docker runtime operations must be constrained to CommerceNode-owned labels/container prefixes.
 
 ## Phase Plan
 
@@ -406,10 +448,13 @@ Stop gate:
 
 - [x] Add typed deployment options.
 - [x] Add generated container naming.
-- [x] Add Storefront image whitelist.
+- [x] Add Storefront image whitelist as MVP bootstrap config.
+- [ ] Move approved Storefront image/version resolution into CommerceNode DB deployment config.
+- [ ] Add owner labels to Storefront containers.
+- [ ] Guard stat/start/stop/remove by generated name and owner labels.
 - [x] Add env file rendering.
 - [x] Add container create/update/start/stop/remove operations.
-- [x] Add health probe call to Storefront `/healthz`.
+- [x] Add health probe call to Storefront liveness path.
 
 Stop gate:
 
@@ -501,7 +546,16 @@ Stop gate:
 
 ## Open Questions To Close
 
-1. Should MVP Docker control use Docker CLI, Docker Compose project files, or a .NET Docker client wrapper?
-2. What is the first approved StorefrontV2 image/tag naming convention?
-3. Should failed deploy artifacts be removed by default, or left stopped in local debug mode only?
-4. What directory should CommerceNode use for generated env files and Nginx fragments?
+1. Should failed deploy artifacts be removed by default, or left stopped in local debug mode only?
+
+## Decision Log
+
+| # | Decision | Status | Reason | Deferred alternative |
+| --- | --- | --- | --- | --- |
+| 1 | CommerceNode is the MVP deployment agent | User-approved | Keeps MVP fast and avoids another service/process boundary. | Extract `CommerceNode.Agent` later. |
+| 2 | Mount Docker socket for containerized CommerceNode | User-approved | Node must create/start/stop/remove Storefront containers. | Remote Docker API or external orchestrator. |
+| 3 | Use a dedicated Docker network per node cluster | User-approved | Lets Nginx, Storefront, PostgreSQL/Redis/future shared services communicate privately. | Shared/default Docker network. |
+| 4 | Storefront image/version comes from CommerceNode DB config | User-approved | Allows controlled testing of different images/versions without code/config redeploy. | Static appsettings-only image allowlist. |
+| 5 | CommerceNode manages only owned containers | User-approved | Avoids duplicate/wrong-container operations and enables safe stat/start/stop/remove recovery. | Raw container names from ControlPlane. |
+| 6 | Persisted config volumes are future production shape, not required immediately | User-approved | MVP can continue with current local runtime directories while deploy flow stabilizes. | Design full volume layout before MVP validation. |
+| 7 | Keep deployment-agent behavior inside CommerceNode API for MVP | User-approved | Simpler deployment and fewer moving parts now. | Split worker/agent before core flow is proven. |

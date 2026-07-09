@@ -199,6 +199,7 @@ namespace BlazorShop.CommerceNode.API.Workers
             var now = DateTimeOffset.UtcNow;
             var task = await context.CommerceTasks.FirstAsync(entity => entity.Id == taskId, cancellationToken);
             var step = await context.CommerceTaskSteps.FirstAsync(entity => entity.Id == stepId, cancellationToken);
+            await context.Entry(task).ReloadAsync(cancellationToken);
 
             var cancelRequested = task.CancelRequestedAt is not null;
             step.CompletedAt = now;

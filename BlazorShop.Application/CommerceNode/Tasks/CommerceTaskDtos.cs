@@ -9,7 +9,7 @@ namespace BlazorShop.Application.CommerceNode.Tasks
         int Take = 100);
 
     public sealed record EnqueueCommerceTaskRequest(
-        string TaskType,
+        string? TaskType,
         string? IdempotencyKey = null,
         string PayloadSchemaVersion = "v1",
         string? PayloadJson = null,
