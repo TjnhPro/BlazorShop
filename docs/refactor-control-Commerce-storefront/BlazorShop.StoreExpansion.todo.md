@@ -591,13 +591,15 @@ Stop gate:
 ### Phase 11 - Control Plane Integration
 
 - [ ] Extend Control Plane store detail to show runtime Commerce Store status.
-- [ ] Add action to enqueue `store.create_and_deploy` on assigned node.
-- [ ] Add action to query task status from CommerceNode API.
-- [ ] Add action to request task cancel/retry from CommerceNode API.
+- [x] Add action to enqueue `store.create_and_deploy` on assigned node.
+- [x] Add action to query task status from CommerceNode API.
+- [x] Add action to request task cancel/retry from CommerceNode API.
 - [ ] Add action to verify runtime domain.
-- [ ] Record audit logs for sync actions.
-- [ ] Do not make Control Plane query Commerce Node DB directly.
-- [ ] Do not store CommerceNode task state in ControlPlane DB.
+- [x] Record audit logs for sync actions.
+- [x] Do not make Control Plane query Commerce Node DB directly.
+- [x] Do not store CommerceNode task state in ControlPlane DB.
+
+2026-07-09 verification: ControlPlane already exposes `POST/GET/cancel/retry api/control-plane/stores/{publicId}/deployment-tasks` through `ControlPlaneStoreDeploymentService` and `CommerceNodeTaskClient`. It sends node key/secret to CommerceNode APIs, records deployment audit actions, and keeps task state owned by CommerceNode. ControlPlane API/Web builds pass.
 
 Stop gate:
 
