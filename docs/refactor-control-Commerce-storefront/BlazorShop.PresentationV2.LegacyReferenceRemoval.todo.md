@@ -149,21 +149,21 @@ Stop gate:
 
 ## Phase 3 - Copy Required Assets Into Storefront V2
 
-- [ ] Copy required fonts into `BlazorShop.Storefront.V2/wwwroot/fonts`.
-- [ ] Copy required Font Awesome assets into `BlazorShop.Storefront.V2/wwwroot/font-awesome` only if V2 still needs local Font Awesome files.
-- [ ] Copy required images into `BlazorShop.Storefront.V2/wwwroot/images`.
-- [ ] Confirm seed/QA image URLs still resolve:
-  - [ ] `/images/banner-bg.jpg`
-  - [ ] any product/category placeholder images in QA data
-- [ ] Remove unused legacy-only assets from the copy plan:
-  - [ ] `index.html`
-  - [ ] legacy appsettings under `wwwroot`
-  - [ ] legacy auth/session JS unless V2 references them
-  - [ ] legacy `app.js`, `authSessionSync.js`, `cookieStorage.js`, `interop.js`, `sessionStorage.js` unless V2 explicitly uses them
+- [x] Copy required fonts into `BlazorShop.Storefront.V2/wwwroot/fonts`.
+- [x] Copy required Font Awesome assets into `BlazorShop.Storefront.V2/wwwroot/font-awesome` only if V2 still needs local Font Awesome files.
+- [x] Copy required images into `BlazorShop.Storefront.V2/wwwroot/images`.
+- [x] Confirm seed/QA image URLs still resolve:
+  - [x] `/images/banner-bg.jpg`
+  - [x] any product/category placeholder images in QA data
+- [x] Remove unused legacy-only assets from the copy plan:
+  - [x] `index.html`
+  - [x] legacy appsettings under `wwwroot`
+  - [x] legacy auth/session JS unless V2 references them
+  - [x] legacy `app.js`, `authSessionSync.js`, `cookieStorage.js`, `interop.js`, `sessionStorage.js` unless V2 explicitly uses them
 
 Stop gate:
 
-- V2 has all required runtime static assets under its own project directory.
+- V2 has all required runtime static assets under its own project directory. 2026-07-09: copied `icon-192.png` and `images/banner-bg.jpg`. Fonts and Font Awesome were not copied because Storefront V2 has no direct references. `bg1.png`, `bg2.png`, and `bg.png` are referenced by development seed data but do not exist in legacy `wwwroot/images`; this remains a seed-data cleanup follow-up rather than a legacy-removal asset copy.
 
 ## Phase 4 - Remove Build And Runtime Legacy File References
 

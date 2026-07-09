@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <Content Include="..\..\BlazorShop.Presentation\BlazorShop.Web\wwwroot\**\*"
-             Exclude="..\..\BlazorShop.Presentation\BlazorShop.Web\wwwroot\css\input.css;..\..\BlazorShop.Presentation\BlazorShop.Web\wwwroot\css\site.css">
+             Exclude="..\..\BlazorShop.Presentation\BlazorShop.Web\wwwroot\css\input.css;..\..\BlazorShop.Presentation\BlazorShop.Web\wwwroot\css\site.css;..\..\BlazorShop.Presentation\BlazorShop.Web\wwwroot\icon-192.png;..\..\BlazorShop.Presentation\BlazorShop.Web\wwwroot\images\banner-bg.jpg">
       <Link>wwwroot\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
