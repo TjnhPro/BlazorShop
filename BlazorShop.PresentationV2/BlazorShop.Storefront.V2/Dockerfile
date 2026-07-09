@@ -16,21 +16,20 @@ COPY BlazorShop.ServiceDefaults/BlazorShop.ServiceDefaults.csproj BlazorShop.Ser
 
 RUN dotnet restore BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj
 
-COPY BlazorShop.Presentation/BlazorShop.Web/package.json BlazorShop.Presentation/BlazorShop.Web/package.json
-COPY BlazorShop.Presentation/BlazorShop.Web/package-lock.json BlazorShop.Presentation/BlazorShop.Web/package-lock.json
+COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package.json BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package.json
+COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package-lock.json BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package-lock.json
 
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2/ BlazorShop.PresentationV2/BlazorShop.Storefront.V2/
-COPY BlazorShop.Presentation/BlazorShop.Web/ BlazorShop.Presentation/BlazorShop.Web/
 COPY BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/ BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/
 COPY BlazorShop.Application/ BlazorShop.Application/
 COPY BlazorShop.Domain/ BlazorShop.Domain/
 COPY BlazorShop.ServiceDefaults/ BlazorShop.ServiceDefaults/
 
-WORKDIR /src/BlazorShop.Presentation/BlazorShop.Web
+WORKDIR /src/BlazorShop.PresentationV2/BlazorShop.Storefront.V2
 
 RUN rm -rf node_modules \
     && npm ci \
-    && npx tailwindcss -c tailwind.config.js -i ./wwwroot/css/input.css -o ./wwwroot/css/site.css --minify
+    && npm run tailwind:build
 
 WORKDIR /src
 

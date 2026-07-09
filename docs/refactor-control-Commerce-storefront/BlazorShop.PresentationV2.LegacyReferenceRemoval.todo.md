@@ -167,26 +167,26 @@ Stop gate:
 
 ## Phase 4 - Remove Build And Runtime Legacy File References
 
-- [ ] Remove this item from `BlazorShop.Storefront.V2.csproj`:
+- [x] Remove this item from `BlazorShop.Storefront.V2.csproj`:
 
 ```xml
 <Content Include="..\..\BlazorShop.Presentation\BlazorShop.Web\wwwroot\**\*">
 ```
 
-- [ ] Remove legacy fallback static file provider from `Program.cs`:
-  - [ ] Delete `CreateStaticFileProvider` legacy path logic.
-  - [ ] Use Storefront V2 `environment.WebRootFileProvider` only.
-  - [ ] Remove `Microsoft.Extensions.FileProviders` usings if no longer needed.
-- [ ] Update Storefront V2 `Dockerfile`:
-  - [ ] Copy `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package*.json`.
-  - [ ] Run `npm ci` from Storefront V2 directory.
-  - [ ] Run Tailwind from Storefront V2 directory.
-  - [ ] Remove all `COPY BlazorShop.Presentation/BlazorShop.Web...` statements.
-  - [ ] Remove `WORKDIR /src/BlazorShop.Presentation/BlazorShop.Web`.
+- [x] Remove legacy fallback static file provider from `Program.cs`:
+  - [x] Delete `CreateStaticFileProvider` legacy path logic.
+  - [x] Use Storefront V2 `environment.WebRootFileProvider` only.
+  - [x] Remove `Microsoft.Extensions.FileProviders` usings if no longer needed.
+- [x] Update Storefront V2 `Dockerfile`:
+  - [x] Copy `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package*.json`.
+  - [x] Run `npm ci` from Storefront V2 directory.
+  - [x] Run Tailwind from Storefront V2 directory.
+  - [x] Remove all `COPY BlazorShop.Presentation/BlazorShop.Web...` statements.
+  - [x] Remove `WORKDIR /src/BlazorShop.Presentation/BlazorShop.Web`.
 
 Stop gate:
 
-- `rg "BlazorShop.Presentation" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 --glob '!**/bin/**' --glob '!**/obj/**'` returns no hits.
+- `rg "BlazorShop\.Presentation[\\/]" BlazorShop.PresentationV2/BlazorShop.Storefront.V2 --glob '!**/bin/**' --glob '!**/obj/**'` returns no hits. 2026-07-09: no Storefront V2 legacy path hits remain outside generated folders.
 
 ## Phase 5 - Replace Legacy Service Discovery Names
 

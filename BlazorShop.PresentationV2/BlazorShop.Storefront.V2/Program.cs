@@ -1,5 +1,3 @@
-using System.IO;
-
 using BlazorShop.Application.Diagnostics;
 using BlazorShop.Application.DTOs.UserIdentity;
 using BlazorShop.Application.Options;
@@ -11,7 +9,6 @@ using BlazorShop.Storefront;
 using BlazorShop.Storefront.Services;
 using BlazorShop.Storefront.Services.Contracts;
 
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Mvc;
 
@@ -60,10 +57,7 @@ builder.Services.AddHttpClient<StorefrontApiClient>((serviceProvider, client) =>
 
 var app = builder.Build();
 
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = CreateStaticFileProvider(app.Environment),
-});
+app.UseStaticFiles();
 app.UseMiddleware<StorefrontPublicRedirectMiddleware>();
 app.Use(async (context, next) =>
 {
@@ -243,24 +237,6 @@ static Uri ResolveApiBaseAddress(IConfiguration configuration)
     }
 
     return new Uri("https+http://apiservice/api/");
-}
-
-static IFileProvider CreateStaticFileProvider(IWebHostEnvironment environment)
-{
-    var fileProviders = new List<IFileProvider>
-    {
-        environment.WebRootFileProvider,
-    };
-
-    var sharedWebRootPath = Path.GetFullPath(Path.Combine(environment.ContentRootPath, "..", "..", "BlazorShop.Presentation", "BlazorShop.Web", "wwwroot"));
-    if (Directory.Exists(sharedWebRootPath))
-    {
-        fileProviders.Add(new PhysicalFileProvider(sharedWebRootPath));
-    }
-
-    return fileProviders.Count == 1
-        ? fileProviders[0]
-        : new CompositeFileProvider(fileProviders);
 }
 
 static IResult CreateClientRedirectResult(IStorefrontClientAppUrlResolver clientAppUrlResolver, string targetPath)
