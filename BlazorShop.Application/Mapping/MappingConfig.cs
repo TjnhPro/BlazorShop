@@ -30,7 +30,8 @@
                 .ForMember(dest => dest.OgImage, opt => opt.MapFrom(src => src.IsPublished ? src.OgImage : null))
                 .ForMember(dest => dest.SeoContent, opt => opt.MapFrom(src => src.IsPublished ? src.SeoContent : null))
                 .ForMember(dest => dest.RobotsIndex, opt => opt.MapFrom(src => src.IsPublished ? src.RobotsIndex : true))
-                .ForMember(dest => dest.RobotsFollow, opt => opt.MapFrom(src => src.IsPublished ? src.RobotsFollow : true));
+                .ForMember(dest => dest.RobotsFollow, opt => opt.MapFrom(src => src.IsPublished ? src.RobotsFollow : true))
+                .ForMember(dest => dest.Products, opt => opt.Ignore());
 
             this.CreateMap<CreateProduct, Product>();
             this.CreateMap<UpdateProduct, Product>();

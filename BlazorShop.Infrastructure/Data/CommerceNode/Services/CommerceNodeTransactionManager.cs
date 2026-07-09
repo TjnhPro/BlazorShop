@@ -2,6 +2,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 {
     using BlazorShop.Application.Services.Contracts;
 
+    using Microsoft.EntityFrameworkCore;
+
     public sealed class CommerceNodeTransactionManager : IApplicationTransactionManager
     {
         private readonly CommerceNodeDbContext context;
@@ -13,18 +15,23 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         public async Task<T> ExecuteInTransactionAsync<T>(Func<Task<T>> action)
         {
-            await using var transaction = await this.context.Database.BeginTransactionAsync();
-            try
+            var executionStrategy = this.context.Database.CreateExecutionStrategy();
+
+            return await executionStrategy.ExecuteAsync(async () =>
             {
-                var result = await action();
-                await transaction.CommitAsync();
-                return result;
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+                await using var transaction = await this.context.Database.BeginTransactionAsync();
+                try
+                {
+                    var result = await action();
+                    await transaction.CommitAsync();
+                    return result;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
         }
     }
 }
