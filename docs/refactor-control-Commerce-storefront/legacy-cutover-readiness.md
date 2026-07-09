@@ -7,7 +7,8 @@ Legacy `BlazorShop.Presentation` remains in the solution until Commerce Node V2 
 ## Dependency Boundary
 
 - `BlazorShop.ControlPlane.API` must not reference legacy presentation projects.
-- `BlazorShop.ControlPlane.Web` may reference `BlazorShop.Web.Shared` only for the approved helper allowlist.
+- V2 web projects must use `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2`, not legacy `BlazorShop.Presentation/BlazorShop.Web.Shared`.
+- Legacy `BlazorShop.Web.Shared` remains available only to legacy `BlazorShop.Presentation` projects.
 - Control Plane feature code belongs under explicit `ControlPlane` namespaces in Application, Infrastructure, Domain, API, Web, and tests.
 - Product, cart, order, payment, category, inventory, media, SEO, and storefront clients remain outside Control Plane.
 
@@ -29,12 +30,12 @@ Do not remove `BlazorShop.Presentation` until:
 2. Commerce Node V2 owns commerce APIs without depending on legacy presentation controllers.
 3. Control Plane operators can manage nodes, credentials, health, stores, actions, and audit logs.
 4. Deployment runbooks and rollback plans exist for Control Plane, Commerce Node V2, and Storefront V2.
-5. Architecture boundary tests pass and no V2 project references legacy presentation code except `BlazorShop.Web.Shared`.
+5. Architecture boundary tests pass and no V2 project references legacy presentation code.
 
 ## Verification Gate
 
 Phase 11 adds architecture tests that fail if:
 
-- PresentationV2 projects reference legacy presentation projects other than `BlazorShop.Web.Shared`.
-- Control Plane Web uses non-allowlisted `BlazorShop.Web.*` namespaces.
+- PresentationV2 projects reference any legacy presentation project.
+- Control Plane Web or Storefront V2 uses legacy `BlazorShop.Web.Shared` namespaces instead of `BlazorShop.Web.SharedV2`.
 - Control Plane tests reference legacy presentation UI or storefront code.

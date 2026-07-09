@@ -56,7 +56,7 @@ User Management la man hinh van hanh quyen truy cap ControlPlane. Day khong phai
 BlazorShop.ControlPlane.Web
   /users page
   IControlPlaneUserClient
-  Reuse BlazorShop.Web.Shared HTTP/token helpers
+  Reuse BlazorShop.Web.SharedV2 HTTP/token helpers
         |
         v
 BlazorShop.ControlPlane.API
@@ -998,4 +998,3 @@ Add or expand these checks in `QA-ControlPlane.todo.md`:
 7. `feat(control-plane): add users web page`
 8. `feat(control-plane): add user management actions ui`
 9. `docs(qa): verify control plane user management`
-

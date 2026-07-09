@@ -8,10 +8,10 @@ ControlPlane la huong phat trien moi, nhung auth nen tan dung cac pattern da co:
 
 - Identity va `IAuthenticationService` trong `BlazorShop.Application`.
 - JWT + refresh token flow hien co.
-- Token/session/browser storage helper trong `BlazorShop.Web.Shared`.
+- Token/session/browser storage helper trong `BlazorShop.Web.SharedV2`.
 - Auth state, route guard, refresh-on-401 pattern da duoc chung minh trong `BlazorShop.Web`.
 
-Khong tham chieu truc tiep `BlazorShop.Web` legacy tu ControlPlane. Neu can dung lai logic UI/client state, tach phan dung chung sang `BlazorShop.Web.Shared` hoac tao adapter ControlPlane nho, ro rang.
+Khong tham chieu truc tiep `BlazorShop.Web` hoac `BlazorShop.Web.Shared` legacy tu ControlPlane. Logic UI/client state dung chung di qua `BlazorShop.Web.SharedV2` hoac adapter ControlPlane nho, ro rang.
 
 ## Quyet dinh kien truc
 
@@ -53,7 +53,7 @@ Phuong an de xuat:
 | --- | --- | --- |
 | CEO/founder | Dung muc tieu nang cap, khong lam lai. Auth la enabling feature cho ControlPlane, khong phai product surface can sang tao lai. | Reuse-first, chi them adapter khi endpoint ControlPlane khac legacy. |
 | Design | Login/logout can ro rang, it ma du thong tin; khong tao landing page. | Trang login truc tiep, layout gon, co error/loading/authenticated state. |
-| Engineering | Rui ro lon nhat la copy auth provider sang V2 roi drift logic. | Tach logic session/auth state dung chung vao `BlazorShop.Web.Shared`, ControlPlane chi giu route/client rieng. |
+| Engineering | Rui ro lon nhat la copy auth provider sang V2 roi drift logic. | Tach logic session/auth state dung chung vao `BlazorShop.Web.SharedV2`, ControlPlane chi giu route/client rieng. |
 | DX | Dev hay loi do sai DB port va cookie secure tren HTTP. | Phase rieng cho docker/config/seed admin va checklist loi thuong gap. |
 
 ## Kien truc muc tieu
@@ -95,13 +95,13 @@ Checklist:
   - `AuthenticationSessionBootstrapper`
   - `AuthenticationSessionSyncService`
   - `ProtectedRouteRedirectResolver`
-- [ ] Ghi lai cac helper dung chung da o `BlazorShop.Web.Shared`:
+- [ ] Ghi lai cac helper dung chung da o `BlazorShop.Web.SharedV2`:
   - `TokenService`
   - `HttpClientHelper`
   - browser storage/cookie services
   - auth DTOs nhu `LoginUser`, `LoginResponse`
 - [ ] Xac nhan ControlPlane khong tham chieu truc tiep `BlazorShop.Web`.
-- [ ] Xac nhan chi duoc reuse qua `BlazorShop.Web.Shared` hoac qua class moi trong `BlazorShop.ControlPlane.Web`.
+- [ ] Xac nhan chi duoc reuse qua `BlazorShop.Web.SharedV2` hoac qua class moi trong `BlazorShop.ControlPlane.Web`.
 
 Output:
 
@@ -143,7 +143,7 @@ Muc tieu: khong duplicate logic session trong ControlPlane.
 
 Checklist:
 
-- [ ] Move hoac extract cac provider generic tu `BlazorShop.Web` sang `BlazorShop.Web.Shared`, neu khong phu thuoc UI legacy:
+- [ ] Move hoac extract cac provider generic tu `BlazorShop.Web` sang `BlazorShop.Web.SharedV2`, neu khong phu thuoc UI legacy:
   - `CustomAuthStateProvider`
   - `RefreshTokenHandler`
   - `BrowserCredentialsHandler`

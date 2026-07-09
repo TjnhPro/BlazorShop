@@ -19,6 +19,8 @@ Status legend:
 - [x] API health endpoint responds. 2026-07-08: verified `GET /api/control-plane/system/info`.
 - [x] Control Plane API does not resolve `AppDbContext`. 2026-07-08: grep verified no `AppDbContext`, `AddSharedAuthenticationInfrastructure`, `AuthConnection`, or `DefaultConnection` usage in ControlPlane API/ControlPlane infrastructure scope.
 - [x] Control Plane clean database does not contain legacy Commerce/Storefront tables. 2026-07-08: QA DB contained `AspNet*`, `RefreshTokens`, and ControlPlane tables only; no `Products`, `Categories`, `Orders`, `PaymentMethods`, `Seo*`, or legacy admin/storefront tables.
+- [x] Control Plane Web references `BlazorShop.Web.SharedV2`, not legacy `BlazorShop.Web.Shared`. 2026-07-09: covered by PresentationV2 boundary tests.
+- [ ] After SharedV2 changes, re-run auth/login smoke and `FullyQualifiedName~ControlPlane`.
 
 ## Open QA Findings
 

@@ -65,6 +65,9 @@ dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrast
 - [x] Robots route is covered by V2 host smoke test.
 - [x] Sitemap route is covered by V2 host smoke test.
 - [x] Empty cart route is covered by V2 host smoke test.
+- [x] Storefront V2 references `BlazorShop.Web.SharedV2`, not legacy `BlazorShop.Web.Shared`.
+  - 2026-07-09: covered by PresentationV2 boundary tests.
+- [ ] After SharedV2 changes, re-run catalog/cart smoke and `FullyQualifiedName~PresentationV2.Storefront`.
 
 ## Runtime Smoke
 

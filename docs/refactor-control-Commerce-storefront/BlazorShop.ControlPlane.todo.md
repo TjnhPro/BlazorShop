@@ -20,7 +20,7 @@ Control Plane is new platform scope: node registry, node credentials, health sna
 5. Layering: Control Plane may reference and extend existing `BlazorShop.Application`, `BlazorShop.Infrastructure`, and `BlazorShop.Domain`.
 6. Dashboard: only a minimal operational summary in the first implementation slice; no charts, alert rules, or advanced analytics until node registry and probes exist.
 7. UI styling: use Tailwind CSS for layout/styling utilities and Font Awesome for icons in `BlazorShop.ControlPlane.Web`.
-8. Web shared helpers: reuse `BlazorShop.Web.Shared` for generic WASM helpers instead of rewriting them, with an explicit allowlist.
+8. Web shared helpers: reuse `BlazorShop.Web.SharedV2` for generic WASM helpers instead of rewriting them, with an explicit allowlist. The earlier `BlazorShop.Web.Shared` reuse decision is superseded because V2 must not depend on legacy presentation.
 
 ## Premises
 
@@ -136,7 +136,7 @@ Recommended API style:
 
 ## Shared Web Helper Reuse
 
-`BlazorShop.ControlPlane.Web` should reuse `BlazorShop.Web.Shared` where the code is generic and not commerce-feature-specific.
+`BlazorShop.ControlPlane.Web` should reuse `BlazorShop.Web.SharedV2` where the code is generic and not commerce-feature-specific.
 
 Allowed reuse:
 
@@ -153,6 +153,7 @@ Do not reuse in Control Plane:
 - Commerce-specific route constants from `Constant`.
 - Commerce-specific models as Control Plane DTOs.
 - Any component or asset that couples Control Plane to legacy `BlazorShop.Presentation` screens.
+- Legacy `BlazorShop.Web.Shared` directly; required helpers must come through `BlazorShop.Web.SharedV2`.
 
 Recommended boundary:
 
@@ -655,7 +656,7 @@ Acceptance:
 - [x] Configure Tailwind CSS for `BlazorShop.ControlPlane.Web`.
 - [x] Configure Font Awesome for `BlazorShop.ControlPlane.Web`.
 - [x] Add projects to solution.
-- [x] Reference `BlazorShop.Web.Shared` from `BlazorShop.ControlPlane.Web` for approved generic helper reuse.
+- [x] Reference shared web helpers for approved generic helper reuse. 2026-07-09: legacy `BlazorShop.Web.Shared` reference was replaced by `BlazorShop.Web.SharedV2`.
 - [x] Register only approved shared helper services: API call, HTTP client, token, browser storage, cookie storage, JS module, toast.
 - [x] Add `BlazorShop.Application/ControlPlane` folder for use cases, DTOs, contracts, validators.
 - [x] Add `BlazorShop.Domain/Entities/ControlPlane` folder for new Control Plane entities.
@@ -674,7 +675,7 @@ Acceptance:
 - Control Plane API starts independently.
 - Control Plane WASM starts independently and can call the API base URL from configuration.
 - Tailwind and Font Awesome load in the WASM project without depending on legacy Presentation assets.
-- Control Plane Web reuses approved `BlazorShop.Web.Shared` helpers without registering commerce feature service clients.
+- Control Plane Web reuses approved `BlazorShop.Web.SharedV2` helpers without registering commerce feature service clients.
 - Control Plane Web does not reference server-only ServiceDefaults.
 - Legacy `BlazorShop.Presentation` remains untouched.
 - Existing shared layers compile with additive ControlPlane folders.
@@ -906,7 +907,7 @@ Verification:
 ### Phase 11 - Legacy Cutover Readiness
 
 - [x] Verify Control Plane does not reference legacy `BlazorShop.Presentation` UI/API/Storefront projects.
-- [x] Verify any `BlazorShop.Web.Shared` dependency is limited to the approved generic helper allowlist.
+- [x] Verify any web shared dependency is limited to the approved generic helper allowlist. 2026-07-09: V2 must use `BlazorShop.Web.SharedV2`, not legacy `BlazorShop.Web.Shared`.
 - [x] Verify Control Plane can reference shared `BlazorShop.Application`, `BlazorShop.Infrastructure`, and `BlazorShop.Domain` only through additive ControlPlane slices and existing reusable auth contracts.
 - [x] Verify Control Plane tests do not depend on legacy admin UI.
 - [x] Decide when Commerce Node V2 starts.
@@ -915,8 +916,8 @@ Verification:
 Implementation notes:
 
 - Added `ControlPlaneArchitectureBoundaryTests` to enforce PresentationV2 dependency boundaries.
-- `BlazorShop.ControlPlane.API` and `BlazorShop.ControlPlane.Web` must not reference legacy presentation projects except the approved `BlazorShop.Web.Shared` helper project.
-- Control Plane Web may use only the explicit `BlazorShop.Web.Shared` helper namespace allowlist.
+- `BlazorShop.ControlPlane.API` and `BlazorShop.ControlPlane.Web` must not reference legacy presentation projects.
+- Control Plane Web may use only the explicit `BlazorShop.Web.SharedV2` helper namespace allowlist.
 - Control Plane tests must not reference legacy presentation UI namespaces.
 - Added `legacy-cutover-readiness.md` to define Commerce Node V2 start conditions and legacy removal conditions.
 

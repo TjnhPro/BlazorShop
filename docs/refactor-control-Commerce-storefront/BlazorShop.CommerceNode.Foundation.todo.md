@@ -200,7 +200,7 @@ Project reference de xuat:
 
 - `BlazorShop.Application` neu can dung shared response contracts.
 - `BlazorShop.Domain` chi khi can model/domain constant.
-- `BlazorShop.Web.Shared` neu co helper response/options/logging dung duoc ma khong keo dependency Web UI khong can thiet.
+- Do not reference legacy `BlazorShop.Web.Shared` from Commerce Node API runtime. Reuse server-side Application/Infrastructure helpers first; copy a small API-safe helper only if needed.
 
 Khong reference `BlazorShop.Presentation`.
 
@@ -427,8 +427,8 @@ feat(commerce-node): add api shell
 - [ ] Tao `CommerceNodeDbContext` rieng cho ecom data boundary, khong dung `AppDbContext`.
 - [ ] Dang ky `CommerceNodeDbContext` bang `CommerceNodeConnection`.
 - [ ] Tai su dung response envelope pattern hien co neu phu hop.
-- [ ] Neu helper trong `BlazorShop.Web.Shared` co the dung ma khong tao dependency xau, thi reference va dung lai.
-- [ ] Neu `BlazorShop.Web.Shared` keo UI/web dependency khong phu hop API runtime, tao helper nho trong Commerce Node va ghi ro ly do.
+- [ ] Neu can helper tu web shared, uu tien copy phan API-safe nho sang boundary phu hop thay vi reference legacy `BlazorShop.Web.Shared`.
+- [ ] Neu legacy `BlazorShop.Web.Shared` keo UI/web dependency khong phu hop API runtime, tao helper nho trong Commerce Node va ghi ro ly do.
 
 Commit de xuat:
 

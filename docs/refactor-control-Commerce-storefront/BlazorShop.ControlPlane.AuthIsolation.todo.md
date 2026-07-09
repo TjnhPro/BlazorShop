@@ -39,7 +39,7 @@ Runtime verification on 2026-07-08 used a clean QA database `blazorshop_controlp
 ```text
 BlazorShop.ControlPlane.Web (Blazor WASM)
   Login / Logout / Protected routes
-  Reuses BlazorShop.Web.Shared auth client helpers
+  Reuses BlazorShop.Web.SharedV2 auth client helpers
         |
         v
 BlazorShop.ControlPlane.API

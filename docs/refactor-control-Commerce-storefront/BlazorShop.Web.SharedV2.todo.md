@@ -446,14 +446,14 @@ test(shared-v2): enforce v2 shared boundary
 
 ## Phase 6 - Documentation And Cutover Notes
 
-- [ ] Update `legacy-cutover-readiness.md`:
-  - [ ] remove exception that allows V2 to reference legacy `BlazorShop.Web.Shared`
-  - [ ] add requirement that V2 references `BlazorShop.Web.SharedV2`
-- [ ] Update `BlazorShop.StorefrontV2.Reuse.todo.md` note:
-  - [ ] prior choice "Keep Web.Shared" is superseded by `SharedV2`
-  - [ ] explain this is copy/reuse isolation, not rewrite
-- [ ] Update ControlPlane docs where they mention `BlazorShop.Web.Shared` helper reuse.
-- [ ] Add final checklist to this file.
+- [x] Update `legacy-cutover-readiness.md`:
+  - [x] remove exception that allows V2 to reference legacy `BlazorShop.Web.Shared`
+  - [x] add requirement that V2 references `BlazorShop.Web.SharedV2`
+- [x] Update `BlazorShop.StorefrontV2.Reuse.todo.md` note:
+  - [x] prior choice "Keep Web.Shared" is superseded by `SharedV2`
+  - [x] explain this is copy/reuse isolation, not rewrite
+- [x] Update ControlPlane docs where they mention `BlazorShop.Web.Shared` helper reuse.
+- [x] Add final checklist to this file.
 
 Verification:
 
@@ -465,6 +465,11 @@ Expected after phase:
 
 - Any remaining doc references to legacy shared must be historical or explicitly marked superseded.
 - No V2 source code should reference `BlazorShop.Web.Shared`.
+
+2026-07-09:
+
+- `rg -n "BlazorShop\.Web\.Shared(?!V2)" BlazorShop.PresentationV2 BlazorShop.Tests/PresentationV2 -S --pcre2` returned no matches.
+- Remaining documentation references are legacy context, superseded decisions, or explicit "not legacy shared" checks.
 
 Commit:
 

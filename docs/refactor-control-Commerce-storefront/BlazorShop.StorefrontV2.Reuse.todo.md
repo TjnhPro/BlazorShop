@@ -15,7 +15,7 @@ This is an MVP migration plan. The goal is speed, low risk, and preserving prove
 | App type | Blazor Server / Razor Components, same as current `BlazorShop.Storefront` |
 | Source baseline | `BlazorShop.Presentation/BlazorShop.Storefront` |
 | API dependency | `BlazorShop.CommerceNode.API` `api/internal/*` |
-| Shared model dependency | Keep `BlazorShop.Web.Shared` |
+| Shared model dependency | Use `BlazorShop.Web.SharedV2` |
 | Legacy Storefront | Keep untouched until explicit cutover/removal phase |
 
 ## Rules
@@ -40,6 +40,7 @@ This is an MVP migration plan. The goal is speed, low risk, and preserving prove
   - `/sitemap.xml`
 - V2 must call Commerce Node internal routes first.
 - Legacy API fallback may exist only as a temporary rollback switch and must be disabled by default in V2.
+- The earlier MVP choice to keep `BlazorShop.Web.Shared` is superseded by `BlazorShop.Web.SharedV2`; this is copy/reuse isolation, not a Storefront rewrite.
 
 ## Autoplan Review Summary
 
@@ -93,7 +94,7 @@ Developer setup should stay simple:
 | `Options/*` and validators | Copy as-is. |
 | `wwwroot/css/storefront.css` | Copy as-is. |
 | `wwwroot/js/storefrontCommerce.js` | Copy as-is for cookie cart MVP. |
-| `BlazorShop.Web.Shared` models | Keep reference. |
+| `BlazorShop.Web.Shared` models | Copy/reuse the required models through `BlazorShop.Web.SharedV2`; do not reference legacy shared from V2. |
 | `BlazorShop.Web/wwwroot` shared assets | Keep copy/link behavior initially. |
 | Storefront tests | Duplicate or parameterize only after V2 project builds. |
 
@@ -514,7 +515,7 @@ Commit gate:
 - Removing legacy Storefront.
 - Removing legacy Storefront API fallback from old Storefront.
 - Redesigning UI or design system.
-- Replacing `BlazorShop.Web.Shared`.
+- Replacing `BlazorShop.Web.Shared` directly in this MVP plan. 2026-07-09: this was superseded by `BlazorShop.Web.SharedV2` to isolate V2 from legacy presentation while preserving copy/reuse behavior.
 
 ## Risks And Controls
 
@@ -533,7 +534,7 @@ Commit gate:
 | # | Decision | Classification | Rationale |
 |---|---|---|---|
 | 1 | Create `BlazorShop.Storefront.V2` as copy-first project | Auto-decided | Fastest MVP path and avoids breaking legacy Storefront. |
-| 2 | Keep `BlazorShop.Web.Shared` | Auto-decided | Storefront already depends on shared models; rewriting would add risk. |
+| 2 | Keep `BlazorShop.Web.Shared` temporarily | Superseded | 2026-07-09: replaced by `BlazorShop.Web.SharedV2`; required models/helpers are copied/reused, not rewritten. |
 | 3 | Disable legacy fallback by default in V2 | Auto-decided | V2 exists to prove Commerce Node parity, not hide failures with legacy API. |
 | 4 | Keep cookie cart for MVP | Auto-decided | Current cart works and is already covered by tests; server cart is future scope. |
 | 5 | Keep checkout handoff to client app | Auto-decided | Moving checkout UI would expand scope beyond Storefront copy/reuse. |
