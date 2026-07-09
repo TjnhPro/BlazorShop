@@ -11,8 +11,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using BlazorShop.Application.DTOs.Admin.Settings;
     using BlazorShop.Application.Services.Contracts.Admin;
     using BlazorShop.Domain.Entities;
+    using BlazorShop.Domain.Entities.CommerceNode;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Options;
 
@@ -34,25 +36,29 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly IHostEnvironment environment;
         private readonly ICommerceNodeAuditActorAccessor actorAccessor;
         private readonly IAdminAuditService auditService;
+        private readonly IMemoryCache memoryCache;
 
         public CommerceNodeAdminSettingsService(
             CommerceNodeDbContext context,
             IOptions<EmailSettings> emailSettings,
             IHostEnvironment environment,
             ICommerceNodeAuditActorAccessor actorAccessor,
-            IAdminAuditService auditService)
+            IAdminAuditService auditService,
+            IMemoryCache memoryCache)
         {
             this.context = context;
             this.emailSettings = emailSettings.Value;
             this.environment = environment;
             this.actorAccessor = actorAccessor;
             this.auditService = auditService;
+            this.memoryCache = memoryCache;
         }
 
         public async Task<AdminSettingsDto> GetAsync()
         {
             var settings = await this.GetOrCreateAsync();
-            return this.Map(settings);
+            var store = await this.GetSettingsStoreAsync();
+            return this.Map(settings, store);
         }
 
         public async Task<ServiceResponse<StoreSettingsDto>> UpdateStoreAsync(UpdateStoreSettingsDto request)
@@ -66,19 +72,22 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var settings = await this.GetOrCreateAsync();
-            settings.StoreName = request.StoreName.Trim();
-            settings.StoreSupportEmail = Normalize(request.StoreSupportEmail);
-            settings.StoreSupportPhone = Normalize(request.StoreSupportPhone);
-            settings.DefaultCurrency = request.DefaultCurrency.Trim().ToUpperInvariant();
-            settings.DefaultCulture = request.DefaultCulture.Trim();
-            settings.MaintenanceModeEnabled = request.MaintenanceModeEnabled;
-            settings.MaintenanceMessage = Normalize(request.MaintenanceMessage);
+            var store = await this.GetOrCreateSettingsStoreAsync(settings);
+            store.Name = request.StoreName.Trim();
+            store.SupportEmail = NormalizeNullable(request.StoreSupportEmail);
+            store.SupportPhone = NormalizeNullable(request.StoreSupportPhone);
+            store.DefaultCurrencyCode = request.DefaultCurrency.Trim().ToUpperInvariant();
+            store.DefaultCulture = request.DefaultCulture.Trim();
+            store.MaintenanceModeEnabled = request.MaintenanceModeEnabled;
+            store.MaintenanceMessage = NormalizeNullable(request.MaintenanceMessage);
+            store.UpdatedAt = DateTimeOffset.UtcNow;
             this.Touch(settings);
 
             await this.context.SaveChangesAsync();
-            await this.LogAsync("AdminSettings.StoreUpdated", "Store settings updated.", settings);
+            this.InvalidateStoreCache(store);
+            await this.LogAsync("CommerceStore.SettingsUpdated", "Store settings updated.", settings, store);
 
-            return Success(this.MapStore(settings), "Store settings updated successfully.");
+            return Success(this.MapStore(settings, store), "Store settings updated successfully.");
         }
 
         public async Task<ServiceResponse<OrderSettingsDto>> UpdateOrdersAsync(UpdateOrderSettingsDto request)
@@ -148,11 +157,66 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return settings;
         }
 
-        private AdminSettingsDto Map(AdminSettings settings)
+        private async Task<CommerceStore?> GetSettingsStoreAsync()
+        {
+            var defaultStore = await this.context.CommerceStores
+                .AsNoTracking()
+                .Include(store => store.Domains)
+                .Where(store => store.ArchivedAt == null && store.StoreKey == "default")
+                .FirstOrDefaultAsync();
+            if (defaultStore is not null)
+            {
+                return defaultStore;
+            }
+
+            var activeStores = await this.context.CommerceStores
+                .AsNoTracking()
+                .Include(store => store.Domains)
+                .Where(store => store.ArchivedAt == null && store.Status == CommerceStoreStatuses.Active)
+                .Take(2)
+                .ToListAsync();
+
+            return activeStores.Count == 1 ? activeStores[0] : null;
+        }
+
+        private async Task<CommerceStore> GetOrCreateSettingsStoreAsync(AdminSettings settings)
+        {
+            var store = await this.context.CommerceStores
+                .Include(item => item.Domains)
+                .Where(item => item.ArchivedAt == null && item.StoreKey == "default")
+                .FirstOrDefaultAsync();
+            if (store is not null)
+            {
+                return store;
+            }
+
+            var now = DateTimeOffset.UtcNow;
+            store = new CommerceStore
+            {
+                Id = Guid.NewGuid(),
+                PublicId = Guid.NewGuid(),
+                StoreKey = "default",
+                Name = string.IsNullOrWhiteSpace(settings.StoreName) ? "BlazorShop" : settings.StoreName.Trim(),
+                Status = CommerceStoreStatuses.Active,
+                DefaultCurrencyCode = string.IsNullOrWhiteSpace(settings.DefaultCurrency) ? "USD" : settings.DefaultCurrency.Trim().ToUpperInvariant(),
+                DefaultCulture = string.IsNullOrWhiteSpace(settings.DefaultCulture) ? "en-US" : settings.DefaultCulture.Trim(),
+                SupportEmail = NormalizeNullable(settings.StoreSupportEmail),
+                SupportPhone = NormalizeNullable(settings.StoreSupportPhone),
+                MaintenanceModeEnabled = settings.MaintenanceModeEnabled,
+                MaintenanceMessage = NormalizeNullable(settings.MaintenanceMessage),
+                CreatedAt = now,
+                UpdatedAt = now,
+            };
+
+            this.context.CommerceStores.Add(store);
+            return store;
+        }
+
+        private AdminSettingsDto Map(AdminSettings settings, CommerceStore? store)
         {
             return new AdminSettingsDto
             {
-                Store = this.MapStore(settings),
+                Store = this.MapStore(settings, store),
                 Orders = this.MapOrders(settings),
                 Notifications = this.MapNotifications(settings),
                 System = new SystemSettingsDto
@@ -165,8 +229,22 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             };
         }
 
-        private StoreSettingsDto MapStore(AdminSettings settings)
+        private StoreSettingsDto MapStore(AdminSettings settings, CommerceStore? store)
         {
+            if (store is not null)
+            {
+                return new StoreSettingsDto
+                {
+                    StoreName = store.Name,
+                    StoreSupportEmail = store.SupportEmail ?? string.Empty,
+                    StoreSupportPhone = store.SupportPhone ?? string.Empty,
+                    DefaultCurrency = store.DefaultCurrencyCode,
+                    DefaultCulture = store.DefaultCulture,
+                    MaintenanceModeEnabled = store.MaintenanceModeEnabled,
+                    MaintenanceMessage = store.MaintenanceMessage ?? string.Empty,
+                };
+            }
+
             return new StoreSettingsDto
             {
                 StoreName = settings.StoreName,
@@ -208,16 +286,26 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             settings.UpdatedByUserId = this.actorAccessor.GetCurrentActor().ActorUserId;
         }
 
-        private async Task LogAsync(string action, string summary, AdminSettings settings)
+        private void InvalidateStoreCache(CommerceStore store)
+        {
+            this.memoryCache.Remove($"commerce-store:key:{store.StoreKey}");
+            foreach (var domain in store.Domains)
+            {
+                this.memoryCache.Remove($"commerce-store:host:{domain.NormalizedDomain}");
+            }
+        }
+
+        private async Task LogAsync(string action, string summary, AdminSettings settings, CommerceStore? store = null)
         {
             var metadata = JsonSerializer.Serialize(new
             {
-                settings.StoreName,
-                settings.DefaultCurrency,
-                settings.DefaultCulture,
+                StoreKey = store?.StoreKey,
+                StoreName = store?.Name ?? settings.StoreName,
+                DefaultCurrency = store?.DefaultCurrencyCode ?? settings.DefaultCurrency,
+                DefaultCulture = store?.DefaultCulture ?? settings.DefaultCulture,
                 settings.DefaultShippingStatus,
                 settings.OrderReferencePrefix,
-                settings.MaintenanceModeEnabled,
+                MaintenanceModeEnabled = store?.MaintenanceModeEnabled ?? settings.MaintenanceModeEnabled,
             });
 
             await this.auditService.LogAsync(new CreateAdminAuditLogDto
@@ -310,6 +398,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private static string Normalize(string? value)
         {
             return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+        }
+
+        private static string? NormalizeNullable(string? value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
 
         private static ServiceResponse<TPayload> Success<TPayload>(TPayload payload, string message)

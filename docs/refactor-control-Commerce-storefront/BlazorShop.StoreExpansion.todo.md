@@ -543,13 +543,15 @@ Stop gate:
 
 ### Phase 8 - Replace Global AdminSettings Store Fields
 
-- [ ] Keep `AdminSettings` for order/notification/system settings.
-- [ ] Move store name/support/currency/culture/maintenance reads to `CommerceStore`.
-- [ ] Keep compatibility mapping temporarily for existing settings API.
-- [ ] Update `CommerceAdminSettingsController` to either:
+- [x] Keep `AdminSettings` for order/notification/system settings.
+- [x] Move store name/support/currency/culture/maintenance reads to `CommerceStore`.
+- [x] Keep compatibility mapping temporarily for existing settings API.
+- [x] Update `CommerceAdminSettingsController` to either:
   - redirect store settings to `CommerceStoresController`, or
   - expose only non-store settings.
-- [ ] Add regression tests.
+- [x] Add regression tests.
+
+2026-07-09 verification: `api/commerce/admin/settings/store` remains as a compatibility endpoint, but writes the `default` `CommerceStore`. `GET api/internal/store/current` with `X-Store-Key: default` returns the updated store name/currency/culture/maintenance values.
 
 Stop gate:
 
