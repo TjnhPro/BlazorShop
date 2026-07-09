@@ -84,6 +84,58 @@ namespace BlazorShop.Tests.Application.Services
             _productReadRepository.Verify(repository => repository.GetPublishedProductsByCategoryAsync(It.IsAny<Guid>()), Times.Never);
         }
 
+        [Fact]
+        public async Task GetPublishedSitemapAsync_LoadsRepositoriesSequentially()
+        {
+            var categoryFinished = false;
+            var productStartedBeforeCategoryFinished = false;
+            var categoryLastModified = new DateTime(2026, 7, 9, 0, 0, 0, DateTimeKind.Utc);
+            var productLastModified = new DateTime(2026, 7, 9, 1, 0, 0, DateTimeKind.Utc);
+
+            _categoryRepository
+                .Setup(repository => repository.GetPublishedCategorySitemapEntriesAsync())
+                .Returns(async () =>
+                {
+                    await Task.Yield();
+                    categoryFinished = true;
+
+                    return
+                    [
+                        new PublishedCategorySitemapEntryReadModel
+                        {
+                            Slug = "qa-category",
+                            LastModifiedUtc = categoryLastModified,
+                        },
+                    ];
+                });
+
+            _productReadRepository
+                .Setup(repository => repository.GetPublishedProductSitemapEntriesAsync())
+                .ReturnsAsync(() =>
+                {
+                    productStartedBeforeCategoryFinished = !categoryFinished;
+
+                    return
+                    [
+                        new PublishedProductSitemapEntryReadModel
+                        {
+                            Slug = "qa-product",
+                            LastModifiedUtc = productLastModified,
+                        },
+                    ];
+                });
+
+            var service = CreateService();
+
+            var result = await service.GetPublishedSitemapAsync();
+
+            Assert.False(productStartedBeforeCategoryFinished);
+            Assert.Single(result.Categories);
+            Assert.Equal("qa-category", result.Categories[0].Slug);
+            Assert.Single(result.Products);
+            Assert.Equal("qa-product", result.Products[0].Slug);
+        }
+
         private PublicCatalogService CreateService()
         {
             return new PublicCatalogService(
