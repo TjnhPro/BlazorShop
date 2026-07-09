@@ -2,6 +2,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
 {
     using System.Security.Claims;
 
+    using BlazorShop.Application.CommerceNode.Tasks;
     using BlazorShop.Application.ControlPlane.Audit;
     using BlazorShop.Application.ControlPlane.Security;
     using BlazorShop.Application.ControlPlane.Stores;
@@ -16,13 +17,16 @@ namespace BlazorShop.ControlPlane.API.Controllers
     public sealed class ControlPlaneStoresController : ControllerBase
     {
         private readonly IControlPlaneStoreService storeService;
+        private readonly IControlPlaneStoreDeploymentService deploymentService;
         private readonly IControlPlaneAuditService auditService;
 
         public ControlPlaneStoresController(
             IControlPlaneStoreService storeService,
+            IControlPlaneStoreDeploymentService deploymentService,
             IControlPlaneAuditService auditService)
         {
             this.storeService = storeService;
+            this.deploymentService = deploymentService;
             this.auditService = auditService;
         }
 
@@ -107,6 +111,62 @@ namespace BlazorShop.ControlPlane.API.Controllers
             return ToActionResult(result);
         }
 
+        [HttpPost("{publicId:guid}/deployment-tasks")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> ProvisionStore(
+            Guid publicId,
+            DeployControlPlaneStoreRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await this.deploymentService.ProvisionAsync(publicId, request, cancellationToken);
+            await this.WriteDeploymentAuditAsync("stores.deployment.submit", publicId, result.Success, result.Message, cancellationToken);
+            return ToDeploymentActionResult(result);
+        }
+
+        [HttpGet("{publicId:guid}/deployment-tasks/{taskPublicId:guid}")]
+        public async Task<IActionResult> GetDeploymentTask(
+            Guid publicId,
+            Guid taskPublicId,
+            CancellationToken cancellationToken)
+        {
+            var result = await this.deploymentService.GetTaskAsync(publicId, taskPublicId, cancellationToken);
+            return ToDeploymentActionResult(result);
+        }
+
+        [HttpPost("{publicId:guid}/deployment-tasks/{taskPublicId:guid}/cancel")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> CancelDeploymentTask(
+            Guid publicId,
+            Guid taskPublicId,
+            CancelCommerceTaskRequest? request,
+            CancellationToken cancellationToken)
+        {
+            var result = await this.deploymentService.CancelTaskAsync(
+                publicId,
+                taskPublicId,
+                request ?? new CancelCommerceTaskRequest(),
+                cancellationToken);
+            await this.WriteDeploymentAuditAsync("stores.deployment.cancel", publicId, result.Success, result.Message, cancellationToken);
+            return ToDeploymentActionResult(result);
+        }
+
+        [HttpPost("{publicId:guid}/deployment-tasks/{taskPublicId:guid}/retry")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> RetryDeploymentTask(
+            Guid publicId,
+            Guid taskPublicId,
+            RetryCommerceTaskRequest? request,
+            CancellationToken cancellationToken)
+        {
+            var result = await this.deploymentService.RetryTaskAsync(
+                publicId,
+                taskPublicId,
+                request ?? new RetryCommerceTaskRequest(),
+                cancellationToken);
+            await this.WriteDeploymentAuditAsync("stores.deployment.retry", publicId, result.Success, result.Message, cancellationToken);
+            return ToDeploymentActionResult(result);
+        }
+
         private IActionResult ToActionResult(ControlPlaneStoreOperationResult<ControlPlaneStoreDetail> result)
         {
             if (result.Success)
@@ -126,6 +186,27 @@ namespace BlazorShop.ControlPlane.API.Controllers
             };
         }
 
+        private static IActionResult ToDeploymentActionResult<TPayload>(
+            ControlPlaneStoreDeploymentOperationResult<TPayload> result)
+        {
+            if (result.Success)
+            {
+                return ControlPlaneApiResponseWriter.Success(
+                    StatusCodes.Status200OK,
+                    result.Payload,
+                    string.IsNullOrWhiteSpace(result.Message) ? "Deployment task request completed." : result.Message);
+            }
+
+            return result.Failure switch
+            {
+                ControlPlaneStoreDeploymentOperationFailure.NotFound => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status404NotFound, result.Message, result.Payload),
+                ControlPlaneStoreDeploymentOperationFailure.Conflict => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status409Conflict, result.Message, result.Payload),
+                ControlPlaneStoreDeploymentOperationFailure.Validation => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message, result.Payload),
+                ControlPlaneStoreDeploymentOperationFailure.RemoteFailure => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status502BadGateway, result.Message, result.Payload),
+                _ => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message, result.Payload)
+            };
+        }
+
         private async Task WriteStoreAuditAsync(
             string action,
             ControlPlaneStoreOperationResult<ControlPlaneStoreDetail> result,
@@ -141,6 +222,27 @@ namespace BlazorShop.ControlPlane.API.Controllers
                     ActorEmail: User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue("email"),
                     EntityPublicId: store?.PublicId.ToString(),
                     MetadataJson: store is null ? null : $$"""{"storeKey":"{{store.StoreKey}}","nodePublicId":"{{store.NodePublicId}}"}""",
+                    IpAddress: HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    UserAgent: Request.Headers.UserAgent.ToString()),
+                cancellationToken);
+        }
+
+        private async Task WriteDeploymentAuditAsync(
+            string action,
+            Guid storePublicId,
+            bool success,
+            string? message,
+            CancellationToken cancellationToken)
+        {
+            await this.auditService.WriteAsync(
+                new ControlPlaneAuditEntry(
+                    Action: action,
+                    EntityType: "store_deployment_task",
+                    Result: success ? "success" : "failure",
+                    ActorIdentityUserId: User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("nameid") ?? User.FindFirstValue("sub"),
+                    ActorEmail: User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue("email"),
+                    EntityPublicId: storePublicId.ToString(),
+                    MetadataJson: string.IsNullOrWhiteSpace(message) ? null : $$"""{"message":"{{message.Replace("\"", "\\\"", StringComparison.Ordinal)}}"}""",
                     IpAddress: HttpContext.Connection.RemoteIpAddress?.ToString(),
                     UserAgent: Request.Headers.UserAgent.ToString()),
                 cancellationToken);

@@ -1,0 +1,290 @@
+namespace BlazorShop.Infrastructure.Data.ControlPlane
+{
+    using System.Text.Json;
+
+    using BlazorShop.Application.CommerceNode.Tasks;
+    using BlazorShop.Application.ControlPlane.Stores;
+    using BlazorShop.Domain.Entities.ControlPlane;
+
+    using Microsoft.EntityFrameworkCore;
+
+    public sealed class ControlPlaneStoreDeploymentService : IControlPlaneStoreDeploymentService
+    {
+        private const string ControlApiEndpointKind = "control_api";
+        private const string StoreCreateAndDeployTaskType = "store.create_and_deploy";
+
+        private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
+
+        private readonly ControlPlaneDbContext dbContext;
+        private readonly ICommerceNodeTaskClient taskClient;
+
+        public ControlPlaneStoreDeploymentService(
+            ControlPlaneDbContext dbContext,
+            ICommerceNodeTaskClient taskClient)
+        {
+            this.dbContext = dbContext;
+            this.taskClient = taskClient;
+        }
+
+        public async Task<ControlPlaneStoreDeploymentOperationResult<CommerceTaskSummary>> ProvisionAsync(
+            Guid storePublicId,
+            DeployControlPlaneStoreRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var store = await this.LoadStoreAsync(storePublicId, cancellationToken);
+            var validation = ValidateStoreForRemoteCall(store);
+            if (validation is not null)
+            {
+                return validation.ToResult<CommerceTaskSummary>();
+            }
+
+            var payloadValidation = ValidateProvisionRequest(request);
+            if (payloadValidation is not null)
+            {
+                return ValidationFailed<CommerceTaskSummary>(payloadValidation);
+            }
+
+            var primaryDomain = string.IsNullOrWhiteSpace(request.PrimaryDomain)
+                ? SelectPrimaryDomain(store!)
+                : request.PrimaryDomain.Trim();
+
+            if (string.IsNullOrWhiteSpace(primaryDomain))
+            {
+                return ValidationFailed<CommerceTaskSummary>("Store must have a domain or PrimaryDomain must be provided.");
+            }
+
+            var baseUrl = string.IsNullOrWhiteSpace(request.BaseUrl)
+                ? $"https://{NormalizeDomain(primaryDomain)}"
+                : request.BaseUrl.Trim();
+
+            var payloadJson = JsonSerializer.Serialize(
+                new
+                {
+                    schemaVersion = "v1",
+                    controlPlaneStorePublicId = store!.PublicId,
+                    storeKey = store.StoreKey,
+                    name = store.Name,
+                    primaryDomain,
+                    baseUrl,
+                    defaultCurrencyCode = request.DefaultCurrencyCode.Trim().ToUpperInvariant(),
+                    defaultCulture = request.DefaultCulture.Trim(),
+                    storefrontImage = request.StorefrontImage.Trim(),
+                    networkName = request.NetworkName,
+                },
+                SerializerOptions);
+
+            var clientResult = await this.taskClient.EnqueueAsync(
+                GetControlApiUrl(store.Node!),
+                store.Node!.NodeKey,
+                store.Node.NodeSecret!,
+                new EnqueueCommerceTaskRequest(
+                    StoreCreateAndDeployTaskType,
+                    IdempotencyKey: $"store:{store.PublicId:D}:create-and-deploy",
+                    PayloadSchemaVersion: "v1",
+                    PayloadJson: payloadJson,
+                    LockKey: $"store:{store.StoreKey}",
+                    MaxAttempts: 1,
+                    CreatedBy: "control-plane"),
+                cancellationToken);
+
+            return FromClientResult(clientResult);
+        }
+
+        public async Task<ControlPlaneStoreDeploymentOperationResult<CommerceTaskDetail>> GetTaskAsync(
+            Guid storePublicId,
+            Guid taskPublicId,
+            CancellationToken cancellationToken = default)
+        {
+            var store = await this.LoadStoreAsync(storePublicId, cancellationToken);
+            var validation = ValidateStoreForRemoteCall(store);
+            if (validation is not null)
+            {
+                return validation.ToResult<CommerceTaskDetail>();
+            }
+
+            return FromClientResult(await this.taskClient.GetAsync(
+                GetControlApiUrl(store!.Node!),
+                store.Node!.NodeKey,
+                store.Node.NodeSecret!,
+                taskPublicId,
+                cancellationToken));
+        }
+
+        public async Task<ControlPlaneStoreDeploymentOperationResult<CommerceTaskDetail>> CancelTaskAsync(
+            Guid storePublicId,
+            Guid taskPublicId,
+            CancelCommerceTaskRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var store = await this.LoadStoreAsync(storePublicId, cancellationToken);
+            var validation = ValidateStoreForRemoteCall(store);
+            if (validation is not null)
+            {
+                return validation.ToResult<CommerceTaskDetail>();
+            }
+
+            return FromClientResult(await this.taskClient.CancelAsync(
+                GetControlApiUrl(store!.Node!),
+                store.Node!.NodeKey,
+                store.Node.NodeSecret!,
+                taskPublicId,
+                request,
+                cancellationToken));
+        }
+
+        public async Task<ControlPlaneStoreDeploymentOperationResult<CommerceTaskDetail>> RetryTaskAsync(
+            Guid storePublicId,
+            Guid taskPublicId,
+            RetryCommerceTaskRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var store = await this.LoadStoreAsync(storePublicId, cancellationToken);
+            var validation = ValidateStoreForRemoteCall(store);
+            if (validation is not null)
+            {
+                return validation.ToResult<CommerceTaskDetail>();
+            }
+
+            return FromClientResult(await this.taskClient.RetryAsync(
+                GetControlApiUrl(store!.Node!),
+                store.Node!.NodeKey,
+                store.Node.NodeSecret!,
+                taskPublicId,
+                request,
+                cancellationToken));
+        }
+
+        private async Task<StoreRegistry?> LoadStoreAsync(Guid publicId, CancellationToken cancellationToken)
+        {
+            return await this.dbContext.Stores
+                .AsNoTracking()
+                .Include(store => store.Node)
+                    .ThenInclude(node => node!.Endpoints)
+                .Include(store => store.Domains)
+                .FirstOrDefaultAsync(store => store.PublicId == publicId, cancellationToken);
+        }
+
+        private static StoreValidationFailure? ValidateStoreForRemoteCall(StoreRegistry? store)
+        {
+            if (store is null)
+            {
+                return new StoreValidationFailure(ControlPlaneStoreDeploymentOperationFailure.NotFound, "Store was not found.");
+            }
+
+            if (store.Status == "archived")
+            {
+                return new StoreValidationFailure(ControlPlaneStoreDeploymentOperationFailure.Validation, "Archived stores cannot be deployed.");
+            }
+
+            if (store.Node is null || store.Node.Status == "disabled")
+            {
+                return new StoreValidationFailure(ControlPlaneStoreDeploymentOperationFailure.Validation, "Store node is missing or disabled.");
+            }
+
+            if (string.IsNullOrWhiteSpace(store.Node.NodeSecret))
+            {
+                return new StoreValidationFailure(ControlPlaneStoreDeploymentOperationFailure.Validation, "Store node does not have a node secret configured.");
+            }
+
+            if (string.IsNullOrWhiteSpace(GetControlApiUrl(store.Node)))
+            {
+                return new StoreValidationFailure(ControlPlaneStoreDeploymentOperationFailure.Validation, "Store node does not have an active Control API endpoint.");
+            }
+
+            return null;
+        }
+
+        private static string? ValidateProvisionRequest(DeployControlPlaneStoreRequest request)
+        {
+            if (request is null)
+            {
+                return "Request body is required.";
+            }
+
+            if (string.IsNullOrWhiteSpace(request.StorefrontImage))
+            {
+                return "Storefront image is required.";
+            }
+
+            if (string.IsNullOrWhiteSpace(request.DefaultCurrencyCode) || request.DefaultCurrencyCode.Trim().Length != 3)
+            {
+                return "Default currency code must be a 3-letter code.";
+            }
+
+            if (string.IsNullOrWhiteSpace(request.DefaultCulture))
+            {
+                return "Default culture is required.";
+            }
+
+            return null;
+        }
+
+        private static string? SelectPrimaryDomain(StoreRegistry store)
+        {
+            return store.Domains
+                .Where(domain => domain.DisabledAt is null)
+                .OrderByDescending(domain => domain.Status == "verified")
+                .ThenBy(domain => domain.Id)
+                .Select(domain => domain.NormalizedDomain)
+                .FirstOrDefault();
+        }
+
+        private static string GetControlApiUrl(CommerceNode node)
+        {
+            return node.Endpoints.FirstOrDefault(endpoint =>
+                endpoint.Kind == ControlApiEndpointKind &&
+                endpoint.IsPrimary &&
+                endpoint.DisabledAt is null)?.Url ?? string.Empty;
+        }
+
+        private static string NormalizeDomain(string domain)
+        {
+            var normalized = domain.Trim().ToLowerInvariant();
+            if (Uri.TryCreate(normalized, UriKind.Absolute, out var uri))
+            {
+                normalized = uri.Host;
+            }
+
+            return normalized.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? normalized;
+        }
+
+        private static ControlPlaneStoreDeploymentOperationResult<TPayload> FromClientResult<TPayload>(
+            CommerceNodeTaskClientResult<TPayload> clientResult)
+        {
+            if (clientResult.Success)
+            {
+                return new ControlPlaneStoreDeploymentOperationResult<TPayload>(
+                    true,
+                    clientResult.Message,
+                    clientResult.Payload);
+            }
+
+            return new ControlPlaneStoreDeploymentOperationResult<TPayload>(
+                false,
+                clientResult.Message,
+                clientResult.Payload,
+                ControlPlaneStoreDeploymentOperationFailure.RemoteFailure);
+        }
+
+        private static ControlPlaneStoreDeploymentOperationResult<TPayload> ValidationFailed<TPayload>(string message)
+        {
+            return new ControlPlaneStoreDeploymentOperationResult<TPayload>(
+                false,
+                message,
+                Failure: ControlPlaneStoreDeploymentOperationFailure.Validation);
+        }
+
+        private sealed record StoreValidationFailure(
+            ControlPlaneStoreDeploymentOperationFailure Failure,
+            string Message)
+        {
+            public ControlPlaneStoreDeploymentOperationResult<TPayload> ToResult<TPayload>()
+            {
+                return new ControlPlaneStoreDeploymentOperationResult<TPayload>(
+                    false,
+                    this.Message,
+                    Failure: this.Failure);
+            }
+        }
+    }
+}

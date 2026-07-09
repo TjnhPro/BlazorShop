@@ -59,12 +59,19 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             services.AddScoped<IControlPlaneDashboardService, ControlPlaneDashboardService>();
             services.AddScoped<IControlPlaneHealthService, ControlPlaneHealthService>();
             services.AddScoped<IControlPlaneStoreService, ControlPlaneStoreService>();
+            services.AddScoped<IControlPlaneStoreDeploymentService, ControlPlaneStoreDeploymentService>();
             services.AddScoped<IControlPlaneUserManagementService, ControlPlaneUserManagementService>();
             services.AddHostedService<ControlPlaneProbeBackgroundService>();
             services.AddHttpClient<ICommerceNodeControlClient, CommerceNodeControlClient>(
                 client =>
                 {
                     var timeoutSeconds = Math.Clamp(configuration.GetValue("ControlPlane:Probes:TimeoutSeconds", 10), 1, 60);
+                    client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
+                });
+            services.AddHttpClient<ICommerceNodeTaskClient, CommerceNodeTaskClient>(
+                client =>
+                {
+                    var timeoutSeconds = Math.Clamp(configuration.GetValue("ControlPlane:Tasks:TimeoutSeconds", 30), 1, 120);
                     client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
                 });
 

@@ -447,11 +447,11 @@ Stop gate:
 
 ### Phase 7 - ControlPlane Integration
 
-- [ ] ControlPlane submits store deployment task through CommerceNode API.
-- [ ] ControlPlane queries task status through CommerceNode API.
-- [ ] ControlPlane can request cancel/retry.
-- [ ] ControlPlane does not store task state locally.
-- [ ] Add audit logs for submit/cancel/retry actions.
+- [x] ControlPlane submits store deployment task through CommerceNode API.
+- [x] ControlPlane queries task status through CommerceNode API.
+- [x] ControlPlane can request cancel/retry.
+- [x] ControlPlane does not store task state locally.
+- [x] Add audit logs for submit/cancel/retry actions.
 
 Stop gate:
 
