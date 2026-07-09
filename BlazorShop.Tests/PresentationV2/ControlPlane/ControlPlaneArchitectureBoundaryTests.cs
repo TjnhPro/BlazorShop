@@ -1,5 +1,6 @@
 namespace BlazorShop.Tests.PresentationV2.ControlPlane
 {
+    using System.Text.RegularExpressions;
     using System.Xml.Linq;
 
     using Xunit;
@@ -24,6 +25,31 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
                     .Where(reference => reference.Contains("BlazorShop.Presentation\\", StringComparison.OrdinalIgnoreCase)
                                         || reference.Contains("BlazorShop.Presentation/", StringComparison.OrdinalIgnoreCase))
                     .Select(reference => $"{project.Name} -> {reference}"))
+                .ToArray();
+
+            Assert.Empty(invalidReferences);
+        }
+
+        [Fact]
+        public void PresentationV2Source_DoesNotContainLegacyRuntimeReferences()
+        {
+            var root = FindRepositoryRoot();
+            var sourceRoot = root.CombinePath("BlazorShop.PresentationV2");
+            var forbiddenReferences = new[]
+            {
+                new ForbiddenReference(new Regex(@"BlazorShop\.Presentation[\\/]", RegexOptions.IgnoreCase), "legacy Presentation path"),
+                new ForbiddenReference(new Regex(@"\bBlazorShop\.API\b"), "legacy API namespace"),
+                new ForbiddenReference(new Regex(@"\bBlazorShop\.Web\.Shared(?!V2)\b"), "legacy Web.Shared namespace"),
+                new ForbiddenReference(new Regex(@"\bBlazorShop\.Web\b(?!\.SharedV2)"), "legacy Web namespace"),
+                new ForbiddenReference(new Regex("adminclient", RegexOptions.IgnoreCase), "legacy adminclient service discovery")
+            };
+
+            var invalidReferences = EnumerateBoundarySourceFiles(sourceRoot)
+                .SelectMany(path => File.ReadLines(path)
+                    .Select((line, index) => new { Path = path, Line = line, Number = index + 1 }))
+                .SelectMany(item => forbiddenReferences
+                    .Where(reference => reference.Pattern.IsMatch(item.Line))
+                    .Select(reference => $"{Path.GetRelativePath(root.FullName, item.Path)}:{item.Number}: {reference.Description}: {item.Line.Trim()}"))
                 .ToArray();
 
             Assert.Empty(invalidReferences);
@@ -157,6 +183,38 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
                 .ToArray();
         }
 
+        private static IEnumerable<string> EnumerateBoundarySourceFiles(string sourceRoot)
+        {
+            var excludedDirectories = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "bin",
+                "obj",
+                "node_modules"
+            };
+            var textExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ".cs",
+                ".razor",
+                ".csproj",
+                ".props",
+                ".targets",
+                ".json",
+                ".js",
+                ".css",
+                ".html",
+                ".config",
+                ".yml",
+                ".yaml",
+                ".md"
+            };
+
+            return Directory.EnumerateFiles(sourceRoot, "*", SearchOption.AllDirectories)
+                .Where(path => !path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                    .Any(segment => excludedDirectories.Contains(segment)))
+                .Where(path => textExtensions.Contains(Path.GetExtension(path))
+                               || string.Equals(Path.GetFileName(path), "Dockerfile", StringComparison.OrdinalIgnoreCase));
+        }
+
         private static bool IsAllowedUsing(string line, IReadOnlyList<string> allowedPrefixes)
         {
             return allowedPrefixes.Any(prefix =>
@@ -178,6 +236,8 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
             return current!;
         }
     }
+
+    internal sealed record ForbiddenReference(Regex Pattern, string Description);
 
     internal static class ControlPlaneArchitecturePathExtensions
     {

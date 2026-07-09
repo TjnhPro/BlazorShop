@@ -219,26 +219,26 @@ Stop gate:
 
 ## Phase 6 - Verification Guardrails
 
-- [ ] Add or update a boundary test that fails if `BlazorShop.PresentationV2` contains forbidden legacy references.
-- [ ] Forbidden strings:
-  - [ ] `BlazorShop.Presentation\`
-  - [ ] `BlazorShop.Presentation/`
-  - [ ] `BlazorShop.Web.Shared`
-  - [ ] `BlazorShop.API`
-  - [ ] `BlazorShop.Web`
-  - [ ] `adminclient`
-- [ ] Exclude:
-  - [ ] `bin`
-  - [ ] `obj`
-  - [ ] generated test output if needed
-  - [ ] docs only if the test is intended for runtime/source boundary rather than migration history
-- [ ] Add a second test for project references:
-  - [ ] enumerate V2 `*.csproj`
-  - [ ] assert no `ProjectReference` includes `BlazorShop.Presentation`
+- [x] Add or update a boundary test that fails if `BlazorShop.PresentationV2` contains forbidden legacy references.
+- [x] Forbidden references:
+  - [x] `BlazorShop.Presentation\`
+  - [x] `BlazorShop.Presentation/`
+  - [x] legacy `BlazorShop.Web.Shared` namespace, excluding `BlazorShop.Web.SharedV2`
+  - [x] `BlazorShop.API`
+  - [x] legacy `BlazorShop.Web` namespace, excluding `BlazorShop.Web.SharedV2`
+  - [x] `adminclient`
+- [x] Exclude:
+  - [x] `bin`
+  - [x] `obj`
+  - [x] generated test output if needed
+  - [x] `node_modules`
+- [x] Add a second test for project references:
+  - [x] enumerate V2 `*.csproj`
+  - [x] assert no `ProjectReference` includes `BlazorShop.Presentation`
 
 Stop gate:
 
-- Future commits cannot accidentally reintroduce direct legacy file/project references into V2 source.
+- Future commits cannot accidentally reintroduce direct legacy file/project references into V2 source. 2026-07-09: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~ControlPlaneArchitectureBoundaryTests"` passed, 6 tests.
 
 ## Phase 7 - Build, Runtime, Docker, QA
 
