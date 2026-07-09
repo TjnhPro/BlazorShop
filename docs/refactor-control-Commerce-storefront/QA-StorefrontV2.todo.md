@@ -194,9 +194,33 @@ Use this checklist whenever Storefront V2 auth UI or Commerce Node auth API chan
 
 - [x] `/css/storefront.css` returns CSS.
 - [x] `/js/storefrontCommerce.js` returns JS.
-- [x] Linked shared assets from `BlazorShop.Presentation/BlazorShop.Web/wwwroot` load from V2 project location.
+- [x] Storefront V2 serves required assets from `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot`, not from legacy `BlazorShop.Presentation/BlazorShop.Web/wwwroot`.
+  - 2026-07-09: `/css/site.css`, `/css/storefront.css`, `/js/storefrontCommerce.js`, `/images/banner-bg.jpg`, and `/icon-192.png` returned 200 from Storefront V2.
 - [x] No missing image/static asset requests on home/category/product pages.
   - 2026-07-09: QA seed image URLs were corrected from `https://example.test/*` to `/images/banner-bg.jpg`.
+
+## Legacy Independence QA
+
+Use this checklist whenever Storefront V2 assets, Dockerfile, project references, auth routes, or shared V2 dependencies change.
+
+- [x] Storefront V2 has no runtime source references to legacy Presentation paths or `adminclient`.
+  - 2026-07-09: `rg "BlazorShop\.Presentation[\\/]|adminclient" BlazorShop.PresentationV2 --glob '!**/bin/**' --glob '!**/obj/**' --glob '!**/node_modules/**'` returned no hits.
+- [x] PresentationV2 boundary tests protect against legacy references.
+  - 2026-07-09: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~ControlPlaneArchitectureBoundaryTests"` passed 6/6.
+- [x] Storefront V2 focused tests pass.
+  - 2026-07-09: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~PresentationV2"` passed 34/34.
+- [x] Full solution tests pass.
+  - 2026-07-09: `dotnet test BlazorShop.sln --no-restore` passed 502/502 with 10 skipped. Existing package vulnerability warnings remain for `MessagePack` and `Microsoft.OpenApi`.
+- [x] Storefront V2 builds without static asset conflicts.
+  - 2026-07-09: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed.
+- [x] Storefront V2 Docker image builds without copying legacy `BlazorShop.Presentation/BlazorShop.Web`.
+  - 2026-07-09: `docker build -f BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile -t blazorshop-storefront-v2:legacy-free .` passed.
+- [~] Legacy folder rename isolation check.
+  - 2026-07-09: attempted after `dotnet build-server shutdown`, but Windows denied renaming `BlazorShop.Presentation`; no temp hidden folder remains. Docker build is the current isolation proof because the Dockerfile does not copy legacy Presentation files.
+- [~] Runtime page QA with Commerce API stopped.
+  - 2026-07-09: `/signin`, `/register`, `/my-cart`, and static assets returned 200. `/` returned 503 because Commerce API was not running. `/product/{slug}` was not tested without seeded Commerce API data.
+- [n/a] Browser screenshots for this legacy-independence pass.
+  - 2026-07-09: no new screenshots captured; this phase used build/test/Docker/runtime HTTP checks.
 
 ## Failure States
 

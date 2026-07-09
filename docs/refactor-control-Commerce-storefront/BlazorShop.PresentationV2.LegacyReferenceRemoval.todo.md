@@ -299,20 +299,25 @@ Stop gate:
 
 ## Phase 8 - Documentation And QA Checklist
 
-- [ ] Update `QA-StorefrontV2.todo.md` with a `Legacy Independence QA` checklist.
-- [ ] Record:
-  - [ ] `rg` no-hit commands
-  - [ ] build/test results
-  - [ ] Docker build result
-  - [ ] browser QA screenshots
-  - [ ] legacy-folder isolation result
-- [ ] Add an architecture note:
-  - [ ] `PresentationV2` owns all V2 presentation assets.
-  - [ ] Legacy `Presentation` can coexist but is not a dependency.
+- [x] Update `QA-StorefrontV2.todo.md` with a `Legacy Independence QA` checklist.
+- [x] Record:
+  - [x] `rg` no-hit commands
+  - [x] build/test results
+  - [x] Docker build result
+  - [x] browser QA screenshots; 2026-07-09: no new screenshots captured for this pass, runtime HTTP checks were used instead.
+  - [x] legacy-folder isolation result
+- [x] Add an architecture note:
+  - [x] `PresentationV2` owns all V2 presentation assets.
+  - [x] Legacy `Presentation` can coexist but is not a dependency.
+
+Architecture note:
+
+- `BlazorShop.PresentationV2` owns Storefront V2 Tailwind/package files, generated `wwwroot/css/site.css`, required images, JavaScript, and project Docker build steps.
+- `BlazorShop.Presentation` may remain in the repository for legacy Storefront/API, but Storefront V2 must not reference its projects, static web assets, Docker build files, service-discovery names, or runtime folders.
 
 Stop gate:
 
-- Future QA has a repeatable checklist for proving V2 independence.
+- Future QA has a repeatable checklist for proving V2 independence. 2026-07-09: `QA-StorefrontV2.todo.md` contains `Legacy Independence QA`.
 
 ## Implementation Order
 
