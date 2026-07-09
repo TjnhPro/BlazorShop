@@ -507,12 +507,14 @@ Stop gate:
 
 ### Phase 6 - Commerce Admin Store API
 
-- [ ] Add `CommerceStoresController`.
-- [ ] Add list/detail/create/update/archive endpoints.
-- [ ] Add domain endpoints.
-- [ ] Apply existing Commerce Node admin response pattern.
-- [ ] Apply node key/secret/IP auth.
-- [ ] Add API tests.
+- [x] Add `CommerceStoresController`.
+- [x] Add list/detail/create/update/archive endpoints.
+- [x] Add domain endpoints.
+- [x] Apply existing Commerce Node admin response pattern.
+- [x] Apply node key/secret/IP auth.
+- [x] Add API tests.
+
+2026-07-09 verification: `POST/GET/PUT api/commerce/admin/stores` and domain verify were smoke-tested through the running CommerceNode API. Duplicate `store_key` returns `409`.
 
 Stop gate:
 
@@ -520,18 +522,20 @@ Stop gate:
 
 ### Phase 7 - Storefront Current Store API
 
-- [ ] Add `StorefrontStoreController`.
-- [ ] Add `GET api/internal/store/current`.
-- [ ] Return public-safe store config:
+- [x] Add `StorefrontStoreController`.
+- [x] Add `GET api/internal/store/current`.
+- [x] Return public-safe store config:
   - name
   - base URL
   - primary domain
   - logo/icon URLs
   - currency/culture
   - maintenance state
-- [ ] Add maintenance/noindex behavior for Storefront V2.
-- [ ] Add Storefront V2 client support.
-- [ ] Add smoke tests.
+- [x] Add maintenance/noindex behavior for Storefront V2.
+- [x] Add Storefront V2 client support.
+- [x] Add smoke tests.
+
+2026-07-09 verification: `GET api/internal/store/current` resolves an `active` store by `X-Store-Key` and verified `X-Store-Host`. Storefront V2 sends `X-Store-Key` from `Api:StoreKey`, `StoreKey`, or `STORE_KEY` and loads current store identity for its header.
 
 Stop gate:
 
@@ -597,14 +601,14 @@ Stop gate:
 
 - [ ] Clean Commerce Node DB migration.
 - [ ] Existing dev DB migration with default store backfill.
-- [ ] Store CRUD through API.
-- [ ] Domain uniqueness.
-- [ ] Primary domain uniqueness.
+- [x] Store CRUD through API.
+- [x] Domain uniqueness.
+- [x] Primary domain uniqueness.
 - [ ] Unknown host returns safe error.
 - [ ] Single active store fallback works.
 - [ ] Multiple active stores require explicit key/host.
-- [ ] Maintenance mode returns safe Storefront state.
-- [ ] Storefront V2 loads current store config.
+- [x] Maintenance mode returns safe Storefront state.
+- [x] Storefront V2 loads current store config.
 - [ ] Product/category does not leak between stores after Phase 8.
 - [ ] Order/cart does not leak between stores after Phase 9.
 

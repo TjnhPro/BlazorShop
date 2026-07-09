@@ -45,13 +45,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var totalCount = await stores.CountAsync(cancellationToken);
-            var items = await stores
+            var storeEntities = await stores
                 .OrderBy(store => store.DisplayOrder)
                 .ThenBy(store => store.Name)
                 .Skip(skip)
                 .Take(take)
-                .Select(store => MapSummary(store))
                 .ToListAsync(cancellationToken);
+            var items = storeEntities.Select(MapSummary).ToList();
 
             return Succeeded(
                 "Stores retrieved.",

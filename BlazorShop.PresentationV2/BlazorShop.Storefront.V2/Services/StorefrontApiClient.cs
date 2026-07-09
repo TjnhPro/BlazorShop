@@ -24,6 +24,7 @@ namespace BlazorShop.Storefront.Services
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
         private const string InternalCatalogBaseRoute = "internal/catalog";
         private const string InternalSeoBaseRoute = "internal/seo";
+        private const string InternalStoreCurrentRoute = "internal/store/current";
         private const string InternalCatalogSitemapRoute = InternalCatalogBaseRoute + "/sitemap";
         private const string InternalCategoriesRoute = InternalCatalogBaseRoute + "/categories";
         private const string InternalProductsRoute = InternalCatalogBaseRoute + "/products";
@@ -127,6 +128,14 @@ namespace BlazorShop.Storefront.Services
                 $"{LegacySeoRedirectsBaseRoute}/resolve?path={Uri.EscapeDataString(path)}",
                 cancellationToken,
                 RedirectResolutionRequestTimeout);
+        }
+
+        public Task<StorefrontApiResult<StorefrontCurrentStore>> GetCurrentStoreAsync(CancellationToken cancellationToken = default)
+        {
+            return GetMaybeNotFoundAsync<StorefrontCurrentStore>(
+                InternalStoreCurrentRoute,
+                cancellationToken,
+                CatalogRequestTimeout);
         }
 
         private async Task<StorefrontApiResult<T>> GetAsyncWithFallback<T>(
@@ -305,4 +314,27 @@ namespace BlazorShop.Storefront.Services
             return document.RootElement.Deserialize<T>(JsonOptions);
         }
     }
+
+    public sealed record StorefrontCurrentStore(
+        Guid PublicId,
+        string StoreKey,
+        string Name,
+        string Status,
+        string? BaseUrl,
+        string? PrimaryDomain,
+        bool ForceHttps,
+        string? CdnHost,
+        string? LogoUrl,
+        string? FaviconUrl,
+        string? PngIconUrl,
+        string? AppleTouchIconUrl,
+        string? MsTileImageUrl,
+        string? MsTileColor,
+        string DefaultCurrencyCode,
+        string DefaultCulture,
+        string? SupportEmail,
+        string? SupportPhone,
+        bool MaintenanceModeEnabled,
+        string? MaintenanceMessage,
+        string? HtmlBodyId);
 }

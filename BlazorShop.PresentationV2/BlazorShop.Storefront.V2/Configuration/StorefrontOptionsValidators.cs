@@ -25,6 +25,11 @@ namespace BlazorShop.Storefront.Configuration
                 return ValidateOptionsResult.Fail("Api:BaseUrl must be an absolute http or https URL when configured.");
             }
 
+            if (!string.IsNullOrWhiteSpace(options.StoreKey) && options.StoreKey.Trim().Length > 128)
+            {
+                return ValidateOptionsResult.Fail("Api:StoreKey must be at most 128 characters when configured.");
+            }
+
             if (_hostEnvironment.IsDevelopment() || HasServiceDiscoveryEndpoint("apiservice"))
             {
                 return ValidateOptionsResult.Success;

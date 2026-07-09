@@ -42,17 +42,17 @@ builder.Services.AddScoped<IStorefrontSitemapService, StorefrontSitemapService>(
 builder.Services.AddHttpClient<IStorefrontSessionResolver, StorefrontSessionResolver>((serviceProvider, client) =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-    client.BaseAddress = ResolveApiBaseAddress(configuration);
+    ConfigureStorefrontHttpClient(client, configuration);
 });
 builder.Services.AddHttpClient<IStorefrontAuthClient, StorefrontAuthClient>((serviceProvider, client) =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-    client.BaseAddress = ResolveApiBaseAddress(configuration);
+    ConfigureStorefrontHttpClient(client, configuration);
 });
 builder.Services.AddHttpClient<StorefrontApiClient>((serviceProvider, client) =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-    client.BaseAddress = ResolveApiBaseAddress(configuration);
+    ConfigureStorefrontHttpClient(client, configuration);
 });
 
 var app = builder.Build();
@@ -237,6 +237,38 @@ static Uri ResolveApiBaseAddress(IConfiguration configuration)
     }
 
     return new Uri("https+http://apiservice/api/");
+}
+
+static void ConfigureStorefrontHttpClient(HttpClient client, IConfiguration configuration)
+{
+    client.BaseAddress = ResolveApiBaseAddress(configuration);
+
+    var storeKey = ResolveStoreKey(configuration);
+    if (!string.IsNullOrWhiteSpace(storeKey))
+    {
+        client.DefaultRequestHeaders.TryAddWithoutValidation("X-Store-Key", storeKey);
+    }
+}
+
+static string? ResolveStoreKey(IConfiguration configuration)
+{
+    return FirstNonEmpty(
+        configuration[$"{StorefrontApiOptions.SectionName}:StoreKey"],
+        configuration["StoreKey"],
+        configuration["STORE_KEY"]);
+}
+
+static string? FirstNonEmpty(params string?[] values)
+{
+    foreach (var value in values)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            return value.Trim();
+        }
+    }
+
+    return null;
 }
 
 static IResult CreateClientRedirectResult(IStorefrontClientAppUrlResolver clientAppUrlResolver, string targetPath)

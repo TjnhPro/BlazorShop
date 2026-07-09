@@ -6,6 +6,8 @@ namespace BlazorShop.Storefront.Options
 
         public string? BaseUrl { get; set; }
 
+        public string? StoreKey { get; set; }
+
         public bool EnableLegacyFallback { get; set; }
     }
 }
