@@ -6,6 +6,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using BlazorShop.Application.DTOs.Admin.Audit;
     using BlazorShop.Application.DTOs.Admin.Orders;
     using BlazorShop.Application.DTOs.Payment;
+    using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.Services.Contracts.Admin;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Contracts.Payment;
@@ -27,15 +28,18 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly CommerceNodeDbContext context;
         private readonly IOrderTrackingService trackingService;
         private readonly IAdminAuditService auditService;
+        private readonly ICommerceStoreContext storeContext;
 
         public CommerceNodeAdminOrderService(
             CommerceNodeDbContext context,
             IOrderTrackingService trackingService,
-            IAdminAuditService auditService)
+            IAdminAuditService auditService,
+            ICommerceStoreContext storeContext)
         {
             this.context = context;
             this.trackingService = trackingService;
             this.auditService = auditService;
+            this.storeContext = storeContext;
         }
 
         public async Task<PagedResult<GetOrder>> GetAsync(AdminOrderQueryDto query)
@@ -44,7 +48,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             var pageNumber = Math.Max(1, query.PageNumber);
             var pageSize = Math.Clamp(query.PageSize, 1, 100);
-            var orders = this.context.Orders.Include(order => order.Lines).AsNoTracking().AsQueryable();
+            var orders = await this.GetCurrentStoreOrdersAsync();
 
             if (!string.IsNullOrWhiteSpace(query.SearchTerm))
             {
@@ -169,7 +173,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failure("Admin note must be 2,000 characters or fewer.", ServiceResponseType.ValidationError);
             }
 
-            var order = await this.context.Orders.Include(item => item.Lines).FirstOrDefaultAsync(item => item.Id == id);
+            var orders = await this.GetCurrentStoreOrdersAsync(asTracking: true);
+            var order = await orders.Include(item => item.Lines).FirstOrDefaultAsync(item => item.Id == id);
             if (order is null)
             {
                 return Failure("Order not found.", ServiceResponseType.NotFound);
@@ -186,7 +191,21 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         {
             return id == Guid.Empty
                 ? null
-                : await this.context.Orders.Include(order => order.Lines).AsNoTracking().FirstOrDefaultAsync(order => order.Id == id);
+                : await (await this.GetCurrentStoreOrdersAsync()).Include(order => order.Lines).FirstOrDefaultAsync(order => order.Id == id);
+        }
+
+        private async Task<IQueryable<Order>> GetCurrentStoreOrdersAsync(bool asTracking = false)
+        {
+            IQueryable<Order> orders = this.context.Orders;
+            if (!asTracking)
+            {
+                orders = orders.AsNoTracking();
+            }
+
+            var result = await this.storeContext.GetCurrentStoreIdAsync();
+            return result.Success
+                ? orders.Include(order => order.Lines).Where(order => order.StoreId == result.Payload)
+                : orders.Where(order => false);
         }
 
         private async Task<IReadOnlyList<GetOrder>> MapOrdersAsync(IReadOnlyCollection<Order> orders)

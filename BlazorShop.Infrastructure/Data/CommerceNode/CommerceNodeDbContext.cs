@@ -169,18 +169,28 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 });
 
             modelBuilder.Entity<NewsletterSubscriber>()
-                .HasIndex(subscriber => subscriber.Email)
-                .IsUnique();
+                .HasIndex(subscriber => new { subscriber.StoreId, subscriber.Email })
+                .IsUnique()
+                .HasFilter("\"StoreId\" IS NOT NULL");
+
+            modelBuilder.Entity<NewsletterSubscriber>()
+                .HasIndex(subscriber => subscriber.StoreId);
 
             modelBuilder.Entity<Order>()
                 .HasIndex(order => order.Reference)
                 .IsUnique();
 
             modelBuilder.Entity<Order>()
-                .HasIndex(order => new { order.UserId, order.CreatedOn });
+                .HasIndex(order => new { order.StoreId, order.UserId, order.CreatedOn });
 
             modelBuilder.Entity<Order>()
                 .HasIndex(order => order.CreatedOn);
+
+            modelBuilder.Entity<Order>()
+                .HasIndex(order => order.StoreId);
+
+            modelBuilder.Entity<OrderItem>()
+                .HasIndex(orderItem => new { orderItem.StoreId, orderItem.UserId, orderItem.CreatedOn });
 
             modelBuilder.Entity<Order>()
                 .HasMany(order => order.Lines)

@@ -10,6 +10,8 @@ namespace BlazorShop.Domain.Entities.Payment
 
         public string Reference { get; set; } = string.Empty;
 
+        public Guid? StoreId { get; set; }
+
         public decimal TotalAmount { get; set; }
 
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;

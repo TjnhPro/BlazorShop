@@ -2,6 +2,7 @@
 {
     using AutoMapper;
 
+    using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Application.Services.Contracts.Payment;
@@ -24,6 +25,7 @@
         private readonly IOrderRepository _orderRepository;
         private readonly IEmailService _emailService;
         private readonly BankTransferSettings _btSettings;
+        private readonly ICommerceStoreContext? _storeContext;
 
         public CartService(ICart cart,
                            IMapper mapper,
@@ -34,7 +36,8 @@
                            IAppUserManager userManager,
                            IOrderRepository orderRepository,
                            IEmailService emailService,
-                           IOptions<BankTransferSettings> bankTransferOptions)
+                           IOptions<BankTransferSettings> bankTransferOptions,
+                           ICommerceStoreContext? storeContext = null)
         {
             _cart = cart;
             _mapper = mapper;
@@ -46,6 +49,7 @@
             _orderRepository = orderRepository;
             _emailService = emailService;
             _btSettings = bankTransferOptions.Value;
+            _storeContext = storeContext;
         }
 
         public async Task<ServiceResponse> SaveCheckoutHistoryAsync(string userId, IEnumerable<CreateOrderItem> orderItems)
@@ -55,6 +59,7 @@
                 return new ServiceResponse(false, "A signed-in user is required to save checkout history.");
             }
 
+            var currentStoreId = await ResolveCurrentStoreIdAsync();
             var sanitizedOrderItems = orderItems
                 .Where(orderItem => orderItem.ProductId != Guid.Empty && orderItem.Quantity > 0)
                 .Select(orderItem => new CreateOrderItem
@@ -70,7 +75,12 @@
                 return new ServiceResponse(false, "No valid checkout items were provided.");
             }
 
-            var mappedData = _mapper.Map<IEnumerable<OrderItem>>(sanitizedOrderItems);
+            var mappedData = _mapper.Map<IEnumerable<OrderItem>>(sanitizedOrderItems).ToArray();
+            foreach (var item in mappedData)
+            {
+                item.StoreId = currentStoreId;
+            }
+
             var result = await _cart.SaveCheckoutHistory(mappedData);
 
             return result > 0 ? new ServiceResponse(true, "Checkout history saved successfully") : new ServiceResponse(false, "Failed to save checkout history");
@@ -200,6 +210,7 @@
                 UserId = userId ?? string.Empty,
                 Status = status,
                 Reference = reference ?? $"{referencePrefix}-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..8].ToUpper()}",
+                StoreId = await ResolveCurrentStoreIdAsync(),
                 TotalAmount = totalAmount,
                 Lines = cartList
                     .Where(item => productMap.ContainsKey(item.ProductId))
@@ -297,6 +308,17 @@
                     : 0);
 
             return (cartProducts, totalAmount);
+        }
+
+        private async Task<Guid?> ResolveCurrentStoreIdAsync()
+        {
+            if (_storeContext is null)
+            {
+                return null;
+            }
+
+            var result = await _storeContext.GetCurrentStoreIdAsync();
+            return result.Success ? result.Payload : null;
         }
 
         public async Task<IEnumerable<GetOrderItem>> GetCheckoutHistoryByUserId(string userId)

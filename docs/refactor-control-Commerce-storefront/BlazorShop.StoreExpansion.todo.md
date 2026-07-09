@@ -575,12 +575,14 @@ Stop gate:
 
 ### Phase 10 - Orders, Cart, Customer Store Scope
 
-- [ ] Add `StoreId` to orders.
-- [ ] Add store context to checkout/order creation.
+- [x] Add `StoreId` to orders.
+- [x] Add store context to checkout/order creation.
 - [ ] Add customer-store membership if required.
-- [ ] Add newsletter store scope.
-- [ ] Add order history filter by current store.
-- [ ] Add tests for cross-store order isolation.
+- [x] Add newsletter store scope.
+- [x] Add order history filter by current store.
+- [x] Add tests for cross-store order isolation.
+
+2026-07-09 verification: CommerceNode migration `CommerceNodeStoreScopeOrders` adds nullable `StoreId` to orders, checkout history, and newsletter subscribers, then backfills existing rows to `default`. `api/commerce/admin/orders` was smoke-tested with `X-Store-Key: default` and `X-Store-Key: qa-store-20260709214646`; each store only returned its own seeded order.
 
 Stop gate:
 
@@ -614,7 +616,7 @@ Stop gate:
 - [x] Maintenance mode returns safe Storefront state.
 - [x] Storefront V2 loads current store config.
 - [x] Product/category does not leak between stores after Phase 8.
-- [ ] Order/cart does not leak between stores after Phase 9.
+- [x] Order/cart does not leak between stores after Phase 9.
 
 ## Risks
 

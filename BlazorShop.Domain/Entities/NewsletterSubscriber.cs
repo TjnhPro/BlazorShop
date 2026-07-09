@@ -6,6 +6,8 @@ namespace BlazorShop.Domain.Entities
 
         public string Email { get; set; } = string.Empty;
 
+        public Guid? StoreId { get; set; }
+
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
     }
 }
