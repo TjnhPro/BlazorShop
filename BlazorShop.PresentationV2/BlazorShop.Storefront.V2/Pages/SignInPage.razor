@@ -1,0 +1,117 @@
+@page "/signin"
+@inject IStorefrontSessionResolver SessionResolver
+@inject NavigationManager NavigationManager
+
+<PageTitle>Sign in</PageTitle>
+
+<HeadContent>
+    <meta name="robots" content="noindex,nofollow" />
+</HeadContent>
+
+<section class="mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8">
+    <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+        <article class="rounded-3xl border border-neutral-200/70 bg-white/95 shadow-lg">
+            <header class="border-b border-neutral-200 px-6 py-7 sm:px-8">
+                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">Customer account</p>
+                <h1 class="mt-2 text-4xl font-extrabold tracking-tight text-neutral-900">Sign in</h1>
+                <p class="mt-3 max-w-2xl text-base leading-7 text-neutral-700">Access checkout, order history, and customer details for this storefront.</p>
+            </header>
+
+            <div class="px-6 py-7 sm:px-8">
+                @if (!string.IsNullOrWhiteSpace(SuccessMessage))
+                {
+                    <div class="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800" role="status">
+                        @SuccessMessage
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Error))
+                {
+                    <div class="mb-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800" role="alert">
+                        @Error
+                    </div>
+                }
+
+                <form method="post" action="@PostAction" class="max-w-xl space-y-5">
+                    <AntiforgeryToken />
+                    <input type="hidden" name="ReturnUrl" value="@SafeReturnUrl" />
+
+                    <label class="block text-sm">
+                        <span class="font-semibold text-neutral-800">Email address</span>
+                        <input name="Email"
+                               type="email"
+                               autocomplete="email"
+                               required
+                               class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
+                    </label>
+
+                    <label class="block text-sm">
+                        <span class="font-semibold text-neutral-800">Password</span>
+                        <input name="Password"
+                               type="password"
+                               autocomplete="current-password"
+                               required
+                               class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
+                    </label>
+
+                    <button type="submit" class="inline-flex w-full items-center justify-center rounded bg-neutral-900 px-4 py-3 font-semibold text-white hover:bg-neutral-800">
+                        Sign in
+                    </button>
+                </form>
+            </div>
+
+            <footer class="border-t border-neutral-200 px-6 py-5 text-sm text-neutral-700 sm:px-8">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <span>New to this storefront?</span>
+                    <a href="@RegisterUrl" class="font-semibold text-neutral-950 hover:text-neutral-700">Create an account</a>
+                </div>
+            </footer>
+        </article>
+
+        <aside class="rounded-3xl border border-neutral-200/70 bg-white/90 p-6 shadow-lg">
+            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">After sign-in</p>
+            <div class="mt-5 space-y-3 text-sm leading-6 text-neutral-700">
+                <div class="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
+                    <div class="font-semibold text-neutral-950">Checkout handoff</div>
+                    <p class="mt-1">Continue checkout with a customer profile attached.</p>
+                </div>
+                <div class="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
+                    <div class="font-semibold text-neutral-950">Order history</div>
+                    <p class="mt-1">Keep confirmed orders tied to the same customer identity.</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+</section>
+
+@code {
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? Error { get; set; }
+
+    [SupplyParameterFromQuery(Name = "registered")]
+    public string? Registered { get; set; }
+
+    private string SafeReturnUrl => StorefrontReturnUrl.Normalize(this.ReturnUrl);
+
+    private string PostAction => StorefrontReturnUrl.BuildSignInUrl(this.SafeReturnUrl);
+
+    private string RegisterUrl => string.IsNullOrWhiteSpace(this.SafeReturnUrl) || this.SafeReturnUrl == StorefrontRoutes.Home
+        ? StorefrontRoutes.Register
+        : $"{StorefrontRoutes.Register}{QueryString.Create("returnUrl", this.SafeReturnUrl)}";
+
+    private string? SuccessMessage => this.Registered == "1"
+        ? "Account created. Sign in to continue."
+        : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var session = await SessionResolver.GetCurrentUserAsync();
+        if (session.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo(this.SafeReturnUrl, replace: true);
+        }
+    }
+}

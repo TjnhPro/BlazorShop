@@ -1,6 +1,7 @@
 using System.IO;
 
 using BlazorShop.Application.Diagnostics;
+using BlazorShop.Application.DTOs.UserIdentity;
 using BlazorShop.Application.Options;
 using BlazorShop.Application.Services;
 using BlazorShop.Application.Services.Contracts;
@@ -12,6 +13,7 @@ using BlazorShop.Storefront.Services.Contracts;
 
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,8 +72,34 @@ app.Use(async (context, next) =>
 });
 app.UseAntiforgery();
 app.MapDefaultEndpoints();
-app.MapGet(StorefrontRoutes.SignIn, (IStorefrontClientAppUrlResolver clientAppUrlResolver) =>
-    CreateClientRedirectResult(clientAppUrlResolver, "/authentication/login/account"));
+app.MapPost(StorefrontRoutes.SignIn, async (
+    [FromForm] StorefrontLoginForm form,
+    IStorefrontAuthClient authClient,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    var safeReturnUrl = StorefrontReturnUrl.Normalize(form.ReturnUrl);
+    if (string.IsNullOrWhiteSpace(form.Email) || string.IsNullOrWhiteSpace(form.Password))
+    {
+        return Results.Redirect(StorefrontReturnUrl.BuildSignInUrl(safeReturnUrl, "Email and password are required."));
+    }
+
+    var result = await authClient.LoginAsync(
+        new LoginUser
+        {
+            Email = form.Email.Trim(),
+            Password = form.Password,
+        },
+        cancellationToken);
+
+    if (!result.Success || result.Data is null || !result.Data.Success || string.IsNullOrWhiteSpace(result.Data.Token))
+    {
+        return Results.Redirect(StorefrontReturnUrl.BuildSignInUrl(safeReturnUrl, result.Message));
+    }
+
+    StorefrontCookieBridge.CopySetCookieHeaders(result.SetCookieHeaders, httpContext.Response);
+    return Results.Redirect(safeReturnUrl);
+});
 app.MapGet(StorefrontRoutes.Register, (IStorefrontClientAppUrlResolver clientAppUrlResolver) =>
     CreateClientRedirectResult(clientAppUrlResolver, "/authentication/register"));
 app.MapGet(StorefrontRoutes.Checkout, async (HttpContext httpContext, IStorefrontClientAppUrlResolver clientAppUrlResolver, IStorefrontSessionResolver sessionResolver, CancellationToken cancellationToken) =>
@@ -79,7 +107,12 @@ app.MapGet(StorefrontRoutes.Checkout, async (HttpContext httpContext, IStorefron
     StorefrontResponseHeaders.ApplyPrivatePage(httpContext);
 
     var session = await sessionResolver.GetCurrentUserAsync(cancellationToken);
-    var targetPath = session.IsAuthenticated ? "/account/checkout" : "/authentication/login/account/checkout";
+    if (!session.IsAuthenticated)
+    {
+        return Results.Redirect(StorefrontReturnUrl.BuildSignInUrl(StorefrontRoutes.Checkout));
+    }
+
+    var targetPath = "/account/checkout";
     return CreateClientRedirectResult(clientAppUrlResolver, targetPath);
 });
 app.MapGet(StorefrontRoutes.Robots, async (HttpContext httpContext, IStorefrontRobotsService robotsService, CancellationToken cancellationToken) =>

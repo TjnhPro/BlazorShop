@@ -232,25 +232,25 @@ Stop gate:
 
 ## Phase 2 - Local Login Page
 
-- [ ] Remove `MapGet(StorefrontRoutes.SignIn, redirect...)`.
-- [ ] Add Storefront V2 login page at `/signin`.
-- [ ] Add POST handler or static SSR form handling for login submit.
-- [ ] Copy Commerce Node `Set-Cookie` headers into Storefront response.
-- [ ] Add safe return URL handling.
-- [ ] Add already-authenticated redirect behavior.
-- [ ] Show API message for invalid credentials.
-- [ ] Update anonymous checkout redirect to `/signin?returnUrl=/checkout`.
-- [ ] Add tests for:
-  - `/signin` returns 200
-  - invalid login stays on page with safe message
-  - successful login sets refresh cookie
-  - successful login redirects to safe return URL
-  - unsafe absolute return URL is rejected or normalized
-  - anonymous `/checkout` redirects to local `/signin`
+- [x] Remove `MapGet(StorefrontRoutes.SignIn, redirect...)`.
+- [x] Add Storefront V2 login page at `/signin`.
+- [x] Add POST handler or static SSR form handling for login submit.
+- [x] Copy Commerce Node `Set-Cookie` headers into Storefront response.
+- [x] Add safe return URL handling.
+- [x] Add already-authenticated redirect behavior.
+- [x] Show API message for invalid credentials.
+- [x] Update anonymous checkout redirect to `/signin?returnUrl=/checkout`.
+- [x] Add tests for:
+  - [x] `/signin` returns 200
+  - [x] invalid login stays on page with safe message
+  - [x] successful login sets refresh cookie
+  - [x] successful login redirects to safe return URL
+  - [x] unsafe absolute return URL is rejected or normalized
+  - [x] anonymous `/checkout` redirects to local `/signin`
 
 Stop gate:
 
-- Customer can sign in from Storefront V2 without touching legacy Web.
+- Customer can sign in from Storefront V2 without touching legacy Web. 2026-07-09: `StorefrontV2HostSmokeTests` passed 15/15 for Storefront V2 filter.
 
 ## Phase 3 - Local Register Page
 

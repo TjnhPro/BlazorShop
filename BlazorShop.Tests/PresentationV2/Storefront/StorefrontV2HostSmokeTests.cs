@@ -3,6 +3,11 @@ extern alias StorefrontV2;
 namespace BlazorShop.Tests.PresentationV2.Storefront
 {
     using System.Net;
+    using System.Net.Http.Headers;
+    using System.Text.RegularExpressions;
+
+    using BlazorShop.Application.DTOs;
+    using BlazorShop.Application.DTOs.UserIdentity;
 
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Mvc.Testing;
@@ -25,22 +30,110 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public async Task Checkout_RedirectsAnonymousCustomer_ToClientAppCheckoutLogin()
+        public async Task Checkout_RedirectsAnonymousCustomer_ToLocalSignIn()
         {
             using var client = CreateClient(
                 services =>
                 {
                     services.RemoveAll<IStorefrontSessionResolver>();
-                    services.RemoveAll<IStorefrontClientAppUrlResolver>();
                     services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
-                    services.AddScoped<IStorefrontClientAppUrlResolver>(_ => new StubStorefrontClientAppUrlResolver("https://account.example.com/"));
                 },
                 allowAutoRedirect: false);
 
             using var response = await client.GetAsync(StorefrontRoutes.Checkout);
 
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-            Assert.Equal("https://account.example.com/authentication/login/account/checkout", response.Headers.Location?.ToString());
+            Assert.Equal("/signin?returnUrl=%2Fcheckout", response.Headers.Location?.ToString());
+        }
+
+        [Fact]
+        public async Task SignIn_ReturnsStorefrontLoginPage()
+        {
+            using var client = CreateClient(services =>
+            {
+                services.RemoveAll<IStorefrontSessionResolver>();
+                services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
+            });
+
+            using var response = await client.GetAsync(StorefrontRoutes.SignIn);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("Customer account", content, StringComparison.Ordinal);
+            Assert.Contains("method=\"post\"", content, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public async Task SignIn_PostSuccess_SetsRefreshCookieAndRedirectsToSafeReturnUrl()
+        {
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontSessionResolver>();
+                    services.RemoveAll<IStorefrontAuthClient>();
+                    services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
+                    services.AddScoped<IStorefrontAuthClient>(_ => new StubStorefrontAuthClient(
+                        StorefrontAuthResult<LoginResponse>.Succeeded(
+                            new LoginResponse(true, "Signed in.", "jwt-token", string.Empty),
+                            "Signed in.",
+                            ["__Host-blazorshop-refresh=abc; Path=/; Secure; HttpOnly"])));
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.SignIn);
+            using var request = CreateSignInPost(token, cookieHeader, "/my-cart");
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/my-cart", response.Headers.Location?.ToString());
+            Assert.Contains(response.Headers.GetValues("Set-Cookie"), value => value.Contains("__Host-blazorshop-refresh=abc", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public async Task SignIn_PostFailure_RedirectsWithApiMessage()
+        {
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontSessionResolver>();
+                    services.RemoveAll<IStorefrontAuthClient>();
+                    services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
+                    services.AddScoped<IStorefrontAuthClient>(_ => new StubStorefrontAuthClient(
+                        StorefrontAuthResult<LoginResponse>.Failed("Invalid credentials.")));
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.SignIn);
+            using var request = CreateSignInPost(token, cookieHeader, "/checkout");
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/signin?returnUrl=%2Fcheckout&error=Invalid%20credentials.", response.Headers.Location?.ToString());
+        }
+
+        [Fact]
+        public async Task SignIn_PostSuccess_RejectsUnsafeReturnUrl()
+        {
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontSessionResolver>();
+                    services.RemoveAll<IStorefrontAuthClient>();
+                    services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
+                    services.AddScoped<IStorefrontAuthClient>(_ => new StubStorefrontAuthClient(
+                        StorefrontAuthResult<LoginResponse>.Succeeded(
+                            new LoginResponse(true, "Signed in.", "jwt-token", string.Empty),
+                            "Signed in.",
+                            [])));
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.SignIn);
+            using var request = CreateSignInPost(token, cookieHeader, "https://evil.example/");
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/", response.Headers.Location?.ToString());
         }
 
         [Fact]
@@ -109,6 +202,43 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             });
         }
 
+        private static async Task<(string Token, string CookieHeader)> ReadAntiforgeryAsync(HttpClient client, string path)
+        {
+            using var response = await client.GetAsync(path);
+            var content = await response.Content.ReadAsStringAsync();
+            var tokenMatch = Regex.Match(
+                content,
+                "<input[^>]*name=\"__RequestVerificationToken\"[^>]*value=\"(?<token>[^\"]+)\"|<input[^>]*value=\"(?<token>[^\"]+)\"[^>]*name=\"__RequestVerificationToken\"",
+                RegexOptions.IgnoreCase);
+
+            Assert.True(tokenMatch.Success, "The sign-in page should render an antiforgery token.");
+
+            var cookieHeader = string.Join(
+                "; ",
+                response.Headers.GetValues("Set-Cookie")
+                    .Select(value => value.Split(';', 2)[0]));
+
+            return (WebUtility.HtmlDecode(tokenMatch.Groups["token"].Value), cookieHeader);
+        }
+
+        private static HttpRequestMessage CreateSignInPost(string antiforgeryToken, string cookieHeader, string returnUrl)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, StorefrontRoutes.SignIn)
+            {
+                Content = new FormUrlEncodedContent(
+                [
+                    new KeyValuePair<string, string>("__RequestVerificationToken", antiforgeryToken),
+                    new KeyValuePair<string, string>("Email", "customer@example.test"),
+                    new KeyValuePair<string, string>("Password", "Password123!"),
+                    new KeyValuePair<string, string>("ReturnUrl", returnUrl),
+                ]),
+            };
+
+            request.Headers.Add("Cookie", cookieHeader);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            return request;
+        }
+
         private sealed class StubStorefrontSessionResolver : IStorefrontSessionResolver
         {
             private readonly StorefrontSessionInfo _sessionInfo;
@@ -141,6 +271,26 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             public string ResolveUrl(string? path)
             {
                 return $"{_baseUrl.TrimEnd('/')}/{(path ?? string.Empty).TrimStart('/')}";
+            }
+        }
+
+        private sealed class StubStorefrontAuthClient : IStorefrontAuthClient
+        {
+            private readonly StorefrontAuthResult<LoginResponse> loginResult;
+
+            public StubStorefrontAuthClient(StorefrontAuthResult<LoginResponse> loginResult)
+            {
+                this.loginResult = loginResult;
+            }
+
+            public Task<StorefrontAuthResult<LoginResponse>> LoginAsync(LoginUser user, CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(this.loginResult);
+            }
+
+            public Task<StorefrontAuthResult<object>> RegisterAsync(CreateUser user, CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(StorefrontAuthResult<object>.Failed("Register is not used by this test."));
             }
         }
 
