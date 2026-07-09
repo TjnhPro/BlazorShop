@@ -358,23 +358,23 @@ refactor(control-plane): use web shared v2
 
 ## Phase 4 - Migrate Storefront V2
 
-- [ ] Change project reference in `BlazorShop.Storefront.V2.csproj` from legacy shared to `SharedV2`.
-- [ ] Update `_Imports.razor` shared namespaces.
-- [ ] Update Storefront V2 service and page namespaces:
-  - [ ] `Models`
-  - [ ] `Models.Category`
-  - [ ] `Models.Product`
-  - [ ] `Models.Discovery`
-  - [ ] `Models.Seo`
-  - [ ] `Models.Payment`
-- [ ] Replace constants:
-  - [ ] `Constant.Cart.Name` -> `StorefrontCookieNames.Cart`
-  - [ ] `Constant.Administration.AdminRole` -> `RoleNames.Admin`
-- [ ] Update Storefront V2 Dockerfile:
-  - [ ] copy `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/*.csproj`
-  - [ ] copy `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/`
-  - [ ] remove legacy shared copy if no longer needed
-- [ ] Build Storefront V2.
+- [x] Change project reference in `BlazorShop.Storefront.V2.csproj` from legacy shared to `SharedV2`.
+- [x] Update `_Imports.razor` shared namespaces.
+- [x] Update Storefront V2 service and page namespaces:
+  - [x] `Models`
+  - [x] `Models.Category`
+  - [x] `Models.Product`
+  - [x] `Models.Discovery`
+  - [x] `Models.Seo`
+  - [x] `Models.Payment`
+- [x] Replace constants:
+  - [x] `Constant.Cart.Name` -> `StorefrontCookieNames.Cart`
+  - [x] `Constant.Administration.AdminRole` -> `RoleNames.Admin`
+- [x] Update Storefront V2 Dockerfile:
+  - [x] copy `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/*.csproj`
+  - [x] copy `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/`
+  - [x] remove legacy shared copy if no longer needed
+- [x] Build Storefront V2.
 
 Verification:
 
@@ -382,6 +382,12 @@ Verification:
 dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj
 dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter FullyQualifiedName~Storefront
 ```
+
+2026-07-09:
+
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj` passed.
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~Storefront"` passed 143/151, skipped 8 existing Storefront SEO smoke tests.
+- Existing NuGet vulnerability warnings remain unchanged.
 
 Commit:
 

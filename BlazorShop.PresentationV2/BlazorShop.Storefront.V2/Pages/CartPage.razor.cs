@@ -4,9 +4,9 @@ namespace BlazorShop.Storefront.Pages
     using System.Text.Json;
 
     using BlazorShop.Storefront.Services;
-    using BlazorShop.Web.Shared;
-    using BlazorShop.Web.Shared.Models.Payment;
-    using BlazorShop.Web.Shared.Models.Product;
+    using BlazorShop.Web.SharedV2;
+    using BlazorShop.Web.SharedV2.Models.Payment;
+    using BlazorShop.Web.SharedV2.Models.Product;
 
     using Microsoft.AspNetCore.Components;
 
@@ -33,7 +33,7 @@ namespace BlazorShop.Storefront.Pages
             _alerts.Clear();
             StorefrontResponseHeaders.ApplyPrivatePage(HttpContext);
 
-            var cartItems = ReadCartItems(HttpContext?.Request.Cookies[Constant.Cart.Name]);
+            var cartItems = ReadCartItems(HttpContext?.Request.Cookies[StorefrontCookieNames.Cart]);
             var productsById = await LoadProductsAsync(cartItems);
             _lines = BuildLines(cartItems, productsById);
         }

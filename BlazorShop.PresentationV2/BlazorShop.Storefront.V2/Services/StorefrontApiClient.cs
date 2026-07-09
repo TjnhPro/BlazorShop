@@ -5,13 +5,13 @@ namespace BlazorShop.Storefront.Services
     using System.Net.Http.Json;
     using System.Text.Json;
 
-    using BlazorShop.Web.Shared.Models.Discovery;
-    using BlazorShop.Web.Shared.Models;
+    using BlazorShop.Web.SharedV2.Models.Discovery;
+    using BlazorShop.Web.SharedV2.Models;
     using BlazorShop.Application.DTOs.Seo;
     using BlazorShop.Storefront.Options;
-    using BlazorShop.Web.Shared.Models.Category;
-    using BlazorShop.Web.Shared.Models.Product;
-    using BlazorShop.Web.Shared.Models.Seo;
+    using BlazorShop.Web.SharedV2.Models.Category;
+    using BlazorShop.Web.SharedV2.Models.Product;
+    using BlazorShop.Web.SharedV2.Models.Seo;
 
     using Microsoft.Extensions.Options;
 

@@ -5,7 +5,7 @@ namespace BlazorShop.Storefront.Services
     using System.Xml;
     using System.Xml.Linq;
 
-    using BlazorShop.Web.Shared.Models.Discovery;
+    using BlazorShop.Web.SharedV2.Models.Discovery;
 
     using BlazorShop.Storefront.Services.Contracts;
 

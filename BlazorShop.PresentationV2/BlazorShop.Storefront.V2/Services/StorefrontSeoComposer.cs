@@ -3,8 +3,8 @@ namespace BlazorShop.Storefront.Services
     using BlazorShop.Application.DTOs.Seo;
     using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Storefront.Services.Contracts;
-    using BlazorShop.Web.Shared.Models.Category;
-    using BlazorShop.Web.Shared.Models.Product;
+    using BlazorShop.Web.SharedV2.Models.Category;
+    using BlazorShop.Web.SharedV2.Models.Product;
 
     public class StorefrontSeoComposer : IStorefrontSeoComposer
     {
