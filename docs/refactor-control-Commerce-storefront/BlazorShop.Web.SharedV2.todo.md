@@ -397,17 +397,17 @@ refactor(storefront-v2): use web shared v2
 
 ## Phase 5 - Migrate Tests And Boundary Guards
 
-- [ ] Update test references/usings that target V2 to use `SharedV2`.
-- [ ] Keep legacy tests that target legacy Storefront/Web on `BlazorShop.Web.Shared`.
-- [ ] Update `BlazorShop.Tests.csproj` to reference `SharedV2` if V2 tests require direct model access.
-- [ ] Update `ControlPlaneArchitectureBoundaryTests`:
-  - [ ] V2 projects must not reference any `BlazorShop.Presentation/*` project.
-  - [ ] V2 projects may reference `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2`.
-  - [ ] ControlPlane Web allowed namespaces become `BlazorShop.Web.SharedV2.*`.
-- [ ] Add Storefront V2 boundary test:
-  - [ ] `StorefrontV2_DoesNotReferenceLegacyPresentationShared`
-  - [ ] `StorefrontV2_UsesOnlySharedV2Namespaces`
-- [ ] Add guard against copying excluded legacy services into `SharedV2`.
+- [x] Update test references/usings that target V2 to use `SharedV2`.
+- [x] Keep legacy tests that target legacy Storefront/Web on `BlazorShop.Web.Shared`.
+- [x] Update `BlazorShop.Tests.csproj` to reference `SharedV2` if V2 tests require direct model access.
+- [x] Update `ControlPlaneArchitectureBoundaryTests`:
+  - [x] V2 projects must not reference any `BlazorShop.Presentation/*` project.
+  - [x] V2 projects may reference `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2`.
+  - [x] ControlPlane Web allowed namespaces become `BlazorShop.Web.SharedV2.*`.
+- [x] Add Storefront V2 boundary test:
+  - [x] `StorefrontV2_DoesNotReferenceLegacyPresentationShared`
+  - [x] `StorefrontV2_UsesOnlySharedV2Namespaces`
+- [x] Add guard against copying excluded legacy services into `SharedV2`.
 
 Suggested guard checks:
 
@@ -434,6 +434,9 @@ dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter FullyQualifiedName
 dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter FullyQualifiedName~Storefront
 dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter FullyQualifiedName~ControlPlane
 ```
+
+2026-07-09: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~PresentationV2"` passed 17/17.
+Existing NuGet vulnerability warnings remain unchanged.
 
 Commit:
 
