@@ -14,7 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\..\BlazorShop.Presentation\BlazorShop.Web\wwwroot\**\*">
+    <Content Include="..\..\BlazorShop.Presentation\BlazorShop.Web\wwwroot\**\*"
+             Exclude="..\..\BlazorShop.Presentation\BlazorShop.Web\wwwroot\css\input.css;..\..\BlazorShop.Presentation\BlazorShop.Web\wwwroot\css\site.css">
       <Link>wwwroot\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

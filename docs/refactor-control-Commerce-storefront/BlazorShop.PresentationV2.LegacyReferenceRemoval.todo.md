@@ -131,21 +131,21 @@ Stop gate:
 
 ## Phase 2 - Move Tailwind Build Ownership To Storefront V2
 
-- [ ] Add `package.json` to `BlazorShop.Storefront.V2`.
-- [ ] Add `package-lock.json` generated from Storefront V2 dependencies.
-- [ ] Add `tailwind.config.js` owned by Storefront V2.
-- [ ] Add `wwwroot/css/input.css` owned by Storefront V2.
-- [ ] Configure Tailwind content globs to scan:
-  - [ ] `./**/*.razor`
-  - [ ] `./**/*.cshtml` if present
-  - [ ] `./**/*.html` if present
-  - [ ] optional `../BlazorShop.Web.SharedV2/**/*.razor` only if shared components need Tailwind scanning
-- [ ] Generate `wwwroot/css/site.css` inside Storefront V2.
-- [ ] Ensure `App.razor` keeps using local `css/site.css` and `css/storefront.css`.
+- [x] Add `package.json` to `BlazorShop.Storefront.V2`.
+- [x] Add `package-lock.json` generated from Storefront V2 dependencies.
+- [x] Add `tailwind.config.js` owned by Storefront V2.
+- [x] Add `wwwroot/css/input.css` owned by Storefront V2.
+- [x] Configure Tailwind content globs to scan:
+  - [x] `./**/*.razor`
+  - [x] `./**/*.cshtml` if present
+  - [x] `./**/*.html` if present
+  - [x] optional `../BlazorShop.Web.SharedV2/**/*.razor` only if shared components need Tailwind scanning
+- [x] Generate `wwwroot/css/site.css` inside Storefront V2.
+- [x] Ensure `App.razor` keeps using local `css/site.css` and `css/storefront.css`.
 
 Stop gate:
 
-- `npm ci` and Tailwind build run from `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`, not legacy Web.
+- `npm ci` and Tailwind build run from `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`, not legacy Web. 2026-07-09: `npm ci` and `npm run tailwind:build` passed in Storefront V2. `dotnet build BlazorShop.Storefront.V2.csproj --no-restore` passed after excluding legacy `css/input.css` and `css/site.css` from the temporary legacy content copy.
 
 ## Phase 3 - Copy Required Assets Into Storefront V2
 
