@@ -130,13 +130,34 @@ Last verified: 2026-07-09
 ### Catalog
 
 - [x] `GET /api/internal/catalog/categories`
+- [x] `GET /api/internal/catalog/categories/tree` returns parent/child tree. 2026-07-10: endpoint added; admin tree smoke verified same hierarchy.
 - [x] `GET /api/internal/catalog/categories/{id}`
 - [x] `GET /api/internal/catalog/categories/slug/{slug}`
 - [x] `GET /api/internal/catalog/categories/{categoryId}/products`
 - [x] `GET /api/internal/catalog/products`
+- [x] `GET /api/internal/catalog/products?minPrice=&maxPrice=&inStock=&sortBy=DisplayOrder` filters expanded catalog. 2026-07-10: smoke returned filtered product page.
 - [x] `GET /api/internal/catalog/products/{id}`
 - [x] `GET /api/internal/catalog/products/slug/{slug}`
 - [x] `GET /api/internal/catalog/sitemap`
+
+### Catalog Expansion
+
+- [x] Development seeder creates `default` store if missing. 2026-07-10: verified in DB.
+- [x] Development seeder creates parent category `Apparel`. 2026-07-10: seeder added.
+- [x] Development seeder creates child category `T-Shirts`. 2026-07-10: seeder added.
+- [x] Development seeder creates product `QA-TSHIRT` with SKU, short/full description, compare price, display order. 2026-07-10: verified in DB.
+- [x] Development seeder creates variant `Color=Red, Size=M`. 2026-07-10: verified in DB.
+- [x] Development seeder creates variant `Color=Red, Size=XL`. 2026-07-10: verified in DB.
+- [x] Development seeder creates variant `Color=Black, Size=M` with zero stock. 2026-07-10: verified in DB.
+- [x] Development seeder creates low-stock product `QA-LOW-STOCK`. 2026-07-10: verified in DB.
+- [x] Development seeder creates sample order `QA-CATALOG-SNAPSHOT` with product/variant snapshot fields. 2026-07-10: verified in DB.
+- [x] `GET /api/commerce/admin/products/query` searches by SKU. 2026-07-10: `searchTerm=QA-TSHIRT` returned seeded product.
+- [x] `GET /api/commerce/admin/categories/tree` returns category hierarchy. 2026-07-10: returned `Apparel -> T-Shirts`.
+- [ ] Duplicate variant combination is rejected.
+- [ ] Second default variant is rejected.
+- [ ] Checkout with out-of-stock variant is rejected.
+- [ ] Successful order deducts product/variant stock.
+- [ ] Admin order detail prefers order line snapshot fields.
 
 ### SEO
 

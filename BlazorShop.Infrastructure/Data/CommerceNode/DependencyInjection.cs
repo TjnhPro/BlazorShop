@@ -70,6 +70,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 .Bind(configuration.GetSection(ClientAppOptions.SectionName));
             services.AddOptions<EmailSettings>()
                 .Bind(configuration.GetSection("EmailSettings"));
+            services.AddScoped<CommerceNodeDevelopmentSeeder>();
             services.AddScoped(typeof(IAppLogger<>), typeof(LoggerAdapter<>));
             services.AddTransient<IEmailService, EmailService>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(CommerceNodeGenericRepository<>));

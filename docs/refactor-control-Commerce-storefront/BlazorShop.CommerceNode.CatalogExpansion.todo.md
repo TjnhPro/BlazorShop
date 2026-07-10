@@ -876,25 +876,25 @@ feat(storefront-v2): support expanded catalog browsing
 
 ### Phase 9 - Seed And QA
 
-- [ ] Add or update clean DB seed data:
-  - [ ] one active store;
-  - [ ] category tree;
-  - [ ] products with SKU;
-  - [ ] product with variants:
-    - [ ] Color = Red, Size = M;
-    - [ ] Color = Red, Size = XL;
-    - [ ] Color = Black, Size = M;
-  - [ ] low-stock product/variant;
-  - [ ] sample order with snapshot fields.
-- [ ] Update `QA-CommerceNode.todo.md` with catalog expansion checklist.
-- [ ] Update `QA-StorefrontV2.todo.md` with storefront variant/cart checklist.
+- [x] Add or update clean DB seed data:
+  - [x] one active store;
+  - [x] category tree;
+  - [x] products with SKU;
+  - [x] product with variants:
+    - [x] Color = Red, Size = M;
+    - [x] Color = Red, Size = XL;
+    - [x] Color = Black, Size = M;
+  - [x] low-stock product/variant;
+  - [x] sample order with snapshot fields.
+- [x] Update `QA-CommerceNode.todo.md` with catalog expansion checklist.
+- [x] Update `QA-StorefrontV2.todo.md` with storefront variant/cart checklist.
 - [ ] Run API QA on clean Commerce Node DB.
 - [ ] Run StorefrontV2 QA for browse/detail/cart/checkout.
 - [ ] Verify no legacy `BlazorShop.Presentation` reference is required.
 
 Stop gate:
 
-- [ ] Clean DB can migrate and seed.
+- [x] Clean DB can migrate and seed. 2026-07-10: migration up-to-date and Development seeder verified on local CommerceNode DB.
 - [ ] Product CRUD verified.
 - [ ] Category tree verified.
 - [ ] Variant combination verified.

@@ -92,12 +92,20 @@ dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrast
 - [x] `/category/{slug}`
   - [x] Shows category breadcrumb.
   - [x] Shows products under category.
+  - [ ] Price range filter applies through query string.
+  - [ ] In-stock filter hides out-of-stock products.
+  - [ ] Sort by display order works.
+  - [ ] Sort by updated works.
   - [x] Missing slug returns noindex 404 state.
 - [x] `/product/{slug}`
   - [x] Shows product image.
   - [x] Shows product price.
   - [x] Shows product category link.
   - [x] Shows variants selector when variants exist.
+  - [ ] Shows variant attributes such as `Color` and `Size`.
+  - [ ] Shows variant effective price.
+  - [ ] Shows compare price when present.
+  - [ ] Shows out-of-stock state for product/variant.
   - [x] Shows add-to-cart button.
   - [x] Shows related products/recommendations block.
   - [x] Missing slug returns noindex 404 state.
@@ -112,7 +120,11 @@ dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrast
 - [x] Cart badge updates after add-to-cart.
 - [x] Add product without variant.
 - [x] Add product with required variant.
+- [ ] Cart cookie contains `ProductVariantId` for selected variant.
+- [ ] Cart line displays selected variant attribute label.
+- [ ] Cart line uses selected variant effective price.
 - [x] Product detail blocks add-to-cart until required variant is selected.
+- [ ] Product detail blocks add-to-cart for out-of-stock variant.
 - [x] Quantity update works.
 - [x] Remove item works.
 - [x] Clear cart works.

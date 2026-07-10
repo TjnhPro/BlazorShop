@@ -45,6 +45,9 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    using var scope = app.Services.CreateScope();
+    await scope.ServiceProvider.GetRequiredService<CommerceNodeDevelopmentSeeder>().SeedAsync();
+
     app.UseSwagger();
     app.UseSwaggerUI();
 }
