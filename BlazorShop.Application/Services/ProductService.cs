@@ -61,7 +61,7 @@
         public async Task<GetProduct?> GetByIdAsync(Guid id)
         {
             var result = await _productReadRepository.GetProductDetailsByIdAsync(id);
-            return result != null ? _mapper.Map<GetProduct>(result) : null;
+            return result != null ? MapProductDetails(result) : null;
         }
 
         public async Task<ServiceResponse> AddAsync(CreateProduct product)
@@ -179,6 +179,20 @@
 
             var result = await _storeContext.GetCurrentStoreIdAsync();
             return result.Success ? result.Payload : null;
+        }
+
+        private GetProduct MapProductDetails(Product product)
+        {
+            var mapped = _mapper.Map<GetProduct>(product);
+            mapped.Variants = mapped.Variants
+                .Select(variant =>
+                {
+                    variant.EffectivePrice = variant.Price ?? product.Price;
+                    return variant;
+                })
+                .ToArray();
+
+            return mapped;
         }
     }
 }

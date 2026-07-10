@@ -93,7 +93,7 @@ namespace BlazorShop.Application.Services
             }
 
             var product = await _productReadRepository.GetPublishedProductDetailsByIdAsync(id);
-            return product is null ? null : _mapper.Map<GetProduct>(product);
+            return product is null ? null : MapProductDetails(product);
         }
 
         public async Task<GetProduct?> GetPublishedProductBySlugAsync(string slug)
@@ -105,7 +105,7 @@ namespace BlazorShop.Application.Services
             }
 
             var product = await _productReadRepository.GetPublishedProductBySlugAsync(normalizedSlug);
-            return product is null ? null : _mapper.Map<GetProduct>(product);
+            return product is null ? null : MapProductDetails(product);
         }
 
         public async Task<GetCategory?> GetPublishedCategoryByIdAsync(Guid id)
@@ -157,6 +157,20 @@ namespace BlazorShop.Application.Services
         {
             var normalizedSlug = _slugService.NormalizeSlug(slug);
             return string.IsNullOrWhiteSpace(normalizedSlug) ? null : normalizedSlug;
+        }
+
+        private GetProduct MapProductDetails(Product product)
+        {
+            var mapped = _mapper.Map<GetProduct>(product);
+            mapped.Variants = mapped.Variants
+                .Select(variant =>
+                {
+                    variant.EffectivePrice = variant.Price ?? product.Price;
+                    return variant;
+                })
+                .ToArray();
+
+            return mapped;
         }
 
         private static IReadOnlyList<GetCategoryTreeNode> BuildTree(IReadOnlyList<Category> categories)

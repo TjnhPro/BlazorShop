@@ -1,6 +1,7 @@
 namespace BlazorShop.Application.Services
 {
     using AutoMapper;
+    using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Product.ProductVariant;
     using BlazorShop.Application.Services.Contracts;
@@ -11,38 +12,158 @@ namespace BlazorShop.Application.Services
     {
         private readonly IGenericRepository<ProductVariant> _variantRepository;
         private readonly IMapper _mapper;
+        private readonly IProductReadRepository? _productReadRepository;
+        private readonly ICommerceStoreContext? _storeContext;
 
-        public ProductVariantService(IGenericRepository<ProductVariant> variantRepository, IMapper mapper)
+        public ProductVariantService(
+            IGenericRepository<ProductVariant> variantRepository,
+            IMapper mapper,
+            IProductReadRepository? productReadRepository = null,
+            ICommerceStoreContext? storeContext = null)
         {
             _variantRepository = variantRepository;
             _mapper = mapper;
+            _productReadRepository = productReadRepository;
+            _storeContext = storeContext;
         }
 
         public async Task<IEnumerable<GetProductVariant>> GetByProductIdAsync(Guid productId)
         {
+            var product = await GetProductForCurrentStoreAsync(productId);
+            if (product is null)
+            {
+                return [];
+            }
+
             var all = await _variantRepository.GetAllAsync();
-            var data = all.Where(v => v.ProductId == productId);
-            return data.Any() ? _mapper.Map<IEnumerable<GetProductVariant>>(data) : Array.Empty<GetProductVariant>();
+            var data = all.Where(v => v.ProductId == productId).ToArray();
+            return data.Length > 0
+                ? data.Select(variant => MapVariant(variant, product.Price)).ToArray()
+                : [];
         }
 
         public async Task<ServiceResponse> AddAsync(CreateProductVariant variant)
         {
+            var product = await GetProductForCurrentStoreAsync(variant.ProductId);
+            if (product is null)
+            {
+                return new ServiceResponse(false, "Product not found");
+            }
+
             var mapped = _mapper.Map<ProductVariant>(variant);
+            var validation = await ValidateVariantAsync(mapped);
+            if (!validation.Success)
+            {
+                return validation;
+            }
+
             var result = await _variantRepository.AddAsync(mapped);
             return result > 0 ? new ServiceResponse(true, "Variant added successfully") : new ServiceResponse(false, "Variant not added");
         }
 
         public async Task<ServiceResponse> UpdateAsync(UpdateProductVariant variant)
         {
-            var mapped = _mapper.Map<ProductVariant>(variant);
-            var result = await _variantRepository.UpdateAsync(mapped);
+            var existing = await _variantRepository.GetByIdAsync(variant.Id);
+            if (existing is null)
+            {
+                return new ServiceResponse(false, "Variant not found");
+            }
+
+            if (existing.ProductId != variant.ProductId)
+            {
+                return new ServiceResponse(false, "Variant does not belong to the product.");
+            }
+
+            var product = await GetProductForCurrentStoreAsync(variant.ProductId);
+            if (product is null)
+            {
+                return new ServiceResponse(false, "Product not found");
+            }
+
+            _mapper.Map(variant, existing);
+            var validation = await ValidateVariantAsync(existing, existing.Id);
+            if (!validation.Success)
+            {
+                return validation;
+            }
+
+            var result = await _variantRepository.UpdateAsync(existing);
             return result > 0 ? new ServiceResponse(true, "Variant updated successfully") : new ServiceResponse(false, "Variant not found");
         }
 
         public async Task<ServiceResponse> DeleteAsync(Guid variantId)
         {
+            var existing = await _variantRepository.GetByIdAsync(variantId);
+            if (existing is null)
+            {
+                return new ServiceResponse(false, "Variant not found");
+            }
+
+            var product = await GetProductForCurrentStoreAsync(existing.ProductId);
+            if (product is null)
+            {
+                return new ServiceResponse(false, "Product not found");
+            }
+
             var result = await _variantRepository.DeleteAsync(variantId);
             return result > 0 ? new ServiceResponse(true, "Variant deleted successfully") : new ServiceResponse(false, "Variant not found");
+        }
+
+        private async Task<ServiceResponse> ValidateVariantAsync(ProductVariant variant, Guid? excludedVariantId = null)
+        {
+            var all = await _variantRepository.GetAllAsync();
+            var variants = all
+                .Where(item => item.ProductId == variant.ProductId
+                    && (!excludedVariantId.HasValue || item.Id != excludedVariantId.Value))
+                .ToArray();
+
+            if (!string.IsNullOrWhiteSpace(variant.AttributeSignature)
+                && variants.Any(item => item.AttributeSignature == variant.AttributeSignature))
+            {
+                return new ServiceResponse(false, "Variant attribute combination already exists for this product.");
+            }
+
+            if (variant.IsDefault && variants.Any(item => item.IsDefault))
+            {
+                return new ServiceResponse(false, "Product already has a default variant.");
+            }
+
+            return new ServiceResponse(true, string.Empty);
+        }
+
+        private async Task<Product?> GetProductForCurrentStoreAsync(Guid productId)
+        {
+            if (_productReadRepository is null)
+            {
+                return new Product { Id = productId };
+            }
+
+            var product = await _productReadRepository.GetProductDetailsByIdAsync(productId);
+            if (product is null)
+            {
+                return null;
+            }
+
+            var storeId = await ResolveCurrentStoreIdAsync();
+            return storeId.HasValue && product.StoreId != storeId.Value ? null : product;
+        }
+
+        private async Task<Guid?> ResolveCurrentStoreIdAsync()
+        {
+            if (_storeContext is null)
+            {
+                return null;
+            }
+
+            var result = await _storeContext.GetCurrentStoreIdAsync();
+            return result.Success ? result.Payload : null;
+        }
+
+        private GetProductVariant MapVariant(ProductVariant variant, decimal productPrice)
+        {
+            var mapped = _mapper.Map<GetProductVariant>(variant);
+            mapped.EffectivePrice = variant.Price ?? productPrice;
+            return mapped;
         }
     }
 }
