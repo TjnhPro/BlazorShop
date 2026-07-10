@@ -32,6 +32,10 @@ namespace BlazorShop.Domain.Contracts
 
         public bool InStock { get; init; }
 
+        public bool IsPublished { get; init; }
+
+        public DateTime? PublishedOn { get; init; }
+
         public Guid? CategoryId { get; init; }
 
         public string? CategoryName { get; init; }

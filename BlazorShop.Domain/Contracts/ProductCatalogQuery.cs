@@ -22,6 +22,8 @@ namespace BlazorShop.Domain.Contracts
 
         public bool? InStock { get; init; }
 
+        public bool? IsPublished { get; init; }
+
         public ProductCatalogSortBy SortBy { get; init; } = ProductCatalogSortBy.Newest;
 
         public DateTime? CreatedAfterUtc { get; init; }

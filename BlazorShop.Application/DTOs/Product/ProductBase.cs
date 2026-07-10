@@ -34,6 +34,10 @@
 
         public int DisplayOrder { get; set; }
 
+        public bool IsPublished { get; set; } = true;
+
+        public DateTime? PublishedOn { get; set; } = DateTime.UtcNow;
+
         public string ProductType { get; set; } = ProductTypes.Simple;
 
         public Guid? VariationTemplateId { get; set; }

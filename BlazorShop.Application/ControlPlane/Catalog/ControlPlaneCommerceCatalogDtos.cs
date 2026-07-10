@@ -9,6 +9,7 @@ namespace BlazorShop.Application.ControlPlane.Catalog
     using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Application.DTOs.Product;
     using BlazorShop.Application.DTOs.Product.ProductVariant;
+    using BlazorShop.Application.DTOs.Seo;
     using BlazorShop.Domain.Contracts;
 
     public interface IControlPlaneCommerceCatalogService
@@ -37,6 +38,17 @@ namespace BlazorShop.Application.ControlPlane.Catalog
         Task<ControlPlaneCommerceCatalogResult<object>> ArchiveProductAsync(
             Guid storePublicId,
             Guid productId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<ProductSeoDto>> GetProductSeoAsync(
+            Guid storePublicId,
+            Guid productId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<ProductSeoDto>> UpdateProductSeoAsync(
+            Guid storePublicId,
+            Guid productId,
+            UpdateProductSeoDto request,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneCommerceCatalogResult<ProductImportUploadResponse>> UploadProductImportAsync(

@@ -180,6 +180,9 @@
                 product.VariationTemplateId = null;
             }
 
+            product.PublishedOn = product.IsPublished
+                ? product.PublishedOn ?? DateTime.UtcNow
+                : null;
             product.UpdatedAt = DateTime.UtcNow;
         }
 

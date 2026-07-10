@@ -317,6 +317,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                     : products.Where(product => product.Quantity <= 0 && !product.Variants.Any(variant => variant.Stock > 0));
             }
 
+            if (query.IsPublished.HasValue)
+            {
+                products = products.Where(product => product.IsPublished == query.IsPublished.Value);
+            }
+
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 var normalizedSearchTerm = searchTerm.ToLower();
@@ -476,7 +481,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
             return product => new CatalogProductReadModel
             {
                 Id = product.Id,
-                Slug = product.IsPublished ? product.Slug : null,
+                Slug = product.Slug,
                 Name = product.Name,
                 Description = product.Description,
                 Sku = product.Sku,
@@ -488,6 +493,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 UpdatedAt = product.UpdatedAt,
                 DisplayOrder = product.DisplayOrder,
                 InStock = product.Quantity > 0 || product.Variants.Any(variant => variant.Stock > 0),
+                IsPublished = product.IsPublished,
+                PublishedOn = product.PublishedOn,
                 CategoryId = product.CategoryId,
                 CategoryName = product.Category != null ? product.Category.Name : null,
                 CategorySlug = product.Category != null && product.Category.IsPublished ? product.Category.Slug : null,

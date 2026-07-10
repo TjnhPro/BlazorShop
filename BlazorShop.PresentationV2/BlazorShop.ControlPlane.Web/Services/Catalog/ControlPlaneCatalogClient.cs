@@ -13,6 +13,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
     using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Application.DTOs.Product;
     using BlazorShop.Application.DTOs.Product.ProductVariant;
+    using BlazorShop.Application.DTOs.Seo;
     using BlazorShop.ControlPlane.Web.Services.Common;
     using BlazorShop.Domain.Contracts;
 
@@ -42,6 +43,17 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
         Task<ControlPlaneClientResult<object>> ArchiveProductAsync(
             Guid storePublicId,
             Guid productId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<ProductSeoDto>> GetProductSeoAsync(
+            Guid storePublicId,
+            Guid productId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<ProductSeoDto>> UpdateProductSeoAsync(
+            Guid storePublicId,
+            Guid productId,
+            UpdateProductSeoDto request,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneFileResult> DownloadProductImportTemplateAsync(
@@ -329,6 +341,30 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             return this.apiClient.DeletePrivateAsync<object>(
                 $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}",
                 "Unable to archive product.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<ProductSeoDto>> GetProductSeoAsync(
+            Guid storePublicId,
+            Guid productId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<ProductSeoDto>(
+                CommerceRoute(storePublicId, $"products/{productId:D}/seo"),
+                "Unable to load product SEO.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<ProductSeoDto>> UpdateProductSeoAsync(
+            Guid storePublicId,
+            Guid productId,
+            UpdateProductSeoDto request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<UpdateProductSeoDto, ProductSeoDto>(
+                CommerceRoute(storePublicId, $"products/{productId:D}/seo"),
+                request,
+                "Unable to update product SEO.",
                 cancellationToken);
         }
 
@@ -824,6 +860,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             AddIfPresent(values, "minPrice", query.MinPrice?.ToString(System.Globalization.CultureInfo.InvariantCulture));
             AddIfPresent(values, "maxPrice", query.MaxPrice?.ToString(System.Globalization.CultureInfo.InvariantCulture));
             AddIfPresent(values, "inStock", query.InStock?.ToString());
+            AddIfPresent(values, "isPublished", query.IsPublished?.ToString());
             return ToQueryString(values);
         }
 

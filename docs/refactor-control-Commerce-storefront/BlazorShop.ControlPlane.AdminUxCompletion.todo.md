@@ -537,23 +537,23 @@ Shipment form:
 
 ### Phase 6 - Products UX And Product Detail Drawer
 
-- [ ] Create `/commerce-admin/products`.
-- [ ] Add compact product table.
-- [ ] Combine title/SKU/slug in one product cell.
-- [ ] Remove stock column from list.
-- [ ] Add category and published filters.
-- [ ] Add title/SKU/slug search.
-- [ ] Add placeholder thumbnail with lazy-loaded proxy thumbnail when `PrimaryMediaId` exists.
-- [ ] Remove manual create product UI.
-- [ ] Add product detail drawer.
-- [ ] Add SEO section first.
-- [ ] Add basic info section.
-- [ ] Add media section through ControlPlane media proxy.
-- [ ] Add variations section read-only/minimal.
-- [ ] Add inventory section inside drawer.
-- [ ] Add optional import history link/filter if cheap.
-- [ ] Ensure unsafe product fields are not editable.
-- [ ] Commit: `feat(control-plane-web): add product admin drawer UX`.
+- [x] Create `/commerce-admin/products`.
+- [x] Add compact product table.
+- [x] Combine title/SKU/slug in one product cell.
+- [x] Remove stock column from list.
+- [x] Add category and published filters.
+- [x] Add title/SKU/slug search.
+- [x] Add placeholder thumbnail with lazy-loaded proxy thumbnail when `PrimaryMediaId` exists.
+- [x] Remove manual create product UI.
+- [x] Add product detail drawer.
+- [x] Add SEO section first.
+- [x] Add basic info section.
+- [x] Add media section through ControlPlane media proxy.
+- [x] Add variations section read-only/minimal.
+- [x] Add inventory section inside drawer.
+- [x] Add optional import history link/filter if cheap. 2026-07-10: deferred; Product Imports page remains the operational import history surface.
+- [x] Ensure unsafe product fields are not editable.
+- [x] Commit: `feat(control-plane-web): add product admin drawer UX`.
 
 ### Phase 7 - Orders And Shipment UX
 

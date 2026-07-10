@@ -42,6 +42,10 @@ namespace BlazorShop.Application.DTOs.Product
 
         public bool InStock { get; set; }
 
+        public bool IsPublished { get; set; }
+
+        public DateTime? PublishedOn { get; set; }
+
         public Guid? CategoryId { get; set; }
 
         public string? CategoryName { get; set; }

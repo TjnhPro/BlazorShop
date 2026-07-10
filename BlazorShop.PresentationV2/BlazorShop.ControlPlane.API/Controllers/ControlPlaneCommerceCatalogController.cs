@@ -15,6 +15,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
     using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Application.DTOs.Product;
     using BlazorShop.Application.DTOs.Product.ProductVariant;
+    using BlazorShop.Application.DTOs.Seo;
     using BlazorShop.ControlPlane.API.Responses;
     using BlazorShop.Domain.Contracts;
 
@@ -81,6 +82,23 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> ArchiveProduct(Guid storePublicId, Guid productId, CancellationToken cancellationToken)
         {
             return ToActionResult(await this.catalogService.ArchiveProductAsync(storePublicId, productId, cancellationToken));
+        }
+
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/products/{productId:guid}/seo")]
+        public async Task<IActionResult> GetProductSeo(Guid storePublicId, Guid productId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.GetProductSeoAsync(storePublicId, productId, cancellationToken));
+        }
+
+        [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/products/{productId:guid}/seo")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> UpdateProductSeo(
+            Guid storePublicId,
+            Guid productId,
+            UpdateProductSeoDto request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.UpdateProductSeoAsync(storePublicId, productId, request, cancellationToken));
         }
 
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/product-imports/template")]

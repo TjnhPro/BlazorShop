@@ -37,16 +37,6 @@
             this.CreateMap<CreateProduct, Product>();
             this.CreateMap<UpdateProduct, Product>();
             this.CreateMap<Product, GetProduct>()
-                .ForMember(dest => dest.Slug, opt => opt.MapFrom(src => src.IsPublished ? src.Slug : null))
-                .ForMember(dest => dest.MetaTitle, opt => opt.MapFrom(src => src.IsPublished ? src.MetaTitle : null))
-                .ForMember(dest => dest.MetaDescription, opt => opt.MapFrom(src => src.IsPublished ? src.MetaDescription : null))
-                .ForMember(dest => dest.CanonicalUrl, opt => opt.MapFrom(src => src.IsPublished ? src.CanonicalUrl : null))
-                .ForMember(dest => dest.OgTitle, opt => opt.MapFrom(src => src.IsPublished ? src.OgTitle : null))
-                .ForMember(dest => dest.OgDescription, opt => opt.MapFrom(src => src.IsPublished ? src.OgDescription : null))
-                .ForMember(dest => dest.OgImage, opt => opt.MapFrom(src => src.IsPublished ? src.OgImage : null))
-                .ForMember(dest => dest.SeoContent, opt => opt.MapFrom(src => src.IsPublished ? src.SeoContent : null))
-                .ForMember(dest => dest.RobotsIndex, opt => opt.MapFrom(src => src.IsPublished ? src.RobotsIndex : true))
-                .ForMember(dest => dest.RobotsFollow, opt => opt.MapFrom(src => src.IsPublished ? src.RobotsFollow : true))
                 .ForMember(dest => dest.Variants, opt => opt.MapFrom(src => src.Variants))
                 .ForMember(dest => dest.VariationTemplate, opt => opt.Ignore());
             this.CreateMap<CatalogProductReadModel, GetCatalogProduct>();

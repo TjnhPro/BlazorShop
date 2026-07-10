@@ -14,6 +14,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Application.DTOs.Product;
     using BlazorShop.Application.DTOs.Product.ProductVariant;
+    using BlazorShop.Application.DTOs.Seo;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities.ControlPlane;
 
@@ -101,6 +102,34 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 HttpMethod.Delete,
                 $"api/commerce/admin/products/{productId:D}",
                 null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<ProductSeoDto>> GetProductSeoAsync(
+            Guid storePublicId,
+            Guid productId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<ProductSeoDto>(
+                storePublicId,
+                HttpMethod.Get,
+                $"api/commerce/admin/products/{productId:D}/seo",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<ProductSeoDto>> UpdateProductSeoAsync(
+            Guid storePublicId,
+            Guid productId,
+            UpdateProductSeoDto request,
+            CancellationToken cancellationToken = default)
+        {
+            request.ProductId = productId;
+            return this.SendAsync<ProductSeoDto>(
+                storePublicId,
+                HttpMethod.Put,
+                $"api/commerce/admin/products/{productId:D}/seo",
+                request,
                 cancellationToken);
         }
 
@@ -867,6 +896,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             AddIfPresent(values, "minPrice", query.MinPrice?.ToString(CultureInfo.InvariantCulture));
             AddIfPresent(values, "maxPrice", query.MaxPrice?.ToString(CultureInfo.InvariantCulture));
             AddIfPresent(values, "inStock", query.InStock?.ToString());
+            AddIfPresent(values, "isPublished", query.IsPublished?.ToString());
 
             return ToQueryString(values);
         }

@@ -1,0 +1,907 @@
+@page "/commerce-admin/products"
+@attribute [Authorize]
+@inject IControlPlaneStoreClient StoreClient
+@inject IControlPlaneCatalogClient CatalogClient
+
+<PageTitle>Products</PageTitle>
+
+<section class="space-y-5">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+            <p class="text-sm font-semibold text-control-700">Commerce Admin</p>
+            <h1 class="text-2xl font-bold text-ink-900">Products</h1>
+            <p class="mt-1 text-sm text-ink-500">Review imported products, edit safe fields, manage media, and adjust inventory.</p>
+        </div>
+        <div class="flex flex-col gap-2 sm:flex-row">
+            <select class="min-h-10 min-w-64 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="selectedStorePublicId">
+                <option value="">Select store</option>
+                @foreach (var store in stores)
+                {
+                    <option value="@store.PublicId">@store.Name (@store.StoreKey)</option>
+                }
+            </select>
+            <button class="cp-button cp-button-secondary" @onclick="LoadAsync">
+                <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">@errorMessage</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">@successMessage</div>
+    }
+
+    <div class="cp-card overflow-hidden">
+        <div class="grid gap-3 border-b border-ink-200 p-4 lg:grid-cols-[minmax(0,1fr)_180px_150px_170px_auto]">
+            <input class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Search title, SKU, or slug" @bind="searchTerm" @onkeydown="OnSearchKeyDown" />
+            <select class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="categoryId">
+                <option value="">All categories</option>
+                @foreach (var category in categories.OrderBy(category => category.Name))
+                {
+                    <option value="@category.Id">@category.Name</option>
+                }
+            </select>
+            <select class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="publishedFilter">
+                <option value="">All status</option>
+                <option value="true">Published</option>
+                <option value="false">Draft</option>
+            </select>
+            <select class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="sortBy">
+                <option value="@ProductCatalogSortBy.Newest">Newest</option>
+                <option value="@ProductCatalogSortBy.Updated">Updated</option>
+                <option value="@ProductCatalogSortBy.DisplayOrder">Display order</option>
+                <option value="@ProductCatalogSortBy.NameAscending">Name A-Z</option>
+            </select>
+            <button class="cp-button cp-button-primary justify-center" disabled="@(!HasStore)" @onclick="SearchAsync">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                Search
+            </button>
+        </div>
+
+        @if (!HasStore)
+        {
+            <div class="p-8 text-center text-sm text-ink-500">Select a store to load products.</div>
+        }
+        else if (isLoading)
+        {
+            <div class="p-8 text-center text-sm text-ink-500">Loading products...</div>
+        }
+        else if (products.Count == 0)
+        {
+            <div class="p-8 text-center text-sm text-ink-500">No products found.</div>
+        }
+        else
+        {
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-ink-200 text-left text-sm">
+                    <thead class="bg-ink-50 text-xs font-semibold uppercase text-ink-500">
+                        <tr>
+                            <th class="px-4 py-3">Product</th>
+                            <th class="px-4 py-3">Category</th>
+                            <th class="px-4 py-3 text-right">Price</th>
+                            <th class="px-4 py-3">Status</th>
+                            <th class="px-4 py-3">Updated</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-ink-100">
+                        @foreach (var product in products)
+                        {
+                            <tr class="cursor-pointer hover:bg-ink-50" @onclick="() => OpenProductAsync(product.Id)">
+                                <td class="px-4 py-3">
+                                    <div class="flex min-w-80 items-center gap-3">
+                                        <div class="h-14 w-14 shrink-0 overflow-hidden rounded-md border border-ink-200 bg-ink-50">
+                                            @if (thumbnailUrls.TryGetValue(product.Id, out var thumbnailUrl))
+                                            {
+                                                <img src="@thumbnailUrl" alt="@product.Name" class="h-full w-full object-cover" loading="lazy" />
+                                            }
+                                            else
+                                            {
+                                                <div class="flex h-full w-full items-center justify-center text-ink-400">
+                                                    <i class="fa-regular fa-image" aria-hidden="true"></i>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="min-w-0">
+                                            <div class="truncate font-semibold text-ink-900">@product.Name</div>
+                                            <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-ink-500">
+                                                <span class="font-mono">@product.Sku</span>
+                                                <span>·</span>
+                                                <span class="font-mono">@product.Slug</span>
+                                                @if (!string.IsNullOrWhiteSpace(product.Slug))
+                                                {
+                                                    <CopyButton Text="@product.Slug" />
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-ink-600">@product.CategoryName</td>
+                                <td class="px-4 py-3 text-right text-ink-700">
+                                    @product.Price.ToString("0.00")
+                                    @if (product.ComparePrice is not null)
+                                    {
+                                        <span class="ml-1 text-xs text-ink-400 line-through">@product.ComparePrice.Value.ToString("0.00")</span>
+                                    }
+                                </td>
+                                <td class="px-4 py-3"><StatusBadge Text="@(product.IsPublished ? "Published" : "Draft")" Tone="@(product.IsPublished ? "success" : "neutral")" /></td>
+                                <td class="px-4 py-3 text-ink-500">@product.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex items-center justify-between border-t border-ink-200 p-4 text-sm">
+                <div class="text-ink-500">Page @pageNumber · @products.Count of @totalCount</div>
+                <div class="flex gap-2">
+                    <button class="cp-button cp-button-secondary" disabled="@(pageNumber <= 1)" @onclick="PreviousPageAsync">
+                        <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                    </button>
+                    <button class="cp-button cp-button-secondary" disabled="@(!CanNextPage)" @onclick="NextPageAsync">
+                        <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<RightDrawer IsOpen="@isDrawerOpen" IsOpenChanged="OnDrawerChanged" Title="@selectedProduct?.Name" Subtitle="@selectedProduct?.Sku" Eyebrow="Product Detail">
+    @if (selectedProduct is null)
+    {
+        <div class="text-sm text-ink-500">No product selected.</div>
+    }
+    else
+    {
+        <div class="space-y-5">
+            <section class="rounded-md border border-ink-200 p-4">
+                <div class="mb-3 flex items-center justify-between">
+                    <h2 class="text-sm font-semibold text-ink-900">SEO</h2>
+                    <StatusBadge Text="@(seoForm.IsPublished ? "Published" : "Draft")" Tone="@(seoForm.IsPublished ? "success" : "neutral")" />
+                </div>
+                <div class="grid gap-3 text-sm md:grid-cols-2">
+                    <label class="space-y-1 md:col-span-2">
+                        <span class="font-medium text-ink-700">Slug</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 font-mono text-xs outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="seoForm.Slug" />
+                    </label>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Meta title</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="seoForm.MetaTitle" />
+                    </label>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Canonical URL</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="seoForm.CanonicalUrl" />
+                    </label>
+                    <label class="space-y-1 md:col-span-2">
+                        <span class="font-medium text-ink-700">Meta description</span>
+                        <textarea class="min-h-20 w-full rounded-md border border-ink-300 px-3 py-2 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="seoForm.MetaDescription"></textarea>
+                    </label>
+                    <label class="flex items-center gap-2 text-ink-700">
+                        <input type="checkbox" @bind="seoForm.IsPublished" />
+                        Published
+                    </label>
+                    <label class="flex items-center gap-2 text-ink-700">
+                        <input type="checkbox" @bind="seoForm.RobotsIndex" />
+                        Robots index
+                    </label>
+                    <label class="flex items-center gap-2 text-ink-700">
+                        <input type="checkbox" @bind="seoForm.RobotsFollow" />
+                        Robots follow
+                    </label>
+                </div>
+                <button class="cp-button cp-button-primary mt-4 justify-center" disabled="@isSaving" @onclick="SaveSeoAsync">
+                    <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                    Save SEO
+                </button>
+            </section>
+
+            <section class="rounded-md border border-ink-200 p-4">
+                <h2 class="text-sm font-semibold text-ink-900">Basic info</h2>
+                <div class="mt-3 grid gap-3 text-sm md:grid-cols-2">
+                    <label class="space-y-1 md:col-span-2">
+                        <span class="font-medium text-ink-700">Title</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="basicForm.Name" />
+                    </label>
+                    <label class="space-y-1 md:col-span-2">
+                        <span class="font-medium text-ink-700">Category</span>
+                        <select class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="basicCategoryId">
+                            <option value="">No category</option>
+                            @foreach (var category in categories.OrderBy(category => category.Name))
+                            {
+                                <option value="@category.Id">@category.Name</option>
+                            }
+                        </select>
+                    </label>
+                    <label class="space-y-1 md:col-span-2">
+                        <span class="font-medium text-ink-700">Short description</span>
+                        <textarea class="min-h-20 w-full rounded-md border border-ink-300 px-3 py-2 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="basicForm.ShortDescription"></textarea>
+                    </label>
+                    <label class="space-y-1 md:col-span-2">
+                        <span class="font-medium text-ink-700">Full description</span>
+                        <textarea class="min-h-28 w-full rounded-md border border-ink-300 px-3 py-2 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="basicForm.FullDescription"></textarea>
+                    </label>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Price</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" step="0.01" @bind="basicForm.Price" />
+                    </label>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Compare price</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" step="0.01" @bind="basicForm.ComparePrice" />
+                    </label>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Display order</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" @bind="basicForm.DisplayOrder" />
+                    </label>
+                </div>
+                <div class="mt-3 rounded-md border border-ink-200 bg-ink-50 p-3 text-xs text-ink-600">
+                    Locked: SKU, product type, store id, and variation template are not editable here.
+                </div>
+                <button class="cp-button cp-button-primary mt-4 justify-center" disabled="@isSaving" @onclick="SaveBasicAsync">
+                    <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                    Save basic info
+                </button>
+            </section>
+
+            <section class="rounded-md border border-ink-200 p-4">
+                <h2 class="text-sm font-semibold text-ink-900">Media</h2>
+                <textarea class="mt-3 min-h-24 w-full rounded-md border border-ink-300 px-3 py-2 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Image source URLs, one per line" @bind="mediaSourceUrls"></textarea>
+                <button class="cp-button cp-button-secondary mt-3 justify-center" disabled="@isSaving" @onclick="ImportMediaAsync">
+                    <i class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></i>
+                    Import URLs
+                </button>
+                <div class="mt-4 grid gap-3 md:grid-cols-2">
+                    @foreach (var media in mediaItems.OrderBy(media => media.SortOrder))
+                    {
+                        <div class="rounded-md border border-ink-200 p-3">
+                            <div class="flex gap-3">
+                                <div class="h-16 w-16 shrink-0 overflow-hidden rounded-md border border-ink-200 bg-ink-50">
+                                    @if (mediaPreviewUrls.TryGetValue(media.PublicId, out var previewUrl))
+                                    {
+                                        <img src="@previewUrl" alt="@media.AltText" class="h-full w-full object-cover" loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        <div class="flex h-full w-full items-center justify-center text-ink-400">
+                                            <i class="fa-regular fa-image" aria-hidden="true"></i>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <StatusBadge Text="@media.Status" Tone="@MediaTone(media.Status)" />
+                                        @if (media.IsPrimary)
+                                        {
+                                            <StatusBadge Text="Primary" Tone="success" />
+                                        }
+                                    </div>
+                                    <div class="mt-1 truncate text-xs text-ink-500">@media.OriginalSourceUrl</div>
+                                    @if (!string.IsNullOrWhiteSpace(media.ErrorMessage))
+                                    {
+                                        <div class="mt-1 text-xs text-red-600">@media.ErrorMessage</div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                <button class="cp-button cp-button-secondary" disabled="@isSaving" @onclick="() => SetPrimaryMediaAsync(media.PublicId)">
+                                    <i class="fa-solid fa-star" aria-hidden="true"></i>
+                                    Primary
+                                </button>
+                                @if (media.Status.Equals("failed", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <button class="cp-button cp-button-secondary" disabled="@isSaving" @onclick="() => RetryMediaAsync(media.PublicId)">
+                                        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+                                        Retry
+                                    </button>
+                                }
+                                <button class="cp-button cp-button-danger" disabled="@isSaving" @onclick="() => DeleteMediaAsync(media.PublicId)">
+                                    <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+
+            <section class="rounded-md border border-ink-200 p-4">
+                <h2 class="text-sm font-semibold text-ink-900">Variations</h2>
+                @if (selectedProduct.VariationTemplate is not null)
+                {
+                    <div class="mt-3 rounded-md border border-ink-200 bg-ink-50 p-3 text-sm">
+                        <div class="font-semibold text-ink-900">@selectedProduct.VariationTemplate.Name</div>
+                        <div class="mt-1 font-mono text-xs text-ink-500">@selectedProduct.VariationTemplate.Slug</div>
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            @foreach (var option in selectedProduct.VariationTemplate.Options)
+                            {
+                                <span class="rounded-md border border-ink-200 bg-white px-3 py-1 text-xs text-ink-700">@option.Name: @string.Join(", ", option.Values.Select(value => value.Value))</span>
+                            }
+                        </div>
+                    </div>
+                }
+                else if (selectedProduct.Variants.Any())
+                {
+                    <div class="mt-3 divide-y divide-ink-100 rounded-md border border-ink-200">
+                        @foreach (var variant in selectedProduct.Variants)
+                        {
+                            <div class="p-3 text-sm">
+                                <div class="font-medium text-ink-900">@VariantName(variant)</div>
+                                <div class="mt-1 font-mono text-xs text-ink-500">@variant.Sku</div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="mt-3 rounded-md border border-ink-200 p-4 text-center text-sm text-ink-500">No variation structure.</div>
+                }
+            </section>
+
+            <section class="rounded-md border border-ink-200 p-4">
+                <h2 class="text-sm font-semibold text-ink-900">Inventory</h2>
+                <div class="mt-3 grid gap-3 text-sm md:grid-cols-[180px_auto]">
+                    <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" @bind="productQuantity" />
+                    <button class="cp-button cp-button-secondary justify-center" disabled="@isSaving" @onclick="SaveProductInventoryAsync">Update product quantity</button>
+                </div>
+                @if (inventoryItem?.Variants.Count > 0)
+                {
+                    <div class="mt-4 divide-y divide-ink-100 rounded-md border border-ink-200">
+                        @foreach (var variant in inventoryItem.Variants)
+                        {
+                            <div class="grid gap-3 p-3 text-sm md:grid-cols-[minmax(0,1fr)_120px_auto] md:items-center">
+                                <div>
+                                    <div class="font-medium text-ink-900">@VariantName(variant)</div>
+                                    <div class="font-mono text-xs text-ink-500">@variant.Sku</div>
+                                </div>
+                                <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" value="@GetVariantStock(variant.VariantId)" @onchange="args => SetVariantStock(variant.VariantId, args.Value?.ToString())" />
+                                <button class="cp-button cp-button-secondary justify-center" disabled="@isSaving" @onclick="() => SaveVariantInventoryAsync(variant.VariantId)">Update stock</button>
+                            </div>
+                        }
+                    </div>
+                }
+            </section>
+        </div>
+    }
+</RightDrawer>
+
+@code {
+    private const int PageSize = 20;
+
+    private readonly List<StoreSummary> stores = [];
+    private readonly List<GetCategory> categories = [];
+    private readonly List<GetCatalogProduct> products = [];
+    private readonly List<ProductMediaDto> mediaItems = [];
+    private readonly Dictionary<Guid, string> thumbnailUrls = [];
+    private readonly Dictionary<Guid, string> mediaPreviewUrls = [];
+    private readonly Dictionary<Guid, int> variantStocks = [];
+    private Guid? selectedStorePublicId;
+    private string? searchTerm;
+    private string categoryId = string.Empty;
+    private string publishedFilter = string.Empty;
+    private ProductCatalogSortBy sortBy = ProductCatalogSortBy.Newest;
+    private int pageNumber = 1;
+    private int totalCount;
+    private GetProduct? selectedProduct;
+    private ProductSeoDto seoForm = new();
+    private ProductBasicForm basicForm = new();
+    private string basicCategoryId = string.Empty;
+    private string? mediaSourceUrls;
+    private AdminInventoryItemDto? inventoryItem;
+    private int productQuantity;
+    private bool isLoading;
+    private bool isSaving;
+    private bool isDrawerOpen;
+    private string? errorMessage;
+    private string? successMessage;
+
+    private bool HasStore => selectedStorePublicId.HasValue && selectedStorePublicId.Value != Guid.Empty;
+
+    private bool CanNextPage => pageNumber * PageSize < totalCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await StoreClient.ListAsync(status: "active");
+        stores.AddRange(response.Items);
+        selectedStorePublicId = stores.FirstOrDefault()?.PublicId;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        try
+        {
+            var categoryResult = await CatalogClient.ListCategoriesAsync(selectedStorePublicId!.Value);
+            if (categoryResult.Success)
+            {
+                categories.Clear();
+                categories.AddRange(categoryResult.Data ?? []);
+            }
+
+            await LoadProductsAsync();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SearchAsync()
+    {
+        pageNumber = 1;
+        await LoadProductsAsync();
+    }
+
+    private async Task LoadProductsAsync()
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        var result = await CatalogClient.QueryProductsAsync(
+            selectedStorePublicId!.Value,
+            new ProductCatalogQuery
+            {
+                PageNumber = pageNumber,
+                PageSize = PageSize,
+                SearchTerm = searchTerm,
+                CategoryId = Guid.TryParse(categoryId, out var selectedCategoryId) ? selectedCategoryId : null,
+                IsPublished = bool.TryParse(publishedFilter, out var isPublished) ? isPublished : null,
+                SortBy = sortBy,
+            });
+
+        if (!result.Success || result.Data is null)
+        {
+            errorMessage = result.Message;
+            return;
+        }
+
+        products.Clear();
+        products.AddRange(result.Data.Items);
+        totalCount = result.Data.TotalCount;
+        await LoadThumbnailsAsync();
+    }
+
+    private async Task LoadThumbnailsAsync()
+    {
+        thumbnailUrls.Clear();
+        foreach (var product in products.Where(product => product.PrimaryMediaPublicId.HasValue))
+        {
+            var preview = await CatalogClient.GetProductMediaPreviewAsync(
+                selectedStorePublicId!.Value,
+                product.Id,
+                product.PrimaryMediaPublicId!.Value,
+                new ProductMediaPreviewQuery(80, 80, "cover", "webp"));
+
+            if (preview.Success && preview.Content is { Length: > 0 })
+            {
+                thumbnailUrls[product.Id] = ToDataUrl(preview);
+            }
+        }
+    }
+
+    private async Task OpenProductAsync(Guid productId)
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        errorMessage = null;
+        var productResult = await CatalogClient.GetProductAsync(selectedStorePublicId!.Value, productId);
+        if (!productResult.Success || productResult.Data is null)
+        {
+            errorMessage = productResult.Message;
+            return;
+        }
+
+        selectedProduct = productResult.Data;
+        basicForm = ProductBasicForm.FromProduct(selectedProduct);
+        basicCategoryId = selectedProduct.CategoryId?.ToString("D") ?? string.Empty;
+        productQuantity = selectedProduct.Quantity;
+        seoForm = new ProductSeoDto
+        {
+            ProductId = selectedProduct.Id,
+            Slug = selectedProduct.Slug,
+            MetaTitle = selectedProduct.MetaTitle,
+            MetaDescription = selectedProduct.MetaDescription,
+            CanonicalUrl = selectedProduct.CanonicalUrl,
+            OgTitle = selectedProduct.OgTitle,
+            OgDescription = selectedProduct.OgDescription,
+            OgImage = selectedProduct.OgImage,
+            SeoContent = selectedProduct.SeoContent,
+            RobotsIndex = selectedProduct.RobotsIndex,
+            RobotsFollow = selectedProduct.RobotsFollow,
+            IsPublished = selectedProduct.IsPublished,
+            PublishedOn = selectedProduct.PublishedOn,
+        };
+
+        var seoResult = await CatalogClient.GetProductSeoAsync(selectedStorePublicId.Value, productId);
+        if (seoResult.Success && seoResult.Data is not null)
+        {
+            seoForm = seoResult.Data;
+        }
+
+        await LoadMediaAsync();
+        await LoadInventoryAsync();
+        isDrawerOpen = true;
+    }
+
+    private async Task SaveSeoAsync()
+    {
+        if (!HasStore || selectedProduct is null)
+        {
+            return;
+        }
+
+        isSaving = true;
+        errorMessage = null;
+        try
+        {
+            var result = await CatalogClient.UpdateProductSeoAsync(
+                selectedStorePublicId!.Value,
+                selectedProduct.Id,
+                new UpdateProductSeoDto
+                {
+                    ProductId = selectedProduct.Id,
+                    Slug = seoForm.Slug,
+                    MetaTitle = seoForm.MetaTitle,
+                    MetaDescription = seoForm.MetaDescription,
+                    CanonicalUrl = seoForm.CanonicalUrl,
+                    OgTitle = seoForm.OgTitle,
+                    OgDescription = seoForm.OgDescription,
+                    OgImage = seoForm.OgImage,
+                    SeoContent = seoForm.SeoContent,
+                    RobotsIndex = seoForm.RobotsIndex,
+                    RobotsFollow = seoForm.RobotsFollow,
+                    IsPublished = seoForm.IsPublished,
+                    PublishedOn = seoForm.PublishedOn,
+                });
+
+            if (!result.Success || result.Data is null)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            seoForm = result.Data;
+            successMessage = result.Message;
+            await LoadProductsAsync();
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task SaveBasicAsync()
+    {
+        if (!HasStore || selectedProduct is null)
+        {
+            return;
+        }
+
+        isSaving = true;
+        errorMessage = null;
+        try
+        {
+            var result = await CatalogClient.UpdateProductAsync(
+                selectedStorePublicId!.Value,
+                selectedProduct.Id,
+                new UpdateProduct
+                {
+                    Id = selectedProduct.Id,
+                    Name = basicForm.Name,
+                    Description = FirstNonEmpty(selectedProduct.Description, basicForm.FullDescription, basicForm.ShortDescription, basicForm.Name),
+                    Sku = selectedProduct.Sku,
+                    ShortDescription = basicForm.ShortDescription,
+                    FullDescription = basicForm.FullDescription,
+                    Price = basicForm.Price,
+                    ComparePrice = basicForm.ComparePrice,
+                    Image = selectedProduct.Image,
+                    Quantity = selectedProduct.Quantity,
+                    DisplayOrder = basicForm.DisplayOrder,
+                    ProductType = selectedProduct.ProductType,
+                    VariationTemplateId = selectedProduct.VariationTemplateId,
+                    CategoryId = Guid.TryParse(basicCategoryId, out var parsedCategoryId) ? parsedCategoryId : null,
+                    IsPublished = selectedProduct.IsPublished,
+                    PublishedOn = selectedProduct.PublishedOn,
+                });
+
+            if (!result.Success)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            successMessage = result.Message;
+            await OpenProductAsync(selectedProduct.Id);
+            await LoadProductsAsync();
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task LoadMediaAsync()
+    {
+        if (!HasStore || selectedProduct is null)
+        {
+            return;
+        }
+
+        var result = await CatalogClient.ListProductMediaAsync(selectedStorePublicId!.Value, selectedProduct.Id);
+        mediaItems.Clear();
+        mediaPreviewUrls.Clear();
+        if (result.Success)
+        {
+            mediaItems.AddRange(result.Data?.Items ?? []);
+            foreach (var media in mediaItems.Where(media => media.Status.Equals("stored", StringComparison.OrdinalIgnoreCase)))
+            {
+                var preview = await CatalogClient.GetProductMediaPreviewAsync(
+                    selectedStorePublicId.Value,
+                    selectedProduct.Id,
+                    media.PublicId,
+                    new ProductMediaPreviewQuery(160, 160, "cover", "webp", media.Version));
+
+                if (preview.Success && preview.Content is { Length: > 0 })
+                {
+                    mediaPreviewUrls[media.PublicId] = ToDataUrl(preview);
+                }
+            }
+        }
+    }
+
+    private async Task LoadInventoryAsync()
+    {
+        if (!HasStore || selectedProduct is null)
+        {
+            return;
+        }
+
+        var result = await CatalogClient.QueryInventoryAsync(
+            selectedStorePublicId!.Value,
+            new AdminInventoryQueryDto
+            {
+                SearchTerm = selectedProduct.Sku ?? selectedProduct.Name,
+                PageNumber = 1,
+                PageSize = 20,
+            });
+
+        inventoryItem = result.Data?.Items.FirstOrDefault(item => item.ProductId == selectedProduct.Id);
+        productQuantity = inventoryItem?.Quantity ?? selectedProduct.Quantity;
+        variantStocks.Clear();
+        foreach (var variant in inventoryItem?.Variants ?? [])
+        {
+            variantStocks[variant.VariantId] = variant.Stock;
+        }
+    }
+
+    private async Task ImportMediaAsync()
+    {
+        if (!HasStore || selectedProduct is null || string.IsNullOrWhiteSpace(mediaSourceUrls))
+        {
+            return;
+        }
+
+        var items = mediaSourceUrls
+            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select((url, index) => new ImportProductMediaItem(url, mediaItems.Count + index))
+            .ToArray();
+
+        if (items.Length == 0)
+        {
+            return;
+        }
+
+        var result = await CatalogClient.ImportProductMediaAsync(selectedStorePublicId!.Value, selectedProduct.Id, new ImportProductMediaRequest(items));
+        if (!result.Success)
+        {
+            errorMessage = result.Message;
+            return;
+        }
+
+        successMessage = result.Message;
+        mediaSourceUrls = null;
+        await LoadMediaAsync();
+    }
+
+    private async Task SetPrimaryMediaAsync(Guid mediaPublicId)
+    {
+        if (!HasStore || selectedProduct is null)
+        {
+            return;
+        }
+
+        var result = await CatalogClient.SetPrimaryProductMediaAsync(selectedStorePublicId!.Value, selectedProduct.Id, mediaPublicId);
+        if (!result.Success)
+        {
+            errorMessage = result.Message;
+            return;
+        }
+
+        await LoadMediaAsync();
+        await LoadProductsAsync();
+    }
+
+    private async Task RetryMediaAsync(Guid mediaPublicId)
+    {
+        if (!HasStore || selectedProduct is null)
+        {
+            return;
+        }
+
+        var result = await CatalogClient.RetryProductMediaAsync(selectedStorePublicId!.Value, selectedProduct.Id, mediaPublicId);
+        if (!result.Success)
+        {
+            errorMessage = result.Message;
+            return;
+        }
+
+        await LoadMediaAsync();
+    }
+
+    private async Task DeleteMediaAsync(Guid mediaPublicId)
+    {
+        if (!HasStore || selectedProduct is null)
+        {
+            return;
+        }
+
+        var result = await CatalogClient.DeleteProductMediaAsync(selectedStorePublicId!.Value, selectedProduct.Id, mediaPublicId);
+        if (!result.Success)
+        {
+            errorMessage = result.Message;
+            return;
+        }
+
+        await LoadMediaAsync();
+        await LoadProductsAsync();
+    }
+
+    private async Task SaveProductInventoryAsync()
+    {
+        if (!HasStore || selectedProduct is null)
+        {
+            return;
+        }
+
+        var result = await CatalogClient.UpdateProductStockAsync(selectedStorePublicId!.Value, selectedProduct.Id, new UpdateProductStockDto { Quantity = productQuantity });
+        if (!result.Success)
+        {
+            errorMessage = result.Message;
+            return;
+        }
+
+        successMessage = result.Message;
+        await LoadInventoryAsync();
+    }
+
+    private async Task SaveVariantInventoryAsync(Guid variantId)
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        var result = await CatalogClient.UpdateVariantStockAsync(selectedStorePublicId!.Value, variantId, new UpdateVariantStockDto { Stock = GetVariantStockValue(variantId) });
+        if (!result.Success)
+        {
+            errorMessage = result.Message;
+            return;
+        }
+
+        successMessage = result.Message;
+        await LoadInventoryAsync();
+    }
+
+    private async Task PreviousPageAsync()
+    {
+        pageNumber = Math.Max(1, pageNumber - 1);
+        await LoadProductsAsync();
+    }
+
+    private async Task NextPageAsync()
+    {
+        if (CanNextPage)
+        {
+            pageNumber++;
+            await LoadProductsAsync();
+        }
+    }
+
+    private async Task OnSearchKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            await SearchAsync();
+        }
+    }
+
+    private Task OnDrawerChanged(bool value)
+    {
+        isDrawerOpen = value;
+        return Task.CompletedTask;
+    }
+
+    private string GetVariantStock(Guid variantId) => GetVariantStockValue(variantId).ToString();
+
+    private int GetVariantStockValue(Guid variantId) => variantStocks.TryGetValue(variantId, out var stock) ? stock : 0;
+
+    private void SetVariantStock(Guid variantId, string? value)
+    {
+        if (int.TryParse(value, out var stock))
+        {
+            variantStocks[variantId] = stock;
+        }
+    }
+
+    private static string VariantName(GetProductVariant variant)
+    {
+        return FirstNonEmpty(variant.DisplayName, string.Join(" / ", variant.Attributes.Select(attribute => $"{attribute.Name}: {attribute.Value}")), variant.SizeValue, variant.Color, "Variant") ?? "Variant";
+    }
+
+    private static string VariantName(AdminInventoryVariantDto variant)
+    {
+        return FirstNonEmpty(variant.DisplayName, string.Join(" / ", variant.Attributes.Select(attribute => $"{attribute.Name}: {attribute.Value}")), variant.SizeValue, variant.Color, "Variant") ?? "Variant";
+    }
+
+    private static string MediaTone(string? status)
+    {
+        return status?.ToLowerInvariant() switch
+        {
+            "stored" or "completed" => "success",
+            "failed" => "danger",
+            "pending" or "processing" or "queued" => "warning",
+            _ => "neutral",
+        };
+    }
+
+    private static string ToDataUrl(ControlPlaneFileResult result)
+    {
+        return $"data:{result.ContentType ?? "image/webp"};base64,{Convert.ToBase64String(result.Content ?? [])}";
+    }
+
+    private static string? FirstNonEmpty(params string?[] values)
+    {
+        return values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
+    }
+
+    private sealed class ProductBasicForm
+    {
+        public string? Name { get; set; }
+
+        public string? ShortDescription { get; set; }
+
+        public string? FullDescription { get; set; }
+
+        public decimal Price { get; set; }
+
+        public decimal? ComparePrice { get; set; }
+
+        public int DisplayOrder { get; set; }
+
+        public static ProductBasicForm FromProduct(GetProduct product)
+        {
+            return new ProductBasicForm
+            {
+                Name = product.Name,
+                ShortDescription = product.ShortDescription,
+                FullDescription = product.FullDescription,
+                Price = product.Price,
+                ComparePrice = product.ComparePrice,
+                DisplayOrder = product.DisplayOrder,
+            };
+        }
+    }
+}
