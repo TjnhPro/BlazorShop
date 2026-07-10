@@ -2,6 +2,7 @@ using BlazorShop.CommerceNode.API.Configuration;
 using BlazorShop.CommerceNode.API.Deployment;
 using BlazorShop.CommerceNode.API.Endpoints;
 using BlazorShop.CommerceNode.API.Middleware;
+using BlazorShop.CommerceNode.API.ProductMedia;
 using BlazorShop.CommerceNode.API.Tasks;
 using BlazorShop.CommerceNode.API.Workers;
 using BlazorShop.Application.CommerceNode.Tasks;
@@ -27,14 +28,18 @@ builder.Services.AddOptions<StorefrontDeploymentOptions>()
     .Bind(builder.Configuration.GetSection(StorefrontDeploymentOptions.SectionName));
 builder.Services.AddOptions<NginxDeploymentOptions>()
     .Bind(builder.Configuration.GetSection(NginxDeploymentOptions.SectionName));
+builder.Services.AddOptions<ProductMediaStorageOptions>()
+    .Bind(builder.Configuration.GetSection(ProductMediaStorageOptions.SectionName));
 builder.Services.AddCommerceNodeInfrastructure(builder.Configuration);
 builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<IProductMediaDownloader, ProductMediaDownloader>();
 builder.Services.AddSingleton<IStorefrontDockerDeploymentService, StorefrontDockerDeploymentService>();
 builder.Services.AddSingleton<INginxDeploymentService, NginxDeploymentService>();
 builder.Services.AddScoped<ICommerceTaskHandler, CompleteTestCommerceTaskHandler>();
 builder.Services.AddScoped<ICommerceTaskHandler, FailTestCommerceTaskHandler>();
 builder.Services.AddScoped<ICommerceTaskHandler, WaitTestCommerceTaskHandler>();
 builder.Services.AddScoped<ICommerceTaskHandler, StoreCreateAndDeployTaskHandler>();
+builder.Services.AddScoped<ICommerceTaskHandler, ProductMediaImportTaskHandler>();
 builder.Services.AddHostedService<CommerceTaskWorker>();
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();

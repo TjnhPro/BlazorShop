@@ -549,52 +549,52 @@ Review/fix gate:
 
 ### Phase 2 - Application Contracts and Services
 
-- [ ] Add ProductMedia DTOs in Application layer.
-- [ ] Add `IProductMediaService`.
-- [ ] Implement service in Infrastructure CommerceNode layer.
-- [ ] Add methods for list, create pending import rows, set primary, update order, soft delete, retry failed.
-- [ ] Add media public URL builder.
-- [ ] Update primary media logic to sync `Product.Image`.
+- [x] Add ProductMedia DTOs in Application layer.
+- [x] Add `IProductMediaService`.
+- [x] Implement service in Infrastructure CommerceNode layer.
+- [x] Add methods for list, create pending import rows, set primary, update order, soft delete, retry failed.
+- [x] Add media public URL builder.
+- [x] Update primary media logic to sync `Product.Image`.
 
 Review/fix gate:
 
-- [ ] Ensure service validates store/product match.
-- [ ] Ensure all queries are store-scoped.
-- [ ] Ensure deleted media is excluded by default.
+- [x] Ensure service validates store/product match.
+- [x] Ensure all queries are store-scoped.
+- [x] Ensure deleted media is excluded by default.
 
 ### Phase 3 - Storage and Download Pipeline
 
-- [ ] Add ProductMedia storage options.
-- [ ] Add local file storage implementation for original images.
-- [ ] Add safe image downloader.
-- [ ] Block unsupported schemes.
-- [ ] Block private IPs, loopback, localhost, and link-local targets.
-- [ ] Enforce max download size.
-- [ ] Reuse or extend existing image signature validation.
-- [ ] Capture MIME type, width, height, file size, and content hash.
+- [x] Add ProductMedia storage options.
+- [x] Add local file storage implementation for original images.
+- [x] Add safe image downloader.
+- [x] Block unsupported schemes.
+- [x] Block private IPs, loopback, localhost, and link-local targets.
+- [x] Enforce max download size.
+- [x] Reuse or extend existing image signature validation.
+- [x] Capture MIME type, width, height, file size, and content hash.
 
 Review/fix gate:
 
-- [ ] Review SSRF defenses.
-- [ ] Review path traversal defenses.
-- [ ] Review memory usage for large downloads.
-- [ ] Review temp file cleanup after failures.
+- [x] Review SSRF defenses.
+- [x] Review path traversal defenses.
+- [x] Review memory usage for large downloads.
+- [x] Review temp file cleanup after failures.
 
 ### Phase 4 - Product Media Task Handler
 
-- [ ] Add task type constant `product.media.import`.
-- [ ] Add `ProductMediaImportTaskHandler`.
-- [ ] Register handler in CommerceNode API DI.
-- [ ] Build task payload parser.
-- [ ] Process media items one by one with per-item status updates.
-- [ ] Record task result JSON with successes and failures.
-- [ ] Update `Product.Image` when primary media is stored.
+- [x] Add task type constant `product.media.import`.
+- [x] Add `ProductMediaImportTaskHandler`.
+- [x] Register handler in CommerceNode API DI.
+- [x] Build task payload parser.
+- [x] Process media items one by one with per-item status updates.
+- [x] Record task result JSON with successes and failures.
+- [x] Update `Product.Image` when primary media is stored.
 
 Review/fix gate:
 
-- [ ] Verify partial item failure does not roll back successful items.
-- [ ] Verify retry behavior only retries infrastructure-level failures.
-- [ ] Verify idempotency prevents duplicate media import tasks.
+- [x] Verify partial item failure does not roll back successful items.
+- [x] Verify retry behavior only retries infrastructure-level failures.
+- [x] Verify idempotency prevents duplicate media import tasks.
 
 ### Phase 5 - CommerceNode APIs
 
