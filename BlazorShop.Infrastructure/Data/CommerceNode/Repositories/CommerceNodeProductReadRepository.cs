@@ -3,6 +3,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
     using System.Linq.Expressions;
 
     using BlazorShop.Application.CommerceNode.Stores;
+    using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities;
 
@@ -10,14 +11,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
 
     public sealed class CommerceNodeProductReadRepository : IProductReadRepository
     {
+        private const int StorefrontMaxPageCount = 10;
+        private const string SearchConfig = "simple";
+
         private readonly CommerceNodeDbContext context;
+        private readonly ISlugService slugService;
         private readonly ICommerceStoreContext storeContext;
 
         public CommerceNodeProductReadRepository(
             CommerceNodeDbContext context,
+            ISlugService slugService,
             ICommerceStoreContext storeContext)
         {
             this.context = context;
+            this.slugService = slugService;
             this.storeContext = storeContext;
         }
 
@@ -84,11 +91,25 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
 
         public async Task<PagedResult<CatalogProductReadModel>> GetPublishedCatalogPageAsync(ProductCatalogQuery query)
         {
-            var pageNumber = query.GetNormalizedPageNumber();
+            var requestedPageNumber = query.GetNormalizedPageNumber();
             var pageSize = query.GetNormalizedPageSize();
 
-            var scopedProducts = await this.GetCurrentStoreProductsAsync();
-            IQueryable<Product> products = BuildCatalogQuery(scopedProducts
+            var storeResult = await this.storeContext.GetCurrentStoreIdAsync();
+            if (!storeResult.Success)
+            {
+                return CreateEmptyPagedResult<CatalogProductReadModel>(1, pageSize);
+            }
+
+            var storeId = storeResult.Payload;
+            var categoryIds = await this.GetPublishedCategoryIdsForQueryAsync(storeId, query);
+            if (categoryIds is not null && categoryIds.Count == 0)
+            {
+                return CreateEmptyPagedResult<CatalogProductReadModel>(1, pageSize);
+            }
+
+            IQueryable<Product> products = this.context.Products
+                .AsNoTracking()
+                .Where(product => product.StoreId == storeId)
                 .Where(product => product.IsPublished
                     && product.ArchivedAt == null
                     && product.PublishedOn != null
@@ -97,10 +118,15 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                     && product.Category != null
                     && product.Category.ArchivedAt == null
                     && product.Category.IsPublished
-                    && product.Category.StoreId == product.StoreId),
-                query);
+                    && product.Category.StoreId == product.StoreId);
+
+            products = BuildPublishedCatalogQuery(products, query, categoryIds);
 
             var totalCount = await products.CountAsync();
+            var cappedTotalCount = Math.Min(totalCount, pageSize * StorefrontMaxPageCount);
+            var maxPageNumber = Math.Max(1, (int)Math.Ceiling((double)cappedTotalCount / pageSize));
+            var pageNumber = Math.Min(requestedPageNumber, maxPageNumber);
+
             var items = await products
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -112,7 +138,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 Items = items,
                 PageNumber = pageNumber,
                 PageSize = pageSize,
-                TotalCount = totalCount,
+                TotalCount = cappedTotalCount,
             };
         }
 
@@ -298,6 +324,138 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
             };
         }
 
+        private static IQueryable<Product> BuildPublishedCatalogQuery(
+            IQueryable<Product> products,
+            ProductCatalogQuery query,
+            IReadOnlyCollection<Guid>? categoryIds)
+        {
+            var searchTerm = query.GetNormalizedSearchTerm();
+
+            if (categoryIds is { Count: > 0 })
+            {
+                products = products.Where(product => categoryIds.Contains(product.CategoryId));
+            }
+            else if (query.CategoryId.HasValue && query.CategoryId.Value != Guid.Empty)
+            {
+                products = products.Where(product => product.CategoryId == query.CategoryId.Value);
+            }
+
+            if (query.CreatedAfterUtc.HasValue)
+            {
+                products = products.Where(product => product.CreatedOn >= query.CreatedAfterUtc.Value);
+            }
+
+            if (query.MinPrice.HasValue)
+            {
+                products = products.Where(product => product.Price >= query.MinPrice.Value);
+            }
+
+            if (query.MaxPrice.HasValue)
+            {
+                products = products.Where(product => product.Price <= query.MaxPrice.Value);
+            }
+
+            if (query.InStock.HasValue)
+            {
+                products = query.InStock.Value
+                    ? products.Where(product => product.Quantity > 0 || product.Variants.Any(variant => variant.Stock > 0))
+                    : products.Where(product => product.Quantity <= 0 && !product.Variants.Any(variant => variant.Stock > 0));
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var searchQuery = EF.Functions.PlainToTsQuery(SearchConfig, searchTerm);
+
+                return products
+                    .Where(product => EF.Functions
+                        .ToTsVector(SearchConfig, product.Name ?? string.Empty)
+                        .Matches(searchQuery))
+                    .OrderByDescending(product => EF.Functions
+                        .ToTsVector(SearchConfig, product.Name ?? string.Empty)
+                        .Rank(searchQuery))
+                    .ThenBy(product => product.DisplayOrder)
+                    .ThenByDescending(product => product.CreatedOn)
+                    .ThenBy(product => product.Id);
+            }
+
+            return query.SortBy switch
+            {
+                ProductCatalogSortBy.Oldest => products.OrderBy(product => product.CreatedOn).ThenBy(product => product.Id),
+                ProductCatalogSortBy.PriceLowToHigh => products.OrderBy(product => product.Price).ThenBy(product => product.Id),
+                ProductCatalogSortBy.PriceHighToLow => products.OrderByDescending(product => product.Price).ThenBy(product => product.Id),
+                ProductCatalogSortBy.NameAscending => products.OrderBy(product => product.Name).ThenBy(product => product.Id),
+                ProductCatalogSortBy.NameDescending => products.OrderByDescending(product => product.Name).ThenBy(product => product.Id),
+                ProductCatalogSortBy.DisplayOrder => products.OrderBy(product => product.DisplayOrder).ThenByDescending(product => product.CreatedOn).ThenBy(product => product.Id),
+                ProductCatalogSortBy.Updated => products.OrderByDescending(product => product.UpdatedAt).ThenBy(product => product.Id),
+                _ => products.OrderByDescending(product => product.CreatedOn).ThenBy(product => product.Id),
+            };
+        }
+
+        private async Task<IReadOnlyCollection<Guid>?> GetPublishedCategoryIdsForQueryAsync(Guid storeId, ProductCatalogQuery query)
+        {
+            var categorySlug = query.GetNormalizedCategorySlug();
+            if (string.IsNullOrWhiteSpace(categorySlug))
+            {
+                return null;
+            }
+
+            var normalizedSlug = this.slugService.NormalizeSlug(categorySlug);
+            if (string.IsNullOrWhiteSpace(normalizedSlug))
+            {
+                return [];
+            }
+
+            var categories = await this.context.Categories
+                .AsNoTracking()
+                .Where(category => category.StoreId == storeId
+                    && category.ArchivedAt == null
+                    && category.IsPublished
+                    && category.Slug != null
+                    && category.Slug != string.Empty)
+                .Select(category => new CategoryScopeNode(category.Id, category.ParentCategoryId, category.Slug!))
+                .ToListAsync();
+
+            var root = categories.FirstOrDefault(category => category.Slug == normalizedSlug);
+            if (root is null)
+            {
+                return [];
+            }
+
+            return CollectDescendantCategoryIds(root.Id, categories);
+        }
+
+        private static IReadOnlyCollection<Guid> CollectDescendantCategoryIds(Guid rootCategoryId, IReadOnlyList<CategoryScopeNode> categories)
+        {
+            var categoryIds = new HashSet<Guid> { rootCategoryId };
+            var pending = new Queue<Guid>();
+            pending.Enqueue(rootCategoryId);
+
+            while (pending.Count > 0)
+            {
+                var currentId = pending.Dequeue();
+                foreach (var child in categories.Where(category => category.ParentCategoryId == currentId))
+                {
+                    if (categoryIds.Add(child.Id))
+                    {
+                        pending.Enqueue(child.Id);
+                    }
+                }
+            }
+
+            return categoryIds;
+        }
+
+        private static PagedResult<T> CreateEmptyPagedResult<T>(int pageNumber, int pageSize)
+        {
+            return new PagedResult<T>
+            {
+                Items = [],
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = 0,
+            };
+        }
+
         private static Expression<Func<Product, CatalogProductReadModel>> MapCatalogProduct()
         {
             return product => new CatalogProductReadModel
@@ -335,5 +493,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 .AsNoTracking()
                 .Where(product => product.StoreId == storeId);
         }
+
+        private sealed record CategoryScopeNode(Guid Id, Guid? ParentCategoryId, string Slug);
     }
 }
