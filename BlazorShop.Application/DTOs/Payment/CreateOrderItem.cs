@@ -7,6 +7,8 @@
         [Required]
         public Guid ProductId { get; set; }
 
+        public Guid? ProductVariantId { get; set; }
+
         [Required]
         public int Quantity { get; set; }
 

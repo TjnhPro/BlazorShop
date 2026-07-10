@@ -8,6 +8,8 @@ namespace BlazorShop.Application.DTOs.Payment
 
         public string Status { get; set; } = string.Empty;
 
+        public string? CurrencyCode { get; set; }
+
         public decimal TotalAmount { get; set; }
 
         public DateTime CreatedOn { get; set; }

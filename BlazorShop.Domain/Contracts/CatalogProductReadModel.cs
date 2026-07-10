@@ -10,11 +10,23 @@ namespace BlazorShop.Domain.Contracts
 
         public string? Description { get; init; }
 
+        public string? Sku { get; init; }
+
+        public string? ShortDescription { get; init; }
+
         public decimal Price { get; init; }
+
+        public decimal? ComparePrice { get; init; }
 
         public string? Image { get; init; }
 
         public DateTime CreatedOn { get; init; }
+
+        public DateTime UpdatedAt { get; init; }
+
+        public int DisplayOrder { get; init; }
+
+        public bool InStock { get; init; }
 
         public Guid CategoryId { get; init; }
 

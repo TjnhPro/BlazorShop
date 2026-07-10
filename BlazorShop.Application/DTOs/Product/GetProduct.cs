@@ -34,6 +34,8 @@
 
         public DateTime CreatedOn { get; set; }
 
+        public DateTime UpdatedAt { get; set; }
+
         public IEnumerable<GetProductVariant> Variants { get; set; } = Array.Empty<GetProductVariant>();
     }
 }

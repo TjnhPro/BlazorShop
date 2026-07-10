@@ -6,5 +6,11 @@
     {
         [Required]
         public string? Name { get; set; }
+
+        public Guid? ParentCategoryId { get; set; }
+
+        public string? Image { get; set; }
+
+        public int DisplayOrder { get; set; }
     }
 }

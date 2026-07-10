@@ -10,6 +10,8 @@ namespace BlazorShop.Application.DTOs.Product.ProductVariant
         [MaxLength(64)]
         public string? Sku { get; set; }
 
+        public IReadOnlyList<ProductVariantAttributeDto> Attributes { get; set; } = Array.Empty<ProductVariantAttributeDto>();
+
         [Required]
         public int SizeScale { get; set; }
 

@@ -6,6 +6,8 @@
     {
         public Guid Id { get; set; }
 
+        public DateTime UpdatedAt { get; set; }
+
         public string? Slug { get; set; }
 
         public string? MetaTitle { get; set; }

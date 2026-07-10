@@ -8,6 +8,7 @@
     using BlazorShop.Application.DTOs.Product.ProductVariant;
     using BlazorShop.Application.DTOs.Seo;
     using BlazorShop.Application.DTOs.UserIdentity;
+    using BlazorShop.Application.Services;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities;
     using BlazorShop.Domain.Entities.Identity;
@@ -69,9 +70,24 @@
             this.CreateMap<Product, GetProductRecommendation>()
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : null));
 
-            this.CreateMap<CreateProductVariant, ProductVariant>();
-            this.CreateMap<UpdateProductVariant, ProductVariant>();
-            this.CreateMap<ProductVariant, GetProductVariant>();
+            this.CreateMap<CreateProductVariant, ProductVariant>()
+                .ForMember(dest => dest.AttributesJson, opt => opt.MapFrom(src =>
+                    ProductVariantAttributeNormalizer.Normalize(src.Attributes, src.Color, src.SizeValue).AttributesJson))
+                .ForMember(dest => dest.AttributeSignature, opt => opt.MapFrom(src =>
+                    ProductVariantAttributeNormalizer.Normalize(src.Attributes, src.Color, src.SizeValue).AttributeSignature))
+                .ForMember(dest => dest.DisplayName, opt => opt.MapFrom(src =>
+                    ProductVariantAttributeNormalizer.Normalize(src.Attributes, src.Color, src.SizeValue).DisplayName));
+            this.CreateMap<UpdateProductVariant, ProductVariant>()
+                .ForMember(dest => dest.AttributesJson, opt => opt.MapFrom(src =>
+                    ProductVariantAttributeNormalizer.Normalize(src.Attributes, src.Color, src.SizeValue).AttributesJson))
+                .ForMember(dest => dest.AttributeSignature, opt => opt.MapFrom(src =>
+                    ProductVariantAttributeNormalizer.Normalize(src.Attributes, src.Color, src.SizeValue).AttributeSignature))
+                .ForMember(dest => dest.DisplayName, opt => opt.MapFrom(src =>
+                    ProductVariantAttributeNormalizer.Normalize(src.Attributes, src.Color, src.SizeValue).DisplayName));
+            this.CreateMap<ProductVariant, GetProductVariant>()
+                .ForMember(dest => dest.Attributes, opt => opt.MapFrom(src =>
+                    ProductVariantAttributeNormalizer.Deserialize(src.AttributesJson)))
+                .ForMember(dest => dest.EffectivePrice, opt => opt.MapFrom(src => src.Price ?? 0));
 
             this.CreateMap<CreateUser, AppUser>();
             this.CreateMap<LoginUser, AppUser>();
