@@ -224,14 +224,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var now = DateTime.UtcNow;
-            template.Options.Add(new VariationTemplateOption
+            var option = new VariationTemplateOption
             {
                 Name = name!,
                 SortOrder = request.SortOrder,
                 IsActive = request.IsActive,
                 CreatedAt = now,
                 UpdatedAt = now,
-            });
+            };
+            template.Options.Add(option);
+            this.context.Entry(option).State = EntityState.Added;
             template.UpdatedAt = now;
 
             await this.context.SaveChangesAsync(cancellationToken);
@@ -320,14 +322,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var now = DateTime.UtcNow;
-            option.Values.Add(new VariationTemplateValue
+            var valueRow = new VariationTemplateValue
             {
                 Value = value!,
                 SortOrder = request.SortOrder,
                 IsActive = request.IsActive,
                 CreatedAt = now,
                 UpdatedAt = now,
-            });
+            };
+            option.Values.Add(valueRow);
+            this.context.Entry(valueRow).State = EntityState.Added;
             option.UpdatedAt = now;
             template.UpdatedAt = now;
 
