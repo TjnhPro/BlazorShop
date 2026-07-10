@@ -1,0 +1,27 @@
+<span class="@CssClass">
+    @if (!string.IsNullOrWhiteSpace(Icon))
+    {
+        <i class="@Icon" aria-hidden="true"></i>
+    }
+    @Text
+</span>
+
+@code {
+    [Parameter]
+    public string? Text { get; set; }
+
+    [Parameter]
+    public string? Icon { get; set; }
+
+    [Parameter]
+    public string Tone { get; set; } = "neutral";
+
+    private string CssClass => Tone.ToLowerInvariant() switch
+    {
+        "success" => "cp-badge border border-green-200 bg-green-50 text-green-700",
+        "warning" => "cp-badge border border-amber-200 bg-amber-50 text-amber-800",
+        "danger" => "cp-badge border border-red-200 bg-red-50 text-red-700",
+        "info" => "cp-badge border border-blue-200 bg-blue-50 text-blue-800",
+        _ => "cp-badge border border-ink-200 bg-ink-50 text-ink-600",
+    };
+}

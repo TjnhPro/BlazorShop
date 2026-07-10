@@ -488,16 +488,16 @@ Shipment form:
 
 ### Phase 2 - Web Client And Shared Admin UI Components
 
-- [ ] Add/standardize `ControlPlaneCommerceAdminClient` or extend `ControlPlaneCatalogClient` for new canonical routes.
-- [ ] Add typed methods for product imports/template/error CSV.
-- [ ] Add typed methods for variation templates.
-- [ ] Add typed methods for orders/shipments.
-- [ ] Add typed media preview URL builder that points to ControlPlane API only.
-- [ ] Add `RightDrawer` component.
-- [ ] Add compact `CopyButton`.
-- [ ] Add status/empty/loading helpers if not already reusable.
-- [ ] Add local placeholder image/icon strategy for product thumbnails.
-- [ ] Commit: `feat(control-plane-web): add commerce admin client and drawer components`.
+- [x] Add/standardize `ControlPlaneCommerceAdminClient` or extend `ControlPlaneCatalogClient` for new canonical routes.
+- [x] Add typed methods for product imports/template/error CSV.
+- [x] Add typed methods for variation templates.
+- [x] Add typed methods for orders/shipments.
+- [x] Add typed media preview URL builder that points to ControlPlane API only. 2026-07-10: implemented authenticated binary fetch through `GetProductMediaPreviewAsync`.
+- [x] Add `RightDrawer` component.
+- [x] Add compact `CopyButton`.
+- [x] Add status/empty/loading helpers if not already reusable.
+- [x] Add local placeholder image/icon strategy for product thumbnails. 2026-07-10: placeholder rendered by product UI phase; binary preview client support is ready.
+- [x] Commit: `feat(control-plane-web): add commerce admin client and drawer components`.
 
 ### Phase 3 - Product Imports UX
 

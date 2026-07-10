@@ -1,8 +1,16 @@
 namespace BlazorShop.ControlPlane.Web.Services.Catalog
 {
+    using System.Globalization;
+    using System.Net.Http.Headers;
+
+    using BlazorShop.Application.ControlPlane.Catalog;
+    using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
+    using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs.Admin.Inventory;
+    using BlazorShop.Application.DTOs.Admin.Orders;
     using BlazorShop.Application.DTOs.Category;
+    using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Application.DTOs.Product;
     using BlazorShop.Application.DTOs.Product.ProductVariant;
     using BlazorShop.ControlPlane.Web.Services.Common;
@@ -34,6 +42,38 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
         Task<ControlPlaneClientResult<object>> ArchiveProductAsync(
             Guid storePublicId,
             Guid productId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneFileResult> DownloadProductImportTemplateAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<ProductImportUploadResponse>> UploadProductImportAsync(
+            Guid storePublicId,
+            Stream content,
+            string fileName,
+            string? mode,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<ProductImportJobListResponse>> ListProductImportsAsync(
+            Guid storePublicId,
+            ProductImportJobListQuery query,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<ProductImportJobDetailDto>> GetProductImportAsync(
+            Guid storePublicId,
+            Guid jobPublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<ProductImportRowsResponse>> ListProductImportRowsAsync(
+            Guid storePublicId,
+            Guid jobPublicId,
+            ProductImportRowsQuery query,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneFileResult> DownloadProductImportErrorsAsync(
+            Guid storePublicId,
+            Guid jobPublicId,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneClientResult<ProductMediaListResponse>> ListProductMediaAsync(
@@ -69,6 +109,13 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             Guid storePublicId,
             Guid productId,
             Guid mediaPublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneFileResult> GetProductMediaPreviewAsync(
+            Guid storePublicId,
+            Guid productId,
+            Guid mediaPublicId,
+            ProductMediaPreviewQuery query,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneClientResult<IReadOnlyList<GetCategory>>> ListCategoriesAsync(
@@ -134,6 +181,87 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             Guid storePublicId,
             Guid variantId,
             UpdateVariantStockDto request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<VariationTemplateListResponse>> ListVariationTemplatesAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<VariationTemplateDetailDto>> GetVariationTemplateAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<VariationTemplateDetailDto>> CreateVariationTemplateAsync(
+            Guid storePublicId,
+            CreateVariationTemplateRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<VariationTemplateDetailDto>> UpdateVariationTemplateAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            UpdateVariationTemplateRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<VariationTemplateDetailDto>> CreateVariationTemplateOptionAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            CreateVariationTemplateOptionRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<VariationTemplateDetailDto>> UpdateVariationTemplateOptionAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            Guid optionPublicId,
+            UpdateVariationTemplateOptionRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<VariationTemplateDetailDto>> CreateVariationTemplateValueAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            Guid optionPublicId,
+            CreateVariationTemplateValueRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<VariationTemplateDetailDto>> UpdateVariationTemplateValueAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            Guid optionPublicId,
+            Guid valuePublicId,
+            UpdateVariationTemplateValueRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<PagedResult<GetOrder>>> QueryOrdersAsync(
+            Guid storePublicId,
+            AdminOrderQueryDto query,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<GetOrder>> GetOrderAsync(
+            Guid storePublicId,
+            Guid orderId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<GetOrder>> UpdateOrderAdminNoteAsync(
+            Guid storePublicId,
+            Guid orderId,
+            UpdateOrderAdminNoteRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<GetOrder>> UpdateOrderShippingStatusAsync(
+            Guid storePublicId,
+            Guid orderId,
+            UpdateShippingStatusRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<GetShipment>> GetShipmentAsync(
+            Guid storePublicId,
+            Guid orderId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<GetShipment>> UpsertShipmentAsync(
+            Guid storePublicId,
+            Guid orderId,
+            UpsertShipmentRequest request,
             CancellationToken cancellationToken = default);
     }
 
@@ -201,6 +329,81 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             return this.apiClient.DeletePrivateAsync<object>(
                 $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}",
                 "Unable to archive product.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneFileResult> DownloadProductImportTemplateAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateFileAsync(
+                CommerceRoute(storePublicId, "product-imports/template"),
+                "Unable to download product import template.",
+                cancellationToken);
+        }
+
+        public async Task<ControlPlaneClientResult<ProductImportUploadResponse>> UploadProductImportAsync(
+            Guid storePublicId,
+            Stream content,
+            string fileName,
+            string? mode,
+            CancellationToken cancellationToken = default)
+        {
+            using var form = new MultipartFormDataContent();
+            using var fileContent = new StreamContent(content);
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue("text/csv");
+            form.Add(fileContent, "file", string.IsNullOrWhiteSpace(fileName) ? "products.csv" : fileName);
+            form.Add(new StringContent(string.IsNullOrWhiteSpace(mode) ? ProductImportModes.CreateOnly : mode), "mode");
+
+            return await this.apiClient.PostPrivateMultipartAsync<ProductImportUploadResponse>(
+                CommerceRoute(storePublicId, "product-imports"),
+                form,
+                "Unable to upload product import.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<ProductImportJobListResponse>> ListProductImportsAsync(
+            Guid storePublicId,
+            ProductImportJobListQuery query,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<ProductImportJobListResponse>(
+                CommerceRoute(storePublicId, "product-imports") + BuildProductImportQuery(query),
+                "Unable to load product import jobs.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<ProductImportJobDetailDto>> GetProductImportAsync(
+            Guid storePublicId,
+            Guid jobPublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<ProductImportJobDetailDto>(
+                CommerceRoute(storePublicId, $"product-imports/{jobPublicId:D}"),
+                "Unable to load product import job.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<ProductImportRowsResponse>> ListProductImportRowsAsync(
+            Guid storePublicId,
+            Guid jobPublicId,
+            ProductImportRowsQuery query,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<ProductImportRowsResponse>(
+                CommerceRoute(storePublicId, $"product-imports/{jobPublicId:D}/rows") + BuildProductImportRowsQuery(query),
+                "Unable to load product import rows.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneFileResult> DownloadProductImportErrorsAsync(
+            Guid storePublicId,
+            Guid jobPublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateFileAsync(
+                CommerceRoute(storePublicId, $"product-imports/{jobPublicId:D}/errors.csv"),
+                "Unable to download product import errors.",
                 cancellationToken);
         }
 
@@ -274,6 +477,19 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             return this.apiClient.PostPrivateAsync<ImportProductMediaResponse>(
                 $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}/media/{mediaPublicId:D}/retry",
                 "Unable to retry product media.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneFileResult> GetProductMediaPreviewAsync(
+            Guid storePublicId,
+            Guid productId,
+            Guid mediaPublicId,
+            ProductMediaPreviewQuery query,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateFileAsync(
+                CommerceRoute(storePublicId, $"products/{productId:D}/media/{mediaPublicId:D}/preview") + BuildMediaPreviewQuery(query),
+                "Unable to load product media preview.",
                 cancellationToken);
         }
 
@@ -420,6 +636,180 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
                 cancellationToken);
         }
 
+        public Task<ControlPlaneClientResult<VariationTemplateListResponse>> ListVariationTemplatesAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<VariationTemplateListResponse>(
+                CommerceRoute(storePublicId, "variation-templates"),
+                "Unable to load variation templates.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<VariationTemplateDetailDto>> GetVariationTemplateAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<VariationTemplateDetailDto>(
+                CommerceRoute(storePublicId, $"variation-templates/{templatePublicId:D}"),
+                "Unable to load variation template.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<VariationTemplateDetailDto>> CreateVariationTemplateAsync(
+            Guid storePublicId,
+            CreateVariationTemplateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<CreateVariationTemplateRequest, VariationTemplateDetailDto>(
+                CommerceRoute(storePublicId, "variation-templates"),
+                request,
+                "Unable to create variation template.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<VariationTemplateDetailDto>> UpdateVariationTemplateAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            UpdateVariationTemplateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<UpdateVariationTemplateRequest, VariationTemplateDetailDto>(
+                CommerceRoute(storePublicId, $"variation-templates/{templatePublicId:D}"),
+                request,
+                "Unable to update variation template.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<VariationTemplateDetailDto>> CreateVariationTemplateOptionAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            CreateVariationTemplateOptionRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<CreateVariationTemplateOptionRequest, VariationTemplateDetailDto>(
+                CommerceRoute(storePublicId, $"variation-templates/{templatePublicId:D}/options"),
+                request,
+                "Unable to create variation option.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<VariationTemplateDetailDto>> UpdateVariationTemplateOptionAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            Guid optionPublicId,
+            UpdateVariationTemplateOptionRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<UpdateVariationTemplateOptionRequest, VariationTemplateDetailDto>(
+                CommerceRoute(storePublicId, $"variation-templates/{templatePublicId:D}/options/{optionPublicId:D}"),
+                request,
+                "Unable to update variation option.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<VariationTemplateDetailDto>> CreateVariationTemplateValueAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            Guid optionPublicId,
+            CreateVariationTemplateValueRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<CreateVariationTemplateValueRequest, VariationTemplateDetailDto>(
+                CommerceRoute(storePublicId, $"variation-templates/{templatePublicId:D}/options/{optionPublicId:D}/values"),
+                request,
+                "Unable to create variation value.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<VariationTemplateDetailDto>> UpdateVariationTemplateValueAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            Guid optionPublicId,
+            Guid valuePublicId,
+            UpdateVariationTemplateValueRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<UpdateVariationTemplateValueRequest, VariationTemplateDetailDto>(
+                CommerceRoute(storePublicId, $"variation-templates/{templatePublicId:D}/options/{optionPublicId:D}/values/{valuePublicId:D}"),
+                request,
+                "Unable to update variation value.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<PagedResult<GetOrder>>> QueryOrdersAsync(
+            Guid storePublicId,
+            AdminOrderQueryDto query,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<PagedResult<GetOrder>>(
+                CommerceRoute(storePublicId, "orders") + BuildOrderQuery(query),
+                "Unable to load orders.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<GetOrder>> GetOrderAsync(
+            Guid storePublicId,
+            Guid orderId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<GetOrder>(
+                CommerceRoute(storePublicId, $"orders/{orderId:D}"),
+                "Unable to load order.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<GetOrder>> UpdateOrderAdminNoteAsync(
+            Guid storePublicId,
+            Guid orderId,
+            UpdateOrderAdminNoteRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<UpdateOrderAdminNoteRequest, GetOrder>(
+                CommerceRoute(storePublicId, $"orders/{orderId:D}/admin-note"),
+                request,
+                "Unable to update order note.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<GetOrder>> UpdateOrderShippingStatusAsync(
+            Guid storePublicId,
+            Guid orderId,
+            UpdateShippingStatusRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<UpdateShippingStatusRequest, GetOrder>(
+                CommerceRoute(storePublicId, $"orders/{orderId:D}/shipping-status"),
+                request,
+                "Unable to update shipping status.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<GetShipment>> GetShipmentAsync(
+            Guid storePublicId,
+            Guid orderId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<GetShipment>(
+                CommerceRoute(storePublicId, $"orders/{orderId:D}/shipment"),
+                "Unable to load shipment.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<GetShipment>> UpsertShipmentAsync(
+            Guid storePublicId,
+            Guid orderId,
+            UpsertShipmentRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<UpsertShipmentRequest, GetShipment>(
+                CommerceRoute(storePublicId, $"orders/{orderId:D}/shipment"),
+                request,
+                "Unable to save shipment.",
+                cancellationToken);
+        }
+
         private static string BuildProductQuery(ProductCatalogQuery query)
         {
             var values = new List<KeyValuePair<string, string>>
@@ -450,6 +840,62 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
 
             AddIfPresent(values, "searchTerm", query.SearchTerm);
             return ToQueryString(values);
+        }
+
+        private static string BuildProductImportQuery(ProductImportJobListQuery query)
+        {
+            var values = new List<KeyValuePair<string, string>>
+            {
+                new("skip", Math.Max(0, query.Skip).ToString(CultureInfo.InvariantCulture)),
+                new("take", Math.Clamp(query.Take, 1, 200).ToString(CultureInfo.InvariantCulture)),
+            };
+
+            AddIfPresent(values, "status", query.Status);
+            return ToQueryString(values);
+        }
+
+        private static string BuildProductImportRowsQuery(ProductImportRowsQuery query)
+        {
+            var values = new List<KeyValuePair<string, string>>
+            {
+                new("skip", Math.Max(0, query.Skip).ToString(CultureInfo.InvariantCulture)),
+                new("take", Math.Clamp(query.Take, 1, 200).ToString(CultureInfo.InvariantCulture)),
+            };
+
+            AddIfPresent(values, "status", query.Status);
+            return ToQueryString(values);
+        }
+
+        private static string BuildOrderQuery(AdminOrderQueryDto query)
+        {
+            var values = new List<KeyValuePair<string, string>>
+            {
+                new("pageNumber", Math.Max(1, query.PageNumber).ToString(CultureInfo.InvariantCulture)),
+                new("pageSize", Math.Clamp(query.PageSize, 1, 100).ToString(CultureInfo.InvariantCulture)),
+            };
+
+            AddIfPresent(values, "searchTerm", query.SearchTerm);
+            AddIfPresent(values, "status", query.Status);
+            AddIfPresent(values, "shippingStatus", query.ShippingStatus);
+            AddIfPresent(values, "fromUtc", query.FromUtc?.ToString("O", CultureInfo.InvariantCulture));
+            AddIfPresent(values, "toUtc", query.ToUtc?.ToString("O", CultureInfo.InvariantCulture));
+            return ToQueryString(values);
+        }
+
+        private static string BuildMediaPreviewQuery(ProductMediaPreviewQuery query)
+        {
+            var values = new List<KeyValuePair<string, string>>();
+            AddIfPresent(values, "w", query.Width?.ToString(CultureInfo.InvariantCulture));
+            AddIfPresent(values, "h", query.Height?.ToString(CultureInfo.InvariantCulture));
+            AddIfPresent(values, "fit", query.Fit);
+            AddIfPresent(values, "format", query.Format);
+            AddIfPresent(values, "v", query.Version?.ToString(CultureInfo.InvariantCulture));
+            return ToQueryString(values);
+        }
+
+        private static string CommerceRoute(Guid storePublicId, string path)
+        {
+            return $"api/controlplane/commerce/stores/{storePublicId:D}/{path.TrimStart('/')}";
         }
 
         private static void AddIfPresent(List<KeyValuePair<string, string>> values, string key, string? value)

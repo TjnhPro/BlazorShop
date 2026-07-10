@@ -58,6 +58,17 @@ namespace BlazorShop.ControlPlane.Web.Services.Common
                 fallbackMessage);
         }
 
+        public async Task<ControlPlaneClientResult<TData>> PostPrivateMultipartAsync<TData>(
+            string route,
+            MultipartFormDataContent content,
+            string fallbackMessage,
+            CancellationToken cancellationToken = default)
+        {
+            return await this.SendPrivateAsync<TData>(
+                client => client.PostAsync(route, content, cancellationToken),
+                fallbackMessage);
+        }
+
         public async Task<ControlPlaneClientResult<TData>> PostPublicAsync<TRequest, TData>(
             string route,
             TRequest request,
@@ -98,6 +109,44 @@ namespace BlazorShop.ControlPlane.Web.Services.Common
             return await this.SendPrivateAsync<TData>(
                 client => client.DeleteAsync(route, cancellationToken),
                 fallbackMessage);
+        }
+
+        public async Task<ControlPlaneFileResult> GetPrivateFileAsync(
+            string route,
+            string fallbackMessage,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var client = await this.httpClientHelper.GetPrivateClientAsync();
+                using var response = await client.GetAsync(route, cancellationToken);
+                if (!response.IsSuccessStatusCode)
+                {
+                    var payload = response.Content is null
+                        ? null
+                        : await response.Content.ReadAsStringAsync(cancellationToken);
+
+                    return ControlPlaneFileResult.Failed(
+                        ResolveFailureMessage(payload, response.StatusCode, fallbackMessage),
+                        response.StatusCode);
+                }
+
+                var content = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+                return ControlPlaneFileResult.Succeeded(
+                    content,
+                    response.Content.Headers.ContentType?.MediaType,
+                    response.Content.Headers.ContentDisposition?.FileNameStar
+                        ?? response.Content.Headers.ContentDisposition?.FileName?.Trim('"'),
+                    response.StatusCode);
+            }
+            catch (HttpRequestException)
+            {
+                return ControlPlaneFileResult.Failed("Unable to reach the Control Plane API.");
+            }
+            catch (OperationCanceledException)
+            {
+                return ControlPlaneFileResult.Failed("The Control Plane request timed out.");
+            }
         }
 
         private async Task<ControlPlaneClientResult<TData>> SendPrivateAsync<TData>(

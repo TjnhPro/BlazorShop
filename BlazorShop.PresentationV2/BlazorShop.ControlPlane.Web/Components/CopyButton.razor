@@ -1,0 +1,41 @@
+@inject IJSRuntime JSRuntime
+
+<button type="button" class="@ButtonClass" title="@Title" @onclick="CopyAsync" disabled="@string.IsNullOrWhiteSpace(Text)">
+    <i class="fa-regular fa-copy" aria-hidden="true"></i>
+    @if (ShowLabel)
+    {
+        <span>@(copied ? "Copied" : Label)</span>
+    }
+</button>
+
+@code {
+    private bool copied;
+
+    [Parameter]
+    public string? Text { get; set; }
+
+    [Parameter]
+    public string Label { get; set; } = "Copy";
+
+    [Parameter]
+    public string Title { get; set; } = "Copy";
+
+    [Parameter]
+    public bool ShowLabel { get; set; }
+
+    [Parameter]
+    public string ButtonClass { get; set; } = "cp-button cp-button-secondary";
+
+    private async Task CopyAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Text))
+        {
+            return;
+        }
+
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", Text);
+        copied = true;
+        await Task.Delay(1200);
+        copied = false;
+    }
+}

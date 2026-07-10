@@ -23,6 +23,12 @@ namespace BlazorShop.ControlPlane.Web.Services.Common
             string fallbackMessage,
             CancellationToken cancellationToken = default);
 
+        Task<ControlPlaneClientResult<TData>> PostPrivateMultipartAsync<TData>(
+            string route,
+            MultipartFormDataContent content,
+            string fallbackMessage,
+            CancellationToken cancellationToken = default);
+
         Task<ControlPlaneClientResult<TData>> PostPublicAsync<TRequest, TData>(
             string route,
             TRequest request,
@@ -41,6 +47,11 @@ namespace BlazorShop.ControlPlane.Web.Services.Common
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneClientResult<TData>> DeletePrivateAsync<TData>(
+            string route,
+            string fallbackMessage,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneFileResult> GetPrivateFileAsync(
             string route,
             string fallbackMessage,
             CancellationToken cancellationToken = default);
