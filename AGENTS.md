@@ -1,30 +1,59 @@
 # BlazorShop Agent Guide
 
-## Agent skills
+This file is the first stop for agents working in this repository. The goal is to keep decisions aligned with the current V2 architecture and avoid guessing from old legacy code.
 
-### Issue tracker
+## Required Reading Order
 
-Issues are tracked in GitHub Issues for `TjnhPro/BlazorShop`; external PRs are not treated as a triage surface. See `docs/agents/issue-tracker.md`.
+Before planning or editing code:
 
-### Triage labels
+1. Read this file.
+2. Read `docs/architecture/README.md`.
+3. Read the architecture page that matches the area being changed.
+4. Read relevant historical plan or QA files under `docs/refactor-control-Commerce-storefront/`.
+5. Search existing code patterns with `rg` before adding abstractions.
 
-Use the default triage labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+Architecture docs:
 
-### Domain docs
+- `docs/architecture/01-system-map.md`
+- `docs/architecture/02-layered-architecture.md`
+- `docs/architecture/03-runtime-boundaries.md`
+- `docs/architecture/04-data-ownership.md`
+- `docs/architecture/05-project-and-folder-guide.md`
+- `docs/architecture/06-feature-map.md`
+- `docs/architecture/07-deployment-and-local-run.md`
+- `docs/architecture/08-agent-decision-rules.md`
 
-Use a single-context domain documentation layout for the BlazorShop ecommerce product. See `docs/agents/domain.md`.
+## Project Shape
 
-## Architecture guardrails
+BlazorShop is one ecommerce product using a single-context domain documentation model.
 
-### Control Plane gateway boundary
+Active shared core:
 
-`BlazorShop.ControlPlane.Web` must only call `BlazorShop.ControlPlane.API`.
+- `BlazorShop.Domain`
+- `BlazorShop.Application`
+- `BlazorShop.Infrastructure`
+- `BlazorShop.ServiceDefaults`
 
-Do not make `BlazorShop.ControlPlane.Web` call `BlazorShop.CommerceNode.API` directly, and do not put Commerce Node node keys, node secrets, IP allowlist assumptions, or Commerce Node base URLs into the Web client. The Web client is a UI surface only.
+Active V2 presentation/runtime:
 
-`BlazorShop.ControlPlane.API` is the gateway responsible for distributing and proxying requests to `BlazorShop.CommerceNode.API` according to the security model: node key, node secret, allowed Control Plane IP, store key scope, audit, and permission checks.
+- `BlazorShop.PresentationV2/BlazorShop.ControlPlane.API`
+- `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web`
+- `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`
+- `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2`
 
-When a feature says "Control Plane calls Commerce Node", interpret that as:
+Legacy presentation:
+
+- `BlazorShop.Presentation/BlazorShop.API`
+- `BlazorShop.Presentation/BlazorShop.Web`
+- `BlazorShop.Presentation/BlazorShop.Storefront`
+- `BlazorShop.Presentation/BlazorShop.Web.Shared`
+
+Legacy projects remain in the solution for comparison and migration reference. Do not extend them for V2 work unless the user explicitly asks.
+
+## Runtime Boundaries
+
+Control Plane path:
 
 ```text
 BlazorShop.ControlPlane.Web
@@ -32,9 +61,125 @@ BlazorShop.ControlPlane.Web
       -> BlazorShop.CommerceNode.API
 ```
 
-Never interpret it as:
+Forbidden path:
 
 ```text
 BlazorShop.ControlPlane.Web
   -> BlazorShop.CommerceNode.API
 ```
+
+Rules:
+
+- Control Plane Web is UI-only.
+- Control Plane API owns platform auth, permissions, audit, node/store registry, and Commerce Node gateway calls.
+- Commerce Node API owns ecommerce node runtime, commerce admin/control APIs, internal Storefront APIs, task orchestration, and node-local deployment.
+- Storefront V2 calls Commerce Node internal APIs and stays store-scoped.
+
+Route ownership:
+
+- `api/control-plane/*` belongs to Control Plane API.
+- `api/commerce/*` belongs to Commerce Node admin/control and is called by Control Plane API.
+- `api/internal/*` belongs to Commerce Node internal Storefront APIs and is called by Storefront V2.
+- Legacy route groups such as `api/admin/*`, `api/public/*`, and `api/[controller]` are not V2 targets.
+
+## Database Ownership
+
+Use the DbContext that matches the product boundary:
+
+- `ControlPlaneDbContext` with `ControlPlaneConnection`, local PostgreSQL port `5433`, owns platform auth, users, roles, permissions, nodes, credentials, store registry, actions, health snapshots, and audit.
+- `CommerceNodeDbContext` with `CommerceNodeConnection`, local PostgreSQL port `5434`, owns ecommerce node data: commerce stores, storefront auth, catalog, variants, inventory, carts, orders, payments, SEO, newsletters, deployment images, deployments, and task orchestration.
+- `AppDbContext` with `DefaultConnection`, local legacy/default port `5432`, belongs to legacy commerce/storefront. Do not add new V2 features or migrations there.
+
+Do not merge contexts just to simplify implementation. Cross-boundary behavior should go through APIs.
+
+## Smartstore Usage
+
+`Smartstore/` is reference source only. It exists to help design better ecommerce business behavior.
+
+Allowed:
+
+- Study entity properties.
+- Study workflows and service boundaries.
+- Compare Smartstore business depth with current BlazorShop behavior.
+- Produce CSVs, notes, and phased plans.
+- Select a small MVP subset before implementation.
+
+Not allowed:
+
+- Copy Smartstore implementation code into BlazorShop.
+- Add runtime references to Smartstore projects.
+- Import Smartstore module architecture wholesale.
+- Expand scope beyond the user's selected features.
+
+When using Smartstore for a feature:
+
+1. Investigate the relevant Smartstore area.
+2. Summarize business concepts and properties.
+3. Compare with existing BlazorShop code.
+4. Propose a staged plan.
+5. Implement only the approved scope using BlazorShop's Layered Architecture.
+
+## Feature Implementation Rules
+
+Default workflow:
+
+1. Investigate current code and docs.
+2. Identify the correct boundary: Control Plane, Commerce Node admin/control, Commerce Node internal, Storefront V2, shared core, or legacy reference.
+3. Reuse existing DTOs, services, repositories, validators, options, clients, and response helpers where they fit.
+4. Preserve migrated legacy behavior first; refactor only when requested.
+5. Keep changes narrow by phase.
+6. Update the relevant QA checklist.
+7. Run focused verification.
+8. Commit when the user asks or the active workflow requires it.
+
+Do not introduce ABP module-style structure unless the user explicitly asks.
+
+## QA Rules
+
+QA checklists live under `docs/refactor-control-Commerce-storefront/`.
+
+Use these files when related behavior changes:
+
+- `QA-ControlPlane.todo.md`
+- `QA-CommerceNode.todo.md`
+- `QA-CommerceNode-TaskOrchestration.todo.md`
+- `QA-StorefrontV2.todo.md`
+
+Control Plane QA should verify auth, user management, permissions, nodes, stores, health, actions, audit, and Web/API response behavior.
+
+Commerce Node QA should verify API route groups, credential behavior for `api/commerce/*`, internal storefront flows for `api/internal/*`, database behavior on `CommerceNodeConnection`, catalog, orders, inventory, tasks, deployment, and audit where applicable.
+
+Storefront V2 QA should verify public page rendering, store key behavior, catalog pages, slug routes, auth forms, checkout redirects, SEO documents, sitemap, robots, and visible browser flows when requested.
+
+If browser behavior changes, use Playwright. If the user asks to observe the test, run with a visible browser.
+
+## Local Runtime Notes
+
+Control Plane database:
+
+```powershell
+docker compose -f compose.controlplane.yml up -d
+```
+
+Commerce Node dependencies:
+
+```powershell
+docker compose -f compose.commercenode.yml up -d
+```
+
+Important local ports:
+
+- Control Plane PostgreSQL: `5433`
+- Commerce Node PostgreSQL: `5434`
+- Legacy/default PostgreSQL: `5432`
+- Commerce Node Nginx: `8088`
+
+See `docs/architecture/07-deployment-and-local-run.md` before changing deployment or runtime behavior.
+
+## Issue Tracker And Domain Docs
+
+Issues are tracked in GitHub Issues for `TjnhPro/BlazorShop`; external PRs are not treated as a triage surface. See `docs/agents/issue-tracker.md`.
+
+Use the default triage labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+Domain documentation uses a single-context layout for the BlazorShop ecommerce product. See `docs/agents/domain.md`.
