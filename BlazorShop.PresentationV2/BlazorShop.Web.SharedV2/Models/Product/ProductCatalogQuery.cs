@@ -10,6 +10,12 @@ namespace BlazorShop.Web.SharedV2.Models.Product
 
         public string? SearchTerm { get; set; }
 
+        public decimal? MinPrice { get; set; }
+
+        public decimal? MaxPrice { get; set; }
+
+        public bool? InStock { get; set; }
+
         public ProductCatalogSortBy SortBy { get; set; } = ProductCatalogSortBy.Newest;
 
         public DateTime? CreatedAfterUtc { get; set; }

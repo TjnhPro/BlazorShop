@@ -284,6 +284,21 @@ namespace BlazorShop.Storefront.Services
                 parameters.Add($"searchTerm={Uri.EscapeDataString(query.SearchTerm.Trim())}");
             }
 
+            if (query.MinPrice.HasValue)
+            {
+                parameters.Add($"minPrice={Uri.EscapeDataString(query.MinPrice.Value.ToString(CultureInfo.InvariantCulture))}");
+            }
+
+            if (query.MaxPrice.HasValue)
+            {
+                parameters.Add($"maxPrice={Uri.EscapeDataString(query.MaxPrice.Value.ToString(CultureInfo.InvariantCulture))}");
+            }
+
+            if (query.InStock.HasValue)
+            {
+                parameters.Add($"inStock={query.InStock.Value}");
+            }
+
             if (query.CreatedAfterUtc.HasValue)
             {
                 parameters.Add($"createdAfterUtc={Uri.EscapeDataString(query.CreatedAfterUtc.Value.ToString("O", CultureInfo.InvariantCulture))}");

@@ -35,10 +35,21 @@
                 {
                     <span class="inline-block rounded bg-amber-100 px-2 py-0.5 text-amber-800">Variants</span>
                 }
+                @if (!Product.InStock)
+                {
+                    <span class="inline-block rounded bg-rose-100 px-2 py-0.5 text-rose-800">Out</span>
+                }
             </div>
         </div>
 
-        <p class="mt-2 text-[15px]"><span class="text-rose-600 font-semibold">@PriceLabel</span> <span class="font-semibold">€ @Product.Price</span></p>
+        <p class="mt-2 text-[15px]">
+            <span class="font-semibold text-rose-600">@PriceLabel</span>
+            <span class="font-semibold">€ @Product.Price.ToString("0.00")</span>
+            @if (Product.ComparePrice is not null && Product.ComparePrice > Product.Price)
+            {
+                <span class="ml-2 text-sm font-semibold text-neutral-400 line-through">€ @Product.ComparePrice.Value.ToString("0.00")</span>
+            }
+        </p>
 
         @if (!string.IsNullOrWhiteSpace(Product.Slug))
         {
@@ -55,7 +66,7 @@
             </div>
         }
 
-        <p class="mt-4 text-sm leading-6 text-neutral-700">@Truncate(Product.Description)</p>
+        <p class="mt-4 text-sm leading-6 text-neutral-700">@Truncate(CardDescription)</p>
     </div>
 
     <div class="mt-auto border-t border-neutral-100 px-6 py-4 text-sm">
@@ -69,11 +80,12 @@
                         data-success-label="Added"
                         data-product-id="@Product.Id"
                         data-product-name="@Product.Name"
-                        data-unit-price="@UnitPriceValue">
+                        data-unit-price="@UnitPriceValue"
+                        data-stock="@(Product.InStock ? 1 : 0)">
                     Add to Cart
                 </button>
             }
-            else if (!string.IsNullOrWhiteSpace(ProductPurchaseUrl))
+            else if (Product.HasVariants && !string.IsNullOrWhiteSpace(ProductPurchaseUrl))
             {
                 <a href="@ProductPurchaseUrl" class="inline-flex items-center justify-center rounded-md bg-amber-500 px-4 py-2 font-semibold text-white transition hover:bg-amber-600">
                     Add to Cart
@@ -90,7 +102,11 @@
 
         @if (Product.HasVariants)
         {
-            <p class="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-neutral-500">Select size on the product page before adding.</p>
+            <p class="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-neutral-500">Select variant on the product page before adding.</p>
+        }
+        else if (!Product.InStock)
+        {
+            <p class="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-rose-600">Currently out of stock.</p>
         }
 
         @if (!string.IsNullOrWhiteSpace(Product.CategorySlug) && !string.IsNullOrWhiteSpace(Product.CategoryName))
@@ -108,7 +124,7 @@
 
     private bool IsNewArrival => DateTime.UtcNow.Subtract(Product.CreatedOn).TotalDays <= 7;
 
-    private bool CanAddDirectly => !Product.HasVariants;
+    private bool CanAddDirectly => !Product.HasVariants && Product.InStock;
 
     private string PriceLabel => Product.HasVariants ? "From" : "Price";
 
@@ -121,6 +137,10 @@
         : $"{ProductUrl}#purchase";
 
     private string UnitPriceValue => Product.Price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+
+    private string? CardDescription => string.IsNullOrWhiteSpace(Product.ShortDescription)
+        ? Product.Description
+        : Product.ShortDescription;
 
     private static string Truncate(string? value, int maxLength = 110)
     {

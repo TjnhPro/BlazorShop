@@ -55,7 +55,7 @@
   }
 
   function getItemVariantId(item) {
-    const value = item?.VariantId ?? item?.variantId;
+    const value = item?.ProductVariantId ?? item?.productVariantId ?? item?.VariantId ?? item?.variantId;
     return value == null ? "" : String(value).trim();
   }
 
@@ -279,6 +279,11 @@
     };
 
     const variantSelectSelector = button.dataset.variantSelect;
+    const productStock = parseInteger(button.dataset.stock, 0);
+    if (!variantSelectSelector && productStock <= 0) {
+      return { error: "This product is out of stock." };
+    }
+
     if (variantSelectSelector) {
       const select = document.querySelector(variantSelectSelector);
       if (!(select instanceof HTMLSelectElement)) {
@@ -287,11 +292,16 @@
 
       const selectedOption = select.selectedOptions[0];
       if (!selectedOption || !selectedOption.value) {
-        return { error: "Select a size before adding to cart." };
+        return { error: "Select a variant before adding to cart." };
       }
 
-      payload.VariantId = selectedOption.value.trim();
-      payload.SizeValue = selectedOption.dataset.sizeValue || selectedOption.textContent.trim();
+      if (parseInteger(selectedOption.dataset.stock, 0) <= 0) {
+        return { error: "This variant is out of stock." };
+      }
+
+      payload.ProductVariantId = selectedOption.value.trim();
+      payload.VariantId = payload.ProductVariantId;
+      payload.SizeValue = selectedOption.dataset.displayName || selectedOption.dataset.sizeValue || selectedOption.textContent.trim();
       payload.UnitPrice = parseNumber(selectedOption.dataset.unitPrice) || payload.UnitPrice;
     }
 

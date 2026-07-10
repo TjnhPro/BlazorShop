@@ -33,6 +33,8 @@ namespace BlazorShop.Web.SharedV2.Models.Product
 
         public DateTime CreatedOn { get; set; }
 
+        public DateTime UpdatedAt { get; set; }
+
         public bool IsNew => DateTime.UtcNow.Subtract(this.CreatedOn).TotalDays <= 7;
 
         public IEnumerable<GetProductVariant> Variants { get; set; } = Array.Empty<GetProductVariant>();

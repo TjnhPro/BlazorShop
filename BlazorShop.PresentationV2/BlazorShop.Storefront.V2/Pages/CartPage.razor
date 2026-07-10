@@ -73,9 +73,9 @@
                                         <h2 class="text-xl font-bold text-neutral-900">@line.DisplayName</h2>
                                     }
 
-                                    @if (!string.IsNullOrWhiteSpace(line.SizeValue))
+                                    @if (!string.IsNullOrWhiteSpace(line.VariantLabel))
                                     {
-                                        <p class="mt-1 text-sm font-medium uppercase tracking-[0.16em] text-neutral-500">Size @line.SizeValue</p>
+                                        <p class="mt-1 text-sm font-medium uppercase tracking-[0.16em] text-neutral-500">@line.VariantLabel</p>
                                     }
 
                                     @if (line.IsUnavailable)
@@ -98,9 +98,9 @@
                                                        value="@line.Quantity"
                                                        data-storefront-cart-quantity
                                                        data-product-id="@line.ProductId"
-                                                       data-variant-id="@line.VariantId"
+                                                       data-variant-id="@line.ProductVariantId"
                                                        data-product-name="@line.DisplayName"
-                                                       data-size-value="@line.SizeValue"
+                                                       data-size-value="@line.VariantLabel"
                                                        class="mt-1 w-24 rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-900 focus:border-neutral-500 focus:outline-none" />
                                             </label>
 
@@ -118,9 +118,9 @@
                                         <button type="button"
                                                 data-storefront-cart-remove
                                                 data-product-id="@line.ProductId"
-                                                data-variant-id="@line.VariantId"
+                                                data-variant-id="@line.ProductVariantId"
                                                 data-product-name="@line.DisplayName"
-                                                data-size-value="@line.SizeValue"
+                                                data-size-value="@line.VariantLabel"
                                                 class="inline-flex items-center justify-center rounded bg-white px-4 py-2 text-sm font-semibold text-rose-700 ring-1 ring-rose-200 hover:bg-rose-50">
                                             Remove
                                         </button>

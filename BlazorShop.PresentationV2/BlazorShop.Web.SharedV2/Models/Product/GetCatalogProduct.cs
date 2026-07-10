@@ -15,15 +15,28 @@ namespace BlazorShop.Web.SharedV2.Models.Product
         [Required(ErrorMessage = "The Description field is required.")]
         public string? Description { get; set; }
 
+        public string? Sku { get; set; }
+
+        public string? ShortDescription { get; set; }
+
         [Required(ErrorMessage = "The Price field is required.")]
         [DataType(DataType.Currency)]
         public decimal Price { get; set; }
+
+        [DataType(DataType.Currency)]
+        public decimal? ComparePrice { get; set; }
 
         [Required(ErrorMessage = "The Image field is required.")]
         public string? Image { get; set; }
 
         [Required]
         public DateTime CreatedOn { get; set; }
+
+        public DateTime UpdatedAt { get; set; }
+
+        public int DisplayOrder { get; set; }
+
+        public bool InStock { get; set; }
 
         [Required(ErrorMessage = "The Category field is required.")]
         public Guid CategoryId { get; set; }

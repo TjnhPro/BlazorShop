@@ -6,6 +6,8 @@ namespace BlazorShop.Web.SharedV2.Models.Payment
 
         public int Quantity { get; set; }
 
+        public Guid? ProductVariantId { get; set; }
+
         public Guid? VariantId { get; set; }
 
         public string? SizeValue { get; set; }

@@ -846,27 +846,27 @@ feat(control-plane): expand commerce catalog admin UI
 
 ### Phase 8 - Storefront V2 UI
 
-- [ ] Update Storefront catalog client models.
+- [x] Update Storefront catalog client models.
 - [ ] Use category tree for navigation/menu where currently suitable.
-- [ ] Product listing supports:
-  - [ ] price range;
-  - [ ] in-stock filter;
-  - [ ] display order sort;
-  - [ ] updated sort.
-- [ ] Product detail displays:
-  - [ ] short/full description appropriately;
-  - [ ] compare price when present;
-  - [ ] variant attribute selections;
-  - [ ] effective price;
-  - [ ] out-of-stock state.
-- [ ] Add cart payload with `ProductVariantId`.
-- [ ] Disable buy when selected product/variant is out of stock.
+- [x] Product listing supports:
+  - [x] price range;
+  - [x] in-stock filter;
+  - [x] display order sort;
+  - [x] updated sort.
+- [x] Product detail displays:
+  - [x] short/full description appropriately;
+  - [x] compare price when present;
+  - [x] variant attribute selections;
+  - [x] effective price;
+  - [x] out-of-stock state.
+- [x] Add cart payload with `ProductVariantId`.
+- [x] Disable buy when selected product/variant is out of stock.
 
 Stop gate:
 
 - [ ] Storefront can browse category tree.
-- [ ] Storefront can select Color/Size variant.
-- [ ] Storefront cart sends selected variant id.
+- [x] Storefront can select Color/Size variant.
+- [x] Storefront cart sends selected variant id.
 
 Commit:
 
