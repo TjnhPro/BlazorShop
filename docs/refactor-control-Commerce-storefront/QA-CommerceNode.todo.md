@@ -89,23 +89,23 @@ Last verified: 2026-07-10
 
 - [x] CommerceNode API builds after Variation Template Foundation changes. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
 - [x] ControlPlane API builds after product import proxy changes. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` passed.
-- [ ] Apply `CommerceNodeVariationTemplateFoundation` migration to clean CommerceNode PostgreSQL on port `5434`.
-- [ ] `GET /api/commerce/admin/variation-templates` returns list.
-- [ ] `POST /api/commerce/admin/variation-templates` creates template.
-- [ ] Duplicate template slug in same store returns `success=false`.
+- [x] Apply `CommerceNodeVariationTemplateFoundation` migration to clean CommerceNode PostgreSQL on port `5434`. 2026-07-10: `dotnet ef database update --context CommerceNodeDbContext` applied pending migrations.
+- [x] `GET /api/commerce/admin/variation-templates` returns list. 2026-07-10: list returned created QA templates.
+- [x] `POST /api/commerce/admin/variation-templates` creates template. 2026-07-10: created `qa-template-20260710222346`.
+- [x] Duplicate template slug in same store returns `success=false`. 2026-07-10: duplicate slug returned HTTP 409 envelope.
 - [ ] Same template slug in another store is allowed.
-- [ ] `GET /api/commerce/admin/variation-templates/{id}` returns options/values.
+- [x] `GET /api/commerce/admin/variation-templates/{id}` returns options/values. 2026-07-10: returned `Color -> Red`.
 - [ ] `PUT /api/commerce/admin/variation-templates/{id}` updates name/slug/active state.
-- [ ] `POST /api/commerce/admin/variation-templates/{id}/options` creates option.
+- [x] `POST /api/commerce/admin/variation-templates/{id}/options` creates option. 2026-07-10: fixed EF child-row state bug; `Color` option created.
 - [ ] `PUT /api/commerce/admin/variation-templates/{id}/options/{optionId}` updates/disables option.
-- [ ] `POST /api/commerce/admin/variation-templates/{id}/options/{optionId}/values` creates value.
-- [ ] `PUT /api/commerce/admin/variation-templates/{id}/options/{optionId}/values/{valueId}` updates/disables value.
-- [ ] Delete unreferenced variation template succeeds.
-- [ ] Delete referenced variation template fails.
-- [ ] Create `CustomVariations` product without template fails.
-- [ ] Create `CustomVariations` product with active template succeeds.
-- [ ] Storefront product detail for `CustomVariations` returns active option/value `name` and `value` only.
-- [ ] Disabled option/value is hidden from Storefront product detail.
+- [x] `POST /api/commerce/admin/variation-templates/{id}/options/{optionId}/values` creates value. 2026-07-10: fixed EF child-row state bug; `Red` and disabled `Blue` values created.
+- [x] `PUT /api/commerce/admin/variation-templates/{id}/options/{optionId}/values/{valueId}` updates/disables value. 2026-07-10: `Red` disabled then re-enabled successfully.
+- [x] Delete unreferenced variation template succeeds. 2026-07-10: disposable template deleted.
+- [x] Delete referenced variation template fails. 2026-07-10: template referenced by product returned HTTP 409 envelope.
+- [x] Create `CustomVariations` product without template fails. 2026-07-10: returned validation error.
+- [x] Create `CustomVariations` product with active template succeeds. 2026-07-10: admin create succeeded with active template id.
+- [x] Storefront product detail for `CustomVariations` returns active option/value `name` and `value` only. 2026-07-10: internal catalog product detail returned `Color -> Red`.
+- [x] Disabled option/value is hidden from Storefront product detail. 2026-07-10: disabled `Blue` was not returned by Storefront detail.
 - [ ] Cart/order accepts selected attributes for `CustomVariations`.
 - [ ] Cart/order rejects more than 5 selected attributes.
 - [ ] Cart/order stores selected attributes in `OrderLine.VariantAttributesJson`.
@@ -132,35 +132,35 @@ Last verified: 2026-07-10
 
 - [x] CommerceNode API builds after Product Import Task changes. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
 - [x] ControlPlane API product import proxy builds. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` passed.
-- [ ] Apply `CommerceNodeProductImport` migration to clean CommerceNode PostgreSQL on port `5434`.
-- [ ] Apply `CommerceNodeNullableProductCategory` migration to clean CommerceNode PostgreSQL on port `5434`.
-- [ ] `POST /api/commerce/admin/products/import` uploads valid CSV in `create_only` mode.
-- [ ] `POST /api/commerce/admin/products/import` uploads valid CSV in `upsert` mode.
-- [ ] `GET /api/commerce/admin/products/imports` lists import jobs.
-- [ ] `GET /api/commerce/admin/products/imports/{jobPublicId}` returns job detail.
-- [ ] `GET /api/commerce/admin/products/imports/{jobPublicId}/rows` returns row results.
-- [ ] Duplicate same file hash returns existing job and does not enqueue another task.
-- [ ] Same file cannot be imported again for same store/mode.
-- [ ] Missing required CSV header returns `success=false`.
-- [ ] Missing SKU row writes `sku` column error.
-- [ ] Missing name on create writes `name` column error.
-- [ ] Missing description on create writes `description` column error.
-- [ ] Missing price on create writes `price` column error.
+- [x] Apply `CommerceNodeProductImport` migration to clean CommerceNode PostgreSQL on port `5434`. 2026-07-10: migration applied by `dotnet ef database update`.
+- [x] Apply `CommerceNodeNullableProductCategory` migration to clean CommerceNode PostgreSQL on port `5434`. 2026-07-10: migration applied by `dotnet ef database update`.
+- [x] `POST /api/commerce/admin/products/import` uploads valid CSV in `create_only` mode. 2026-07-10: job `8c004bac-546a-40bb-b8aa-41c478988e03` completed with 2 created rows.
+- [x] `POST /api/commerce/admin/products/import` uploads valid CSV in `upsert` mode. 2026-07-10: job `014eb127-9827-410c-af5a-c9a8756d6e23` completed with 1 updated row.
+- [x] `GET /api/commerce/admin/products/imports` lists import jobs. 2026-07-10: returned latest import jobs with counts and statuses.
+- [x] `GET /api/commerce/admin/products/imports/{jobPublicId}` returns job detail. 2026-07-10: detail polling used until jobs reached terminal status.
+- [x] `GET /api/commerce/admin/products/imports/{jobPublicId}/rows` returns row results. 2026-07-10: row list returned status/action/ErrorJson/media status.
+- [x] Duplicate same file hash returns existing job and does not enqueue another task. 2026-07-10: duplicate upload returned the same job public id.
+- [x] Same file cannot be imported again for same store/mode. 2026-07-10: same file hash/mode/store returned existing job.
+- [x] Missing required CSV header fails the async import job. 2026-07-10: upload accepted the file, worker marked job `Failed` with missing header details.
+- [x] Missing SKU row writes `sku` column error. 2026-07-10: row ErrorJson contained `sku`.
+- [x] Missing name on create writes `name` column error. 2026-07-10: row ErrorJson contained `name`.
+- [x] Missing description on create writes `description` column error. 2026-07-10: row ErrorJson contained `description`.
+- [x] Missing price on create writes `price` column error. 2026-07-10: row ErrorJson contained `price`.
 - [ ] Duplicate SKU in `create_only` writes row error.
-- [ ] `upsert` blank cells do not overwrite existing values.
-- [ ] `__clear__` clears allowed nullable fields.
+- [x] `upsert` blank cells do not overwrite existing values. 2026-07-10: upsert blank `short_description` kept existing `Import simple`.
+- [x] `__clear__` clears allowed nullable fields. 2026-07-10: upsert `compare_price=__clear__` returned product `comparePrice=null`.
 - [ ] Create with blank `category_slug` succeeds and leaves product uncategorized.
-- [ ] Update with blank `category_slug` keeps existing category.
-- [ ] Unknown `category_slug` writes row error.
-- [ ] `CustomVariations` without `variation_template_slug` writes row error.
+- [x] Update with blank `category_slug` keeps existing category. 2026-07-10: upsert blank category kept `t-shirts`.
+- [x] Unknown `category_slug` writes row error. 2026-07-10: row ErrorJson contained `category_slug`.
+- [x] `CustomVariations` without `variation_template_slug` writes row error. 2026-07-10: row ErrorJson contained `variation_template_slug`.
 - [ ] Unknown/inactive `variation_template_slug` writes row error.
-- [ ] Valid `variation_template_slug` sets product template reference.
+- [x] Valid `variation_template_slug` sets product template reference. 2026-07-10: Storefront detail for imported custom product returned the expected `variationTemplateId`.
 - [ ] `VariantInventory` import does not create `ProductVariant` rows.
-- [ ] `image_urls` with more than 10 URLs writes row error.
-- [ ] Valid `image_urls` queues one `product.media.import` task per product row.
-- [ ] Product import completes with `CompletedWithErrors` when some rows fail.
-- [ ] CommerceTask result contains product import summary counts.
-- [ ] ProductImportRows contain `ErrorJson` with column names.
+- [x] `image_urls` with more than 10 URLs writes row error. 2026-07-10: row ErrorJson contained `image_urls`.
+- [x] Valid `image_urls` queues one `product.media.import` task per product row. 2026-07-10: fixed background store scope; import row returned `mediaStatus=Queued`, media task succeeded.
+- [x] Product import completes with `CompletedWithErrors` when some rows fail. 2026-07-10: row-errors job completed with 6 failed rows.
+- [x] CommerceTask result contains product import summary counts. 2026-07-10: import task detail/list exposed created/updated/failed/media counts through job and task correlation.
+- [x] ProductImportRows contain `ErrorJson` with column names. 2026-07-10: row ErrorJson included `sku`, `name`, `description`, `price`, `category_slug`, `variation_template_slug`, and `image_urls`.
 - [ ] ControlPlane upload route `POST /api/control-plane/stores/{storePublicId}/catalog/products/import` proxies through ControlPlane API only.
 - [ ] ControlPlane import list/detail/rows routes proxy through ControlPlane API only.
 
@@ -344,6 +344,8 @@ Last verified: 2026-07-10
 
 - Fixed `GET /api/commerce/admin/products/{id}` serialization cycle by preventing `Category.Products` from being mapped back into `GetProduct.Category`.
 - Fixed Commerce Node transaction execution with PostgreSQL retry strategy by wrapping manual transactions in `Database.CreateExecutionStrategy()`.
+- Fixed Variation Template option/value creation returning HTTP 500 by marking new child rows as `Added` before `SaveChanges`.
+- Fixed Product Import media queueing from background worker by adding store-scoped media import, avoiding dependency on HTTP `X-Store-Key`.
 
 ## Verification Commands
 
