@@ -557,15 +557,15 @@ Shipment form:
 
 ### Phase 7 - Orders And Shipment UX
 
-- [ ] Create `/commerce-admin/orders`.
-- [ ] Add order list.
-- [ ] Add order drawer.
-- [ ] Add order line/totals/customer display.
-- [ ] Add admin note edit if API supports it.
-- [ ] Add shipment upsert form in order drawer.
-- [ ] Keep shipment fields simple.
-- [ ] Do not add delete/cancel shipment.
-- [ ] Commit: `feat(control-plane-web): add orders and shipment admin UX`.
+- [x] Create `/commerce-admin/orders`.
+- [x] Add order list.
+- [x] Add order drawer.
+- [x] Add order line/totals/customer display.
+- [x] Add admin note edit if API supports it.
+- [x] Add shipment upsert form in order drawer.
+- [x] Keep shipment fields simple.
+- [x] Do not add delete/cancel shipment.
+- [x] Commit: `feat(control-plane-web): add orders and shipment admin UX`.
 
 ### Phase 8 - Navigation, Permission UX, And Cleanup
 
