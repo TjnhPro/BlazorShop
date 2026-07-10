@@ -3,6 +3,9 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using BlazorShop.Domain.Constants;
+    using BlazorShop.Domain.Entities.CommerceNode;
+
     public class Product
     {
         [Key]
@@ -62,6 +65,12 @@
         public DateTime? PublishedOn { get; set; } = DateTime.UtcNow;
 
         public Guid? StoreId { get; set; }
+
+        public string ProductType { get; set; } = ProductTypes.Simple;
+
+        public Guid? VariationTemplateId { get; set; }
+
+        public VariationTemplate? VariationTemplate { get; set; }
 
         public Guid CategoryId { get; set; }
 

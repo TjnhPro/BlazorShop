@@ -60,6 +60,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
         public DbSet<ProductMedia> ProductMedia => Set<ProductMedia>();
 
+        public DbSet<VariationTemplate> VariationTemplates => Set<VariationTemplate>();
+
+        public DbSet<VariationTemplateOption> VariationTemplateOptions => Set<VariationTemplateOption>();
+
+        public DbSet<VariationTemplateValue> VariationTemplateValues => Set<VariationTemplateValue>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -98,6 +104,87 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 .WithMany(product => product.Variants)
                 .HasForeignKey(variant => variant.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Product>()
+                .Property(product => product.ProductType)
+                .HasMaxLength(64)
+                .HasDefaultValue(BlazorShop.Domain.Constants.ProductTypes.Simple);
+
+            modelBuilder.Entity<Product>()
+                .HasIndex(product => new { product.StoreId, product.ProductType });
+
+            modelBuilder.Entity<Product>()
+                .HasIndex(product => product.VariationTemplateId);
+
+            modelBuilder.Entity<Product>()
+                .HasOne(product => product.VariationTemplate)
+                .WithMany(template => template.Products)
+                .HasForeignKey(product => product.VariationTemplateId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<VariationTemplate>(entity =>
+            {
+                entity.ToTable("variation_templates");
+                entity.HasKey(template => template.Id);
+                entity.Property(template => template.Id).HasColumnName("id");
+                entity.Property(template => template.PublicId).HasColumnName("public_id");
+                entity.Property(template => template.StoreId).HasColumnName("store_id");
+                entity.Property(template => template.Name).HasColumnName("name").HasMaxLength(160).IsRequired();
+                entity.Property(template => template.Slug).HasColumnName("slug").HasMaxLength(160).IsRequired();
+                entity.Property(template => template.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+                entity.Property(template => template.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(template => template.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasIndex(template => template.PublicId).IsUnique();
+                entity.HasIndex(template => new { template.StoreId, template.Slug }).IsUnique();
+                entity.HasIndex(template => new { template.StoreId, template.IsActive });
+            });
+
+            modelBuilder.Entity<VariationTemplateOption>(entity =>
+            {
+                entity.ToTable("variation_template_options");
+                entity.HasKey(option => option.Id);
+                entity.Property(option => option.Id).HasColumnName("id");
+                entity.Property(option => option.PublicId).HasColumnName("public_id");
+                entity.Property(option => option.TemplateId).HasColumnName("template_id");
+                entity.Property(option => option.Name).HasColumnName("name").HasMaxLength(100).IsRequired();
+                entity.Property(option => option.SortOrder).HasColumnName("sort_order").HasDefaultValue(0);
+                entity.Property(option => option.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+                entity.Property(option => option.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(option => option.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasIndex(option => option.PublicId).IsUnique();
+                entity.HasIndex(option => new { option.TemplateId, option.Name }).IsUnique();
+                entity.HasIndex(option => new { option.TemplateId, option.SortOrder });
+
+                entity.HasOne(option => option.Template)
+                    .WithMany(template => template.Options)
+                    .HasForeignKey(option => option.TemplateId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<VariationTemplateValue>(entity =>
+            {
+                entity.ToTable("variation_template_values");
+                entity.HasKey(value => value.Id);
+                entity.Property(value => value.Id).HasColumnName("id");
+                entity.Property(value => value.PublicId).HasColumnName("public_id");
+                entity.Property(value => value.OptionId).HasColumnName("option_id");
+                entity.Property(value => value.Value).HasColumnName("value").HasMaxLength(200).IsRequired();
+                entity.Property(value => value.SortOrder).HasColumnName("sort_order").HasDefaultValue(0);
+                entity.Property(value => value.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+                entity.Property(value => value.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(value => value.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasIndex(value => value.PublicId).IsUnique();
+                entity.HasIndex(value => new { value.OptionId, value.Value }).IsUnique();
+                entity.HasIndex(value => new { value.OptionId, value.SortOrder });
+
+                entity.HasOne(value => value.Option)
+                    .WithMany(option => option.Values)
+                    .HasForeignKey(value => value.OptionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
 
             modelBuilder.Entity<ProductMedia>(entity =>
             {
