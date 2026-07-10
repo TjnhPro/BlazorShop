@@ -802,40 +802,41 @@ feat(commerce-node): add stock-safe checkout snapshots
 
 ### Phase 7 - Admin UI
 
-- [ ] Update product list UI:
-  - [ ] SKU column;
-  - [ ] category column;
-  - [ ] price/compare price;
-  - [ ] stock;
+- [x] Add ControlPlane API proxy for Commerce Node catalog admin routes so Web does not receive node secrets.
+- [x] Update product list UI:
+  - [x] SKU column;
+  - [x] category column;
+  - [x] price/compare price;
+  - [x] stock;
   - [ ] published;
-  - [ ] updated at;
-  - [ ] search/filter/sort/paging.
-- [ ] Update product create/edit UI:
-  - [ ] SKU;
-  - [ ] short description;
-  - [ ] full description;
-  - [ ] compare price;
-  - [ ] image URL;
-  - [ ] display order;
+  - [x] updated at;
+  - [x] search/filter/sort/paging.
+- [x] Update product create/edit UI:
+  - [x] SKU;
+  - [x] short description;
+  - [x] full description;
+  - [x] compare price;
+  - [x] image URL;
+  - [x] display order;
   - [ ] publish field.
-- [ ] Add variant inline editor:
-  - [ ] SKU;
-  - [ ] attributes rows;
-  - [ ] price override;
-  - [ ] stock;
-  - [ ] default flag.
-- [ ] Add category tree UI:
-  - [ ] parent category;
-  - [ ] display order;
-  - [ ] image URL;
-  - [ ] publish/archive.
-- [ ] Update inventory UI to show attributes/display name.
+- [x] Add variant inline editor:
+  - [x] SKU;
+  - [x] attributes rows;
+  - [x] price override;
+  - [x] stock;
+  - [x] default flag.
+- [x] Add category tree UI:
+  - [x] parent category;
+  - [x] display order;
+  - [x] image URL;
+  - [x] publish/archive.
+- [x] Update inventory UI to show attributes/display name.
 
 Stop gate:
 
-- [ ] Admin can create product with SKU and variant attributes.
-- [ ] Admin can create category tree.
-- [ ] Admin can filter/search products without loading entire catalog.
+- [x] Admin can create product with SKU and variant attributes.
+- [x] Admin can create category tree.
+- [x] Admin can filter/search products without loading entire catalog.
 
 Commit:
 

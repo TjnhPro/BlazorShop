@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using BlazorShop.Application.ControlPlane.Audit;
     using BlazorShop.Application.ControlPlane.Actions;
+    using BlazorShop.Application.ControlPlane.Catalog;
     using BlazorShop.Application.ControlPlane.Credentials;
     using BlazorShop.Application.ControlPlane.Dashboard;
     using BlazorShop.Application.ControlPlane.Health;
@@ -72,6 +73,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 client =>
                 {
                     var timeoutSeconds = Math.Clamp(configuration.GetValue("ControlPlane:Tasks:TimeoutSeconds", 30), 1, 120);
+                    client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
+                });
+            services.AddHttpClient<IControlPlaneCommerceCatalogService, ControlPlaneCommerceCatalogService>(
+                client =>
+                {
+                    var timeoutSeconds = Math.Clamp(configuration.GetValue("ControlPlane:Catalog:TimeoutSeconds", 30), 1, 120);
                     client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
                 });
 
