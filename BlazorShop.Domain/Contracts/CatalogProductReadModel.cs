@@ -35,5 +35,9 @@ namespace BlazorShop.Domain.Contracts
         public string? CategorySlug { get; init; }
 
         public bool HasVariants { get; init; }
+
+        public string ProductType { get; init; } = string.Empty;
+
+        public Guid? VariationTemplateId { get; init; }
     }
 }

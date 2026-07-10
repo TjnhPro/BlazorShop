@@ -2,6 +2,8 @@
 {
     using System.ComponentModel.DataAnnotations;
 
+    using BlazorShop.Domain.Constants;
+
     public class ProductBase
     {
         [Required]
@@ -31,6 +33,10 @@
         public int Quantity { get; set; }
 
         public int DisplayOrder { get; set; }
+
+        public string ProductType { get; set; } = ProductTypes.Simple;
+
+        public Guid? VariationTemplateId { get; set; }
 
         [Required]
         public Guid CategoryId { get; set; }

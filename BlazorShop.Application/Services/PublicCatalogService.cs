@@ -7,12 +7,14 @@ namespace BlazorShop.Application.Services
 
     using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.CommerceNode.Stores;
+    using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs.Category;
     using BlazorShop.Application.DTOs.Discovery;
     using BlazorShop.Application.DTOs.Product;
     using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Contracts.CategoryPersistence;
+    using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Entities;
 
     public class PublicCatalogService : IPublicCatalogService
@@ -258,8 +260,37 @@ namespace BlazorShop.Application.Services
                     return variant;
                 })
                 .ToArray();
+            mapped.VariationTemplate = MapStorefrontVariationTemplate(product);
 
             return mapped;
+        }
+
+        private static StorefrontVariationTemplateDto? MapStorefrontVariationTemplate(Product product)
+        {
+            if (!string.Equals(product.ProductType, ProductTypes.CustomVariations, StringComparison.OrdinalIgnoreCase)
+                || product.VariationTemplate is null
+                || !product.VariationTemplate.IsActive)
+            {
+                return null;
+            }
+
+            return new StorefrontVariationTemplateDto(
+                product.VariationTemplate.Name,
+                product.VariationTemplate.Slug,
+                product.VariationTemplate.Options
+                    .Where(option => option.IsActive)
+                    .OrderBy(option => option.SortOrder)
+                    .ThenBy(option => option.Name)
+                    .Select(option => new StorefrontVariationOptionDto(
+                        option.Name,
+                        option.Values
+                            .Where(value => value.IsActive)
+                            .OrderBy(value => value.SortOrder)
+                            .ThenBy(value => value.Value)
+                            .Select(value => new StorefrontVariationValueDto(value.Value))
+                            .ToArray()))
+                    .Where(option => option.Values.Count > 0)
+                    .ToArray());
         }
 
         private static IReadOnlyList<GetCategoryTreeNode> BuildTree(IReadOnlyList<Category> categories)

@@ -47,7 +47,8 @@
                 .ForMember(dest => dest.SeoContent, opt => opt.MapFrom(src => src.IsPublished ? src.SeoContent : null))
                 .ForMember(dest => dest.RobotsIndex, opt => opt.MapFrom(src => src.IsPublished ? src.RobotsIndex : true))
                 .ForMember(dest => dest.RobotsFollow, opt => opt.MapFrom(src => src.IsPublished ? src.RobotsFollow : true))
-                .ForMember(dest => dest.Variants, opt => opt.MapFrom(src => src.Variants));
+                .ForMember(dest => dest.Variants, opt => opt.MapFrom(src => src.Variants))
+                .ForMember(dest => dest.VariationTemplate, opt => opt.Ignore());
             this.CreateMap<CatalogProductReadModel, GetCatalogProduct>();
 
             this.CreateMap<Product, SeoFieldsDto>();

@@ -19,12 +19,18 @@ namespace BlazorShop.Infrastructure.Data.Configurations
             builder.HasIndex(product => new { product.StoreId, product.CategoryId, product.DisplayOrder, product.CreatedOn });
             builder.HasIndex(product => new { product.StoreId, product.IsPublished, product.ArchivedAt });
 
+            builder.HasIndex(product => new { product.StoreId, product.ProductType });
+
             builder.HasIndex(product => new { product.StoreId, product.Slug })
                 .IsUnique()
                 .HasFilter("\"StoreId\" IS NOT NULL AND \"Slug\" IS NOT NULL AND \"ArchivedAt\" IS NULL");
 
             builder.Property(product => product.Sku)
                 .HasMaxLength(64);
+
+            builder.Property(product => product.ProductType)
+                .HasMaxLength(64)
+                .HasDefaultValue(ProductTypes.Simple);
 
             builder.Property(product => product.ShortDescription)
                 .HasColumnType("text");

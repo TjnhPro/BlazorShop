@@ -46,5 +46,9 @@ namespace BlazorShop.Application.DTOs.Product
         public string? CategorySlug { get; set; }
 
         public bool HasVariants { get; set; }
+
+        public string ProductType { get; set; } = string.Empty;
+
+        public Guid? VariationTemplateId { get; set; }
     }
 }

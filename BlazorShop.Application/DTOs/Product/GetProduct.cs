@@ -2,6 +2,7 @@
 {
     using System.ComponentModel.DataAnnotations;
 
+    using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs.Category;
     using BlazorShop.Application.DTOs.Product.ProductVariant;
 
@@ -31,6 +32,8 @@
         public bool RobotsFollow { get; set; } = true;
 
         public GetCategory? Category { get; set; }
+
+        public StorefrontVariationTemplateDto? VariationTemplate { get; set; }
 
         public DateTime CreatedOn { get; set; }
 

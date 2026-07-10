@@ -116,6 +116,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IProductMediaService, ProductMediaService>();
             services.AddScoped<IProductMediaUrlBuilder, ProductMediaUrlBuilder>();
             services.AddScoped<IVariationTemplateService, VariationTemplateService>();
+            services.AddScoped<IVariationTemplateLookupService, VariationTemplateLookupService>();
             services.AddSingleton<ICatalogQueryCache, MemoryCatalogQueryCache>();
             services.AddScoped<ICommerceStoreService, CommerceStoreService>();
             services.AddScoped<ICommerceStoreContext, CommerceStoreContext>();

@@ -6,11 +6,13 @@
 
     using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.CommerceNode.Stores;
+    using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
     using BlazorShop.Application.DTOs.Product;
     using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Application.Services.Contracts.Admin;
+    using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities;
 
@@ -22,6 +24,7 @@
         private readonly IAdminAuditService? _auditService;
         private readonly ICommerceStoreContext? _storeContext;
         private readonly ICatalogQueryCache? _catalogQueryCache;
+        private readonly IVariationTemplateLookupService? _variationTemplateLookupService;
 
         public ProductService(
             IProductReadRepository productReadRepository,
@@ -29,7 +32,8 @@
             IMapper mapper,
             IAdminAuditService? auditService = null,
             ICommerceStoreContext? storeContext = null,
-            ICatalogQueryCache? catalogQueryCache = null)
+            ICatalogQueryCache? catalogQueryCache = null,
+            IVariationTemplateLookupService? variationTemplateLookupService = null)
         {
             _productReadRepository = productReadRepository;
             _productRepository = productRepository;
@@ -37,6 +41,7 @@
             _auditService = auditService;
             _storeContext = storeContext;
             _catalogQueryCache = catalogQueryCache;
+            _variationTemplateLookupService = variationTemplateLookupService;
         }
 
         public async Task<IEnumerable<GetProduct>> GetAllAsync()
@@ -74,6 +79,12 @@
             mappedData.StoreId ??= await ResolveCurrentStoreIdAsync();
             NormalizeProduct(mappedData);
 
+            var validation = await ValidateProductTypeAsync(mappedData);
+            if (!validation.Success)
+            {
+                return validation;
+            }
+
             if (!string.IsNullOrWhiteSpace(mappedData.Sku)
                 && await _productReadRepository.ProductSkuExistsAsync(mappedData.Sku, mappedData.StoreId))
             {
@@ -105,6 +116,12 @@
             _mapper.Map(product, existingProduct);
             existingProduct.StoreId = storeId;
             NormalizeProduct(existingProduct);
+
+            var validation = await ValidateProductTypeAsync(existingProduct);
+            if (!validation.Success)
+            {
+                return validation;
+            }
 
             if (!string.IsNullOrWhiteSpace(existingProduct.Sku)
                 && await _productReadRepository.ProductSkuExistsAsync(existingProduct.Sku, existingProduct.StoreId, existingProduct.Id))
@@ -157,7 +174,56 @@
                 ? product.Description
                 : product.FullDescription.Trim();
             product.Image = product.Image?.Trim();
+            product.ProductType = NormalizeProductType(product.ProductType);
+            if (!string.Equals(product.ProductType, ProductTypes.CustomVariations, StringComparison.OrdinalIgnoreCase))
+            {
+                product.VariationTemplateId = null;
+            }
+
             product.UpdatedAt = DateTime.UtcNow;
+        }
+
+        private async Task<ServiceResponse> ValidateProductTypeAsync(Product product)
+        {
+            if (!ProductTypes.All.Contains(product.ProductType))
+            {
+                return new ServiceResponse(false, "Product type is invalid.");
+            }
+
+            if (!string.Equals(product.ProductType, ProductTypes.CustomVariations, StringComparison.OrdinalIgnoreCase))
+            {
+                return new ServiceResponse(true, string.Empty);
+            }
+
+            if (!product.VariationTemplateId.HasValue || product.VariationTemplateId.Value == Guid.Empty)
+            {
+                return new ServiceResponse(false, "Variation template is required for custom variation products.");
+            }
+
+            if (_variationTemplateLookupService is null)
+            {
+                return new ServiceResponse(true, string.Empty);
+            }
+
+            var isActive = await _variationTemplateLookupService.IsActiveTemplateInStoreAsync(
+                product.VariationTemplateId.Value,
+                product.StoreId);
+
+            return isActive
+                ? new ServiceResponse(true, string.Empty)
+                : new ServiceResponse(false, "Variation template was not found or is inactive.");
+        }
+
+        private static string NormalizeProductType(string? productType)
+        {
+            if (string.IsNullOrWhiteSpace(productType))
+            {
+                return ProductTypes.Simple;
+            }
+
+            var trimmed = productType.Trim();
+            return ProductTypes.All.FirstOrDefault(type => string.Equals(type, trimmed, StringComparison.OrdinalIgnoreCase))
+                   ?? trimmed;
         }
 
         private async Task LogAsync(string action, Guid entityId, string summary, object metadata)
@@ -208,8 +274,37 @@
                     return variant;
                 })
                 .ToArray();
+            mapped.VariationTemplate = MapStorefrontVariationTemplate(product);
 
             return mapped;
+        }
+
+        private static StorefrontVariationTemplateDto? MapStorefrontVariationTemplate(Product product)
+        {
+            if (!string.Equals(product.ProductType, ProductTypes.CustomVariations, StringComparison.OrdinalIgnoreCase)
+                || product.VariationTemplate is null
+                || !product.VariationTemplate.IsActive)
+            {
+                return null;
+            }
+
+            return new StorefrontVariationTemplateDto(
+                product.VariationTemplate.Name,
+                product.VariationTemplate.Slug,
+                product.VariationTemplate.Options
+                    .Where(option => option.IsActive)
+                    .OrderBy(option => option.SortOrder)
+                    .ThenBy(option => option.Name)
+                    .Select(option => new StorefrontVariationOptionDto(
+                        option.Name,
+                        option.Values
+                            .Where(value => value.IsActive)
+                            .OrderBy(value => value.SortOrder)
+                            .ThenBy(value => value.Value)
+                            .Select(value => new StorefrontVariationValueDto(value.Value))
+                            .ToArray()))
+                    .Where(option => option.Values.Count > 0)
+                    .ToArray());
         }
     }
 }

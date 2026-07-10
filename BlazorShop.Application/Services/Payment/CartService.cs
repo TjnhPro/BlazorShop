@@ -1,8 +1,11 @@
-﻿namespace BlazorShop.Application.Services.Payment
+namespace BlazorShop.Application.Services.Payment
 {
+    using System.Text.Json;
+
     using AutoMapper;
 
     using BlazorShop.Application.CommerceNode.Stores;
+    using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Application.DTOs.Product.ProductVariant;
@@ -11,12 +14,19 @@
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Contracts.Authentication;
     using BlazorShop.Domain.Contracts.Payment;
+    using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Entities;
     using BlazorShop.Domain.Entities.Payment;
     using Microsoft.Extensions.Options;
 
     public class CartService : ICartService
     {
+        private const int MaxSelectedAttributes = 5;
+        private const int MaxSelectedAttributeNameLength = 100;
+        private const int MaxSelectedAttributeValueLength = 200;
+
+        private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
+
         private readonly ICart _cart;
         private readonly IMapper _mapper;
         private readonly IProductReadRepository _productReadRepository;
@@ -240,7 +250,7 @@
                             Sku = item.Variant?.Sku ?? item.Product.Sku,
                             Image = item.Product.Image,
                             ProductVariantId = item.Variant?.Id,
-                            VariantAttributesJson = item.Variant?.AttributesJson,
+                            VariantAttributesJson = item.VariantAttributesJson ?? item.Variant?.AttributesJson,
                             Quantity = item.Quantity,
                             UnitPrice = item.UnitPrice,
                         })
@@ -376,6 +386,12 @@
                     return CartLineResolution.Failure("A cart product could not be found for this store.");
                 }
 
+                var selectedAttributes = NormalizeSelectedAttributes(product, item.SelectedAttributes);
+                if (!selectedAttributes.Success)
+                {
+                    return CartLineResolution.Failure(selectedAttributes.ErrorMessage);
+                }
+
                 var variant = ResolveVariant(product, item.ProductVariantId);
                 if (variant.Failed)
                 {
@@ -392,6 +408,7 @@
                 lines.Add(new CartLineContext(
                     product,
                     selectedVariant,
+                    selectedAttributes.AttributesJson,
                     item.Quantity,
                     selectedVariant?.Price ?? product.Price));
             }
@@ -401,6 +418,11 @@
 
         private static VariantResolution ResolveVariant(Product product, Guid? productVariantId)
         {
+            if (string.Equals(product.ProductType, ProductTypes.CustomVariations, StringComparison.OrdinalIgnoreCase))
+            {
+                return VariantResolution.Success(null);
+            }
+
             var variants = product.Variants.ToArray();
             if (productVariantId.HasValue)
             {
@@ -496,7 +518,62 @@
             return orderItems;
         }
 
-        private sealed record CartLineContext(Product Product, ProductVariant? Variant, int Quantity, decimal UnitPrice);
+        private static SelectedAttributesResolution NormalizeSelectedAttributes(
+            Product product,
+            IReadOnlyList<SelectedAttributeDto>? selectedAttributes)
+        {
+            if (!string.Equals(product.ProductType, ProductTypes.CustomVariations, StringComparison.OrdinalIgnoreCase))
+            {
+                return SelectedAttributesResolution.Ok(null);
+            }
+
+            var attributes = (selectedAttributes ?? [])
+                .Select(attribute => new SelectedAttributeDto(
+                    attribute.Name?.Trim() ?? string.Empty,
+                    attribute.Value?.Trim() ?? string.Empty))
+                .Where(attribute => !string.IsNullOrWhiteSpace(attribute.Name)
+                    || !string.IsNullOrWhiteSpace(attribute.Value))
+                .ToArray();
+
+            if (attributes.Length > MaxSelectedAttributes)
+            {
+                return SelectedAttributesResolution.Failure("At most 5 selected attributes are allowed.");
+            }
+
+            foreach (var attribute in attributes)
+            {
+                if (string.IsNullOrWhiteSpace(attribute.Name))
+                {
+                    return SelectedAttributesResolution.Failure("Selected attribute name is required.");
+                }
+
+                if (string.IsNullOrWhiteSpace(attribute.Value))
+                {
+                    return SelectedAttributesResolution.Failure("Selected attribute value is required.");
+                }
+
+                if (attribute.Name.Length > MaxSelectedAttributeNameLength)
+                {
+                    return SelectedAttributesResolution.Failure("Selected attribute name must be 100 characters or fewer.");
+                }
+
+                if (attribute.Value.Length > MaxSelectedAttributeValueLength)
+                {
+                    return SelectedAttributesResolution.Failure("Selected attribute value must be 200 characters or fewer.");
+                }
+            }
+
+            var normalized = attributes
+                .GroupBy(attribute => attribute.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(group => group.First())
+                .ToArray();
+
+            return SelectedAttributesResolution.Ok(normalized.Length == 0
+                ? null
+                : JsonSerializer.Serialize(normalized, SerializerOptions));
+        }
+
+        private sealed record CartLineContext(Product Product, ProductVariant? Variant, string? VariantAttributesJson, int Quantity, decimal UnitPrice);
 
         private sealed record CartLineResolution(bool Success, IReadOnlyList<CartLineContext> Lines, string? ErrorMessage)
         {
@@ -510,6 +587,13 @@
             public static VariantResolution Success(ProductVariant? variant) => new(false, variant, null);
 
             public static VariantResolution Failure(string? errorMessage) => new(true, null, errorMessage);
+        }
+
+        private sealed record SelectedAttributesResolution(bool Success, string? AttributesJson, string? ErrorMessage)
+        {
+            public static SelectedAttributesResolution Ok(string? attributesJson) => new(true, attributesJson, null);
+
+            public static SelectedAttributesResolution Failure(string? errorMessage) => new(false, null, errorMessage);
         }
     }
 }

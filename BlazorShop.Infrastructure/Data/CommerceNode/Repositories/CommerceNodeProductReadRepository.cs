@@ -60,6 +60,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                     SeoContent = product.SeoContent,
                     IsPublished = product.IsPublished,
                     PublishedOn = product.PublishedOn,
+                    ProductType = product.ProductType,
+                    VariationTemplateId = product.VariationTemplateId,
                     CategoryId = product.CategoryId,
                 })
                 .ToListAsync();
@@ -172,6 +174,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 .AsNoTracking()
                 .Include(product => product.Category)
                 .Include(product => product.Variants)
+                .Include(product => product.VariationTemplate!)
+                    .ThenInclude(template => template.Options)
+                    .ThenInclude(option => option.Values)
                 .FirstOrDefaultAsync(product => product.Id == id);
         }
 
@@ -182,6 +187,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 .AsNoTracking()
                 .Include(product => product.Category)
                 .Include(product => product.Variants)
+                .Include(product => product.VariationTemplate!)
+                    .ThenInclude(template => template.Options)
+                    .ThenInclude(option => option.Values)
                 .FirstOrDefaultAsync(product => product.Id == id
                     && product.ArchivedAt == null
                     && product.IsPublished
@@ -201,6 +209,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 .AsNoTracking()
                 .Include(product => product.Category)
                 .Include(product => product.Variants)
+                .Include(product => product.VariationTemplate!)
+                    .ThenInclude(template => template.Options)
+                    .ThenInclude(option => option.Values)
                 .FirstOrDefaultAsync(product => product.IsPublished
                     && product.ArchivedAt == null
                     && product.PublishedOn != null
@@ -477,6 +488,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 CategoryName = product.Category != null ? product.Category.Name : null,
                 CategorySlug = product.Category != null && product.Category.IsPublished ? product.Category.Slug : null,
                 HasVariants = product.Variants.Any(),
+                ProductType = product.ProductType,
+                VariationTemplateId = product.VariationTemplateId,
             };
         }
 
