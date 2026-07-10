@@ -40,6 +40,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
         public DbSet<OrderLine> OrderLines => Set<OrderLine>();
 
+        public DbSet<Shipment> Shipments => Set<Shipment>();
+
         public DbSet<SeoRedirect> SeoRedirects => Set<SeoRedirect>();
 
         public DbSet<SeoSettings> SeoSettings => Set<SeoSettings>();
@@ -233,6 +235,52 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 .WithMany()
                 .HasForeignKey(line => line.ProductVariantId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Shipment>(entity =>
+            {
+                entity.ToTable("Shipments");
+                entity.HasKey(shipment => shipment.Id);
+
+                entity.Property(shipment => shipment.ShipDate)
+                    .HasColumnType("timestamp with time zone");
+
+                entity.Property(shipment => shipment.CarrierName)
+                    .HasMaxLength(128)
+                    .IsRequired();
+
+                entity.Property(shipment => shipment.CarrierService)
+                    .HasMaxLength(128);
+
+                entity.Property(shipment => shipment.TrackingNumber)
+                    .HasMaxLength(160)
+                    .IsRequired();
+
+                entity.Property(shipment => shipment.TrackingUrl)
+                    .HasMaxLength(1024);
+
+                entity.Property(shipment => shipment.Note)
+                    .HasMaxLength(1000);
+
+                entity.Property(shipment => shipment.CreatedAt)
+                    .HasColumnType("timestamp with time zone")
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.Property(shipment => shipment.UpdatedAt)
+                    .HasColumnType("timestamp with time zone")
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasIndex(shipment => new { shipment.StoreId, shipment.OrderId })
+                    .IsUnique();
+
+                entity.HasIndex(shipment => shipment.StoreId);
+
+                entity.HasIndex(shipment => shipment.OrderId);
+
+                entity.HasOne(shipment => shipment.Order)
+                    .WithMany()
+                    .HasForeignKey(shipment => shipment.OrderId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
 
             modelBuilder.Entity<PaymentMethod>().HasData(
                 new PaymentMethod
