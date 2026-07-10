@@ -109,6 +109,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IAdminInventoryService, CommerceNodeAdminInventoryService>();
             services.AddScoped<IOrderTrackingService, CommerceNodeOrderTrackingService>();
             services.AddScoped<IAdminOrderService, CommerceNodeAdminOrderService>();
+            services.AddScoped<IAdminShipmentService, CommerceNodeAdminShipmentService>();
             services.AddScoped<IAdminSettingsService, CommerceNodeAdminSettingsService>();
             services.AddScoped<ICommerceTaskService, CommerceTaskService>();
             services.AddScoped<IProductMediaService, ProductMediaService>();

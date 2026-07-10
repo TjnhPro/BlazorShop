@@ -11,10 +11,14 @@ namespace BlazorShop.CommerceNode.API.Controllers
     public sealed class CommerceOrdersController : CommerceAdminControllerBase
     {
         private readonly IAdminOrderService adminOrderService;
+        private readonly IAdminShipmentService adminShipmentService;
 
-        public CommerceOrdersController(IAdminOrderService adminOrderService)
+        public CommerceOrdersController(
+            IAdminOrderService adminOrderService,
+            IAdminShipmentService adminShipmentService)
         {
             this.adminOrderService = adminOrderService;
+            this.adminShipmentService = adminShipmentService;
         }
 
         [HttpGet]
@@ -42,6 +46,20 @@ namespace BlazorShop.CommerceNode.API.Controllers
         public async Task<IActionResult> UpdateShippingStatus(Guid id, [FromBody] UpdateShippingStatusRequest request)
         {
             var result = await this.adminOrderService.UpdateShippingStatusAsync(id, request);
+            return this.FromServiceResponse(result);
+        }
+
+        [HttpGet("{id:guid}/shipment")]
+        public async Task<IActionResult> GetShipment(Guid id)
+        {
+            var result = await this.adminShipmentService.GetShipmentAsync(id);
+            return this.FromServiceResponse(result);
+        }
+
+        [HttpPut("{id:guid}/shipment")]
+        public async Task<IActionResult> UpsertShipment(Guid id, [FromBody] UpsertShipmentRequest request)
+        {
+            var result = await this.adminShipmentService.UpsertShipmentAsync(id, request);
             return this.FromServiceResponse(result);
         }
 

@@ -181,20 +181,24 @@ Validation:
 
 ## Service Design
 
-Preferred MVP approach: extend `IAdminOrderService`.
+Preferred MVP approach after code inspection: add `IAdminShipmentService`.
 
 Reason:
 
-- Shipment MVP is tightly attached to admin order detail.
-- `CommerceOrdersController` already owns order admin routes.
-- `CommerceNodeAdminOrderService` already has store-scoped order lookup, mapping, and audit patterns.
+- `IAdminOrderService` is also implemented by legacy `BlazorShop.API`.
+- Extending `IAdminOrderService` would force legacy service changes for a CommerceNode-only feature.
+- `CommerceOrdersController` can still own the route while delegating shipment behavior to a dedicated service.
+- `CommerceNodeAdminShipmentService` can reuse the same store context, API response, and audit patterns without touching legacy.
 - A separate `IShipmentService` can be introduced later if shipment grows into provider integration, labels, webhooks, or notification workflows.
 
-Add methods:
+Add contract:
 
 ```csharp
+public interface IAdminShipmentService
+{
 Task<ServiceResponse<GetShipment>> GetShipmentAsync(Guid orderId);
 Task<ServiceResponse<GetShipment>> UpsertShipmentAsync(Guid orderId, UpsertShipmentRequest request);
+}
 ```
 
 Implementation notes:
@@ -304,7 +308,7 @@ Tasks:
 
 - Add `GetShipment`.
 - Add `UpsertShipmentRequest`.
-- Extend `IAdminOrderService` with shipment methods.
+- Add `IAdminShipmentService` with shipment methods.
 - Keep existing order service methods unchanged.
 
 Acceptance:
@@ -318,6 +322,7 @@ Tasks:
 
 - Implement `GetShipmentAsync`.
 - Implement `UpsertShipmentAsync`.
+- Register `IAdminShipmentService` to `CommerceNodeAdminShipmentService`.
 - Validate request fields.
 - Resolve current store.
 - Load order by current `StoreId`.
