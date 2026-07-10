@@ -4,6 +4,7 @@
 
     using AutoMapper;
 
+    using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
@@ -20,19 +21,22 @@
         private readonly IMapper _mapper;
         private readonly IAdminAuditService? _auditService;
         private readonly ICommerceStoreContext? _storeContext;
+        private readonly ICatalogQueryCache? _catalogQueryCache;
 
         public ProductService(
             IProductReadRepository productReadRepository,
             IGenericRepository<Product> productRepository,
             IMapper mapper,
             IAdminAuditService? auditService = null,
-            ICommerceStoreContext? storeContext = null)
+            ICommerceStoreContext? storeContext = null,
+            ICatalogQueryCache? catalogQueryCache = null)
         {
             _productReadRepository = productReadRepository;
             _productRepository = productRepository;
             _mapper = mapper;
             _auditService = auditService;
             _storeContext = storeContext;
+            _catalogQueryCache = catalogQueryCache;
         }
 
         public async Task<IEnumerable<GetProduct>> GetAllAsync()
@@ -84,6 +88,7 @@
             }
 
             await LogAsync("Product.Created", mappedData.Id, $"Product {mappedData.Name} created.", new { mappedData.Name, mappedData.Price, mappedData.Quantity });
+            await InvalidateCatalogAsync(mappedData.StoreId);
             return new ServiceResponse(true, "Product added successfully", mappedData.Id);
         }
 
@@ -115,6 +120,7 @@
             }
 
             await LogAsync("Product.Updated", existingProduct.Id, $"Product {existingProduct.Name} updated.", new { existingProduct.Name, existingProduct.Price, existingProduct.Quantity });
+            await InvalidateCatalogAsync(existingProduct.StoreId);
             return new ServiceResponse(true, "Product updated successfully");
         }
 
@@ -137,6 +143,7 @@
             }
 
             await LogAsync("Product.Archived", id, $"Product {existingProduct.Name ?? id.ToString()} archived.", new { existingProduct.Name, existingProduct.Sku });
+            await InvalidateCatalogAsync(existingProduct.StoreId);
             return new ServiceResponse(true, "Product archived successfully");
         }
 
@@ -179,6 +186,16 @@
 
             var result = await _storeContext.GetCurrentStoreIdAsync();
             return result.Success ? result.Payload : null;
+        }
+
+        private async Task InvalidateCatalogAsync(Guid? storeId)
+        {
+            if (_catalogQueryCache is null || !storeId.HasValue || storeId.Value == Guid.Empty)
+            {
+                return;
+            }
+
+            await _catalogQueryCache.InvalidateStoreCatalogAsync(storeId.Value);
         }
 
         private GetProduct MapProductDetails(Product product)

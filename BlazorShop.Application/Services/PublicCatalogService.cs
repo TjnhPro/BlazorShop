@@ -1,7 +1,12 @@
 namespace BlazorShop.Application.Services
 {
+    using System.Globalization;
+    using System.Text;
+
     using AutoMapper;
 
+    using BlazorShop.Application.CommerceNode.Catalog;
+    using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs.Category;
     using BlazorShop.Application.DTOs.Discovery;
     using BlazorShop.Application.DTOs.Product;
@@ -12,7 +17,12 @@ namespace BlazorShop.Application.Services
 
     public class PublicCatalogService : IPublicCatalogService
     {
+        private static readonly TimeSpan CategoryTreeCacheTtl = TimeSpan.FromSeconds(60);
+        private static readonly TimeSpan CatalogPageCacheTtl = TimeSpan.FromSeconds(45);
+
         private readonly ICategoryRepository _categoryRepository;
+        private readonly ICatalogQueryCache? _catalogQueryCache;
+        private readonly ICommerceStoreContext? _commerceStoreContext;
         private readonly IMapper _mapper;
         private readonly IProductReadRepository _productReadRepository;
         private readonly ISlugService _slugService;
@@ -21,9 +31,13 @@ namespace BlazorShop.Application.Services
             ICategoryRepository categoryRepository,
             IMapper mapper,
             IProductReadRepository productReadRepository,
-            ISlugService slugService)
+            ISlugService slugService,
+            ICatalogQueryCache? catalogQueryCache = null,
+            ICommerceStoreContext? commerceStoreContext = null)
         {
             _categoryRepository = categoryRepository;
+            _catalogQueryCache = catalogQueryCache;
+            _commerceStoreContext = commerceStoreContext;
             _mapper = mapper;
             _productReadRepository = productReadRepository;
             _slugService = slugService;
@@ -37,6 +51,17 @@ namespace BlazorShop.Application.Services
 
         public async Task<IReadOnlyList<GetCategoryTreeNode>> GetPublishedCategoryTreeAsync()
         {
+            var storeId = await ResolveCurrentStoreIdAsync();
+            var cacheKey = storeId.HasValue ? BuildCategoryTreeCacheKey(storeId.Value) : null;
+            if (_catalogQueryCache is not null && cacheKey is not null)
+            {
+                var cached = await _catalogQueryCache.GetAsync<IReadOnlyList<GetCategoryTreeNode>>(cacheKey);
+                if (cached is not null)
+                {
+                    return cached;
+                }
+            }
+
             var categories = await _categoryRepository.GetCategoriesForTreeAsync();
             var publishedCategories = categories
                 .Where(category => category.IsPublished
@@ -44,7 +69,13 @@ namespace BlazorShop.Application.Services
                     && !string.IsNullOrWhiteSpace(category.Slug))
                 .ToArray();
 
-            return BuildTree(publishedCategories);
+            var tree = BuildTree(publishedCategories);
+            if (_catalogQueryCache is not null && cacheKey is not null)
+            {
+                await _catalogQueryCache.SetAsync(cacheKey, tree, CategoryTreeCacheTtl);
+            }
+
+            return tree;
         }
 
         public async Task<GetPublicCatalogSitemap> GetPublishedSitemapAsync()
@@ -73,16 +104,34 @@ namespace BlazorShop.Application.Services
 
         public async Task<PagedResult<GetCatalogProduct>> GetPublishedCatalogPageAsync(ProductCatalogQuery query)
         {
+            var storeId = await ResolveCurrentStoreIdAsync();
+            var cacheKey = storeId.HasValue ? BuildCatalogPageCacheKey(storeId.Value, query) : null;
+            if (_catalogQueryCache is not null && cacheKey is not null)
+            {
+                var cached = await _catalogQueryCache.GetAsync<PagedResult<GetCatalogProduct>>(cacheKey);
+                if (cached is not null)
+                {
+                    return cached;
+                }
+            }
+
             var result = await _productReadRepository.GetPublishedCatalogPageAsync(query);
             var mappedItems = _mapper.Map<IReadOnlyList<GetCatalogProduct>>(result.Items);
 
-            return new PagedResult<GetCatalogProduct>
+            var page = new PagedResult<GetCatalogProduct>
             {
                 Items = mappedItems,
                 PageNumber = result.PageNumber,
                 PageSize = result.PageSize,
                 TotalCount = result.TotalCount,
             };
+
+            if (_catalogQueryCache is not null && cacheKey is not null)
+            {
+                await _catalogQueryCache.SetAsync(cacheKey, page, CatalogPageCacheTtl);
+            }
+
+            return page;
         }
 
         public async Task<GetProduct?> GetPublishedProductByIdAsync(Guid id)
@@ -157,6 +206,46 @@ namespace BlazorShop.Application.Services
         {
             var normalizedSlug = _slugService.NormalizeSlug(slug);
             return string.IsNullOrWhiteSpace(normalizedSlug) ? null : normalizedSlug;
+        }
+
+        private async Task<Guid?> ResolveCurrentStoreIdAsync()
+        {
+            if (_commerceStoreContext is null)
+            {
+                return null;
+            }
+
+            var result = await _commerceStoreContext.GetCurrentStoreIdAsync();
+            return result.Success && result.Payload != Guid.Empty ? result.Payload : null;
+        }
+
+        private static string BuildCategoryTreeCacheKey(Guid storeId)
+        {
+            return $"store:{storeId:D}:catalog:categories:tree:v1";
+        }
+
+        private static string BuildCatalogPageCacheKey(Guid storeId, ProductCatalogQuery query)
+        {
+            var builder = new StringBuilder();
+            builder.Append(CultureInfo.InvariantCulture, $"store:{storeId:D}:catalog:products:v1");
+            builder.Append(CultureInfo.InvariantCulture, $":page:{Math.Max(1, query.PageNumber)}");
+            builder.Append(CultureInfo.InvariantCulture, $":size:{Math.Max(1, query.PageSize)}");
+            builder.Append(CultureInfo.InvariantCulture, $":sort:{query.SortBy}");
+            builder.Append(CultureInfo.InvariantCulture, $":category-id:{query.CategoryId?.ToString("D") ?? "none"}");
+            builder.Append(CultureInfo.InvariantCulture, $":category-slug:{NormalizeCachePart(query.GetNormalizedCategorySlug())}");
+            builder.Append(CultureInfo.InvariantCulture, $":search:{NormalizeCachePart(query.GetNormalizedSearchTerm())}");
+            builder.Append(CultureInfo.InvariantCulture, $":min:{query.MinPrice?.ToString(CultureInfo.InvariantCulture) ?? "none"}");
+            builder.Append(CultureInfo.InvariantCulture, $":max:{query.MaxPrice?.ToString(CultureInfo.InvariantCulture) ?? "none"}");
+            builder.Append(CultureInfo.InvariantCulture, $":stock:{query.InStock?.ToString() ?? "none"}");
+            builder.Append(CultureInfo.InvariantCulture, $":created:{query.CreatedAfterUtc?.ToString("O", CultureInfo.InvariantCulture) ?? "none"}");
+            return builder.ToString();
+        }
+
+        private static string NormalizeCachePart(string? value)
+        {
+            return string.IsNullOrWhiteSpace(value)
+                ? "empty"
+                : Uri.EscapeDataString(value.Trim().ToLowerInvariant());
         }
 
         private GetProduct MapProductDetails(Product product)

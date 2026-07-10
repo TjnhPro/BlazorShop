@@ -1,6 +1,7 @@
 namespace BlazorShop.Application.Services
 {
     using AutoMapper;
+    using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Product.ProductVariant;
@@ -14,17 +15,20 @@ namespace BlazorShop.Application.Services
         private readonly IMapper _mapper;
         private readonly IProductReadRepository? _productReadRepository;
         private readonly ICommerceStoreContext? _storeContext;
+        private readonly ICatalogQueryCache? _catalogQueryCache;
 
         public ProductVariantService(
             IGenericRepository<ProductVariant> variantRepository,
             IMapper mapper,
             IProductReadRepository? productReadRepository = null,
-            ICommerceStoreContext? storeContext = null)
+            ICommerceStoreContext? storeContext = null,
+            ICatalogQueryCache? catalogQueryCache = null)
         {
             _variantRepository = variantRepository;
             _mapper = mapper;
             _productReadRepository = productReadRepository;
             _storeContext = storeContext;
+            _catalogQueryCache = catalogQueryCache;
         }
 
         public async Task<IEnumerable<GetProductVariant>> GetByProductIdAsync(Guid productId)
@@ -58,7 +62,13 @@ namespace BlazorShop.Application.Services
             }
 
             var result = await _variantRepository.AddAsync(mapped);
-            return result > 0 ? new ServiceResponse(true, "Variant added successfully") : new ServiceResponse(false, "Variant not added");
+            if (result <= 0)
+            {
+                return new ServiceResponse(false, "Variant not added");
+            }
+
+            await InvalidateCatalogAsync(product.StoreId);
+            return new ServiceResponse(true, "Variant added successfully");
         }
 
         public async Task<ServiceResponse> UpdateAsync(UpdateProductVariant variant)
@@ -88,7 +98,13 @@ namespace BlazorShop.Application.Services
             }
 
             var result = await _variantRepository.UpdateAsync(existing);
-            return result > 0 ? new ServiceResponse(true, "Variant updated successfully") : new ServiceResponse(false, "Variant not found");
+            if (result <= 0)
+            {
+                return new ServiceResponse(false, "Variant not found");
+            }
+
+            await InvalidateCatalogAsync(product.StoreId);
+            return new ServiceResponse(true, "Variant updated successfully");
         }
 
         public async Task<ServiceResponse> DeleteAsync(Guid variantId)
@@ -106,7 +122,13 @@ namespace BlazorShop.Application.Services
             }
 
             var result = await _variantRepository.DeleteAsync(variantId);
-            return result > 0 ? new ServiceResponse(true, "Variant deleted successfully") : new ServiceResponse(false, "Variant not found");
+            if (result <= 0)
+            {
+                return new ServiceResponse(false, "Variant not found");
+            }
+
+            await InvalidateCatalogAsync(product.StoreId);
+            return new ServiceResponse(true, "Variant deleted successfully");
         }
 
         private async Task<ServiceResponse> ValidateVariantAsync(ProductVariant variant, Guid? excludedVariantId = null)
@@ -157,6 +179,16 @@ namespace BlazorShop.Application.Services
 
             var result = await _storeContext.GetCurrentStoreIdAsync();
             return result.Success ? result.Payload : null;
+        }
+
+        private async Task InvalidateCatalogAsync(Guid? storeId)
+        {
+            if (_catalogQueryCache is null || !storeId.HasValue || storeId.Value == Guid.Empty)
+            {
+                return;
+            }
+
+            await _catalogQueryCache.InvalidateStoreCatalogAsync(storeId.Value);
         }
 
         private GetProductVariant MapVariant(ProductVariant variant, decimal productPrice)

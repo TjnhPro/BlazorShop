@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 {
     using System.Text.Json;
 
+    using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
     using BlazorShop.Application.DTOs.Admin.Inventory;
@@ -17,15 +18,18 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     {
         private readonly CommerceNodeDbContext context;
         private readonly IAdminAuditService auditService;
+        private readonly ICatalogQueryCache catalogQueryCache;
         private readonly ICommerceStoreContext storeContext;
 
         public CommerceNodeAdminInventoryService(
             CommerceNodeDbContext context,
             IAdminAuditService auditService,
+            ICatalogQueryCache catalogQueryCache,
             ICommerceStoreContext storeContext)
         {
             this.context = context;
             this.auditService = auditService;
+            this.catalogQueryCache = catalogQueryCache;
             this.storeContext = storeContext;
         }
 
@@ -111,6 +115,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var previousQuantity = product.Quantity;
             product.Quantity = request.Quantity;
             await this.context.SaveChangesAsync();
+            await this.InvalidateCatalogAsync(storeId);
 
             await this.LogAsync(
                 "Inventory.ProductStockUpdated",
@@ -152,6 +157,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var previousStock = variant.Stock;
             variant.Stock = request.Stock;
             await this.context.SaveChangesAsync();
+            await this.InvalidateCatalogAsync(storeId);
 
             await this.LogAsync(
                 "Inventory.VariantStockUpdated",
@@ -209,6 +215,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         {
             var result = await this.storeContext.GetCurrentStoreIdAsync();
             return result.Success ? result.Payload : null;
+        }
+
+        private async Task InvalidateCatalogAsync(Guid? storeId)
+        {
+            if (!storeId.HasValue || storeId.Value == Guid.Empty)
+            {
+                return;
+            }
+
+            await this.catalogQueryCache.InvalidateStoreCatalogAsync(storeId.Value);
         }
 
         private async Task LogAsync(string action, string entityType, string entityId, string summary, object metadata)

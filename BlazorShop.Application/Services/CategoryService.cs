@@ -4,6 +4,7 @@
 
     using AutoMapper;
 
+    using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
@@ -22,19 +23,22 @@
         private readonly ICategoryRepository _categoryRepository;
         private readonly IAdminAuditService? _auditService;
         private readonly ICommerceStoreContext? _storeContext;
+        private readonly ICatalogQueryCache? _catalogQueryCache;
 
         public CategoryService(
             IGenericRepository<Category> genericRepository,
             IMapper mapper,
             ICategoryRepository categoryRepository,
             IAdminAuditService? auditService = null,
-            ICommerceStoreContext? storeContext = null)
+            ICommerceStoreContext? storeContext = null,
+            ICatalogQueryCache? catalogQueryCache = null)
         {
             _genericRepository = genericRepository;
             _mapper = mapper;
             _categoryRepository = categoryRepository;
             _auditService = auditService;
             _storeContext = storeContext;
+            _catalogQueryCache = catalogQueryCache;
         }
 
         public async Task<IEnumerable<GetCategory>> GetAllAsync()
@@ -75,6 +79,7 @@
             }
 
             await LogAsync("Category.Created", entity.Id, $"Category {entity.Name} created.", new { entity.Name, entity.ParentCategoryId, entity.DisplayOrder });
+            await InvalidateCatalogAsync(entity.StoreId);
             return new ServiceResponse(true, "Category added successfully");
         }
 
@@ -106,6 +111,7 @@
             }
 
             await LogAsync("Category.Updated", existingCategory.Id, $"Category {existingCategory.Name} updated.", new { existingCategory.Name, existingCategory.ParentCategoryId, existingCategory.DisplayOrder });
+            await InvalidateCatalogAsync(existingCategory.StoreId);
             return new ServiceResponse(true, "Category updated successfully");
         }
 
@@ -138,6 +144,7 @@
             }
 
             await LogAsync("Category.Archived", id, $"Category {existingCategory.Name ?? id.ToString()} archived.", new { existingCategory.Name });
+            await InvalidateCatalogAsync(existingCategory.StoreId);
             return new ServiceResponse(true, "Category archived successfully");
         }
 
@@ -173,6 +180,16 @@
 
             var result = await _storeContext.GetCurrentStoreIdAsync();
             return result.Success ? result.Payload : null;
+        }
+
+        private async Task InvalidateCatalogAsync(Guid? storeId)
+        {
+            if (_catalogQueryCache is null || !storeId.HasValue || storeId.Value == Guid.Empty)
+            {
+                return;
+            }
+
+            await _catalogQueryCache.InvalidateStoreCatalogAsync(storeId.Value);
         }
 
         private async Task<ServiceResponse> ValidateParentAsync(Guid categoryId, Guid? parentCategoryId, Guid? storeId)

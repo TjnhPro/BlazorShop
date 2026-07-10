@@ -4,6 +4,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using System.Text;
     using System.Text.Json;
 
+    using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.CommerceNode.Tasks;
@@ -18,17 +19,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
         private readonly CommerceNodeDbContext context;
+        private readonly ICatalogQueryCache catalogQueryCache;
         private readonly ICommerceStoreContext storeContext;
         private readonly ICommerceTaskService taskService;
         private readonly IProductMediaUrlBuilder urlBuilder;
 
         public ProductMediaService(
             CommerceNodeDbContext context,
+            ICatalogQueryCache catalogQueryCache,
             ICommerceStoreContext storeContext,
             ICommerceTaskService taskService,
             IProductMediaUrlBuilder urlBuilder)
         {
             this.context = context;
+            this.catalogQueryCache = catalogQueryCache;
             this.storeContext = storeContext;
             this.taskService = taskService;
             this.urlBuilder = urlBuilder;
@@ -185,6 +189,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             await this.SetPrimaryMediaAsync(scope.Product!, media, DateTimeOffset.UtcNow, cancellationToken);
+            await this.catalogQueryCache.InvalidateStoreCatalogAsync(scope.StoreId, cancellationToken);
             return Succeeded("Primary product media updated.", this.Map(media));
         }
 
@@ -263,6 +268,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             await this.context.SaveChangesAsync(cancellationToken);
+            if (wasPrimary)
+            {
+                await this.catalogQueryCache.InvalidateStoreCatalogAsync(scope.StoreId, cancellationToken);
+            }
+
             return await this.ListAsync(productId, cancellationToken);
         }
 
