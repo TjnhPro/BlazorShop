@@ -7,7 +7,7 @@ This document records the current development deployment model. It is not a prod
 | File | Purpose |
 | --- | --- |
 | `compose.controlplane.yml` | Runs Control Plane PostgreSQL on host port `5433`. |
-| `compose.commercenode.yml` | Runs Commerce Node PostgreSQL on host port `5434` and Nginx on host port `8088`. |
+| `compose.commercenode.yml` | Runs Commerce Node PostgreSQL on host port `5434`, Nginx on host port `8088`, and imgproxy on host port `8089`. |
 | `compose.production.yml` | Production-oriented compose file. Check before using because V2 architecture is evolving. |
 
 ## Local Ports
@@ -18,6 +18,7 @@ This document records the current development deployment model. It is not a prod
 | Commerce Node PostgreSQL | `5434 -> 5432` | Database `blazorshop_commerce_node`. |
 | Legacy/default PostgreSQL | `5432` | Used by legacy `AppDbContext` if running legacy. |
 | Commerce Node Nginx | `8088 -> 80` | Reverse proxy/runtime config for deployed storefront containers. |
+| Commerce Node imgproxy | `8089 -> 8080` | Local image resize/format service for product media. |
 
 ## Control Plane Local Run
 
@@ -61,8 +62,17 @@ The Commerce Node compose file includes:
 
 - PostgreSQL.
 - Nginx.
+- imgproxy.
 - A dedicated `blazorshop-commercenode` network.
 - Mounted Nginx config and log folders under `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/nginx`.
+- Bind-mounted product media storage under `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/media`.
+
+Product media local QA notes:
+
+- Admin media APIs use `api/commerce/admin/products/{productId}/media/*` with node credentials and `X-Store-Key`.
+- Public media URLs use `/media/products/{mediaPublicId}`.
+- Direct local calls to `localhost:5180/media/products/{mediaId}` may need `X-Store-Key` because `localhost` is not a real store domain in a multi-store database.
+- Production/storefront traffic should resolve the store from the request host/domain through Nginx.
 
 In deployment environments where Commerce Node manages Docker containers, it may require:
 

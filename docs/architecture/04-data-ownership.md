@@ -77,6 +77,7 @@ Owns:
 - Categories.
 - Products.
 - Product variants.
+- Product media.
 - Inventory fields on products/variants.
 - Orders and order lines.
 - Cart/checkout order items.
@@ -91,6 +92,13 @@ Owns:
 - Commerce tasks and task steps.
 
 Use this context when the feature is node-local ecommerce behavior, store runtime, catalog, order, storefront auth, task orchestration, or deployment state.
+
+Current ProductMedia ownership:
+
+- `product_media` rows live only in `CommerceNodeDbContext`.
+- Media import work is queued in `commerce_task` with task type `product.media.import`.
+- The MVP handler runs under the existing `CommerceTaskWorker`; a separate media worker is a future extraction, not the current architecture.
+- `Product.Image` remains the compatibility field for Storefront V2 and points to the primary `/media/products/{mediaPublicId}` URL after import succeeds.
 
 Do not store Control Plane platform users, node credentials, or platform permissions here.
 

@@ -83,6 +83,7 @@ Responsibilities:
 - Deployment task lifecycle.
 - Catalog admin operations.
 - Inventory, order admin, metrics, SEO, audit, media.
+- Product media import is asynchronous through `commerce_task` and the existing `CommerceTaskWorker` in MVP.
 
 ### `api/internal/*`
 
@@ -122,6 +123,22 @@ Responsibilities:
 - Store key propagation to Commerce Node.
 
 It must not call Control Plane APIs and must not use Control Plane credentials.
+
+## Public Product Media Boundary
+
+Product media URLs are public storefront URLs, but they are still store-scoped:
+
+```text
+/media/products/{mediaPublicId}?w=600&h=600&fit=contain&format=webp&v=1
+```
+
+Resolution rules:
+
+- Production/storefront traffic should resolve the store from `Host`, `X-Forwarded-Host`, or the Nginx/store domain path.
+- Local direct API QA may send `X-Store-Key` to disambiguate the store.
+- A plain `localhost:5180/media/products/{mediaId}` request can return `404` when the Commerce Node database has multiple active stores, because `localhost` is not enough store identity.
+- Store A media must not resolve from Store B host or store key.
+- Public media rendering validates the store/media row first, then proxies optimized output through imgproxy.
 
 ## Legacy Boundary
 

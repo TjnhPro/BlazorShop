@@ -33,12 +33,15 @@ Use:
 - `api/commerce/*` for Control Plane/API admin-control calls.
 - `api/internal/*` for Storefront V2 private/internal calls.
 - `CommerceNodeDbContext` for ecommerce node data.
+- Existing `CommerceTaskWorker` and `commerce_task` for asynchronous node-local work unless a separate worker has been explicitly approved.
 
 ## Storefront Rule
 
 Storefront V2 is store-scoped and calls Commerce Node internal APIs.
 
 Do not make Storefront V2 call Control Plane. Do not give Storefront V2 node credentials.
+
+Public Storefront media is also store-scoped. Do not design product media as a global file endpoint; resolve the current store from host/domain in production or `X-Store-Key` in direct local QA.
 
 ## Database Rule
 

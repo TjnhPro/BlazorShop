@@ -50,6 +50,9 @@ This is an extension of CommerceNode catalog. It is not a rewrite of catalog, St
 - Keep using existing API response envelope patterns.
 - Reuse existing CommerceTaskWorker and task handler pattern before adding a separate product worker process.
 - A separate product worker service can be extracted later if media/product import grows.
+- Current implementation uses `CommerceTaskWorker`; `ProductMediaImportTaskHandler` handles `product.media.import`.
+- Direct local requests to `/media/products/{mediaId}` may need `X-Store-Key` because `localhost` is not a store domain and the local database can contain multiple active stores.
+- Production media requests should resolve the store from the Storefront domain/host through Nginx.
 
 ## Non Goals
 
@@ -74,6 +77,7 @@ This is an extension of CommerceNode catalog. It is not a rewrite of catalog, St
   - `api/control-plane/stores/{storePublicId}/catalog/*`
 - ControlPlane API proxies catalog calls through `ControlPlaneCommerceCatalogService`.
 - CommerceNode already has `CommerceTaskWorker` and task handlers.
+- ProductMedia MVP has been implemented on that existing worker rather than a separate media worker process.
 - Existing task type pattern example: `store.create_and_deploy`.
 - Existing upload endpoint exists at `api/commerce/admin/media/images`.
 - Existing upload endpoint stores files under `/uploads` and returns a URL.

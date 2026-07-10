@@ -74,6 +74,8 @@ Rules:
 - Control Plane API owns platform auth, permissions, audit, node/store registry, and Commerce Node gateway calls.
 - Commerce Node API owns ecommerce node runtime, commerce admin/control APIs, internal Storefront APIs, task orchestration, and node-local deployment.
 - Storefront V2 calls Commerce Node internal APIs and stays store-scoped.
+- Public product media URLs are store-scoped too. Local direct API QA can send `X-Store-Key`; production Storefront/Nginx traffic should resolve store scope from the request host/domain.
+- ProductMedia MVP uses the existing `CommerceTaskWorker` and `commerce_task` table with task type `product.media.import`. Do not introduce a separate media/product worker unless the workload grows enough to justify that extraction.
 
 Route ownership:
 
@@ -87,7 +89,7 @@ Route ownership:
 Use the DbContext that matches the product boundary:
 
 - `ControlPlaneDbContext` with `ControlPlaneConnection`, local PostgreSQL port `5433`, owns platform auth, users, roles, permissions, nodes, credentials, store registry, actions, health snapshots, and audit.
-- `CommerceNodeDbContext` with `CommerceNodeConnection`, local PostgreSQL port `5434`, owns ecommerce node data: commerce stores, storefront auth, catalog, variants, inventory, carts, orders, payments, SEO, newsletters, deployment images, deployments, and task orchestration.
+- `CommerceNodeDbContext` with `CommerceNodeConnection`, local PostgreSQL port `5434`, owns ecommerce node data: commerce stores, storefront auth, catalog, variants, product media, inventory, carts, orders, payments, SEO, newsletters, deployment images, deployments, and task orchestration.
 - `AppDbContext` with `DefaultConnection`, local legacy/default port `5432`, belongs to legacy commerce/storefront. Do not add new V2 features or migrations there.
 
 Do not merge contexts just to simplify implementation. Cross-boundary behavior should go through APIs.
@@ -173,6 +175,7 @@ Important local ports:
 - Commerce Node PostgreSQL: `5434`
 - Legacy/default PostgreSQL: `5432`
 - Commerce Node Nginx: `8088`
+- Commerce Node imgproxy: `8089`
 
 See `docs/architecture/07-deployment-and-local-run.md` before changing deployment or runtime behavior.
 

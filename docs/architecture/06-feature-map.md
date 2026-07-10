@@ -60,6 +60,7 @@ Capabilities:
 - Product categories.
 - Products.
 - Product variants with attribute combinations.
+- Product media import, primary image selection, public media URL generation, and imgproxy-backed rendering.
 - Inventory.
 - Media upload.
 - Orders and order admin actions.
@@ -96,6 +97,7 @@ Capabilities:
 - Newsletter subscribe.
 - SEO settings and redirect resolution.
 - Product recommendations.
+- Public product media rendering through store-scoped `/media/products/{mediaPublicId}` URLs.
 
 Decision rule:
 
