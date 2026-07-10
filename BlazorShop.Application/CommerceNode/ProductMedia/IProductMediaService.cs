@@ -13,6 +13,14 @@ namespace BlazorShop.Application.CommerceNode.ProductMedia
             string? correlationId = null,
             CancellationToken cancellationToken = default);
 
+        Task<ProductMediaOperationResult<ImportProductMediaResponse>> ImportForStoreAsync(
+            Guid storeId,
+            Guid productId,
+            ImportProductMediaRequest request,
+            string? createdBy = null,
+            string? correlationId = null,
+            CancellationToken cancellationToken = default);
+
         Task<ProductMediaOperationResult<ProductMediaDto>> SetPrimaryAsync(
             Guid productId,
             Guid mediaPublicId,

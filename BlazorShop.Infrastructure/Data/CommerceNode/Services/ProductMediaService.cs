@@ -66,16 +66,65 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             string? correlationId = null,
             CancellationToken cancellationToken = default)
         {
-            var validationError = ValidateImportRequest(request);
-            if (validationError is not null)
-            {
-                return Failed<ImportProductMediaResponse>(ProductMediaOperationFailure.Validation, validationError);
-            }
-
             var scope = await this.ResolveProductScopeAsync(productId, asTracking: false, cancellationToken);
             if (!scope.Success)
             {
                 return Failed<ImportProductMediaResponse>(scope.Failure!.Value, scope.Message);
+            }
+
+            return await this.ImportScopedAsync(
+                scope.StoreId,
+                productId,
+                request,
+                createdBy,
+                correlationId,
+                cancellationToken);
+        }
+
+        public async Task<ProductMediaOperationResult<ImportProductMediaResponse>> ImportForStoreAsync(
+            Guid storeId,
+            Guid productId,
+            ImportProductMediaRequest request,
+            string? createdBy = null,
+            string? correlationId = null,
+            CancellationToken cancellationToken = default)
+        {
+            if (storeId == Guid.Empty)
+            {
+                return Failed<ImportProductMediaResponse>(ProductMediaOperationFailure.Validation, "Store id is required.");
+            }
+
+            var productExists = await this.context.Products
+                .AsNoTracking()
+                .AnyAsync(
+                    entity => entity.Id == productId && entity.StoreId == storeId && entity.ArchivedAt == null,
+                    cancellationToken);
+            if (!productExists)
+            {
+                return Failed<ImportProductMediaResponse>(ProductMediaOperationFailure.NotFound, "Product was not found for the current store.");
+            }
+
+            return await this.ImportScopedAsync(
+                storeId,
+                productId,
+                request,
+                createdBy,
+                correlationId,
+                cancellationToken);
+        }
+
+        private async Task<ProductMediaOperationResult<ImportProductMediaResponse>> ImportScopedAsync(
+            Guid storeId,
+            Guid productId,
+            ImportProductMediaRequest request,
+            string? createdBy,
+            string? correlationId,
+            CancellationToken cancellationToken)
+        {
+            var validationError = ValidateImportRequest(request);
+            if (validationError is not null)
+            {
+                return Failed<ImportProductMediaResponse>(ProductMediaOperationFailure.Validation, validationError);
             }
 
             var now = DateTimeOffset.UtcNow;
@@ -83,7 +132,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 .Select((item, index) => NormalizeImportItem(item, index))
                 .ToList();
             var idempotencyKey = BuildIdempotencyKey(
-                scope.StoreId,
+                storeId,
                 productId,
                 normalizedItems.Select(item => item.SourceUrl));
             var existingTaskResponse = await this.TryBuildExistingImportResponseAsync(
@@ -99,7 +148,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 {
                     Id = Guid.NewGuid(),
                     PublicId = Guid.NewGuid(),
-                    StoreId = scope.StoreId,
+                    StoreId = storeId,
                     ProductId = productId,
                     OriginalSourceUrl = item.SourceUrl,
                     SortOrder = item.SortOrder,
@@ -126,7 +175,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             var payload = new ProductMediaImportTaskPayload(
                 "v1",
-                scope.StoreId,
+                storeId,
                 productId,
                 payloadItems,
                 createdBy,

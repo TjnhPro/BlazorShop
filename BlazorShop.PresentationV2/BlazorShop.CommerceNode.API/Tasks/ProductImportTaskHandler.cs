@@ -176,7 +176,8 @@ namespace BlazorShop.CommerceNode.API.Tasks
             var mediaStatus = ProductImportMediaStatuses.None;
             if (rowValues.ImageUrls.Count > 0)
             {
-                var mediaResult = await this.productMediaService.ImportAsync(
+                var mediaResult = await this.productMediaService.ImportForStoreAsync(
+                    job.StoreId,
                     product.Id,
                     new ImportProductMediaRequest(rowValues.ImageUrls.Select((url, index) => new ImportProductMediaItem(url, index, index == 0, product.Name)).ToArray()),
                     job.CreatedBy,
@@ -187,6 +188,22 @@ namespace BlazorShop.CommerceNode.API.Tasks
                 {
                     mediaTaskPublicId = mediaResult.Payload.TaskPublicId;
                     mediaStatus = ProductImportMediaStatuses.Queued;
+                }
+                else
+                {
+                    await this.AddRowAsync(
+                        job,
+                        parsedRow,
+                        sku,
+                        ProductImportRowStatuses.Failed,
+                        ProductImportRowActions.Failed,
+                        product.Id,
+                        ProductImportMediaStatuses.None,
+                        null,
+                        [new ProductImportError("image_urls", mediaResult.Message ?? "Product media import could not be queued.")],
+                        cancellationToken);
+
+                    return RowResult.ForFailed();
                 }
             }
 
