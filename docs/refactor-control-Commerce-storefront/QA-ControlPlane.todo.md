@@ -157,6 +157,52 @@ Status legend:
 - [ ] API error message from CommerceNode is surfaced through ControlPlane API response message.
 - [ ] Browser network capture shows no direct `api/commerce/*` call from ControlPlane Web.
 
+## Commerce Admin UX Completion
+
+- [ ] Commerce Admin nav group renders.
+- [ ] Legacy `/catalog` route redirects to `/commerce-admin/products`.
+- [ ] Products page loads after selecting a store.
+- [ ] Product list calls ControlPlane API only.
+- [ ] Product list does not call CommerceNode directly.
+- [ ] Product thumbnail placeholder renders before image load.
+- [ ] Product thumbnail image, when available, loads through ControlPlane API preview proxy.
+- [ ] Product drawer opens and closes without losing list filters.
+- [ ] Product drawer shows SEO first.
+- [ ] Product drawer can update allowed SEO fields.
+- [ ] Product drawer can update allowed basic fields.
+- [ ] Product drawer does not allow editing SKU.
+- [ ] Product drawer does not allow editing product type.
+- [ ] Product drawer does not allow editing variation template.
+- [ ] Product drawer media section lists media.
+- [ ] Product drawer media import queues URLs.
+- [ ] Product drawer can set primary media.
+- [ ] Product drawer can retry failed media.
+- [ ] Product drawer inventory section updates product quantity.
+- [ ] Product drawer inventory section updates existing variant stock.
+- [ ] Product Import page downloads header-only CSV template.
+- [ ] Product Import page uploads CSV in `create_only`.
+- [ ] Product Import page uploads CSV in `upsert`.
+- [ ] Product Import job list refreshes status.
+- [ ] Product Import job drawer shows row errors.
+- [ ] Product Import error CSV downloads.
+- [ ] Category page shows and copies `category_slug`.
+- [ ] Variation Template page shows and copies `variation_template_slug`.
+- [ ] Variation Template drawer can create/update template.
+- [ ] Variation Template drawer can create/update/disable option.
+- [ ] Variation Template drawer can create/update/disable value.
+- [ ] Orders page loads order list.
+- [ ] Order drawer shows lines/totals/customer fields.
+- [ ] Order drawer creates shipment.
+- [ ] Order drawer updates existing shipment.
+- [ ] Shipment update syncs visible order shipping fields after refresh.
+- [ ] API error messages are displayed from response `message`.
+- [ ] Browser console has no unexpected errors.
+- [ ] Visible Playwright MCP browser QA is used with Chromium `headless=false` when operator observation is requested.
+- [ ] Browser network capture shows ControlPlane Web makes 0 direct calls to CommerceNode.
+- [x] ControlPlane Web build passes after Admin UX Completion implementation. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` passed.
+- [x] ControlPlane API build passes after Admin UX Completion implementation. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` passed.
+- [x] CommerceNode API build passes after Admin UX Completion implementation. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
+
 ## Health
 
 - [x] Health page loads. 2026-07-08: authenticated admin session loaded Health page.
@@ -256,3 +302,4 @@ Status legend:
 | 2026-07-08 | Codex | Commerce Node foundation implementation | Passed | Added Commerce Node API shell, ecom DB context boundary, credential/IP guard, `api/commerce/healthz`, Control Plane node secret storage/UI, and Control Plane healthz probe client. `dotnet test BlazorShop.Tests --no-restore` passed: 475 passed, 10 skipped. Local Commerce Node HTTP smoke passed: 200 valid, 401 wrong secret, 403 disallowed IP. |
 | 2026-07-09 | Codex | Independent V2 QA after SharedV2 extraction | Passed | Used clean Control Plane DB `blazorshop_controlplane_qa_20260709`, Commerce Node DB on port 5434, ControlPlane API/Web, CommerceNode API, and StorefrontV2 only. Full `dotnet test BlazorShop.sln --no-restore` passed: 485 passed, 10 skipped. Playwright admin/user login and main pages passed; standard user Users page returns expected 403 permission denials without app crash. |
 | 2026-07-10 | Codex | ControlPlane gateway boundary QA | Passed | Used clean QA DB `blazorshop_controlplane_qa_20260710`; Playwright MCP visible browser verified admin login, Dashboard, Nodes, Stores, Health, Actions, Users, Audit Logs, and Catalog. Request capture confirmed ControlPlane Web only called ControlPlane API and never called CommerceNode directly. |
+| 2026-07-10 | Codex | ControlPlane Admin UX Completion implementation | Partial | Added Products, Product Imports, Categories, Variation Templates, Orders, Commerce Admin nav, and `/catalog` redirect. Build verification passed for ControlPlane Web/API and CommerceNode API. Live browser QA remains pending against a running ControlPlane + CommerceNode environment. |

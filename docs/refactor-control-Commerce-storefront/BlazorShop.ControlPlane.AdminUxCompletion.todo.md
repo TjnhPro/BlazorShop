@@ -584,21 +584,21 @@ Shipment form:
 
 ### Phase 9 - QA And Docs
 
-- [ ] Update `QA-ControlPlane.todo.md` with Admin UX Completion checklist.
-- [ ] Update `QA-CommerceNode.todo.md` only for API cases that Admin UX depends on and are still unverified.
-- [ ] Add visible Playwright MCP QA note: use Chromium `headless=false` when requested.
-- [ ] Verify Product Imports page.
-- [ ] Verify Variation Templates page.
-- [ ] Verify Categories page.
-- [ ] Verify Products/Product Detail drawer.
-- [ ] Verify media preview proxy.
-- [ ] Verify Orders/Shipment page.
-- [ ] Verify network capture: ControlPlane Web makes 0 direct calls to CommerceNode.
-- [ ] Verify `dotnet build` for:
-  - [ ] `BlazorShop.ControlPlane.API`
-  - [ ] `BlazorShop.ControlPlane.Web`
-  - [ ] `BlazorShop.CommerceNode.API` if shared DTO/API changes require it.
-- [ ] Commit: `test(control-plane): document admin ux qa coverage`.
+- [x] Update `QA-ControlPlane.todo.md` with Admin UX Completion checklist.
+- [x] Update `QA-CommerceNode.todo.md` only for API cases that Admin UX depends on and are still unverified. 2026-07-10: no CommerceNode API checklist changes needed; Admin UX uses existing/proxied API surfaces.
+- [x] Add visible Playwright MCP QA note: use Chromium `headless=false` when requested.
+- [~] Verify Product Imports page. 2026-07-10: checklist added; live browser QA pending.
+- [~] Verify Variation Templates page. 2026-07-10: checklist added; live browser QA pending.
+- [~] Verify Categories page. 2026-07-10: checklist added; live browser QA pending.
+- [~] Verify Products/Product Detail drawer. 2026-07-10: checklist added; live browser QA pending.
+- [~] Verify media preview proxy. 2026-07-10: build and route wiring verified; live browser/network QA pending.
+- [~] Verify Orders/Shipment page. 2026-07-10: checklist added; live browser QA pending.
+- [~] Verify network capture: ControlPlane Web makes 0 direct calls to CommerceNode. 2026-07-10: static grep found no direct CommerceNode route usage in Web admin code; live network capture pending.
+- [x] Verify `dotnet build` for:
+  - [x] `BlazorShop.ControlPlane.API`
+  - [x] `BlazorShop.ControlPlane.Web`
+  - [x] `BlazorShop.CommerceNode.API` if shared DTO/API changes require it.
+- [x] Commit: `test(control-plane): document admin ux qa coverage`.
 
 ## QA Checklist To Add
 
