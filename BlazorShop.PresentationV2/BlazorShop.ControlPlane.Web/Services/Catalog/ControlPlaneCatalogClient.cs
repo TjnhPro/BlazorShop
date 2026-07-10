@@ -1,5 +1,6 @@
 namespace BlazorShop.ControlPlane.Web.Services.Catalog
 {
+    using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.DTOs.Admin.Inventory;
     using BlazorShop.Application.DTOs.Category;
     using BlazorShop.Application.DTOs.Product;
@@ -33,6 +34,41 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
         Task<ControlPlaneClientResult<object>> ArchiveProductAsync(
             Guid storePublicId,
             Guid productId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<ProductMediaListResponse>> ListProductMediaAsync(
+            Guid storePublicId,
+            Guid productId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<ImportProductMediaResponse>> ImportProductMediaAsync(
+            Guid storePublicId,
+            Guid productId,
+            ImportProductMediaRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<ProductMediaListResponse>> UpdateProductMediaOrderAsync(
+            Guid storePublicId,
+            Guid productId,
+            UpdateProductMediaOrderRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<ProductMediaDto>> SetPrimaryProductMediaAsync(
+            Guid storePublicId,
+            Guid productId,
+            Guid mediaPublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<ProductMediaListResponse>> DeleteProductMediaAsync(
+            Guid storePublicId,
+            Guid productId,
+            Guid mediaPublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<ImportProductMediaResponse>> RetryProductMediaAsync(
+            Guid storePublicId,
+            Guid productId,
+            Guid mediaPublicId,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneClientResult<IReadOnlyList<GetCategory>>> ListCategoriesAsync(
@@ -165,6 +201,79 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             return this.apiClient.DeletePrivateAsync<object>(
                 $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}",
                 "Unable to archive product.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<ProductMediaListResponse>> ListProductMediaAsync(
+            Guid storePublicId,
+            Guid productId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<ProductMediaListResponse>(
+                $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}/media",
+                "Unable to load product media.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<ImportProductMediaResponse>> ImportProductMediaAsync(
+            Guid storePublicId,
+            Guid productId,
+            ImportProductMediaRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<ImportProductMediaRequest, ImportProductMediaResponse>(
+                $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}/media/import",
+                request,
+                "Unable to import product media.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<ProductMediaListResponse>> UpdateProductMediaOrderAsync(
+            Guid storePublicId,
+            Guid productId,
+            UpdateProductMediaOrderRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<UpdateProductMediaOrderRequest, ProductMediaListResponse>(
+                $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}/media/order",
+                request,
+                "Unable to update product media order.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<ProductMediaDto>> SetPrimaryProductMediaAsync(
+            Guid storePublicId,
+            Guid productId,
+            Guid mediaPublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<ProductMediaDto>(
+                $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}/media/{mediaPublicId:D}/primary",
+                "Unable to set primary product media.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<ProductMediaListResponse>> DeleteProductMediaAsync(
+            Guid storePublicId,
+            Guid productId,
+            Guid mediaPublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.DeletePrivateAsync<ProductMediaListResponse>(
+                $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}/media/{mediaPublicId:D}",
+                "Unable to delete product media.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<ImportProductMediaResponse>> RetryProductMediaAsync(
+            Guid storePublicId,
+            Guid productId,
+            Guid mediaPublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<ImportProductMediaResponse>(
+                $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}/media/{mediaPublicId:D}/retry",
+                "Unable to retry product media.",
                 cancellationToken);
         }
 

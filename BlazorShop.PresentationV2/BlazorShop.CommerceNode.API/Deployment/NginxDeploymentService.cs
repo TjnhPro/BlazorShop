@@ -58,6 +58,21 @@ namespace BlazorShop.CommerceNode.API.Deployment
                 .AppendLine("server {")
                 .Append("    server_name ").Append(plan.ServerName).AppendLine(";")
                 .AppendLine()
+                .AppendLine("    location /media/products/ {")
+                .Append("        proxy_pass ").Append(this.ResolveMediaUpstreamUrl()).AppendLine(";")
+                .AppendLine("        proxy_cache blazorshop_product_media;")
+                .AppendLine("        proxy_cache_key \"$host$request_uri\";")
+                .AppendLine("        proxy_cache_valid 200 301 302 30d;")
+                .AppendLine("        proxy_cache_lock on;")
+                .AppendLine("        proxy_set_header Host $host;")
+                .AppendLine("        proxy_set_header X-Real-IP $remote_addr;")
+                .AppendLine("        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;")
+                .AppendLine("        proxy_set_header X-Forwarded-Proto $scheme;")
+                .AppendLine("        add_header X-BlazorShop-Media-Cache $upstream_cache_status always;")
+                .Append("        proxy_connect_timeout ").Append(Math.Max(1, this.options.ProxyConnectTimeoutSeconds)).AppendLine("s;")
+                .Append("        proxy_read_timeout ").Append(Math.Max(1, this.options.ProxyReadTimeoutSeconds)).AppendLine("s;")
+                .AppendLine("    }")
+                .AppendLine()
                 .AppendLine("    location / {")
                 .Append("        proxy_pass ").Append(plan.UpstreamUrl).AppendLine(";")
                 .AppendLine("        proxy_set_header Host $host;")
@@ -162,6 +177,13 @@ namespace BlazorShop.CommerceNode.API.Deployment
             return string.IsNullOrWhiteSpace(this.options.ContainerName)
                 ? "blazorshop-commercenode-nginx"
                 : this.options.ContainerName.Trim();
+        }
+
+        private string ResolveMediaUpstreamUrl()
+        {
+            return string.IsNullOrWhiteSpace(this.options.MediaUpstreamUrl)
+                ? "http://host.docker.internal:5180"
+                : this.options.MediaUpstreamUrl.TrimEnd('/');
         }
 
         private string ResolveConfiguredPath(string configuredPath)

@@ -5,6 +5,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using System.Text.Json;
 
     using BlazorShop.Application.ControlPlane.Catalog;
+    using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.DTOs.Admin.Inventory;
     using BlazorShop.Application.DTOs.Category;
     using BlazorShop.Application.DTOs.Product;
@@ -95,6 +96,89 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 storePublicId,
                 HttpMethod.Delete,
                 $"api/commerce/admin/products/{productId:D}",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<ProductMediaListResponse>> ListProductMediaAsync(
+            Guid storePublicId,
+            Guid productId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<ProductMediaListResponse>(
+                storePublicId,
+                HttpMethod.Get,
+                $"api/commerce/admin/products/{productId:D}/media",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<ImportProductMediaResponse>> ImportProductMediaAsync(
+            Guid storePublicId,
+            Guid productId,
+            ImportProductMediaRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<ImportProductMediaResponse>(
+                storePublicId,
+                HttpMethod.Post,
+                $"api/commerce/admin/products/{productId:D}/media/import",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<ProductMediaListResponse>> UpdateProductMediaOrderAsync(
+            Guid storePublicId,
+            Guid productId,
+            UpdateProductMediaOrderRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<ProductMediaListResponse>(
+                storePublicId,
+                HttpMethod.Put,
+                $"api/commerce/admin/products/{productId:D}/media/order",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<ProductMediaDto>> SetPrimaryProductMediaAsync(
+            Guid storePublicId,
+            Guid productId,
+            Guid mediaPublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<ProductMediaDto>(
+                storePublicId,
+                HttpMethod.Post,
+                $"api/commerce/admin/products/{productId:D}/media/{mediaPublicId:D}/primary",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<ProductMediaListResponse>> DeleteProductMediaAsync(
+            Guid storePublicId,
+            Guid productId,
+            Guid mediaPublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<ProductMediaListResponse>(
+                storePublicId,
+                HttpMethod.Delete,
+                $"api/commerce/admin/products/{productId:D}/media/{mediaPublicId:D}",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<ImportProductMediaResponse>> RetryProductMediaAsync(
+            Guid storePublicId,
+            Guid productId,
+            Guid mediaPublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<ImportProductMediaResponse>(
+                storePublicId,
+                HttpMethod.Post,
+                $"api/commerce/admin/products/{productId:D}/media/{mediaPublicId:D}/retry",
                 null,
                 cancellationToken);
         }

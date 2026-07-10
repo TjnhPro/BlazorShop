@@ -41,6 +41,26 @@ services:
       timeout: 5s
       retries: 5
 
+  commercenode-imgproxy:
+    image: darthsim/imgproxy:v3
+    container_name: blazorshop-commercenode-imgproxy
+    restart: unless-stopped
+    environment:
+      IMGPROXY_LOCAL_FILESYSTEM_ROOT: /var/blazorshop/media
+      IMGPROXY_USE_ETAG: "true"
+      IMGPROXY_ENABLE_WEBP_DETECTION: "true"
+    ports:
+      - "8089:8080"
+    volumes:
+      - ./BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/media:/var/blazorshop/media:ro
+    networks:
+      - blazorshop-commercenode
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://127.0.0.1:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   commercenode_postgres_data:
   commercenode_nginx_cache:

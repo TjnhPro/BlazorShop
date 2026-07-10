@@ -236,7 +236,7 @@ Do not require MinIO in this MVP because local Docker volume is enough to valida
 Extend `compose.commercenode.yml` later with:
 
 - `commercenode-imgproxy`
-- shared `commercenode_media_data` volume
+- shared bind-mounted `runtime/media` path between local CommerceNode API and imgproxy
 - internal-only imgproxy port
 - existing `blazorshop-commercenode` network
 
@@ -613,48 +613,48 @@ Review/fix gate:
 
 ### Phase 6 - Docker, Nginx, and imgproxy
 
-- [ ] Extend `compose.commercenode.yml` with `commercenode-imgproxy`.
-- [ ] Add persistent `commercenode_media_data` volume.
-- [ ] Mount media volume into CommerceNode API and imgproxy as read-only where possible.
-- [ ] Add Nginx cache route for `/media/products/*`.
-- [ ] Keep imgproxy internal to CommerceNode network.
-- [ ] Document local test URLs.
+- [x] Extend `compose.commercenode.yml` with `commercenode-imgproxy`.
+- [x] Add persistent bind-mounted `runtime/media` storage path.
+- [x] Mount media volume into CommerceNode API and imgproxy as read-only where possible.
+- [x] Add Nginx cache route for `/media/products/*`.
+- [x] Keep imgproxy internal to CommerceNode network.
+- [x] Document local test URLs.
 
 Review/fix gate:
 
-- [ ] Verify Nginx cache key includes host and query string.
-- [ ] Verify imgproxy cannot fetch arbitrary public URLs directly in MVP.
-- [ ] Verify media files survive container restart.
+- [x] Verify Nginx cache key includes host and query string.
+- [x] Verify imgproxy cannot fetch arbitrary public URLs directly in MVP.
+- [x] Verify media files survive container restart.
 
 ### Phase 7 - ControlPlane API Gateway
 
-- [ ] Extend `IControlPlaneCommerceCatalogService` with product media methods.
-- [ ] Extend `ControlPlaneCommerceCatalogService` forwarding methods.
-- [ ] Add ControlPlane API routes under `api/control-plane/stores/{storePublicId}/catalog/products/{productId}/media`.
-- [ ] Reuse existing node endpoint resolution and credential injection.
+- [x] Extend `IControlPlaneCommerceCatalogService` with product media methods.
+- [x] Extend `ControlPlaneCommerceCatalogService` forwarding methods.
+- [x] Add ControlPlane API routes under `api/control-plane/stores/{storePublicId}/catalog/products/{productId}/media`.
+- [x] Reuse existing node endpoint resolution and credential injection.
 - [ ] Add audit entries for media actions.
-- [ ] Preserve response envelope and message propagation.
+- [x] Preserve response envelope and message propagation.
 
 Review/fix gate:
 
-- [ ] Verify ControlPlane Web never receives CommerceNode credentials.
-- [ ] Verify permission checks match existing catalog admin pattern.
-- [ ] Verify errors from CommerceNode are shown through ControlPlane response message.
+- [x] Verify ControlPlane Web never receives CommerceNode credentials.
+- [x] Verify permission checks match existing catalog admin pattern.
+- [x] Verify errors from CommerceNode are shown through ControlPlane response message.
 
 ### Phase 8 - ControlPlane Web UI
 
-- [ ] Extend catalog client with media methods.
-- [ ] Add media URLs textarea to product editor.
-- [ ] Add media panel for selected product.
-- [ ] Add thumbnail/status/primary/order/delete/retry controls.
-- [ ] Display task id/status after import starts.
-- [ ] Keep current product list stable while media is processing.
+- [x] Extend catalog client with media methods.
+- [x] Add media URLs textarea to product editor.
+- [x] Add media panel for selected product.
+- [x] Add thumbnail/status/primary/order/delete/retry controls.
+- [x] Display task id/status after import starts.
+- [x] Keep current product list stable while media is processing.
 
 Review/fix gate:
 
-- [ ] Verify UI only checks `Success` and displays `Message`.
-- [ ] Verify no CommerceNode URL/secret appears in Web code.
-- [ ] Verify text and controls fit the current Tailwind/FontAwesome style.
+- [x] Verify UI only checks `Success` and displays `Message`.
+- [x] Verify no CommerceNode URL/secret appears in Web code.
+- [x] Verify text and controls fit the current Tailwind/FontAwesome style.
 
 ### Phase 9 - StorefrontV2 Compatibility
 

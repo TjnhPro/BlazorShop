@@ -16,6 +16,8 @@ namespace BlazorShop.CommerceNode.API.Configuration
 
         public string ConfigFilePrefix { get; set; } = "blazorshop-store";
 
+        public string MediaUpstreamUrl { get; set; } = "http://host.docker.internal:5180";
+
         public int ProxyConnectTimeoutSeconds { get; set; } = 5;
 
         public int ProxyReadTimeoutSeconds { get; set; } = 30;

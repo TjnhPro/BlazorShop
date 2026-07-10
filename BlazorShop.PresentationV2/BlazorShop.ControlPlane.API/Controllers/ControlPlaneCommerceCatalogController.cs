@@ -2,6 +2,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
 {
     using BlazorShop.Application.ControlPlane.Catalog;
     using BlazorShop.Application.ControlPlane.Security;
+    using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.DTOs.Admin.Inventory;
     using BlazorShop.Application.DTOs.Category;
     using BlazorShop.Application.DTOs.Product;
@@ -65,6 +66,67 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> ArchiveProduct(Guid storePublicId, Guid productId, CancellationToken cancellationToken)
         {
             return ToActionResult(await this.catalogService.ArchiveProductAsync(storePublicId, productId, cancellationToken));
+        }
+
+        [HttpGet("products/{productId:guid}/media")]
+        public async Task<IActionResult> ListProductMedia(Guid storePublicId, Guid productId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ListProductMediaAsync(storePublicId, productId, cancellationToken));
+        }
+
+        [HttpPost("products/{productId:guid}/media/import")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> ImportProductMedia(
+            Guid storePublicId,
+            Guid productId,
+            ImportProductMediaRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ImportProductMediaAsync(storePublicId, productId, request, cancellationToken));
+        }
+
+        [HttpPut("products/{productId:guid}/media/order")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> UpdateProductMediaOrder(
+            Guid storePublicId,
+            Guid productId,
+            UpdateProductMediaOrderRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.UpdateProductMediaOrderAsync(storePublicId, productId, request, cancellationToken));
+        }
+
+        [HttpPost("products/{productId:guid}/media/{mediaPublicId:guid}/primary")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> SetPrimaryProductMedia(
+            Guid storePublicId,
+            Guid productId,
+            Guid mediaPublicId,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.SetPrimaryProductMediaAsync(storePublicId, productId, mediaPublicId, cancellationToken));
+        }
+
+        [HttpDelete("products/{productId:guid}/media/{mediaPublicId:guid}")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> DeleteProductMedia(
+            Guid storePublicId,
+            Guid productId,
+            Guid mediaPublicId,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.DeleteProductMediaAsync(storePublicId, productId, mediaPublicId, cancellationToken));
+        }
+
+        [HttpPost("products/{productId:guid}/media/{mediaPublicId:guid}/retry")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> RetryProductMedia(
+            Guid storePublicId,
+            Guid productId,
+            Guid mediaPublicId,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.RetryProductMediaAsync(storePublicId, productId, mediaPublicId, cancellationToken));
         }
 
         [HttpGet("categories")]
