@@ -157,6 +157,31 @@ Last verified: 2026-07-10
 - [x] `GET /api/internal/catalog/products/slug/{slug}`
 - [x] `GET /api/internal/catalog/sitemap`
 
+### Catalog Search MVP
+
+- [x] CommerceNode API builds after catalog search/cache changes. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
+- [x] Legacy `BlazorShop.API` still builds after optional catalog cache dependencies were added. 2026-07-10: `dotnet build BlazorShop.Presentation/BlazorShop.API/BlazorShop.API.csproj --no-restore` passed with existing `Microsoft.OpenApi` advisory warning.
+- [~] Full test suite attempted after CommerceNode catalog search/cache changes. 2026-07-10: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore` failed 11/512. Failures were in migration model consistency, existing Product/Category delete unit expectations, CartService tests, and sitemap timestamp tests; CommerceNode API and StorefrontV2 builds passed.
+- [x] Storefront published catalog search uses PostgreSQL FTS over `Products.Name`, not `Contains` over SKU/description. 2026-07-10: code review verified `CommerceNodeProductReadRepository.GetPublishedCatalogPageAsync`.
+- [x] Migration adds `ix_products_name_fts_simple` GIN expression index. 2026-07-10: migration `20260710120000_CommerceNodeCatalogSearchMvp` added.
+- [ ] Apply `CommerceNodeCatalogSearchMvp` migration to local PostgreSQL on port `5434`.
+- [ ] `GET /api/internal/catalog/products?searchTerm=shirt` returns title matches.
+- [ ] `GET /api/internal/catalog/products?searchTerm=<sku-only-term>` does not match SKU-only text.
+- [ ] `GET /api/internal/catalog/products?searchTerm=<description-only-term>` does not match description-only text.
+- [ ] `GET /api/internal/catalog/products?categorySlug=t-shirts` returns category-scoped products.
+- [ ] `GET /api/internal/catalog/products?categorySlug=apparel` includes child category products.
+- [ ] `GET /api/internal/catalog/products?categorySlug=missing-category` returns `success=true` with empty page data.
+- [ ] `GET /api/internal/catalog/products?categorySlug=t-shirts&searchTerm=shirt` combines category and title search.
+- [ ] Empty `searchTerm` does not use FTS and returns browse listing.
+- [ ] `pageNumber` greater than 10 is clamped by backend.
+- [ ] `TotalCount` is capped to `PageSize * 10`.
+- [ ] Catalog query cache returns stable repeated results.
+- [ ] Product create/update/delete invalidates store catalog cache.
+- [ ] Category create/update/delete invalidates store catalog cache.
+- [ ] Variant create/update/delete invalidates store catalog cache.
+- [ ] Inventory stock updates invalidate store catalog cache.
+- [ ] Primary product media change invalidates store catalog cache.
+
 ### Catalog Expansion
 
 - [x] Development seeder creates `default` store if missing. 2026-07-10: verified in DB.

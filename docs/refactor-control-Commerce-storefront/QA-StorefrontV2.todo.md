@@ -115,6 +115,31 @@ dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrast
 - [x] `/todays-deals`
   - [x] Shows discount/deal products when available.
 
+## Catalog Search MVP
+
+Use this checklist whenever `StorefrontHeader`, `/search`, `StorefrontApiClient`, catalog query model, or CommerceNode published catalog search changes.
+
+- [x] StorefrontV2 builds after adding header search and `/search`. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed.
+- [x] Focused StorefrontV2 tests pass after adding catalog search. 2026-07-10: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~PresentationV2.Storefront"` passed 23/23.
+- [~] Full test suite attempted after catalog search implementation. 2026-07-10: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore` failed 11/512. Failures were in migration model consistency, existing Product/Category delete unit expectations, CartService tests, and sitemap timestamp tests; focused StorefrontV2 tests passed.
+- [ ] Header search renders on desktop without overlapping brand, nav, cart, or account controls.
+- [ ] Header search renders on mobile without overlapping cart, account, or menu controls.
+- [ ] Header category combobox loads published category tree options.
+- [ ] Category change alone does not submit the form.
+- [ ] Pressing Enter in the search input navigates to `/search`.
+- [ ] Search button navigates to `/search`.
+- [ ] Empty input with `All` category shows published products.
+- [ ] Empty input with selected category shows products scoped to that category.
+- [ ] Parent category search includes child category products.
+- [ ] Text search targets product title.
+- [ ] Text search does not match SKU-only or description-only terms.
+- [ ] Invalid category slug shows `No products found`.
+- [ ] `/search` renders `noindex,follow`.
+- [ ] `/search` is not present in `/sitemap.xml`.
+- [ ] Pagination renders at most 10 pages.
+- [ ] Page values greater than backend max are clamped by backend.
+- [ ] Browser console has no unexpected errors on `/search`.
+
 ## Product Media Rendering
 
 - [ ] Product listing displays `Product.Image` when it is a `/media/products/{mediaId}` URL.
