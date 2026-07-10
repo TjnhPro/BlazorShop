@@ -8,6 +8,8 @@ namespace BlazorShop.Web.SharedV2.Models.Product
 
         public Guid? CategoryId { get; set; }
 
+        public string? CategorySlug { get; set; }
+
         public string? SearchTerm { get; set; }
 
         public decimal? MinPrice { get; set; }

@@ -279,6 +279,11 @@ namespace BlazorShop.Storefront.Services
                 parameters.Add($"categoryId={query.CategoryId.Value}");
             }
 
+            if (!string.IsNullOrWhiteSpace(query.CategorySlug))
+            {
+                parameters.Add($"categorySlug={Uri.EscapeDataString(query.CategorySlug.Trim())}");
+            }
+
             if (!string.IsNullOrWhiteSpace(query.SearchTerm))
             {
                 parameters.Add($"searchTerm={Uri.EscapeDataString(query.SearchTerm.Trim())}");

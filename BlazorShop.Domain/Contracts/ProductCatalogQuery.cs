@@ -12,6 +12,8 @@ namespace BlazorShop.Domain.Contracts
 
         public Guid? CategoryId { get; init; }
 
+        public string? CategorySlug { get; init; }
+
         public string? SearchTerm { get; init; }
 
         public decimal? MinPrice { get; init; }
@@ -31,5 +33,9 @@ namespace BlazorShop.Domain.Contracts
         public string? GetNormalizedSearchTerm() => string.IsNullOrWhiteSpace(this.SearchTerm)
             ? null
             : this.SearchTerm.Trim();
+
+        public string? GetNormalizedCategorySlug() => string.IsNullOrWhiteSpace(this.CategorySlug)
+            ? null
+            : this.CategorySlug.Trim();
     }
 }
