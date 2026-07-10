@@ -131,6 +131,33 @@ Last verified: 2026-07-10
 - [x] `PUT /api/commerce/admin/orders/{id}/shipping-status`
 - [x] `PUT /api/commerce/admin/orders/{id}/admin-note`
 
+### Shipments
+
+- [x] CommerceNode API builds after shipment foundation changes. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
+- [ ] Apply `CommerceNodeShipments` migration to clean CommerceNode PostgreSQL on port `5434`.
+- [ ] `GET /api/commerce/admin/orders/{orderId}/shipment` returns `success=false`/not found before shipment exists.
+- [ ] `PUT /api/commerce/admin/orders/{orderId}/shipment` creates a shipment for an existing store-scoped order.
+- [ ] `GET /api/commerce/admin/orders/{orderId}/shipment` returns created shipment data.
+- [ ] Second `PUT /api/commerce/admin/orders/{orderId}/shipment` updates/replaces the existing shipment instead of creating a duplicate.
+- [ ] Database unique index `(StoreId, OrderId)` prevents duplicate shipment rows.
+- [ ] Shipment create/update syncs order fields:
+  - [ ] `ShippingStatus = Shipped`
+  - [ ] `ShippedOn = ShipDate`
+  - [ ] `ShippingCarrier = CarrierName`
+  - [ ] `TrackingNumber = TrackingNumber`
+  - [ ] `TrackingUrl = TrackingUrl`
+  - [ ] `LastTrackingUpdate` is updated.
+- [ ] Shipment request with empty `CarrierName` returns `success=false`.
+- [ ] Shipment request with empty `TrackingNumber` returns `success=false`.
+- [ ] Shipment request with over-length text fields returns `success=false`.
+- [ ] Store isolation: a request scoped to another store cannot read the shipment.
+- [ ] Store isolation: a request scoped to another store cannot update the shipment.
+- [ ] Audit log includes `Order.ShipmentUpserted` after shipment upsert.
+- [ ] Existing `PUT /api/commerce/admin/orders/{orderId}/tracking` still works after shipment migration.
+- [ ] Existing `PUT /api/commerce/admin/orders/{orderId}/shipping-status` still works after shipment migration.
+- [ ] Storefront order detail still reads shipping info from existing order fields.
+- [ ] No new Storefront shipment endpoint is exposed under `api/internal/*`.
+
 ### Settings, Audit, Metrics
 
 - [x] `GET /api/commerce/admin/settings`

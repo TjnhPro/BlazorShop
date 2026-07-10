@@ -1,6 +1,6 @@
 # BlazorShop Commerce Node Shipping Fulfillment Foundation Todo
 
-Status: draft
+Status: implemented; runtime QA pending
 Created: 2026-07-10
 
 ## Goal
