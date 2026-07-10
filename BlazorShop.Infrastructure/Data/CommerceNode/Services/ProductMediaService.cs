@@ -44,13 +44,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failed<ProductMediaListResponse>(scope.Failure!.Value, scope.Message);
             }
 
-            var items = await this.context.ProductMedia
+            var mediaRows = await this.context.ProductMedia
                 .AsNoTracking()
                 .Where(media => media.StoreId == scope.StoreId && media.ProductId == productId && media.DeletedAt == null)
                 .OrderBy(media => media.SortOrder)
                 .ThenBy(media => media.CreatedAt)
-                .Select(media => this.Map(media))
                 .ToListAsync(cancellationToken);
+            var items = mediaRows.Select(this.Map).ToList();
 
             return Succeeded("Product media retrieved.", new ProductMediaListResponse(items));
         }

@@ -12,7 +12,7 @@ Database target:
 - Database: `blazorshop_commerce_node`
 - User: `blazorshop_commerce_node`
 
-Last verified: 2026-07-09
+Last verified: 2026-07-10
 
 ## Environment Checklist
 
@@ -84,6 +84,23 @@ Last verified: 2026-07-09
 - [x] `POST /api/commerce/admin/products/{productId}/variants`
 - [x] `PUT /api/commerce/admin/products/{productId}/variants/{variantId}`
 - [x] `DELETE /api/commerce/admin/products/{productId}/variants/{variantId}` with disposable variant only.
+
+### Product Media
+
+- [~] `GET /api/commerce/admin/products/{productId}/media` returns an empty list before import. Existing QA DB already contained media rows after this run; list endpoint itself verified.
+- [x] `POST /api/commerce/admin/products/{productId}/media/import` queues a valid public image URL. 2026-07-10: queued `picsum.photos` image.
+- [x] `POST /api/commerce/admin/products/{productId}/media/import` rejects unsupported URL schemes. 2026-07-10: `ftp://` returned `success=false`.
+- [x] `POST /api/commerce/admin/products/{productId}/media/import` blocks localhost/private IP source URLs. 2026-07-10: `127.0.0.1` source failed with safe private/local host message.
+- [x] Media task transitions imported image to `stored`. 2026-07-10: retry after storage fix stored media `973caf94-14c9-4c12-9376-7101d17e061a`.
+- [x] Failed media records a safe error message. 2026-07-10: failed source returned safe unsuccessful/private-host messages.
+- [x] Primary stored media updates `Product.Image` to `/media/products/{mediaPublicId}`. 2026-07-10: admin product detail returned Product.Image media URL.
+- [x] `GET /media/products/{mediaPublicId}` returns optimized image content. 2026-07-10: public resolver returned `image/webp` through imgproxy when store scope was provided.
+- [x] `GET /media/products/{mediaPublicId}?w=320&fit=contain&format=webp` returns image content. 2026-07-10: returned 200, `image/webp`, immutable cache headers.
+- [x] `GET /media/products/{mediaPublicId}?w=3000` rejects or clamps invalid dimensions so rendered output never exceeds `2000`. 2026-07-10: controller clamps to max `2000`.
+- [x] Set primary media succeeds. 2026-07-10: imported primary became stored primary.
+- [x] Retry failed media succeeds when the media is retryable. 2026-07-10: retry converted failed storage row to stored after fix.
+- [ ] Delete primary media chooses next stored image or clears `Product.Image`.
+- [x] Store-scoped media cannot be read from another store host. 2026-07-10: `X-Store-Key: other` returned 404 for default store media.
 
 ### Inventory
 
@@ -219,5 +236,7 @@ Last verified: 2026-07-09
 - `docker compose -f compose.commercenode.yml up -d`
 - `dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrastructure.csproj --startup-project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --context CommerceNodeDbContext`
 - `dotnet test BlazorShop.sln`
+
+Latest ProductMedia QA result: 2026-07-10 CommerceNode API smoke passed for import queue, retry, worker storage, Product.Image sync, public imgproxy rendering, invalid scheme rejection, private/local source blocking, and cross-store 404. Fixed EF projection and temp-file length bugs found during QA.
 
 Latest test result: 2026-07-09 full solution test passed: 485 passed, 10 skipped. Independent API smoke passed for ControlPlane -> CommerceNode health probe, Commerce admin catalog/media, Storefront internal auth/cart/order, and admin order visibility.

@@ -672,19 +672,19 @@ Review/fix gate:
 
 ### Phase 10 - QA and Documentation
 
-- [ ] Add ProductMedia cases to `QA-CommerceNode.todo.md`.
-- [ ] Add ControlPlane catalog media cases to `QA-ControlPlane.todo.md`.
-- [ ] Add Storefront image rendering cases to `QA-StorefrontV2.todo.md`.
+- [x] Add ProductMedia cases to `QA-CommerceNode.todo.md`.
+- [x] Add ControlPlane catalog media cases to `QA-ControlPlane.todo.md`.
+- [x] Add Storefront image rendering cases to `QA-StorefrontV2.todo.md`.
 - [ ] Add architecture note under `docs/architecture` if implementation changes runtime topology.
 - [ ] Update `AGENTS.md` if a new hard rule is introduced.
 
 Review/fix gate:
 
-- [ ] Run API QA against clean CommerceNode DB.
+- [x] Run API QA against clean CommerceNode DB.
 - [ ] Run ControlPlane UI QA with Playwright.
 - [ ] Run StorefrontV2 UI QA with Playwright.
-- [ ] Fix discovered bugs immediately in the same phase.
-- [ ] Mark checklist items only after verification.
+- [x] Fix discovered bugs immediately in the same phase.
+- [x] Mark checklist items only after verification.
 
 ## QA Checklist Seeds
 

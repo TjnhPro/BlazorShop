@@ -85,6 +85,7 @@ namespace BlazorShop.CommerceNode.API.ProductMedia
                     var copyResult = await CopyWithLimitAsync(source, target, this.options.MaxDownloadBytes, timeoutCts.Token);
                     if (!copyResult.Success)
                     {
+                        File.Delete(tempPath);
                         return ProductMediaDownloadResult.Failed(copyResult.Message);
                     }
                 }
@@ -100,6 +101,7 @@ namespace BlazorShop.CommerceNode.API.ProductMedia
                 }
 
                 var fileInfo = new FileInfo(tempPath);
+                var fileSizeBytes = fileInfo.Length;
                 var metadata = await ReadImageMetadataAsync(tempPath, contentType, timeoutCts.Token);
                 var contentHash = await ComputeSha256Async(tempPath, timeoutCts.Token);
                 var relativeStoragePath = string.Join(
@@ -127,7 +129,7 @@ namespace BlazorShop.CommerceNode.API.ProductMedia
                     contentHash,
                     metadata.Width,
                     metadata.Height,
-                    fileInfo.Length);
+                    fileSizeBytes);
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
             {

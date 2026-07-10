@@ -115,6 +115,15 @@ dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrast
 - [x] `/todays-deals`
   - [x] Shows discount/deal products when available.
 
+## Product Media Rendering
+
+- [ ] Product listing displays `Product.Image` when it is a `/media/products/{mediaId}` URL.
+- [ ] Product detail displays `Product.Image` when it is a `/media/products/{mediaId}` URL.
+- [ ] Cart line displays product media URL after add-to-cart.
+- [ ] Public media URL resolves on the current Storefront host.
+- [ ] Public media URL defaults to bounded optimized output instead of original full-size image.
+- [ ] Product structured data image remains valid when `Product.Image` is a media URL.
+
 ## Cart Flow
 
 - [x] `/my-cart` renders without Commerce Node for empty cart smoke.

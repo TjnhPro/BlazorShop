@@ -145,6 +145,18 @@ Status legend:
 - [x] Store status is visible. 2026-07-08: Stores list/detail showed `active` status.
 - [~] Archived/disabled store state is handled correctly. Service tests pass; live archive/disabled-store UI state was not exercised in this run.
 
+## Catalog Product Media
+
+- [ ] Catalog page media panel loads for a selected product.
+- [ ] Product media list is loaded through ControlPlane API only.
+- [ ] Product media import submits to `api/control-plane/stores/{storePublicId}/catalog/products/{productId}/media/import`.
+- [ ] Import task id/status is shown from API response.
+- [ ] Set primary media works from Catalog page.
+- [ ] Delete media works from Catalog page.
+- [ ] Retry failed media works from Catalog page.
+- [ ] API error message from CommerceNode is surfaced through ControlPlane API response message.
+- [ ] Browser network capture shows no direct `api/commerce/*` call from ControlPlane Web.
+
 ## Health
 
 - [x] Health page loads. 2026-07-08: authenticated admin session loaded Health page.
