@@ -226,6 +226,7 @@ namespace BlazorShop.Infrastructure.Repositories
 
             return await _context.Products
                 .AsNoTracking()
+                .Include(product => product.Variants)
                 .Where(product => ids.Contains(product.Id))
                 .ToDictionaryAsync(product => product.Id);
         }

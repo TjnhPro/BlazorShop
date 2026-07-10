@@ -240,6 +240,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
 
             return await this.context.Products
                 .AsNoTracking()
+                .Include(product => product.Variants)
                 .Where(product => ids.Contains(product.Id))
                 .ToDictionaryAsync(product => product.Id);
         }

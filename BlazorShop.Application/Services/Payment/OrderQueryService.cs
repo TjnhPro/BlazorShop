@@ -1,6 +1,7 @@
 namespace BlazorShop.Application.Services.Payment
 {
     using BlazorShop.Application.DTOs.Payment;
+    using BlazorShop.Application.Services;
     using BlazorShop.Application.Services.Contracts.Payment;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Contracts.Authentication;
@@ -66,6 +67,7 @@ namespace BlazorShop.Application.Services.Payment
                     Id = o.Id,
                     Reference = o.Reference,
                     Status = o.Status,
+                    CurrencyCode = o.CurrencyCode,
                     TotalAmount = o.TotalAmount,
                     CreatedOn = o.CreatedOn,
                     ShippingStatus = o.ShippingStatus,
@@ -83,7 +85,11 @@ namespace BlazorShop.Application.Services.Payment
                         ProductId = l.ProductId,
                         Quantity = l.Quantity,
                         UnitPrice = l.UnitPrice,
-                        ProductName = nameMap.TryGetValue(l.ProductId, out var n) ? n : string.Empty
+                        ProductName = l.ProductName ?? (nameMap.TryGetValue(l.ProductId, out var n) ? n : string.Empty),
+                        Sku = l.Sku,
+                        Image = l.Image,
+                        ProductVariantId = l.ProductVariantId,
+                        VariantAttributes = ProductVariantAttributeNormalizer.Deserialize(l.VariantAttributesJson),
                     })
                 });
             }

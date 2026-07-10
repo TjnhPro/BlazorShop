@@ -5,7 +5,9 @@
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Payment;
+    using BlazorShop.Application.DTOs.Product.ProductVariant;
     using BlazorShop.Application.Services.Contracts.Payment;
+    using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Contracts.Authentication;
     using BlazorShop.Domain.Contracts.Payment;
@@ -26,6 +28,9 @@
         private readonly IEmailService _emailService;
         private readonly BankTransferSettings _btSettings;
         private readonly ICommerceStoreContext? _storeContext;
+        private readonly IGenericRepository<Product>? _productRepository;
+        private readonly IGenericRepository<ProductVariant>? _variantRepository;
+        private readonly IApplicationTransactionManager? _transactionManager;
 
         public CartService(ICart cart,
                            IMapper mapper,
@@ -37,7 +42,10 @@
                            IOrderRepository orderRepository,
                            IEmailService emailService,
                            IOptions<BankTransferSettings> bankTransferOptions,
-                           ICommerceStoreContext? storeContext = null)
+                           ICommerceStoreContext? storeContext = null,
+                           IGenericRepository<Product>? productRepository = null,
+                           IGenericRepository<ProductVariant>? variantRepository = null,
+                           IApplicationTransactionManager? transactionManager = null)
         {
             _cart = cart;
             _mapper = mapper;
@@ -50,6 +58,9 @@
             _emailService = emailService;
             _btSettings = bankTransferOptions.Value;
             _storeContext = storeContext;
+            _productRepository = productRepository;
+            _variantRepository = variantRepository;
+            _transactionManager = transactionManager;
         }
 
         public async Task<ServiceResponse> SaveCheckoutHistoryAsync(string userId, IEnumerable<CreateOrderItem> orderItems)
@@ -197,47 +208,74 @@
                 return new ServiceResponse(false, "Your cart is empty.");
             }
 
-            var (products, totalAmount) = await GetCartTotalAmount(cartList);
-            var productMap = products.ToDictionary(product => product.Id);
+            var lineResult = await ResolveCartLinesAsync(cartList);
+            if (!lineResult.Success)
+            {
+                return new ServiceResponse(false, lineResult.ErrorMessage ?? "We couldn't resolve the cart items for this order.");
+            }
 
-            if (productMap.Count == 0 || totalAmount <= 0)
+            var lines = lineResult.Lines;
+            var totalAmount = lines.Sum(line => line.Quantity * line.UnitPrice);
+
+            if (lines.Count == 0 || totalAmount <= 0)
             {
                 return new ServiceResponse(false, "We couldn't resolve the cart items for this order.");
             }
 
-            var order = new Order
+            async Task<ServiceResponse> CreateOrderAndDeductStockAsync()
             {
-                UserId = userId ?? string.Empty,
-                Status = status,
-                Reference = reference ?? $"{referencePrefix}-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..8].ToUpper()}",
-                StoreId = await ResolveCurrentStoreIdAsync(),
-                TotalAmount = totalAmount,
-                Lines = cartList
-                    .Where(item => productMap.ContainsKey(item.ProductId))
-                    .Select(item => new OrderLine
-                    {
-                        ProductId = item.ProductId,
-                        Quantity = item.Quantity,
-                        UnitPrice = productMap[item.ProductId].Price,
-                    })
-                    .ToList(),
-            };
-
-            if (order.Lines.Count == 0)
-            {
-                return new ServiceResponse(false, "We couldn't resolve the cart items for this order.");
-            }
-
-            await _orderRepository.CreateAsync(order);
-
-            return new ServiceResponse(true, "Order saved successfully")
-            {
-                Payload = new
+                var order = new Order
                 {
-                    order.Id,
-                    order.Reference,
+                    UserId = userId ?? string.Empty,
+                    Status = status,
+                    Reference = reference ?? $"{referencePrefix}-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..8].ToUpper()}",
+                    StoreId = await ResolveCurrentStoreIdAsync(),
+                    CurrencyCode = await ResolveCurrentCurrencyCodeAsync(),
+                    TotalAmount = totalAmount,
+                    Lines = lines
+                        .Select(item => new OrderLine
+                        {
+                            ProductId = item.Product.Id,
+                            ProductName = item.Product.Name,
+                            Sku = item.Variant?.Sku ?? item.Product.Sku,
+                            Image = item.Product.Image,
+                            ProductVariantId = item.Variant?.Id,
+                            VariantAttributesJson = item.Variant?.AttributesJson,
+                            Quantity = item.Quantity,
+                            UnitPrice = item.UnitPrice,
+                        })
+                        .ToList(),
+                };
+
+                if (order.Lines.Count == 0)
+                {
+                    return new ServiceResponse(false, "We couldn't resolve the cart items for this order.");
                 }
-            };
+
+                await _orderRepository.CreateAsync(order);
+
+                var stockResult = await DeductStockAsync(lines);
+                if (!stockResult.Success)
+                {
+                    return stockResult;
+                }
+
+                return new ServiceResponse(true, "Order saved successfully")
+                {
+                    Payload = new
+                    {
+                        order.Id,
+                        order.Reference,
+                    }
+                };
+            }
+
+            if (_transactionManager is not null)
+            {
+                return await _transactionManager.ExecuteInTransactionAsync(CreateOrderAndDeductStockAsync);
+            }
+
+            return await CreateOrderAndDeductStockAsync();
         }
 
         public async Task<IEnumerable<GetOrderItem>> GetOrderItemsAsync()
@@ -286,28 +324,10 @@
 
         private async Task<(IEnumerable<Product>, decimal)> GetCartTotalAmount(IEnumerable<ProcessCart> carts)
         {
-            var cartList = carts.ToList();
-
-            if (cartList.Count == 0)
-            {
-                return ([], 0);
-            }
-
-            var productLookup = await _productReadRepository.GetProductsByIdsAsync(cartList.Select(item => item.ProductId));
-
-            if (productLookup.Count == 0)
-            {
-                return ([], 0);
-            }
-
-            var cartProducts = productLookup.Values.ToList();
-
-            var totalAmount = cartList.Sum(item =>
-                productLookup.TryGetValue(item.ProductId, out var product)
-                    ? item.Quantity * product.Price
-                    : 0);
-
-            return (cartProducts, totalAmount);
+            var result = await ResolveCartLinesAsync(carts);
+            return result.Success
+                ? (result.Lines.Select(line => line.Product).DistinctBy(product => product.Id).ToArray(), result.Lines.Sum(line => line.Quantity * line.UnitPrice))
+                : ([], 0);
         }
 
         private async Task<Guid?> ResolveCurrentStoreIdAsync()
@@ -319,6 +339,125 @@
 
             var result = await _storeContext.GetCurrentStoreIdAsync();
             return result.Success ? result.Payload : null;
+        }
+
+        private async Task<string?> ResolveCurrentCurrencyCodeAsync()
+        {
+            if (_storeContext is null)
+            {
+                return null;
+            }
+
+            var result = await _storeContext.GetCurrentStoreAsync();
+            return result.Success ? result.Payload?.DefaultCurrencyCode : null;
+        }
+
+        private async Task<CartLineResolution> ResolveCartLinesAsync(IEnumerable<ProcessCart> carts)
+        {
+            var cartList = carts
+                .Where(item => item.ProductId != Guid.Empty && item.Quantity > 0)
+                .ToList();
+
+            if (cartList.Count == 0)
+            {
+                return CartLineResolution.Failure("Your cart is empty.");
+            }
+
+            var currentStoreId = await ResolveCurrentStoreIdAsync();
+            var productLookup = await _productReadRepository.GetProductsByIdsAsync(cartList.Select(item => item.ProductId));
+            var lines = new List<CartLineContext>();
+
+            foreach (var item in cartList)
+            {
+                if (!productLookup.TryGetValue(item.ProductId, out var product)
+                    || product.ArchivedAt != null
+                    || (currentStoreId.HasValue && product.StoreId != currentStoreId.Value))
+                {
+                    return CartLineResolution.Failure("A cart product could not be found for this store.");
+                }
+
+                var variant = ResolveVariant(product, item.ProductVariantId);
+                if (variant.Failed)
+                {
+                    return CartLineResolution.Failure(variant.ErrorMessage);
+                }
+
+                var selectedVariant = variant.Value;
+                var availableStock = selectedVariant?.Stock ?? product.Quantity;
+                if (availableStock < item.Quantity)
+                {
+                    return CartLineResolution.Failure("One or more cart items are out of stock.");
+                }
+
+                lines.Add(new CartLineContext(
+                    product,
+                    selectedVariant,
+                    item.Quantity,
+                    selectedVariant?.Price ?? product.Price));
+            }
+
+            return CartLineResolution.Ok(lines);
+        }
+
+        private static VariantResolution ResolveVariant(Product product, Guid? productVariantId)
+        {
+            var variants = product.Variants.ToArray();
+            if (productVariantId.HasValue)
+            {
+                var variant = variants.FirstOrDefault(item => item.Id == productVariantId.Value);
+                return variant is null
+                    ? VariantResolution.Failure("Selected product variant was not found.")
+                    : VariantResolution.Success(variant);
+            }
+
+            if (variants.Length == 0)
+            {
+                return VariantResolution.Success(null);
+            }
+
+            var defaultVariants = variants.Where(item => item.IsDefault).ToArray();
+            if (defaultVariants.Length == 1)
+            {
+                return VariantResolution.Success(defaultVariants[0]);
+            }
+
+            return VariantResolution.Failure("Please select a product variant before checkout.");
+        }
+
+        private async Task<ServiceResponse> DeductStockAsync(IReadOnlyList<CartLineContext> lines)
+        {
+            if (_productRepository is null || _variantRepository is null)
+            {
+                return new ServiceResponse(true, "Stock deduction skipped because writable catalog repositories are not available.");
+            }
+
+            foreach (var line in lines)
+            {
+                if (line.Variant is not null)
+                {
+                    var variant = await _variantRepository.GetByIdAsync(line.Variant.Id);
+                    if (variant is null || variant.Stock < line.Quantity)
+                    {
+                        return new ServiceResponse(false, "One or more variants are out of stock.");
+                    }
+
+                    variant.Stock -= line.Quantity;
+                    await _variantRepository.UpdateAsync(variant);
+                    continue;
+                }
+
+                var product = await _productRepository.GetByIdAsync(line.Product.Id);
+                if (product is null || product.Quantity < line.Quantity)
+                {
+                    return new ServiceResponse(false, "One or more products are out of stock.");
+                }
+
+                product.Quantity -= line.Quantity;
+                product.UpdatedAt = DateTime.UtcNow;
+                await _productRepository.UpdateAsync(product);
+            }
+
+            return new ServiceResponse(true, "Stock deducted successfully.");
         }
 
         public async Task<IEnumerable<GetOrderItem>> GetCheckoutHistoryByUserId(string userId)
@@ -355,6 +494,22 @@
             }
 
             return orderItems;
+        }
+
+        private sealed record CartLineContext(Product Product, ProductVariant? Variant, int Quantity, decimal UnitPrice);
+
+        private sealed record CartLineResolution(bool Success, IReadOnlyList<CartLineContext> Lines, string? ErrorMessage)
+        {
+            public static CartLineResolution Ok(IReadOnlyList<CartLineContext> lines) => new(true, lines, null);
+
+            public static CartLineResolution Failure(string? errorMessage) => new(false, [], errorMessage);
+        }
+
+        private sealed record VariantResolution(bool Failed, ProductVariant? Value, string? ErrorMessage)
+        {
+            public static VariantResolution Success(ProductVariant? variant) => new(false, variant, null);
+
+            public static VariantResolution Failure(string? errorMessage) => new(true, null, errorMessage);
         }
     }
 }

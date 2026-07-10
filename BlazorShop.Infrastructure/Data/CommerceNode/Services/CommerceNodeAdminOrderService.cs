@@ -7,6 +7,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using BlazorShop.Application.DTOs.Admin.Orders;
     using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Application.CommerceNode.Stores;
+    using BlazorShop.Application.Services;
     using BlazorShop.Application.Services.Contracts.Admin;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Contracts.Payment;
@@ -222,6 +223,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 Id = order.Id,
                 Reference = order.Reference,
                 Status = order.Status,
+                CurrencyCode = order.CurrencyCode,
                 TotalAmount = order.TotalAmount,
                 CreatedOn = order.CreatedOn,
                 ShippingStatus = order.ShippingStatus,
@@ -239,7 +241,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     ProductId = line.ProductId,
                     Quantity = line.Quantity,
                     UnitPrice = line.UnitPrice,
-                    ProductName = productNames.TryGetValue(line.ProductId, out var productName) ? productName : string.Empty,
+                    ProductName = line.ProductName ?? (productNames.TryGetValue(line.ProductId, out var productName) ? productName : string.Empty),
+                    Sku = line.Sku,
+                    Image = line.Image,
+                    ProductVariantId = line.ProductVariantId,
+                    VariantAttributes = ProductVariantAttributeNormalizer.Deserialize(line.VariantAttributesJson),
                 }),
             }).ToArray();
         }
