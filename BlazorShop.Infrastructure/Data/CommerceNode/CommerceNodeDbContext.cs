@@ -60,6 +60,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
         public DbSet<ProductMedia> ProductMedia => Set<ProductMedia>();
 
+        public DbSet<ProductImportJob> ProductImportJobs => Set<ProductImportJob>();
+
+        public DbSet<ProductImportRow> ProductImportRows => Set<ProductImportRow>();
+
         public DbSet<VariationTemplate> VariationTemplates => Set<VariationTemplate>();
 
         public DbSet<VariationTemplateOption> VariationTemplateOptions => Set<VariationTemplateOption>();
@@ -242,6 +246,91 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                         table.HasCheckConstraint("ck_product_media_height", "height IS NULL OR height > 0");
                         table.HasCheckConstraint("ck_product_media_file_size", "file_size_bytes IS NULL OR file_size_bytes > 0");
                     });
+            });
+
+            modelBuilder.Entity<ProductImportJob>(entity =>
+            {
+                entity.ToTable("product_import_job");
+                entity.HasKey(job => job.Id);
+                entity.Property(job => job.Id).HasColumnName("id");
+                entity.Property(job => job.PublicId).HasColumnName("public_id");
+                entity.Property(job => job.StoreId).HasColumnName("store_id");
+                entity.Property(job => job.TaskPublicId).HasColumnName("task_public_id");
+                entity.Property(job => job.Mode).HasColumnName("mode").HasMaxLength(32).IsRequired();
+                entity.Property(job => job.Status).HasColumnName("status").HasMaxLength(64).IsRequired();
+                entity.Property(job => job.FileName).HasColumnName("file_name").HasMaxLength(260).IsRequired();
+                entity.Property(job => job.StoredFilePath).HasColumnName("stored_file_path").IsRequired();
+                entity.Property(job => job.FileHash).HasColumnName("file_hash").HasMaxLength(128).IsRequired();
+                entity.Property(job => job.FileSizeBytes).HasColumnName("file_size_bytes");
+                entity.Property(job => job.TotalRows).HasColumnName("total_rows");
+                entity.Property(job => job.CreatedCount).HasColumnName("created_count");
+                entity.Property(job => job.UpdatedCount).HasColumnName("updated_count");
+                entity.Property(job => job.FailedCount).HasColumnName("failed_count");
+                entity.Property(job => job.SkippedCount).HasColumnName("skipped_count");
+                entity.Property(job => job.MediaQueuedCount).HasColumnName("media_queued_count");
+                entity.Property(job => job.CreatedBy).HasColumnName("created_by").HasMaxLength(256);
+                entity.Property(job => job.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(job => job.StartedAt).HasColumnName("started_at").HasColumnType("timestamp with time zone");
+                entity.Property(job => job.CompletedAt).HasColumnName("completed_at").HasColumnType("timestamp with time zone");
+                entity.Property(job => job.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasIndex(job => job.PublicId).IsUnique();
+                entity.HasIndex(job => new { job.StoreId, job.Mode, job.FileHash }).IsUnique();
+                entity.HasIndex(job => new { job.StoreId, job.Status, job.CreatedAt });
+                entity.HasIndex(job => job.TaskPublicId);
+
+                entity.ToTable(
+                    table => table.HasCheckConstraint(
+                        "ck_product_import_job_status",
+                        "status in ('Queued', 'Running', 'Completed', 'CompletedWithErrors', 'Failed')"));
+                entity.ToTable(
+                    table => table.HasCheckConstraint(
+                        "ck_product_import_job_mode",
+                        "mode in ('create_only', 'upsert')"));
+            });
+
+            modelBuilder.Entity<ProductImportRow>(entity =>
+            {
+                entity.ToTable("product_import_row");
+                entity.HasKey(row => row.Id);
+                entity.Property(row => row.Id).HasColumnName("id");
+                entity.Property(row => row.JobId).HasColumnName("job_id");
+                entity.Property(row => row.RowNumber).HasColumnName("row_number");
+                entity.Property(row => row.Sku).HasColumnName("sku").HasMaxLength(64);
+                entity.Property(row => row.Status).HasColumnName("status").HasMaxLength(64).IsRequired();
+                entity.Property(row => row.Action).HasColumnName("action").HasMaxLength(64).IsRequired();
+                entity.Property(row => row.ProductId).HasColumnName("product_id");
+                entity.Property(row => row.MediaStatus).HasColumnName("media_status").HasMaxLength(64).IsRequired();
+                entity.Property(row => row.MediaTaskPublicId).HasColumnName("media_task_public_id");
+                entity.Property(row => row.ErrorMessage).HasColumnName("error_message");
+                entity.Property(row => row.ErrorJson).HasColumnName("error_json").HasColumnType("jsonb");
+                entity.Property(row => row.RawDataJson).HasColumnName("raw_data_json").HasColumnType("jsonb");
+                entity.Property(row => row.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(row => row.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasIndex(row => new { row.JobId, row.RowNumber }).IsUnique();
+                entity.HasIndex(row => new { row.JobId, row.Status });
+                entity.HasIndex(row => new { row.JobId, row.Sku });
+                entity.HasIndex(row => row.ProductId);
+                entity.HasIndex(row => row.MediaTaskPublicId);
+
+                entity.HasOne(row => row.Job)
+                    .WithMany(job => job.Rows)
+                    .HasForeignKey(row => row.JobId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.ToTable(
+                    table => table.HasCheckConstraint(
+                        "ck_product_import_row_status",
+                        "status in ('Pending', 'Succeeded', 'Failed', 'Skipped')"));
+                entity.ToTable(
+                    table => table.HasCheckConstraint(
+                        "ck_product_import_row_action",
+                        "action in ('Created', 'Updated', 'Skipped', 'Failed')"));
+                entity.ToTable(
+                    table => table.HasCheckConstraint(
+                        "ck_product_import_row_media_status",
+                        "media_status in ('None', 'Queued')"));
             });
 
             modelBuilder.Entity<IdentityUserLogin<string>>()
