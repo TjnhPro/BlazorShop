@@ -23,6 +23,7 @@ Muc tieu hien tai:
 - [x] Storefront V2.
   - Project: `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`
   - Local HTTP URL: `http://localhost:18598`
+- [x] Browser QA runs with Playwright MCP visible Chromium (`headless=false`) when operator observation is requested. 2026-07-10: local StorefrontV2 catalog/auth/cart smoke used Playwright MCP visible browser.
 - [n/a] Client app, only when testing login/register/checkout UI handoff. 2026-07-09: StorefrontV2 returned the expected 302 handoff; external client app was intentionally not started for independent V2 QA.
 
 ## Clean DB Setup
@@ -92,20 +93,20 @@ dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrast
 - [x] `/category/{slug}`
   - [x] Shows category breadcrumb.
   - [x] Shows products under category.
-  - [ ] Price range filter applies through query string.
-  - [ ] In-stock filter hides out-of-stock products.
-  - [ ] Sort by display order works.
-  - [ ] Sort by updated works.
+- [x] Price range filter applies through query string. 2026-07-10: `/category/t-shirts?minPrice=19&maxPrice=20&sortBy=PriceLowToHigh` returned `Catalog QA T-Shirt` and excluded `Catalog QA Low Stock Tee`.
+- [x] In-stock filter hides out-of-stock products. 2026-07-10: `/category/t-shirts?sortBy=Updated&inStock=true` returned 200 and rendered the in-stock seeded products.
+- [x] Sort by display order works. 2026-07-10: `/category/t-shirts?sortBy=DisplayOrder` returned 200 after fixing enum query parsing.
+- [x] Sort by updated works. 2026-07-10: `/category/t-shirts?sortBy=Updated&inStock=true` returned 200 after fixing enum query parsing.
   - [x] Missing slug returns noindex 404 state.
 - [x] `/product/{slug}`
   - [x] Shows product image.
   - [x] Shows product price.
   - [x] Shows product category link.
   - [x] Shows variants selector when variants exist.
-  - [ ] Shows variant attributes such as `Color` and `Size`.
-  - [ ] Shows variant effective price.
-  - [ ] Shows compare price when present.
-  - [ ] Shows out-of-stock state for product/variant.
+- [x] Shows variant attributes such as `Color` and `Size`. 2026-07-10: product page rendered `Color: Red / Size: M`, `Color: Red / Size: XL`, and `Color: Black / Size: M`.
+- [x] Shows variant effective price. 2026-07-10: product page rendered variant prices `EUR 19.99` and `EUR 21.99`.
+- [x] Shows compare price when present. 2026-07-10: product page rendered `EUR 24.99` compare price for `Catalog QA T-Shirt`.
+- [x] Shows out-of-stock state for product/variant. 2026-07-10: product page rendered `Black / M` as `Out of stock`.
   - [x] Shows add-to-cart button.
   - [x] Shows related products/recommendations block.
   - [x] Missing slug returns noindex 404 state.
@@ -120,11 +121,11 @@ dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrast
 - [x] Cart badge updates after add-to-cart.
 - [x] Add product without variant.
 - [x] Add product with required variant.
-- [ ] Cart cookie contains `ProductVariantId` for selected variant.
-- [ ] Cart line displays selected variant attribute label.
-- [ ] Cart line uses selected variant effective price.
+- [x] Cart cookie contains `ProductVariantId` for selected variant. 2026-07-10: Playwright decoded `my-cart` cookie and found `ProductVariantId` plus `VariantId` for selected `Red / XL`.
+- [x] Cart line displays selected variant attribute label. 2026-07-10: cart rendered `RED / M` after selecting the `Red / M` variant.
+- [x] Cart line uses selected variant effective price. 2026-07-10: cart rendered `EUR 19.99` for `Red / M` and cookie stored `UnitPrice=21.99` for `Red / XL`.
 - [x] Product detail blocks add-to-cart until required variant is selected.
-- [ ] Product detail blocks add-to-cart for out-of-stock variant.
+- [x] Product detail blocks add-to-cart for out-of-stock variant. 2026-07-10: selecting `Black / M` and clicking Add to Cart produced no `my-cart` cookie and cart stayed empty.
 - [x] Quantity update works.
 - [x] Remove item works.
 - [x] Clear cart works.
@@ -175,6 +176,7 @@ Use this checklist whenever Storefront V2 auth UI or Commerce Node auth API chan
 - [x] Logout calls Storefront local `/logout`, clears refresh cookie, and returns anonymous account menu. 2026-07-09: refresh cookie removed and menu returned `Sign in`/`Register`.
 - [x] Browser console has no unexpected errors during `/signin`, `/register`, login, register, and logout. 2026-07-09: current Playwright console error list was empty.
 - [x] Network/browser QA shows no navigation/request to legacy `BlazorShop.Web` or legacy `BlazorShop.API` for auth UI. 2026-07-09: browser performance entries had no suspicious legacy URL/port entries.
+  - 2026-07-10: Playwright MCP visible browser registered `qa-visible-*`, verified wrong-password `Invalid credentials.`, logged in successfully, saw 0 console errors/failed requests, and saw 0 legacy requests.
 
 2026-07-09 local-auth QA run:
 
@@ -183,6 +185,13 @@ Use this checklist whenever Storefront V2 auth UI or Commerce Node auth API chan
 - [x] Browser QA for `/register` rerun. Screenshot: `.gstack/qa-reports/storefrontv2-register-2026-07-09.png`.
 - [x] Browser QA for successful register/login/logout rerun. Signed-in menu screenshot: `.gstack/qa-reports/storefrontv2-signed-in-menu-2026-07-09.png`.
 - [x] Browser QA console checked. 2026-07-09: no current console errors.
+
+2026-07-10 visible Playwright MCP QA run:
+
+- [x] StorefrontV2 Development config includes `Api:StoreKey=default` so local catalog resolves the default QA store without env overrides.
+- [x] `/`, `/category/t-shirts`, filtered category URLs, `/product/catalog-qa-t-shirt`, and `/my-cart` rendered with no console errors.
+- [x] Hero background uses local `/images/banner-bg.jpg`; browser cache-cleared retest had 0 failed external image requests.
+- [x] Local register/login/wrong-password flow passed with no legacy Web/API requests.
 
 ## SEO And Discovery
 

@@ -94,7 +94,14 @@ else if (_categoryPage is not null)
     public bool InStock { get; set; }
 
     [SupplyParameterFromQuery(Name = "sortBy")]
-    public ProductCatalogSortBy SortBy { get; set; } = ProductCatalogSortBy.DisplayOrder;
+    public string? SortByQuery { get; set; }
+
+    private ProductCatalogSortBy SortBy => Enum.TryParse<ProductCatalogSortBy>(
+        SortByQuery,
+        ignoreCase: true,
+        out var sortBy)
+        ? sortBy
+        : ProductCatalogSortBy.DisplayOrder;
 
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
