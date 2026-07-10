@@ -569,18 +569,18 @@ Shipment form:
 
 ### Phase 8 - Navigation, Permission UX, And Cleanup
 
-- [ ] Add `Commerce Admin` nav group.
-- [ ] Wire nav links:
-  - [ ] Products.
-  - [ ] Product Imports.
-  - [ ] Categories.
-  - [ ] Variation Templates.
-  - [ ] Orders.
-- [ ] Remove or redirect old `/catalog` page if replaced.
-- [ ] Hide/disable write actions when user lacks write permission if permission data is available.
-- [ ] Ensure API 403 message is surfaced cleanly if UI permission hiding is incomplete.
-- [ ] Ensure no direct CommerceNode URLs are hardcoded in Web.
-- [ ] Commit: `refactor(control-plane-web): organize commerce admin navigation`.
+- [x] Add `Commerce Admin` nav group.
+- [x] Wire nav links:
+  - [x] Products.
+  - [x] Product Imports.
+  - [x] Categories.
+  - [x] Variation Templates.
+  - [x] Orders.
+- [x] Remove or redirect old `/catalog` page if replaced.
+- [x] Hide/disable write actions when user lacks write permission if permission data is available. 2026-07-10: no per-action permission snapshot is available in Web; API 403 envelope remains the enforcement path.
+- [x] Ensure API 403 message is surfaced cleanly if UI permission hiding is incomplete.
+- [x] Ensure no direct CommerceNode URLs are hardcoded in Web.
+- [x] Commit: `refactor(control-plane-web): organize commerce admin navigation`.
 
 ### Phase 9 - QA And Docs
 
