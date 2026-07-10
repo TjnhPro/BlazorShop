@@ -375,3 +375,4 @@ FodyWeavers.xsd
 .playwright-cli/
 output/
 .gstack/
+Smartstore/
