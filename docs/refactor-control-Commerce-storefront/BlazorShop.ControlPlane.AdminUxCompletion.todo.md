@@ -473,18 +473,18 @@ Shipment form:
 
 ### Phase 1 - ControlPlane API Gateway Completion
 
-- [ ] Add canonical `/api/controlplane/commerce/*` route group or route aliases.
-- [ ] Add product import template endpoint.
-- [ ] Add product import error CSV endpoint.
-- [ ] Add product media preview proxy endpoint.
-- [ ] Add VariationTemplate proxy methods in application service/interface.
-- [ ] Add VariationTemplate controller actions.
-- [ ] Add Orders/Shipment proxy methods in application service/interface.
-- [ ] Add Orders/Shipment controller actions.
-- [ ] Ensure all responses use ControlPlane API response envelope.
-- [ ] Ensure all write routes require `StoresWrite`; read routes require `StoresRead`.
-- [ ] Verify Web never needs node key/secret.
-- [ ] Commit: `feat(control-plane): complete commerce admin gateway`.
+- [x] Add canonical `/api/controlplane/commerce/*` route group or route aliases.
+- [x] Add product import template endpoint.
+- [x] Add product import error CSV endpoint.
+- [x] Add product media preview proxy endpoint.
+- [x] Add VariationTemplate proxy methods in application service/interface.
+- [x] Add VariationTemplate controller actions.
+- [x] Add Orders/Shipment proxy methods in application service/interface.
+- [x] Add Orders/Shipment controller actions.
+- [x] Ensure all responses use ControlPlane API response envelope.
+- [x] Ensure all write routes require `StoresWrite`; read routes require `StoresRead`.
+- [x] Verify Web never needs node key/secret. 2026-07-10: node credentials remain inside `ControlPlaneCommerceCatalogService`.
+- [x] Commit: `feat(control-plane): complete commerce admin gateway`.
 
 ### Phase 2 - Web Client And Shared Admin UI Components
 

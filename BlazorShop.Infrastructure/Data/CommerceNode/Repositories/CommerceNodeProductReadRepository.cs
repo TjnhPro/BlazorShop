@@ -6,6 +6,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
     using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities;
+    using BlazorShop.Domain.Entities.CommerceNode;
 
     using Microsoft.EntityFrameworkCore;
 
@@ -81,6 +82,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 .Take(pageSize)
                 .Select(MapCatalogProduct())
                 .ToListAsync();
+            items = await this.AttachPrimaryMediaAsync(items);
 
             return new PagedResult<CatalogProductReadModel>
             {
@@ -134,6 +136,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 .Take(pageSize)
                 .Select(MapCatalogProduct())
                 .ToListAsync();
+            items = await this.AttachPrimaryMediaAsync(items);
 
             return new PagedResult<CatalogProductReadModel>
             {
@@ -225,7 +228,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
         public async Task<IReadOnlyList<CatalogProductReadModel>> GetPublishedProductsByCategoryAsync(Guid categoryId)
         {
             var scopedProducts = await this.GetCurrentStoreProductsAsync();
-            return await scopedProducts
+            var items = await scopedProducts
                 .AsNoTracking()
                 .Where(product => product.CategoryId == categoryId
                     && product.ArchivedAt == null
@@ -242,6 +245,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 .ThenBy(product => product.Id)
                 .Select(MapCatalogProduct())
                 .ToListAsync();
+            return await this.AttachPrimaryMediaAsync(items);
         }
 
         public async Task<bool> ProductSlugExistsAsync(string slug, Guid? excludedProductId = null)
@@ -491,6 +495,62 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 ProductType = product.ProductType,
                 VariationTemplateId = product.VariationTemplateId,
             };
+        }
+
+        private async Task<List<CatalogProductReadModel>> AttachPrimaryMediaAsync(List<CatalogProductReadModel> products)
+        {
+            var productIds = products.Select(product => product.Id).Distinct().ToArray();
+            if (productIds.Length == 0)
+            {
+                return products;
+            }
+
+            var primaryMedia = await this.context.ProductMedia
+                .AsNoTracking()
+                .Where(media => productIds.Contains(media.ProductId)
+                    && media.IsPrimary
+                    && media.Status == ProductMediaStatuses.Stored
+                    && media.DeletedAt == null)
+                .GroupBy(media => media.ProductId)
+                .Select(group => new
+                {
+                    ProductId = group.Key,
+                    MediaPublicId = group
+                        .OrderBy(media => media.SortOrder)
+                        .ThenBy(media => media.CreatedAt)
+                        .Select(media => media.PublicId)
+                        .FirstOrDefault(),
+                })
+                .ToDictionaryAsync(media => media.ProductId, media => media.MediaPublicId);
+
+            return products
+                .Select(product => primaryMedia.TryGetValue(product.Id, out var mediaPublicId) && mediaPublicId != Guid.Empty
+                    ? new CatalogProductReadModel
+                    {
+                        Id = product.Id,
+                        Slug = product.Slug,
+                        Name = product.Name,
+                        Description = product.Description,
+                        Sku = product.Sku,
+                        ShortDescription = product.ShortDescription,
+                        Price = product.Price,
+                        ComparePrice = product.ComparePrice,
+                        Image = product.Image,
+                        PrimaryMediaPublicId = mediaPublicId,
+                        HasPrimaryMedia = true,
+                        CreatedOn = product.CreatedOn,
+                        UpdatedAt = product.UpdatedAt,
+                        DisplayOrder = product.DisplayOrder,
+                        InStock = product.InStock,
+                        CategoryId = product.CategoryId,
+                        CategoryName = product.CategoryName,
+                        CategorySlug = product.CategorySlug,
+                        HasVariants = product.HasVariants,
+                        ProductType = product.ProductType,
+                        VariationTemplateId = product.VariationTemplateId,
+                    }
+                    : product)
+                .ToList();
         }
 
         private async Task<IQueryable<Product>> GetCurrentStoreProductsAsync()

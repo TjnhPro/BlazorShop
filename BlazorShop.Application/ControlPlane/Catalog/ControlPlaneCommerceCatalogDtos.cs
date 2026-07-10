@@ -1,9 +1,12 @@
 namespace BlazorShop.Application.ControlPlane.Catalog
 {
+    using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs.Admin.Inventory;
+    using BlazorShop.Application.DTOs.Admin.Orders;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.DTOs.Category;
+    using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Application.DTOs.Product;
     using BlazorShop.Application.DTOs.Product.ProductVariant;
     using BlazorShop.Domain.Contracts;
@@ -55,6 +58,54 @@ namespace BlazorShop.Application.ControlPlane.Catalog
             Guid storePublicId,
             Guid jobPublicId,
             ProductImportRowsQuery query,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<VariationTemplateListResponse>> ListVariationTemplatesAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> GetVariationTemplateAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> CreateVariationTemplateAsync(
+            Guid storePublicId,
+            CreateVariationTemplateRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> UpdateVariationTemplateAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            UpdateVariationTemplateRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> CreateVariationTemplateOptionAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            CreateVariationTemplateOptionRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> UpdateVariationTemplateOptionAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            Guid optionPublicId,
+            UpdateVariationTemplateOptionRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> CreateVariationTemplateValueAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            Guid optionPublicId,
+            CreateVariationTemplateValueRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> UpdateVariationTemplateValueAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            Guid optionPublicId,
+            Guid valuePublicId,
+            UpdateVariationTemplateValueRequest request,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneCommerceCatalogResult<ProductMediaListResponse>> ListProductMediaAsync(
@@ -156,12 +207,66 @@ namespace BlazorShop.Application.ControlPlane.Catalog
             Guid variantId,
             UpdateVariantStockDto request,
             CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<PagedResult<GetOrder>>> QueryOrdersAsync(
+            Guid storePublicId,
+            AdminOrderQueryDto query,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<GetOrder>> GetOrderAsync(
+            Guid storePublicId,
+            Guid orderId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<GetOrder>> UpdateOrderAdminNoteAsync(
+            Guid storePublicId,
+            Guid orderId,
+            UpdateOrderAdminNoteRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<GetOrder>> UpdateOrderShippingStatusAsync(
+            Guid storePublicId,
+            Guid orderId,
+            UpdateShippingStatusRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<GetShipment>> GetShipmentAsync(
+            Guid storePublicId,
+            Guid orderId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<GetShipment>> UpsertShipmentAsync(
+            Guid storePublicId,
+            Guid orderId,
+            UpsertShipmentRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceMediaResult> GetProductMediaPreviewAsync(
+            Guid storePublicId,
+            Guid mediaPublicId,
+            ProductMediaPreviewQuery query,
+            CancellationToken cancellationToken = default);
     }
 
     public sealed record ControlPlaneCommerceCatalogResult<TPayload>(
         bool Success,
         string? Message = null,
         TPayload? Payload = default,
+        ControlPlaneCommerceCatalogFailure? Failure = null,
+        int? HttpStatusCode = null);
+
+    public sealed record ProductMediaPreviewQuery(
+        int? Width = null,
+        int? Height = null,
+        string? Fit = null,
+        string? Format = null,
+        int? Version = null);
+
+    public sealed record ControlPlaneCommerceMediaResult(
+        bool Success,
+        string? Message = null,
+        byte[]? Content = null,
+        string? ContentType = null,
         ControlPlaneCommerceCatalogFailure? Failure = null,
         int? HttpStatusCode = null);
 

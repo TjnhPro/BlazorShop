@@ -29,6 +29,10 @@ namespace BlazorShop.Application.DTOs.Product
         [Required]
         public string? Image { get; set; }
 
+        public Guid? PrimaryMediaPublicId { get; set; }
+
+        public bool HasPrimaryMedia { get; set; }
+
         [Required]
         public DateTime CreatedOn { get; set; }
 

@@ -5,10 +5,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using System.Text.Json;
 
     using BlazorShop.Application.ControlPlane.Catalog;
+    using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.DTOs.Admin.Inventory;
+    using BlazorShop.Application.DTOs.Admin.Orders;
     using BlazorShop.Application.DTOs.Category;
+    using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Application.DTOs.Product;
     using BlazorShop.Application.DTOs.Product.ProductVariant;
     using BlazorShop.Domain.Contracts;
@@ -150,6 +153,118 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 HttpMethod.Get,
                 $"api/commerce/admin/products/imports/{jobPublicId:D}/rows" + BuildProductImportRowsQuery(query),
                 null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateListResponse>> ListVariationTemplatesAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<VariationTemplateListResponse>(
+                storePublicId,
+                HttpMethod.Get,
+                "api/commerce/admin/variation-templates",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> GetVariationTemplateAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<VariationTemplateDetailDto>(
+                storePublicId,
+                HttpMethod.Get,
+                $"api/commerce/admin/variation-templates/{templatePublicId:D}",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> CreateVariationTemplateAsync(
+            Guid storePublicId,
+            CreateVariationTemplateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<VariationTemplateDetailDto>(
+                storePublicId,
+                HttpMethod.Post,
+                "api/commerce/admin/variation-templates",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> UpdateVariationTemplateAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            UpdateVariationTemplateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<VariationTemplateDetailDto>(
+                storePublicId,
+                HttpMethod.Put,
+                $"api/commerce/admin/variation-templates/{templatePublicId:D}",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> CreateVariationTemplateOptionAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            CreateVariationTemplateOptionRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<VariationTemplateDetailDto>(
+                storePublicId,
+                HttpMethod.Post,
+                $"api/commerce/admin/variation-templates/{templatePublicId:D}/options",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> UpdateVariationTemplateOptionAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            Guid optionPublicId,
+            UpdateVariationTemplateOptionRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<VariationTemplateDetailDto>(
+                storePublicId,
+                HttpMethod.Put,
+                $"api/commerce/admin/variation-templates/{templatePublicId:D}/options/{optionPublicId:D}",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> CreateVariationTemplateValueAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            Guid optionPublicId,
+            CreateVariationTemplateValueRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<VariationTemplateDetailDto>(
+                storePublicId,
+                HttpMethod.Post,
+                $"api/commerce/admin/variation-templates/{templatePublicId:D}/options/{optionPublicId:D}/values",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> UpdateVariationTemplateValueAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            Guid optionPublicId,
+            Guid valuePublicId,
+            UpdateVariationTemplateValueRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<VariationTemplateDetailDto>(
+                storePublicId,
+                HttpMethod.Put,
+                $"api/commerce/admin/variation-templates/{templatePublicId:D}/options/{optionPublicId:D}/values/{valuePublicId:D}",
+                request,
                 cancellationToken);
         }
 
@@ -401,6 +516,99 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
+        public Task<ControlPlaneCommerceCatalogResult<PagedResult<GetOrder>>> QueryOrdersAsync(
+            Guid storePublicId,
+            AdminOrderQueryDto query,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<PagedResult<GetOrder>>(
+                storePublicId,
+                HttpMethod.Get,
+                "api/commerce/admin/orders" + BuildOrderQuery(query),
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<GetOrder>> GetOrderAsync(
+            Guid storePublicId,
+            Guid orderId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<GetOrder>(
+                storePublicId,
+                HttpMethod.Get,
+                $"api/commerce/admin/orders/{orderId:D}",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<GetOrder>> UpdateOrderAdminNoteAsync(
+            Guid storePublicId,
+            Guid orderId,
+            UpdateOrderAdminNoteRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<GetOrder>(
+                storePublicId,
+                HttpMethod.Put,
+                $"api/commerce/admin/orders/{orderId:D}/admin-note",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<GetOrder>> UpdateOrderShippingStatusAsync(
+            Guid storePublicId,
+            Guid orderId,
+            UpdateShippingStatusRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<GetOrder>(
+                storePublicId,
+                HttpMethod.Put,
+                $"api/commerce/admin/orders/{orderId:D}/shipping-status",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<GetShipment>> GetShipmentAsync(
+            Guid storePublicId,
+            Guid orderId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<GetShipment>(
+                storePublicId,
+                HttpMethod.Get,
+                $"api/commerce/admin/orders/{orderId:D}/shipment",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<GetShipment>> UpsertShipmentAsync(
+            Guid storePublicId,
+            Guid orderId,
+            UpsertShipmentRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<GetShipment>(
+                storePublicId,
+                HttpMethod.Put,
+                $"api/commerce/admin/orders/{orderId:D}/shipment",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceMediaResult> GetProductMediaPreviewAsync(
+            Guid storePublicId,
+            Guid mediaPublicId,
+            ProductMediaPreviewQuery query,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendMediaAsync(
+                storePublicId,
+                $"media/products/{mediaPublicId:D}" + BuildMediaPreviewQuery(query),
+                cancellationToken);
+        }
+
         private async Task<ControlPlaneCommerceCatalogResult<TPayload>> SendAsync<TPayload>(
             Guid storePublicId,
             HttpMethod method,
@@ -473,6 +681,53 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             catch (JsonException)
             {
                 return Failure<TPayload>("Commerce Node returned malformed JSON.", ControlPlaneCommerceCatalogFailure.RemoteFailure);
+            }
+        }
+
+        private async Task<ControlPlaneCommerceMediaResult> SendMediaAsync(
+            Guid storePublicId,
+            string path,
+            CancellationToken cancellationToken)
+        {
+            var store = await this.LoadStoreAsync(storePublicId, cancellationToken);
+            var validation = ValidateStoreForRemoteCall(store);
+            if (validation is not null)
+            {
+                return validation.ToMediaResult();
+            }
+
+            try
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, AppendPath(GetControlApiUrl(store!.Node!), path));
+                request.Headers.TryAddWithoutValidation("X-Node-Key", store.Node!.NodeKey);
+                request.Headers.TryAddWithoutValidation("X-Node-Secret", store.Node.NodeSecret);
+                request.Headers.TryAddWithoutValidation("X-Store-Key", store.StoreKey);
+
+                using var response = await this.httpClient.SendAsync(request, cancellationToken);
+                var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new ControlPlaneCommerceMediaResult(
+                        false,
+                        bytes.Length > 0 ? System.Text.Encoding.UTF8.GetString(bytes) : "Commerce Node media preview request failed.",
+                        Failure: ToFailure(response.StatusCode),
+                        HttpStatusCode: (int)response.StatusCode);
+                }
+
+                return new ControlPlaneCommerceMediaResult(
+                    true,
+                    "Product media preview loaded.",
+                    bytes,
+                    response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream",
+                    HttpStatusCode: (int)response.StatusCode);
+            }
+            catch (TaskCanceledException)
+            {
+                return new ControlPlaneCommerceMediaResult(false, "Commerce Node media preview request timed out.", Failure: ControlPlaneCommerceCatalogFailure.RemoteFailure);
+            }
+            catch (HttpRequestException ex)
+            {
+                return new ControlPlaneCommerceMediaResult(false, ex.Message, Failure: ControlPlaneCommerceCatalogFailure.RemoteFailure);
             }
         }
 
@@ -631,6 +886,33 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return ToQueryString(values);
         }
 
+        private static string BuildOrderQuery(AdminOrderQueryDto query)
+        {
+            var values = new List<KeyValuePair<string, string>>
+            {
+                new("pageNumber", Math.Max(1, query.PageNumber).ToString(CultureInfo.InvariantCulture)),
+                new("pageSize", Math.Clamp(query.PageSize, 1, 100).ToString(CultureInfo.InvariantCulture)),
+            };
+
+            AddIfPresent(values, "searchTerm", query.SearchTerm);
+            AddIfPresent(values, "status", query.Status);
+            AddIfPresent(values, "shippingStatus", query.ShippingStatus);
+            AddIfPresent(values, "fromUtc", query.FromUtc?.ToString("O", CultureInfo.InvariantCulture));
+            AddIfPresent(values, "toUtc", query.ToUtc?.ToString("O", CultureInfo.InvariantCulture));
+            return ToQueryString(values);
+        }
+
+        private static string BuildMediaPreviewQuery(ProductMediaPreviewQuery query)
+        {
+            var values = new List<KeyValuePair<string, string>>();
+            AddIfPresent(values, "w", query.Width?.ToString(CultureInfo.InvariantCulture));
+            AddIfPresent(values, "h", query.Height?.ToString(CultureInfo.InvariantCulture));
+            AddIfPresent(values, "fit", query.Fit);
+            AddIfPresent(values, "format", query.Format);
+            AddIfPresent(values, "v", query.Version?.ToString(CultureInfo.InvariantCulture));
+            return ToQueryString(values);
+        }
+
         private static string BuildProductImportQuery(ProductImportJobListQuery query)
         {
             var values = new List<KeyValuePair<string, string>>
@@ -709,6 +991,14 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             public ControlPlaneCommerceCatalogResult<TPayload> ToResult<TPayload>()
             {
                 return new ControlPlaneCommerceCatalogResult<TPayload>(
+                    false,
+                    this.Message,
+                    Failure: this.Failure);
+            }
+
+            public ControlPlaneCommerceMediaResult ToMediaResult()
+            {
+                return new ControlPlaneCommerceMediaResult(
                     false,
                     this.Message,
                     Failure: this.Failure);

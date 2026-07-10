@@ -20,6 +20,10 @@ namespace BlazorShop.Domain.Contracts
 
         public string? Image { get; init; }
 
+        public Guid? PrimaryMediaPublicId { get; init; }
+
+        public bool HasPrimaryMedia { get; init; }
+
         public DateTime CreatedOn { get; init; }
 
         public DateTime UpdatedAt { get; init; }
