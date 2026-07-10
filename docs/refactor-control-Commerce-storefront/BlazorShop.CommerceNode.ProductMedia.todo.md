@@ -533,19 +533,19 @@ Review/fix gate:
 
 ### Phase 1 - Database Schema
 
-- [ ] Add `ProductMedia` entity.
-- [ ] Add `ProductMediaStatuses`.
-- [ ] Add `DbSet<ProductMedia>` to `CommerceNodeDbContext`.
-- [ ] Configure `product_media` table with snake_case columns.
-- [ ] Add indexes and constraints listed above.
-- [ ] Add CommerceNode EF migration.
-- [ ] Verify migration applies against clean CommerceNode PostgreSQL on port `5434`.
+- [x] Add `ProductMedia` entity.
+- [x] Add `ProductMediaStatuses`.
+- [x] Add `DbSet<ProductMedia>` to `CommerceNodeDbContext`.
+- [x] Configure `product_media` table with snake_case columns.
+- [x] Add indexes and constraints listed above.
+- [x] Add CommerceNode EF migration.
+- [x] Verify migration applies against clean CommerceNode PostgreSQL on port `5434`.
 
 Review/fix gate:
 
-- [ ] Check migration does not touch ControlPlane DB.
-- [ ] Check migration does not touch `AppDbContext`.
-- [ ] Check unique primary-media behavior is enforced by service or filtered index.
+- [x] Check migration does not touch ControlPlane DB.
+- [x] Check migration does not touch `AppDbContext`.
+- [x] Check unique primary-media behavior is enforced by service or filtered index.
 
 ### Phase 2 - Application Contracts and Services
 
