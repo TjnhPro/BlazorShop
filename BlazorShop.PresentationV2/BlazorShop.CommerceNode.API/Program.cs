@@ -40,6 +40,7 @@ builder.Services.AddScoped<ICommerceTaskHandler, FailTestCommerceTaskHandler>();
 builder.Services.AddScoped<ICommerceTaskHandler, WaitTestCommerceTaskHandler>();
 builder.Services.AddScoped<ICommerceTaskHandler, StoreCreateAndDeployTaskHandler>();
 builder.Services.AddScoped<ICommerceTaskHandler, ProductMediaImportTaskHandler>();
+builder.Services.AddScoped<ICommerceTaskHandler, ProductImportTaskHandler>();
 builder.Services.AddHostedService<CommerceTaskWorker>();
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
