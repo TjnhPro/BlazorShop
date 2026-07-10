@@ -1,0 +1,415 @@
+@page "/commerce-admin/product-imports"
+@attribute [Authorize]
+@inject IControlPlaneStoreClient StoreClient
+@inject IControlPlaneCatalogClient CatalogClient
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Product Imports</PageTitle>
+
+<section class="space-y-5">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+            <p class="text-sm font-semibold text-control-700">Commerce Admin</p>
+            <h1 class="text-2xl font-bold text-ink-900">Product imports</h1>
+            <p class="mt-1 text-sm text-ink-500">Create and update products from CSV files through the assigned Commerce Node.</p>
+        </div>
+        <div class="flex flex-col gap-2 sm:flex-row">
+            <select class="min-h-10 min-w-64 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="selectedStorePublicId">
+                <option value="">Select store</option>
+                @foreach (var store in stores)
+                {
+                    <option value="@store.PublicId">@store.Name (@store.StoreKey)</option>
+                }
+            </select>
+            <button class="cp-button cp-button-secondary" @onclick="LoadAsync">
+                <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">@errorMessage</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">@successMessage</div>
+    }
+
+    <div class="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
+        <div class="cp-card">
+            <div class="border-b border-ink-200 p-4">
+                <h2 class="text-sm font-semibold text-ink-900">Upload CSV</h2>
+            </div>
+            <div class="space-y-4 p-4">
+                <button class="cp-button cp-button-secondary w-full" disabled="@(!HasStore)" @onclick="DownloadTemplateAsync">
+                    <i class="fa-solid fa-download" aria-hidden="true"></i>
+                    Download CSV template
+                </button>
+                <label class="space-y-1 text-sm">
+                    <span class="font-medium text-ink-700">Mode</span>
+                    <select class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="uploadMode">
+                        <option value="@ProductImportModes.CreateOnly">Create only</option>
+                        <option value="@ProductImportModes.Upsert">Upsert</option>
+                    </select>
+                </label>
+                <label class="space-y-1 text-sm">
+                    <span class="font-medium text-ink-700">CSV file</span>
+                    <InputFile class="block w-full rounded-md border border-ink-300 px-3 py-2 text-sm" OnChange="OnFileSelected" accept=".csv,text/csv" />
+                </label>
+                @if (selectedFile is not null)
+                {
+                    <div class="rounded-md border border-ink-200 bg-ink-50 p-3 text-xs text-ink-600">
+                        <div class="font-semibold text-ink-800">@selectedFile.Name</div>
+                        <div>@(selectedFile.Size / 1024) KB</div>
+                    </div>
+                }
+                <button class="cp-button cp-button-primary w-full" disabled="@(!CanUpload)" @onclick="UploadAsync">
+                    <i class="fa-solid fa-upload" aria-hidden="true"></i>
+                    Submit import
+                </button>
+                <div class="border-t border-ink-200 pt-4 text-sm">
+                    <div class="font-semibold text-ink-800">CSV helpers</div>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <a class="cp-button cp-button-secondary" href="commerce-admin/categories">
+                            <i class="fa-solid fa-sitemap" aria-hidden="true"></i>
+                            Category slugs
+                        </a>
+                        <a class="cp-button cp-button-secondary" href="commerce-admin/variation-templates">
+                            <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+                            Template slugs
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cp-card overflow-hidden">
+            <div class="flex flex-col gap-3 border-b border-ink-200 p-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h2 class="text-sm font-semibold text-ink-900">Import jobs</h2>
+                    <p class="text-xs text-ink-500">Open a job to inspect row errors and media task status.</p>
+                </div>
+                <select class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="statusFilter">
+                    <option value="">All statuses</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Running">Running</option>
+                    <option value="Completed">Completed</option>
+                    <option value="CompletedWithErrors">Completed with errors</option>
+                    <option value="Failed">Failed</option>
+                </select>
+            </div>
+
+            @if (!HasStore)
+            {
+                <div class="p-8 text-center text-sm text-ink-500">Select a store to load product imports.</div>
+            }
+            else if (isLoading)
+            {
+                <div class="p-8 text-center text-sm text-ink-500">Loading import jobs...</div>
+            }
+            else if (jobs.Count == 0)
+            {
+                <div class="p-8 text-center text-sm text-ink-500">No import jobs found.</div>
+            }
+            else
+            {
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-ink-200 text-left text-sm">
+                        <thead class="bg-ink-50 text-xs font-semibold uppercase text-ink-500">
+                            <tr>
+                                <th class="px-4 py-3">File</th>
+                                <th class="px-4 py-3">Status</th>
+                                <th class="px-4 py-3">Rows</th>
+                                <th class="px-4 py-3">Media</th>
+                                <th class="px-4 py-3">Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-ink-100">
+                            @foreach (var job in jobs)
+                            {
+                                <tr class="cursor-pointer hover:bg-ink-50" @onclick="() => OpenJobAsync(job.PublicId)">
+                                    <td class="px-4 py-3">
+                                        <div class="font-semibold text-ink-900">@job.FileName</div>
+                                        <div class="text-xs text-ink-500">@job.Mode · @job.FileHash</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <StatusBadge Text="@job.Status" Tone="@StatusTone(job.Status)" />
+                                    </td>
+                                    <td class="px-4 py-3 text-ink-600">@job.TotalRows total · @job.CreatedCount created · @job.UpdatedCount updated · @job.FailedCount failed</td>
+                                    <td class="px-4 py-3 text-ink-600">@job.MediaQueuedCount queued</td>
+                                    <td class="px-4 py-3 text-ink-500">@job.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<RightDrawer IsOpen="@isDrawerOpen" IsOpenChanged="OnDrawerChanged" Title="Import job" Subtitle="@selectedJob?.Job.FileName" Eyebrow="Product Import">
+    @if (selectedJob is null)
+    {
+        <div class="text-sm text-ink-500">No job selected.</div>
+    }
+    else
+    {
+        <div class="space-y-5">
+            <div class="grid gap-3 md:grid-cols-4">
+                <div class="rounded-md border border-ink-200 bg-ink-50 p-3">
+                    <div class="text-xs font-semibold uppercase text-ink-500">Total</div>
+                    <div class="mt-1 text-xl font-bold text-ink-900">@selectedJob.Job.TotalRows</div>
+                </div>
+                <div class="rounded-md border border-green-200 bg-green-50 p-3">
+                    <div class="text-xs font-semibold uppercase text-green-700">Created</div>
+                    <div class="mt-1 text-xl font-bold text-green-700">@selectedJob.Job.CreatedCount</div>
+                </div>
+                <div class="rounded-md border border-blue-200 bg-blue-50 p-3">
+                    <div class="text-xs font-semibold uppercase text-blue-800">Updated</div>
+                    <div class="mt-1 text-xl font-bold text-blue-800">@selectedJob.Job.UpdatedCount</div>
+                </div>
+                <div class="rounded-md border border-red-200 bg-red-50 p-3">
+                    <div class="text-xs font-semibold uppercase text-red-700">Failed</div>
+                    <div class="mt-1 text-xl font-bold text-red-700">@selectedJob.Job.FailedCount</div>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button class="cp-button cp-button-secondary" @onclick="DownloadSelectedJobErrorsAsync">
+                    <i class="fa-solid fa-file-csv" aria-hidden="true"></i>
+                    Download error CSV
+                </button>
+            </div>
+
+            <div class="overflow-hidden rounded-md border border-ink-200">
+                <table class="min-w-full divide-y divide-ink-200 text-left text-sm">
+                    <thead class="bg-ink-50 text-xs font-semibold uppercase text-ink-500">
+                        <tr>
+                            <th class="px-4 py-3">Row</th>
+                            <th class="px-4 py-3">SKU</th>
+                            <th class="px-4 py-3">Status</th>
+                            <th class="px-4 py-3">Message</th>
+                            <th class="px-4 py-3">Media</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-ink-100">
+                        @foreach (var row in rows)
+                        {
+                            <tr>
+                                <td class="px-4 py-3 text-ink-600">@row.RowNumber</td>
+                                <td class="px-4 py-3 font-mono text-xs text-ink-700">@row.Sku</td>
+                                <td class="px-4 py-3"><StatusBadge Text="@row.Status" Tone="@StatusTone(row.Status)" /></td>
+                                <td class="px-4 py-3 text-ink-600">@FirstNonEmpty(row.ErrorMessage, row.ErrorJson, "-")</td>
+                                <td class="px-4 py-3 text-ink-600">@row.MediaStatus</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</RightDrawer>
+
+@code {
+    private readonly List<StoreSummary> stores = [];
+    private readonly List<ProductImportJobDto> jobs = [];
+    private readonly List<ProductImportRowDto> rows = [];
+    private Guid? selectedStorePublicId;
+    private string uploadMode = ProductImportModes.CreateOnly;
+    private string? statusFilter;
+    private IBrowserFile? selectedFile;
+    private ProductImportJobDetailDto? selectedJob;
+    private bool isLoading;
+    private bool isSaving;
+    private bool isDrawerOpen;
+    private string? errorMessage;
+    private string? successMessage;
+
+    private bool HasStore => selectedStorePublicId.HasValue && selectedStorePublicId.Value != Guid.Empty;
+
+    private bool CanUpload => HasStore && selectedFile is not null && !isSaving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStoresAsync();
+    }
+
+    private async Task LoadStoresAsync()
+    {
+        try
+        {
+            var response = await StoreClient.ListAsync(status: "active");
+            stores.Clear();
+            stores.AddRange(response.Items);
+            selectedStorePublicId ??= stores.FirstOrDefault()?.PublicId;
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        try
+        {
+            var result = await CatalogClient.ListProductImportsAsync(
+                selectedStorePublicId!.Value,
+                new ProductImportJobListQuery(statusFilter, Take: 100));
+
+            if (!result.Success)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            jobs.Clear();
+            jobs.AddRange(result.Data?.Items ?? []);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OnFileSelected(InputFileChangeEventArgs args)
+    {
+        selectedFile = args.File;
+    }
+
+    private async Task UploadAsync()
+    {
+        if (!CanUpload || selectedFile is null)
+        {
+            return;
+        }
+
+        isSaving = true;
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            await using var stream = selectedFile.OpenReadStream(5 * 1024 * 1024);
+            var result = await CatalogClient.UploadProductImportAsync(
+                selectedStorePublicId!.Value,
+                stream,
+                selectedFile.Name,
+                uploadMode);
+
+            if (!result.Success)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            successMessage = result.Message;
+            selectedFile = null;
+            await LoadAsync();
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task DownloadTemplateAsync()
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        var result = await CatalogClient.DownloadProductImportTemplateAsync(selectedStorePublicId!.Value);
+        await DownloadAsync(result, "product-import-template.csv");
+    }
+
+    private async Task OpenJobAsync(Guid jobPublicId)
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        var detailResult = await CatalogClient.GetProductImportAsync(selectedStorePublicId!.Value, jobPublicId);
+        if (!detailResult.Success || detailResult.Data is null)
+        {
+            errorMessage = detailResult.Message;
+            return;
+        }
+
+        selectedJob = detailResult.Data;
+        rows.Clear();
+        rows.AddRange(selectedJob.RecentRows);
+        var rowsResult = await CatalogClient.ListProductImportRowsAsync(
+            selectedStorePublicId.Value,
+            jobPublicId,
+            new ProductImportRowsQuery(Take: 100));
+
+        if (rowsResult.Success)
+        {
+            rows.Clear();
+            rows.AddRange(rowsResult.Data?.Items ?? []);
+        }
+
+        isDrawerOpen = true;
+    }
+
+    private async Task DownloadSelectedJobErrorsAsync()
+    {
+        if (!HasStore || selectedJob is null)
+        {
+            return;
+        }
+
+        var result = await CatalogClient.DownloadProductImportErrorsAsync(selectedStorePublicId!.Value, selectedJob.Job.PublicId);
+        await DownloadAsync(result, $"product-import-{selectedJob.Job.PublicId:D}-errors.csv");
+    }
+
+    private async Task DownloadAsync(ControlPlaneFileResult result, string fallbackFileName)
+    {
+        if (!result.Success || result.Content is null)
+        {
+            errorMessage = result.Message;
+            return;
+        }
+
+        await JSRuntime.InvokeVoidAsync(
+            "controlPlaneDownloads.downloadBytes",
+            result.FileName ?? fallbackFileName,
+            result.ContentType ?? "text/csv",
+            result.Content);
+    }
+
+    private Task OnDrawerChanged(bool value)
+    {
+        isDrawerOpen = value;
+        return Task.CompletedTask;
+    }
+
+    private static string StatusTone(string? status)
+    {
+        return status?.ToLowerInvariant() switch
+        {
+            "completed" or "succeeded" or "created" or "updated" => "success",
+            "completedwitherrors" or "pending" or "running" or "queued" => "warning",
+            "failed" => "danger",
+            _ => "neutral",
+        };
+    }
+
+    private static string FirstNonEmpty(params string?[] values)
+    {
+        return values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)) ?? string.Empty;
+    }
+}
