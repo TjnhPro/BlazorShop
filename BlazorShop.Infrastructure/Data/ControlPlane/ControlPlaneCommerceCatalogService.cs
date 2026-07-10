@@ -5,6 +5,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using System.Text.Json;
 
     using BlazorShop.Application.ControlPlane.Catalog;
+    using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.DTOs.Admin.Inventory;
     using BlazorShop.Application.DTOs.Category;
@@ -96,6 +97,58 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 storePublicId,
                 HttpMethod.Delete,
                 $"api/commerce/admin/products/{productId:D}",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<ProductImportUploadResponse>> UploadProductImportAsync(
+            Guid storePublicId,
+            ProductImportUploadRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendMultipartAsync<ProductImportUploadResponse>(
+                storePublicId,
+                "api/commerce/admin/products/import",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<ProductImportJobListResponse>> ListProductImportsAsync(
+            Guid storePublicId,
+            ProductImportJobListQuery query,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<ProductImportJobListResponse>(
+                storePublicId,
+                HttpMethod.Get,
+                "api/commerce/admin/products/imports" + BuildProductImportQuery(query),
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<ProductImportJobDetailDto>> GetProductImportAsync(
+            Guid storePublicId,
+            Guid jobPublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<ProductImportJobDetailDto>(
+                storePublicId,
+                HttpMethod.Get,
+                $"api/commerce/admin/products/imports/{jobPublicId:D}",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<ProductImportRowsResponse>> ListProductImportRowsAsync(
+            Guid storePublicId,
+            Guid jobPublicId,
+            ProductImportRowsQuery query,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<ProductImportRowsResponse>(
+                storePublicId,
+                HttpMethod.Get,
+                $"api/commerce/admin/products/imports/{jobPublicId:D}/rows" + BuildProductImportRowsQuery(query),
                 null,
                 cancellationToken);
         }
@@ -423,6 +476,76 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             }
         }
 
+        private async Task<ControlPlaneCommerceCatalogResult<TPayload>> SendMultipartAsync<TPayload>(
+            Guid storePublicId,
+            string path,
+            ProductImportUploadRequest upload,
+            CancellationToken cancellationToken)
+        {
+            var store = await this.LoadStoreAsync(storePublicId, cancellationToken);
+            var validation = ValidateStoreForRemoteCall(store);
+            if (validation is not null)
+            {
+                return validation.ToResult<TPayload>();
+            }
+
+            try
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Post, AppendPath(GetControlApiUrl(store!.Node!), path));
+                request.Headers.TryAddWithoutValidation("X-Node-Key", store.Node!.NodeKey);
+                request.Headers.TryAddWithoutValidation("X-Node-Secret", store.Node.NodeSecret);
+                request.Headers.TryAddWithoutValidation("X-Store-Key", store.StoreKey);
+
+                using var form = new MultipartFormDataContent();
+                using var fileContent = new StreamContent(upload.Content);
+                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/csv");
+                form.Add(fileContent, "file", string.IsNullOrWhiteSpace(upload.FileName) ? "products.csv" : upload.FileName);
+                form.Add(new StringContent(string.IsNullOrWhiteSpace(upload.Mode) ? ProductImportModes.CreateOnly : upload.Mode), "mode");
+                request.Content = form;
+
+                using var response = await this.httpClient.SendAsync(request, cancellationToken);
+                var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                if (string.IsNullOrWhiteSpace(responseBody))
+                {
+                    return Failure<TPayload>("Commerce Node returned an empty response.", ControlPlaneCommerceCatalogFailure.RemoteFailure, (int)response.StatusCode);
+                }
+
+                var envelope = JsonSerializer.Deserialize<CommerceNodeEnvelope<TPayload>>(responseBody, SerializerOptions);
+                if (envelope is null)
+                {
+                    return Failure<TPayload>("Commerce Node returned a malformed response envelope.", ControlPlaneCommerceCatalogFailure.RemoteFailure, (int)response.StatusCode);
+                }
+
+                if (!response.IsSuccessStatusCode || !envelope.Success)
+                {
+                    return new ControlPlaneCommerceCatalogResult<TPayload>(
+                        false,
+                        string.IsNullOrWhiteSpace(envelope.Message) ? "Commerce Node catalog request failed." : envelope.Message,
+                        envelope.Data,
+                        ToFailure(response.StatusCode),
+                        (int)response.StatusCode);
+                }
+
+                return new ControlPlaneCommerceCatalogResult<TPayload>(
+                    true,
+                    envelope.Message,
+                    envelope.Data,
+                    HttpStatusCode: (int)response.StatusCode);
+            }
+            catch (TaskCanceledException)
+            {
+                return Failure<TPayload>("Commerce Node catalog request timed out.", ControlPlaneCommerceCatalogFailure.RemoteFailure);
+            }
+            catch (HttpRequestException ex)
+            {
+                return Failure<TPayload>(ex.Message, ControlPlaneCommerceCatalogFailure.RemoteFailure);
+            }
+            catch (JsonException)
+            {
+                return Failure<TPayload>("Commerce Node returned malformed JSON.", ControlPlaneCommerceCatalogFailure.RemoteFailure);
+            }
+        }
+
         private async Task<StoreRegistry?> LoadStoreAsync(Guid publicId, CancellationToken cancellationToken)
         {
             return await this.dbContext.Stores
@@ -505,6 +628,30 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             };
 
             AddIfPresent(values, "searchTerm", query.SearchTerm);
+            return ToQueryString(values);
+        }
+
+        private static string BuildProductImportQuery(ProductImportJobListQuery query)
+        {
+            var values = new List<KeyValuePair<string, string>>
+            {
+                new("skip", Math.Max(0, query.Skip).ToString(CultureInfo.InvariantCulture)),
+                new("take", Math.Clamp(query.Take, 1, 200).ToString(CultureInfo.InvariantCulture)),
+            };
+
+            AddIfPresent(values, "status", query.Status);
+            return ToQueryString(values);
+        }
+
+        private static string BuildProductImportRowsQuery(ProductImportRowsQuery query)
+        {
+            var values = new List<KeyValuePair<string, string>>
+            {
+                new("skip", Math.Max(0, query.Skip).ToString(CultureInfo.InvariantCulture)),
+                new("take", Math.Clamp(query.Take, 1, 200).ToString(CultureInfo.InvariantCulture)),
+            };
+
+            AddIfPresent(values, "status", query.Status);
             return ToQueryString(values);
         }
 

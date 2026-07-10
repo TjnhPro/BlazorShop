@@ -1,6 +1,7 @@
 namespace BlazorShop.Application.ControlPlane.Catalog
 {
     using BlazorShop.Application.DTOs.Admin.Inventory;
+    using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.DTOs.Category;
     using BlazorShop.Application.DTOs.Product;
@@ -33,6 +34,27 @@ namespace BlazorShop.Application.ControlPlane.Catalog
         Task<ControlPlaneCommerceCatalogResult<object>> ArchiveProductAsync(
             Guid storePublicId,
             Guid productId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<ProductImportUploadResponse>> UploadProductImportAsync(
+            Guid storePublicId,
+            ProductImportUploadRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<ProductImportJobListResponse>> ListProductImportsAsync(
+            Guid storePublicId,
+            ProductImportJobListQuery query,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<ProductImportJobDetailDto>> GetProductImportAsync(
+            Guid storePublicId,
+            Guid jobPublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<ProductImportRowsResponse>> ListProductImportRowsAsync(
+            Guid storePublicId,
+            Guid jobPublicId,
+            ProductImportRowsQuery query,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneCommerceCatalogResult<ProductMediaListResponse>> ListProductMediaAsync(

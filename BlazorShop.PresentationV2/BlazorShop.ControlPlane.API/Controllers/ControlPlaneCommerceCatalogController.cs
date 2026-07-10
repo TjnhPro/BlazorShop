@@ -2,6 +2,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
 {
     using BlazorShop.Application.ControlPlane.Catalog;
     using BlazorShop.Application.ControlPlane.Security;
+    using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.DTOs.Admin.Inventory;
     using BlazorShop.Application.DTOs.Category;
@@ -66,6 +67,50 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> ArchiveProduct(Guid storePublicId, Guid productId, CancellationToken cancellationToken)
         {
             return ToActionResult(await this.catalogService.ArchiveProductAsync(storePublicId, productId, cancellationToken));
+        }
+
+        [HttpPost("products/import")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        [RequestSizeLimit(5 * 1024 * 1024)]
+        public async Task<IActionResult> UploadProductImport(
+            Guid storePublicId,
+            IFormFile file,
+            [FromForm] string? mode,
+            CancellationToken cancellationToken)
+        {
+            await using var stream = file.OpenReadStream();
+            return ToActionResult(await this.catalogService.UploadProductImportAsync(
+                storePublicId,
+                new ProductImportUploadRequest(file.FileName, mode, stream, file.Length, this.User.Identity?.Name),
+                cancellationToken));
+        }
+
+        [HttpGet("products/imports")]
+        public async Task<IActionResult> ListProductImports(
+            Guid storePublicId,
+            [FromQuery] ProductImportJobListQuery query,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ListProductImportsAsync(storePublicId, query, cancellationToken));
+        }
+
+        [HttpGet("products/imports/{jobPublicId:guid}")]
+        public async Task<IActionResult> GetProductImport(
+            Guid storePublicId,
+            Guid jobPublicId,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.GetProductImportAsync(storePublicId, jobPublicId, cancellationToken));
+        }
+
+        [HttpGet("products/imports/{jobPublicId:guid}/rows")]
+        public async Task<IActionResult> ListProductImportRows(
+            Guid storePublicId,
+            Guid jobPublicId,
+            [FromQuery] ProductImportRowsQuery query,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ListProductImportRowsAsync(storePublicId, jobPublicId, query, cancellationToken));
         }
 
         [HttpGet("products/{productId:guid}/media")]
