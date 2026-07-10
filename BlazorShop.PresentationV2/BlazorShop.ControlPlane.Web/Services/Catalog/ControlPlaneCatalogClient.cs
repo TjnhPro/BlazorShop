@@ -292,7 +292,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.GetPrivateAsync<PagedResult<GetCatalogProduct>>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/products{BuildProductQuery(query)}",
+                CommerceRoute(storePublicId, "products") + BuildProductQuery(query),
                 "Unable to load catalog products.",
                 cancellationToken);
         }
@@ -303,7 +303,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.GetPrivateAsync<GetProduct>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}",
+                CommerceRoute(storePublicId, $"products/{productId:D}"),
                 "Unable to load product.",
                 cancellationToken);
         }
@@ -314,7 +314,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.PostPrivateAsync<CreateProduct, object>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/products",
+                CommerceRoute(storePublicId, "products"),
                 request,
                 "Unable to create product.",
                 cancellationToken);
@@ -327,7 +327,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.PutPrivateAsync<UpdateProduct, object>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}",
+                CommerceRoute(storePublicId, $"products/{productId:D}"),
                 request,
                 "Unable to update product.",
                 cancellationToken);
@@ -339,7 +339,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.DeletePrivateAsync<object>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}",
+                CommerceRoute(storePublicId, $"products/{productId:D}"),
                 "Unable to archive product.",
                 cancellationToken);
         }
@@ -449,7 +449,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.GetPrivateAsync<ProductMediaListResponse>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}/media",
+                CommerceRoute(storePublicId, $"products/{productId:D}/media"),
                 "Unable to load product media.",
                 cancellationToken);
         }
@@ -461,7 +461,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.PostPrivateAsync<ImportProductMediaRequest, ImportProductMediaResponse>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}/media/import",
+                CommerceRoute(storePublicId, $"products/{productId:D}/media/import"),
                 request,
                 "Unable to import product media.",
                 cancellationToken);
@@ -474,7 +474,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.PutPrivateAsync<UpdateProductMediaOrderRequest, ProductMediaListResponse>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}/media/order",
+                CommerceRoute(storePublicId, $"products/{productId:D}/media/order"),
                 request,
                 "Unable to update product media order.",
                 cancellationToken);
@@ -487,7 +487,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.PostPrivateAsync<ProductMediaDto>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}/media/{mediaPublicId:D}/primary",
+                CommerceRoute(storePublicId, $"products/{productId:D}/media/{mediaPublicId:D}/primary"),
                 "Unable to set primary product media.",
                 cancellationToken);
         }
@@ -499,7 +499,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.DeletePrivateAsync<ProductMediaListResponse>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}/media/{mediaPublicId:D}",
+                CommerceRoute(storePublicId, $"products/{productId:D}/media/{mediaPublicId:D}"),
                 "Unable to delete product media.",
                 cancellationToken);
         }
@@ -511,7 +511,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.PostPrivateAsync<ImportProductMediaResponse>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}/media/{mediaPublicId:D}/retry",
+                CommerceRoute(storePublicId, $"products/{productId:D}/media/{mediaPublicId:D}/retry"),
                 "Unable to retry product media.",
                 cancellationToken);
         }
@@ -534,7 +534,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.GetPrivateAsync<IReadOnlyList<GetCategory>>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/categories",
+                CommerceRoute(storePublicId, "categories"),
                 "Unable to load categories.",
                 cancellationToken);
         }
@@ -544,7 +544,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.GetPrivateAsync<IReadOnlyList<GetCategoryTreeNode>>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/categories/tree",
+                CommerceRoute(storePublicId, "categories/tree"),
                 "Unable to load category tree.",
                 cancellationToken);
         }
@@ -555,7 +555,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.PostPrivateAsync<CreateCategory, object>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/categories",
+                CommerceRoute(storePublicId, "categories"),
                 request,
                 "Unable to create category.",
                 cancellationToken);
@@ -568,7 +568,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.PutPrivateAsync<UpdateCategory, object>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/categories/{categoryId:D}",
+                CommerceRoute(storePublicId, $"categories/{categoryId:D}"),
                 request,
                 "Unable to update category.",
                 cancellationToken);
@@ -580,7 +580,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.DeletePrivateAsync<object>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/categories/{categoryId:D}",
+                CommerceRoute(storePublicId, $"categories/{categoryId:D}"),
                 "Unable to archive category.",
                 cancellationToken);
         }
@@ -591,7 +591,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.GetPrivateAsync<IReadOnlyList<GetProductVariant>>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}/variants",
+                CommerceRoute(storePublicId, $"products/{productId:D}/variants"),
                 "Unable to load variants.",
                 cancellationToken);
         }
@@ -603,7 +603,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.PostPrivateAsync<CreateProductVariant, object>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}/variants",
+                CommerceRoute(storePublicId, $"products/{productId:D}/variants"),
                 request,
                 "Unable to create variant.",
                 cancellationToken);
@@ -617,7 +617,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.PutPrivateAsync<UpdateProductVariant, object>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}/variants/{variantId:D}",
+                CommerceRoute(storePublicId, $"products/{productId:D}/variants/{variantId:D}"),
                 request,
                 "Unable to update variant.",
                 cancellationToken);
@@ -630,7 +630,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.DeletePrivateAsync<object>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/products/{productId:D}/variants/{variantId:D}",
+                CommerceRoute(storePublicId, $"products/{productId:D}/variants/{variantId:D}"),
                 "Unable to delete variant.",
                 cancellationToken);
         }
@@ -641,7 +641,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.GetPrivateAsync<PagedResult<AdminInventoryItemDto>>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/inventory{BuildInventoryQuery(query)}",
+                CommerceRoute(storePublicId, "inventory") + BuildInventoryQuery(query),
                 "Unable to load inventory.",
                 cancellationToken);
         }
@@ -653,7 +653,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.PutPrivateAsync<UpdateProductStockDto, AdminInventoryItemDto>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/inventory/products/{productId:D}",
+                CommerceRoute(storePublicId, $"products/{productId:D}/inventory"),
                 request,
                 "Unable to update product stock.",
                 cancellationToken);
@@ -666,7 +666,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.PutPrivateAsync<UpdateVariantStockDto, AdminInventoryVariantDto>(
-                $"api/control-plane/stores/{storePublicId:D}/catalog/inventory/variants/{variantId:D}",
+                CommerceRoute(storePublicId, $"inventory/variants/{variantId:D}"),
                 request,
                 "Unable to update variant stock.",
                 cancellationToken);

@@ -327,12 +327,14 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpGet("products/{productId:guid}/variants")]
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/products/{productId:guid}/variants")]
         public async Task<IActionResult> ListVariants(Guid storePublicId, Guid productId, CancellationToken cancellationToken)
         {
             return ToActionResult(await this.catalogService.ListVariantsAsync(storePublicId, productId, cancellationToken));
         }
 
         [HttpPost("products/{productId:guid}/variants")]
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/products/{productId:guid}/variants")]
         [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
         public async Task<IActionResult> CreateVariant(
             Guid storePublicId,
@@ -344,6 +346,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpPut("products/{productId:guid}/variants/{variantId:guid}")]
+        [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/products/{productId:guid}/variants/{variantId:guid}")]
         [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
         public async Task<IActionResult> UpdateVariant(
             Guid storePublicId,
@@ -356,6 +359,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpDelete("products/{productId:guid}/variants/{variantId:guid}")]
+        [HttpDelete("~/api/controlplane/commerce/stores/{storePublicId:guid}/products/{productId:guid}/variants/{variantId:guid}")]
         [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
         public async Task<IActionResult> DeleteVariant(
             Guid storePublicId,
@@ -367,6 +371,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpGet("inventory")]
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/inventory")]
         public async Task<IActionResult> QueryInventory(
             Guid storePublicId,
             [FromQuery] AdminInventoryQueryDto query,
@@ -388,6 +393,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpPut("inventory/variants/{variantId:guid}")]
+        [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/inventory/variants/{variantId:guid}")]
         [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/products/{productId:guid}/variants/{variantId:guid}/inventory")]
         [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
         public async Task<IActionResult> UpdateVariantStock(
