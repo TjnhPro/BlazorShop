@@ -598,18 +598,18 @@ Review/fix gate:
 
 ### Phase 5 - CommerceNode APIs
 
-- [ ] Add `CommerceProductMediaController`.
-- [ ] Add list/import/order/primary/delete/retry endpoints.
-- [ ] Add public `GET /media/products/{mediaPublicId}` resolver.
-- [ ] Validate resize query params.
-- [ ] Return envelope responses for admin endpoints.
-- [ ] Return correct image response/cache headers for public media endpoint.
+- [x] Add `CommerceProductMediaController`.
+- [x] Add list/import/order/primary/delete/retry endpoints.
+- [x] Add public `GET /media/products/{mediaPublicId}` resolver.
+- [x] Validate resize query params.
+- [x] Return envelope responses for admin endpoints.
+- [x] Return correct image response/cache headers for public media endpoint.
 
 Review/fix gate:
 
-- [ ] Verify admin APIs require existing Commerce admin security.
-- [ ] Verify public media route is host/store scoped.
-- [ ] Verify Store A cannot read Store B media by guessing GUID.
+- [x] Verify admin APIs require existing Commerce admin security.
+- [x] Verify public media route is host/store scoped.
+- [x] Verify Store A cannot read Store B media by guessing GUID.
 
 ### Phase 6 - Docker, Nginx, and imgproxy
 
