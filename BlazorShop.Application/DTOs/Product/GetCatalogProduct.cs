@@ -38,8 +38,7 @@ namespace BlazorShop.Application.DTOs.Product
 
         public bool InStock { get; set; }
 
-        [Required]
-        public Guid CategoryId { get; set; }
+        public Guid? CategoryId { get; set; }
 
         public string? CategoryName { get; set; }
 

@@ -28,7 +28,7 @@ namespace BlazorShop.Domain.Contracts
 
         public bool InStock { get; init; }
 
-        public Guid CategoryId { get; init; }
+        public Guid? CategoryId { get; init; }
 
         public string? CategoryName { get; init; }
 

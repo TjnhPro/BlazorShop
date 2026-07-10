@@ -95,7 +95,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                         return Enumerable.Empty<Product>();
                     }
 
-                    return await this.GetRelatedProductsByCategoryAsync(productId, product.CategoryId, count);
+                    return product.CategoryId.HasValue
+                        ? await this.GetRelatedProductsByCategoryAsync(productId, product.CategoryId.Value, count)
+                        : Enumerable.Empty<Product>();
                 }
 
                 var products = await this.context.Products

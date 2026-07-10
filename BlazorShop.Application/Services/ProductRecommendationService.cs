@@ -79,9 +79,15 @@ namespace BlazorShop.Application.Services
 
                 if (!relatedProducts.Any())
                 {
+                    if (!product.CategoryId.HasValue)
+                    {
+                        _logger.LogInformation("Product has no category, skipping category-based recommendations");
+                        return Enumerable.Empty<GetProductRecommendation>();
+                    }
+
                     _logger.LogInformation("No order-based recommendations, using category-based");
                     relatedProducts = await _recommendationRepository
-                      .GetRelatedProductsByCategoryAsync(productId, product.CategoryId, _options.MaxRecommendations);
+                      .GetRelatedProductsByCategoryAsync(productId, product.CategoryId.Value, _options.MaxRecommendations);
                 }
 
                 var recommendations = _mapper.Map<IEnumerable<GetProductRecommendation>>(relatedProducts);

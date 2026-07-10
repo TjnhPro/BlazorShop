@@ -344,7 +344,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
 
             if (categoryIds is { Count: > 0 })
             {
-                products = products.Where(product => categoryIds.Contains(product.CategoryId));
+                products = products.Where(product => product.CategoryId.HasValue && categoryIds.Contains(product.CategoryId.Value));
             }
             else if (query.CategoryId.HasValue && query.CategoryId.Value != Guid.Empty)
             {
