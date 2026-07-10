@@ -8,6 +8,8 @@
     {
         Task<IEnumerable<GetCategory>> GetAllAsync();
 
+        Task<IReadOnlyList<GetCategoryTreeNode>> GetTreeAsync();
+
         Task<GetCategory> GetByIdAsync(Guid id);
 
         Task<ServiceResponse> AddAsync(CreateCategory category);

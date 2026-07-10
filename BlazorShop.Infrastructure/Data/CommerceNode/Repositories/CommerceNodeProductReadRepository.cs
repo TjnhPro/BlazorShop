@@ -193,6 +193,17 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
             return await this.context.Products
                 .AsNoTracking()
                 .AnyAsync(product => product.Slug == slug
+                    && product.ArchivedAt == null
+                    && (!excludedProductId.HasValue || product.Id != excludedProductId.Value));
+        }
+
+        public async Task<bool> ProductSkuExistsAsync(string sku, Guid? storeId, Guid? excludedProductId = null)
+        {
+            return await this.context.Products
+                .AsNoTracking()
+                .AnyAsync(product => product.Sku == sku
+                    && product.StoreId == storeId
+                    && product.ArchivedAt == null
                     && (!excludedProductId.HasValue || product.Id != excludedProductId.Value));
         }
 

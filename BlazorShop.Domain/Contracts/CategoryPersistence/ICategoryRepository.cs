@@ -8,6 +8,8 @@
 
         Task<IEnumerable<Category>> GetPublishedCategoriesAsync();
 
+        Task<IReadOnlyList<Category>> GetCategoriesForTreeAsync();
+
         Task<IReadOnlyList<PublishedCategorySitemapEntryReadModel>> GetPublishedCategorySitemapEntriesAsync();
 
         Task<Category?> GetPublishedCategoryByIdAsync(Guid id);
@@ -15,5 +17,9 @@
         Task<Category?> GetPublishedCategoryBySlugAsync(string slug);
 
         Task<bool> CategorySlugExistsAsync(string slug, Guid? excludedCategoryId = null);
+
+        Task<bool> HasActiveChildrenAsync(Guid id);
+
+        Task<bool> HasActiveProductsAsync(Guid id);
     }
 }

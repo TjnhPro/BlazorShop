@@ -43,6 +43,12 @@
             return result.Any() ? _mapper.Map<IEnumerable<GetCategory>>(result) : new List<GetCategory>();
         }
 
+        public async Task<IReadOnlyList<GetCategoryTreeNode>> GetTreeAsync()
+        {
+            var categories = await _categoryRepository.GetCategoriesForTreeAsync();
+            return BuildTree(categories);
+        }
+
         public async Task<GetCategory> GetByIdAsync(Guid id)
         {
             var result = await _genericRepository.GetByIdAsync(id);
@@ -53,6 +59,14 @@
         {
             var entity = _mapper.Map<Category>(category);
             entity.StoreId ??= await ResolveCurrentStoreIdAsync();
+
+            var validation = await ValidateParentAsync(entity.Id, entity.ParentCategoryId, entity.StoreId);
+            if (!validation.Success)
+            {
+                return validation;
+            }
+
+            NormalizeCategory(entity);
             int result = await _genericRepository.AddAsync(entity);
 
             if (result <= 0)
@@ -60,7 +74,7 @@
                 return new ServiceResponse(false, "Category not added");
             }
 
-            await LogAsync("Category.Created", entity.Id, $"Category {entity.Name} created.", new { entity.Name });
+            await LogAsync("Category.Created", entity.Id, $"Category {entity.Name} created.", new { entity.Name, entity.ParentCategoryId, entity.DisplayOrder });
             return new ServiceResponse(true, "Category added successfully");
         }
 
@@ -73,7 +87,17 @@
                 return new ServiceResponse(false, "Category not found");
             }
 
+            var storeId = existingCategory.StoreId;
             _mapper.Map(category, existingCategory);
+            existingCategory.StoreId = storeId;
+
+            var validation = await ValidateParentAsync(existingCategory.Id, existingCategory.ParentCategoryId, existingCategory.StoreId);
+            if (!validation.Success)
+            {
+                return validation;
+            }
+
+            NormalizeCategory(existingCategory);
             int result = await _genericRepository.UpdateAsync(existingCategory);
 
             if (result <= 0)
@@ -81,22 +105,40 @@
                 return new ServiceResponse(false, "Category not found");
             }
 
-            await LogAsync("Category.Updated", existingCategory.Id, $"Category {existingCategory.Name} updated.", new { existingCategory.Name });
+            await LogAsync("Category.Updated", existingCategory.Id, $"Category {existingCategory.Name} updated.", new { existingCategory.Name, existingCategory.ParentCategoryId, existingCategory.DisplayOrder });
             return new ServiceResponse(true, "Category updated successfully");
         }
 
         public async Task<ServiceResponse> DeleteAsync(Guid id)
         {
             var existingCategory = await _genericRepository.GetByIdAsync(id);
-            var result = await _genericRepository.DeleteAsync(id);
+            if (existingCategory is null)
+            {
+                return new ServiceResponse(false, "Category not found");
+            }
+
+            if (await _categoryRepository.HasActiveChildrenAsync(id))
+            {
+                return new ServiceResponse(false, "Category has active child categories.");
+            }
+
+            if (await _categoryRepository.HasActiveProductsAsync(id))
+            {
+                return new ServiceResponse(false, "Category has active products.");
+            }
+
+            existingCategory.ArchivedAt = DateTime.UtcNow;
+            existingCategory.UpdatedAt = DateTime.UtcNow;
+            existingCategory.IsPublished = false;
+            var result = await _genericRepository.UpdateAsync(existingCategory);
 
             if (result <= 0)
             {
                 return new ServiceResponse(false, "Category not found");
             }
 
-            await LogAsync("Category.Deleted", id, $"Category {existingCategory?.Name ?? id.ToString()} deleted.", new { existingCategory?.Name });
-            return new ServiceResponse(true, "Category deleted successfully");
+            await LogAsync("Category.Archived", id, $"Category {existingCategory.Name ?? id.ToString()} archived.", new { existingCategory.Name });
+            return new ServiceResponse(true, "Category archived successfully");
         }
 
         public async Task<IEnumerable<GetProduct>> GetProductsByCategoryAsync(Guid id)
@@ -131,6 +173,96 @@
 
             var result = await _storeContext.GetCurrentStoreIdAsync();
             return result.Success ? result.Payload : null;
+        }
+
+        private async Task<ServiceResponse> ValidateParentAsync(Guid categoryId, Guid? parentCategoryId, Guid? storeId)
+        {
+            if (!parentCategoryId.HasValue)
+            {
+                return new ServiceResponse(true, string.Empty);
+            }
+
+            if (parentCategoryId.Value == categoryId)
+            {
+                return new ServiceResponse(false, "Category cannot be its own parent.");
+            }
+
+            var parent = await _genericRepository.GetByIdAsync(parentCategoryId.Value);
+            if (parent is null || parent.ArchivedAt != null)
+            {
+                return new ServiceResponse(false, "Parent category not found.");
+            }
+
+            if (parent.StoreId != storeId)
+            {
+                return new ServiceResponse(false, "Parent category must belong to the same store.");
+            }
+
+            var categories = (await _genericRepository.GetAllAsync())
+                .Where(category => category.StoreId == storeId && category.ArchivedAt == null)
+                .ToDictionary(category => category.Id);
+            var currentParentId = parent.ParentCategoryId;
+
+            while (currentParentId.HasValue)
+            {
+                if (currentParentId.Value == categoryId)
+                {
+                    return new ServiceResponse(false, "Category parent chain cannot be circular.");
+                }
+
+                if (!categories.TryGetValue(currentParentId.Value, out var currentParent))
+                {
+                    break;
+                }
+
+                currentParentId = currentParent.ParentCategoryId;
+            }
+
+            return new ServiceResponse(true, string.Empty);
+        }
+
+        private static void NormalizeCategory(Category category)
+        {
+            category.Name = category.Name?.Trim();
+            category.Image = string.IsNullOrWhiteSpace(category.Image) ? null : category.Image.Trim();
+            category.UpdatedAt = DateTime.UtcNow;
+        }
+
+        private static IReadOnlyList<GetCategoryTreeNode> BuildTree(IReadOnlyList<Category> categories)
+        {
+            var nodes = categories
+                .OrderBy(category => category.DisplayOrder)
+                .ThenBy(category => category.Name)
+                .Select(category => new GetCategoryTreeNode
+                {
+                    Id = category.Id,
+                    ParentCategoryId = category.ParentCategoryId,
+                    Name = category.Name,
+                    Slug = category.IsPublished ? category.Slug : null,
+                    Image = category.Image,
+                    DisplayOrder = category.DisplayOrder,
+                    IsPublished = category.IsPublished,
+                })
+                .ToDictionary(category => category.Id);
+
+            var childrenByParent = nodes.Values
+                .Where(category => category.ParentCategoryId.HasValue)
+                .GroupBy(category => category.ParentCategoryId!.Value)
+                .ToDictionary(group => group.Key, group => group.ToArray());
+
+            foreach (var node in nodes.Values)
+            {
+                if (childrenByParent.TryGetValue(node.Id, out var children))
+                {
+                    node.Children = children;
+                }
+            }
+
+            return nodes.Values
+                .Where(category => !category.ParentCategoryId.HasValue || !nodes.ContainsKey(category.ParentCategoryId.Value))
+                .OrderBy(category => category.DisplayOrder)
+                .ThenBy(category => category.Name)
+                .ToArray();
         }
     }
 }

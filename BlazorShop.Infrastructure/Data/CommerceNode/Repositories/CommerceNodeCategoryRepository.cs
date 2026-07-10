@@ -39,11 +39,26 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
             var scopedCategories = await this.GetCurrentStoreCategoriesAsync();
             var categories = await scopedCategories
                 .AsNoTracking()
-                .Where(category => category.IsPublished && category.Slug != null && category.Slug != string.Empty)
-                .OrderBy(category => category.Name)
+                .Where(category => category.ArchivedAt == null
+                    && category.IsPublished
+                    && category.Slug != null
+                    && category.Slug != string.Empty)
+                .OrderBy(category => category.DisplayOrder)
+                .ThenBy(category => category.Name)
                 .ToListAsync();
 
             return categories.Count > 0 ? categories : [];
+        }
+
+        public async Task<IReadOnlyList<Category>> GetCategoriesForTreeAsync()
+        {
+            var scopedCategories = await this.GetCurrentStoreCategoriesAsync();
+            return await scopedCategories
+                .AsNoTracking()
+                .Where(category => category.ArchivedAt == null)
+                .OrderBy(category => category.DisplayOrder)
+                .ThenBy(category => category.Name)
+                .ToListAsync();
         }
 
         public async Task<IReadOnlyList<PublishedCategorySitemapEntryReadModel>> GetPublishedCategorySitemapEntriesAsync()
@@ -51,8 +66,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
             var scopedCategories = await this.GetCurrentStoreCategoriesAsync();
             return await scopedCategories
                 .AsNoTracking()
-                .Where(category => category.IsPublished && category.Slug != null && category.Slug != string.Empty)
-                .OrderBy(category => category.Name)
+                .Where(category => category.ArchivedAt == null
+                    && category.IsPublished
+                    && category.Slug != null
+                    && category.Slug != string.Empty)
+                .OrderBy(category => category.DisplayOrder)
+                .ThenBy(category => category.Name)
                 .Select(category => new PublishedCategorySitemapEntryReadModel
                 {
                     Slug = category.Slug!,
@@ -72,6 +91,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
             return await scopedCategories
                 .AsNoTracking()
                 .FirstOrDefaultAsync(category => category.Id == id
+                    && category.ArchivedAt == null
                     && category.IsPublished
                     && category.Slug != null
                     && category.Slug != string.Empty);
@@ -83,6 +103,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
             return await scopedCategories
                 .AsNoTracking()
                 .FirstOrDefaultAsync(category => category.IsPublished
+                    && category.ArchivedAt == null
                     && category.Slug == slug);
         }
 
@@ -91,7 +112,24 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
             return await this.context.Categories
                 .AsNoTracking()
                 .AnyAsync(category => category.Slug == slug
+                    && category.ArchivedAt == null
                     && (!excludedCategoryId.HasValue || category.Id != excludedCategoryId.Value));
+        }
+
+        public async Task<bool> HasActiveChildrenAsync(Guid id)
+        {
+            var scopedCategories = await this.GetCurrentStoreCategoriesAsync();
+            return await scopedCategories
+                .AsNoTracking()
+                .AnyAsync(category => category.ParentCategoryId == id && category.ArchivedAt == null);
+        }
+
+        public async Task<bool> HasActiveProductsAsync(Guid id)
+        {
+            var scopedProducts = await this.GetCurrentStoreProductsAsync();
+            return await scopedProducts
+                .AsNoTracking()
+                .AnyAsync(product => product.CategoryId == id && product.ArchivedAt == null);
         }
 
         private async Task<IQueryable<Category>> GetCurrentStoreCategoriesAsync()

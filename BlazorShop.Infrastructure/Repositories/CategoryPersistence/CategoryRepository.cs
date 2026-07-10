@@ -32,19 +32,37 @@
         {
             var categories = await _context.Categories
                 .AsNoTracking()
-                .Where(category => category.IsPublished && category.Slug != null && category.Slug != string.Empty)
-                .OrderBy(category => category.Name)
+                .Where(category => category.ArchivedAt == null
+                    && category.IsPublished
+                    && category.Slug != null
+                    && category.Slug != string.Empty)
+                .OrderBy(category => category.DisplayOrder)
+                .ThenBy(category => category.Name)
                 .ToListAsync();
 
             return categories.Count > 0 ? categories : [];
+        }
+
+        public async Task<IReadOnlyList<Category>> GetCategoriesForTreeAsync()
+        {
+            return await _context.Categories
+                .AsNoTracking()
+                .Where(category => category.ArchivedAt == null)
+                .OrderBy(category => category.DisplayOrder)
+                .ThenBy(category => category.Name)
+                .ToListAsync();
         }
 
         public async Task<IReadOnlyList<PublishedCategorySitemapEntryReadModel>> GetPublishedCategorySitemapEntriesAsync()
         {
             return await _context.Categories
                 .AsNoTracking()
-                .Where(category => category.IsPublished && category.Slug != null && category.Slug != string.Empty)
-                .OrderBy(category => category.Name)
+                .Where(category => category.ArchivedAt == null
+                    && category.IsPublished
+                    && category.Slug != null
+                    && category.Slug != string.Empty)
+                .OrderBy(category => category.DisplayOrder)
+                .ThenBy(category => category.Name)
                 .Select(category => new PublishedCategorySitemapEntryReadModel
                 {
                     Slug = category.Slug!,
@@ -63,6 +81,7 @@
             return await _context.Categories
                 .AsNoTracking()
                 .FirstOrDefaultAsync(category => category.Id == id
+                    && category.ArchivedAt == null
                     && category.IsPublished
                     && category.Slug != null
                     && category.Slug != string.Empty);
@@ -73,6 +92,7 @@
             return await _context.Categories
                 .AsNoTracking()
                 .FirstOrDefaultAsync(category => category.IsPublished
+                    && category.ArchivedAt == null
                     && category.Slug == slug);
         }
 
@@ -81,7 +101,22 @@
             return await _context.Categories
                 .AsNoTracking()
                 .AnyAsync(category => category.Slug == slug
+                    && category.ArchivedAt == null
                     && (!excludedCategoryId.HasValue || category.Id != excludedCategoryId.Value));
+        }
+
+        public async Task<bool> HasActiveChildrenAsync(Guid id)
+        {
+            return await _context.Categories
+                .AsNoTracking()
+                .AnyAsync(category => category.ParentCategoryId == id && category.ArchivedAt == null);
+        }
+
+        public async Task<bool> HasActiveProductsAsync(Guid id)
+        {
+            return await _context.Products
+                .AsNoTracking()
+                .AnyAsync(product => product.CategoryId == id && product.ArchivedAt == null);
         }
     }
 }
