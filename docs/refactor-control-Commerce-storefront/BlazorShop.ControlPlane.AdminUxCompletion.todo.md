@@ -501,39 +501,39 @@ Shipment form:
 
 ### Phase 3 - Product Imports UX
 
-- [ ] Create `/commerce-admin/product-imports`.
-- [ ] Add store selector.
-- [ ] Add download CSV template button.
-- [ ] Add mode selector: `create_only`, `upsert`.
-- [ ] Add CSV upload and submit.
-- [ ] Add job list.
-- [ ] Add job detail drawer.
-- [ ] Add row error table.
-- [ ] Add download error CSV button.
-- [ ] Add quick links to Categories and Variation Templates.
-- [ ] Remove any spreadsheet editor/dry-run/retry-row scope if it appears during implementation.
-- [ ] Commit: `feat(control-plane-web): add product import admin UX`.
+- [x] Create `/commerce-admin/product-imports`.
+- [x] Add store selector.
+- [x] Add download CSV template button.
+- [x] Add mode selector: `create_only`, `upsert`.
+- [x] Add CSV upload and submit.
+- [x] Add job list.
+- [x] Add job detail drawer.
+- [x] Add row error table.
+- [x] Add download error CSV button.
+- [x] Add quick links to Categories and Variation Templates.
+- [x] Remove any spreadsheet editor/dry-run/retry-row scope if it appears during implementation.
+- [x] Commit: `feat(control-plane-web): add product import admin UX`.
 
 ### Phase 4 - Variation Templates UX
 
-- [ ] Create `/commerce-admin/variation-templates`.
-- [ ] Add list with name/slug/status/counts/updated time.
-- [ ] Add copy slug action.
-- [ ] Add drawer for create/edit template.
-- [ ] Add option management.
-- [ ] Add value management.
-- [ ] Implement disable-only behavior in UI.
-- [ ] Show active values before inactive values.
-- [ ] Commit: `feat(control-plane-web): add variation template admin UX`.
+- [x] Create `/commerce-admin/variation-templates`.
+- [x] Add list with name/slug/status/counts/updated time.
+- [x] Add copy slug action.
+- [x] Add drawer for create/edit template.
+- [x] Add option management.
+- [x] Add value management.
+- [x] Implement disable-only behavior in UI.
+- [x] Show active values before inactive values.
+- [x] Commit: `feat(control-plane-web): add variation template admin UX`.
 
 ### Phase 5 - Categories UX Polish
 
-- [ ] Create or polish `/commerce-admin/categories`.
-- [ ] Add list/tree view.
-- [ ] Add copy category slug action.
-- [ ] Add drawer for create/edit if supported by existing API.
-- [ ] Keep category business rules unchanged.
-- [ ] Commit: `feat(control-plane-web): add commerce category admin UX`.
+- [x] Create or polish `/commerce-admin/categories`.
+- [x] Add list/tree view.
+- [x] Add copy category slug action.
+- [x] Add drawer for create/edit if supported by existing API.
+- [x] Keep category business rules unchanged.
+- [x] Commit: `feat(control-plane-web): add commerce category admin UX`.
 
 ### Phase 6 - Products UX And Product Detail Drawer
 

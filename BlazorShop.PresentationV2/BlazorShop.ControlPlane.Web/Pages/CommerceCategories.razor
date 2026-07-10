@@ -1,0 +1,389 @@
+@page "/commerce-admin/categories"
+@attribute [Authorize]
+@inject IControlPlaneStoreClient StoreClient
+@inject IControlPlaneCatalogClient CatalogClient
+
+<PageTitle>Categories</PageTitle>
+
+<section class="space-y-5">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+            <p class="text-sm font-semibold text-control-700">Commerce Admin</p>
+            <h1 class="text-2xl font-bold text-ink-900">Categories</h1>
+            <p class="mt-1 text-sm text-ink-500">Manage store categories and copy slugs for product import CSV files.</p>
+        </div>
+        <div class="flex flex-col gap-2 sm:flex-row">
+            <select class="min-h-10 min-w-64 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="selectedStorePublicId">
+                <option value="">Select store</option>
+                @foreach (var store in stores)
+                {
+                    <option value="@store.PublicId">@store.Name (@store.StoreKey)</option>
+                }
+            </select>
+            <button class="cp-button cp-button-secondary" @onclick="LoadAsync">
+                <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                Refresh
+            </button>
+            <button class="cp-button cp-button-primary" disabled="@(!HasStore)" @onclick="NewCategory">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                New category
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">@errorMessage</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">@successMessage</div>
+    }
+
+    <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div class="cp-card overflow-hidden">
+            @if (!HasStore)
+            {
+                <div class="p-8 text-center text-sm text-ink-500">Select a store to load categories.</div>
+            }
+            else if (isLoading)
+            {
+                <div class="p-8 text-center text-sm text-ink-500">Loading categories...</div>
+            }
+            else if (categories.Count == 0)
+            {
+                <div class="p-8 text-center text-sm text-ink-500">No categories found.</div>
+            }
+            else
+            {
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-ink-200 text-left text-sm">
+                        <thead class="bg-ink-50 text-xs font-semibold uppercase text-ink-500">
+                            <tr>
+                                <th class="px-4 py-3">Category</th>
+                                <th class="px-4 py-3">Slug</th>
+                                <th class="px-4 py-3">Parent</th>
+                                <th class="px-4 py-3">Display</th>
+                                <th class="px-4 py-3">Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-ink-100">
+                            @foreach (var category in categories.OrderBy(category => category.DisplayOrder).ThenBy(category => category.Name))
+                            {
+                                <tr class="cursor-pointer hover:bg-ink-50" @onclick="() => EditCategory(category)">
+                                    <td class="px-4 py-3">
+                                        <div class="font-semibold text-ink-900">@category.Name</div>
+                                        @if (!string.IsNullOrWhiteSpace(category.Image))
+                                        {
+                                            <div class="truncate text-xs text-ink-500">@category.Image</div>
+                                        }
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center gap-2 font-mono text-xs text-ink-600">
+                                            <span>@category.Slug</span>
+                                            @if (!string.IsNullOrWhiteSpace(category.Slug))
+                                            {
+                                                <CopyButton Text="@category.Slug" />
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-ink-600">@GetParentName(category.ParentCategoryId)</td>
+                                    <td class="px-4 py-3 text-ink-600">@category.DisplayOrder</td>
+                                    <td class="px-4 py-3 text-ink-500">@category.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <aside class="cp-card p-4">
+            <h2 class="text-sm font-semibold text-ink-900">Category tree</h2>
+            @if (categoryTree.Count == 0)
+            {
+                <div class="mt-4 rounded-md border border-ink-200 p-4 text-center text-sm text-ink-500">No tree data.</div>
+            }
+            else
+            {
+                <div class="mt-4 space-y-2">
+                    @foreach (var node in categoryTree)
+                    {
+                        @RenderCategoryNode(node, 0)
+                    }
+                </div>
+            }
+        </aside>
+    </div>
+</section>
+
+<RightDrawer IsOpen="@isDrawerOpen" IsOpenChanged="OnDrawerChanged" Title="@DrawerTitle" Subtitle="@selectedCategory?.Slug" Eyebrow="Category">
+    <div class="space-y-5">
+        <div class="rounded-md border border-ink-200 p-4">
+            <h2 class="text-sm font-semibold text-ink-900">Category fields</h2>
+            <div class="mt-3 grid gap-3 text-sm">
+                <label class="space-y-1">
+                    <span class="font-medium text-ink-700">Name</span>
+                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="categoryForm.Name" />
+                </label>
+                <label class="space-y-1">
+                    <span class="font-medium text-ink-700">Parent</span>
+                    <select class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="categoryParentId">
+                        <option value="">No parent</option>
+                        @foreach (var category in categories.Where(category => category.Id != selectedCategory?.Id).OrderBy(category => category.Name))
+                        {
+                            <option value="@category.Id">@category.Name</option>
+                        }
+                    </select>
+                </label>
+                <label class="space-y-1">
+                    <span class="font-medium text-ink-700">Image URL</span>
+                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="categoryForm.Image" />
+                </label>
+                <label class="space-y-1">
+                    <span class="font-medium text-ink-700">Display order</span>
+                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" @bind="categoryForm.DisplayOrder" />
+                </label>
+            </div>
+        </div>
+
+        @if (selectedCategory is not null)
+        {
+            <div class="rounded-md border border-ink-200 bg-ink-50 p-4 text-sm">
+                <div class="flex items-center justify-between gap-3">
+                    <span class="font-medium text-ink-700">Slug</span>
+                    <div class="flex items-center gap-2 font-mono text-xs text-ink-600">
+                        <span>@selectedCategory.Slug</span>
+                        @if (!string.IsNullOrWhiteSpace(selectedCategory.Slug))
+                        {
+                            <CopyButton Text="@selectedCategory.Slug" />
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="flex gap-2">
+            <button class="cp-button cp-button-primary flex-1 justify-center" disabled="@isSaving" @onclick="SaveCategoryAsync">
+                <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                Save category
+            </button>
+            @if (selectedCategory is not null)
+            {
+                <button class="cp-button cp-button-danger" disabled="@isSaving" @onclick="ArchiveCategoryAsync">
+                    <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
+                </button>
+            }
+        </div>
+    </div>
+</RightDrawer>
+
+@code {
+    private readonly List<StoreSummary> stores = [];
+    private readonly List<GetCategory> categories = [];
+    private readonly List<GetCategoryTreeNode> categoryTree = [];
+    private Guid? selectedStorePublicId;
+    private GetCategory? selectedCategory;
+    private CreateCategory categoryForm = new();
+    private string categoryParentId = string.Empty;
+    private bool isLoading;
+    private bool isSaving;
+    private bool isDrawerOpen;
+    private string? errorMessage;
+    private string? successMessage;
+
+    private bool HasStore => selectedStorePublicId.HasValue && selectedStorePublicId.Value != Guid.Empty;
+
+    private string DrawerTitle => selectedCategory is null ? "Create category" : selectedCategory.Name ?? "Category";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStoresAsync();
+    }
+
+    private async Task LoadStoresAsync()
+    {
+        var response = await StoreClient.ListAsync(status: "active");
+        stores.Clear();
+        stores.AddRange(response.Items);
+        selectedStorePublicId ??= stores.FirstOrDefault()?.PublicId;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        try
+        {
+            var categoriesResult = await CatalogClient.ListCategoriesAsync(selectedStorePublicId!.Value);
+            if (!categoriesResult.Success)
+            {
+                errorMessage = categoriesResult.Message;
+                return;
+            }
+
+            categories.Clear();
+            categories.AddRange(categoriesResult.Data ?? []);
+
+            var treeResult = await CatalogClient.GetCategoryTreeAsync(selectedStorePublicId.Value);
+            if (treeResult.Success)
+            {
+                categoryTree.Clear();
+                categoryTree.AddRange(treeResult.Data ?? []);
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void NewCategory()
+    {
+        selectedCategory = null;
+        categoryForm = new CreateCategory();
+        categoryParentId = string.Empty;
+        isDrawerOpen = true;
+    }
+
+    private void EditCategory(GetCategory category)
+    {
+        selectedCategory = category;
+        categoryForm = new CreateCategory
+        {
+            Name = category.Name,
+            ParentCategoryId = category.ParentCategoryId,
+            Image = category.Image,
+            DisplayOrder = category.DisplayOrder,
+        };
+        categoryParentId = category.ParentCategoryId?.ToString("D") ?? string.Empty;
+        isDrawerOpen = true;
+    }
+
+    private async Task SaveCategoryAsync()
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        isSaving = true;
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            categoryForm.ParentCategoryId = Guid.TryParse(categoryParentId, out var parentId) ? parentId : null;
+            var result = selectedCategory is null
+                ? await CatalogClient.CreateCategoryAsync(selectedStorePublicId!.Value, categoryForm)
+                : await CatalogClient.UpdateCategoryAsync(
+                    selectedStorePublicId!.Value,
+                    selectedCategory.Id,
+                    new UpdateCategory
+                    {
+                        Id = selectedCategory.Id,
+                        Name = categoryForm.Name,
+                        ParentCategoryId = categoryForm.ParentCategoryId,
+                        Image = categoryForm.Image,
+                        DisplayOrder = categoryForm.DisplayOrder,
+                    });
+
+            if (!result.Success)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            successMessage = result.Message;
+            isDrawerOpen = false;
+            await LoadAsync();
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task ArchiveCategoryAsync()
+    {
+        if (!HasStore || selectedCategory is null)
+        {
+            return;
+        }
+
+        isSaving = true;
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            var result = await CatalogClient.ArchiveCategoryAsync(selectedStorePublicId!.Value, selectedCategory.Id);
+            if (!result.Success)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            successMessage = result.Message;
+            isDrawerOpen = false;
+            selectedCategory = null;
+            await LoadAsync();
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private string GetParentName(Guid? parentCategoryId)
+    {
+        if (!parentCategoryId.HasValue)
+        {
+            return "-";
+        }
+
+        return categories.FirstOrDefault(category => category.Id == parentCategoryId.Value)?.Name ?? parentCategoryId.Value.ToString("D");
+    }
+
+    private Task OnDrawerChanged(bool value)
+    {
+        isDrawerOpen = value;
+        return Task.CompletedTask;
+    }
+
+    private RenderFragment RenderCategoryNode(GetCategoryTreeNode category, int depth) => builder =>
+    {
+        var sequence = 0;
+        builder.OpenElement(sequence++, "button");
+        builder.AddAttribute(sequence++, "class", "flex w-full items-center justify-between rounded-md border border-ink-200 bg-white px-3 py-2 text-left text-sm hover:bg-ink-50");
+        builder.AddAttribute(sequence++, "style", $"margin-left:{Math.Min(depth, 4) * 12}px");
+        builder.AddAttribute(sequence++, "onclick", EventCallback.Factory.Create(this, () => EditCategoryById(category.Id)));
+        builder.OpenElement(sequence++, "span");
+        builder.AddAttribute(sequence++, "class", "font-medium text-ink-800");
+        builder.AddContent(sequence++, category.Name);
+        builder.CloseElement();
+        builder.OpenElement(sequence++, "span");
+        builder.AddAttribute(sequence++, "class", "font-mono text-xs text-ink-500");
+        builder.AddContent(sequence++, category.Slug);
+        builder.CloseElement();
+        builder.CloseElement();
+
+        foreach (var child in category.Children)
+        {
+            builder.AddContent(sequence++, RenderCategoryNode(child, depth + 1));
+        }
+    };
+
+    private void EditCategoryById(Guid categoryId)
+    {
+        var category = categories.FirstOrDefault(item => item.Id == categoryId);
+        if (category is not null)
+        {
+            EditCategory(category);
+        }
+    }
+}
