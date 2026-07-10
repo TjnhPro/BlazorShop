@@ -29,6 +29,12 @@ namespace BlazorShop.Infrastructure.Repositories
                     Image = product.Image,
                     Quantity = product.Quantity,
                     CreatedOn = product.CreatedOn,
+                    UpdatedAt = product.UpdatedAt,
+                    Sku = product.Sku,
+                    ShortDescription = product.ShortDescription,
+                    FullDescription = product.FullDescription,
+                    ComparePrice = product.ComparePrice,
+                    DisplayOrder = product.DisplayOrder,
                     Slug = product.Slug,
                     MetaTitle = product.MetaTitle,
                     MetaDescription = product.MetaDescription,
@@ -50,7 +56,9 @@ namespace BlazorShop.Infrastructure.Repositories
         {
             var pageNumber = query.GetNormalizedPageNumber();
             var pageSize = query.GetNormalizedPageSize();
-            IQueryable<Product> products = BuildCatalogQuery(_context.Products.AsNoTracking(), query);
+            IQueryable<Product> products = BuildCatalogQuery(
+                _context.Products.AsNoTracking().Where(product => product.ArchivedAt == null),
+                query);
 
             var totalCount = await products.CountAsync();
             var items = await products
@@ -77,10 +85,12 @@ namespace BlazorShop.Infrastructure.Repositories
                 _context.Products
                     .AsNoTracking()
                     .Where(product => product.IsPublished
+                        && product.ArchivedAt == null
                         && product.PublishedOn != null
                         && product.Slug != null
                         && product.Slug != string.Empty
                         && product.Category != null
+                        && product.Category.ArchivedAt == null
                         && product.Category.IsPublished),
                 query);
 
@@ -105,17 +115,19 @@ namespace BlazorShop.Infrastructure.Repositories
             return await _context.Products
                 .AsNoTracking()
                 .Where(product => product.IsPublished
+                    && product.ArchivedAt == null
                     && product.PublishedOn != null
                     && product.Slug != null
                     && product.Slug != string.Empty
                     && product.Category != null
+                    && product.Category.ArchivedAt == null
                     && product.Category.IsPublished)
-                .OrderBy(product => product.PublishedOn)
+                .OrderBy(product => product.UpdatedAt)
                 .ThenBy(product => product.Id)
                 .Select(product => new PublishedProductSitemapEntryReadModel
                 {
                     Slug = product.Slug!,
-                    LastModifiedUtc = product.PublishedOn ?? product.CreatedOn,
+                    LastModifiedUtc = product.UpdatedAt != default ? product.UpdatedAt : product.PublishedOn ?? product.CreatedOn,
                 })
                 .ToListAsync();
         }
@@ -136,11 +148,13 @@ namespace BlazorShop.Infrastructure.Repositories
                 .Include(product => product.Category)
                 .Include(product => product.Variants)
                 .FirstOrDefaultAsync(product => product.Id == id
+                    && product.ArchivedAt == null
                     && product.IsPublished
                     && product.PublishedOn != null
                     && product.Slug != null
                     && product.Slug != string.Empty
                     && product.Category != null
+                    && product.Category.ArchivedAt == null
                     && product.Category.IsPublished);
         }
 
@@ -151,9 +165,11 @@ namespace BlazorShop.Infrastructure.Repositories
                 .Include(product => product.Category)
                 .Include(product => product.Variants)
                 .FirstOrDefaultAsync(product => product.IsPublished
+                    && product.ArchivedAt == null
                     && product.PublishedOn != null
                     && product.Slug == slug
                     && product.Category != null
+                    && product.Category.ArchivedAt == null
                     && product.Category.IsPublished);
         }
 
@@ -162,13 +178,16 @@ namespace BlazorShop.Infrastructure.Repositories
             return await _context.Products
                 .AsNoTracking()
                 .Where(product => product.CategoryId == categoryId
+                    && product.ArchivedAt == null
                     && product.IsPublished
                     && product.PublishedOn != null
                     && product.Slug != null
                     && product.Slug != string.Empty
                     && product.Category != null
+                    && product.Category.ArchivedAt == null
                     && product.Category.IsPublished)
-                .OrderByDescending(product => product.CreatedOn)
+                .OrderBy(product => product.DisplayOrder)
+                .ThenByDescending(product => product.CreatedOn)
                 .ThenBy(product => product.Id)
                 .Select(MapCatalogProduct())
                 .ToListAsync();
@@ -225,10 +244,28 @@ namespace BlazorShop.Infrastructure.Repositories
                 products = products.Where(product => product.CreatedOn >= query.CreatedAfterUtc.Value);
             }
 
+            if (query.MinPrice.HasValue)
+            {
+                products = products.Where(product => product.Price >= query.MinPrice.Value);
+            }
+
+            if (query.MaxPrice.HasValue)
+            {
+                products = products.Where(product => product.Price <= query.MaxPrice.Value);
+            }
+
+            if (query.InStock.HasValue)
+            {
+                products = query.InStock.Value
+                    ? products.Where(product => product.Quantity > 0 || product.Variants.Any(variant => variant.Stock > 0))
+                    : products.Where(product => product.Quantity <= 0 && !product.Variants.Any(variant => variant.Stock > 0));
+            }
+
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 var normalizedSearchTerm = searchTerm.ToLower();
                 products = products.Where(product =>
+                    (product.Sku != null && product.Sku.ToLower().Contains(normalizedSearchTerm)) ||
                     (product.Name != null && product.Name.ToLower().Contains(normalizedSearchTerm)) ||
                     (product.Description != null && product.Description.ToLower().Contains(normalizedSearchTerm)));
             }
@@ -240,6 +277,8 @@ namespace BlazorShop.Infrastructure.Repositories
                 ProductCatalogSortBy.PriceHighToLow => products.OrderByDescending(product => product.Price).ThenBy(product => product.Id),
                 ProductCatalogSortBy.NameAscending => products.OrderBy(product => product.Name).ThenBy(product => product.Id),
                 ProductCatalogSortBy.NameDescending => products.OrderByDescending(product => product.Name).ThenBy(product => product.Id),
+                ProductCatalogSortBy.DisplayOrder => products.OrderBy(product => product.DisplayOrder).ThenByDescending(product => product.CreatedOn).ThenBy(product => product.Id),
+                ProductCatalogSortBy.Updated => products.OrderByDescending(product => product.UpdatedAt).ThenBy(product => product.Id),
                 _ => products.OrderByDescending(product => product.CreatedOn).ThenBy(product => product.Id),
             };
         }
@@ -252,9 +291,15 @@ namespace BlazorShop.Infrastructure.Repositories
                 Slug = product.IsPublished ? product.Slug : null,
                 Name = product.Name,
                 Description = product.Description,
+                Sku = product.Sku,
+                ShortDescription = product.ShortDescription,
                 Price = product.Price,
+                ComparePrice = product.ComparePrice,
                 Image = product.Image,
                 CreatedOn = product.CreatedOn,
+                UpdatedAt = product.UpdatedAt,
+                DisplayOrder = product.DisplayOrder,
+                InStock = product.Quantity > 0 || product.Variants.Any(variant => variant.Stock > 0),
                 CategoryId = product.CategoryId,
                 CategoryName = product.Category != null ? product.Category.Name : null,
                 CategorySlug = product.Category != null && product.Category.IsPublished ? product.Category.Slug : null,

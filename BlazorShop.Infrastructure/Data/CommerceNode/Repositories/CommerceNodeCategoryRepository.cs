@@ -75,12 +75,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 .Select(category => new PublishedCategorySitemapEntryReadModel
                 {
                     Slug = category.Slug!,
-                    LastModifiedUtc = category.Products!
-                        .Where(product => product.IsPublished
-                            && product.PublishedOn != null
-                            && product.Slug != null
-                            && product.Slug != string.Empty)
-                        .Max(product => product.PublishedOn),
+                    LastModifiedUtc = category.UpdatedAt,
                 })
                 .ToListAsync();
         }

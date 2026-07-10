@@ -14,6 +14,12 @@ namespace BlazorShop.Domain.Contracts
 
         public string? SearchTerm { get; init; }
 
+        public decimal? MinPrice { get; init; }
+
+        public decimal? MaxPrice { get; init; }
+
+        public bool? InStock { get; init; }
+
         public ProductCatalogSortBy SortBy { get; init; } = ProductCatalogSortBy.Newest;
 
         public DateTime? CreatedAfterUtc { get; init; }

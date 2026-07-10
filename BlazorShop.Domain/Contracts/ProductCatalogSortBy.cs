@@ -8,5 +8,7 @@ namespace BlazorShop.Domain.Contracts
         PriceHighToLow = 3,
         NameAscending = 4,
         NameDescending = 5,
+        DisplayOrder = 6,
+        Updated = 7,
     }
 }

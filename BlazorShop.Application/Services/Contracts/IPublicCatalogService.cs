@@ -9,6 +9,8 @@ namespace BlazorShop.Application.Services.Contracts
     {
         Task<IEnumerable<GetCategory>> GetPublishedCategoriesAsync();
 
+        Task<IReadOnlyList<GetCategoryTreeNode>> GetPublishedCategoryTreeAsync();
+
         Task<GetPublicCatalogSitemap> GetPublishedSitemapAsync();
 
         Task<PagedResult<GetCatalogProduct>> GetPublishedCatalogPageAsync(ProductCatalogQuery query);

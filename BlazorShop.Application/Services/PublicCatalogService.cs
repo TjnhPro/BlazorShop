@@ -8,6 +8,7 @@ namespace BlazorShop.Application.Services
     using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Contracts.CategoryPersistence;
+    using BlazorShop.Domain.Entities;
 
     public class PublicCatalogService : IPublicCatalogService
     {
@@ -32,6 +33,18 @@ namespace BlazorShop.Application.Services
         {
             var categories = await _categoryRepository.GetPublishedCategoriesAsync();
             return categories.Any() ? _mapper.Map<IEnumerable<GetCategory>>(categories) : [];
+        }
+
+        public async Task<IReadOnlyList<GetCategoryTreeNode>> GetPublishedCategoryTreeAsync()
+        {
+            var categories = await _categoryRepository.GetCategoriesForTreeAsync();
+            var publishedCategories = categories
+                .Where(category => category.IsPublished
+                    && category.ArchivedAt == null
+                    && !string.IsNullOrWhiteSpace(category.Slug))
+                .ToArray();
+
+            return BuildTree(publishedCategories);
         }
 
         public async Task<GetPublicCatalogSitemap> GetPublishedSitemapAsync()
@@ -144,6 +157,43 @@ namespace BlazorShop.Application.Services
         {
             var normalizedSlug = _slugService.NormalizeSlug(slug);
             return string.IsNullOrWhiteSpace(normalizedSlug) ? null : normalizedSlug;
+        }
+
+        private static IReadOnlyList<GetCategoryTreeNode> BuildTree(IReadOnlyList<Category> categories)
+        {
+            var nodes = categories
+                .OrderBy(category => category.DisplayOrder)
+                .ThenBy(category => category.Name)
+                .Select(category => new GetCategoryTreeNode
+                {
+                    Id = category.Id,
+                    ParentCategoryId = category.ParentCategoryId,
+                    Name = category.Name,
+                    Slug = category.Slug,
+                    Image = category.Image,
+                    DisplayOrder = category.DisplayOrder,
+                    IsPublished = category.IsPublished,
+                })
+                .ToDictionary(category => category.Id);
+
+            var childrenByParent = nodes.Values
+                .Where(category => category.ParentCategoryId.HasValue)
+                .GroupBy(category => category.ParentCategoryId!.Value)
+                .ToDictionary(group => group.Key, group => group.ToArray());
+
+            foreach (var node in nodes.Values)
+            {
+                if (childrenByParent.TryGetValue(node.Id, out var children))
+                {
+                    node.Children = children;
+                }
+            }
+
+            return nodes.Values
+                .Where(category => !category.ParentCategoryId.HasValue || !nodes.ContainsKey(category.ParentCategoryId.Value))
+                .OrderBy(category => category.DisplayOrder)
+                .ThenBy(category => category.Name)
+                .ToArray();
         }
     }
 }

@@ -3,6 +3,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Product;
     using BlazorShop.Application.Services.Contracts;
+    using BlazorShop.Domain.Contracts;
 
     using Microsoft.AspNetCore.Mvc;
 
@@ -21,6 +22,13 @@ namespace BlazorShop.CommerceNode.API.Controllers
         public async Task<IActionResult> GetAll()
         {
             var products = await this.productService.GetAllAsync();
+            return this.Success(products, "Products retrieved successfully.");
+        }
+
+        [HttpGet("query")]
+        public async Task<IActionResult> Query([FromQuery] ProductCatalogQuery query)
+        {
+            var products = await this.productService.GetCatalogPageAsync(query);
             return this.Success(products, "Products retrieved successfully.");
         }
 

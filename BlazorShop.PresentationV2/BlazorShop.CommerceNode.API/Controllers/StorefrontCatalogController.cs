@@ -27,6 +27,13 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return this.Success(categories, "Published categories loaded.");
         }
 
+        [HttpGet("categories/tree")]
+        public async Task<IActionResult> GetCategoryTree()
+        {
+            var categories = await this.publicCatalogService.GetPublishedCategoryTreeAsync();
+            return this.Success(categories, "Published category tree loaded.");
+        }
+
         [HttpGet("categories/{id:guid}")]
         public async Task<IActionResult> GetCategoryById(Guid id)
         {

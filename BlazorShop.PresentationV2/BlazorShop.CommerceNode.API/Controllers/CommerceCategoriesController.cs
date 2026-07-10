@@ -24,6 +24,13 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return this.Success(categories, "Categories retrieved successfully.");
         }
 
+        [HttpGet("tree")]
+        public async Task<IActionResult> GetTree()
+        {
+            var categories = await this.categoryService.GetTreeAsync();
+            return this.Success(categories, "Category tree retrieved successfully.");
+        }
+
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
