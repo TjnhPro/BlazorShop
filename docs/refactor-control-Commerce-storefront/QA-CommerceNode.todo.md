@@ -85,6 +85,32 @@ Last verified: 2026-07-10
 - [x] `PUT /api/commerce/admin/products/{productId}/variants/{variantId}`
 - [x] `DELETE /api/commerce/admin/products/{productId}/variants/{variantId}` with disposable variant only.
 
+### Variation Templates
+
+- [x] CommerceNode API builds after Variation Template Foundation changes. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
+- [x] ControlPlane API builds after product import proxy changes. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` passed.
+- [ ] Apply `CommerceNodeVariationTemplateFoundation` migration to clean CommerceNode PostgreSQL on port `5434`.
+- [ ] `GET /api/commerce/admin/variation-templates` returns list.
+- [ ] `POST /api/commerce/admin/variation-templates` creates template.
+- [ ] Duplicate template slug in same store returns `success=false`.
+- [ ] Same template slug in another store is allowed.
+- [ ] `GET /api/commerce/admin/variation-templates/{id}` returns options/values.
+- [ ] `PUT /api/commerce/admin/variation-templates/{id}` updates name/slug/active state.
+- [ ] `POST /api/commerce/admin/variation-templates/{id}/options` creates option.
+- [ ] `PUT /api/commerce/admin/variation-templates/{id}/options/{optionId}` updates/disables option.
+- [ ] `POST /api/commerce/admin/variation-templates/{id}/options/{optionId}/values` creates value.
+- [ ] `PUT /api/commerce/admin/variation-templates/{id}/options/{optionId}/values/{valueId}` updates/disables value.
+- [ ] Delete unreferenced variation template succeeds.
+- [ ] Delete referenced variation template fails.
+- [ ] Create `CustomVariations` product without template fails.
+- [ ] Create `CustomVariations` product with active template succeeds.
+- [ ] Storefront product detail for `CustomVariations` returns active option/value `name` and `value` only.
+- [ ] Disabled option/value is hidden from Storefront product detail.
+- [ ] Cart/order accepts selected attributes for `CustomVariations`.
+- [ ] Cart/order rejects more than 5 selected attributes.
+- [ ] Cart/order stores selected attributes in `OrderLine.VariantAttributesJson`.
+- [ ] Existing `ProductVariant` endpoints still work for `VariantInventory`.
+
 ### Product Media
 
 - [~] `GET /api/commerce/admin/products/{productId}/media` returns an empty list before import. Existing QA DB already contained media rows after this run; list endpoint itself verified.
@@ -101,6 +127,42 @@ Last verified: 2026-07-10
 - [x] Retry failed media succeeds when the media is retryable. 2026-07-10: retry converted failed storage row to stored after fix.
 - [ ] Delete primary media chooses next stored image or clears `Product.Image`.
 - [x] Store-scoped media cannot be read from another store host. 2026-07-10: `X-Store-Key: other` returned 404 for default store media.
+
+### Product Import
+
+- [x] CommerceNode API builds after Product Import Task changes. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
+- [x] ControlPlane API product import proxy builds. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` passed.
+- [ ] Apply `CommerceNodeProductImport` migration to clean CommerceNode PostgreSQL on port `5434`.
+- [ ] Apply `CommerceNodeNullableProductCategory` migration to clean CommerceNode PostgreSQL on port `5434`.
+- [ ] `POST /api/commerce/admin/products/import` uploads valid CSV in `create_only` mode.
+- [ ] `POST /api/commerce/admin/products/import` uploads valid CSV in `upsert` mode.
+- [ ] `GET /api/commerce/admin/products/imports` lists import jobs.
+- [ ] `GET /api/commerce/admin/products/imports/{jobPublicId}` returns job detail.
+- [ ] `GET /api/commerce/admin/products/imports/{jobPublicId}/rows` returns row results.
+- [ ] Duplicate same file hash returns existing job and does not enqueue another task.
+- [ ] Same file cannot be imported again for same store/mode.
+- [ ] Missing required CSV header returns `success=false`.
+- [ ] Missing SKU row writes `sku` column error.
+- [ ] Missing name on create writes `name` column error.
+- [ ] Missing description on create writes `description` column error.
+- [ ] Missing price on create writes `price` column error.
+- [ ] Duplicate SKU in `create_only` writes row error.
+- [ ] `upsert` blank cells do not overwrite existing values.
+- [ ] `__clear__` clears allowed nullable fields.
+- [ ] Create with blank `category_slug` succeeds and leaves product uncategorized.
+- [ ] Update with blank `category_slug` keeps existing category.
+- [ ] Unknown `category_slug` writes row error.
+- [ ] `CustomVariations` without `variation_template_slug` writes row error.
+- [ ] Unknown/inactive `variation_template_slug` writes row error.
+- [ ] Valid `variation_template_slug` sets product template reference.
+- [ ] `VariantInventory` import does not create `ProductVariant` rows.
+- [ ] `image_urls` with more than 10 URLs writes row error.
+- [ ] Valid `image_urls` queues one `product.media.import` task per product row.
+- [ ] Product import completes with `CompletedWithErrors` when some rows fail.
+- [ ] CommerceTask result contains product import summary counts.
+- [ ] ProductImportRows contain `ErrorJson` with column names.
+- [ ] ControlPlane upload route `POST /api/control-plane/stores/{storePublicId}/catalog/products/import` proxies through ControlPlane API only.
+- [ ] ControlPlane import list/detail/rows routes proxy through ControlPlane API only.
 
 ### Inventory
 
