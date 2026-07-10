@@ -5,6 +5,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
     using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.CommerceNode.Tasks;
     using BlazorShop.Application.CommerceNode.Stores;
+    using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Application.Mapping;
     using BlazorShop.Application.Options;
@@ -114,6 +115,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<ICommerceTaskService, CommerceTaskService>();
             services.AddScoped<IProductMediaService, ProductMediaService>();
             services.AddScoped<IProductMediaUrlBuilder, ProductMediaUrlBuilder>();
+            services.AddScoped<IVariationTemplateService, VariationTemplateService>();
             services.AddSingleton<ICatalogQueryCache, MemoryCatalogQueryCache>();
             services.AddScoped<ICommerceStoreService, CommerceStoreService>();
             services.AddScoped<ICommerceStoreContext, CommerceStoreContext>();
