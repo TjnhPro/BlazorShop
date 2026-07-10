@@ -1,4 +1,5 @@
 @inject StorefrontApiClient ApiClient
+@using BlazorShop.Application.DTOs.Category
 
 <header class="bs-storefront-header relative text-neutral-100">
     <div class="bs-storefront-header__shell">
@@ -8,7 +9,22 @@
                 <span class="bs-storefront-header__brand-label">@BrandLabel</span>
             </a>
 
-            <nav class="bs-storefront-header__desktop-nav flex flex-1 flex-wrap items-center gap-2 text-sm font-medium lg:justify-center" aria-label="Primary shop navigation">
+            <form method="get" action="@StorefrontRoutes.Search" class="bs-storefront-search" role="search">
+                <select name="category" class="bs-storefront-search__select" aria-label="Search category">
+                    <option value="">All</option>
+                    @foreach (var category in _searchCategories)
+                    {
+                        <option value="@category.Slug">@category.Label</option>
+                    }
+                </select>
+                <input name="q" class="bs-storefront-search__input" type="search" placeholder="Search products" aria-label="Search products" autocomplete="off" />
+                <button type="submit" class="bs-storefront-search__button" aria-label="Search">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <span class="bs-storefront-search__button-text">Search</span>
+                </button>
+            </form>
+
+            <nav class="bs-storefront-header__desktop-nav flex flex-wrap items-center gap-2 text-sm font-medium lg:justify-center" aria-label="Primary shop navigation">
                 <NavLink href="@StorefrontRoutes.Home" Match="NavLinkMatch.All" class="bs-storefront-nav-link" ActiveClass="is-active">Home</NavLink>
                 <NavLink href="@StorefrontRoutes.NewReleases" class="bs-storefront-nav-link" ActiveClass="is-active">New Releases</NavLink>
                 <NavLink href="@StorefrontRoutes.TodaysDeals" class="bs-storefront-nav-link" ActiveClass="is-active">Today's Deals</NavLink>
@@ -57,6 +73,21 @@
                 <StorefrontAccountMenu />
             </div>
 
+            <form method="get" action="@StorefrontRoutes.Search" class="bs-storefront-search bs-storefront-search--mobile" role="search">
+                <select name="category" class="bs-storefront-search__select" aria-label="Search category">
+                    <option value="">All</option>
+                    @foreach (var category in _searchCategories)
+                    {
+                        <option value="@category.Slug">@category.Label</option>
+                    }
+                </select>
+                <input name="q" class="bs-storefront-search__input" type="search" placeholder="Search products" aria-label="Search products" autocomplete="off" />
+                <button type="submit" class="bs-storefront-search__button" aria-label="Search">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <span class="bs-storefront-search__button-text">Search</span>
+                </button>
+            </form>
+
             <details class="bs-storefront-header__menu">
                 <summary class="bs-storefront-menu-button" aria-label="Open shop navigation">
                     <span class="bs-storefront-menu-button__text">Menu</span>
@@ -94,17 +125,51 @@
 
     private string BrandHomeLabel => $"{BrandName} shop home";
 
+    private IReadOnlyList<SearchCategoryOption> _searchCategories = [];
+
     protected override async Task OnInitializedAsync()
     {
         var result = await ApiClient.GetCurrentStoreAsync();
-        if (!result.IsSuccess || result.Value is null)
+        if (result.IsSuccess && result.Value is not null)
         {
-            return;
+            BrandName = result.Value.Name;
+            BrandLabel = string.IsNullOrWhiteSpace(result.Value.PrimaryDomain)
+                ? result.Value.StoreKey.ToUpperInvariant()
+                : result.Value.PrimaryDomain;
         }
 
-        BrandName = result.Value.Name;
-        BrandLabel = string.IsNullOrWhiteSpace(result.Value.PrimaryDomain)
-            ? result.Value.StoreKey.ToUpperInvariant()
-            : result.Value.PrimaryDomain;
+        var categories = await ApiClient.GetPublishedCategoryTreeAsync();
+        if (categories.IsSuccess && categories.Value is not null)
+        {
+            _searchCategories = FlattenCategories(categories.Value);
+        }
     }
+
+    private static IReadOnlyList<SearchCategoryOption> FlattenCategories(IReadOnlyList<GetCategoryTreeNode> categories)
+    {
+        var options = new List<SearchCategoryOption>();
+
+        foreach (var category in categories)
+        {
+            AppendCategory(options, category, 0);
+        }
+
+        return options;
+    }
+
+    private static void AppendCategory(List<SearchCategoryOption> options, GetCategoryTreeNode category, int depth)
+    {
+        if (!string.IsNullOrWhiteSpace(category.Slug))
+        {
+            var prefix = depth <= 0 ? string.Empty : $"{new string('-', depth * 2)} ";
+            options.Add(new SearchCategoryOption(category.Slug, $"{prefix}{category.Name}"));
+        }
+
+        foreach (var child in category.Children)
+        {
+            AppendCategory(options, child, depth + 1);
+        }
+    }
+
+    private sealed record SearchCategoryOption(string Slug, string Label);
 }

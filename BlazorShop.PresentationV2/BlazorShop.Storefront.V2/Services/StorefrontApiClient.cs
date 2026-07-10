@@ -15,6 +15,8 @@ namespace BlazorShop.Storefront.Services
 
     using Microsoft.Extensions.Options;
 
+    using GetCategoryTreeNode = BlazorShop.Application.DTOs.Category.GetCategoryTreeNode;
+
     public class StorefrontApiClient
     {
         // Static informational pages should degrade faster than catalog-backed pages when the API is offline.
@@ -27,6 +29,7 @@ namespace BlazorShop.Storefront.Services
         private const string InternalStoreCurrentRoute = "internal/store/current";
         private const string InternalCatalogSitemapRoute = InternalCatalogBaseRoute + "/sitemap";
         private const string InternalCategoriesRoute = InternalCatalogBaseRoute + "/categories";
+        private const string InternalCategoryTreeRoute = InternalCategoriesRoute + "/tree";
         private const string InternalProductsRoute = InternalCatalogBaseRoute + "/products";
         private const string SeoSettingsRoute = InternalSeoBaseRoute + "/settings";
         private const string LegacyCatalogBaseRoute = "public/catalog";
@@ -57,7 +60,22 @@ namespace BlazorShop.Storefront.Services
                 ? StorefrontApiResult<IReadOnlyList<GetCategory>>.Success(result.Value)
                 : result.IsServiceUnavailable
                     ? StorefrontApiResult<IReadOnlyList<GetCategory>>.ServiceUnavailable()
-                    : StorefrontApiResult<IReadOnlyList<GetCategory>>.Success([]);
+                : StorefrontApiResult<IReadOnlyList<GetCategory>>.Success([]);
+        }
+
+        public async Task<StorefrontApiResult<IReadOnlyList<GetCategoryTreeNode>>> GetPublishedCategoryTreeAsync(CancellationToken cancellationToken = default)
+        {
+            var result = await GetAsync<List<GetCategoryTreeNode>>(
+                InternalCategoryTreeRoute,
+                cancellationToken,
+                [],
+                CatalogRequestTimeout);
+
+            return result.IsSuccess && result.Value is not null
+                ? StorefrontApiResult<IReadOnlyList<GetCategoryTreeNode>>.Success(result.Value)
+                : result.IsServiceUnavailable
+                    ? StorefrontApiResult<IReadOnlyList<GetCategoryTreeNode>>.ServiceUnavailable()
+                    : StorefrontApiResult<IReadOnlyList<GetCategoryTreeNode>>.Success([]);
         }
 
         public Task<StorefrontApiResult<GetPublicCatalogSitemap>> GetPublishedSitemapAsync(CancellationToken cancellationToken = default)
