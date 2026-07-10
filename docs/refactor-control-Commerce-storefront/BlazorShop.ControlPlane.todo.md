@@ -1077,13 +1077,14 @@ Dependency graph:
 
 ```text
 ControlPlane.Web (Blazor WASM)
-    -> ControlPlane.API typed HTTP clients
+    -> ControlPlane.API typed HTTP clients only
     -> existing Web.Shared/client helper patterns where compatible
 
 ControlPlane.API (PresentationV2)
     -> BlazorShop.Application/ControlPlane
     -> BlazorShop.Infrastructure/Data/ControlPlane
     -> ServiceDefaults
+    -> Commerce Node control/catalog/task HTTP clients
 
 BlazorShop.Application/ControlPlane
     -> existing auth/application contracts
@@ -1113,6 +1114,7 @@ Dashboard              -> UI/component tests
 
 Engineering concerns:
 
+- `BlazorShop.ControlPlane.Web` must never call `BlazorShop.CommerceNode.API` directly. Web calls `BlazorShop.ControlPlane.API`; ControlPlane API distributes requests to CommerceNode according to node credential, allowed IP, store key, audit, and permission rules.
 - Control Plane may reference existing `BlazorShop.Application`, `BlazorShop.Infrastructure`, and `BlazorShop.Domain`, but new behavior should live in explicit `ControlPlane` feature folders/namespaces.
 - Shared auth is intentional for this upgrade path, but Control Plane permissions must remain platform-specific.
 - Decide whether Identity/auth tables stay in the existing auth database or are hosted in the Control Plane PostgreSQL database before Phase 3 implementation.

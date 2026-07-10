@@ -35,6 +35,29 @@ When output names a domain concept, use the term as defined in `CONTEXT.md` if p
 
 If a needed concept is missing from the glossary, either avoid inventing a new term or note the gap for a future domain-modeling pass.
 
+## Control Plane Gateway Boundary
+
+Treat `BlazorShop.ControlPlane.Web` as a UI-only client. It must only call `BlazorShop.ControlPlane.API`.
+
+`BlazorShop.ControlPlane.API` is the gateway that may call `BlazorShop.CommerceNode.API`. It owns the security-sensitive distribution path: node key, node secret, allowed Control Plane IP, store key scope, audit, and platform permission checks.
+
+When existing docs say "Control Plane calls Commerce Node", read that as:
+
+```text
+BlazorShop.ControlPlane.Web
+  -> BlazorShop.ControlPlane.API
+      -> BlazorShop.CommerceNode.API
+```
+
+Do not design or implement:
+
+```text
+BlazorShop.ControlPlane.Web
+  -> BlazorShop.CommerceNode.API
+```
+
+Do not expose Commerce Node credentials, Commerce Node base URLs, or node security headers to `BlazorShop.ControlPlane.Web`.
+
 ## Flag ADR Conflicts
 
 If an output contradicts an existing ADR, surface it explicitly rather than silently overriding it.

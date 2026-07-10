@@ -84,8 +84,9 @@ Known gaps:
 ## Target Architecture
 
 ```text
-ControlPlane
-  -> api/commerce/admin/* on CommerceNode
+ControlPlane.Web
+  -> ControlPlane.API catalog proxy endpoints
+      -> api/commerce/admin/* on CommerceNode
       -> Application services
       -> CommerceNode repositories/services
       -> CommerceNodeDbContext
@@ -99,6 +100,13 @@ StorefrontV2
 ```
 
 CatalogExpansion stays inside Commerce Node. Control Plane should not own product/category/order data.
+
+ControlPlane gateway rule:
+
+- `BlazorShop.ControlPlane.Web` never calls `BlazorShop.CommerceNode.API` directly.
+- `BlazorShop.ControlPlane.Web` only calls `BlazorShop.ControlPlane.API`.
+- `BlazorShop.ControlPlane.API` calls `BlazorShop.CommerceNode.API` and owns node key, node secret, allowed IP, store key scope, audit, and permission enforcement.
+- Any future Commerce admin UI in ControlPlane Web must use ControlPlane API proxy/gateway endpoints, not CommerceNode URLs or CommerceNode security headers in the browser.
 
 ## Database Design
 
