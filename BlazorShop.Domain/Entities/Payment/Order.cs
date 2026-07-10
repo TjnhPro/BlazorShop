@@ -12,6 +12,8 @@ namespace BlazorShop.Domain.Entities.Payment
 
         public Guid? StoreId { get; set; }
 
+        public string? CurrencyCode { get; set; }
+
         public decimal TotalAmount { get; set; }
 
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;

@@ -9,6 +9,20 @@
 
         public string? Name { get; set; }
 
+        public Guid? ParentCategoryId { get; set; }
+
+        public Category? ParentCategory { get; set; }
+
+        public ICollection<Category> Children { get; set; } = new List<Category>();
+
+        public string? Image { get; set; }
+
+        public int DisplayOrder { get; set; }
+
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        public DateTime? ArchivedAt { get; set; }
+
         public string? Slug { get; set; }
 
         public string? MetaTitle { get; set; }

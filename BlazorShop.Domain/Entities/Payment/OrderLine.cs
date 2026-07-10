@@ -8,6 +8,16 @@ namespace BlazorShop.Domain.Entities.Payment
 
         public Guid ProductId { get; set; }
 
+        public string? ProductName { get; set; }
+
+        public string? Sku { get; set; }
+
+        public string? Image { get; set; }
+
+        public Guid? ProductVariantId { get; set; }
+
+        public string? VariantAttributesJson { get; set; }
+
         public int Quantity { get; set; }
 
         public decimal UnitPrice { get; set; }

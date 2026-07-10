@@ -12,9 +12,29 @@ namespace BlazorShop.Infrastructure.Data.Configurations
         {
             builder.HasIndex(category => new { category.StoreId, category.Slug })
                 .IsUnique()
-                .HasFilter("\"StoreId\" IS NOT NULL AND \"Slug\" IS NOT NULL");
+                .HasFilter("\"StoreId\" IS NOT NULL AND \"Slug\" IS NOT NULL AND \"ArchivedAt\" IS NULL");
 
             builder.HasIndex(category => category.StoreId);
+            builder.HasIndex(category => new { category.StoreId, category.ParentCategoryId, category.DisplayOrder });
+            builder.HasIndex(category => new { category.StoreId, category.IsPublished, category.ArchivedAt });
+
+            builder.HasOne(category => category.ParentCategory)
+                .WithMany(category => category.Children)
+                .HasForeignKey(category => category.ParentCategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Property(category => category.Image)
+                .HasColumnType("text");
+
+            builder.Property(category => category.DisplayOrder)
+                .HasDefaultValue(0);
+
+            builder.Property(category => category.UpdatedAt)
+                .HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            builder.Property(category => category.ArchivedAt)
+                .HasColumnType("timestamp with time zone");
 
             builder.Property(category => category.Slug)
                 .HasMaxLength(SeoConstraints.SlugMaxLength);

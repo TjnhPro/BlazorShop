@@ -16,6 +16,14 @@ namespace BlazorShop.Domain.Entities
         [MaxLength(64)]
         public string? Sku { get; set; }
 
+        public string? AttributesJson { get; set; }
+
+        [MaxLength(512)]
+        public string? AttributeSignature { get; set; }
+
+        [MaxLength(256)]
+        public string? DisplayName { get; set; }
+
         public SizeScale SizeScale { get; set; }
 
         [MaxLength(16)]

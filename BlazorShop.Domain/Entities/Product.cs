@@ -12,14 +12,30 @@
 
         public string? Description { get; set; }
 
+        [MaxLength(64)]
+        public string? Sku { get; set; }
+
+        public string? ShortDescription { get; set; }
+
+        public string? FullDescription { get; set; }
+
         [Column(TypeName = "decimal(18,2)")]
         public decimal Price { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? ComparePrice { get; set; }
 
         public string? Image { get; set; }
 
         public int Quantity { get; set; }
 
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        public DateTime? ArchivedAt { get; set; }
+
+        public int DisplayOrder { get; set; }
 
         public string? Slug { get; set; }
 

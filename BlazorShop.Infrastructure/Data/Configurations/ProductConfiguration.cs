@@ -12,9 +12,38 @@ namespace BlazorShop.Infrastructure.Data.Configurations
         {
             builder.HasIndex(product => new { product.CategoryId, product.CreatedOn });
             builder.HasIndex(product => product.StoreId);
+            builder.HasIndex(product => new { product.StoreId, product.Sku })
+                .IsUnique()
+                .HasFilter("\"StoreId\" IS NOT NULL AND \"Sku\" IS NOT NULL AND \"ArchivedAt\" IS NULL");
+
+            builder.HasIndex(product => new { product.StoreId, product.CategoryId, product.DisplayOrder, product.CreatedOn });
+            builder.HasIndex(product => new { product.StoreId, product.IsPublished, product.ArchivedAt });
+
             builder.HasIndex(product => new { product.StoreId, product.Slug })
                 .IsUnique()
-                .HasFilter("\"StoreId\" IS NOT NULL AND \"Slug\" IS NOT NULL");
+                .HasFilter("\"StoreId\" IS NOT NULL AND \"Slug\" IS NOT NULL AND \"ArchivedAt\" IS NULL");
+
+            builder.Property(product => product.Sku)
+                .HasMaxLength(64);
+
+            builder.Property(product => product.ShortDescription)
+                .HasColumnType("text");
+
+            builder.Property(product => product.FullDescription)
+                .HasColumnType("text");
+
+            builder.Property(product => product.ComparePrice)
+                .HasColumnType("decimal(18,2)");
+
+            builder.Property(product => product.DisplayOrder)
+                .HasDefaultValue(0);
+
+            builder.Property(product => product.UpdatedAt)
+                .HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            builder.Property(product => product.ArchivedAt)
+                .HasColumnType("timestamp with time zone");
 
             builder.Property(product => product.Slug)
                 .HasMaxLength(SeoConstraints.SlugMaxLength);

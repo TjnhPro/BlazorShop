@@ -68,8 +68,26 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             modelBuilder.ApplyConfiguration(new AdminSettingsConfiguration());
 
             modelBuilder.Entity<ProductVariant>()
-                .HasIndex(variant => new { variant.ProductId, variant.SizeScale, variant.SizeValue })
-                .IsUnique();
+                .Property(variant => variant.AttributesJson)
+                .HasColumnType("jsonb");
+
+            modelBuilder.Entity<ProductVariant>()
+                .Property(variant => variant.AttributeSignature)
+                .HasMaxLength(512);
+
+            modelBuilder.Entity<ProductVariant>()
+                .Property(variant => variant.DisplayName)
+                .HasMaxLength(256);
+
+            modelBuilder.Entity<ProductVariant>()
+                .HasIndex(variant => new { variant.ProductId, variant.AttributeSignature })
+                .IsUnique()
+                .HasFilter("\"AttributeSignature\" IS NOT NULL");
+
+            modelBuilder.Entity<ProductVariant>()
+                .HasIndex(variant => variant.ProductId)
+                .IsUnique()
+                .HasFilter("\"IsDefault\" = TRUE");
 
             modelBuilder.Entity<ProductVariant>()
                 .HasOne(variant => variant.Product)
@@ -134,6 +152,27 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             modelBuilder.Entity<Order>()
                 .Property(order => order.AdminNote)
                 .HasMaxLength(2000);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.CurrencyCode)
+                .HasMaxLength(3);
+
+            modelBuilder.Entity<OrderLine>()
+                .Property(line => line.Sku)
+                .HasMaxLength(64);
+
+            modelBuilder.Entity<OrderLine>()
+                .Property(line => line.VariantAttributesJson)
+                .HasColumnType("jsonb");
+
+            modelBuilder.Entity<OrderLine>()
+                .HasIndex(line => line.ProductVariantId);
+
+            modelBuilder.Entity<OrderLine>()
+                .HasOne<ProductVariant>()
+                .WithMany()
+                .HasForeignKey(line => line.ProductVariantId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<PaymentMethod>().HasData(
                 new PaymentMethod
