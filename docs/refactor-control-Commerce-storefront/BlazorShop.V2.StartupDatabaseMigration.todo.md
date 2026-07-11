@@ -281,11 +281,11 @@ Commit: `feat(commercenode): apply database migrations on startup`
 
 ### Phase 3 - Local Run Script Alignment
 
-- [ ] Ensure `scripts/run-v2-local.ps1` works with startup migration enabled.
-- [ ] Ensure clean Control Plane DB bootstraps from migrations.
-- [ ] Ensure clean Commerce Node DB bootstraps from migrations.
-- [ ] Ensure script output points users to migration logs when startup fails.
-- [ ] Ensure `scripts/stop-v2-local.ps1` remains the documented shutdown path.
+- [x] Ensure `scripts/run-v2-local.ps1` works with startup migration enabled.
+- [x] Ensure clean Control Plane DB bootstraps from migrations.
+- [x] Ensure clean Commerce Node DB bootstraps from migrations.
+- [x] Ensure script output points users to migration logs when startup fails.
+- [x] Ensure `scripts/stop-v2-local.ps1` remains the documented shutdown path.
 
 Commit: `chore: align v2 local scripts with startup migrations`
 

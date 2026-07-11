@@ -25,7 +25,6 @@ $projects = @{
     ControlPlaneWeb = "BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj"
     CommerceNodeApi = "BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj"
     StorefrontV2 = "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj"
-    Infrastructure = "BlazorShop.Infrastructure/BlazorShop.Infrastructure.csproj"
 }
 
 function Read-EnvFile {
@@ -67,48 +66,6 @@ function Get-EnvValue {
     }
 
     return $Default
-}
-
-function Get-ServiceEnvironment {
-    param(
-        [hashtable] $Values,
-        [string] $Prefix
-    )
-
-    $result = @{}
-    foreach ($entry in $Values.GetEnumerator()) {
-        if ($entry.Key.StartsWith("COMMON__", [StringComparison]::OrdinalIgnoreCase)) {
-            $result[$entry.Key.Substring("COMMON__".Length)] = $entry.Value
-        }
-
-        if ($entry.Key.StartsWith($Prefix, [StringComparison]::OrdinalIgnoreCase)) {
-            $result[$entry.Key.Substring($Prefix.Length)] = $entry.Value
-        }
-    }
-
-    return $result
-}
-
-function Invoke-WithEnvironment {
-    param(
-        [hashtable] $Environment,
-        [scriptblock] $Script
-    )
-
-    $previous = @{}
-    foreach ($entry in $Environment.GetEnumerator()) {
-        $previous[$entry.Key] = [Environment]::GetEnvironmentVariable($entry.Key, "Process")
-        [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value, "Process")
-    }
-
-    try {
-        & $Script
-    }
-    finally {
-        foreach ($entry in $previous.GetEnumerator()) {
-            [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value, "Process")
-        }
-    }
 }
 
 function Get-PortFromUrl {
@@ -218,34 +175,7 @@ function Assert-NoV2RuntimeProcesses {
         Write-Host "  $($process.ProcessName) pid=$($process.Id)"
     }
 
-    throw "Stop the V2 processes first or rerun this script with -StopExisting. Use -SkipMigrations only if the databases are already migrated."
-}
-
-function Invoke-DotNetEfUpdate {
-    param(
-        [string] $Context,
-        [string] $StartupProject,
-        [string] $Prefix,
-        [hashtable] $Values
-    )
-
-    $serviceEnv = Get-ServiceEnvironment -Values $Values -Prefix $Prefix
-    New-Item -ItemType Directory -Path $logDir -Force | Out-Null
-    $logFile = Join-Path $logDir "ef-$Context.log"
-    Write-Host "Updating database for $Context"
-
-    Invoke-WithEnvironment -Environment $serviceEnv -Script {
-        dotnet ef database update `
-            --context $Context `
-            --project $projects.Infrastructure `
-            --startup-project $StartupProject *> $logFile
-
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "dotnet ef failed. Last log lines:"
-            Get-Content -Path $logFile -Tail 80
-            throw "dotnet ef database update failed for $Context. See $logFile"
-        }
-    }
+    throw "Stop the V2 processes first or rerun this script with -StopExisting."
 }
 
 function Start-DotNetService {
@@ -470,6 +400,7 @@ Write-Host "  ControlPlane API: $controlPlaneApiUrl"
 Write-Host "  ControlPlane Web: $controlPlaneWebUrl"
 Write-Host "  CommerceNode API: $commerceNodeApiUrl"
 Write-Host "  Storefront V2:    $storefrontUrl"
+Write-Host "  DB migrations:    API startup migration via env config"
 
 if ($DryRun) {
     Write-Host "Dry run only. No processes were started."
@@ -495,22 +426,12 @@ if ($StopExisting) {
 
     Stop-V2RuntimeProcesses
 }
-elseif (-not $SkipMigrations) {
+else {
     Assert-NoV2RuntimeProcesses
 }
 
-if (-not $SkipMigrations) {
-    Invoke-DotNetEfUpdate `
-        -Context "ControlPlaneDbContext" `
-        -StartupProject $projects.ControlPlaneApi `
-        -Prefix "CONTROLPLANE_API__" `
-        -Values $values
-
-    Invoke-DotNetEfUpdate `
-        -Context "CommerceNodeDbContext" `
-        -StartupProject $projects.CommerceNodeApi `
-        -Prefix "COMMERCENODE_API__" `
-        -Values $values
+if ($SkipMigrations) {
+    Write-Warning "-SkipMigrations no longer runs or skips dotnet ef. V2 migrations are applied by API startup when MigrateOnStartup=true in $envFilePath."
 }
 
 Start-DotNetService `
@@ -567,6 +488,9 @@ Write-Host "  admin@example.local / Admin123!"
 Write-Host "  user@example.local  / User123!"
 Write-Host ""
 Write-Host "Logs: $logDir"
+Write-Host "Database migration logs are in the API service logs:"
+Write-Host "  $logDir\controlplane-api.log"
+Write-Host "  $logDir\commercenode-api.log"
 
 if ($openBrowser -and -not $NoOpenBrowser) {
     Start-Process $controlPlaneWebUrl
