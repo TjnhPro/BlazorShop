@@ -1,8 +1,8 @@
 namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
-    using System.Text;
     using System.Text.RegularExpressions;
 
+    using BlazorShop.Application.ControlPlane.Common;
     using BlazorShop.Application.ControlPlane.Nodes;
     using BlazorShop.Domain.Entities.ControlPlane;
 
@@ -10,8 +10,6 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
     public sealed partial class ControlPlaneNodeService : IControlPlaneNodeService
     {
-        private const int DefaultLimit = 25;
-        private const int MaxLimit = 100;
         private const string ControlApiEndpointKind = "control_api";
 
         private readonly ControlPlaneDbContext dbContext;
@@ -27,17 +25,10 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
             ArgumentNullException.ThrowIfNull(query);
 
-            var limit = Math.Clamp(query.Limit <= 0 ? DefaultLimit : query.Limit, 1, MaxLimit);
-            var cursorId = DecodeCursor(query.Cursor);
             var nodes = this.dbContext.Nodes
                 .AsNoTracking()
                 .Include(node => node.Endpoints)
                 .AsQueryable();
-
-            if (cursorId is not null)
-            {
-                nodes = nodes.Where(node => node.Id < cursorId.Value);
-            }
 
             if (!string.IsNullOrWhiteSpace(query.Status))
             {
@@ -53,15 +44,20 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                     || node.Name.ToLower().Contains(search));
             }
 
+            var page = ControlPlanePaging.Normalize(query.PageNumber, query.PageSize);
+            var totalCount = await nodes.CountAsync(cancellationToken);
             var fetchedNodes = await nodes
                 .OrderByDescending(node => node.Id)
-                .Take(limit + 1)
+                .Skip(page.Skip)
+                .Take(page.PageSize)
                 .ToListAsync(cancellationToken);
 
-            var items = fetchedNodes.Take(limit).Select(MapSummary).ToArray();
-            var nextCursor = fetchedNodes.Count > limit ? EncodeCursor(fetchedNodes[limit - 1].Id) : null;
-
-            return new ControlPlaneNodeListResponse(items, nextCursor);
+            return new ControlPlaneNodeListResponse(
+                fetchedNodes.Select(MapSummary).ToArray(),
+                totalCount,
+                page.PageNumber,
+                page.PageSize,
+                ControlPlanePaging.GetTotalPages(totalCount, page.PageSize));
         }
 
         public async Task<ControlPlaneNodeOperationResult<ControlPlaneNodeDetail>> GetByPublicIdAsync(
@@ -342,29 +338,6 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         private static string? NormalizeOptionalText(string? value)
         {
             return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-        }
-
-        private static string? EncodeCursor(long id)
-        {
-            return Convert.ToBase64String(Encoding.UTF8.GetBytes(id.ToString(System.Globalization.CultureInfo.InvariantCulture)));
-        }
-
-        private static long? DecodeCursor(string? cursor)
-        {
-            if (string.IsNullOrWhiteSpace(cursor))
-            {
-                return null;
-            }
-
-            try
-            {
-                var value = Encoding.UTF8.GetString(Convert.FromBase64String(cursor));
-                return long.TryParse(value, out var id) && id > 0 ? id : null;
-            }
-            catch (FormatException)
-            {
-                return null;
-            }
         }
 
         private static ControlPlaneNodeOperationResult<ControlPlaneNodeDetail> Succeeded(ControlPlaneNodeDetail payload)

@@ -138,10 +138,20 @@
                 </div>
             }
 
-            @if (!string.IsNullOrWhiteSpace(nextCursor))
+            @if (!isLoading && nodes.Count > 0)
             {
-                <div class="border-t border-ink-200 p-4 text-right">
-                    <button class="cp-button cp-button-secondary" @onclick="LoadMoreAsync">Load more</button>
+                <div class="flex flex-col gap-3 border-t border-ink-200 px-4 py-3 text-sm text-ink-600 md:flex-row md:items-center md:justify-between">
+                    <div>Page @nodePageNumber of @DisplayTotalPages(nodeTotalPages) · @nodes.Count of @nodeTotalCount nodes</div>
+                    <div class="flex gap-2">
+                        <button class="cp-button cp-button-secondary" disabled="@(nodePageNumber <= 1 || isLoading)" @onclick="PreviousNodesPageAsync">
+                            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                            Previous
+                        </button>
+                        <button class="cp-button cp-button-secondary" disabled="@(!CanLoadNextNodesPage || isLoading)" @onclick="NextNodesPageAsync">
+                            Next
+                            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </div>
             }
         </div>
@@ -257,7 +267,6 @@
 
     private string? search;
     private string? status;
-    private string? nextCursor;
     private string? errorMessage;
     private string? successMessage;
     private bool isLoading;
@@ -266,6 +275,10 @@
     private NodeDetail? selectedNode;
     private bool initialized;
     private bool isEditingSelectedNode;
+    private const int NodePageSize = 25;
+    private int nodePageNumber = 1;
+    private int nodeTotalCount;
+    private int nodeTotalPages;
 
     private string createNodeKey = string.Empty;
     private string createNodeSecret = string.Empty;
@@ -276,6 +289,8 @@
     private string editDescription = string.Empty;
     private string editControlApiUrl = string.Empty;
     private string editNodeSecret = string.Empty;
+
+    private bool CanLoadNextNodesPage => nodePageNumber < nodeTotalPages;
 
     protected override async Task OnInitializedAsync()
     {
@@ -301,12 +316,8 @@
 
     private async Task ApplyFiltersAsync()
     {
+        nodePageNumber = 1;
         await LoadNodesAsync(reset: true);
-    }
-
-    private async Task LoadMoreAsync()
-    {
-        await LoadNodesAsync(reset: false);
     }
 
     private async Task LoadNodesAsync(bool reset)
@@ -317,14 +328,15 @@
 
         try
         {
-            var response = await NodeClient.ListAsync(search, status, reset ? null : nextCursor);
+            var response = await NodeClient.ListAsync(search, status, nodePageNumber, NodePageSize);
             if (reset)
             {
                 nodes.Clear();
             }
 
             nodes.AddRange(response.Items);
-            nextCursor = response.NextCursor;
+            nodeTotalCount = response.TotalCount;
+            nodeTotalPages = response.TotalPages;
         }
         catch (Exception ex)
         {
@@ -334,6 +346,28 @@
         {
             isLoading = false;
         }
+    }
+
+    private async Task PreviousNodesPageAsync()
+    {
+        if (nodePageNumber <= 1)
+        {
+            return;
+        }
+
+        nodePageNumber--;
+        await LoadNodesAsync(reset: true);
+    }
+
+    private async Task NextNodesPageAsync()
+    {
+        if (!CanLoadNextNodesPage)
+        {
+            return;
+        }
+
+        nodePageNumber++;
+        await LoadNodesAsync(reset: true);
     }
 
     private void OpenCreateForm()
@@ -502,5 +536,10 @@
             "disabled" => "rounded-full bg-ink-100 px-2 py-1 text-xs font-semibold text-ink-600",
             _ => "rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700"
         };
+    }
+
+    private static int DisplayTotalPages(int totalPages)
+    {
+        return Math.Max(1, totalPages);
     }
 }

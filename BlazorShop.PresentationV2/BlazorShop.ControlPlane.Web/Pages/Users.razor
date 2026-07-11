@@ -194,10 +194,20 @@
                 </div>
             }
 
-            @if (!string.IsNullOrWhiteSpace(nextCursor))
+            @if (!isLoading && users.Count > 0)
             {
-                <div class="border-t border-ink-200 p-4 text-right">
-                    <button class="cp-button cp-button-secondary" @onclick="LoadMoreAsync">Load more</button>
+                <div class="flex flex-col gap-3 border-t border-ink-200 px-4 py-3 text-sm text-ink-600 md:flex-row md:items-center md:justify-between">
+                    <div>Page @userPageNumber of @DisplayTotalPages(userTotalPages) · @users.Count of @userTotalCount users</div>
+                    <div class="flex gap-2">
+                        <button class="cp-button cp-button-secondary" disabled="@(userPageNumber <= 1 || isLoading)" @onclick="PreviousUsersPageAsync">
+                            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                            Previous
+                        </button>
+                        <button class="cp-button cp-button-secondary" disabled="@(!CanLoadNextUsersPage || isLoading)" @onclick="NextUsersPageAsync">
+                            Next
+                            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </div>
             }
         </div>
@@ -344,7 +354,6 @@
     private string? roleKey;
     private string? permissionKey;
     private string? successMessage;
-    private string? nextCursor;
     private string? errorMessage;
     private string? createdTemporaryPassword;
     private string? createEmail;
@@ -359,6 +368,12 @@
     private bool isLoading;
     private bool isSaving;
     private bool showCreateForm;
+    private const int UserPageSize = 25;
+    private int userPageNumber = 1;
+    private int userTotalCount;
+    private int userTotalPages;
+
+    private bool CanLoadNextUsersPage => userPageNumber < userTotalPages;
 
     protected override async Task OnInitializedAsync()
     {
@@ -373,7 +388,7 @@
             errorMessage = null;
             var rolesTask = UserClient.ListRolesAsync();
             var permissionsTask = UserClient.ListPermissionsAsync();
-            var usersTask = UserClient.ListAsync(search, status, roleKey, permissionKey, null);
+            var usersTask = UserClient.ListAsync(search, status, roleKey, permissionKey, userPageNumber, UserPageSize);
 
             await Task.WhenAll(rolesTask, permissionsTask, usersTask);
 
@@ -381,7 +396,8 @@
             permissionCatalog = permissionsTask.Result.Items;
             users.Clear();
             users.AddRange(usersTask.Result.Items);
-            nextCursor = usersTask.Result.NextCursor;
+            userTotalCount = usersTask.Result.TotalCount;
+            userTotalPages = usersTask.Result.TotalPages;
         }
         catch (Exception ex)
         {
@@ -396,27 +412,30 @@
     private async Task ApplyFiltersAsync()
     {
         selectedUser = null;
+        userPageNumber = 1;
         await LoadInitialAsync();
     }
 
-    private async Task LoadMoreAsync()
+    private async Task PreviousUsersPageAsync()
     {
-        if (string.IsNullOrWhiteSpace(nextCursor))
+        if (userPageNumber <= 1)
         {
             return;
         }
 
-        try
+        userPageNumber--;
+        await LoadInitialAsync();
+    }
+
+    private async Task NextUsersPageAsync()
+    {
+        if (!CanLoadNextUsersPage)
         {
-            errorMessage = null;
-            var response = await UserClient.ListAsync(search, status, roleKey, permissionKey, nextCursor);
-            users.AddRange(response.Items);
-            nextCursor = response.NextCursor;
+            return;
         }
-        catch (Exception ex)
-        {
-            errorMessage = ex.Message;
-        }
+
+        userPageNumber++;
+        await LoadInitialAsync();
     }
 
     private async Task LoadDetailAsync(Guid publicId)
@@ -637,5 +656,10 @@
             "invited" => "rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700",
             _ => "rounded-full bg-ink-100 px-2 py-1 text-xs font-semibold text-ink-700"
         };
+    }
+
+    private static int DisplayTotalPages(int totalPages)
+    {
+        return Math.Max(1, totalPages);
     }
 }

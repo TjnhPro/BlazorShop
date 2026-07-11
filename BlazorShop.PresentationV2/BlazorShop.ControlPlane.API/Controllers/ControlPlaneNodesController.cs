@@ -30,12 +30,12 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> List(
             [FromQuery] string? search,
             [FromQuery] string? status,
-            [FromQuery] string? cursor,
-            [FromQuery] int limit = 25,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 25,
             CancellationToken cancellationToken = default)
         {
             var response = await this.nodeService.ListAsync(
-                new ControlPlaneNodeListQuery(search, status, cursor, limit),
+                new ControlPlaneNodeListQuery(search, status, pageNumber, pageSize),
                 cancellationToken);
 
             return ControlPlaneApiResponseWriter.Success(

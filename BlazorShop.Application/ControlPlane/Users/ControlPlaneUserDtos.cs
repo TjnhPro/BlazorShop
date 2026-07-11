@@ -5,12 +5,15 @@ namespace BlazorShop.Application.ControlPlane.Users
         string? Status = null,
         string? RoleKey = null,
         string? PermissionKey = null,
-        string? Cursor = null,
-        int Limit = 25);
+        int PageNumber = 1,
+        int PageSize = 25);
 
     public sealed record ControlPlaneUserListResponse(
         IReadOnlyList<ControlPlaneUserSummary> Items,
-        string? NextCursor);
+        int TotalCount,
+        int PageNumber,
+        int PageSize,
+        int TotalPages);
 
     public sealed record CreateControlPlaneUserRequest(
         string Email,

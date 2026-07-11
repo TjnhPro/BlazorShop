@@ -6,7 +6,12 @@ namespace BlazorShop.ControlPlane.Web.Services.Nodes
 
     public interface IControlPlaneNodeClient
     {
-        Task<NodeListResponse> ListAsync(string? search, string? status, string? cursor, CancellationToken cancellationToken = default);
+        Task<NodeListResponse> ListAsync(
+            string? search = null,
+            string? status = null,
+            int pageNumber = 1,
+            int pageSize = 25,
+            CancellationToken cancellationToken = default);
 
         Task<NodeDetail?> GetAsync(Guid publicId, CancellationToken cancellationToken = default);
 
@@ -26,9 +31,18 @@ namespace BlazorShop.ControlPlane.Web.Services.Nodes
             this.apiClient = apiClient;
         }
 
-        public async Task<NodeListResponse> ListAsync(string? search, string? status, string? cursor, CancellationToken cancellationToken = default)
+        public async Task<NodeListResponse> ListAsync(
+            string? search = null,
+            string? status = null,
+            int pageNumber = 1,
+            int pageSize = 25,
+            CancellationToken cancellationToken = default)
         {
-            var query = new List<string>();
+            var query = new List<string>
+            {
+                $"pageNumber={Math.Max(1, pageNumber)}",
+                $"pageSize={Math.Clamp(pageSize, 1, 100)}"
+            };
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -40,12 +54,6 @@ namespace BlazorShop.ControlPlane.Web.Services.Nodes
                 query.Add($"status={Uri.EscapeDataString(status)}");
             }
 
-            if (!string.IsNullOrWhiteSpace(cursor))
-            {
-                query.Add($"cursor={Uri.EscapeDataString(cursor)}");
-            }
-
-            query.Add("limit=25");
             var route = $"api/control-plane/nodes?{string.Join("&", query)}";
             var result = await this.apiClient.GetPrivateAsync<NodeListResponse>(
                 route,
@@ -54,7 +62,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Nodes
 
             if (result.Success)
             {
-                return result.Data ?? new NodeListResponse([], null);
+                return result.Data ?? new NodeListResponse([], 0, Math.Max(1, pageNumber), Math.Clamp(pageSize, 1, 100), 0);
             }
 
             throw new InvalidOperationException(result.Message);
@@ -113,7 +121,12 @@ namespace BlazorShop.ControlPlane.Web.Services.Nodes
         }
     }
 
-    public sealed record NodeListResponse(IReadOnlyList<NodeSummary> Items, string? NextCursor);
+    public sealed record NodeListResponse(
+        IReadOnlyList<NodeSummary> Items,
+        int TotalCount,
+        int PageNumber,
+        int PageSize,
+        int TotalPages);
 
     public sealed record NodeSummary(
         Guid PublicId,

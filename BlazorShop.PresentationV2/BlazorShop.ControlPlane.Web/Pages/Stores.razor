@@ -318,7 +318,7 @@
     {
         try
         {
-            var response = await NodeClient.ListAsync(search: null, status: null, cursor: null);
+            var response = await NodeClient.ListAsync(pageSize: 100);
             nodes.Clear();
             nodes.AddRange(response.Items.Where(node => node.Status != "disabled"));
         }

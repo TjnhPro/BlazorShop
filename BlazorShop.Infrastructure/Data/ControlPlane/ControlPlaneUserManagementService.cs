@@ -1,8 +1,8 @@
 namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using System.Security.Cryptography;
-    using System.Text;
 
+    using BlazorShop.Application.ControlPlane.Common;
     using BlazorShop.Application.ControlPlane.Users;
     using BlazorShop.Domain.Entities.ControlPlane;
     using BlazorShop.Domain.Entities.Identity;
@@ -12,8 +12,6 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
     public sealed class ControlPlaneUserManagementService : IControlPlaneUserManagementService
     {
-        private const int DefaultLimit = 25;
-        private const int MaxLimit = 100;
         private const string DefaultIdentityRole = "User";
         private const string PlatformOwnerRoleKey = "platform_owner";
 
@@ -37,14 +35,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
             ArgumentNullException.ThrowIfNull(query);
 
-            var limit = Math.Clamp(query.Limit <= 0 ? DefaultLimit : query.Limit, 1, MaxLimit);
-            var cursorId = DecodeCursor(query.Cursor);
             var users = BaseUserQuery();
-
-            if (cursorId is not null)
-            {
-                users = users.Where(user => user.Id < cursorId.Value);
-            }
 
             if (!string.IsNullOrWhiteSpace(query.Status))
             {
@@ -75,22 +66,28 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                     || user.DisplayName.ToLower().Contains(search));
             }
 
+            var page = ControlPlanePaging.Normalize(query.PageNumber, query.PageSize);
+            var totalCount = await users.CountAsync(cancellationToken);
             var fetchedUsers = await users
                 .OrderByDescending(user => user.Id)
-                .Take(limit + 1)
+                .Skip(page.Skip)
+                .Take(page.PageSize)
                 .ToListAsync(cancellationToken);
 
-            var pageUsers = fetchedUsers.Take(limit).ToArray();
             var identityRoleLookup = await LoadIdentityRoleLookupAsync(
-                pageUsers.Select(user => user.IdentityUserId),
+                fetchedUsers.Select(user => user.IdentityUserId),
                 cancellationToken);
 
-            var items = pageUsers
+            var items = fetchedUsers
                 .Select(user => MapSummary(user, identityRoleLookup))
                 .ToArray();
-            var nextCursor = fetchedUsers.Count > limit ? EncodeCursor(fetchedUsers[limit - 1].Id) : null;
 
-            return new ControlPlaneUserListResponse(items, nextCursor);
+            return new ControlPlaneUserListResponse(
+                items,
+                totalCount,
+                page.PageNumber,
+                page.PageSize,
+                ControlPlanePaging.GetTotalPages(totalCount, page.PageSize));
         }
 
         public async Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> GetAsync(
@@ -886,29 +883,6 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             IReadOnlyDictionary<string, IReadOnlyList<string>> identityRoleLookup)
         {
             return identityRoleLookup.TryGetValue(identityUserId, out var roles) ? roles : [];
-        }
-
-        private static string? EncodeCursor(long id)
-        {
-            return Convert.ToBase64String(Encoding.UTF8.GetBytes(id.ToString()));
-        }
-
-        private static long? DecodeCursor(string? cursor)
-        {
-            if (string.IsNullOrWhiteSpace(cursor))
-            {
-                return null;
-            }
-
-            try
-            {
-                var raw = Encoding.UTF8.GetString(Convert.FromBase64String(cursor));
-                return long.TryParse(raw, out var id) && id > 0 ? id : null;
-            }
-            catch (FormatException)
-            {
-                return null;
-            }
         }
 
         private static ControlPlaneUserOperationResult<TPayload> Succeeded<TPayload>(TPayload payload)

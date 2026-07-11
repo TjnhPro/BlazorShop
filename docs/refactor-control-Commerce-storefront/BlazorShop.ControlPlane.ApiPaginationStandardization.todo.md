@@ -369,17 +369,17 @@ Rationale:
 
 Tasks:
 
-- [ ] Migrate `ControlPlaneUserListQuery` from `Cursor/Limit` to `PageNumber/PageSize`.
-- [ ] Migrate `ControlPlaneUserListResponse` from `NextCursor` to paged response.
-- [ ] Update `Users.razor` from "Load more" to page controls.
-- [ ] Migrate `ControlPlaneNodeListQuery` from `Cursor/Limit` to `PageNumber/PageSize`.
-- [ ] Migrate `ControlPlaneNodeListResponse` from `NextCursor` to paged response.
-- [ ] Update `Nodes.razor` from "Load more" to page controls.
-- [ ] Update all reference callers that currently call first node page only:
+- [x] Migrate `ControlPlaneUserListQuery` from `Cursor/Limit` to `PageNumber/PageSize`.
+- [x] Migrate `ControlPlaneUserListResponse` from `NextCursor` to paged response.
+- [x] Update `Users.razor` from "Load more" to page controls.
+- [x] Migrate `ControlPlaneNodeListQuery` from `Cursor/Limit` to `PageNumber/PageSize`.
+- [x] Migrate `ControlPlaneNodeListResponse` from `NextCursor` to paged response.
+- [x] Update `Nodes.razor` from "Load more" to page controls.
+- [x] Update all reference callers that currently call first node page only:
   - `Stores.razor`
   - `Actions.razor`
   - `Credentials.razor`
-- [ ] For dropdown/reference node lists, explicitly request `pageSize=100` and document current MVP limit, or create lookup endpoint later.
+- [x] For dropdown/reference node lists, explicitly request `pageSize=100` and document current MVP limit, or create lookup endpoint later.
 
 Commit:
 
@@ -487,8 +487,8 @@ Add to `QA-ControlPlane.todo.md`:
 
 Every checked item must either become paged or be renamed away from `List`.
 
-- [ ] `ControlPlaneUsersController.List`
-- [ ] `ControlPlaneNodesController.List`
+- [x] `ControlPlaneUsersController.List`
+- [x] `ControlPlaneNodesController.List`
 - [x] `ControlPlaneStoresController.List`
 - [x] `ControlPlaneHealthController.List`
 - [x] `ControlPlaneActionsController.List`

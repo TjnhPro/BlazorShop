@@ -3,8 +3,8 @@ namespace BlazorShop.Application.ControlPlane.Nodes
     public sealed record ControlPlaneNodeListQuery(
         string? Search = null,
         string? Status = null,
-        string? Cursor = null,
-        int Limit = 25);
+        int PageNumber = 1,
+        int PageSize = 25);
 
     public sealed record CreateControlPlaneNodeRequest(
         string NodeKey,
@@ -21,7 +21,10 @@ namespace BlazorShop.Application.ControlPlane.Nodes
 
     public sealed record ControlPlaneNodeListResponse(
         IReadOnlyList<ControlPlaneNodeSummary> Items,
-        string? NextCursor);
+        int TotalCount,
+        int PageNumber,
+        int PageSize,
+        int TotalPages);
 
     public sealed record ControlPlaneNodeSummary(
         Guid PublicId,

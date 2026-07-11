@@ -11,7 +11,8 @@ namespace BlazorShop.ControlPlane.Web.Services.Users
             string? status,
             string? roleKey,
             string? permissionKey,
-            string? cursor,
+            int pageNumber = 1,
+            int pageSize = 25,
             CancellationToken cancellationToken = default);
 
         Task<UserDetail?> GetAsync(Guid publicId, CancellationToken cancellationToken = default);
@@ -51,16 +52,20 @@ namespace BlazorShop.ControlPlane.Web.Services.Users
             string? status,
             string? roleKey,
             string? permissionKey,
-            string? cursor,
+            int pageNumber = 1,
+            int pageSize = 25,
             CancellationToken cancellationToken = default)
         {
-            var query = new List<string> { "limit=25" };
+            var query = new List<string>
+            {
+                $"pageNumber={Math.Max(1, pageNumber)}",
+                $"pageSize={Math.Clamp(pageSize, 1, 100)}"
+            };
 
             AddQuery(query, "search", search);
             AddQuery(query, "status", status);
             AddQuery(query, "roleKey", roleKey);
             AddQuery(query, "permissionKey", permissionKey);
-            AddQuery(query, "cursor", cursor);
 
             var result = await this.apiClient.GetPrivateAsync<UserListResponse>(
                 $"api/control-plane/users?{string.Join("&", query)}",
@@ -69,7 +74,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Users
 
             if (result.Success)
             {
-                return result.Data ?? new UserListResponse([], null);
+                return result.Data ?? new UserListResponse([], 0, Math.Max(1, pageNumber), Math.Clamp(pageSize, 1, 100), 0);
             }
 
             throw new InvalidOperationException(result.Message);
@@ -227,7 +232,12 @@ namespace BlazorShop.ControlPlane.Web.Services.Users
         }
     }
 
-    public sealed record UserListResponse(IReadOnlyList<UserSummary> Items, string? NextCursor);
+    public sealed record UserListResponse(
+        IReadOnlyList<UserSummary> Items,
+        int TotalCount,
+        int PageNumber,
+        int PageSize,
+        int TotalPages);
 
     public sealed record UserSummary(
         Guid PublicId,

@@ -32,12 +32,12 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromQuery] string? status,
             [FromQuery] string? roleKey,
             [FromQuery] string? permissionKey,
-            [FromQuery] string? cursor,
-            [FromQuery] int limit = 25,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 25,
             CancellationToken cancellationToken = default)
         {
             var response = await this.userManagementService.ListAsync(
-                new ControlPlaneUserListQuery(search, status, roleKey, permissionKey, cursor, limit),
+                new ControlPlaneUserListQuery(search, status, roleKey, permissionKey, pageNumber, pageSize),
                 cancellationToken);
 
             return ControlPlaneApiResponseWriter.Success(
