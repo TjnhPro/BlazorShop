@@ -632,7 +632,9 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 new ControlPlanePermission { Id = 9, Key = "users.read", Description = "List and view Control Plane users.", CreatedAt = SeedCreatedAt },
                 new ControlPlanePermission { Id = 10, Key = "users.write", Description = "Create, update, enable, and disable Control Plane users.", CreatedAt = SeedCreatedAt },
                 new ControlPlanePermission { Id = 11, Key = "roles.assign", Description = "Assign and remove Control Plane roles.", CreatedAt = SeedCreatedAt },
-                new ControlPlanePermission { Id = 12, Key = "permissions.manage", Description = "Assign and remove direct Control Plane user permissions.", CreatedAt = SeedCreatedAt });
+                new ControlPlanePermission { Id = 12, Key = "permissions.manage", Description = "Assign and remove direct Control Plane user permissions.", CreatedAt = SeedCreatedAt },
+                new ControlPlanePermission { Id = 13, Key = "commerce.pages.read", Description = "Read Commerce storefront pages through Control Plane.", CreatedAt = SeedCreatedAt },
+                new ControlPlanePermission { Id = 14, Key = "commerce.pages.write", Description = "Create, update, publish, and archive Commerce storefront pages through Control Plane.", CreatedAt = SeedCreatedAt });
 
             modelBuilder.Entity<ControlPlaneRolePermission>().HasData(
                 new ControlPlaneRolePermission { RoleId = 1, PermissionId = 1, CreatedAt = SeedCreatedAt },
@@ -647,6 +649,8 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 new ControlPlaneRolePermission { RoleId = 1, PermissionId = 10, CreatedAt = SeedCreatedAt },
                 new ControlPlaneRolePermission { RoleId = 1, PermissionId = 11, CreatedAt = SeedCreatedAt },
                 new ControlPlaneRolePermission { RoleId = 1, PermissionId = 12, CreatedAt = SeedCreatedAt },
+                new ControlPlaneRolePermission { RoleId = 1, PermissionId = 13, CreatedAt = SeedCreatedAt },
+                new ControlPlaneRolePermission { RoleId = 1, PermissionId = 14, CreatedAt = SeedCreatedAt },
                 new ControlPlaneRolePermission { RoleId = 2, PermissionId = 1, CreatedAt = SeedCreatedAt },
                 new ControlPlaneRolePermission { RoleId = 2, PermissionId = 2, CreatedAt = SeedCreatedAt },
                 new ControlPlaneRolePermission { RoleId = 2, PermissionId = 3, CreatedAt = SeedCreatedAt },
@@ -654,11 +658,14 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 new ControlPlaneRolePermission { RoleId = 2, PermissionId = 5, CreatedAt = SeedCreatedAt },
                 new ControlPlaneRolePermission { RoleId = 2, PermissionId = 6, CreatedAt = SeedCreatedAt },
                 new ControlPlaneRolePermission { RoleId = 2, PermissionId = 7, CreatedAt = SeedCreatedAt },
+                new ControlPlaneRolePermission { RoleId = 2, PermissionId = 13, CreatedAt = SeedCreatedAt },
+                new ControlPlaneRolePermission { RoleId = 2, PermissionId = 14, CreatedAt = SeedCreatedAt },
                 new ControlPlaneRolePermission { RoleId = 3, PermissionId = 1, CreatedAt = SeedCreatedAt },
                 new ControlPlaneRolePermission { RoleId = 3, PermissionId = 4, CreatedAt = SeedCreatedAt },
                 new ControlPlaneRolePermission { RoleId = 3, PermissionId = 6, CreatedAt = SeedCreatedAt },
                 new ControlPlaneRolePermission { RoleId = 3, PermissionId = 7, CreatedAt = SeedCreatedAt },
-                new ControlPlaneRolePermission { RoleId = 3, PermissionId = 8, CreatedAt = SeedCreatedAt });
+                new ControlPlaneRolePermission { RoleId = 3, PermissionId = 8, CreatedAt = SeedCreatedAt },
+                new ControlPlaneRolePermission { RoleId = 3, PermissionId = 13, CreatedAt = SeedCreatedAt });
         }
     }
 }

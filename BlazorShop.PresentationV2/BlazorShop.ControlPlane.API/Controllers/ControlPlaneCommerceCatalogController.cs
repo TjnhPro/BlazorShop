@@ -518,6 +518,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/pages")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommercePagesRead)]
         public async Task<IActionResult> ListStorefrontPages(
             Guid storePublicId,
             [FromQuery] StorefrontPageListQuery query,
@@ -527,7 +528,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/pages")]
-        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        [Authorize(Policy = ControlPlanePolicyNames.CommercePagesWrite)]
         public async Task<IActionResult> CreateStorefrontPage(
             Guid storePublicId,
             CreateStorefrontPageRequest request,
@@ -537,6 +538,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/pages/{pagePublicId:guid}")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommercePagesRead)]
         public async Task<IActionResult> GetStorefrontPage(
             Guid storePublicId,
             Guid pagePublicId,
@@ -546,7 +548,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/pages/{pagePublicId:guid}")]
-        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        [Authorize(Policy = ControlPlanePolicyNames.CommercePagesWrite)]
         public async Task<IActionResult> UpdateStorefrontPage(
             Guid storePublicId,
             Guid pagePublicId,
@@ -557,7 +559,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpDelete("~/api/controlplane/commerce/stores/{storePublicId:guid}/pages/{pagePublicId:guid}")]
-        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        [Authorize(Policy = ControlPlanePolicyNames.CommercePagesWrite)]
         public async Task<IActionResult> ArchiveStorefrontPage(
             Guid storePublicId,
             Guid pagePublicId,

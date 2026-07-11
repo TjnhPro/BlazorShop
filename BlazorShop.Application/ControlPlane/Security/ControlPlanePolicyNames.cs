@@ -14,6 +14,8 @@ namespace BlazorShop.Application.ControlPlane.Security
         public const string UsersWrite = "ControlPlane.Users.Write";
         public const string RolesAssign = "ControlPlane.Roles.Assign";
         public const string PermissionsManage = "ControlPlane.Permissions.Manage";
+        public const string CommercePagesRead = "ControlPlane.CommercePages.Read";
+        public const string CommercePagesWrite = "ControlPlane.CommercePages.Write";
 
         public static readonly IReadOnlyDictionary<string, string> PermissionByPolicy =
             new Dictionary<string, string>(StringComparer.Ordinal)
@@ -29,7 +31,9 @@ namespace BlazorShop.Application.ControlPlane.Security
                 [UsersRead] = ControlPlanePermissions.UsersRead,
                 [UsersWrite] = ControlPlanePermissions.UsersWrite,
                 [RolesAssign] = ControlPlanePermissions.RolesAssign,
-                [PermissionsManage] = ControlPlanePermissions.PermissionsManage
+                [PermissionsManage] = ControlPlanePermissions.PermissionsManage,
+                [CommercePagesRead] = ControlPlanePermissions.CommercePagesRead,
+                [CommercePagesWrite] = ControlPlanePermissions.CommercePagesWrite
             };
     }
 }
