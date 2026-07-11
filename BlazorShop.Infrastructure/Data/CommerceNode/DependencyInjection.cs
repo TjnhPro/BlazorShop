@@ -4,6 +4,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
     using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
+    using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.Tasks;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
@@ -120,6 +121,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IProductImportService, ProductImportService>();
             services.AddScoped<IVariationTemplateService, VariationTemplateService>();
             services.AddScoped<IVariationTemplateLookupService, VariationTemplateLookupService>();
+            services.AddScoped<IStorefrontPageService, StorefrontPageService>();
             services.AddSingleton<ICatalogQueryCache, MemoryCatalogQueryCache>();
             services.AddScoped<ICommerceStoreService, CommerceStoreService>();
             services.AddScoped<ICommerceStoreContext, CommerceStoreContext>();
