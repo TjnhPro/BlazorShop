@@ -36,19 +36,22 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
         }
 
         [Fact]
-        public async Task ListAsync_UsesCursorPagination()
+        public async Task ListAsync_UsesPagePagination()
         {
             await using var context = CreateContext();
             var service = new ControlPlaneNodeService(context);
             await service.CreateAsync(new CreateControlPlaneNodeRequest("node-a", "test-node-secret", "Node A", null, "http://localhost:5180/api/controlpanel"));
             await service.CreateAsync(new CreateControlPlaneNodeRequest("node-b", "test-node-secret", "Node B", null, "http://localhost:5280/api/controlpanel"));
 
-            var firstPage = await service.ListAsync(new ControlPlaneNodeListQuery(Limit: 1));
-            var secondPage = await service.ListAsync(new ControlPlaneNodeListQuery(Cursor: firstPage.NextCursor, Limit: 1));
+            var firstPage = await service.ListAsync(new ControlPlaneNodeListQuery(PageNumber: 1, PageSize: 1));
+            var secondPage = await service.ListAsync(new ControlPlaneNodeListQuery(PageNumber: 2, PageSize: 1));
 
             Assert.Single(firstPage.Items);
-            Assert.NotNull(firstPage.NextCursor);
+            Assert.Equal(2, firstPage.TotalCount);
+            Assert.Equal(1, firstPage.PageNumber);
+            Assert.Equal(2, firstPage.TotalPages);
             Assert.Single(secondPage.Items);
+            Assert.Equal(2, secondPage.PageNumber);
             Assert.NotEqual(firstPage.Items[0].PublicId, secondPage.Items[0].PublicId);
         }
 

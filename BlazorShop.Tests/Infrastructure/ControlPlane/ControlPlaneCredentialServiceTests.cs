@@ -18,7 +18,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             var service = new ControlPlaneCredentialService(context);
 
             var created = await service.CreateAsync(node.PublicId, actorAdminUserId: 42);
-            var listed = await service.ListAsync(node.PublicId);
+            var listed = await service.ListAsync(node.PublicId, new ControlPlaneCredentialListQuery());
             var persisted = await context.NodeCredentials.SingleAsync();
 
             Assert.True(created.Success);
