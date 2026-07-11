@@ -332,10 +332,13 @@
         };
         shipmentDate = shipmentForm.ShipDate.Date;
 
-        var shipmentResult = await CatalogClient.GetShipmentAsync(selectedStorePublicId.Value, orderId);
-        if (shipmentResult.Success && shipmentResult.Data is not null)
+        if (HasExistingShipmentSnapshot(selectedOrder))
         {
-            ApplyShipment(shipmentResult.Data);
+            var shipmentResult = await CatalogClient.GetShipmentAsync(selectedStorePublicId.Value, orderId);
+            if (shipmentResult.Success && shipmentResult.Data is not null)
+            {
+                ApplyShipment(shipmentResult.Data);
+            }
         }
 
         isDrawerOpen = true;
@@ -448,6 +451,16 @@
             Note = shipment.Note,
         };
         shipmentDate = shipment.ShipDate.Date;
+    }
+
+    private static bool HasExistingShipmentSnapshot(GetOrder order)
+    {
+        return !string.IsNullOrWhiteSpace(order.ShippingCarrier)
+            || !string.IsNullOrWhiteSpace(order.TrackingNumber)
+            || !string.IsNullOrWhiteSpace(order.TrackingUrl)
+            || order.ShippedOn.HasValue
+            || string.Equals(order.ShippingStatus, "Shipped", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(order.ShippingStatus, "Delivered", StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task PreviousPageAsync()
