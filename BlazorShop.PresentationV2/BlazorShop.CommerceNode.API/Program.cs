@@ -49,11 +49,13 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+if (ShouldMigrateDatabase(app))
+{
+    await BlazorShop.CommerceNode.API.CommerceNodeDatabaseBootstrapper.MigrateAsync(app.Services);
+}
+
 if (app.Environment.IsDevelopment())
 {
-    using var scope = app.Services.CreateScope();
-    await scope.ServiceProvider.GetRequiredService<CommerceNodeDevelopmentSeeder>().SeedAsync();
-
     app.UseSwagger();
     app.UseSwaggerUI();
 }
@@ -75,6 +77,11 @@ app.MapControllers();
 app.MapDefaultEndpoints();
 
 app.Run();
+
+static bool ShouldMigrateDatabase(WebApplication app)
+{
+    return app.Configuration.GetValue("CommerceNode:Database:MigrateOnStartup", app.Environment.IsDevelopment());
+}
 
 static StaticFileOptions CreateUploadsStaticFileOptions(string uploadsPath)
 {

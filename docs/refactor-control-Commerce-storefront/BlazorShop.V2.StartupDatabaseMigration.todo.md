@@ -268,14 +268,14 @@ Commit: `feat(controlplane): harden startup database migration`
 
 ### Phase 2 - Commerce Node Startup Migration
 
-- [ ] Add `CommerceNodeDatabaseBootstrapper`.
-- [ ] Add `CommerceNode:Database:MigrateOnStartup`.
-- [ ] Add `CommerceNode:Database:FailStartupOnMigrationError`.
-- [ ] Add `CommerceNode:Database:LogMigrationState`.
-- [ ] Run migration before Development seeding.
-- [ ] Run migration before hosted services process work.
-- [ ] Ensure `CommerceTaskWorker` does not start before schema migration completes.
-- [ ] Add production example config if Commerce Node does not have one yet.
+- [x] Add `CommerceNodeDatabaseBootstrapper`.
+- [x] Add `CommerceNode:Database:MigrateOnStartup`.
+- [x] Add `CommerceNode:Database:FailStartupOnMigrationError`.
+- [x] Add `CommerceNode:Database:LogMigrationState`.
+- [x] Run migration before Development seeding.
+- [x] Run migration before hosted services process work.
+- [x] Ensure `CommerceTaskWorker` does not start before schema migration completes.
+- [x] Add production example config if Commerce Node does not have one yet.
 
 Commit: `feat(commercenode): apply database migrations on startup`
 
