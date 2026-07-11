@@ -5,5 +5,7 @@ namespace BlazorShop.Application.DTOs.Discovery
         public IReadOnlyList<GetCategorySitemapEntry> Categories { get; set; } = Array.Empty<GetCategorySitemapEntry>();
 
         public IReadOnlyList<GetProductSitemapEntry> Products { get; set; } = Array.Empty<GetProductSitemapEntry>();
+
+        public IReadOnlyList<GetPageSitemapEntry> Pages { get; set; } = Array.Empty<GetPageSitemapEntry>();
     }
 }

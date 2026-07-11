@@ -7,6 +7,7 @@ namespace BlazorShop.Application.Services
 
     using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.CommerceNode.Stores;
+    using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs.Category;
     using BlazorShop.Application.DTOs.Discovery;
@@ -28,6 +29,7 @@ namespace BlazorShop.Application.Services
         private readonly IMapper _mapper;
         private readonly IProductReadRepository _productReadRepository;
         private readonly ISlugService _slugService;
+        private readonly IStorefrontPageService? _storefrontPageService;
 
         public PublicCatalogService(
             ICategoryRepository categoryRepository,
@@ -35,7 +37,8 @@ namespace BlazorShop.Application.Services
             IProductReadRepository productReadRepository,
             ISlugService slugService,
             ICatalogQueryCache? catalogQueryCache = null,
-            ICommerceStoreContext? commerceStoreContext = null)
+            ICommerceStoreContext? commerceStoreContext = null,
+            IStorefrontPageService? storefrontPageService = null)
         {
             _categoryRepository = categoryRepository;
             _catalogQueryCache = catalogQueryCache;
@@ -43,6 +46,7 @@ namespace BlazorShop.Application.Services
             _mapper = mapper;
             _productReadRepository = productReadRepository;
             _slugService = slugService;
+            _storefrontPageService = storefrontPageService;
         }
 
         public async Task<IEnumerable<GetCategory>> GetPublishedCategoriesAsync()
@@ -84,6 +88,7 @@ namespace BlazorShop.Application.Services
         {
             var categories = await _categoryRepository.GetPublishedCategorySitemapEntriesAsync();
             var products = await _productReadRepository.GetPublishedProductSitemapEntriesAsync();
+            var pages = await GetPublishedPageSitemapEntriesAsync(_storefrontPageService);
 
             return new GetPublicCatalogSitemap
             {
@@ -101,7 +106,26 @@ namespace BlazorShop.Application.Services
                         LastModifiedUtc = product.LastModifiedUtc,
                     })
                     .ToArray(),
+                Pages = pages
+                    .Select(page => new GetPageSitemapEntry
+                    {
+                        Slug = page.Slug,
+                        LastModifiedUtc = page.UpdatedAt.UtcDateTime,
+                    })
+                    .ToArray(),
             };
+        }
+
+        private static async Task<IReadOnlyList<StorefrontPageSitemapEntryDto>> GetPublishedPageSitemapEntriesAsync(
+            IStorefrontPageService? storefrontPageService)
+        {
+            if (storefrontPageService is null)
+            {
+                return [];
+            }
+
+            var result = await storefrontPageService.ListSitemapEntriesAsync();
+            return result.Success && result.Payload is not null ? result.Payload : [];
         }
 
         public async Task<PagedResult<GetCatalogProduct>> GetPublishedCatalogPageAsync(ProductCatalogQuery query)
