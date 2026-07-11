@@ -53,6 +53,14 @@ Use the correct context:
 
 Do not add new V2 migrations to `AppDbContext`.
 
+V2 database upgrades use startup EF Core migrations for MVP:
+
+- Control Plane API owns startup migration for `ControlPlaneDbContext`.
+- Commerce Node API owns startup migration for `CommerceNodeDbContext`.
+- Each runtime migrates only its own database.
+- Do not introduce a migrator image, CommerceNode Agent, or Control Plane migration UI unless that architecture is explicitly reopened.
+- Production operation requires a manual database backup and a single API instance during migration.
+
 ## Smartstore Rule
 
 Smartstore is business reference source only.

@@ -94,6 +94,14 @@ Use the DbContext that matches the product boundary:
 
 Do not merge contexts just to simplify implementation. Cross-boundary behavior should go through APIs.
 
+V2 production database upgrades follow the Smartstore-style startup migration decision:
+
+- `BlazorShop.ControlPlane.API` may apply pending EF Core migrations for `ControlPlaneDbContext` on startup when `ControlPlane:Database:MigrateOnStartup=true`.
+- `BlazorShop.CommerceNode.API` may apply pending EF Core migrations for `CommerceNodeDbContext` on startup when `CommerceNode:Database:MigrateOnStartup=true`.
+- A runtime must only migrate its own DbContext.
+- Do not propose a separate migrator image, CommerceNode Agent, or Control Plane "Update DB" button for MVP migration unless the user explicitly reopens that decision.
+- Operators must backup the target PostgreSQL database and run one API instance per database during startup migration.
+
 ## Smartstore Usage
 
 `Smartstore/` is reference source only. It exists to help design better ecommerce business behavior.

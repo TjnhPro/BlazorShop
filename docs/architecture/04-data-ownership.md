@@ -143,3 +143,13 @@ This is intentional:
 - Permissions and roles may look similar, but they do not mean the same thing across boundaries.
 
 Do not merge the contexts just to avoid a second identity setup. A feature should cross boundaries through APIs, not by sharing DbContext state.
+
+## Startup Migration Ownership
+
+V2 database migration follows the startup migration decision captured in `docs/refactor-control-Commerce-storefront/BlazorShop.V2.StartupDatabaseMigration.todo.md`.
+
+- `BlazorShop.ControlPlane.API` may run EF Core migrations for `ControlPlaneDbContext` when `ControlPlane:Database:MigrateOnStartup=true`.
+- `BlazorShop.CommerceNode.API` may run EF Core migrations for `CommerceNodeDbContext` when `CommerceNode:Database:MigrateOnStartup=true`.
+- `AppDbContext` remains legacy and is not part of the V2 startup migration flow.
+- A runtime must fail startup if its own database migration fails.
+- Production deploys must backup the database first and avoid starting multiple API instances against the same database while migration is running.
