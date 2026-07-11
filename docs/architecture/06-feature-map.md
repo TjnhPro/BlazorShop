@@ -26,6 +26,7 @@ Capabilities:
 - Control actions and attempts.
 - Audit logs.
 - Catalog gateway from Control Plane API to Commerce Node API.
+- Commerce storefront page gateway and admin UI. Control Plane Web must call Control Plane API only.
 
 Decision rule:
 
@@ -67,6 +68,7 @@ Capabilities:
 - Metrics.
 - Product/category SEO.
 - SEO settings and redirects.
+- Store-scoped dynamic storefront pages, including admin CRUD, HTML validation, archive, and sitemap inclusion.
 
 Decision rule:
 
@@ -90,6 +92,7 @@ Capabilities:
 - Store context and maintenance state.
 - Storefront auth create/login/refresh/logout/change password/update profile.
 - Public catalog categories/products by id or slug.
+- Public storefront pages by slug.
 - Sitemap catalog feed.
 - Cart checkout/save checkout.
 - Order confirmation and current user orders.
@@ -113,6 +116,7 @@ Project:
 Capabilities:
 
 - Public storefront pages.
+- Dynamic informational pages at `/pages/{slug}` loaded from Commerce Node.
 - Product/category route rendering.
 - Login/register/logout forms in the storefront layout.
 - Storefront auth cookie bridge.

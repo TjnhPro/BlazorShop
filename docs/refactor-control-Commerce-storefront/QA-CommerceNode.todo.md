@@ -306,6 +306,36 @@ Last verified: 2026-07-10
 - [x] `GET /api/internal/seo/settings`
 - [x] `GET /api/internal/seo/redirects/resolve?path=/legacy-qa-product`
 
+### Storefront Pages
+
+- [x] CommerceNode API builds after StorefrontPage schema/service/API changes. 2026-07-11: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
+- [ ] Apply `CommerceNodeStorefrontPage` migration to clean CommerceNode PostgreSQL on port `5434`.
+- [ ] `GET /api/commerce/admin/pages?pageNumber=1&pageSize=25` returns paged response.
+- [ ] Admin page list search matches title.
+- [ ] Admin page list search matches slug.
+- [ ] Status filter `all` includes draft and published non-archived pages.
+- [ ] Status filter `published` includes published only.
+- [ ] Status filter `draft` includes draft only.
+- [ ] `POST /api/commerce/admin/pages` creates draft page by default.
+- [ ] Create page requires slug.
+- [ ] Slug is normalized before save.
+- [ ] Duplicate slug in same store is rejected.
+- [ ] Duplicate slug is rejected even if old page is archived.
+- [ ] Dangerous HTML `<script>` is rejected.
+- [ ] Dangerous HTML `javascript:` is rejected.
+- [ ] Dangerous inline event such as `onerror=` is rejected.
+- [ ] External image URL in `<img src>` is rejected.
+- [ ] Local image URL in `<img src="/media/...">` is accepted.
+- [ ] External HTTPS link in `<a href>` is accepted.
+- [ ] Body above 100 KB is rejected.
+- [ ] Draft page is not returned from `GET /api/internal/pages/{slug}`.
+- [ ] Archived page is not returned from `GET /api/internal/pages/{slug}`.
+- [ ] Published page is returned from `GET /api/internal/pages/{slug}`.
+- [ ] Archive hides page from admin list.
+- [ ] Archive reserves slug.
+- [ ] Sitemap entries include only published pages with `include_in_sitemap=true`.
+- [ ] Store A cannot read Store B page by slug.
+
 ### Auth
 
 - [x] `POST /api/internal/auth/create`

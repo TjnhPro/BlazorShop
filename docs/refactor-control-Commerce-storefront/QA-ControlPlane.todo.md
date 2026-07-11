@@ -167,6 +167,28 @@ Status legend:
 - [ ] API error message from CommerceNode is surfaced through ControlPlane API response message.
 - [ ] Browser network capture shows no direct `api/commerce/*` call from ControlPlane Web.
 
+## Commerce Storefront Pages
+
+- [x] ControlPlane API builds after storefront page gateway changes. 2026-07-11: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` passed.
+- [x] ControlPlane Web builds after storefront page admin UI changes. 2026-07-11: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` passed.
+- [ ] Apply `ControlPlaneCommercePagePermissions` migration to ControlPlane PostgreSQL on port `5433`.
+- [ ] Pages nav item renders under Commerce Admin.
+- [ ] Pages list loads after selecting a store.
+- [ ] Pages list calls ControlPlane API only.
+- [ ] Browser network has no direct CommerceNode page API calls.
+- [ ] Page list uses `pageNumber/pageSize`.
+- [ ] Search title works.
+- [ ] Search slug works.
+- [ ] Status filter works.
+- [ ] Create draft page works.
+- [ ] Edit page works.
+- [ ] Publish page works.
+- [ ] Include in sitemap toggle works.
+- [ ] Archive page works.
+- [ ] API validation messages display from response message.
+- [ ] User without `commerce.pages.read` cannot list/view pages.
+- [ ] User without `commerce.pages.write` cannot create/update/archive pages.
+
 ## Commerce Admin UX Completion
 
 - [x] Commerce Admin nav group renders. 2026-07-11: visible Playwright MCP browser showed Products, Product Imports, Categories, Variation Templates, and Orders links.

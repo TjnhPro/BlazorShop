@@ -1,8 +1,17 @@
 # BlazorShop CommerceNode StorefrontPage Todo
 
-Status: draft
+Status: implemented
 Created: 2026-07-11
 Scope: Store-scoped dynamic storefront informational pages rendered from CommerceNode data at `/pages/{slug}`.
+
+Implementation notes:
+
+- Implemented through phased commits ending 2026-07-11.
+- CommerceNode API currently uses canonical routes `api/commerce/admin/pages` and `api/internal/pages/{slug}` following existing V2 controller style.
+- ControlPlane Web still calls only ControlPlane API routes under `api/controlplane/commerce/stores/{storePublicId}/pages`.
+- Storefront V2 dynamic route is `/pages/{slug}`.
+- Static placeholder Razor pages for about/faq/privacy/terms/customer-service were removed.
+- Separate ControlPlane permissions `commerce.pages.read` and `commerce.pages.write` were added.
 
 ## Goal
 
@@ -697,17 +706,17 @@ Update route constants:
 
 ### Phase 0 - Baseline Audit
 
-- [ ] Confirm no existing `StorefrontPage` entity/service exists.
-- [ ] Confirm current placeholder static pages and route constants.
-- [ ] Confirm current `StorefrontSitemapService` static route entries.
-- [ ] Confirm current ControlPlane commerce admin client/gateway pattern.
-- [ ] Confirm current CommerceNode service response and audit patterns.
-- [ ] Confirm existing permission seed pattern for ControlPlane permissions.
+- [x] Confirm no existing `StorefrontPage` entity/service exists.
+- [x] Confirm current placeholder static pages and route constants.
+- [x] Confirm current `StorefrontSitemapService` static route entries.
+- [x] Confirm current ControlPlane commerce admin client/gateway pattern.
+- [x] Confirm current CommerceNode service response and audit patterns.
+- [x] Confirm existing permission seed pattern for ControlPlane permissions.
 
 Exit gate:
 
-- [ ] No legacy project needs to be edited.
-- [ ] Boundaries are still `ControlPlane.Web -> ControlPlane.API -> CommerceNode.API` and `StorefrontV2 -> CommerceNode.API`.
+- [x] No legacy project needs to be edited.
+- [x] Boundaries are still `ControlPlane.Web -> ControlPlane.API -> CommerceNode.API` and `StorefrontV2 -> CommerceNode.API`.
 
 Suggested commit:
 
@@ -717,19 +726,19 @@ docs: plan storefront page foundation
 
 ### Phase 1 - Domain, DbContext, Migration
 
-- [ ] Add `StorefrontPage` entity under `BlazorShop.Domain.Entities.CommerceNode`.
-- [ ] Add `DbSet<StorefrontPage>` to `CommerceNodeDbContext`.
-- [ ] Configure `storefront_page` table with snake_case columns.
-- [ ] Add indexes and constraints from Database Design.
-- [ ] Add CommerceNode EF migration.
-- [ ] Verify migration targets `CommerceNodeDbContext` only.
-- [ ] Run build for Domain/Infrastructure if practical.
+- [x] Add `StorefrontPage` entity under `BlazorShop.Domain.Entities.CommerceNode`.
+- [x] Add `DbSet<StorefrontPage>` to `CommerceNodeDbContext`.
+- [x] Configure `storefront_page` table with snake_case columns.
+- [x] Add indexes and constraints from Database Design.
+- [x] Add CommerceNode EF migration.
+- [x] Verify migration targets `CommerceNodeDbContext` only.
+- [x] Run build for Domain/Infrastructure if practical.
 
 Exit gate:
 
-- [ ] Migration does not touch `ControlPlaneDbContext`.
-- [ ] Migration does not touch `AppDbContext`.
-- [ ] `unique(store_id, slug)` reserves archived slugs too.
+- [x] Migration does not touch `ControlPlaneDbContext`.
+- [x] Migration does not touch `AppDbContext`.
+- [x] `unique(store_id, slug)` reserves archived slugs too.
 
 Suggested commit:
 
@@ -739,28 +748,28 @@ feat(commerce-node): add storefront page schema
 
 ### Phase 2 - Application DTOs, Validation, Service
 
-- [ ] Add StorefrontPage DTOs and query contracts.
-- [ ] Add `IStorefrontPageService`.
-- [ ] Implement `StorefrontPageService`.
-- [ ] Reuse `ISlugService` for normalization.
-- [ ] Add HTML safety validation.
-- [ ] Enforce body max 100 KB.
-- [ ] Enforce local-only `<img src>`.
-- [ ] Allow local/HTTPS `<a href>`.
-- [ ] Implement paged admin query.
-- [ ] Implement published-by-slug query.
-- [ ] Implement create/update/archive.
-- [ ] Implement sitemap entries.
-- [ ] Add audit hooks/events where existing pattern makes this practical.
+- [x] Add StorefrontPage DTOs and query contracts.
+- [x] Add `IStorefrontPageService`.
+- [x] Implement `StorefrontPageService`.
+- [x] Reuse `ISlugService` for normalization.
+- [x] Add HTML safety validation.
+- [x] Enforce body max 100 KB.
+- [x] Enforce local-only `<img src>`.
+- [x] Allow local/HTTPS `<a href>`.
+- [x] Implement paged admin query.
+- [x] Implement published-by-slug query.
+- [x] Implement create/update/archive.
+- [x] Implement sitemap entries.
+- [x] Add audit hooks/events where existing pattern makes this practical.
 - [ ] Add focused tests for slug, paging, archive, sitemap, and HTML validation.
 
 Exit gate:
 
-- [ ] Draft page is not returned by public query.
-- [ ] Archived page is not returned by public/admin list.
-- [ ] Dangerous HTML rejects the whole request.
-- [ ] External image URL rejects the whole request.
-- [ ] Local image URL is accepted.
+- [x] Draft page is not returned by public query.
+- [x] Archived page is not returned by public/admin list.
+- [x] Dangerous HTML rejects the whole request.
+- [x] External image URL rejects the whole request.
+- [x] Local image URL is accepted.
 
 Suggested commit:
 

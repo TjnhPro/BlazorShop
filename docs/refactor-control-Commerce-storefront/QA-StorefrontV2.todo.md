@@ -115,6 +115,24 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] `/todays-deals`
   - [x] Shows discount/deal products when available.
 
+## Dynamic Storefront Pages
+
+- [x] Storefront V2 builds after dynamic StorefrontPage rendering changes. 2026-07-11: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed.
+- [ ] `/pages/{slug}` renders published page title.
+- [ ] `/pages/{slug}` renders intro.
+- [ ] `/pages/{slug}` renders body HTML.
+- [ ] Local image path in body renders.
+- [ ] HTTPS anchor link renders.
+- [ ] Missing page returns 404.
+- [ ] Draft page returns 404.
+- [ ] Archived page returns 404.
+- [ ] CommerceNode API unavailable renders service unavailable, not 404.
+- [ ] Page SEO uses page meta fields.
+- [ ] Sitemap includes `/pages/{slug}` when published and included.
+- [ ] Sitemap excludes draft page.
+- [ ] Sitemap excludes published page with `include_in_sitemap=false`.
+- [ ] Old `/privacy`, `/faq`, `/terms`, `/customer-service`, `/about-us` routes return 404.
+
 ## Catalog Search MVP
 
 Use this checklist whenever `StorefrontHeader`, `/search`, `StorefrontApiClient`, catalog query model, or CommerceNode published catalog search changes.
