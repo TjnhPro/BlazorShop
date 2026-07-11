@@ -43,7 +43,7 @@
                 <h2 class="text-sm font-semibold text-ink-900">Upload CSV</h2>
             </div>
             <div class="space-y-4 p-4">
-                <button class="cp-button cp-button-secondary w-full" disabled="@(!HasStore)" @onclick="DownloadTemplateAsync">
+                <button class="cp-button cp-button-secondary w-full" @onclick="DownloadTemplateAsync">
                     <i class="fa-solid fa-download" aria-hidden="true"></i>
                     Download CSV template
                 </button>
@@ -379,12 +379,7 @@
 
     private async Task DownloadTemplateAsync()
     {
-        if (!HasStore)
-        {
-            return;
-        }
-
-        var result = await CatalogClient.DownloadProductImportTemplateAsync(selectedStorePublicId!.Value);
+        var result = await CatalogClient.DownloadProductImportTemplateAsync();
         await DownloadAsync(result, "product-import-template.csv");
     }
 

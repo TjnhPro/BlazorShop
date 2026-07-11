@@ -301,7 +301,7 @@ Status legend:
 
 ## Pagination Contract Regression
 
-- [ ] Product Import template downloads canonical parser header.
+- [ ] Product Import template downloads from global `api/controlplane/commerce/product-imports/template` without requiring a selected store and returns the canonical parser header.
 - [ ] Product Import valid CSV from downloaded template queues and completes.
 - [ ] Product Import invalid header shows job-level error in drawer.
 - [ ] Product Import error CSV includes job-level error when row list is empty.

@@ -101,8 +101,9 @@ namespace BlazorShop.ControlPlane.API.Controllers
             return ToActionResult(await this.catalogService.UpdateProductSeoAsync(storePublicId, productId, request, cancellationToken));
         }
 
+        [HttpGet("~/api/controlplane/commerce/product-imports/template")]
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/product-imports/template")]
-        public IActionResult DownloadProductImportTemplate(Guid storePublicId)
+        public IActionResult DownloadProductImportTemplate(Guid? storePublicId = null)
         {
             _ = storePublicId;
             return this.File(

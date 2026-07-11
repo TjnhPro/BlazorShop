@@ -116,7 +116,7 @@ Compatibility note:
 Add/standardize:
 
 ```text
-GET  /api/controlplane/commerce/stores/{storePublicId}/product-imports/template
+GET  /api/controlplane/commerce/product-imports/template
 POST /api/controlplane/commerce/stores/{storePublicId}/product-imports
 GET  /api/controlplane/commerce/stores/{storePublicId}/product-imports
 GET  /api/controlplane/commerce/stores/{storePublicId}/product-imports/{jobPublicId}
@@ -127,7 +127,7 @@ GET  /api/controlplane/commerce/stores/{storePublicId}/product-imports/{jobPubli
 CSV template:
 
 ```csv
-sku,title,short_description,full_description,price,compare_price,quantity,category_slug,variation_template_slug,product_type,image_urls,is_published
+sku,name,slug,category_slug,product_type,variation_template_slug,price,compare_price,quantity,is_published,short_description,description,image_urls
 ```
 
 Rules:

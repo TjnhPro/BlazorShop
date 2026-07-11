@@ -57,7 +57,6 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneFileResult> DownloadProductImportTemplateAsync(
-            Guid storePublicId,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneClientResult<ProductImportUploadResponse>> UploadProductImportAsync(
@@ -375,11 +374,10 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
         }
 
         public Task<ControlPlaneFileResult> DownloadProductImportTemplateAsync(
-            Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.GetPrivateFileAsync(
-                CommerceRoute(storePublicId, "product-imports/template"),
+                "api/controlplane/commerce/product-imports/template",
                 "Unable to download product import template.",
                 cancellationToken);
         }
