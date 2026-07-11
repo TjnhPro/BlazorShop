@@ -42,6 +42,8 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Blazo
 
 Control Plane API defaults to `ControlPlaneConnection` on port `5433`.
 
+Control Plane API applies pending `ControlPlaneDbContext` EF Core migrations on startup when `ControlPlane:Database:MigrateOnStartup=true`. Development enables this by default.
+
 ## Commerce Node Local Run
 
 Dependencies:
@@ -57,6 +59,8 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 ```
 
 Commerce Node API defaults to `CommerceNodeConnection` on port `5434`.
+
+Commerce Node API applies pending `CommerceNodeDbContext` EF Core migrations on startup when `CommerceNode:Database:MigrateOnStartup=true`. Development enables this by default.
 
 The Commerce Node compose file includes:
 
@@ -117,6 +121,36 @@ Rules:
 - Commerce Node owns node-local task execution.
 - Storefront containers should be uniquely named/keyed so Commerce Node can start, stop, remove, retry, or inspect them.
 - Storefront image selection can be database-configured so test images and versions can be controlled.
+
+## V2 Production Database Migration
+
+V2 uses Smartstore-style startup migration for MVP.
+
+Control Plane:
+
+```text
+ControlPlane__Database__MigrateOnStartup=true
+ControlPlane__Database__FailStartupOnMigrationError=true
+ControlPlane__Database__LogMigrationState=true
+```
+
+Commerce Node:
+
+```text
+CommerceNode__Database__MigrateOnStartup=true
+CommerceNode__Database__FailStartupOnMigrationError=true
+CommerceNode__Database__LogMigrationState=true
+```
+
+Production operation:
+
+1. Backup the target PostgreSQL database before replacing the API image.
+2. Ensure only one API instance starts against that database while migration runs.
+3. Start the latest API image and watch startup logs for applied and pending migration names.
+4. Treat migration failure as startup failure. Do not run traffic against a partially migrated database.
+5. If startup fails, inspect logs, then restore the database backup or roll back the app image manually.
+
+Long data migrations need manual review before release because they can block readiness while the API starts.
 
 ## QA Run Notes
 

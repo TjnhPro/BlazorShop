@@ -212,6 +212,40 @@ Notes:
 - The compose example disables API-level HSTS and HTTPS redirection because the API sits behind the Web proxy. If you expose the API directly over HTTPS instead, re-enable both.
 - PayPal is intentionally disabled in this build until a real provider integration and capture flow are implemented.
 
+## V2 Startup Database Migration
+
+The active V2 runtimes use startup EF Core migration for MVP. This applies to:
+
+- `BlazorShop.ControlPlane.API` with `ControlPlaneDbContext` and `ControlPlaneConnection`.
+- `BlazorShop.CommerceNode.API` with `CommerceNodeDbContext` and `CommerceNodeConnection`.
+
+Enable startup migration intentionally through environment variables:
+
+```text
+ControlPlane__Database__MigrateOnStartup=true
+ControlPlane__Database__FailStartupOnMigrationError=true
+ControlPlane__Database__LogMigrationState=true
+CommerceNode__Database__MigrateOnStartup=true
+CommerceNode__Database__FailStartupOnMigrationError=true
+CommerceNode__Database__LogMigrationState=true
+```
+
+Manual production workflow:
+
+1. Backup the target PostgreSQL database with the platform's backup tool or `pg_dump`.
+2. Stop or scale down extra API instances so one runtime owns migration for that database.
+3. Pull or deploy the latest API image.
+4. Start the API and watch startup logs for migration state, pending migration names, and completion.
+5. Only open traffic after the API reaches ready/healthy state.
+
+Failure behavior:
+
+- Migration errors must fail API startup when `FailStartupOnMigrationError=true`.
+- Do not keep a container running against a partially migrated or incompatible schema.
+- Restore the DB backup or roll back the API image manually after reviewing logs.
+
+Review long or data-heavy migrations before release. Startup migration is acceptable for MVP, but a migration that rewrites large tables can delay readiness and should be handled as an explicit maintenance operation.
+
 ## Logging and Failure Visibility
 
 - API startup/runtime logs go to console and to `BlazorShop.Presentation/BlazorShop.API/log/log*.txt` by default.
@@ -401,7 +435,7 @@ Run this checklist before promoting a release candidate.
 2. Run `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj -c Release --filter "Category=SeoSmoke"` against the actual running storefront environment with `BLAZORSHOP_SEO_SMOKE_BASE_URL` and any required route overrides set.
 3. Run `docker compose -f compose.production.yml config` with the production-required environment variables available.
 4. Run `docker compose -f compose.production.yml build api web`.
-5. Apply database migrations before opening traffic. In the standard runtime path this repository applies migrations on API startup, but if your deployment process separates migration execution from app startup, run that migration step explicitly and verify it completed successfully.
+5. Apply database migrations before opening traffic. For V2, the standard MVP runtime path applies migrations on API startup when the relevant `MigrateOnStartup` flag is true; backup the DB first and run one API instance during migration.
 6. Smoke test login, refresh, logout, and upload persistence against the deployed environment.
 
 Suggested smoke-test focus:

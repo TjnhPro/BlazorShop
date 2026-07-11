@@ -291,14 +291,14 @@ Commit: `chore: align v2 local scripts with startup migrations`
 
 ### Phase 4 - Production Runbook
 
-- [ ] Update `docs/architecture/07-deployment-and-local-run.md`.
-- [ ] Add manual backup-before-deploy note.
-- [ ] Add single-instance migration requirement for MVP.
-- [ ] Add rollback guidance:
+- [x] Update `docs/architecture/07-deployment-and-local-run.md`.
+- [x] Add manual backup-before-deploy note.
+- [x] Add single-instance migration requirement for MVP.
+- [x] Add rollback guidance:
   - failed startup means API should stay down
   - inspect logs
   - restore backup or rollback image manually
-- [ ] Add warning for long/data-heavy migrations requiring manual review.
+- [x] Add warning for long/data-heavy migrations requiring manual review.
 
 Commit: `docs: add production database migration runbook`
 
