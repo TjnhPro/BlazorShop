@@ -6,7 +6,12 @@ namespace BlazorShop.ControlPlane.Web.Services.Health
 
     public interface IControlPlaneHealthClient
     {
-        Task<HealthListResponse> ListAsync(CancellationToken cancellationToken = default);
+        Task<HealthListResponse> ListAsync(
+            string? search = null,
+            string? status = null,
+            int pageNumber = 1,
+            int pageSize = 25,
+            CancellationToken cancellationToken = default);
 
         Task<HealthDetail?> GetAsync(Guid nodePublicId, CancellationToken cancellationToken = default);
 
@@ -22,16 +27,37 @@ namespace BlazorShop.ControlPlane.Web.Services.Health
             this.apiClient = apiClient;
         }
 
-        public async Task<HealthListResponse> ListAsync(CancellationToken cancellationToken = default)
+        public async Task<HealthListResponse> ListAsync(
+            string? search = null,
+            string? status = null,
+            int pageNumber = 1,
+            int pageSize = 25,
+            CancellationToken cancellationToken = default)
         {
+            var query = new List<string>
+            {
+                $"pageNumber={Math.Max(1, pageNumber)}",
+                $"pageSize={Math.Clamp(pageSize, 1, 100)}"
+            };
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query.Add($"search={Uri.EscapeDataString(search)}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                query.Add($"status={Uri.EscapeDataString(status)}");
+            }
+
             var result = await this.apiClient.GetPrivateAsync<HealthListResponse>(
-                "api/control-plane/health/nodes",
+                $"api/control-plane/health/nodes?{string.Join("&", query)}",
                 "Unable to load node health.",
                 cancellationToken);
 
             if (result.Success)
             {
-                return result.Data ?? new HealthListResponse([]);
+                return result.Data ?? new HealthListResponse([], 0, Math.Max(1, pageNumber), Math.Clamp(pageSize, 1, 100), 0);
             }
 
             throw new InvalidOperationException(result.Message);
@@ -68,7 +94,12 @@ namespace BlazorShop.ControlPlane.Web.Services.Health
         }
     }
 
-    public sealed record HealthListResponse(IReadOnlyList<HealthNodeSummary> Items);
+    public sealed record HealthListResponse(
+        IReadOnlyList<HealthNodeSummary> Items,
+        int TotalCount,
+        int PageNumber,
+        int PageSize,
+        int TotalPages);
 
     public sealed record HealthNodeSummary(
         Guid PublicId,

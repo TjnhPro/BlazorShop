@@ -33,8 +33,21 @@
 
     <div class="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
         <aside class="cp-card overflow-hidden">
-            <div class="border-b border-ink-200 p-4">
+            <div class="space-y-3 border-b border-ink-200 p-4">
                 <h2 class="text-sm font-semibold text-ink-900">Nodes</h2>
+                <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Search node" @bind="search" />
+                <select class="min-h-10 w-full rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="status">
+                    <option value="">All statuses</option>
+                    <option value="healthy">Healthy</option>
+                    <option value="warning">Warning</option>
+                    <option value="down">Down</option>
+                    <option value="disabled">Disabled</option>
+                    <option value="unknown">Unknown</option>
+                </select>
+                <button class="cp-button cp-button-secondary w-full justify-center" @onclick="SearchHealthAsync">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    Search
+                </button>
             </div>
 
             @if (isLoading)
@@ -67,6 +80,19 @@
                             </span>
                         </button>
                     }
+                </div>
+                <div class="flex flex-col gap-3 border-t border-ink-200 px-4 py-3 text-sm text-ink-600">
+                    <div>Page @healthPageNumber of @DisplayTotalPages(healthTotalPages) · @nodes.Count of @healthTotalCount nodes</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="cp-button cp-button-secondary justify-center" disabled="@(healthPageNumber <= 1 || isLoading)" @onclick="PreviousHealthPageAsync">
+                            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                            Previous
+                        </button>
+                        <button class="cp-button cp-button-secondary justify-center" disabled="@(!CanLoadNextHealthPage || isLoading)" @onclick="NextHealthPageAsync">
+                            Next
+                            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </div>
             }
         </aside>
@@ -189,10 +215,18 @@
     private readonly List<HealthNodeSummary> nodes = [];
     private HealthDetail? selectedDetail;
     private Guid? selectedNodePublicId;
+    private string? search;
+    private string? status;
     private string? errorMessage;
     private string? successMessage;
     private bool isLoading;
     private bool isProbing;
+    private const int HealthPageSize = 25;
+    private int healthPageNumber = 1;
+    private int healthTotalCount;
+    private int healthTotalPages;
+
+    private bool CanLoadNextHealthPage => healthPageNumber < healthTotalPages;
 
     protected override async Task OnInitializedAsync()
     {
@@ -206,11 +240,13 @@
 
         try
         {
-            var response = await HealthClient.ListAsync();
+            var response = await HealthClient.ListAsync(search, status, healthPageNumber, HealthPageSize);
             nodes.Clear();
             nodes.AddRange(response.Items);
+            healthTotalCount = response.TotalCount;
+            healthTotalPages = response.TotalPages;
 
-            if (selectedNodePublicId is null && nodes.Count > 0)
+            if ((selectedNodePublicId is null || nodes.All(node => node.PublicId != selectedNodePublicId.Value)) && nodes.Count > 0)
             {
                 selectedNodePublicId = nodes[0].PublicId;
             }
@@ -218,6 +254,10 @@
             if (selectedNodePublicId is not null)
             {
                 await LoadDetailAsync(selectedNodePublicId.Value);
+            }
+            else
+            {
+                selectedDetail = null;
             }
         }
         catch (Exception ex)
@@ -228,6 +268,13 @@
         {
             isLoading = false;
         }
+    }
+
+    private async Task SearchHealthAsync()
+    {
+        healthPageNumber = 1;
+        selectedNodePublicId = null;
+        await LoadAsync();
     }
 
     private async Task SelectNodeAsync(Guid publicId)
@@ -285,6 +332,30 @@
         }
     }
 
+    private async Task PreviousHealthPageAsync()
+    {
+        if (healthPageNumber <= 1)
+        {
+            return;
+        }
+
+        healthPageNumber--;
+        selectedNodePublicId = null;
+        await LoadAsync();
+    }
+
+    private async Task NextHealthPageAsync()
+    {
+        if (!CanLoadNextHealthPage)
+        {
+            return;
+        }
+
+        healthPageNumber++;
+        selectedNodePublicId = null;
+        await LoadAsync();
+    }
+
     private string GetNodeButtonClass(Guid publicId)
     {
         var selected = selectedNodePublicId == publicId;
@@ -310,5 +381,10 @@
     private static string ShortChecksum(string checksum)
     {
         return checksum[..Math.Min(12, checksum.Length)];
+    }
+
+    private static int DisplayTotalPages(int totalPages)
+    {
+        return Math.Max(1, totalPages);
     }
 }

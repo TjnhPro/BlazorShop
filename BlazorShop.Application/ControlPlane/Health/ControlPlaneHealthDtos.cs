@@ -1,6 +1,17 @@
 namespace BlazorShop.Application.ControlPlane.Health
 {
-    public sealed record ControlPlaneHealthListResponse(IReadOnlyList<ControlPlaneHealthNodeSummary> Items);
+    public sealed record ControlPlaneHealthListQuery(
+        string? Search = null,
+        string? Status = null,
+        int PageNumber = 1,
+        int PageSize = 25);
+
+    public sealed record ControlPlaneHealthListResponse(
+        IReadOnlyList<ControlPlaneHealthNodeSummary> Items,
+        int TotalCount,
+        int PageNumber,
+        int PageSize,
+        int TotalPages);
 
     public sealed record ControlPlaneHealthNodeSummary(
         Guid PublicId,

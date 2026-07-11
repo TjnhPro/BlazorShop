@@ -3,6 +3,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using System.Security.Cryptography;
     using System.Text;
 
+    using BlazorShop.Application.ControlPlane.Common;
     using BlazorShop.Application.ControlPlane.Health;
     using BlazorShop.Domain.Entities.ControlPlane;
 
@@ -26,16 +27,60 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             this.logger = logger;
         }
 
-        public async Task<ControlPlaneHealthListResponse> ListAsync(CancellationToken cancellationToken = default)
+        public async Task<ControlPlaneHealthListResponse> ListAsync(
+            ControlPlaneHealthListQuery query,
+            CancellationToken cancellationToken = default)
         {
-            var nodes = await this.dbContext.Nodes
+            ArgumentNullException.ThrowIfNull(query);
+
+            var nodesQuery = this.dbContext.Nodes
                 .AsNoTracking()
-                .Include(node => node.HealthSnapshots)
-                .Include(node => node.CapabilitySnapshots)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(query.Search))
+            {
+                var search = query.Search.Trim().ToLowerInvariant();
+                nodesQuery = nodesQuery.Where(node =>
+                    node.NodeKey.ToLower().Contains(search)
+                    || node.Name.ToLower().Contains(search));
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.Status))
+            {
+                var status = query.Status.Trim().ToLowerInvariant();
+                nodesQuery = nodesQuery.Where(node => node.Status == status);
+            }
+
+            var page = ControlPlanePaging.Normalize(query.PageNumber, query.PageSize);
+            var totalCount = await nodesQuery.CountAsync(cancellationToken);
+            var nodes = await nodesQuery
                 .OrderBy(node => node.NodeKey)
+                .Skip(page.Skip)
+                .Take(page.PageSize)
                 .ToListAsync(cancellationToken);
 
-            return new ControlPlaneHealthListResponse(nodes.Select(MapSummary).ToArray());
+            var nodeIds = nodes.Select(node => node.Id).ToArray();
+            var latestHealthByNodeId = await this.dbContext.NodeHealthSnapshots
+                .AsNoTracking()
+                .Where(snapshot => nodeIds.Contains(snapshot.NodeId))
+                .OrderByDescending(snapshot => snapshot.CheckedAt)
+                .ToListAsync(cancellationToken);
+            var currentCapabilityByNodeId = await this.dbContext.NodeCapabilitySnapshots
+                .AsNoTracking()
+                .Where(snapshot => nodeIds.Contains(snapshot.NodeId) && snapshot.IsCurrent)
+                .ToListAsync(cancellationToken);
+
+            var latestHealth = latestHealthByNodeId
+                .GroupBy(snapshot => snapshot.NodeId)
+                .ToDictionary(group => group.Key, group => group.First());
+            var currentCapabilities = currentCapabilityByNodeId.ToDictionary(snapshot => snapshot.NodeId);
+
+            return new ControlPlaneHealthListResponse(
+                nodes.Select(node => MapSummary(node, latestHealth.GetValueOrDefault(node.Id), currentCapabilities.GetValueOrDefault(node.Id))).ToArray(),
+                totalCount,
+                page.PageNumber,
+                page.PageSize,
+                ControlPlanePaging.GetTotalPages(totalCount, page.PageSize));
         }
 
         public async Task<ControlPlaneHealthOperationResult<ControlPlaneHealthDetail>> GetDetailAsync(
@@ -207,6 +252,21 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 node.LastSeenAt,
                 node.HealthSnapshots.OrderByDescending(snapshot => snapshot.CheckedAt).Select(MapHealth).FirstOrDefault(),
                 node.CapabilitySnapshots.Where(snapshot => snapshot.IsCurrent).Select(MapCapability).FirstOrDefault());
+        }
+
+        private static ControlPlaneHealthNodeSummary MapSummary(
+            CommerceNode node,
+            NodeHealthSnapshot? latestHealth,
+            NodeCapabilitySnapshot? currentCapability)
+        {
+            return new ControlPlaneHealthNodeSummary(
+                node.PublicId,
+                node.NodeKey,
+                node.Name,
+                node.Status,
+                node.LastSeenAt,
+                latestHealth is null ? null : MapHealth(latestHealth),
+                currentCapability is null ? null : MapCapability(currentCapability));
         }
 
         private static ControlPlaneHealthDetail MapDetail(CommerceNode node)

@@ -2,7 +2,9 @@ namespace BlazorShop.Application.ControlPlane.Health
 {
     public interface IControlPlaneHealthService
     {
-        Task<ControlPlaneHealthListResponse> ListAsync(CancellationToken cancellationToken = default);
+        Task<ControlPlaneHealthListResponse> ListAsync(
+            ControlPlaneHealthListQuery query,
+            CancellationToken cancellationToken = default);
 
         Task<ControlPlaneHealthOperationResult<ControlPlaneHealthDetail>> GetDetailAsync(
             Guid nodePublicId,

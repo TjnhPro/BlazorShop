@@ -27,11 +27,16 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpGet("nodes")]
-        public async Task<IActionResult> List(CancellationToken cancellationToken)
+        public async Task<IActionResult> List(
+            [FromQuery] string? search,
+            [FromQuery] string? status,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 25,
+            CancellationToken cancellationToken = default)
         {
             return ControlPlaneApiResponseWriter.Success(
                 StatusCodes.Status200OK,
-                await this.healthService.ListAsync(cancellationToken),
+                await this.healthService.ListAsync(new ControlPlaneHealthListQuery(search, status, pageNumber, pageSize), cancellationToken),
                 "Node health loaded.");
         }
 

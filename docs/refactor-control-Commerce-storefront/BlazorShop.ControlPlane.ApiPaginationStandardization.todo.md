@@ -316,17 +316,17 @@ Goal: node health page must not load all nodes/snapshots.
 
 Tasks:
 
-- [ ] Add `ControlPlaneHealthListQuery` with `PageNumber/PageSize`, optional `status/search`.
-- [ ] Update `ControlPlaneHealthListResponse` to paged response.
-- [ ] Rewrite `ControlPlaneHealthService.ListAsync`:
+- [x] Add `ControlPlaneHealthListQuery` with `PageNumber/PageSize`, optional `status/search`.
+- [x] Update `ControlPlaneHealthListResponse` to paged response.
+- [x] Rewrite `ControlPlaneHealthService.ListAsync`:
   - query node page first;
   - only load latest health and current capability for nodes on that page;
   - avoid loading full snapshot collections for every node.
-- [ ] Keep `GetDetailAsync(nodePublicId)` responsible for recent timeline of one node.
-- [ ] Ensure detail timeline remains capped, currently `Take(25)` behavior should stay.
-- [ ] Update `ControlPlaneHealthController.List`.
-- [ ] Update `ControlPlaneHealthClient.ListAsync`.
-- [ ] Add page controls to `Health.razor`.
+- [x] Keep `GetDetailAsync(nodePublicId)` responsible for recent timeline of one node.
+- [x] Ensure detail timeline remains capped, currently `Take(25)` behavior should stay.
+- [x] Update `ControlPlaneHealthController.List`.
+- [x] Update `ControlPlaneHealthClient.ListAsync`.
+- [x] Add page controls to `Health.razor`.
 
 Commit:
 
@@ -490,7 +490,7 @@ Every checked item must either become paged or be renamed away from `List`.
 - [ ] `ControlPlaneUsersController.List`
 - [ ] `ControlPlaneNodesController.List`
 - [x] `ControlPlaneStoresController.List`
-- [ ] `ControlPlaneHealthController.List`
+- [x] `ControlPlaneHealthController.List`
 - [ ] `ControlPlaneActionsController.List`
 - [ ] `ControlPlaneCredentialsController.List`
 - [ ] `ControlPlaneUsersController.ListRoles`
