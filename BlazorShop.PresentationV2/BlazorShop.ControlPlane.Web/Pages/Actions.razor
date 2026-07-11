@@ -104,7 +104,7 @@
                     <option value="fetch_capabilities">fetch_capabilities</option>
                     <option value="sync_store_placeholder">sync_store_placeholder</option>
                 </select>
-                <button class="cp-button cp-button-secondary" @onclick="LoadActionsAsync" disabled="@isLoading">
+                <button class="cp-button cp-button-secondary" @onclick="SearchActionsAsync" disabled="@isLoading">
                     <i class="fa-solid fa-rotate" aria-hidden="true"></i>
                     Refresh
                 </button>
@@ -152,6 +152,19 @@
                             }
                         </tbody>
                     </table>
+                </div>
+                <div class="flex flex-col gap-3 border-t border-ink-200 px-4 py-3 text-sm text-ink-600 md:flex-row md:items-center md:justify-between">
+                    <div>Page @actionPageNumber of @DisplayTotalPages(actionTotalPages) · @actions.Count of @actionTotalCount actions</div>
+                    <div class="flex gap-2">
+                        <button class="cp-button cp-button-secondary" disabled="@(actionPageNumber <= 1 || isLoading)" @onclick="PreviousActionsPageAsync">
+                            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                            Previous
+                        </button>
+                        <button class="cp-button cp-button-secondary" disabled="@(!CanLoadNextActionsPage || isLoading)" @onclick="NextActionsPageAsync">
+                            Next
+                            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </div>
             }
         </div>
@@ -268,8 +281,14 @@
     private string enqueueIdempotencyKey = string.Empty;
     private string enqueueCorrelationId = string.Empty;
     private string enqueuePayloadJson = "{}";
+    private const int ActionPageSize = 25;
+    private int actionPageNumber = 1;
+    private int actionTotalCount;
+    private int actionTotalPages;
 
     private bool CanCancelSelected => selectedAction?.Status is "queued" or "running" or "failed";
+
+    private bool CanLoadNextActionsPage => actionPageNumber < actionTotalPages;
 
     protected override async Task OnInitializedAsync()
     {
@@ -302,9 +321,11 @@
 
         try
         {
-            var response = await ActionClient.ListAsync(filterStatus, filterActionType);
+            var response = await ActionClient.ListAsync(filterStatus, filterActionType, pageNumber: actionPageNumber, pageSize: ActionPageSize);
             actions.Clear();
             actions.AddRange(response.Items);
+            actionTotalCount = response.TotalCount;
+            actionTotalPages = response.TotalPages;
         }
         catch (Exception ex)
         {
@@ -314,6 +335,12 @@
         {
             isLoading = false;
         }
+    }
+
+    private async Task SearchActionsAsync()
+    {
+        actionPageNumber = 1;
+        await LoadActionsAsync();
     }
 
     private void OpenEnqueueForm()
@@ -373,12 +400,35 @@
             selectedAction = result.Action;
             successMessage = "Action queued.";
             showEnqueueForm = false;
+            actionPageNumber = 1;
             await LoadActionsAsync();
         }
         finally
         {
             isSaving = false;
         }
+    }
+
+    private async Task PreviousActionsPageAsync()
+    {
+        if (actionPageNumber <= 1)
+        {
+            return;
+        }
+
+        actionPageNumber--;
+        await LoadActionsAsync();
+    }
+
+    private async Task NextActionsPageAsync()
+    {
+        if (!CanLoadNextActionsPage)
+        {
+            return;
+        }
+
+        actionPageNumber++;
+        await LoadActionsAsync();
     }
 
     private async Task LoadDetailAsync(Guid publicId)
@@ -432,5 +482,10 @@
             "cancelled" => "rounded-full bg-ink-100 px-2 py-1 text-xs font-semibold text-ink-600",
             _ => "rounded-full bg-ink-100 px-2 py-1 text-xs font-semibold text-ink-600"
         };
+    }
+
+    private static int DisplayTotalPages(int totalPages)
+    {
+        return Math.Max(1, totalPages);
     }
 }

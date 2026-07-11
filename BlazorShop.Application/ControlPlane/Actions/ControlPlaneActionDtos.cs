@@ -5,8 +5,8 @@ namespace BlazorShop.Application.ControlPlane.Actions
         string? ActionType = null,
         Guid? NodePublicId = null,
         Guid? StorePublicId = null,
-        long? BeforeId = null,
-        int Limit = 100);
+        int PageNumber = 1,
+        int PageSize = 25);
 
     public sealed record EnqueueControlActionRequest(
         Guid NodePublicId,
@@ -26,7 +26,10 @@ namespace BlazorShop.Application.ControlPlane.Actions
 
     public sealed record ControlPlaneActionListResponse(
         IReadOnlyList<ControlPlaneActionSummary> Items,
-        long? NextBeforeId);
+        int TotalCount,
+        int PageNumber,
+        int PageSize,
+        int TotalPages);
 
     public sealed record ControlPlaneActionSummary(
         long Id,

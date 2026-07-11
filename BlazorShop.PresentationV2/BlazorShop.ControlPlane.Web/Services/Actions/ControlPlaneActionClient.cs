@@ -11,8 +11,8 @@ namespace BlazorShop.ControlPlane.Web.Services.Actions
             string? actionType = null,
             Guid? nodePublicId = null,
             Guid? storePublicId = null,
-            long? beforeId = null,
-            int limit = 100,
+            int pageNumber = 1,
+            int pageSize = 25,
             CancellationToken cancellationToken = default);
 
         Task<ActionDetail?> GetAsync(Guid publicId, CancellationToken cancellationToken = default);
@@ -36,11 +36,15 @@ namespace BlazorShop.ControlPlane.Web.Services.Actions
             string? actionType = null,
             Guid? nodePublicId = null,
             Guid? storePublicId = null,
-            long? beforeId = null,
-            int limit = 100,
+            int pageNumber = 1,
+            int pageSize = 25,
             CancellationToken cancellationToken = default)
         {
-            var query = new List<string> { $"limit={limit}" };
+            var query = new List<string>
+            {
+                $"pageNumber={Math.Max(1, pageNumber)}",
+                $"pageSize={Math.Clamp(pageSize, 1, 100)}"
+            };
 
             if (!string.IsNullOrWhiteSpace(status))
             {
@@ -62,11 +66,6 @@ namespace BlazorShop.ControlPlane.Web.Services.Actions
                 query.Add($"storePublicId={storePublicId}");
             }
 
-            if (beforeId is not null)
-            {
-                query.Add($"beforeId={beforeId}");
-            }
-
             var result = await this.apiClient.GetPrivateAsync<ActionListResponse>(
                 $"api/control-plane/actions?{string.Join("&", query)}",
                 "Unable to load control actions.",
@@ -74,7 +73,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Actions
 
             if (result.Success)
             {
-                return result.Data ?? new ActionListResponse([], null);
+                return result.Data ?? new ActionListResponse([], 0, Math.Max(1, pageNumber), Math.Clamp(pageSize, 1, 100), 0);
             }
 
             throw new InvalidOperationException(result.Message);
@@ -122,7 +121,12 @@ namespace BlazorShop.ControlPlane.Web.Services.Actions
         }
     }
 
-    public sealed record ActionListResponse(IReadOnlyList<ActionSummary> Items, long? NextBeforeId);
+    public sealed record ActionListResponse(
+        IReadOnlyList<ActionSummary> Items,
+        int TotalCount,
+        int PageNumber,
+        int PageSize,
+        int TotalPages);
 
     public sealed record ActionSummary(long Id, Guid PublicId, string ActionType, string Status, string IdempotencyKey, string? CorrelationId, Guid NodePublicId, string NodeKey, string NodeName, Guid? StorePublicId, string? StoreKey, string? StoreName, string? ErrorCode, string? ErrorMessage, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, DateTimeOffset? StartedAt, DateTimeOffset? CompletedAt, int AttemptCount);
 

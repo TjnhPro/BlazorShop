@@ -340,17 +340,17 @@ Goal: make Actions page a real paged admin list.
 
 Tasks:
 
-- [ ] Decide final contract:
+- [x] Decide final contract:
   - Preferred: convert to `pageNumber/pageSize`.
   - Alternative: keep `beforeId/limit` only if UI is explicitly an infinite feed.
-- [ ] For admin table consistency, implement `pageNumber/pageSize`.
-- [ ] Update `ControlPlaneActionListQuery`.
-- [ ] Update `ControlPlaneActionListResponse`.
-- [ ] Update `ControlPlaneActionService.ListAsync` with total count and page math.
-- [ ] Update `ControlPlaneActionsController.List`.
-- [ ] Update `ControlPlaneActionClient.ListAsync`.
-- [ ] Add page controls to `Actions.razor`.
-- [ ] Remove unused `NextBeforeId` from Web DTO if page contract wins.
+- [x] For admin table consistency, implement `pageNumber/pageSize`.
+- [x] Update `ControlPlaneActionListQuery`.
+- [x] Update `ControlPlaneActionListResponse`.
+- [x] Update `ControlPlaneActionService.ListAsync` with total count and page math.
+- [x] Update `ControlPlaneActionsController.List`.
+- [x] Update `ControlPlaneActionClient.ListAsync`.
+- [x] Add page controls to `Actions.razor`.
+- [x] Remove unused `NextBeforeId` from Web DTO if page contract wins.
 
 Commit:
 
@@ -491,7 +491,7 @@ Every checked item must either become paged or be renamed away from `List`.
 - [ ] `ControlPlaneNodesController.List`
 - [x] `ControlPlaneStoresController.List`
 - [x] `ControlPlaneHealthController.List`
-- [ ] `ControlPlaneActionsController.List`
+- [x] `ControlPlaneActionsController.List`
 - [ ] `ControlPlaneCredentialsController.List`
 - [ ] `ControlPlaneUsersController.ListRoles`
 - [ ] `ControlPlaneUsersController.ListPermissions`

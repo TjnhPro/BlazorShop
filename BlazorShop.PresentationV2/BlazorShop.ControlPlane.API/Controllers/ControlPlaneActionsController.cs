@@ -32,14 +32,14 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromQuery] string? actionType,
             [FromQuery] Guid? nodePublicId,
             [FromQuery] Guid? storePublicId,
-            [FromQuery] long? beforeId,
-            [FromQuery] int limit = 100,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 25,
             CancellationToken cancellationToken = default)
         {
             return ControlPlaneApiResponseWriter.Success(
                 StatusCodes.Status200OK,
                 await this.actionService.ListAsync(
-                    new ControlPlaneActionListQuery(status, actionType, nodePublicId, storePublicId, beforeId, limit),
+                    new ControlPlaneActionListQuery(status, actionType, nodePublicId, storePublicId, pageNumber, pageSize),
                     cancellationToken),
                 "Control actions loaded.");
         }
