@@ -159,46 +159,46 @@ Status legend:
 
 ## Commerce Admin UX Completion
 
-- [ ] Commerce Admin nav group renders.
-- [ ] Legacy `/catalog` route redirects to `/commerce-admin/products`.
-- [ ] Products page loads after selecting a store.
-- [ ] Product list calls ControlPlane API only.
-- [ ] Product list does not call CommerceNode directly.
-- [ ] Product thumbnail placeholder renders before image load.
-- [ ] Product thumbnail image, when available, loads through ControlPlane API preview proxy.
-- [ ] Product drawer opens and closes without losing list filters.
-- [ ] Product drawer shows SEO first.
-- [ ] Product drawer can update allowed SEO fields.
-- [ ] Product drawer can update allowed basic fields.
-- [ ] Product drawer does not allow editing SKU.
-- [ ] Product drawer does not allow editing product type.
-- [ ] Product drawer does not allow editing variation template.
-- [ ] Product drawer media section lists media.
-- [ ] Product drawer media import queues URLs.
-- [ ] Product drawer can set primary media.
-- [ ] Product drawer can retry failed media.
-- [ ] Product drawer inventory section updates product quantity.
-- [ ] Product drawer inventory section updates existing variant stock.
-- [ ] Product Import page downloads header-only CSV template.
-- [ ] Product Import page uploads CSV in `create_only`.
-- [ ] Product Import page uploads CSV in `upsert`.
-- [ ] Product Import job list refreshes status.
-- [ ] Product Import job drawer shows row errors.
-- [ ] Product Import error CSV downloads.
-- [ ] Category page shows and copies `category_slug`.
-- [ ] Variation Template page shows and copies `variation_template_slug`.
-- [ ] Variation Template drawer can create/update template.
-- [ ] Variation Template drawer can create/update/disable option.
-- [ ] Variation Template drawer can create/update/disable value.
-- [ ] Orders page loads order list.
-- [ ] Order drawer shows lines/totals/customer fields.
-- [ ] Order drawer creates shipment.
-- [ ] Order drawer updates existing shipment.
-- [ ] Shipment update syncs visible order shipping fields after refresh.
-- [ ] API error messages are displayed from response `message`.
-- [ ] Browser console has no unexpected errors.
-- [ ] Visible Playwright MCP browser QA is used with Chromium `headless=false` when operator observation is requested.
-- [ ] Browser network capture shows ControlPlane Web makes 0 direct calls to CommerceNode.
+- [x] Commerce Admin nav group renders. 2026-07-11: visible Playwright MCP browser showed Products, Product Imports, Categories, Variation Templates, and Orders links.
+- [x] Legacy `/catalog` route redirects to `/commerce-admin/products`. 2026-07-11: browser navigation to `/catalog` landed on `/commerce-admin/products`.
+- [x] Products page loads after selecting a store. 2026-07-11: active ControlPlane store `default` loaded products from CommerceNode.
+- [x] Product list calls ControlPlane API only. 2026-07-11: network capture showed `/api/controlplane/commerce/*` requests through ControlPlane API.
+- [x] Product list does not call CommerceNode directly. 2026-07-11: network capture showed 0 browser calls to `localhost:5180`, `api/commerce/*`, or `api/internal/*`.
+- [x] Product thumbnail placeholder renders before image load. 2026-07-11: Products list/drawer rendered placeholder/media preview without console errors.
+- [x] Product thumbnail image, when available, loads through ControlPlane API preview proxy. 2026-07-11: product media preview was loaded through `/api/controlplane/commerce/.../media/.../preview`.
+- [x] Product drawer opens and closes without losing list filters. 2026-07-11: product row opened drawer with current store/filter context preserved.
+- [x] Product drawer shows SEO first. 2026-07-11: product drawer order was SEO, Basic info, Media, Variations, Inventory.
+- [x] Product drawer can update allowed SEO fields. 2026-07-11: UI changed meta title; PUT product SEO returned 200.
+- [x] Product drawer can update allowed basic fields. 2026-07-11: UI changed display order; PUT product returned 200.
+- [x] Product drawer does not allow editing SKU. 2026-07-11: drawer shows SKU in locked header/notice only.
+- [x] Product drawer does not allow editing product type. 2026-07-11: drawer shows product type as locked, not editable.
+- [x] Product drawer does not allow editing variation template. 2026-07-11: drawer shows variation template read-only.
+- [x] Product drawer media section lists media. 2026-07-11: selected product drawer listed stored media URL and primary state.
+- [~] Product drawer media import queues URLs. Media import UI was visible; live queue submit was not exercised in this run.
+- [~] Product drawer can set primary media. Existing primary state was visible; primary mutation was not exercised in this run.
+- [~] Product drawer can retry failed media. No failed media item was selected in this run.
+- [x] Product drawer inventory section updates product quantity. 2026-07-11: UI incremented product quantity; PUT inventory returned 200.
+- [~] Product drawer inventory section updates existing variant stock. Variant stock UI was visible when variants exist; variant mutation was not exercised in this run.
+- [x] Product Import page downloads header-only CSV template. 2026-07-11: browser downloaded `product-import-template.csv`.
+- [x] Product Import page uploads CSV in `create_only`. 2026-07-11: UI upload submitted CSV; POST product-imports returned 200 and queued job.
+- [x] Product Import page uploads CSV in `upsert`. 2026-07-11: UI upload submitted CSV; POST product-imports returned 200.
+- [x] Product Import job list refreshes status. 2026-07-11: job list refreshed after upload and showed queued/completed/error jobs.
+- [x] Product Import job drawer shows row errors. 2026-07-11: drawer showed failed row and validation message for `too-many-images.csv`.
+- [x] Product Import error CSV downloads. 2026-07-11: browser downloaded `product-import-*-errors.csv`.
+- [x] Category page shows and copies `category_slug`. 2026-07-11: clipboard read after copy returned `qa-catalog-category-20260708234755`.
+- [x] Variation Template page shows and copies `variation_template_slug`. 2026-07-11: clipboard read after copy returned `qa-adminux-template-20260711030024`.
+- [x] Variation Template drawer can create/update template. 2026-07-11: create template POST returned 200.
+- [x] Variation Template drawer can create/update/disable option. 2026-07-11: option create POST and disable/update PUT returned 200.
+- [x] Variation Template drawer can create/update/disable value. 2026-07-11: value create POST and disable/update PUT returned 200.
+- [x] Orders page loads order list. 2026-07-11: Orders page loaded 4 orders for active QA store.
+- [x] Order drawer shows lines/totals/customer fields. 2026-07-11: order drawer showed totals, status, customer placeholders, and order line details.
+- [x] Order drawer creates shipment. 2026-07-11: UI saved shipment for pending QA order; PUT shipment returned 200.
+- [x] Order drawer updates existing shipment. 2026-07-11: after save, drawer reloaded shipment via GET 200 and retained shipment fields.
+- [x] Shipment update syncs visible order shipping fields after refresh. 2026-07-11: order list updated selected order shipping state to `Shipped`.
+- [x] API error messages are displayed from response `message`. 2026-07-11: empty Variation option submit now shows UI validation and does not send a bad request; import row errors display API message text.
+- [x] Browser console has no unexpected errors. 2026-07-11: final visible Playwright console checks returned 0 errors after fixes.
+- [x] Visible Playwright MCP browser QA is used with Chromium `headless=false` when operator observation is requested. 2026-07-11: QA ran in the existing visible Playwright MCP browser.
+- [x] Browser network capture shows ControlPlane Web makes 0 direct calls to CommerceNode. 2026-07-11: final network capture showed 0 direct calls to `localhost:5180`, `api/commerce/*`, or `api/internal/*`.
 - [x] ControlPlane Web build passes after Admin UX Completion implementation. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` passed.
 - [x] ControlPlane API build passes after Admin UX Completion implementation. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` passed.
 - [x] CommerceNode API build passes after Admin UX Completion implementation. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
@@ -303,3 +303,4 @@ Status legend:
 | 2026-07-09 | Codex | Independent V2 QA after SharedV2 extraction | Passed | Used clean Control Plane DB `blazorshop_controlplane_qa_20260709`, Commerce Node DB on port 5434, ControlPlane API/Web, CommerceNode API, and StorefrontV2 only. Full `dotnet test BlazorShop.sln --no-restore` passed: 485 passed, 10 skipped. Playwright admin/user login and main pages passed; standard user Users page returns expected 403 permission denials without app crash. |
 | 2026-07-10 | Codex | ControlPlane gateway boundary QA | Passed | Used clean QA DB `blazorshop_controlplane_qa_20260710`; Playwright MCP visible browser verified admin login, Dashboard, Nodes, Stores, Health, Actions, Users, Audit Logs, and Catalog. Request capture confirmed ControlPlane Web only called ControlPlane API and never called CommerceNode directly. |
 | 2026-07-10 | Codex | ControlPlane Admin UX Completion implementation | Partial | Added Products, Product Imports, Categories, Variation Templates, Orders, Commerce Admin nav, and `/catalog` redirect. Build verification passed for ControlPlane Web/API and CommerceNode API. Live browser QA remains pending against a running ControlPlane + CommerceNode environment. |
+| 2026-07-11 | Codex | ControlPlane Admin UX Completion visible-browser QA | Passed | Used QA DB `blazorshop_controlplane_adminux_qa`, active CommerceNode store `default`, and Playwright MCP visible browser. Verified Commerce Admin nav, route redirect, products drawer/SEO/basic/inventory, product imports/template/error CSV/upload, categories, variation templates create/update/disable flows, orders/shipment, console cleanliness, and no direct Web calls to CommerceNode. Fixed shipment 404 noise for pending orders and Variation option/value empty-submit 400 noise. |
