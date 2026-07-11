@@ -273,6 +273,18 @@
             return;
         }
 
+        if (string.IsNullOrWhiteSpace(templateForm.Name))
+        {
+            errorMessage = "Variation template name is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(templateForm.Slug))
+        {
+            errorMessage = "Variation template slug is required.";
+            return;
+        }
+
         isSaving = true;
         errorMessage = null;
         try
@@ -298,6 +310,12 @@
     {
         if (!HasStore || selectedTemplate is null)
         {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(optionForm.Name))
+        {
+            errorMessage = "Variation option name is required.";
             return;
         }
 
@@ -334,6 +352,12 @@
         }
 
         var form = GetValueForm(optionPublicId);
+        if (string.IsNullOrWhiteSpace(form.Value))
+        {
+            errorMessage = "Variation value is required.";
+            return;
+        }
+
         isSaving = true;
         errorMessage = null;
         try
