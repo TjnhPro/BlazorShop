@@ -402,7 +402,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await StoreClient.ListAsync(status: "active");
+        var response = await StoreClient.ListAsync(status: "active", pageSize: 100);
         stores.AddRange(response.Items);
         selectedStorePublicId = stores.FirstOrDefault()?.PublicId;
         await LoadAsync();

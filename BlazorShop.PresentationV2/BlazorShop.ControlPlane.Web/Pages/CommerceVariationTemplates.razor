@@ -204,7 +204,7 @@
 
     private async Task LoadStoresAsync()
     {
-        var response = await StoreClient.ListAsync(status: "active");
+        var response = await StoreClient.ListAsync(status: "active", pageSize: 100);
         stores.Clear();
         stores.AddRange(response.Items);
         selectedStorePublicId ??= stores.FirstOrDefault()?.PublicId;

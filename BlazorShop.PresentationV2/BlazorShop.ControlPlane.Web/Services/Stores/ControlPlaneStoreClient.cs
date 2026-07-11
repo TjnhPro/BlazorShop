@@ -6,7 +6,13 @@ namespace BlazorShop.ControlPlane.Web.Services.Stores
 
     public interface IControlPlaneStoreClient
     {
-        Task<StoreListResponse> ListAsync(string? search = null, string? status = null, Guid? nodePublicId = null, CancellationToken cancellationToken = default);
+        Task<StoreListResponse> ListAsync(
+            string? search = null,
+            string? status = null,
+            Guid? nodePublicId = null,
+            int pageNumber = 1,
+            int pageSize = 25,
+            CancellationToken cancellationToken = default);
 
         Task<StoreDetail?> GetAsync(Guid publicId, CancellationToken cancellationToken = default);
 
@@ -36,9 +42,19 @@ namespace BlazorShop.ControlPlane.Web.Services.Stores
             this.apiClient = apiClient;
         }
 
-        public async Task<StoreListResponse> ListAsync(string? search = null, string? status = null, Guid? nodePublicId = null, CancellationToken cancellationToken = default)
+        public async Task<StoreListResponse> ListAsync(
+            string? search = null,
+            string? status = null,
+            Guid? nodePublicId = null,
+            int pageNumber = 1,
+            int pageSize = 25,
+            CancellationToken cancellationToken = default)
         {
-            var query = new List<string>();
+            var query = new List<string>
+            {
+                $"pageNumber={Math.Max(1, pageNumber)}",
+                $"pageSize={Math.Clamp(pageSize, 1, 100)}"
+            };
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -55,7 +71,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Stores
                 query.Add($"nodePublicId={nodePublicId}");
             }
 
-            var route = query.Count == 0 ? "api/control-plane/stores" : $"api/control-plane/stores?{string.Join("&", query)}";
+            var route = $"api/control-plane/stores?{string.Join("&", query)}";
             var result = await this.apiClient.GetPrivateAsync<StoreListResponse>(
                 route,
                 "Unable to load stores.",
@@ -63,7 +79,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Stores
 
             if (result.Success)
             {
-                return result.Data ?? new StoreListResponse([]);
+                return result.Data ?? new StoreListResponse([], 0, Math.Max(1, pageNumber), Math.Clamp(pageSize, 1, 100), 0);
             }
 
             throw new InvalidOperationException(result.Message);
@@ -174,7 +190,12 @@ namespace BlazorShop.ControlPlane.Web.Services.Stores
         }
     }
 
-    public sealed record StoreListResponse(IReadOnlyList<StoreSummary> Items);
+    public sealed record StoreListResponse(
+        IReadOnlyList<StoreSummary> Items,
+        int TotalCount,
+        int PageNumber,
+        int PageSize,
+        int TotalPages);
 
     public sealed record StoreSummary(Guid PublicId, string StoreKey, string Name, string Status, Guid NodePublicId, string NodeKey, string NodeName, string NodeStatus, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, DateTimeOffset? ArchivedAt, int DomainCount);
 

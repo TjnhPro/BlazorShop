@@ -3,7 +3,9 @@ namespace BlazorShop.Application.ControlPlane.Stores
     public sealed record ControlPlaneStoreListQuery(
         string? Search = null,
         string? Status = null,
-        Guid? NodePublicId = null);
+        Guid? NodePublicId = null,
+        int PageNumber = 1,
+        int PageSize = 25);
 
     public sealed record CreateControlPlaneStoreRequest(
         string StoreKey,
@@ -18,7 +20,12 @@ namespace BlazorShop.Application.ControlPlane.Stores
 
     public sealed record CreateControlPlaneStoreDomainRequest(string Domain);
 
-    public sealed record ControlPlaneStoreListResponse(IReadOnlyList<ControlPlaneStoreSummary> Items);
+    public sealed record ControlPlaneStoreListResponse(
+        IReadOnlyList<ControlPlaneStoreSummary> Items,
+        int TotalCount,
+        int PageNumber,
+        int PageSize,
+        int TotalPages);
 
     public sealed record ControlPlaneStoreSummary(
         Guid PublicId,

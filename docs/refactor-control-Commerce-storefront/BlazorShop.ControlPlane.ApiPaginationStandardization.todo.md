@@ -288,19 +288,19 @@ Goal: remove store list load-all and `.Take(200)` truncation.
 
 Tasks:
 
-- [ ] Update `ControlPlaneStoreListQuery` with `PageNumber/PageSize`.
-- [ ] Update `ControlPlaneStoreListResponse` to paged response.
-- [ ] Update `ControlPlaneStoreService.ListAsync`:
+- [x] Update `ControlPlaneStoreListQuery` with `PageNumber/PageSize`.
+- [x] Update `ControlPlaneStoreListResponse` to paged response.
+- [x] Update `ControlPlaneStoreService.ListAsync`:
   - filter first;
   - count total;
   - order;
   - skip/take internally;
   - map only current page.
-- [ ] Update `ControlPlaneStoresController.List`.
-- [ ] Update `ControlPlaneStoreClient.ListAsync`.
-- [ ] Add page controls to `Stores.razor`.
-- [ ] Check all places that call `StoreClient.ListAsync(status: "active")`.
-- [ ] For dropdown/reference data, either:
+- [x] Update `ControlPlaneStoresController.List`.
+- [x] Update `ControlPlaneStoreClient.ListAsync`.
+- [x] Add page controls to `Stores.razor`.
+- [x] Check all places that call `StoreClient.ListAsync(status: "active")`.
+- [x] For dropdown/reference data, either:
   - fetch first 100 active stores explicitly and document it as dropdown reference, or
   - add a separate lightweight lookup endpoint later.
 
@@ -489,7 +489,7 @@ Every checked item must either become paged or be renamed away from `List`.
 
 - [ ] `ControlPlaneUsersController.List`
 - [ ] `ControlPlaneNodesController.List`
-- [ ] `ControlPlaneStoresController.List`
+- [x] `ControlPlaneStoresController.List`
 - [ ] `ControlPlaneHealthController.List`
 - [ ] `ControlPlaneActionsController.List`
 - [ ] `ControlPlaneCredentialsController.List`

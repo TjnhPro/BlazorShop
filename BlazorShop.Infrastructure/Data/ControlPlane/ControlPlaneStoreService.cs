@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using System.Text.RegularExpressions;
 
+    using BlazorShop.Application.ControlPlane.Common;
     using BlazorShop.Application.ControlPlane.Stores;
     using BlazorShop.Domain.Entities.ControlPlane;
 
@@ -47,12 +48,20 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 stores = stores.Where(store => store.Node != null && store.Node.PublicId == query.NodePublicId);
             }
 
+            var page = ControlPlanePaging.Normalize(query.PageNumber, query.PageSize);
+            var totalCount = await stores.CountAsync(cancellationToken);
             var items = await stores
                 .OrderBy(store => store.StoreKey)
-                .Take(200)
+                .Skip(page.Skip)
+                .Take(page.PageSize)
                 .ToListAsync(cancellationToken);
 
-            return new ControlPlaneStoreListResponse(items.Select(MapSummary).ToArray());
+            return new ControlPlaneStoreListResponse(
+                items.Select(MapSummary).ToArray(),
+                totalCount,
+                page.PageNumber,
+                page.PageSize,
+                ControlPlanePaging.GetTotalPages(totalCount, page.PageSize));
         }
 
         public async Task<ControlPlaneStoreOperationResult<ControlPlaneStoreDetail>> GetByPublicIdAsync(

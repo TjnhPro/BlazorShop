@@ -35,12 +35,14 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromQuery] string? search,
             [FromQuery] string? status,
             [FromQuery] Guid? nodePublicId,
-            CancellationToken cancellationToken)
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 25,
+            CancellationToken cancellationToken = default)
         {
             return ControlPlaneApiResponseWriter.Success(
                 StatusCodes.Status200OK,
                 await this.storeService.ListAsync(
-                    new ControlPlaneStoreListQuery(search, status, nodePublicId),
+                    new ControlPlaneStoreListQuery(search, status, nodePublicId, pageNumber, pageSize),
                     cancellationToken),
                 "Stores loaded.");
         }

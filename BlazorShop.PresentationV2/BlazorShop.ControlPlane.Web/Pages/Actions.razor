@@ -285,7 +285,7 @@
             nodes.Clear();
             nodes.AddRange(nodeResponse.Items.Where(node => node.Status != "disabled"));
 
-            var storeResponse = await StoreClient.ListAsync(status: "active");
+            var storeResponse = await StoreClient.ListAsync(status: "active", pageSize: 100);
             stores.Clear();
             stores.AddRange(storeResponse.Items);
         }
