@@ -255,14 +255,14 @@ Commit: `docs: document v2 startup migration strategy`
 
 ### Phase 1 - Control Plane Migration Hardening
 
-- [ ] Keep `ControlPlaneDatabaseBootstrapper`.
-- [ ] Add structured migration logs.
-- [ ] Log applied and pending migration names.
-- [ ] Add `ControlPlane:Database:FailStartupOnMigrationError`.
-- [ ] Add `ControlPlane:Database:LogMigrationState`.
-- [ ] Ensure Development seeding runs only after successful migration.
-- [ ] Ensure no raw connection string is logged.
-- [ ] Update `appsettings.Production.example.json` so MVP production can opt into startup migration intentionally.
+- [x] Keep `ControlPlaneDatabaseBootstrapper`.
+- [x] Add structured migration logs.
+- [x] Log applied and pending migration names.
+- [x] Add `ControlPlane:Database:FailStartupOnMigrationError`.
+- [x] Add `ControlPlane:Database:LogMigrationState`.
+- [x] Ensure Development seeding runs only after successful migration.
+- [x] Ensure no raw connection string is logged.
+- [x] Update `appsettings.Production.example.json` so MVP production can opt into startup migration intentionally.
 
 Commit: `feat(controlplane): harden startup database migration`
 
