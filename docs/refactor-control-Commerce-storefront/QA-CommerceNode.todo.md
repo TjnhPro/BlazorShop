@@ -17,7 +17,7 @@ Last verified: 2026-07-10
 ## Environment Checklist
 
 - [x] Start `blazorshop-commercenode-postgres` on port `5434`.
-- [x] Apply `CommerceNodeDbContext` migrations.
+- [x] Apply `CommerceNodeDbContext` migrations through CommerceNode API startup.
 - [x] Start `BlazorShop.CommerceNode.API` in Development.
 - [x] Verify API base URL: `http://localhost:5180`.
 - [x] Verify Swagger/API host is reachable.
@@ -361,8 +361,10 @@ Last verified: 2026-07-10
 ## Verification Commands
 
 - `docker compose -f compose.commercenode.yml up -d`
-- `dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrastructure.csproj --startup-project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --context CommerceNodeDbContext`
+- `dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --urls http://localhost:5180`
 - `dotnet test BlazorShop.sln`
+
+CommerceNode migrations are applied by API startup when `CommerceNode:Database:MigrateOnStartup=true`. Use `dotnet ef database update` only as a manual diagnostic fallback, not as the normal V2 run path.
 
 Latest ProductMedia QA result: 2026-07-10 CommerceNode API smoke passed for import queue, retry, worker storage, Product.Image sync, public imgproxy rendering, invalid scheme rejection, private/local source blocking, and cross-store 404. Fixed EF projection and temp-file length bugs found during QA.
 

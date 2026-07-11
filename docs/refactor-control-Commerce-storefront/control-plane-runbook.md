@@ -25,7 +25,15 @@ $env:ControlPlane__SeedUser__DisplayName = 'Control Plane User'
 $env:ControlPlane__SeedUser__ControlPlaneRoleKey = 'auditor'
 ```
 
-Then start `BlazorShop.ControlPlane.API`. Development startup applies `ControlPlaneDbContext` migrations and seeds the configured accounts when their seed passwords are present.
+Then start `BlazorShop.ControlPlane.API` with startup migration enabled. Development enables this by default:
+
+```powershell
+$env:ControlPlane__Database__MigrateOnStartup = 'true'
+$env:ControlPlane__Database__FailStartupOnMigrationError = 'true'
+$env:ControlPlane__Database__LogMigrationState = 'true'
+```
+
+Development startup applies `ControlPlaneDbContext` migrations and seeds the configured accounts when their seed passwords are present.
 
 If the local database was previously contaminated by `AppDbContext` migrations, reset it only after confirming local data can be discarded:
 
@@ -50,7 +58,7 @@ Forbidden table groups:
 
 ## First Node Registration
 
-1. Start PostgreSQL and apply the Control Plane migration.
+1. Start PostgreSQL.
 2. Start `BlazorShop.ControlPlane.API` and `BlazorShop.ControlPlane.Web`.
 3. Sign in with an operator account that has `nodes.write`.
 4. Open `Nodes`, create a node with a unique node key and its Control API base URL.
@@ -85,4 +93,6 @@ Forbidden table groups:
 3. Set `ControlPlane:Cors:AllowedOrigins` to the Control Plane Web origin.
 4. Set `ControlPlane:ForwardedHeaders:KnownProxies` when running behind a trusted reverse proxy.
 5. Review `ControlPlane:RateLimiting` for the deployment topology.
-6. Verify `/health` reports the Control Plane database readiness check as healthy.
+6. Decide whether this deployment enables `ControlPlane:Database:MigrateOnStartup`; MVP production should enable it only after a DB backup and with one API instance running against the database.
+7. Verify startup migration logs show pending/applied migrations without raw connection strings.
+8. Verify `/health` reports the Control Plane database readiness check as healthy.

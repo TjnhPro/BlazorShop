@@ -80,6 +80,7 @@ Important folders:
 - `Authorization/` - Control Plane policies and auth setup.
 - `Middleware/` - correlation and API behavior middleware.
 - `Responses/` - Control Plane API envelope helpers.
+- `ControlPlaneDatabaseBootstrapper.cs` - startup migration and Development seeding for `ControlPlaneDbContext`.
 
 Use for:
 
@@ -91,6 +92,7 @@ Do not:
 
 - Put Commerce Node credentials in Web clients.
 - Store commerce catalog/order/customer data directly here.
+- Migrate `CommerceNodeDbContext` or legacy `AppDbContext` from this runtime.
 
 ### `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web`
 
@@ -126,6 +128,7 @@ Important folders:
 - `Workers/` - background task worker.
 - `runtime/` - generated/runtime Nginx config and logs. Treat as runtime state, not source-of-truth business logic.
 - `uploads/` - local upload storage.
+- `CommerceNodeDatabaseBootstrapper.cs` - startup migration and Development seeding for `CommerceNodeDbContext`.
 
 Use for:
 
@@ -138,6 +141,7 @@ Do not:
 
 - Add Control Plane UI logic.
 - Persist platform-level users/permissions/credentials here.
+- Migrate `ControlPlaneDbContext` or legacy `AppDbContext` from this runtime.
 
 ### `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`
 

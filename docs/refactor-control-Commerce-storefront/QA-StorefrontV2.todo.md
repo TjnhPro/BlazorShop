@@ -34,10 +34,10 @@ Muc tieu hien tai:
 docker compose -f compose.commercenode.yml up -d
 ```
 
-- [x] Apply Commerce Node migrations:
+- [x] Apply Commerce Node migrations through CommerceNode API startup. Development should run with `CommerceNode:Database:MigrateOnStartup=true`:
 
 ```powershell
-dotnet ef database update --project BlazorShop.Infrastructure/BlazorShop.Infrastructure.csproj --startup-project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --context CommerceNodeDbContext
+dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --urls http://localhost:5180
 ```
 
 - [x] Seed at least one published category.

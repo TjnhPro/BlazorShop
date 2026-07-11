@@ -15,9 +15,9 @@
 | Legacy | `BlazorShop.Presentation/BlazorShop.Web` | Legacy | Original admin/account/customer Blazor Web UI. |
 | Legacy | `BlazorShop.Presentation/BlazorShop.Storefront` | Legacy | Original public storefront. |
 | Legacy | `BlazorShop.Presentation/BlazorShop.Web.Shared` | Legacy | Original Web shared helpers. |
-| V2 | `BlazorShop.PresentationV2/BlazorShop.ControlPlane.API` | Active | Platform API for auth, users, permissions, nodes, stores, credentials, health, actions, audit, and Commerce Node gateway calls. |
+| V2 | `BlazorShop.PresentationV2/BlazorShop.ControlPlane.API` | Active | Platform API for auth, users, permissions, nodes, stores, credentials, health, actions, audit, Commerce Node gateway calls, and startup migration for `ControlPlaneDbContext`. |
 | V2 | `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web` | Active | Blazor WASM Control Plane UI. Calls only Control Plane API. |
-| V2 | `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API` | Active | Node-local ecommerce API, admin/control endpoints, internal storefront endpoints, task orchestration, deployment support. |
+| V2 | `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API` | Active | Node-local ecommerce API, admin/control endpoints, internal storefront endpoints, task orchestration, deployment support, and startup migration for `CommerceNodeDbContext`. |
 | V2 | `BlazorShop.PresentationV2/BlazorShop.Storefront.V2` | Active | Server-side storefront using Commerce Node internal APIs and store key scope. |
 | V2 | `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2` | Active | Shared V2 browser storage, cookie storage, auth session, toast, and API helper utilities. |
 | Tests | `BlazorShop.Tests` | Active but mixed | Test project currently references legacy and selected V2 projects. Treat test ownership by feature area. |
@@ -39,6 +39,12 @@ Active V2 presentation projects reference shared core projects:
 - `BlazorShop.ControlPlane.Web` references `Application` and `Web.SharedV2`.
 - `BlazorShop.Storefront.V2` references `Application`, `ServiceDefaults`, and `Web.SharedV2`.
 - `BlazorShop.Web.SharedV2` has no project references.
+
+Startup migration ownership:
+
+- `BlazorShop.ControlPlane.API` applies pending EF Core migrations for `ControlPlaneDbContext` when `ControlPlane:Database:MigrateOnStartup=true`.
+- `BlazorShop.CommerceNode.API` applies pending EF Core migrations for `CommerceNodeDbContext` when `CommerceNode:Database:MigrateOnStartup=true`.
+- V2 runtimes do not use a separate migrator image or CommerceNode Agent for MVP database migration.
 
 Legacy presentation projects reference legacy shared/core projects and should not be extended for V2 work:
 

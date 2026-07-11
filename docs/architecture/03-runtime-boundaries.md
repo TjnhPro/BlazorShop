@@ -34,6 +34,7 @@ Control Plane API owns:
 - Commerce Node credential usage.
 - Audit for platform actions.
 - Gateway calls to Commerce Node.
+- Startup EF Core migration for `ControlPlaneDbContext` only.
 
 Main route group:
 
@@ -54,6 +55,8 @@ Examples:
 ## Commerce Node Boundary
 
 Commerce Node is the ecommerce runtime boundary. It owns node-local commerce data, node-local admin/control endpoints, internal Storefront APIs, and local deployment tasks.
+
+Commerce Node API also owns startup EF Core migration for `CommerceNodeDbContext` only. It must not migrate `ControlPlaneDbContext` or legacy `AppDbContext`.
 
 Main route groups:
 
@@ -151,6 +154,8 @@ Legacy route groups include:
 - `api/[controller]`
 
 Do not use legacy APIs as a dependency for V2 features. If behavior must be migrated, copy the behavior intentionally into the active V2 boundary and adapt it to `CommerceNodeDbContext` or `ControlPlaneDbContext` as appropriate.
+
+Legacy `AppDbContext` migrations are not part of the V2 startup migration flow.
 
 ## API Response Pattern
 

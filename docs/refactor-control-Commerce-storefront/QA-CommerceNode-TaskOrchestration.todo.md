@@ -18,10 +18,10 @@ Scope: QA checklist and runbook for CommerceNode async task orchestration.
 ### PostgreSQL
 
 - [x] Start CommerceNode PostgreSQL on port `5434`.
-- [x] Apply CommerceNode migrations:
+- [x] Apply CommerceNode migrations through API startup. Development should run with `CommerceNode:Database:MigrateOnStartup=true`.
 
 ```powershell
-dotnet ef database update --project BlazorShop.Infrastructure --startup-project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API --context CommerceNodeDbContext
+dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --urls http://localhost:5180
 ```
 
 ### CommerceNode API
@@ -189,7 +189,7 @@ Status: completed for CommerceNode task API, happy-path Storefront deployment, D
 
 - [x] Compose config valid.
 - [x] Compose services started.
-- [x] CommerceNode migrations applied.
+- [x] CommerceNode migrations applied by API startup.
 - [x] CommerceNode API started.
 - [x] CommerceNode health endpoint verified.
 
