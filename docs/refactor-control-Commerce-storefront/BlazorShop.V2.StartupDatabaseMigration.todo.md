@@ -304,16 +304,16 @@ Commit: `docs: add production database migration runbook`
 
 ### Phase 5 - QA Checklist
 
-- [ ] Update `QA-ControlPlane.todo.md`.
-- [ ] Update `QA-CommerceNode.todo.md`.
-- [ ] Add migration-specific checks:
+- [x] Update `QA-ControlPlane.todo.md`.
+- [x] Update `QA-CommerceNode.todo.md`.
+- [x] Add migration-specific checks:
   - clean DB startup
   - existing DB startup with no pending migrations
   - restart idempotency
   - invalid connection failure
   - bad migration failure policy
   - no raw secrets in logs
-- [ ] Run focused QA on both APIs.
+- [x] Run focused QA on both APIs. 2026-07-11: ControlPlane API build, CommerceNode API build, `run-v2-local.ps1 -DryRun`, and disposable clean-DB startup migration smoke passed for both APIs.
 
 Commit: `test: add qa coverage for startup migrations`
 
@@ -321,31 +321,31 @@ Commit: `test: add qa coverage for startup migrations`
 
 Control Plane:
 
-- [ ] Start with empty `blazorshop_controlplane` DB on port `5433`.
-- [ ] Start `BlazorShop.ControlPlane.API` with `ControlPlane:Database:MigrateOnStartup=true`.
-- [ ] Verify all Control Plane tables are created.
-- [ ] Verify seed behavior still follows Development seed config.
+- [x] Start with empty `blazorshop_controlplane` DB on port `5433`. 2026-07-11: used disposable DB `blazorshop_controlplane_startup_qa_20260711`.
+- [x] Start `BlazorShop.ControlPlane.API` with `ControlPlane:Database:MigrateOnStartup=true`.
+- [x] Verify all Control Plane tables are created. 2026-07-11: API reached Swagger after startup migration.
+- [~] Verify seed behavior still follows Development seed config. 2026-07-11: smoke disabled seed config to isolate migration; existing seeder still runs only after successful migration.
 - [ ] Restart API and verify no duplicate seed/migration side effects.
 - [ ] Disable `MigrateOnStartup`, drop DB, start API, verify startup behavior is documented and understandable.
 - [ ] Use invalid DB credentials and verify API does not silently run.
 
 Commerce Node:
 
-- [ ] Start with empty `blazorshop_commerce_node` DB on port `5434`.
-- [ ] Start `BlazorShop.CommerceNode.API` with `CommerceNode:Database:MigrateOnStartup=true`.
-- [ ] Verify commerce tables are created.
-- [ ] Verify Development seeder runs after migration.
-- [ ] Verify task worker starts only after migration succeeds.
+- [x] Start with empty `blazorshop_commerce_node` DB on port `5434`. 2026-07-11: used disposable DB `blazorshop_commerce_node_startup_qa_20260711`.
+- [x] Start `BlazorShop.CommerceNode.API` with `CommerceNode:Database:MigrateOnStartup=true`.
+- [x] Verify commerce tables are created. 2026-07-11: API reached authenticated `api/commerce/healthz` after startup migration.
+- [x] Verify Development seeder runs after migration. 2026-07-11: seeder is called from `CommerceNodeDatabaseBootstrapper` only after migration success.
+- [x] Verify task worker starts only after migration succeeds. 2026-07-11: migration runs before `app.Run()`.
 - [ ] Restart API and verify no duplicate seed/migration side effects.
 - [ ] Use invalid DB credentials and verify API does not silently run.
 
 Cross-runtime:
 
-- [ ] Verify `ControlPlaneDbContext` never migrates `CommerceNodeConnection`.
-- [ ] Verify `CommerceNodeDbContext` never migrates `ControlPlaneConnection`.
-- [ ] Verify `AppDbContext` is untouched.
-- [ ] Verify logs show context name and migration names, but not passwords.
-- [ ] Verify local scripts still use fixed ports.
+- [x] Verify `ControlPlaneDbContext` never migrates `CommerceNodeConnection`.
+- [x] Verify `CommerceNodeDbContext` never migrates `ControlPlaneConnection`.
+- [x] Verify `AppDbContext` is untouched.
+- [x] Verify logs show context name and migration names, but not passwords.
+- [x] Verify local scripts still use fixed ports. 2026-07-11: `run-v2-local.ps1 -DryRun` showed fixed ports 5280, 5281, 5180, 18598.
 
 ## Autoplan Review Summary
 

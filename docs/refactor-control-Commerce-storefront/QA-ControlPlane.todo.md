@@ -24,6 +24,16 @@ Status legend:
 - [x] Control Plane Web references `BlazorShop.Web.SharedV2`, not legacy `BlazorShop.Web.Shared`. 2026-07-09: covered by PresentationV2 boundary tests.
 - [x] After SharedV2 changes, re-run auth/login smoke and `FullyQualifiedName~ControlPlane`. 2026-07-09: full solution test passed 485/485 with 10 skipped; API smoke and Playwright admin/user login smoke passed.
 
+## Startup Database Migration
+
+- [x] Clean `ControlPlaneConnection` database is created/migrated by `BlazorShop.ControlPlane.API` startup when `ControlPlane:Database:MigrateOnStartup=true`. 2026-07-11: startup smoke passed against disposable DB `blazorshop_controlplane_startup_qa_20260711`.
+- [ ] Existing migrated Control Plane database restarts without duplicate migration or seed side effects.
+- [x] Startup migration logs context name, connection name, applied count, pending count, and pending migration names. 2026-07-11: verified in `.gstack/startup-migration-qa/controlplane-startup-migration.log`.
+- [x] Startup migration logs do not expose passwords or raw connection strings. 2026-07-11: smoke assertion checked logs did not contain `Password=`.
+- [ ] Invalid `ControlPlaneConnection` fails API startup when `ControlPlane:Database:FailStartupOnMigrationError=true`.
+- [ ] `ControlPlane:Database:LogMigrationState=false` still runs migration without state log noise.
+- [x] `ControlPlaneDbContext` startup migration never touches `CommerceNodeConnection` or `AppDbContext`. 2026-07-11: smoke used only `ConnectionStrings__ControlPlaneConnection`; architecture/code path resolves only `ControlPlaneDbContext`.
+
 ## Open QA Findings
 
 - [x] QA-CP-001: Wrong-password login is testable against Control Plane PostgreSQL on port 5433. 2026-07-08: fixed startup auth schema migration and verified safe 400 response.
@@ -287,6 +297,7 @@ Status legend:
 - [~] Backlog: add contract tests for Commerce Node heartbeat/probe payloads.
 - [~] Backlog: add integration tests for Commerce Node `healthz` valid, invalid credential, and IP allowlist paths.
 - [~] Backlog: add migration test for `commerce_node.node_secret` and `node_secret_updated_at`.
+- [~] Backlog: add automated startup migration smoke for `ControlPlaneDbContext` with a disposable PostgreSQL database.
 
 ## QA Run History
 
@@ -304,3 +315,4 @@ Status legend:
 | 2026-07-10 | Codex | ControlPlane gateway boundary QA | Passed | Used clean QA DB `blazorshop_controlplane_qa_20260710`; Playwright MCP visible browser verified admin login, Dashboard, Nodes, Stores, Health, Actions, Users, Audit Logs, and Catalog. Request capture confirmed ControlPlane Web only called ControlPlane API and never called CommerceNode directly. |
 | 2026-07-10 | Codex | ControlPlane Admin UX Completion implementation | Partial | Added Products, Product Imports, Categories, Variation Templates, Orders, Commerce Admin nav, and `/catalog` redirect. Build verification passed for ControlPlane Web/API and CommerceNode API. Live browser QA remains pending against a running ControlPlane + CommerceNode environment. |
 | 2026-07-11 | Codex | ControlPlane Admin UX Completion visible-browser QA | Passed | Used QA DB `blazorshop_controlplane_adminux_qa`, active CommerceNode store `default`, and Playwright MCP visible browser. Verified Commerce Admin nav, route redirect, products drawer/SEO/basic/inventory, product imports/template/error CSV/upload, categories, variation templates create/update/disable flows, orders/shipment, console cleanliness, and no direct Web calls to CommerceNode. Fixed shipment 404 noise for pending orders and Variation option/value empty-submit 400 noise. |
+| 2026-07-11 | Codex | ControlPlane startup database migration smoke | Partial | Build passed, `run-v2-local.ps1 -DryRun` passed, and ControlPlane API startup migrated clean disposable DB `blazorshop_controlplane_startup_qa_20260711` with safe migration logs. Failure-policy and restart-idempotency checks remain open. |

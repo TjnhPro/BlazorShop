@@ -23,6 +23,17 @@ Last verified: 2026-07-10
 - [x] Verify Swagger/API host is reachable.
 - [x] Verify response envelope shape: `success`, `message`, `data`.
 
+## Startup Database Migration
+
+- [x] Clean `CommerceNodeConnection` database is created/migrated by `BlazorShop.CommerceNode.API` startup when `CommerceNode:Database:MigrateOnStartup=true`. 2026-07-11: startup smoke passed against disposable DB `blazorshop_commerce_node_startup_qa_20260711`.
+- [ ] Existing migrated Commerce Node database restarts without duplicate migration or seed side effects.
+- [x] Startup migration logs context name, connection name, applied count, pending count, and pending migration names. 2026-07-11: verified in `.gstack/startup-migration-qa/commercenode-startup-migration.log`.
+- [x] Startup migration logs do not expose passwords or raw connection strings. 2026-07-11: smoke assertion checked logs did not contain `Password=`.
+- [ ] Invalid `CommerceNodeConnection` fails API startup when `CommerceNode:Database:FailStartupOnMigrationError=true`.
+- [ ] `CommerceNode:Database:LogMigrationState=false` still runs migration without state log noise.
+- [x] `CommerceNodeDbContext` startup migration never touches `ControlPlaneConnection` or `AppDbContext`. 2026-07-11: smoke used only `ConnectionStrings__CommerceNodeConnection`; architecture/code path resolves only `CommerceNodeDbContext`.
+- [x] `CommerceTaskWorker` starts only after startup migration completes. 2026-07-11: migration runs before `app.Run()` and smoke reached `api/commerce/healthz` after startup completed.
+
 ## Credential Boundary
 
 ### `api/commerce/*`
@@ -356,3 +367,5 @@ Last verified: 2026-07-10
 Latest ProductMedia QA result: 2026-07-10 CommerceNode API smoke passed for import queue, retry, worker storage, Product.Image sync, public imgproxy rendering, invalid scheme rejection, private/local source blocking, and cross-store 404. Fixed EF projection and temp-file length bugs found during QA.
 
 Latest test result: 2026-07-09 full solution test passed: 485 passed, 10 skipped. Independent API smoke passed for ControlPlane -> CommerceNode health probe, Commerce admin catalog/media, Storefront internal auth/cart/order, and admin order visibility.
+
+Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `run-v2-local.ps1 -DryRun` passed, and startup migration created/migrated disposable DB `blazorshop_commerce_node_startup_qa_20260711` with safe migration logs. Failure-policy and restart-idempotency checks remain open.
