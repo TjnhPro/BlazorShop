@@ -87,7 +87,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                     CreatedBy: "control-plane"),
                 cancellationToken);
 
-            return FromClientResult(clientResult);
+            var result = FromClientResult(clientResult);
+            if (result.Success && result.Payload is not null)
+            {
+                await this.UpdateStoreDeploymentStatusAsync(store.Id, result.Payload.Status, cancellationToken);
+            }
+
+            return result;
         }
 
         public async Task<ControlPlaneStoreDeploymentOperationResult<CommerceTaskDetail>> GetTaskAsync(
@@ -102,12 +108,20 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 return validation.ToResult<CommerceTaskDetail>();
             }
 
-            return FromClientResult(await this.taskClient.GetAsync(
+            var clientResult = await this.taskClient.GetAsync(
                 GetControlApiUrl(store!.Node!),
                 store.Node!.NodeKey,
                 store.Node.NodeSecret!,
                 taskPublicId,
-                cancellationToken));
+                cancellationToken);
+
+            var result = FromClientResult(clientResult);
+            if (result.Success && result.Payload is not null)
+            {
+                await this.UpdateStoreDeploymentStatusAsync(store.Id, result.Payload.Status, cancellationToken);
+            }
+
+            return result;
         }
 
         public async Task<ControlPlaneStoreDeploymentOperationResult<CommerceTaskDetail>> CancelTaskAsync(
@@ -162,6 +176,27 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                     .ThenInclude(node => node!.Endpoints)
                 .Include(store => store.Domains)
                 .FirstOrDefaultAsync(store => store.PublicId == publicId, cancellationToken);
+        }
+
+        private async Task UpdateStoreDeploymentStatusAsync(long storeId, string taskStatus, CancellationToken cancellationToken)
+        {
+            var status = taskStatus switch
+            {
+                "succeeded" => "active",
+                "failed" => "disabled",
+                "cancelled" => "disabled",
+                _ => "provisioning"
+            };
+
+            var store = await this.dbContext.Stores.FirstOrDefaultAsync(store => store.Id == storeId, cancellationToken);
+            if (store is null || store.Status == "archived" || store.Status == status)
+            {
+                return;
+            }
+
+            store.Status = status;
+            store.UpdatedAt = DateTimeOffset.UtcNow;
+            await this.dbContext.SaveChangesAsync(cancellationToken);
         }
 
         private static StoreValidationFailure? ValidateStoreForRemoteCall(StoreRegistry? store)

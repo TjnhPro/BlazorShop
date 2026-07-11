@@ -223,6 +223,41 @@ app.MapGet(StorefrontRoutes.Sitemap, async (HttpContext httpContext, IStorefront
         return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
     }
 });
+app.MapGet("/media/products/{mediaPublicId:guid}", async (
+    Guid mediaPublicId,
+    HttpContext httpContext,
+    IHttpClientFactory httpClientFactory,
+    IConfiguration configuration,
+    CancellationToken cancellationToken) =>
+{
+    var storeKey = ResolveStoreKey(configuration);
+    if (string.IsNullOrWhiteSpace(storeKey))
+    {
+        return Results.NotFound();
+    }
+
+    var client = httpClientFactory.CreateClient();
+    var targetUri = new Uri(
+        ResolveCommerceNodeBaseAddress(configuration),
+        $"media/products/{mediaPublicId:D}{httpContext.Request.QueryString}");
+
+    using var request = new HttpRequestMessage(HttpMethod.Get, targetUri);
+    request.Headers.TryAddWithoutValidation("X-Store-Key", storeKey);
+
+    using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+    if (!response.IsSuccessStatusCode)
+    {
+        return Results.StatusCode((int)response.StatusCode);
+    }
+
+    CopyHeaderIfPresent(response, httpContext.Response, "Cache-Control");
+    CopyHeaderIfPresent(response, httpContext.Response, "ETag");
+    CopyHeaderIfPresent(response, httpContext.Response, "Last-Modified");
+
+    var content = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+    var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
+    return Results.File(content, contentType);
+});
 app.MapRazorComponents<App>();
 
 app.Run();
@@ -237,6 +272,26 @@ static Uri ResolveApiBaseAddress(IConfiguration configuration)
     }
 
     return new Uri("https+http://apiservice/api/");
+}
+
+static Uri ResolveCommerceNodeBaseAddress(IConfiguration configuration)
+{
+    var apiBaseAddress = ResolveApiBaseAddress(configuration);
+    return new UriBuilder(apiBaseAddress)
+    {
+        Path = "/",
+        Query = string.Empty,
+        Fragment = string.Empty,
+    }.Uri;
+}
+
+static void CopyHeaderIfPresent(HttpResponseMessage source, HttpResponse destination, string headerName)
+{
+    if (source.Headers.TryGetValues(headerName, out var values)
+        || source.Content.Headers.TryGetValues(headerName, out values))
+    {
+        destination.Headers[headerName] = string.Join(",", values);
+    }
 }
 
 static void ConfigureStorefrontHttpClient(HttpClient client, IConfiguration configuration)

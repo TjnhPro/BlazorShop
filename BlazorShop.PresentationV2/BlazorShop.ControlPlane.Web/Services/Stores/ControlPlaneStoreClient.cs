@@ -21,6 +21,10 @@ namespace BlazorShop.ControlPlane.Web.Services.Stores
         Task<StoreMutationResult> VerifyDomainAsync(Guid publicId, long domainId, CancellationToken cancellationToken = default);
 
         Task<StoreMutationResult> DisableDomainAsync(Guid publicId, long domainId, CancellationToken cancellationToken = default);
+
+        Task<StoreDeploymentResult> DeployAsync(Guid publicId, StoreDeploymentRequest request, CancellationToken cancellationToken = default);
+
+        Task<StoreDeploymentDetailResult> GetDeploymentTaskAsync(Guid publicId, Guid taskPublicId, CancellationToken cancellationToken = default);
     }
 
     public sealed class ControlPlaneStoreClient : IControlPlaneStoreClient
@@ -147,6 +151,27 @@ namespace BlazorShop.ControlPlane.Web.Services.Stores
 
             return new StoreMutationResult(result.Success, result.Message, result.Data);
         }
+
+        public async Task<StoreDeploymentResult> DeployAsync(Guid publicId, StoreDeploymentRequest request, CancellationToken cancellationToken = default)
+        {
+            var result = await this.apiClient.PostPrivateAsync<StoreDeploymentRequest, StoreDeploymentTaskSummary>(
+                $"api/control-plane/stores/{publicId}/deployment-tasks",
+                request,
+                "Unable to submit deployment task.",
+                cancellationToken);
+
+            return new StoreDeploymentResult(result.Success, result.Message, result.Data);
+        }
+
+        public async Task<StoreDeploymentDetailResult> GetDeploymentTaskAsync(Guid publicId, Guid taskPublicId, CancellationToken cancellationToken = default)
+        {
+            var result = await this.apiClient.GetPrivateAsync<StoreDeploymentTaskDetail>(
+                $"api/control-plane/stores/{publicId}/deployment-tasks/{taskPublicId}",
+                "Unable to load deployment task.",
+                cancellationToken);
+
+            return new StoreDeploymentDetailResult(result.Success, result.Message, result.Data);
+        }
     }
 
     public sealed record StoreListResponse(IReadOnlyList<StoreSummary> Items);
@@ -164,4 +189,75 @@ namespace BlazorShop.ControlPlane.Web.Services.Stores
     public sealed record StoreDomainCreateRequest(string Domain);
 
     public sealed record StoreMutationResult(bool Success, string? Message = null, StoreDetail? Store = null);
+
+    public sealed record StoreDeploymentRequest(
+        string StorefrontImage,
+        string? PrimaryDomain = null,
+        string? BaseUrl = null,
+        string DefaultCurrencyCode = "USD",
+        string DefaultCulture = "en-US",
+        string? NetworkName = null);
+
+    public sealed record StoreDeploymentTaskSummary(
+        Guid PublicId,
+        string TaskType,
+        string Status,
+        string? IdempotencyKey,
+        string? LockKey,
+        string PayloadSchemaVersion,
+        string? ErrorCode,
+        string? ErrorMessage,
+        int AttemptCount,
+        int MaxAttempts,
+        DateTimeOffset? NextAttemptAt,
+        DateTimeOffset? StartedAt,
+        DateTimeOffset? CompletedAt,
+        DateTimeOffset CreatedAt,
+        DateTimeOffset UpdatedAt,
+        string? CreatedBy,
+        string? CorrelationId,
+        DateTimeOffset? CancelRequestedAt,
+        string? WorkerId,
+        DateTimeOffset? LastHeartbeatAt);
+
+    public sealed record StoreDeploymentTaskDetail(
+        Guid PublicId,
+        string TaskType,
+        string Status,
+        string? IdempotencyKey,
+        string? LockKey,
+        string PayloadSchemaVersion,
+        string PayloadJson,
+        string? ResultJson,
+        string? ErrorCode,
+        string? ErrorMessage,
+        int AttemptCount,
+        int MaxAttempts,
+        DateTimeOffset? NextAttemptAt,
+        DateTimeOffset? StartedAt,
+        DateTimeOffset? CompletedAt,
+        DateTimeOffset CreatedAt,
+        DateTimeOffset UpdatedAt,
+        string? CreatedBy,
+        string? CorrelationId,
+        DateTimeOffset? CancelRequestedAt,
+        string? CancelReason,
+        string? WorkerId,
+        DateTimeOffset? LastHeartbeatAt,
+        IReadOnlyList<StoreDeploymentTaskStep> Steps);
+
+    public sealed record StoreDeploymentTaskStep(
+        Guid Id,
+        string StepKey,
+        string Status,
+        int AttemptNumber,
+        string? ResultJson,
+        string? ErrorCode,
+        string? ErrorMessage,
+        DateTimeOffset? StartedAt,
+        DateTimeOffset? CompletedAt);
+
+    public sealed record StoreDeploymentResult(bool Success, string? Message = null, StoreDeploymentTaskSummary? Task = null);
+
+    public sealed record StoreDeploymentDetailResult(bool Success, string? Message = null, StoreDeploymentTaskDetail? Task = null);
 }

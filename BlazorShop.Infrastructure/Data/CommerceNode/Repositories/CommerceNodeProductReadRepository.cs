@@ -384,17 +384,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                var searchQuery = EF.Functions.PlainToTsQuery(SearchConfig, searchTerm);
-
                 return products
                     .Where(product => EF.Functions
                         .ToTsVector(SearchConfig, product.Name ?? string.Empty)
-                        .Matches(searchQuery))
+                        .Matches(EF.Functions.PlainToTsQuery(SearchConfig, searchTerm)))
                     .OrderByDescending(product => EF.Functions
                         .ToTsVector(SearchConfig, product.Name ?? string.Empty)
-                        .Rank(searchQuery))
-                    .ThenBy(product => product.DisplayOrder)
-                    .ThenByDescending(product => product.CreatedOn)
+                        .Rank(EF.Functions.PlainToTsQuery(SearchConfig, searchTerm)))
                     .ThenBy(product => product.Id);
             }
 
@@ -549,6 +545,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                         UpdatedAt = product.UpdatedAt,
                         DisplayOrder = product.DisplayOrder,
                         InStock = product.InStock,
+                        IsPublished = product.IsPublished,
+                        PublishedOn = product.PublishedOn,
                         CategoryId = product.CategoryId,
                         CategoryName = product.CategoryName,
                         CategorySlug = product.CategorySlug,

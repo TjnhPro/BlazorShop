@@ -84,7 +84,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             {
                 StoreKey = request.StoreKey.Trim().ToLowerInvariant(),
                 Name = request.Name.Trim(),
-                Status = "active",
+                Status = "disabled",
                 MetadataJson = NormalizeOptionalJson(request.MetadataJson),
                 NodeId = node.Id,
                 CreatedAt = now,
