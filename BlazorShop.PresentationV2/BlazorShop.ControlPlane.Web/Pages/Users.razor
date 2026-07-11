@@ -386,8 +386,8 @@
         {
             isLoading = true;
             errorMessage = null;
-            var rolesTask = UserClient.ListRolesAsync();
-            var permissionsTask = UserClient.ListPermissionsAsync();
+            var rolesTask = UserClient.GetRoleCatalogAsync();
+            var permissionsTask = UserClient.GetPermissionCatalogAsync();
             var usersTask = UserClient.ListAsync(search, status, roleKey, permissionKey, userPageNumber, UserPageSize);
 
             await Task.WhenAll(rolesTask, permissionsTask, usersTask);

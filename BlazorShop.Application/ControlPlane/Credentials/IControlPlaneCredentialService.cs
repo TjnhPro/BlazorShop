@@ -4,6 +4,7 @@ namespace BlazorShop.Application.ControlPlane.Credentials
     {
         Task<ControlPlaneCredentialOperationResult<ControlPlaneCredentialListResponse>> ListAsync(
             Guid nodePublicId,
+            ControlPlaneCredentialListQuery query,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneCredentialOperationResult<ControlPlaneCredentialSecretResult>> CreateAsync(

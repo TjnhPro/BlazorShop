@@ -30,9 +30,16 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> List(Guid nodePublicId, CancellationToken cancellationToken)
+        public async Task<IActionResult> List(
+            Guid nodePublicId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 25,
+            CancellationToken cancellationToken = default)
         {
-            var result = await this.credentialService.ListAsync(nodePublicId, cancellationToken);
+            var result = await this.credentialService.ListAsync(
+                nodePublicId,
+                new ControlPlaneCredentialListQuery(pageNumber, pageSize),
+                cancellationToken);
             return ToActionResult(result);
         }
 

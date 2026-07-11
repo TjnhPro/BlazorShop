@@ -515,7 +515,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return await ReloadDetailAsync(publicId, cancellationToken);
         }
 
-        public async Task<ControlPlaneRoleCatalogResponse> ListRolesAsync(
+        public async Task<ControlPlaneRoleCatalogResponse> GetRoleCatalogAsync(
             CancellationToken cancellationToken = default)
         {
             var roles = await this.dbContext.ControlPlaneRoles
@@ -538,7 +538,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                     .ToArray());
         }
 
-        public async Task<ControlPlanePermissionCatalogResponse> ListPermissionsAsync(
+        public async Task<ControlPlanePermissionCatalogResponse> GetPermissionCatalogAsync(
             CancellationToken cancellationToken = default)
         {
             var permissions = await this.dbContext.Permissions

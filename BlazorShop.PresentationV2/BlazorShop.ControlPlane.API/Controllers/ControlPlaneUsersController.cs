@@ -182,9 +182,9 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpGet("roles")]
-        public async Task<IActionResult> ListRoles(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetRoleCatalog(CancellationToken cancellationToken)
         {
-            var response = await this.userManagementService.ListRolesAsync(cancellationToken);
+            var response = await this.userManagementService.GetRoleCatalogAsync(cancellationToken);
             return ControlPlaneApiResponseWriter.Success(
                 StatusCodes.Status200OK,
                 response,
@@ -192,9 +192,9 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpGet("permissions")]
-        public async Task<IActionResult> ListPermissions(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetPermissionCatalog(CancellationToken cancellationToken)
         {
-            var response = await this.userManagementService.ListPermissionsAsync(cancellationToken);
+            var response = await this.userManagementService.GetPermissionCatalogAsync(cancellationToken);
             return ControlPlaneApiResponseWriter.Success(
                 StatusCodes.Status200OK,
                 response,

@@ -17,9 +17,9 @@ namespace BlazorShop.ControlPlane.Web.Services.Users
 
         Task<UserDetail?> GetAsync(Guid publicId, CancellationToken cancellationToken = default);
 
-        Task<RoleCatalogResponse> ListRolesAsync(CancellationToken cancellationToken = default);
+        Task<RoleCatalogResponse> GetRoleCatalogAsync(CancellationToken cancellationToken = default);
 
-        Task<PermissionCatalogResponse> ListPermissionsAsync(CancellationToken cancellationToken = default);
+        Task<PermissionCatalogResponse> GetPermissionCatalogAsync(CancellationToken cancellationToken = default);
 
         Task<CreateUserResult> CreateAsync(CreateUserRequest request, CancellationToken cancellationToken = default);
 
@@ -100,7 +100,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Users
             throw new InvalidOperationException(result.Message);
         }
 
-        public async Task<RoleCatalogResponse> ListRolesAsync(CancellationToken cancellationToken = default)
+        public async Task<RoleCatalogResponse> GetRoleCatalogAsync(CancellationToken cancellationToken = default)
         {
             var result = await this.apiClient.GetPrivateAsync<RoleCatalogResponse>(
                 "api/control-plane/users/roles",
@@ -115,7 +115,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Users
             throw new InvalidOperationException(result.Message);
         }
 
-        public async Task<PermissionCatalogResponse> ListPermissionsAsync(CancellationToken cancellationToken = default)
+        public async Task<PermissionCatalogResponse> GetPermissionCatalogAsync(CancellationToken cancellationToken = default)
         {
             var result = await this.apiClient.GetPrivateAsync<PermissionCatalogResponse>(
                 "api/control-plane/users/permissions",

@@ -1,5 +1,9 @@
 namespace BlazorShop.Application.ControlPlane.Credentials
 {
+    public sealed record ControlPlaneCredentialListQuery(
+        int PageNumber = 1,
+        int PageSize = 25);
+
     public sealed record ControlPlaneCredentialSummary(
         string KeyId,
         string Status,
@@ -8,7 +12,12 @@ namespace BlazorShop.Application.ControlPlane.Credentials
         DateTimeOffset? RevealedAt,
         DateTimeOffset? RevokedAt);
 
-    public sealed record ControlPlaneCredentialListResponse(IReadOnlyList<ControlPlaneCredentialSummary> Items);
+    public sealed record ControlPlaneCredentialListResponse(
+        IReadOnlyList<ControlPlaneCredentialSummary> Items,
+        int TotalCount,
+        int PageNumber,
+        int PageSize,
+        int TotalPages);
 
     public sealed record CreateControlPlaneCredentialRequest(string? Note = null);
 

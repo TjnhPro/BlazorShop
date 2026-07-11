@@ -4,7 +4,11 @@ namespace BlazorShop.ControlPlane.Web.Services.Credentials
 
     public interface IControlPlaneCredentialClient
     {
-        Task<CredentialListResponse> ListAsync(Guid nodePublicId, CancellationToken cancellationToken = default);
+        Task<CredentialListResponse> ListAsync(
+            Guid nodePublicId,
+            int pageNumber = 1,
+            int pageSize = 25,
+            CancellationToken cancellationToken = default);
 
         Task<CredentialSecretResult> CreateAsync(Guid nodePublicId, CancellationToken cancellationToken = default);
 
@@ -22,16 +26,20 @@ namespace BlazorShop.ControlPlane.Web.Services.Credentials
             this.apiClient = apiClient;
         }
 
-        public async Task<CredentialListResponse> ListAsync(Guid nodePublicId, CancellationToken cancellationToken = default)
+        public async Task<CredentialListResponse> ListAsync(
+            Guid nodePublicId,
+            int pageNumber = 1,
+            int pageSize = 25,
+            CancellationToken cancellationToken = default)
         {
             var result = await this.apiClient.GetPrivateAsync<CredentialListResponse>(
-                $"api/control-plane/nodes/{nodePublicId}/credentials",
+                $"api/control-plane/nodes/{nodePublicId}/credentials?pageNumber={Math.Max(1, pageNumber)}&pageSize={Math.Clamp(pageSize, 1, 100)}",
                 "Unable to load credentials.",
                 cancellationToken);
 
             if (result.Success)
             {
-                return result.Data ?? new CredentialListResponse([]);
+                return result.Data ?? new CredentialListResponse([], 0, Math.Max(1, pageNumber), Math.Clamp(pageSize, 1, 100), 0);
             }
 
             throw new InvalidOperationException(result.Message);
@@ -74,7 +82,12 @@ namespace BlazorShop.ControlPlane.Web.Services.Credentials
         }
     }
 
-    public sealed record CredentialListResponse(IReadOnlyList<CredentialSummary> Items);
+    public sealed record CredentialListResponse(
+        IReadOnlyList<CredentialSummary> Items,
+        int TotalCount,
+        int PageNumber,
+        int PageSize,
+        int TotalPages);
 
     public sealed record CredentialSummary(
         string KeyId,

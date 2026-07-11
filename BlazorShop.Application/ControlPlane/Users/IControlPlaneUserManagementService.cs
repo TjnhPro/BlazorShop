@@ -57,10 +57,10 @@ namespace BlazorShop.Application.ControlPlane.Users
             ControlPlaneUserActor actor,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneRoleCatalogResponse> ListRolesAsync(
+        Task<ControlPlaneRoleCatalogResponse> GetRoleCatalogAsync(
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlanePermissionCatalogResponse> ListPermissionsAsync(
+        Task<ControlPlanePermissionCatalogResponse> GetPermissionCatalogAsync(
             CancellationToken cancellationToken = default);
     }
 }

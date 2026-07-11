@@ -3,6 +3,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using System.Security.Cryptography;
     using System.Text;
 
+    using BlazorShop.Application.ControlPlane.Common;
     using BlazorShop.Application.ControlPlane.Credentials;
     using BlazorShop.Domain.Entities.ControlPlane;
 
@@ -25,24 +26,39 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
         public async Task<ControlPlaneCredentialOperationResult<ControlPlaneCredentialListResponse>> ListAsync(
             Guid nodePublicId,
+            ControlPlaneCredentialListQuery query,
             CancellationToken cancellationToken = default)
         {
+            ArgumentNullException.ThrowIfNull(query);
+
             var node = await this.dbContext.Nodes
                 .AsNoTracking()
-                .Include(candidate => candidate.Credentials)
-                .FirstOrDefaultAsync(candidate => candidate.PublicId == nodePublicId, cancellationToken);
+                .Where(candidate => candidate.PublicId == nodePublicId)
+                .Select(candidate => new { candidate.Id })
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (node is null)
             {
                 return NotFound<ControlPlaneCredentialListResponse>("Node was not found.");
             }
 
-            var credentials = node.Credentials
+            var page = ControlPlanePaging.Normalize(query.PageNumber, query.PageSize);
+            var credentialsQuery = this.dbContext.NodeCredentials
+                .AsNoTracking()
+                .Where(credential => credential.NodeId == node.Id);
+            var totalCount = await credentialsQuery.CountAsync(cancellationToken);
+            var credentials = await credentialsQuery
                 .OrderByDescending(credential => credential.CreatedAt)
-                .Select(MapSummary)
-                .ToArray();
+                .Skip(page.Skip)
+                .Take(page.PageSize)
+                .ToArrayAsync(cancellationToken);
 
-            return Succeeded(new ControlPlaneCredentialListResponse(credentials));
+            return Succeeded(new ControlPlaneCredentialListResponse(
+                credentials.Select(MapSummary).ToArray(),
+                totalCount,
+                page.PageNumber,
+                page.PageSize,
+                ControlPlanePaging.GetTotalPages(totalCount, page.PageSize)));
         }
 
         public async Task<ControlPlaneCredentialOperationResult<ControlPlaneCredentialSecretResult>> CreateAsync(

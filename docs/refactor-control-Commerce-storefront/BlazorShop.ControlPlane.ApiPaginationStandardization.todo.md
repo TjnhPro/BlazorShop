@@ -393,7 +393,7 @@ Goal: remove all remaining non-paged `List*` methods from ControlPlane API/Web c
 
 Tasks:
 
-- [ ] Page node credentials:
+- [x] Page node credentials:
   - `ControlPlaneCredentialListQuery`
   - `ControlPlaneCredentialListResponse`
   - `ControlPlaneCredentialService.ListAsync`
@@ -404,7 +404,7 @@ Tasks:
 - [ ] Page product variants by product.
 - [ ] Page product media by product or enforce/document a strict max count. If no strict max exists, page it.
 - [ ] Page variation templates.
-- [ ] Handle roles/permissions:
+- [x] Handle roles/permissions:
   - Preferred: rename API/client methods to `GetRoleCatalog` and `GetPermissionCatalog`.
   - Alternative: page them too.
   - Do not leave methods named `ListRoles`/`ListPermissions` returning unpaged collection.
@@ -492,9 +492,9 @@ Every checked item must either become paged or be renamed away from `List`.
 - [x] `ControlPlaneStoresController.List`
 - [x] `ControlPlaneHealthController.List`
 - [x] `ControlPlaneActionsController.List`
-- [ ] `ControlPlaneCredentialsController.List`
-- [ ] `ControlPlaneUsersController.ListRoles`
-- [ ] `ControlPlaneUsersController.ListPermissions`
+- [x] `ControlPlaneCredentialsController.List`
+- [x] `ControlPlaneUsersController.ListRoles`
+- [x] `ControlPlaneUsersController.ListPermissions`
 - [ ] `ControlPlaneCommerceCatalogController.QueryProducts`
 - [x] `ControlPlaneCommerceCatalogController.ListProductImports`
 - [x] `ControlPlaneCommerceCatalogController.ListProductImportRows`
