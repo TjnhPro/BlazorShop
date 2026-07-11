@@ -408,7 +408,7 @@ Tasks:
   - Preferred: rename API/client methods to `GetRoleCatalog` and `GetPermissionCatalog`.
   - Alternative: page them too.
   - Do not leave methods named `ListRoles`/`ListPermissions` returning unpaged collection.
-- [ ] Search codebase for:
+- [x] Search codebase for:
   - `ListResponse(IReadOnlyList`
   - `Task<.*IReadOnlyList`
   - `public async Task<IActionResult> List`
@@ -416,7 +416,7 @@ Tasks:
   - `.Take(200)`
   - `Skip =`
   - `Take =`
-- [ ] For every match, either migrate to page contract or document why it is not a list endpoint.
+- [x] For every match, either migrate to page contract or document why it is not a list endpoint.
 
 Commit:
 
@@ -430,7 +430,7 @@ Goal: verify paging behavior across Control Plane after a broad contract change.
 
 Tasks:
 
-- [ ] Update `QA-ControlPlane.todo.md` with cases for:
+- [x] Update `QA-ControlPlane.todo.md` with cases for:
   - Product Import template header.
   - Product Import job page navigation.
   - Product Import row page navigation.
@@ -443,18 +443,18 @@ Tasks:
   - Category list page/navigation or lookup behavior.
   - Variation Template page navigation.
   - Product media and variants pagination where applicable.
-- [ ] Update architecture docs if the API paging rule should become permanent:
+- [x] Update architecture docs if the API paging rule should become permanent:
   - `docs/architecture/03-runtime-boundaries.md`
   - `docs/architecture/08-agent-decision-rules.md`
-- [ ] Add explicit agent rule: "List methods must be paged; static lookup/catalog methods must not be named List."
-- [ ] Run focused builds:
+- [x] Add explicit agent rule: "List methods must be paged; static lookup/catalog methods must not be named List."
+- [x] Run focused builds:
   - `dotnet build BlazorShop.Application/BlazorShop.Application.csproj --no-restore`
   - `dotnet build BlazorShop.Infrastructure/BlazorShop.Infrastructure.csproj --no-restore`
   - `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore`
   - `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore`
   - `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore`
 - [ ] Run visible-browser QA if user requests observation.
-- [ ] Verify no direct Web calls to CommerceNode.
+- [x] Verify no direct Web calls to CommerceNode.
 
 Commit:
 

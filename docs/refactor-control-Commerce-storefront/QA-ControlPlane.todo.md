@@ -299,6 +299,25 @@ Status legend:
 - [~] Backlog: add migration test for `commerce_node.node_secret` and `node_secret_updated_at`.
 - [~] Backlog: add automated startup migration smoke for `ControlPlaneDbContext` with a disposable PostgreSQL database.
 
+## Pagination Contract Regression
+
+- [ ] Product Import template downloads canonical parser header.
+- [ ] Product Import valid CSV from downloaded template queues and completes.
+- [ ] Product Import invalid header shows job-level error in drawer.
+- [ ] Product Import error CSV includes job-level error when row list is empty.
+- [ ] Product Import jobs page has previous/next controls and honors `pageNumber/pageSize`.
+- [ ] Product Import rows drawer has previous/next controls and honors `pageNumber/pageSize`.
+- [ ] Stores page has page controls and search/status filters still work.
+- [ ] Health page has page controls, search/status filters, and detail load still works.
+- [ ] Actions page has page controls and status/action filters still work.
+- [ ] Users page has page controls and search/status/role/permission filters still work.
+- [ ] Nodes page has page controls and search/status filters still work.
+- [ ] Credentials page has page controls for node credentials.
+- [ ] Category list uses paged response data.
+- [ ] Variation templates use paged response data.
+- [ ] Product media and product variants use paged response data.
+- [ ] ControlPlane Web request capture confirms no direct calls to CommerceNode APIs.
+
 ## QA Run History
 
 | Date | Tester | Scope | Result | Notes |
