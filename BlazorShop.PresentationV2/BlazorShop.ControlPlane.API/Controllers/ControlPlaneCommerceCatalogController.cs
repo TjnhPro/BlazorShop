@@ -174,7 +174,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             var result = await this.catalogService.ListProductImportRowsAsync(
                 storePublicId,
                 jobPublicId,
-                new ProductImportRowsQuery("failed", Take: 200),
+                new ProductImportRowsQuery("failed", PageNumber: 1, PageSize: 100),
                 cancellationToken);
 
             if (!result.Success || result.Payload is null)

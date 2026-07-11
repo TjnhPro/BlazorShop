@@ -29,19 +29,20 @@ namespace BlazorShop.Application.CommerceNode.ProductImports
 
     public sealed record ProductImportJobListQuery(
         string? Status = null,
-        int Skip = 0,
-        int Take = 50);
+        int PageNumber = 1,
+        int PageSize = 25);
 
     public sealed record ProductImportRowsQuery(
         string? Status = null,
-        int Skip = 0,
-        int Take = 100);
+        int PageNumber = 1,
+        int PageSize = 25);
 
     public sealed record ProductImportJobListResponse(
         IReadOnlyList<ProductImportJobDto> Items,
         int TotalCount,
-        int Skip,
-        int Take);
+        int PageNumber,
+        int PageSize,
+        int TotalPages);
 
     public sealed record ProductImportUploadResponse(ProductImportJobDto Job);
 
@@ -74,8 +75,9 @@ namespace BlazorShop.Application.CommerceNode.ProductImports
     public sealed record ProductImportRowsResponse(
         IReadOnlyList<ProductImportRowDto> Items,
         int TotalCount,
-        int Skip,
-        int Take);
+        int PageNumber,
+        int PageSize,
+        int TotalPages);
 
     public sealed record ProductImportRowDto(
         int RowNumber,

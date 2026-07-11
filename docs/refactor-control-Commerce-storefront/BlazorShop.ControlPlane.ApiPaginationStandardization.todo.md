@@ -249,8 +249,8 @@ Tasks:
 - [x] Add/update docs rule: every Control Plane API `List`, `Query`, `Search` endpoint must be paged.
 - [x] Add a source audit checklist in this todo for all existing list methods.
 - [ ] Rename non-paged static catalog methods away from `List*`, or explicitly convert them to paged responses.
-- [ ] Do not migrate all endpoints in this phase yet, but the pattern must be committed first.
-- [ ] Build `BlazorShop.Application`.
+- [x] Do not migrate all endpoints in this phase yet, but the pattern must be committed first.
+- [x] Build `BlazorShop.Application`.
 
 Commit:
 
@@ -264,17 +264,17 @@ Goal: remove exposed `skip/take` from Product Import admin flow.
 
 Tasks:
 
-- [ ] Replace `ProductImportJobListQuery.Skip/Take` with `PageNumber/PageSize`.
-- [ ] Replace `ProductImportRowsQuery.Skip/Take` with `PageNumber/PageSize`.
-- [ ] Replace response `Skip/Take` fields with `PageNumber/PageSize/TotalPages`.
-- [ ] Update CommerceNode import service query math internally.
-- [ ] Update CommerceNode API binding.
-- [ ] Update ControlPlane API proxy route/query mapping.
-- [ ] Update ControlPlane Web typed client.
-- [ ] Add page controls to Product Import jobs table.
-- [ ] Add page controls to Product Import drawer rows table.
-- [ ] Avoid hard-coded `Take=100`.
-- [ ] Keep error CSV bounded but page through failed rows internally if needed, or document max export rows.
+- [x] Replace `ProductImportJobListQuery.Skip/Take` with `PageNumber/PageSize`.
+- [x] Replace `ProductImportRowsQuery.Skip/Take` with `PageNumber/PageSize`.
+- [x] Replace response `Skip/Take` fields with `PageNumber/PageSize/TotalPages`.
+- [x] Update CommerceNode import service query math internally.
+- [x] Update CommerceNode API binding.
+- [x] Update ControlPlane API proxy route/query mapping.
+- [x] Update ControlPlane Web typed client.
+- [x] Add page controls to Product Import jobs table.
+- [x] Add page controls to Product Import drawer rows table.
+- [x] Avoid hard-coded `Take=100`.
+- [x] Keep error CSV bounded but page through failed rows internally if needed, or document max export rows.
 
 Commit:
 
@@ -496,8 +496,8 @@ Every checked item must either become paged or be renamed away from `List`.
 - [ ] `ControlPlaneUsersController.ListRoles`
 - [ ] `ControlPlaneUsersController.ListPermissions`
 - [ ] `ControlPlaneCommerceCatalogController.QueryProducts`
-- [ ] `ControlPlaneCommerceCatalogController.ListProductImports`
-- [ ] `ControlPlaneCommerceCatalogController.ListProductImportRows`
+- [x] `ControlPlaneCommerceCatalogController.ListProductImports`
+- [x] `ControlPlaneCommerceCatalogController.ListProductImportRows`
 - [ ] `ControlPlaneCommerceCatalogController.ListProductMedia`
 - [ ] `ControlPlaneCommerceCatalogController.ListCategories`
 - [ ] `ControlPlaneCommerceCatalogController.GetCategoryTree`

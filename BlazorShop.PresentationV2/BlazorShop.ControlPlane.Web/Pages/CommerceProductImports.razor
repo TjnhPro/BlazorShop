@@ -145,6 +145,19 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="flex flex-col gap-3 border-t border-ink-200 px-4 py-3 text-sm text-ink-600 md:flex-row md:items-center md:justify-between">
+                    <div>Page @jobPageNumber of @DisplayTotalPages(jobTotalPages) · @jobs.Count of @jobTotalCount jobs</div>
+                    <div class="flex gap-2">
+                        <button class="cp-button cp-button-secondary" disabled="@(jobPageNumber <= 1 || isLoading)" @onclick="PreviousJobsPageAsync">
+                            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                            Previous
+                        </button>
+                        <button class="cp-button cp-button-secondary" disabled="@(!CanLoadNextJobsPage || isLoading)" @onclick="NextJobsPageAsync">
+                            Next
+                            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
             }
         </div>
     </div>
@@ -220,6 +233,19 @@
                         }
                     </tbody>
                 </table>
+                <div class="flex flex-col gap-3 border-t border-ink-200 px-4 py-3 text-sm text-ink-600 md:flex-row md:items-center md:justify-between">
+                    <div>Page @rowPageNumber of @DisplayTotalPages(rowTotalPages) · @rows.Count of @rowTotalCount rows</div>
+                    <div class="flex gap-2">
+                        <button class="cp-button cp-button-secondary" disabled="@(rowPageNumber <= 1 || isRowsLoading)" @onclick="PreviousRowsPageAsync">
+                            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                            Previous
+                        </button>
+                        <button class="cp-button cp-button-secondary" disabled="@(!CanLoadNextRowsPage || isRowsLoading)" @onclick="NextRowsPageAsync">
+                            Next
+                            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     }
@@ -229,20 +255,33 @@
     private readonly List<StoreSummary> stores = [];
     private readonly List<ProductImportJobDto> jobs = [];
     private readonly List<ProductImportRowDto> rows = [];
+    private const int JobPageSize = 25;
+    private const int RowPageSize = 25;
     private Guid? selectedStorePublicId;
     private string uploadMode = ProductImportModes.CreateOnly;
     private string? statusFilter;
     private IBrowserFile? selectedFile;
     private ProductImportJobDetailDto? selectedJob;
     private bool isLoading;
+    private bool isRowsLoading;
     private bool isSaving;
     private bool isDrawerOpen;
+    private int jobPageNumber = 1;
+    private int jobTotalCount;
+    private int jobTotalPages;
+    private int rowPageNumber = 1;
+    private int rowTotalCount;
+    private int rowTotalPages;
     private string? errorMessage;
     private string? successMessage;
 
     private bool HasStore => selectedStorePublicId.HasValue && selectedStorePublicId.Value != Guid.Empty;
 
     private bool CanUpload => HasStore && selectedFile is not null && !isSaving;
+
+    private bool CanLoadNextJobsPage => jobPageNumber < jobTotalPages;
+
+    private bool CanLoadNextRowsPage => rowPageNumber < rowTotalPages;
 
     protected override async Task OnInitializedAsync()
     {
@@ -278,7 +317,7 @@
         {
             var result = await CatalogClient.ListProductImportsAsync(
                 selectedStorePublicId!.Value,
-                new ProductImportJobListQuery(statusFilter, Take: 100));
+                new ProductImportJobListQuery(statusFilter, jobPageNumber, JobPageSize));
 
             if (!result.Success)
             {
@@ -288,6 +327,8 @@
 
             jobs.Clear();
             jobs.AddRange(result.Data?.Items ?? []);
+            jobTotalCount = result.Data?.TotalCount ?? 0;
+            jobTotalPages = result.Data?.TotalPages ?? 0;
         }
         finally
         {
@@ -327,6 +368,7 @@
 
             successMessage = result.Message;
             selectedFile = null;
+            jobPageNumber = 1;
             await LoadAsync();
         }
         finally
@@ -361,20 +403,42 @@
         }
 
         selectedJob = detailResult.Data;
-        rows.Clear();
-        rows.AddRange(selectedJob.RecentRows);
-        var rowsResult = await CatalogClient.ListProductImportRowsAsync(
-            selectedStorePublicId.Value,
-            jobPublicId,
-            new ProductImportRowsQuery(Take: 100));
-
-        if (rowsResult.Success)
-        {
-            rows.Clear();
-            rows.AddRange(rowsResult.Data?.Items ?? []);
-        }
+        rowPageNumber = 1;
+        await LoadRowsAsync();
 
         isDrawerOpen = true;
+    }
+
+    private async Task LoadRowsAsync()
+    {
+        if (!HasStore || selectedJob is null)
+        {
+            return;
+        }
+
+        isRowsLoading = true;
+        try
+        {
+            var rowsResult = await CatalogClient.ListProductImportRowsAsync(
+                selectedStorePublicId!.Value,
+                selectedJob.Job.PublicId,
+                new ProductImportRowsQuery(PageNumber: rowPageNumber, PageSize: RowPageSize));
+
+            if (!rowsResult.Success)
+            {
+                errorMessage = rowsResult.Message;
+                return;
+            }
+
+            rows.Clear();
+            rows.AddRange(rowsResult.Data?.Items ?? []);
+            rowTotalCount = rowsResult.Data?.TotalCount ?? 0;
+            rowTotalPages = rowsResult.Data?.TotalPages ?? 0;
+        }
+        finally
+        {
+            isRowsLoading = false;
+        }
     }
 
     private async Task DownloadSelectedJobErrorsAsync()
@@ -409,6 +473,50 @@
         return Task.CompletedTask;
     }
 
+    private async Task PreviousJobsPageAsync()
+    {
+        if (jobPageNumber <= 1)
+        {
+            return;
+        }
+
+        jobPageNumber--;
+        await LoadAsync();
+    }
+
+    private async Task NextJobsPageAsync()
+    {
+        if (!CanLoadNextJobsPage)
+        {
+            return;
+        }
+
+        jobPageNumber++;
+        await LoadAsync();
+    }
+
+    private async Task PreviousRowsPageAsync()
+    {
+        if (rowPageNumber <= 1)
+        {
+            return;
+        }
+
+        rowPageNumber--;
+        await LoadRowsAsync();
+    }
+
+    private async Task NextRowsPageAsync()
+    {
+        if (!CanLoadNextRowsPage)
+        {
+            return;
+        }
+
+        rowPageNumber++;
+        await LoadRowsAsync();
+    }
+
     private static string StatusTone(string? status)
     {
         return status?.ToLowerInvariant() switch
@@ -423,5 +531,10 @@
     private static string FirstNonEmpty(params string?[] values)
     {
         return values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)) ?? string.Empty;
+    }
+
+    private static int DisplayTotalPages(int totalPages)
+    {
+        return Math.Max(1, totalPages);
     }
 }

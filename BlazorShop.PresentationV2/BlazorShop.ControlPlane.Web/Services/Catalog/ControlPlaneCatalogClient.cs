@@ -883,8 +883,8 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
         {
             var values = new List<KeyValuePair<string, string>>
             {
-                new("skip", Math.Max(0, query.Skip).ToString(CultureInfo.InvariantCulture)),
-                new("take", Math.Clamp(query.Take, 1, 200).ToString(CultureInfo.InvariantCulture)),
+                new("pageNumber", Math.Max(1, query.PageNumber).ToString(CultureInfo.InvariantCulture)),
+                new("pageSize", Math.Clamp(query.PageSize, 1, 100).ToString(CultureInfo.InvariantCulture)),
             };
 
             AddIfPresent(values, "status", query.Status);
@@ -895,8 +895,8 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
         {
             var values = new List<KeyValuePair<string, string>>
             {
-                new("skip", Math.Max(0, query.Skip).ToString(CultureInfo.InvariantCulture)),
-                new("take", Math.Clamp(query.Take, 1, 200).ToString(CultureInfo.InvariantCulture)),
+                new("pageNumber", Math.Max(1, query.PageNumber).ToString(CultureInfo.InvariantCulture)),
+                new("pageSize", Math.Clamp(query.PageSize, 1, 100).ToString(CultureInfo.InvariantCulture)),
             };
 
             AddIfPresent(values, "status", query.Status);

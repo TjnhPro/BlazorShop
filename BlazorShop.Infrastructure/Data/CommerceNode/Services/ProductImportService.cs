@@ -14,8 +14,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     public sealed class ProductImportService : IProductImportService
     {
         private const long MaxFileSizeBytes = 5 * 1024 * 1024;
-        private const int DefaultTake = 50;
-        private const int MaxTake = 200;
+        private const int DefaultPageSize = 25;
+        private const int MaxPageSize = 100;
         private const string SchemaVersion = "v1";
 
         private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
@@ -141,8 +141,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failure<ProductImportJobListResponse>("Store context was not resolved.", ServiceResponseType.NotFound);
             }
 
-            var skip = Math.Max(0, query.Skip);
-            var take = Math.Clamp(query.Take <= 0 ? DefaultTake : query.Take, 1, MaxTake);
+            var page = NormalizePage(query.PageNumber, query.PageSize);
             var jobs = this.context.ProductImportJobs.AsNoTracking().Where(job => job.StoreId == storeId);
             if (!string.IsNullOrWhiteSpace(query.Status))
             {
@@ -152,12 +151,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var total = await jobs.CountAsync(cancellationToken);
             var items = await jobs
                 .OrderByDescending(job => job.CreatedAt)
-                .Skip(skip)
-                .Take(take)
+                .Skip(page.Skip)
+                .Take(page.PageSize)
                 .Select(job => MapJob(job))
                 .ToListAsync(cancellationToken);
 
-            return Success(new ProductImportJobListResponse(items, total, skip, take), "Product imports retrieved.");
+            return Success(new ProductImportJobListResponse(items, total, page.PageNumber, page.PageSize, TotalPages(total, page.PageSize)), "Product imports retrieved.");
         }
 
         public async Task<ServiceResponse<ProductImportJobDetailDto>> GetByPublicIdAsync(
@@ -170,7 +169,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failure<ProductImportJobDetailDto>("Product import job was not found.", ServiceResponseType.NotFound);
             }
 
-            return Success(new ProductImportJobDetailDto(MapJob(job), job.Rows.OrderBy(row => row.RowNumber).Take(100).Select(MapRow).ToArray()), "Product import job retrieved.");
+            return Success(new ProductImportJobDetailDto(MapJob(job), []), "Product import job retrieved.");
         }
 
         public async Task<ServiceResponse<ProductImportRowsResponse>> ListRowsAsync(
@@ -184,8 +183,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failure<ProductImportRowsResponse>("Product import job was not found.", ServiceResponseType.NotFound);
             }
 
-            var skip = Math.Max(0, query.Skip);
-            var take = Math.Clamp(query.Take <= 0 ? 100 : query.Take, 1, MaxTake);
+            var page = NormalizePage(query.PageNumber, query.PageSize);
             var rows = this.context.ProductImportRows.AsNoTracking().Where(row => row.JobId == job.Id);
             if (!string.IsNullOrWhiteSpace(query.Status))
             {
@@ -195,12 +193,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var total = await rows.CountAsync(cancellationToken);
             var items = await rows
                 .OrderBy(row => row.RowNumber)
-                .Skip(skip)
-                .Take(take)
+                .Skip(page.Skip)
+                .Take(page.PageSize)
                 .Select(row => MapRow(row))
                 .ToListAsync(cancellationToken);
 
-            return Success(new ProductImportRowsResponse(items, total, skip, take), "Product import rows retrieved.");
+            return Success(new ProductImportRowsResponse(items, total, page.PageNumber, page.PageSize, TotalPages(total, page.PageSize)), "Product import rows retrieved.");
         }
 
         private async Task<ProductImportJob?> LoadJobAsync(Guid publicId, CancellationToken cancellationToken)
@@ -213,7 +211,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             return await this.context.ProductImportJobs
                 .AsNoTracking()
-                .Include(job => job.Rows.OrderBy(row => row.RowNumber))
                 .FirstOrDefaultAsync(job => job.StoreId == storeId && job.PublicId == publicId, cancellationToken);
         }
 
@@ -242,6 +239,18 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private static string? NormalizeOptional(string? value)
         {
             return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
+
+        private static ProductImportPage NormalizePage(int pageNumber, int pageSize)
+        {
+            var normalizedPageNumber = Math.Max(1, pageNumber);
+            var normalizedPageSize = Math.Clamp(pageSize <= 0 ? DefaultPageSize : pageSize, 1, MaxPageSize);
+            return new ProductImportPage(normalizedPageNumber, normalizedPageSize);
+        }
+
+        private static int TotalPages(int totalCount, int pageSize)
+        {
+            return totalCount <= 0 ? 0 : (int)Math.Ceiling(totalCount / (double)Math.Max(1, pageSize));
         }
 
         private static ProductImportJobDto MapJob(ProductImportJob job)
@@ -301,6 +310,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             {
                 ResponseType = responseType,
             };
+        }
+
+        private readonly record struct ProductImportPage(int PageNumber, int PageSize)
+        {
+            public int Skip => (this.PageNumber - 1) * this.PageSize;
         }
     }
 }
