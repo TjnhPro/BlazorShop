@@ -24,6 +24,14 @@ Do not extend it for V2 work unless the user explicitly asks. If behavior must b
 
 Never put Commerce Node base URLs, node keys, node secrets, allowed IP assumptions, or store security headers into Control Plane Web.
 
+Control Plane list/search/query APIs must use a page contract:
+
+- Use `pageNumber/pageSize` in public API and Web client contracts.
+- Include `items`, `totalCount`, `pageNumber`, `pageSize`, and `totalPages` in list responses.
+- Do not expose `skip/take` to Control Plane Web.
+- Do not hide paging with `.Take(100)` or `.Take(200)`.
+- If a collection is a static lookup/catalog and is intentionally not paged, do not name the endpoint or client method `List*`.
+
 ## Commerce Node Rule
 
 Commerce Node owns node-local ecommerce runtime behavior.

@@ -172,3 +172,25 @@ Control Plane API uses the standardized API envelope:
 The Web UI should rely on `success`, `message`, and `data` for user-facing results while still allowing the client layer to handle HTTP status for auth and infrastructure cases.
 
 Commerce Node APIs should follow existing response helpers/patterns in the project being edited. Prefer consistency with nearby controllers before adding another response abstraction.
+
+## Control Plane Paging Pattern
+
+Control Plane admin list/search/query endpoints use `pageNumber/pageSize` rather than `skip/take` or hidden caps.
+
+List responses should include:
+
+```json
+{
+  "items": [],
+  "totalCount": 0,
+  "pageNumber": 1,
+  "pageSize": 25,
+  "totalPages": 0
+}
+```
+
+Rules:
+
+- Every Control Plane API method named `List`, `Query`, or `Search` must be paged unless it is a static lookup/catalog.
+- Static lookup/catalog endpoints should be named as catalog/lookup APIs, not `List*`.
+- API services may compute skip/take internally, but Web/API contracts must not expose skip/take for admin list pages.

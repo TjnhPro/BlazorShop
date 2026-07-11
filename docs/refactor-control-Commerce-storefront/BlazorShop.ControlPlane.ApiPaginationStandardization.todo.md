@@ -243,11 +243,11 @@ Goal: add shared paging contract and create a repo rule so every list/search met
 
 Tasks:
 
-- [ ] Add `ControlPlanePageQuery`.
-- [ ] Add `ControlPlanePagedResponse<TItem>`.
-- [ ] Add normalization helper or local static methods following existing project style.
-- [ ] Add/update docs rule: every Control Plane API `List`, `Query`, `Search` endpoint must be paged.
-- [ ] Add a source audit checklist in this todo for all existing list methods.
+- [x] Add `ControlPlanePageQuery`.
+- [x] Add `ControlPlanePagedResponse<TItem>`.
+- [x] Add normalization helper or local static methods following existing project style.
+- [x] Add/update docs rule: every Control Plane API `List`, `Query`, `Search` endpoint must be paged.
+- [x] Add a source audit checklist in this todo for all existing list methods.
 - [ ] Rename non-paged static catalog methods away from `List*`, or explicitly convert them to paged responses.
 - [ ] Do not migrate all endpoints in this phase yet, but the pattern must be committed first.
 - [ ] Build `BlazorShop.Application`.
