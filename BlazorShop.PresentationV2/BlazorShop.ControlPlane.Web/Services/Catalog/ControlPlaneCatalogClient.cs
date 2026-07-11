@@ -6,6 +6,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
     using BlazorShop.Application.ControlPlane.Catalog;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
+    using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs.Admin.Inventory;
     using BlazorShop.Application.DTOs.Admin.Orders;
@@ -246,6 +247,32 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             Guid optionPublicId,
             Guid valuePublicId,
             UpdateVariationTemplateValueRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StorefrontPageListResponse>> ListStorefrontPagesAsync(
+            Guid storePublicId,
+            StorefrontPageListQuery query,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StorefrontPageDetailDto>> GetStorefrontPageAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StorefrontPageDetailDto>> CreateStorefrontPageAsync(
+            Guid storePublicId,
+            CreateStorefrontPageRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StorefrontPageDetailDto>> UpdateStorefrontPageAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            UpdateStorefrontPageRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StorefrontPageDetailDto>> ArchiveStorefrontPageAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneClientResult<PagedResult<GetOrder>>> QueryOrdersAsync(
@@ -784,6 +811,64 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
                 cancellationToken);
         }
 
+        public Task<ControlPlaneClientResult<StorefrontPageListResponse>> ListStorefrontPagesAsync(
+            Guid storePublicId,
+            StorefrontPageListQuery query,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<StorefrontPageListResponse>(
+                CommerceRoute(storePublicId, "pages") + BuildStorefrontPageQuery(query),
+                "Unable to load storefront pages.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StorefrontPageDetailDto>> GetStorefrontPageAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<StorefrontPageDetailDto>(
+                CommerceRoute(storePublicId, $"pages/{pagePublicId:D}"),
+                "Unable to load storefront page.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StorefrontPageDetailDto>> CreateStorefrontPageAsync(
+            Guid storePublicId,
+            CreateStorefrontPageRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<CreateStorefrontPageRequest, StorefrontPageDetailDto>(
+                CommerceRoute(storePublicId, "pages"),
+                request,
+                "Unable to create storefront page.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StorefrontPageDetailDto>> UpdateStorefrontPageAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            UpdateStorefrontPageRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<UpdateStorefrontPageRequest, StorefrontPageDetailDto>(
+                CommerceRoute(storePublicId, $"pages/{pagePublicId:D}"),
+                request,
+                "Unable to update storefront page.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StorefrontPageDetailDto>> ArchiveStorefrontPageAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.DeletePrivateAsync<StorefrontPageDetailDto>(
+                CommerceRoute(storePublicId, $"pages/{pagePublicId:D}"),
+                "Unable to archive storefront page.",
+                cancellationToken);
+        }
+
         public Task<ControlPlaneClientResult<PagedResult<GetOrder>>> QueryOrdersAsync(
             Guid storePublicId,
             AdminOrderQueryDto query,
@@ -920,6 +1005,19 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
                 new("pageSize", Math.Clamp(query.PageSize, 1, 100).ToString(CultureInfo.InvariantCulture)),
             };
 
+            AddIfPresent(values, "status", query.Status);
+            return ToQueryString(values);
+        }
+
+        private static string BuildStorefrontPageQuery(StorefrontPageListQuery query)
+        {
+            var values = new List<KeyValuePair<string, string>>
+            {
+                new("pageNumber", Math.Max(1, query.PageNumber).ToString(CultureInfo.InvariantCulture)),
+                new("pageSize", Math.Clamp(query.PageSize, 1, 100).ToString(CultureInfo.InvariantCulture)),
+            };
+
+            AddIfPresent(values, "search", query.Search);
             AddIfPresent(values, "status", query.Status);
             return ToQueryString(values);
         }

@@ -8,6 +8,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
     using BlazorShop.Application.ControlPlane.Security;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
+    using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs.Admin.Inventory;
     using BlazorShop.Application.DTOs.Admin.Orders;
@@ -514,6 +515,55 @@ namespace BlazorShop.ControlPlane.API.Controllers
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.catalogService.UpdateVariationTemplateValueAsync(storePublicId, templatePublicId, optionPublicId, valuePublicId, request, cancellationToken));
+        }
+
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/pages")]
+        public async Task<IActionResult> ListStorefrontPages(
+            Guid storePublicId,
+            [FromQuery] StorefrontPageListQuery query,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ListStorefrontPagesAsync(storePublicId, query, cancellationToken));
+        }
+
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/pages")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> CreateStorefrontPage(
+            Guid storePublicId,
+            CreateStorefrontPageRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.CreateStorefrontPageAsync(storePublicId, request, cancellationToken));
+        }
+
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/pages/{pagePublicId:guid}")]
+        public async Task<IActionResult> GetStorefrontPage(
+            Guid storePublicId,
+            Guid pagePublicId,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.GetStorefrontPageAsync(storePublicId, pagePublicId, cancellationToken));
+        }
+
+        [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/pages/{pagePublicId:guid}")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> UpdateStorefrontPage(
+            Guid storePublicId,
+            Guid pagePublicId,
+            UpdateStorefrontPageRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.UpdateStorefrontPageAsync(storePublicId, pagePublicId, request, cancellationToken));
+        }
+
+        [HttpDelete("~/api/controlplane/commerce/stores/{storePublicId:guid}/pages/{pagePublicId:guid}")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> ArchiveStorefrontPage(
+            Guid storePublicId,
+            Guid pagePublicId,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ArchiveStorefrontPageAsync(storePublicId, pagePublicId, cancellationToken));
         }
 
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/orders")]

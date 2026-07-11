@@ -5,6 +5,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using System.Text.Json;
 
     using BlazorShop.Application.ControlPlane.Catalog;
+    using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
@@ -295,6 +296,72 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 HttpMethod.Put,
                 $"api/commerce/admin/variation-templates/{templatePublicId:D}/options/{optionPublicId:D}/values/{valuePublicId:D}",
                 request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageListResponse>> ListStorefrontPagesAsync(
+            Guid storePublicId,
+            StorefrontPageListQuery query,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<StorefrontPageListResponse>(
+                storePublicId,
+                HttpMethod.Get,
+                "api/commerce/admin/pages" + BuildStorefrontPageQuery(query),
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> GetStorefrontPageAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<StorefrontPageDetailDto>(
+                storePublicId,
+                HttpMethod.Get,
+                $"api/commerce/admin/pages/{pagePublicId:D}",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> CreateStorefrontPageAsync(
+            Guid storePublicId,
+            CreateStorefrontPageRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<StorefrontPageDetailDto>(
+                storePublicId,
+                HttpMethod.Post,
+                "api/commerce/admin/pages",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> UpdateStorefrontPageAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            UpdateStorefrontPageRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<StorefrontPageDetailDto>(
+                storePublicId,
+                HttpMethod.Put,
+                $"api/commerce/admin/pages/{pagePublicId:D}",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> ArchiveStorefrontPageAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<StorefrontPageDetailDto>(
+                storePublicId,
+                HttpMethod.Delete,
+                $"api/commerce/admin/pages/{pagePublicId:D}",
+                null,
                 cancellationToken);
         }
 
@@ -980,6 +1047,19 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 new("pageSize", Math.Clamp(query.PageSize, 1, 100).ToString(CultureInfo.InvariantCulture)),
             };
 
+            AddIfPresent(values, "status", query.Status);
+            return ToQueryString(values);
+        }
+
+        private static string BuildStorefrontPageQuery(StorefrontPageListQuery query)
+        {
+            var values = new List<KeyValuePair<string, string>>
+            {
+                new("pageNumber", Math.Max(1, query.PageNumber).ToString(CultureInfo.InvariantCulture)),
+                new("pageSize", Math.Clamp(query.PageSize, 1, 100).ToString(CultureInfo.InvariantCulture)),
+            };
+
+            AddIfPresent(values, "search", query.Search);
             AddIfPresent(values, "status", query.Status);
             return ToQueryString(values);
         }

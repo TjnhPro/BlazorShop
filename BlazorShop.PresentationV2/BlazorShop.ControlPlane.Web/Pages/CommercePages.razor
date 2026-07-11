@@ -1,0 +1,466 @@
+@page "/commerce-admin/pages"
+@attribute [Authorize]
+@inject IControlPlaneStoreClient StoreClient
+@inject IControlPlaneCatalogClient CatalogClient
+
+<PageTitle>Storefront Pages</PageTitle>
+
+<section class="space-y-5">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+            <p class="text-sm font-semibold text-control-700">Commerce Admin</p>
+            <h1 class="text-2xl font-bold text-ink-900">Storefront pages</h1>
+            <p class="mt-1 text-sm text-ink-500">Manage store-scoped HTML pages rendered at /pages/slug.</p>
+        </div>
+        <div class="flex flex-col gap-2 sm:flex-row">
+            <select class="min-h-10 min-w-64 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="selectedStorePublicId">
+                <option value="">Select store</option>
+                @foreach (var store in stores)
+                {
+                    <option value="@store.PublicId">@store.Name (@store.StoreKey)</option>
+                }
+            </select>
+            <button class="cp-button cp-button-secondary" @onclick="LoadAsync">
+                <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                Refresh
+            </button>
+            <button class="cp-button cp-button-primary" disabled="@(!HasStore)" @onclick="NewPage">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                New page
+            </button>
+        </div>
+    </div>
+
+    <div class="cp-card p-4">
+        <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_120px_auto]">
+            <input class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Search title or slug" @bind="search" @bind:event="oninput" />
+            <select class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="status">
+                <option value="all">All status</option>
+                <option value="published">Published</option>
+                <option value="draft">Draft</option>
+            </select>
+            <select class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="pageSize">
+                <option value="10">10 rows</option>
+                <option value="25">25 rows</option>
+                <option value="50">50 rows</option>
+            </select>
+            <button class="cp-button cp-button-secondary justify-center" disabled="@(!HasStore)" @onclick="SearchAsync">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                Search
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">@errorMessage</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">@successMessage</div>
+    }
+
+    <div class="cp-card overflow-hidden">
+        @if (!HasStore)
+        {
+            <div class="p-8 text-center text-sm text-ink-500">Select a store to load pages.</div>
+        }
+        else if (isLoading)
+        {
+            <div class="p-8 text-center text-sm text-ink-500">Loading pages...</div>
+        }
+        else if (pages.Count == 0)
+        {
+            <div class="p-8 text-center text-sm text-ink-500">No storefront pages found.</div>
+        }
+        else
+        {
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-ink-200 text-left text-sm">
+                    <thead class="bg-ink-50 text-xs font-semibold uppercase text-ink-500">
+                        <tr>
+                            <th class="px-4 py-3">Page</th>
+                            <th class="px-4 py-3">Status</th>
+                            <th class="px-4 py-3">Sitemap</th>
+                            <th class="px-4 py-3">Updated</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-ink-100">
+                        @foreach (var item in pages)
+                        {
+                            <tr class="cursor-pointer hover:bg-ink-50" @onclick="() => OpenPageAsync(item.PublicId)">
+                                <td class="px-4 py-3">
+                                    <div class="font-semibold text-ink-900">@item.Title</div>
+                                    <div class="mt-1 flex items-center gap-2 font-mono text-xs text-ink-500">
+                                        <span>/pages/@item.Slug</span>
+                                        <CopyButton Text="@($"/pages/{item.Slug}")" />
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3"><StatusBadge Text="@(item.IsPublished ? "Published" : "Draft")" Tone="@(item.IsPublished ? "success" : "neutral")" /></td>
+                                <td class="px-4 py-3"><StatusBadge Text="@(item.IncludeInSitemap ? "Included" : "Hidden")" Tone="@(item.IncludeInSitemap ? "info" : "neutral")" /></td>
+                                <td class="px-4 py-3 text-ink-500">@item.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex flex-col gap-3 border-t border-ink-100 px-4 py-3 text-sm text-ink-600 sm:flex-row sm:items-center sm:justify-between">
+                <div>Page @pageNumber of @Math.Max(1, totalPages) · @totalCount total</div>
+                <div class="flex gap-2">
+                    <button class="cp-button cp-button-secondary" disabled="@(pageNumber <= 1 || isLoading)" @onclick="PreviousPageAsync">Previous</button>
+                    <button class="cp-button cp-button-secondary" disabled="@(pageNumber >= totalPages || isLoading)" @onclick="NextPageAsync">Next</button>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<RightDrawer IsOpen="@isDrawerOpen" IsOpenChanged="OnDrawerChanged" Title="@DrawerTitle" Subtitle="@form.Slug" Eyebrow="Storefront Page">
+    <div class="space-y-5">
+        <div class="rounded-md border border-ink-200 p-4">
+            <div class="mb-3 flex items-center justify-between">
+                <h2 class="text-sm font-semibold text-ink-900">Page fields</h2>
+                <StatusBadge Text="@(form.IsPublished ? "Published" : "Draft")" Tone="@(form.IsPublished ? "success" : "neutral")" />
+            </div>
+            <div class="grid gap-3 text-sm">
+                <label class="space-y-1">
+                    <span class="font-medium text-ink-700">Title</span>
+                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="form.Title" />
+                </label>
+                <label class="space-y-1">
+                    <span class="font-medium text-ink-700">Slug</span>
+                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 font-mono text-xs outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="form.Slug" />
+                </label>
+                <label class="space-y-1">
+                    <span class="font-medium text-ink-700">Intro</span>
+                    <textarea class="min-h-20 w-full rounded-md border border-ink-300 px-3 py-2 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="form.Intro"></textarea>
+                </label>
+                <label class="space-y-1">
+                    <span class="font-medium text-ink-700">Body HTML</span>
+                    <textarea class="min-h-60 w-full rounded-md border border-ink-300 px-3 py-2 font-mono text-xs outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="form.BodyHtml"></textarea>
+                </label>
+                <div class="grid gap-3 md:grid-cols-2">
+                    <label class="flex items-center gap-2 text-ink-700">
+                        <input type="checkbox" @bind="form.IsPublished" />
+                        Published
+                    </label>
+                    <label class="flex items-center gap-2 text-ink-700">
+                        <input type="checkbox" @bind="form.IncludeInSitemap" />
+                        Include in sitemap
+                    </label>
+                    <label class="flex items-center gap-2 text-ink-700">
+                        <input type="checkbox" @bind="form.RobotsIndex" />
+                        Robots index
+                    </label>
+                    <label class="flex items-center gap-2 text-ink-700">
+                        <input type="checkbox" @bind="form.RobotsFollow" />
+                        Robots follow
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-md border border-ink-200 p-4">
+            <h2 class="mb-3 text-sm font-semibold text-ink-900">SEO</h2>
+            <div class="grid gap-3 text-sm">
+                <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Meta title" @bind="form.MetaTitle" />
+                <textarea class="min-h-20 rounded-md border border-ink-300 px-3 py-2 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Meta description" @bind="form.MetaDescription"></textarea>
+                <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Canonical URL" @bind="form.CanonicalUrl" />
+                <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="OG title" @bind="form.OgTitle" />
+                <textarea class="min-h-20 rounded-md border border-ink-300 px-3 py-2 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="OG description" @bind="form.OgDescription"></textarea>
+                <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="OG image local URL" @bind="form.OgImage" />
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-2 sm:flex-row">
+            <button class="cp-button cp-button-primary justify-center" disabled="@isSaving" @onclick="SaveAsync">
+                <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                Save page
+            </button>
+            @if (selectedPage is not null)
+            {
+                <button class="cp-button cp-button-secondary justify-center" disabled="@isSaving" @onclick="ArchiveAsync">
+                    <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
+                    Archive
+                </button>
+            }
+        </div>
+    </div>
+</RightDrawer>
+
+@code {
+    private readonly List<StoreSummary> stores = [];
+    private readonly List<StorefrontPageSummaryDto> pages = [];
+    private Guid? selectedStorePublicId;
+    private StorefrontPageDetailDto? selectedPage;
+    private PageFormState form = new();
+    private string? search;
+    private string status = StorefrontPageStatuses.All;
+    private int pageNumber = 1;
+    private int pageSize = 25;
+    private int totalCount;
+    private int totalPages;
+    private bool isLoading;
+    private bool isSaving;
+    private bool isDrawerOpen;
+    private string? errorMessage;
+    private string? successMessage;
+
+    private bool HasStore => selectedStorePublicId.HasValue && selectedStorePublicId.Value != Guid.Empty;
+
+    private string DrawerTitle => selectedPage is null ? "Create page" : selectedPage.Title;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStoresAsync();
+    }
+
+    private async Task LoadStoresAsync()
+    {
+        var response = await StoreClient.ListAsync(status: "active", pageSize: 100);
+        stores.Clear();
+        stores.AddRange(response.Items);
+        selectedStorePublicId ??= stores.FirstOrDefault()?.PublicId;
+        await LoadAsync();
+    }
+
+    private async Task SearchAsync()
+    {
+        pageNumber = 1;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        try
+        {
+            var result = await CatalogClient.ListStorefrontPagesAsync(
+                selectedStorePublicId!.Value,
+                new StorefrontPageListQuery(pageNumber, pageSize, search, status));
+            if (!result.Success)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            var payload = result.Data ?? new StorefrontPageListResponse([], 0, pageNumber, pageSize, 0);
+            pages.Clear();
+            pages.AddRange(payload.Items);
+            totalCount = payload.TotalCount;
+            totalPages = payload.TotalPages;
+            pageNumber = payload.PageNumber;
+            pageSize = payload.PageSize;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task PreviousPageAsync()
+    {
+        pageNumber = Math.Max(1, pageNumber - 1);
+        await LoadAsync();
+    }
+
+    private async Task NextPageAsync()
+    {
+        pageNumber++;
+        await LoadAsync();
+    }
+
+    private void NewPage()
+    {
+        selectedPage = null;
+        form = new PageFormState();
+        isDrawerOpen = true;
+    }
+
+    private async Task OpenPageAsync(Guid pagePublicId)
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        var result = await CatalogClient.GetStorefrontPageAsync(selectedStorePublicId!.Value, pagePublicId);
+        if (!result.Success || result.Data is null)
+        {
+            errorMessage = result.Message;
+            return;
+        }
+
+        selectedPage = result.Data;
+        form = PageFormState.From(result.Data);
+        isDrawerOpen = true;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(form.Title) || string.IsNullOrWhiteSpace(form.Slug) || string.IsNullOrWhiteSpace(form.BodyHtml))
+        {
+            errorMessage = "Title, slug, and body HTML are required.";
+            return;
+        }
+
+        isSaving = true;
+        errorMessage = null;
+        try
+        {
+            var result = selectedPage is null
+                ? await CatalogClient.CreateStorefrontPageAsync(selectedStorePublicId!.Value, form.ToCreateRequest())
+                : await CatalogClient.UpdateStorefrontPageAsync(selectedStorePublicId!.Value, selectedPage.PublicId, form.ToUpdateRequest());
+
+            if (!result.Success || result.Data is null)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            selectedPage = result.Data;
+            form = PageFormState.From(result.Data);
+            successMessage = "Storefront page saved.";
+            await LoadAsync();
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task ArchiveAsync()
+    {
+        if (!HasStore || selectedPage is null)
+        {
+            return;
+        }
+
+        isSaving = true;
+        errorMessage = null;
+        try
+        {
+            var result = await CatalogClient.ArchiveStorefrontPageAsync(selectedStorePublicId!.Value, selectedPage.PublicId);
+            if (!result.Success)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            successMessage = "Storefront page archived.";
+            isDrawerOpen = false;
+            selectedPage = null;
+            await LoadAsync();
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private Task OnDrawerChanged(bool value)
+    {
+        isDrawerOpen = value;
+        return Task.CompletedTask;
+    }
+
+    private sealed class PageFormState
+    {
+        public string? Slug { get; set; }
+
+        public string? Title { get; set; }
+
+        public string? Intro { get; set; }
+
+        public string? BodyHtml { get; set; }
+
+        public bool IsPublished { get; set; }
+
+        public bool IncludeInSitemap { get; set; }
+
+        public string? MetaTitle { get; set; }
+
+        public string? MetaDescription { get; set; }
+
+        public string? CanonicalUrl { get; set; }
+
+        public string? OgTitle { get; set; }
+
+        public string? OgDescription { get; set; }
+
+        public string? OgImage { get; set; }
+
+        public bool RobotsIndex { get; set; } = true;
+
+        public bool RobotsFollow { get; set; } = true;
+
+        public static PageFormState From(StorefrontPageDetailDto detail)
+        {
+            return new PageFormState
+            {
+                Slug = detail.Slug,
+                Title = detail.Title,
+                Intro = detail.Intro,
+                BodyHtml = detail.BodyHtml,
+                IsPublished = detail.IsPublished,
+                IncludeInSitemap = detail.IncludeInSitemap,
+                MetaTitle = detail.Seo.MetaTitle,
+                MetaDescription = detail.Seo.MetaDescription,
+                CanonicalUrl = detail.Seo.CanonicalUrl,
+                OgTitle = detail.Seo.OgTitle,
+                OgDescription = detail.Seo.OgDescription,
+                OgImage = detail.Seo.OgImage,
+                RobotsIndex = detail.Seo.RobotsIndex,
+                RobotsFollow = detail.Seo.RobotsFollow,
+            };
+        }
+
+        public CreateStorefrontPageRequest ToCreateRequest()
+        {
+            return new CreateStorefrontPageRequest(
+                this.Slug,
+                this.Title,
+                this.Intro,
+                this.BodyHtml,
+                this.IsPublished,
+                this.IncludeInSitemap,
+                this.BuildSeo());
+        }
+
+        public UpdateStorefrontPageRequest ToUpdateRequest()
+        {
+            return new UpdateStorefrontPageRequest(
+                this.Slug,
+                this.Title,
+                this.Intro,
+                this.BodyHtml,
+                this.IsPublished,
+                this.IncludeInSitemap,
+                this.BuildSeo());
+        }
+
+        private StorefrontPageSeoDto BuildSeo()
+        {
+            return new StorefrontPageSeoDto(
+                this.MetaTitle,
+                this.MetaDescription,
+                this.CanonicalUrl,
+                this.OgTitle,
+                this.OgDescription,
+                this.OgImage,
+                this.RobotsIndex,
+                this.RobotsFollow);
+        }
+    }
+}
