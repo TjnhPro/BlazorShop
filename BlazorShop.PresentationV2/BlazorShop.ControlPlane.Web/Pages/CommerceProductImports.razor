@@ -177,6 +177,18 @@
                 </div>
             </div>
 
+            @if (!string.IsNullOrWhiteSpace(selectedJob.Job.ErrorMessage))
+            {
+                <div class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                    <div class="font-semibold">Import failed</div>
+                    <div class="mt-1">@selectedJob.Job.ErrorMessage</div>
+                    @if (!string.IsNullOrWhiteSpace(selectedJob.Job.ErrorJson))
+                    {
+                        <pre class="mt-2 max-h-32 overflow-auto rounded-md bg-ink-950 p-3 text-xs text-white">@selectedJob.Job.ErrorJson</pre>
+                    }
+                </div>
+            }
+
             <div class="flex justify-end">
                 <button class="cp-button cp-button-secondary" @onclick="DownloadSelectedJobErrorsAsync">
                     <i class="fa-solid fa-file-csv" aria-hidden="true"></i>

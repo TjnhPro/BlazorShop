@@ -60,6 +60,8 @@ namespace BlazorShop.Application.CommerceNode.ProductImports
         int FailedCount,
         int SkippedCount,
         int MediaQueuedCount,
+        string? ErrorMessage,
+        string? ErrorJson,
         DateTime CreatedAt,
         DateTime? StartedAt,
         DateTime? CompletedAt,

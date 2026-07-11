@@ -34,7 +34,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             this.catalogService = catalogService;
         }
 
-        private const string ProductImportTemplateHeader = "sku,title,short_description,full_description,price,compare_price,quantity,category_slug,variation_template_slug,product_type,image_urls,is_published";
+        private const string ProductImportTemplateHeader = "sku,name,slug,category_slug,product_type,variation_template_slug,price,compare_price,quantity,is_published,short_description,description,image_urls";
 
         [HttpGet("products")]
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/products")]
@@ -165,6 +165,12 @@ namespace BlazorShop.ControlPlane.API.Controllers
             Guid jobPublicId,
             CancellationToken cancellationToken)
         {
+            var jobResult = await this.catalogService.GetProductImportAsync(storePublicId, jobPublicId, cancellationToken);
+            if (!jobResult.Success || jobResult.Payload is null)
+            {
+                return ToActionResult(jobResult);
+            }
+
             var result = await this.catalogService.ListProductImportRowsAsync(
                 storePublicId,
                 jobPublicId,
@@ -176,7 +182,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
                 return ToActionResult(result);
             }
 
-            var csv = BuildProductImportErrorCsv(result.Payload.Items);
+            var csv = BuildProductImportErrorCsv(jobResult.Payload.Job, result.Payload.Items);
             return this.File(
                 Encoding.UTF8.GetBytes(csv),
                 "text/csv",
@@ -564,10 +570,23 @@ namespace BlazorShop.ControlPlane.API.Controllers
             };
         }
 
-        private static string BuildProductImportErrorCsv(IReadOnlyList<ProductImportRowDto> rows)
+        private static string BuildProductImportErrorCsv(ProductImportJobDto job, IReadOnlyList<ProductImportRowDto> rows)
         {
             var builder = new StringBuilder();
             builder.AppendLine("row_number,sku,status,error_column,error_message,error_json");
+            if (rows.Count == 0 && !string.IsNullOrWhiteSpace(job.ErrorMessage))
+            {
+                builder.AppendLine(string.Join(
+                    ",",
+                    Csv(string.Empty),
+                    Csv(string.Empty),
+                    Csv(job.Status),
+                    Csv("file"),
+                    Csv(job.ErrorMessage),
+                    Csv(job.ErrorJson)));
+                return builder.ToString();
+            }
+
             foreach (var row in rows)
             {
                 var errors = ExtractErrors(row);

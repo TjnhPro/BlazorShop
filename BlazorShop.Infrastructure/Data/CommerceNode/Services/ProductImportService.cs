@@ -118,6 +118,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             if (!enqueue.Success || enqueue.Payload is null)
             {
                 job.Status = ProductImportJobStatuses.Failed;
+                job.ErrorMessage = enqueue.Message ?? "Product import task could not be queued.";
                 job.UpdatedAt = DateTime.UtcNow;
                 await this.context.SaveChangesAsync(cancellationToken);
                 return Failure<ProductImportUploadResponse>(enqueue.Message ?? "Product import task could not be queued.", ServiceResponseType.Failure);
@@ -260,6 +261,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 job.FailedCount,
                 job.SkippedCount,
                 job.MediaQueuedCount,
+                job.ErrorMessage,
+                job.ErrorJson,
                 job.CreatedAt,
                 job.StartedAt,
                 job.CompletedAt,

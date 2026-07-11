@@ -268,6 +268,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.Property(job => job.FailedCount).HasColumnName("failed_count");
                 entity.Property(job => job.SkippedCount).HasColumnName("skipped_count");
                 entity.Property(job => job.MediaQueuedCount).HasColumnName("media_queued_count");
+                entity.Property(job => job.ErrorMessage).HasColumnName("error_message");
+                entity.Property(job => job.ErrorJson).HasColumnName("error_json").HasColumnType("jsonb");
                 entity.Property(job => job.CreatedBy).HasColumnName("created_by").HasMaxLength(256);
                 entity.Property(job => job.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
                 entity.Property(job => job.StartedAt).HasColumnName("started_at").HasColumnType("timestamp with time zone");

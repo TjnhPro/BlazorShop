@@ -69,6 +69,8 @@ namespace BlazorShop.CommerceNode.API.Tasks
             var now = DateTime.UtcNow;
             job.Status = ProductImportJobStatuses.Running;
             job.StartedAt ??= now;
+            job.ErrorMessage = null;
+            job.ErrorJson = null;
             job.UpdatedAt = now;
             if (job.Rows.Count > 0)
             {
@@ -110,6 +112,8 @@ namespace BlazorShop.CommerceNode.API.Tasks
             job.SkippedCount = counters.Skipped;
             job.MediaQueuedCount = counters.MediaQueued;
             job.Status = counters.Failed > 0 ? ProductImportJobStatuses.CompletedWithErrors : ProductImportJobStatuses.Completed;
+            job.ErrorMessage = null;
+            job.ErrorJson = null;
             job.CompletedAt = DateTime.UtcNow;
             job.UpdatedAt = job.CompletedAt.Value;
             await this.context.SaveChangesAsync(cancellationToken);
@@ -583,6 +587,10 @@ namespace BlazorShop.CommerceNode.API.Tasks
         private async Task FailJobAsync(ProductImportJob job, string message, CancellationToken cancellationToken)
         {
             job.Status = ProductImportJobStatuses.Failed;
+            job.ErrorMessage = message;
+            job.ErrorJson = JsonSerializer.Serialize(
+                new[] { new ProductImportError("file", message) },
+                SerializerOptions);
             job.CompletedAt = DateTime.UtcNow;
             job.UpdatedAt = job.CompletedAt.Value;
             job.FailedCount = Math.Max(1, job.FailedCount);

@@ -34,6 +34,10 @@ namespace BlazorShop.Domain.Entities.CommerceNode
 
         public int MediaQueuedCount { get; set; }
 
+        public string? ErrorMessage { get; set; }
+
+        public string? ErrorJson { get; set; }
+
         public string? CreatedBy { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
