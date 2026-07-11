@@ -10,6 +10,11 @@ namespace BlazorShop.Application.ControlPlane.Health
             Guid nodePublicId,
             CancellationToken cancellationToken = default);
 
+        Task<ControlPlaneHealthOperationResult<ControlPlaneHealthTimelineResponse>> GetTimelineAsync(
+            Guid nodePublicId,
+            ControlPlaneHealthTimelineQuery query,
+            CancellationToken cancellationToken = default);
+
         Task<ControlPlaneHealthOperationResult<ControlPlaneProbeResult>> ProbeAsync(
             Guid nodePublicId,
             CancellationToken cancellationToken = default);

@@ -126,11 +126,11 @@
                     <div class="mt-4 grid gap-3 md:grid-cols-3">
                         <div class="rounded-md border border-ink-200 p-3">
                             <p class="text-xs font-semibold uppercase text-ink-500">Latest heartbeat</p>
-                            <p class="mt-2 text-sm font-semibold text-ink-900">@(selectedDetail.RecentHealth.FirstOrDefault()?.CheckedAt.LocalDateTime.ToString("yyyy-MM-dd HH:mm") ?? "No sample")</p>
+                            <p class="mt-2 text-sm font-semibold text-ink-900">@(selectedDetail.LatestHealth?.CheckedAt.LocalDateTime.ToString("yyyy-MM-dd HH:mm") ?? "No sample")</p>
                         </div>
                         <div class="rounded-md border border-ink-200 p-3">
                             <p class="text-xs font-semibold uppercase text-ink-500">Latency</p>
-                            <p class="mt-2 text-sm font-semibold text-ink-900">@(selectedDetail.RecentHealth.FirstOrDefault()?.DurationMs.ToString() ?? "-") ms</p>
+                            <p class="mt-2 text-sm font-semibold text-ink-900">@(selectedDetail.LatestHealth?.DurationMs.ToString() ?? "-") ms</p>
                         </div>
                         <div class="rounded-md border border-ink-200 p-3">
                             <p class="text-xs font-semibold uppercase text-ink-500">Capabilities</p>
@@ -147,7 +147,7 @@
                         <div class="border-b border-ink-200 p-4">
                             <h2 class="text-sm font-semibold text-ink-900">Health timeline</h2>
                         </div>
-                        @if (selectedDetail.RecentHealth.Count == 0)
+                        @if (timeline.Count == 0)
                         {
                             <div class="p-8 text-center">
                                 <i class="fa-solid fa-clock-rotate-left mb-3 text-2xl text-ink-400" aria-hidden="true"></i>
@@ -158,7 +158,7 @@
                         else
                         {
                             <div class="divide-y divide-ink-100">
-                                @foreach (var snapshot in selectedDetail.RecentHealth)
+                                @foreach (var snapshot in timeline)
                                 {
                                     <div class="p-4">
                                         <div class="flex items-center justify-between gap-3">
@@ -178,6 +178,19 @@
                                         }
                                     </div>
                                 }
+                            </div>
+                            <div class="flex flex-col gap-3 border-t border-ink-200 px-4 py-3 text-sm text-ink-600">
+                                <div>Page @timelinePageNumber of @DisplayTotalPages(timelineTotalPages) · @timeline.Count of @timelineTotalCount samples</div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button class="cp-button cp-button-secondary justify-center" disabled="@(timelinePageNumber <= 1 || isTimelineLoading)" @onclick="PreviousTimelinePageAsync">
+                                        <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                                        Previous
+                                    </button>
+                                    <button class="cp-button cp-button-secondary justify-center" disabled="@(!CanLoadNextTimelinePage || isTimelineLoading)" @onclick="NextTimelinePageAsync">
+                                        Next
+                                        <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                                    </button>
+                                </div>
                             </div>
                         }
                     </section>
@@ -213,6 +226,7 @@
 
 @code {
     private readonly List<HealthNodeSummary> nodes = [];
+    private readonly List<HealthSnapshot> timeline = [];
     private HealthDetail? selectedDetail;
     private Guid? selectedNodePublicId;
     private string? search;
@@ -221,12 +235,18 @@
     private string? successMessage;
     private bool isLoading;
     private bool isProbing;
+    private bool isTimelineLoading;
     private const int HealthPageSize = 25;
+    private const int TimelinePageSize = 25;
     private int healthPageNumber = 1;
     private int healthTotalCount;
     private int healthTotalPages;
+    private int timelinePageNumber = 1;
+    private int timelineTotalCount;
+    private int timelineTotalPages;
 
     private bool CanLoadNextHealthPage => healthPageNumber < healthTotalPages;
+    private bool CanLoadNextTimelinePage => timelinePageNumber < timelineTotalPages;
 
     protected override async Task OnInitializedAsync()
     {
@@ -249,6 +269,7 @@
             if ((selectedNodePublicId is null || nodes.All(node => node.PublicId != selectedNodePublicId.Value)) && nodes.Count > 0)
             {
                 selectedNodePublicId = nodes[0].PublicId;
+                timelinePageNumber = 1;
             }
 
             if (selectedNodePublicId is not null)
@@ -258,6 +279,9 @@
             else
             {
                 selectedDetail = null;
+                timeline.Clear();
+                timelineTotalCount = 0;
+                timelineTotalPages = 0;
             }
         }
         catch (Exception ex)
@@ -280,6 +304,7 @@
     private async Task SelectNodeAsync(Guid publicId)
     {
         selectedNodePublicId = publicId;
+        timelinePageNumber = 1;
         successMessage = null;
         await LoadDetailAsync(publicId);
     }
@@ -292,11 +317,35 @@
             if (selectedDetail is null)
             {
                 errorMessage = "Node was not found.";
+                timeline.Clear();
+                timelineTotalCount = 0;
+                timelineTotalPages = 0;
+                return;
             }
+
+            await LoadTimelineAsync(publicId);
         }
         catch (Exception ex)
         {
             errorMessage = ex.Message;
+        }
+    }
+
+    private async Task LoadTimelineAsync(Guid publicId)
+    {
+        isTimelineLoading = true;
+
+        try
+        {
+            var response = await HealthClient.GetTimelineAsync(publicId, timelinePageNumber, TimelinePageSize);
+            timeline.Clear();
+            timeline.AddRange(response.Items);
+            timelineTotalCount = response.TotalCount;
+            timelineTotalPages = response.TotalPages;
+        }
+        finally
+        {
+            isTimelineLoading = false;
         }
     }
 
@@ -354,6 +403,28 @@
         healthPageNumber++;
         selectedNodePublicId = null;
         await LoadAsync();
+    }
+
+    private async Task PreviousTimelinePageAsync()
+    {
+        if (selectedNodePublicId is null || timelinePageNumber <= 1)
+        {
+            return;
+        }
+
+        timelinePageNumber--;
+        await LoadTimelineAsync(selectedNodePublicId.Value);
+    }
+
+    private async Task NextTimelinePageAsync()
+    {
+        if (selectedNodePublicId is null || !CanLoadNextTimelinePage)
+        {
+            return;
+        }
+
+        timelinePageNumber++;
+        await LoadTimelineAsync(selectedNodePublicId.Value);
     }
 
     private string GetNodeButtonClass(Guid publicId)

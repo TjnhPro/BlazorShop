@@ -13,6 +13,17 @@ namespace BlazorShop.Application.ControlPlane.Health
         int PageSize,
         int TotalPages);
 
+    public sealed record ControlPlaneHealthTimelineQuery(
+        int PageNumber = 1,
+        int PageSize = 25);
+
+    public sealed record ControlPlaneHealthTimelineResponse(
+        IReadOnlyList<ControlPlaneHealthSnapshotDto> Items,
+        int TotalCount,
+        int PageNumber,
+        int PageSize,
+        int TotalPages);
+
     public sealed record ControlPlaneHealthNodeSummary(
         Guid PublicId,
         string NodeKey,
@@ -28,7 +39,7 @@ namespace BlazorShop.Application.ControlPlane.Health
         string Name,
         string Status,
         DateTimeOffset? LastSeenAt,
-        IReadOnlyList<ControlPlaneHealthSnapshotDto> RecentHealth,
+        ControlPlaneHealthSnapshotDto? LatestHealth,
         ControlPlaneCapabilitySnapshotDto? CurrentCapability);
 
     public sealed record ControlPlaneHealthSnapshotDto(

@@ -47,6 +47,20 @@ namespace BlazorShop.ControlPlane.API.Controllers
             return ToActionResult(result);
         }
 
+        [HttpGet("nodes/{nodePublicId:guid}/timeline")]
+        public async Task<IActionResult> GetTimeline(
+            Guid nodePublicId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 25,
+            CancellationToken cancellationToken = default)
+        {
+            var result = await this.healthService.GetTimelineAsync(
+                nodePublicId,
+                new ControlPlaneHealthTimelineQuery(pageNumber, pageSize),
+                cancellationToken);
+            return ToActionResult(result);
+        }
+
         [HttpPost("nodes/{nodePublicId:guid}/probe")]
         [Authorize(Policy = ControlPlanePolicyNames.NodesWrite)]
         public async Task<IActionResult> Probe(Guid nodePublicId, CancellationToken cancellationToken)

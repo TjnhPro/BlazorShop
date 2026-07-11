@@ -4,6 +4,8 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
     using System.Net.Http;
 
     using BlazorShop.Application.ControlPlane.Nodes;
+    using BlazorShop.Application.ControlPlane.Health;
+    using BlazorShop.Domain.Entities.ControlPlane;
     using BlazorShop.Infrastructure.Data.ControlPlane;
 
     using Microsoft.EntityFrameworkCore;
@@ -53,6 +55,38 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             Assert.False(second.Payload!.CapabilityChanged);
             Assert.Equal(2, await context.NodeHealthSnapshots.CountAsync());
             Assert.Equal(0, await context.NodeCapabilitySnapshots.CountAsync());
+        }
+
+        [Fact]
+        public async Task GetDetailAsync_ReturnsLatestHealthWithoutEmbeddingTimeline()
+        {
+            await using var context = CreateContext();
+            var node = await CreateNodeAsync(context);
+            await SeedHealthSnapshotsAsync(context, node.PublicId, count: 3);
+            var service = CreateService(context, _ => JsonResponse("""{"success":true,"message":"ok","data":{"status":"healthy"}}"""));
+
+            var result = await service.GetDetailAsync(node.PublicId);
+
+            Assert.True(result.Success);
+            Assert.Equal("sample-3", result.Payload!.LatestHealth!.ErrorCode);
+        }
+
+        [Fact]
+        public async Task GetTimelineAsync_ReturnsPagedTimeline()
+        {
+            await using var context = CreateContext();
+            var node = await CreateNodeAsync(context);
+            await SeedHealthSnapshotsAsync(context, node.PublicId, count: 5);
+            var service = CreateService(context, _ => JsonResponse("""{"success":true,"message":"ok","data":{"status":"healthy"}}"""));
+
+            var result = await service.GetTimelineAsync(node.PublicId, new ControlPlaneHealthTimelineQuery(PageNumber: 2, PageSize: 2));
+
+            Assert.True(result.Success);
+            Assert.Equal(5, result.Payload!.TotalCount);
+            Assert.Equal(2, result.Payload.PageNumber);
+            Assert.Equal(2, result.Payload.PageSize);
+            Assert.Equal(3, result.Payload.TotalPages);
+            Assert.Equal(new[] { "sample-3", "sample-2" }, result.Payload.Items.Select(item => item.ErrorCode).ToArray());
         }
 
         [Fact]
@@ -126,6 +160,30 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
 
             Assert.True(created.Success);
             return created.Payload!;
+        }
+
+        private static async Task SeedHealthSnapshotsAsync(ControlPlaneDbContext context, Guid nodePublicId, int count)
+        {
+            var nodeId = await context.Nodes
+                .Where(node => node.PublicId == nodePublicId)
+                .Select(node => node.Id)
+                .SingleAsync();
+
+            var start = DateTimeOffset.UtcNow.AddMinutes(-count);
+            for (var i = 1; i <= count; i++)
+            {
+                context.NodeHealthSnapshots.Add(new NodeHealthSnapshot
+                {
+                    NodeId = nodeId,
+                    Status = "healthy",
+                    HttpStatusCode = 200,
+                    DurationMs = i,
+                    ErrorCode = $"sample-{i}",
+                    CheckedAt = start.AddMinutes(i)
+                });
+            }
+
+            await context.SaveChangesAsync();
         }
 
         private static HttpResponseMessage JsonResponse(string content)

@@ -89,13 +89,62 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
             var node = await this.dbContext.Nodes
                 .AsNoTracking()
-                .Include(candidate => candidate.HealthSnapshots)
-                .Include(candidate => candidate.CapabilitySnapshots)
                 .FirstOrDefaultAsync(candidate => candidate.PublicId == nodePublicId, cancellationToken);
 
-            return node is null
-                ? NotFound<ControlPlaneHealthDetail>("Node was not found.")
-                : Succeeded(MapDetail(node));
+            if (node is null)
+            {
+                return NotFound<ControlPlaneHealthDetail>("Node was not found.");
+            }
+
+            var latestHealth = await this.dbContext.NodeHealthSnapshots
+                .AsNoTracking()
+                .Where(snapshot => snapshot.NodeId == node.Id)
+                .OrderByDescending(snapshot => snapshot.CheckedAt)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            var currentCapability = await this.dbContext.NodeCapabilitySnapshots
+                .AsNoTracking()
+                .Where(snapshot => snapshot.NodeId == node.Id && snapshot.IsCurrent)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            return Succeeded(MapDetail(node, latestHealth, currentCapability));
+        }
+
+        public async Task<ControlPlaneHealthOperationResult<ControlPlaneHealthTimelineResponse>> GetTimelineAsync(
+            Guid nodePublicId,
+            ControlPlaneHealthTimelineQuery query,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(query);
+
+            var nodeId = await this.dbContext.Nodes
+                .AsNoTracking()
+                .Where(node => node.PublicId == nodePublicId)
+                .Select(node => (long?)node.Id)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (nodeId is null)
+            {
+                return NotFound<ControlPlaneHealthTimelineResponse>("Node was not found.");
+            }
+
+            var page = ControlPlanePaging.Normalize(query.PageNumber, query.PageSize);
+            var timelineQuery = this.dbContext.NodeHealthSnapshots
+                .AsNoTracking()
+                .Where(snapshot => snapshot.NodeId == nodeId.Value);
+            var totalCount = await timelineQuery.CountAsync(cancellationToken);
+            var snapshotEntities = await timelineQuery
+                .OrderByDescending(snapshot => snapshot.CheckedAt)
+                .Skip(page.Skip)
+                .Take(page.PageSize)
+                .ToListAsync(cancellationToken);
+
+            return Succeeded(new ControlPlaneHealthTimelineResponse(
+                snapshotEntities.Select(MapHealth).ToArray(),
+                totalCount,
+                page.PageNumber,
+                page.PageSize,
+                ControlPlanePaging.GetTotalPages(totalCount, page.PageSize)));
         }
 
         public async Task<ControlPlaneHealthOperationResult<ControlPlaneProbeResult>> ProbeAsync(
@@ -242,18 +291,6 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return probed;
         }
 
-        private static ControlPlaneHealthNodeSummary MapSummary(CommerceNode node)
-        {
-            return new ControlPlaneHealthNodeSummary(
-                node.PublicId,
-                node.NodeKey,
-                node.Name,
-                node.Status,
-                node.LastSeenAt,
-                node.HealthSnapshots.OrderByDescending(snapshot => snapshot.CheckedAt).Select(MapHealth).FirstOrDefault(),
-                node.CapabilitySnapshots.Where(snapshot => snapshot.IsCurrent).Select(MapCapability).FirstOrDefault());
-        }
-
         private static ControlPlaneHealthNodeSummary MapSummary(
             CommerceNode node,
             NodeHealthSnapshot? latestHealth,
@@ -269,7 +306,10 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 currentCapability is null ? null : MapCapability(currentCapability));
         }
 
-        private static ControlPlaneHealthDetail MapDetail(CommerceNode node)
+        private static ControlPlaneHealthDetail MapDetail(
+            CommerceNode node,
+            NodeHealthSnapshot? latestHealth,
+            NodeCapabilitySnapshot? currentCapability)
         {
             return new ControlPlaneHealthDetail(
                 node.PublicId,
@@ -277,15 +317,8 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 node.Name,
                 node.Status,
                 node.LastSeenAt,
-                node.HealthSnapshots
-                    .OrderByDescending(snapshot => snapshot.CheckedAt)
-                    .Take(25)
-                    .Select(MapHealth)
-                    .ToArray(),
-                node.CapabilitySnapshots
-                    .Where(snapshot => snapshot.IsCurrent)
-                    .Select(MapCapability)
-                    .FirstOrDefault());
+                latestHealth is null ? null : MapHealth(latestHealth),
+                currentCapability is null ? null : MapCapability(currentCapability));
         }
 
         private static ControlPlaneHealthSnapshotDto MapHealth(NodeHealthSnapshot snapshot)

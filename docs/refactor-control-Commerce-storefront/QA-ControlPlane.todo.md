@@ -309,6 +309,7 @@ Status legend:
 - [ ] Product Import rows drawer has previous/next controls and honors `pageNumber/pageSize`.
 - [ ] Stores page has page controls and search/status filters still work.
 - [ ] Health page has page controls, search/status filters, and detail load still works.
+- [ ] Health timeline uses paged `nodes/{nodePublicId}/timeline` response with `items`, `totalCount`, `pageNumber`, `pageSize`, and `totalPages`.
 - [ ] Actions page has page controls and status/action filters still work.
 - [ ] Users page has page controls and search/status/role/permission filters still work.
 - [ ] Nodes page has page controls and search/status filters still work.

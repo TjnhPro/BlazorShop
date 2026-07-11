@@ -15,6 +15,12 @@ namespace BlazorShop.ControlPlane.Web.Services.Health
 
         Task<HealthDetail?> GetAsync(Guid nodePublicId, CancellationToken cancellationToken = default);
 
+        Task<HealthTimelineResponse> GetTimelineAsync(
+            Guid nodePublicId,
+            int pageNumber = 1,
+            int pageSize = 25,
+            CancellationToken cancellationToken = default);
+
         Task<ProbeMutationResult> ProbeAsync(Guid nodePublicId, CancellationToken cancellationToken = default);
     }
 
@@ -83,6 +89,32 @@ namespace BlazorShop.ControlPlane.Web.Services.Health
             throw new InvalidOperationException(result.Message);
         }
 
+        public async Task<HealthTimelineResponse> GetTimelineAsync(
+            Guid nodePublicId,
+            int pageNumber = 1,
+            int pageSize = 25,
+            CancellationToken cancellationToken = default)
+        {
+            var normalizedPageNumber = Math.Max(1, pageNumber);
+            var normalizedPageSize = Math.Clamp(pageSize, 1, 100);
+            var result = await this.apiClient.GetPrivateAsync<HealthTimelineResponse>(
+                $"api/control-plane/health/nodes/{nodePublicId}/timeline?pageNumber={normalizedPageNumber}&pageSize={normalizedPageSize}",
+                "Unable to load health timeline.",
+                cancellationToken);
+
+            if (result.StatusCode == HttpStatusCode.NotFound)
+            {
+                return new HealthTimelineResponse([], 0, normalizedPageNumber, normalizedPageSize, 0);
+            }
+
+            if (result.Success)
+            {
+                return result.Data ?? new HealthTimelineResponse([], 0, normalizedPageNumber, normalizedPageSize, 0);
+            }
+
+            throw new InvalidOperationException(result.Message);
+        }
+
         public async Task<ProbeMutationResult> ProbeAsync(Guid nodePublicId, CancellationToken cancellationToken = default)
         {
             var result = await this.apiClient.PostPrivateAsync<ProbeResult>(
@@ -96,6 +128,13 @@ namespace BlazorShop.ControlPlane.Web.Services.Health
 
     public sealed record HealthListResponse(
         IReadOnlyList<HealthNodeSummary> Items,
+        int TotalCount,
+        int PageNumber,
+        int PageSize,
+        int TotalPages);
+
+    public sealed record HealthTimelineResponse(
+        IReadOnlyList<HealthSnapshot> Items,
         int TotalCount,
         int PageNumber,
         int PageSize,
@@ -116,7 +155,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Health
         string Name,
         string Status,
         DateTimeOffset? LastSeenAt,
-        IReadOnlyList<HealthSnapshot> RecentHealth,
+        HealthSnapshot? LatestHealth,
         CapabilitySnapshot? CurrentCapability);
 
     public sealed record HealthSnapshot(
