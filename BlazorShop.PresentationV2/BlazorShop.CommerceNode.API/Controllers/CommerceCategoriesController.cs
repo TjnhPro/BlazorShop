@@ -18,9 +18,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 25)
         {
-            var categories = await this.categoryService.GetAllAsync();
+            var categories = await this.categoryService.QueryAsync(pageNumber, pageSize);
             return this.Success(categories, "Categories retrieved successfully.");
         }
 

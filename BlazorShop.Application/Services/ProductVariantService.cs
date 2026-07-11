@@ -46,6 +46,24 @@ namespace BlazorShop.Application.Services
                 : [];
         }
 
+        public async Task<PagedResult<GetProductVariant>> QueryByProductIdAsync(Guid productId, int pageNumber = 1, int pageSize = 25)
+        {
+            var normalizedPageNumber = Math.Max(1, pageNumber);
+            var normalizedPageSize = Math.Clamp(pageSize <= 0 ? 25 : pageSize, 1, 100);
+            var all = (await GetByProductIdAsync(productId))
+                .OrderBy(variant => variant.DisplayName)
+                .ThenBy(variant => variant.Sku)
+                .ToArray();
+
+            return new PagedResult<GetProductVariant>
+            {
+                Items = all.Skip((normalizedPageNumber - 1) * normalizedPageSize).Take(normalizedPageSize).ToArray(),
+                PageNumber = normalizedPageNumber,
+                PageSize = normalizedPageSize,
+                TotalCount = all.Length
+            };
+        }
+
         public async Task<ServiceResponse> AddAsync(CreateProductVariant variant)
         {
             var product = await GetProductForCurrentStoreAsync(variant.ProductId);

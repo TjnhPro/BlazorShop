@@ -222,7 +222,9 @@
         errorMessage = null;
         try
         {
-            var result = await CatalogClient.ListVariationTemplatesAsync(selectedStorePublicId!.Value);
+            var result = await CatalogClient.ListVariationTemplatesAsync(
+                selectedStorePublicId!.Value,
+                new VariationTemplateListQuery(PageSize: 100));
             if (!result.Success)
             {
                 errorMessage = result.Message;

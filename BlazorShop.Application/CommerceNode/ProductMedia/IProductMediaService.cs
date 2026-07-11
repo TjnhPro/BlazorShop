@@ -4,6 +4,7 @@ namespace BlazorShop.Application.CommerceNode.ProductMedia
     {
         Task<ProductMediaOperationResult<ProductMediaListResponse>> ListAsync(
             Guid productId,
+            ProductMediaListQuery query,
             CancellationToken cancellationToken = default);
 
         Task<ProductMediaOperationResult<ImportProductMediaResponse>> ImportAsync(

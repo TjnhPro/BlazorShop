@@ -423,7 +423,7 @@
             if (categoryResult.Success)
             {
                 categories.Clear();
-                categories.AddRange(categoryResult.Data ?? []);
+                categories.AddRange(categoryResult.Data?.Items ?? []);
             }
 
             await LoadProductsAsync();
@@ -640,7 +640,10 @@
             return;
         }
 
-        var result = await CatalogClient.ListProductMediaAsync(selectedStorePublicId!.Value, selectedProduct.Id);
+        var result = await CatalogClient.ListProductMediaAsync(
+            selectedStorePublicId!.Value,
+            selectedProduct.Id,
+            new ProductMediaListQuery(PageSize: 100));
         mediaItems.Clear();
         mediaPreviewUrls.Clear();
         if (result.Success)

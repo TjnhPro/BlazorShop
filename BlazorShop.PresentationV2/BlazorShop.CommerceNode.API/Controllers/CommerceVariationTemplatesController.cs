@@ -16,9 +16,14 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> List(CancellationToken cancellationToken)
+        public async Task<IActionResult> List(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 25,
+            CancellationToken cancellationToken = default)
         {
-            var result = await this.variationTemplateService.ListAsync(cancellationToken);
+            var result = await this.variationTemplateService.ListAsync(
+                new VariationTemplateListQuery(pageNumber, pageSize),
+                cancellationToken);
             return this.FromServiceResponse(result);
         }
 

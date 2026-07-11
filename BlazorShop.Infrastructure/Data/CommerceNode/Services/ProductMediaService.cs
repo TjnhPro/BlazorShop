@@ -40,23 +40,39 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         public async Task<ProductMediaOperationResult<ProductMediaListResponse>> ListAsync(
             Guid productId,
+            ProductMediaListQuery query,
             CancellationToken cancellationToken = default)
         {
+            ArgumentNullException.ThrowIfNull(query);
+
             var scope = await this.ResolveProductScopeAsync(productId, asTracking: false, cancellationToken);
             if (!scope.Success)
             {
                 return Failed<ProductMediaListResponse>(scope.Failure!.Value, scope.Message);
             }
 
-            var mediaRows = await this.context.ProductMedia
+            var pageNumber = Math.Max(1, query.PageNumber);
+            var pageSize = Math.Clamp(query.PageSize <= 0 ? 25 : query.PageSize, 1, 100);
+            var mediaQuery = this.context.ProductMedia
                 .AsNoTracking()
-                .Where(media => media.StoreId == scope.StoreId && media.ProductId == productId && media.DeletedAt == null)
+                .Where(media => media.StoreId == scope.StoreId && media.ProductId == productId && media.DeletedAt == null);
+            var totalCount = await mediaQuery.CountAsync(cancellationToken);
+            var mediaRows = await mediaQuery
                 .OrderBy(media => media.SortOrder)
                 .ThenBy(media => media.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync(cancellationToken);
             var items = mediaRows.Select(this.Map).ToList();
 
-            return Succeeded("Product media retrieved.", new ProductMediaListResponse(items));
+            return Succeeded(
+                "Product media retrieved.",
+                new ProductMediaListResponse(
+                    items,
+                    totalCount,
+                    pageNumber,
+                    pageSize,
+                    totalCount <= 0 ? 0 : (int)Math.Ceiling(totalCount / (double)pageSize)));
         }
 
         public async Task<ProductMediaOperationResult<ImportProductMediaResponse>> ImportAsync(
@@ -276,7 +292,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             await this.context.SaveChangesAsync(cancellationToken);
-            return await this.ListAsync(productId, cancellationToken);
+            return await this.ListAsync(productId, new ProductMediaListQuery(PageSize: 100), cancellationToken);
         }
 
         public async Task<ProductMediaOperationResult<ProductMediaListResponse>> DeleteAsync(
@@ -322,7 +338,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 await this.catalogQueryCache.InvalidateStoreCatalogAsync(scope.StoreId, cancellationToken);
             }
 
-            return await this.ListAsync(productId, cancellationToken);
+            return await this.ListAsync(productId, new ProductMediaListQuery(PageSize: 100), cancellationToken);
         }
 
         public async Task<ProductMediaOperationResult<ImportProductMediaResponse>> RetryAsync(

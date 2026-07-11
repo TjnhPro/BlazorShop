@@ -17,9 +17,16 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> List(Guid productId, CancellationToken cancellationToken)
+        public async Task<IActionResult> List(
+            Guid productId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 25,
+            CancellationToken cancellationToken = default)
         {
-            var result = await this.productMediaService.ListAsync(productId, cancellationToken);
+            var result = await this.productMediaService.ListAsync(
+                productId,
+                new ProductMediaListQuery(pageNumber, pageSize),
+                cancellationToken);
             return this.FromProductMediaResult(result);
         }
 

@@ -191,9 +191,14 @@ namespace BlazorShop.ControlPlane.API.Controllers
 
         [HttpGet("products/{productId:guid}/media")]
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/products/{productId:guid}/media")]
-        public async Task<IActionResult> ListProductMedia(Guid storePublicId, Guid productId, CancellationToken cancellationToken)
+        public async Task<IActionResult> ListProductMedia(
+            Guid storePublicId,
+            Guid productId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 25,
+            CancellationToken cancellationToken = default)
         {
-            return ToActionResult(await this.catalogService.ListProductMediaAsync(storePublicId, productId, cancellationToken));
+            return ToActionResult(await this.catalogService.ListProductMediaAsync(storePublicId, productId, new ProductMediaListQuery(pageNumber, pageSize), cancellationToken));
         }
 
         [HttpPost("products/{productId:guid}/media/import")]
@@ -289,9 +294,13 @@ namespace BlazorShop.ControlPlane.API.Controllers
 
         [HttpGet("categories")]
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/categories")]
-        public async Task<IActionResult> ListCategories(Guid storePublicId, CancellationToken cancellationToken)
+        public async Task<IActionResult> ListCategories(
+            Guid storePublicId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 25,
+            CancellationToken cancellationToken = default)
         {
-            return ToActionResult(await this.catalogService.ListCategoriesAsync(storePublicId, cancellationToken));
+            return ToActionResult(await this.catalogService.ListCategoriesAsync(storePublicId, pageNumber, pageSize, cancellationToken));
         }
 
         [HttpGet("categories/tree")]
@@ -334,9 +343,14 @@ namespace BlazorShop.ControlPlane.API.Controllers
 
         [HttpGet("products/{productId:guid}/variants")]
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/products/{productId:guid}/variants")]
-        public async Task<IActionResult> ListVariants(Guid storePublicId, Guid productId, CancellationToken cancellationToken)
+        public async Task<IActionResult> ListVariants(
+            Guid storePublicId,
+            Guid productId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 25,
+            CancellationToken cancellationToken = default)
         {
-            return ToActionResult(await this.catalogService.ListVariantsAsync(storePublicId, productId, cancellationToken));
+            return ToActionResult(await this.catalogService.ListVariantsAsync(storePublicId, productId, pageNumber, pageSize, cancellationToken));
         }
 
         [HttpPost("products/{productId:guid}/variants")]
@@ -414,9 +428,13 @@ namespace BlazorShop.ControlPlane.API.Controllers
         }
 
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/variation-templates")]
-        public async Task<IActionResult> ListVariationTemplates(Guid storePublicId, CancellationToken cancellationToken)
+        public async Task<IActionResult> ListVariationTemplates(
+            Guid storePublicId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 25,
+            CancellationToken cancellationToken = default)
         {
-            return ToActionResult(await this.catalogService.ListVariationTemplatesAsync(storePublicId, cancellationToken));
+            return ToActionResult(await this.catalogService.ListVariationTemplatesAsync(storePublicId, new VariationTemplateListQuery(pageNumber, pageSize), cancellationToken));
         }
 
         [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/variation-templates")]

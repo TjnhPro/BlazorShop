@@ -3,10 +3,13 @@
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Category;
     using BlazorShop.Application.DTOs.Product;
+    using BlazorShop.Domain.Contracts;
 
     public interface ICategoryService
     {
         Task<IEnumerable<GetCategory>> GetAllAsync();
+
+        Task<PagedResult<GetCategory>> QueryAsync(int pageNumber = 1, int pageSize = 25);
 
         Task<IReadOnlyList<GetCategoryTreeNode>> GetTreeAsync();
 

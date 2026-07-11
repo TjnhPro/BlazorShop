@@ -91,6 +91,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
         Task<ControlPlaneClientResult<ProductMediaListResponse>> ListProductMediaAsync(
             Guid storePublicId,
             Guid productId,
+            ProductMediaListQuery query,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneClientResult<ImportProductMediaResponse>> ImportProductMediaAsync(
@@ -130,8 +131,10 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             ProductMediaPreviewQuery query,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneClientResult<IReadOnlyList<GetCategory>>> ListCategoriesAsync(
+        Task<ControlPlaneClientResult<PagedResult<GetCategory>>> ListCategoriesAsync(
             Guid storePublicId,
+            int pageNumber = 1,
+            int pageSize = 25,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneClientResult<IReadOnlyList<GetCategoryTreeNode>>> GetCategoryTreeAsync(
@@ -154,9 +157,11 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             Guid categoryId,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneClientResult<IReadOnlyList<GetProductVariant>>> ListVariantsAsync(
+        Task<ControlPlaneClientResult<PagedResult<GetProductVariant>>> ListVariantsAsync(
             Guid storePublicId,
             Guid productId,
+            int pageNumber = 1,
+            int pageSize = 25,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneClientResult<object>> CreateVariantAsync(
@@ -197,6 +202,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
 
         Task<ControlPlaneClientResult<VariationTemplateListResponse>> ListVariationTemplatesAsync(
             Guid storePublicId,
+            VariationTemplateListQuery query,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneClientResult<VariationTemplateDetailDto>> GetVariationTemplateAsync(
@@ -446,10 +452,11 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
         public Task<ControlPlaneClientResult<ProductMediaListResponse>> ListProductMediaAsync(
             Guid storePublicId,
             Guid productId,
+            ProductMediaListQuery query,
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.GetPrivateAsync<ProductMediaListResponse>(
-                CommerceRoute(storePublicId, $"products/{productId:D}/media"),
+                CommerceRoute(storePublicId, $"products/{productId:D}/media") + BuildPageQuery(query.PageNumber, query.PageSize),
                 "Unable to load product media.",
                 cancellationToken);
         }
@@ -529,12 +536,14 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
                 cancellationToken);
         }
 
-        public Task<ControlPlaneClientResult<IReadOnlyList<GetCategory>>> ListCategoriesAsync(
+        public Task<ControlPlaneClientResult<PagedResult<GetCategory>>> ListCategoriesAsync(
             Guid storePublicId,
+            int pageNumber = 1,
+            int pageSize = 25,
             CancellationToken cancellationToken = default)
         {
-            return this.apiClient.GetPrivateAsync<IReadOnlyList<GetCategory>>(
-                CommerceRoute(storePublicId, "categories"),
+            return this.apiClient.GetPrivateAsync<PagedResult<GetCategory>>(
+                CommerceRoute(storePublicId, "categories") + BuildPageQuery(pageNumber, pageSize),
                 "Unable to load categories.",
                 cancellationToken);
         }
@@ -585,13 +594,15 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
                 cancellationToken);
         }
 
-        public Task<ControlPlaneClientResult<IReadOnlyList<GetProductVariant>>> ListVariantsAsync(
+        public Task<ControlPlaneClientResult<PagedResult<GetProductVariant>>> ListVariantsAsync(
             Guid storePublicId,
             Guid productId,
+            int pageNumber = 1,
+            int pageSize = 25,
             CancellationToken cancellationToken = default)
         {
-            return this.apiClient.GetPrivateAsync<IReadOnlyList<GetProductVariant>>(
-                CommerceRoute(storePublicId, $"products/{productId:D}/variants"),
+            return this.apiClient.GetPrivateAsync<PagedResult<GetProductVariant>>(
+                CommerceRoute(storePublicId, $"products/{productId:D}/variants") + BuildPageQuery(pageNumber, pageSize),
                 "Unable to load variants.",
                 cancellationToken);
         }
@@ -674,10 +685,11 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
 
         public Task<ControlPlaneClientResult<VariationTemplateListResponse>> ListVariationTemplatesAsync(
             Guid storePublicId,
+            VariationTemplateListQuery query,
             CancellationToken cancellationToken = default)
         {
             return this.apiClient.GetPrivateAsync<VariationTemplateListResponse>(
-                CommerceRoute(storePublicId, "variation-templates"),
+                CommerceRoute(storePublicId, "variation-templates") + BuildPageQuery(query.PageNumber, query.PageSize),
                 "Unable to load variation templates.",
                 cancellationToken);
         }
@@ -888,6 +900,17 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             };
 
             AddIfPresent(values, "status", query.Status);
+            return ToQueryString(values);
+        }
+
+        private static string BuildPageQuery(int pageNumber, int pageSize)
+        {
+            var values = new List<KeyValuePair<string, string>>
+            {
+                new("pageNumber", Math.Max(1, pageNumber).ToString(CultureInfo.InvariantCulture)),
+                new("pageSize", Math.Clamp(pageSize, 1, 100).ToString(CultureInfo.InvariantCulture)),
+            };
+
             return ToQueryString(values);
         }
 

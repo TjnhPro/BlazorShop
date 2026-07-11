@@ -187,12 +187,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
         public Task<ControlPlaneCommerceCatalogResult<VariationTemplateListResponse>> ListVariationTemplatesAsync(
             Guid storePublicId,
+            VariationTemplateListQuery query,
             CancellationToken cancellationToken = default)
         {
             return this.SendAsync<VariationTemplateListResponse>(
                 storePublicId,
                 HttpMethod.Get,
-                "api/commerce/admin/variation-templates",
+                "api/commerce/admin/variation-templates" + BuildPageQuery(query.PageNumber, query.PageSize),
                 null,
                 cancellationToken);
         }
@@ -300,12 +301,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         public Task<ControlPlaneCommerceCatalogResult<ProductMediaListResponse>> ListProductMediaAsync(
             Guid storePublicId,
             Guid productId,
+            ProductMediaListQuery query,
             CancellationToken cancellationToken = default)
         {
             return this.SendAsync<ProductMediaListResponse>(
                 storePublicId,
                 HttpMethod.Get,
-                $"api/commerce/admin/products/{productId:D}/media",
+                $"api/commerce/admin/products/{productId:D}/media" + BuildPageQuery(query.PageNumber, query.PageSize),
                 null,
                 cancellationToken);
         }
@@ -380,14 +382,16 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<GetCategory>>> ListCategoriesAsync(
+        public Task<ControlPlaneCommerceCatalogResult<PagedResult<GetCategory>>> ListCategoriesAsync(
             Guid storePublicId,
+            int pageNumber = 1,
+            int pageSize = 25,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<GetCategory>>(
+            return this.SendAsync<PagedResult<GetCategory>>(
                 storePublicId,
                 HttpMethod.Get,
-                "api/commerce/admin/categories",
+                "api/commerce/admin/categories" + BuildPageQuery(pageNumber, pageSize),
                 null,
                 cancellationToken);
         }
@@ -445,15 +449,17 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<GetProductVariant>>> ListVariantsAsync(
+        public Task<ControlPlaneCommerceCatalogResult<PagedResult<GetProductVariant>>> ListVariantsAsync(
             Guid storePublicId,
             Guid productId,
+            int pageNumber = 1,
+            int pageSize = 25,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<GetProductVariant>>(
+            return this.SendAsync<PagedResult<GetProductVariant>>(
                 storePublicId,
                 HttpMethod.Get,
-                $"api/commerce/admin/products/{productId:D}/variants",
+                $"api/commerce/admin/products/{productId:D}/variants" + BuildPageQuery(pageNumber, pageSize),
                 null,
                 cancellationToken);
         }
@@ -952,6 +958,17 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             };
 
             AddIfPresent(values, "status", query.Status);
+            return ToQueryString(values);
+        }
+
+        private static string BuildPageQuery(int pageNumber, int pageSize)
+        {
+            var values = new List<KeyValuePair<string, string>>
+            {
+                new("pageNumber", Math.Max(1, pageNumber).ToString(CultureInfo.InvariantCulture)),
+                new("pageSize", Math.Clamp(pageSize, 1, 100).ToString(CultureInfo.InvariantCulture)),
+            };
+
             return ToQueryString(values);
         }
 

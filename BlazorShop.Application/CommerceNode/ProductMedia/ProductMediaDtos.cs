@@ -5,7 +5,16 @@ namespace BlazorShop.Application.CommerceNode.ProductMedia
         public const string Import = "product.media.import";
     }
 
-    public sealed record ProductMediaListResponse(IReadOnlyList<ProductMediaDto> Items);
+    public sealed record ProductMediaListQuery(
+        int PageNumber = 1,
+        int PageSize = 25);
+
+    public sealed record ProductMediaListResponse(
+        IReadOnlyList<ProductMediaDto> Items,
+        int TotalCount = 0,
+        int PageNumber = 1,
+        int PageSize = 25,
+        int TotalPages = 0);
 
     public sealed record ImportProductMediaRequest(IReadOnlyList<ImportProductMediaItem> Items);
 

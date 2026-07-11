@@ -2,7 +2,16 @@ namespace BlazorShop.Application.CommerceNode.VariationTemplates
 {
     using BlazorShop.Application.DTOs;
 
-    public sealed record VariationTemplateListResponse(IReadOnlyList<VariationTemplateSummaryDto> Items);
+    public sealed record VariationTemplateListQuery(
+        int PageNumber = 1,
+        int PageSize = 25);
+
+    public sealed record VariationTemplateListResponse(
+        IReadOnlyList<VariationTemplateSummaryDto> Items,
+        int TotalCount = 0,
+        int PageNumber = 1,
+        int PageSize = 25,
+        int TotalPages = 0);
 
     public sealed record VariationTemplateSummaryDto(
         Guid Id,
@@ -90,7 +99,9 @@ namespace BlazorShop.Application.CommerceNode.VariationTemplates
 
     public interface IVariationTemplateService
     {
-        Task<ServiceResponse<VariationTemplateListResponse>> ListAsync(CancellationToken cancellationToken = default);
+        Task<ServiceResponse<VariationTemplateListResponse>> ListAsync(
+            VariationTemplateListQuery query,
+            CancellationToken cancellationToken = default);
 
         Task<ServiceResponse<VariationTemplateDetailDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 

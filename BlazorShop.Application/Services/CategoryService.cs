@@ -47,6 +47,21 @@
             return result.Any() ? _mapper.Map<IEnumerable<GetCategory>>(result) : new List<GetCategory>();
         }
 
+        public async Task<PagedResult<GetCategory>> QueryAsync(int pageNumber = 1, int pageSize = 25)
+        {
+            var normalizedPageNumber = Math.Max(1, pageNumber);
+            var normalizedPageSize = Math.Clamp(pageSize <= 0 ? 25 : pageSize, 1, 100);
+            var all = (await GetAllAsync()).OrderBy(category => category.Name).ToArray();
+
+            return new PagedResult<GetCategory>
+            {
+                Items = all.Skip((normalizedPageNumber - 1) * normalizedPageSize).Take(normalizedPageSize).ToArray(),
+                PageNumber = normalizedPageNumber,
+                PageSize = normalizedPageSize,
+                TotalCount = all.Length
+            };
+        }
+
         public async Task<IReadOnlyList<GetCategoryTreeNode>> GetTreeAsync()
         {
             var categories = await _categoryRepository.GetCategoriesForTreeAsync();

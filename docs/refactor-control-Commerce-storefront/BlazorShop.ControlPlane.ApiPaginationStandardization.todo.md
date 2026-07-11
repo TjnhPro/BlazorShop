@@ -398,12 +398,12 @@ Tasks:
   - `ControlPlaneCredentialListResponse`
   - `ControlPlaneCredentialService.ListAsync`
   - `Credentials.razor`
-- [ ] Page categories list:
+- [x] Page categories list:
   - Keep `categories/tree` as tree endpoint.
   - Convert `categories` list endpoint to `pageNumber/pageSize`.
-- [ ] Page product variants by product.
-- [ ] Page product media by product or enforce/document a strict max count. If no strict max exists, page it.
-- [ ] Page variation templates.
+- [x] Page product variants by product.
+- [x] Page product media by product or enforce/document a strict max count. If no strict max exists, page it.
+- [x] Page variation templates.
 - [x] Handle roles/permissions:
   - Preferred: rename API/client methods to `GetRoleCatalog` and `GetPermissionCatalog`.
   - Alternative: page them too.
@@ -498,12 +498,12 @@ Every checked item must either become paged or be renamed away from `List`.
 - [ ] `ControlPlaneCommerceCatalogController.QueryProducts`
 - [x] `ControlPlaneCommerceCatalogController.ListProductImports`
 - [x] `ControlPlaneCommerceCatalogController.ListProductImportRows`
-- [ ] `ControlPlaneCommerceCatalogController.ListProductMedia`
-- [ ] `ControlPlaneCommerceCatalogController.ListCategories`
+- [x] `ControlPlaneCommerceCatalogController.ListProductMedia`
+- [x] `ControlPlaneCommerceCatalogController.ListCategories`
 - [ ] `ControlPlaneCommerceCatalogController.GetCategoryTree`
-- [ ] `ControlPlaneCommerceCatalogController.ListVariants`
+- [x] `ControlPlaneCommerceCatalogController.ListVariants`
 - [ ] `ControlPlaneCommerceCatalogController.QueryInventory`
-- [ ] `ControlPlaneCommerceCatalogController.ListVariationTemplates`
+- [x] `ControlPlaneCommerceCatalogController.ListVariationTemplates`
 - [ ] `ControlPlaneCommerceCatalogController.QueryOrders`
 
 ## Risk Notes

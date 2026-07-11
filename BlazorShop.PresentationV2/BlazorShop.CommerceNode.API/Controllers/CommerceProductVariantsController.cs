@@ -17,9 +17,12 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetByProductId(Guid productId)
+        public async Task<IActionResult> GetByProductId(
+            Guid productId,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 25)
         {
-            var variants = await this.variantService.GetByProductIdAsync(productId);
+            var variants = await this.variantService.QueryByProductIdAsync(productId, pageNumber, pageSize);
             return this.Success(variants, "Product variants retrieved successfully.");
         }
 

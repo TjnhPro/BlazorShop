@@ -229,7 +229,7 @@
             }
 
             categories.Clear();
-            categories.AddRange(categoriesResult.Data ?? []);
+            categories.AddRange(categoriesResult.Data?.Items ?? []);
 
             var treeResult = await CatalogClient.GetCategoryTreeAsync(selectedStorePublicId.Value);
             if (treeResult.Success)

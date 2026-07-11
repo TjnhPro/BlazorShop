@@ -74,6 +74,7 @@ namespace BlazorShop.Application.ControlPlane.Catalog
 
         Task<ControlPlaneCommerceCatalogResult<VariationTemplateListResponse>> ListVariationTemplatesAsync(
             Guid storePublicId,
+            VariationTemplateListQuery query,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> GetVariationTemplateAsync(
@@ -123,6 +124,7 @@ namespace BlazorShop.Application.ControlPlane.Catalog
         Task<ControlPlaneCommerceCatalogResult<ProductMediaListResponse>> ListProductMediaAsync(
             Guid storePublicId,
             Guid productId,
+            ProductMediaListQuery query,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneCommerceCatalogResult<ImportProductMediaResponse>> ImportProductMediaAsync(
@@ -155,8 +157,10 @@ namespace BlazorShop.Application.ControlPlane.Catalog
             Guid mediaPublicId,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<GetCategory>>> ListCategoriesAsync(
+        Task<ControlPlaneCommerceCatalogResult<PagedResult<GetCategory>>> ListCategoriesAsync(
             Guid storePublicId,
+            int pageNumber = 1,
+            int pageSize = 25,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<GetCategoryTreeNode>>> GetCategoryTreeAsync(
@@ -179,9 +183,11 @@ namespace BlazorShop.Application.ControlPlane.Catalog
             Guid categoryId,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<GetProductVariant>>> ListVariantsAsync(
+        Task<ControlPlaneCommerceCatalogResult<PagedResult<GetProductVariant>>> ListVariantsAsync(
             Guid storePublicId,
             Guid productId,
+            int pageNumber = 1,
+            int pageSize = 25,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneCommerceCatalogResult<object>> CreateVariantAsync(

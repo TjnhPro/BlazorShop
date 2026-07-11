@@ -36,19 +36,29 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.catalogQueryCache = catalogQueryCache;
         }
 
-        public async Task<ServiceResponse<VariationTemplateListResponse>> ListAsync(CancellationToken cancellationToken = default)
+        public async Task<ServiceResponse<VariationTemplateListResponse>> ListAsync(
+            VariationTemplateListQuery query,
+            CancellationToken cancellationToken = default)
         {
+            ArgumentNullException.ThrowIfNull(query);
+
             var storeId = await this.ResolveStoreIdAsync(cancellationToken);
             if (!storeId.HasValue)
             {
                 return Failure<VariationTemplateListResponse>("Store context was not resolved.", ServiceResponseType.NotFound);
             }
 
-            var items = await this.context.VariationTemplates
+            var pageNumber = Math.Max(1, query.PageNumber);
+            var pageSize = Math.Clamp(query.PageSize <= 0 ? 25 : query.PageSize, 1, 100);
+            var templates = this.context.VariationTemplates
                 .AsNoTracking()
-                .Where(template => template.StoreId == storeId)
+                .Where(template => template.StoreId == storeId);
+            var totalCount = await templates.CountAsync(cancellationToken);
+            var items = await templates
                 .OrderBy(template => template.Name)
                 .ThenBy(template => template.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .Select(template => new VariationTemplateSummaryDto(
                     template.Id,
                     template.PublicId,
@@ -61,7 +71,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     template.UpdatedAt))
                 .ToListAsync(cancellationToken);
 
-            return Success(new VariationTemplateListResponse(items), "Variation templates retrieved.");
+            return Success(
+                new VariationTemplateListResponse(
+                    items,
+                    totalCount,
+                    pageNumber,
+                    pageSize,
+                    totalCount <= 0 ? 0 : (int)Math.Ceiling(totalCount / (double)pageSize)),
+                "Variation templates retrieved.");
         }
 
         public async Task<ServiceResponse<VariationTemplateDetailDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
