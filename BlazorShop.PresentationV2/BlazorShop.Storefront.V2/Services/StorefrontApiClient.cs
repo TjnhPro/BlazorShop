@@ -10,6 +10,7 @@ namespace BlazorShop.Storefront.Services
     using BlazorShop.Application.DTOs.Seo;
     using BlazorShop.Storefront.Options;
     using BlazorShop.Web.SharedV2.Models.Category;
+    using BlazorShop.Web.SharedV2.Models.Pages;
     using BlazorShop.Web.SharedV2.Models.Product;
     using BlazorShop.Web.SharedV2.Models.Seo;
 
@@ -25,6 +26,7 @@ namespace BlazorShop.Storefront.Services
         private static readonly TimeSpan SeoSettingsRequestTimeout = TimeSpan.FromMilliseconds(500);
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
         private const string InternalCatalogBaseRoute = "internal/catalog";
+        private const string InternalPagesBaseRoute = "internal/pages";
         private const string InternalSeoBaseRoute = "internal/seo";
         private const string InternalStoreCurrentRoute = "internal/store/current";
         private const string InternalCatalogSitemapRoute = InternalCatalogBaseRoute + "/sitemap";
@@ -112,6 +114,14 @@ namespace BlazorShop.Storefront.Services
             return GetMaybeNotFoundWithFallbackAsync<GetProduct>(
                 $"{InternalProductsRoute}/slug/{Uri.EscapeDataString(slug)}",
                 $"{LegacyProductsRoute}/slug/{Uri.EscapeDataString(slug)}",
+                cancellationToken,
+                CatalogRequestTimeout);
+        }
+
+        public Task<StorefrontApiResult<GetStorefrontPage>> GetPublishedPageBySlugAsync(string slug, CancellationToken cancellationToken = default)
+        {
+            return GetMaybeNotFoundAsync<GetStorefrontPage>(
+                $"{InternalPagesBaseRoute}/{Uri.EscapeDataString(slug)}",
                 cancellationToken,
                 CatalogRequestTimeout);
         }

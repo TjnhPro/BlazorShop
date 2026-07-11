@@ -4,6 +4,7 @@ namespace BlazorShop.Storefront.Services
     using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Storefront.Services.Contracts;
     using BlazorShop.Web.SharedV2.Models.Category;
+    using BlazorShop.Web.SharedV2.Models.Pages;
     using BlazorShop.Web.SharedV2.Models.Product;
 
     public class StorefrontSeoComposer : IStorefrontSeoComposer
@@ -62,6 +63,30 @@ namespace BlazorShop.Storefront.Services
                 RelativePath = StorefrontRoutes.Product(product.Slug),
                 Settings = settings,
                 PageSeo = MapProductSeo(product, Truncate(product.Description, 160)),
+            });
+        }
+
+        public async Task<SeoMetadataDto> ComposeStorefrontPageAsync(GetStorefrontPage page, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(page);
+
+            var settings = await GetEffectiveSettingsAsync(cancellationToken);
+            return _metadataBuilder.Build(new SeoMetadataBuildRequest
+            {
+                PageTitle = page.Title,
+                RelativePath = StorefrontRoutes.Page(page.Slug),
+                Settings = settings,
+                PageSeo = new SeoFieldsDto
+                {
+                    MetaTitle = page.Seo.MetaTitle,
+                    MetaDescription = string.IsNullOrWhiteSpace(page.Seo.MetaDescription) ? Truncate(page.Intro, 160) : page.Seo.MetaDescription,
+                    CanonicalUrl = page.Seo.CanonicalUrl,
+                    OgTitle = page.Seo.OgTitle,
+                    OgDescription = page.Seo.OgDescription,
+                    OgImage = page.Seo.OgImage,
+                    RobotsIndex = page.Seo.RobotsIndex,
+                    RobotsFollow = page.Seo.RobotsFollow,
+                },
             });
         }
 

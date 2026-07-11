@@ -70,6 +70,12 @@ namespace BlazorShop.Storefront.Services
                     _publicUrlResolver.ResolveAbsoluteUrl(StorefrontRoutes.Product(product.Slug), configuredBaseUrl),
                     product.LastModifiedUtc)));
 
+            entries.AddRange(sitemap.Pages
+                .Where(page => !string.IsNullOrWhiteSpace(page.Slug))
+                .Select(page => new SitemapUrlEntry(
+                    _publicUrlResolver.ResolveAbsoluteUrl(StorefrontRoutes.Page(page.Slug), configuredBaseUrl),
+                    page.LastModifiedUtc)));
+
             return entries
                 .Where(entry => !string.IsNullOrWhiteSpace(entry.Location))
                 .GroupBy(entry => entry.Location!, StringComparer.OrdinalIgnoreCase)

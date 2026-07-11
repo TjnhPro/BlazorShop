@@ -10,23 +10,19 @@ namespace BlazorShop.Storefront.Services
         public const string Logout = "/logout";
         public const string Sitemap = "/sitemap.xml";
         public const string Robots = "/robots.txt";
-        public const string About = "/about-us";
-        public const string Faq = "/faq";
-        public const string Privacy = "/privacy";
-        public const string Terms = "/terms";
-        public const string CustomerService = "/customer-service";
+        public const string About = "/pages/about-us";
+        public const string Faq = "/pages/faq";
+        public const string Privacy = "/pages/privacy";
+        public const string Terms = "/pages/terms";
+        public const string CustomerService = "/pages/customer-service";
         public const string NewReleases = "/new-releases";
         public const string TodaysDeals = "/todays-deals";
         public const string Search = "/search";
+        public const string PagesBase = "/pages";
 
         public static IReadOnlyList<StorefrontSitemapStaticRoute> SitemapStaticPages { get; } =
         [
             new(Home, UseCatalogLastModified: true),
-            new(About),
-            new(Faq),
-            new(Privacy),
-            new(Terms),
-            new(CustomerService),
             new(NewReleases, UseCatalogLastModified: true),
             new(TodaysDeals, UseCatalogLastModified: true),
         ];
@@ -43,6 +39,13 @@ namespace BlazorShop.Storefront.Services
             return string.IsNullOrWhiteSpace(slug)
                 ? "/product"
                 : $"/product/{Uri.EscapeDataString(slug.Trim())}";
+        }
+
+        public static string Page(string? slug)
+        {
+            return string.IsNullOrWhiteSpace(slug)
+                ? PagesBase
+                : $"{PagesBase}/{Uri.EscapeDataString(slug.Trim())}";
         }
 
         public static string SearchUrl(string? query, string? categorySlug = null, int? pageNumber = null)
