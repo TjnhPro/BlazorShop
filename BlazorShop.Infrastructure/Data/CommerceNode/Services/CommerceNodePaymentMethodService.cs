@@ -1,0 +1,281 @@
+namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
+{
+    using System.Text.Json;
+
+    using BlazorShop.Application.CommerceNode.Payments;
+    using BlazorShop.Application.CommerceNode.Stores;
+    using BlazorShop.Application.DTOs;
+    using BlazorShop.Application.DTOs.Admin.Audit;
+    using BlazorShop.Application.DTOs.Payment;
+    using BlazorShop.Application.Services.Contracts.Admin;
+    using BlazorShop.Application.Services.Contracts.Payment;
+    using BlazorShop.Domain.Constants;
+    using BlazorShop.Domain.Entities.Payment;
+
+    using Microsoft.EntityFrameworkCore;
+
+    public sealed class CommerceNodePaymentMethodService : IPaymentMethodService, IStorePaymentMethodAdminService
+    {
+        private static readonly StorePaymentMethodSeed[] DefaultMethods =
+        [
+            new(PaymentMethodKeys.Cod, "Cash on Delivery", "Test checkout payment method for MVP.", true, 10),
+            new(PaymentMethodKeys.Stripe, "Stripe", "Card payments through Stripe.", false, 20),
+            new(PaymentMethodKeys.PayPal, "PayPal", "PayPal payment skeleton.", false, 30),
+        ];
+
+        private readonly CommerceNodeDbContext context;
+        private readonly ICommerceStoreContext storeContext;
+        private readonly IAdminAuditService auditService;
+
+        public CommerceNodePaymentMethodService(
+            CommerceNodeDbContext context,
+            ICommerceStoreContext storeContext,
+            IAdminAuditService auditService)
+        {
+            this.context = context;
+            this.storeContext = storeContext;
+            this.auditService = auditService;
+        }
+
+        public async Task<IEnumerable<GetPaymentMethod>> GetPaymentMethodsAsync()
+        {
+            var storeResult = await this.storeContext.GetCurrentStoreIdAsync();
+            if (!storeResult.Success)
+            {
+                return [];
+            }
+
+            await this.EnsureDefaultsAsync(storeResult.Payload);
+            var storeMethods = await this.context.StorePaymentMethods
+                .AsNoTracking()
+                .Where(method => method.StoreId == storeResult.Payload && method.Enabled)
+                .OrderBy(method => method.DisplayOrder)
+                .ThenBy(method => method.DisplayName)
+                .ToListAsync();
+
+            if (storeMethods.Count == 0)
+            {
+                return [];
+            }
+
+            var keys = storeMethods.Select(method => method.PaymentMethodKey).ToArray();
+            var catalog = await this.context.PaymentMethods
+                .AsNoTracking()
+                .Where(method => keys.Contains(method.Key))
+                .ToDictionaryAsync(method => method.Key, StringComparer.OrdinalIgnoreCase);
+
+            return storeMethods.Select(method =>
+            {
+                catalog.TryGetValue(method.PaymentMethodKey, out var paymentMethod);
+                return new GetPaymentMethod
+                {
+                    Id = paymentMethod?.Id ?? method.Id,
+                    Key = method.PaymentMethodKey,
+                    Name = method.DisplayName,
+                    Description = method.Description ?? paymentMethod?.Description,
+                };
+            });
+        }
+
+        public async Task<IReadOnlyList<StorePaymentMethodDto>> GetAsync(CancellationToken cancellationToken = default)
+        {
+            var storeResult = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
+            if (!storeResult.Success)
+            {
+                return [];
+            }
+
+            await this.EnsureDefaultsAsync(storeResult.Payload, cancellationToken);
+            return await this.context.StorePaymentMethods
+                .AsNoTracking()
+                .Where(method => method.StoreId == storeResult.Payload)
+                .OrderBy(method => method.DisplayOrder)
+                .ThenBy(method => method.DisplayName)
+                .Select(method => Map(method))
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<ServiceResponse<StorePaymentMethodDto>> UpdateAsync(
+            string paymentMethodKey,
+            UpdateStorePaymentMethodRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(request);
+
+            var key = NormalizeKey(paymentMethodKey);
+            if (!IsSupportedKey(key))
+            {
+                return Failure("Payment method key is not supported.", ServiceResponseType.ValidationError);
+            }
+
+            var validationMessage = Validate(request);
+            if (validationMessage is not null)
+            {
+                return Failure(validationMessage, ServiceResponseType.ValidationError);
+            }
+
+            var storeResult = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
+            if (!storeResult.Success)
+            {
+                return Failure("Current store could not be resolved.", ServiceResponseType.NotFound);
+            }
+
+            await this.EnsureDefaultsAsync(storeResult.Payload, cancellationToken);
+            var method = await this.context.StorePaymentMethods
+                .FirstOrDefaultAsync(
+                    candidate => candidate.StoreId == storeResult.Payload && candidate.PaymentMethodKey == key,
+                    cancellationToken);
+
+            if (method is null)
+            {
+                return Failure("Payment method configuration was not found.", ServiceResponseType.NotFound);
+            }
+
+            method.Enabled = request.Enabled;
+            method.DisplayName = request.DisplayName.Trim();
+            method.Description = NormalizeNullable(request.Description);
+            method.DisplayOrder = request.DisplayOrder;
+            method.SettingsJson = NormalizeNullable(request.SettingsJson);
+            method.UpdatedAt = DateTime.UtcNow;
+
+            await this.context.SaveChangesAsync(cancellationToken);
+            var dto = Map(method);
+
+            await this.auditService.LogAsync(new CreateAdminAuditLogDto
+            {
+                Action = "PaymentMethod.Updated",
+                EntityType = "StorePaymentMethod",
+                EntityId = method.Id.ToString(),
+                Summary = $"Payment method '{method.PaymentMethodKey}' updated.",
+                MetadataJson = JsonSerializer.Serialize(new
+                {
+                    method.StoreId,
+                    method.PaymentMethodKey,
+                    method.Enabled,
+                    method.DisplayOrder,
+                }),
+            });
+
+            return Success(dto, "Payment method updated successfully.");
+        }
+
+        private async Task EnsureDefaultsAsync(Guid storeId, CancellationToken cancellationToken = default)
+        {
+            var existingKeys = await this.context.StorePaymentMethods
+                .Where(method => method.StoreId == storeId)
+                .Select(method => method.PaymentMethodKey)
+                .ToArrayAsync(cancellationToken);
+
+            var existing = new HashSet<string>(existingKeys, StringComparer.OrdinalIgnoreCase);
+            foreach (var seed in DefaultMethods)
+            {
+                if (existing.Contains(seed.Key))
+                {
+                    continue;
+                }
+
+                this.context.StorePaymentMethods.Add(new StorePaymentMethod
+                {
+                    StoreId = storeId,
+                    PaymentMethodKey = seed.Key,
+                    Enabled = seed.Enabled,
+                    DisplayName = seed.DisplayName,
+                    Description = seed.Description,
+                    DisplayOrder = seed.DisplayOrder,
+                });
+            }
+
+            await this.context.SaveChangesAsync(cancellationToken);
+        }
+
+        private static StorePaymentMethodDto Map(StorePaymentMethod method)
+        {
+            return new StorePaymentMethodDto(
+                method.Id,
+                method.PaymentMethodKey,
+                method.DisplayName,
+                method.Description,
+                method.Enabled,
+                method.DisplayOrder,
+                method.SettingsJson,
+                method.CreatedAt,
+                method.UpdatedAt);
+        }
+
+        private static string? Validate(UpdateStorePaymentMethodRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.DisplayName))
+            {
+                return "Payment display name is required.";
+            }
+
+            if (request.DisplayName.Trim().Length > 160)
+            {
+                return "Payment display name must be 160 characters or fewer.";
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Description) && request.Description.Trim().Length > 500)
+            {
+                return "Payment description must be 500 characters or fewer.";
+            }
+
+            if (request.DisplayOrder < 0 || request.DisplayOrder > 10000)
+            {
+                return "Payment display order must be between 0 and 10000.";
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.SettingsJson))
+            {
+                try
+                {
+                    using var _ = JsonDocument.Parse(request.SettingsJson);
+                }
+                catch (JsonException)
+                {
+                    return "Payment settings JSON is invalid.";
+                }
+            }
+
+            return null;
+        }
+
+        private static bool IsSupportedKey(string key)
+        {
+            return key is PaymentMethodKeys.Cod or PaymentMethodKeys.Stripe or PaymentMethodKeys.PayPal;
+        }
+
+        private static string NormalizeKey(string? value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().ToLowerInvariant();
+        }
+
+        private static string? NormalizeNullable(string? value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
+
+        private static ServiceResponse<StorePaymentMethodDto> Success(StorePaymentMethodDto payload, string message)
+        {
+            return new ServiceResponse<StorePaymentMethodDto>(true, message, payload.Id)
+            {
+                Payload = payload,
+                ResponseType = ServiceResponseType.Success,
+            };
+        }
+
+        private static ServiceResponse<StorePaymentMethodDto> Failure(string message, ServiceResponseType responseType)
+        {
+            return new ServiceResponse<StorePaymentMethodDto>(false, message)
+            {
+                ResponseType = responseType,
+            };
+        }
+
+        private sealed record StorePaymentMethodSeed(
+            string Key,
+            string DisplayName,
+            string Description,
+            bool Enabled,
+            int DisplayOrder);
+    }
+}

@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 {
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.CommerceNode.Catalog;
+    using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
@@ -101,7 +102,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IProductVariantService, ProductVariantService>();
             services.AddScoped<IPublicCatalogService, PublicCatalogService>();
             services.AddScoped<IProductRecommendationService, ProductRecommendationService>();
-            services.AddScoped<IPaymentMethodService, PaymentMethodService>();
+            services.AddScoped<CommerceNodePaymentMethodService>();
+            services.AddScoped<IPaymentMethodService>(provider => provider.GetRequiredService<CommerceNodePaymentMethodService>());
+            services.AddScoped<IStorePaymentMethodAdminService>(provider => provider.GetRequiredService<CommerceNodePaymentMethodService>());
+            services.AddScoped<IPaymentHandler, CodPaymentHandler>();
+            services.AddScoped<IPaymentHandler, StripePaymentHandler>();
+            services.AddScoped<IPaymentHandler, PayPalPaymentHandler>();
+            services.AddScoped<IPaymentHandlerResolver, PaymentHandlerResolver>();
             services.AddScoped<IStripeCheckoutSessionService, StripeCheckoutSessionService>();
             services.AddScoped<IPaymentService, StripePaymentService>();
             services.AddScoped<IPayPalPaymentService, PayPalPaymentService>();
