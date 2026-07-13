@@ -341,13 +341,13 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 ## Checkout And Payment Foundation
 
 - [x] Storefront V2 builds after checkout/payment foundation changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed.
-- [ ] `/checkout` renders local Storefront V2 checkout page.
-- [ ] `/checkout` does not redirect to `/account/checkout`.
-- [ ] Empty cart checkout shows empty state.
-- [ ] Checkout page loads enabled payment methods.
-- [ ] COD is selected/available in MVP.
+- [x] `/checkout` renders local Storefront V2 checkout page. 2026-07-13: Playwright MCP visible browser rendered the local checkout form.
+- [x] `/checkout` does not redirect to `/account/checkout`. 2026-07-13: visible browser stayed on `/checkout` and submitted locally.
+- [x] Empty cart checkout shows empty state. 2026-07-13: `/checkout` with no cart showed `Your cart is empty`.
+- [x] Checkout page loads enabled payment methods. 2026-07-13: checkout loaded COD from CommerceNode internal payment methods.
+- [x] COD is selected/available in MVP. 2026-07-13: COD radio was checked by default.
 - [ ] Required contact/shipping validation blocks submit.
-- [ ] COD checkout succeeds with visible order reference.
-- [ ] Cart cookie is cleared after checkout success.
+- [x] COD checkout succeeds with visible order reference. 2026-07-13: visible browser created `ORD-20260713-6672B965` and displayed the confirmation page.
+- [x] Cart cookie is cleared after checkout success. 2026-07-13: browser `document.cookie` returned empty after successful checkout.
 - [ ] Browser network shows no legacy API/Web requests.
 - [ ] Checkout page is noindex/private and absent from sitemap.

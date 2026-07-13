@@ -363,10 +363,10 @@ Status legend:
 
 - [x] ControlPlane API builds after checkout/payment gateway changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` passed.
 - [x] ControlPlane Web builds after checkout/payment admin UI changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` passed.
-- [ ] ControlPlane Web request capture confirms payment method admin page calls only ControlPlane API.
-- [ ] Payment Methods page loads store-scoped methods.
+- [x] ControlPlane Web request capture confirms payment method admin page calls only ControlPlane API. 2026-07-13: Playwright performance resource capture showed zero direct `localhost:5180`, `api/commerce/*`, or `api/internal/*` calls.
+- [x] Payment Methods page loads store-scoped methods. 2026-07-13: visible browser loaded COD, Stripe, and PayPal rows for the selected store.
 - [ ] Payment Methods page can enable/disable a method.
-- [ ] Payment Methods page rejects invalid settings JSON via API message.
-- [ ] Orders drawer shows order/payment/shipping statuses separately.
-- [ ] Orders drawer Mark Complete calls ControlPlane API and updates order detail.
+- [x] Payment Methods page rejects invalid settings JSON via API message. 2026-07-13: COD invalid JSON save showed `Payment settings JSON is invalid.`
+- [x] Orders drawer shows order/payment/shipping statuses separately. 2026-07-13: Orders table/drawer showed order `processing`, payment `paid`, shipping `not_yet_shipped`, then `shipped`.
+- [x] Orders drawer Mark Complete calls ControlPlane API and updates order detail. 2026-07-13: visible browser marked `ORD-20260713-6672B965` complete after shipping update; network capture still showed no direct CommerceNode calls.
 - [ ] Orders drawer Cancel calls ControlPlane API and updates order detail.

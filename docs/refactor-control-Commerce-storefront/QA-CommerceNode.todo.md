@@ -405,24 +405,24 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 ## Checkout And Payment Foundation
 
 - [x] CommerceNode API builds after checkout/payment foundation changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
-- [ ] `PaymentMethods` seed contains `cod`, `stripe`, and `paypal`.
-- [ ] `bank_transfer` is not returned by Storefront payment methods.
-- [ ] Default store has `cod` enabled and `stripe/paypal` disabled.
-- [ ] `GET /api/internal/payments/methods` returns only enabled methods for current store.
-- [ ] `POST /api/internal/cart/checkout` with COD creates an order.
-- [ ] Created COD order has `order_status=processing`.
-- [ ] Created COD order has `payment_status=paid`.
-- [ ] Created COD order has `payment_method_key=cod`.
-- [ ] Created COD order has `payment_at`.
-- [ ] Created COD order has `payment_metadata_json`.
-- [ ] Created COD order has customer snapshot fields.
-- [ ] Created COD order has shipping address snapshot fields.
-- [ ] Disabled `stripe` checkout request returns `success=false`.
-- [ ] Unknown payment method key returns `success=false`.
+- [x] `PaymentMethods` seed contains `cod`, `stripe`, and `paypal`. 2026-07-13: ControlPlane payment admin page loaded all three seeded methods for default store.
+- [x] `bank_transfer` is not returned by Storefront payment methods. 2026-07-13: `GET /api/internal/payments/methods` returned COD only.
+- [x] Default store has `cod` enabled and `stripe/paypal` disabled. 2026-07-13: payment admin page showed COD checked, Stripe/PayPal unchecked.
+- [x] `GET /api/internal/payments/methods` returns only enabled methods for current store. 2026-07-13: request with `X-Store-Key=default` returned COD only.
+- [x] `POST /api/internal/cart/checkout` with COD creates an order. 2026-07-13: visible Storefront checkout created `ORD-20260713-6672B965`.
+- [x] Created COD order has `order_status=processing`. 2026-07-13: order list showed `processing` immediately after checkout before completion.
+- [x] Created COD order has `payment_status=paid`. 2026-07-13: order list and detail API showed `paid`.
+- [x] Created COD order has `payment_method_key=cod`. 2026-07-13: order detail API and DB query showed `cod`.
+- [x] Created COD order has `payment_at`. 2026-07-13: order detail API and DB query showed non-null `payment_at`.
+- [x] Created COD order has `payment_metadata_json`. 2026-07-13: DB query showed COD handler metadata JSON.
+- [x] Created COD order has customer snapshot fields. 2026-07-13: order detail API returned customer name/email snapshot.
+- [x] Created COD order has shipping address snapshot fields. 2026-07-13: order detail API and DB query returned shipping name/email/address fields.
+- [x] Disabled `stripe` checkout request returns `success=false`. 2026-07-13: direct API checkout with `paymentMethodKey=stripe` returned `success=false`.
+- [x] Unknown payment method key returns `success=false`. 2026-07-13: direct API checkout with `paymentMethodKey=unknown` returned `success=false`.
 - [ ] Checkout creates customer when email does not exist.
 - [ ] Checkout attaches existing customer when email exists.
-- [ ] Admin order detail returns payment fields.
-- [ ] Admin mark complete succeeds for paid/shipped order.
+- [x] Admin order detail returns payment fields. 2026-07-13: order detail API returned payment status, method, payment date, and completed date.
+- [x] Admin mark complete succeeds for paid/shipped order. 2026-07-13: ControlPlane Orders drawer updated shipping to `shipped` and marked order complete.
 - [ ] Admin mark complete rejects unpaid order.
 - [ ] Store isolation blocks another store from reading/completing the order.
 - [ ] Audit log includes `Order.Completed`.
