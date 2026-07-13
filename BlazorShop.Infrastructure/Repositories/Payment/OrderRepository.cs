@@ -29,7 +29,7 @@ namespace BlazorShop.Infrastructure.Repositories.Payment
         {
             var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
             if (order == null) return 0;
-            order.Status = status;
+            order.OrderStatus = status;
             return await _context.SaveChangesAsync();
         }
 

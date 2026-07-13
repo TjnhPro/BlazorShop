@@ -1,5 +1,6 @@
 namespace BlazorShop.Infrastructure.Data.CommerceNode
 {
+    using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Entities;
     using BlazorShop.Domain.Entities.CommerceNode;
     using BlazorShop.Domain.Entities.Identity;
@@ -31,6 +32,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
         public DbSet<PaymentMethod> PaymentMethods => Set<PaymentMethod>();
+
+        public DbSet<StorePaymentMethod> StorePaymentMethods => Set<StorePaymentMethod>();
 
         public DbSet<OrderItem> CheckoutOrderItems => Set<OrderItem>();
 
@@ -429,12 +432,144 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             modelBuilder.Entity<Order>()
+                .Property(order => order.OrderStatus)
+                .HasColumnName("order_status")
+                .HasMaxLength(32)
+                .HasDefaultValue(OrderStatuses.Pending);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.PaymentStatus)
+                .HasColumnName("payment_status")
+                .HasMaxLength(32)
+                .HasDefaultValue(PaymentStatuses.Pending);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.PaymentMethodKey)
+                .HasColumnName("payment_method_key")
+                .HasMaxLength(64)
+                .HasDefaultValue(PaymentMethodKeys.Cod);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.PaymentAt)
+                .HasColumnName("payment_at")
+                .HasColumnType("timestamp with time zone");
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.PaymentMetadataJson)
+                .HasColumnName("payment_metadata_json")
+                .HasColumnType("jsonb");
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.CustomerName)
+                .HasColumnName("customer_name")
+                .HasMaxLength(256);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.CustomerEmail)
+                .HasColumnName("customer_email")
+                .HasMaxLength(256);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ShippingFullName)
+                .HasColumnName("shipping_full_name")
+                .HasMaxLength(256)
+                .HasDefaultValue(string.Empty);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ShippingEmail)
+                .HasColumnName("shipping_email")
+                .HasMaxLength(256)
+                .HasDefaultValue(string.Empty);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ShippingPhone)
+                .HasColumnName("shipping_phone")
+                .HasMaxLength(64);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ShippingAddress1)
+                .HasColumnName("shipping_address1")
+                .HasMaxLength(400)
+                .HasDefaultValue(string.Empty);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ShippingAddress2)
+                .HasColumnName("shipping_address2")
+                .HasMaxLength(400);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ShippingCity)
+                .HasColumnName("shipping_city")
+                .HasMaxLength(160)
+                .HasDefaultValue(string.Empty);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ShippingState)
+                .HasColumnName("shipping_state")
+                .HasMaxLength(160);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ShippingPostalCode)
+                .HasColumnName("shipping_postal_code")
+                .HasMaxLength(64)
+                .HasDefaultValue(string.Empty);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ShippingCountryCode)
+                .HasColumnName("shipping_country_code")
+                .HasMaxLength(2)
+                .HasDefaultValue(string.Empty);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.UpdatedAt)
+                .HasColumnName("updated_at")
+                .HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.CompletedAt)
+                .HasColumnName("completed_at")
+                .HasColumnType("timestamp with time zone");
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.CancelledAt)
+                .HasColumnName("cancelled_at")
+                .HasColumnType("timestamp with time zone");
+
+            modelBuilder.Entity<Order>()
                 .Property(order => order.AdminNote)
                 .HasMaxLength(2000);
 
             modelBuilder.Entity<Order>()
                 .Property(order => order.CurrencyCode)
                 .HasMaxLength(3);
+
+            modelBuilder.Entity<Order>()
+                .HasIndex(order => new { order.StoreId, order.OrderStatus, order.CreatedOn });
+
+            modelBuilder.Entity<Order>()
+                .HasIndex(order => new { order.StoreId, order.PaymentStatus, order.CreatedOn });
+
+            modelBuilder.Entity<Order>()
+                .HasIndex(order => new { order.StoreId, order.CustomerEmail, order.CreatedOn });
+
+            modelBuilder.Entity<Order>()
+                .HasIndex(order => order.PaymentMethodKey);
+
+            modelBuilder.Entity<Order>()
+                .ToTable(
+                    table =>
+                    {
+                        table.HasCheckConstraint(
+                            "ck_orders_order_status",
+                            "order_status in ('pending', 'processing', 'complete', 'cancelled')");
+                        table.HasCheckConstraint(
+                            "ck_orders_payment_status",
+                            "payment_status in ('pending', 'authorized', 'paid', 'partially_refunded', 'refunded', 'voided')");
+                        table.HasCheckConstraint(
+                            "ck_orders_payment_method_key",
+                            "payment_method_key in ('cod', 'stripe', 'paypal')");
+                    });
 
             modelBuilder.Entity<OrderLine>()
                 .Property(line => line.Sku)
@@ -499,21 +634,84 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
+            modelBuilder.Entity<PaymentMethod>(entity =>
+            {
+                entity.Property(method => method.Key)
+                    .HasMaxLength(64)
+                    .IsRequired();
+
+                entity.Property(method => method.Name)
+                    .HasMaxLength(160)
+                    .IsRequired();
+
+                entity.Property(method => method.Description)
+                    .HasMaxLength(500);
+
+                entity.HasIndex(method => method.Key).IsUnique();
+
+                entity.ToTable(
+                    table => table.HasCheckConstraint(
+                        "ck_payment_methods_key",
+                        "\"Key\" in ('cod', 'stripe', 'paypal')"));
+            });
+
+            modelBuilder.Entity<StorePaymentMethod>(entity =>
+            {
+                entity.ToTable("store_payment_methods");
+                entity.HasKey(method => method.Id);
+                entity.Property(method => method.Id).HasColumnName("id");
+                entity.Property(method => method.StoreId).HasColumnName("store_id");
+                entity.Property(method => method.PaymentMethodKey).HasColumnName("payment_method_key").HasMaxLength(64).IsRequired();
+                entity.Property(method => method.Enabled).HasColumnName("enabled");
+                entity.Property(method => method.DisplayName).HasColumnName("display_name").HasMaxLength(160).IsRequired();
+                entity.Property(method => method.Description).HasColumnName("description").HasMaxLength(500);
+                entity.Property(method => method.DisplayOrder).HasColumnName("display_order");
+                entity.Property(method => method.SettingsJson).HasColumnName("settings_json").HasColumnType("jsonb");
+                entity.Property(method => method.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(method => method.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasIndex(method => new { method.StoreId, method.PaymentMethodKey }).IsUnique();
+                entity.HasIndex(method => new { method.StoreId, method.Enabled, method.DisplayOrder });
+
+                entity.HasOne(method => method.Store)
+                    .WithMany()
+                    .HasForeignKey(method => method.StoreId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.ToTable(
+                    "store_payment_methods",
+                    table => table.HasCheckConstraint(
+                        "ck_store_payment_methods_key",
+                        "payment_method_key in ('cod', 'stripe', 'paypal')"));
+            });
+
             modelBuilder.Entity<PaymentMethod>().HasData(
                 new PaymentMethod
                 {
                     Id = Guid.Parse("3604fc1d-cd6a-46ad-ace4-9b5f8e03f43b"),
-                    Name = "Credit Card",
+                    Key = PaymentMethodKeys.Stripe,
+                    Name = "Stripe",
+                    Description = "Card payments through Stripe.",
+                    IsEnabledByDefault = false,
+                    SortOrder = 20,
                 },
                 new PaymentMethod
                 {
                     Id = Guid.Parse("6f2c2a7e-9f9b-4a0d-9f7f-2a1b3c4d5e6f"),
+                    Key = PaymentMethodKeys.Cod,
                     Name = "Cash on Delivery",
+                    Description = "Test checkout payment method for MVP.",
+                    IsEnabledByDefault = true,
+                    SortOrder = 10,
                 },
                 new PaymentMethod
                 {
                     Id = Guid.Parse("b2e5c1d4-7a9f-4d2c-8f1e-3a4b5c6d7e8f"),
-                    Name = "Bank Transfer",
+                    Key = PaymentMethodKeys.PayPal,
+                    Name = "PayPal",
+                    Description = "PayPal payment skeleton.",
+                    IsEnabledByDefault = false,
+                    SortOrder = 30,
                 });
 
             modelBuilder.Entity<IdentityRole>().HasData(

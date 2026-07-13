@@ -112,6 +112,76 @@
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             builder.Entity<Order>()
+                .Property(order => order.OrderStatus)
+                .HasColumnName("Status");
+
+            builder.Entity<Order>()
+                .Ignore(order => order.PaymentStatus);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.PaymentMethodKey);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.PaymentAt);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.PaymentMetadataJson);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.UpdatedAt);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.CompletedAt);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.CancelledAt);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.CustomerName);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.CustomerEmail);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.ShippingFullName);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.ShippingEmail);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.ShippingPhone);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.ShippingAddress1);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.ShippingAddress2);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.ShippingCity);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.ShippingState);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.ShippingPostalCode);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.ShippingCountryCode);
+
+            builder.Entity<PaymentMethod>()
+                .Ignore(method => method.Key);
+
+            builder.Entity<PaymentMethod>()
+                .Ignore(method => method.Description);
+
+            builder.Entity<PaymentMethod>()
+                .Ignore(method => method.IsEnabledByDefault);
+
+            builder.Entity<PaymentMethod>()
+                .Ignore(method => method.SortOrder);
+
+            builder.Entity<Order>()
                 .Property(order => order.AdminNote)
                 .HasMaxLength(2000);
 

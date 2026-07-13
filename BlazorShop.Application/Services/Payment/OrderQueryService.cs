@@ -66,7 +66,7 @@ namespace BlazorShop.Application.Services.Payment
                 {
                     Id = o.Id,
                     Reference = o.Reference,
-                    Status = o.Status,
+                    Status = o.OrderStatus,
                     CurrencyCode = o.CurrencyCode,
                     TotalAmount = o.TotalAmount,
                     CreatedOn = o.CreatedOn,

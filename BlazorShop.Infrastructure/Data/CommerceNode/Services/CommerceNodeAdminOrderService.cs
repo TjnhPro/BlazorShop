@@ -62,7 +62,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             if (!string.IsNullOrWhiteSpace(query.Status))
             {
                 var status = query.Status.Trim();
-                orders = orders.Where(order => order.Status == status);
+                orders = orders.Where(order => order.OrderStatus == status);
             }
 
             if (!string.IsNullOrWhiteSpace(query.ShippingStatus))
@@ -222,7 +222,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             {
                 Id = order.Id,
                 Reference = order.Reference,
-                Status = order.Status,
+                Status = order.OrderStatus,
                 CurrencyCode = order.CurrencyCode,
                 TotalAmount = order.TotalAmount,
                 CreatedOn = order.CreatedOn,

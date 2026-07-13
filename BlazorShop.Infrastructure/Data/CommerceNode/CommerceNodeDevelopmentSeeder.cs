@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 {
     using System.Text.Json;
 
+    using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Entities;
     using BlazorShop.Domain.Entities.CommerceNode;
     using BlazorShop.Domain.Entities.Payment;
@@ -30,6 +31,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
         public async Task SeedAsync(CancellationToken cancellationToken = default)
         {
             var store = await this.EnsureStoreAsync(cancellationToken);
+            await this.EnsureStorePaymentMethodsAsync(store.Id, cancellationToken);
             await this.EnsureCategoriesAsync(store.Id, cancellationToken);
             await this.EnsureProductsAsync(store.Id, cancellationToken);
             await this.EnsureSampleOrderAsync(store.Id, cancellationToken);
@@ -73,6 +75,56 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             this.dbContext.CommerceStores.Add(store);
             await this.dbContext.SaveChangesAsync(cancellationToken);
             return store;
+        }
+
+        private async Task EnsureStorePaymentMethodsAsync(Guid storeId, CancellationToken cancellationToken)
+        {
+            var existingKeys = await this.dbContext.StorePaymentMethods
+                .Where(method => method.StoreId == storeId)
+                .Select(method => method.PaymentMethodKey)
+                .ToArrayAsync(cancellationToken);
+
+            var existing = new HashSet<string>(existingKeys, StringComparer.OrdinalIgnoreCase);
+            var methods = new[]
+            {
+                new StorePaymentMethod
+                {
+                    StoreId = storeId,
+                    PaymentMethodKey = PaymentMethodKeys.Cod,
+                    Enabled = true,
+                    DisplayName = "Cash on Delivery",
+                    Description = "Test checkout payment method for MVP.",
+                    DisplayOrder = 10,
+                },
+                new StorePaymentMethod
+                {
+                    StoreId = storeId,
+                    PaymentMethodKey = PaymentMethodKeys.Stripe,
+                    Enabled = false,
+                    DisplayName = "Stripe",
+                    Description = "Card payments through Stripe.",
+                    DisplayOrder = 20,
+                },
+                new StorePaymentMethod
+                {
+                    StoreId = storeId,
+                    PaymentMethodKey = PaymentMethodKeys.PayPal,
+                    Enabled = false,
+                    DisplayName = "PayPal",
+                    Description = "PayPal payment skeleton.",
+                    DisplayOrder = 30,
+                },
+            };
+
+            foreach (var method in methods)
+            {
+                if (!existing.Contains(method.PaymentMethodKey))
+                {
+                    this.dbContext.StorePaymentMethods.Add(method);
+                }
+            }
+
+            await this.dbContext.SaveChangesAsync(cancellationToken);
         }
 
         private async Task EnsureCategoriesAsync(Guid storeId, CancellationToken cancellationToken)
@@ -252,10 +304,24 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 StoreId = storeId,
                 UserId = "qa-seed-user",
                 Reference = reference,
-                Status = "Completed",
+                OrderStatus = OrderStatuses.Complete,
+                PaymentStatus = PaymentStatuses.Paid,
+                PaymentMethodKey = PaymentMethodKeys.Cod,
+                PaymentAt = DateTime.UtcNow,
+                PaymentMetadataJson = JsonSerializer.Serialize(new { handler = PaymentMethodKeys.Cod, mode = "seed" }),
                 CurrencyCode = "EUR",
                 TotalAmount = 19.99m,
                 CreatedOn = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                CompletedAt = DateTime.UtcNow,
+                CustomerName = "QA Seed Customer",
+                CustomerEmail = "qa-seed@example.local",
+                ShippingFullName = "QA Seed Customer",
+                ShippingEmail = "qa-seed@example.local",
+                ShippingAddress1 = "1 QA Street",
+                ShippingCity = "QA City",
+                ShippingPostalCode = "10000",
+                ShippingCountryCode = "US",
                 Lines =
                 [
                     new OrderLine

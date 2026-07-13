@@ -44,7 +44,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 return 0;
             }
 
-            order.Status = status;
+            order.OrderStatus = status;
             return await this.context.SaveChangesAsync();
         }
 

@@ -114,7 +114,7 @@ namespace BlazorShop.Application.Services.Payment
                 return new ServiceResponse(false, "A signed-in user is required to confirm the order.");
             }
 
-            return await CreateOrderAsync(carts, userId, status ?? "Paid", "ORD");
+            return await CreateOrderAsync(carts, userId, status ?? OrderStatuses.Processing, "ORD");
         }
 
         public async Task<ServiceResponse> CheckoutAsync(Checkout checkout)
@@ -237,7 +237,7 @@ namespace BlazorShop.Application.Services.Payment
                 var order = new Order
                 {
                     UserId = userId ?? string.Empty,
-                    Status = status,
+                    OrderStatus = status,
                     Reference = reference ?? $"{referencePrefix}-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..8].ToUpper()}",
                     StoreId = await ResolveCurrentStoreIdAsync(),
                     CurrencyCode = await ResolveCurrentCurrencyCodeAsync(),
