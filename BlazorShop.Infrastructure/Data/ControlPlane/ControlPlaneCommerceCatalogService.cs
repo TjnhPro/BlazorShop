@@ -5,6 +5,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using System.Text.Json;
 
     using BlazorShop.Application.ControlPlane.Catalog;
+    using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.CommerceNode.Payments;
@@ -450,6 +451,84 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
+        public Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetListResponse>> ListMediaAssetsAsync(
+            Guid storePublicId,
+            CommerceMediaAssetListQuery query,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<CommerceMediaAssetListResponse>(
+                storePublicId,
+                HttpMethod.Get,
+                "api/commerce/admin/media/assets" + BuildMediaAssetListQuery(query),
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> GetMediaAssetAsync(
+            Guid storePublicId,
+            Guid assetPublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<CommerceMediaAssetDto>(
+                storePublicId,
+                HttpMethod.Get,
+                $"api/commerce/admin/media/assets/{assetPublicId:D}",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> UploadMediaAssetAsync(
+            Guid storePublicId,
+            CommerceMediaAssetUploadRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendMediaAssetMultipartAsync<CommerceMediaAssetDto>(
+                storePublicId,
+                "api/commerce/admin/media/assets",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> UpdateMediaAssetMetadataAsync(
+            Guid storePublicId,
+            Guid assetPublicId,
+            CommerceMediaAssetMetadataRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<CommerceMediaAssetDto>(
+                storePublicId,
+                HttpMethod.Put,
+                $"api/commerce/admin/media/assets/{assetPublicId:D}",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> ReplaceMediaAssetAsync(
+            Guid storePublicId,
+            Guid assetPublicId,
+            CommerceMediaAssetUploadRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendMediaAssetMultipartAsync<CommerceMediaAssetDto>(
+                storePublicId,
+                $"api/commerce/admin/media/assets/{assetPublicId:D}/replace",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<object>> DeleteMediaAssetAsync(
+            Guid storePublicId,
+            Guid assetPublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<object>(
+                storePublicId,
+                HttpMethod.Delete,
+                $"api/commerce/admin/media/assets/{assetPublicId:D}",
+                null,
+                cancellationToken);
+        }
+
         public Task<ControlPlaneCommerceCatalogResult<PagedResult<GetCategory>>> ListCategoriesAsync(
             Guid storePublicId,
             int pageNumber = 1,
@@ -764,6 +843,19 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
+        public Task<ControlPlaneCommerceMediaResult> GetMediaAssetPreviewAsync(
+            Guid storePublicId,
+            Guid assetPublicId,
+            string canonicalFileName,
+            MediaAssetPreviewQuery query,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendMediaAsync(
+                storePublicId,
+                $"media/assets/{assetPublicId:D}/{Uri.EscapeDataString(canonicalFileName)}" + BuildMediaAssetPreviewQuery(query),
+                cancellationToken);
+        }
+
         private async Task<ControlPlaneCommerceCatalogResult<TPayload>> SendAsync<TPayload>(
             Guid storePublicId,
             HttpMethod method,
@@ -956,6 +1048,79 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             }
         }
 
+        private async Task<ControlPlaneCommerceCatalogResult<TPayload>> SendMediaAssetMultipartAsync<TPayload>(
+            Guid storePublicId,
+            string path,
+            CommerceMediaAssetUploadRequest upload,
+            CancellationToken cancellationToken)
+        {
+            var store = await this.LoadStoreAsync(storePublicId, cancellationToken);
+            var validation = ValidateStoreForRemoteCall(store);
+            if (validation is not null)
+            {
+                return validation.ToResult<TPayload>();
+            }
+
+            try
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Post, AppendPath(GetControlApiUrl(store!.Node!), path));
+                request.Headers.TryAddWithoutValidation("X-Node-Key", store.Node!.NodeKey);
+                request.Headers.TryAddWithoutValidation("X-Node-Secret", store.Node.NodeSecret);
+                request.Headers.TryAddWithoutValidation("X-Store-Key", store.StoreKey);
+
+                using var form = new MultipartFormDataContent();
+                using var fileContent = new StreamContent(upload.Content);
+                if (!string.IsNullOrWhiteSpace(upload.ContentType))
+                {
+                    fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(upload.ContentType);
+                }
+
+                form.Add(fileContent, "file", string.IsNullOrWhiteSpace(upload.FileName) ? "media-asset" : upload.FileName);
+                request.Content = form;
+
+                using var response = await this.httpClient.SendAsync(request, cancellationToken);
+                var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                if (string.IsNullOrWhiteSpace(responseBody))
+                {
+                    return Failure<TPayload>("Commerce Node returned an empty response.", ControlPlaneCommerceCatalogFailure.RemoteFailure, (int)response.StatusCode);
+                }
+
+                var envelope = JsonSerializer.Deserialize<CommerceNodeEnvelope<TPayload>>(responseBody, SerializerOptions);
+                if (envelope is null)
+                {
+                    return Failure<TPayload>("Commerce Node returned a malformed response envelope.", ControlPlaneCommerceCatalogFailure.RemoteFailure, (int)response.StatusCode);
+                }
+
+                if (!response.IsSuccessStatusCode || !envelope.Success)
+                {
+                    return new ControlPlaneCommerceCatalogResult<TPayload>(
+                        false,
+                        string.IsNullOrWhiteSpace(envelope.Message) ? "Commerce Node catalog request failed." : envelope.Message,
+                        envelope.Data,
+                        ToFailure(response.StatusCode),
+                        (int)response.StatusCode);
+                }
+
+                return new ControlPlaneCommerceCatalogResult<TPayload>(
+                    true,
+                    envelope.Message,
+                    envelope.Data,
+                    HttpStatusCode: (int)response.StatusCode);
+            }
+            catch (TaskCanceledException)
+            {
+                return Failure<TPayload>("Commerce Node catalog request timed out.", ControlPlaneCommerceCatalogFailure.RemoteFailure);
+            }
+            catch (HttpRequestException ex)
+            {
+                return Failure<TPayload>(ex.Message, ControlPlaneCommerceCatalogFailure.RemoteFailure);
+            }
+            catch (JsonException)
+            {
+                return Failure<TPayload>("Commerce Node returned malformed JSON.", ControlPlaneCommerceCatalogFailure.RemoteFailure);
+            }
+        }
+
         private async Task<StoreRegistry?> LoadStoreAsync(Guid publicId, CancellationToken cancellationToken)
         {
             return await this.dbContext.Stores
@@ -1066,6 +1231,29 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             AddIfPresent(values, "fit", query.Fit);
             AddIfPresent(values, "format", query.Format);
             AddIfPresent(values, "v", query.Version?.ToString(CultureInfo.InvariantCulture));
+            return ToQueryString(values);
+        }
+
+        private static string BuildMediaAssetPreviewQuery(MediaAssetPreviewQuery query)
+        {
+            var values = new List<KeyValuePair<string, string>>();
+            AddIfPresent(values, "w", query.Width?.ToString(CultureInfo.InvariantCulture));
+            AddIfPresent(values, "h", query.Height?.ToString(CultureInfo.InvariantCulture));
+            AddIfPresent(values, "fit", query.Fit);
+            AddIfPresent(values, "format", query.Format);
+            AddIfPresent(values, "v", query.Version?.ToString(CultureInfo.InvariantCulture));
+            return ToQueryString(values);
+        }
+
+        private static string BuildMediaAssetListQuery(CommerceMediaAssetListQuery query)
+        {
+            var values = new List<KeyValuePair<string, string>>
+            {
+                new("pageNumber", Math.Max(1, query.PageNumber).ToString(CultureInfo.InvariantCulture)),
+                new("pageSize", Math.Clamp(query.PageSize, 1, 100).ToString(CultureInfo.InvariantCulture)),
+            };
+
+            AddIfPresent(values, "search", query.Search);
             return ToQueryString(values);
         }
 

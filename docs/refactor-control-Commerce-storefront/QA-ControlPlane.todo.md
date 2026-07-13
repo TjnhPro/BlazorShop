@@ -189,6 +189,22 @@ Status legend:
 - [ ] User without `commerce.pages.read` cannot list/view pages.
 - [ ] User without `commerce.pages.write` cannot create/update/archive pages.
 
+## Commerce Media Library
+
+- [x] ControlPlane API builds after Media Library gateway changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj` passed after stopping the locked local ControlPlane API process.
+- [x] ControlPlane Web builds after Media Library page changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj` passed.
+- [x] Media Library nav item renders under Commerce Admin at `/commerce-admin/media-library`. 2026-07-13: route/page added and build passed.
+- [ ] Media Library list loads after selecting a store.
+- [ ] Media Library list calls ControlPlane API only.
+- [ ] Browser network capture shows no direct `api/commerce/*` or CommerceNode host calls.
+- [ ] Upload creates an asset and opens the asset drawer.
+- [ ] Grid thumbnail preview loads through ControlPlane API preview proxy.
+- [ ] Metadata save updates display name, alt text, title text, and generated version.
+- [ ] Replace file keeps the public id and canonical file name.
+- [ ] Delete asset removes it from the grid.
+- [ ] Link generator emits a local `/media/assets/{assetPublicId}/{canonicalFileName}` URL with transform query.
+- [ ] Link generator emits an `<img>` snippet with `alt`, optional `title`, `loading="lazy"`, and width/height when selected.
+
 ## Commerce Admin UX Completion
 
 - [x] Commerce Admin nav group renders. 2026-07-11: visible Playwright MCP browser showed Products, Product Imports, Categories, Variation Templates, and Orders links.

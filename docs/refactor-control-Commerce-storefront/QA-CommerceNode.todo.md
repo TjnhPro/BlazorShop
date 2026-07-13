@@ -139,6 +139,26 @@ Last verified: 2026-07-10
 - [ ] Delete primary media chooses next stored image or clears `Product.Image`.
 - [x] Store-scoped media cannot be read from another store host. 2026-07-10: `X-Store-Key: other` returned 404 for default store media.
 
+### Media Library
+
+- [x] CommerceNode API builds after Media Library MVP backend changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj` passed.
+- [x] `CommerceNodeMediaLibraryMvp` migration was generated for `CommerceNodeDbContext`. 2026-07-13: `dotnet ef migrations add CommerceNodeMediaLibraryMvp` succeeded after stopping locked local dev processes.
+- [ ] Apply `CommerceNodeMediaLibraryMvp` migration to local CommerceNode PostgreSQL on port `5434`.
+- [ ] `GET /api/commerce/admin/media/assets?pageNumber=1&pageSize=25` returns paged media assets for current store.
+- [ ] `POST /api/commerce/admin/media/assets` uploads jpg/png/webp/gif/ico up to 10MB.
+- [ ] Upload auto-generates `displayName`, `altText`, and `titleText` from file name.
+- [ ] Upload rejects unsupported extensions and mismatched file signatures.
+- [ ] `PUT /api/commerce/admin/media/assets/{assetPublicId}` updates metadata and bumps datetime version.
+- [ ] Blank display name is rejected.
+- [ ] Blank alt text falls back to display name.
+- [ ] `POST /api/commerce/admin/media/assets/{assetPublicId}/replace` replaces original bytes while keeping the public id and canonical file name.
+- [ ] `DELETE /api/commerce/admin/media/assets/{assetPublicId}` hard-deletes the row and asset directory.
+- [ ] `GET /media/assets/{assetPublicId}/{canonicalFileName}` serves original content with store scope.
+- [ ] Wrong canonical filename redirects permanently to the canonical URL while preserving query.
+- [ ] Transform query supports `w`, `h`, `fit=cover|contain|inside`, `format=original|webp|jpg|png`, and `v`.
+- [ ] Transform query for gif/ico returns 400.
+- [ ] Store A cannot read Store B media asset.
+
 ### Product Import
 
 - [x] CommerceNode API builds after Product Import Task changes. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.

@@ -3,6 +3,7 @@ namespace BlazorShop.Application.ControlPlane.Catalog
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.CommerceNode.Payments;
+    using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.DTOs.Admin.Inventory;
     using BlazorShop.Application.DTOs.Admin.Orders;
     using BlazorShop.Application.CommerceNode.ProductImports;
@@ -153,6 +154,38 @@ namespace BlazorShop.Application.ControlPlane.Catalog
             Guid storePublicId,
             Guid productId,
             ProductMediaListQuery query,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetListResponse>> ListMediaAssetsAsync(
+            Guid storePublicId,
+            CommerceMediaAssetListQuery query,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> GetMediaAssetAsync(
+            Guid storePublicId,
+            Guid assetPublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> UploadMediaAssetAsync(
+            Guid storePublicId,
+            CommerceMediaAssetUploadRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> UpdateMediaAssetMetadataAsync(
+            Guid storePublicId,
+            Guid assetPublicId,
+            CommerceMediaAssetMetadataRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> ReplaceMediaAssetAsync(
+            Guid storePublicId,
+            Guid assetPublicId,
+            CommerceMediaAssetUploadRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<object>> DeleteMediaAssetAsync(
+            Guid storePublicId,
+            Guid assetPublicId,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneCommerceCatalogResult<ImportProductMediaResponse>> ImportProductMediaAsync(
@@ -312,6 +345,13 @@ namespace BlazorShop.Application.ControlPlane.Catalog
             Guid mediaPublicId,
             ProductMediaPreviewQuery query,
             CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceMediaResult> GetMediaAssetPreviewAsync(
+            Guid storePublicId,
+            Guid assetPublicId,
+            string canonicalFileName,
+            MediaAssetPreviewQuery query,
+            CancellationToken cancellationToken = default);
     }
 
     public sealed record ControlPlaneCommerceCatalogResult<TPayload>(
@@ -327,6 +367,13 @@ namespace BlazorShop.Application.ControlPlane.Catalog
         string? Fit = null,
         string? Format = null,
         int? Version = null);
+
+    public sealed record MediaAssetPreviewQuery(
+        int? Width = null,
+        int? Height = null,
+        string? Fit = null,
+        string? Format = null,
+        long? Version = null);
 
     public sealed record ControlPlaneCommerceMediaResult(
         bool Success,

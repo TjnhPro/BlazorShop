@@ -4,6 +4,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
     using System.Net.Http.Headers;
 
     using BlazorShop.Application.ControlPlane.Catalog;
+    using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
@@ -130,6 +131,44 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             Guid productId,
             Guid mediaPublicId,
             ProductMediaPreviewQuery query,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<CommerceMediaAssetListResponse>> ListMediaAssetsAsync(
+            Guid storePublicId,
+            CommerceMediaAssetListQuery query,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<CommerceMediaAssetDto>> UploadMediaAssetAsync(
+            Guid storePublicId,
+            Stream content,
+            string fileName,
+            string? contentType,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<CommerceMediaAssetDto>> UpdateMediaAssetMetadataAsync(
+            Guid storePublicId,
+            Guid assetPublicId,
+            CommerceMediaAssetMetadataRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<CommerceMediaAssetDto>> ReplaceMediaAssetAsync(
+            Guid storePublicId,
+            Guid assetPublicId,
+            Stream content,
+            string fileName,
+            string? contentType,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<object>> DeleteMediaAssetAsync(
+            Guid storePublicId,
+            Guid assetPublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneFileResult> GetMediaAssetPreviewAsync(
+            Guid storePublicId,
+            Guid assetPublicId,
+            string canonicalFileName,
+            MediaAssetPreviewQuery query,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneClientResult<PagedResult<GetCategory>>> ListCategoriesAsync(
@@ -579,6 +618,85 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             return this.apiClient.GetPrivateFileAsync(
                 CommerceRoute(storePublicId, $"products/{productId:D}/media/{mediaPublicId:D}/preview") + BuildMediaPreviewQuery(query),
                 "Unable to load product media preview.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<CommerceMediaAssetListResponse>> ListMediaAssetsAsync(
+            Guid storePublicId,
+            CommerceMediaAssetListQuery query,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<CommerceMediaAssetListResponse>(
+                CommerceRoute(storePublicId, "media/assets") + BuildMediaAssetListQuery(query),
+                "Unable to load media assets.",
+                cancellationToken);
+        }
+
+        public async Task<ControlPlaneClientResult<CommerceMediaAssetDto>> UploadMediaAssetAsync(
+            Guid storePublicId,
+            Stream content,
+            string fileName,
+            string? contentType,
+            CancellationToken cancellationToken = default)
+        {
+            using var form = BuildMediaAssetForm(content, fileName, contentType);
+            return await this.apiClient.PostPrivateMultipartAsync<CommerceMediaAssetDto>(
+                CommerceRoute(storePublicId, "media/assets"),
+                form,
+                "Unable to upload media asset.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<CommerceMediaAssetDto>> UpdateMediaAssetMetadataAsync(
+            Guid storePublicId,
+            Guid assetPublicId,
+            CommerceMediaAssetMetadataRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<CommerceMediaAssetMetadataRequest, CommerceMediaAssetDto>(
+                CommerceRoute(storePublicId, $"media/assets/{assetPublicId:D}"),
+                request,
+                "Unable to update media asset.",
+                cancellationToken);
+        }
+
+        public async Task<ControlPlaneClientResult<CommerceMediaAssetDto>> ReplaceMediaAssetAsync(
+            Guid storePublicId,
+            Guid assetPublicId,
+            Stream content,
+            string fileName,
+            string? contentType,
+            CancellationToken cancellationToken = default)
+        {
+            using var form = BuildMediaAssetForm(content, fileName, contentType);
+            return await this.apiClient.PostPrivateMultipartAsync<CommerceMediaAssetDto>(
+                CommerceRoute(storePublicId, $"media/assets/{assetPublicId:D}/replace"),
+                form,
+                "Unable to replace media asset.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<object>> DeleteMediaAssetAsync(
+            Guid storePublicId,
+            Guid assetPublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.DeletePrivateAsync<object>(
+                CommerceRoute(storePublicId, $"media/assets/{assetPublicId:D}"),
+                "Unable to delete media asset.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneFileResult> GetMediaAssetPreviewAsync(
+            Guid storePublicId,
+            Guid assetPublicId,
+            string canonicalFileName,
+            MediaAssetPreviewQuery query,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateFileAsync(
+                CommerceRoute(storePublicId, $"media/assets/{assetPublicId:D}/preview") + BuildMediaAssetPreviewQuery(canonicalFileName, query),
+                "Unable to load media asset preview.",
                 cancellationToken);
         }
 
@@ -1113,6 +1231,43 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             AddIfPresent(values, "format", query.Format);
             AddIfPresent(values, "v", query.Version?.ToString(CultureInfo.InvariantCulture));
             return ToQueryString(values);
+        }
+
+        private static string BuildMediaAssetPreviewQuery(string canonicalFileName, MediaAssetPreviewQuery query)
+        {
+            var values = new List<KeyValuePair<string, string>>
+            {
+                new("fileName", canonicalFileName),
+            };
+
+            AddIfPresent(values, "w", query.Width?.ToString(CultureInfo.InvariantCulture));
+            AddIfPresent(values, "h", query.Height?.ToString(CultureInfo.InvariantCulture));
+            AddIfPresent(values, "fit", query.Fit);
+            AddIfPresent(values, "format", query.Format);
+            AddIfPresent(values, "v", query.Version?.ToString(CultureInfo.InvariantCulture));
+            return ToQueryString(values);
+        }
+
+        private static string BuildMediaAssetListQuery(CommerceMediaAssetListQuery query)
+        {
+            var values = new List<KeyValuePair<string, string>>
+            {
+                new("pageNumber", Math.Max(1, query.PageNumber).ToString(CultureInfo.InvariantCulture)),
+                new("pageSize", Math.Clamp(query.PageSize, 1, 100).ToString(CultureInfo.InvariantCulture)),
+            };
+
+            AddIfPresent(values, "search", query.Search);
+            return ToQueryString(values);
+        }
+
+        private static MultipartFormDataContent BuildMediaAssetForm(Stream content, string fileName, string? contentType)
+        {
+            var form = new MultipartFormDataContent();
+            var fileContent = new StreamContent(content);
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(
+                string.IsNullOrWhiteSpace(contentType) ? "application/octet-stream" : contentType);
+            form.Add(fileContent, "file", string.IsNullOrWhiteSpace(fileName) ? "media-asset" : fileName);
+            return form;
         }
 
         private static string CommerceRoute(Guid storePublicId, string path)

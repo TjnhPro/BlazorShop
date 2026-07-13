@@ -5,6 +5,7 @@ using BlazorShop.CommerceNode.API.Middleware;
 using BlazorShop.CommerceNode.API.ProductMedia;
 using BlazorShop.CommerceNode.API.Tasks;
 using BlazorShop.CommerceNode.API.Workers;
+using BlazorShop.Application.CommerceNode.Media;
 using BlazorShop.Application.CommerceNode.Tasks;
 using BlazorShop.Infrastructure.Data.CommerceNode;
 
@@ -30,6 +31,8 @@ builder.Services.AddOptions<NginxDeploymentOptions>()
     .Bind(builder.Configuration.GetSection(NginxDeploymentOptions.SectionName));
 builder.Services.AddOptions<ProductMediaStorageOptions>()
     .Bind(builder.Configuration.GetSection(ProductMediaStorageOptions.SectionName));
+builder.Services.AddOptions<CommerceMediaStorageOptions>()
+    .Bind(builder.Configuration.GetSection(CommerceMediaStorageOptions.SectionName));
 builder.Services.AddCommerceNodeInfrastructure(builder.Configuration);
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<IProductMediaDownloader, ProductMediaDownloader>();

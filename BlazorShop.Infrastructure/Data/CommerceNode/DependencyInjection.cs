@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 {
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.CommerceNode.Catalog;
+    using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
@@ -123,6 +124,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IAdminSettingsService, CommerceNodeAdminSettingsService>();
             services.AddScoped<ICommerceTaskService, CommerceTaskService>();
             services.AddScoped<IProductMediaService, ProductMediaService>();
+            services.AddScoped<ICommerceMediaAssetService, CommerceMediaAssetService>();
             services.AddScoped<IProductMediaUrlBuilder, ProductMediaUrlBuilder>();
             services.AddScoped<IProductImportCsvParser, ProductImportCsvParser>();
             services.AddScoped<IProductImportService, ProductImportService>();
