@@ -8,6 +8,7 @@ namespace BlazorShop.Storefront.Services
     using BlazorShop.Web.SharedV2.Models.Discovery;
     using BlazorShop.Web.SharedV2.Models;
     using BlazorShop.Application.DTOs.Seo;
+    using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Storefront.Options;
     using BlazorShop.Web.SharedV2.Models.Category;
     using BlazorShop.Web.SharedV2.Models.Pages;
@@ -29,6 +30,8 @@ namespace BlazorShop.Storefront.Services
         private const string InternalPagesBaseRoute = "internal/pages";
         private const string InternalSeoBaseRoute = "internal/seo";
         private const string InternalStoreCurrentRoute = "internal/store/current";
+        private const string InternalPaymentMethodsRoute = "internal/payments/methods";
+        private const string InternalCheckoutRoute = "internal/cart/checkout";
         private const string InternalCatalogSitemapRoute = InternalCatalogBaseRoute + "/sitemap";
         private const string InternalCategoriesRoute = InternalCatalogBaseRoute + "/categories";
         private const string InternalCategoryTreeRoute = InternalCategoriesRoute + "/tree";
@@ -164,6 +167,32 @@ namespace BlazorShop.Storefront.Services
                 InternalStoreCurrentRoute,
                 cancellationToken,
                 CatalogRequestTimeout);
+        }
+
+        public async Task<StorefrontApiResult<IReadOnlyList<GetPaymentMethod>>> GetPaymentMethodsAsync(CancellationToken cancellationToken = default)
+        {
+            var result = await GetAsync<List<GetPaymentMethod>>(
+                InternalPaymentMethodsRoute,
+                cancellationToken,
+                [],
+                CatalogRequestTimeout);
+
+            return result.IsSuccess && result.Value is not null
+                ? StorefrontApiResult<IReadOnlyList<GetPaymentMethod>>.Success(result.Value)
+                : result.IsServiceUnavailable
+                    ? StorefrontApiResult<IReadOnlyList<GetPaymentMethod>>.ServiceUnavailable()
+                    : StorefrontApiResult<IReadOnlyList<GetPaymentMethod>>.Success([]);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCheckoutResult>> CheckoutAsync(
+            StorefrontCheckoutRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return PostAsync<StorefrontCheckoutRequest, StorefrontCheckoutResult>(
+                InternalCheckoutRoute,
+                request,
+                "Unable to place order right now.",
+                cancellationToken);
         }
 
         private async Task<StorefrontApiResult<T>> GetAsyncWithFallback<T>(
@@ -360,6 +389,61 @@ namespace BlazorShop.Storefront.Services
             }
 
             return document.RootElement.Deserialize<T>(JsonOptions);
+        }
+
+        private async Task<StorefrontSubmitResult<TData>> PostAsync<TRequest, TData>(
+            string route,
+            TRequest request,
+            string unavailableMessage,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                using var response = await _httpClient.PostAsJsonAsync(route, request, JsonOptions, cancellationToken);
+                var envelope = await ReadEnvelopeAsync<TData>(response, cancellationToken);
+                if (envelope is not null)
+                {
+                    return envelope.Success
+                        ? StorefrontSubmitResult<TData>.Succeeded(envelope.Data, envelope.Message)
+                        : StorefrontSubmitResult<TData>.Failed(envelope.Message);
+                }
+
+                return response.IsSuccessStatusCode
+                    ? StorefrontSubmitResult<TData>.Succeeded(default, "Request completed.")
+                    : StorefrontSubmitResult<TData>.Failed(unavailableMessage);
+            }
+            catch (Exception exception) when (exception is HttpRequestException or JsonException or NotSupportedException or TaskCanceledException)
+            {
+                return StorefrontSubmitResult<TData>.Failed(unavailableMessage);
+            }
+        }
+
+        private static async Task<StorefrontApiEnvelope<TData>?> ReadEnvelopeAsync<TData>(
+            HttpResponseMessage response,
+            CancellationToken cancellationToken)
+        {
+            var payload = await response.Content.ReadAsStringAsync(cancellationToken);
+            if (string.IsNullOrWhiteSpace(payload))
+            {
+                return null;
+            }
+
+            return JsonSerializer.Deserialize<StorefrontApiEnvelope<TData>>(payload, JsonOptions);
+        }
+
+        private sealed record StorefrontApiEnvelope<TData>(bool Success, string? Message, TData? Data);
+    }
+
+    public sealed record StorefrontSubmitResult<TData>(bool Success, string Message, TData? Data)
+    {
+        public static StorefrontSubmitResult<TData> Succeeded(TData? data, string? message)
+        {
+            return new(true, string.IsNullOrWhiteSpace(message) ? "Request completed." : message, data);
+        }
+
+        public static StorefrontSubmitResult<TData> Failed(string? message)
+        {
+            return new(false, string.IsNullOrWhiteSpace(message) ? "The request could not be completed." : message, default);
         }
     }
 

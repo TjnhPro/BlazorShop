@@ -1,5 +1,7 @@
 using BlazorShop.Application.Diagnostics;
 using BlazorShop.Application.DTOs.UserIdentity;
+using BlazorShop.Application.DTOs.Payment;
+using BlazorShop.Application.CommerceNode.VariationTemplates;
 using BlazorShop.Application.Options;
 using BlazorShop.Application.Services;
 using BlazorShop.Application.Services.Contracts;
@@ -9,9 +11,12 @@ using BlazorShop.Storefront;
 using BlazorShop.Storefront.Services;
 using BlazorShop.Storefront.Services.Contracts;
 using BlazorShop.Storefront.WASM;
+using BlazorShop.Web.SharedV2;
 
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
+using SharedProcessCart = BlazorShop.Web.SharedV2.Models.Payment.ProcessCart;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -168,18 +173,48 @@ app.MapPost(StorefrontRoutes.Logout, async (
 
     return Results.Redirect(safeReturnUrl);
 });
-app.MapGet(StorefrontRoutes.Checkout, async (HttpContext httpContext, IStorefrontClientAppUrlResolver clientAppUrlResolver, IStorefrontSessionResolver sessionResolver, CancellationToken cancellationToken) =>
+app.MapPost(StorefrontRoutes.Checkout, async (
+    [FromForm] StorefrontCheckoutForm form,
+    StorefrontApiClient apiClient,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
 {
     StorefrontResponseHeaders.ApplyPrivatePage(httpContext);
 
-    var session = await sessionResolver.GetCurrentUserAsync(cancellationToken);
-    if (!session.IsAuthenticated)
+    var carts = ReadCartCookie(httpContext.Request.Cookies[StorefrontCookieNames.Cart]);
+    if (carts.Count == 0)
     {
-        return Results.Redirect(StorefrontReturnUrl.BuildSignInUrl(StorefrontRoutes.Checkout));
+        return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("error", "Your cart is empty."));
     }
 
-    var targetPath = "/account/checkout";
-    return CreateClientRedirectResult(clientAppUrlResolver, targetPath);
+    var request = new StorefrontCheckoutRequest
+    {
+        CustomerEmail = form.CustomerEmail?.Trim() ?? string.Empty,
+        CustomerName = form.CustomerName?.Trim() ?? string.Empty,
+        PaymentMethodKey = form.PaymentMethodKey?.Trim() ?? string.Empty,
+        Carts = carts.Select(MapCartItem).ToArray(),
+        ShippingAddress = new CheckoutShippingAddress
+        {
+            FullName = form.ShippingFullName?.Trim() ?? string.Empty,
+            Email = form.ShippingEmail?.Trim() ?? form.CustomerEmail?.Trim() ?? string.Empty,
+            Phone = form.ShippingPhone?.Trim(),
+            Address1 = form.ShippingAddress1?.Trim() ?? string.Empty,
+            Address2 = form.ShippingAddress2?.Trim(),
+            City = form.ShippingCity?.Trim() ?? string.Empty,
+            State = form.ShippingState?.Trim(),
+            PostalCode = form.ShippingPostalCode?.Trim() ?? string.Empty,
+            CountryCode = form.ShippingCountryCode?.Trim() ?? string.Empty,
+        },
+    };
+
+    var result = await apiClient.CheckoutAsync(request, cancellationToken);
+    if (!result.Success || result.Data is null)
+    {
+        return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("error", result.Message));
+    }
+
+    httpContext.Response.Cookies.Delete(StorefrontCookieNames.Cart, new CookieOptions { Path = "/" });
+    return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("orderReference", result.Data.Reference));
 });
 app.MapGet(StorefrontRoutes.Robots, async (HttpContext httpContext, IStorefrontRobotsService robotsService, CancellationToken cancellationToken) =>
 {
@@ -337,14 +372,37 @@ static string? FirstNonEmpty(params string?[] values)
     return null;
 }
 
-static IResult CreateClientRedirectResult(IStorefrontClientAppUrlResolver clientAppUrlResolver, string targetPath)
+static List<SharedProcessCart> ReadCartCookie(string? rawCart)
 {
-    if (string.IsNullOrWhiteSpace(clientAppUrlResolver.ResolveBaseUrl()))
+    if (string.IsNullOrWhiteSpace(rawCart))
     {
-        return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+        return [];
     }
 
-    return Results.Redirect(clientAppUrlResolver.ResolveUrl(targetPath));
+    try
+    {
+        return JsonSerializer.Deserialize<List<SharedProcessCart>>(rawCart, new JsonSerializerOptions(JsonSerializerDefaults.Web))
+            ?.Where(item => item.ProductId != Guid.Empty && item.Quantity > 0)
+            .ToList()
+            ?? [];
+    }
+    catch (JsonException)
+    {
+        return [];
+    }
+}
+
+static ProcessCart MapCartItem(SharedProcessCart item)
+{
+    return new ProcessCart
+    {
+        ProductId = item.ProductId,
+        ProductVariantId = item.ProductVariantId ?? item.VariantId,
+        Quantity = item.Quantity,
+        SelectedAttributes = item.SelectedAttributes?
+            .Select(attribute => new SelectedAttributeDto(attribute.Name, attribute.Value))
+            .ToArray(),
+    };
 }
 
 public partial class Program;
