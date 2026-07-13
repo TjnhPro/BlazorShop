@@ -144,13 +144,14 @@ Verification:
 
 ## Phase 3 - Add Storefront WASM Project
 
-- [ ] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM`.
-- [ ] Use a Blazor WebAssembly project shape targeting `net10.0`.
-- [ ] Keep it as a bundle/entry-point project hosted by `Storefront.V2`.
-- [ ] Reference `BlazorShop.Storefront.Components`.
-- [ ] Reference `BlazorShop.Web.SharedV2` only if a browser-safe helper is needed.
-- [ ] Do not reference `BlazorShop.Infrastructure`, `BlazorShop.CommerceNode.API`, `BlazorShop.ControlPlane.API`, or legacy Presentation projects.
-- [ ] Keep `Program.cs` minimal.
+- [x] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM`.
+- [x] Use a Blazor WebAssembly project shape targeting `net10.0`.
+- [x] Keep it as a bundle/entry-point project hosted by `Storefront.V2`.
+- [x] Reference `BlazorShop.Storefront.Components`.
+- [x] Reference `BlazorShop.Web.SharedV2` only if a browser-safe helper is needed.
+- [x] Do not reference `BlazorShop.Infrastructure`, `BlazorShop.CommerceNode.API`, `BlazorShop.ControlPlane.API`, or legacy Presentation projects.
+- [x] Keep `Program.cs` minimal.
+- [x] Add the project to `BlazorShop.sln`.
 
 Expected files:
 
@@ -160,7 +161,7 @@ Expected files:
 
 Verification:
 
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj`
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj`
 
 ## Phase 4 - Wire Storefront V2 Host
 
