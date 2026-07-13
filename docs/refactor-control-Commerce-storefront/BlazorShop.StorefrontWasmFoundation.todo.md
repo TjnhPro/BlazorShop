@@ -203,13 +203,13 @@ Verification:
 
 ## Phase 5 - QA Checklist Update
 
-- [ ] Add a "WASM Foundation" section to `QA-StorefrontV2.todo.md`.
-- [ ] Require visible browser QA when the user asks to observe.
-- [ ] Verify SSR page HTML still loads.
-- [ ] Verify `_framework/blazor.web.js` loads.
-- [ ] Verify WASM boot resources load.
-- [ ] Verify the probe counter increments without a full page reload.
-- [ ] Verify `storefrontCommerce.js` cart/toast behavior still initializes.
+- [x] Add a "WASM Foundation" section to `QA-StorefrontV2.todo.md`.
+- [x] Require visible browser QA when the user asks to observe.
+- [x] Verify SSR page HTML still loads.
+- [x] Verify `_framework/blazor.web.js` loads.
+- [x] Verify WASM boot resources load.
+- [x] Verify the probe counter increments without a full page reload.
+- [x] Verify `storefrontCommerce.js` cart/toast behavior still initializes.
 
 Expected files:
 

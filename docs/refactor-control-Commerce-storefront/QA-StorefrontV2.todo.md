@@ -70,6 +70,19 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
   - 2026-07-09: covered by PresentationV2 boundary tests.
 - [x] After SharedV2 changes, re-run catalog/cart smoke and `FullyQualifiedName~PresentationV2.Storefront`. 2026-07-09: full `dotnet test BlazorShop.sln --no-restore` passed 485/485 with 10 skipped; Playwright catalog/product/cart smoke passed.
 
+## WASM Foundation
+
+- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj`
+- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj`
+- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj`
+- [ ] `dotnet build BlazorShop.sln`
+- [ ] Existing SSR Storefront route returns HTML before hydration.
+- [ ] `_framework/blazor.web.js` loads from Storefront V2.
+- [ ] WASM boot resources load from Storefront V2.
+- [ ] Development-only `WasmProbe` renders on an existing route.
+- [ ] `WasmProbe` button increments without a full page reload.
+- [ ] `storefrontCommerce.js` still initializes cart/toast behavior.
+
 ## Runtime Smoke
 
 - [x] Start Commerce Node API with launch profile `http`.
