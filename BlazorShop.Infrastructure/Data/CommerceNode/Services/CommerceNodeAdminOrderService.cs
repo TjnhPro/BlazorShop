@@ -11,19 +11,33 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using BlazorShop.Application.Services.Contracts.Admin;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Contracts.Payment;
+    using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Entities.Payment;
 
     using Microsoft.EntityFrameworkCore;
 
     public sealed class CommerceNodeAdminOrderService : IAdminOrderService
     {
-        private static readonly HashSet<string> ShippingStatuses = new(StringComparer.OrdinalIgnoreCase)
+        private static readonly HashSet<string> ValidShippingStatuses = new(StringComparer.OrdinalIgnoreCase)
         {
             "PendingShipment",
             "Shipped",
             "InTransit",
             "OutForDelivery",
             "Delivered",
+            ShippingStatuses.NotYetShipped,
+            ShippingStatuses.Shipped,
+            ShippingStatuses.Delivered,
+            ShippingStatuses.ShippingNotRequired,
+        };
+
+        private static readonly HashSet<string> CompleteAllowedShippingStatuses = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "Shipped",
+            "Delivered",
+            ShippingStatuses.Shipped,
+            ShippingStatuses.Delivered,
+            ShippingStatuses.ShippingNotRequired,
         };
 
         private readonly CommerceNodeDbContext context;
@@ -139,7 +153,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failure("Order id is required.", ServiceResponseType.ValidationError);
             }
 
-            if (string.IsNullOrWhiteSpace(request.ShippingStatus) || !ShippingStatuses.Contains(request.ShippingStatus.Trim()))
+            if (string.IsNullOrWhiteSpace(request.ShippingStatus) || !ValidShippingStatuses.Contains(request.ShippingStatus.Trim()))
             {
                 return Failure("Shipping status is invalid.", ServiceResponseType.ValidationError);
             }
@@ -188,6 +202,87 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Success((await this.MapOrdersAsync(new[] { order })).Single(), "Order admin note updated successfully.");
         }
 
+        public async Task<ServiceResponse<GetOrder>> CompleteAsync(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                return Failure("Order id is required.", ServiceResponseType.ValidationError);
+            }
+
+            var orders = await this.GetCurrentStoreOrdersAsync(asTracking: true);
+            var order = await orders.Include(item => item.Lines).FirstOrDefaultAsync(item => item.Id == id);
+            if (order is null)
+            {
+                return Failure("Order not found.", ServiceResponseType.NotFound);
+            }
+
+            if (string.Equals(order.OrderStatus, OrderStatuses.Complete, StringComparison.OrdinalIgnoreCase))
+            {
+                return Success((await this.MapOrdersAsync(new[] { order })).Single(), "Order is already complete.");
+            }
+
+            if (!string.Equals(order.PaymentStatus, PaymentStatuses.Paid, StringComparison.OrdinalIgnoreCase))
+            {
+                return Failure("Only paid orders can be completed.", ServiceResponseType.ValidationError);
+            }
+
+            if (!CompleteAllowedShippingStatuses.Contains(order.ShippingStatus))
+            {
+                return Failure("Order must be shipped, delivered, or shipping-not-required before completion.", ServiceResponseType.ValidationError);
+            }
+
+            order.OrderStatus = OrderStatuses.Complete;
+            order.CompletedAt = DateTime.UtcNow;
+            order.UpdatedAt = DateTime.UtcNow;
+            await this.context.SaveChangesAsync();
+            await this.LogAsync("Order.Completed", id, "Order marked complete.", new
+            {
+                order.Reference,
+                order.PaymentStatus,
+                order.ShippingStatus,
+            });
+
+            return Success((await this.MapOrdersAsync(new[] { order })).Single(), "Order marked complete successfully.");
+        }
+
+        public async Task<ServiceResponse<GetOrder>> CancelAsync(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                return Failure("Order id is required.", ServiceResponseType.ValidationError);
+            }
+
+            var orders = await this.GetCurrentStoreOrdersAsync(asTracking: true);
+            var order = await orders.Include(item => item.Lines).FirstOrDefaultAsync(item => item.Id == id);
+            if (order is null)
+            {
+                return Failure("Order not found.", ServiceResponseType.NotFound);
+            }
+
+            if (string.Equals(order.OrderStatus, OrderStatuses.Complete, StringComparison.OrdinalIgnoreCase))
+            {
+                return Failure("Completed orders cannot be cancelled.", ServiceResponseType.ValidationError);
+            }
+
+            if (string.Equals(order.OrderStatus, OrderStatuses.Cancelled, StringComparison.OrdinalIgnoreCase))
+            {
+                return Success((await this.MapOrdersAsync(new[] { order })).Single(), "Order is already cancelled.");
+            }
+
+            order.OrderStatus = OrderStatuses.Cancelled;
+            order.CancelledAt = DateTime.UtcNow;
+            order.UpdatedAt = DateTime.UtcNow;
+            await this.context.SaveChangesAsync();
+            await this.LogAsync("Order.Cancelled", id, "Order cancelled.", new
+            {
+                order.Reference,
+                order.PaymentStatus,
+                order.ShippingStatus,
+            });
+
+            return Success((await this.MapOrdersAsync(new[] { order })).Single(), "Order cancelled successfully.");
+        }
+
         private async Task<Order?> GetOrderEntityAsync(Guid id)
         {
             return id == Guid.Empty
@@ -223,6 +318,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 Id = order.Id,
                 Reference = order.Reference,
                 Status = order.OrderStatus,
+                OrderStatus = order.OrderStatus,
+                PaymentStatus = order.PaymentStatus,
+                PaymentMethodKey = order.PaymentMethodKey,
+                PaymentAt = order.PaymentAt,
                 CurrencyCode = order.CurrencyCode,
                 TotalAmount = order.TotalAmount,
                 CreatedOn = order.CreatedOn,
@@ -233,8 +332,19 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 ShippedOn = order.ShippedOn,
                 DeliveredOn = order.DeliveredOn,
                 UserId = order.UserId,
-                CustomerName = null,
-                CustomerEmail = null,
+                CustomerName = order.CustomerName,
+                CustomerEmail = order.CustomerEmail,
+                ShippingFullName = order.ShippingFullName,
+                ShippingEmail = order.ShippingEmail,
+                ShippingPhone = order.ShippingPhone,
+                ShippingAddress1 = order.ShippingAddress1,
+                ShippingAddress2 = order.ShippingAddress2,
+                ShippingCity = order.ShippingCity,
+                ShippingState = order.ShippingState,
+                ShippingPostalCode = order.ShippingPostalCode,
+                ShippingCountryCode = order.ShippingCountryCode,
+                CompletedAt = order.CompletedAt,
+                CancelledAt = order.CancelledAt,
                 AdminNote = order.AdminNote,
                 Lines = order.Lines.Select(line => new GetOrderLine
                 {

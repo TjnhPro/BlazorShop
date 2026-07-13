@@ -69,5 +69,19 @@ namespace BlazorShop.CommerceNode.API.Controllers
             var result = await this.adminOrderService.UpdateAdminNoteAsync(id, request);
             return this.FromServiceResponse(result);
         }
+
+        [HttpPost("{id:guid}/complete")]
+        public async Task<IActionResult> Complete(Guid id)
+        {
+            var result = await this.adminOrderService.CompleteAsync(id);
+            return this.FromServiceResponse(result);
+        }
+
+        [HttpPost("{id:guid}/cancel")]
+        public async Task<IActionResult> Cancel(Guid id)
+        {
+            var result = await this.adminOrderService.CancelAsync(id);
+            return this.FromServiceResponse(result);
+        }
     }
 }

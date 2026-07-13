@@ -189,6 +189,16 @@ namespace BlazorShop.Infrastructure.Services.Admin
             return Success((await MapOrdersAsync(new[] { order })).Single(), "Order admin note updated successfully.");
         }
 
+        public Task<ServiceResponse<GetOrder>> CompleteAsync(Guid id)
+        {
+            return Task.FromResult(Failure("Order completion is only supported by Commerce Node V2.", ServiceResponseType.ValidationError));
+        }
+
+        public Task<ServiceResponse<GetOrder>> CancelAsync(Guid id)
+        {
+            return Task.FromResult(Failure("Order cancellation is only supported by Commerce Node V2.", ServiceResponseType.ValidationError));
+        }
+
         private async Task<Order?> GetOrderEntityAsync(Guid id)
         {
             return id == Guid.Empty
@@ -220,6 +230,10 @@ namespace BlazorShop.Infrastructure.Services.Admin
                     Id = order.Id,
                     Reference = order.Reference,
                     Status = order.OrderStatus,
+                    OrderStatus = order.OrderStatus,
+                    PaymentStatus = order.PaymentStatus,
+                    PaymentMethodKey = order.PaymentMethodKey,
+                    PaymentAt = order.PaymentAt,
                     TotalAmount = order.TotalAmount,
                     CreatedOn = order.CreatedOn,
                     ShippingStatus = order.ShippingStatus,
@@ -231,6 +245,17 @@ namespace BlazorShop.Infrastructure.Services.Admin
                     UserId = order.UserId,
                     CustomerName = string.IsNullOrWhiteSpace(user?.FullName) ? user?.UserName : user.FullName,
                     CustomerEmail = user?.Email,
+                    ShippingFullName = order.ShippingFullName,
+                    ShippingEmail = order.ShippingEmail,
+                    ShippingPhone = order.ShippingPhone,
+                    ShippingAddress1 = order.ShippingAddress1,
+                    ShippingAddress2 = order.ShippingAddress2,
+                    ShippingCity = order.ShippingCity,
+                    ShippingState = order.ShippingState,
+                    ShippingPostalCode = order.ShippingPostalCode,
+                    ShippingCountryCode = order.ShippingCountryCode,
+                    CompletedAt = order.CompletedAt,
+                    CancelledAt = order.CancelledAt,
                     AdminNote = order.AdminNote,
                     Lines = order.Lines.Select(line => new GetOrderLine
                     {

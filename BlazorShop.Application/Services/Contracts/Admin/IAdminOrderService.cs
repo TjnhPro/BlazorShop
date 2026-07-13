@@ -16,5 +16,9 @@ namespace BlazorShop.Application.Services.Contracts.Admin
         Task<ServiceResponse<GetOrder>> UpdateShippingStatusAsync(Guid id, UpdateShippingStatusRequest request);
 
         Task<ServiceResponse<GetOrder>> UpdateAdminNoteAsync(Guid id, UpdateOrderAdminNoteRequest request);
+
+        Task<ServiceResponse<GetOrder>> CompleteAsync(Guid id);
+
+        Task<ServiceResponse<GetOrder>> CancelAsync(Guid id);
     }
 }
