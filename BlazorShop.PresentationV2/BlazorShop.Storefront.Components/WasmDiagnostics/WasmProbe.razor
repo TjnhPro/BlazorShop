@@ -1,0 +1,23 @@
+<div data-wasm-probe
+     class="fixed bottom-3 right-3 z-[120] flex items-center gap-2 rounded border border-emerald-500/30 bg-neutral-950/90 px-3 py-2 text-xs text-white shadow-lg">
+    <span data-wasm-probe-runtime>@RuntimeLabel</span>
+    <button type="button"
+            data-wasm-probe-button
+            class="rounded bg-emerald-500 px-2 py-1 font-semibold text-neutral-950 hover:bg-emerald-400"
+            @onclick="Increment">
+        Count @_count
+    </button>
+</div>
+
+@code {
+    private int _count;
+
+    private static string RuntimeLabel => OperatingSystem.IsBrowser()
+        ? "WASM active"
+        : "SSR prerender";
+
+    private void Increment()
+    {
+        _count++;
+    }
+}

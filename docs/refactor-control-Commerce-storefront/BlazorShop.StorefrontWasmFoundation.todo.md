@@ -117,12 +117,13 @@ Verification:
 
 ## Phase 2 - Add Storefront Components RCL
 
-- [ ] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components`.
-- [ ] Use a Razor Class Library style project targeting `net10.0`.
-- [ ] Set namespace/root namespace to `BlazorShop.Storefront.Components`.
-- [ ] Add `_Imports.razor` for component-level usings.
-- [ ] Add a small `WasmDiagnostics/WasmProbe.razor` component.
-- [ ] Keep the component free of business logic and API calls.
+- [x] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.Components`.
+- [x] Use a Razor Class Library style project targeting `net10.0`.
+- [x] Set namespace/root namespace to `BlazorShop.Storefront.Components`.
+- [x] Add `_Imports.razor` for component-level usings.
+- [x] Add a small `WasmDiagnostics/WasmProbe.razor` component.
+- [x] Keep the component free of business logic and API calls.
+- [x] Add the project to `BlazorShop.sln`.
 
 Probe behavior:
 
@@ -139,7 +140,7 @@ Expected files:
 
 Verification:
 
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj`
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj`
 
 ## Phase 3 - Add Storefront WASM Project
 
