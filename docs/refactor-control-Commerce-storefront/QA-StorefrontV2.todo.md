@@ -72,16 +72,16 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 
 ## WASM Foundation
 
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj`
-- [ ] `dotnet build BlazorShop.sln`
-- [ ] Existing SSR Storefront route returns HTML before hydration.
-- [ ] `_framework/blazor.web.js` loads from Storefront V2.
-- [ ] WASM boot resources load from Storefront V2.
-- [ ] Development-only `WasmProbe` renders on an existing route.
-- [ ] `WasmProbe` button increments without a full page reload.
-- [ ] `storefrontCommerce.js` still initializes cart/toast behavior.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj`. 2026-07-13: passed.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj`. 2026-07-13: passed.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj`. 2026-07-13: passed after adding `MapStaticAssets()`.
+- [x] `dotnet build BlazorShop.sln`. 2026-07-13: passed with existing package vulnerability warnings.
+- [x] Existing SSR Storefront route returns HTML before hydration. 2026-07-13: `GET http://localhost:18598/signin` returned 200 and included `data-wasm-probe`.
+- [x] `_framework/blazor.web.js` loads from Storefront V2. 2026-07-13: returned HTTP 200 after adding `MapStaticAssets()`.
+- [x] WASM boot resources load from Storefront V2. 2026-07-13: server log showed `_framework/BlazorShop.Storefront.Components.*.wasm` and resource collection assets returned 200.
+- [x] Development-only `WasmProbe` renders on an existing route. 2026-07-13: Playwright MCP found `WASM active` on `/signin`.
+- [x] `WasmProbe` button increments without a full page reload. 2026-07-13: Playwright MCP clicked the probe button and verified `Count 1`.
+- [x] `storefrontCommerce.js` still initializes cart/toast behavior. 2026-07-13: `/signin` HTML still included `js/storefrontCommerce.js`; no browser console errors beyond Blazor debug hotkey info.
 
 ## Runtime Smoke
 

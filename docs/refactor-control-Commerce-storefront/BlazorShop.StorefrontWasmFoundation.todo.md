@@ -222,19 +222,19 @@ Verification:
 
 ## Phase 6 - Runtime Smoke
 
-- [ ] Start Storefront V2 on its existing local port.
-- [ ] Open an existing Storefront route.
-- [ ] Confirm no new page is required to test WASM.
-- [ ] Confirm the Development-only probe is visible only in Development.
-- [ ] Click the probe button.
-- [ ] Confirm the counter updates without navigation.
-- [ ] Confirm browser console has no Blazor boot errors.
+- [x] Start Storefront V2 on its existing local port.
+- [x] Open an existing Storefront route.
+- [x] Confirm no new page is required to test WASM.
+- [x] Confirm the Development-only probe is visible only in Development.
+- [x] Click the probe button.
+- [x] Confirm the counter updates without navigation.
+- [x] Confirm browser console has no Blazor boot errors.
 
 Optional network checks:
 
-- [ ] `_framework/blazor.web.js` returns 200.
-- [ ] `_framework/blazor.boot.json` returns 200.
-- [ ] Storefront WASM assemblies load from the Storefront V2 host.
+- [x] `_framework/blazor.web.js` returns 200.
+- [n/a] `_framework/blazor.boot.json` returns 200. Direct URL returned 404 in this host shape; browser QA and server logs verified the actual WASM assets loaded through generated framework resources.
+- [x] Storefront WASM assemblies load from the Storefront V2 host.
 
 ## Non-Goals
 
@@ -260,13 +260,13 @@ Optional network checks:
 
 ## Definition Of Done
 
-- [ ] `BlazorShop.Storefront.Components` exists and builds.
-- [ ] `BlazorShop.Storefront.WASM` exists and builds.
-- [ ] `BlazorShop.Storefront.V2` hosts Interactive WebAssembly components.
-- [ ] One development-only WASM probe hydrates and handles a click event.
-- [ ] Existing Storefront V2 routes remain SSR-first.
-- [ ] No Commerce Node or Control Plane API changes were required.
-- [ ] `QA-StorefrontV2.todo.md` contains WASM Foundation QA checks.
+- [x] `BlazorShop.Storefront.Components` exists and builds.
+- [x] `BlazorShop.Storefront.WASM` exists and builds.
+- [x] `BlazorShop.Storefront.V2` hosts Interactive WebAssembly components.
+- [x] One development-only WASM probe hydrates and handles a click event.
+- [x] Existing Storefront V2 routes remain SSR-first.
+- [x] No Commerce Node or Control Plane API changes were required.
+- [x] `QA-StorefrontV2.todo.md` contains WASM Foundation QA checks.
 
 ## Decision Audit Trail
 

@@ -73,6 +73,7 @@ app.Use(async (context, next) =>
     await next();
 });
 app.UseAntiforgery();
+app.MapStaticAssets();
 app.MapDefaultEndpoints();
 app.MapPost(StorefrontRoutes.SignIn, async (
     [FromForm] StorefrontLoginForm form,
