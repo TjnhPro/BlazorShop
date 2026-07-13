@@ -2,6 +2,7 @@ namespace BlazorShop.Application.ControlPlane.Catalog
 {
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
+    using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.DTOs.Admin.Inventory;
     using BlazorShop.Application.DTOs.Admin.Orders;
     using BlazorShop.Application.CommerceNode.ProductImports;
@@ -273,6 +274,26 @@ namespace BlazorShop.Application.ControlPlane.Catalog
             Guid storePublicId,
             Guid orderId,
             UpdateShippingStatusRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<GetOrder>> CompleteOrderAsync(
+            Guid storePublicId,
+            Guid orderId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<GetOrder>> CancelOrderAsync(
+            Guid storePublicId,
+            Guid orderId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StorePaymentMethodDto>>> ListPaymentMethodsAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StorePaymentMethodDto>> UpdatePaymentMethodAsync(
+            Guid storePublicId,
+            string paymentMethodKey,
+            UpdateStorePaymentMethodRequest request,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneCommerceCatalogResult<GetShipment>> GetShipmentAsync(

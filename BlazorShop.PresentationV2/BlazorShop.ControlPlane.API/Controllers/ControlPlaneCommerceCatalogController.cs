@@ -9,6 +9,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
+    using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs.Admin.Inventory;
     using BlazorShop.Application.DTOs.Admin.Orders;
@@ -603,6 +604,38 @@ namespace BlazorShop.ControlPlane.API.Controllers
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.catalogService.UpdateOrderShippingStatusAsync(storePublicId, orderId, request, cancellationToken));
+        }
+
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/orders/{orderId:guid}/complete")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> CompleteOrder(Guid storePublicId, Guid orderId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.CompleteOrderAsync(storePublicId, orderId, cancellationToken));
+        }
+
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/orders/{orderId:guid}/cancel")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> CancelOrder(Guid storePublicId, Guid orderId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.CancelOrderAsync(storePublicId, orderId, cancellationToken));
+        }
+
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/payment-methods")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresRead)]
+        public async Task<IActionResult> ListPaymentMethods(Guid storePublicId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ListPaymentMethodsAsync(storePublicId, cancellationToken));
+        }
+
+        [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/payment-methods/{paymentMethodKey}")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> UpdatePaymentMethod(
+            Guid storePublicId,
+            string paymentMethodKey,
+            UpdateStorePaymentMethodRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.UpdatePaymentMethodAsync(storePublicId, paymentMethodKey, request, cancellationToken));
         }
 
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/orders/{orderId:guid}/shipment")]

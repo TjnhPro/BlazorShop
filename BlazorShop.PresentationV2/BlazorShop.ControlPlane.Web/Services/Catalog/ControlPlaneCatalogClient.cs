@@ -7,6 +7,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
+    using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs.Admin.Inventory;
     using BlazorShop.Application.DTOs.Admin.Orders;
@@ -295,6 +296,26 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             Guid storePublicId,
             Guid orderId,
             UpdateShippingStatusRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<GetOrder>> CompleteOrderAsync(
+            Guid storePublicId,
+            Guid orderId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<GetOrder>> CancelOrderAsync(
+            Guid storePublicId,
+            Guid orderId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<IReadOnlyList<StorePaymentMethodDto>>> ListPaymentMethodsAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StorePaymentMethodDto>> UpdatePaymentMethodAsync(
+            Guid storePublicId,
+            string paymentMethodKey,
+            UpdateStorePaymentMethodRequest request,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneClientResult<GetShipment>> GetShipmentAsync(
@@ -914,6 +935,51 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
                 CommerceRoute(storePublicId, $"orders/{orderId:D}/shipping-status"),
                 request,
                 "Unable to update shipping status.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<GetOrder>> CompleteOrderAsync(
+            Guid storePublicId,
+            Guid orderId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<GetOrder>(
+                CommerceRoute(storePublicId, $"orders/{orderId:D}/complete"),
+                "Unable to complete order.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<GetOrder>> CancelOrderAsync(
+            Guid storePublicId,
+            Guid orderId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<GetOrder>(
+                CommerceRoute(storePublicId, $"orders/{orderId:D}/cancel"),
+                "Unable to cancel order.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<IReadOnlyList<StorePaymentMethodDto>>> ListPaymentMethodsAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<IReadOnlyList<StorePaymentMethodDto>>(
+                CommerceRoute(storePublicId, "payment-methods"),
+                "Unable to load payment methods.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StorePaymentMethodDto>> UpdatePaymentMethodAsync(
+            Guid storePublicId,
+            string paymentMethodKey,
+            UpdateStorePaymentMethodRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<UpdateStorePaymentMethodRequest, StorePaymentMethodDto>(
+                CommerceRoute(storePublicId, $"payment-methods/{Uri.EscapeDataString(paymentMethodKey)}"),
+                request,
+                "Unable to update payment method.",
                 cancellationToken);
         }
 

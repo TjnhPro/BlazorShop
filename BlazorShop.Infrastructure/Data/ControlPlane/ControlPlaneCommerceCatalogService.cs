@@ -7,6 +7,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using BlazorShop.Application.ControlPlane.Catalog;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
+    using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.DTOs.Admin.Inventory;
@@ -668,6 +669,58 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/orders/{orderId:D}/shipping-status",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<GetOrder>> CompleteOrderAsync(
+            Guid storePublicId,
+            Guid orderId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<GetOrder>(
+                storePublicId,
+                HttpMethod.Post,
+                $"api/commerce/admin/orders/{orderId:D}/complete",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<GetOrder>> CancelOrderAsync(
+            Guid storePublicId,
+            Guid orderId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<GetOrder>(
+                storePublicId,
+                HttpMethod.Post,
+                $"api/commerce/admin/orders/{orderId:D}/cancel",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StorePaymentMethodDto>>> ListPaymentMethodsAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<IReadOnlyList<StorePaymentMethodDto>>(
+                storePublicId,
+                HttpMethod.Get,
+                "api/commerce/admin/payment-methods",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<StorePaymentMethodDto>> UpdatePaymentMethodAsync(
+            Guid storePublicId,
+            string paymentMethodKey,
+            UpdateStorePaymentMethodRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<StorePaymentMethodDto>(
+                storePublicId,
+                HttpMethod.Put,
+                $"api/commerce/admin/payment-methods/{Uri.EscapeDataString(paymentMethodKey)}",
                 request,
                 cancellationToken);
         }
