@@ -134,7 +134,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] `/pages/{slug}` renders published page title. 2026-07-12: Playwright MCP visible browser rendered `QA Dynamic Page 20260712034014` at `/pages/qa-dynamic-page-20260712034014`.
 - [x] `/pages/{slug}` renders intro. 2026-07-12: Playwright MCP visible browser rendered `QA intro marker 20260712034014`.
 - [x] `/pages/{slug}` renders body HTML. 2026-07-12: Playwright MCP visible browser rendered `QA body marker 20260712034014` and list body content; screenshot saved at `.gstack/qa-reports/screenshots/storefront-page-qa-dynamic-page-20260712034014.png`.
-- [ ] Local image path in body renders.
+- [x] Local image path in body renders. 2026-07-13: investigated `qa-dynamic-page-20260712034014`; Storefront V2 now proxies `/media/assets/...` and Playwright network showed page `200` plus image `200`.
 - [ ] HTTPS anchor link renders.
 - [x] Missing page returns 404. 2026-07-12: `GET /pages/non-existing-page-qa` returned 404 with not-found content.
 - [x] Draft page returns 404. 2026-07-12: CommerceNode internal API returned 404 for `qa-draft-page-20260712034014`; draft was not rendered publicly.

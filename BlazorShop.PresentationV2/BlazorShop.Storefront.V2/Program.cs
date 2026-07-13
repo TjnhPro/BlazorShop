@@ -274,33 +274,27 @@ app.MapGet("/media/products/{mediaPublicId:guid}", async (
     IConfiguration configuration,
     CancellationToken cancellationToken) =>
 {
-    var storeKey = ResolveStoreKey(configuration);
-    if (string.IsNullOrWhiteSpace(storeKey))
-    {
-        return Results.NotFound();
-    }
-
-    var client = httpClientFactory.CreateClient();
-    var targetUri = new Uri(
-        ResolveCommerceNodeBaseAddress(configuration),
-        $"media/products/{mediaPublicId:D}{httpContext.Request.QueryString}");
-
-    using var request = new HttpRequestMessage(HttpMethod.Get, targetUri);
-    request.Headers.TryAddWithoutValidation("X-Store-Key", storeKey);
-
-    using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-    if (!response.IsSuccessStatusCode)
-    {
-        return Results.StatusCode((int)response.StatusCode);
-    }
-
-    CopyHeaderIfPresent(response, httpContext.Response, "Cache-Control");
-    CopyHeaderIfPresent(response, httpContext.Response, "ETag");
-    CopyHeaderIfPresent(response, httpContext.Response, "Last-Modified");
-
-    var content = await response.Content.ReadAsByteArrayAsync(cancellationToken);
-    var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
-    return Results.File(content, contentType);
+    return await ProxyCommerceNodeMediaAsync(
+        $"media/products/{mediaPublicId:D}",
+        httpContext,
+        httpClientFactory,
+        configuration,
+        cancellationToken);
+});
+app.MapGet("/media/assets/{assetPublicId:guid}/{fileName}", async (
+    Guid assetPublicId,
+    string fileName,
+    HttpContext httpContext,
+    IHttpClientFactory httpClientFactory,
+    IConfiguration configuration,
+    CancellationToken cancellationToken) =>
+{
+    return await ProxyCommerceNodeMediaAsync(
+        $"media/assets/{assetPublicId:D}/{Uri.EscapeDataString(fileName)}",
+        httpContext,
+        httpClientFactory,
+        configuration,
+        cancellationToken);
 });
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
@@ -329,6 +323,42 @@ static Uri ResolveCommerceNodeBaseAddress(IConfiguration configuration)
         Query = string.Empty,
         Fragment = string.Empty,
     }.Uri;
+}
+
+static async Task<IResult> ProxyCommerceNodeMediaAsync(
+    string mediaPath,
+    HttpContext httpContext,
+    IHttpClientFactory httpClientFactory,
+    IConfiguration configuration,
+    CancellationToken cancellationToken)
+{
+    var storeKey = ResolveStoreKey(configuration);
+    if (string.IsNullOrWhiteSpace(storeKey))
+    {
+        return Results.NotFound();
+    }
+
+    var client = httpClientFactory.CreateClient();
+    var targetUri = new Uri(
+        ResolveCommerceNodeBaseAddress(configuration),
+        $"{mediaPath}{httpContext.Request.QueryString}");
+
+    using var request = new HttpRequestMessage(HttpMethod.Get, targetUri);
+    request.Headers.TryAddWithoutValidation("X-Store-Key", storeKey);
+
+    using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+    if (!response.IsSuccessStatusCode)
+    {
+        return Results.StatusCode((int)response.StatusCode);
+    }
+
+    CopyHeaderIfPresent(response, httpContext.Response, "Cache-Control");
+    CopyHeaderIfPresent(response, httpContext.Response, "ETag");
+    CopyHeaderIfPresent(response, httpContext.Response, "Last-Modified");
+
+    var content = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+    var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
+    return Results.File(content, contentType);
 }
 
 static void CopyHeaderIfPresent(HttpResponseMessage source, HttpResponse destination, string headerName)
