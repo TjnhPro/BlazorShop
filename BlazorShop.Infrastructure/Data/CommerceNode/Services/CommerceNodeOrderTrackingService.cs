@@ -60,12 +60,22 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             order.ShippingStatus = shippingStatus;
-            order.ShippedOn = shippedOn ?? order.ShippedOn;
-            order.DeliveredOn = deliveredOn ?? order.DeliveredOn;
+            order.ShippedOn = shippedOn.HasValue ? EnsureUtc(shippedOn.Value) : order.ShippedOn;
+            order.DeliveredOn = deliveredOn.HasValue ? EnsureUtc(deliveredOn.Value) : order.DeliveredOn;
             order.LastTrackingUpdate = DateTime.UtcNow;
             await this.context.SaveChangesAsync();
 
             return true;
+        }
+
+        private static DateTime EnsureUtc(DateTime value)
+        {
+            return value.Kind switch
+            {
+                DateTimeKind.Utc => value,
+                DateTimeKind.Local => value.ToUniversalTime(),
+                _ => DateTime.SpecifyKind(value, DateTimeKind.Utc),
+            };
         }
 
         private async Task<Guid?> ResolveCurrentStoreIdAsync()
