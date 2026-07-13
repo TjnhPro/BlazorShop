@@ -16,7 +16,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
         {
             if (response.Success)
             {
-                return this.Ok(CommerceNodeApiResponse<object>.Succeeded(new { response.Id }, NormalizeMessage(response.Message)));
+                return this.Ok(CommerceNodeApiResponse<object>.Succeeded(response.Payload ?? new { response.Id }, NormalizeMessage(response.Message)));
             }
 
             return this.BadRequest(CommerceNodeApiResponse<object>.Failed(NormalizeMessage(response.Message)));

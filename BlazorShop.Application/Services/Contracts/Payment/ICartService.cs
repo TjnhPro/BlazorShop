@@ -13,6 +13,8 @@
 
         Task<ServiceResponse> CheckoutAsync(Checkout checkout, string? userId);
 
+        Task<ServiceResponse> CheckoutAsync(StorefrontCheckoutRequest checkout, string? userId);
+
         Task<IEnumerable<GetOrderItem>> GetOrderItemsAsync();
 
         Task<IEnumerable<GetOrderItem>> GetCheckoutHistoryByUserId(string userId);

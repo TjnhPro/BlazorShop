@@ -23,14 +23,10 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpPost("checkout")]
-        public async Task<IActionResult> Checkout(Checkout checkout)
+        [AllowAnonymous]
+        public async Task<IActionResult> Checkout(StorefrontCheckoutRequest checkout)
         {
             var userId = this.GetCurrentCustomerId();
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                return this.Unauthorized(CommerceNodeApiResponse<object>.Failed("Customer identity was not found."));
-            }
-
             var result = await this.cartService.CheckoutAsync(checkout, userId);
             return this.FromServiceResponse(result);
         }
