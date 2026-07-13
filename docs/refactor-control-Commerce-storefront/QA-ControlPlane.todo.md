@@ -171,19 +171,19 @@ Status legend:
 
 - [x] ControlPlane API builds after storefront page gateway changes. 2026-07-11: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` passed.
 - [x] ControlPlane Web builds after storefront page admin UI changes. 2026-07-11: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` passed.
-- [ ] Apply `ControlPlaneCommercePagePermissions` migration to ControlPlane PostgreSQL on port `5433`.
-- [ ] Pages nav item renders under Commerce Admin.
-- [ ] Pages list loads after selecting a store.
-- [ ] Pages list calls ControlPlane API only.
-- [ ] Browser network has no direct CommerceNode page API calls.
-- [ ] Page list uses `pageNumber/pageSize`.
-- [ ] Search title works.
-- [ ] Search slug works.
-- [ ] Status filter works.
-- [ ] Create draft page works.
+- [x] Apply `ControlPlaneCommercePagePermissions` migration to ControlPlane PostgreSQL on port `5433`. 2026-07-12: `run-v2-local.ps1` startup migration applied `20260711164138_ControlPlaneCommercePagePermissions` to `blazorshop_controlplane_v2_local`.
+- [x] Pages nav item renders under Commerce Admin. 2026-07-12: Playwright MCP visible browser showed `Pages` nav item and loaded `/commerce-admin/pages`.
+- [x] Pages list loads after selecting a store. 2026-07-12: selected `Default QA Store (default)` and list loaded `QA Dynamic Page 20260712034014` plus draft row.
+- [x] Pages list calls ControlPlane API only. 2026-07-12: browser resource capture showed only `localhost:5280/api/controlplane/commerce/.../pages` calls from ControlPlane Web.
+- [x] Browser network has no direct CommerceNode page API calls. 2026-07-12: Playwright performance resource capture showed zero `localhost:5180` calls from ControlPlane Web during list/create/reload.
+- [x] Page list uses `pageNumber/pageSize`. 2026-07-12: browser resource capture included `pages?pageNumber=1&pageSize=25&status=all`; UI showed `Page 1 of 1 - 2 total`.
+- [x] Search title works. 2026-07-12: Playwright UI search for `Dynamic` returned `QA Dynamic Page 20260712034014`.
+- [x] Search slug works. 2026-07-12: Playwright UI search for `qa-dynamic-page` returned `QA Dynamic Page 20260712034014`.
+- [x] Status filter works. 2026-07-12: Playwright UI filter `published` returned only published page; filter `draft` returned only `QA Draft Page 20260712034014`.
+- [x] Create draft page works. 2026-07-12: CommerceNode admin API created `qa-draft-page-20260712034014` with `isPublished=false`; ControlPlane list displayed it as `Draft`.
 - [ ] Edit page works.
-- [ ] Publish page works.
-- [ ] Include in sitemap toggle works.
+- [x] Publish page works. 2026-07-12: ControlPlane UI created `qa-dynamic-page-20260712034014` with `Published` status and Storefront rendered it at `/pages/qa-dynamic-page-20260712034014`.
+- [x] Include in sitemap toggle works. 2026-07-12: ControlPlane UI created `qa-dynamic-page-20260712034014` with `Included`; Storefront `/sitemap.xml` contained `/pages/qa-dynamic-page-20260712034014`.
 - [ ] Archive page works.
 - [ ] API validation messages display from response message.
 - [ ] User without `commerce.pages.read` cannot list/view pages.

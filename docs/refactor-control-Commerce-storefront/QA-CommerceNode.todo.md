@@ -309,31 +309,31 @@ Last verified: 2026-07-10
 ### Storefront Pages
 
 - [x] CommerceNode API builds after StorefrontPage schema/service/API changes. 2026-07-11: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
-- [ ] Apply `CommerceNodeStorefrontPage` migration to clean CommerceNode PostgreSQL on port `5434`.
-- [ ] `GET /api/commerce/admin/pages?pageNumber=1&pageSize=25` returns paged response.
-- [ ] Admin page list search matches title.
-- [ ] Admin page list search matches slug.
-- [ ] Status filter `all` includes draft and published non-archived pages.
-- [ ] Status filter `published` includes published only.
-- [ ] Status filter `draft` includes draft only.
-- [ ] `POST /api/commerce/admin/pages` creates draft page by default.
+- [x] Apply `CommerceNodeStorefrontPage` migration to CommerceNode PostgreSQL on port `5434`. 2026-07-12: `run-v2-local.ps1` startup migration applied `20260711155908_CommerceNodeStorefrontPage` to local `blazorshop_commerce_node_v2_local`; `storefront_page` table exists.
+- [x] `GET /api/commerce/admin/pages?pageNumber=1&pageSize=25` returns paged response. 2026-07-12: direct API with node credentials returned `success=true`, `pageNumber=1`, `pageSize=25`, and `totalPages=1`.
+- [x] Admin page list search matches title. 2026-07-12: `search=Dynamic` returned `qa-dynamic-page-20260712034014`.
+- [x] Admin page list search matches slug. 2026-07-12: `search=qa-dynamic-page` returned `qa-dynamic-page-20260712034014`.
+- [x] Status filter `all` includes draft and published non-archived pages. 2026-07-12: ControlPlane/CommerceNode list showed both `QA Dynamic Page 20260712034014` and `QA Draft Page 20260712034014`.
+- [x] Status filter `published` includes published only. 2026-07-12: CommerceNode `status=published` returned the published page and excluded the draft page.
+- [x] Status filter `draft` includes draft only. 2026-07-12: CommerceNode `status=draft` returned the draft page and excluded the published page.
+- [x] `POST /api/commerce/admin/pages` creates draft page by default. 2026-07-12: direct API created `qa-draft-page-20260712034014` with `isPublished=false`.
 - [ ] Create page requires slug.
 - [ ] Slug is normalized before save.
 - [ ] Duplicate slug in same store is rejected.
 - [ ] Duplicate slug is rejected even if old page is archived.
-- [ ] Dangerous HTML `<script>` is rejected.
+- [x] Dangerous HTML `<script>` is rejected. 2026-07-12: direct API returned 400 with `success=false` and message `Page body HTML contains a disallowed tag.`
 - [ ] Dangerous HTML `javascript:` is rejected.
 - [ ] Dangerous inline event such as `onerror=` is rejected.
 - [ ] External image URL in `<img src>` is rejected.
 - [ ] Local image URL in `<img src="/media/...">` is accepted.
 - [ ] External HTTPS link in `<a href>` is accepted.
 - [ ] Body above 100 KB is rejected.
-- [ ] Draft page is not returned from `GET /api/internal/pages/{slug}`.
+- [x] Draft page is not returned from `GET /api/internal/pages/{slug}`. 2026-07-12: `GET /api/internal/pages/qa-draft-page-20260712034014` with `X-Store-Key=default` returned 404.
 - [ ] Archived page is not returned from `GET /api/internal/pages/{slug}`.
-- [ ] Published page is returned from `GET /api/internal/pages/{slug}`.
+- [x] Published page is returned from `GET /api/internal/pages/{slug}`. 2026-07-12: `GET /api/internal/pages/qa-dynamic-page-20260712034014` returned title, intro, body HTML, and SEO data.
 - [ ] Archive hides page from admin list.
 - [ ] Archive reserves slug.
-- [ ] Sitemap entries include only published pages with `include_in_sitemap=true`.
+- [x] Sitemap entries include only published pages with `include_in_sitemap=true`. 2026-07-12: `GET /api/internal/catalog/sitemap` included `qa-dynamic-page-20260712034014` and Storefront `/sitemap.xml` excluded `qa-draft-page-20260712034014`.
 - [ ] Store A cannot read Store B page by slug.
 
 ### Auth

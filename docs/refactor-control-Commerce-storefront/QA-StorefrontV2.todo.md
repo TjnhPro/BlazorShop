@@ -131,20 +131,20 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 ## Dynamic Storefront Pages
 
 - [x] Storefront V2 builds after dynamic StorefrontPage rendering changes. 2026-07-11: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed.
-- [ ] `/pages/{slug}` renders published page title.
-- [ ] `/pages/{slug}` renders intro.
-- [ ] `/pages/{slug}` renders body HTML.
+- [x] `/pages/{slug}` renders published page title. 2026-07-12: Playwright MCP visible browser rendered `QA Dynamic Page 20260712034014` at `/pages/qa-dynamic-page-20260712034014`.
+- [x] `/pages/{slug}` renders intro. 2026-07-12: Playwright MCP visible browser rendered `QA intro marker 20260712034014`.
+- [x] `/pages/{slug}` renders body HTML. 2026-07-12: Playwright MCP visible browser rendered `QA body marker 20260712034014` and list body content; screenshot saved at `.gstack/qa-reports/screenshots/storefront-page-qa-dynamic-page-20260712034014.png`.
 - [ ] Local image path in body renders.
 - [ ] HTTPS anchor link renders.
-- [ ] Missing page returns 404.
-- [ ] Draft page returns 404.
+- [x] Missing page returns 404. 2026-07-12: `GET /pages/non-existing-page-qa` returned 404 with not-found content.
+- [x] Draft page returns 404. 2026-07-12: CommerceNode internal API returned 404 for `qa-draft-page-20260712034014`; draft was not rendered publicly.
 - [ ] Archived page returns 404.
 - [ ] CommerceNode API unavailable renders service unavailable, not 404.
-- [ ] Page SEO uses page meta fields.
-- [ ] Sitemap includes `/pages/{slug}` when published and included.
-- [ ] Sitemap excludes draft page.
+- [x] Page SEO uses page meta fields. 2026-07-12: Playwright page title was `QA Dynamic Page 20260712034014 SEO`, coming from the page meta title.
+- [x] Sitemap includes `/pages/{slug}` when published and included. 2026-07-12: `GET /sitemap.xml` contained `/pages/qa-dynamic-page-20260712034014`.
+- [x] Sitemap excludes draft page. 2026-07-12: `GET /sitemap.xml` did not contain `/pages/qa-draft-page-20260712034014`.
 - [ ] Sitemap excludes published page with `include_in_sitemap=false`.
-- [ ] Old `/privacy`, `/faq`, `/terms`, `/customer-service`, `/about-us` routes return 404.
+- [x] Old `/privacy`, `/faq`, `/terms`, `/customer-service`, `/about-us` routes return 404. 2026-07-12: all five routes returned HTTP 404.
 
 ## Catalog Search MVP
 
