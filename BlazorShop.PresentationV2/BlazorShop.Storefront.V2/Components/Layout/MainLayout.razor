@@ -1,4 +1,5 @@
 @inherits LayoutComponentBase
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment HostEnvironment
 
 <div class="bs-storefront-shell">
     <StorefrontHeader />
@@ -30,6 +31,11 @@
     <main class="bs-storefront-main flex-1">
         @Body
     </main>
+
+    @if (HostEnvironment.IsDevelopment())
+    {
+        <WasmProbe @rendermode="InteractiveWebAssembly" />
+    }
 
     <footer class="border-t border-white/10 bg-neutral-900 text-neutral-100">
         <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">

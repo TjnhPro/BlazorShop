@@ -165,10 +165,10 @@ Verification:
 
 ## Phase 4 - Wire Storefront V2 Host
 
-- [ ] Add project references from `BlazorShop.Storefront.V2` to:
+- [x] Add project references from `BlazorShop.Storefront.V2` to:
   - `BlazorShop.Storefront.Components`
   - `BlazorShop.Storefront.WASM`
-- [ ] Update `Program.cs` Razor component registration:
+- [x] Update `Program.cs` Razor component registration:
 
 ```csharp
 builder.Services
@@ -176,17 +176,17 @@ builder.Services
     .AddInteractiveWebAssemblyComponents();
 ```
 
-- [ ] Update component endpoint mapping:
+- [x] Update component endpoint mapping:
 
 ```csharp
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode();
 ```
 
-- [ ] Add additional assemblies only if routing/component discovery requires it after build validation.
-- [ ] Add `_framework/blazor.web.js` to `App.razor`.
-- [ ] Add the development-only `WasmProbe` to `Components/Layout/MainLayout.razor`.
-- [ ] Keep every existing route and page unchanged.
+- [x] Add additional assemblies only if routing/component discovery requires it after build validation.
+- [x] Add `_framework/blazor.web.js` to `App.razor`.
+- [x] Add the development-only `WasmProbe` to `Components/Layout/MainLayout.razor`.
+- [x] Keep every existing route and page unchanged.
 
 Expected files:
 
@@ -198,8 +198,8 @@ Expected files:
 
 Verification:
 
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj`
-- [ ] Existing Storefront pages still build without route changes.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj`
+- [x] Existing Storefront pages still build without route changes.
 
 ## Phase 5 - QA Checklist Update
 

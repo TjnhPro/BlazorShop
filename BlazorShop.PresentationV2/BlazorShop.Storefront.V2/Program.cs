@@ -8,6 +8,7 @@ using BlazorShop.Storefront.Options;
 using BlazorShop.Storefront;
 using BlazorShop.Storefront.Services;
 using BlazorShop.Storefront.Services.Contracts;
+using BlazorShop.Storefront.WASM;
 
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +31,9 @@ builder.Services.AddOptions<ClientAppOptions>()
 builder.Services.AddOptions<StorefrontPublicUrlOptions>()
     .Bind(builder.Configuration.GetSection(StorefrontPublicUrlOptions.SectionName))
     .ValidateOnStart();
-builder.Services.AddRazorComponents();
+builder.Services
+    .AddRazorComponents()
+    .AddInteractiveWebAssemblyComponents();
 builder.Services.AddSingleton<ISeoMetadataBuilder, SeoMetadataBuilder>();
 builder.Services.AddScoped<IStorefrontClientAppUrlResolver, StorefrontClientAppUrlResolver>();
 builder.Services.AddScoped<IStorefrontPublicUrlResolver, StorefrontPublicUrlResolver>();
@@ -56,6 +59,11 @@ builder.Services.AddHttpClient<StorefrontApiClient>((serviceProvider, client) =>
 });
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseWebAssemblyDebugging();
+}
 
 app.UseStaticFiles();
 app.UseMiddleware<StorefrontPublicRedirectMiddleware>();
@@ -258,7 +266,9 @@ app.MapGet("/media/products/{mediaPublicId:guid}", async (
     var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
     return Results.File(content, contentType);
 });
-app.MapRazorComponents<App>();
+app.MapRazorComponents<App>()
+    .AddInteractiveWebAssemblyRenderMode()
+    .AddAdditionalAssemblies(typeof(BlazorShop.Storefront.WASM._Imports).Assembly);
 
 app.Run();
 
