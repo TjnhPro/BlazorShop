@@ -69,6 +69,7 @@
                             <th class="px-4 py-3">Customer</th>
                             <th class="px-4 py-3 text-right">Total</th>
                             <th class="px-4 py-3">Order status</th>
+                            <th class="px-4 py-3">Payment</th>
                             <th class="px-4 py-3">Shipping</th>
                             <th class="px-4 py-3">Created</th>
                         </tr>
@@ -87,6 +88,7 @@
                                 </td>
                                 <td class="px-4 py-3 text-right text-ink-700">@order.TotalAmount.ToString("0.00") @order.CurrencyCode</td>
                                 <td class="px-4 py-3"><StatusBadge Text="@order.Status" Tone="@StatusTone(order.Status)" /></td>
+                                <td class="px-4 py-3"><StatusBadge Text="@order.PaymentStatus" Tone="@PaymentTone(order.PaymentStatus)" /></td>
                                 <td class="px-4 py-3"><StatusBadge Text="@order.ShippingStatus" Tone="@ShippingTone(order.ShippingStatus)" /></td>
                                 <td class="px-4 py-3 text-ink-500">@order.CreatedOn.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
                             </tr>
@@ -117,7 +119,7 @@
     else
     {
         <div class="space-y-5">
-            <section class="grid gap-3 md:grid-cols-4">
+            <section class="grid gap-3 md:grid-cols-5">
                 <div class="rounded-md border border-ink-200 bg-ink-50 p-3">
                     <div class="text-xs font-semibold uppercase text-ink-500">Total</div>
                     <div class="mt-1 text-xl font-bold text-ink-900">@selectedOrder.TotalAmount.ToString("0.00")</div>
@@ -131,8 +133,44 @@
                     <div class="mt-2"><StatusBadge Text="@selectedOrder.Status" Tone="@StatusTone(selectedOrder.Status)" /></div>
                 </div>
                 <div class="rounded-md border border-ink-200 bg-ink-50 p-3">
+                    <div class="text-xs font-semibold uppercase text-ink-500">Payment</div>
+                    <div class="mt-2"><StatusBadge Text="@selectedOrder.PaymentStatus" Tone="@PaymentTone(selectedOrder.PaymentStatus)" /></div>
+                </div>
+                <div class="rounded-md border border-ink-200 bg-ink-50 p-3">
                     <div class="text-xs font-semibold uppercase text-ink-500">Shipping</div>
                     <div class="mt-2"><StatusBadge Text="@selectedOrder.ShippingStatus" Tone="@ShippingTone(selectedOrder.ShippingStatus)" /></div>
+                </div>
+            </section>
+
+            <section class="rounded-md border border-ink-200 p-4">
+                <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                    <div>
+                        <h2 class="text-sm font-semibold text-ink-900">Payment workflow</h2>
+                        <div class="mt-3 grid gap-3 text-sm md:grid-cols-3">
+                            <div>
+                                <div class="text-xs font-semibold uppercase text-ink-500">Method</div>
+                                <div class="mt-1 font-mono text-ink-800">@selectedOrder.PaymentMethodKey</div>
+                            </div>
+                            <div>
+                                <div class="text-xs font-semibold uppercase text-ink-500">Payment at</div>
+                                <div class="mt-1 text-ink-800">@FormatDate(selectedOrder.PaymentAt)</div>
+                            </div>
+                            <div>
+                                <div class="text-xs font-semibold uppercase text-ink-500">Completed at</div>
+                                <div class="mt-1 text-ink-800">@FormatDate(selectedOrder.CompletedAt)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="cp-button cp-button-primary justify-center" disabled="@(!CanCompleteSelectedOrder || isSaving)" @onclick="CompleteOrderAsync">
+                            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                            Complete
+                        </button>
+                        <button class="cp-button cp-button-secondary justify-center" disabled="@(!CanCancelSelectedOrder || isSaving)" @onclick="CancelOrderAsync">
+                            <i class="fa-solid fa-ban" aria-hidden="true"></i>
+                            Cancel
+                        </button>
+                    </div>
                 </div>
             </section>
 
@@ -252,6 +290,15 @@
     private bool HasStore => selectedStorePublicId.HasValue && selectedStorePublicId.Value != Guid.Empty;
 
     private bool CanNextPage => pageNumber * PageSize < totalCount;
+
+    private bool CanCompleteSelectedOrder => selectedOrder is not null
+        && string.Equals(selectedOrder.PaymentStatus, "paid", StringComparison.OrdinalIgnoreCase)
+        && !string.Equals(selectedOrder.OrderStatus, "complete", StringComparison.OrdinalIgnoreCase)
+        && !string.Equals(selectedOrder.OrderStatus, "cancelled", StringComparison.OrdinalIgnoreCase);
+
+    private bool CanCancelSelectedOrder => selectedOrder is not null
+        && !string.Equals(selectedOrder.OrderStatus, "complete", StringComparison.OrdinalIgnoreCase)
+        && !string.Equals(selectedOrder.OrderStatus, "cancelled", StringComparison.OrdinalIgnoreCase);
 
     protected override async Task OnInitializedAsync()
     {
@@ -424,6 +471,44 @@
         }
     }
 
+    private async Task CompleteOrderAsync()
+    {
+        if (!HasStore || selectedOrder is null)
+        {
+            return;
+        }
+
+        isSaving = true;
+        try
+        {
+            var result = await CatalogClient.CompleteOrderAsync(selectedStorePublicId!.Value, selectedOrder.Id);
+            await ApplyOrderResultAsync(result);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task CancelOrderAsync()
+    {
+        if (!HasStore || selectedOrder is null)
+        {
+            return;
+        }
+
+        isSaving = true;
+        try
+        {
+            var result = await CatalogClient.CancelOrderAsync(selectedStorePublicId!.Value, selectedOrder.Id);
+            await ApplyOrderResultAsync(result);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
     private async Task ApplyOrderResultAsync(ControlPlaneClientResult<GetOrder> result)
     {
         if (!result.Success || result.Data is null)
@@ -496,9 +581,20 @@
     {
         return status?.ToLowerInvariant() switch
         {
-            "paid" or "completed" or "succeeded" => "success",
+            "paid" or "complete" or "completed" or "succeeded" => "success",
             "cancelled" or "failed" => "danger",
             "pending" or "processing" => "warning",
+            _ => "neutral",
+        };
+    }
+
+    private static string PaymentTone(string? status)
+    {
+        return status?.ToLowerInvariant() switch
+        {
+            "paid" or "authorized" => "success",
+            "refunded" or "voided" => "danger",
+            "pending" or "partially_refunded" => "warning",
             _ => "neutral",
         };
     }
@@ -512,5 +608,10 @@
             "pendingshipment" or "pending" or "processing" => "warning",
             _ => "neutral",
         };
+    }
+
+    private static string FormatDate(DateTime? value)
+    {
+        return value.HasValue ? value.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "-";
     }
 }
