@@ -401,3 +401,28 @@ Latest ProductMedia QA result: 2026-07-10 CommerceNode API smoke passed for impo
 Latest test result: 2026-07-09 full solution test passed: 485 passed, 10 skipped. Independent API smoke passed for ControlPlane -> CommerceNode health probe, Commerce admin catalog/media, Storefront internal auth/cart/order, and admin order visibility.
 
 Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `run-v2-local.ps1 -DryRun` passed, and startup migration created/migrated disposable DB `blazorshop_commerce_node_startup_qa_20260711` with safe migration logs. Failure-policy and restart-idempotency checks remain open.
+
+## Checkout And Payment Foundation
+
+- [x] CommerceNode API builds after checkout/payment foundation changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
+- [ ] `PaymentMethods` seed contains `cod`, `stripe`, and `paypal`.
+- [ ] `bank_transfer` is not returned by Storefront payment methods.
+- [ ] Default store has `cod` enabled and `stripe/paypal` disabled.
+- [ ] `GET /api/internal/payments/methods` returns only enabled methods for current store.
+- [ ] `POST /api/internal/cart/checkout` with COD creates an order.
+- [ ] Created COD order has `order_status=processing`.
+- [ ] Created COD order has `payment_status=paid`.
+- [ ] Created COD order has `payment_method_key=cod`.
+- [ ] Created COD order has `payment_at`.
+- [ ] Created COD order has `payment_metadata_json`.
+- [ ] Created COD order has customer snapshot fields.
+- [ ] Created COD order has shipping address snapshot fields.
+- [ ] Disabled `stripe` checkout request returns `success=false`.
+- [ ] Unknown payment method key returns `success=false`.
+- [ ] Checkout creates customer when email does not exist.
+- [ ] Checkout attaches existing customer when email exists.
+- [ ] Admin order detail returns payment fields.
+- [ ] Admin mark complete succeeds for paid/shipped order.
+- [ ] Admin mark complete rejects unpaid order.
+- [ ] Store isolation blocks another store from reading/completing the order.
+- [ ] Audit log includes `Order.Completed`.

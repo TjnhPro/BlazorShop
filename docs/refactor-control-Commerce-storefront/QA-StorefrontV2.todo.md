@@ -337,3 +337,17 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Verify `Api:EnableLegacyFallback=true` only for emergency rollback and never in default config.
 - [x] Verify production config requires explicit `Api:BaseUrl`. 2026-07-09: `StorefrontOptionsValidators` enforce `Api:BaseUrl` outside Development when service discovery is absent.
 - [n/a] Verify public reverse proxy does not expose Commerce Node `api/internal/*` directly. No reverse proxy/deployment config is part of this local MVP QA run.
+
+## Checkout And Payment Foundation
+
+- [x] Storefront V2 builds after checkout/payment foundation changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed.
+- [ ] `/checkout` renders local Storefront V2 checkout page.
+- [ ] `/checkout` does not redirect to `/account/checkout`.
+- [ ] Empty cart checkout shows empty state.
+- [ ] Checkout page loads enabled payment methods.
+- [ ] COD is selected/available in MVP.
+- [ ] Required contact/shipping validation blocks submit.
+- [ ] COD checkout succeeds with visible order reference.
+- [ ] Cart cookie is cleared after checkout success.
+- [ ] Browser network shows no legacy API/Web requests.
+- [ ] Checkout page is noindex/private and absent from sitemap.

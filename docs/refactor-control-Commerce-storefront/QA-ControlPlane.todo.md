@@ -358,3 +358,15 @@ Status legend:
 | 2026-07-10 | Codex | ControlPlane Admin UX Completion implementation | Partial | Added Products, Product Imports, Categories, Variation Templates, Orders, Commerce Admin nav, and `/catalog` redirect. Build verification passed for ControlPlane Web/API and CommerceNode API. Live browser QA remains pending against a running ControlPlane + CommerceNode environment. |
 | 2026-07-11 | Codex | ControlPlane Admin UX Completion visible-browser QA | Passed | Used QA DB `blazorshop_controlplane_adminux_qa`, active CommerceNode store `default`, and Playwright MCP visible browser. Verified Commerce Admin nav, route redirect, products drawer/SEO/basic/inventory, product imports/template/error CSV/upload, categories, variation templates create/update/disable flows, orders/shipment, console cleanliness, and no direct Web calls to CommerceNode. Fixed shipment 404 noise for pending orders and Variation option/value empty-submit 400 noise. |
 | 2026-07-11 | Codex | ControlPlane startup database migration smoke | Partial | Build passed, `run-v2-local.ps1 -DryRun` passed, and ControlPlane API startup migrated clean disposable DB `blazorshop_controlplane_startup_qa_20260711` with safe migration logs. Failure-policy and restart-idempotency checks remain open. |
+
+## Checkout And Payment Admin Gateway
+
+- [x] ControlPlane API builds after checkout/payment gateway changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` passed.
+- [x] ControlPlane Web builds after checkout/payment admin UI changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` passed.
+- [ ] ControlPlane Web request capture confirms payment method admin page calls only ControlPlane API.
+- [ ] Payment Methods page loads store-scoped methods.
+- [ ] Payment Methods page can enable/disable a method.
+- [ ] Payment Methods page rejects invalid settings JSON via API message.
+- [ ] Orders drawer shows order/payment/shipping statuses separately.
+- [ ] Orders drawer Mark Complete calls ControlPlane API and updates order detail.
+- [ ] Orders drawer Cancel calls ControlPlane API and updates order detail.
