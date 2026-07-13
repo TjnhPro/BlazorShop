@@ -160,9 +160,18 @@ namespace BlazorShop.CommerceNode.API.Controllers
         {
             var normalizedBaseUrl = this.options.ImgproxyBaseUrl!.TrimEnd('/');
             var imgproxyFit = ImgproxyFitByRequestFit[query.Fit];
-            var physicalPath = this.ResolvePhysicalPath(asset.OriginalStoragePath).Replace('\\', '/');
-            var source = Uri.EscapeDataString($"local:///{physicalPath}");
+            var imgproxyPath = this.BuildImgproxyLocalPath(asset.OriginalStoragePath);
+            var source = Uri.EscapeDataString($"local:///{imgproxyPath}");
             return $"{normalizedBaseUrl}/insecure/rs:{imgproxyFit}:{query.Width ?? 0}:{query.Height ?? 0}/plain/{source}@{GetOutputFormat(asset, query)}";
+        }
+
+        private string BuildImgproxyLocalPath(string storagePath)
+        {
+            var normalizedStoragePath = storagePath.Replace('\\', '/').TrimStart('/');
+            var prefix = this.options.ImgproxyLocalPathPrefix?.Replace('\\', '/').Trim('/');
+            return string.IsNullOrWhiteSpace(prefix)
+                ? normalizedStoragePath
+                : $"{prefix}/{normalizedStoragePath}";
         }
 
         private string ResolvePhysicalPath(string storagePath)

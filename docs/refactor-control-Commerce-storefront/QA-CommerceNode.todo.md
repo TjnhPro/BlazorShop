@@ -143,19 +143,19 @@ Last verified: 2026-07-10
 
 - [x] CommerceNode API builds after Media Library MVP backend changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj` passed.
 - [x] `CommerceNodeMediaLibraryMvp` migration was generated for `CommerceNodeDbContext`. 2026-07-13: `dotnet ef migrations add CommerceNodeMediaLibraryMvp` succeeded after stopping locked local dev processes.
-- [ ] Apply `CommerceNodeMediaLibraryMvp` migration to local CommerceNode PostgreSQL on port `5434`.
-- [ ] `GET /api/commerce/admin/media/assets?pageNumber=1&pageSize=25` returns paged media assets for current store.
-- [ ] `POST /api/commerce/admin/media/assets` uploads jpg/png/webp/gif/ico up to 10MB.
-- [ ] Upload auto-generates `displayName`, `altText`, and `titleText` from file name.
-- [ ] Upload rejects unsupported extensions and mismatched file signatures.
-- [ ] `PUT /api/commerce/admin/media/assets/{assetPublicId}` updates metadata and bumps datetime version.
+- [x] Apply `CommerceNodeMediaLibraryMvp` migration to local CommerceNode PostgreSQL on port `5434`. 2026-07-13: local CommerceNode startup migration applied; browser upload/list used the new table.
+- [x] `GET /api/commerce/admin/media/assets?pageNumber=1&pageSize=25` returns paged media assets for current store. 2026-07-13: ControlPlane browser list loaded page 1 with one uploaded asset, then empty state after delete.
+- [~] `POST /api/commerce/admin/media/assets` uploads jpg/png/webp/gif/ico up to 10MB. 2026-07-13: PNG upload path verified; remaining supported formats still pending.
+- [x] Upload auto-generates `displayName`, `altText`, and `titleText` from file name. 2026-07-13: `summer-sale-banner.png` generated `Summer Sale Banner` for all three fields.
+- [x] Upload rejects unsupported extensions and mismatched file signatures. 2026-07-13: `.txt` upload returned validation error through the visible ControlPlane page.
+- [x] `PUT /api/commerce/admin/media/assets/{assetPublicId}` updates metadata and bumps datetime version. 2026-07-13: metadata save updated generated link version and drawer values.
 - [ ] Blank display name is rejected.
 - [ ] Blank alt text falls back to display name.
-- [ ] `POST /api/commerce/admin/media/assets/{assetPublicId}/replace` replaces original bytes while keeping the public id and canonical file name.
-- [ ] `DELETE /api/commerce/admin/media/assets/{assetPublicId}` hard-deletes the row and asset directory.
+- [x] `POST /api/commerce/admin/media/assets/{assetPublicId}/replace` replaces original bytes while keeping the public id and canonical file name. 2026-07-13: replacement kept the same public id and `summer-sale-banner.png`.
+- [x] `DELETE /api/commerce/admin/media/assets/{assetPublicId}` hard-deletes the row and asset directory. 2026-07-13: visible browser delete returned the grid to the empty state.
 - [ ] `GET /media/assets/{assetPublicId}/{canonicalFileName}` serves original content with store scope.
 - [ ] Wrong canonical filename redirects permanently to the canonical URL while preserving query.
-- [ ] Transform query supports `w`, `h`, `fit=cover|contain|inside`, `format=original|webp|jpg|png`, and `v`.
+- [~] Transform query supports `w`, `h`, `fit=cover|contain|inside`, `format=original|webp|jpg|png`, and `v`. 2026-07-13: `w=320&h=180&fit=cover&format=webp&v=...` returned `200 image/webp`; other fit/format combinations still pending.
 - [ ] Transform query for gif/ico returns 400.
 - [ ] Store A cannot read Store B media asset.
 

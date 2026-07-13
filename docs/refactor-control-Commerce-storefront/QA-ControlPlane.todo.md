@@ -194,16 +194,16 @@ Status legend:
 - [x] ControlPlane API builds after Media Library gateway changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj` passed after stopping the locked local ControlPlane API process.
 - [x] ControlPlane Web builds after Media Library page changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj` passed.
 - [x] Media Library nav item renders under Commerce Admin at `/commerce-admin/media-library`. 2026-07-13: route/page added and build passed.
-- [ ] Media Library list loads after selecting a store.
-- [ ] Media Library list calls ControlPlane API only.
-- [ ] Browser network capture shows no direct `api/commerce/*` or CommerceNode host calls.
-- [ ] Upload creates an asset and opens the asset drawer.
-- [ ] Grid thumbnail preview loads through ControlPlane API preview proxy.
-- [ ] Metadata save updates display name, alt text, title text, and generated version.
-- [ ] Replace file keeps the public id and canonical file name.
-- [ ] Delete asset removes it from the grid.
-- [ ] Link generator emits a local `/media/assets/{assetPublicId}/{canonicalFileName}` URL with transform query.
-- [ ] Link generator emits an `<img>` snippet with `alt`, optional `title`, `loading="lazy"`, and width/height when selected.
+- [x] Media Library list loads after selecting a store. 2026-07-13: visible browser loaded Default QA Store and showed empty/list states.
+- [x] Media Library list calls ControlPlane API only. 2026-07-13: browser HTTP logs used `/api/controlplane/commerce/.../media/assets`.
+- [x] Browser network capture shows no direct `api/commerce/*` or CommerceNode host calls. 2026-07-13: browser capture showed no direct `localhost:5180` calls during page/list/preview.
+- [x] Upload creates an asset and opens the asset drawer. 2026-07-13: PNG upload created `Summer Sale Banner` and opened the drawer.
+- [x] Grid thumbnail preview loads through ControlPlane API preview proxy. 2026-07-13: preview loaded as `data:image/webp` after fixing imgproxy local path.
+- [x] Metadata save updates display name, alt text, title text, and generated version. 2026-07-13: drawer showed edited QA metadata and link version updated.
+- [x] Replace file keeps the public id and canonical file name. 2026-07-13: replace kept the public id and `summer-sale-banner.png`, with a new version timestamp.
+- [x] Delete asset removes it from the grid. 2026-07-13: delete returned the page to `No media assets found`.
+- [x] Link generator emits a local `/media/assets/{assetPublicId}/{canonicalFileName}` URL with transform query. 2026-07-13: generated `/media/assets/.../summer-sale-banner.png?w=320&h=180&fit=cover&format=webp&v=...`.
+- [x] Link generator emits an `<img>` snippet with `alt`, optional `title`, `loading="lazy"`, and width/height when selected. 2026-07-13: snippet included edited alt/title, `width="320"`, `height="180"`, and lazy loading.
 
 ## Commerce Admin UX Completion
 

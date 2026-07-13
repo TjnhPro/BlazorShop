@@ -10,6 +10,8 @@ namespace BlazorShop.Application.CommerceNode.Media
 
         public string? ImgproxyBaseUrl { get; set; } = "http://localhost:8089";
 
+        public string? ImgproxyLocalPathPrefix { get; set; } = "assets";
+
         public bool UseImgproxy { get; set; } = true;
     }
 }
