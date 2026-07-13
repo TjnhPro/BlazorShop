@@ -19,6 +19,7 @@
 .clip-diagonal { clip-path: polygon(0 0, 100% 0, 95% 100%, 5% 100%); }
 .hero-bg { background: url('/images/banner-bg.jpg') center/cover no-repeat; }
 .text-shadow { text-shadow: 0 2px 8px rgba(0,0,0,.15); }
+h1[tabindex="-1"]:focus { outline: none; }
 
 .bs-product-shell {
   background: var(--bs-shell-bg, linear-gradient(180deg, #f8fafc 0%, #ffffff 100%));
