@@ -1,5 +1,52 @@
 namespace BlazorShop.Application.CommerceNode.Carts
 {
+    using BlazorShop.Application.DTOs.Product.ProductVariant;
+
+    public sealed record StorefrontCartCreateOrResumeRequest(
+        Guid StoreId,
+        string? Token = null,
+        Guid? CustomerId = null,
+        string? AppUserId = null);
+
+    public sealed record StorefrontCartResult(
+        StorefrontCartSessionDto Cart,
+        string? Token = null,
+        IReadOnlyList<StorefrontCartValidationIssueDto>? Issues = null);
+
+    public sealed record StorefrontCartAddLineRequest(
+        Guid StoreId,
+        string Token,
+        Guid ProductId,
+        Guid? ProductVariantId = null,
+        IReadOnlyList<ProductVariantAttributeDto>? SelectedAttributes = null,
+        string? PersonalizationHash = null,
+        string? PersonalizationJson = null,
+        Guid? ArtworkAssetId = null,
+        int? ArtworkVersion = null,
+        string? FulfillmentProviderKey = null,
+        int Quantity = 1,
+        string? CurrencyCode = null);
+
+    public sealed record StorefrontCartUpdateLineRequest(
+        Guid StoreId,
+        string Token,
+        Guid LineId,
+        int Quantity);
+
+    public sealed record StorefrontCartValidationResult(
+        Guid CartPublicId,
+        int Version,
+        bool IsValid,
+        decimal TotalAmount,
+        string CurrencyCode,
+        IReadOnlyList<StorefrontCartValidationIssueDto> Issues);
+
+    public sealed record StorefrontCartValidationIssueDto(
+        Guid? LineId,
+        Guid? ProductId,
+        string Code,
+        string Message);
+
     public sealed record StorefrontCartSessionCreateRequest(
         Guid StoreId,
         Guid? CustomerId = null,

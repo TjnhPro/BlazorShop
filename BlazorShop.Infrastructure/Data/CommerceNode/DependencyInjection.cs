@@ -139,6 +139,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<ICommerceStoreDomainResolver, CommerceStoreDomainResolver>();
             services.AddScoped<IStorefrontCustomerService, StorefrontCustomerService>();
             services.AddScoped<IStorefrontCartSessionService, StorefrontCartSessionService>();
+            services.AddScoped<IStorefrontCartService, StorefrontCartService>();
             services.AddScoped<IProductSeoService, ProductSeoService>();
             services.AddScoped<ICategorySeoService, CategorySeoService>();
             services.AddScoped<ISeoSettingsService, SeoSettingsService>();

@@ -101,6 +101,7 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Server cart session tables are created in `CommerceNodeDbContext` only. 2026-07-14: `CartSession`/`CartLine` entities and migration `CommerceNodeServerCartSessions` added; `StorefrontCartSessionServiceTests` passed 5/5.
 - [x] Store-scoped commerce customer profile is unique by `(StoreId, NormalizedEmail)` and does not require adding `StoreId` to `AppUser`. 2026-07-14: `CommerceCustomer`/`StorefrontCustomerService` added with Commerce Node migration `CommerceNodeStorefrontCustomers`; `StorefrontCustomerServiceTests` passed 5/5.
 - [x] Cart token lookup refuses cross-store token reuse without revealing another store's cart. 2026-07-14: `ResolveAsync_ReturnsNotFound_WhenTokenBelongsToDifferentStore` covers store + token hash lookup.
+- [x] Cart application service validates published/current-store product availability before mutating server cart. 2026-07-14: `StorefrontCartServiceTests` covers published add, unpublished/unavailable, wrong-store, invalid variant, minimum quantity, custom selected attributes, personalization line splitting, and revalidation after product unavailability.
 - [ ] Cart API rejects unpublished, archived, wrong-store, and invalid-variant products.
 - [ ] Checkout preview validates cart version, customer email/name, payment method, and shipping address without creating an order.
 - [ ] Place-order requires idempotency and returns the original result for duplicate retry.
