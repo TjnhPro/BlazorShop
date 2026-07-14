@@ -332,15 +332,15 @@ X-Store-Key header is required for legacy internal API.
 
 ### Phase 3 - Store Scope Resolver
 
-- [ ] Update `CommerceStoreContext` to resolve source by request group:
+- [x] Update `CommerceStoreContext` to resolve source by request group:
   - route value for `api/storefront/stores/{storeKey}/*`,
   - query for `api/commerce/admin/*`,
   - header for `api/internal/*`.
-- [ ] Add clear failure messages for missing scope.
-- [ ] Ensure new route groups do not read `X-Store-Key`.
-- [ ] Keep host/domain fallback out of this MVP phase unless needed by existing public media behavior.
-- [ ] Build CommerceNode API.
-- [ ] Commit resolver phase.
+- [x] Add clear failure messages for missing scope.
+- [x] Ensure new route groups do not read `X-Store-Key`.
+- [x] Keep host/domain fallback out of this MVP phase unless needed by existing public media behavior.
+- [x] Build CommerceNode API.
+- [x] Commit resolver phase.
 
 ### Phase 4 - Storefront Scoped Controllers
 
