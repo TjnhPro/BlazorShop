@@ -35,6 +35,7 @@
     <ProjectReference Include="..\BlazorShop.Presentation\BlazorShop.Web.Shared\BlazorShop.Web.Shared.csproj" />
     <ProjectReference Include="..\BlazorShop.Presentation\BlazorShop.Storefront\BlazorShop.Storefront.csproj" />
     <ProjectReference Include="..\BlazorShop.PresentationV2\BlazorShop.ControlPlane.API\BlazorShop.ControlPlane.API.csproj" Aliases="ControlPlaneApi" />
+    <ProjectReference Include="..\BlazorShop.PresentationV2\BlazorShop.CommerceNode.API\BlazorShop.CommerceNode.API.csproj" Aliases="CommerceNodeApi" />
     <ProjectReference Include="..\BlazorShop.PresentationV2\BlazorShop.Storefront.V2\BlazorShop.Storefront.V2.csproj" Aliases="StorefrontV2" />
   </ItemGroup>
 

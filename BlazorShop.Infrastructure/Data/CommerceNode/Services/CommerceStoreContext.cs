@@ -65,14 +65,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     : new StoreScopeHints(queryStoreKey, null, null);
             }
 
-            if (request.Path.StartsWithSegments("/api/internal"))
-            {
-                var legacyStoreKey = FirstHeaderValue(request, "X-Store-Key");
-                return string.IsNullOrWhiteSpace(legacyStoreKey)
-                    ? new StoreScopeHints(null, null, "X-Store-Key header is required for legacy internal API.")
-                    : new StoreScopeHints(legacyStoreKey, null, null);
-            }
-
             var storeKey = FirstHeaderValue(request, "X-Store-Key");
             var host = FirstHeaderValue(request, "X-Store-Host")
                        ?? FirstHeaderValue(request, "X-Forwarded-Host")
