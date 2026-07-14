@@ -39,4 +39,8 @@
     <ProjectReference Include="..\BlazorShop.PresentationV2\BlazorShop.Storefront.V2\BlazorShop.Storefront.V2.csproj" Aliases="StorefrontV2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="PresentationV2\CommerceNode\Snapshots\*.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

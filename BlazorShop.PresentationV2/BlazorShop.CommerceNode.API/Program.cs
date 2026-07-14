@@ -112,3 +112,7 @@ static StaticFileOptions CreateUploadsStaticFileOptions(string uploadsPath)
         },
     };
 }
+
+public partial class Program
+{
+}
