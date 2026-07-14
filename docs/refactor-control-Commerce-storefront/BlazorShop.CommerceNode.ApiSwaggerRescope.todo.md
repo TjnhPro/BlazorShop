@@ -361,15 +361,15 @@ X-Store-Key header is required for legacy internal API.
 
 ### Phase 5 - Commerce Admin StoreKey Query Enforcement
 
-- [ ] Mark or configure store-scoped Commerce Admin endpoints.
-- [ ] Require query `storeKey` for all agreed store-scoped endpoints.
-- [ ] Remove Commerce Admin reliance on `X-Store-Key`.
-- [ ] Add/admin debug media endpoints:
+- [x] Mark or configure store-scoped Commerce Admin endpoints.
+- [x] Require query `storeKey` for all agreed store-scoped endpoints.
+- [x] Remove Commerce Admin reliance on `X-Store-Key`.
+- [x] Add/admin debug media endpoints:
   - `api/commerce/admin/media/products/{mediaId}`
   - `api/commerce/admin/media/assets/{assetId}`
-- [ ] Ensure node-level endpoints still work without `storeKey`.
-- [ ] Build CommerceNode API.
-- [ ] Commit Commerce Admin rescope phase.
+- [x] Ensure node-level endpoints still work without `storeKey`.
+- [x] Build CommerceNode API.
+- [x] Commit Commerce Admin rescope phase.
 
 ### Phase 6 - ControlPlane API Gateway Update
 

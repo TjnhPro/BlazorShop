@@ -52,6 +52,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpGet("{mediaPublicId:guid}")]
+        [HttpGet("/api/commerce/admin/media/products/{mediaPublicId:guid}")]
         public async Task<IActionResult> Get(
             Guid mediaPublicId,
             [FromQuery] int? w,

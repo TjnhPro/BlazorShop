@@ -51,6 +51,48 @@ namespace BlazorShop.CommerceNode.API.Controllers
             this.httpClientFactory = httpClientFactory;
         }
 
+        [HttpGet("/api/commerce/admin/media/assets/{assetPublicId:guid}")]
+        public async Task<IActionResult> GetAdminDebug(
+            Guid assetPublicId,
+            [FromQuery] int? w,
+            [FromQuery] int? width,
+            [FromQuery] int? h,
+            [FromQuery] int? height,
+            [FromQuery] string? fit,
+            [FromQuery] string? format,
+            [FromQuery] long? v,
+            CancellationToken cancellationToken)
+        {
+            var storeResult = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
+            if (!storeResult.Success || storeResult.Payload == Guid.Empty)
+            {
+                return this.NotFound();
+            }
+
+            var asset = await this.context.CommerceMediaAssets
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    item => item.PublicId == assetPublicId && item.StoreId == storeResult.Payload,
+                    cancellationToken);
+
+            if (asset is null)
+            {
+                return this.NotFound();
+            }
+
+            return await this.Get(
+                assetPublicId,
+                asset.CanonicalFileName,
+                w,
+                width,
+                h,
+                height,
+                fit,
+                format,
+                v,
+                cancellationToken);
+        }
+
         [HttpGet("{assetPublicId:guid}/{fileName}")]
         public async Task<IActionResult> Get(
             Guid assetPublicId,

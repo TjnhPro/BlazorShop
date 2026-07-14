@@ -73,6 +73,9 @@ app.MapGet("/", () => Results.Redirect("/swagger"));
 app.UseWhen(
     context => context.Request.Path.StartsWithSegments("/api/commerce"),
     branch => branch.UseMiddleware<CommerceNodeCredentialMiddleware>());
+app.UseWhen(
+    context => context.Request.Path.StartsWithSegments("/api/commerce/admin"),
+    branch => branch.UseMiddleware<CommerceAdminStoreScopeMiddleware>());
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapCommerceHealthEndpoints();

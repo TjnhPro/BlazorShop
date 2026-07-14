@@ -96,12 +96,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
 
         internal static bool IsCommerceAdminStoreScopedPath(string relativePath)
         {
-            if (!relativePath.StartsWith("api/commerce/admin/", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            return !relativePath.StartsWith("api/commerce/admin/stores", StringComparison.OrdinalIgnoreCase);
+            return CommerceAdminStoreScopeMiddleware.IsStoreScopedCommerceAdminPath(relativePath);
         }
 
         internal static void EnsureHeaderParameter(OpenApiOperation operation, string name, string description)
