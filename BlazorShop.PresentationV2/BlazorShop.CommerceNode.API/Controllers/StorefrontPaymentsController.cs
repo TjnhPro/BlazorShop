@@ -10,7 +10,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/internal/payments")]
-    public sealed class StorefrontPaymentsController : StorefrontInternalControllerBase
+    public sealed class StorefrontPaymentsController : StorefrontApiControllerBase
     {
         private readonly ClientAppOptions clientAppOptions;
         private readonly IPaymentMethodService paymentMethodService;

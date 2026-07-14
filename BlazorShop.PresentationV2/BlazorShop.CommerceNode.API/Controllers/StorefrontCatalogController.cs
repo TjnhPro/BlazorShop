@@ -11,7 +11,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/internal/catalog")]
-    public sealed class StorefrontCatalogController : StorefrontInternalControllerBase
+    public sealed class StorefrontCatalogController : StorefrontApiControllerBase
     {
         private readonly IPublicCatalogService publicCatalogService;
 

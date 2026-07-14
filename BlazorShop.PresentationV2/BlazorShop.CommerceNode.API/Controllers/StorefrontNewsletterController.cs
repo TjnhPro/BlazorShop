@@ -7,7 +7,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/internal/newsletter")]
-    public sealed class StorefrontNewsletterController : StorefrontInternalControllerBase
+    public sealed class StorefrontNewsletterController : StorefrontApiControllerBase
     {
         private readonly INewsletterService newsletterService;
 

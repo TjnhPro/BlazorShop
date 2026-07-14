@@ -5,7 +5,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     using Microsoft.AspNetCore.Mvc;
 
-    public abstract class StorefrontInternalControllerBase : ControllerBase
+    public abstract class StorefrontApiControllerBase : ControllerBase
     {
         protected IActionResult Success<TData>(TData? data, string message)
         {

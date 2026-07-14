@@ -13,7 +13,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     [ApiController]
     [Route("api/internal/cart")]
     [Authorize]
-    public sealed class StorefrontCartController : StorefrontInternalControllerBase
+    public sealed class StorefrontCartController : StorefrontApiControllerBase
     {
         private readonly ICartService cartService;
 

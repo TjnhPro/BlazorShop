@@ -6,7 +6,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/internal/pages")]
-    public sealed class StorefrontPagesController : StorefrontInternalControllerBase
+    public sealed class StorefrontPagesController : StorefrontApiControllerBase
     {
         private readonly IStorefrontPageService storefrontPageService;
 

@@ -8,7 +8,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/internal/seo")]
-    public sealed class StorefrontSeoController : StorefrontInternalControllerBase
+    public sealed class StorefrontSeoController : StorefrontApiControllerBase
     {
         private readonly ISeoRedirectResolutionService seoRedirectResolutionService;
         private readonly ISeoSettingsService seoSettingsService;

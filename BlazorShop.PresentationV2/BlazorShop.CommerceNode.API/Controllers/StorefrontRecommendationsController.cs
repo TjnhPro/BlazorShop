@@ -8,7 +8,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/internal/recommendations")]
-    public sealed class StorefrontRecommendationsController : StorefrontInternalControllerBase
+    public sealed class StorefrontRecommendationsController : StorefrontApiControllerBase
     {
         private readonly IProductRecommendationService recommendationService;
         private readonly ILogger<StorefrontRecommendationsController> logger;

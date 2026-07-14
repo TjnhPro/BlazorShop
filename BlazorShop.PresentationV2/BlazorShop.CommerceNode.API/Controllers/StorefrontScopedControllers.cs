@@ -25,7 +25,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/storefront/stores/{storeKey}/auth")]
-    public sealed class StorefrontScopedAuthController : StorefrontInternalControllerBase
+    public sealed class StorefrontScopedAuthController : StorefrontApiControllerBase
     {
         private readonly IAuthenticationService authenticationService;
         private readonly CommerceNodeRuntimeOptions runtimeOptions;
@@ -226,7 +226,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/storefront/stores/{storeKey}/catalog")]
-    public sealed class StorefrontScopedCatalogController : StorefrontInternalControllerBase
+    public sealed class StorefrontScopedCatalogController : StorefrontApiControllerBase
     {
         private readonly IPublicCatalogService publicCatalogService;
 
@@ -318,7 +318,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     [ApiController]
     [Route("api/storefront/stores/{storeKey}/cart")]
     [Authorize]
-    public sealed class StorefrontScopedCartController : StorefrontInternalControllerBase
+    public sealed class StorefrontScopedCartController : StorefrontApiControllerBase
     {
         private readonly ICartService cartService;
 
@@ -357,7 +357,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/storefront/stores/{storeKey}/newsletter")]
-    public sealed class StorefrontScopedNewsletterController : StorefrontInternalControllerBase
+    public sealed class StorefrontScopedNewsletterController : StorefrontApiControllerBase
     {
         private readonly INewsletterService newsletterService;
 
@@ -384,7 +384,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     [ApiController]
     [Route("api/storefront/stores/{storeKey}/orders")]
     [Authorize]
-    public sealed class StorefrontScopedOrdersController : StorefrontInternalControllerBase
+    public sealed class StorefrontScopedOrdersController : StorefrontApiControllerBase
     {
         private readonly ICartService cartService;
         private readonly IOrderQueryService orderQueryService;
@@ -449,7 +449,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/storefront/stores/{storeKey}/pages")]
-    public sealed class StorefrontScopedPagesController : StorefrontInternalControllerBase
+    public sealed class StorefrontScopedPagesController : StorefrontApiControllerBase
     {
         private readonly IStorefrontPageService storefrontPageService;
 
@@ -468,7 +468,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/storefront/stores/{storeKey}/payments")]
-    public sealed class StorefrontScopedPaymentsController : StorefrontInternalControllerBase
+    public sealed class StorefrontScopedPaymentsController : StorefrontApiControllerBase
     {
         private readonly ClientAppOptions clientAppOptions;
         private readonly IPaymentMethodService paymentMethodService;
@@ -523,7 +523,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/storefront/stores/{storeKey}/recommendations")]
-    public sealed class StorefrontScopedRecommendationsController : StorefrontInternalControllerBase
+    public sealed class StorefrontScopedRecommendationsController : StorefrontApiControllerBase
     {
         private readonly IProductRecommendationService recommendationService;
         private readonly ILogger<StorefrontScopedRecommendationsController> logger;
@@ -573,7 +573,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/storefront/stores/{storeKey}/seo")]
-    public sealed class StorefrontScopedSeoController : StorefrontInternalControllerBase
+    public sealed class StorefrontScopedSeoController : StorefrontApiControllerBase
     {
         private readonly ISeoRedirectResolutionService seoRedirectResolutionService;
         private readonly ISeoSettingsService seoSettingsService;
@@ -605,7 +605,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/storefront/stores/{storeKey}/store")]
-    public sealed class StorefrontScopedStoreController : StorefrontInternalControllerBase
+    public sealed class StorefrontScopedStoreController : StorefrontApiControllerBase
     {
         private readonly ICommerceStoreContext storeContext;
 

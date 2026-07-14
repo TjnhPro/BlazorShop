@@ -14,7 +14,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     [ApiController]
     [Route("api/internal/auth")]
-    public sealed class StorefrontAuthController : StorefrontInternalControllerBase
+    public sealed class StorefrontAuthController : StorefrontApiControllerBase
     {
         private readonly IAuthenticationService authenticationService;
         private readonly CommerceNodeRuntimeOptions runtimeOptions;
