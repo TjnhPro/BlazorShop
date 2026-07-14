@@ -372,13 +372,29 @@ static void CopyHeaderIfPresent(HttpResponseMessage source, HttpResponse destina
 
 static void ConfigureStorefrontHttpClient(HttpClient client, IConfiguration configuration)
 {
-    client.BaseAddress = ResolveApiBaseAddress(configuration);
+    client.BaseAddress = ResolveScopedStorefrontApiBaseAddress(configuration);
+}
 
+static Uri ResolveScopedStorefrontApiBaseAddress(IConfiguration configuration)
+{
+    var apiBaseAddress = ResolveApiBaseAddress(configuration);
     var storeKey = ResolveStoreKey(configuration);
-    if (!string.IsNullOrWhiteSpace(storeKey))
+    if (string.IsNullOrWhiteSpace(storeKey))
     {
-        client.DefaultRequestHeaders.TryAddWithoutValidation("X-Store-Key", storeKey);
+        return apiBaseAddress;
     }
+
+    var path = apiBaseAddress.AbsolutePath.TrimEnd('/')
+        + "/storefront/stores/"
+        + Uri.EscapeDataString(storeKey)
+        + "/";
+
+    return new UriBuilder(apiBaseAddress)
+    {
+        Path = path,
+        Query = string.Empty,
+        Fragment = string.Empty,
+    }.Uri;
 }
 
 static string? ResolveStoreKey(IConfiguration configuration)

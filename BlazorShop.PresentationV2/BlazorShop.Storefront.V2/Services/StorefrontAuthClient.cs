@@ -9,9 +9,9 @@ namespace BlazorShop.Storefront.Services
 
     public sealed class StorefrontAuthClient : IStorefrontAuthClient
     {
-        private const string RegisterRoute = "internal/auth/create";
-        private const string LoginRoute = "internal/auth/login";
-        private const string LogoutRoute = "internal/auth/logout";
+        private const string RegisterRoute = "auth/register";
+        private const string LoginRoute = "auth/login";
+        private const string LogoutRoute = "auth/logout";
 
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 

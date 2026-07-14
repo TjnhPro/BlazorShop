@@ -18,7 +18,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var handler = new RecordingHandler(request =>
             {
-                Assert.Equal("/api/internal/catalog/categories", request.RequestUri?.AbsolutePath);
+                Assert.Equal("/api/storefront/stores/default/catalog/categories", request.RequestUri?.AbsolutePath);
 
                 return JsonResponse(
                     HttpStatusCode.OK,
@@ -32,7 +32,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.True(result.IsSuccess);
             Assert.NotNull(result.Value);
             Assert.Empty(result.Value);
-            Assert.Equal(["/api/internal/catalog/categories"], handler.RequestPaths);
+            Assert.Equal(["/api/storefront/stores/default/catalog/categories"], handler.RequestPaths);
         }
 
         [Fact]
@@ -40,7 +40,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var handler = new RecordingHandler(request =>
             {
-                if (request.RequestUri?.AbsolutePath == "/api/internal/catalog/categories")
+                if (request.RequestUri?.AbsolutePath == "/api/storefront/stores/default/catalog/categories")
                 {
                     return JsonResponse(HttpStatusCode.ServiceUnavailable, """{"success":false,"message":"down","data":null}""");
                 }
@@ -55,7 +55,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var result = await apiClient.GetPublishedCategoriesAsync();
 
             Assert.True(result.IsServiceUnavailable);
-            Assert.Equal(["/api/internal/catalog/categories"], handler.RequestPaths);
+            Assert.Equal(["/api/storefront/stores/default/catalog/categories"], handler.RequestPaths);
         }
 
         [Fact]
@@ -63,7 +63,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var handler = new RecordingHandler(request =>
             {
-                if (request.RequestUri?.AbsolutePath == "/api/internal/catalog/categories")
+                if (request.RequestUri?.AbsolutePath == "/api/storefront/stores/default/catalog/categories")
                 {
                     return JsonResponse(HttpStatusCode.ServiceUnavailable, """{"success":false,"message":"down","data":null}""");
                 }
@@ -76,7 +76,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var result = await apiClient.GetPublishedCategoriesAsync();
 
             Assert.True(result.IsSuccess);
-            Assert.Equal(["/api/internal/catalog/categories", "/api/public/catalog/categories"], handler.RequestPaths);
+            Assert.Equal(["/api/storefront/stores/default/catalog/categories", "/api/public/catalog/categories"], handler.RequestPaths);
         }
 
         private static StorefrontApiClient CreateApiClient(HttpClient client, bool enableLegacyFallback = false)
@@ -93,7 +93,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             return new HttpClient(handler)
             {
-                BaseAddress = new Uri("https://commerce-node.example/api/"),
+                BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/default/"),
             };
         }
 

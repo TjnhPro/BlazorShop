@@ -19,7 +19,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var handler = new RecordingHandler(request =>
             {
-                Assert.Equal("/api/internal/auth/login", request.RequestUri?.AbsolutePath);
+                Assert.Equal("/api/storefront/stores/default/auth/login", request.RequestUri?.AbsolutePath);
 
                 var response = JsonResponse(
                     HttpStatusCode.OK,
@@ -36,7 +36,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal("Signed in.", result.Message);
             Assert.Equal("jwt-token", result.Data?.Token);
             Assert.Contains("__Host-blazorshop-refresh=abc", result.SetCookieHeaders.Single(), StringComparison.Ordinal);
-            Assert.Equal(["/api/internal/auth/login"], handler.RequestPaths);
+            Assert.Equal(["/api/storefront/stores/default/auth/login"], handler.RequestPaths);
         }
 
         [Fact]
@@ -59,7 +59,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var handler = new RecordingHandler(request =>
             {
-                Assert.Equal("/api/internal/auth/create", request.RequestUri?.AbsolutePath);
+                Assert.Equal("/api/storefront/stores/default/auth/register", request.RequestUri?.AbsolutePath);
 
                 return JsonResponse(
                     HttpStatusCode.OK,
@@ -78,7 +78,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.True(result.Success);
             Assert.Equal("User created successfully.", result.Message);
-            Assert.Equal(["/api/internal/auth/create"], handler.RequestPaths);
+            Assert.Equal(["/api/storefront/stores/default/auth/register"], handler.RequestPaths);
         }
 
         [Fact]
@@ -104,7 +104,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var handler = new RecordingHandler(request =>
             {
-                Assert.Equal("/api/internal/auth/logout", request.RequestUri?.AbsolutePath);
+                Assert.Equal("/api/storefront/stores/default/auth/logout", request.RequestUri?.AbsolutePath);
                 Assert.Equal("__Host-blazorshop-refresh=abc", request.Headers.GetValues("Cookie").Single());
                 Assert.Equal("Storefront QA", request.Headers.UserAgent.ToString());
 
@@ -120,14 +120,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.True(result.Success);
             Assert.Equal("Signed out.", result.Message);
             Assert.Contains("__Host-blazorshop-refresh=;", result.SetCookieHeaders.Single(), StringComparison.Ordinal);
-            Assert.Equal(["/api/internal/auth/logout"], handler.RequestPaths);
+            Assert.Equal(["/api/storefront/stores/default/auth/logout"], handler.RequestPaths);
         }
 
         private static HttpClient CreateClient(HttpMessageHandler handler)
         {
             return new HttpClient(handler)
             {
-                BaseAddress = new Uri("https://commerce-node.example/api/"),
+                BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/default/"),
             };
         }
 

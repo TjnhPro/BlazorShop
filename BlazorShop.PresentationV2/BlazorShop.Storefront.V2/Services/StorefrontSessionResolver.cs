@@ -74,7 +74,7 @@ namespace BlazorShop.Storefront.Services
         private string GetRefreshTokenRoute()
         {
             return string.IsNullOrWhiteSpace(_configuration["Api:RefreshTokenRoute"])
-                ? "internal/auth/refresh-token"
+                ? "auth/refresh-token"
                 : _configuration["Api:RefreshTokenRoute"]!;
         }
 

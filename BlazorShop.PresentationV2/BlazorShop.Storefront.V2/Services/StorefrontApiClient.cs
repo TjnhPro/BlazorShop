@@ -26,23 +26,23 @@ namespace BlazorShop.Storefront.Services
         private static readonly TimeSpan RedirectResolutionRequestTimeout = TimeSpan.FromMilliseconds(500);
         private static readonly TimeSpan SeoSettingsRequestTimeout = TimeSpan.FromMilliseconds(500);
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-        private const string InternalCatalogBaseRoute = "internal/catalog";
-        private const string InternalPagesBaseRoute = "internal/pages";
-        private const string InternalSeoBaseRoute = "internal/seo";
-        private const string InternalStoreCurrentRoute = "internal/store/current";
-        private const string InternalPaymentMethodsRoute = "internal/payments/methods";
-        private const string InternalCheckoutRoute = "internal/cart/checkout";
-        private const string InternalCatalogSitemapRoute = InternalCatalogBaseRoute + "/sitemap";
-        private const string InternalCategoriesRoute = InternalCatalogBaseRoute + "/categories";
-        private const string InternalCategoryTreeRoute = InternalCategoriesRoute + "/tree";
-        private const string InternalProductsRoute = InternalCatalogBaseRoute + "/products";
-        private const string SeoSettingsRoute = InternalSeoBaseRoute + "/settings";
-        private const string LegacyCatalogBaseRoute = "public/catalog";
-        private const string LegacySeoRedirectsBaseRoute = "public/seo/redirects";
+        private const string StorefrontCatalogBaseRoute = "catalog";
+        private const string StorefrontPagesBaseRoute = "pages";
+        private const string StorefrontSeoBaseRoute = "seo";
+        private const string StorefrontStoreCurrentRoute = "store/current";
+        private const string StorefrontPaymentMethodsRoute = "payments/methods";
+        private const string StorefrontCheckoutRoute = "cart/checkout";
+        private const string StorefrontCatalogSitemapRoute = StorefrontCatalogBaseRoute + "/sitemap";
+        private const string StorefrontCategoriesRoute = StorefrontCatalogBaseRoute + "/categories";
+        private const string StorefrontCategoryTreeRoute = StorefrontCategoriesRoute + "/tree";
+        private const string StorefrontProductsRoute = StorefrontCatalogBaseRoute + "/products";
+        private const string SeoSettingsRoute = StorefrontSeoBaseRoute + "/settings";
+        private const string LegacyCatalogBaseRoute = "/api/public/catalog";
+        private const string LegacySeoRedirectsBaseRoute = "/api/public/seo/redirects";
         private const string LegacyCatalogSitemapRoute = LegacyCatalogBaseRoute + "/sitemap";
         private const string LegacyCategoriesRoute = LegacyCatalogBaseRoute + "/categories";
         private const string LegacyProductsRoute = LegacyCatalogBaseRoute + "/products";
-        private const string LegacySeoSettingsRoute = "seo/settings";
+        private const string LegacySeoSettingsRoute = "/api/seo/settings";
 
         private readonly HttpClient _httpClient;
         private readonly bool _enableLegacyFallback;
@@ -56,7 +56,7 @@ namespace BlazorShop.Storefront.Services
         public async Task<StorefrontApiResult<IReadOnlyList<GetCategory>>> GetPublishedCategoriesAsync(CancellationToken cancellationToken = default)
         {
             var result = await GetAsyncWithFallback<List<GetCategory>>(
-                InternalCategoriesRoute,
+                StorefrontCategoriesRoute,
                 LegacyCategoriesRoute,
                 cancellationToken,
                 []);
@@ -71,7 +71,7 @@ namespace BlazorShop.Storefront.Services
         public async Task<StorefrontApiResult<IReadOnlyList<GetCategoryTreeNode>>> GetPublishedCategoryTreeAsync(CancellationToken cancellationToken = default)
         {
             var result = await GetAsync<List<GetCategoryTreeNode>>(
-                InternalCategoryTreeRoute,
+                StorefrontCategoryTreeRoute,
                 cancellationToken,
                 [],
                 CatalogRequestTimeout);
@@ -86,7 +86,7 @@ namespace BlazorShop.Storefront.Services
         public Task<StorefrontApiResult<GetPublicCatalogSitemap>> GetPublishedSitemapAsync(CancellationToken cancellationToken = default)
         {
             return GetAsyncWithFallback(
-                InternalCatalogSitemapRoute,
+                StorefrontCatalogSitemapRoute,
                 LegacyCatalogSitemapRoute,
                 cancellationToken,
                 new GetPublicCatalogSitemap(),
@@ -96,7 +96,7 @@ namespace BlazorShop.Storefront.Services
         public Task<StorefrontApiResult<PagedResult<GetCatalogProduct>>> GetPublishedCatalogPageAsync(ProductCatalogQuery query, CancellationToken cancellationToken = default)
         {
             return GetAsyncWithFallback(
-                BuildCatalogRoute(query, InternalProductsRoute),
+                BuildCatalogRoute(query, StorefrontProductsRoute),
                 BuildCatalogRoute(query, LegacyProductsRoute),
                 cancellationToken,
                 new PagedResult<GetCatalogProduct>(),
@@ -106,7 +106,7 @@ namespace BlazorShop.Storefront.Services
         public Task<StorefrontApiResult<GetCategoryPage>> GetPublishedCategoryBySlugAsync(string slug, CancellationToken cancellationToken = default)
         {
             return GetMaybeNotFoundWithFallbackAsync<GetCategoryPage>(
-                $"{InternalCategoriesRoute}/slug/{Uri.EscapeDataString(slug)}",
+                $"{StorefrontCategoriesRoute}/slug/{Uri.EscapeDataString(slug)}",
                 $"{LegacyCategoriesRoute}/slug/{Uri.EscapeDataString(slug)}",
                 cancellationToken,
                 CatalogRequestTimeout);
@@ -115,7 +115,7 @@ namespace BlazorShop.Storefront.Services
         public Task<StorefrontApiResult<GetProduct>> GetPublishedProductBySlugAsync(string slug, CancellationToken cancellationToken = default)
         {
             return GetMaybeNotFoundWithFallbackAsync<GetProduct>(
-                $"{InternalProductsRoute}/slug/{Uri.EscapeDataString(slug)}",
+                $"{StorefrontProductsRoute}/slug/{Uri.EscapeDataString(slug)}",
                 $"{LegacyProductsRoute}/slug/{Uri.EscapeDataString(slug)}",
                 cancellationToken,
                 CatalogRequestTimeout);
@@ -124,7 +124,7 @@ namespace BlazorShop.Storefront.Services
         public Task<StorefrontApiResult<GetStorefrontPage>> GetPublishedPageBySlugAsync(string slug, CancellationToken cancellationToken = default)
         {
             return GetMaybeNotFoundAsync<GetStorefrontPage>(
-                $"{InternalPagesBaseRoute}/{Uri.EscapeDataString(slug)}",
+                $"{StorefrontPagesBaseRoute}/{Uri.EscapeDataString(slug)}",
                 cancellationToken,
                 CatalogRequestTimeout);
         }
@@ -137,8 +137,8 @@ namespace BlazorShop.Storefront.Services
             }
 
             return GetMaybeNotFoundWithFallbackAsync<GetProduct>(
-                $"{InternalProductsRoute}/{id}",
-                $"product/single/{id}",
+                $"{StorefrontProductsRoute}/{id}",
+                $"/api/product/single/{id}",
                 cancellationToken,
                 CatalogRequestTimeout);
         }
@@ -155,7 +155,7 @@ namespace BlazorShop.Storefront.Services
         public Task<StorefrontApiResult<SeoRedirectResolutionDto>> GetRedirectResolutionAsync(string path, CancellationToken cancellationToken = default)
         {
             return GetMaybeNotFoundWithFallbackAsync<SeoRedirectResolutionDto>(
-                $"{InternalSeoBaseRoute}/redirects/resolve?path={Uri.EscapeDataString(path)}",
+                $"{StorefrontSeoBaseRoute}/redirects/resolve?path={Uri.EscapeDataString(path)}",
                 $"{LegacySeoRedirectsBaseRoute}/resolve?path={Uri.EscapeDataString(path)}",
                 cancellationToken,
                 RedirectResolutionRequestTimeout);
@@ -164,7 +164,7 @@ namespace BlazorShop.Storefront.Services
         public Task<StorefrontApiResult<StorefrontCurrentStore>> GetCurrentStoreAsync(CancellationToken cancellationToken = default)
         {
             return GetMaybeNotFoundAsync<StorefrontCurrentStore>(
-                InternalStoreCurrentRoute,
+                StorefrontStoreCurrentRoute,
                 cancellationToken,
                 CatalogRequestTimeout);
         }
@@ -172,7 +172,7 @@ namespace BlazorShop.Storefront.Services
         public async Task<StorefrontApiResult<IReadOnlyList<GetPaymentMethod>>> GetPaymentMethodsAsync(CancellationToken cancellationToken = default)
         {
             var result = await GetAsync<List<GetPaymentMethod>>(
-                InternalPaymentMethodsRoute,
+                StorefrontPaymentMethodsRoute,
                 cancellationToken,
                 [],
                 CatalogRequestTimeout);
@@ -189,7 +189,7 @@ namespace BlazorShop.Storefront.Services
             CancellationToken cancellationToken = default)
         {
             return PostAsync<StorefrontCheckoutRequest, StorefrontCheckoutResult>(
-                InternalCheckoutRoute,
+                StorefrontCheckoutRoute,
                 request,
                 "Unable to place order right now.",
                 cancellationToken);

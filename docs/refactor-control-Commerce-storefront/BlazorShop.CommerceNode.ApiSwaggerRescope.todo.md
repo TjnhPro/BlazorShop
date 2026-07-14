@@ -383,13 +383,13 @@ X-Store-Key header is required for legacy internal API.
 
 ### Phase 7 - Storefront V2 Client Switch
 
-- [ ] Update `BlazorShop.Storefront.V2` API client base paths to:
+- [x] Update `BlazorShop.Storefront.V2` API client base paths to:
   - `api/storefront/stores/{storeKey}/*`
-- [ ] Stop sending `X-Store-Key` for Storefront API calls.
-- [ ] Verify catalog, search, cart, checkout, auth, pages, payments, SEO, and recommendations use new route.
-- [ ] Keep legacy route available until QA passes.
-- [ ] Build Storefront V2.
-- [ ] Commit Storefront client switch phase.
+- [x] Stop sending `X-Store-Key` for Storefront API calls.
+- [x] Verify catalog, search, cart, checkout, auth, pages, payments, SEO, and recommendations use new route. 2026-07-14: Storefront V2 clients now use scoped base address plus `catalog/*`, `cart/*`, `auth/*`, `pages/*`, `payments/*`, `seo/*`, `store/*`, and tests assert scoped catalog/auth paths.
+- [x] Keep legacy route available until QA passes.
+- [x] Build Storefront V2. 2026-07-14: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed.
+- [x] Commit Storefront client switch phase.
 
 ### Phase 8 - QA Checklist Update
 
