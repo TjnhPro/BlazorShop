@@ -1,0 +1,91 @@
+@page "/payment-cancel"
+@inject StorefrontApiClient ApiClient
+
+<PageTitle>Payment cancelled</PageTitle>
+
+<HeadContent>
+    <meta name="robots" content="noindex,nofollow" />
+</HeadContent>
+
+<section class="mx-auto max-w-3xl px-4 pb-12 pt-10 sm:px-6 lg:px-8">
+    <article class="rounded-3xl border border-amber-200 bg-amber-50 px-6 py-10 text-center shadow-sm">
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">@Eyebrow</p>
+        <h1 class="mt-2 text-4xl font-extrabold tracking-tight text-amber-950">@Heading</h1>
+        <p class="mx-auto mt-3 max-w-xl text-base leading-7 text-amber-900">@Body</p>
+
+        @if (Attempt is not null)
+        {
+            <dl class="mx-auto mt-6 grid max-w-md gap-3 text-left text-sm sm:grid-cols-2">
+                <div>
+                    <dt class="font-semibold text-amber-700">Payment</dt>
+                    <dd class="mt-1 font-mono text-amber-950">@Attempt.Id</dd>
+                </div>
+                <div>
+                    <dt class="font-semibold text-amber-700">Status</dt>
+                    <dd class="mt-1 font-bold text-amber-950">@Attempt.State</dd>
+                </div>
+            </dl>
+        }
+
+        <div class="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+            <a href="@StorefrontRoutes.Checkout" class="inline-flex items-center justify-center rounded bg-neutral-900 px-4 py-3 font-semibold text-white hover:bg-neutral-800">Return to checkout</a>
+            <a href="@StorefrontRoutes.Home" class="inline-flex items-center justify-center rounded bg-white px-4 py-3 font-semibold text-neutral-900 ring-1 ring-black/10 hover:bg-neutral-100">Continue shopping</a>
+        </div>
+    </article>
+</section>
+
+@code {
+    [SupplyParameterFromQuery(Name = "paymentAttemptId")]
+    public Guid? PaymentAttemptId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "provider")]
+    public string? Provider { get; set; }
+
+    private StorefrontPaymentAttemptResponse? Attempt { get; set; }
+
+    private string LoadError { get; set; } = string.Empty;
+
+    private string Eyebrow => Attempt is null
+        ? "Payment cancelled"
+        : IsFailedState(Attempt.State)
+            ? "Payment not completed"
+            : "Payment status";
+
+    private string Heading => Attempt is null
+        ? "Checkout is still available"
+        : IsFailedState(Attempt.State)
+            ? "Try another payment method"
+            : "Review payment status";
+
+    private string Body => !string.IsNullOrWhiteSpace(LoadError)
+        ? LoadError
+        : Attempt?.FailureMessage ?? "Your cart and checkout can be reviewed before trying payment again.";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!PaymentAttemptId.HasValue || PaymentAttemptId.Value == Guid.Empty)
+        {
+            LoadError = "Payment was cancelled before a provider status was available.";
+            return;
+        }
+
+        var result = await ApiClient.GetPaymentAttemptAsync(PaymentAttemptId.Value);
+        if (!result.IsSuccess || result.Value is null)
+        {
+            LoadError = result.IsServiceUnavailable
+                ? "Payment status is temporarily unavailable."
+                : "Payment status was not found.";
+            return;
+        }
+
+        Attempt = result.Value;
+        LoadError = string.Empty;
+    }
+
+    private static bool IsFailedState(string state)
+    {
+        return string.Equals(state, "failed", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(state, "cancelled", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(state, "expired", StringComparison.OrdinalIgnoreCase);
+    }
+}

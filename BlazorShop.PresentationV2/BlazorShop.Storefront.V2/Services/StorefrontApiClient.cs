@@ -35,6 +35,7 @@ namespace BlazorShop.Storefront.Services
         private const string StorefrontCheckoutRoute = "cart/checkout";
         private const string StorefrontCheckoutPreviewRoute = "checkout/preview";
         private const string StorefrontPlaceOrderRoute = "checkout/place-order";
+        private const string StorefrontPaymentAttemptsRoute = "payments/attempts";
         private const string StorefrontCartRoute = "cart";
         private const string StorefrontCartSessionRoute = StorefrontCartRoute + "/session";
         private const string StorefrontCartLinesRoute = StorefrontCartRoute + "/lines";
@@ -225,6 +226,22 @@ namespace BlazorShop.Storefront.Services
                 request,
                 "Unable to place order right now.",
                 cancellationToken);
+        }
+
+        public Task<StorefrontApiResult<StorefrontPaymentAttemptResponse>> GetPaymentAttemptAsync(
+            Guid paymentAttemptId,
+            CancellationToken cancellationToken = default)
+        {
+            if (paymentAttemptId == Guid.Empty)
+            {
+                return Task.FromResult(StorefrontApiResult<StorefrontPaymentAttemptResponse>.NotFound());
+            }
+
+            return GetAsync<StorefrontPaymentAttemptResponse>(
+                $"{StorefrontPaymentAttemptsRoute}/{paymentAttemptId:D}",
+                cancellationToken,
+                fallbackValue: null,
+                CatalogRequestTimeout);
         }
 
         public Task<StorefrontSubmitResult<StorefrontCartSessionResponse>> CreateOrResumeCartSessionAsync(
@@ -769,4 +786,22 @@ namespace BlazorShop.Storefront.Services
     public sealed record StorefrontPaymentNextActionResponse(
         string Type,
         string? Url);
+
+    public sealed record StorefrontPaymentAttemptResponse(
+        Guid Id,
+        Guid CheckoutSessionId,
+        Guid? OrderId,
+        string PaymentMethodKey,
+        string ProviderKey,
+        string State,
+        decimal Amount,
+        string CurrencyCode,
+        string? ProviderReference,
+        string? ProviderSessionId,
+        StorefrontPaymentNextActionResponse? NextAction,
+        string? FailureCode,
+        string? FailureMessage,
+        DateTimeOffset ExpiresAtUtc,
+        DateTimeOffset CreatedAtUtc,
+        DateTimeOffset UpdatedAtUtc);
 }

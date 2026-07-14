@@ -623,6 +623,8 @@ Commit boundary: `feat: add first online payment provider mvp`
 
 ### Phase 11 - Storefront Checkout UX Cutover
 
+Status: implemented 2026-07-14 in commit `feat: cut storefront checkout to session flow`; provider sandbox/browser QA remains tracked in QA checklist.
+
 Goal: connect Storefront V2 checkout pages to preview/place-order/payment attempt flow.
 
 UI behavior:

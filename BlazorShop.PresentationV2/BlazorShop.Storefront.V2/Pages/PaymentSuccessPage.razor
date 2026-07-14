@@ -1,0 +1,144 @@
+@page "/payment-success"
+@inject StorefrontApiClient ApiClient
+
+<PageTitle>Payment status</PageTitle>
+
+<HeadContent>
+    <meta name="robots" content="noindex,nofollow" />
+    @if (IsPending)
+    {
+        <meta http-equiv="refresh" content="5" />
+    }
+</HeadContent>
+
+<section class="mx-auto max-w-3xl px-4 pb-12 pt-10 sm:px-6 lg:px-8">
+    <article class="@PanelClass">
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] @EyebrowClass">@Eyebrow</p>
+        <h1 class="mt-2 text-4xl font-extrabold tracking-tight @HeadingClass">@Heading</h1>
+        <p class="mx-auto mt-3 max-w-xl text-base leading-7 @BodyClass">@Body</p>
+
+        @if (Attempt is not null)
+        {
+            <dl class="mx-auto mt-6 grid max-w-md gap-3 text-left text-sm sm:grid-cols-2">
+                <div>
+                    <dt class="font-semibold @MutedClass">Payment</dt>
+                    <dd class="mt-1 font-mono @HeadingClass">@Attempt.Id</dd>
+                </div>
+                <div>
+                    <dt class="font-semibold @MutedClass">Status</dt>
+                    <dd class="mt-1 font-bold @HeadingClass">@Attempt.State</dd>
+                </div>
+            </dl>
+        }
+
+        <div class="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+            @if (ShowRetry)
+            {
+                <a href="@StorefrontRoutes.Checkout" class="inline-flex items-center justify-center rounded bg-neutral-900 px-4 py-3 font-semibold text-white hover:bg-neutral-800">Return to checkout</a>
+            }
+            <a href="@StorefrontRoutes.Home" class="inline-flex items-center justify-center rounded bg-white px-4 py-3 font-semibold text-neutral-900 ring-1 ring-black/10 hover:bg-neutral-100">Continue shopping</a>
+        </div>
+    </article>
+</section>
+
+@code {
+    [SupplyParameterFromQuery(Name = "paymentAttemptId")]
+    public Guid? PaymentAttemptId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "provider")]
+    public string? Provider { get; set; }
+
+    private StorefrontPaymentAttemptResponse? Attempt { get; set; }
+
+    private string LoadError { get; set; } = string.Empty;
+
+    private bool IsPending => Attempt is null && string.IsNullOrWhiteSpace(LoadError)
+        || Attempt is not null && IsPendingState(Attempt.State);
+
+    private bool IsSuccess => Attempt is not null && IsSuccessState(Attempt.State);
+
+    private bool ShowRetry => !IsSuccess;
+
+    private string Eyebrow => IsSuccess
+        ? "Payment confirmed"
+        : IsPending
+            ? "Payment pending"
+            : "Payment needs attention";
+
+    private string Heading => IsSuccess
+        ? "Thank you"
+        : IsPending
+            ? "Payment is being confirmed"
+            : "Payment was not completed";
+
+    private string Body => IsSuccess
+        ? "Your payment is confirmed and the order is being prepared."
+        : IsPending
+            ? "We are waiting for the payment provider to confirm this payment."
+            : string.IsNullOrWhiteSpace(LoadError)
+                ? Attempt?.FailureMessage ?? "Review the checkout and try another payment method."
+                : LoadError;
+
+    private string PanelClass => IsSuccess
+        ? "rounded-3xl border border-emerald-200 bg-emerald-50 px-6 py-10 text-center shadow-sm"
+        : IsPending
+            ? "rounded-3xl border border-amber-200 bg-amber-50 px-6 py-10 text-center shadow-sm"
+            : "rounded-3xl border border-rose-200 bg-rose-50 px-6 py-10 text-center shadow-sm";
+
+    private string EyebrowClass => IsSuccess
+        ? "text-emerald-700"
+        : IsPending
+            ? "text-amber-700"
+            : "text-rose-700";
+
+    private string HeadingClass => IsSuccess
+        ? "text-emerald-950"
+        : IsPending
+            ? "text-amber-950"
+            : "text-rose-950";
+
+    private string BodyClass => IsSuccess
+        ? "text-emerald-900"
+        : IsPending
+            ? "text-amber-900"
+            : "text-rose-900";
+
+    private string MutedClass => IsSuccess
+        ? "text-emerald-700"
+        : IsPending
+            ? "text-amber-700"
+            : "text-rose-700";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!PaymentAttemptId.HasValue || PaymentAttemptId.Value == Guid.Empty)
+        {
+            LoadError = "Payment status is not available.";
+            return;
+        }
+
+        var result = await ApiClient.GetPaymentAttemptAsync(PaymentAttemptId.Value);
+        if (!result.IsSuccess || result.Value is null)
+        {
+            LoadError = result.IsServiceUnavailable
+                ? "Payment status is temporarily unavailable."
+                : "Payment status was not found.";
+            return;
+        }
+
+        Attempt = result.Value;
+        LoadError = string.Empty;
+    }
+
+    private static bool IsSuccessState(string state)
+    {
+        return string.Equals(state, "captured", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(state, "authorized", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsPendingState(string state)
+    {
+        return string.Equals(state, "created", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(state, "requires_action", StringComparison.OrdinalIgnoreCase);
+    }
+}

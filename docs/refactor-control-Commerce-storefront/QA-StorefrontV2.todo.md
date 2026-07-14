@@ -222,8 +222,9 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Stale cart version on checkout shows a review-cart state, not a duplicate order. 2026-07-14: `StorefrontCheckoutServiceTests` covers stale cart version rejection with no checkout session/order creation.
 - [x] COD checkout places one order, clears/expires the cart token, and shows confirmation. 2026-07-14: Storefront V2 checkout POST now calls Commerce Node `/checkout/place-order` after preview, deletes `bs-cart-token`/`my-cart`, and redirects with order reference; focused host/contract suite passed.
 - [x] Online provider checkout redirects to provider next action when configured. 2026-07-14: `StorefrontV2HostSmokeTests.Checkout_PostRedirectsToProviderNextAction` covers checkout POST redirect to provider `NextAction.Url` and cart-token cleanup.
-- [ ] Provider cancel/failure returns to a recoverable checkout state.
-- [ ] Payment attempt polling page shows pending, success, failure, and retry states without console errors.
+- [x] Provider cancel/failure returns to a recoverable checkout state. 2026-07-14: `/payment-cancel` polls the payment attempt and renders retry checkout action; host smoke test covers failed provider state.
+- [x] Payment attempt polling page shows pending, success, failure, and retry states. 2026-07-14: `/payment-success` and `/payment-cancel` host smoke tests cover captured, pending refresh, failed, and retry states.
+- [ ] Visible browser QA confirms payment return/cancel pages have no console errors.
 - [ ] Browser QA verifies no readable raw cart price payload remains after server-cart migration.
 
 ## Auth And Checkout Handoff

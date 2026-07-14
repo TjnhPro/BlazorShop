@@ -5,6 +5,8 @@ namespace BlazorShop.Storefront.Services
         public const string Home = "/";
         public const string Cart = "/my-cart";
         public const string Checkout = "/checkout";
+        public const string PaymentSuccess = "/payment-success";
+        public const string PaymentCancel = "/payment-cancel";
         public const string SignIn = "/signin";
         public const string Register = "/register";
         public const string Logout = "/logout";

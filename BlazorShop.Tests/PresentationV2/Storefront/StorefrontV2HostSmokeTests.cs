@@ -471,6 +471,52 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(1, handler.PlaceOrderCalls);
         }
 
+        [Fact]
+        public async Task PaymentSuccess_WhenCapturedAttempt_ShowsConfirmedState()
+        {
+            var handler = new PaymentAttemptStatusHandler("captured");
+            using var client = CreateClientWithPaymentAttemptHandler(handler);
+
+            using var response = await client.GetAsync($"{StorefrontRoutes.PaymentSuccess}?paymentAttemptId={PaymentAttemptStatusHandler.AttemptId:D}&provider=stripe");
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("Payment confirmed", content, StringComparison.Ordinal);
+            Assert.Contains("Thank you", content, StringComparison.Ordinal);
+            Assert.Contains("captured", content, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task PaymentSuccess_WhenAttemptPending_ShowsPollingState()
+        {
+            var handler = new PaymentAttemptStatusHandler("requires_action");
+            using var client = CreateClientWithPaymentAttemptHandler(handler);
+
+            using var response = await client.GetAsync($"{StorefrontRoutes.PaymentSuccess}?paymentAttemptId={PaymentAttemptStatusHandler.AttemptId:D}&provider=stripe");
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("Payment pending", content, StringComparison.Ordinal);
+            Assert.Contains("Payment is being confirmed", content, StringComparison.Ordinal);
+            Assert.Contains("http-equiv=\"refresh\"", content, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public async Task PaymentCancel_WhenFailedAttempt_ShowsRetryState()
+        {
+            var handler = new PaymentAttemptStatusHandler("failed", "Payment provider declined this payment.");
+            using var client = CreateClientWithPaymentAttemptHandler(handler);
+
+            using var response = await client.GetAsync($"{StorefrontRoutes.PaymentCancel}?paymentAttemptId={PaymentAttemptStatusHandler.AttemptId:D}&provider=stripe");
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("Payment not completed", content, StringComparison.Ordinal);
+            Assert.Contains("Try another payment method", content, StringComparison.Ordinal);
+            Assert.Contains("Payment provider declined this payment.", content, StringComparison.Ordinal);
+            Assert.Contains($"href=\"{StorefrontRoutes.Checkout}\"", content, StringComparison.Ordinal);
+        }
+
         private HttpClient CreateClient(Action<IServiceCollection> configureServices, bool allowAutoRedirect = true)
         {
             var configuredFactory = _factory.WithWebHostBuilder(builder =>
@@ -481,6 +527,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             return configuredFactory.CreateClient(new WebApplicationFactoryClientOptions
             {
                 AllowAutoRedirect = allowAutoRedirect,
+            });
+        }
+
+        private HttpClient CreateClientWithPaymentAttemptHandler(PaymentAttemptStatusHandler handler)
+        {
+            return CreateClient(services =>
+            {
+                services.RemoveAll<StorefrontApiClient>();
+                services.AddScoped(_ => new StorefrontApiClient(
+                    new HttpClient(handler)
+                    {
+                        BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
+                    },
+                    Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
             });
         }
 
@@ -836,6 +896,70 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                             },
                     },
                 };
+            }
+
+            private static HttpResponseMessage JsonResponse(object payload)
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = JsonContent(payload),
+                };
+            }
+        }
+
+        private sealed class PaymentAttemptStatusHandler : HttpMessageHandler
+        {
+            public static readonly Guid AttemptId = Guid.Parse("12121212-1212-1212-1212-121212121212");
+
+            private readonly string state;
+            private readonly string? failureMessage;
+
+            public PaymentAttemptStatusHandler(string state, string? failureMessage = null)
+            {
+                this.state = state;
+                this.failureMessage = failureMessage;
+            }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                var path = request.RequestUri?.AbsolutePath ?? string.Empty;
+                if (request.Method == HttpMethod.Get && path.EndsWith($"/payments/attempts/{AttemptId:D}", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Task.FromResult(JsonResponse(new
+                    {
+                        success = true,
+                        message = "OK",
+                        data = new
+                        {
+                            id = AttemptId,
+                            checkoutSessionId = Guid.Parse("34343434-3434-3434-3434-343434343434"),
+                            orderId = string.Equals(this.state, "captured", StringComparison.OrdinalIgnoreCase)
+                                ? Guid.Parse("56565656-5656-5656-5656-565656565656")
+                                : (Guid?)null,
+                            paymentMethodKey = "stripe",
+                            providerKey = "stripe",
+                            state = this.state,
+                            amount = 12.34m,
+                            currencyCode = "USD",
+                            providerReference = "pi_test",
+                            providerSessionId = "cs_test",
+                            nextAction = string.Equals(this.state, "requires_action", StringComparison.OrdinalIgnoreCase)
+                                ? new
+                                {
+                                    type = "redirect",
+                                    url = "https://checkout.stripe.test/session",
+                                }
+                                : null,
+                            failureCode = this.failureMessage is null ? null : "payment.failed",
+                            failureMessage = this.failureMessage,
+                            expiresAtUtc = DateTimeOffset.UtcNow.AddMinutes(30),
+                            createdAtUtc = DateTimeOffset.UtcNow.AddMinutes(-2),
+                            updatedAtUtc = DateTimeOffset.UtcNow,
+                        },
+                    }));
+                }
+
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
             }
 
             private static HttpResponseMessage JsonResponse(object payload)
