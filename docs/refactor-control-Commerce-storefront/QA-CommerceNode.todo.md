@@ -113,6 +113,7 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Missing online provider configuration returns a safe failure without creating an order. 2026-07-14: Stripe provider config checks return conflict and checkout marks the attempt failed with safe `provider_session_failed` details.
 - [x] Storefront Swagger includes generator-safe request/response/error schemas for every new cart/checkout/payment endpoint. 2026-07-14: server cart, checkout preview, place-order, payment attempt polling, provider callback, and webhook endpoints covered by contract tests.
 - [x] Storefront Swagger snapshot is refreshed after cart/checkout/payment API cutover. 2026-07-14: refreshed through Phase 10 first online provider result-shape update; focused checkout/payment/contract/Storefront suite passed 63/63 before Storefront host redirect test, then Storefront host suite passed 27/27.
+- [x] Direct raw Storefront checkout path is retired after Storefront V2 cutover. 2026-07-14: `POST /cart/checkout` removed from active Storefront API contract/client; focused contract/Storefront suite passed 51/51.
 
 ## Startup Database Migration
 
@@ -157,8 +158,7 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
   - [ ] `api/storefront/stores/{storeKey}/orders/confirm`
   - [ ] `api/storefront/stores/{storeKey}/orders/current-user`
   - [ ] `api/storefront/stores/{storeKey}/orders/current-user/items`
-- [ ] Anonymous checkout route remains allowed:
-  - [ ] `api/storefront/stores/{storeKey}/cart/checkout`
+- [x] Direct raw cart checkout route is retired from active Storefront API. 2026-07-14: `POST /api/storefront/stores/{storeKey}/cart/checkout` removed from controller, Storefront V2 client, and Storefront Swagger snapshot; session checkout uses `/checkout/preview` + `/checkout/place-order`.
 
 ## Seed Data
 
@@ -419,7 +419,7 @@ This section records pre-removal `api/internal/*` QA evidence. Do not use it as 
 
 ### Cart And Orders
 
-- [ ] `POST /api/storefront/stores/{storeKey}/cart/checkout`
+- [n/a] `POST /api/storefront/stores/{storeKey}/cart/checkout` retired after server-cart checkout cutover. 2026-07-14: use `/checkout/preview` and `/checkout/place-order`.
 - [ ] `POST /api/storefront/stores/{storeKey}/cart/save-checkout`
 - [ ] `POST /api/storefront/stores/{storeKey}/orders/confirm`
 - [ ] `GET /api/storefront/stores/{storeKey}/orders/current-user`

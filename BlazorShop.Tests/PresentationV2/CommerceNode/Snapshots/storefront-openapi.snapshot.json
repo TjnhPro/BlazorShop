@@ -229,7 +229,7 @@
         },
         "security": [
           {
-            "RefreshCookie": [ ]
+            "RefreshCookie": []
           }
         ]
       }
@@ -285,7 +285,7 @@
         },
         "security": [
           {
-            "RefreshCookie": [ ]
+            "RefreshCookie": []
           }
         ]
       }
@@ -371,7 +371,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -532,7 +532,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -1170,97 +1170,6 @@
         }
       }
     },
-    "/api/storefront/stores/{storeKey}/cart/checkout": {
-      "post": {
-        "tags": [
-          "StorefrontScopedCart"
-        ],
-        "summary": "Create a Storefront checkout order.",
-        "operationId": "StorefrontCart_Checkout",
-        "parameters": [
-          {
-            "name": "storeKey",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StorefrontCheckoutRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StorefrontCheckoutRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/StorefrontCheckoutRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StorefrontCheckoutResultResponseCommerceNodeApiResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/storefront/stores/{storeKey}/cart/save-checkout": {
       "post": {
         "tags": [
@@ -1351,7 +1260,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -2295,7 +2204,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -2351,7 +2260,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -2417,7 +2326,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -4382,45 +4291,6 @@
           },
           "data": {
             "$ref": "#/components/schemas/StorefrontCheckoutPreviewResponse"
-          }
-        },
-        "additionalProperties": false
-      },
-      "StorefrontCheckoutRequest": {
-        "required": [
-          "carts",
-          "customerEmail",
-          "customerName",
-          "paymentMethodKey",
-          "shippingAddress"
-        ],
-        "type": "object",
-        "properties": {
-          "customerEmail": {
-            "maxLength": 254,
-            "minLength": 1,
-            "type": "string",
-            "format": "email"
-          },
-          "customerName": {
-            "maxLength": 160,
-            "minLength": 1,
-            "type": "string"
-          },
-          "paymentMethodKey": {
-            "maxLength": 64,
-            "minLength": 1,
-            "type": "string"
-          },
-          "carts": {
-            "minItems": 1,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/StorefrontCartItemRequest"
-            }
-          },
-          "shippingAddress": {
-            "$ref": "#/components/schemas/StorefrontCheckoutShippingAddress"
           }
         },
         "additionalProperties": false

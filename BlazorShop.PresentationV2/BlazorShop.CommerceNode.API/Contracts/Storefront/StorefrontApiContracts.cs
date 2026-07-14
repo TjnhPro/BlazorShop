@@ -130,29 +130,6 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         ];
     }
 
-    public sealed class StorefrontCheckoutRequest
-    {
-        [Required]
-        [EmailAddress]
-        [MaxLength(StorefrontContractValidation.EmailMaxLength)]
-        public string CustomerEmail { get; set; } = string.Empty;
-
-        [Required]
-        [MaxLength(160)]
-        public string CustomerName { get; set; } = string.Empty;
-
-        [Required]
-        [MaxLength(64)]
-        public string PaymentMethodKey { get; set; } = string.Empty;
-
-        [Required]
-        [MinLength(1)]
-        public IReadOnlyList<StorefrontCartItemRequest> Carts { get; set; } = Array.Empty<StorefrontCartItemRequest>();
-
-        [Required]
-        public StorefrontCheckoutShippingAddress ShippingAddress { get; set; } = new();
-    }
-
     public sealed class StorefrontCheckoutShippingAddress
     {
         [Required]

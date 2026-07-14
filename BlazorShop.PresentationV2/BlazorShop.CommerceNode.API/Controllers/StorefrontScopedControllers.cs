@@ -514,19 +514,6 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 payload => payload?.ToStorefrontContract());
         }
 
-        [HttpPost("checkout")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Checkout([FromBody] StorefrontCheckoutRequest checkout)
-        {
-            var userId = this.GetCurrentCustomerId();
-            var result = await this.cartService.CheckoutAsync(checkout.ToApplicationRequest(), userId);
-            return this.FromServiceResponse(
-                result,
-                payload => payload is ApplicationStorefrontCheckoutResult checkoutResult
-                    ? checkoutResult.ToStorefrontContract()
-                    : null);
-        }
-
         [HttpPost("save-checkout")]
         public async Task<IActionResult> SaveCheckout([FromBody] IReadOnlyList<StorefrontOrderItemRequest> orderItems)
         {

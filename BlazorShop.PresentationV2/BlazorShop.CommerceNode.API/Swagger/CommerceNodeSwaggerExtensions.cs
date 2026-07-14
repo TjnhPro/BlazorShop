@@ -282,11 +282,6 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         typeof(CommerceNodeApiResponse<GetPublicCatalogSitemap>),
                         [StatusCodes.Status500InternalServerError]),
 
-                    [("StorefrontScopedCart", "Checkout")] = new(
-                        "StorefrontCart_Checkout",
-                        "Create a Storefront checkout order.",
-                        typeof(CommerceNodeApiResponse<StorefrontCheckoutResultResponse>),
-                        [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedCart", "CreateSession")] = new(
                         "StorefrontCart_CreateSession",
                         "Create or resume a server cart session.",

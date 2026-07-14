@@ -671,6 +671,8 @@ Commit boundary: `feat: cut storefront checkout to session flow`
 
 ### Phase 12 - Deprecate Direct Raw Cart Checkout Path
 
+Status: completed 2026-07-14 in commit `refactor: retire raw storefront checkout path`.
+
 Goal: remove or constrain the old direct checkout path after Storefront V2 cutover.
 
 Candidate actions:

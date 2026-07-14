@@ -7,7 +7,6 @@ POST /api/storefront/stores/{storeKey}/auth/register
 POST /api/storefront/stores/{storeKey}/auth/update-profile
 DELETE /api/storefront/stores/{storeKey}/cart
 GET /api/storefront/stores/{storeKey}/cart
-POST /api/storefront/stores/{storeKey}/cart/checkout
 POST /api/storefront/stores/{storeKey}/cart/lines
 DELETE /api/storefront/stores/{storeKey}/cart/lines/{lineId}
 PUT /api/storefront/stores/{storeKey}/cart/lines/{lineId}

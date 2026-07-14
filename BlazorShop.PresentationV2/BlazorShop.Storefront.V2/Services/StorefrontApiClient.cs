@@ -32,7 +32,6 @@ namespace BlazorShop.Storefront.Services
         private const string StorefrontSeoBaseRoute = "seo";
         private const string StorefrontStoreCurrentRoute = "store/current";
         private const string StorefrontPaymentMethodsRoute = "payments/methods";
-        private const string StorefrontCheckoutRoute = "cart/checkout";
         private const string StorefrontCheckoutPreviewRoute = "checkout/preview";
         private const string StorefrontPlaceOrderRoute = "checkout/place-order";
         private const string StorefrontPaymentAttemptsRoute = "payments/attempts";
@@ -190,17 +189,6 @@ namespace BlazorShop.Storefront.Services
                 : result.IsServiceUnavailable
                     ? StorefrontApiResult<IReadOnlyList<GetPaymentMethod>>.ServiceUnavailable()
                     : StorefrontApiResult<IReadOnlyList<GetPaymentMethod>>.Success([]);
-        }
-
-        public Task<StorefrontSubmitResult<StorefrontCheckoutResult>> CheckoutAsync(
-            StorefrontCheckoutRequest request,
-            CancellationToken cancellationToken = default)
-        {
-            return PostAsync<StorefrontCheckoutRequest, StorefrontCheckoutResult>(
-                StorefrontCheckoutRoute,
-                request,
-                "Unable to place order right now.",
-                cancellationToken);
         }
 
         public Task<StorefrontSubmitResult<StorefrontCheckoutPreviewResponse>> PreviewCheckoutAsync(

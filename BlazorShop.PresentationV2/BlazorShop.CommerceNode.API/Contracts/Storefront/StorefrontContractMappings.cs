@@ -73,32 +73,6 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
             };
         }
 
-        public static StorefrontCheckoutRequest ToStorefrontContract(
-            this Application.DTOs.Payment.StorefrontCheckoutRequest request)
-        {
-            return new StorefrontCheckoutRequest
-            {
-                CustomerEmail = request.CustomerEmail,
-                CustomerName = request.CustomerName,
-                PaymentMethodKey = request.PaymentMethodKey,
-                Carts = request.Carts.Select(item => item.ToStorefrontContract()).ToArray(),
-                ShippingAddress = request.ShippingAddress.ToStorefrontContract(),
-            };
-        }
-
-        public static Application.DTOs.Payment.StorefrontCheckoutRequest ToApplicationRequest(
-            this StorefrontCheckoutRequest request)
-        {
-            return new Application.DTOs.Payment.StorefrontCheckoutRequest
-            {
-                CustomerEmail = request.CustomerEmail,
-                CustomerName = request.CustomerName,
-                PaymentMethodKey = request.PaymentMethodKey,
-                Carts = request.Carts.Select(item => item.ToProcessCart()).ToArray(),
-                ShippingAddress = request.ShippingAddress.ToApplicationRequest(),
-            };
-        }
-
         public static CheckoutShippingAddress ToApplicationRequest(this StorefrontCheckoutShippingAddress request)
         {
             return new CheckoutShippingAddress
