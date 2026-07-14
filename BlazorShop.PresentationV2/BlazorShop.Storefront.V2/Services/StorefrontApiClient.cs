@@ -34,6 +34,7 @@ namespace BlazorShop.Storefront.Services
         private const string StorefrontPaymentMethodsRoute = "payments/methods";
         private const string StorefrontCheckoutRoute = "cart/checkout";
         private const string StorefrontCheckoutPreviewRoute = "checkout/preview";
+        private const string StorefrontPlaceOrderRoute = "checkout/place-order";
         private const string StorefrontCartRoute = "cart";
         private const string StorefrontCartSessionRoute = StorefrontCartRoute + "/session";
         private const string StorefrontCartLinesRoute = StorefrontCartRoute + "/lines";
@@ -212,6 +213,17 @@ namespace BlazorShop.Storefront.Services
                 cartToken,
                 request,
                 "Unable to preview checkout right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontPlaceOrderResponse>> PlaceOrderAsync(
+            StorefrontPlaceOrderRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return PostAsync<StorefrontPlaceOrderRequest, StorefrontPlaceOrderResponse>(
+                StorefrontPlaceOrderRoute,
+                request,
+                "Unable to place order right now.",
                 cancellationToken);
         }
 
@@ -730,4 +742,25 @@ namespace BlazorShop.Storefront.Services
         string? Field,
         Guid? LineId,
         Guid? ProductId);
+
+    public sealed class StorefrontPlaceOrderRequest
+    {
+        public Guid CheckoutSessionId { get; set; }
+
+        public int ExpectedCartVersion { get; set; }
+
+        public string IdempotencyKey { get; set; } = string.Empty;
+    }
+
+    public sealed record StorefrontPlaceOrderResponse(
+        Guid CheckoutSessionId,
+        Guid OrderId,
+        string Reference,
+        string OrderStatus,
+        string PaymentStatus,
+        string PaymentMethodKey,
+        decimal TotalAmount,
+        string CurrencyCode,
+        string IdempotencyKey,
+        DateTime CreatedOn);
 }

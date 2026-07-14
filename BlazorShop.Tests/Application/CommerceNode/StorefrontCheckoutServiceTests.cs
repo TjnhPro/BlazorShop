@@ -3,10 +3,12 @@ namespace BlazorShop.Tests.Application.CommerceNode
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Checkout;
     using BlazorShop.Application.CommerceNode.Customers;
+    using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities;
+    using BlazorShop.Domain.Entities.CommerceNode;
     using BlazorShop.Domain.Entities.Payment;
     using BlazorShop.Infrastructure.Data.CommerceNode;
     using BlazorShop.Infrastructure.Data.CommerceNode.Services;
@@ -88,6 +90,161 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Empty(context.Orders);
         }
 
+        [Fact]
+        public async Task PlaceOrderAsync_DuplicateIdempotencyKey_ReturnsSameOrder()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 25m, stock: 10);
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 2));
+            var service = CreateCheckoutService(context, cartService);
+            var preview = await service.PreviewAsync(CreateRequest(storeId, cart.Payload.Token!, add.Payload!.Version));
+
+            var first = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                preview.Payload!.CheckoutSessionId,
+                preview.Payload.CartVersion,
+                "checkout-retry-key"));
+            var second = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                preview.Payload.CheckoutSessionId,
+                preview.Payload.CartVersion,
+                "checkout-retry-key"));
+
+            Assert.True(first.Success);
+            Assert.True(second.Success);
+            Assert.Equal(first.Payload!.OrderId, second.Payload!.OrderId);
+            Assert.Single(context.Orders);
+            Assert.Equal(CartSessionStates.Ordered, context.CartSessions.Single().State);
+            Assert.Equal(8, context.Products.Single(item => item.Id == product.Id).Quantity);
+        }
+
+        [Fact]
+        public async Task PlaceOrderAsync_RejectsStaleCartVersion()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 12m, stock: 10);
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1));
+            var service = CreateCheckoutService(context, cartService);
+            var preview = await service.PreviewAsync(CreateRequest(storeId, cart.Payload.Token!, add.Payload!.Version));
+            context.CartSessions.Single().Version++;
+            context.SaveChanges();
+
+            var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                preview.Payload!.CheckoutSessionId,
+                preview.Payload.CartVersion,
+                "stale-cart-version"));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.Conflict, result.ResponseType);
+            Assert.Empty(context.Orders);
+            Assert.Equal(CartSessionStates.Active, context.CartSessions.Single().State);
+        }
+
+        [Fact]
+        public async Task PlaceOrderAsync_RejectsProductUnpublishedAfterPreview()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 15m, stock: 10);
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1));
+            var service = CreateCheckoutService(context, cartService);
+            var preview = await service.PreviewAsync(CreateRequest(storeId, cart.Payload.Token!, add.Payload!.Version));
+            context.Products.Single(item => item.Id == product.Id).IsPublished = false;
+            context.SaveChanges();
+
+            var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                preview.Payload!.CheckoutSessionId,
+                preview.Payload.CartVersion,
+                "unpublished-after-preview"));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.Conflict, result.ResponseType);
+            Assert.Empty(context.Orders);
+        }
+
+        [Fact]
+        public async Task PlaceOrderAsync_SnapshotsSelectedAttributesAndPersonalization()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 30m, stock: 10);
+            product.ProductType = ProductTypes.CustomVariations;
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                SelectedAttributes: [new SelectedAttributeDto("Size", "XL")],
+                PersonalizationHash: "personalization-hash",
+                PersonalizationJson: "{\"text\":\"hello\"}",
+                FulfillmentProviderKey: "pod",
+                Quantity: 1));
+            var service = CreateCheckoutService(context, cartService);
+            var preview = await service.PreviewAsync(CreateRequest(storeId, cart.Payload.Token!, add.Payload!.Version));
+
+            var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                preview.Payload!.CheckoutSessionId,
+                preview.Payload.CartVersion,
+                "snapshot-line-data"));
+
+            Assert.True(result.Success);
+            var line = context.OrderLines.Single();
+            Assert.Contains("\"name\":\"Size\"", line.VariantAttributesJson);
+            Assert.Contains("\"value\":\"XL\"", line.VariantAttributesJson);
+            Assert.Equal("personalization-hash", line.PersonalizationHash);
+            Assert.Equal("{\"text\":\"hello\"}", line.PersonalizationJson);
+            Assert.Equal("pod", line.FulfillmentProviderKey);
+            Assert.Equal(10, context.Products.Single(item => item.Id == product.Id).Quantity);
+        }
+
         private static StorefrontCheckoutService CreateCheckoutService(
             CommerceNodeDbContext context,
             IStorefrontCartService cartService)
@@ -95,7 +252,8 @@ namespace BlazorShop.Tests.Application.CommerceNode
             return new StorefrontCheckoutService(
                 context,
                 cartService,
-                new StorefrontCustomerService(context));
+                new StorefrontCustomerService(context),
+                new PaymentHandlerResolver([new CodPaymentHandler()]));
         }
 
         private static StorefrontCartService CreateCartService(
@@ -173,6 +331,12 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 Enabled = true,
                 DisplayOrder = 10,
             });
+            context.SaveChanges();
+        }
+
+        private static void SeedProduct(CommerceNodeDbContext context, Product product)
+        {
+            context.Products.Add(product);
             context.SaveChanges();
         }
 

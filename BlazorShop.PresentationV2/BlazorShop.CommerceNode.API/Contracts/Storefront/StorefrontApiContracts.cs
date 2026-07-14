@@ -233,6 +233,31 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         IReadOnlyList<StorefrontCheckoutLineSummaryResponse> Lines,
         IReadOnlyList<StorefrontCheckoutValidationIssueResponse> Issues);
 
+    public sealed class StorefrontPlaceOrderRequest
+    {
+        [Required]
+        public Guid CheckoutSessionId { get; set; }
+
+        [Range(1, int.MaxValue)]
+        public int ExpectedCartVersion { get; set; }
+
+        [Required]
+        [MaxLength(128)]
+        public string IdempotencyKey { get; set; } = string.Empty;
+    }
+
+    public sealed record StorefrontPlaceOrderResponse(
+        Guid CheckoutSessionId,
+        Guid OrderId,
+        string Reference,
+        string OrderStatus,
+        string PaymentStatus,
+        string PaymentMethodKey,
+        decimal TotalAmount,
+        string CurrencyCode,
+        string IdempotencyKey,
+        DateTime CreatedOn);
+
     public sealed record StorefrontCheckoutLineSummaryResponse(
         Guid LineId,
         Guid ProductId,

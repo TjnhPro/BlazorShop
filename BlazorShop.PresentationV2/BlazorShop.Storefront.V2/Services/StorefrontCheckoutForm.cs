@@ -4,6 +4,8 @@ namespace BlazorShop.Storefront.Services
     {
         public int CartVersion { get; set; }
 
+        public string? IdempotencyKey { get; set; }
+
         public string? CustomerEmail { get; set; }
 
         public string? CustomerName { get; set; }

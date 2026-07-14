@@ -1,6 +1,5 @@
 using BlazorShop.Application.Diagnostics;
 using BlazorShop.Application.DTOs.UserIdentity;
-using BlazorShop.Application.DTOs.Payment;
 using BlazorShop.Application.CommerceNode.VariationTemplates;
 using BlazorShop.Application.Options;
 using BlazorShop.Application.Services;
@@ -209,35 +208,24 @@ app.MapPost(StorefrontRoutes.Checkout, async (
             firstIssue?.Message ?? "Review checkout details before placing the order."));
     }
 
-    var request = new StorefrontCheckoutRequest
-    {
-        CustomerEmail = form.CustomerEmail?.Trim() ?? string.Empty,
-        CustomerName = form.CustomerName?.Trim() ?? string.Empty,
-        PaymentMethodKey = form.PaymentMethodKey?.Trim() ?? string.Empty,
-        Carts = cartResult.Data.Lines.Select(MapCartItem).ToArray(),
-        ShippingAddress = new CheckoutShippingAddress
+    var placeOrderResult = await apiClient.PlaceOrderAsync(
+        new StorefrontPlaceOrderRequest
         {
-            FullName = form.ShippingFullName?.Trim() ?? string.Empty,
-            Email = form.ShippingEmail?.Trim() ?? form.CustomerEmail?.Trim() ?? string.Empty,
-            Phone = form.ShippingPhone?.Trim(),
-            Address1 = form.ShippingAddress1?.Trim() ?? string.Empty,
-            Address2 = form.ShippingAddress2?.Trim(),
-            City = form.ShippingCity?.Trim() ?? string.Empty,
-            State = form.ShippingState?.Trim(),
-            PostalCode = form.ShippingPostalCode?.Trim() ?? string.Empty,
-            CountryCode = form.ShippingCountryCode?.Trim() ?? string.Empty,
+            CheckoutSessionId = previewResult.Data.CheckoutSessionId,
+            ExpectedCartVersion = previewResult.Data.CartVersion,
+            IdempotencyKey = string.IsNullOrWhiteSpace(form.IdempotencyKey)
+                ? Guid.NewGuid().ToString("N")
+                : form.IdempotencyKey.Trim(),
         },
-    };
-
-    var result = await apiClient.CheckoutAsync(request, cancellationToken);
-    if (!result.Success || result.Data is null)
+        cancellationToken);
+    if (!placeOrderResult.Success || placeOrderResult.Data is null)
     {
-        return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("error", result.Message));
+        return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("error", placeOrderResult.Message));
     }
 
     httpContext.Response.Cookies.Delete(StorefrontCookieNames.Cart, new CookieOptions { Path = "/" });
     httpContext.Response.Cookies.Delete(StorefrontCookieNames.CartToken, new CookieOptions { Path = "/" });
-    return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("orderReference", result.Data.Reference));
+    return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("orderReference", placeOrderResult.Data.Reference));
 });
 app.MapGet("/api/cart", async (
     StorefrontCartTokenService cartTokenService,
@@ -505,16 +493,6 @@ static string? FirstNonEmpty(params string?[] values)
     }
 
     return null;
-}
-
-static ProcessCart MapCartItem(StorefrontCartLineResponse item)
-{
-    return new ProcessCart
-    {
-        ProductId = item.ProductId,
-        ProductVariantId = item.ProductVariantId,
-        Quantity = item.Quantity,
-    };
 }
 
 static StorefrontCheckoutPreviewRequest BuildCheckoutPreviewRequest(StorefrontCheckoutForm form, int expectedCartVersion)

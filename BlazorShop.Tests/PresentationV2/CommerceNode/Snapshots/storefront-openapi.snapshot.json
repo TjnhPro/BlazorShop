@@ -2023,6 +2023,97 @@
         }
       }
     },
+    "/api/storefront/stores/{storeKey}/checkout/place-order": {
+      "post": {
+        "tags": [
+          "StorefrontScopedCheckout"
+        ],
+        "summary": "Place a COD order from a checkout session.",
+        "operationId": "StorefrontCheckout_PlaceOrder",
+        "parameters": [
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontPlaceOrderRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontPlaceOrderRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontPlaceOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontPlaceOrderResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/storefront/stores/{storeKey}/newsletter/subscribe": {
       "post": {
         "tags": [
@@ -4820,6 +4911,93 @@
               "$ref": "#/components/schemas/StorefrontPaymentMethodResponse"
             },
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontPlaceOrderRequest": {
+        "required": [
+          "checkoutSessionId",
+          "idempotencyKey"
+        ],
+        "type": "object",
+        "properties": {
+          "checkoutSessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedCartVersion": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "idempotencyKey": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontPlaceOrderResponse": {
+        "type": "object",
+        "properties": {
+          "checkoutSessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reference": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentMethodKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "currencyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdOn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontPlaceOrderResponseCommerceNodeApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/StorefrontPlaceOrderResponse"
           }
         },
         "additionalProperties": false

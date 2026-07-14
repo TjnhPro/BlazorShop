@@ -18,6 +18,16 @@ namespace BlazorShop.Domain.Entities.Payment
 
         public string? VariantAttributesJson { get; set; }
 
+        public string? PersonalizationHash { get; set; }
+
+        public string? PersonalizationJson { get; set; }
+
+        public Guid? ArtworkAssetId { get; set; }
+
+        public int? ArtworkVersion { get; set; }
+
+        public string? FulfillmentProviderKey { get; set; }
+
         public int Quantity { get; set; }
 
         public decimal UnitPrice { get; set; }

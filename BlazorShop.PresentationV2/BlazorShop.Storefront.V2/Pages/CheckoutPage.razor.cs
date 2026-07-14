@@ -28,6 +28,8 @@ namespace BlazorShop.Storefront.Pages
 
         private int CartVersion { get; set; }
 
+        private string IdempotencyKey { get; set; } = Guid.NewGuid().ToString("N");
+
         private string GrandTotalDisplay => lines.Sum(line => line.LineTotal).ToString("0.00", CultureInfo.InvariantCulture);
 
         protected override async Task OnParametersSetAsync()

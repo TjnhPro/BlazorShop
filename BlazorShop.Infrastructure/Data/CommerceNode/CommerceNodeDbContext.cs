@@ -283,6 +283,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.Property(session => session.StoreId).HasColumnName("store_id");
                 entity.Property(session => session.CartSessionId).HasColumnName("cart_session_id");
                 entity.Property(session => session.CustomerId).HasColumnName("customer_id");
+                entity.Property(session => session.OrderId).HasColumnName("order_id");
                 entity.Property(session => session.State).HasColumnName("state").HasMaxLength(32).IsRequired();
                 entity.Property(session => session.CartVersion).HasColumnName("cart_version");
                 entity.Property(session => session.CustomerEmail).HasColumnName("customer_email").HasMaxLength(256).IsRequired();
@@ -306,6 +307,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.Property(session => session.CurrencyCode).HasColumnName("currency_code").HasMaxLength(3).IsRequired();
                 entity.Property(session => session.ValidationIssuesJson).HasColumnName("validation_issues_json").HasColumnType("jsonb");
                 entity.Property(session => session.NextAction).HasColumnName("next_action").HasMaxLength(64).IsRequired();
+                entity.Property(session => session.IdempotencyKey).HasColumnName("idempotency_key").HasMaxLength(128);
+                entity.Property(session => session.PlacedAtUtc).HasColumnName("placed_at_utc").HasColumnType("timestamp with time zone");
                 entity.Property(session => session.ExpiresAtUtc).HasColumnName("expires_at_utc").HasColumnType("timestamp with time zone");
                 entity.Property(session => session.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
                 entity.Property(session => session.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -313,6 +316,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.HasIndex(session => session.PublicId).IsUnique();
                 entity.HasIndex(session => new { session.StoreId, session.CartSessionId, session.State });
                 entity.HasIndex(session => session.CustomerId);
+                entity.HasIndex(session => session.OrderId);
+                entity.HasIndex(session => new { session.StoreId, session.IdempotencyKey })
+                    .IsUnique()
+                    .HasFilter("idempotency_key IS NOT NULL");
                 entity.HasIndex(session => session.ExpiresAtUtc);
 
                 entity.HasOne(session => session.Store)
@@ -328,6 +335,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.HasOne(session => session.Customer)
                     .WithMany()
                     .HasForeignKey(session => session.CustomerId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasOne(session => session.Order)
+                    .WithMany()
+                    .HasForeignKey(session => session.OrderId)
                     .OnDelete(DeleteBehavior.SetNull);
 
                 entity.ToTable(
@@ -823,7 +835,22 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 .HasColumnType("jsonb");
 
             modelBuilder.Entity<OrderLine>()
+                .Property(line => line.PersonalizationHash)
+                .HasMaxLength(128);
+
+            modelBuilder.Entity<OrderLine>()
+                .Property(line => line.PersonalizationJson)
+                .HasColumnType("jsonb");
+
+            modelBuilder.Entity<OrderLine>()
+                .Property(line => line.FulfillmentProviderKey)
+                .HasMaxLength(64);
+
+            modelBuilder.Entity<OrderLine>()
                 .HasIndex(line => line.ProductVariantId);
+
+            modelBuilder.Entity<OrderLine>()
+                .HasIndex(line => line.ArtworkAssetId);
 
             modelBuilder.Entity<OrderLine>()
                 .HasOne<ProductVariant>()

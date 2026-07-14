@@ -42,6 +42,24 @@ namespace BlazorShop.Application.CommerceNode.Checkout
         IReadOnlyList<StorefrontCheckoutLineSummary> Lines,
         IReadOnlyList<StorefrontCheckoutValidationIssue> Issues);
 
+    public sealed record StorefrontPlaceOrderRequest(
+        Guid StoreId,
+        Guid CheckoutSessionId,
+        int ExpectedCartVersion,
+        string IdempotencyKey);
+
+    public sealed record StorefrontPlaceOrderResult(
+        Guid CheckoutSessionId,
+        Guid OrderId,
+        string Reference,
+        string OrderStatus,
+        string PaymentStatus,
+        string PaymentMethodKey,
+        decimal TotalAmount,
+        string CurrencyCode,
+        string IdempotencyKey,
+        DateTime CreatedOn);
+
     public sealed record StorefrontCheckoutLineSummary(
         Guid LineId,
         Guid ProductId,
@@ -62,6 +80,10 @@ namespace BlazorShop.Application.CommerceNode.Checkout
     {
         Task<ServiceResponse<StorefrontCheckoutPreviewResult>> PreviewAsync(
             StorefrontCheckoutPreviewRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<StorefrontPlaceOrderResult>> PlaceOrderAsync(
+            StorefrontPlaceOrderRequest request,
             CancellationToken cancellationToken = default);
     }
 }

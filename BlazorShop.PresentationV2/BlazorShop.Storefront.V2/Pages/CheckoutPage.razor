@@ -53,6 +53,7 @@
                         <form method="post" action="@StorefrontRoutes.Checkout" class="space-y-6">
                             <AntiforgeryToken />
                             <input type="hidden" name="CartVersion" value="@CartVersion" />
+                            <input type="hidden" name="IdempotencyKey" value="@IdempotencyKey" />
 
                             <section class="grid gap-4 md:grid-cols-2">
                                 <label class="block text-sm">

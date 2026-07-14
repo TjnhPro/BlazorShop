@@ -6,8 +6,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Checkout;
     using BlazorShop.Application.CommerceNode.Customers;
+    using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.DTOs;
+    using BlazorShop.Domain.Constants;
+    using BlazorShop.Domain.Entities;
     using BlazorShop.Domain.Entities.CommerceNode;
+    using BlazorShop.Domain.Entities.Payment;
 
     using Microsoft.EntityFrameworkCore;
 
@@ -19,15 +23,18 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly CommerceNodeDbContext context;
         private readonly IStorefrontCartService cartService;
         private readonly IStorefrontCustomerService customerService;
+        private readonly IPaymentHandlerResolver paymentHandlerResolver;
 
         public StorefrontCheckoutService(
             CommerceNodeDbContext context,
             IStorefrontCartService cartService,
-            IStorefrontCustomerService customerService)
+            IStorefrontCustomerService customerService,
+            IPaymentHandlerResolver paymentHandlerResolver)
         {
             this.context = context;
             this.cartService = cartService;
             this.customerService = customerService;
+            this.paymentHandlerResolver = paymentHandlerResolver;
         }
 
         public async Task<ServiceResponse<StorefrontCheckoutPreviewResult>> PreviewAsync(
@@ -193,7 +200,247 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     session.CurrencyCode,
                     session.ExpiresAtUtc,
                     lines,
-                    issues));
+                issues));
+        }
+
+        public async Task<ServiceResponse<StorefrontPlaceOrderResult>> PlaceOrderAsync(
+            StorefrontPlaceOrderRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            if (request.StoreId == Guid.Empty)
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.ValidationError, "Store is required.");
+            }
+
+            if (request.CheckoutSessionId == Guid.Empty)
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.ValidationError, "Checkout session is required.");
+            }
+
+            if (request.ExpectedCartVersion < 1)
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.ValidationError, "Cart version is required.");
+            }
+
+            var idempotencyKey = NormalizeIdempotencyKey(request.IdempotencyKey);
+            if (idempotencyKey is null)
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.ValidationError, "Idempotency key is required.");
+            }
+
+            var existing = await this.FindCompletedByIdempotencyKeyAsync(request.StoreId, idempotencyKey, cancellationToken);
+            if (existing is not null)
+            {
+                return Succeeded("Order already placed.", existing);
+            }
+
+            var session = await this.context.CheckoutSessions
+                .Include(checkout => checkout.CartSession!)
+                    .ThenInclude(cart => cart.Lines)
+                .Include(checkout => checkout.Order)
+                .FirstOrDefaultAsync(
+                    checkout => checkout.StoreId == request.StoreId
+                        && checkout.PublicId == request.CheckoutSessionId,
+                    cancellationToken);
+
+            if (session is null)
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.NotFound, "Checkout session was not found.");
+            }
+
+            if (session.OrderId.HasValue
+                && string.Equals(session.IdempotencyKey, idempotencyKey, StringComparison.Ordinal)
+                && session.Order is not null)
+            {
+                return Succeeded("Order already placed.", ToPlaceOrderResult(session, session.Order, idempotencyKey));
+            }
+
+            if (!string.Equals(session.State, CheckoutSessionStates.Ready, StringComparison.OrdinalIgnoreCase))
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Checkout session is not ready for order placement.");
+            }
+
+            if (session.ExpiresAtUtc <= DateTimeOffset.UtcNow)
+            {
+                session.State = CheckoutSessionStates.Expired;
+                session.UpdatedAtUtc = DateTimeOffset.UtcNow;
+                await this.context.SaveChangesAsync(cancellationToken);
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Checkout session has expired.");
+            }
+
+            var cart = session.CartSession;
+            if (cart is null)
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.NotFound, "Cart session was not found.");
+            }
+
+            if (!string.Equals(cart.State, CartSessionStates.Active, StringComparison.OrdinalIgnoreCase))
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Cart is not active.");
+            }
+
+            if (cart.Version != request.ExpectedCartVersion || cart.Version != session.CartVersion)
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Cart version is stale.");
+            }
+
+            if (cart.Lines.Count == 0)
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.ValidationError, "Cart is empty.");
+            }
+
+            var paymentMethodKey = NormalizeKey(session.PaymentMethodKey);
+            if (!await this.IsPaymentMethodEnabledAsync(request.StoreId, paymentMethodKey, cancellationToken))
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Payment method is not available.");
+            }
+
+            if (!string.Equals(paymentMethodKey, PaymentMethodKeys.Cod, StringComparison.OrdinalIgnoreCase))
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Only COD order placement is available in this phase.");
+            }
+
+            var lineResolution = await this.ResolveOrderLinesAsync(request.StoreId, cart.Lines, cancellationToken);
+            if (!lineResolution.Success)
+            {
+                return Failed<StorefrontPlaceOrderResult>(lineResolution.ResponseType, lineResolution.Message);
+            }
+
+            var lines = lineResolution.Lines;
+            var totalAmount = lines.Sum(line => line.CartLine.Quantity * line.UnitPrice);
+            if (totalAmount <= 0m)
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.ValidationError, "Cart total must be greater than zero.");
+            }
+
+            var currencyCode = NormalizeCurrency(session.CurrencyCode) ?? DefaultCurrencyCode;
+            PaymentHandlerResult paymentResult;
+            try
+            {
+                var handler = this.paymentHandlerResolver.Resolve(paymentMethodKey);
+                paymentResult = await handler.ProcessAsync(
+                    new PaymentHandlerContext(
+                        request.StoreId,
+                        Guid.Empty,
+                        paymentMethodKey,
+                        totalAmount,
+                        currencyCode,
+                        JsonSerializer.Serialize(new
+                        {
+                            handler = paymentMethodKey,
+                            checkoutSessionId = session.PublicId,
+                            idempotencyKey,
+                            mode = "test",
+                            processedAt = DateTimeOffset.UtcNow,
+                        }, JsonOptions)),
+                    cancellationToken);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, ex.Message);
+            }
+
+            if (!paymentResult.Success)
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, paymentResult.Message);
+            }
+
+            var now = DateTimeOffset.UtcNow;
+            var order = new Order
+            {
+                Id = Guid.NewGuid(),
+                UserId = string.Empty,
+                CustomerId = session.CustomerId,
+                StoreId = request.StoreId,
+                Reference = $"ORD-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..8].ToUpperInvariant()}",
+                OrderStatus = OrderStatuses.Processing,
+                PaymentStatus = paymentResult.PaymentStatus,
+                PaymentMethodKey = paymentMethodKey,
+                PaymentAt = paymentResult.PaymentAt,
+                PaymentMetadataJson = paymentResult.MetadataJson,
+                CurrencyCode = currencyCode,
+                TotalAmount = totalAmount,
+                CustomerName = session.CustomerName,
+                CustomerEmail = session.CustomerEmail,
+                ShippingFullName = session.ShippingFullName,
+                ShippingEmail = session.ShippingEmail,
+                ShippingPhone = session.ShippingPhone,
+                ShippingAddress1 = session.ShippingAddress1,
+                ShippingAddress2 = session.ShippingAddress2,
+                ShippingCity = session.ShippingCity,
+                ShippingState = session.ShippingState,
+                ShippingPostalCode = session.ShippingPostalCode,
+                ShippingCountryCode = session.ShippingCountryCode,
+                ShippingStatus = ShippingStatuses.NotYetShipped,
+                CreatedOn = now.UtcDateTime,
+                UpdatedAt = now.UtcDateTime,
+                Lines = lines.Select(line => new OrderLine
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = line.Product.Id,
+                    ProductName = line.Product.Name,
+                    Sku = line.Variant?.Sku ?? line.Product.Sku,
+                    Image = line.Product.Image,
+                    ProductVariantId = line.Variant?.Id,
+                    VariantAttributesJson = line.CartLine.SelectedAttributesJson ?? line.Variant?.AttributesJson,
+                    PersonalizationHash = line.CartLine.PersonalizationHash,
+                    PersonalizationJson = line.CartLine.PersonalizationJson,
+                    ArtworkAssetId = line.CartLine.ArtworkAssetId,
+                    ArtworkVersion = line.CartLine.ArtworkVersion,
+                    FulfillmentProviderKey = line.CartLine.FulfillmentProviderKey,
+                    Quantity = line.CartLine.Quantity,
+                    UnitPrice = line.UnitPrice,
+                }).ToList(),
+            };
+
+            await using var transaction = this.context.Database.IsRelational()
+                ? await this.context.Database.BeginTransactionAsync(cancellationToken)
+                : null;
+
+            this.context.Orders.Add(order);
+            foreach (var line in lines)
+            {
+                DeductTrackedStock(line);
+            }
+
+            cart.State = CartSessionStates.Ordered;
+            cart.ConvertedOrderId = order.Id;
+            cart.ExpiresAtUtc = now;
+            cart.LastActivityAtUtc = now;
+            cart.UpdatedAtUtc = now;
+
+            session.State = CheckoutSessionStates.Completed;
+            session.OrderId = order.Id;
+            session.IdempotencyKey = idempotencyKey;
+            session.NextAction = "complete";
+            session.PlacedAtUtc = now;
+            session.UpdatedAtUtc = now;
+
+            try
+            {
+                await this.context.SaveChangesAsync(cancellationToken);
+                if (transaction is not null)
+                {
+                    await transaction.CommitAsync(cancellationToken);
+                }
+            }
+            catch (DbUpdateException)
+            {
+                if (transaction is not null)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                }
+
+                var duplicate = await this.FindCompletedByIdempotencyKeyAsync(request.StoreId, idempotencyKey, cancellationToken);
+                if (duplicate is not null)
+                {
+                    return Succeeded("Order already placed.", duplicate);
+                }
+
+                throw;
+            }
+
+            return Succeeded("Order placed successfully.", ToPlaceOrderResult(session, order, idempotencyKey));
         }
 
         private async Task<bool> IsPaymentMethodEnabledAsync(Guid storeId, string paymentMethodKey, CancellationToken cancellationToken)
@@ -210,6 +457,101 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                         && method.PaymentMethodKey == paymentMethodKey
                         && method.Enabled,
                     cancellationToken);
+        }
+
+        private async Task<StorefrontPlaceOrderResult?> FindCompletedByIdempotencyKeyAsync(
+            Guid storeId,
+            string idempotencyKey,
+            CancellationToken cancellationToken)
+        {
+            var session = await this.context.CheckoutSessions
+                .AsNoTracking()
+                .Include(checkout => checkout.Order)
+                .FirstOrDefaultAsync(
+                    checkout => checkout.StoreId == storeId
+                        && checkout.IdempotencyKey == idempotencyKey
+                        && checkout.OrderId != null,
+                    cancellationToken);
+
+            return session?.Order is null ? null : ToPlaceOrderResult(session, session.Order, idempotencyKey);
+        }
+
+        private async Task<OrderLineResolution> ResolveOrderLinesAsync(
+            Guid storeId,
+            IEnumerable<CartLine> cartLines,
+            CancellationToken cancellationToken)
+        {
+            var results = new List<OrderLineSnapshot>();
+
+            foreach (var cartLine in cartLines)
+            {
+                if (cartLine.Quantity < 1)
+                {
+                    return OrderLineResolution.Failed(ServiceResponseType.ValidationError, "Cart line quantity must be at least 1.");
+                }
+
+                var product = await this.context.Products
+                    .Include(item => item.Category)
+                    .Include(item => item.Variants)
+                    .FirstOrDefaultAsync(item => item.Id == cartLine.ProductId, cancellationToken);
+                if (product is null || !IsStorefrontAvailable(product, storeId))
+                {
+                    return OrderLineResolution.Failed(ServiceResponseType.Conflict, "Product is not available for this store.");
+                }
+
+                var variant = cartLine.ProductVariantId.HasValue
+                    ? product.Variants.FirstOrDefault(candidate => candidate.Id == cartLine.ProductVariantId.Value)
+                    : null;
+                if (cartLine.ProductVariantId.HasValue && variant is null)
+                {
+                    return OrderLineResolution.Failed(ServiceResponseType.Conflict, "Selected product variant was not found.");
+                }
+
+                var availableStock = variant?.Stock ?? product.Quantity;
+                if (availableStock < cartLine.Quantity)
+                {
+                    return OrderLineResolution.Failed(ServiceResponseType.Conflict, "One or more cart items are out of stock.");
+                }
+
+                var unitPrice = cartLine.UnitPriceSnapshot ?? variant?.Price ?? product.Price;
+                if (unitPrice <= 0m)
+                {
+                    return OrderLineResolution.Failed(ServiceResponseType.ValidationError, "Cart line price is invalid.");
+                }
+
+                results.Add(new OrderLineSnapshot(cartLine, product, variant, unitPrice));
+            }
+
+            return OrderLineResolution.Succeeded(results);
+        }
+
+        private static bool IsStorefrontAvailable(Product product, Guid storeId)
+        {
+            return product.StoreId == storeId
+                && product.ArchivedAt is null
+                && product.IsPublished
+                && product.PublishedOn is not null
+                && !string.IsNullOrWhiteSpace(product.Slug)
+                && product.Category is not null
+                && product.Category.StoreId == product.StoreId
+                && product.Category.ArchivedAt is null
+                && product.Category.IsPublished;
+        }
+
+        private static void DeductTrackedStock(OrderLineSnapshot line)
+        {
+            if (!string.IsNullOrWhiteSpace(line.CartLine.FulfillmentProviderKey))
+            {
+                return;
+            }
+
+            if (line.Variant is not null)
+            {
+                line.Variant.Stock -= line.CartLine.Quantity;
+                return;
+            }
+
+            line.Product.Quantity -= line.CartLine.Quantity;
         }
 
         private static IEnumerable<StorefrontCheckoutValidationIssue> ValidateCheckoutFields(StorefrontCheckoutPreviewRequest request)
@@ -287,10 +629,39 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
 
+        private static string? NormalizeIdempotencyKey(string? value)
+        {
+            var normalized = NormalizeNullable(value);
+            if (normalized is null)
+            {
+                return null;
+            }
+
+            return normalized.Length > 128 ? null : normalized;
+        }
+
         private static string? NormalizeCurrency(string? value)
         {
             var normalized = NormalizeNullable(value);
             return normalized is null ? null : normalized.ToUpperInvariant();
+        }
+
+        private static StorefrontPlaceOrderResult ToPlaceOrderResult(
+            CheckoutSession session,
+            Order order,
+            string idempotencyKey)
+        {
+            return new StorefrontPlaceOrderResult(
+                session.PublicId,
+                order.Id,
+                order.Reference,
+                order.OrderStatus,
+                order.PaymentStatus,
+                order.PaymentMethodKey,
+                order.TotalAmount,
+                NormalizeCurrency(order.CurrencyCode) ?? DefaultCurrencyCode,
+                idempotencyKey,
+                order.CreatedOn);
         }
 
         private static ServiceResponse<StorefrontCheckoutPreviewResult> Succeeded(
@@ -312,6 +683,50 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             {
                 ResponseType = responseType,
             };
+        }
+
+        private static ServiceResponse<TPayload> Succeeded<TPayload>(
+            string message,
+            TPayload payload)
+        {
+            return new ServiceResponse<TPayload>(true, message)
+            {
+                Payload = payload,
+                ResponseType = ServiceResponseType.Success,
+            };
+        }
+
+        private static ServiceResponse<TPayload> Failed<TPayload>(
+            ServiceResponseType responseType,
+            string message)
+        {
+            return new ServiceResponse<TPayload>(false, message)
+            {
+                ResponseType = responseType,
+            };
+        }
+
+        private sealed record OrderLineSnapshot(
+            CartLine CartLine,
+            Product Product,
+            ProductVariant? Variant,
+            decimal UnitPrice);
+
+        private sealed record OrderLineResolution(
+            bool Success,
+            ServiceResponseType ResponseType,
+            string Message,
+            IReadOnlyList<OrderLineSnapshot> Lines)
+        {
+            public static OrderLineResolution Succeeded(IReadOnlyList<OrderLineSnapshot> lines)
+            {
+                return new OrderLineResolution(true, ServiceResponseType.Success, "Cart lines resolved.", lines);
+            }
+
+            public static OrderLineResolution Failed(ServiceResponseType responseType, string message)
+            {
+                return new OrderLineResolution(false, responseType, message, []);
+            }
         }
     }
 }

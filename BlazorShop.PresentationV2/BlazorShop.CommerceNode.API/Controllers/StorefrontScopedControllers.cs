@@ -4,6 +4,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     using ApplicationStorefrontCheckoutResult = BlazorShop.Application.DTOs.Payment.StorefrontCheckoutResult;
     using ApplicationStorefrontCheckoutPreviewResult = BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutPreviewResult;
+    using ApplicationStorefrontPlaceOrderResult = BlazorShop.Application.CommerceNode.Checkout.StorefrontPlaceOrderResult;
     using IStorefrontCheckoutService = BlazorShop.Application.CommerceNode.Checkout.IStorefrontCheckoutService;
 
     using BlazorShop.Application.CommerceNode.Carts;
@@ -590,6 +591,28 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 result,
                 payload => payload is ApplicationStorefrontCheckoutPreviewResult preview
                     ? preview.ToStorefrontContract()
+                    : null);
+        }
+
+        [HttpPost("place-order")]
+        [AllowAnonymous]
+        public async Task<IActionResult> PlaceOrder(
+            [FromBody] StorefrontPlaceOrderRequest request,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.checkoutService.PlaceOrderAsync(
+                request.ToApplicationRequest(storeId.Value),
+                cancellationToken);
+            return this.FromServiceResponse(
+                result,
+                payload => payload is ApplicationStorefrontPlaceOrderResult order
+                    ? order.ToStorefrontContract()
                     : null);
         }
 

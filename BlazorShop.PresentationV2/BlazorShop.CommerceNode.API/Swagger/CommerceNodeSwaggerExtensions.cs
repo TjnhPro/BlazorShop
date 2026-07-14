@@ -333,6 +333,11 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "Preview and validate a Storefront checkout session.",
                         typeof(CommerceNodeApiResponse<StorefrontCheckoutPreviewResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedCheckout", "PlaceOrder")] = new(
+                        "StorefrontCheckout_PlaceOrder",
+                        "Place a COD order from a checkout session.",
+                        typeof(CommerceNodeApiResponse<StorefrontPlaceOrderResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedNewsletter", "Subscribe")] = new(
                         "StorefrontNewsletter_Subscribe",
                         "Subscribe an email to the Storefront newsletter.",

@@ -482,6 +482,28 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         }
 
         [Fact]
+        public async Task StorefrontSwagger_PlaceOrderHasGeneratorSafeContract()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var operation = GetOperation(swagger, "StorefrontCheckout_PlaceOrder");
+
+            Assert.False(string.IsNullOrWhiteSpace(operation["summary"]?.GetValue<string>()));
+            Assert.True(operation["responses"]?.AsObject().Count > 1);
+            AssertRequiredRequestBody(operation);
+            Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(operation));
+
+            var requestSchema = ResolveRequestBodySchema(operation, schemas);
+            var requestProperties = GetPropertyNames(requestSchema);
+            Assert.Contains("checkoutSessionId", requestProperties);
+            Assert.Contains("expectedCartVersion", requestProperties);
+            Assert.Contains("idempotencyKey", requestProperties);
+            Assert.DoesNotContain("carts", requestProperties, StringComparer.OrdinalIgnoreCase);
+
+            Assert.True(schemas.ContainsKey("StorefrontPlaceOrderResponse"));
+        }
+
+        [Fact]
         public async Task StorefrontSwagger_FinalHardening_HasNoBrokenSchemaReferences()
         {
             var swagger = await this.GetStorefrontSwaggerAsync();

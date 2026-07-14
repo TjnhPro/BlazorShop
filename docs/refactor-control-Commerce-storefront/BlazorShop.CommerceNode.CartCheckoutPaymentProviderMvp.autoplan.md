@@ -443,6 +443,8 @@ Commit boundary: `feat: add checkout preview session`
 
 ### Phase 7 - Idempotent Place Order for COD
 
+Status: completed 2026-07-14 in commit `feat: place cod orders from checkout session`.
+
 Goal: create orders from a checkout session, not raw cart request lines, starting with COD.
 
 Service behavior:

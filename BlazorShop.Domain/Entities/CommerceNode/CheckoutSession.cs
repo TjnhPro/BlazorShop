@@ -1,5 +1,7 @@
 namespace BlazorShop.Domain.Entities.CommerceNode
 {
+    using BlazorShop.Domain.Entities.Payment;
+
     public sealed class CheckoutSession
     {
         public Guid Id { get; set; } = Guid.NewGuid();
@@ -11,6 +13,8 @@ namespace BlazorShop.Domain.Entities.CommerceNode
         public Guid CartSessionId { get; set; }
 
         public Guid? CustomerId { get; set; }
+
+        public Guid? OrderId { get; set; }
 
         public string State { get; set; } = CheckoutSessionStates.Draft;
 
@@ -58,6 +62,10 @@ namespace BlazorShop.Domain.Entities.CommerceNode
 
         public string NextAction { get; set; } = "review";
 
+        public string? IdempotencyKey { get; set; }
+
+        public DateTimeOffset? PlacedAtUtc { get; set; }
+
         public DateTimeOffset ExpiresAtUtc { get; set; } = DateTimeOffset.UtcNow.AddHours(1);
 
         public DateTimeOffset CreatedAtUtc { get; set; } = DateTimeOffset.UtcNow;
@@ -69,5 +77,7 @@ namespace BlazorShop.Domain.Entities.CommerceNode
         public CartSession? CartSession { get; set; }
 
         public CommerceCustomer? Customer { get; set; }
+
+        public Order? Order { get; set; }
     }
 }

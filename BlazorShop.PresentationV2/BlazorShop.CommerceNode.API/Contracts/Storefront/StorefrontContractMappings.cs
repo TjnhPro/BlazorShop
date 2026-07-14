@@ -194,6 +194,32 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                     issue.ProductId)).ToArray());
         }
 
+        public static BlazorShop.Application.CommerceNode.Checkout.StorefrontPlaceOrderRequest ToApplicationRequest(
+            this Contracts.Storefront.StorefrontPlaceOrderRequest request,
+            Guid storeId)
+        {
+            return new BlazorShop.Application.CommerceNode.Checkout.StorefrontPlaceOrderRequest(
+                storeId,
+                request.CheckoutSessionId,
+                request.ExpectedCartVersion,
+                request.IdempotencyKey);
+        }
+
+        public static StorefrontPlaceOrderResponse ToStorefrontContract(this StorefrontPlaceOrderResult result)
+        {
+            return new StorefrontPlaceOrderResponse(
+                result.CheckoutSessionId,
+                result.OrderId,
+                result.Reference,
+                result.OrderStatus,
+                result.PaymentStatus,
+                result.PaymentMethodKey,
+                result.TotalAmount,
+                result.CurrencyCode,
+                result.IdempotencyKey,
+                result.CreatedOn);
+        }
+
         public static ProcessCart ToProcessCart(this StorefrontCartItemRequest request)
         {
             return new ProcessCart
