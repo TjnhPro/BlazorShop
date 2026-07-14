@@ -430,6 +430,39 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures));
         }
 
+        [Fact(Skip = "Phase 0 pending guardrail for CartCheckoutPaymentProviderMvp: enable after server cart, checkout session, and payment attempt endpoints are added.")]
+        public async Task StorefrontSwagger_CartCheckoutPaymentProviderEndpointsHaveGeneratorSafeContracts()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var operations = GetOperations(swagger)
+                .ToDictionary(
+                    operation => operation.Value["operationId"]?.GetValue<string>() ?? string.Empty,
+                    operation => operation.Value,
+                    StringComparer.Ordinal);
+
+            var expectedOperationIds = new[]
+            {
+                "StorefrontCart_CreateSession",
+                "StorefrontCart_Get",
+                "StorefrontCart_AddLine",
+                "StorefrontCart_UpdateLine",
+                "StorefrontCart_RemoveLine",
+                "StorefrontCart_Validate",
+                "StorefrontCheckout_Preview",
+                "StorefrontCheckout_PlaceOrder",
+                "StorefrontPayments_GetAttempt",
+                "StorefrontPayments_HandleProviderCallback",
+                "StorefrontPayments_HandleWebhook",
+            };
+
+            foreach (var operationId in expectedOperationIds)
+            {
+                Assert.True(operations.TryGetValue(operationId, out var operation), $"{operationId} was not found.");
+                Assert.False(string.IsNullOrWhiteSpace(operation!["summary"]?.GetValue<string>()));
+                Assert.True(operation["responses"]?.AsObject().Count > 1, $"{operationId} must declare success and error responses.");
+            }
+        }
+
         private HttpClient CreateSwaggerClient()
         {
             var configuredFactory = this.factory.WithWebHostBuilder(builder =>

@@ -407,5 +407,61 @@ namespace BlazorShop.Tests.Application.Services.Payment
             // Assert
             Assert.Empty(orderItems);
         }
+
+        [Fact(Skip = "Phase 0 pending guardrail for CartCheckoutPaymentProviderMvp: checkout must resolve only published/current-store products before server cart cutover.")]
+        public async Task StorefrontCheckoutAsync_ShouldRejectUnpublishedProducts_WhenServerCartValidationIsImplemented()
+        {
+            var productId = Guid.NewGuid();
+            var checkout = new StorefrontCheckoutRequest
+            {
+                CustomerEmail = "buyer@example.com",
+                CustomerName = "Buyer",
+                PaymentMethodKey = "cod",
+                ShippingAddress = new CheckoutShippingAddress
+                {
+                    FullName = "Buyer",
+                    Email = "buyer@example.com",
+                    Address1 = "1 Main Street",
+                    City = "Hanoi",
+                    PostalCode = "10000",
+                    CountryCode = "VN",
+                },
+                Carts = new List<ProcessCart>
+                {
+                    new()
+                    {
+                        ProductId = productId,
+                        Quantity = 1,
+                    },
+                },
+            };
+
+            _productReadRepositoryMock
+                .Setup(repository => repository.GetProductsByIdsAsync(It.IsAny<IEnumerable<Guid>>()))
+                .ReturnsAsync(new Dictionary<Guid, Product>
+                {
+                    [productId] = new()
+                    {
+                        Id = productId,
+                        Name = "Draft product",
+                        IsPublished = false,
+                        Price = 10m,
+                        Quantity = 5,
+                    },
+                });
+
+            var result = await _cartService.CheckoutAsync(checkout, null);
+
+            Assert.False(result.Success);
+            Assert.Contains("published", result.Message, StringComparison.OrdinalIgnoreCase);
+            _orderRepositoryMock.Verify(repository => repository.CreateAsync(It.IsAny<Order>()), Times.Never);
+        }
+
+        [Fact(Skip = "Phase 0 pending guardrail for CartCheckoutPaymentProviderMvp: place-order must require idempotency before payment provider cutover.")]
+        public Task StorefrontPlaceOrderAsync_ShouldReturnSameOrder_ForDuplicateIdempotencyKey()
+        {
+            throw new NotImplementedException(
+                "Implement after CheckoutSession and PaymentAttempt exist: duplicate idempotency key must return the original order/payment result.");
+        }
     }
 }

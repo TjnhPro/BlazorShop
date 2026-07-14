@@ -207,6 +207,25 @@ Use this checklist whenever `StorefrontHeader`, `/search`, `StorefrontApiClient`
 - [x] Cart route stays private/noindex.
   - 2026-07-09: verified `X-Robots-Tag`, noindex meta, and no-store/no-cache.
 
+## Server Cart, Checkout Session & Payment Provider MVP
+
+Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.md`.
+
+- [x] Phase 0 records Storefront V2 migration checklist before runtime changes. 2026-07-14: checklist added for server-cart/token checkout cutover.
+- [ ] Storefront V2 creates or resumes an opaque server cart token instead of treating `my-cart` JSON as authoritative.
+- [ ] New cart token cookie is `HttpOnly`, `SameSite=Lax`, `Path=/`, and `Secure` outside development.
+- [ ] Existing `my-cart` cookie is imported once into the server cart and then deleted after successful import.
+- [ ] Add-to-cart uses a Storefront V2 local endpoint/API client call instead of writing final price/order data directly to the cookie.
+- [ ] `/my-cart` renders server cart lines, normalized product/variant labels, totals, and unavailable-line warnings.
+- [ ] Quantity update, remove line, and clear cart mutate the server cart and refresh the cart version.
+- [ ] `/checkout` calls checkout preview before final submit and displays field-level validation errors.
+- [ ] Stale cart version on checkout shows a review-cart state, not a duplicate order.
+- [ ] COD checkout places one order, clears/expires the cart token, and shows confirmation.
+- [ ] Online provider checkout redirects to provider next action when configured.
+- [ ] Provider cancel/failure returns to a recoverable checkout state.
+- [ ] Payment attempt polling page shows pending, success, failure, and retry states without console errors.
+- [ ] Browser QA verifies no readable raw cart price payload remains after server-cart migration.
+
 ## Auth And Checkout Handoff
 
 - [x] Empty anonymous `/checkout` renders the local empty-cart state. 2026-07-14 host smoke test covers current local checkout behavior.

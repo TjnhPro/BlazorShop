@@ -91,6 +91,25 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] Storefront Swagger passes Microsoft.OpenApi reader parsing and has no broken schema references. 2026-07-14: `StorefrontSwagger_PassesOpenApiReaderValidation` and broken-ref traversal tests passed.
 - [x] Storefront Swagger snapshot is updated after final hardening. 2026-07-14: `storefront-openapi.snapshot.json` refreshed and contract suite passed 16/16.
 
+## Cart, Checkout & Payment Provider MVP
+
+Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.md`.
+
+- [x] Phase 0 records pending guardrail tests for server-cart checkout product visibility. 2026-07-14: `CartServiceTests.StorefrontCheckoutAsync_ShouldRejectUnpublishedProducts_WhenServerCartValidationIsImplemented` added as an intentional skipped guardrail.
+- [x] Phase 0 records pending guardrail tests for idempotent place-order. 2026-07-14: `CartServiceTests.StorefrontPlaceOrderAsync_ShouldReturnSameOrder_ForDuplicateIdempotencyKey` added as an intentional skipped guardrail.
+- [x] Phase 0 records pending OpenAPI guardrail for future cart/checkout/payment provider endpoints. 2026-07-14: `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_CartCheckoutPaymentProviderEndpointsHaveGeneratorSafeContracts` added as an intentional skipped guardrail.
+- [ ] Server cart session tables are created in `CommerceNodeDbContext` only.
+- [ ] Store-scoped commerce customer profile is unique by `(StoreId, NormalizedEmail)` and does not require adding `StoreId` to `AppUser`.
+- [ ] Cart token lookup refuses cross-store token reuse without revealing another store's cart.
+- [ ] Cart API rejects unpublished, archived, wrong-store, and invalid-variant products.
+- [ ] Checkout preview validates cart version, customer email/name, payment method, and shipping address without creating an order.
+- [ ] Place-order requires idempotency and returns the original result for duplicate retry.
+- [ ] COD checkout creates order from server cart snapshot and marks the cart ordered.
+- [ ] Payment attempts are persisted before online provider redirect/callback work.
+- [ ] Provider callback/webhook endpoints are POST-only and idempotent.
+- [ ] Storefront Swagger includes generator-safe request/response/error schemas for every new cart/checkout/payment endpoint.
+- [ ] Storefront Swagger snapshot is refreshed after cart/checkout/payment API cutover.
+
 ## Startup Database Migration
 
 - [x] Clean `CommerceNodeConnection` database is created/migrated by `BlazorShop.CommerceNode.API` startup when `CommerceNode:Database:MigrateOnStartup=true`. 2026-07-11: startup smoke passed against disposable DB `blazorshop_commerce_node_startup_qa_20260711`.
