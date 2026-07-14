@@ -22,6 +22,7 @@ Architecture docs:
 - `docs/architecture/06-feature-map.md`
 - `docs/architecture/07-deployment-and-local-run.md`
 - `docs/architecture/08-agent-decision-rules.md`
+- `docs/architecture/09-api-contract-standards.md`
 
 ## Project Shape
 
@@ -84,6 +85,24 @@ Route ownership:
 - `api/storefront/stores/{storeKey}/*` belongs to Commerce Node Storefront APIs and is called by Storefront V2. Store scope must come from the route value.
 - `api/internal/*` has been removed from the active V2 Commerce Node runtime. Do not add new features or compatibility routes there.
 - Legacy route groups such as `api/admin/*`, `api/public/*`, and `api/[controller]` are not V2 targets.
+
+## API Contract Standards
+
+Every new or changed active V2 API must satisfy `docs/architecture/09-api-contract-standards.md`.
+
+Minimum bar:
+
+- Stable `operationId` and short summary for every operation.
+- Explicit request DTOs and response DTOs.
+- Standard error response schemas for expected failures.
+- Required request body metadata when the endpoint reads a body.
+- Security schemes and per-operation security requirements for protected endpoints.
+- Validation metadata in OpenAPI, including required fields, length/range bounds, email/password requirements, shipping-address requirements where applicable, and `minimum: 1` for quantity-like fields.
+- Client-facing sort/filter enums should be named strings, not numeric enum values.
+- No server-owned fields in client request contracts, such as authenticated `userId`, client-supplied order status, `IsPublished`, audit fields, credentials, or store ownership.
+- No domain entities or admin-only DTOs in public schemas.
+- No side-effecting `GET`; payment capture, checkout submit, logout/revocation, imports, and task commands must use an appropriate command method such as `POST`.
+- Contract tests must prove response schemas, security metadata, error responses, OpenAPI validity, generator safety, and snapshots where relevant.
 
 ## Database Ownership
 

@@ -171,6 +171,10 @@ Legacy `AppDbContext` migrations are not part of the V2 startup migration flow.
 
 ## API Response Pattern
 
+All active V2 HTTP APIs must follow [API Contract Standards](09-api-contract-standards.md).
+
+OpenAPI is a contract surface, not only debug UI. New or changed operations must publish stable operation IDs, summaries, explicit request/response DTO schemas, standard error schemas, required request bodies, validation metadata, and security requirements. Contract tests must protect those fields before the change is considered complete.
+
 Control Plane API uses the standardized API envelope:
 
 ```json

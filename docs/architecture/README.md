@@ -12,6 +12,7 @@ Read these documents before planning or implementing new work:
 6. [Feature Map](06-feature-map.md)
 7. [Deployment And Local Run](07-deployment-and-local-run.md)
 8. [Agent Decision Rules](08-agent-decision-rules.md)
+9. [API Contract Standards](09-api-contract-standards.md)
 
 The current documentation backlog is tracked in [BlazorShop.ArchitectureDocumentation.todo.md](BlazorShop.ArchitectureDocumentation.todo.md).
 
@@ -42,6 +43,18 @@ BlazorShop.ControlPlane.Web
 ```
 
 Commerce Node credentials, node secrets, allowed IP behavior, Commerce Node base URLs, and store security headers must stay behind `BlazorShop.ControlPlane.API`.
+
+## API Contract Standard
+
+Every new or changed active V2 API must follow [API Contract Standards](09-api-contract-standards.md).
+
+The short version:
+
+- Do not expose domain entities as public HTTP schemas.
+- Use explicit request and response DTOs.
+- Publish validation metadata, error responses, response schemas, operation IDs, summaries, required request bodies, and security requirements in OpenAPI.
+- Keep side-effecting operations off `GET`.
+- Add contract tests and Swagger snapshots when the API is consumed by another V2 runtime or external client.
 
 ## Related Docs
 
