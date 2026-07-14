@@ -12,8 +12,6 @@ namespace BlazorShop.CommerceNode.API.Swagger
 
         public const string StorefrontDocumentName = "storefront";
 
-        public const string LegacyInternalDocumentName = "legacy-internal";
-
         public static IServiceCollection AddCommerceNodeSwagger(this IServiceCollection services)
         {
             services.AddSwaggerGen(options =>
@@ -36,19 +34,9 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         Description = "Storefront APIs scoped by api/storefront/stores/{storeKey}/*.",
                     });
 
-                options.SwaggerDoc(
-                    LegacyInternalDocumentName,
-                    new OpenApiInfo
-                    {
-                        Title = "Legacy Internal",
-                        Version = "v1",
-                        Description = "Legacy api/internal/* compatibility APIs. Do not use for new Storefront work.",
-                    });
-
                 options.DocInclusionPredicate(ShouldIncludeApiDescription);
                 options.OperationFilter<CommerceNodeAdminCredentialHeaderOperationFilter>();
                 options.OperationFilter<CommerceAdminStoreKeyOperationFilter>();
-                options.OperationFilter<LegacyInternalStoreKeyHeaderOperationFilter>();
             });
 
             return services;
@@ -65,9 +53,6 @@ namespace BlazorShop.CommerceNode.API.Swagger
                 options.SwaggerEndpoint(
                     $"/swagger/{StorefrontDocumentName}/swagger.json",
                     "Storefront API");
-                options.SwaggerEndpoint(
-                    $"/swagger/{LegacyInternalDocumentName}/swagger.json",
-                    "Legacy Internal");
             });
 
             return app;
@@ -81,7 +66,6 @@ namespace BlazorShop.CommerceNode.API.Swagger
             {
                 CommerceAdminDocumentName => relativePath.StartsWith("api/commerce/", StringComparison.OrdinalIgnoreCase),
                 StorefrontDocumentName => relativePath.StartsWith("api/storefront/stores/{storekey}/", StringComparison.OrdinalIgnoreCase),
-                LegacyInternalDocumentName => relativePath.StartsWith("api/internal/", StringComparison.OrdinalIgnoreCase),
                 _ => false,
             };
         }
@@ -173,21 +157,5 @@ namespace BlazorShop.CommerceNode.API.Swagger
             }
         }
 
-        private sealed class LegacyInternalStoreKeyHeaderOperationFilter : IOperationFilter
-        {
-            public void Apply(OpenApiOperation operation, OperationFilterContext context)
-            {
-                var relativePath = NormalizePath(context.ApiDescription.RelativePath);
-                if (!relativePath.StartsWith("api/internal/", StringComparison.OrdinalIgnoreCase))
-                {
-                    return;
-                }
-
-                EnsureHeaderParameter(
-                    operation,
-                    "X-Store-Key",
-                    "Legacy internal store key header. Compatibility only.");
-            }
-        }
     }
 }
