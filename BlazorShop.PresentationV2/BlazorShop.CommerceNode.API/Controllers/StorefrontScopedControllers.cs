@@ -5,10 +5,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
-    using BlazorShop.Application.DTOs.Category;
     using BlazorShop.Application.DTOs.Discovery;
-    using BlazorShop.Application.DTOs.Payment;
-    using BlazorShop.Application.DTOs.Product;
     using BlazorShop.Application.DTOs.Seo;
     using BlazorShop.Application.DTOs.UserIdentity;
     using BlazorShop.Application.Options;
@@ -16,8 +13,8 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using BlazorShop.Application.Services.Contracts.Authentication;
     using BlazorShop.Application.Services.Contracts.Payment;
     using BlazorShop.CommerceNode.API.Configuration;
+    using BlazorShop.CommerceNode.API.Contracts.Storefront;
     using BlazorShop.CommerceNode.API.Responses;
-    using BlazorShop.Domain.Contracts;
 
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
@@ -39,34 +36,39 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(CreateUser user)
+        public async Task<IActionResult> Register([FromBody] StorefrontRegisterRequest user)
         {
-            var result = await this.authenticationService.CreateUser(user);
+            var result = await this.authenticationService.CreateUser(user.ToApplicationRequest());
             return this.FromServiceResponse(result);
         }
 
         [HttpPost("login")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
-        public async Task<IActionResult> Login(LoginUser user)
+        public async Task<IActionResult> Login([FromBody] StorefrontLoginRequest user)
         {
-            var result = await this.authenticationService.LoginUser(user, this.GetClientIpAddress(), this.GetUserAgent());
+            var result = await this.authenticationService.LoginUser(
+                user.ToApplicationRequest(),
+                this.GetClientIpAddress(),
+                this.GetUserAgent());
             if (!result.Success)
             {
-                return this.BadRequest(CommerceNodeApiResponse<LoginResponse>.Failed(
+                return this.BadRequest(CommerceNodeApiResponse<StorefrontAuthResponse>.Failed(
                     NormalizeLoginMessage(result.Message),
-                    SanitizeLoginResponse(result)));
+                    SanitizeLoginResponse(result).ToStorefrontContract()));
             }
 
             if (string.IsNullOrWhiteSpace(result.RefreshToken))
             {
                 return this.StatusCode(
                     StatusCodes.Status500InternalServerError,
-                    CommerceNodeApiResponse<LoginResponse>.Failed("Error occurred in login.", SanitizeLoginResponse(result)));
+                    CommerceNodeApiResponse<StorefrontAuthResponse>.Failed(
+                        "Error occurred in login.",
+                        SanitizeLoginResponse(result).ToStorefrontContract()));
             }
 
             this.AppendRefreshTokenCookie(result.RefreshToken);
-            return this.Ok(CommerceNodeApiResponse<LoginResponse>.Succeeded(
-                SanitizeLoginResponse(result),
+            return this.Ok(CommerceNodeApiResponse<StorefrontAuthResponse>.Succeeded(
+                SanitizeLoginResponse(result).ToStorefrontContract(),
                 NormalizeLoginMessage(result.Message)));
         }
 
@@ -78,9 +80,9 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 || string.IsNullOrWhiteSpace(refreshToken))
             {
                 this.DeleteRefreshTokenCookie();
-                return this.BadRequest(CommerceNodeApiResponse<LoginResponse>.Failed(
+                return this.BadRequest(CommerceNodeApiResponse<StorefrontAuthResponse>.Failed(
                     "Invalid token.",
-                    new LoginResponse(Message: "Invalid token.")));
+                    new StorefrontAuthResponse(false, "Invalid token.", string.Empty)));
             }
 
             var result = await this.authenticationService.ReviveToken(
@@ -91,9 +93,9 @@ namespace BlazorShop.CommerceNode.API.Controllers
             if (!result.Success)
             {
                 this.DeleteRefreshTokenCookie();
-                return this.BadRequest(CommerceNodeApiResponse<LoginResponse>.Failed(
+                return this.BadRequest(CommerceNodeApiResponse<StorefrontAuthResponse>.Failed(
                     NormalizeLoginMessage(result.Message),
-                    SanitizeLoginResponse(result)));
+                    SanitizeLoginResponse(result).ToStorefrontContract()));
             }
 
             if (string.IsNullOrWhiteSpace(result.RefreshToken))
@@ -101,12 +103,14 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 this.DeleteRefreshTokenCookie();
                 return this.StatusCode(
                     StatusCodes.Status500InternalServerError,
-                    CommerceNodeApiResponse<LoginResponse>.Failed("Error occurred in login.", SanitizeLoginResponse(result)));
+                    CommerceNodeApiResponse<StorefrontAuthResponse>.Failed(
+                        "Error occurred in login.",
+                        SanitizeLoginResponse(result).ToStorefrontContract()));
             }
 
             this.AppendRefreshTokenCookie(result.RefreshToken);
-            return this.Ok(CommerceNodeApiResponse<LoginResponse>.Succeeded(
-                SanitizeLoginResponse(result),
+            return this.Ok(CommerceNodeApiResponse<StorefrontAuthResponse>.Succeeded(
+                SanitizeLoginResponse(result).ToStorefrontContract(),
                 NormalizeLoginMessage(result.Message)));
         }
 
@@ -123,7 +127,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         [HttpPost("change-password")]
         [Authorize]
-        public async Task<IActionResult> ChangePassword([FromBody] ChangePassword dto)
+        public async Task<IActionResult> ChangePassword([FromBody] StorefrontChangePasswordRequest dto)
         {
             var userId = this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
@@ -131,7 +135,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 return this.Unauthorized(CommerceNodeApiResponse<object>.Failed("Customer identity was not found."));
             }
 
-            var result = await this.authenticationService.ChangePassword(dto, userId);
+            var result = await this.authenticationService.ChangePassword(dto.ToApplicationRequest(), userId);
             return this.FromServiceResponse(result);
         }
 
@@ -144,7 +148,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         [HttpPost("update-profile")]
         [Authorize]
-        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfile dto)
+        public async Task<IActionResult> UpdateProfile([FromBody] StorefrontUpdateProfileRequest dto)
         {
             var userId = this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
@@ -152,7 +156,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 return this.Unauthorized(CommerceNodeApiResponse<object>.Failed("Customer identity was not found."));
             }
 
-            var result = await this.authenticationService.UpdateProfile(userId, dto);
+            var result = await this.authenticationService.UpdateProfile(userId, dto.ToApplicationRequest());
             return this.FromServiceResponse(result);
         }
 
@@ -239,14 +243,18 @@ namespace BlazorShop.CommerceNode.API.Controllers
         public async Task<IActionResult> GetCategories()
         {
             var categories = await this.publicCatalogService.GetPublishedCategoriesAsync();
-            return this.Success(categories, "Published categories loaded.");
+            return this.Success(
+                categories.Select(category => category.ToStorefrontContract()).ToArray(),
+                "Published categories loaded.");
         }
 
         [HttpGet("categories/tree")]
         public async Task<IActionResult> GetCategoryTree()
         {
             var categories = await this.publicCatalogService.GetPublishedCategoryTreeAsync();
-            return this.Success(categories, "Published category tree loaded.");
+            return this.Success(
+                categories.Select(category => category.ToStorefrontContract()).ToArray(),
+                "Published category tree loaded.");
         }
 
         [HttpGet("categories/{id:guid}")]
@@ -254,8 +262,8 @@ namespace BlazorShop.CommerceNode.API.Controllers
         {
             var category = await this.publicCatalogService.GetPublishedCategoryByIdAsync(id);
             return category is null
-                ? this.Failure<GetCategory>(ServiceResponseType.NotFound, "Published category was not found.")
-                : this.Success(category, "Published category loaded.");
+                ? this.Failure<StorefrontCategoryResponse>(ServiceResponseType.NotFound, "Published category was not found.")
+                : this.Success(category.ToStorefrontContract(), "Published category loaded.");
         }
 
         [HttpGet("categories/slug/{slug}")]
@@ -263,8 +271,8 @@ namespace BlazorShop.CommerceNode.API.Controllers
         {
             var categoryPage = await this.publicCatalogService.GetPublishedCategoryPageBySlugAsync(slug);
             return categoryPage is null
-                ? this.Failure<GetCategoryPage>(ServiceResponseType.NotFound, "Published category was not found.")
-                : this.Success(categoryPage, "Published category page loaded.");
+                ? this.Failure<StorefrontCategoryPageResponse>(ServiceResponseType.NotFound, "Published category was not found.")
+                : this.Success(categoryPage.ToStorefrontContract(), "Published category page loaded.");
         }
 
         [HttpGet("categories/{categoryId:guid}/products")]
@@ -273,20 +281,24 @@ namespace BlazorShop.CommerceNode.API.Controllers
             var category = await this.publicCatalogService.GetPublishedCategoryByIdAsync(categoryId);
             if (category is null)
             {
-                return this.Failure<IReadOnlyList<GetCatalogProduct>>(
+                return this.Failure<IReadOnlyList<StorefrontCatalogProductResponse>>(
                     ServiceResponseType.NotFound,
                     "Published category was not found.");
             }
 
             var products = await this.publicCatalogService.GetPublishedProductsByCategoryAsync(categoryId);
-            return this.Success(products, "Published category products loaded.");
+            return this.Success(
+                products.Select(product => product.ToStorefrontContract()).ToArray(),
+                "Published category products loaded.");
         }
 
         [HttpGet("products")]
-        public async Task<IActionResult> GetProducts([FromQuery] ProductCatalogQuery query)
+        public async Task<IActionResult> GetProducts([FromQuery] StorefrontProductCatalogQuery query)
         {
-            var products = await this.publicCatalogService.GetPublishedCatalogPageAsync(query);
-            return this.Success(products, "Published products loaded.");
+            var products = await this.publicCatalogService.GetPublishedCatalogPageAsync(query.ToApplicationQuery());
+            return this.Success(
+                products.ToStorefrontContract(product => product.ToStorefrontContract()),
+                "Published products loaded.");
         }
 
         [HttpGet("products/{id:guid}")]
@@ -294,8 +306,8 @@ namespace BlazorShop.CommerceNode.API.Controllers
         {
             var product = await this.publicCatalogService.GetPublishedProductByIdAsync(id);
             return product is null
-                ? this.Failure<GetProduct>(ServiceResponseType.NotFound, "Published product was not found.")
-                : this.Success(product, "Published product loaded.");
+                ? this.Failure<StorefrontProductResponse>(ServiceResponseType.NotFound, "Published product was not found.")
+                : this.Success(product.ToStorefrontContract(), "Published product loaded.");
         }
 
         [HttpGet("products/slug/{slug}")]
@@ -303,8 +315,8 @@ namespace BlazorShop.CommerceNode.API.Controllers
         {
             var product = await this.publicCatalogService.GetPublishedProductBySlugAsync(slug);
             return product is null
-                ? this.Failure<GetProduct>(ServiceResponseType.NotFound, "Published product was not found.")
-                : this.Success(product, "Published product loaded.");
+                ? this.Failure<StorefrontProductResponse>(ServiceResponseType.NotFound, "Published product was not found.")
+                : this.Success(product.ToStorefrontContract(), "Published product loaded.");
         }
 
         [HttpGet("sitemap")]
@@ -329,15 +341,15 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         [HttpPost("checkout")]
         [AllowAnonymous]
-        public async Task<IActionResult> Checkout(StorefrontCheckoutRequest checkout)
+        public async Task<IActionResult> Checkout([FromBody] StorefrontCheckoutRequest checkout)
         {
             var userId = this.GetCurrentCustomerId();
-            var result = await this.cartService.CheckoutAsync(checkout, userId);
+            var result = await this.cartService.CheckoutAsync(checkout.ToApplicationRequest(), userId);
             return this.FromServiceResponse(result);
         }
 
         [HttpPost("save-checkout")]
-        public async Task<IActionResult> SaveCheckout(IEnumerable<CreateOrderItem> orderItems)
+        public async Task<IActionResult> SaveCheckout([FromBody] IReadOnlyList<StorefrontOrderItemRequest> orderItems)
         {
             var userId = this.GetCurrentCustomerId();
             if (string.IsNullOrWhiteSpace(userId))
@@ -345,7 +357,9 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 return this.Unauthorized(CommerceNodeApiResponse<object>.Failed("Customer identity was not found."));
             }
 
-            var result = await this.cartService.SaveCheckoutHistoryAsync(userId, orderItems);
+            var result = await this.cartService.SaveCheckoutHistoryAsync(
+                userId,
+                orderItems.Select(orderItem => orderItem.ToCreateOrderItem()).ToArray());
             return this.FromServiceResponse(result);
         }
 
@@ -367,7 +381,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpPost("subscribe")]
-        public async Task<IActionResult> Subscribe([FromBody] SubscribeEmailRequest request)
+        public async Task<IActionResult> Subscribe([FromBody] StorefrontNewsletterSubscribeRequest request)
         {
             if (request is null || string.IsNullOrWhiteSpace(request.Email))
             {
@@ -378,7 +392,6 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return this.FromServiceResponse(result);
         }
 
-        public sealed record SubscribeEmailRequest(string Email);
     }
 
     [ApiController]
@@ -398,7 +411,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpPost("confirm")]
-        public async Task<IActionResult> ConfirmOrder(IEnumerable<ProcessCart> carts, [FromQuery] string? status = null)
+        public async Task<IActionResult> ConfirmOrder([FromBody] IReadOnlyList<StorefrontCartItemRequest> carts)
         {
             var userId = this.GetCurrentCustomerId();
             if (string.IsNullOrWhiteSpace(userId))
@@ -406,7 +419,9 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 return this.Unauthorized(CommerceNodeApiResponse<object>.Failed("Customer identity was not found."));
             }
 
-            var result = await this.cartService.ConfirmOrderAsync(carts, userId, status);
+            var result = await this.cartService.ConfirmOrderAsync(
+                carts.Select(cart => cart.ToProcessCart()).ToArray(),
+                userId);
             return this.FromServiceResponse(result);
         }
 
@@ -420,7 +435,9 @@ namespace BlazorShop.CommerceNode.API.Controllers
             }
 
             var orders = (await this.orderQueryService.GetOrdersForUserAsync(userId)).ToArray();
-            return this.Success<IEnumerable<GetOrder>>(orders, "Current customer orders loaded.");
+            return this.Success(
+                orders.Select(order => order.ToStorefrontContract()).ToArray(),
+                "Current customer orders loaded.");
         }
 
         [HttpGet("current-user/items")]
@@ -434,11 +451,13 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
             var orderItems = (await this.cartService.GetCheckoutHistoryByUserId(userId)).ToArray();
             return orderItems.Length == 0
-                ? this.Failure<IEnumerable<GetOrderItem>>(
+                ? this.Failure<IReadOnlyList<StorefrontOrderItemHistoryResponse>>(
                     ServiceResponseType.NotFound,
                     "No orders found for the current customer.",
-                    orderItems)
-                : this.Success<IEnumerable<GetOrderItem>>(orderItems, "Current customer order items loaded.");
+                    [])
+                : this.Success(
+                    orderItems.Select(item => item.ToStorefrontContract()).ToArray(),
+                    "Current customer order items loaded.");
         }
 
         private string? GetCurrentCustomerId()
@@ -489,25 +508,34 @@ namespace BlazorShop.CommerceNode.API.Controllers
         {
             var paymentMethods = (await this.paymentMethodService.GetPaymentMethodsAsync()).ToArray();
             return paymentMethods.Length == 0
-                ? this.Failure<IEnumerable<GetPaymentMethod>>(
+                ? this.Failure<IReadOnlyList<StorefrontPaymentMethodResponse>>(
                     ServiceResponseType.NotFound,
                     "No payment methods are currently available.",
-                    paymentMethods)
-                : this.Success<IEnumerable<GetPaymentMethod>>(paymentMethods, "Payment methods loaded.");
+                    [])
+                : this.Success(
+                    paymentMethods.Select(method => method.ToStorefrontContract()).ToArray(),
+                    "Payment methods loaded.");
         }
 
-        [HttpGet("paypal/capture")]
-        public async Task<IActionResult> CapturePayPal([FromQuery] string token)
+        [HttpPost("paypal/capture")]
+        public async Task<IActionResult> CapturePayPal([FromBody] StorefrontPayPalCaptureRequest request)
         {
-            if (string.IsNullOrWhiteSpace(token))
+            if (request is null || string.IsNullOrWhiteSpace(request.Token))
             {
-                return this.Failure<object>(ServiceResponseType.ValidationError, "Missing PayPal token.");
+                return this.Failure<StorefrontPayPalCaptureResponse>(
+                    ServiceResponseType.ValidationError,
+                    "Missing PayPal token.");
             }
 
-            var captured = await this.payPalPaymentService.CaptureAsync(token);
-            return captured
-                ? this.Redirect(this.BuildClientUrl("payment-success"))
-                : this.Redirect(this.BuildClientUrl("payment-cancel"));
+            var captured = await this.payPalPaymentService.CaptureAsync(request.Token);
+            var redirectPath = captured ? "payment-success" : "payment-cancel";
+
+            return this.Success(
+                new StorefrontPayPalCaptureResponse(
+                    captured,
+                    this.BuildClientUrl(redirectPath),
+                    captured ? "PayPal payment captured." : "PayPal payment capture failed."),
+                captured ? "PayPal payment captured." : "PayPal payment capture failed.");
         }
 
         private string BuildClientUrl(string path)
@@ -543,7 +571,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             {
                 if (productId == Guid.Empty)
                 {
-                    return this.Failure<IEnumerable<GetProductRecommendation>>(
+                    return this.Failure<IReadOnlyList<StorefrontProductRecommendationResponse>>(
                         ServiceResponseType.ValidationError,
                         "Invalid product ID.");
                 }
@@ -551,20 +579,20 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 var recommendations = (await this.recommendationService.GetRecommendationsForProductAsync(productId)).ToArray();
                 if (recommendations.Length == 0)
                 {
-                    return this.Failure<IEnumerable<GetProductRecommendation>>(
+                    return this.Failure<IReadOnlyList<StorefrontProductRecommendationResponse>>(
                         ServiceResponseType.NotFound,
                         "No recommendations found for this product.",
-                        recommendations);
+                        []);
                 }
 
-                return this.Success<IEnumerable<GetProductRecommendation>>(
-                    recommendations,
+                return this.Success(
+                    recommendations.Select(recommendation => recommendation.ToStorefrontContract()).ToArray(),
                     "Product recommendations loaded.");
             }
             catch (Exception ex)
             {
                 this.logger.LogError(ex, "Error occurred while fetching recommendations for product {ProductId}.", productId);
-                return this.Failure<IEnumerable<GetProductRecommendation>>(
+                return this.Failure<IReadOnlyList<StorefrontProductRecommendationResponse>>(
                     ServiceResponseType.Failure,
                     "An error occurred while processing product recommendations.");
             }
@@ -630,16 +658,9 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 return ToActionResult(result);
             }
 
-            var maintenance = new
-            {
-                result.Payload.PublicId,
-                result.Payload.StoreKey,
-                result.Payload.Name,
-                result.Payload.MaintenanceModeEnabled,
-                result.Payload.MaintenanceMessage,
-            };
-
-            return this.Ok(CommerceNodeApiResponse<object>.Succeeded(maintenance, "Store maintenance state retrieved."));
+            return this.Ok(CommerceNodeApiResponse<StorefrontMaintenanceResponse>.Succeeded(
+                result.Payload.ToStorefrontMaintenanceContract(),
+                "Store maintenance state retrieved."));
         }
 
         private static IActionResult ToActionResult<TPayload>(CommerceStoreOperationResult<TPayload> result)

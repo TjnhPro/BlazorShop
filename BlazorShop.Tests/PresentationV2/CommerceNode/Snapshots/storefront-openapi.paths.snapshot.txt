@@ -22,7 +22,7 @@ GET /api/storefront/stores/{storeKey}/orders/current-user
 GET /api/storefront/stores/{storeKey}/orders/current-user/items
 GET /api/storefront/stores/{storeKey}/pages/{slug}
 GET /api/storefront/stores/{storeKey}/payments/methods
-GET /api/storefront/stores/{storeKey}/payments/paypal/capture
+POST /api/storefront/stores/{storeKey}/payments/paypal/capture
 GET /api/storefront/stores/{storeKey}/recommendations/products/{productId}
 GET /api/storefront/stores/{storeKey}/seo/redirects/resolve
 GET /api/storefront/stores/{storeKey}/seo/settings

@@ -96,7 +96,6 @@ namespace BlazorShop.Application.Services.Payment
                 {
                     ProductId = orderItem.ProductId,
                     Quantity = orderItem.Quantity,
-                    UserId = userId,
                 })
                 .ToArray();
 
@@ -109,6 +108,7 @@ namespace BlazorShop.Application.Services.Payment
             foreach (var item in mappedData)
             {
                 item.StoreId = currentStoreId;
+                item.UserId = userId;
             }
 
             var result = await _cart.SaveCheckoutHistory(mappedData);

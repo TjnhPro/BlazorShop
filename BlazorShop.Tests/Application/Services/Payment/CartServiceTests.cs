@@ -74,10 +74,9 @@ namespace BlazorShop.Tests.Application.Services.Payment
                 {
                     ProductId = Guid.NewGuid(),
                     Quantity = 2,
-                    UserId = "spoofed-user"
                 }
             };
-            var mappedData = new List<OrderItem>();
+            var mappedData = new List<OrderItem> { new() };
             List<CreateOrderItem>? capturedItems = null;
             _mapperMock
                 .Setup(m => m.Map<IEnumerable<OrderItem>>(It.IsAny<object>()))
@@ -95,7 +94,8 @@ namespace BlazorShop.Tests.Application.Services.Payment
             Assert.Equal("Checkout history saved successfully", result.Message);
             Assert.NotNull(capturedItems);
             Assert.Single(capturedItems!);
-            Assert.All(capturedItems!, item => Assert.Equal("user123", item.UserId));
+            Assert.Null(typeof(CreateOrderItem).GetProperty("UserId"));
+            Assert.All(mappedData, item => Assert.Equal("user123", item.UserId));
         }
 
         [Fact]
@@ -108,7 +108,6 @@ namespace BlazorShop.Tests.Application.Services.Payment
                 {
                     ProductId = Guid.NewGuid(),
                     Quantity = 1,
-                    UserId = "other-user",
                 }
             };
             var mappedData = new List<OrderItem>();

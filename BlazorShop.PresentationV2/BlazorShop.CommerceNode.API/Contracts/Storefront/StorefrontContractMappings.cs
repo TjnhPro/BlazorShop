@@ -148,7 +148,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
             };
         }
 
-        public static CreateOrderItem ToCreateOrderItem(this StorefrontOrderItemRequest request, string userId)
+        public static CreateOrderItem ToCreateOrderItem(this StorefrontOrderItemRequest request)
         {
             return new CreateOrderItem
             {
@@ -156,7 +156,6 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 ProductVariantId = request.ProductVariantId,
                 SelectedAttributes = request.SelectedAttributes,
                 Quantity = request.Quantity,
-                UserId = userId,
             };
         }
 

@@ -54,7 +54,6 @@ namespace BlazorShop.Tests.Presentation.API.Controllers
                 {
                     ProductId = Guid.NewGuid(),
                     Quantity = 1,
-                    UserId = "spoofed-user",
                 }
             };
 

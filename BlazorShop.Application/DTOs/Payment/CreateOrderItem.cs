@@ -15,8 +15,5 @@ namespace BlazorShop.Application.DTOs.Payment
 
         [Required]
         public int Quantity { get; set; }
-
-        [Required]
-        public string? UserId { get; set; }
     }
 }
