@@ -88,7 +88,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 || string.IsNullOrWhiteSpace(refreshToken))
             {
                 this.DeleteRefreshTokenCookie();
-                return this.Error(StatusCodes.Status400BadRequest, "validation_error", "Invalid token.");
+                return this.Error(StatusCodes.Status401Unauthorized, "auth.refresh_cookie_missing", "Refresh token cookie was not found.");
             }
 
             var result = await this.authenticationService.ReviveToken(
@@ -100,8 +100,8 @@ namespace BlazorShop.CommerceNode.API.Controllers
             {
                 this.DeleteRefreshTokenCookie();
                 return this.Error(
-                    StatusCodes.Status400BadRequest,
-                    "validation_error",
+                    StatusCodes.Status401Unauthorized,
+                    "auth.invalid_refresh_token",
                     NormalizeLoginMessage(result.Message));
             }
 

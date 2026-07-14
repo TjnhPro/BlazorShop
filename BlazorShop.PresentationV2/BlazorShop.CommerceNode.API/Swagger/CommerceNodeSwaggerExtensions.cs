@@ -67,6 +67,8 @@ namespace BlazorShop.CommerceNode.API.Swagger
                 options.OperationFilter<CommerceNodeAdminCredentialHeaderOperationFilter>();
                 options.OperationFilter<CommerceAdminStoreKeyOperationFilter>();
                 options.OperationFilter<StorefrontOperationMetadataFilter>();
+                options.DocumentFilter<StorefrontSecurityDocumentFilter>();
+                options.SchemaFilter<StorefrontContractSchemaFilter>();
             });
 
             return services;
@@ -470,7 +472,14 @@ namespace BlazorShop.CommerceNode.API.Swagger
                 var schemeName = security == StorefrontSecurityRequirement.RefreshCookie ? "RefreshCookie" : "Bearer";
                 return new OpenApiSecurityRequirement
                 {
-                    [new OpenApiSecuritySchemeReference(schemeName, null!, null)] = [],
+                    [new OpenApiSecuritySchemeReference(schemeName, null!, null)
+                    {
+                        Reference = new OpenApiReferenceWithDescription
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = schemeName,
+                        },
+                    }] = [],
                 };
             }
 
@@ -500,6 +509,96 @@ namespace BlazorShop.CommerceNode.API.Swagger
             None,
             Bearer,
             RefreshCookie,
+        }
+
+        private sealed class StorefrontSecurityDocumentFilter : IDocumentFilter
+        {
+            private static readonly IReadOnlyDictionary<string, StorefrontSecurityRequirement> OperationSecurity =
+                new Dictionary<string, StorefrontSecurityRequirement>(StringComparer.Ordinal)
+                {
+                    ["StorefrontAuth_RefreshToken"] = StorefrontSecurityRequirement.RefreshCookie,
+                    ["StorefrontAuth_Logout"] = StorefrontSecurityRequirement.RefreshCookie,
+                    ["StorefrontAuth_ChangePassword"] = StorefrontSecurityRequirement.Bearer,
+                    ["StorefrontAuth_UpdateProfile"] = StorefrontSecurityRequirement.Bearer,
+                    ["StorefrontCart_SaveCheckout"] = StorefrontSecurityRequirement.Bearer,
+                    ["StorefrontOrders_Confirm"] = StorefrontSecurityRequirement.Bearer,
+                    ["StorefrontOrders_ListCurrentUserOrders"] = StorefrontSecurityRequirement.Bearer,
+                    ["StorefrontOrders_ListCurrentUserOrderItems"] = StorefrontSecurityRequirement.Bearer,
+                };
+
+            public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
+            {
+                foreach (var pathItem in swaggerDoc.Paths.Values)
+                {
+                    foreach (var operation in GetOperations(pathItem))
+                    {
+                        if (operation.OperationId is null
+                            || !OperationSecurity.TryGetValue(operation.OperationId, out var security))
+                        {
+                            continue;
+                        }
+
+                        operation.Security ??= [];
+                        operation.Security.Clear();
+                        operation.Security.Add(CreateSecurityRequirement(swaggerDoc, security));
+                    }
+                }
+            }
+
+            private static IEnumerable<OpenApiOperation> GetOperations(IOpenApiPathItem pathItem)
+            {
+                var operations = pathItem.Operations;
+                return operations is null ? [] : operations.Values;
+            }
+
+            private static OpenApiSecurityRequirement CreateSecurityRequirement(
+                OpenApiDocument swaggerDoc,
+                StorefrontSecurityRequirement security)
+            {
+                var schemeName = security == StorefrontSecurityRequirement.RefreshCookie ? "RefreshCookie" : "Bearer";
+                return new OpenApiSecurityRequirement
+                {
+                    [new OpenApiSecuritySchemeReference(schemeName, swaggerDoc, null)] = [],
+                };
+            }
+        }
+
+        private sealed class StorefrontContractSchemaFilter : ISchemaFilter
+        {
+            public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
+            {
+                if (context.Type == typeof(CommerceNodeApiErrorResponse))
+                {
+                    if (schema is not OpenApiSchema openApiSchema)
+                    {
+                        return;
+                    }
+
+                    openApiSchema.Required = new HashSet<string>(StringComparer.Ordinal)
+                    {
+                        "success",
+                        "code",
+                        "message",
+                        "traceId",
+                    };
+
+                    ForceRequiredString(openApiSchema, "code");
+                    ForceRequiredString(openApiSchema, "message");
+                    ForceRequiredString(openApiSchema, "traceId");
+                }
+            }
+
+            private static void ForceRequiredString(OpenApiSchema schema, string propertyName)
+            {
+                if (schema.Properties is null
+                    || !schema.Properties.TryGetValue(propertyName, out var propertySchema)
+                    || propertySchema is not OpenApiSchema openApiPropertySchema)
+                {
+                    return;
+                }
+
+                openApiPropertySchema.Type = JsonSchemaType.String;
+            }
         }
 
     }

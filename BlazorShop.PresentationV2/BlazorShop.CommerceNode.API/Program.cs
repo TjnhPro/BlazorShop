@@ -3,6 +3,7 @@ using BlazorShop.CommerceNode.API.Deployment;
 using BlazorShop.CommerceNode.API.Endpoints;
 using BlazorShop.CommerceNode.API.Middleware;
 using BlazorShop.CommerceNode.API.ProductMedia;
+using BlazorShop.CommerceNode.API.Responses;
 using BlazorShop.CommerceNode.API.Swagger;
 using BlazorShop.CommerceNode.API.Tasks;
 using BlazorShop.CommerceNode.API.Workers;
@@ -10,6 +11,7 @@ using BlazorShop.Application.CommerceNode.Media;
 using BlazorShop.Application.CommerceNode.Tasks;
 using BlazorShop.Infrastructure.Data.CommerceNode;
 
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
@@ -46,7 +48,29 @@ builder.Services.AddScoped<ICommerceTaskHandler, StoreCreateAndDeployTaskHandler
 builder.Services.AddScoped<ICommerceTaskHandler, ProductMediaImportTaskHandler>();
 builder.Services.AddScoped<ICommerceTaskHandler, ProductImportTaskHandler>();
 builder.Services.AddHostedService<CommerceTaskWorker>();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var fieldErrors = context.ModelState
+                .Where(entry => entry.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    entry => entry.Key,
+                    entry => entry.Value!.Errors
+                        .Select(error => string.IsNullOrWhiteSpace(error.ErrorMessage)
+                            ? "The field is invalid."
+                            : error.ErrorMessage)
+                        .ToArray());
+
+            return new BadRequestObjectResult(new CommerceNodeApiErrorResponse(
+                false,
+                "validation.failed",
+                "The request validation failed.",
+                context.HttpContext.TraceIdentifier,
+                fieldErrors));
+        };
+    });
 builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddCommerceNodeSwagger();

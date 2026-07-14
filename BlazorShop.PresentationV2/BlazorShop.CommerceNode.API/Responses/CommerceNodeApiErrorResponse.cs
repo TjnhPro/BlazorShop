@@ -4,6 +4,6 @@ namespace BlazorShop.CommerceNode.API.Responses
         bool Success,
         string Code,
         string Message,
-        string? TraceId,
+        string TraceId,
         IReadOnlyDictionary<string, string[]>? FieldErrors = null);
 }
