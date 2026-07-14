@@ -10,7 +10,7 @@ namespace BlazorShop.Web.SharedV2.Models.Payment
 
         public string? CustomerEmail { get; set; }
 
-        public decimal AmountPayed { get; set; }
+        public decimal AmountPaid { get; set; }
 
         public DateTime DatePurchased { get; set; }
 

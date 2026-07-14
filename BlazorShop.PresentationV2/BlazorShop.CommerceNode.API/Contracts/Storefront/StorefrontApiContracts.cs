@@ -414,7 +414,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         int QuantityOrdered,
         string? CustomerName,
         string? CustomerEmail,
-        decimal AmountPayed,
+        decimal AmountPaid,
         DateTime DatePurchased,
         string? TrackingNumber,
         string? TrackingUrl,
