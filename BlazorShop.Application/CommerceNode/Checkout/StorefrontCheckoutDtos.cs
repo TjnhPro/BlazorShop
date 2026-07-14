@@ -51,15 +51,17 @@ namespace BlazorShop.Application.CommerceNode.Checkout
     public sealed record StorefrontPlaceOrderResult(
         Guid CheckoutSessionId,
         Guid PaymentAttemptId,
-        Guid OrderId,
-        string Reference,
-        string OrderStatus,
+        Guid? OrderId,
+        string? Reference,
+        string? OrderStatus,
         string PaymentStatus,
         string PaymentMethodKey,
         decimal TotalAmount,
         string CurrencyCode,
         string IdempotencyKey,
-        DateTime CreatedOn);
+        DateTime CreatedOn,
+        string? NextActionType = null,
+        string? NextActionUrl = null);
 
     public sealed record StorefrontCheckoutLineSummary(
         Guid LineId,

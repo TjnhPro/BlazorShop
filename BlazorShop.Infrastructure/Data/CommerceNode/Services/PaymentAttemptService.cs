@@ -5,7 +5,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.DTOs;
+    using BlazorShop.Domain.Constants;
+    using BlazorShop.Domain.Entities;
     using BlazorShop.Domain.Entities.CommerceNode;
+    using BlazorShop.Domain.Entities.Payment;
 
     using Microsoft.EntityFrameworkCore;
 
@@ -174,6 +177,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failed<PaymentAttemptDto>(ServiceResponseType.Conflict, "Payment attempt state transition is not allowed.");
             }
 
+            if (string.Equals(newState, PaymentAttemptStates.Captured, StringComparison.OrdinalIgnoreCase)
+                && !attempt.OrderId.HasValue)
+            {
+                var orderResult = await this.CreateCapturedOrderAsync(attempt, request.MetadataJson, cancellationToken);
+                if (!orderResult.Success)
+                {
+                    return Failed<PaymentAttemptDto>(orderResult.ResponseType, orderResult.Message);
+                }
+            }
+
             attempt.State = newState;
             attempt.ProviderReference = NormalizeNullable(request.ProviderReference) ?? attempt.ProviderReference;
             attempt.ProviderSessionId = NormalizeNullable(request.ProviderSessionId) ?? attempt.ProviderSessionId;
@@ -186,6 +199,126 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             await this.context.SaveChangesAsync(cancellationToken);
             return Succeeded("Payment attempt updated.", ToDto(attempt));
+        }
+
+        private async Task<OrderCreationResult> CreateCapturedOrderAsync(
+            PaymentAttempt attempt,
+            string? paymentMetadataJson,
+            CancellationToken cancellationToken)
+        {
+            var checkout = await this.context.CheckoutSessions
+                .Include(session => session.CartSession!)
+                    .ThenInclude(cart => cart.Lines)
+                .FirstOrDefaultAsync(
+                    session => session.Id == attempt.CheckoutSessionId
+                        && session.StoreId == attempt.StoreId,
+                    cancellationToken);
+            if (checkout?.CartSession is null)
+            {
+                return OrderCreationResult.Failed(ServiceResponseType.NotFound, "Checkout session was not found.");
+            }
+
+            if (checkout.CartSession.Lines.Count == 0)
+            {
+                return OrderCreationResult.Failed(ServiceResponseType.Conflict, "Cart is empty.");
+            }
+
+            var lines = new List<OrderLineSnapshot>();
+            foreach (var cartLine in checkout.CartSession.Lines)
+            {
+                var product = await this.context.Products
+                    .Include(item => item.Category)
+                    .Include(item => item.Variants)
+                    .FirstOrDefaultAsync(item => item.Id == cartLine.ProductId, cancellationToken);
+                if (product is null || !IsStorefrontAvailable(product, attempt.StoreId))
+                {
+                    return OrderCreationResult.Failed(ServiceResponseType.Conflict, "Product is not available for this store.");
+                }
+
+                var variant = cartLine.ProductVariantId.HasValue
+                    ? product.Variants.FirstOrDefault(candidate => candidate.Id == cartLine.ProductVariantId.Value)
+                    : null;
+                if (cartLine.ProductVariantId.HasValue && variant is null)
+                {
+                    return OrderCreationResult.Failed(ServiceResponseType.Conflict, "Selected product variant was not found.");
+                }
+
+                if ((variant?.Stock ?? product.Quantity) < cartLine.Quantity)
+                {
+                    return OrderCreationResult.Failed(ServiceResponseType.Conflict, "One or more cart items are out of stock.");
+                }
+
+                var unitPrice = cartLine.UnitPriceSnapshot ?? variant?.Price ?? product.Price;
+                lines.Add(new OrderLineSnapshot(cartLine, product, variant, unitPrice));
+            }
+
+            var now = DateTimeOffset.UtcNow;
+            var order = new Order
+            {
+                Id = Guid.NewGuid(),
+                UserId = string.Empty,
+                CustomerId = checkout.CustomerId,
+                StoreId = attempt.StoreId,
+                Reference = $"ORD-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..8].ToUpperInvariant()}",
+                OrderStatus = OrderStatuses.Processing,
+                PaymentStatus = PaymentStatuses.Paid,
+                PaymentMethodKey = attempt.PaymentMethodKey,
+                PaymentAt = now.UtcDateTime,
+                PaymentMetadataJson = NormalizeNullable(paymentMetadataJson) ?? attempt.MetadataJson,
+                CurrencyCode = attempt.CurrencyCode,
+                TotalAmount = attempt.Amount,
+                CustomerName = checkout.CustomerName,
+                CustomerEmail = checkout.CustomerEmail,
+                ShippingFullName = checkout.ShippingFullName,
+                ShippingEmail = checkout.ShippingEmail,
+                ShippingPhone = checkout.ShippingPhone,
+                ShippingAddress1 = checkout.ShippingAddress1,
+                ShippingAddress2 = checkout.ShippingAddress2,
+                ShippingCity = checkout.ShippingCity,
+                ShippingState = checkout.ShippingState,
+                ShippingPostalCode = checkout.ShippingPostalCode,
+                ShippingCountryCode = checkout.ShippingCountryCode,
+                ShippingStatus = ShippingStatuses.NotYetShipped,
+                CreatedOn = now.UtcDateTime,
+                UpdatedAt = now.UtcDateTime,
+                Lines = lines.Select(line => new OrderLine
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = line.Product.Id,
+                    ProductName = line.Product.Name,
+                    Sku = line.Variant?.Sku ?? line.Product.Sku,
+                    Image = line.Product.Image,
+                    ProductVariantId = line.Variant?.Id,
+                    VariantAttributesJson = line.CartLine.SelectedAttributesJson ?? line.Variant?.AttributesJson,
+                    PersonalizationHash = line.CartLine.PersonalizationHash,
+                    PersonalizationJson = line.CartLine.PersonalizationJson,
+                    ArtworkAssetId = line.CartLine.ArtworkAssetId,
+                    ArtworkVersion = line.CartLine.ArtworkVersion,
+                    FulfillmentProviderKey = line.CartLine.FulfillmentProviderKey,
+                    Quantity = line.CartLine.Quantity,
+                    UnitPrice = line.UnitPrice,
+                }).ToList(),
+            };
+
+            foreach (var line in lines)
+            {
+                DeductTrackedStock(line);
+            }
+
+            this.context.Orders.Add(order);
+            checkout.State = CheckoutSessionStates.Completed;
+            checkout.OrderId = order.Id;
+            checkout.NextAction = "complete";
+            checkout.PlacedAtUtc = now;
+            checkout.UpdatedAtUtc = now;
+            checkout.CartSession.State = CartSessionStates.Ordered;
+            checkout.CartSession.ConvertedOrderId = order.Id;
+            checkout.CartSession.ExpiresAtUtc = now;
+            checkout.CartSession.LastActivityAtUtc = now;
+            checkout.CartSession.UpdatedAtUtc = now;
+            attempt.OrderId = order.Id;
+
+            return OrderCreationResult.Succeeded();
         }
 
         public async Task<ServiceResponse<PaymentProviderEventDto>> RecordProviderEventAsync(
@@ -381,6 +514,35 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Convert.ToHexString(hash).ToLowerInvariant();
         }
 
+        private static bool IsStorefrontAvailable(Product product, Guid storeId)
+        {
+            return product.StoreId == storeId
+                && product.ArchivedAt is null
+                && product.IsPublished
+                && product.PublishedOn is not null
+                && !string.IsNullOrWhiteSpace(product.Slug)
+                && product.Category is not null
+                && product.Category.StoreId == product.StoreId
+                && product.Category.ArchivedAt is null
+                && product.Category.IsPublished;
+        }
+
+        private static void DeductTrackedStock(OrderLineSnapshot line)
+        {
+            if (!string.IsNullOrWhiteSpace(line.CartLine.FulfillmentProviderKey))
+            {
+                return;
+            }
+
+            if (line.Variant is not null)
+            {
+                line.Variant.Stock -= line.CartLine.Quantity;
+                return;
+            }
+
+            line.Product.Quantity -= line.CartLine.Quantity;
+        }
+
         private static PaymentAttemptDto ToDto(PaymentAttempt attempt)
         {
             return new PaymentAttemptDto(
@@ -437,6 +599,28 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             {
                 ResponseType = responseType,
             };
+        }
+
+        private sealed record OrderLineSnapshot(
+            CartLine CartLine,
+            Product Product,
+            ProductVariant? Variant,
+            decimal UnitPrice);
+
+        private sealed record OrderCreationResult(
+            bool Success,
+            ServiceResponseType ResponseType,
+            string Message)
+        {
+            public static OrderCreationResult Succeeded()
+            {
+                return new OrderCreationResult(true, ServiceResponseType.Success, "Order created.");
+            }
+
+            public static OrderCreationResult Failed(ServiceResponseType responseType, string message)
+            {
+                return new OrderCreationResult(false, responseType, message);
+            }
         }
     }
 }

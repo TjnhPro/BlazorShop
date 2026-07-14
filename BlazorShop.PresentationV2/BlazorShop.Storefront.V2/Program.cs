@@ -225,6 +225,19 @@ app.MapPost(StorefrontRoutes.Checkout, async (
 
     httpContext.Response.Cookies.Delete(StorefrontCookieNames.Cart, new CookieOptions { Path = "/" });
     httpContext.Response.Cookies.Delete(StorefrontCookieNames.CartToken, new CookieOptions { Path = "/" });
+    var nextAction = placeOrderResult.Data.NextAction;
+    var nextActionUrl = nextAction?.Url;
+    if (string.Equals(nextAction?.Type, "redirect", StringComparison.OrdinalIgnoreCase)
+        && !string.IsNullOrWhiteSpace(nextActionUrl))
+    {
+        return Results.Redirect(nextActionUrl);
+    }
+
+    if (string.IsNullOrWhiteSpace(placeOrderResult.Data.Reference))
+    {
+        return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("error", "Order confirmation is not available yet."));
+    }
+
     return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("orderReference", placeOrderResult.Data.Reference));
 });
 app.MapGet("/api/cart", async (

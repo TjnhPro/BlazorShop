@@ -755,13 +755,18 @@ namespace BlazorShop.Storefront.Services
     public sealed record StorefrontPlaceOrderResponse(
         Guid CheckoutSessionId,
         Guid PaymentAttemptId,
-        Guid OrderId,
-        string Reference,
-        string OrderStatus,
+        Guid? OrderId,
+        string? Reference,
+        string? OrderStatus,
         string PaymentStatus,
         string PaymentMethodKey,
         decimal TotalAmount,
         string CurrencyCode,
         string IdempotencyKey,
-        DateTime CreatedOn);
+        DateTime CreatedOn,
+        StorefrontPaymentNextActionResponse? NextAction);
+
+    public sealed record StorefrontPaymentNextActionResponse(
+        string Type,
+        string? Url);
 }

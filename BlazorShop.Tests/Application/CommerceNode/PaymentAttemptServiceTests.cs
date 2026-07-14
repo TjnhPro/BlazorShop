@@ -3,6 +3,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Domain.Constants;
+    using BlazorShop.Domain.Entities;
     using BlazorShop.Domain.Entities.CommerceNode;
     using BlazorShop.Infrastructure.Data.CommerceNode;
     using BlazorShop.Infrastructure.Data.CommerceNode.Services;
@@ -51,22 +52,24 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var service = new PaymentAttemptService(context);
             var created = await service.CreateAsync(CreateAttemptRequest(idempotencyKey: "transition-key"));
 
-            var captured = await service.TransitionAsync(new TransitionPaymentAttemptRequest(
+            var failed = await service.TransitionAsync(new TransitionPaymentAttemptRequest(
                 created.Payload!.StoreId,
                 created.Payload.Id,
-                PaymentAttemptStates.Captured,
-                ProviderReference: "cod-captured"));
+                PaymentAttemptStates.Failed,
+                ProviderReference: "provider-ref",
+                FailureCode: "provider_failed",
+                FailureMessage: "Provider failed."));
             var rejected = await service.TransitionAsync(new TransitionPaymentAttemptRequest(
                 created.Payload.StoreId,
                 created.Payload.Id,
                 PaymentAttemptStates.Authorized));
 
-            Assert.True(captured.Success);
-            Assert.Equal(PaymentAttemptStates.Captured, captured.Payload!.State);
-            Assert.Equal("cod-captured", captured.Payload.ProviderReference);
+            Assert.True(failed.Success);
+            Assert.Equal(PaymentAttemptStates.Failed, failed.Payload!.State);
+            Assert.Equal("provider-ref", failed.Payload.ProviderReference);
             Assert.False(rejected.Success);
             Assert.Equal(ServiceResponseType.Conflict, rejected.ResponseType);
-            Assert.Equal(PaymentAttemptStates.Captured, context.PaymentAttempts.Single().State);
+            Assert.Equal(PaymentAttemptStates.Failed, context.PaymentAttempts.Single().State);
         }
 
         [Fact]
@@ -89,6 +92,97 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Equal("provider_declined", failed.Payload.FailureCode);
             Assert.Equal("Payment was declined.", failed.Payload.FailureMessage);
             Assert.Equal("{\"safe\":true}", context.PaymentAttempts.Single().MetadataJson);
+        }
+
+        [Fact]
+        public async Task TransitionAsync_CapturedOnlineAttemptCreatesOrderExactlyOnce()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var product = CreatePublishedProduct(storeId, price: 21m, stock: 5);
+            context.Products.Add(product);
+            var cart = new CartSession
+            {
+                Id = Guid.NewGuid(),
+                StoreId = storeId,
+                TokenHash = "token",
+                State = CartSessionStates.Active,
+                Version = 2,
+                Lines =
+                {
+                    new CartLine
+                    {
+                        Id = Guid.NewGuid(),
+                        ProductId = product.Id,
+                        Quantity = 2,
+                        UnitPriceSnapshot = 21m,
+                        CurrencyCodeSnapshot = "USD",
+                        LineKey = "line-1",
+                    },
+                },
+            };
+            var checkout = new CheckoutSession
+            {
+                Id = Guid.NewGuid(),
+                PublicId = Guid.NewGuid(),
+                StoreId = storeId,
+                CartSession = cart,
+                CartSessionId = cart.Id,
+                State = CheckoutSessionStates.OrderPending,
+                CartVersion = 2,
+                CustomerEmail = "customer@example.test",
+                CustomerName = "Customer One",
+                ShippingFullName = "Customer One",
+                ShippingEmail = "customer@example.test",
+                ShippingAddress1 = "100 Main St",
+                ShippingCity = "New York",
+                ShippingPostalCode = "10001",
+                ShippingCountryCode = "US",
+                PaymentMethodKey = PaymentMethodKeys.Stripe,
+                GrandTotal = 42m,
+                CurrencyCode = "USD",
+            };
+            var attempt = new PaymentAttempt
+            {
+                Id = Guid.NewGuid(),
+                PublicId = Guid.NewGuid(),
+                StoreId = storeId,
+                CheckoutSession = checkout,
+                CheckoutSessionId = checkout.Id,
+                PaymentMethodKey = PaymentMethodKeys.Stripe,
+                ProviderKey = PaymentMethodKeys.Stripe,
+                State = PaymentAttemptStates.RequiresAction,
+                Amount = 42m,
+                CurrencyCode = "USD",
+                IdempotencyKey = "capture-key",
+                ProviderSessionId = "cs_test",
+            };
+            context.CheckoutSessions.Add(checkout);
+            context.PaymentAttempts.Add(attempt);
+            context.SaveChanges();
+            var service = new PaymentAttemptService(context);
+
+            var first = await service.TransitionAsync(new TransitionPaymentAttemptRequest(
+                storeId,
+                attempt.PublicId,
+                PaymentAttemptStates.Captured,
+                ProviderReference: "pi_test",
+                MetadataJson: "{\"event\":\"checkout.session.completed\"}"));
+            var second = await service.TransitionAsync(new TransitionPaymentAttemptRequest(
+                storeId,
+                attempt.PublicId,
+                PaymentAttemptStates.Captured,
+                ProviderReference: "pi_test",
+                MetadataJson: "{\"event\":\"checkout.session.completed\"}"));
+
+            Assert.True(first.Success);
+            Assert.True(second.Success);
+            Assert.Equal(PaymentAttemptStates.Captured, first.Payload!.State);
+            Assert.Single(context.Orders);
+            Assert.Single(context.OrderLines);
+            Assert.Equal(context.Orders.Single().Id, first.Payload.OrderId);
+            Assert.Equal(CartSessionStates.Ordered, context.CartSessions.Single().State);
+            Assert.Equal(3, context.Products.Single(item => item.Id == product.Id).Quantity);
         }
 
         [Fact]
@@ -128,6 +222,32 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 "usd",
                 idempotencyKey,
                 MetadataJson: "{\"mode\":\"test\"}");
+        }
+
+        private static Product CreatePublishedProduct(Guid storeId, decimal price, int stock)
+        {
+            var categoryId = Guid.NewGuid();
+            return new Product
+            {
+                Id = Guid.NewGuid(),
+                StoreId = storeId,
+                Name = "Published product",
+                Slug = $"published-{Guid.NewGuid():N}",
+                Price = price,
+                Quantity = stock,
+                IsPublished = true,
+                PublishedOn = DateTime.UtcNow,
+                ProductType = ProductTypes.Simple,
+                CategoryId = categoryId,
+                Category = new Category
+                {
+                    Id = categoryId,
+                    StoreId = storeId,
+                    Name = "Published category",
+                    Slug = "published-category",
+                    IsPublished = true,
+                },
+            };
         }
 
         private static CommerceNodeDbContext CreateContext()

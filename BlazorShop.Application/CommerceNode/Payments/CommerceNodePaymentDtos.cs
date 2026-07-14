@@ -59,6 +59,30 @@ namespace BlazorShop.Application.CommerceNode.Payments
         DateTimeOffset? ProcessedAtUtc,
         DateTimeOffset CreatedAtUtc);
 
+    public sealed record PaymentProviderSessionLine(
+        Guid ProductId,
+        string Name,
+        int Quantity,
+        decimal UnitAmount);
+
+    public sealed record CreatePaymentProviderSessionRequest(
+        Guid StoreId,
+        Guid CheckoutSessionId,
+        Guid PaymentAttemptId,
+        string PaymentMethodKey,
+        string ProviderKey,
+        decimal Amount,
+        string CurrencyCode,
+        string IdempotencyKey,
+        IReadOnlyList<PaymentProviderSessionLine> Lines);
+
+    public sealed record PaymentProviderSessionResult(
+        string ProviderSessionId,
+        string? ProviderReference,
+        string NextActionType,
+        string NextActionUrl,
+        string? MetadataJson);
+
     public sealed record RecordPaymentProviderEventRequest(
         Guid StoreId,
         Guid? PaymentAttemptId,
@@ -86,6 +110,20 @@ namespace BlazorShop.Application.CommerceNode.Payments
         Task<ServiceResponse<PaymentProviderEventDto>> RecordProviderEventAsync(
             RecordPaymentProviderEventRequest request,
             CancellationToken cancellationToken = default);
+    }
+
+    public interface IStorefrontPaymentProvider
+    {
+        string ProviderKey { get; }
+
+        Task<ServiceResponse<PaymentProviderSessionResult>> CreateHostedSessionAsync(
+            CreatePaymentProviderSessionRequest request,
+            CancellationToken cancellationToken = default);
+    }
+
+    public interface IStorefrontPaymentProviderResolver
+    {
+        IStorefrontPaymentProvider Resolve(string providerKey);
     }
 
     public sealed record StorePaymentMethodDto(

@@ -444,6 +444,33 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("unitPrice", handler.LastAddLineBody, StringComparison.OrdinalIgnoreCase);
         }
 
+        [Fact]
+        public async Task Checkout_PostRedirectsToProviderNextAction()
+        {
+            var handler = new CheckoutPaymentRedirectHandler();
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<StorefrontApiClient>();
+                    services.AddScoped(_ => new StorefrontApiClient(
+                        new HttpClient(handler)
+                        {
+                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
+                        },
+                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.Checkout, "bs-cart-token=server-token");
+            using var request = CreateCheckoutPost(token, AppendCookie(cookieHeader, "bs-cart-token=server-token"));
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("https://checkout.stripe.test/session", response.Headers.Location?.ToString());
+            Assert.Contains(response.Headers.GetValues("Set-Cookie"), value => value.Contains("bs-cart-token=", StringComparison.Ordinal));
+            Assert.Equal(1, handler.PlaceOrderCalls);
+        }
+
         private HttpClient CreateClient(Action<IServiceCollection> configureServices, bool allowAutoRedirect = true)
         {
             var configuredFactory = _factory.WithWebHostBuilder(builder =>
@@ -457,9 +484,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             });
         }
 
-        private static async Task<(string Token, string CookieHeader)> ReadAntiforgeryAsync(HttpClient client, string path)
+        private static async Task<(string Token, string CookieHeader)> ReadAntiforgeryAsync(
+            HttpClient client,
+            string path,
+            string? requestCookieHeader = null)
         {
-            using var response = await client.GetAsync(path);
+            using var request = new HttpRequestMessage(HttpMethod.Get, path);
+            if (!string.IsNullOrWhiteSpace(requestCookieHeader))
+            {
+                request.Headers.Add("Cookie", requestCookieHeader);
+            }
+
+            using var response = await client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
             var tokenMatch = Regex.Match(
                 content,
@@ -510,6 +546,33 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     new KeyValuePair<string, string>("Password", "Password123!"),
                     new KeyValuePair<string, string>("ConfirmPassword", confirmPassword),
                     new KeyValuePair<string, string>("ReturnUrl", returnUrl),
+                ]),
+            };
+
+            request.Headers.Add("Cookie", cookieHeader);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            return request;
+        }
+
+        private static HttpRequestMessage CreateCheckoutPost(string antiforgeryToken, string cookieHeader)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, StorefrontRoutes.Checkout)
+            {
+                Content = new FormUrlEncodedContent(
+                [
+                    new KeyValuePair<string, string>("__RequestVerificationToken", antiforgeryToken),
+                    new KeyValuePair<string, string>("CartVersion", "2"),
+                    new KeyValuePair<string, string>("IdempotencyKey", "checkout-online-key"),
+                    new KeyValuePair<string, string>("CustomerEmail", "customer@example.test"),
+                    new KeyValuePair<string, string>("CustomerName", "Customer One"),
+                    new KeyValuePair<string, string>("PaymentMethodKey", "stripe"),
+                    new KeyValuePair<string, string>("ShippingFullName", "Customer One"),
+                    new KeyValuePair<string, string>("ShippingEmail", "customer@example.test"),
+                    new KeyValuePair<string, string>("ShippingPhone", "5550100"),
+                    new KeyValuePair<string, string>("ShippingAddress1", "1 Test Street"),
+                    new KeyValuePair<string, string>("ShippingCity", "Test City"),
+                    new KeyValuePair<string, string>("ShippingPostalCode", "10000"),
+                    new KeyValuePair<string, string>("ShippingCountryCode", "US"),
                 ]),
             };
 
@@ -771,6 +834,206 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                                     currencyCodeSnapshot = "EUR",
                                 },
                             },
+                    },
+                };
+            }
+
+            private static HttpResponseMessage JsonResponse(object payload)
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = JsonContent(payload),
+                };
+            }
+        }
+
+        private sealed class CheckoutPaymentRedirectHandler : HttpMessageHandler
+        {
+            private static readonly Guid CartId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+            private static readonly Guid LineId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+            private static readonly Guid ProductId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+            private static readonly Guid CheckoutSessionId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
+            private static readonly Guid PaymentAttemptId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
+            private static readonly DateTimeOffset ExpiresAtUtc = DateTimeOffset.UtcNow.AddDays(30);
+
+            public int PlaceOrderCalls { get; private set; }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                var path = request.RequestUri?.AbsolutePath ?? string.Empty;
+                if (request.Method == HttpMethod.Post && path.EndsWith("/cart/session", StringComparison.Ordinal))
+                {
+                    return Task.FromResult(JsonResponse(new
+                    {
+                        success = true,
+                        message = "OK",
+                        data = new
+                        {
+                            cartId = CartId,
+                            cartToken = "server-token",
+                            state = "active",
+                            version = 2,
+                            expiresAtUtc = ExpiresAtUtc,
+                        },
+                    }));
+                }
+
+                if (request.Method == HttpMethod.Get && path.EndsWith("/cart", StringComparison.Ordinal))
+                {
+                    return Task.FromResult(JsonResponse(CreateCartEnvelope()));
+                }
+
+                if (request.Method == HttpMethod.Get && path.EndsWith($"/catalog/products/{ProductId:D}", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Task.FromResult(JsonResponse(new
+                    {
+                        success = true,
+                        message = "OK",
+                        data = new
+                        {
+                            id = ProductId,
+                            name = "Checkout Product",
+                            description = "Test product",
+                            image = "/media/products/test.webp",
+                            price = 12.34m,
+                            quantity = 10,
+                            categoryId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
+                            createdOn = DateTime.UtcNow,
+                            updatedAt = DateTime.UtcNow,
+                            variants = Array.Empty<object>(),
+                        },
+                    }));
+                }
+
+                if (request.Method == HttpMethod.Get && path.EndsWith("/payments/methods", StringComparison.Ordinal))
+                {
+                    return Task.FromResult(JsonResponse(new
+                    {
+                        success = true,
+                        message = "OK",
+                        data = new[]
+                        {
+                            new
+                            {
+                                id = Guid.Parse("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+                                key = "stripe",
+                                name = "Stripe",
+                                description = "Pay online",
+                            },
+                        },
+                    }));
+                }
+
+                if (request.Method == HttpMethod.Post && path.EndsWith("/checkout/preview", StringComparison.Ordinal))
+                {
+                    return Task.FromResult(JsonResponse(new
+                    {
+                        success = true,
+                        message = "OK",
+                        data = new
+                        {
+                            checkoutSessionId = CheckoutSessionId,
+                            cartId = CartId,
+                            cartVersion = 2,
+                            state = "ready",
+                            isValid = true,
+                            nextAction = "placeOrder",
+                            customerEmail = "customer@example.test",
+                            customerName = "Customer One",
+                            paymentMethodKey = "stripe",
+                            subtotal = 12.34m,
+                            shippingTotal = 0m,
+                            taxTotal = 0m,
+                            discountTotal = 0m,
+                            grandTotal = 12.34m,
+                            currencyCode = "USD",
+                            expiresAtUtc = ExpiresAtUtc,
+                            lines = new[]
+                            {
+                                new
+                                {
+                                    lineId = LineId,
+                                    productId = ProductId,
+                                    productVariantId = (Guid?)null,
+                                    quantity = 1,
+                                    unitPrice = 12.34m,
+                                    lineTotal = 12.34m,
+                                    selectedAttributesJson = (string?)null,
+                                    personalizationHash = (string?)null,
+                                    personalizationJson = (string?)null,
+                                    artworkAssetId = (Guid?)null,
+                                    artworkVersion = (int?)null,
+                                    fulfillmentProviderKey = (string?)null,
+                                },
+                            },
+                            issues = Array.Empty<object>(),
+                        },
+                    }));
+                }
+
+                if (request.Method == HttpMethod.Post && path.EndsWith("/checkout/place-order", StringComparison.Ordinal))
+                {
+                    this.PlaceOrderCalls++;
+                    return Task.FromResult(JsonResponse(new
+                    {
+                        success = true,
+                        message = "OK",
+                        data = new
+                        {
+                            checkoutSessionId = CheckoutSessionId,
+                            paymentAttemptId = PaymentAttemptId,
+                            orderId = (Guid?)null,
+                            reference = (string?)null,
+                            orderStatus = (string?)null,
+                            paymentStatus = "requires_action",
+                            paymentMethodKey = "stripe",
+                            totalAmount = 12.34m,
+                            currencyCode = "USD",
+                            idempotencyKey = "checkout-online-key",
+                            createdOn = DateTime.UtcNow,
+                            nextAction = new
+                            {
+                                type = "redirect",
+                                url = "https://checkout.stripe.test/session",
+                            },
+                        },
+                    }));
+                }
+
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
+            }
+
+            private static object CreateCartEnvelope()
+            {
+                return new
+                {
+                    success = true,
+                    message = "OK",
+                    data = new
+                    {
+                        cartId = CartId,
+                        state = "active",
+                        version = 2,
+                        lastActivityAtUtc = DateTimeOffset.UtcNow,
+                        expiresAtUtc = ExpiresAtUtc,
+                        lines = new[]
+                        {
+                            new
+                            {
+                                lineId = LineId,
+                                productId = ProductId,
+                                productVariantId = (Guid?)null,
+                                selectedAttributesJson = (string?)null,
+                                personalizationHash = (string?)null,
+                                personalizationJson = (string?)null,
+                                artworkAssetId = (Guid?)null,
+                                artworkVersion = (int?)null,
+                                fulfillmentProviderKey = (string?)null,
+                                quantity = 1,
+                                unitPriceSnapshot = 12.34m,
+                                currencyCodeSnapshot = "USD",
+                            },
+                        },
                     },
                 };
             }

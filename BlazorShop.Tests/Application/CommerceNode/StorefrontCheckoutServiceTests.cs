@@ -3,6 +3,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Checkout;
     using BlazorShop.Application.CommerceNode.Customers;
+    using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Domain.Constants;
@@ -249,15 +250,116 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Equal(10, context.Products.Single(item => item.Id == product.Id).Quantity);
         }
 
+        [Fact]
+        public async Task PlaceOrderAsync_StripeCreatesRedirectAttemptWithoutOrder()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId, PaymentMethodKeys.Stripe);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 40m, stock: 10);
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1));
+            var provider = new FakePaymentProvider(
+                PaymentMethodKeys.Stripe,
+                request => new PaymentProviderSessionResult(
+                    "cs_test_123",
+                    null,
+                    "redirect",
+                    "https://checkout.stripe.test/session",
+                    "{\"provider\":\"stripe\"}"));
+            var service = CreateCheckoutService(context, cartService, provider);
+            var preview = await service.PreviewAsync(CreateRequest(
+                storeId,
+                cart.Payload.Token!,
+                add.Payload!.Version,
+                paymentMethodKey: PaymentMethodKeys.Stripe));
+
+            var first = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                preview.Payload!.CheckoutSessionId,
+                preview.Payload.CartVersion,
+                "stripe-session-key"));
+            var second = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                preview.Payload.CheckoutSessionId,
+                preview.Payload.CartVersion,
+                "stripe-session-key"));
+
+            Assert.True(first.Success);
+            Assert.True(second.Success);
+            Assert.Null(first.Payload!.OrderId);
+            Assert.Null(first.Payload.Reference);
+            Assert.Equal(first.Payload.PaymentAttemptId, second.Payload!.PaymentAttemptId);
+            Assert.Equal("redirect", first.Payload.NextActionType);
+            Assert.Equal("https://checkout.stripe.test/session", first.Payload.NextActionUrl);
+            Assert.Empty(context.Orders);
+            var attempt = Assert.Single(context.PaymentAttempts);
+            Assert.Equal(PaymentAttemptStates.RequiresAction, attempt.State);
+            Assert.Equal("cs_test_123", attempt.ProviderSessionId);
+            Assert.Equal(CheckoutSessionStates.OrderPending, context.CheckoutSessions.Single().State);
+            Assert.Equal(CartSessionStates.Active, context.CartSessions.Single().State);
+        }
+
+        [Fact]
+        public async Task PlaceOrderAsync_StripeProviderFailureReturnsConflictWithoutOrder()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId, PaymentMethodKeys.Stripe);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 40m, stock: 10);
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1));
+            var provider = new FakePaymentProvider(PaymentMethodKeys.Stripe, _ => null);
+            var service = CreateCheckoutService(context, cartService, provider);
+            var preview = await service.PreviewAsync(CreateRequest(
+                storeId,
+                cart.Payload.Token!,
+                add.Payload!.Version,
+                paymentMethodKey: PaymentMethodKeys.Stripe));
+
+            var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                preview.Payload!.CheckoutSessionId,
+                preview.Payload.CartVersion,
+                "stripe-missing-config"));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.Conflict, result.ResponseType);
+            Assert.Empty(context.Orders);
+            Assert.Equal(PaymentAttemptStates.Failed, context.PaymentAttempts.Single().State);
+        }
+
         private static StorefrontCheckoutService CreateCheckoutService(
             CommerceNodeDbContext context,
-            IStorefrontCartService cartService)
+            IStorefrontCartService cartService,
+            params IStorefrontPaymentProvider[] providers)
         {
             return new StorefrontCheckoutService(
                 context,
                 cartService,
                 new StorefrontCustomerService(context),
-                new PaymentHandlerResolver([new CodPaymentHandler()]));
+                new PaymentHandlerResolver([new CodPaymentHandler()]),
+                new StorefrontPaymentProviderResolver(providers));
         }
 
         private static StorefrontCartService CreateCartService(
@@ -276,7 +378,8 @@ namespace BlazorShop.Tests.Application.CommerceNode
             string customerEmail = "customer@example.test",
             string shippingEmail = "customer@example.test",
             string postalCode = "10001",
-            string countryCode = "US")
+            string countryCode = "US",
+            string paymentMethodKey = PaymentMethodKeys.Cod)
         {
             return new StorefrontCheckoutPreviewRequest(
                 storeId,
@@ -284,7 +387,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 expectedCartVersion,
                 customerEmail,
                 "Customer One",
-                PaymentMethodKeys.Cod,
+                paymentMethodKey,
                 new StorefrontCheckoutShippingAddressDto(
                     "Customer One",
                     shippingEmail,
@@ -324,14 +427,17 @@ namespace BlazorShop.Tests.Application.CommerceNode
             };
         }
 
-        private static void SeedPaymentMethod(CommerceNodeDbContext context, Guid storeId)
+        private static void SeedPaymentMethod(
+            CommerceNodeDbContext context,
+            Guid storeId,
+            string paymentMethodKey = PaymentMethodKeys.Cod)
         {
             context.StorePaymentMethods.Add(new StorePaymentMethod
             {
                 Id = Guid.NewGuid(),
                 StoreId = storeId,
-                PaymentMethodKey = PaymentMethodKeys.Cod,
-                DisplayName = "Cash on Delivery",
+                PaymentMethodKey = paymentMethodKey,
+                DisplayName = paymentMethodKey,
                 Enabled = true,
                 DisplayOrder = 10,
             });
@@ -351,6 +457,38 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 .Options;
 
             return new CommerceNodeDbContext(options);
+        }
+
+        private sealed class FakePaymentProvider : IStorefrontPaymentProvider
+        {
+            private readonly Func<CreatePaymentProviderSessionRequest, PaymentProviderSessionResult?> createSession;
+
+            public FakePaymentProvider(
+                string providerKey,
+                Func<CreatePaymentProviderSessionRequest, PaymentProviderSessionResult?> createSession)
+            {
+                this.ProviderKey = providerKey;
+                this.createSession = createSession;
+            }
+
+            public string ProviderKey { get; }
+
+            public Task<ServiceResponse<PaymentProviderSessionResult>> CreateHostedSessionAsync(
+                CreatePaymentProviderSessionRequest request,
+                CancellationToken cancellationToken = default)
+            {
+                var result = this.createSession(request);
+                return result is null
+                    ? Task.FromResult(new ServiceResponse<PaymentProviderSessionResult>(false, "Provider is not configured.")
+                    {
+                        ResponseType = ServiceResponseType.Conflict,
+                    })
+                    : Task.FromResult(new ServiceResponse<PaymentProviderSessionResult>(true, "Session created.")
+                    {
+                        Payload = result,
+                        ResponseType = ServiceResponseType.Success,
+                    });
+            }
         }
     }
 }

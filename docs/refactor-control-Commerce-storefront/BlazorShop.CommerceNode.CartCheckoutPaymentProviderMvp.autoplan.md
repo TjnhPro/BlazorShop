@@ -581,6 +581,8 @@ Commit boundary: `feat: route cod checkout through payment attempts`
 
 ### Phase 10 - First Online Provider MVP
 
+Status: completed 2026-07-14 in commit `feat: add first online payment provider mvp`.
+
 Goal: implement exactly one online provider end to end after the ledger exists.
 
 Provider selection gate:

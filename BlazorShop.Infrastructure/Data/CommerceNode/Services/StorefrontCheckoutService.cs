@@ -24,17 +24,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly IStorefrontCartService cartService;
         private readonly IStorefrontCustomerService customerService;
         private readonly IPaymentHandlerResolver paymentHandlerResolver;
+        private readonly IStorefrontPaymentProviderResolver paymentProviderResolver;
 
         public StorefrontCheckoutService(
             CommerceNodeDbContext context,
             IStorefrontCartService cartService,
             IStorefrontCustomerService customerService,
-            IPaymentHandlerResolver paymentHandlerResolver)
+            IPaymentHandlerResolver paymentHandlerResolver,
+            IStorefrontPaymentProviderResolver paymentProviderResolver)
         {
             this.context = context;
             this.cartService = cartService;
             this.customerService = customerService;
             this.paymentHandlerResolver = paymentHandlerResolver;
+            this.paymentProviderResolver = paymentProviderResolver;
         }
 
         public async Task<ServiceResponse<StorefrontCheckoutPreviewResult>> PreviewAsync(
@@ -261,6 +264,21 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Succeeded("Order already placed.", ToPlaceOrderResult(session, session.Order, paymentAttemptId, idempotencyKey));
             }
 
+            if (string.Equals(session.IdempotencyKey, idempotencyKey, StringComparison.Ordinal)
+                && string.Equals(session.State, CheckoutSessionStates.OrderPending, StringComparison.OrdinalIgnoreCase))
+            {
+                var existingAttempt = await this.context.PaymentAttempts
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(
+                        attempt => attempt.StoreId == session.StoreId
+                            && attempt.IdempotencyKey == idempotencyKey,
+                        cancellationToken);
+                if (existingAttempt is not null)
+                {
+                    return Succeeded("Payment session already exists.", ToOnlinePlaceOrderResult(session, existingAttempt, idempotencyKey));
+                }
+            }
+
             if (!string.Equals(session.State, CheckoutSessionStates.Ready, StringComparison.OrdinalIgnoreCase))
             {
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Checkout session is not ready for order placement.");
@@ -301,9 +319,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Payment method is not available.");
             }
 
-            if (!string.Equals(paymentMethodKey, PaymentMethodKeys.Cod, StringComparison.OrdinalIgnoreCase))
+            var isCod = string.Equals(paymentMethodKey, PaymentMethodKeys.Cod, StringComparison.OrdinalIgnoreCase);
+            var isStripe = string.Equals(paymentMethodKey, PaymentMethodKeys.Stripe, StringComparison.OrdinalIgnoreCase);
+            if (!isCod && !isStripe)
             {
-                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Only COD order placement is available in this phase.");
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Payment provider is not available for order placement.");
             }
 
             var lineResolution = await this.ResolveOrderLinesAsync(request.StoreId, cart.Lines, cancellationToken);
@@ -320,6 +340,19 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var currencyCode = NormalizeCurrency(session.CurrencyCode) ?? DefaultCurrencyCode;
+            if (isStripe)
+            {
+                return await this.CreateOnlinePaymentSessionAsync(
+                    request,
+                    session,
+                    cart,
+                    lines,
+                    totalAmount,
+                    currencyCode,
+                    idempotencyKey,
+                    cancellationToken);
+            }
+
             PaymentHandlerResult paymentResult;
             try
             {
@@ -470,6 +503,127 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             return Succeeded("Order placed successfully.", ToPlaceOrderResult(session, order, paymentAttempt.PublicId, idempotencyKey));
+        }
+
+        private async Task<ServiceResponse<StorefrontPlaceOrderResult>> CreateOnlinePaymentSessionAsync(
+            StorefrontPlaceOrderRequest request,
+            CheckoutSession session,
+            CartSession cart,
+            IReadOnlyList<OrderLineSnapshot> lines,
+            decimal totalAmount,
+            string currencyCode,
+            string idempotencyKey,
+            CancellationToken cancellationToken)
+        {
+            var existingAttempt = await this.context.PaymentAttempts
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    attempt => attempt.StoreId == request.StoreId
+                        && attempt.IdempotencyKey == idempotencyKey,
+                    cancellationToken);
+            if (existingAttempt is not null)
+            {
+                return Succeeded("Payment session already exists.", ToOnlinePlaceOrderResult(session, existingAttempt, idempotencyKey));
+            }
+
+            var now = DateTimeOffset.UtcNow;
+            var paymentAttempt = new PaymentAttempt
+            {
+                Id = Guid.NewGuid(),
+                PublicId = Guid.NewGuid(),
+                StoreId = request.StoreId,
+                CheckoutSessionId = session.Id,
+                PaymentMethodKey = session.PaymentMethodKey,
+                ProviderKey = session.PaymentMethodKey,
+                State = PaymentAttemptStates.Created,
+                Amount = totalAmount,
+                CurrencyCode = currencyCode,
+                IdempotencyKey = idempotencyKey,
+                ExpiresAtUtc = now.AddMinutes(30),
+                CreatedAtUtc = now,
+                UpdatedAtUtc = now,
+            };
+
+            this.context.PaymentAttempts.Add(paymentAttempt);
+            try
+            {
+                await this.context.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateException)
+            {
+                var duplicate = await this.context.PaymentAttempts
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(
+                        attempt => attempt.StoreId == request.StoreId
+                            && attempt.IdempotencyKey == idempotencyKey,
+                        cancellationToken);
+                if (duplicate is not null)
+                {
+                    return Succeeded("Payment session already exists.", ToOnlinePlaceOrderResult(session, duplicate, idempotencyKey));
+                }
+
+                throw;
+            }
+
+            ServiceResponse<PaymentProviderSessionResult> providerResult;
+            try
+            {
+                var provider = this.paymentProviderResolver.Resolve(paymentAttempt.ProviderKey);
+                providerResult = await provider.CreateHostedSessionAsync(
+                    new CreatePaymentProviderSessionRequest(
+                        request.StoreId,
+                        session.PublicId,
+                        paymentAttempt.PublicId,
+                        paymentAttempt.PaymentMethodKey,
+                        paymentAttempt.ProviderKey,
+                        totalAmount,
+                        currencyCode,
+                        idempotencyKey,
+                        lines.Select(line => new PaymentProviderSessionLine(
+                            line.Product.Id,
+                            line.Product.Name ?? "Product",
+                            line.CartLine.Quantity,
+                            line.UnitPrice)).ToArray()),
+                    cancellationToken);
+            }
+            catch (InvalidOperationException ex)
+            {
+                providerResult = new ServiceResponse<PaymentProviderSessionResult>(false, ex.Message)
+                {
+                    ResponseType = ServiceResponseType.Conflict,
+                };
+            }
+
+            if (!providerResult.Success || providerResult.Payload is null)
+            {
+                paymentAttempt.State = PaymentAttemptStates.Failed;
+                paymentAttempt.FailureCode = "provider_session_failed";
+                paymentAttempt.FailureMessage = providerResult.Message ?? "Payment provider session could not be created.";
+                paymentAttempt.UpdatedAtUtc = DateTimeOffset.UtcNow;
+                await this.context.SaveChangesAsync(cancellationToken);
+                return Failed<StorefrontPlaceOrderResult>(
+                    providerResult.ResponseType is ServiceResponseType.Success ? ServiceResponseType.Conflict : providerResult.ResponseType,
+                    paymentAttempt.FailureMessage);
+            }
+
+            var providerSession = providerResult.Payload;
+            paymentAttempt.State = PaymentAttemptStates.RequiresAction;
+            paymentAttempt.ProviderSessionId = providerSession.ProviderSessionId;
+            paymentAttempt.ProviderReference = providerSession.ProviderReference;
+            paymentAttempt.NextActionType = providerSession.NextActionType;
+            paymentAttempt.NextActionUrl = providerSession.NextActionUrl;
+            paymentAttempt.MetadataJson = providerSession.MetadataJson;
+            paymentAttempt.UpdatedAtUtc = DateTimeOffset.UtcNow;
+
+            session.State = CheckoutSessionStates.OrderPending;
+            session.IdempotencyKey = idempotencyKey;
+            session.NextAction = "paymentRedirect";
+            session.UpdatedAtUtc = DateTimeOffset.UtcNow;
+            cart.LastActivityAtUtc = DateTimeOffset.UtcNow;
+            cart.UpdatedAtUtc = DateTimeOffset.UtcNow;
+
+            await this.context.SaveChangesAsync(cancellationToken);
+            return Succeeded("Payment session created.", ToOnlinePlaceOrderResult(session, paymentAttempt, idempotencyKey));
         }
 
         private async Task<bool> IsPaymentMethodEnabledAsync(Guid storeId, string paymentMethodKey, CancellationToken cancellationToken)
@@ -705,6 +859,27 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 NormalizeCurrency(order.CurrencyCode) ?? DefaultCurrencyCode,
                 idempotencyKey,
                 order.CreatedOn);
+        }
+
+        private static StorefrontPlaceOrderResult ToOnlinePlaceOrderResult(
+            CheckoutSession session,
+            PaymentAttempt paymentAttempt,
+            string idempotencyKey)
+        {
+            return new StorefrontPlaceOrderResult(
+                session.PublicId,
+                paymentAttempt.PublicId,
+                paymentAttempt.OrderId,
+                null,
+                null,
+                PaymentStatuses.Pending,
+                paymentAttempt.PaymentMethodKey,
+                paymentAttempt.Amount,
+                NormalizeCurrency(paymentAttempt.CurrencyCode) ?? DefaultCurrencyCode,
+                idempotencyKey,
+                paymentAttempt.CreatedAtUtc.UtcDateTime,
+                paymentAttempt.NextActionType,
+                paymentAttempt.NextActionUrl);
         }
 
         private static ServiceResponse<StorefrontCheckoutPreviewResult> Succeeded(

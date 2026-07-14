@@ -5457,7 +5457,8 @@
           },
           "orderId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "nullable": true
           },
           "reference": {
             "type": "string",
@@ -5490,6 +5491,9 @@
           "createdOn": {
             "type": "string",
             "format": "date-time"
+          },
+          "nextAction": {
+            "$ref": "#/components/schemas/StorefrontPaymentNextActionResponse"
           }
         },
         "additionalProperties": false

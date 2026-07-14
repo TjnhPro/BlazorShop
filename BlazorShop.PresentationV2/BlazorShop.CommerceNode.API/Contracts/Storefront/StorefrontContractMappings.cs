@@ -208,6 +208,10 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
 
         public static StorefrontPlaceOrderResponse ToStorefrontContract(this StorefrontPlaceOrderResult result)
         {
+            var nextAction = string.IsNullOrWhiteSpace(result.NextActionType)
+                ? null
+                : new StorefrontPaymentNextActionResponse(result.NextActionType, result.NextActionUrl);
+
             return new StorefrontPlaceOrderResponse(
                 result.CheckoutSessionId,
                 result.PaymentAttemptId,
@@ -219,7 +223,8 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 result.TotalAmount,
                 result.CurrencyCode,
                 result.IdempotencyKey,
-                result.CreatedOn);
+                result.CreatedOn,
+                nextAction);
         }
 
         public static StorefrontPaymentAttemptResponse ToStorefrontContract(this PaymentAttemptDto result)

@@ -1,0 +1,100 @@
+namespace BlazorShop.Tests.Infrastructure.CommerceNode
+{
+    using BlazorShop.Application.CommerceNode.Payments;
+    using BlazorShop.Application.DTOs;
+    using BlazorShop.Application.Options;
+    using BlazorShop.Domain.Constants;
+    using BlazorShop.Infrastructure.Data.CommerceNode.Services;
+    using BlazorShop.Infrastructure.Services;
+
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.Options;
+
+    using Stripe.Checkout;
+
+    using Xunit;
+
+    public sealed class StripeStorefrontPaymentProviderTests
+    {
+        [Fact]
+        public async Task CreateHostedSessionAsync_SendsAmountCurrencyAndIdempotencyMetadata()
+        {
+            var checkout = new FakeStripeCheckoutSessionService();
+            var provider = CreateProvider(checkout, stripeSecret: "sk_test_123", clientBaseUrl: "https://shop.example.com");
+            var request = CreateRequest();
+
+            var result = await provider.CreateHostedSessionAsync(request);
+
+            Assert.True(result.Success);
+            Assert.Equal("redirect", result.Payload!.NextActionType);
+            Assert.Equal("https://checkout.stripe.test/session", result.Payload.NextActionUrl);
+            Assert.NotNull(checkout.Options);
+            Assert.Equal("usd", checkout.Options!.LineItems[0].PriceData.Currency);
+            Assert.Equal(1234, checkout.Options.LineItems[0].PriceData.UnitAmount);
+            Assert.Equal("payment", checkout.Options.Mode);
+            Assert.Equal(request.PaymentAttemptId.ToString(), checkout.Options.Metadata["paymentAttemptId"]);
+            Assert.Equal("stripe-idem-key", checkout.Options.Metadata["idempotencyKey"]);
+            Assert.Contains("paymentAttemptId=", checkout.Options.SuccessUrl, StringComparison.Ordinal);
+            Assert.Contains("paymentAttemptId=", checkout.Options.CancelUrl, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task CreateHostedSessionAsync_WhenStripeSecretMissing_ReturnsConflict()
+        {
+            var provider = CreateProvider(new FakeStripeCheckoutSessionService(), stripeSecret: "", clientBaseUrl: "https://shop.example.com");
+
+            var result = await provider.CreateHostedSessionAsync(CreateRequest());
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.Conflict, result.ResponseType);
+        }
+
+        private static StripeStorefrontPaymentProvider CreateProvider(
+            IStripeCheckoutSessionService checkout,
+            string stripeSecret,
+            string clientBaseUrl)
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["Stripe:SecretKey"] = stripeSecret,
+                })
+                .Build();
+
+            return new StripeStorefrontPaymentProvider(
+                checkout,
+                Options.Create(new ClientAppOptions { BaseUrl = clientBaseUrl }),
+                configuration);
+        }
+
+        private static CreatePaymentProviderSessionRequest CreateRequest()
+        {
+            return new CreatePaymentProviderSessionRequest(
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                PaymentMethodKeys.Stripe,
+                PaymentMethodKeys.Stripe,
+                12.34m,
+                "USD",
+                "stripe-idem-key",
+                [new PaymentProviderSessionLine(Guid.NewGuid(), "T-Shirt", 1, 12.34m)]);
+        }
+
+        private sealed class FakeStripeCheckoutSessionService : IStripeCheckoutSessionService
+        {
+            public SessionCreateOptions? Options { get; private set; }
+
+            public Task<Session> CreateAsync(SessionCreateOptions options, CancellationToken cancellationToken = default)
+            {
+                this.Options = options;
+                return Task.FromResult(new Session
+                {
+                    Id = "cs_test_123",
+                    Url = "https://checkout.stripe.test/session",
+                    PaymentIntentId = "pi_test_123",
+                });
+            }
+        }
+    }
+}
