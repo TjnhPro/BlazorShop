@@ -53,24 +53,24 @@ Current route state:
 
 Baseline recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFoundationStorefrontHardening.autoplan.md`.
 
-- [ ] Storefront Swagger has stable `operationId` and summary metadata for every scoped operation.
-- [ ] Storefront Swagger declares request schemas for every operation with a request body.
-- [ ] Storefront Swagger declares response schemas for every success and error response.
-- [ ] Storefront Swagger declares Bearer/cookie security requirements for protected operations.
-- [ ] Storefront Swagger has no operation that only declares HTTP 200.
-- [ ] Storefront Swagger does not expose domain entities or admin-only DTOs as public schemas.
-- [ ] Storefront Swagger validates as an OpenAPI document.
-- [ ] Storefront Swagger can generate a C# or TypeScript client in a smoke test.
-- [ ] Storefront Swagger snapshot is stored under the test project for breaking-change detection.
-- [ ] Storefront public save-checkout request does not accept `userId`; authenticated identity comes from JWT.
-- [ ] Storefront order confirm request does not accept client-supplied `status`.
-- [ ] Storefront product catalog query does not expose `IsPublished`.
-- [ ] Storefront PayPal capture uses POST for the capture side effect.
-- [ ] Storefront quantity request fields publish `minimum: 1` and reject invalid values.
-- [ ] Storefront product catalog `pageSize` publishes minimum/maximum bounds.
-- [ ] Storefront auth and checkout request models publish email, password, and shipping-address validation metadata.
-- [ ] Storefront sort values are named strings, not numeric enum values.
-- [ ] Storefront POST request bodies are required in OpenAPI.
+- [x] Storefront Swagger has stable `operationId` and summary metadata for every scoped operation. 2026-07-14: enforced by `CommerceNodeStorefrontOpenApiContractTests`.
+- [x] Storefront Swagger declares request schemas for every operation with a request body. 2026-07-14: request-body presence and required flag covered by contract tests.
+- [x] Storefront Swagger declares response schemas for every success and error response. 2026-07-14: contract tests assert every declared response has an `application/json` schema.
+- [x] Storefront Swagger declares Bearer/cookie security requirements for protected operations. 2026-07-14: protected operation IDs are asserted in contract tests; Swagger declares Bearer and refresh-cookie schemes.
+- [x] Storefront Swagger has no operation that only declares HTTP 200. 2026-07-14: contract tests require more than one response per operation.
+- [x] Storefront Swagger does not expose domain entities or admin-only DTOs as public schemas. 2026-07-14: contract tests reject unsafe schema names and unsafe public fields.
+- [x] Storefront Swagger validates as an OpenAPI document. 2026-07-14: Swagger is fetched, parsed as OpenAPI JSON, and checked for required document sections.
+- [x] Storefront Swagger can generate a C# or TypeScript client in a smoke test. 2026-07-14: contract tests generate a TypeScript client stub from paths and operation IDs.
+- [x] Storefront Swagger snapshot is stored under the test project for breaking-change detection. 2026-07-14: `storefront-openapi.snapshot.json` and path snapshot are committed.
+- [x] Storefront public save-checkout request does not accept `userId`; authenticated identity comes from JWT. 2026-07-14: `CreateOrderItem.UserId` removed and contract tests reject `userId`.
+- [x] Storefront order confirm request does not accept client-supplied `status`. 2026-07-14: scoped confirm action no longer has `status`; contract tests assert no such parameter.
+- [x] Storefront product catalog query does not expose `IsPublished`. 2026-07-14: scoped query uses `StorefrontProductCatalogQuery`; contract tests reject `isPublished`.
+- [x] Storefront PayPal capture uses POST for the capture side effect. 2026-07-14: `StorefrontPayments_CapturePayPal` is POST with a required body.
+- [x] Storefront quantity request fields publish `minimum: 1` and reject invalid values. 2026-07-14: request DTOs use `[Range(1, int.MaxValue)]`; contract tests assert OpenAPI minimum.
+- [x] Storefront product catalog `pageSize` publishes minimum/maximum bounds. 2026-07-14: `pageSize` range is `1..100` and asserted in contract tests.
+- [x] Storefront auth and checkout request models publish email, password, and shipping-address validation metadata. 2026-07-14: public Storefront DTOs carry DataAnnotations for email/password/shipping address.
+- [x] Storefront sort values are named strings, not numeric enum values. 2026-07-14: Storefront V2 emits lower-camel sort values; API contract uses a string pattern.
+- [x] Storefront POST request bodies are required in OpenAPI. 2026-07-14: Storefront Swagger operation filter marks request bodies required and tests assert it.
 
 ## Startup Database Migration
 
@@ -527,6 +527,8 @@ CommerceNode migrations are applied by API startup when `CommerceNode:Database:M
 Latest ProductMedia QA result: 2026-07-10 CommerceNode API smoke passed for import queue, retry, worker storage, Product.Image sync, public imgproxy rendering, invalid scheme rejection, private/local source blocking, and cross-store 404. Fixed EF projection and temp-file length bugs found during QA.
 
 Latest test result: 2026-07-09 full solution test passed: 485 passed, 10 skipped. Independent API smoke passed for ControlPlane -> CommerceNode health probe, Commerce admin catalog/media, Storefront internal auth/cart/order, and admin order visibility.
+
+Latest Storefront API contract foundation result: 2026-07-14 CommerceNode API build passed, Storefront V2 build passed, CommerceNode OpenAPI contract tests passed, CartService contract tests passed, legacy CartController tests passed, and Storefront V2 API client tests passed. Known warnings were existing NuGet vulnerability warnings and Browserslist freshness notice.
 
 Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `run-v2-local.ps1 -DryRun` passed, and startup migration created/migrated disposable DB `blazorshop_commerce_node_startup_qa_20260711` with safe migration logs. Failure-policy and restart-idempotency checks remain open.
 
