@@ -49,6 +49,29 @@ Current route state:
 - [ ] Storefront scoped endpoint ignores/rejects header-only store scope and does not require node credentials.
 - [x] Legacy `api/internal/*` is removed after Storefront scoped route QA passed; sampled old routes should return 404.
 
+## Storefront API Contract Foundation
+
+Baseline recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFoundationStorefrontHardening.autoplan.md`.
+
+- [ ] Storefront Swagger has stable `operationId` and summary metadata for every scoped operation.
+- [ ] Storefront Swagger declares request schemas for every operation with a request body.
+- [ ] Storefront Swagger declares response schemas for every success and error response.
+- [ ] Storefront Swagger declares Bearer/cookie security requirements for protected operations.
+- [ ] Storefront Swagger has no operation that only declares HTTP 200.
+- [ ] Storefront Swagger does not expose domain entities or admin-only DTOs as public schemas.
+- [ ] Storefront Swagger validates as an OpenAPI document.
+- [ ] Storefront Swagger can generate a C# or TypeScript client in a smoke test.
+- [ ] Storefront Swagger snapshot is stored under the test project for breaking-change detection.
+- [ ] Storefront public save-checkout request does not accept `userId`; authenticated identity comes from JWT.
+- [ ] Storefront order confirm request does not accept client-supplied `status`.
+- [ ] Storefront product catalog query does not expose `IsPublished`.
+- [ ] Storefront PayPal capture uses POST for the capture side effect.
+- [ ] Storefront quantity request fields publish `minimum: 1` and reject invalid values.
+- [ ] Storefront product catalog `pageSize` publishes minimum/maximum bounds.
+- [ ] Storefront auth and checkout request models publish email, password, and shipping-address validation metadata.
+- [ ] Storefront sort values are named strings, not numeric enum values.
+- [ ] Storefront POST request bodies are required in OpenAPI.
+
 ## Startup Database Migration
 
 - [x] Clean `CommerceNodeConnection` database is created/migrated by `BlazorShop.CommerceNode.API` startup when `CommerceNode:Database:MigrateOnStartup=true`. 2026-07-11: startup smoke passed against disposable DB `blazorshop_commerce_node_startup_qa_20260711`.
