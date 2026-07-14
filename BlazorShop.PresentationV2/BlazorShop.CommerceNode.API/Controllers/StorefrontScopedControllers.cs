@@ -539,20 +539,27 @@ namespace BlazorShop.CommerceNode.API.Controllers
         {
             if (request is null || string.IsNullOrWhiteSpace(request.Token))
             {
-                return this.Failure<StorefrontPayPalCaptureResponse>(
-                    ServiceResponseType.ValidationError,
+                return this.Error(
+                    StatusCodes.Status400BadRequest,
+                    "payment.paypal_token_missing",
                     "Missing PayPal token.");
             }
 
             var captured = await this.payPalPaymentService.CaptureAsync(request.Token);
-            var redirectPath = captured ? "payment-success" : "payment-cancel";
+            if (!captured)
+            {
+                return this.Error(
+                    StatusCodes.Status409Conflict,
+                    "payment.paypal_capture_failed",
+                    "PayPal payment capture failed.");
+            }
 
             return this.Success(
                 new StorefrontPayPalCaptureResponse(
-                    captured,
-                    this.BuildClientUrl(redirectPath),
-                    captured ? "PayPal payment captured." : "PayPal payment capture failed."),
-                captured ? "PayPal payment captured." : "PayPal payment capture failed.");
+                    true,
+                    this.BuildClientUrl("payment-success"),
+                    "PayPal payment captured."),
+                "PayPal payment captured.");
         }
 
         private string BuildClientUrl(string path)
