@@ -30,7 +30,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public async Task Checkout_RedirectsAnonymousCustomer_ToLocalSignIn()
+        public async Task Checkout_WhenCartIsEmpty_ShowsEmptyCartState()
         {
             using var client = CreateClient(
                 services =>
@@ -42,8 +42,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             using var response = await client.GetAsync(StorefrontRoutes.Checkout);
 
-            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-            Assert.Equal("/signin?returnUrl=%2Fcheckout", response.Headers.Location?.ToString());
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("Your cart is empty", content, StringComparison.Ordinal);
+            Assert.Contains("Shop New Releases", content, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -239,7 +242,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
             });
 
-            using var response = await client.GetAsync(StorefrontRoutes.Terms);
+            using var response = await client.GetAsync(StorefrontRoutes.Checkout);
             var content = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -264,7 +267,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
             });
 
-            using var response = await client.GetAsync(StorefrontRoutes.Terms);
+            using var response = await client.GetAsync(StorefrontRoutes.Checkout);
             var content = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

@@ -80,7 +80,7 @@ namespace BlazorShop.Tests.Infrastructure.Repositories
             {
                 Id = orderId,
                 UserId = "user-1",
-                Status = "Paid",
+                OrderStatus = "Paid",
                 Reference = "order-1",
                 TotalAmount = 45m,
                 Lines =

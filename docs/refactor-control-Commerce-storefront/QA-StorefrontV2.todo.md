@@ -150,6 +150,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Sitemap excludes draft page. 2026-07-12: `GET /sitemap.xml` did not contain `/pages/qa-draft-page-20260712034014`.
 - [ ] Sitemap excludes published page with `include_in_sitemap=false`.
 - [x] Old `/privacy`, `/faq`, `/terms`, `/customer-service`, `/about-us` routes return 404. 2026-07-12: all five routes returned HTTP 404.
+- [~] Header/footer `/pages/about-us`, `/pages/customer-service`, `/pages/faq`, `/pages/privacy`, and `/pages/terms` require matching published CommerceNode pages or they render 404. 2026-07-14 scoped QA DB had no published standard pages, so all five linked `/pages/*` routes returned 404.
 
 ## Catalog Search MVP
 
@@ -207,12 +208,12 @@ Use this checklist whenever `StorefrontHeader`, `/search`, `StorefrontApiClient`
 
 ## Auth And Checkout Handoff
 
-- [x] Anonymous `/checkout` redirect is covered by automated smoke test.
+- [x] Empty anonymous `/checkout` renders the local empty-cart state. 2026-07-14 host smoke test covers current local checkout behavior.
 - [x] Refresh-token cookie name is compatible:
   - `__Host-blazorshop-refresh`
 - [x] Storefront V2 calls `api/storefront/stores/{storeKey}/auth/refresh-token`. 2026-07-14: `Api:RefreshTokenRoute` default/config changed to `auth/refresh-token` under scoped base address.
 - [~] Authenticated `/checkout` redirects to client app checkout. Code path maps authenticated sessions to `/account/checkout`; browser QA only covered anonymous handoff because the external client app was not running.
-- [x] Anonymous `/checkout` redirects to local `/signin?returnUrl=/checkout`.
+- [x] Anonymous checkout can place a local Storefront V2 order when cart data is present. 2026-07-14 visible-browser QA reached checkout form and order success before auth QA.
 - [x] `/signin` renders Storefront V2 local login page.
 - [x] `/register` renders Storefront V2 local register page.
 - [x] Login success copies Commerce Node `Set-Cookie` refresh cookie to Storefront response. 2026-07-09: covered by host smoke test with auth client stub.
@@ -251,6 +252,7 @@ Use this checklist whenever Storefront V2 auth UI or Commerce Node auth API chan
 2026-07-09 local-auth QA run:
 
 - [x] Automated Storefront V2 auth tests rerun. 2026-07-09: `FullyQualifiedName~PresentationV2.Storefront` passed 23/23.
+- [x] Scoped StorefrontV2 auth/checkout host tests rerun. 2026-07-14: `FullyQualifiedName~ProductRecommendationRepositoryTests|FullyQualifiedName~CartServiceTests|FullyQualifiedName~PresentationV2.Storefront` passed 43/43 after updating stale test expectations for checkout/payment foundation.
 - [x] Browser QA for `/signin` rerun. Screenshot: `.gstack/qa-reports/storefrontv2-signin-2026-07-09.png`.
 - [x] Browser QA for `/register` rerun. Screenshot: `.gstack/qa-reports/storefrontv2-register-2026-07-09.png`.
 - [x] Browser QA for successful register/login/logout rerun. Signed-in menu screenshot: `.gstack/qa-reports/storefrontv2-signed-in-menu-2026-07-09.png`.

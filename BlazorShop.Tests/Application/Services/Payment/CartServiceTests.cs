@@ -159,7 +159,8 @@ namespace BlazorShop.Tests.Application.Services.Payment
                 new Product
                 {
                     Id = checkout.Carts.First().ProductId,
-                    Price = 10m
+                    Price = 10m,
+                    Quantity = 5,
                 }
             };
             var totalAmount = 10m;
@@ -177,7 +178,7 @@ namespace BlazorShop.Tests.Application.Services.Payment
                     }
                 });
             _paymentServiceMock
-                .Setup(s => s.Pay(totalAmount, products, checkout.Carts))
+                .Setup(s => s.Pay(totalAmount, It.IsAny<IEnumerable<Product>>(), checkout.Carts))
                 .ReturnsAsync(new ServiceResponse(true, "Payment successful"));
 
             // Act
@@ -235,6 +236,7 @@ namespace BlazorShop.Tests.Application.Services.Payment
                 {
                     Id = productId,
                     Price = 12.5m,
+                    Quantity = 5,
                 }
             };
             Order? createdOrder = null;
@@ -255,7 +257,7 @@ namespace BlazorShop.Tests.Application.Services.Payment
             Assert.True(result.Success);
             Assert.NotNull(createdOrder);
             Assert.Equal("user-1", createdOrder!.UserId);
-            Assert.Equal("Paid", createdOrder.Status);
+            Assert.Equal("Paid", createdOrder.OrderStatus);
             Assert.Equal(25m, createdOrder.TotalAmount);
             Assert.Single(createdOrder.Lines);
             Assert.Equal(2, createdOrder.Lines.First().Quantity);
