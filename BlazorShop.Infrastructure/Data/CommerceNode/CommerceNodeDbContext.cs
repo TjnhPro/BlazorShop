@@ -59,6 +59,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
         public DbSet<CommerceCustomer> CommerceCustomers => Set<CommerceCustomer>();
 
+        public DbSet<CartSession> CartSessions => Set<CartSession>();
+
+        public DbSet<CartLine> CartLines => Set<CartLine>();
+
         public DbSet<CommerceStoreDomain> CommerceStoreDomains => Set<CommerceStoreDomain>();
 
         public DbSet<StorefrontDeploymentImage> StorefrontDeploymentImages => Set<StorefrontDeploymentImage>();
@@ -171,6 +175,100 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.HasOne(order => order.Customer)
                     .WithMany(customer => customer.Orders)
                     .HasForeignKey(order => order.CustomerId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<CartSession>(entity =>
+            {
+                entity.ToTable("cart_sessions");
+                entity.HasKey(cart => cart.Id);
+                entity.Property(cart => cart.Id).HasColumnName("id");
+                entity.Property(cart => cart.PublicId).HasColumnName("public_id");
+                entity.Property(cart => cart.StoreId).HasColumnName("store_id");
+                entity.Property(cart => cart.TokenHash).HasColumnName("token_hash").HasMaxLength(64).IsRequired();
+                entity.Property(cart => cart.CustomerId).HasColumnName("customer_id");
+                entity.Property(cart => cart.AppUserId).HasColumnName("app_user_id").HasMaxLength(450);
+                entity.Property(cart => cart.State).HasColumnName("state").HasMaxLength(32).IsRequired();
+                entity.Property(cart => cart.Version).HasColumnName("version").HasDefaultValue(1);
+                entity.Property(cart => cart.LastActivityAtUtc).HasColumnName("last_activity_at_utc").HasColumnType("timestamp with time zone");
+                entity.Property(cart => cart.ExpiresAtUtc).HasColumnName("expires_at_utc").HasColumnType("timestamp with time zone");
+                entity.Property(cart => cart.ConvertedOrderId).HasColumnName("converted_order_id");
+                entity.Property(cart => cart.MergedIntoCartId).HasColumnName("merged_into_cart_id");
+                entity.Property(cart => cart.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(cart => cart.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasIndex(cart => cart.PublicId).IsUnique();
+                entity.HasIndex(cart => cart.TokenHash).IsUnique();
+                entity.HasIndex(cart => new { cart.StoreId, cart.State });
+                entity.HasIndex(cart => cart.CustomerId);
+                entity.HasIndex(cart => cart.AppUserId).HasFilter("app_user_id IS NOT NULL");
+                entity.HasIndex(cart => cart.ExpiresAtUtc);
+
+                entity.HasOne(cart => cart.Store)
+                    .WithMany()
+                    .HasForeignKey(cart => cart.StoreId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(cart => cart.Customer)
+                    .WithMany()
+                    .HasForeignKey(cart => cart.CustomerId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasOne(cart => cart.AppUser)
+                    .WithMany()
+                    .HasForeignKey(cart => cart.AppUserId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasOne(cart => cart.ConvertedOrder)
+                    .WithMany()
+                    .HasForeignKey(cart => cart.ConvertedOrderId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasOne(cart => cart.MergedIntoCart)
+                    .WithMany()
+                    .HasForeignKey(cart => cart.MergedIntoCartId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<CartLine>(entity =>
+            {
+                entity.ToTable("cart_lines");
+                entity.HasKey(line => line.Id);
+                entity.Property(line => line.Id).HasColumnName("id");
+                entity.Property(line => line.CartSessionId).HasColumnName("cart_session_id");
+                entity.Property(line => line.ProductId).HasColumnName("product_id");
+                entity.Property(line => line.ProductVariantId).HasColumnName("product_variant_id");
+                entity.Property(line => line.LineKey).HasColumnName("line_key").HasMaxLength(64).IsRequired();
+                entity.Property(line => line.SelectedAttributesJson).HasColumnName("selected_attributes_json").HasColumnType("jsonb");
+                entity.Property(line => line.PersonalizationHash).HasColumnName("personalization_hash").HasMaxLength(128);
+                entity.Property(line => line.PersonalizationJson).HasColumnName("personalization_json").HasColumnType("jsonb");
+                entity.Property(line => line.ArtworkAssetId).HasColumnName("artwork_asset_id");
+                entity.Property(line => line.ArtworkVersion).HasColumnName("artwork_version");
+                entity.Property(line => line.FulfillmentProviderKey).HasColumnName("fulfillment_provider_key").HasMaxLength(64);
+                entity.Property(line => line.Quantity).HasColumnName("quantity");
+                entity.Property(line => line.UnitPriceSnapshot).HasColumnName("unit_price_snapshot").HasPrecision(18, 2);
+                entity.Property(line => line.CurrencyCodeSnapshot).HasColumnName("currency_code_snapshot").HasMaxLength(3);
+                entity.Property(line => line.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(line => line.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasIndex(line => new { line.CartSessionId, line.LineKey }).IsUnique();
+                entity.HasIndex(line => line.ProductId);
+                entity.HasIndex(line => line.ProductVariantId);
+                entity.HasIndex(line => line.ArtworkAssetId);
+
+                entity.HasOne(line => line.CartSession)
+                    .WithMany(cart => cart.Lines)
+                    .HasForeignKey(line => line.CartSessionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(line => line.Product)
+                    .WithMany()
+                    .HasForeignKey(line => line.ProductId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(line => line.ProductVariant)
+                    .WithMany()
+                    .HasForeignKey(line => line.ProductVariantId)
                     .OnDelete(DeleteBehavior.SetNull);
             });
 
