@@ -23,8 +23,8 @@ This is documentation-only work. It must not refactor runtime code, rename proje
 | Legacy Shared | `BlazorShop.Presentation/BlazorShop.Web.Shared` | Legacy, do not extend | Original shared Web helpers. |
 | V2 Control Plane | `BlazorShop.PresentationV2/BlazorShop.ControlPlane.API` | Active V2 | Platform API for auth, nodes, stores, actions, health, catalog gateway, audit, user management. |
 | V2 Control Plane | `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web` | Active V2 | Blazor WASM admin UI. Must only call `BlazorShop.ControlPlane.API`. |
-| V2 Commerce Node | `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API` | Active V2 | Node-local ecommerce API, admin commerce endpoints, internal storefront endpoints, task orchestration, deployment support. |
-| V2 Storefront | `BlazorShop.PresentationV2/BlazorShop.Storefront.V2` | Active V2 | Server-side storefront that calls Commerce Node internal APIs with store scope. |
+| V2 Commerce Node | `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API` | Active V2 | Node-local ecommerce API, admin commerce endpoints, scoped Storefront endpoints, task orchestration, deployment support. |
+| V2 Storefront | `BlazorShop.PresentationV2/BlazorShop.Storefront.V2` | Active V2 | Server-side storefront that calls Commerce Node Storefront APIs with route store scope. |
 | V2 Shared | `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2` | Active V2 | Shared browser storage, auth session, toast, API helpers for V2 UI projects. |
 | Tests | `BlazorShop.Tests` | Active but mixed | Tests currently reference legacy and selected V2 projects. |
 | Reference Source | `Smartstore/` | Reference only | Used for ecommerce business research. Do not copy code or add product runtime references. |
@@ -37,7 +37,7 @@ Control Plane Web
       -> Commerce Node API
 
 Storefront V2
-  -> Commerce Node API /api/internal/*
+  -> Commerce Node API /api/storefront/stores/{storeKey}/*
 
 Control Plane API
   -> PostgreSQL ControlPlaneConnection, local dev port 5433
@@ -56,7 +56,7 @@ Commerce Node API
 | --- | --- | --- | --- |
 | Control Plane API | `api/control-plane/*` | Control Plane Web and platform operators | Control Plane JWT, permissions, response envelope, rate limiting. |
 | Commerce Node admin/control API | `api/commerce/*` | Control Plane API | Node key, node secret, allowed IP, store scope where applicable. |
-| Commerce Node internal storefront API | `api/internal/*` | Storefront V2 on the same node/private path | Store key and storefront/customer session behavior. |
+| Commerce Node Storefront API | `api/storefront/stores/{storeKey}/*` | Storefront V2 | Store key route value and storefront/customer session behavior. |
 | Legacy API | `api/admin/*`, `api/public/*`, `api/[controller]` | Legacy Web/Storefront | Legacy auth and legacy AppDbContext. Do not use for V2 expansion. |
 
 ### Database Ownership
@@ -119,14 +119,14 @@ Service and API boundary map.
 
 Required content:
 - ControlPlane Web -> ControlPlane API -> CommerceNode API gateway rule.
-- StorefrontV2 -> CommerceNode internal API rule.
-- `api/control-plane/*`, `api/commerce/*`, `api/internal/*`, and legacy route groups.
+- StorefrontV2 -> CommerceNode Storefront API rule.
+- `api/control-plane/*`, `api/commerce/*`, `api/storefront/stores/{storeKey}/*`, removed `api/internal/*`, and legacy route groups.
 - Security ownership per boundary.
 - Response pattern ownership.
 
 Acceptance criteria:
 - It prevents agents from designing direct Web-to-CommerceNode calls.
-- It prevents mixing Storefront internal APIs with Control Plane admin APIs.
+- It prevents mixing Storefront APIs with Control Plane admin APIs.
 
 ### 5. `docs/architecture/04-data-ownership.md`
 

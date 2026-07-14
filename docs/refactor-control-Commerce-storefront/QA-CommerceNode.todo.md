@@ -14,6 +14,12 @@ Database target:
 
 Last verified: 2026-07-10
 
+Current route state:
+
+- `api/internal/*` was removed from the active CommerceNode runtime on 2026-07-14 by `BlazorShop.CommerceNode.RemoveLegacyInternal.autoplan.md`.
+- Remaining `api/internal/*` entries in this file are historical QA evidence from the migration window unless explicitly marked as a current negative check.
+- Current Storefront API QA targets `api/storefront/stores/{storeKey}/*`; old Internal routes should return 404.
+
 ## Environment Checklist
 
 - [x] Start `blazorshop-commercenode-postgres` on port `5434`.
@@ -34,14 +40,14 @@ Last verified: 2026-07-10
 - [~] Storefront Swagger includes `api/storefront/stores/{storeKey}/*` endpoints only. 2026-07-14: document generated; detailed route membership still pending a full path audit.
 - [x] Storefront Swagger shows required `{storeKey}` path parameter. 2026-07-14: sampled scoped categories operation included required path parameter.
 - [x] Storefront Swagger does not show `X-Node-Key`, `X-Node-Secret`, or `X-Store-Key`. 2026-07-14: checked sampled scoped categories operation.
-- [x] `GET /swagger/legacy-internal/swagger.json` returns 200. 2026-07-14: document returned `Legacy Internal`.
-- [~] Legacy Internal Swagger includes `api/internal/*` endpoints only and is visibly marked compatibility/legacy. 2026-07-14: document generated and title/description are legacy; detailed route membership still pending a full path audit.
-- [x] Legacy Internal Swagger shows `X-Store-Key`. 2026-07-14: sampled internal categories operation included required header.
+- [x] `GET /swagger/legacy-internal/swagger.json` returns 404 after removal. 2026-07-14: Legacy Internal Swagger was removed by `BlazorShop.CommerceNode.RemoveLegacyInternal.autoplan.md`.
+- [x] Legacy Internal Swagger no longer appears in Swagger UI after removal.
+- [x] Legacy Internal Swagger no longer shows `X-Store-Key` because the document was removed.
 - [x] Store-scoped Commerce Admin endpoint without `storeKey` query returns a clear `success=false` response. 2026-07-14: `GET /api/commerce/admin/products` returned HTTP 400 with `storeKey query parameter is required.`
 - [x] Store-scoped Commerce Admin endpoint with `X-Store-Key` but no `storeKey` query still fails. 2026-07-14: middleware source only reads query for `api/commerce/admin/*`; sampled missing-query request failed.
 - [x] Storefront scoped endpoint reads `storeKey` from route and works without `X-Store-Key`. 2026-07-14: `GET /api/storefront/stores/default/catalog/categories` returned HTTP 200 without headers.
 - [ ] Storefront scoped endpoint ignores/rejects header-only store scope and does not require node credentials.
-- [ ] Legacy `api/internal/*` remains available with `X-Store-Key` until Storefront scoped route QA passes.
+- [x] Legacy `api/internal/*` is removed after Storefront scoped route QA passed; sampled old routes should return 404.
 
 ## Startup Database Migration
 
@@ -63,12 +69,12 @@ Last verified: 2026-07-10
 - [x] Valid node credential allows `api/commerce/healthz`.
 - [x] Valid node credential allows `api/commerce/admin/*`.
 
-### `api/internal/*`
+### Historical `api/internal/*` Pre-Removal Evidence
 
-- [x] Internal catalog routes do not require node key.
-- [x] Internal SEO routes do not require node key.
-- [x] Internal auth create/login/refresh/logout do not require node key.
-- [x] Customer routes require JWT:
+- [x] Historical: Internal catalog routes did not require node key before removal.
+- [x] Historical: Internal SEO routes did not require node key before removal.
+- [x] Historical: Internal auth create/login/refresh/logout did not require node key before removal.
+- [x] Historical: Customer routes required JWT before removal:
   - [x] `api/internal/cart/checkout`
   - [x] `api/internal/cart/save-checkout`
   - [x] `api/internal/orders/confirm`
@@ -98,8 +104,8 @@ Last verified: 2026-07-10
 - [x] Update category SEO through `api/commerce/admin/categories/{id}/seo`.
 - [x] Update global SEO settings through `api/commerce/admin/seo/settings`.
 - [x] Create SEO redirect through `api/commerce/admin/seo/redirects`.
-- [x] Register Storefront customer through `api/internal/auth/create`.
-- [x] Login Storefront customer through `api/internal/auth/login`.
+- [x] Historical: registered Storefront customer through `api/internal/auth/create` before removal.
+- [x] Historical: logged in Storefront customer through `api/internal/auth/login` before removal.
 
 ## Commerce Admin API Checklist
 
@@ -283,7 +289,7 @@ Last verified: 2026-07-10
 - [ ] Existing `PUT /api/commerce/admin/orders/{orderId}/tracking` still works after shipment migration.
 - [ ] Existing `PUT /api/commerce/admin/orders/{orderId}/shipping-status` still works after shipment migration.
 - [ ] Storefront order detail still reads shipping info from existing order fields.
-- [ ] No new Storefront shipment endpoint is exposed under `api/internal/*`.
+- [x] No Storefront shipment endpoint is exposed under removed `api/internal/*`.
 
 ### Settings, Audit, Metrics
 
@@ -296,7 +302,9 @@ Last verified: 2026-07-10
 - [x] `GET /api/commerce/admin/metrics/sales`
 - [x] `GET /api/commerce/admin/metrics/traffic`
 
-## Storefront Internal API Checklist
+## Historical Storefront Internal API Checklist
+
+This section records pre-removal `api/internal/*` QA evidence. Do not use it as the current CommerceNode Storefront API target; use the Storefront Scoped API Checklist instead.
 
 ### Catalog
 
@@ -353,6 +361,8 @@ Last verified: 2026-07-10
 - [ ] `GET /api/storefront/stores/{storeKey}/orders/current-user/items`
 
 ### Catalog Search MVP
+
+Historical `api/internal/*` checks in this subsection should be ported to scoped `api/storefront/stores/{storeKey}/*` checks when catalog search QA is rerun.
 
 - [x] CommerceNode API builds after catalog search/cache changes. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
 - [x] Legacy `BlazorShop.API` still builds after optional catalog cache dependencies were added. 2026-07-10: `dotnet build BlazorShop.Presentation/BlazorShop.API/BlazorShop.API.csproj --no-restore` passed with existing `Microsoft.OpenApi` advisory warning.
@@ -468,13 +478,13 @@ Last verified: 2026-07-10
 
 - Use `X-Node-Key: dev-node`.
 - Use `X-Node-Secret: dev-node-secret`.
-- Customer JWT comes from `api/internal/auth/login` response `data.token`.
+- Current customer JWT comes from scoped `api/storefront/stores/{storeKey}/auth/login`; historical Internal QA used `api/internal/auth/login` response `data.token`.
 - Refresh token is stored in `Set-Cookie` from login.
 - Local HTTP clients may not resend the refresh cookie automatically because it is `Secure=true`; QA verified refresh by replaying the `Set-Cookie` value as a `Cookie` header.
 - Missing JWT on `[Authorize]` Storefront routes returns HTTP `401` from ASP.NET auth middleware, with an empty body.
-- `api/internal/cart/save-checkout` and `api/internal/orders/confirm` expect a top-level JSON array. When using PowerShell, send raw JSON for single-item arrays to avoid `ConvertTo-Json` collapsing the array.
-- `api/internal/cart/save-checkout` currently also requires a `userId` field in the request body even though the authenticated customer is resolved from JWT; QA supplied a harmless placeholder. This is a cleanup candidate for the later Storefront auth contract pass.
-- `api/internal/recommendations/products/{productId}` requires at least one related published product; a single product in a category correctly returns a not-found response.
+- Scoped cart save-checkout and order confirm routes expect a top-level JSON array. When using PowerShell, send raw JSON for single-item arrays to avoid `ConvertTo-Json` collapsing the array.
+- Historical `api/internal/cart/save-checkout` also required a `userId` field in the request body even though the authenticated customer was resolved from JWT; verify whether the scoped contract still needs cleanup before changing behavior.
+- Scoped recommendations route requires at least one related published product; a single product in a category correctly returns a not-found response.
 
 ## Fixes Applied During QA
 

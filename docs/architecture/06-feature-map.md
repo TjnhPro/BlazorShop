@@ -75,7 +75,7 @@ Decision rule:
 - If the feature is node-local ecommerce admin behavior, it belongs to Commerce Node admin/control.
 - Control Plane Web must reach it only through Control Plane API.
 
-## Commerce Node Internal Storefront
+## Commerce Node Storefront API
 
 Project:
 
@@ -84,7 +84,7 @@ Project:
 Route group:
 
 ```text
-api/internal/*
+api/storefront/stores/{storeKey}/*
 ```
 
 Capabilities:
@@ -104,8 +104,8 @@ Capabilities:
 
 Decision rule:
 
-- If the caller is Storefront V2 and the feature is public/customer behavior, it belongs to `api/internal/*`.
-- Keep this path private/internal to the node/storefront runtime.
+- If the caller is Storefront V2 and the feature is public/customer behavior, it belongs to `api/storefront/stores/{storeKey}/*`.
+- `api/internal/*` was the migration compatibility path and has been removed from active V2 runtime guidance.
 
 ## Storefront V2 UI
 
@@ -123,12 +123,12 @@ Capabilities:
 - Checkout redirect flow.
 - Robots and sitemap documents.
 - SEO composition and structured data.
-- Storefront API client with store key header.
+- Storefront API client with store key in the scoped route path.
 
 Decision rule:
 
 - If the feature is visual/storefront page behavior, it belongs to Storefront V2.
-- If the feature needs data, call Commerce Node internal API.
+- If the feature needs data, call Commerce Node Storefront APIs under `api/storefront/stores/{storeKey}/*`.
 
 ## Shared V2 Web
 

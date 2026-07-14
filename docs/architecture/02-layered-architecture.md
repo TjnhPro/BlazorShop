@@ -81,7 +81,7 @@ Rules:
 
 - Control Plane Web is a UI client and must call only Control Plane API.
 - Control Plane API is the gateway to Commerce Node API.
-- Storefront V2 calls Commerce Node internal API.
+- Storefront V2 calls Commerce Node Storefront APIs under `api/storefront/stores/{storeKey}/*`.
 - Commerce Node API owns node-local ecommerce runtime and deployment tasks.
 
 ## Reuse Policy

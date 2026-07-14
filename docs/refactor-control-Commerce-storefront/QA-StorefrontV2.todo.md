@@ -10,7 +10,7 @@ Muc tieu hien tai:
 - Xac nhan V2 goi Commerce Node `api/storefront/stores/{storeKey}/*` mac dinh.
 - Xac nhan V2 khong gui `X-Store-Key` cho Storefront API calls.
 - Xac nhan legacy API fallback bi tat mac dinh.
-- Xac nhan `api/internal/*` chi con la legacy compatibility cho den khi QA scoped route pass.
+- Xac nhan `api/internal/*` da bi remove khoi CommerceNode runtime sau scoped route QA; neu gap request moi toi `api/internal/*` thi do la regression.
 
 ## Required Services
 
@@ -47,7 +47,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
   - 2026-07-09: QA products loaded from Commerce Node DB.
 - [x] Seed at least one product variant.
   - 2026-07-09: variant selector verified on product detail.
-- [x] Seed one Storefront customer account. 2026-07-09: API smoke registered and logged in a QA customer through `api/internal/auth`.
+- [x] Seed one Storefront customer account. 2026-07-09: historical API smoke registered and logged in a QA customer through `api/internal/auth`; current auth QA uses scoped Storefront routes.
 - [x] Seed SEO settings and one redirect rule.
   - 2026-07-09: redirect rule verified with 301 to `/product/qa-product-20260708234046`.
 
@@ -142,7 +142,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Programmatic heading focus after navigation does not show a black browser outline. 2026-07-13: Playwright verified the dynamic page and home page keep `h1` focused with `outline-style: none` and empty text selection.
 - [ ] HTTPS anchor link renders.
 - [x] Missing page returns 404. 2026-07-12: `GET /pages/non-existing-page-qa` returned 404 with not-found content.
-- [x] Draft page returns 404. 2026-07-12: CommerceNode internal API returned 404 for `qa-draft-page-20260712034014`; draft was not rendered publicly.
+- [x] Draft page returns 404. 2026-07-12: CommerceNode pre-removal Internal API returned 404 for `qa-draft-page-20260712034014`; current page QA should use scoped Storefront APIs.
 - [ ] Archived page returns 404.
 - [ ] CommerceNode API unavailable renders service unavailable, not 404.
 - [x] Page SEO uses page meta fields. 2026-07-12: Playwright page title was `QA Dynamic Page 20260712034014 SEO`, coming from the page meta title.
@@ -340,7 +340,7 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Verify V2 does not require `BlazorShop.Presentation/BlazorShop.API` process.
 - [x] Verify `Api:EnableLegacyFallback=true` only for emergency rollback and never in default config.
 - [x] Verify production config requires explicit `Api:BaseUrl`. 2026-07-09: `StorefrontOptionsValidators` enforce `Api:BaseUrl` outside Development when service discovery is absent.
-- [n/a] Verify public reverse proxy does not expose Commerce Node `api/internal/*` directly. No reverse proxy/deployment config is part of this local MVP QA run.
+- [x] Verify removed Commerce Node `api/internal/*` is not a Storefront V2 dependency. 2026-07-14: client tests guard against `/api/internal` requests.
 
 ## Checkout And Payment Foundation
 

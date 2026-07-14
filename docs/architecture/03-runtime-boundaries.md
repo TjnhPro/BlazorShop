@@ -54,7 +54,7 @@ Examples:
 
 ## Commerce Node Boundary
 
-Commerce Node is the ecommerce runtime boundary. It owns node-local commerce data, node-local admin/control endpoints, Storefront APIs, legacy internal Storefront compatibility APIs, and local deployment tasks.
+Commerce Node is the ecommerce runtime boundary. It owns node-local commerce data, node-local admin/control endpoints, scoped Storefront APIs, and local deployment tasks.
 
 Commerce Node API also owns startup EF Core migration for `CommerceNodeDbContext` only. It must not migrate `ControlPlaneDbContext` or legacy `AppDbContext`.
 
@@ -63,7 +63,6 @@ Main route groups:
 ```text
 api/commerce/*
 api/storefront/stores/{storeKey}/*
-api/internal/*
 ```
 
 ### `api/commerce/*`
@@ -114,21 +113,16 @@ Responsibilities:
 - SEO settings and redirect resolution.
 - Recommendations.
 
-### `api/internal/*`
+### Removed `api/internal/*`
 
 Status:
 
-- Legacy compatibility only.
-
-Security:
-
-- Uses `X-Store-Key` while compatibility remains.
+- Removed from the active V2 Commerce Node runtime after the Storefront V2 scoped route migration and QA pass.
 
 Rules:
 
-- Do not add new features.
-- Only fix blocker bugs if the new Storefront route migration is not complete.
-- Remove after Storefront V2 moves to `api/storefront/stores/{storeKey}/*` and QA passes.
+- Do not add new `api/internal/*` controllers, Swagger documents, or Storefront clients.
+- Historical planning files may mention `api/internal/*` as migration context only.
 
 ## Storefront V2 Boundary
 

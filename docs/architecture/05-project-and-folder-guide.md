@@ -118,7 +118,7 @@ Do not:
 
 Important folders:
 
-- `Controllers/` - `api/commerce/*` and `api/internal/*` endpoints.
+- `Controllers/` - `api/commerce/*` and `api/storefront/stores/{storeKey}/*` endpoints.
 - `Configuration/` - node, worker, Nginx, and deployment options.
 - `Deployment/` - Storefront Docker and Nginx deployment services.
 - `Endpoints/` - endpoint mapping helpers such as health.
@@ -133,7 +133,7 @@ Important folders:
 Use for:
 
 - Node-local ecommerce API.
-- Storefront internal API.
+- Scoped Storefront API.
 - Node task orchestration.
 - Store deployment support.
 
@@ -159,7 +159,7 @@ Use for:
 - Public/store-scoped storefront UI.
 - Storefront login/register/logout forms.
 - SEO and public discovery documents.
-- Store key propagation to Commerce Node internal API.
+- Store key propagation to Commerce Node Storefront API.
 
 Do not:
 

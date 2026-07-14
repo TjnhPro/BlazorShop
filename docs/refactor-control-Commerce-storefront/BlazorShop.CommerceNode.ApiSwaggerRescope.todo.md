@@ -1,5 +1,9 @@
 # BlazorShop CommerceNode API Swagger Rescope TODO
 
+Superseded note, 2026-07-14:
+
+`api/internal/*`, `/swagger/legacy-internal/swagger.json`, and legacy-only `X-Store-Key` route handling were removed by `BlazorShop.CommerceNode.RemoveLegacyInternal.autoplan.md` after Storefront V2 scoped route QA passed. This document is retained as historical context for the rescope migration; use current architecture docs for active route guidance.
+
 ## Goal
 
 Rescope `BlazorShop.CommerceNode.API` routes and Swagger documents so store-scoped APIs are explicit, debug-friendly, and aligned with the V2 runtime boundaries.
@@ -419,15 +423,17 @@ X-Store-Key header is required for legacy internal API.
 
 ### Phase 10 - Follow-up Legacy Cleanup Plan
 
-This phase does not remove legacy internal routes. After route migration and QA pass, create a separate cleanup phase:
+Completed by `BlazorShop.CommerceNode.RemoveLegacyInternal.autoplan.md` after route migration and QA pass:
 
-- [ ] Remove `api/internal/*` controllers.
-- [ ] Remove `X-Store-Key` legacy support from `CommerceStoreContext`.
-- [ ] Remove Legacy Internal Swagger document.
-- [ ] Update docs to show `api/internal/*` removed.
-- [ ] Run full Storefront and CommerceNode QA.
+- [x] Remove `api/internal/*` controllers.
+- [x] Remove `X-Store-Key` legacy support from `CommerceStoreContext`.
+- [x] Remove Legacy Internal Swagger document.
+- [x] Update docs to show `api/internal/*` removed.
+- [x] Run focused Storefront and CommerceNode verification.
 
 ## Not In Scope
+
+Historical note: this Not In Scope list applied to the original Swagger rescope phase. The follow-up legacy cleanup has since been completed by `BlazorShop.CommerceNode.RemoveLegacyInternal.autoplan.md`.
 
 - No commerce business logic rewrite.
 - No database schema change unless an implementation detail unexpectedly requires it.
@@ -452,8 +458,8 @@ This phase does not remove legacy internal routes. After route migration and QA 
 |---|---|---|
 | 1 | Storefront new API uses `api/storefront/stores/{storeKey}/*`. | Accepted |
 | 2 | Commerce Admin store scope uses required query `storeKey`. | Accepted |
-| 3 | `api/internal/*` remains legacy compatibility only. | Accepted |
-| 4 | Swagger has `commerce-admin`, `storefront`, and `legacy-internal` documents. | Accepted |
+| 3 | `api/internal/*` remained legacy compatibility only during the rescope migration window; it was removed in the follow-up cleanup. | Superseded |
+| 4 | Swagger originally had `commerce-admin`, `storefront`, and `legacy-internal` documents; only active Admin and Storefront documents remain after cleanup. | Superseded |
 | 5 | Storefront route migration uses new `StorefrontScoped*Controller` classes. | Accepted |
 | 6 | `CommerceStoreContext` reads route/query/header by route group, not mixed fallback. | Accepted |
 | 7 | Public media URLs remain clean; admin media debug endpoints use Commerce Admin route and `storeKey` query. | Accepted |

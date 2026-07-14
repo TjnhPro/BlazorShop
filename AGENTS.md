@@ -72,7 +72,7 @@ Rules:
 
 - Control Plane Web is UI-only.
 - Control Plane API owns platform auth, permissions, audit, node/store registry, and Commerce Node gateway calls.
-- Commerce Node API owns ecommerce node runtime, commerce admin/control APIs, Storefront APIs, legacy internal Storefront compatibility APIs, task orchestration, and node-local deployment.
+- Commerce Node API owns ecommerce node runtime, commerce admin/control APIs, scoped Storefront APIs, task orchestration, and node-local deployment.
 - Storefront V2 calls Commerce Node Storefront APIs at `api/storefront/stores/{storeKey}/*` and stays store-scoped through the route path.
 - Public product media URLs are store-scoped too. Storefront-facing media URLs stay clean (`/media/products/{mediaId}` and `/media/assets/{assetId}`); store scope is handled by Nginx/domain/rewrite behavior. Commerce Admin media debug endpoints use `storeKey` query.
 - ProductMedia MVP uses the existing `CommerceTaskWorker` and `commerce_task` table with task type `product.media.import`. Do not introduce a separate media/product worker unless the workload grows enough to justify that extraction.
@@ -82,7 +82,7 @@ Route ownership:
 - `api/control-plane/*` belongs to Control Plane API.
 - `api/commerce/*` belongs to Commerce Node admin/control and is called by Control Plane API. Store-scoped Commerce Admin endpoints require `storeKey` query.
 - `api/storefront/stores/{storeKey}/*` belongs to Commerce Node Storefront APIs and is called by Storefront V2. Store scope must come from the route value.
-- `api/internal/*` is legacy Commerce Node Storefront compatibility only. Do not add new features there; remove it after Storefront V2 route migration and QA pass.
+- `api/internal/*` has been removed from the active V2 Commerce Node runtime. Do not add new features or compatibility routes there.
 - Legacy route groups such as `api/admin/*`, `api/public/*`, and `api/[controller]` are not V2 targets.
 
 ## Database Ownership
@@ -135,7 +135,7 @@ When using Smartstore for a feature:
 Default workflow:
 
 1. Investigate current code and docs.
-2. Identify the correct boundary: Control Plane, Commerce Node admin/control, Commerce Node internal, Storefront V2, shared core, or legacy reference.
+2. Identify the correct boundary: Control Plane, Commerce Node admin/control, Commerce Node Storefront API, Storefront V2, shared core, or legacy reference.
 3. Reuse existing DTOs, services, repositories, validators, options, clients, and response helpers where they fit.
 4. Preserve migrated legacy behavior first; refactor only when requested.
 5. Keep changes narrow by phase.
@@ -158,7 +158,7 @@ Use these files when related behavior changes:
 
 Control Plane QA should verify auth, user management, permissions, nodes, stores, health, actions, audit, and Web/API response behavior.
 
-Commerce Node QA should verify API route groups, credential behavior for `api/commerce/*`, Storefront scoped flows for `api/storefront/stores/{storeKey}/*`, legacy compatibility flows for `api/internal/*` while it exists, database behavior on `CommerceNodeConnection`, catalog, orders, inventory, tasks, deployment, and audit where applicable.
+Commerce Node QA should verify API route groups, credential behavior for `api/commerce/*`, Storefront scoped flows for `api/storefront/stores/{storeKey}/*`, old `api/internal/*` routes returning 404 after removal, database behavior on `CommerceNodeConnection`, catalog, orders, inventory, tasks, deployment, and audit where applicable.
 
 Storefront V2 QA should verify public page rendering, store key route behavior, catalog pages, slug routes, auth forms, checkout redirects, SEO documents, sitemap, robots, and visible browser flows when requested.
 

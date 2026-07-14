@@ -73,7 +73,7 @@ The Commerce Node compose file includes:
 
 Product media local QA notes:
 
-- Admin media APIs use `api/commerce/admin/products/{productId}/media/*` with node credentials and `X-Store-Key`.
+- Admin media APIs use `api/commerce/admin/products/{productId}/media/*` with node credentials and `storeKey` query.
 - Public media URLs use `/media/products/{mediaPublicId}`.
 - Direct local calls to `localhost:5180/media/products/{mediaId}` may need `X-Store-Key` because `localhost` is not a real store domain in a multi-store database.
 - Production/storefront traffic should resolve the store from the request host/domain through Nginx.
@@ -94,7 +94,7 @@ Typical project:
 dotnet run --project BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj
 ```
 
-Storefront V2 calls Commerce Node internal APIs. It sends a store key from configuration:
+Storefront V2 calls Commerce Node Storefront APIs under `api/storefront/stores/{storeKey}/*`. It resolves the route store key from configuration:
 
 - `StorefrontApi:StoreKey`
 - `StoreKey`
