@@ -192,6 +192,23 @@ app.MapPost(StorefrontRoutes.Checkout, async (
         return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("error", "Your cart is empty."));
     }
 
+    var previewResult = await apiClient.PreviewCheckoutAsync(
+        cartToken,
+        BuildCheckoutPreviewRequest(form, form.CartVersion > 0 ? form.CartVersion : cartResult.Data.Version),
+        cancellationToken);
+    if (!previewResult.Success || previewResult.Data is null)
+    {
+        return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("error", previewResult.Message));
+    }
+
+    if (!previewResult.Data.IsValid)
+    {
+        var firstIssue = previewResult.Data.Issues.FirstOrDefault();
+        return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create(
+            "error",
+            firstIssue?.Message ?? "Review checkout details before placing the order."));
+    }
+
     var request = new StorefrontCheckoutRequest
     {
         CustomerEmail = form.CustomerEmail?.Trim() ?? string.Empty,
@@ -497,6 +514,29 @@ static ProcessCart MapCartItem(StorefrontCartLineResponse item)
         ProductId = item.ProductId,
         ProductVariantId = item.ProductVariantId,
         Quantity = item.Quantity,
+    };
+}
+
+static StorefrontCheckoutPreviewRequest BuildCheckoutPreviewRequest(StorefrontCheckoutForm form, int expectedCartVersion)
+{
+    return new StorefrontCheckoutPreviewRequest
+    {
+        ExpectedCartVersion = expectedCartVersion,
+        CustomerEmail = form.CustomerEmail?.Trim() ?? string.Empty,
+        CustomerName = form.CustomerName?.Trim() ?? string.Empty,
+        PaymentMethodKey = form.PaymentMethodKey?.Trim() ?? string.Empty,
+        ShippingAddress = new StorefrontCheckoutPreviewShippingAddress
+        {
+            FullName = form.ShippingFullName?.Trim() ?? string.Empty,
+            Email = form.ShippingEmail?.Trim() ?? form.CustomerEmail?.Trim() ?? string.Empty,
+            Phone = form.ShippingPhone?.Trim(),
+            Address1 = form.ShippingAddress1?.Trim() ?? string.Empty,
+            Address2 = form.ShippingAddress2?.Trim(),
+            City = form.ShippingCity?.Trim() ?? string.Empty,
+            State = form.ShippingState?.Trim(),
+            PostalCode = form.ShippingPostalCode?.Trim() ?? string.Empty,
+            CountryCode = form.ShippingCountryCode?.Trim() ?? string.Empty,
+        },
     };
 }
 

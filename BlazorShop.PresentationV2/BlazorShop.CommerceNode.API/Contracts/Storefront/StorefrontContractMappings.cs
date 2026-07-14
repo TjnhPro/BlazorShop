@@ -3,6 +3,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
     using System.IdentityModel.Tokens.Jwt;
 
     using BlazorShop.Application.CommerceNode.Carts;
+    using BlazorShop.Application.CommerceNode.Checkout;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Category;
@@ -127,6 +128,70 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 PostalCode = address.PostalCode,
                 CountryCode = address.CountryCode,
             };
+        }
+
+        public static BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutPreviewRequest ToApplicationRequest(
+            this Contracts.Storefront.StorefrontCheckoutPreviewRequest request,
+            Guid storeId,
+            string cartToken)
+        {
+            return new BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutPreviewRequest(
+                storeId,
+                cartToken,
+                request.ExpectedCartVersion,
+                request.CustomerEmail,
+                request.CustomerName,
+                request.PaymentMethodKey,
+                request.ShippingAddress.ToPreviewShippingAddress());
+        }
+
+        public static StorefrontCheckoutShippingAddressDto ToPreviewShippingAddress(this StorefrontCheckoutShippingAddress request)
+        {
+            return new StorefrontCheckoutShippingAddressDto(
+                request.FullName,
+                request.Email,
+                request.Phone,
+                request.Address1,
+                request.Address2,
+                request.City,
+                request.State,
+                request.PostalCode,
+                request.CountryCode);
+        }
+
+        public static StorefrontCheckoutPreviewResponse ToStorefrontContract(this StorefrontCheckoutPreviewResult result)
+        {
+            return new StorefrontCheckoutPreviewResponse(
+                result.CheckoutSessionId,
+                result.CartId,
+                result.CartVersion,
+                result.State,
+                result.IsValid,
+                result.NextAction,
+                result.CustomerEmail,
+                result.CustomerName,
+                result.PaymentMethodKey,
+                result.Subtotal,
+                result.ShippingTotal,
+                result.TaxTotal,
+                result.DiscountTotal,
+                result.GrandTotal,
+                result.CurrencyCode,
+                result.ExpiresAtUtc,
+                result.Lines.Select(line => new StorefrontCheckoutLineSummaryResponse(
+                    line.LineId,
+                    line.ProductId,
+                    line.ProductVariantId,
+                    line.Quantity,
+                    line.UnitPrice,
+                    line.LineTotal,
+                    line.CurrencyCode)).ToArray(),
+                result.Issues.Select(issue => new StorefrontCheckoutValidationIssueResponse(
+                    issue.Code,
+                    issue.Message,
+                    issue.Field,
+                    issue.LineId,
+                    issue.ProductId)).ToArray());
         }
 
         public static ProcessCart ToProcessCart(this StorefrontCartItemRequest request)

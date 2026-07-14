@@ -218,8 +218,8 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Add-to-cart uses a Storefront V2 local endpoint/API client call instead of writing final price/order data directly to the cookie. 2026-07-14: JS posts to `/api/cart/lines`; host test verifies `UnitPrice` is not forwarded to Commerce Node.
 - [x] `/my-cart` renders server cart lines, normalized product/variant labels, totals, and unavailable-line warnings. 2026-07-14: cart page now enriches `StorefrontCartResponse` lines from catalog and keeps unavailable-line warning path.
 - [x] Quantity update, remove line, and clear cart mutate the server cart and refresh the cart version. 2026-07-14: JS uses local PUT/DELETE cart endpoints; Commerce Node exposes `DELETE /cart` for clear.
-- [ ] `/checkout` calls checkout preview before final submit and displays field-level validation errors.
-- [ ] Stale cart version on checkout shows a review-cart state, not a duplicate order.
+- [x] `/checkout` calls checkout preview before final submit and displays field-level validation errors. 2026-07-14: Storefront V2 checkout POST now calls `/checkout/preview` using cart token/version and redirects with the first validation issue before direct checkout.
+- [x] Stale cart version on checkout shows a review-cart state, not a duplicate order. 2026-07-14: `StorefrontCheckoutServiceTests` covers stale cart version rejection with no checkout session/order creation.
 - [ ] COD checkout places one order, clears/expires the cart token, and shows confirmation.
 - [ ] Online provider checkout redirects to provider next action when configured.
 - [ ] Provider cancel/failure returns to a recoverable checkout state.

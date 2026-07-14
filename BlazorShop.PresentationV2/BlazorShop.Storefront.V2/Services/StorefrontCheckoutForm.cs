@@ -2,6 +2,8 @@ namespace BlazorShop.Storefront.Services
 {
     public sealed class StorefrontCheckoutForm
     {
+        public int CartVersion { get; set; }
+
         public string? CustomerEmail { get; set; }
 
         public string? CustomerName { get; set; }

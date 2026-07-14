@@ -63,6 +63,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
         public DbSet<CartLine> CartLines => Set<CartLine>();
 
+        public DbSet<CheckoutSession> CheckoutSessions => Set<CheckoutSession>();
+
         public DbSet<CommerceStoreDomain> CommerceStoreDomains => Set<CommerceStoreDomain>();
 
         public DbSet<StorefrontDeploymentImage> StorefrontDeploymentImages => Set<StorefrontDeploymentImage>();
@@ -270,6 +272,69 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                     .WithMany()
                     .HasForeignKey(line => line.ProductVariantId)
                     .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<CheckoutSession>(entity =>
+            {
+                entity.ToTable("checkout_sessions");
+                entity.HasKey(session => session.Id);
+                entity.Property(session => session.Id).HasColumnName("id");
+                entity.Property(session => session.PublicId).HasColumnName("public_id");
+                entity.Property(session => session.StoreId).HasColumnName("store_id");
+                entity.Property(session => session.CartSessionId).HasColumnName("cart_session_id");
+                entity.Property(session => session.CustomerId).HasColumnName("customer_id");
+                entity.Property(session => session.State).HasColumnName("state").HasMaxLength(32).IsRequired();
+                entity.Property(session => session.CartVersion).HasColumnName("cart_version");
+                entity.Property(session => session.CustomerEmail).HasColumnName("customer_email").HasMaxLength(256).IsRequired();
+                entity.Property(session => session.CustomerName).HasColumnName("customer_name").HasMaxLength(256).IsRequired();
+                entity.Property(session => session.CustomerPhone).HasColumnName("customer_phone").HasMaxLength(64);
+                entity.Property(session => session.ShippingFullName).HasColumnName("shipping_full_name").HasMaxLength(256).IsRequired();
+                entity.Property(session => session.ShippingEmail).HasColumnName("shipping_email").HasMaxLength(256).IsRequired();
+                entity.Property(session => session.ShippingPhone).HasColumnName("shipping_phone").HasMaxLength(64);
+                entity.Property(session => session.ShippingAddress1).HasColumnName("shipping_address1").HasMaxLength(512).IsRequired();
+                entity.Property(session => session.ShippingAddress2).HasColumnName("shipping_address2").HasMaxLength(512);
+                entity.Property(session => session.ShippingCity).HasColumnName("shipping_city").HasMaxLength(160).IsRequired();
+                entity.Property(session => session.ShippingState).HasColumnName("shipping_state").HasMaxLength(160);
+                entity.Property(session => session.ShippingPostalCode).HasColumnName("shipping_postal_code").HasMaxLength(64).IsRequired();
+                entity.Property(session => session.ShippingCountryCode).HasColumnName("shipping_country_code").HasMaxLength(2).IsRequired();
+                entity.Property(session => session.PaymentMethodKey).HasColumnName("payment_method_key").HasMaxLength(64).IsRequired();
+                entity.Property(session => session.Subtotal).HasColumnName("subtotal").HasPrecision(18, 2);
+                entity.Property(session => session.ShippingTotal).HasColumnName("shipping_total").HasPrecision(18, 2);
+                entity.Property(session => session.TaxTotal).HasColumnName("tax_total").HasPrecision(18, 2);
+                entity.Property(session => session.DiscountTotal).HasColumnName("discount_total").HasPrecision(18, 2);
+                entity.Property(session => session.GrandTotal).HasColumnName("grand_total").HasPrecision(18, 2);
+                entity.Property(session => session.CurrencyCode).HasColumnName("currency_code").HasMaxLength(3).IsRequired();
+                entity.Property(session => session.ValidationIssuesJson).HasColumnName("validation_issues_json").HasColumnType("jsonb");
+                entity.Property(session => session.NextAction).HasColumnName("next_action").HasMaxLength(64).IsRequired();
+                entity.Property(session => session.ExpiresAtUtc).HasColumnName("expires_at_utc").HasColumnType("timestamp with time zone");
+                entity.Property(session => session.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(session => session.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasIndex(session => session.PublicId).IsUnique();
+                entity.HasIndex(session => new { session.StoreId, session.CartSessionId, session.State });
+                entity.HasIndex(session => session.CustomerId);
+                entity.HasIndex(session => session.ExpiresAtUtc);
+
+                entity.HasOne(session => session.Store)
+                    .WithMany()
+                    .HasForeignKey(session => session.StoreId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(session => session.CartSession)
+                    .WithMany()
+                    .HasForeignKey(session => session.CartSessionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(session => session.Customer)
+                    .WithMany()
+                    .HasForeignKey(session => session.CustomerId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.ToTable(
+                    "checkout_sessions",
+                    table => table.HasCheckConstraint(
+                        "ck_checkout_sessions_state",
+                        "state in ('draft', 'ready', 'order_pending', 'completed', 'expired', 'cancelled')"));
             });
 
             modelBuilder.Entity<VariationTemplate>(entity =>

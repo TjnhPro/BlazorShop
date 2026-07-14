@@ -191,6 +191,64 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         public string CountryCode { get; set; } = string.Empty;
     }
 
+    public sealed class StorefrontCheckoutPreviewRequest
+    {
+        [Range(1, int.MaxValue)]
+        public int ExpectedCartVersion { get; set; }
+
+        [Required]
+        [EmailAddress]
+        [MaxLength(StorefrontContractValidation.EmailMaxLength)]
+        public string CustomerEmail { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(160)]
+        public string CustomerName { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(64)]
+        public string PaymentMethodKey { get; set; } = string.Empty;
+
+        [Required]
+        public StorefrontCheckoutShippingAddress ShippingAddress { get; set; } = new();
+    }
+
+    public sealed record StorefrontCheckoutPreviewResponse(
+        Guid CheckoutSessionId,
+        Guid CartId,
+        int CartVersion,
+        string State,
+        bool IsValid,
+        string NextAction,
+        string CustomerEmail,
+        string CustomerName,
+        string PaymentMethodKey,
+        decimal Subtotal,
+        decimal ShippingTotal,
+        decimal TaxTotal,
+        decimal DiscountTotal,
+        decimal GrandTotal,
+        string CurrencyCode,
+        DateTimeOffset ExpiresAtUtc,
+        IReadOnlyList<StorefrontCheckoutLineSummaryResponse> Lines,
+        IReadOnlyList<StorefrontCheckoutValidationIssueResponse> Issues);
+
+    public sealed record StorefrontCheckoutLineSummaryResponse(
+        Guid LineId,
+        Guid ProductId,
+        Guid? ProductVariantId,
+        int Quantity,
+        decimal UnitPrice,
+        decimal LineTotal,
+        string CurrencyCode);
+
+    public sealed record StorefrontCheckoutValidationIssueResponse(
+        string Code,
+        string Message,
+        string? Field,
+        Guid? LineId,
+        Guid? ProductId);
+
     public sealed class StorefrontCartItemRequest
     {
         [Required]

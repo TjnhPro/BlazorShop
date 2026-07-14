@@ -3,6 +3,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Catalog;
+    using BlazorShop.Application.CommerceNode.Checkout;
     using BlazorShop.Application.CommerceNode.Customers;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Payments;
@@ -140,6 +141,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IStorefrontCustomerService, StorefrontCustomerService>();
             services.AddScoped<IStorefrontCartSessionService, StorefrontCartSessionService>();
             services.AddScoped<IStorefrontCartService, StorefrontCartService>();
+            services.AddScoped<IStorefrontCheckoutService, StorefrontCheckoutService>();
             services.AddScoped<IProductSeoService, ProductSeoService>();
             services.AddScoped<ICategorySeoService, CategorySeoService>();
             services.AddScoped<ISeoSettingsService, SeoSettingsService>();

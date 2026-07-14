@@ -26,6 +26,8 @@ namespace BlazorShop.Storefront.Pages
 
         private IReadOnlyList<GetPaymentMethod> PaymentMethods => paymentMethods;
 
+        private int CartVersion { get; set; }
+
         private string GrandTotalDisplay => lines.Sum(line => line.LineTotal).ToString("0.00", CultureInfo.InvariantCulture);
 
         protected override async Task OnParametersSetAsync()
@@ -49,6 +51,7 @@ namespace BlazorShop.Storefront.Pages
             }
 
             var cartItems = cartResolution.Cart?.Lines ?? [];
+            CartVersion = cartResolution.Cart?.Version ?? 0;
             var productsById = await LoadProductsAsync(cartItems);
             lines.Clear();
             lines.AddRange(BuildLines(cartItems, productsById));

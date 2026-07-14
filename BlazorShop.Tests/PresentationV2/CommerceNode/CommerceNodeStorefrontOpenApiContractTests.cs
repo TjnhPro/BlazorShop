@@ -455,6 +455,33 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         }
 
         [Fact]
+        public async Task StorefrontSwagger_CheckoutPreviewHasGeneratorSafeContract()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var operation = GetOperation(swagger, "StorefrontCheckout_Preview");
+
+            Assert.False(string.IsNullOrWhiteSpace(operation["summary"]?.GetValue<string>()));
+            Assert.True(operation["responses"]?.AsObject().Count > 1);
+            AssertRequiredRequestBody(operation);
+            Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(operation));
+
+            var requestSchema = ResolveRequestBodySchema(operation, schemas);
+            var requestProperties = GetPropertyNames(requestSchema);
+            Assert.Contains("expectedCartVersion", requestProperties);
+            Assert.Contains("shippingAddress", requestProperties);
+            Assert.DoesNotContain("carts", requestProperties, StringComparer.OrdinalIgnoreCase);
+
+            Assert.True(schemas.ContainsKey("StorefrontCheckoutPreviewResponse"));
+            Assert.True(schemas.ContainsKey("StorefrontCheckoutValidationIssueResponse"));
+
+            var parameters = operation["parameters"]?.AsArray()
+                ?? throw new InvalidOperationException("Checkout preview operation does not contain parameters.");
+            Assert.Contains(parameters, parameter =>
+                string.Equals(parameter?["name"]?.GetValue<string>(), "X-Cart-Token", StringComparison.Ordinal));
+        }
+
+        [Fact]
         public async Task StorefrontSwagger_FinalHardening_HasNoBrokenSchemaReferences()
         {
             var swagger = await this.GetStorefrontSwaggerAsync();

@@ -33,6 +33,7 @@ namespace BlazorShop.Storefront.Services
         private const string StorefrontStoreCurrentRoute = "store/current";
         private const string StorefrontPaymentMethodsRoute = "payments/methods";
         private const string StorefrontCheckoutRoute = "cart/checkout";
+        private const string StorefrontCheckoutPreviewRoute = "checkout/preview";
         private const string StorefrontCartRoute = "cart";
         private const string StorefrontCartSessionRoute = StorefrontCartRoute + "/session";
         private const string StorefrontCartLinesRoute = StorefrontCartRoute + "/lines";
@@ -197,6 +198,20 @@ namespace BlazorShop.Storefront.Services
                 StorefrontCheckoutRoute,
                 request,
                 "Unable to place order right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCheckoutPreviewResponse>> PreviewCheckoutAsync(
+            string cartToken,
+            StorefrontCheckoutPreviewRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return SendCartAsync<StorefrontCheckoutPreviewResponse>(
+                HttpMethod.Post,
+                StorefrontCheckoutPreviewRoute,
+                cartToken,
+                request,
+                "Unable to preview checkout right now.",
                 cancellationToken);
         }
 
@@ -645,4 +660,74 @@ namespace BlazorShop.Storefront.Services
         int Quantity,
         decimal? UnitPriceSnapshot,
         string? CurrencyCodeSnapshot);
+
+    public sealed class StorefrontCheckoutPreviewRequest
+    {
+        public int ExpectedCartVersion { get; set; }
+
+        public string CustomerEmail { get; set; } = string.Empty;
+
+        public string CustomerName { get; set; } = string.Empty;
+
+        public string PaymentMethodKey { get; set; } = string.Empty;
+
+        public StorefrontCheckoutPreviewShippingAddress ShippingAddress { get; set; } = new();
+    }
+
+    public sealed class StorefrontCheckoutPreviewShippingAddress
+    {
+        public string FullName { get; set; } = string.Empty;
+
+        public string Email { get; set; } = string.Empty;
+
+        public string? Phone { get; set; }
+
+        public string Address1 { get; set; } = string.Empty;
+
+        public string? Address2 { get; set; }
+
+        public string City { get; set; } = string.Empty;
+
+        public string? State { get; set; }
+
+        public string PostalCode { get; set; } = string.Empty;
+
+        public string CountryCode { get; set; } = string.Empty;
+    }
+
+    public sealed record StorefrontCheckoutPreviewResponse(
+        Guid CheckoutSessionId,
+        Guid CartId,
+        int CartVersion,
+        string State,
+        bool IsValid,
+        string NextAction,
+        string CustomerEmail,
+        string CustomerName,
+        string PaymentMethodKey,
+        decimal Subtotal,
+        decimal ShippingTotal,
+        decimal TaxTotal,
+        decimal DiscountTotal,
+        decimal GrandTotal,
+        string CurrencyCode,
+        DateTimeOffset ExpiresAtUtc,
+        IReadOnlyList<StorefrontCheckoutLineSummaryResponse> Lines,
+        IReadOnlyList<StorefrontCheckoutValidationIssueResponse> Issues);
+
+    public sealed record StorefrontCheckoutLineSummaryResponse(
+        Guid LineId,
+        Guid ProductId,
+        Guid? ProductVariantId,
+        int Quantity,
+        decimal UnitPrice,
+        decimal LineTotal,
+        string CurrencyCode);
+
+    public sealed record StorefrontCheckoutValidationIssueResponse(
+        string Code,
+        string Message,
+        string? Field,
+        Guid? LineId,
+        Guid? ProductId);
 }

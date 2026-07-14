@@ -3,6 +3,8 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using System.Security.Claims;
 
     using ApplicationStorefrontCheckoutResult = BlazorShop.Application.DTOs.Payment.StorefrontCheckoutResult;
+    using ApplicationStorefrontCheckoutPreviewResult = BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutPreviewResult;
+    using IStorefrontCheckoutService = BlazorShop.Application.CommerceNode.Checkout.IStorefrontCheckoutService;
 
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
@@ -541,6 +543,54 @@ namespace BlazorShop.CommerceNode.API.Controllers
         private string? GetCurrentCustomerId()
         {
             return this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
+
+        private async Task<Guid?> ResolveStoreIdAsync(CancellationToken cancellationToken)
+        {
+            var result = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
+            return result.Success ? result.Payload : null;
+        }
+    }
+
+    [ApiController]
+    [Route("api/storefront/stores/{storeKey}/checkout")]
+    [Authorize]
+    public sealed class StorefrontScopedCheckoutController : StorefrontApiControllerBase
+    {
+        private const string CartTokenHeaderName = "X-Cart-Token";
+
+        private readonly IStorefrontCheckoutService checkoutService;
+        private readonly ICommerceStoreContext storeContext;
+
+        public StorefrontScopedCheckoutController(
+            IStorefrontCheckoutService checkoutService,
+            ICommerceStoreContext storeContext)
+        {
+            this.checkoutService = checkoutService;
+            this.storeContext = storeContext;
+        }
+
+        [HttpPost("preview")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Preview(
+            [FromHeader(Name = CartTokenHeaderName)] string cartToken,
+            [FromBody] StorefrontCheckoutPreviewRequest request,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.checkoutService.PreviewAsync(
+                request.ToApplicationRequest(storeId.Value, cartToken),
+                cancellationToken);
+            return this.FromServiceResponse(
+                result,
+                payload => payload is ApplicationStorefrontCheckoutPreviewResult preview
+                    ? preview.ToStorefrontContract()
+                    : null);
         }
 
         private async Task<Guid?> ResolveStoreIdAsync(CancellationToken cancellationToken)
