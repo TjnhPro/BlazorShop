@@ -30,6 +30,46 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             "StorefrontOrders_ListCurrentUserOrderItems",
         ];
 
+        private static readonly IReadOnlyDictionary<string, string> ProtectedOperationSecuritySchemes =
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["StorefrontAuth_RefreshToken"] = "RefreshCookie",
+                ["StorefrontAuth_Logout"] = "RefreshCookie",
+                ["StorefrontAuth_ChangePassword"] = "Bearer",
+                ["StorefrontAuth_UpdateProfile"] = "Bearer",
+                ["StorefrontCart_SaveCheckout"] = "Bearer",
+                ["StorefrontOrders_Confirm"] = "Bearer",
+                ["StorefrontOrders_ListCurrentUserOrders"] = "Bearer",
+                ["StorefrontOrders_ListCurrentUserOrderItems"] = "Bearer",
+            };
+
+        private static readonly (string SchemaName, string PropertyName)[] NonNullableResponseCollections =
+        [
+            ("StorefrontPagedResponse", "items"),
+            ("StorefrontCategoryTreeNodeResponse", "children"),
+            ("StorefrontCategoryPageResponse", "products"),
+            ("StorefrontProductResponse", "variants"),
+            ("StorefrontProductVariantResponse", "attributes"),
+            ("StorefrontOrderResponse", "lines"),
+            ("StorefrontOrderLineResponse", "variantAttributes"),
+            ("GetPublicCatalogSitemap", "categories"),
+            ("GetPublicCatalogSitemap", "products"),
+            ("GetPublicCatalogSitemap", "pages"),
+            ("StorefrontVariationTemplateDto", "options"),
+            ("StorefrontVariationOptionDto", "values"),
+        ];
+
+        private static readonly string[] MonetaryPropertyNames =
+        [
+            "price",
+            "comparePrice",
+            "effectivePrice",
+            "unitPrice",
+            "lineTotal",
+            "totalAmount",
+            "amountPaid",
+        ];
+
         private readonly WebApplicationFactory<CommerceNodeProgram> factory;
 
         public CommerceNodeStorefrontOpenApiContractTests(WebApplicationFactory<CommerceNodeProgram> factory)
@@ -195,6 +235,149 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         }
 
         [Fact]
+        public async Task StorefrontSwagger_FinalHardening_DoesNotExposeObjectOrAuthDoubleEnvelope()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var schemaNames = schemas.Select(schema => schema.Key).ToArray();
+            var serializedSchemas = schemas.ToJsonString();
+
+            Assert.DoesNotContain("ObjectCommerceNodeApiResponse", schemaNames, StringComparer.Ordinal);
+            Assert.DoesNotContain("StorefrontAuthResponseCommerceNodeApiResponse", schemaNames, StringComparer.Ordinal);
+            Assert.DoesNotContain("ObjectCommerceNodeApiResponse", serializedSchemas, StringComparison.Ordinal);
+
+            if (schemas.TryGetPropertyValue("StorefrontAuthResponse", out var legacyAuthSchema))
+            {
+                var legacyAuthProperties = GetPropertyNames(legacyAuthSchema!.AsObject()).ToArray();
+                Assert.DoesNotContain("success", legacyAuthProperties, StringComparer.OrdinalIgnoreCase);
+                Assert.DoesNotContain("message", legacyAuthProperties, StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_FinalHardening_ErrorResponseHasRequiredMachineReadableShape()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var errorSchema = schemas["CommerceNodeApiErrorResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("CommerceNodeApiErrorResponse schema was not found.");
+
+            var required = GetRequiredProperties(errorSchema).ToArray();
+
+            Assert.Contains("success", required, StringComparer.Ordinal);
+            Assert.Contains("code", required, StringComparer.Ordinal);
+            Assert.Contains("message", required, StringComparer.Ordinal);
+            Assert.Contains("traceId", required, StringComparer.Ordinal);
+            Assert.False(IsNullableProperty(errorSchema, "traceId"), "traceId must be required and non-nullable.");
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_FinalHardening_PublicResponseCollectionsAreRequiredAndNonNullable()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var failures = new List<string>();
+
+            foreach (var (schemaNameFragment, propertyName) in NonNullableResponseCollections)
+            {
+                var matchingSchemas = schemas
+                    .Where(schema => schema.Key.Contains(schemaNameFragment, StringComparison.Ordinal))
+                    .Select(schema => schema.Value?.AsObject())
+                    .Where(schema => schema is not null)
+                    .Cast<JsonObject>()
+                    .Where(schema => schema["properties"]?.AsObject().ContainsKey(propertyName) == true)
+                    .ToArray();
+
+                if (matchingSchemas.Length == 0)
+                {
+                    failures.Add($"{schemaNameFragment}.{propertyName}: schema/property not found");
+                    continue;
+                }
+
+                foreach (var schema in matchingSchemas)
+                {
+                    var required = GetRequiredProperties(schema);
+                    if (!required.Contains(propertyName, StringComparer.Ordinal))
+                    {
+                        failures.Add($"{schemaNameFragment}.{propertyName}: not required");
+                    }
+
+                    if (IsNullableProperty(schema, propertyName))
+                    {
+                        failures.Add($"{schemaNameFragment}.{propertyName}: nullable");
+                    }
+                }
+            }
+
+            Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures));
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_FinalHardening_PublicContractUsesAmountPaidAndDecimalMoneyFields()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var serializedSchemas = schemas.ToJsonString();
+
+            Assert.DoesNotContain("amountPayed", serializedSchemas, StringComparison.Ordinal);
+            Assert.Contains("amountPaid", serializedSchemas, StringComparison.Ordinal);
+
+            foreach (var propertyName in MonetaryPropertyNames)
+            {
+                var moneySchemas = FindPropertySchemas(schemas, propertyName).ToArray();
+                Assert.NotEmpty(moneySchemas);
+
+                foreach (var schema in moneySchemas)
+                {
+                    Assert.Equal("number", schema["type"]?.GetValue<string>());
+                }
+            }
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_FinalHardening_SortByIsNamedStringEnum()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var catalog = GetOperation(swagger, "StorefrontCatalog_QueryProducts");
+            var catalogParameters = catalog["parameters"]?.AsArray()
+                ?? throw new InvalidOperationException("Catalog query operation does not contain parameters.");
+            var sortBy = GetParameter(catalogParameters, "sortBy");
+            var schema = sortBy["schema"]?.AsObject()
+                ?? throw new InvalidOperationException("sortBy parameter does not contain a schema.");
+
+            Assert.Equal("string", schema["type"]?.GetValue<string>());
+            var values = schema["enum"]?.AsArray().Select(value => value?.GetValue<string>()).ToArray()
+                ?? throw new InvalidOperationException("sortBy parameter does not contain a named enum.");
+
+            Assert.Contains("newest", values);
+            Assert.Contains("priceLowToHigh", values);
+            Assert.DoesNotContain(values, value => int.TryParse(value, out _));
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_FinalHardening_SecurityRequirementsMatchRuntimeContract()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var operations = GetOperations(swagger)
+                .ToDictionary(
+                    operation => operation.Value["operationId"]?.GetValue<string>() ?? string.Empty,
+                    operation => operation.Value,
+                    StringComparer.Ordinal);
+
+            foreach (var expected in ProtectedOperationSecuritySchemes)
+            {
+                Assert.True(operations.TryGetValue(expected.Key, out var operation), $"{expected.Key} was not found.");
+                Assert.Contains(expected.Value, GetSecuritySchemeNames(operation!));
+            }
+
+            var anonymousOperationIds = operations.Keys.Except(ProtectedOperationSecuritySchemes.Keys, StringComparer.Ordinal);
+            foreach (var operationId in anonymousOperationIds)
+            {
+                Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(operations[operationId]));
+            }
+        }
+
+        [Fact]
         public async Task StorefrontSwagger_CanGenerateTypeScriptClientSmoke()
         {
             var swagger = await this.GetStorefrontSwaggerAsync();
@@ -262,6 +445,12 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 .Single(operation => string.Equals(operation["operationId"]?.GetValue<string>(), operationId, StringComparison.Ordinal));
         }
 
+        private static JsonObject GetSchemas(JsonObject swagger)
+        {
+            return swagger["components"]?["schemas"]?.AsObject()
+                ?? throw new InvalidOperationException("Swagger document does not contain component schemas.");
+        }
+
         private static string GetPathSnapshot(JsonObject swagger)
         {
             var lines = GetOperations(swagger)
@@ -315,6 +504,42 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         private static IEnumerable<string> GetPropertyNames(JsonObject schema)
         {
             return schema["properties"]?.AsObject().Select(property => property.Key) ?? [];
+        }
+
+        private static IEnumerable<string> GetRequiredProperties(JsonObject schema)
+        {
+            return schema["required"]?.AsArray().Select(property => property?.GetValue<string>() ?? string.Empty) ?? [];
+        }
+
+        private static bool IsNullableProperty(JsonObject schema, string propertyName)
+        {
+            return schema["properties"]?[propertyName]?["nullable"]?.GetValue<bool>() == true;
+        }
+
+        private static IEnumerable<JsonObject> FindPropertySchemas(JsonObject schemas, string propertyName)
+        {
+            foreach (var schema in schemas)
+            {
+                var properties = schema.Value?["properties"]?.AsObject();
+                if (properties is null || !properties.TryGetPropertyValue(propertyName, out var propertySchema) || propertySchema is null)
+                {
+                    continue;
+                }
+
+                yield return propertySchema.AsObject();
+            }
+        }
+
+        private static IEnumerable<string> GetSecuritySchemeNames(JsonObject operation)
+        {
+            if (operation["security"] is not JsonArray security)
+            {
+                return [];
+            }
+
+            return security
+                .SelectMany(requirement => requirement?.AsObject().Select(scheme => scheme.Key) ?? [])
+                .ToArray();
         }
 
         private static JsonObject GetParameter(JsonArray parameters, string name)
