@@ -839,7 +839,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
             return this.SendMediaAsync(
                 storePublicId,
-                $"media/products/{mediaPublicId:D}" + BuildMediaPreviewQuery(query),
+                $"api/commerce/admin/media/products/{mediaPublicId:D}" + BuildMediaPreviewQuery(query),
                 cancellationToken);
         }
 
@@ -852,7 +852,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
             return this.SendMediaAsync(
                 storePublicId,
-                $"media/assets/{assetPublicId:D}/{Uri.EscapeDataString(canonicalFileName)}" + BuildMediaAssetPreviewQuery(query),
+                $"api/commerce/admin/media/assets/{assetPublicId:D}" + BuildMediaAssetPreviewQuery(query),
                 cancellationToken);
         }
 
@@ -872,10 +872,9 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
             try
             {
-                using var request = new HttpRequestMessage(method, AppendPath(GetControlApiUrl(store!.Node!), path));
+                using var request = new HttpRequestMessage(method, AppendPath(GetControlApiUrl(store!.Node!), AppendStoreKeyQuery(path, store.StoreKey)));
                 request.Headers.TryAddWithoutValidation("X-Node-Key", store.Node!.NodeKey);
                 request.Headers.TryAddWithoutValidation("X-Node-Secret", store.Node.NodeSecret);
-                request.Headers.TryAddWithoutValidation("X-Store-Key", store.StoreKey);
 
                 if (body is not null)
                 {
@@ -945,10 +944,9 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
             try
             {
-                using var request = new HttpRequestMessage(HttpMethod.Get, AppendPath(GetControlApiUrl(store!.Node!), path));
+                using var request = new HttpRequestMessage(HttpMethod.Get, AppendPath(GetControlApiUrl(store!.Node!), AppendStoreKeyQuery(path, store.StoreKey)));
                 request.Headers.TryAddWithoutValidation("X-Node-Key", store.Node!.NodeKey);
                 request.Headers.TryAddWithoutValidation("X-Node-Secret", store.Node.NodeSecret);
-                request.Headers.TryAddWithoutValidation("X-Store-Key", store.StoreKey);
 
                 using var response = await this.httpClient.SendAsync(request, cancellationToken);
                 var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
@@ -993,10 +991,9 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
             try
             {
-                using var request = new HttpRequestMessage(HttpMethod.Post, AppendPath(GetControlApiUrl(store!.Node!), path));
+                using var request = new HttpRequestMessage(HttpMethod.Post, AppendPath(GetControlApiUrl(store!.Node!), AppendStoreKeyQuery(path, store.StoreKey)));
                 request.Headers.TryAddWithoutValidation("X-Node-Key", store.Node!.NodeKey);
                 request.Headers.TryAddWithoutValidation("X-Node-Secret", store.Node.NodeSecret);
-                request.Headers.TryAddWithoutValidation("X-Store-Key", store.StoreKey);
 
                 using var form = new MultipartFormDataContent();
                 using var fileContent = new StreamContent(upload.Content);
@@ -1063,10 +1060,9 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
             try
             {
-                using var request = new HttpRequestMessage(HttpMethod.Post, AppendPath(GetControlApiUrl(store!.Node!), path));
+                using var request = new HttpRequestMessage(HttpMethod.Post, AppendPath(GetControlApiUrl(store!.Node!), AppendStoreKeyQuery(path, store.StoreKey)));
                 request.Headers.TryAddWithoutValidation("X-Node-Key", store.Node!.NodeKey);
                 request.Headers.TryAddWithoutValidation("X-Node-Secret", store.Node.NodeSecret);
-                request.Headers.TryAddWithoutValidation("X-Store-Key", store.StoreKey);
 
                 using var form = new MultipartFormDataContent();
                 using var fileContent = new StreamContent(upload.Content);
@@ -1171,6 +1167,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         private static Uri AppendPath(string baseUrl, string path)
         {
             return new Uri(baseUrl.TrimEnd('/') + "/" + path.TrimStart('/'), UriKind.Absolute);
+        }
+
+        private static string AppendStoreKeyQuery(string path, string storeKey)
+        {
+            var separator = path.Contains('?', StringComparison.Ordinal) ? "&" : "?";
+            return path + separator + "storeKey=" + Uri.EscapeDataString(storeKey);
         }
 
         private static string BuildProductQuery(ProductCatalogQuery query)

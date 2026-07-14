@@ -373,13 +373,13 @@ X-Store-Key header is required for legacy internal API.
 
 ### Phase 6 - ControlPlane API Gateway Update
 
-- [ ] Update ControlPlane CommerceNode clients/gateways to append `storeKey` query.
-- [ ] Remove `X-Store-Key` header when calling Commerce Admin endpoints.
-- [ ] Keep `X-Node-Key` and `X-Node-Secret`.
-- [ ] Ensure ControlPlane Web still calls only ControlPlane API.
-- [ ] Build ControlPlane API.
-- [ ] Build ControlPlane Web if affected by client contracts.
-- [ ] Commit ControlPlane gateway phase.
+- [x] Update ControlPlane CommerceNode clients/gateways to append `storeKey` query.
+- [x] Remove `X-Store-Key` header when calling Commerce Admin endpoints.
+- [x] Keep `X-Node-Key` and `X-Node-Secret`.
+- [x] Ensure ControlPlane Web still calls only ControlPlane API.
+- [x] Build ControlPlane API.
+- [x] Build ControlPlane Web if affected by client contracts.
+- [x] Commit ControlPlane gateway phase.
 
 ### Phase 7 - Storefront V2 Client Switch
 
