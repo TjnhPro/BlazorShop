@@ -4,6 +4,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
 
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Checkout;
+    using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Category;
@@ -209,6 +210,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         {
             return new StorefrontPlaceOrderResponse(
                 result.CheckoutSessionId,
+                result.PaymentAttemptId,
                 result.OrderId,
                 result.Reference,
                 result.OrderStatus,
@@ -218,6 +220,31 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 result.CurrencyCode,
                 result.IdempotencyKey,
                 result.CreatedOn);
+        }
+
+        public static StorefrontPaymentAttemptResponse ToStorefrontContract(this PaymentAttemptDto result)
+        {
+            var nextAction = string.IsNullOrWhiteSpace(result.NextActionType)
+                ? null
+                : new StorefrontPaymentNextActionResponse(result.NextActionType, result.NextActionUrl);
+
+            return new StorefrontPaymentAttemptResponse(
+                result.Id,
+                result.CheckoutSessionId,
+                result.OrderId,
+                result.PaymentMethodKey,
+                result.ProviderKey,
+                result.State,
+                result.Amount,
+                result.CurrencyCode,
+                result.ProviderReference,
+                result.ProviderSessionId,
+                nextAction,
+                result.FailureCode,
+                result.FailureMessage,
+                result.ExpiresAtUtc,
+                result.CreatedAtUtc,
+                result.UpdatedAtUtc);
         }
 
         public static ProcessCart ToProcessCart(this StorefrontCartItemRequest request)

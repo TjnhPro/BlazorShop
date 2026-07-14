@@ -371,6 +371,21 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "List enabled Storefront payment methods.",
                         typeof(CommerceNodeApiResponse<IReadOnlyList<StorefrontPaymentMethodResponse>>),
                         [StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedPayments", "GetAttempt")] = new(
+                        "StorefrontPayments_GetAttempt",
+                        "Get a Storefront payment attempt.",
+                        typeof(CommerceNodeApiResponse<StorefrontPaymentAttemptResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedPayments", "HandleProviderCallback")] = new(
+                        "StorefrontPayments_HandleProviderCallback",
+                        "Accept a Storefront payment provider callback.",
+                        typeof(CommerceNodeApiResponse<StorefrontPaymentWebhookAcceptedResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedPayments", "HandleWebhook")] = new(
+                        "StorefrontPayments_HandleWebhook",
+                        "Accept a Storefront payment provider webhook.",
+                        typeof(CommerceNodeApiResponse<StorefrontPaymentWebhookAcceptedResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedPayments", "CapturePayPal")] = new(
                         "StorefrontPayments_CapturePayPal",
                         "Capture a PayPal Storefront payment.",

@@ -8,6 +8,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using IStorefrontCheckoutService = BlazorShop.Application.CommerceNode.Checkout.IStorefrontCheckoutService;
 
     using BlazorShop.Application.CommerceNode.Carts;
+    using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
@@ -748,14 +749,20 @@ namespace BlazorShop.CommerceNode.API.Controllers
     public sealed class StorefrontScopedPaymentsController : StorefrontApiControllerBase
     {
         private readonly ClientAppOptions clientAppOptions;
+        private readonly ICommerceStoreContext storeContext;
+        private readonly IPaymentAttemptService paymentAttemptService;
         private readonly IPaymentMethodService paymentMethodService;
         private readonly IPayPalPaymentService payPalPaymentService;
 
         public StorefrontScopedPaymentsController(
+            ICommerceStoreContext storeContext,
+            IPaymentAttemptService paymentAttemptService,
             IPaymentMethodService paymentMethodService,
             IPayPalPaymentService payPalPaymentService,
             IOptions<ClientAppOptions> clientAppOptions)
         {
+            this.storeContext = storeContext;
+            this.paymentAttemptService = paymentAttemptService;
             this.paymentMethodService = paymentMethodService;
             this.payPalPaymentService = payPalPaymentService;
             this.clientAppOptions = clientAppOptions.Value;
@@ -773,6 +780,133 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 : this.Success(
                     paymentMethods.Select(method => method.ToStorefrontContract()).ToArray(),
                     "Payment methods loaded.");
+        }
+
+        [HttpGet("attempts/{attemptId:guid}")]
+        public async Task<IActionResult> GetAttempt(Guid attemptId, CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.paymentAttemptService.GetAsync(storeId.Value, attemptId, cancellationToken);
+            return this.FromServiceResponse(
+                result,
+                payload => payload is PaymentAttemptDto attempt
+                    ? attempt.ToStorefrontContract()
+                    : null);
+        }
+
+        [HttpPost("provider-callback/{providerKey}")]
+        public async Task<IActionResult> HandleProviderCallback(
+            string providerKey,
+            [FromBody] StorefrontPaymentCallbackRequest request,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var eventResult = await this.paymentAttemptService.RecordProviderEventAsync(
+                new RecordPaymentProviderEventRequest(
+                    storeId.Value,
+                    request.PaymentAttemptId,
+                    providerKey,
+                    request.ProviderEventId,
+                    request.EventType,
+                    request.PayloadJson,
+                    ProcessedAtUtc: DateTimeOffset.UtcNow),
+                cancellationToken);
+            if (!eventResult.Success || eventResult.Payload is null)
+            {
+                return this.FromServiceResponse(eventResult);
+            }
+
+            if (request.PaymentAttemptId.HasValue && !string.IsNullOrWhiteSpace(request.State))
+            {
+                var transition = await this.paymentAttemptService.TransitionAsync(
+                    new TransitionPaymentAttemptRequest(
+                        storeId.Value,
+                        request.PaymentAttemptId.Value,
+                        request.State,
+                        request.ProviderReference,
+                        request.ProviderSessionId,
+                        FailureCode: request.FailureCode,
+                        FailureMessage: request.FailureMessage,
+                        MetadataJson: request.PayloadJson),
+                    cancellationToken);
+                if (!transition.Success)
+                {
+                    return this.FromServiceResponse(transition);
+                }
+            }
+
+            return this.Success(
+                new StorefrontPaymentWebhookAcceptedResponse(
+                    providerKey,
+                    request.ProviderEventId,
+                    eventResult.Payload.IsDuplicate,
+                    eventResult.Payload.PayloadHash,
+                    eventResult.Payload.CreatedAtUtc),
+                "Payment provider callback accepted.");
+        }
+
+        [HttpPost("webhooks/{providerKey}")]
+        public async Task<IActionResult> HandleWebhook(
+            string providerKey,
+            [FromHeader(Name = "X-Provider-Signature")] string? providerSignature,
+            [FromBody] StorefrontPaymentWebhookRequest request,
+            CancellationToken cancellationToken)
+        {
+            _ = providerSignature;
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var eventResult = await this.paymentAttemptService.RecordProviderEventAsync(
+                new RecordPaymentProviderEventRequest(
+                    storeId.Value,
+                    request.PaymentAttemptId,
+                    providerKey,
+                    request.EventId,
+                    request.EventType,
+                    request.PayloadJson,
+                    ProcessedAtUtc: DateTimeOffset.UtcNow),
+                cancellationToken);
+            if (!eventResult.Success || eventResult.Payload is null)
+            {
+                return this.FromServiceResponse(eventResult);
+            }
+
+            if (request.PaymentAttemptId.HasValue && !string.IsNullOrWhiteSpace(request.State))
+            {
+                var transition = await this.paymentAttemptService.TransitionAsync(
+                    new TransitionPaymentAttemptRequest(
+                        storeId.Value,
+                        request.PaymentAttemptId.Value,
+                        request.State,
+                        MetadataJson: request.PayloadJson),
+                    cancellationToken);
+                if (!transition.Success)
+                {
+                    return this.FromServiceResponse(transition);
+                }
+            }
+
+            return this.Success(
+                new StorefrontPaymentWebhookAcceptedResponse(
+                    providerKey,
+                    request.EventId,
+                    eventResult.Payload.IsDuplicate,
+                    eventResult.Payload.PayloadHash,
+                    eventResult.Payload.CreatedAtUtc),
+                "Payment webhook accepted.");
         }
 
         [HttpPost("paypal/capture")]
@@ -811,6 +945,12 @@ namespace BlazorShop.CommerceNode.API.Controllers
             }
 
             return $"{this.clientAppOptions.BaseUrl.TrimEnd('/')}/{path.TrimStart('/')}";
+        }
+
+        private async Task<Guid?> ResolveStoreIdAsync(CancellationToken cancellationToken)
+        {
+            var result = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
+            return result.Success ? result.Payload : null;
         }
     }
 

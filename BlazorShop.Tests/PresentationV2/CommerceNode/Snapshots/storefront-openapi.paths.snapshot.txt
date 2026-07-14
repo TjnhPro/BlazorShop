@@ -30,8 +30,11 @@ POST /api/storefront/stores/{storeKey}/orders/confirm
 GET /api/storefront/stores/{storeKey}/orders/current-user
 GET /api/storefront/stores/{storeKey}/orders/current-user/items
 GET /api/storefront/stores/{storeKey}/pages/{slug}
+GET /api/storefront/stores/{storeKey}/payments/attempts/{attemptId}
 GET /api/storefront/stores/{storeKey}/payments/methods
 POST /api/storefront/stores/{storeKey}/payments/paypal/capture
+POST /api/storefront/stores/{storeKey}/payments/provider-callback/{providerKey}
+POST /api/storefront/stores/{storeKey}/payments/webhooks/{providerKey}
 GET /api/storefront/stores/{storeKey}/recommendations/products/{productId}
 GET /api/storefront/stores/{storeKey}/seo/redirects/resolve
 GET /api/storefront/stores/{storeKey}/seo/settings

@@ -252,7 +252,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 && string.Equals(session.IdempotencyKey, idempotencyKey, StringComparison.Ordinal)
                 && session.Order is not null)
             {
-                return Succeeded("Order already placed.", ToPlaceOrderResult(session, session.Order, idempotencyKey));
+                var paymentAttemptId = await this.context.PaymentAttempts
+                    .AsNoTracking()
+                    .Where(attempt => attempt.StoreId == session.StoreId
+                        && attempt.IdempotencyKey == idempotencyKey)
+                    .Select(attempt => attempt.PublicId)
+                    .FirstOrDefaultAsync(cancellationToken);
+                return Succeeded("Order already placed.", ToPlaceOrderResult(session, session.Order, paymentAttemptId, idempotencyKey));
             }
 
             if (!string.Equals(session.State, CheckoutSessionStates.Ready, StringComparison.OrdinalIgnoreCase))
@@ -346,6 +352,22 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var now = DateTimeOffset.UtcNow;
+            var paymentAttempt = new PaymentAttempt
+            {
+                Id = Guid.NewGuid(),
+                PublicId = Guid.NewGuid(),
+                StoreId = request.StoreId,
+                CheckoutSessionId = session.Id,
+                PaymentMethodKey = paymentMethodKey,
+                ProviderKey = paymentMethodKey,
+                State = PaymentAttemptStates.Created,
+                Amount = totalAmount,
+                CurrencyCode = currencyCode,
+                IdempotencyKey = idempotencyKey,
+                ExpiresAtUtc = now.AddMinutes(30),
+                CreatedAtUtc = now,
+                UpdatedAtUtc = now,
+            };
             var order = new Order
             {
                 Id = Guid.NewGuid(),
@@ -398,6 +420,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 : null;
 
             this.context.Orders.Add(order);
+            this.context.PaymentAttempts.Add(paymentAttempt);
             foreach (var line in lines)
             {
                 DeductTrackedStock(line);
@@ -415,6 +438,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             session.NextAction = "complete";
             session.PlacedAtUtc = now;
             session.UpdatedAtUtc = now;
+
+            paymentAttempt.OrderId = order.Id;
+            paymentAttempt.State = PaymentAttemptStates.Captured;
+            paymentAttempt.ProviderReference = paymentResult.ProviderReference;
+            paymentAttempt.MetadataJson = paymentResult.MetadataJson;
+            paymentAttempt.UpdatedAtUtc = now;
 
             try
             {
@@ -440,7 +469,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 throw;
             }
 
-            return Succeeded("Order placed successfully.", ToPlaceOrderResult(session, order, idempotencyKey));
+            return Succeeded("Order placed successfully.", ToPlaceOrderResult(session, order, paymentAttempt.PublicId, idempotencyKey));
         }
 
         private async Task<bool> IsPaymentMethodEnabledAsync(Guid storeId, string paymentMethodKey, CancellationToken cancellationToken)
@@ -473,7 +502,19 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                         && checkout.OrderId != null,
                     cancellationToken);
 
-            return session?.Order is null ? null : ToPlaceOrderResult(session, session.Order, idempotencyKey);
+            if (session?.Order is null)
+            {
+                return null;
+            }
+
+            var paymentAttemptId = await this.context.PaymentAttempts
+                .AsNoTracking()
+                .Where(attempt => attempt.StoreId == session.StoreId
+                    && attempt.IdempotencyKey == idempotencyKey)
+                .Select(attempt => attempt.PublicId)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            return ToPlaceOrderResult(session, session.Order, paymentAttemptId, idempotencyKey);
         }
 
         private async Task<OrderLineResolution> ResolveOrderLinesAsync(
@@ -649,10 +690,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private static StorefrontPlaceOrderResult ToPlaceOrderResult(
             CheckoutSession session,
             Order order,
+            Guid paymentAttemptId,
             string idempotencyKey)
         {
             return new StorefrontPlaceOrderResult(
                 session.PublicId,
+                paymentAttemptId,
                 order.Id,
                 order.Reference,
                 order.OrderStatus,

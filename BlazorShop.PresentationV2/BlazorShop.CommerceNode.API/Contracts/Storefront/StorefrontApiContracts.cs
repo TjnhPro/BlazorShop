@@ -248,6 +248,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
 
     public sealed record StorefrontPlaceOrderResponse(
         Guid CheckoutSessionId,
+        Guid PaymentAttemptId,
         Guid OrderId,
         string Reference,
         string OrderStatus,
@@ -257,6 +258,83 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         string CurrencyCode,
         string IdempotencyKey,
         DateTime CreatedOn);
+
+    public sealed record StorefrontPaymentAttemptResponse(
+        Guid Id,
+        Guid CheckoutSessionId,
+        Guid? OrderId,
+        string PaymentMethodKey,
+        string ProviderKey,
+        string State,
+        decimal Amount,
+        string CurrencyCode,
+        string? ProviderReference,
+        string? ProviderSessionId,
+        StorefrontPaymentNextActionResponse? NextAction,
+        string? FailureCode,
+        string? FailureMessage,
+        DateTimeOffset ExpiresAtUtc,
+        DateTimeOffset CreatedAtUtc,
+        DateTimeOffset UpdatedAtUtc);
+
+    public sealed record StorefrontPaymentNextActionResponse(
+        string Type,
+        string? Url);
+
+    public sealed class StorefrontPaymentCallbackRequest
+    {
+        public Guid? PaymentAttemptId { get; set; }
+
+        [MaxLength(256)]
+        public string? ProviderEventId { get; set; }
+
+        [Required]
+        [MaxLength(128)]
+        public string EventType { get; set; } = "provider.callback";
+
+        [MaxLength(32)]
+        public string? State { get; set; }
+
+        [MaxLength(256)]
+        public string? ProviderReference { get; set; }
+
+        [MaxLength(256)]
+        public string? ProviderSessionId { get; set; }
+
+        [MaxLength(128)]
+        public string? FailureCode { get; set; }
+
+        [MaxLength(512)]
+        public string? FailureMessage { get; set; }
+
+        [Required]
+        public string PayloadJson { get; set; } = "{}";
+    }
+
+    public sealed class StorefrontPaymentWebhookRequest
+    {
+        public Guid? PaymentAttemptId { get; set; }
+
+        [MaxLength(256)]
+        public string? EventId { get; set; }
+
+        [Required]
+        [MaxLength(128)]
+        public string EventType { get; set; } = string.Empty;
+
+        [MaxLength(32)]
+        public string? State { get; set; }
+
+        [Required]
+        public string PayloadJson { get; set; } = "{}";
+    }
+
+    public sealed record StorefrontPaymentWebhookAcceptedResponse(
+        string ProviderKey,
+        string? EventId,
+        bool Duplicate,
+        string PayloadHash,
+        DateTimeOffset AcceptedAtUtc);
 
     public sealed record StorefrontCheckoutLineSummaryResponse(
         Guid LineId,

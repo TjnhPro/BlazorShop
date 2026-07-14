@@ -126,7 +126,11 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.True(first.Success);
             Assert.True(second.Success);
             Assert.Equal(first.Payload!.OrderId, second.Payload!.OrderId);
+            Assert.Equal(first.Payload.PaymentAttemptId, second.Payload.PaymentAttemptId);
             Assert.Single(context.Orders);
+            var attempt = Assert.Single(context.PaymentAttempts);
+            Assert.Equal(PaymentAttemptStates.Captured, attempt.State);
+            Assert.Equal(first.Payload.OrderId, attempt.OrderId);
             Assert.Equal(CartSessionStates.Ordered, context.CartSessions.Single().State);
             Assert.Equal(8, context.Products.Single(item => item.Id == product.Id).Quantity);
         }

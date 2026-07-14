@@ -51,6 +51,33 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.context = context;
         }
 
+        public async Task<ServiceResponse<PaymentAttemptDto>> GetAsync(
+            Guid storeId,
+            Guid paymentAttemptId,
+            CancellationToken cancellationToken = default)
+        {
+            if (storeId == Guid.Empty)
+            {
+                return Failed<PaymentAttemptDto>(ServiceResponseType.ValidationError, "Store is required.");
+            }
+
+            if (paymentAttemptId == Guid.Empty)
+            {
+                return Failed<PaymentAttemptDto>(ServiceResponseType.ValidationError, "Payment attempt is required.");
+            }
+
+            var attempt = await this.context.PaymentAttempts
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    candidate => candidate.StoreId == storeId
+                        && candidate.PublicId == paymentAttemptId,
+                    cancellationToken);
+
+            return attempt is null
+                ? Failed<PaymentAttemptDto>(ServiceResponseType.NotFound, "Payment attempt was not found.")
+                : Succeeded("Payment attempt loaded.", ToDto(attempt));
+        }
+
         public async Task<ServiceResponse<PaymentAttemptDto>> CreateAsync(
             CreatePaymentAttemptRequest request,
             CancellationToken cancellationToken = default)
@@ -173,6 +200,23 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             var providerKey = NormalizeKey(request.ProviderKey)!;
             var eventId = NormalizeNullable(request.EventId);
+            Guid? paymentAttemptInternalId = null;
+            if (request.PaymentAttemptId.HasValue)
+            {
+                var attempt = await this.context.PaymentAttempts
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(
+                        candidate => candidate.StoreId == request.StoreId
+                            && candidate.PublicId == request.PaymentAttemptId.Value,
+                        cancellationToken);
+                if (attempt is null)
+                {
+                    return Failed<PaymentProviderEventDto>(ServiceResponseType.NotFound, "Payment attempt was not found.");
+                }
+
+                paymentAttemptInternalId = attempt.Id;
+            }
+
             if (eventId is not null)
             {
                 var existing = await this.context.PaymentProviderEvents
@@ -191,7 +235,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             {
                 Id = Guid.NewGuid(),
                 StoreId = request.StoreId,
-                PaymentAttemptId = request.PaymentAttemptId,
+                PaymentAttemptId = paymentAttemptInternalId,
                 ProviderKey = providerKey,
                 EventId = eventId,
                 EventType = NormalizeRequired(request.EventType)!,

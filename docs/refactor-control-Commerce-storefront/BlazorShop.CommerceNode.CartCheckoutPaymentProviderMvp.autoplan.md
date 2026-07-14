@@ -537,6 +537,8 @@ Commit boundary: `feat: add payment attempt ledger`
 
 ### Phase 9 - Payment API Contract and COD Adapter Cutover
 
+Status: completed 2026-07-14 in commit `feat: route cod checkout through payment attempts`.
+
 Goal: expose payment attempt state and move COD through the provider-shaped pipeline.
 
 API:

@@ -504,6 +504,34 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         }
 
         [Fact]
+        public async Task StorefrontSwagger_PaymentAttemptEndpointsHaveGeneratorSafeContracts()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var getAttempt = GetOperation(swagger, "StorefrontPayments_GetAttempt");
+            var callback = GetOperation(swagger, "StorefrontPayments_HandleProviderCallback");
+            var webhook = GetOperation(swagger, "StorefrontPayments_HandleWebhook");
+
+            Assert.False(string.IsNullOrWhiteSpace(getAttempt["summary"]?.GetValue<string>()));
+            Assert.True(getAttempt["responses"]?.AsObject().Count > 1);
+            Assert.Null(getAttempt["requestBody"]);
+            Assert.True(schemas.ContainsKey("StorefrontPaymentAttemptResponse"));
+
+            AssertRequiredRequestBody(callback);
+            AssertRequiredRequestBody(webhook);
+            Assert.True(callback["responses"]?.AsObject().Count > 1);
+            Assert.True(webhook["responses"]?.AsObject().Count > 1);
+            Assert.True(schemas.ContainsKey("StorefrontPaymentCallbackRequest"));
+            Assert.True(schemas.ContainsKey("StorefrontPaymentWebhookRequest"));
+            Assert.True(schemas.ContainsKey("StorefrontPaymentWebhookAcceptedResponse"));
+
+            var parameters = webhook["parameters"]?.AsArray()
+                ?? throw new InvalidOperationException("Webhook operation does not contain parameters.");
+            Assert.Contains(parameters, parameter =>
+                string.Equals(parameter?["name"]?.GetValue<string>(), "X-Provider-Signature", StringComparison.Ordinal));
+        }
+
+        [Fact]
         public async Task StorefrontSwagger_FinalHardening_HasNoBrokenSchemaReferences()
         {
             var swagger = await this.GetStorefrontSwaggerAsync();
@@ -529,7 +557,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures));
         }
 
-        [Fact(Skip = "Phase 0 pending guardrail for CartCheckoutPaymentProviderMvp: enable after server cart, checkout session, and payment attempt endpoints are added.")]
+        [Fact]
         public async Task StorefrontSwagger_CartCheckoutPaymentProviderEndpointsHaveGeneratorSafeContracts()
         {
             var swagger = await this.GetStorefrontSwaggerAsync();

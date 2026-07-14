@@ -70,6 +70,11 @@ namespace BlazorShop.Application.CommerceNode.Payments
 
     public interface IPaymentAttemptService
     {
+        Task<ServiceResponse<PaymentAttemptDto>> GetAsync(
+            Guid storeId,
+            Guid paymentAttemptId,
+            CancellationToken cancellationToken = default);
+
         Task<ServiceResponse<PaymentAttemptDto>> CreateAsync(
             CreatePaymentAttemptRequest request,
             CancellationToken cancellationToken = default);

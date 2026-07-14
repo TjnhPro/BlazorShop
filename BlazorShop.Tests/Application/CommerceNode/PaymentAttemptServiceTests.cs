@@ -31,6 +31,20 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public async Task GetAsync_ReturnsNamedAttemptState()
+        {
+            using var context = CreateContext();
+            var service = new PaymentAttemptService(context);
+            var created = await service.CreateAsync(CreateAttemptRequest(idempotencyKey: "poll-key"));
+
+            var loaded = await service.GetAsync(created.Payload!.StoreId, created.Payload.Id);
+
+            Assert.True(loaded.Success);
+            Assert.Equal(created.Payload.Id, loaded.Payload!.Id);
+            Assert.Equal(PaymentAttemptStates.Created, loaded.Payload.State);
+        }
+
+        [Fact]
         public async Task TransitionAsync_AllowsForwardState_AndRejectsTerminalTransition()
         {
             using var context = CreateContext();

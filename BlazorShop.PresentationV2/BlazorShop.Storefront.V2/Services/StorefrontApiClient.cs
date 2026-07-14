@@ -754,6 +754,7 @@ namespace BlazorShop.Storefront.Services
 
     public sealed record StorefrontPlaceOrderResponse(
         Guid CheckoutSessionId,
+        Guid PaymentAttemptId,
         Guid OrderId,
         string Reference,
         string OrderStatus,

@@ -107,9 +107,9 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Place-order requires idempotency and returns the original result for duplicate retry. 2026-07-14: `StorefrontCheckoutServiceTests.PlaceOrderAsync_DuplicateIdempotencyKey_ReturnsSameOrder` covers duplicate retry with one order.
 - [x] COD checkout creates order from server cart snapshot and marks the cart ordered. 2026-07-14: `PlaceOrderAsync` creates COD orders from checkout session/cart snapshot, expires the cart, snapshots personalization fields, and contract tests cover `/checkout/place-order`.
 - [x] Payment attempts are persisted before online provider redirect/callback work. 2026-07-14: `PaymentAttempt`/`PaymentProviderEvent` ledger and migration `CommerceNodePaymentAttemptLedger` added; `PaymentAttemptServiceTests` covers idempotent create, state transitions, failure details, and event dedupe.
-- [ ] Provider callback/webhook endpoints are POST-only and idempotent.
-- [~] Storefront Swagger includes generator-safe request/response/error schemas for every new cart/checkout/payment endpoint. 2026-07-14: server cart, checkout preview, and place-order endpoints covered; payment attempt endpoints remain future phases.
-- [x] Storefront Swagger snapshot is refreshed after cart/checkout/payment API cutover. 2026-07-14: refreshed for server cart API Phase 4, checkout preview Phase 6, and place-order Phase 7; later payment phases must refresh again.
+- [x] Provider callback/webhook endpoints are POST-only and idempotent. 2026-07-14: Storefront payment callback/webhook endpoints added as POST routes backed by `PaymentAttemptService.RecordProviderEventAsync`; event ID dedupe is covered by `PaymentAttemptServiceTests`.
+- [x] Storefront Swagger includes generator-safe request/response/error schemas for every new cart/checkout/payment endpoint. 2026-07-14: server cart, checkout preview, place-order, payment attempt polling, provider callback, and webhook endpoints covered by contract tests.
+- [x] Storefront Swagger snapshot is refreshed after cart/checkout/payment API cutover. 2026-07-14: refreshed through Phase 9 payment attempt API/callback/webhook cutover; focused contract suite passed 58/58.
 
 ## Startup Database Migration
 
