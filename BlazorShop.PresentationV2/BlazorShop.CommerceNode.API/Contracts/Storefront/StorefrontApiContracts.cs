@@ -1,0 +1,445 @@
+namespace BlazorShop.CommerceNode.API.Contracts.Storefront
+{
+    using System.ComponentModel.DataAnnotations;
+
+    using BlazorShop.Application.CommerceNode.VariationTemplates;
+
+    public static class StorefrontContractValidation
+    {
+        public const int DefaultPageSize = 24;
+        public const int MaxPageSize = 100;
+        public const int EmailMaxLength = 254;
+        public const int PasswordMinLength = 8;
+
+        public const string SortByPattern =
+            "^(newest|oldest|priceLowToHigh|priceHighToLow|nameAscending|nameDescending|displayOrder|updated)$";
+    }
+
+    public sealed class StorefrontRegisterRequest
+    {
+        [Required]
+        [MaxLength(160)]
+        public string FullName { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress]
+        [MaxLength(StorefrontContractValidation.EmailMaxLength)]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        [MinLength(StorefrontContractValidation.PasswordMinLength)]
+        public string Password { get; set; } = string.Empty;
+
+        [Required]
+        [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+
+    public sealed class StorefrontLoginRequest
+    {
+        [Required]
+        [EmailAddress]
+        [MaxLength(StorefrontContractValidation.EmailMaxLength)]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        public string Password { get; set; } = string.Empty;
+    }
+
+    public sealed class StorefrontChangePasswordRequest
+    {
+        [Required]
+        public string CurrentPassword { get; set; } = string.Empty;
+
+        [Required]
+        [MinLength(StorefrontContractValidation.PasswordMinLength)]
+        public string NewPassword { get; set; } = string.Empty;
+
+        [Required]
+        [Compare(nameof(NewPassword), ErrorMessage = "Passwords do not match.")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+
+    public sealed class StorefrontUpdateProfileRequest
+    {
+        [Required]
+        [MaxLength(160)]
+        public string FullName { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress]
+        [MaxLength(StorefrontContractValidation.EmailMaxLength)]
+        public string Email { get; set; } = string.Empty;
+
+        [Phone]
+        [MaxLength(32)]
+        public string? PhoneNumber { get; set; }
+    }
+
+    public sealed class StorefrontProductCatalogQuery
+    {
+        [Range(1, int.MaxValue)]
+        public int PageNumber { get; init; } = 1;
+
+        [Range(1, StorefrontContractValidation.MaxPageSize)]
+        public int PageSize { get; init; } = StorefrontContractValidation.DefaultPageSize;
+
+        public Guid? CategoryId { get; init; }
+
+        [MaxLength(256)]
+        public string? CategorySlug { get; init; }
+
+        [MaxLength(256)]
+        public string? SearchTerm { get; init; }
+
+        [Range(0, double.MaxValue)]
+        public decimal? MinPrice { get; init; }
+
+        [Range(0, double.MaxValue)]
+        public decimal? MaxPrice { get; init; }
+
+        public bool? InStock { get; init; }
+
+        [RegularExpression(StorefrontContractValidation.SortByPattern)]
+        public string SortBy { get; init; } = StorefrontProductCatalogSortValues.Newest;
+
+        public DateTime? CreatedAfterUtc { get; init; }
+    }
+
+    public static class StorefrontProductCatalogSortValues
+    {
+        public const string Newest = "newest";
+        public const string Oldest = "oldest";
+        public const string PriceLowToHigh = "priceLowToHigh";
+        public const string PriceHighToLow = "priceHighToLow";
+        public const string NameAscending = "nameAscending";
+        public const string NameDescending = "nameDescending";
+        public const string DisplayOrder = "displayOrder";
+        public const string Updated = "updated";
+
+        public static IReadOnlyList<string> All { get; } =
+        [
+            Newest,
+            Oldest,
+            PriceLowToHigh,
+            PriceHighToLow,
+            NameAscending,
+            NameDescending,
+            DisplayOrder,
+            Updated,
+        ];
+    }
+
+    public sealed class StorefrontCheckoutRequest
+    {
+        [Required]
+        [EmailAddress]
+        [MaxLength(StorefrontContractValidation.EmailMaxLength)]
+        public string CustomerEmail { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(160)]
+        public string CustomerName { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(64)]
+        public string PaymentMethodKey { get; set; } = string.Empty;
+
+        [Required]
+        [MinLength(1)]
+        public IReadOnlyList<StorefrontCartItemRequest> Carts { get; set; } = Array.Empty<StorefrontCartItemRequest>();
+
+        [Required]
+        public StorefrontCheckoutShippingAddress ShippingAddress { get; set; } = new();
+    }
+
+    public sealed class StorefrontCheckoutShippingAddress
+    {
+        [Required]
+        [MaxLength(160)]
+        public string FullName { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress]
+        [MaxLength(StorefrontContractValidation.EmailMaxLength)]
+        public string Email { get; set; } = string.Empty;
+
+        [Phone]
+        [MaxLength(32)]
+        public string? Phone { get; set; }
+
+        [Required]
+        [MaxLength(240)]
+        public string Address1 { get; set; } = string.Empty;
+
+        [MaxLength(240)]
+        public string? Address2 { get; set; }
+
+        [Required]
+        [MaxLength(120)]
+        public string City { get; set; } = string.Empty;
+
+        [MaxLength(120)]
+        public string? State { get; set; }
+
+        [Required]
+        [MaxLength(32)]
+        public string PostalCode { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(2, MinimumLength = 2)]
+        public string CountryCode { get; set; } = string.Empty;
+    }
+
+    public sealed class StorefrontCartItemRequest
+    {
+        [Required]
+        public Guid ProductId { get; set; }
+
+        public Guid? ProductVariantId { get; set; }
+
+        public IReadOnlyList<SelectedAttributeDto>? SelectedAttributes { get; set; }
+
+        [Range(1, int.MaxValue)]
+        public int Quantity { get; set; }
+    }
+
+    public sealed class StorefrontOrderItemRequest
+    {
+        [Required]
+        public Guid ProductId { get; set; }
+
+        public Guid? ProductVariantId { get; set; }
+
+        public IReadOnlyList<SelectedAttributeDto>? SelectedAttributes { get; set; }
+
+        [Range(1, int.MaxValue)]
+        public int Quantity { get; set; }
+    }
+
+    public sealed class StorefrontNewsletterSubscribeRequest
+    {
+        [Required]
+        [EmailAddress]
+        [MaxLength(StorefrontContractValidation.EmailMaxLength)]
+        public string Email { get; set; } = string.Empty;
+    }
+
+    public sealed class StorefrontPayPalCaptureRequest
+    {
+        [Required]
+        [MaxLength(512)]
+        public string Token { get; set; } = string.Empty;
+
+        [MaxLength(2048)]
+        public string? ReturnUrl { get; set; }
+    }
+
+    public sealed record StorefrontAuthResponse(
+        bool Success,
+        string Message,
+        string Token);
+
+    public sealed record StorefrontCategoryResponse(
+        Guid Id,
+        Guid? ParentCategoryId,
+        string? Name,
+        string? Slug,
+        string? Image,
+        int DisplayOrder,
+        DateTime? UpdatedAt = null,
+        string? MetaTitle = null,
+        string? MetaDescription = null,
+        string? CanonicalUrl = null,
+        string? OgTitle = null,
+        string? OgDescription = null,
+        string? OgImage = null,
+        string? SeoContent = null,
+        bool RobotsIndex = true,
+        bool RobotsFollow = true);
+
+    public sealed record StorefrontCategoryTreeNodeResponse(
+        Guid Id,
+        Guid? ParentCategoryId,
+        string? Name,
+        string? Slug,
+        string? Image,
+        int DisplayOrder,
+        IReadOnlyList<StorefrontCategoryTreeNodeResponse> Children);
+
+    public sealed record StorefrontCategoryPageResponse(
+        StorefrontCategoryResponse Category,
+        IReadOnlyList<StorefrontCatalogProductResponse> Products);
+
+    public sealed record StorefrontCatalogProductResponse(
+        Guid Id,
+        string? Slug,
+        string? Name,
+        string? Description,
+        string? Sku,
+        string? ShortDescription,
+        decimal Price,
+        decimal? ComparePrice,
+        string? Image,
+        Guid? PrimaryMediaPublicId,
+        bool HasPrimaryMedia,
+        DateTime CreatedOn,
+        DateTime UpdatedAt,
+        int DisplayOrder,
+        bool InStock,
+        DateTime? PublishedOn,
+        Guid? CategoryId,
+        string? CategoryName,
+        string? CategorySlug,
+        bool HasVariants,
+        string ProductType,
+        Guid? VariationTemplateId);
+
+    public sealed record StorefrontProductResponse(
+        Guid Id,
+        string? Slug,
+        string? Name,
+        string? Description,
+        string? Sku,
+        string? ShortDescription,
+        string? FullDescription,
+        decimal Price,
+        decimal? ComparePrice,
+        string? Image,
+        int Quantity,
+        int DisplayOrder,
+        DateTime? PublishedOn,
+        string ProductType,
+        Guid? VariationTemplateId,
+        Guid? CategoryId,
+        string? MetaTitle,
+        string? MetaDescription,
+        string? CanonicalUrl,
+        string? OgTitle,
+        string? OgDescription,
+        string? OgImage,
+        string? SeoContent,
+        bool RobotsIndex,
+        bool RobotsFollow,
+        StorefrontCategoryResponse? Category,
+        StorefrontVariationTemplateDto? VariationTemplate,
+        DateTime CreatedOn,
+        DateTime UpdatedAt,
+        IReadOnlyList<StorefrontProductVariantResponse> Variants);
+
+    public sealed record StorefrontProductVariantResponse(
+        Guid Id,
+        Guid ProductId,
+        string? Sku,
+        IReadOnlyList<StorefrontProductVariantAttributeResponse> Attributes,
+        string? AttributeSignature,
+        string? DisplayName,
+        int SizeScale,
+        string SizeValue,
+        decimal? Price,
+        decimal EffectivePrice,
+        int Stock,
+        string? Color,
+        bool IsDefault);
+
+    public sealed record StorefrontProductVariantAttributeResponse(
+        string Name,
+        string Value);
+
+    public sealed record StorefrontPagedResponse<TItem>(
+        IReadOnlyList<TItem> Items,
+        int PageNumber,
+        int PageSize,
+        int TotalCount,
+        int TotalPages);
+
+    public sealed record StorefrontCheckoutResultResponse(
+        Guid OrderId,
+        string Reference,
+        string OrderStatus,
+        string PaymentStatus,
+        string PaymentMethodKey,
+        DateTime CreatedOn);
+
+    public sealed record StorefrontOrderResponse(
+        Guid Id,
+        string Reference,
+        string Status,
+        string OrderStatus,
+        string PaymentStatus,
+        string PaymentMethodKey,
+        DateTime? PaymentAt,
+        string? CurrencyCode,
+        decimal TotalAmount,
+        DateTime CreatedOn,
+        string ShippingStatus,
+        string? ShippingCarrier,
+        string? TrackingNumber,
+        string? TrackingUrl,
+        DateTime? ShippedOn,
+        DateTime? DeliveredOn,
+        string? CustomerName,
+        string? CustomerEmail,
+        StorefrontShippingAddressResponse ShippingAddress,
+        DateTime? CompletedAt,
+        DateTime? CancelledAt,
+        IReadOnlyList<StorefrontOrderLineResponse> Lines);
+
+    public sealed record StorefrontShippingAddressResponse(
+        string? FullName,
+        string? Email,
+        string? Phone,
+        string? Address1,
+        string? Address2,
+        string? City,
+        string? State,
+        string? PostalCode,
+        string? CountryCode);
+
+    public sealed record StorefrontOrderLineResponse(
+        Guid ProductId,
+        string? ProductName,
+        string? Sku,
+        string? Image,
+        Guid? ProductVariantId,
+        IReadOnlyList<StorefrontProductVariantAttributeResponse> VariantAttributes,
+        int Quantity,
+        decimal UnitPrice,
+        decimal LineTotal);
+
+    public sealed record StorefrontOrderItemHistoryResponse(
+        string? ProductName,
+        int QuantityOrdered,
+        string? CustomerName,
+        string? CustomerEmail,
+        decimal AmountPayed,
+        DateTime DatePurchased,
+        string? TrackingNumber,
+        string? TrackingUrl,
+        string? ShippingStatus);
+
+    public sealed record StorefrontPaymentMethodResponse(
+        Guid Id,
+        string Key,
+        string Name,
+        string? Description);
+
+    public sealed record StorefrontPayPalCaptureResponse(
+        bool Captured,
+        string RedirectPath,
+        string Message);
+
+    public sealed record StorefrontProductRecommendationResponse(
+        Guid Id,
+        string? Name,
+        string? Image,
+        decimal Price,
+        string? CategoryName);
+
+    public sealed record StorefrontMaintenanceResponse(
+        Guid PublicId,
+        string StoreKey,
+        string Name,
+        bool MaintenanceModeEnabled,
+        string? MaintenanceMessage);
+}
