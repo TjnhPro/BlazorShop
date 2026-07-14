@@ -3,6 +3,7 @@ using BlazorShop.CommerceNode.API.Deployment;
 using BlazorShop.CommerceNode.API.Endpoints;
 using BlazorShop.CommerceNode.API.Middleware;
 using BlazorShop.CommerceNode.API.ProductMedia;
+using BlazorShop.CommerceNode.API.Swagger;
 using BlazorShop.CommerceNode.API.Tasks;
 using BlazorShop.CommerceNode.API.Workers;
 using BlazorShop.Application.CommerceNode.Media;
@@ -48,7 +49,7 @@ builder.Services.AddHostedService<CommerceTaskWorker>();
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddCommerceNodeSwagger();
 
 var app = builder.Build();
 
@@ -59,8 +60,7 @@ if (ShouldMigrateDatabase(app))
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseCommerceNodeSwaggerUi();
 }
 
 app.UseHttpsRedirection();

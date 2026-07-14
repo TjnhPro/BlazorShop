@@ -314,21 +314,21 @@ X-Store-Key header is required for legacy internal API.
 
 ### Phase 2 - Swagger Document Split
 
-- [ ] Replace default `AddSwaggerGen()` with three Swagger docs:
+- [x] Replace default `AddSwaggerGen()` with three Swagger docs:
   - `commerce-admin`
   - `storefront`
   - `legacy-internal`
-- [ ] Configure Swagger UI with three endpoints:
+- [x] Configure Swagger UI with three endpoints:
   - `/swagger/commerce-admin/swagger.json`
   - `/swagger/storefront/swagger.json`
   - `/swagger/legacy-internal/swagger.json`
-- [ ] Add document inclusion logic by route prefix.
-- [ ] Add operation filter for `X-Node-Key` and `X-Node-Secret` on Commerce Admin document.
-- [ ] Add operation filter for required `storeKey` query on Commerce Admin store-scoped endpoints.
-- [ ] Add operation filter for `X-Store-Key` on Legacy Internal document.
-- [ ] Ensure Storefront document does not show node credential headers or `X-Store-Key`.
-- [ ] Build CommerceNode API.
-- [ ] Commit Swagger phase.
+- [x] Add document inclusion logic by route prefix.
+- [x] Add operation filter for `X-Node-Key` and `X-Node-Secret` on Commerce Admin document.
+- [x] Add operation filter for required `storeKey` query on Commerce Admin store-scoped endpoints.
+- [x] Add operation filter for `X-Store-Key` on Legacy Internal document.
+- [x] Ensure Storefront document does not show node credential headers or `X-Store-Key`.
+- [x] Build CommerceNode API.
+- [x] Commit Swagger phase.
 
 ### Phase 3 - Store Scope Resolver
 
