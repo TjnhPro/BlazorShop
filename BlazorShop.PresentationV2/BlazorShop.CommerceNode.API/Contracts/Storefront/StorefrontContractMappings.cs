@@ -2,6 +2,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
 {
     using System.IdentityModel.Tokens.Jwt;
 
+    using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Category;
@@ -148,6 +149,97 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 SelectedAttributes = request.SelectedAttributes,
                 Quantity = request.Quantity,
             };
+        }
+
+        public static StorefrontCartAddLineRequest ToApplicationRequest(
+            this StorefrontCartLineCreateRequest request,
+            Guid storeId,
+            string cartToken)
+        {
+            return new StorefrontCartAddLineRequest(
+                storeId,
+                cartToken,
+                request.ProductId,
+                request.ProductVariantId,
+                request.SelectedAttributes,
+                request.PersonalizationHash,
+                request.PersonalizationJson,
+                request.ArtworkAssetId,
+                request.ArtworkVersion,
+                request.FulfillmentProviderKey,
+                request.Quantity,
+                request.CurrencyCode);
+        }
+
+        public static StorefrontCartUpdateLineRequest ToApplicationRequest(
+            this StorefrontCartLineUpdateRequest request,
+            Guid storeId,
+            string cartToken,
+            Guid lineId)
+        {
+            return new StorefrontCartUpdateLineRequest(
+                storeId,
+                cartToken,
+                lineId,
+                request.Quantity);
+        }
+
+        public static StorefrontCartSessionResponse ToSessionContract(this StorefrontCartResult result, string? fallbackCartToken = null)
+        {
+            return new StorefrontCartSessionResponse(
+                result.Cart.PublicId,
+                result.Token ?? fallbackCartToken ?? string.Empty,
+                result.Cart.State,
+                result.Cart.Version,
+                result.Cart.ExpiresAtUtc);
+        }
+
+        public static StorefrontCartResponse ToStorefrontContract(this StorefrontCartSessionDto cart)
+        {
+            return new StorefrontCartResponse(
+                cart.PublicId,
+                cart.State,
+                cart.Version,
+                cart.LastActivityAtUtc,
+                cart.ExpiresAtUtc,
+                cart.Lines.Select(line => line.ToStorefrontContract()).ToArray());
+        }
+
+        public static StorefrontCartLineResponse ToStorefrontContract(this StorefrontCartLineDto line)
+        {
+            return new StorefrontCartLineResponse(
+                line.Id,
+                line.ProductId,
+                line.ProductVariantId,
+                line.SelectedAttributesJson,
+                line.PersonalizationHash,
+                line.PersonalizationJson,
+                line.ArtworkAssetId,
+                line.ArtworkVersion,
+                line.FulfillmentProviderKey,
+                line.Quantity,
+                line.UnitPriceSnapshot,
+                line.CurrencyCodeSnapshot);
+        }
+
+        public static StorefrontCartValidationResponse ToStorefrontContract(this StorefrontCartValidationResult validation)
+        {
+            return new StorefrontCartValidationResponse(
+                validation.CartPublicId,
+                validation.Version,
+                validation.IsValid,
+                validation.TotalAmount,
+                validation.CurrencyCode,
+                validation.Issues.Select(issue => issue.ToStorefrontContract()).ToArray());
+        }
+
+        public static StorefrontCartValidationIssueResponse ToStorefrontContract(this StorefrontCartValidationIssueDto issue)
+        {
+            return new StorefrontCartValidationIssueResponse(
+                issue.LineId,
+                issue.ProductId,
+                issue.Code,
+                issue.Message);
         }
 
         public static CreateOrderItem ToCreateOrderItem(this StorefrontOrderItemRequest request)

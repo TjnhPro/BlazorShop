@@ -5,8 +5,14 @@ POST /api/storefront/stores/{storeKey}/auth/logout
 POST /api/storefront/stores/{storeKey}/auth/refresh-token
 POST /api/storefront/stores/{storeKey}/auth/register
 POST /api/storefront/stores/{storeKey}/auth/update-profile
+GET /api/storefront/stores/{storeKey}/cart
 POST /api/storefront/stores/{storeKey}/cart/checkout
+POST /api/storefront/stores/{storeKey}/cart/lines
+DELETE /api/storefront/stores/{storeKey}/cart/lines/{lineId}
+PUT /api/storefront/stores/{storeKey}/cart/lines/{lineId}
 POST /api/storefront/stores/{storeKey}/cart/save-checkout
+POST /api/storefront/stores/{storeKey}/cart/session
+POST /api/storefront/stores/{storeKey}/cart/validate
 GET /api/storefront/stores/{storeKey}/catalog/categories
 GET /api/storefront/stores/{storeKey}/catalog/categories/slug/{slug}
 GET /api/storefront/stores/{storeKey}/catalog/categories/tree

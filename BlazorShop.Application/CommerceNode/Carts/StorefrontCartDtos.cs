@@ -1,6 +1,6 @@
 namespace BlazorShop.Application.CommerceNode.Carts
 {
-    using BlazorShop.Application.DTOs.Product.ProductVariant;
+    using BlazorShop.Application.CommerceNode.VariationTemplates;
 
     public sealed record StorefrontCartCreateOrResumeRequest(
         Guid StoreId,
@@ -18,7 +18,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
         string Token,
         Guid ProductId,
         Guid? ProductVariantId = null,
-        IReadOnlyList<ProductVariantAttributeDto>? SelectedAttributes = null,
+        IReadOnlyList<SelectedAttributeDto>? SelectedAttributes = null,
         string? PersonalizationHash = null,
         string? PersonalizationJson = null,
         Guid? ArtworkAssetId = null,

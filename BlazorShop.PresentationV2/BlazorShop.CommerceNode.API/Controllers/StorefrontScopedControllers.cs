@@ -4,6 +4,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     using ApplicationStorefrontCheckoutResult = BlazorShop.Application.DTOs.Payment.StorefrontCheckoutResult;
 
+    using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
@@ -341,11 +342,151 @@ namespace BlazorShop.CommerceNode.API.Controllers
     [Authorize]
     public sealed class StorefrontScopedCartController : StorefrontApiControllerBase
     {
-        private readonly ICartService cartService;
+        private const string CartTokenHeaderName = "X-Cart-Token";
 
-        public StorefrontScopedCartController(ICartService cartService)
+        private readonly ICartService cartService;
+        private readonly IStorefrontCartService storefrontCartService;
+        private readonly ICommerceStoreContext storeContext;
+
+        public StorefrontScopedCartController(
+            ICartService cartService,
+            IStorefrontCartService storefrontCartService,
+            ICommerceStoreContext storeContext)
         {
             this.cartService = cartService;
+            this.storefrontCartService = storefrontCartService;
+            this.storeContext = storeContext;
+        }
+
+        [HttpPost("session")]
+        [AllowAnonymous]
+        public async Task<IActionResult> CreateSession(
+            [FromBody] StorefrontCreateCartSessionRequest request,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.storefrontCartService.CreateOrResumeAsync(
+                new StorefrontCartCreateOrResumeRequest(storeId.Value, request.CartToken),
+                cancellationToken);
+            return this.FromServiceResponse(
+                result,
+                payload => payload?.ToSessionContract(request.CartToken));
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> Get(
+            [FromHeader(Name = CartTokenHeaderName)] string cartToken,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.storefrontCartService.GetAsync(storeId.Value, cartToken, cancellationToken);
+            return this.FromServiceResponse(
+                result,
+                payload => payload?.ToStorefrontContract());
+        }
+
+        [HttpPost("lines")]
+        [AllowAnonymous]
+        public async Task<IActionResult> AddLine(
+            [FromHeader(Name = CartTokenHeaderName)] string cartToken,
+            [FromBody] StorefrontCartLineCreateRequest request,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.storefrontCartService.AddLineAsync(
+                request.ToApplicationRequest(storeId.Value, cartToken),
+                cancellationToken);
+            return this.FromServiceResponse(
+                result,
+                payload => payload?.ToStorefrontContract());
+        }
+
+        [HttpPut("lines/{lineId:guid}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> UpdateLine(
+            Guid lineId,
+            [FromHeader(Name = CartTokenHeaderName)] string cartToken,
+            [FromBody] StorefrontCartLineUpdateRequest request,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.storefrontCartService.UpdateLineAsync(
+                request.ToApplicationRequest(storeId.Value, cartToken, lineId),
+                cancellationToken);
+            return this.FromServiceResponse(
+                result,
+                payload => payload?.ToStorefrontContract());
+        }
+
+        [HttpDelete("lines/{lineId:guid}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RemoveLine(
+            Guid lineId,
+            [FromHeader(Name = CartTokenHeaderName)] string cartToken,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.storefrontCartService.RemoveLineAsync(
+                storeId.Value,
+                cartToken,
+                lineId,
+                cancellationToken);
+            return this.FromServiceResponse(
+                result,
+                payload => payload?.ToStorefrontContract());
+        }
+
+        [HttpPost("validate")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Validate(
+            [FromHeader(Name = CartTokenHeaderName)] string cartToken,
+            [FromBody] StorefrontCartValidateRequest request,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.storefrontCartService.ValidateAsync(storeId.Value, cartToken, cancellationToken);
+            if (result.Success
+                && result.Payload is not null
+                && request.ExpectedVersion.HasValue
+                && request.ExpectedVersion.Value != result.Payload.Version)
+            {
+                return this.Error(StatusCodes.Status409Conflict, "cart.version_stale", "Cart version is stale.");
+            }
+
+            return this.FromServiceResponse(
+                result,
+                payload => payload?.ToStorefrontContract());
         }
 
         [HttpPost("checkout")]
@@ -379,6 +520,12 @@ namespace BlazorShop.CommerceNode.API.Controllers
         private string? GetCurrentCustomerId()
         {
             return this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
+
+        private async Task<Guid?> ResolveStoreIdAsync(CancellationToken cancellationToken)
+        {
+            var result = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
+            return result.Success ? result.Payload : null;
         }
     }
 

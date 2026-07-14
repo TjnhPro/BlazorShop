@@ -35,7 +35,7 @@
                 "$ref": "#/components/schemas/StorefrontRegisterRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontRegisterRequest"
               }
@@ -116,7 +116,7 @@
                 "$ref": "#/components/schemas/StorefrontLoginRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontLoginRequest"
               }
@@ -295,7 +295,7 @@
         "tags": [
           "StorefrontScopedAuth"
         ],
-        "summary": "Change the current customer\u0027s password.",
+        "summary": "Change the current customer's password.",
         "operationId": "StorefrontAuth_ChangePassword",
         "parameters": [
           {
@@ -319,7 +319,7 @@
                 "$ref": "#/components/schemas/StorefrontChangePasswordRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontChangePasswordRequest"
               }
@@ -480,7 +480,7 @@
                 "$ref": "#/components/schemas/StorefrontUpdateProfileRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontUpdateProfileRequest"
               }
@@ -537,6 +537,563 @@
         ]
       }
     },
+    "/api/storefront/stores/{storeKey}/cart/session": {
+      "post": {
+        "tags": [
+          "StorefrontScopedCart"
+        ],
+        "summary": "Create or resume a server cart session.",
+        "operationId": "StorefrontCart_CreateSession",
+        "parameters": [
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCreateCartSessionRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCreateCartSessionRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCreateCartSessionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontCartSessionResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/storefront/stores/{storeKey}/cart": {
+      "get": {
+        "tags": [
+          "StorefrontScopedCart"
+        ],
+        "summary": "Get the current server cart.",
+        "operationId": "StorefrontCart_Get",
+        "parameters": [
+          {
+            "name": "X-Cart-Token",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontCartResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/storefront/stores/{storeKey}/cart/lines": {
+      "post": {
+        "tags": [
+          "StorefrontScopedCart"
+        ],
+        "summary": "Add a line to the server cart.",
+        "operationId": "StorefrontCart_AddLine",
+        "parameters": [
+          {
+            "name": "X-Cart-Token",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCartLineCreateRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCartLineCreateRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCartLineCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontCartResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/storefront/stores/{storeKey}/cart/lines/{lineId}": {
+      "put": {
+        "tags": [
+          "StorefrontScopedCart"
+        ],
+        "summary": "Update a server cart line.",
+        "operationId": "StorefrontCart_UpdateLine",
+        "parameters": [
+          {
+            "name": "lineId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Cart-Token",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCartLineUpdateRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCartLineUpdateRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCartLineUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontCartResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "StorefrontScopedCart"
+        ],
+        "summary": "Remove a server cart line.",
+        "operationId": "StorefrontCart_RemoveLine",
+        "parameters": [
+          {
+            "name": "lineId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Cart-Token",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontCartResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/storefront/stores/{storeKey}/cart/validate": {
+      "post": {
+        "tags": [
+          "StorefrontScopedCart"
+        ],
+        "summary": "Validate and reprice the server cart.",
+        "operationId": "StorefrontCart_Validate",
+        "parameters": [
+          {
+            "name": "X-Cart-Token",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCartValidateRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCartValidateRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCartValidateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontCartValidationResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/storefront/stores/{storeKey}/cart/checkout": {
       "post": {
         "tags": [
@@ -566,7 +1123,7 @@
                 "$ref": "#/components/schemas/StorefrontCheckoutRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCheckoutRequest"
               }
@@ -633,7 +1190,7 @@
         "tags": [
           "StorefrontScopedCart"
         ],
-        "summary": "Save the current customer\u0027s checkout history.",
+        "summary": "Save the current customer's checkout history.",
         "operationId": "StorefrontCart_SaveCheckout",
         "parameters": [
           {
@@ -663,7 +1220,7 @@
                 }
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "type": "array",
                 "items": {
@@ -1321,7 +1878,7 @@
                 "$ref": "#/components/schemas/StorefrontNewsletterSubscribeRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontNewsletterSubscribeRequest"
               }
@@ -1408,7 +1965,7 @@
                 }
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "type": "array",
                 "items": {
@@ -1739,7 +2296,7 @@
                 "$ref": "#/components/schemas/StorefrontPayPalCaptureRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontPayPalCaptureRequest"
               }
@@ -2418,6 +2975,320 @@
         },
         "additionalProperties": false
       },
+      "StorefrontCartLineCreateRequest": {
+        "required": [
+          "productId"
+        ],
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "productVariantId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "selectedAttributes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SelectedAttributeDto"
+            },
+            "nullable": true
+          },
+          "personalizationHash": {
+            "maxLength": 128,
+            "type": "string",
+            "nullable": true
+          },
+          "personalizationJson": {
+            "maxLength": 8192,
+            "type": "string",
+            "nullable": true
+          },
+          "artworkAssetId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "artworkVersion": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "fulfillmentProviderKey": {
+            "maxLength": 64,
+            "type": "string",
+            "nullable": true
+          },
+          "quantity": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "currencyCode": {
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCartLineResponse": {
+        "type": "object",
+        "properties": {
+          "lineId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "productId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "productVariantId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "selectedAttributesJson": {
+            "type": "string",
+            "nullable": true
+          },
+          "personalizationHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "personalizationJson": {
+            "type": "string",
+            "nullable": true
+          },
+          "artworkAssetId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "artworkVersion": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "fulfillmentProviderKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unitPriceSnapshot": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "currencyCodeSnapshot": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCartLineUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCartResponse": {
+        "required": [
+          "lines"
+        ],
+        "type": "object",
+        "properties": {
+          "cartId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lastActivityAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontCartLineResponse"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCartResponseCommerceNodeApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/StorefrontCartResponse"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCartSessionResponse": {
+        "type": "object",
+        "properties": {
+          "cartId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cartToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "expiresAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCartSessionResponseCommerceNodeApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/StorefrontCartSessionResponse"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCartValidateRequest": {
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCartValidationIssueResponse": {
+        "type": "object",
+        "properties": {
+          "lineId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "productId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCartValidationResponse": {
+        "required": [
+          "issues"
+        ],
+        "type": "object",
+        "properties": {
+          "cartId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isValid": {
+            "type": "boolean"
+          },
+          "totalAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "currencyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "issues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontCartValidationIssueResponse"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCartValidationResponseCommerceNodeApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/StorefrontCartValidationResponse"
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontCatalogProductResponse": {
         "type": "object",
         "properties": {
@@ -2946,6 +3817,17 @@
             "maxLength": 2,
             "minLength": 2,
             "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCreateCartSessionRequest": {
+        "type": "object",
+        "properties": {
+          "cartToken": {
+            "maxLength": 512,
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

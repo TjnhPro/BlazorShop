@@ -1,8 +1,8 @@
 namespace BlazorShop.Tests.Application.CommerceNode
 {
     using BlazorShop.Application.CommerceNode.Carts;
+    using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs;
-    using BlazorShop.Application.DTOs.Product.ProductVariant;
     using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities;
@@ -162,7 +162,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var cart = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
             var selectedAttributes = new[]
             {
-                new ProductVariantAttributeDto { Name = " Color ", Value = " Red " },
+                new SelectedAttributeDto(" Color ", " Red "),
             };
 
             var first = await service.AddLineAsync(new StorefrontCartAddLineRequest(
@@ -199,7 +199,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 .ReturnsAsync(product);
             var cart = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
             var selectedAttributes = Enumerable.Range(1, 6)
-                .Select(index => new ProductVariantAttributeDto { Name = $"Option {index}", Value = "Red" })
+                .Select(index => new SelectedAttributeDto($"Option {index}", "Red"))
                 .ToArray();
 
             var result = await service.AddLineAsync(new StorefrontCartAddLineRequest(

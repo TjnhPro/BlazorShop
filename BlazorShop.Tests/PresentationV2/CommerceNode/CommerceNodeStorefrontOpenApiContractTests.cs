@@ -52,6 +52,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             ("StorefrontCategoryPageResponse", "products"),
             ("StorefrontProductResponse", "variants"),
             ("StorefrontProductVariantResponse", "attributes"),
+            ("StorefrontCartResponse", "lines"),
+            ("StorefrontCartValidationResponse", "issues"),
             ("StorefrontOrderResponse", "lines"),
             ("StorefrontOrderLineResponse", "variantAttributes"),
             ("GetPublicCatalogSitemap", "categories"),
@@ -399,9 +401,56 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
 
             Assert.Contains("export class StorefrontApiClient", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCatalog_QueryProducts", client, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCart_CreateSession", client, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCart_AddLine", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontPayments_CapturePayPal", client, StringComparison.Ordinal);
             Assert.DoesNotContain("any /* missing operationId */", client, StringComparison.Ordinal);
             Assert.DoesNotContain("Promise<any>", client, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_ServerCartEndpointsHaveGeneratorSafeContracts()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var operations = GetOperations(swagger)
+                .ToDictionary(
+                    operation => operation.Value["operationId"]?.GetValue<string>() ?? string.Empty,
+                    operation => operation.Value,
+                    StringComparer.Ordinal);
+
+            var expectedOperationIds = new[]
+            {
+                "StorefrontCart_CreateSession",
+                "StorefrontCart_Get",
+                "StorefrontCart_AddLine",
+                "StorefrontCart_UpdateLine",
+                "StorefrontCart_RemoveLine",
+                "StorefrontCart_Validate",
+            };
+
+            foreach (var operationId in expectedOperationIds)
+            {
+                Assert.True(operations.TryGetValue(operationId, out var operation), $"{operationId} was not found.");
+                Assert.False(string.IsNullOrWhiteSpace(operation!["summary"]?.GetValue<string>()));
+                Assert.True(operation["responses"]?.AsObject().Count > 1, $"{operationId} must declare success and error responses.");
+            }
+
+            AssertRequiredRequestBody(operations["StorefrontCart_CreateSession"]);
+            AssertRequiredRequestBody(operations["StorefrontCart_AddLine"]);
+            AssertRequiredRequestBody(operations["StorefrontCart_UpdateLine"]);
+            AssertRequiredRequestBody(operations["StorefrontCart_Validate"]);
+
+            var addLineSchema = schemas["StorefrontCartLineCreateRequest"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCartLineCreateRequest schema was not found.");
+            Assert.Equal(1, addLineSchema["properties"]?["quantity"]?["minimum"]?.GetValue<int>());
+
+            var updateLineSchema = schemas["StorefrontCartLineUpdateRequest"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCartLineUpdateRequest schema was not found.");
+            Assert.Equal(1, updateLineSchema["properties"]?["quantity"]?["minimum"]?.GetValue<int>());
+
+            Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(operations["StorefrontCart_Get"]));
+            Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(operations["StorefrontCart_AddLine"]));
         }
 
         [Fact]

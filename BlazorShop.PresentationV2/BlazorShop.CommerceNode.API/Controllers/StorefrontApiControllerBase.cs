@@ -53,6 +53,23 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 NormalizeMessage(response.Message));
         }
 
+        protected IActionResult FromServiceResponse<TSource, TData>(
+            ServiceResponse<TSource> response,
+            Func<TSource?, TData?> mapPayload)
+        {
+            if (response.Success)
+            {
+                return this.Ok(CommerceNodeApiResponse<TData>.Succeeded(
+                    mapPayload(response.Payload),
+                    NormalizeMessage(response.Message)));
+            }
+
+            return this.Error(
+                ToStatusCode(response.ResponseType),
+                ToErrorCode(response.ResponseType),
+                NormalizeMessage(response.Message));
+        }
+
         protected IActionResult Failure<TData>(ServiceResponseType responseType, string message, TData? data = default)
         {
             return this.Error(ToStatusCode(responseType), ToErrorCode(responseType), message);

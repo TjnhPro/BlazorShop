@@ -287,6 +287,36 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "Create a Storefront checkout order.",
                         typeof(CommerceNodeApiResponse<StorefrontCheckoutResultResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedCart", "CreateSession")] = new(
+                        "StorefrontCart_CreateSession",
+                        "Create or resume a server cart session.",
+                        typeof(CommerceNodeApiResponse<StorefrontCartSessionResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedCart", "Get")] = new(
+                        "StorefrontCart_Get",
+                        "Get the current server cart.",
+                        typeof(CommerceNodeApiResponse<StorefrontCartResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedCart", "AddLine")] = new(
+                        "StorefrontCart_AddLine",
+                        "Add a line to the server cart.",
+                        typeof(CommerceNodeApiResponse<StorefrontCartResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedCart", "UpdateLine")] = new(
+                        "StorefrontCart_UpdateLine",
+                        "Update a server cart line.",
+                        typeof(CommerceNodeApiResponse<StorefrontCartResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedCart", "RemoveLine")] = new(
+                        "StorefrontCart_RemoveLine",
+                        "Remove a server cart line.",
+                        typeof(CommerceNodeApiResponse<StorefrontCartResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedCart", "Validate")] = new(
+                        "StorefrontCart_Validate",
+                        "Validate and reprice the server cart.",
+                        typeof(CommerceNodeApiResponse<StorefrontCartValidationResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedCart", "SaveCheckout")] = new(
                         "StorefrontCart_SaveCheckout",
                         "Save the current customer's checkout history.",
@@ -596,6 +626,8 @@ namespace BlazorShop.CommerceNode.API.Swagger
                     [typeof(StorefrontCategoryPageResponse)] = ["products"],
                     [typeof(StorefrontProductResponse)] = ["variants"],
                     [typeof(StorefrontProductVariantResponse)] = ["attributes"],
+                    [typeof(StorefrontCartResponse)] = ["lines"],
+                    [typeof(StorefrontCartValidationResponse)] = ["issues"],
                     [typeof(StorefrontOrderResponse)] = ["lines"],
                     [typeof(StorefrontOrderLineResponse)] = ["variantAttributes"],
                     [typeof(GetPublicCatalogSitemap)] = ["categories", "products", "pages"],

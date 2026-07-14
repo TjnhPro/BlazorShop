@@ -2,8 +2,8 @@ namespace BlazorShop.Application.CommerceNode.Carts
 {
     using System.Text.Json;
 
+    using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs;
-    using BlazorShop.Application.DTOs.Product.ProductVariant;
     using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities;
@@ -264,7 +264,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
             Guid productId,
             Guid? productVariantId,
             int quantity,
-            IReadOnlyList<ProductVariantAttributeDto>? selectedAttributes,
+            IReadOnlyList<SelectedAttributeDto>? selectedAttributes,
             CancellationToken cancellationToken,
             string? selectedAttributesJson = null)
         {
@@ -351,14 +351,12 @@ namespace BlazorShop.Application.CommerceNode.Carts
 
         private static SelectedAttributesResolution NormalizeSelectedAttributes(
             Product product,
-            IReadOnlyList<ProductVariantAttributeDto>? selectedAttributes)
+            IReadOnlyList<SelectedAttributeDto>? selectedAttributes)
         {
             var attributes = (selectedAttributes ?? [])
-                .Select(attribute => new ProductVariantAttributeDto
-                {
-                    Name = attribute.Name?.Trim() ?? string.Empty,
-                    Value = attribute.Value?.Trim() ?? string.Empty,
-                })
+                .Select(attribute => new SelectedAttributeDto(
+                    attribute.Name?.Trim() ?? string.Empty,
+                    attribute.Value?.Trim() ?? string.Empty))
                 .Where(attribute => !string.IsNullOrWhiteSpace(attribute.Name)
                     || !string.IsNullOrWhiteSpace(attribute.Value))
                 .ToArray();
@@ -417,7 +415,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
 
         private static SelectedAttributesResolution ValidateTemplateAttributes(
             Product product,
-            IReadOnlyList<ProductVariantAttributeDto> attributes)
+            IReadOnlyList<SelectedAttributeDto> attributes)
         {
             var template = product.VariationTemplate;
             if (template is null)
