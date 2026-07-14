@@ -38,18 +38,19 @@ Commerce Node owns node-local ecommerce runtime behavior.
 
 Use:
 
-- `api/commerce/*` for Control Plane/API admin-control calls.
-- `api/internal/*` for Storefront V2 private/internal calls.
+- `api/commerce/*` for Control Plane/API admin-control calls. Store-scoped Commerce Admin endpoints must use query `storeKey`; do not use `X-Store-Key`.
+- `api/storefront/stores/{storeKey}/*` for Storefront V2 calls. Store scope must come from route value `{storeKey}`; do not use `X-Store-Key`.
+- `api/internal/*` only for temporary legacy Storefront compatibility. Do not add new features there.
 - `CommerceNodeDbContext` for ecommerce node data.
 - Existing `CommerceTaskWorker` and `commerce_task` for asynchronous node-local work unless a separate worker has been explicitly approved.
 
 ## Storefront Rule
 
-Storefront V2 is store-scoped and calls Commerce Node internal APIs.
+Storefront V2 is store-scoped and calls Commerce Node Storefront APIs at `api/storefront/stores/{storeKey}/*`.
 
 Do not make Storefront V2 call Control Plane. Do not give Storefront V2 node credentials.
 
-Public Storefront media is also store-scoped. Do not design product media as a global file endpoint; resolve the current store from host/domain in production or `X-Store-Key` in direct local QA.
+Public Storefront media is also store-scoped. Do not design product media as a global file endpoint. Public media URLs stay clean and are scoped by Nginx/domain/rewrite behavior; Commerce Admin media debug endpoints use `storeKey` query.
 
 ## Database Rule
 

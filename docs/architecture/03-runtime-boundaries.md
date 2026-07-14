@@ -54,7 +54,7 @@ Examples:
 
 ## Commerce Node Boundary
 
-Commerce Node is the ecommerce runtime boundary. It owns node-local commerce data, node-local admin/control endpoints, internal Storefront APIs, and local deployment tasks.
+Commerce Node is the ecommerce runtime boundary. It owns node-local commerce data, node-local admin/control endpoints, Storefront APIs, legacy internal Storefront compatibility APIs, and local deployment tasks.
 
 Commerce Node API also owns startup EF Core migration for `CommerceNodeDbContext` only. It must not migrate `ControlPlaneDbContext` or legacy `AppDbContext`.
 
@@ -62,6 +62,7 @@ Main route groups:
 
 ```text
 api/commerce/*
+api/storefront/stores/{storeKey}/*
 api/internal/*
 ```
 
@@ -76,7 +77,7 @@ Security:
 - Node key.
 - Node secret.
 - Allowed IP behavior where configured.
-- Store scope where applicable.
+- Store scope through required query `storeKey` for store-scoped Commerce Admin endpoints.
 
 Responsibilities:
 
@@ -88,7 +89,7 @@ Responsibilities:
 - Inventory, order admin, metrics, SEO, audit, media.
 - Product media import is asynchronous through `commerce_task` and the existing `CommerceTaskWorker` in MVP.
 
-### `api/internal/*`
+### `api/storefront/stores/{storeKey}/*`
 
 Caller:
 
@@ -96,9 +97,10 @@ Caller:
 
 Security:
 
-- Store key scope.
+- Store scope comes from the route value `{storeKey}`.
 - Storefront/customer session behavior where needed.
-- Intended as a private/internal path, not public Control Plane UI traffic.
+- No node key or node secret.
+- No `X-Store-Key` header.
 
 Responsibilities:
 
@@ -112,9 +114,25 @@ Responsibilities:
 - SEO settings and redirect resolution.
 - Recommendations.
 
+### `api/internal/*`
+
+Status:
+
+- Legacy compatibility only.
+
+Security:
+
+- Uses `X-Store-Key` while compatibility remains.
+
+Rules:
+
+- Do not add new features.
+- Only fix blocker bugs if the new Storefront route migration is not complete.
+- Remove after Storefront V2 moves to `api/storefront/stores/{storeKey}/*` and QA passes.
+
 ## Storefront V2 Boundary
 
-`BlazorShop.Storefront.V2` is a server-side storefront. It renders public/store pages and calls Commerce Node internal APIs.
+`BlazorShop.Storefront.V2` is a server-side storefront. It renders public/store pages and calls Commerce Node Storefront APIs.
 
 Responsibilities:
 
@@ -123,7 +141,7 @@ Responsibilities:
 - Sitemap and robots generation.
 - SEO composition and structured data.
 - Redirects to client account/checkout routes when needed.
-- Store key propagation to Commerce Node.
+- Store key propagation to Commerce Node through route path `api/storefront/stores/{storeKey}/*`.
 
 It must not call Control Plane APIs and must not use Control Plane credentials.
 
@@ -137,8 +155,8 @@ Product media URLs are public storefront URLs, but they are still store-scoped:
 
 Resolution rules:
 
-- Production/storefront traffic should resolve the store from `Host`, `X-Forwarded-Host`, or the Nginx/store domain path.
-- Local direct API QA may send `X-Store-Key` to disambiguate the store.
+- Production/storefront traffic should resolve the store through Nginx/domain/rewrite behavior.
+- Local admin/debug media QA should use Commerce Admin media debug endpoints with `storeKey` query.
 - A plain `localhost:5180/media/products/{mediaId}` request can return `404` when the Commerce Node database has multiple active stores, because `localhost` is not enough store identity.
 - Store A media must not resolve from Store B host or store key.
 - Public media rendering validates the store/media row first, then proxies optimized output through imgproxy.
