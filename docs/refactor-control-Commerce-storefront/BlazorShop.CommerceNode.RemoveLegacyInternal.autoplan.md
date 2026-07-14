@@ -1,7 +1,7 @@
 # Remove Legacy Internal Storefront API - Autoplan
 
 Date: 2026-07-14
-Status: Ready for phased implementation
+Status: Implemented
 Mode: HOLD SCOPE cleanup plan
 Primary boundary: `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API`
 
@@ -10,6 +10,23 @@ Primary boundary: `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API`
 Remove the legacy Commerce Node `api/internal/*` compatibility surface now that Storefront V2 uses scoped Storefront routes under `api/storefront/stores/{storeKey}/*` and the scoped QA pass has completed.
 
 This plan removes active runtime support, Swagger exposure, and active architecture/QA guidance for legacy Internal. Historical migration documents remain as history unless they are likely to mislead future work.
+
+## Implementation Result
+
+Implemented on 2026-07-14 with separate phase commits:
+
+- Phase 0 planning: `5c069c6 docs: plan legacy internal storefront removal`
+- Phase 1 guards: `19fec6f test: guard against legacy internal storefront calls`
+- Phase 2 base rename: `c53ef6c refactor: rename storefront api controller base`
+- Phase 3 runtime removal: `cde2ce9 refactor: remove legacy internal storefront controllers`
+- Phase 4 Swagger removal: `73cff79 docs: remove legacy internal swagger surface`
+- Phase 5 active docs/QA update: `9ff004d docs: mark legacy internal storefront api removed`
+
+Phase 6 verification:
+
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~PresentationV2.Storefront|FullyQualifiedName~CommerceNode|FullyQualifiedName~ControlPlaneArchitectureBoundaryTests"` passed 30/30.
+- HTTP smoke was not run in this phase because no CommerceNode API runtime was started for manual endpoint checks.
 
 ## Premises
 
