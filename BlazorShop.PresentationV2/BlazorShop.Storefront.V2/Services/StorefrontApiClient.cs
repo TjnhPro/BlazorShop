@@ -328,7 +328,7 @@ namespace BlazorShop.Storefront.Services
             {
                 $"pageNumber={Math.Max(1, query.PageNumber)}",
                 $"pageSize={Math.Max(1, query.PageSize)}",
-                $"sortBy={Uri.EscapeDataString(query.SortBy.ToString())}",
+                $"sortBy={Uri.EscapeDataString(query.SortBy.ToApiValue())}",
             };
 
             if (query.CategoryId.HasValue && query.CategoryId.Value != Guid.Empty)

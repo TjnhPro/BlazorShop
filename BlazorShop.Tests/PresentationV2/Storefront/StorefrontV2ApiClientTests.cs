@@ -8,6 +8,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     using Microsoft.Extensions.Options;
     using Xunit;
 
+    using BlazorShop.Web.SharedV2.Models.Product;
+
     using StorefrontV2::BlazorShop.Storefront.Options;
     using StorefrontV2::BlazorShop.Storefront.Services;
 
@@ -77,6 +79,32 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.True(result.IsSuccess);
             Assert.Equal(["/api/storefront/stores/default/catalog/categories", "/api/public/catalog/categories"], handler.RequestPaths);
+        }
+
+        [Fact]
+        public async Task GetPublishedCatalogPageAsync_UsesNamedSortValue()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal("/api/storefront/stores/default/catalog/products", request.RequestUri?.AbsolutePath);
+                Assert.Contains("sortBy=displayOrder", request.RequestUri?.Query, StringComparison.Ordinal);
+                Assert.DoesNotContain("sortBy=DisplayOrder", request.RequestUri?.Query, StringComparison.Ordinal);
+                Assert.DoesNotContain("sortBy=6", request.RequestUri?.Query, StringComparison.Ordinal);
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    """{"success":true,"message":"ok","data":{"items":[],"pageNumber":1,"pageSize":24,"totalCount":0,"totalPages":0}}""");
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var result = await apiClient.GetPublishedCatalogPageAsync(new ProductCatalogQuery
+            {
+                SortBy = ProductCatalogSortBy.DisplayOrder,
+            });
+
+            Assert.True(result.IsSuccess);
+            Assert.Equal(["/api/storefront/stores/default/catalog/products"], handler.RequestPaths);
         }
 
         private static StorefrontApiClient CreateApiClient(HttpClient client, bool enableLegacyFallback = false)
