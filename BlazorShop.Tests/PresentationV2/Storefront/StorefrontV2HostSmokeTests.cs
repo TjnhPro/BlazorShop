@@ -4,6 +4,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 {
     using System.Net;
     using System.Net.Http.Headers;
+    using System.Text;
+    using System.Text.Json;
     using System.Text.RegularExpressions;
 
     using BlazorShop.Application.DTOs;
@@ -369,6 +371,79 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("cart", content, StringComparison.OrdinalIgnoreCase);
         }
 
+        [Fact]
+        public async Task CartApi_PostLine_SetsHttpOnlyCartToken_AndDoesNotSendUnitPrice()
+        {
+            var productId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+            var handler = new CartApiHandler(productId);
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<StorefrontApiClient>();
+                    services.AddScoped(_ => new StorefrontApiClient(
+                        new HttpClient(handler)
+                        {
+                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
+                        },
+                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                },
+                allowAutoRedirect: false);
+
+            using var response = await client.PostAsync(
+                "/api/cart/lines",
+                JsonContent(
+                    new
+                    {
+                        ProductId = productId,
+                        Quantity = 1,
+                        UnitPrice = 99.95m,
+                    }));
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("\"count\":1", content, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(response.Headers.GetValues("Set-Cookie"), value =>
+                value.Contains("bs-cart-token=server-token", StringComparison.Ordinal)
+                && value.Contains("httponly", StringComparison.OrdinalIgnoreCase)
+                && value.Contains("samesite=lax", StringComparison.OrdinalIgnoreCase)
+                && value.Contains("path=/", StringComparison.OrdinalIgnoreCase));
+            Assert.DoesNotContain("unitPrice", handler.LastAddLineBody, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public async Task CartApi_Get_ImportsLegacyCookieAndDeletesReadableCartPayload()
+        {
+            var productId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+            var handler = new CartApiHandler(productId);
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<StorefrontApiClient>();
+                    services.AddScoped(_ => new StorefrontApiClient(
+                        new HttpClient(handler)
+                        {
+                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
+                        },
+                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                },
+                allowAutoRedirect: false);
+
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/cart");
+            request.Headers.Add("Cookie", CreateLegacyCartCookie(productId, 2, 129.95m));
+            using var response = await client.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("\"count\":2", content, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(response.Headers.GetValues("Set-Cookie"), value =>
+                value.Contains("bs-cart-token=server-token", StringComparison.Ordinal)
+                && value.Contains("httponly", StringComparison.OrdinalIgnoreCase));
+            Assert.Contains(response.Headers.GetValues("Set-Cookie"), value =>
+                value.Contains("my-cart=", StringComparison.Ordinal)
+                && value.Contains("expires=Thu, 01 Jan 1970", StringComparison.OrdinalIgnoreCase));
+            Assert.DoesNotContain("unitPrice", handler.LastAddLineBody, StringComparison.OrdinalIgnoreCase);
+        }
+
         private HttpClient CreateClient(Action<IServiceCollection> configureServices, bool allowAutoRedirect = true)
         {
             var configuredFactory = _factory.WithWebHostBuilder(builder =>
@@ -464,6 +539,30 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             return string.IsNullOrWhiteSpace(cookieHeader)
                 ? cookie
                 : $"{cookieHeader}; {cookie}";
+        }
+
+        private static StringContent JsonContent(object value)
+        {
+            return new StringContent(
+                JsonSerializer.Serialize(value),
+                Encoding.UTF8,
+                "application/json");
+        }
+
+        private static string CreateLegacyCartCookie(Guid productId, int quantity, decimal unitPrice)
+        {
+            var cartJson = JsonSerializer.Serialize(
+                new[]
+                {
+                    new
+                    {
+                        ProductId = productId,
+                        Quantity = quantity,
+                        UnitPrice = unitPrice,
+                    },
+                });
+
+            return $"my-cart={Uri.EscapeDataString(cartJson)}";
         }
 
         private sealed class StubStorefrontSessionResolver : IStorefrontSessionResolver
@@ -580,6 +679,108 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+            }
+        }
+
+        private sealed class CartApiHandler : HttpMessageHandler
+        {
+            private static readonly DateTimeOffset ExpiresAtUtc = DateTimeOffset.UtcNow.AddDays(30);
+
+            private readonly Guid productId;
+            private int quantity;
+
+            public CartApiHandler(Guid productId)
+            {
+                this.productId = productId;
+            }
+
+            public string LastAddLineBody { get; private set; } = string.Empty;
+
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                var path = request.RequestUri?.AbsolutePath ?? string.Empty;
+                if (request.Method == HttpMethod.Post && path.EndsWith("/cart/session", StringComparison.Ordinal))
+                {
+                    return JsonResponse(new
+                    {
+                        success = true,
+                        message = "OK",
+                        data = new
+                        {
+                            cartId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                            cartToken = "server-token",
+                            state = "active",
+                            version = 1,
+                            expiresAtUtc = ExpiresAtUtc,
+                        },
+                    });
+                }
+
+                if (request.Method == HttpMethod.Post && path.EndsWith("/cart/lines", StringComparison.Ordinal))
+                {
+                    this.LastAddLineBody = await request.Content!.ReadAsStringAsync(cancellationToken);
+                    using var document = JsonDocument.Parse(this.LastAddLineBody);
+                    this.quantity += document.RootElement.GetProperty("quantity").GetInt32();
+                    return JsonResponse(CreateCartEnvelope());
+                }
+
+                if (request.Method == HttpMethod.Get && path.EndsWith("/cart", StringComparison.Ordinal))
+                {
+                    return JsonResponse(CreateCartEnvelope());
+                }
+
+                if (request.Method == HttpMethod.Delete && path.EndsWith("/cart", StringComparison.Ordinal))
+                {
+                    this.quantity = 0;
+                    return JsonResponse(CreateCartEnvelope());
+                }
+
+                return new HttpResponseMessage(HttpStatusCode.NotFound);
+            }
+
+            private object CreateCartEnvelope()
+            {
+                return new
+                {
+                    success = true,
+                    message = "OK",
+                    data = new
+                    {
+                        cartId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                        state = "active",
+                        version = 2,
+                        lastActivityAtUtc = DateTimeOffset.UtcNow,
+                        expiresAtUtc = ExpiresAtUtc,
+                        lines = this.quantity <= 0
+                            ? []
+                            : new[]
+                            {
+                                new
+                                {
+                                    lineId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+                                    productId = this.productId,
+                                    productVariantId = (Guid?)null,
+                                    selectedAttributesJson = (string?)null,
+                                    personalizationHash = (string?)null,
+                                    personalizationJson = (string?)null,
+                                    artworkAssetId = (Guid?)null,
+                                    artworkVersion = (int?)null,
+                                    fulfillmentProviderKey = (string?)null,
+                                    quantity = this.quantity,
+                                    unitPriceSnapshot = 129.95m,
+                                    currencyCodeSnapshot = "EUR",
+                                },
+                            },
+                    },
+                };
+            }
+
+            private static HttpResponseMessage JsonResponse(object payload)
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = JsonContent(payload),
+                };
             }
         }
     }

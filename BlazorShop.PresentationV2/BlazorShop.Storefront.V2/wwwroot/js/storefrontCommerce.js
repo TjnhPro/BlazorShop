@@ -1,5 +1,5 @@
 (function () {
-  const cartCookieName = "my-cart";
+  const cartApiRoute = "/api/cart";
   const buttonSelector = "[data-storefront-add-to-cart]";
   const badgeSelector = "[data-storefront-cart-badge]";
   const cartRemoveSelector = "[data-storefront-cart-remove]";
@@ -9,91 +9,18 @@
   const toastTemplateSelector = "[data-storefront-toast-template]";
   const cartChangedEventName = "blazorshop:cart-changed";
   const pendingToastStorageKey = "blazorshop:storefront:pending-toast";
-  const cartLifetimeDays = 30;
   const badgePollIntervalMs = 1500;
   const buttonResetDelayMs = 1600;
   const toastDurationMs = 5000;
   const buttonResetTimers = new WeakMap();
-  let lastCartCookie = null;
   let badgePollHandle = 0;
-
-  function readCookie(name) {
-    const encodedName = `${encodeURIComponent(name)}=`;
-    const cookies = document.cookie.split(";");
-
-    for (const cookie of cookies) {
-      const trimmedCookie = cookie.trim();
-      if (trimmedCookie.startsWith(encodedName)) {
-        return decodeURIComponent(trimmedCookie.substring(encodedName.length));
-      }
-    }
-
-    return null;
-  }
-
-  function writeCookie(name, value, days, path) {
-    const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
-    document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; expires=${expires}; path=${path}`;
-  }
-
-  function removeCookie(name, path) {
-    document.cookie = `${encodeURIComponent(name)}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}`;
-  }
-
-  function parseNumber(value) {
-    const parsed = Number.parseFloat(value);
-    return Number.isFinite(parsed) ? parsed : 0;
-  }
 
   function parseInteger(value, fallback = 0) {
     const parsed = Number.parseInt(value, 10);
     return Number.isFinite(parsed) ? parsed : fallback;
   }
 
-  function getItemProductId(item) {
-    return String(item?.ProductId ?? item?.productId ?? "").trim();
-  }
-
-  function getItemVariantId(item) {
-    const value = item?.ProductVariantId ?? item?.productVariantId ?? item?.VariantId ?? item?.variantId;
-    return value == null ? "" : String(value).trim();
-  }
-
-  function getItemQuantity(item) {
-    return parseInteger(item?.Quantity ?? item?.quantity, 0);
-  }
-
-  function setItemQuantity(item, quantity) {
-    if (Object.prototype.hasOwnProperty.call(item, "Quantity") || !Object.prototype.hasOwnProperty.call(item, "quantity")) {
-      item.Quantity = quantity;
-      return;
-    }
-
-    item.quantity = quantity;
-  }
-
-  function parseCart() {
-    const rawCart = readCookie(cartCookieName);
-    if (!rawCart) {
-      return [];
-    }
-
-    try {
-      const parsed = JSON.parse(rawCart);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  }
-
-  function getCartCount(items) {
-    return items.reduce((total, item) => total + getItemQuantity(item), 0);
-  }
-
-  function updateBadges(items) {
-    const cartItems = items ?? parseCart();
-    const cartCount = getCartCount(cartItems);
-
+  function updateBadgesFromCount(cartCount) {
     document.querySelectorAll(badgeSelector).forEach((badge) => {
       badge.textContent = cartCount > 99 ? "99+" : String(cartCount);
       badge.hidden = cartCount <= 0;
@@ -101,23 +28,41 @@
     });
   }
 
-  function persistCart(items) {
-    const normalizedItems = Array.isArray(items)
-      ? items.filter((item) => getItemProductId(item) && getItemQuantity(item) > 0)
-      : [];
+  function applyCartSummary(summary) {
+    const count = parseInteger(summary?.count ?? summary?.Count, 0);
+    updateBadgesFromCount(count);
+    document.dispatchEvent(new CustomEvent(cartChangedEventName, { detail: { count } }));
+  }
 
-    if (normalizedItems.length === 0) {
-      removeCookie(cartCookieName, "/");
-      lastCartCookie = null;
-      updateBadges([]);
-      document.dispatchEvent(new CustomEvent(cartChangedEventName, { detail: { count: 0 } }));
-      return;
+  async function sendCartRequest(route, method, body) {
+    const options = {
+      method,
+      credentials: "same-origin",
+      headers: { "Accept": "application/json" }
+    };
+
+    if (body !== undefined) {
+      options.headers["Content-Type"] = "application/json";
+      options.body = JSON.stringify(body);
     }
 
-    writeCookie(cartCookieName, JSON.stringify(normalizedItems), cartLifetimeDays, "/");
-    lastCartCookie = readCookie(cartCookieName);
-    updateBadges(normalizedItems);
-    document.dispatchEvent(new CustomEvent(cartChangedEventName, { detail: { count: getCartCount(normalizedItems) } }));
+    const response = await fetch(route, options);
+    const text = await response.text();
+    const payload = text ? JSON.parse(text) : null;
+    if (!response.ok) {
+      throw new Error(payload?.message || payload?.Message || "Cart could not be updated.");
+    }
+
+    return payload;
+  }
+
+  async function refreshCartSummary() {
+    try {
+      const summary = await sendCartRequest(cartApiRoute, "GET");
+      applyCartSummary(summary);
+    } catch {
+      updateBadgesFromCount(0);
+    }
   }
 
   function setFeedback(button, message, isError) {
@@ -274,8 +219,7 @@
 
     const payload = {
       ProductId: productId,
-      Quantity: 1,
-      UnitPrice: parseNumber(button.dataset.unitPrice)
+      Quantity: 1
     };
 
     const variantSelectSelector = button.dataset.variantSelect;
@@ -300,15 +244,13 @@
       }
 
       payload.ProductVariantId = selectedOption.value.trim();
-      payload.VariantId = payload.ProductVariantId;
       payload.SizeValue = selectedOption.dataset.displayName || selectedOption.dataset.sizeValue || selectedOption.textContent.trim();
-      payload.UnitPrice = parseNumber(selectedOption.dataset.unitPrice) || payload.UnitPrice;
     }
 
     return { payload, productName };
   }
 
-  function addToCart(button) {
+  async function addToCart(button) {
     const result = buildCartPayload(button);
     if (result.error) {
       setFeedback(button, result.error, true);
@@ -316,73 +258,63 @@
       return;
     }
 
-    const cartItems = parseCart();
     const { payload, productName } = result;
-    const existingItem = cartItems.find((item) => getItemProductId(item) === payload.ProductId && (getItemVariantId(item) || null) === (payload.VariantId || null));
+    const feedbackMessage = `Product ${formatCartLabel(productName, payload.SizeValue)} added to cart`;
 
-    let feedbackMessage = "";
-    let toastLevel = "success";
-
-    if (existingItem) {
-      setItemQuantity(existingItem, getItemQuantity(existingItem) + payload.Quantity);
-      feedbackMessage = `Increased quantity of ${formatCartLabel(productName, payload.SizeValue)}`;
-      toastLevel = "info";
-    } else {
-      cartItems.push(payload);
-      feedbackMessage = `Product ${formatCartLabel(productName, payload.SizeValue)} added to cart`;
+    button.disabled = true;
+    try {
+      const summary = await sendCartRequest(`${cartApiRoute}/lines`, "POST", {
+        ProductId: payload.ProductId,
+        ProductVariantId: payload.ProductVariantId || null,
+        Quantity: payload.Quantity
+      });
+      applyCartSummary(summary);
+      setFeedback(button, feedbackMessage, false);
+      showToast("success", "Cart", feedbackMessage);
+      flashButton(button);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Cart could not be updated.";
+      setFeedback(button, message, true);
+      showToast("error", "Cart", message);
+    } finally {
+      button.disabled = false;
     }
-
-    persistCart(cartItems);
-    setFeedback(button, feedbackMessage, false);
-    showToast(toastLevel, "Cart", feedbackMessage);
-    flashButton(button);
   }
 
-  function findCartLine(items, productId, variantId) {
-    return items.find((item) => getItemProductId(item) === productId && getItemVariantId(item) === (variantId || ""));
-  }
-
-  function removeCartLine(button) {
-    const productId = (button.dataset.productId || "").trim();
-    const variantId = (button.dataset.variantId || "").trim();
-    if (!productId) {
-      showToast("error", "Cart", "This cart item could not be removed.");
-      return;
-    }
-
-    const cartItems = parseCart();
-    const nextItems = cartItems.filter((item) => !(getItemProductId(item) === productId && getItemVariantId(item) === variantId));
-    if (nextItems.length === cartItems.length) {
+  async function removeCartLine(button) {
+    const lineId = (button.dataset.lineId || "").trim();
+    if (!lineId) {
       showToast("error", "Cart", "This cart item could not be removed.");
       return;
     }
 
     const productName = formatCartLabel(button.dataset.productName, button.dataset.sizeValue);
-    persistCart(nextItems);
-    queueToastForNextLoad("warning", "Cart", `Removed ${productName} from cart.`);
-    window.location.reload();
-  }
-
-  function clearCart() {
-    const cartItems = parseCart();
-    if (cartItems.length === 0) {
-      showToast("info", "Cart", "Your cart is already empty.");
-      return;
+    try {
+      await sendCartRequest(`${cartApiRoute}/lines/${encodeURIComponent(lineId)}`, "DELETE");
+      queueToastForNextLoad("warning", "Cart", `Removed ${productName} from cart.`);
+      window.location.reload();
+    } catch (error) {
+      showToast("error", "Cart", error instanceof Error ? error.message : "This cart item could not be removed.");
     }
-
-    persistCart([]);
-    queueToastForNextLoad("info", "Cart", "Cart cleared.");
-    window.location.reload();
   }
 
-  function updateCartQuantity(input) {
-    const productId = (input.dataset.productId || "").trim();
-    const variantId = (input.dataset.variantId || "").trim();
+  async function clearCart() {
+    try {
+      await sendCartRequest(cartApiRoute, "DELETE");
+      queueToastForNextLoad("info", "Cart", "Cart cleared.");
+      window.location.reload();
+    } catch (error) {
+      showToast("error", "Cart", error instanceof Error ? error.message : "Cart could not be cleared.");
+    }
+  }
+
+  async function updateCartQuantity(input) {
+    const lineId = (input.dataset.lineId || "").trim();
     const productName = formatCartLabel(input.dataset.productName, input.dataset.sizeValue);
     const nextQuantity = parseInteger(input.value, Number.NaN);
     const currentQuantity = parseInteger(input.getAttribute("value"), 1);
 
-    if (!productId) {
+    if (!lineId) {
       showToast("error", "Cart", "This cart item could not be updated.");
       return;
     }
@@ -393,29 +325,30 @@
       return;
     }
 
-    const cartItems = parseCart();
-    const cartLine = findCartLine(cartItems, productId, variantId);
-    if (!cartLine) {
-      showToast("error", "Cart", "This cart item could not be updated.");
-      return;
-    }
-
     if (nextQuantity === currentQuantity) {
       return;
     }
 
     if (nextQuantity === 0) {
-      const nextItems = cartItems.filter((item) => !(getItemProductId(item) === productId && getItemVariantId(item) === variantId));
-      persistCart(nextItems);
-      queueToastForNextLoad("warning", "Cart", `Removed ${productName} from cart.`);
-      window.location.reload();
+      try {
+        await sendCartRequest(`${cartApiRoute}/lines/${encodeURIComponent(lineId)}`, "DELETE");
+        queueToastForNextLoad("warning", "Cart", `Removed ${productName} from cart.`);
+        window.location.reload();
+      } catch (error) {
+        input.value = String(currentQuantity);
+        showToast("error", "Cart", error instanceof Error ? error.message : "This cart item could not be removed.");
+      }
       return;
     }
 
-    setItemQuantity(cartLine, nextQuantity);
-    persistCart(cartItems);
-    queueToastForNextLoad("info", "Cart", `Updated quantity of ${productName}.`);
-    window.location.reload();
+    try {
+      await sendCartRequest(`${cartApiRoute}/lines/${encodeURIComponent(lineId)}`, "PUT", { Quantity: nextQuantity });
+      queueToastForNextLoad("info", "Cart", `Updated quantity of ${productName}.`);
+      window.location.reload();
+    } catch (error) {
+      input.value = String(currentQuantity);
+      showToast("error", "Cart", error instanceof Error ? error.message : "This cart item could not be updated.");
+    }
   }
 
   function handleClick(event) {
@@ -456,23 +389,15 @@
       return;
     }
 
-    lastCartCookie = readCookie(cartCookieName);
-    badgePollHandle = window.setInterval(() => {
-      const currentCartCookie = readCookie(cartCookieName);
-      if (currentCartCookie !== lastCartCookie) {
-        lastCartCookie = currentCartCookie;
-        updateBadges();
-      }
-    }, badgePollIntervalMs);
+    badgePollHandle = window.setInterval(refreshCartSummary, badgePollIntervalMs);
   }
 
   function initialize() {
     flushQueuedToast();
-    updateBadges();
+    refreshCartSummary();
     startBadgePolling();
     document.addEventListener("click", handleClick);
     document.addEventListener("change", handleChange);
-    document.addEventListener(cartChangedEventName, () => updateBadges());
   }
 
   if (document.readyState === "loading") {

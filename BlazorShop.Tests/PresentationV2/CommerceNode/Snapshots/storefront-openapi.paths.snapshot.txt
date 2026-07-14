@@ -5,6 +5,7 @@ POST /api/storefront/stores/{storeKey}/auth/logout
 POST /api/storefront/stores/{storeKey}/auth/refresh-token
 POST /api/storefront/stores/{storeKey}/auth/register
 POST /api/storefront/stores/{storeKey}/auth/update-profile
+DELETE /api/storefront/stores/{storeKey}/cart
 GET /api/storefront/stores/{storeKey}/cart
 POST /api/storefront/stores/{storeKey}/cart/checkout
 POST /api/storefront/stores/{storeKey}/cart/lines

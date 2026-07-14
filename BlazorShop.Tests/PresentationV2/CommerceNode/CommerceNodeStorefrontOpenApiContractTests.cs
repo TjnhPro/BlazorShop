@@ -426,6 +426,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 "StorefrontCart_AddLine",
                 "StorefrontCart_UpdateLine",
                 "StorefrontCart_RemoveLine",
+                "StorefrontCart_Clear",
                 "StorefrontCart_Validate",
             };
 
@@ -496,6 +497,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 "StorefrontCart_AddLine",
                 "StorefrontCart_UpdateLine",
                 "StorefrontCart_RemoveLine",
+                "StorefrontCart_Clear",
                 "StorefrontCart_Validate",
                 "StorefrontCheckout_Preview",
                 "StorefrontCheckout_PlaceOrder",

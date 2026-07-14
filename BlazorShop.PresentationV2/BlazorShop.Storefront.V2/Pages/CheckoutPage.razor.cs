@@ -1,13 +1,10 @@
 namespace BlazorShop.Storefront.Pages
 {
     using System.Globalization;
-    using System.Text.Json;
 
     using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Storefront.Services;
-    using BlazorShop.Web.SharedV2;
     using BlazorShop.Web.SharedV2.Models.Product;
-    using SharedProcessCart = BlazorShop.Web.SharedV2.Models.Payment.ProcessCart;
 
     using Microsoft.AspNetCore.Components;
 
@@ -42,7 +39,16 @@ namespace BlazorShop.Storefront.Pages
                 return;
             }
 
-            var cartItems = ReadCartItems(HttpContext?.Request.Cookies[StorefrontCookieNames.Cart]);
+            var cartResolution = await CartTokenService.ResolveAsync(HttpContext);
+            if (!cartResolution.Success)
+            {
+                Error = cartResolution.Message;
+                lines.Clear();
+                paymentMethods = [];
+                return;
+            }
+
+            var cartItems = cartResolution.Cart?.Lines ?? [];
             var productsById = await LoadProductsAsync(cartItems);
             lines.Clear();
             lines.AddRange(BuildLines(cartItems, productsById));
@@ -53,27 +59,7 @@ namespace BlazorShop.Storefront.Pages
                 : [];
         }
 
-        private static List<SharedProcessCart> ReadCartItems(string? rawCart)
-        {
-            if (string.IsNullOrWhiteSpace(rawCart))
-            {
-                return [];
-            }
-
-            try
-            {
-                return JsonSerializer.Deserialize<List<SharedProcessCart>>(rawCart, new JsonSerializerOptions(JsonSerializerDefaults.Web))
-                    ?.Where(item => item.ProductId != Guid.Empty && item.Quantity > 0)
-                    .ToList()
-                    ?? [];
-            }
-            catch (JsonException)
-            {
-                return [];
-            }
-        }
-
-        private async Task<Dictionary<Guid, GetProduct>> LoadProductsAsync(IEnumerable<SharedProcessCart> cartItems)
+        private async Task<Dictionary<Guid, GetProduct>> LoadProductsAsync(IEnumerable<StorefrontCartLineResponse> cartItems)
         {
             var productIds = cartItems
                 .Select(item => item.ProductId)
@@ -101,7 +87,7 @@ namespace BlazorShop.Storefront.Pages
             return productsById;
         }
 
-        private static IReadOnlyList<CartLine> BuildLines(IEnumerable<SharedProcessCart> cartItems, IReadOnlyDictionary<Guid, GetProduct> productsById)
+        private static IReadOnlyList<CartLine> BuildLines(IEnumerable<StorefrontCartLineResponse> cartItems, IReadOnlyDictionary<Guid, GetProduct> productsById)
         {
             var result = new List<CartLine>();
 
@@ -112,13 +98,13 @@ namespace BlazorShop.Storefront.Pages
                     continue;
                 }
 
-                var selectedVariantId = cartItem.ProductVariantId ?? cartItem.VariantId;
+                var selectedVariantId = cartItem.ProductVariantId;
                 var selectedVariant = selectedVariantId is null
                     ? null
                     : product.Variants.FirstOrDefault(variant => variant.Id == selectedVariantId.Value);
-                var unitPrice = cartItem.UnitPrice
-                                ?? (selectedVariant?.EffectivePrice > 0 ? selectedVariant.EffectivePrice : selectedVariant?.Price)
-                                ?? product.Price;
+                var unitPrice = cartItem.UnitPriceSnapshot
+                    ?? (selectedVariant?.EffectivePrice > 0 ? selectedVariant.EffectivePrice : selectedVariant?.Price)
+                    ?? product.Price;
 
                 result.Add(new CartLine(
                     string.IsNullOrWhiteSpace(product.Name) ? "Product" : product.Name,

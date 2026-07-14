@@ -5,6 +5,7 @@ namespace BlazorShop.Storefront.Services
     using System.Net.Http.Json;
     using System.Text.Json;
 
+    using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Web.SharedV2.Models.Discovery;
     using BlazorShop.Web.SharedV2.Models;
     using BlazorShop.Application.DTOs.Seo;
@@ -32,6 +33,10 @@ namespace BlazorShop.Storefront.Services
         private const string StorefrontStoreCurrentRoute = "store/current";
         private const string StorefrontPaymentMethodsRoute = "payments/methods";
         private const string StorefrontCheckoutRoute = "cart/checkout";
+        private const string StorefrontCartRoute = "cart";
+        private const string StorefrontCartSessionRoute = StorefrontCartRoute + "/session";
+        private const string StorefrontCartLinesRoute = StorefrontCartRoute + "/lines";
+        private const string CartTokenHeaderName = "X-Cart-Token";
         private const string StorefrontCatalogSitemapRoute = StorefrontCatalogBaseRoute + "/sitemap";
         private const string StorefrontCategoriesRoute = StorefrontCatalogBaseRoute + "/categories";
         private const string StorefrontCategoryTreeRoute = StorefrontCategoriesRoute + "/tree";
@@ -192,6 +197,86 @@ namespace BlazorShop.Storefront.Services
                 StorefrontCheckoutRoute,
                 request,
                 "Unable to place order right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCartSessionResponse>> CreateOrResumeCartSessionAsync(
+            string? cartToken,
+            CancellationToken cancellationToken = default)
+        {
+            return PostAsync<StorefrontCreateCartSessionRequest, StorefrontCartSessionResponse>(
+                StorefrontCartSessionRoute,
+                new StorefrontCreateCartSessionRequest { CartToken = cartToken },
+                "Unable to create cart right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCartResponse>> GetCartAsync(
+            string cartToken,
+            CancellationToken cancellationToken = default)
+        {
+            return SendCartAsync<StorefrontCartResponse>(
+                HttpMethod.Get,
+                StorefrontCartRoute,
+                cartToken,
+                request: null,
+                "Unable to load cart right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCartResponse>> AddCartLineAsync(
+            string cartToken,
+            StorefrontCartLineCreateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return SendCartAsync<StorefrontCartResponse>(
+                HttpMethod.Post,
+                StorefrontCartLinesRoute,
+                cartToken,
+                request,
+                "Unable to add this item to cart right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCartResponse>> UpdateCartLineAsync(
+            string cartToken,
+            Guid lineId,
+            StorefrontCartLineUpdateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return SendCartAsync<StorefrontCartResponse>(
+                HttpMethod.Put,
+                $"{StorefrontCartLinesRoute}/{lineId:D}",
+                cartToken,
+                request,
+                "Unable to update this cart line right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCartResponse>> RemoveCartLineAsync(
+            string cartToken,
+            Guid lineId,
+            CancellationToken cancellationToken = default)
+        {
+            return SendCartAsync<StorefrontCartResponse>(
+                HttpMethod.Delete,
+                $"{StorefrontCartLinesRoute}/{lineId:D}",
+                cartToken,
+                request: null,
+                "Unable to remove this cart line right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCartResponse>> ClearCartAsync(
+            string cartToken,
+            CancellationToken cancellationToken = default)
+        {
+            return SendCartAsync<StorefrontCartResponse>(
+                HttpMethod.Delete,
+                StorefrontCartRoute,
+                cartToken,
+                request: null,
+                "Unable to clear cart right now.",
                 cancellationToken);
         }
 
@@ -418,6 +503,47 @@ namespace BlazorShop.Storefront.Services
             }
         }
 
+        private async Task<StorefrontSubmitResult<TData>> SendCartAsync<TData>(
+            HttpMethod method,
+            string route,
+            string cartToken,
+            object? request,
+            string unavailableMessage,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(cartToken))
+            {
+                return StorefrontSubmitResult<TData>.Failed("Cart token is required.");
+            }
+
+            try
+            {
+                using var message = new HttpRequestMessage(method, route);
+                message.Headers.TryAddWithoutValidation(CartTokenHeaderName, cartToken);
+                if (request is not null)
+                {
+                    message.Content = JsonContent.Create(request, options: JsonOptions);
+                }
+
+                using var response = await _httpClient.SendAsync(message, cancellationToken);
+                var envelope = await ReadEnvelopeAsync<TData>(response, cancellationToken);
+                if (envelope is not null)
+                {
+                    return envelope.Success
+                        ? StorefrontSubmitResult<TData>.Succeeded(envelope.Data, envelope.Message)
+                        : StorefrontSubmitResult<TData>.Failed(envelope.Message);
+                }
+
+                return response.IsSuccessStatusCode
+                    ? StorefrontSubmitResult<TData>.Succeeded(default, "Request completed.")
+                    : StorefrontSubmitResult<TData>.Failed(unavailableMessage);
+            }
+            catch (Exception exception) when (exception is HttpRequestException or JsonException or NotSupportedException or TaskCanceledException)
+            {
+                return StorefrontSubmitResult<TData>.Failed(unavailableMessage);
+            }
+        }
+
         private static async Task<StorefrontApiEnvelope<TData>?> ReadEnvelopeAsync<TData>(
             HttpResponseMessage response,
             CancellationToken cancellationToken)
@@ -469,4 +595,54 @@ namespace BlazorShop.Storefront.Services
         bool MaintenanceModeEnabled,
         string? MaintenanceMessage,
         string? HtmlBodyId);
+
+    public sealed class StorefrontCreateCartSessionRequest
+    {
+        public string? CartToken { get; set; }
+    }
+
+    public sealed class StorefrontCartLineCreateRequest
+    {
+        public Guid ProductId { get; set; }
+
+        public Guid? ProductVariantId { get; set; }
+
+        public IReadOnlyList<SelectedAttributeDto>? SelectedAttributes { get; set; }
+
+        public int Quantity { get; set; } = 1;
+    }
+
+    public sealed class StorefrontCartLineUpdateRequest
+    {
+        public int Quantity { get; set; }
+    }
+
+    public sealed record StorefrontCartSessionResponse(
+        Guid CartId,
+        string CartToken,
+        string State,
+        int Version,
+        DateTimeOffset ExpiresAtUtc);
+
+    public sealed record StorefrontCartResponse(
+        Guid CartId,
+        string State,
+        int Version,
+        DateTimeOffset LastActivityAtUtc,
+        DateTimeOffset ExpiresAtUtc,
+        IReadOnlyList<StorefrontCartLineResponse> Lines);
+
+    public sealed record StorefrontCartLineResponse(
+        Guid LineId,
+        Guid ProductId,
+        Guid? ProductVariantId,
+        string? SelectedAttributesJson,
+        string? PersonalizationHash,
+        string? PersonalizationJson,
+        Guid? ArtworkAssetId,
+        int? ArtworkVersion,
+        string? FulfillmentProviderKey,
+        int Quantity,
+        decimal? UnitPriceSnapshot,
+        string? CurrencyCodeSnapshot);
 }

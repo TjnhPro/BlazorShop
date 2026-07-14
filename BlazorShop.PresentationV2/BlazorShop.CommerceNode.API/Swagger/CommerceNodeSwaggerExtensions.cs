@@ -312,6 +312,11 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "Remove a server cart line.",
                         typeof(CommerceNodeApiResponse<StorefrontCartResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedCart", "Clear")] = new(
+                        "StorefrontCart_Clear",
+                        "Clear the current server cart.",
+                        typeof(CommerceNodeApiResponse<StorefrontCartResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedCart", "Validate")] = new(
                         "StorefrontCart_Validate",
                         "Validate and reprice the server cart.",

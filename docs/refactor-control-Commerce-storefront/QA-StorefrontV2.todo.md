@@ -212,12 +212,12 @@ Use this checklist whenever `StorefrontHeader`, `/search`, `StorefrontApiClient`
 Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.md`.
 
 - [x] Phase 0 records Storefront V2 migration checklist before runtime changes. 2026-07-14: checklist added for server-cart/token checkout cutover.
-- [ ] Storefront V2 creates or resumes an opaque server cart token instead of treating `my-cart` JSON as authoritative.
-- [ ] New cart token cookie is `HttpOnly`, `SameSite=Lax`, `Path=/`, and `Secure` outside development.
-- [ ] Existing `my-cart` cookie is imported once into the server cart and then deleted after successful import.
-- [ ] Add-to-cart uses a Storefront V2 local endpoint/API client call instead of writing final price/order data directly to the cookie.
-- [ ] `/my-cart` renders server cart lines, normalized product/variant labels, totals, and unavailable-line warnings.
-- [ ] Quantity update, remove line, and clear cart mutate the server cart and refresh the cart version.
+- [x] Storefront V2 creates or resumes an opaque server cart token instead of treating `my-cart` JSON as authoritative. 2026-07-14: local `/api/cart` bridge creates/resumes Commerce Node cart sessions and pages read server cart lines.
+- [x] New cart token cookie is `HttpOnly`, `SameSite=Lax`, `Path=/`, and `Secure` outside development. 2026-07-14: `StorefrontCartTokenService` writes `bs-cart-token` with session expiry and secure production policy.
+- [x] Existing `my-cart` cookie is imported once into the server cart and then deleted after successful import. 2026-07-14: host test covers legacy cookie import, token write, and `my-cart` deletion.
+- [x] Add-to-cart uses a Storefront V2 local endpoint/API client call instead of writing final price/order data directly to the cookie. 2026-07-14: JS posts to `/api/cart/lines`; host test verifies `UnitPrice` is not forwarded to Commerce Node.
+- [x] `/my-cart` renders server cart lines, normalized product/variant labels, totals, and unavailable-line warnings. 2026-07-14: cart page now enriches `StorefrontCartResponse` lines from catalog and keeps unavailable-line warning path.
+- [x] Quantity update, remove line, and clear cart mutate the server cart and refresh the cart version. 2026-07-14: JS uses local PUT/DELETE cart endpoints; Commerce Node exposes `DELETE /cart` for clear.
 - [ ] `/checkout` calls checkout preview before final submit and displays field-level validation errors.
 - [ ] Stale cart version on checkout shows a review-cart state, not a duplicate order.
 - [ ] COD checkout places one order, clears/expires the cart token, and shows confirmation.

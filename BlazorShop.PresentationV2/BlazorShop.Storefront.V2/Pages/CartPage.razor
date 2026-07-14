@@ -1,5 +1,6 @@
 @page "/my-cart"
 @inject StorefrontApiClient ApiClient
+@inject StorefrontCartTokenService CartTokenService
 @inject IStorefrontClientAppUrlResolver ClientAppUrlResolver
 
 <PageTitle>My Cart</PageTitle>
@@ -97,6 +98,7 @@
                                                        step="1"
                                                        value="@line.Quantity"
                                                        data-storefront-cart-quantity
+                                                       data-line-id="@line.LineId"
                                                        data-product-id="@line.ProductId"
                                                        data-variant-id="@line.ProductVariantId"
                                                        data-product-name="@line.DisplayName"
@@ -117,6 +119,7 @@
 
                                         <button type="button"
                                                 data-storefront-cart-remove
+                                                data-line-id="@line.LineId"
                                                 data-product-id="@line.ProductId"
                                                 data-variant-id="@line.ProductVariantId"
                                                 data-product-name="@line.DisplayName"

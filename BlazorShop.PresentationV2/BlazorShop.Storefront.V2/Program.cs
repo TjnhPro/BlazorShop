@@ -15,8 +15,6 @@ using BlazorShop.Web.SharedV2;
 
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
-using SharedProcessCart = BlazorShop.Web.SharedV2.Models.Payment.ProcessCart;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +45,7 @@ builder.Services.AddScoped<IStorefrontSeoSettingsProvider, StorefrontSeoSettings
 builder.Services.AddScoped<IStorefrontSeoComposer, StorefrontSeoComposer>();
 builder.Services.AddScoped<IStorefrontStructuredDataComposer, StorefrontStructuredDataComposer>();
 builder.Services.AddScoped<IStorefrontSitemapService, StorefrontSitemapService>();
+builder.Services.AddScoped<StorefrontCartTokenService>();
 builder.Services.AddHttpClient<IStorefrontSessionResolver, StorefrontSessionResolver>((serviceProvider, client) =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
@@ -181,8 +180,14 @@ app.MapPost(StorefrontRoutes.Checkout, async (
 {
     StorefrontResponseHeaders.ApplyPrivatePage(httpContext);
 
-    var carts = ReadCartCookie(httpContext.Request.Cookies[StorefrontCookieNames.Cart]);
-    if (carts.Count == 0)
+    var cartToken = httpContext.Request.Cookies[StorefrontCookieNames.CartToken];
+    if (string.IsNullOrWhiteSpace(cartToken))
+    {
+        return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("error", "Your cart is empty."));
+    }
+
+    var cartResult = await apiClient.GetCartAsync(cartToken, cancellationToken);
+    if (!cartResult.Success || cartResult.Data is null || cartResult.Data.Lines.Count == 0)
     {
         return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("error", "Your cart is empty."));
     }
@@ -192,7 +197,7 @@ app.MapPost(StorefrontRoutes.Checkout, async (
         CustomerEmail = form.CustomerEmail?.Trim() ?? string.Empty,
         CustomerName = form.CustomerName?.Trim() ?? string.Empty,
         PaymentMethodKey = form.PaymentMethodKey?.Trim() ?? string.Empty,
-        Carts = carts.Select(MapCartItem).ToArray(),
+        Carts = cartResult.Data.Lines.Select(MapCartItem).ToArray(),
         ShippingAddress = new CheckoutShippingAddress
         {
             FullName = form.ShippingFullName?.Trim() ?? string.Empty,
@@ -214,7 +219,74 @@ app.MapPost(StorefrontRoutes.Checkout, async (
     }
 
     httpContext.Response.Cookies.Delete(StorefrontCookieNames.Cart, new CookieOptions { Path = "/" });
+    httpContext.Response.Cookies.Delete(StorefrontCookieNames.CartToken, new CookieOptions { Path = "/" });
     return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("orderReference", result.Data.Reference));
+});
+app.MapGet("/api/cart", async (
+    StorefrontCartTokenService cartTokenService,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    var result = await cartTokenService.ResolveAsync(httpContext, cancellationToken: cancellationToken);
+    return result.Success
+        ? Results.Ok(ToLocalCartResponse(result.Cart))
+        : Results.Ok(ToLocalCartResponse(null));
+});
+app.MapPost("/api/cart/lines", async (
+    StorefrontLocalCartLineRequest request,
+    StorefrontCartTokenService cartTokenService,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    if (request.ProductId == Guid.Empty || request.Quantity < 1)
+    {
+        return Results.BadRequest(new StorefrontLocalCartErrorResponse("Product and quantity are required."));
+    }
+
+    var result = await cartTokenService.AddLineAsync(
+        httpContext,
+        new StorefrontCartLineCreateRequest
+        {
+            ProductId = request.ProductId,
+            ProductVariantId = request.ProductVariantId,
+            Quantity = request.Quantity,
+            SelectedAttributes = request.SelectedAttributes,
+        },
+        cancellationToken);
+
+    return ToLocalCartMutationResult(result);
+});
+app.MapPut("/api/cart/lines/{lineId:guid}", async (
+    Guid lineId,
+    StorefrontLocalCartQuantityRequest request,
+    StorefrontCartTokenService cartTokenService,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    if (request.Quantity < 1)
+    {
+        return Results.BadRequest(new StorefrontLocalCartErrorResponse("Quantity must be at least 1."));
+    }
+
+    var result = await cartTokenService.UpdateLineAsync(httpContext, lineId, request.Quantity, cancellationToken);
+    return ToLocalCartMutationResult(result);
+});
+app.MapDelete("/api/cart/lines/{lineId:guid}", async (
+    Guid lineId,
+    StorefrontCartTokenService cartTokenService,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    var result = await cartTokenService.RemoveLineAsync(httpContext, lineId, cancellationToken);
+    return ToLocalCartMutationResult(result);
+});
+app.MapDelete("/api/cart", async (
+    StorefrontCartTokenService cartTokenService,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    var result = await cartTokenService.ClearAsync(httpContext, cancellationToken);
+    return ToLocalCartMutationResult(result);
 });
 app.MapGet(StorefrontRoutes.Robots, async (HttpContext httpContext, IStorefrontRobotsService robotsService, CancellationToken cancellationToken) =>
 {
@@ -418,37 +490,58 @@ static string? FirstNonEmpty(params string?[] values)
     return null;
 }
 
-static List<SharedProcessCart> ReadCartCookie(string? rawCart)
-{
-    if (string.IsNullOrWhiteSpace(rawCart))
-    {
-        return [];
-    }
-
-    try
-    {
-        return JsonSerializer.Deserialize<List<SharedProcessCart>>(rawCart, new JsonSerializerOptions(JsonSerializerDefaults.Web))
-            ?.Where(item => item.ProductId != Guid.Empty && item.Quantity > 0)
-            .ToList()
-            ?? [];
-    }
-    catch (JsonException)
-    {
-        return [];
-    }
-}
-
-static ProcessCart MapCartItem(SharedProcessCart item)
+static ProcessCart MapCartItem(StorefrontCartLineResponse item)
 {
     return new ProcessCart
     {
         ProductId = item.ProductId,
-        ProductVariantId = item.ProductVariantId ?? item.VariantId,
+        ProductVariantId = item.ProductVariantId,
         Quantity = item.Quantity,
-        SelectedAttributes = item.SelectedAttributes?
-            .Select(attribute => new SelectedAttributeDto(attribute.Name, attribute.Value))
-            .ToArray(),
     };
 }
+
+static IResult ToLocalCartMutationResult(StorefrontCartMutationResult result)
+{
+    if (result.Success)
+    {
+        return Results.Ok(ToLocalCartResponse(result.Cart));
+    }
+
+    return Results.Json(
+        new StorefrontLocalCartErrorResponse(result.Message),
+        statusCode: StatusCodes.Status400BadRequest);
+}
+
+static StorefrontLocalCartResponse ToLocalCartResponse(StorefrontCartResponse? cart)
+{
+    var lines = cart?.Lines ?? [];
+    return new StorefrontLocalCartResponse(
+        Count: lines.Sum(line => Math.Max(0, line.Quantity)),
+        Version: cart?.Version ?? 0,
+        Lines: lines);
+}
+
+public sealed class StorefrontLocalCartLineRequest
+{
+    public Guid ProductId { get; set; }
+
+    public Guid? ProductVariantId { get; set; }
+
+    public IReadOnlyList<SelectedAttributeDto>? SelectedAttributes { get; set; }
+
+    public int Quantity { get; set; } = 1;
+}
+
+public sealed class StorefrontLocalCartQuantityRequest
+{
+    public int Quantity { get; set; }
+}
+
+public sealed record StorefrontLocalCartResponse(
+    int Count,
+    int Version,
+    IReadOnlyList<StorefrontCartLineResponse> Lines);
+
+public sealed record StorefrontLocalCartErrorResponse(string Message);
 
 public partial class Program;

@@ -1,11 +1,8 @@
 namespace BlazorShop.Storefront.Pages
 {
     using System.Globalization;
-    using System.Text.Json;
 
     using BlazorShop.Storefront.Services;
-    using BlazorShop.Web.SharedV2;
-    using BlazorShop.Web.SharedV2.Models.Payment;
     using BlazorShop.Web.SharedV2.Models.Product;
 
     using Microsoft.AspNetCore.Components;
@@ -33,35 +30,20 @@ namespace BlazorShop.Storefront.Pages
             _alerts.Clear();
             StorefrontResponseHeaders.ApplyPrivatePage(HttpContext);
 
-            var cartItems = ReadCartItems(HttpContext?.Request.Cookies[StorefrontCookieNames.Cart]);
+            var cartResolution = await CartTokenService.ResolveAsync(HttpContext);
+            if (!cartResolution.Success)
+            {
+                _alerts.Add(new CartAlert("error", cartResolution.Message));
+                _lines = [];
+                return;
+            }
+
+            var cartItems = cartResolution.Cart?.Lines ?? [];
             var productsById = await LoadProductsAsync(cartItems);
             _lines = BuildLines(cartItems, productsById);
         }
 
-        private List<ProcessCart> ReadCartItems(string? rawCart)
-        {
-            if (string.IsNullOrWhiteSpace(rawCart))
-            {
-                return [];
-            }
-
-            try
-            {
-                return JsonSerializer.Deserialize<List<ProcessCart>>(rawCart)
-                    ?.Where(item => item.ProductId != Guid.Empty && item.Quantity > 0)
-                    .ToList()
-                    ?? [];
-            }
-            catch (JsonException)
-            {
-                _alerts.Add(new CartAlert(
-                    "error",
-                    "We couldn't read the saved cart cookie. Add the items again to continue."));
-                return [];
-            }
-        }
-
-        private async Task<Dictionary<Guid, GetProduct>> LoadProductsAsync(IEnumerable<ProcessCart> cartItems)
+        private async Task<Dictionary<Guid, GetProduct>> LoadProductsAsync(IEnumerable<StorefrontCartLineResponse> cartItems)
         {
             var productIds = cartItems
                 .Select(item => item.ProductId)
@@ -89,7 +71,7 @@ namespace BlazorShop.Storefront.Pages
             return productsById;
         }
 
-        private IReadOnlyList<CartLine> BuildLines(IEnumerable<ProcessCart> cartItems, IReadOnlyDictionary<Guid, GetProduct> productsById)
+        private IReadOnlyList<CartLine> BuildLines(IEnumerable<StorefrontCartLineResponse> cartItems, IReadOnlyDictionary<Guid, GetProduct> productsById)
         {
             var lines = new List<CartLine>();
             var unavailableItems = 0;
@@ -97,21 +79,21 @@ namespace BlazorShop.Storefront.Pages
             foreach (var cartItem in cartItems)
             {
                 var quantity = Math.Max(1, cartItem.Quantity);
-                var sizeValue = string.IsNullOrWhiteSpace(cartItem.SizeValue) ? null : cartItem.SizeValue.Trim();
 
                 if (productsById.TryGetValue(cartItem.ProductId, out var product))
                 {
-                    var selectedVariantId = cartItem.ProductVariantId ?? cartItem.VariantId;
+                    var selectedVariantId = cartItem.ProductVariantId;
                     var selectedVariant = selectedVariantId is null
                         ? null
                         : product.Variants.FirstOrDefault(variant => variant.Id == selectedVariantId.Value);
                     var variantLabel = selectedVariant is null
-                        ? sizeValue
+                        ? null
                         : GetVariantLabel(selectedVariant);
-                    var unitPrice = cartItem.UnitPrice
-                                    ?? (selectedVariant?.EffectivePrice > 0 ? selectedVariant.EffectivePrice : selectedVariant?.Price)
-                                    ?? product.Price;
+                    var unitPrice = cartItem.UnitPriceSnapshot
+                        ?? (selectedVariant?.EffectivePrice > 0 ? selectedVariant.EffectivePrice : selectedVariant?.Price)
+                        ?? product.Price;
                     lines.Add(new CartLine(
+                        LineId: cartItem.LineId,
                         ProductId: cartItem.ProductId,
                         ProductVariantId: selectedVariantId,
                         DisplayName: string.IsNullOrWhiteSpace(product.Name) ? "Product" : product.Name,
@@ -126,14 +108,15 @@ namespace BlazorShop.Storefront.Pages
 
                 unavailableItems++;
                 lines.Add(new CartLine(
+                    LineId: cartItem.LineId,
                     ProductId: cartItem.ProductId,
-                    ProductVariantId: cartItem.ProductVariantId ?? cartItem.VariantId,
+                    ProductVariantId: cartItem.ProductVariantId,
                     DisplayName: "Unavailable item",
                     ProductUrl: null,
                     ImageUrl: null,
                     Quantity: quantity,
-                    UnitPrice: cartItem.UnitPrice ?? 0m,
-                    VariantLabel: sizeValue,
+                    UnitPrice: cartItem.UnitPriceSnapshot ?? 0m,
+                    VariantLabel: null,
                     IsUnavailable: true));
             }
 
@@ -152,6 +135,7 @@ namespace BlazorShop.Storefront.Pages
         private sealed record CartAlert(string Level, string Message);
 
         private sealed record CartLine(
+            Guid LineId,
             Guid ProductId,
             Guid? ProductVariantId,
             string DisplayName,

@@ -462,6 +462,27 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 payload => payload?.ToStorefrontContract());
         }
 
+        [HttpDelete]
+        [AllowAnonymous]
+        public async Task<IActionResult> Clear(
+            [FromHeader(Name = CartTokenHeaderName)] string cartToken,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.storefrontCartService.ClearAsync(
+                storeId.Value,
+                cartToken,
+                cancellationToken);
+            return this.FromServiceResponse(
+                result,
+                payload => payload?.ToStorefrontContract());
+        }
+
         [HttpPost("validate")]
         [AllowAnonymous]
         public async Task<IActionResult> Validate(
