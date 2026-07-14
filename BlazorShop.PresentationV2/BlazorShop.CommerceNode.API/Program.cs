@@ -11,6 +11,7 @@ using BlazorShop.Application.CommerceNode.Media;
 using BlazorShop.Application.CommerceNode.Tasks;
 using BlazorShop.Infrastructure.Data.CommerceNode;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
@@ -37,6 +38,24 @@ builder.Services.AddOptions<ProductMediaStorageOptions>()
 builder.Services.AddOptions<CommerceMediaStorageOptions>()
     .Bind(builder.Configuration.GetSection(CommerceMediaStorageOptions.SectionName));
 builder.Services.AddCommerceNodeInfrastructure(builder.Configuration);
+builder.Services.PostConfigure<JwtBearerOptions>(
+    JwtBearerDefaults.AuthenticationScheme,
+    options =>
+    {
+        options.Events ??= new JwtBearerEvents();
+        options.Events.OnChallenge = async context =>
+        {
+            context.HandleResponse();
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            context.Response.ContentType = "application/json";
+
+            await context.Response.WriteAsJsonAsync(new CommerceNodeApiErrorResponse(
+                false,
+                "auth.unauthenticated",
+                "Authentication is required.",
+                context.HttpContext.TraceIdentifier));
+        };
+    });
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<IProductMediaDownloader, ProductMediaDownloader>();
 builder.Services.AddSingleton<IStorefrontDockerDeploymentService, StorefrontDockerDeploymentService>();

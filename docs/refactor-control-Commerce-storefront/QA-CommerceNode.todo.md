@@ -72,6 +72,25 @@ Baseline recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFoundationS
 - [x] Storefront sort values are named strings, not numeric enum values. 2026-07-14: Storefront V2 emits lower-camel sort values; API contract uses a string pattern.
 - [x] Storefront POST request bodies are required in OpenAPI. 2026-07-14: Storefront Swagger operation filter marks request bodies required and tests assert it.
 
+## Storefront API Contract Final Hardening
+
+Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFinalHardening.autoplan.md`.
+
+- [x] Storefront Swagger has no `ObjectCommerceNodeApiResponse` public schema. 2026-07-14: enforced by `CommerceNodeStorefrontOpenApiContractTests`.
+- [x] Storefront auth login/refresh no longer double-envelope `success` and `message` inside `data`. 2026-07-14: login/refresh return `StorefrontTokenResponse` payload with access token metadata only.
+- [x] Storefront error response schema requires `success`, `code`, `message`, and `traceId`. 2026-07-14: OpenAPI reader and schema assertions passed.
+- [x] Storefront validation errors return `CommerceNodeApiErrorResponse` with `fieldErrors`. 2026-07-14: PayPal missing-token integration test verified `validation.failed`.
+- [x] Protected Storefront routes return typed JSON 401 errors instead of empty challenges. 2026-07-14: change-password and current-user orders integration tests verified `auth.unauthenticated`.
+- [x] Refresh without refresh cookie returns typed 401. 2026-07-14: integration test verified `auth.refresh_cookie_missing`.
+- [x] Protected Storefront operations declare `Bearer` or `RefreshCookie` security requirements. 2026-07-14: OpenAPI contract tests assert operation-level security scheme names.
+- [x] Public response arrays are required and non-null in OpenAPI. 2026-07-14: category tree, paged items, order lines, variants, sitemap lists, and variation options/values are guarded by contract tests.
+- [x] Storefront product sort values are emitted as a named string enum. 2026-07-14: `sortBy` OpenAPI enum contains `newest`, `priceLowToHigh`, and related lower-camel values.
+- [x] Storefront public order item history exposes `amountPaid`, not `amountPayed`. 2026-07-14: public OpenAPI and SharedV2 model were updated; internal Application spelling remains mapped only at the boundary.
+- [x] PayPal capture failure no longer returns HTTP 200 `success=true`. 2026-07-14: provider failure now returns HTTP 409 with `payment.paypal_capture_failed`.
+- [x] PayPal capture remains POST-only. 2026-07-14: integration test verified GET capture returns 405.
+- [x] Storefront Swagger passes Microsoft.OpenApi reader parsing and has no broken schema references. 2026-07-14: `StorefrontSwagger_PassesOpenApiReaderValidation` and broken-ref traversal tests passed.
+- [x] Storefront Swagger snapshot is updated after final hardening. 2026-07-14: `storefront-openapi.snapshot.json` refreshed and contract suite passed 16/16.
+
 ## Startup Database Migration
 
 - [x] Clean `CommerceNodeConnection` database is created/migrated by `BlazorShop.CommerceNode.API` startup when `CommerceNode:Database:MigrateOnStartup=true`. 2026-07-11: startup smoke passed against disposable DB `blazorshop_commerce_node_startup_qa_20260711`.
@@ -504,7 +523,7 @@ Historical `api/internal/*` checks in this subsection should be ported to scoped
 - Current customer JWT comes from scoped `api/storefront/stores/{storeKey}/auth/login`; historical Internal QA used `api/internal/auth/login` response `data.token`.
 - Refresh token is stored in `Set-Cookie` from login.
 - Local HTTP clients may not resend the refresh cookie automatically because it is `Secure=true`; QA verified refresh by replaying the `Set-Cookie` value as a `Cookie` header.
-- Missing JWT on `[Authorize]` Storefront routes returns HTTP `401` from ASP.NET auth middleware, with an empty body.
+- Missing JWT on `[Authorize]` Storefront routes returns HTTP `401` with `CommerceNodeApiErrorResponse` code `auth.unauthenticated`.
 - Scoped cart save-checkout and order confirm routes expect a top-level JSON array. When using PowerShell, send raw JSON for single-item arrays to avoid `ConvertTo-Json` collapsing the array.
 - Historical `api/internal/cart/save-checkout` also required a `userId` field in the request body even though the authenticated customer was resolved from JWT; verify whether the scoped contract still needs cleanup before changing behavior.
 - Scoped recommendations route requires at least one related published product; a single product in a category correctly returns a not-found response.

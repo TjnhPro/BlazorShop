@@ -62,6 +62,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] API client parses API response envelope.
 - [x] API client calls Commerce Node scoped Storefront catalog route. 2026-07-14: client tests assert `/api/storefront/stores/default/catalog/categories`.
 - [x] API client auth calls Commerce Node scoped Storefront auth routes. 2026-07-14: client tests assert scoped login/register/logout routes.
+- [x] API client parses scoped auth token response without nested auth envelope. 2026-07-14: `StorefrontAuthClient` consumes `data.accessToken` / `data.expiresAtUtc`; auth client tests were updated.
 - [x] Storefront HTTP clients do not send `X-Store-Key` on scoped API requests. 2026-07-14: `ConfigureStorefrontHttpClient` now sets scoped base address and no default store header; `/` runtime log showed scoped CommerceNode URLs.
 - [x] API client does not call legacy fallback when `Api:EnableLegacyFallback=false`.
 - [x] API client can use legacy fallback only when explicitly enabled.
@@ -212,6 +213,7 @@ Use this checklist whenever `StorefrontHeader`, `/search`, `StorefrontApiClient`
 - [x] Refresh-token cookie name is compatible:
   - `__Host-blazorshop-refresh`
 - [x] Storefront V2 calls `api/storefront/stores/{storeKey}/auth/refresh-token`. 2026-07-14: `Api:RefreshTokenRoute` default/config changed to `auth/refresh-token` under scoped base address.
+- [x] Storefront V2 session resolver reads `StorefrontTokenResponse.AccessToken` from the final hardened auth contract. 2026-07-14: focused auth tests passed after removing the old nested `StorefrontAuthResponse`.
 - [~] Authenticated `/checkout` redirects to client app checkout. Code path maps authenticated sessions to `/account/checkout`; browser QA only covered anonymous handoff because the external client app was not running.
 - [x] Anonymous checkout can place a local Storefront V2 order when cart data is present. 2026-07-14 visible-browser QA reached checkout form and order success before auth QA.
 - [x] `/signin` renders Storefront V2 local login page.
@@ -347,6 +349,7 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 ## Checkout And Payment Foundation
 
 - [x] Storefront V2 builds after checkout/payment foundation changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed.
+- [x] Storefront V2 shared order item model uses public `AmountPaid` spelling. 2026-07-14: SharedV2 `GetOrderItem` was updated to match Storefront API final hardening; public OpenAPI rejects `amountPayed`.
 - [x] `/checkout` renders local Storefront V2 checkout page. 2026-07-13: Playwright MCP visible browser rendered the local checkout form.
 - [x] `/checkout` does not redirect to `/account/checkout`. 2026-07-13: visible browser stayed on `/checkout` and submitted locally.
 - [x] Empty cart checkout shows empty state. 2026-07-13: `/checkout` with no cart showed `Your cart is empty`.
