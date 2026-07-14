@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 {
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.CommerceNode.Catalog;
+    using BlazorShop.Application.CommerceNode.Customers;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.ProductImports;
@@ -135,6 +136,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<ICommerceStoreService, CommerceStoreService>();
             services.AddScoped<ICommerceStoreContext, CommerceStoreContext>();
             services.AddScoped<ICommerceStoreDomainResolver, CommerceStoreDomainResolver>();
+            services.AddScoped<IStorefrontCustomerService, StorefrontCustomerService>();
             services.AddScoped<IProductSeoService, ProductSeoService>();
             services.AddScoped<ICategorySeoService, CategorySeoService>();
             services.AddScoped<ISeoSettingsService, SeoSettingsService>();

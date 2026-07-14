@@ -1,12 +1,15 @@
 namespace BlazorShop.Domain.Entities.Payment
 {
     using BlazorShop.Domain.Constants;
+    using BlazorShop.Domain.Entities.CommerceNode;
 
     public class Order
     {
         public Guid Id { get; set; } = Guid.NewGuid();
 
         public string UserId { get; set; } = string.Empty;
+
+        public Guid? CustomerId { get; set; }
 
         public string OrderStatus { get; set; } = OrderStatuses.Pending;
 
@@ -73,5 +76,7 @@ namespace BlazorShop.Domain.Entities.Payment
         public DateTime? LastTrackingUpdate { get; set; }
 
         public string? AdminNote { get; set; }
+
+        public CommerceCustomer? Customer { get; set; }
     }
 }

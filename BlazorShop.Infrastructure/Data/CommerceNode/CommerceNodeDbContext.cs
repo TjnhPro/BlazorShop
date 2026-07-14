@@ -57,6 +57,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
         public DbSet<CommerceStore> CommerceStores => Set<CommerceStore>();
 
+        public DbSet<CommerceCustomer> CommerceCustomers => Set<CommerceCustomer>();
+
         public DbSet<CommerceStoreDomain> CommerceStoreDomains => Set<CommerceStoreDomain>();
 
         public DbSet<StorefrontDeploymentImage> StorefrontDeploymentImages => Set<StorefrontDeploymentImage>();
@@ -132,6 +134,45 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 .WithMany(template => template.Products)
                 .HasForeignKey(product => product.VariationTemplateId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<CommerceCustomer>(entity =>
+            {
+                entity.ToTable("commerce_customers");
+                entity.HasKey(customer => customer.Id);
+                entity.Property(customer => customer.Id).HasColumnName("id");
+                entity.Property(customer => customer.StoreId).HasColumnName("store_id");
+                entity.Property(customer => customer.AppUserId).HasColumnName("app_user_id").HasMaxLength(450);
+                entity.Property(customer => customer.Email).HasColumnName("email").HasMaxLength(256).IsRequired();
+                entity.Property(customer => customer.NormalizedEmail).HasColumnName("normalized_email").HasMaxLength(256).IsRequired();
+                entity.Property(customer => customer.FullName).HasColumnName("full_name").HasMaxLength(256).IsRequired();
+                entity.Property(customer => customer.Phone).HasColumnName("phone").HasMaxLength(64);
+                entity.Property(customer => customer.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(customer => customer.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(customer => customer.LastCheckoutAt).HasColumnName("last_checkout_at").HasColumnType("timestamp with time zone");
+
+                entity.HasIndex(customer => new { customer.StoreId, customer.NormalizedEmail }).IsUnique();
+                entity.HasIndex(customer => customer.AppUserId).HasFilter("app_user_id IS NOT NULL");
+
+                entity.HasOne(customer => customer.Store)
+                    .WithMany()
+                    .HasForeignKey(customer => customer.StoreId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(customer => customer.AppUser)
+                    .WithMany()
+                    .HasForeignKey(customer => customer.AppUserId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<Order>(entity =>
+            {
+                entity.Property(order => order.CustomerId).HasColumnName("customer_id");
+                entity.HasIndex(order => order.CustomerId);
+                entity.HasOne(order => order.Customer)
+                    .WithMany(customer => customer.Orders)
+                    .HasForeignKey(order => order.CustomerId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
 
             modelBuilder.Entity<VariationTemplate>(entity =>
             {

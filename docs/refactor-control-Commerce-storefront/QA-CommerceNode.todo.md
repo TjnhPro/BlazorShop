@@ -99,7 +99,7 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Phase 0 records pending guardrail tests for idempotent place-order. 2026-07-14: `CartServiceTests.StorefrontPlaceOrderAsync_ShouldReturnSameOrder_ForDuplicateIdempotencyKey` added as an intentional skipped guardrail.
 - [x] Phase 0 records pending OpenAPI guardrail for future cart/checkout/payment provider endpoints. 2026-07-14: `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_CartCheckoutPaymentProviderEndpointsHaveGeneratorSafeContracts` added as an intentional skipped guardrail.
 - [ ] Server cart session tables are created in `CommerceNodeDbContext` only.
-- [ ] Store-scoped commerce customer profile is unique by `(StoreId, NormalizedEmail)` and does not require adding `StoreId` to `AppUser`.
+- [x] Store-scoped commerce customer profile is unique by `(StoreId, NormalizedEmail)` and does not require adding `StoreId` to `AppUser`. 2026-07-14: `CommerceCustomer`/`StorefrontCustomerService` added with Commerce Node migration `CommerceNodeStorefrontCustomers`; `StorefrontCustomerServiceTests` passed 5/5.
 - [ ] Cart token lookup refuses cross-store token reuse without revealing another store's cart.
 - [ ] Cart API rejects unpublished, archived, wrong-store, and invalid-variant products.
 - [ ] Checkout preview validates cart version, customer email/name, payment method, and shipping address without creating an order.
