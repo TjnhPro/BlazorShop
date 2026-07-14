@@ -41,6 +41,7 @@
 
   <ItemGroup>
     <None Update="PresentationV2\CommerceNode\Snapshots\*.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="PresentationV2\CommerceNode\Snapshots\*.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
