@@ -195,40 +195,40 @@ namespace BlazorShop.CommerceNode.API.Swagger
                     [("StorefrontScopedAuth", "Register")] = new(
                         "StorefrontAuth_Register",
                         "Register a Storefront customer.",
-                        typeof(CommerceNodeApiResponse<object>),
+                        typeof(CommerceNodeApiResponse<StorefrontRegistrationResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedAuth", "Login")] = new(
                         "StorefrontAuth_Login",
                         "Sign in a Storefront customer.",
-                        typeof(CommerceNodeApiResponse<StorefrontAuthResponse>),
+                        typeof(CommerceNodeApiResponse<StorefrontTokenResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedAuth", "RefreshToken")] = new(
                         "StorefrontAuth_RefreshToken",
                         "Refresh a Storefront access token.",
-                        typeof(CommerceNodeApiResponse<StorefrontAuthResponse>),
+                        typeof(CommerceNodeApiResponse<StorefrontTokenResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status500InternalServerError],
                         Security: StorefrontSecurityRequirement.RefreshCookie),
                     [("StorefrontScopedAuth", "Logout")] = new(
                         "StorefrontAuth_Logout",
                         "Sign out a Storefront customer.",
-                        typeof(CommerceNodeApiResponse<object>),
+                        typeof(CommerceNodeApiResponse),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status500InternalServerError],
                         Security: StorefrontSecurityRequirement.RefreshCookie),
                     [("StorefrontScopedAuth", "ChangePassword")] = new(
                         "StorefrontAuth_ChangePassword",
                         "Change the current customer's password.",
-                        typeof(CommerceNodeApiResponse<object>),
+                        typeof(CommerceNodeApiResponse),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status500InternalServerError],
                         Security: StorefrontSecurityRequirement.Bearer),
                     [("StorefrontScopedAuth", "ConfirmEmail")] = new(
                         "StorefrontAuth_ConfirmEmail",
                         "Confirm a Storefront customer email.",
-                        typeof(CommerceNodeApiResponse<object>),
+                        typeof(CommerceNodeApiResponse),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedAuth", "UpdateProfile")] = new(
                         "StorefrontAuth_UpdateProfile",
                         "Update the current customer profile.",
-                        typeof(CommerceNodeApiResponse<object>),
+                        typeof(CommerceNodeApiResponse),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status500InternalServerError],
                         Security: StorefrontSecurityRequirement.Bearer),
 
@@ -281,23 +281,23 @@ namespace BlazorShop.CommerceNode.API.Swagger
                     [("StorefrontScopedCart", "Checkout")] = new(
                         "StorefrontCart_Checkout",
                         "Create a Storefront checkout order.",
-                        typeof(CommerceNodeApiResponse<object>),
+                        typeof(CommerceNodeApiResponse<StorefrontCheckoutResultResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedCart", "SaveCheckout")] = new(
                         "StorefrontCart_SaveCheckout",
                         "Save the current customer's checkout history.",
-                        typeof(CommerceNodeApiResponse<object>),
+                        typeof(CommerceNodeApiResponse),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status500InternalServerError],
                         Security: StorefrontSecurityRequirement.Bearer),
                     [("StorefrontScopedNewsletter", "Subscribe")] = new(
                         "StorefrontNewsletter_Subscribe",
                         "Subscribe an email to the Storefront newsletter.",
-                        typeof(CommerceNodeApiResponse<object>),
+                        typeof(CommerceNodeApiResponse),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedOrders", "ConfirmOrder")] = new(
                         "StorefrontOrders_Confirm",
                         "Confirm an order for the current customer.",
-                        typeof(CommerceNodeApiResponse<object>),
+                        typeof(CommerceNodeApiResponse<StorefrontCheckoutResultResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError],
                         Security: StorefrontSecurityRequirement.Bearer),
                     [("StorefrontScopedOrders", "GetCurrentUserOrders")] = new(

@@ -1,5 +1,7 @@
 namespace BlazorShop.CommerceNode.API.Contracts.Storefront
 {
+    using System.IdentityModel.Tokens.Jwt;
+
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Category;
@@ -159,9 +161,9 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
             };
         }
 
-        public static StorefrontAuthResponse ToStorefrontContract(this LoginResponse response)
+        public static StorefrontTokenResponse ToStorefrontTokenContract(this LoginResponse response)
         {
-            return new StorefrontAuthResponse(response.Success, response.Message, response.Token);
+            return new StorefrontTokenResponse(response.Token, ResolveAccessTokenExpiration(response.Token));
         }
 
         public static StorefrontCategoryResponse ToStorefrontContract(this GetCategory category)
@@ -446,6 +448,21 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 StorefrontProductCatalogSortValues.Updated => ProductCatalogSortBy.Updated,
                 _ => ProductCatalogSortBy.Newest,
             };
+        }
+
+        private static DateTime ResolveAccessTokenExpiration(string token)
+        {
+            try
+            {
+                var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
+                return jwt.ValidTo == DateTime.MinValue
+                    ? DateTime.UtcNow.AddHours(2)
+                    : jwt.ValidTo;
+            }
+            catch (ArgumentException)
+            {
+                return DateTime.UtcNow.AddHours(2);
+            }
         }
     }
 }

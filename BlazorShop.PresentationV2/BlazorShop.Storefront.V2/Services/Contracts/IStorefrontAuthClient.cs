@@ -1,16 +1,17 @@
 namespace BlazorShop.Storefront.Services.Contracts
 {
-    using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.UserIdentity;
 
     public interface IStorefrontAuthClient
     {
-        Task<StorefrontAuthResult<LoginResponse>> LoginAsync(LoginUser user, CancellationToken cancellationToken = default);
+        Task<StorefrontAuthResult<StorefrontTokenResponse>> LoginAsync(LoginUser user, CancellationToken cancellationToken = default);
 
         Task<StorefrontAuthResult<object>> RegisterAsync(CreateUser user, CancellationToken cancellationToken = default);
 
         Task<StorefrontAuthResult<object>> LogoutAsync(string? cookieHeader, string? userAgent, CancellationToken cancellationToken = default);
     }
+
+    public sealed record StorefrontTokenResponse(string AccessToken, DateTime ExpiresAtUtc);
 
     public sealed record StorefrontAuthResult<TData>(
         bool Success,

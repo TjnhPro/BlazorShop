@@ -23,7 +23,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
                 var response = JsonResponse(
                     HttpStatusCode.OK,
-                    """{"success":true,"message":"Signed in.","data":{"success":true,"message":"Signed in.","token":"jwt-token","refreshToken":""}}""");
+                    """{"success":true,"message":"Signed in.","data":{"accessToken":"jwt-token","expiresAtUtc":"2026-07-14T00:00:00Z"}}""");
                 response.Headers.TryAddWithoutValidation("Set-Cookie", "__Host-blazorshop-refresh=abc; Path=/; Secure; HttpOnly");
                 return response;
             });
@@ -34,7 +34,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.True(result.Success);
             Assert.Equal("Signed in.", result.Message);
-            Assert.Equal("jwt-token", result.Data?.Token);
+            Assert.Equal("jwt-token", result.Data?.AccessToken);
             Assert.Contains("__Host-blazorshop-refresh=abc", result.SetCookieHeaders.Single(), StringComparison.Ordinal);
             Assert.Equal(["/api/storefront/stores/default/auth/login"], handler.RequestPaths);
         }

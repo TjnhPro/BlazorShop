@@ -76,8 +76,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     services.RemoveAll<IStorefrontAuthClient>();
                     services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
                     services.AddScoped<IStorefrontAuthClient>(_ => new StubStorefrontAuthClient(
-                        StorefrontAuthResult<LoginResponse>.Succeeded(
-                            new LoginResponse(true, "Signed in.", "jwt-token", string.Empty),
+                        StorefrontAuthResult<StorefrontTokenResponse>.Succeeded(
+                            new StorefrontTokenResponse("jwt-token", DateTime.UtcNow.AddHours(2)),
                             "Signed in.",
                             ["__Host-blazorshop-refresh=abc; Path=/; Secure; HttpOnly"])));
                 },
@@ -102,7 +102,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     services.RemoveAll<IStorefrontAuthClient>();
                     services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
                     services.AddScoped<IStorefrontAuthClient>(_ => new StubStorefrontAuthClient(
-                        StorefrontAuthResult<LoginResponse>.Failed("Invalid credentials.")));
+                        StorefrontAuthResult<StorefrontTokenResponse>.Failed("Invalid credentials.")));
                 },
                 allowAutoRedirect: false);
 
@@ -124,8 +124,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     services.RemoveAll<IStorefrontAuthClient>();
                     services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
                     services.AddScoped<IStorefrontAuthClient>(_ => new StubStorefrontAuthClient(
-                        StorefrontAuthResult<LoginResponse>.Succeeded(
-                            new LoginResponse(true, "Signed in.", "jwt-token", string.Empty),
+                        StorefrontAuthResult<StorefrontTokenResponse>.Succeeded(
+                            new StorefrontTokenResponse("jwt-token", DateTime.UtcNow.AddHours(2)),
                             "Signed in.",
                             [])));
                 },
@@ -503,16 +503,16 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
         private sealed class StubStorefrontAuthClient : IStorefrontAuthClient
         {
-            private readonly StorefrontAuthResult<LoginResponse> loginResult;
+            private readonly StorefrontAuthResult<StorefrontTokenResponse> loginResult;
             private readonly StorefrontAuthResult<object> registerResult;
             private readonly StorefrontAuthResult<object> logoutResult;
 
             public StubStorefrontAuthClient(
-                StorefrontAuthResult<LoginResponse>? loginResult = null,
+                StorefrontAuthResult<StorefrontTokenResponse>? loginResult = null,
                 StorefrontAuthResult<object>? registerResult = null,
                 StorefrontAuthResult<object>? logoutResult = null)
             {
-                this.loginResult = loginResult ?? StorefrontAuthResult<LoginResponse>.Failed("Login is not used by this test.");
+                this.loginResult = loginResult ?? StorefrontAuthResult<StorefrontTokenResponse>.Failed("Login is not used by this test.");
                 this.registerResult = registerResult ?? StorefrontAuthResult<object>.Failed("Register is not used by this test.");
                 this.logoutResult = logoutResult ?? StorefrontAuthResult<object>.Failed("Logout is not used by this test.");
             }
@@ -525,7 +525,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             public string? LastLogoutCookieHeader { get; private set; }
 
-            public Task<StorefrontAuthResult<LoginResponse>> LoginAsync(LoginUser user, CancellationToken cancellationToken = default)
+            public Task<StorefrontAuthResult<StorefrontTokenResponse>> LoginAsync(LoginUser user, CancellationToken cancellationToken = default)
             {
                 return Task.FromResult(this.loginResult);
             }

@@ -3,7 +3,6 @@ namespace BlazorShop.Storefront.Services
     using System.Net.Http.Json;
     using System.Text.Json;
 
-    using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.UserIdentity;
     using BlazorShop.Storefront.Services.Contracts;
 
@@ -22,9 +21,9 @@ namespace BlazorShop.Storefront.Services
             this.httpClient = httpClient;
         }
 
-        public Task<StorefrontAuthResult<LoginResponse>> LoginAsync(LoginUser user, CancellationToken cancellationToken = default)
+        public Task<StorefrontAuthResult<StorefrontTokenResponse>> LoginAsync(LoginUser user, CancellationToken cancellationToken = default)
         {
-            return this.PostAsync<LoginUser, LoginResponse>(
+            return this.PostAsync<LoginUser, StorefrontTokenResponse>(
                 LoginRoute,
                 user,
                 "Unable to sign in right now.",

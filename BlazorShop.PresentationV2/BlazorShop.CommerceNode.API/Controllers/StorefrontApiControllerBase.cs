@@ -16,7 +16,22 @@ namespace BlazorShop.CommerceNode.API.Controllers
         {
             if (response.Success)
             {
-                return this.Ok(CommerceNodeApiResponse<object>.Succeeded(response.Payload ?? new { response.Id }, NormalizeMessage(response.Message)));
+                return this.Ok(CommerceNodeApiResponse.Succeeded(NormalizeMessage(response.Message)));
+            }
+
+            return this.Error(
+                StatusCodes.Status400BadRequest,
+                "validation_error",
+                NormalizeMessage(response.Message));
+        }
+
+        protected IActionResult FromServiceResponse<TData>(ServiceResponse response, Func<object?, TData?> mapPayload)
+        {
+            if (response.Success)
+            {
+                return this.Ok(CommerceNodeApiResponse<TData>.Succeeded(
+                    mapPayload(response.Payload),
+                    NormalizeMessage(response.Message)));
             }
 
             return this.Error(

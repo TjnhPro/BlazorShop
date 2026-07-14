@@ -2,6 +2,8 @@ namespace BlazorShop.CommerceNode.API.Controllers
 {
     using System.Security.Claims;
 
+    using ApplicationStorefrontCheckoutResult = BlazorShop.Application.DTOs.Payment.StorefrontCheckoutResult;
+
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
@@ -39,7 +41,10 @@ namespace BlazorShop.CommerceNode.API.Controllers
         public async Task<IActionResult> Register([FromBody] StorefrontRegisterRequest user)
         {
             var result = await this.authenticationService.CreateUser(user.ToApplicationRequest());
-            return this.FromServiceResponse(result);
+            return this.FromServiceResponse(
+                result,
+                payload => new StorefrontRegistrationResponse(
+                    result.Id ?? (payload is Guid userId ? userId : Guid.Empty)));
         }
 
         [HttpPost("login")]
@@ -70,8 +75,8 @@ namespace BlazorShop.CommerceNode.API.Controllers
             }
 
             this.AppendRefreshTokenCookie(result.RefreshToken);
-            return this.Ok(CommerceNodeApiResponse<StorefrontAuthResponse>.Succeeded(
-                SanitizeLoginResponse(result).ToStorefrontContract(),
+            return this.Ok(CommerceNodeApiResponse<StorefrontTokenResponse>.Succeeded(
+                SanitizeLoginResponse(result).ToStorefrontTokenContract(),
                 NormalizeLoginMessage(result.Message)));
         }
 
@@ -113,8 +118,8 @@ namespace BlazorShop.CommerceNode.API.Controllers
             }
 
             this.AppendRefreshTokenCookie(result.RefreshToken);
-            return this.Ok(CommerceNodeApiResponse<StorefrontAuthResponse>.Succeeded(
-                SanitizeLoginResponse(result).ToStorefrontContract(),
+            return this.Ok(CommerceNodeApiResponse<StorefrontTokenResponse>.Succeeded(
+                SanitizeLoginResponse(result).ToStorefrontTokenContract(),
                 NormalizeLoginMessage(result.Message)));
         }
 
@@ -349,7 +354,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
         {
             var userId = this.GetCurrentCustomerId();
             var result = await this.cartService.CheckoutAsync(checkout.ToApplicationRequest(), userId);
-            return this.FromServiceResponse(result);
+            return this.FromServiceResponse(
+                result,
+                payload => payload is ApplicationStorefrontCheckoutResult checkoutResult
+                    ? checkoutResult.ToStorefrontContract()
+                    : null);
         }
 
         [HttpPost("save-checkout")]
@@ -426,7 +435,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
             var result = await this.cartService.ConfirmOrderAsync(
                 carts.Select(cart => cart.ToProcessCart()).ToArray(),
                 userId);
-            return this.FromServiceResponse(result);
+            return this.FromServiceResponse(
+                result,
+                payload => payload is ApplicationStorefrontCheckoutResult checkoutResult
+                    ? checkoutResult.ToStorefrontContract()
+                    : null);
         }
 
         [HttpGet("current-user")]

@@ -5,7 +5,6 @@ namespace BlazorShop.Storefront.Services
     using System.Text;
     using System.Text.Json;
 
-    using BlazorShop.Application.DTOs;
     using BlazorShop.Storefront.Services.Contracts;
     using BlazorShop.Web.SharedV2;
 
@@ -57,13 +56,13 @@ namespace BlazorShop.Storefront.Services
                 return StorefrontSessionInfo.Anonymous;
             }
 
-            var payload = await ReadLoginResponseAsync(response, cancellationToken);
-            if (payload is null || !payload.Success || string.IsNullOrWhiteSpace(payload.Token))
+            var payload = await ReadTokenResponseAsync(response, cancellationToken);
+            if (payload is null || string.IsNullOrWhiteSpace(payload.AccessToken))
             {
                 return StorefrontSessionInfo.Anonymous;
             }
 
-            return ParseSession(payload.Token);
+            return ParseSession(payload.AccessToken);
         }
 
         private string GetRefreshTokenCookieName()
@@ -167,7 +166,7 @@ namespace BlazorShop.Storefront.Services
             return Encoding.UTF8.GetString(Convert.FromBase64String(padded));
         }
 
-        private static async Task<LoginResponse?> ReadLoginResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+        private static async Task<StorefrontTokenResponse?> ReadTokenResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
         {
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
 
@@ -178,10 +177,10 @@ namespace BlazorShop.Storefront.Services
             {
                 return dataProperty.ValueKind == JsonValueKind.Null
                     ? null
-                    : dataProperty.Deserialize<LoginResponse>(new JsonSerializerOptions(JsonSerializerDefaults.Web));
+                    : dataProperty.Deserialize<StorefrontTokenResponse>(new JsonSerializerOptions(JsonSerializerDefaults.Web));
             }
 
-            return document.RootElement.Deserialize<LoginResponse>(new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            return document.RootElement.Deserialize<StorefrontTokenResponse>(new JsonSerializerOptions(JsonSerializerDefaults.Web));
         }
     }
 }

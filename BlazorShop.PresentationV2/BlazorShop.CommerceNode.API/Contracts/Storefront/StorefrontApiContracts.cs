@@ -235,10 +235,12 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         public string? ReturnUrl { get; set; }
     }
 
-    public sealed record StorefrontAuthResponse(
-        bool Success,
-        string Message,
-        string Token);
+    public sealed record StorefrontRegistrationResponse(
+        Guid CustomerId);
+
+    public sealed record StorefrontTokenResponse(
+        string AccessToken,
+        DateTime ExpiresAtUtc);
 
     public sealed record StorefrontCategoryResponse(
         Guid Id,

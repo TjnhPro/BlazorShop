@@ -100,7 +100,7 @@ app.MapPost(StorefrontRoutes.SignIn, async (
         },
         cancellationToken);
 
-    if (!result.Success || result.Data is null || !result.Data.Success || string.IsNullOrWhiteSpace(result.Data.Token))
+    if (!result.Success || result.Data is null || string.IsNullOrWhiteSpace(result.Data.AccessToken))
     {
         return Results.Redirect(StorefrontReturnUrl.BuildSignInUrl(safeReturnUrl, result.Message));
     }
