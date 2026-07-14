@@ -65,6 +65,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
         public DbSet<CheckoutSession> CheckoutSessions => Set<CheckoutSession>();
 
+        public DbSet<PaymentAttempt> PaymentAttempts => Set<PaymentAttempt>();
+
+        public DbSet<PaymentProviderEvent> PaymentProviderEvents => Set<PaymentProviderEvent>();
+
         public DbSet<CommerceStoreDomain> CommerceStoreDomains => Set<CommerceStoreDomain>();
 
         public DbSet<StorefrontDeploymentImage> StorefrontDeploymentImages => Set<StorefrontDeploymentImage>();
@@ -347,6 +351,94 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                     table => table.HasCheckConstraint(
                         "ck_checkout_sessions_state",
                         "state in ('draft', 'ready', 'order_pending', 'completed', 'expired', 'cancelled')"));
+            });
+
+            modelBuilder.Entity<PaymentAttempt>(entity =>
+            {
+                entity.ToTable("payment_attempts");
+                entity.HasKey(attempt => attempt.Id);
+                entity.Property(attempt => attempt.Id).HasColumnName("id");
+                entity.Property(attempt => attempt.PublicId).HasColumnName("public_id");
+                entity.Property(attempt => attempt.StoreId).HasColumnName("store_id");
+                entity.Property(attempt => attempt.CheckoutSessionId).HasColumnName("checkout_session_id");
+                entity.Property(attempt => attempt.OrderId).HasColumnName("order_id");
+                entity.Property(attempt => attempt.PaymentMethodKey).HasColumnName("payment_method_key").HasMaxLength(64).IsRequired();
+                entity.Property(attempt => attempt.ProviderKey).HasColumnName("provider_key").HasMaxLength(64).IsRequired();
+                entity.Property(attempt => attempt.State).HasColumnName("state").HasMaxLength(32).IsRequired();
+                entity.Property(attempt => attempt.Amount).HasColumnName("amount").HasPrecision(18, 2);
+                entity.Property(attempt => attempt.CurrencyCode).HasColumnName("currency_code").HasMaxLength(3).IsRequired();
+                entity.Property(attempt => attempt.IdempotencyKey).HasColumnName("idempotency_key").HasMaxLength(128).IsRequired();
+                entity.Property(attempt => attempt.ProviderReference).HasColumnName("provider_reference").HasMaxLength(256);
+                entity.Property(attempt => attempt.ProviderSessionId).HasColumnName("provider_session_id").HasMaxLength(256);
+                entity.Property(attempt => attempt.NextActionType).HasColumnName("next_action_type").HasMaxLength(64);
+                entity.Property(attempt => attempt.NextActionUrl).HasColumnName("next_action_url").HasMaxLength(2048);
+                entity.Property(attempt => attempt.FailureCode).HasColumnName("failure_code").HasMaxLength(128);
+                entity.Property(attempt => attempt.FailureMessage).HasColumnName("failure_message").HasMaxLength(512);
+                entity.Property(attempt => attempt.MetadataJson).HasColumnName("metadata_json").HasColumnType("jsonb");
+                entity.Property(attempt => attempt.ExpiresAtUtc).HasColumnName("expires_at_utc").HasColumnType("timestamp with time zone");
+                entity.Property(attempt => attempt.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(attempt => attempt.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasIndex(attempt => attempt.PublicId).IsUnique();
+                entity.HasIndex(attempt => new { attempt.StoreId, attempt.IdempotencyKey }).IsUnique();
+                entity.HasIndex(attempt => new { attempt.StoreId, attempt.State, attempt.CreatedAtUtc });
+                entity.HasIndex(attempt => attempt.CheckoutSessionId);
+                entity.HasIndex(attempt => attempt.OrderId);
+                entity.HasIndex(attempt => new { attempt.ProviderKey, attempt.ProviderSessionId })
+                    .HasFilter("provider_session_id IS NOT NULL");
+
+                entity.HasOne(attempt => attempt.Store)
+                    .WithMany()
+                    .HasForeignKey(attempt => attempt.StoreId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(attempt => attempt.CheckoutSession)
+                    .WithMany()
+                    .HasForeignKey(attempt => attempt.CheckoutSessionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(attempt => attempt.Order)
+                    .WithMany()
+                    .HasForeignKey(attempt => attempt.OrderId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.ToTable(
+                    "payment_attempts",
+                    table => table.HasCheckConstraint(
+                        "ck_payment_attempts_state",
+                        "state in ('created', 'requires_action', 'authorized', 'captured', 'failed', 'cancelled', 'expired')"));
+            });
+
+            modelBuilder.Entity<PaymentProviderEvent>(entity =>
+            {
+                entity.ToTable("payment_provider_events");
+                entity.HasKey(paymentEvent => paymentEvent.Id);
+                entity.Property(paymentEvent => paymentEvent.Id).HasColumnName("id");
+                entity.Property(paymentEvent => paymentEvent.StoreId).HasColumnName("store_id");
+                entity.Property(paymentEvent => paymentEvent.PaymentAttemptId).HasColumnName("payment_attempt_id");
+                entity.Property(paymentEvent => paymentEvent.ProviderKey).HasColumnName("provider_key").HasMaxLength(64).IsRequired();
+                entity.Property(paymentEvent => paymentEvent.EventId).HasColumnName("event_id").HasMaxLength(256);
+                entity.Property(paymentEvent => paymentEvent.EventType).HasColumnName("event_type").HasMaxLength(128).IsRequired();
+                entity.Property(paymentEvent => paymentEvent.PayloadHash).HasColumnName("payload_hash").HasMaxLength(64).IsRequired();
+                entity.Property(paymentEvent => paymentEvent.PayloadJson).HasColumnName("payload_json").HasColumnType("jsonb").IsRequired();
+                entity.Property(paymentEvent => paymentEvent.ProcessedAtUtc).HasColumnName("processed_at_utc").HasColumnType("timestamp with time zone");
+                entity.Property(paymentEvent => paymentEvent.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasIndex(paymentEvent => new { paymentEvent.ProviderKey, paymentEvent.EventId })
+                    .IsUnique()
+                    .HasFilter("event_id IS NOT NULL");
+                entity.HasIndex(paymentEvent => paymentEvent.PaymentAttemptId);
+                entity.HasIndex(paymentEvent => new { paymentEvent.StoreId, paymentEvent.ProviderKey, paymentEvent.CreatedAtUtc });
+
+                entity.HasOne(paymentEvent => paymentEvent.Store)
+                    .WithMany()
+                    .HasForeignKey(paymentEvent => paymentEvent.StoreId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(paymentEvent => paymentEvent.PaymentAttempt)
+                    .WithMany()
+                    .HasForeignKey(paymentEvent => paymentEvent.PaymentAttemptId)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             modelBuilder.Entity<VariationTemplate>(entity =>

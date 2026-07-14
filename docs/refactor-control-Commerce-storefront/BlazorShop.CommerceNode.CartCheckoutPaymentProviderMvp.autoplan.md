@@ -489,6 +489,8 @@ Commit boundary: `feat: place cod orders from checkout session`
 
 ### Phase 8 - Payment Attempt Foundation
 
+Status: completed 2026-07-14 in commit `feat: add payment attempt ledger`.
+
 Goal: create a provider-ready payment ledger before online payment work.
 
 Entity:

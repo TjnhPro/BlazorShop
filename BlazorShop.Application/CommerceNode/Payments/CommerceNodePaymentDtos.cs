@@ -2,6 +2,87 @@ namespace BlazorShop.Application.CommerceNode.Payments
 {
     using BlazorShop.Application.DTOs;
 
+    public sealed record PaymentAttemptDto(
+        Guid Id,
+        Guid StoreId,
+        Guid CheckoutSessionId,
+        Guid? OrderId,
+        string PaymentMethodKey,
+        string ProviderKey,
+        string State,
+        decimal Amount,
+        string CurrencyCode,
+        string IdempotencyKey,
+        string? ProviderReference,
+        string? ProviderSessionId,
+        string? NextActionType,
+        string? NextActionUrl,
+        string? FailureCode,
+        string? FailureMessage,
+        DateTimeOffset ExpiresAtUtc,
+        DateTimeOffset CreatedAtUtc,
+        DateTimeOffset UpdatedAtUtc);
+
+    public sealed record CreatePaymentAttemptRequest(
+        Guid StoreId,
+        Guid CheckoutSessionId,
+        Guid? OrderId,
+        string PaymentMethodKey,
+        string ProviderKey,
+        decimal Amount,
+        string CurrencyCode,
+        string IdempotencyKey,
+        string? MetadataJson = null,
+        DateTimeOffset? ExpiresAtUtc = null);
+
+    public sealed record TransitionPaymentAttemptRequest(
+        Guid StoreId,
+        Guid PaymentAttemptId,
+        string NewState,
+        string? ProviderReference = null,
+        string? ProviderSessionId = null,
+        string? NextActionType = null,
+        string? NextActionUrl = null,
+        string? FailureCode = null,
+        string? FailureMessage = null,
+        string? MetadataJson = null);
+
+    public sealed record PaymentProviderEventDto(
+        Guid Id,
+        Guid StoreId,
+        Guid? PaymentAttemptId,
+        string ProviderKey,
+        string? EventId,
+        string EventType,
+        string PayloadHash,
+        bool IsDuplicate,
+        DateTimeOffset? ProcessedAtUtc,
+        DateTimeOffset CreatedAtUtc);
+
+    public sealed record RecordPaymentProviderEventRequest(
+        Guid StoreId,
+        Guid? PaymentAttemptId,
+        string ProviderKey,
+        string? EventId,
+        string EventType,
+        string PayloadJson,
+        DateTimeOffset? ProcessedAtUtc = null);
+
+    public interface IPaymentAttemptService
+    {
+        Task<ServiceResponse<PaymentAttemptDto>> CreateAsync(
+            CreatePaymentAttemptRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<PaymentAttemptDto>> TransitionAsync(
+            TransitionPaymentAttemptRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<PaymentProviderEventDto>> RecordProviderEventAsync(
+            RecordPaymentProviderEventRequest request,
+            CancellationToken cancellationToken = default);
+    }
+
     public sealed record StorePaymentMethodDto(
         Guid Id,
         string PaymentMethodKey,

@@ -113,6 +113,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IPaymentHandler, StripePaymentHandler>();
             services.AddScoped<IPaymentHandler, PayPalPaymentHandler>();
             services.AddScoped<IPaymentHandlerResolver, PaymentHandlerResolver>();
+            services.AddScoped<IPaymentAttemptService, PaymentAttemptService>();
             services.AddScoped<IStripeCheckoutSessionService, StripeCheckoutSessionService>();
             services.AddScoped<IPaymentService, StripePaymentService>();
             services.AddScoped<IPayPalPaymentService, PayPalPaymentService>();
