@@ -393,16 +393,16 @@ X-Store-Key header is required for legacy internal API.
 
 ### Phase 8 - QA Checklist Update
 
-- [ ] Update `QA-CommerceNode.todo.md`.
-- [ ] Update `QA-ControlPlane.todo.md`.
-- [ ] Update `QA-StorefrontV2.todo.md`.
-- [ ] Add Swagger checks:
+- [x] Update `QA-CommerceNode.todo.md`.
+- [x] Update `QA-ControlPlane.todo.md`.
+- [x] Update `QA-StorefrontV2.todo.md`.
+- [x] Add Swagger checks:
   - Commerce Admin document shows node headers and storeKey query.
   - Storefront document shows route storeKey and no headers.
   - Legacy Internal document shows X-Store-Key and is marked legacy.
-- [ ] Add API checks for missing storeKey failures.
-- [ ] Add visible browser QA requirement for Storefront flows when user requests observation.
-- [ ] Commit QA docs phase.
+- [x] Add API checks for missing storeKey failures.
+- [x] Add visible browser QA requirement for Storefront flows when user requests observation.
+- [x] Commit QA docs phase.
 
 ### Phase 9 - Verification
 

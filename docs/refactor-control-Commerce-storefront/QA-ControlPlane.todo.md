@@ -167,6 +167,16 @@ Status legend:
 - [ ] API error message from CommerceNode is surfaced through ControlPlane API response message.
 - [ ] Browser network capture shows no direct `api/commerce/*` call from ControlPlane Web.
 
+## Commerce Admin Gateway Rescope
+
+- [x] ControlPlane CommerceNode catalog/media gateway appends `storeKey` query to Commerce Admin calls. 2026-07-14: `ControlPlaneCommerceCatalogService` gateway routes were updated in Phase 6.
+- [x] ControlPlane CommerceNode catalog/media gateway keeps `X-Node-Key` and `X-Node-Secret`. 2026-07-14: build verified after Phase 6 gateway update.
+- [x] ControlPlane CommerceNode catalog/media gateway no longer sends `X-Store-Key` to Commerce Admin endpoints. 2026-07-14: Phase 6 removed the header from gateway calls.
+- [ ] ControlPlane product/category/order/media/admin pages still load after Commerce Admin missing-`storeKey` enforcement.
+- [ ] Browser network capture confirms ControlPlane Web still calls only ControlPlane API.
+- [ ] ControlPlane API product media preview calls `api/commerce/admin/media/products/{mediaId}?storeKey={storeKey}`.
+- [ ] ControlPlane API asset media preview calls `api/commerce/admin/media/assets/{assetId}?storeKey={storeKey}`.
+
 ## Commerce Storefront Pages
 
 - [x] ControlPlane API builds after storefront page gateway changes. 2026-07-11: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` passed.

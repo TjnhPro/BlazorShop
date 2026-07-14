@@ -7,9 +7,10 @@ QA nay theo doi `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`.
 Muc tieu hien tai:
 
 - Xac nhan Storefront V2 copy/reuse tu legacy Storefront ma khong sua legacy project.
-- Xac nhan V2 goi Commerce Node `api/internal/*` mac dinh.
+- Xac nhan V2 goi Commerce Node `api/storefront/stores/{storeKey}/*` mac dinh.
+- Xac nhan V2 khong gui `X-Store-Key` cho Storefront API calls.
 - Xac nhan legacy API fallback bi tat mac dinh.
-- Xac nhan cac route Storefront core chay duoc truoc khi cat over.
+- Xac nhan `api/internal/*` chi con la legacy compatibility cho den khi QA scoped route pass.
 
 ## Required Services
 
@@ -59,7 +60,9 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] `dotnet test BlazorShop.sln`
   - 2026-07-09: passed with 501 passed, 10 skipped after Storefront V2 local auth implementation.
 - [x] API client parses API response envelope.
-- [x] API client calls Commerce Node internal catalog route.
+- [x] API client calls Commerce Node scoped Storefront catalog route. 2026-07-14: client tests assert `/api/storefront/stores/default/catalog/categories`.
+- [x] API client auth calls Commerce Node scoped Storefront auth routes. 2026-07-14: client tests assert scoped login/register/logout routes.
+- [ ] Storefront HTTP clients do not send `X-Store-Key` on scoped API requests.
 - [x] API client does not call legacy fallback when `Api:EnableLegacyFallback=false`.
 - [x] API client can use legacy fallback only when explicitly enabled.
 - [x] Checkout anonymous redirect is covered by V2 host smoke test.
@@ -195,7 +198,7 @@ Use this checklist whenever `StorefrontHeader`, `/search`, `StorefrontApiClient`
 - [x] Quantity update works.
 - [x] Remove item works.
 - [x] Clear cart works.
-- [x] Cart refreshes product details from `api/internal/catalog/products/{id}`.
+- [x] Cart refreshes product details from `api/storefront/stores/{storeKey}/catalog/products/{id}`. 2026-07-14: `StorefrontApiClient` route switched to scoped catalog base.
 - [x] Invalid cart cookie does not crash page.
 - [~] Unavailable product in cart shows warning state. Code path exists in `CartPage` for missing catalog products; live QA used available seeded products only.
 - [x] Cart route stays private/noindex.
@@ -206,7 +209,7 @@ Use this checklist whenever `StorefrontHeader`, `/search`, `StorefrontApiClient`
 - [x] Anonymous `/checkout` redirect is covered by automated smoke test.
 - [x] Refresh-token cookie name is compatible:
   - `__Host-blazorshop-refresh`
-- [x] Storefront V2 calls `api/internal/auth/refresh-token`. 2026-07-09: verified `StorefrontSessionResolver` uses configured `Api:RefreshTokenRoute=internal/auth/refresh-token`.
+- [x] Storefront V2 calls `api/storefront/stores/{storeKey}/auth/refresh-token`. 2026-07-14: `Api:RefreshTokenRoute` default/config changed to `auth/refresh-token` under scoped base address.
 - [~] Authenticated `/checkout` redirects to client app checkout. Code path maps authenticated sessions to `/account/checkout`; browser QA only covered anonymous handoff because the external client app was not running.
 - [x] Anonymous `/checkout` redirects to local `/signin?returnUrl=/checkout`.
 - [x] `/signin` renders Storefront V2 local login page.
@@ -217,7 +220,7 @@ Use this checklist whenever `StorefrontHeader`, `/search`, `StorefrontApiClient`
 - [x] Register password mismatch is blocked before Commerce Node API call. 2026-07-09: covered by host smoke test.
 - [x] Duplicate/invalid register shows safe API message. 2026-07-09: covered by host smoke test.
 - [x] Register success redirects to `/signin?registered=1` and preserves safe return URL. 2026-07-09: covered by host smoke test.
-- [x] Local `/logout` calls Commerce Node `api/internal/auth/logout` and copies expired refresh cookie back to the browser. 2026-07-09: covered by auth client and host smoke tests.
+- [x] Local `/logout` calls Commerce Node `api/storefront/stores/{storeKey}/auth/logout` and copies expired refresh cookie back to the browser. 2026-07-14: auth client route tests assert scoped logout path.
 - [x] Authenticated account menu shows local logout and does not link customer to legacy `BlazorShop.Web`.
 - [x] Browser console has no unexpected errors on `/signin`, `/register`, login, register, and logout. 2026-07-09: Playwright local-auth QA run reported 0 current console errors.
 - [~] Missing Commerce Node auth endpoint degrades to anonymous and does not crash. Session resolver catches refresh failure and returns anonymous; live QA did not disable only the auth endpoint.
@@ -230,10 +233,10 @@ Use this checklist whenever Storefront V2 auth UI or Commerce Node auth API chan
 - [x] `GET /register` renders Storefront V2 page with local form and no redirect to legacy Web. 2026-07-09: Playwright verified `http://localhost:18598/register`.
 - [x] Register empty/invalid required fields stay browser-validatable and do not call Commerce Node. 2026-07-09: empty submit stayed on `/register`; invalid required fields were `FullName`, `Email`, `Password`, `ConfirmPassword`.
 - [x] Register password mismatch returns safe Storefront error message. 2026-07-09: returned `Passwords do not match.`
-- [x] Register new customer succeeds against Commerce Node `api/internal/auth/create`. 2026-07-09: registered `qa-browser-1783577745900@example.local`.
+- [ ] Register new customer succeeds against Commerce Node `api/storefront/stores/{storeKey}/auth/register`.
 - [x] Duplicate register returns safe Storefront/API error message. 2026-07-09: duplicate returned `User already exists.`
 - [x] Login wrong password returns safe Storefront/API error message. 2026-07-09: wrong password returned `Invalid credentials.`
-- [x] Login correct credentials succeeds against Commerce Node `api/internal/auth/login`. 2026-07-09: QA customer login redirected to `/terms`.
+- [ ] Login correct credentials succeeds against Commerce Node `api/storefront/stores/{storeKey}/auth/login`.
 - [x] Login success sets `__Host-blazorshop-refresh` on Storefront response. 2026-07-09: Playwright cookie list contained `__Host-blazorshop-refresh`.
 - [x] Login success redirects to safe `returnUrl` when provided. 2026-07-09: `/signin?returnUrl=/terms` redirected to `/terms`.
 - [x] Unsafe absolute `returnUrl` is rejected and redirects to `/`. 2026-07-09: covered by automated Storefront V2 host smoke test.
@@ -270,10 +273,9 @@ Use this checklist whenever Storefront V2 auth UI or Commerce Node auth API chan
 - [x] `SeoHead` renders OpenGraph.
 - [x] `JsonLdScript` renders structured data.
   - 2026-07-09: verified `schema.org` structured data on home and product pages.
-- [x] `/sitemap.xml` uses `api/internal/catalog/sitemap`.
-  - 2026-07-09: fixed and verified sitemap after ISSUE-001.
+- [x] `/sitemap.xml` uses `api/storefront/stores/{storeKey}/catalog/sitemap`. 2026-07-14: API client route switched to scoped catalog sitemap.
 - [x] `/robots.txt` points at V2 public sitemap URL.
-- [x] Redirect middleware uses `api/internal/seo/redirects/resolve`.
+- [x] Redirect middleware uses `api/storefront/stores/{storeKey}/seo/redirects/resolve`. 2026-07-14: API client route switched to scoped SEO redirects.
 - [x] Missing route has no canonical and includes noindex.
 - [x] Commerce Node downtime has noindex 503 surface.
 
@@ -345,7 +347,7 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] `/checkout` renders local Storefront V2 checkout page. 2026-07-13: Playwright MCP visible browser rendered the local checkout form.
 - [x] `/checkout` does not redirect to `/account/checkout`. 2026-07-13: visible browser stayed on `/checkout` and submitted locally.
 - [x] Empty cart checkout shows empty state. 2026-07-13: `/checkout` with no cart showed `Your cart is empty`.
-- [x] Checkout page loads enabled payment methods. 2026-07-13: checkout loaded COD from CommerceNode internal payment methods.
+- [x] Checkout page loads enabled payment methods through scoped Storefront API. 2026-07-14: payment methods route switched to `payments/methods` under scoped base; live browser recheck pending.
 - [x] COD is selected/available in MVP. 2026-07-13: COD radio was checked by default.
 - [ ] Required contact/shipping validation blocks submit.
 - [x] COD checkout succeeds with visible order reference. 2026-07-13: visible browser created `ORD-20260713-6672B965` and displayed the confirmation page.

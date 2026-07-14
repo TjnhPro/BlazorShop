@@ -23,6 +23,26 @@ Last verified: 2026-07-10
 - [x] Verify Swagger/API host is reachable.
 - [x] Verify response envelope shape: `success`, `message`, `data`.
 
+## Swagger And Store Scope Rescope
+
+- [ ] `GET /swagger/commerce-admin/swagger.json` returns 200.
+- [ ] Commerce Admin Swagger includes `api/commerce/*` endpoints only.
+- [ ] Commerce Admin Swagger shows required `X-Node-Key` and `X-Node-Secret` headers.
+- [ ] Commerce Admin Swagger shows required `storeKey` query for store-scoped admin endpoints.
+- [ ] Commerce Admin Swagger does not show `X-Store-Key`.
+- [ ] `GET /swagger/storefront/swagger.json` returns 200.
+- [ ] Storefront Swagger includes `api/storefront/stores/{storeKey}/*` endpoints only.
+- [ ] Storefront Swagger shows required `{storeKey}` path parameter.
+- [ ] Storefront Swagger does not show `X-Node-Key`, `X-Node-Secret`, or `X-Store-Key`.
+- [ ] `GET /swagger/legacy-internal/swagger.json` returns 200.
+- [ ] Legacy Internal Swagger includes `api/internal/*` endpoints only and is visibly marked compatibility/legacy.
+- [ ] Legacy Internal Swagger shows `X-Store-Key`.
+- [ ] Store-scoped Commerce Admin endpoint without `storeKey` query returns a clear `success=false` response.
+- [ ] Store-scoped Commerce Admin endpoint with `X-Store-Key` but no `storeKey` query still fails.
+- [ ] Storefront scoped endpoint reads `storeKey` from route and works without `X-Store-Key`.
+- [ ] Storefront scoped endpoint ignores/rejects header-only store scope and does not require node credentials.
+- [ ] Legacy `api/internal/*` remains available with `X-Store-Key` until Storefront scoped route QA passes.
+
 ## Startup Database Migration
 
 - [x] Clean `CommerceNodeConnection` database is created/migrated by `BlazorShop.CommerceNode.API` startup when `CommerceNode:Database:MigrateOnStartup=true`. 2026-07-11: startup smoke passed against disposable DB `blazorshop_commerce_node_startup_qa_20260711`.
@@ -54,6 +74,20 @@ Last verified: 2026-07-10
   - [x] `api/internal/orders/confirm`
   - [x] `api/internal/orders/current-user`
   - [x] `api/internal/orders/current-user/items`
+
+### `api/storefront/stores/{storeKey}/*`
+
+- [ ] Scoped catalog routes do not require node key.
+- [ ] Scoped SEO routes do not require node key.
+- [ ] Scoped auth register/login/refresh/logout do not require node key.
+- [ ] Scoped Storefront routes do not require `X-Store-Key`.
+- [ ] Customer routes require JWT:
+  - [ ] `api/storefront/stores/{storeKey}/cart/save-checkout`
+  - [ ] `api/storefront/stores/{storeKey}/orders/confirm`
+  - [ ] `api/storefront/stores/{storeKey}/orders/current-user`
+  - [ ] `api/storefront/stores/{storeKey}/orders/current-user/items`
+- [ ] Anonymous checkout route remains allowed:
+  - [ ] `api/storefront/stores/{storeKey}/cart/checkout`
 
 ## Seed Data
 
@@ -276,6 +310,47 @@ Last verified: 2026-07-10
 - [x] `GET /api/internal/catalog/products/{id}`
 - [x] `GET /api/internal/catalog/products/slug/{slug}`
 - [x] `GET /api/internal/catalog/sitemap`
+
+## Storefront Scoped API Checklist
+
+### Catalog
+
+- [ ] `GET /api/storefront/stores/{storeKey}/catalog/categories`
+- [ ] `GET /api/storefront/stores/{storeKey}/catalog/categories/tree`
+- [ ] `GET /api/storefront/stores/{storeKey}/catalog/categories/{id}`
+- [ ] `GET /api/storefront/stores/{storeKey}/catalog/categories/slug/{slug}`
+- [ ] `GET /api/storefront/stores/{storeKey}/catalog/categories/{categoryId}/products`
+- [ ] `GET /api/storefront/stores/{storeKey}/catalog/products`
+- [ ] `GET /api/storefront/stores/{storeKey}/catalog/products?categorySlug=t-shirts&searchTerm=shirt`
+- [ ] `GET /api/storefront/stores/{storeKey}/catalog/products/{id}`
+- [ ] `GET /api/storefront/stores/{storeKey}/catalog/products/slug/{slug}`
+- [ ] `GET /api/storefront/stores/{storeKey}/catalog/sitemap`
+
+### Store, SEO, Pages
+
+- [ ] `GET /api/storefront/stores/{storeKey}/store/current`
+- [ ] `GET /api/storefront/stores/{storeKey}/store/maintenance`
+- [ ] `GET /api/storefront/stores/{storeKey}/seo/settings`
+- [ ] `GET /api/storefront/stores/{storeKey}/seo/redirects/resolve?path=/legacy-qa-product`
+- [ ] `GET /api/storefront/stores/{storeKey}/pages/{slug}`
+
+### Auth, Payments, Newsletter, Recommendations
+
+- [ ] `POST /api/storefront/stores/{storeKey}/auth/register`
+- [ ] `POST /api/storefront/stores/{storeKey}/auth/login`
+- [ ] `POST /api/storefront/stores/{storeKey}/auth/refresh-token` with login cookie.
+- [ ] `POST /api/storefront/stores/{storeKey}/auth/logout` revokes refresh cookie.
+- [ ] `GET /api/storefront/stores/{storeKey}/payments/methods`
+- [ ] `POST /api/storefront/stores/{storeKey}/newsletter/subscribe`
+- [ ] `GET /api/storefront/stores/{storeKey}/recommendations/products/{productId}`
+
+### Cart And Orders
+
+- [ ] `POST /api/storefront/stores/{storeKey}/cart/checkout`
+- [ ] `POST /api/storefront/stores/{storeKey}/cart/save-checkout`
+- [ ] `POST /api/storefront/stores/{storeKey}/orders/confirm`
+- [ ] `GET /api/storefront/stores/{storeKey}/orders/current-user`
+- [ ] `GET /api/storefront/stores/{storeKey}/orders/current-user/items`
 
 ### Catalog Search MVP
 
