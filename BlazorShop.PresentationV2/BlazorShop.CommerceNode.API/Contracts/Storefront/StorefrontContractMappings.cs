@@ -407,6 +407,32 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 store.MaintenanceMessage);
         }
 
+        public static StorefrontCurrentStoreResponse ToStorefrontContract(this CommerceCurrentStore store)
+        {
+            return new StorefrontCurrentStoreResponse(
+                store.PublicId,
+                store.StoreKey,
+                store.Name,
+                store.Status,
+                store.BaseUrl,
+                store.PrimaryDomain,
+                store.ForceHttps,
+                store.CdnHost,
+                store.LogoUrl,
+                store.FaviconUrl,
+                store.PngIconUrl,
+                store.AppleTouchIconUrl,
+                store.MsTileImageUrl,
+                store.MsTileColor,
+                store.DefaultCurrencyCode,
+                store.DefaultCulture,
+                store.SupportEmail,
+                store.SupportPhone,
+                store.MaintenanceModeEnabled,
+                store.MaintenanceMessage,
+                store.HtmlBodyId);
+        }
+
         private static ProductCatalogSortBy ToApplicationSortBy(string? sortBy)
         {
             return sortBy switch

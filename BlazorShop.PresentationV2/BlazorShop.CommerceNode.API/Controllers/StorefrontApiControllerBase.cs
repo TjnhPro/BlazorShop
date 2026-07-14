@@ -19,7 +19,10 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 return this.Ok(CommerceNodeApiResponse<object>.Succeeded(response.Payload ?? new { response.Id }, NormalizeMessage(response.Message)));
             }
 
-            return this.BadRequest(CommerceNodeApiResponse<object>.Failed(NormalizeMessage(response.Message)));
+            return this.Error(
+                StatusCodes.Status400BadRequest,
+                "validation_error",
+                NormalizeMessage(response.Message));
         }
 
         protected IActionResult FromServiceResponse<TData>(ServiceResponse<TData> response)
@@ -29,14 +32,26 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 return this.Ok(CommerceNodeApiResponse<TData>.Succeeded(response.Payload, NormalizeMessage(response.Message)));
             }
 
-            return this.StatusCode(
+            return this.Error(
                 ToStatusCode(response.ResponseType),
-                CommerceNodeApiResponse<TData>.Failed(NormalizeMessage(response.Message), response.Payload));
+                ToErrorCode(response.ResponseType),
+                NormalizeMessage(response.Message));
         }
 
         protected IActionResult Failure<TData>(ServiceResponseType responseType, string message, TData? data = default)
         {
-            return this.StatusCode(ToStatusCode(responseType), CommerceNodeApiResponse<TData>.Failed(message, data));
+            return this.Error(ToStatusCode(responseType), ToErrorCode(responseType), message);
+        }
+
+        protected IActionResult Error(int statusCode, string code, string message)
+        {
+            return this.StatusCode(
+                statusCode,
+                new CommerceNodeApiErrorResponse(
+                    false,
+                    code,
+                    NormalizeMessage(message),
+                    this.HttpContext.TraceIdentifier));
         }
 
         private static int ToStatusCode(ServiceResponseType responseType)
@@ -47,6 +62,17 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 ServiceResponseType.NotFound => StatusCodes.Status404NotFound,
                 ServiceResponseType.Conflict => StatusCodes.Status409Conflict,
                 _ => StatusCodes.Status500InternalServerError,
+            };
+        }
+
+        private static string ToErrorCode(ServiceResponseType responseType)
+        {
+            return responseType switch
+            {
+                ServiceResponseType.ValidationError => "validation_error",
+                ServiceResponseType.NotFound => "not_found",
+                ServiceResponseType.Conflict => "conflict",
+                _ => "internal_error",
             };
         }
 

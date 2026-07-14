@@ -442,4 +442,27 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         string Name,
         bool MaintenanceModeEnabled,
         string? MaintenanceMessage);
+
+    public sealed record StorefrontCurrentStoreResponse(
+        Guid PublicId,
+        string StoreKey,
+        string Name,
+        string Status,
+        string? BaseUrl,
+        string? PrimaryDomain,
+        bool ForceHttps,
+        string? CdnHost,
+        string? LogoUrl,
+        string? FaviconUrl,
+        string? PngIconUrl,
+        string? AppleTouchIconUrl,
+        string? MsTileImageUrl,
+        string? MsTileColor,
+        string DefaultCurrencyCode,
+        string DefaultCulture,
+        string? SupportEmail,
+        string? SupportPhone,
+        bool MaintenanceModeEnabled,
+        string? MaintenanceMessage,
+        string? HtmlBodyId);
 }

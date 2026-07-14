@@ -52,18 +52,21 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 this.GetUserAgent());
             if (!result.Success)
             {
-                return this.BadRequest(CommerceNodeApiResponse<StorefrontAuthResponse>.Failed(
-                    NormalizeLoginMessage(result.Message),
-                    SanitizeLoginResponse(result).ToStorefrontContract()));
+                return this.Error(
+                    StatusCodes.Status400BadRequest,
+                    "validation_error",
+                    NormalizeLoginMessage(result.Message));
             }
 
             if (string.IsNullOrWhiteSpace(result.RefreshToken))
             {
                 return this.StatusCode(
                     StatusCodes.Status500InternalServerError,
-                    CommerceNodeApiResponse<StorefrontAuthResponse>.Failed(
+                    new CommerceNodeApiErrorResponse(
+                        false,
+                        "internal_error",
                         "Error occurred in login.",
-                        SanitizeLoginResponse(result).ToStorefrontContract()));
+                        this.HttpContext.TraceIdentifier));
             }
 
             this.AppendRefreshTokenCookie(result.RefreshToken);
@@ -80,9 +83,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 || string.IsNullOrWhiteSpace(refreshToken))
             {
                 this.DeleteRefreshTokenCookie();
-                return this.BadRequest(CommerceNodeApiResponse<StorefrontAuthResponse>.Failed(
-                    "Invalid token.",
-                    new StorefrontAuthResponse(false, "Invalid token.", string.Empty)));
+                return this.Error(StatusCodes.Status400BadRequest, "validation_error", "Invalid token.");
             }
 
             var result = await this.authenticationService.ReviveToken(
@@ -93,9 +94,10 @@ namespace BlazorShop.CommerceNode.API.Controllers
             if (!result.Success)
             {
                 this.DeleteRefreshTokenCookie();
-                return this.BadRequest(CommerceNodeApiResponse<StorefrontAuthResponse>.Failed(
-                    NormalizeLoginMessage(result.Message),
-                    SanitizeLoginResponse(result).ToStorefrontContract()));
+                return this.Error(
+                    StatusCodes.Status400BadRequest,
+                    "validation_error",
+                    NormalizeLoginMessage(result.Message));
             }
 
             if (string.IsNullOrWhiteSpace(result.RefreshToken))
@@ -103,9 +105,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 this.DeleteRefreshTokenCookie();
                 return this.StatusCode(
                     StatusCodes.Status500InternalServerError,
-                    CommerceNodeApiResponse<StorefrontAuthResponse>.Failed(
+                    new CommerceNodeApiErrorResponse(
+                        false,
+                        "internal_error",
                         "Error occurred in login.",
-                        SanitizeLoginResponse(result).ToStorefrontContract()));
+                        this.HttpContext.TraceIdentifier));
             }
 
             this.AppendRefreshTokenCookie(result.RefreshToken);
@@ -132,7 +136,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             var userId = this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
             {
-                return this.Unauthorized(CommerceNodeApiResponse<object>.Failed("Customer identity was not found."));
+                return this.Error(StatusCodes.Status401Unauthorized, "unauthorized", "Customer identity was not found.");
             }
 
             var result = await this.authenticationService.ChangePassword(dto.ToApplicationRequest(), userId);
@@ -153,7 +157,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             var userId = this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
             {
-                return this.Unauthorized(CommerceNodeApiResponse<object>.Failed("Customer identity was not found."));
+                return this.Error(StatusCodes.Status401Unauthorized, "unauthorized", "Customer identity was not found.");
             }
 
             var result = await this.authenticationService.UpdateProfile(userId, dto.ToApplicationRequest());
@@ -354,7 +358,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             var userId = this.GetCurrentCustomerId();
             if (string.IsNullOrWhiteSpace(userId))
             {
-                return this.Unauthorized(CommerceNodeApiResponse<object>.Failed("Customer identity was not found."));
+                return this.Error(StatusCodes.Status401Unauthorized, "unauthorized", "Customer identity was not found.");
             }
 
             var result = await this.cartService.SaveCheckoutHistoryAsync(
@@ -416,7 +420,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             var userId = this.GetCurrentCustomerId();
             if (string.IsNullOrWhiteSpace(userId))
             {
-                return this.Unauthorized(CommerceNodeApiResponse<object>.Failed("Customer identity was not found."));
+                return this.Error(StatusCodes.Status401Unauthorized, "unauthorized", "Customer identity was not found.");
             }
 
             var result = await this.cartService.ConfirmOrderAsync(
@@ -431,7 +435,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             var userId = this.GetCurrentCustomerId();
             if (string.IsNullOrWhiteSpace(userId))
             {
-                return this.Unauthorized(CommerceNodeApiResponse<object>.Failed("Customer identity was not found."));
+                return this.Error(StatusCodes.Status401Unauthorized, "unauthorized", "Customer identity was not found.");
             }
 
             var orders = (await this.orderQueryService.GetOrdersForUserAsync(userId)).ToArray();
@@ -446,7 +450,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             var userId = this.GetCurrentCustomerId();
             if (string.IsNullOrWhiteSpace(userId))
             {
-                return this.Unauthorized(CommerceNodeApiResponse<object>.Failed("Customer identity was not found."));
+                return this.Error(StatusCodes.Status401Unauthorized, "unauthorized", "Customer identity was not found.");
             }
 
             var orderItems = (await this.cartService.GetCheckoutHistoryByUserId(userId)).ToArray();
@@ -646,7 +650,14 @@ namespace BlazorShop.CommerceNode.API.Controllers
         public async Task<IActionResult> Current(CancellationToken cancellationToken)
         {
             var result = await this.storeContext.GetCurrentStoreAsync(cancellationToken);
-            return ToActionResult(result);
+            if (!result.Success || result.Payload is null)
+            {
+                return this.ToActionResult(result);
+            }
+
+            return this.Ok(CommerceNodeApiResponse<StorefrontCurrentStoreResponse>.Succeeded(
+                result.Payload.ToStorefrontContract(),
+                "Current store resolved."));
         }
 
         [HttpGet("maintenance")]
@@ -655,7 +666,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             var result = await this.storeContext.GetCurrentStoreAsync(cancellationToken);
             if (!result.Success || result.Payload is null)
             {
-                return ToActionResult(result);
+                return this.ToActionResult(result);
             }
 
             return this.Ok(CommerceNodeApiResponse<StorefrontMaintenanceResponse>.Succeeded(
@@ -663,15 +674,22 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 "Store maintenance state retrieved."));
         }
 
-        private static IActionResult ToActionResult<TPayload>(CommerceStoreOperationResult<TPayload> result)
+        private IActionResult ToActionResult<TPayload>(CommerceStoreOperationResult<TPayload> result)
         {
-            var response = result.Success
-                ? CommerceNodeApiResponse<TPayload>.Succeeded(result.Payload, NormalizeMessage(result.Message))
-                : CommerceNodeApiResponse<TPayload>.Failed(NormalizeMessage(result.Message), result.Payload);
-
-            return new ObjectResult(response)
+            if (!result.Success)
             {
-                StatusCode = result.Success ? StatusCodes.Status200OK : ToStatusCode(result.Failure),
+                return this.StatusCode(
+                    ToStatusCode(result.Failure),
+                    new CommerceNodeApiErrorResponse(
+                        false,
+                        ToErrorCode(result.Failure),
+                        NormalizeMessage(result.Message),
+                        this.HttpContext.TraceIdentifier));
+            }
+
+            return new ObjectResult(CommerceNodeApiResponse<TPayload>.Succeeded(result.Payload, NormalizeMessage(result.Message)))
+            {
+                StatusCode = StatusCodes.Status200OK,
             };
         }
 
@@ -683,6 +701,17 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 CommerceStoreOperationFailure.NotFound => StatusCodes.Status404NotFound,
                 CommerceStoreOperationFailure.Conflict => StatusCodes.Status409Conflict,
                 _ => StatusCodes.Status500InternalServerError,
+            };
+        }
+
+        private static string ToErrorCode(CommerceStoreOperationFailure? failure)
+        {
+            return failure switch
+            {
+                CommerceStoreOperationFailure.Validation => "validation_error",
+                CommerceStoreOperationFailure.NotFound => "not_found",
+                CommerceStoreOperationFailure.Conflict => "conflict",
+                _ => "internal_error",
             };
         }
 
