@@ -1,8 +1,10 @@
 namespace BlazorShop.CommerceNode.API.Swagger
 {
     using System.Reflection;
+    using System.Text.Json.Nodes;
 
     using BlazorShop.Application.CommerceNode.StorefrontPages;
+    using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs.Discovery;
     using BlazorShop.Application.DTOs.Seo;
     using BlazorShop.CommerceNode.API.Contracts.Storefront;
@@ -387,6 +389,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
                 ApplySuccessResponse(operation, context, metadata.SuccessResponseType);
                 ApplyErrorResponses(operation, context, metadata.ErrorStatusCodes);
                 ApplySecurity(operation, context, metadata.Security);
+                ApplyParameterMetadata(operation, metadata.OperationId);
             }
 
             private static void ApplySuccessResponse(
@@ -451,6 +454,27 @@ namespace BlazorShop.CommerceNode.API.Swagger
                 operation.Security ??= [];
                 operation.Security.Clear();
                 operation.Security.Add(CreateSecurityRequirement(security));
+            }
+
+            private static void ApplyParameterMetadata(OpenApiOperation operation, string operationId)
+            {
+                if (!string.Equals(operationId, "StorefrontCatalog_QueryProducts", StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                var sortByParameter = operation.Parameters?
+                    .FirstOrDefault(parameter => string.Equals(parameter.Name, "sortBy", StringComparison.OrdinalIgnoreCase));
+                if (sortByParameter?.Schema is not OpenApiSchema sortBySchema)
+                {
+                    return;
+                }
+
+                sortBySchema.Type = JsonSchemaType.String;
+                sortBySchema.Enum = StorefrontProductCatalogSortValues.All
+                    .Select(value => JsonValue.Create(value)!)
+                    .Cast<JsonNode>()
+                    .ToList();
             }
 
             private static bool RequiresAuthorization(MethodInfo methodInfo)
@@ -565,15 +589,29 @@ namespace BlazorShop.CommerceNode.API.Swagger
 
         private sealed class StorefrontContractSchemaFilter : ISchemaFilter
         {
+            private static readonly IReadOnlyDictionary<Type, string[]> RequiredArrayPropertiesByType =
+                new Dictionary<Type, string[]>
+                {
+                    [typeof(StorefrontCategoryTreeNodeResponse)] = ["children"],
+                    [typeof(StorefrontCategoryPageResponse)] = ["products"],
+                    [typeof(StorefrontProductResponse)] = ["variants"],
+                    [typeof(StorefrontProductVariantResponse)] = ["attributes"],
+                    [typeof(StorefrontOrderResponse)] = ["lines"],
+                    [typeof(StorefrontOrderLineResponse)] = ["variantAttributes"],
+                    [typeof(GetPublicCatalogSitemap)] = ["categories", "products", "pages"],
+                    [typeof(StorefrontVariationTemplateDto)] = ["options"],
+                    [typeof(StorefrontVariationOptionDto)] = ["values"],
+                };
+
             public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
             {
+                if (schema is not OpenApiSchema openApiSchema)
+                {
+                    return;
+                }
+
                 if (context.Type == typeof(CommerceNodeApiErrorResponse))
                 {
-                    if (schema is not OpenApiSchema openApiSchema)
-                    {
-                        return;
-                    }
-
                     openApiSchema.Required = new HashSet<string>(StringComparer.Ordinal)
                     {
                         "success",
@@ -585,6 +623,24 @@ namespace BlazorShop.CommerceNode.API.Swagger
                     ForceRequiredString(openApiSchema, "code");
                     ForceRequiredString(openApiSchema, "message");
                     ForceRequiredString(openApiSchema, "traceId");
+                    return;
+                }
+
+                if (context.Type.IsGenericType
+                    && context.Type.GetGenericTypeDefinition() == typeof(StorefrontPagedResponse<>))
+                {
+                    ForceRequiredArray(openApiSchema, "items");
+                    return;
+                }
+
+                if (!RequiredArrayPropertiesByType.TryGetValue(context.Type, out var requiredArrayProperties))
+                {
+                    return;
+                }
+
+                foreach (var propertyName in requiredArrayProperties)
+                {
+                    ForceRequiredArray(openApiSchema, propertyName);
                 }
             }
 
@@ -598,6 +654,21 @@ namespace BlazorShop.CommerceNode.API.Swagger
                 }
 
                 openApiPropertySchema.Type = JsonSchemaType.String;
+            }
+
+            private static void ForceRequiredArray(OpenApiSchema schema, string propertyName)
+            {
+                schema.Required ??= new HashSet<string>(StringComparer.Ordinal);
+                schema.Required.Add(propertyName);
+
+                if (schema.Properties is null
+                    || !schema.Properties.TryGetValue(propertyName, out var propertySchema)
+                    || propertySchema is not OpenApiSchema openApiPropertySchema)
+                {
+                    return;
+                }
+
+                openApiPropertySchema.Type = JsonSchemaType.Array;
             }
         }
 
