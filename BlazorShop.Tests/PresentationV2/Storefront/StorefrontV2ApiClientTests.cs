@@ -119,7 +119,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
-                _requestPaths.Add(request.RequestUri?.AbsolutePath ?? string.Empty);
+                var requestPath = request.RequestUri?.AbsolutePath ?? string.Empty;
+                Assert.DoesNotContain("/api/internal", requestPath, StringComparison.OrdinalIgnoreCase);
+                _requestPaths.Add(requestPath);
 
                 return Task.FromResult(_handler(request));
             }
