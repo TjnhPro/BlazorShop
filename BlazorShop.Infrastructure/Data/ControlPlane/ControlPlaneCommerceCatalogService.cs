@@ -852,7 +852,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
             return this.SendMediaAsync(
                 storePublicId,
-                $"api/commerce/admin/media/assets/{assetPublicId:D}" + BuildMediaAssetPreviewQuery(query),
+                $"api/commerce/admin/media/assets/{assetPublicId:D}/preview" + BuildMediaAssetPreviewQuery(query),
                 cancellationToken);
         }
 

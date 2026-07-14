@@ -153,7 +153,7 @@ Commerce Admin media debug endpoints should be added for Swagger/debug:
 
 ```text
 api/commerce/admin/media/products/{mediaId}?storeKey=default&w=600&h=600&fit=contain&format=webp&v=1
-api/commerce/admin/media/assets/{assetId}?storeKey=default&w=1200&format=webp&v=3
+api/commerce/admin/media/assets/{assetId}/preview?storeKey=default&w=1200&format=webp&v=3
 ```
 
 Rules:
@@ -366,7 +366,7 @@ X-Store-Key header is required for legacy internal API.
 - [x] Remove Commerce Admin reliance on `X-Store-Key`.
 - [x] Add/admin debug media endpoints:
   - `api/commerce/admin/media/products/{mediaId}`
-  - `api/commerce/admin/media/assets/{assetId}`
+  - `api/commerce/admin/media/assets/{assetId}/preview`
 - [x] Ensure node-level endpoints still work without `storeKey`.
 - [x] Build CommerceNode API.
 - [x] Commit Commerce Admin rescope phase.
@@ -406,16 +406,16 @@ X-Store-Key header is required for legacy internal API.
 
 ### Phase 9 - Verification
 
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore`
-- [ ] Run local runtime with fixed ports.
-- [ ] Verify Swagger JSON endpoints return 200.
-- [ ] Verify Storefront scoped endpoints work without `X-Store-Key`.
-- [ ] Verify legacy internal endpoints still work with `X-Store-Key`.
-- [ ] Verify Commerce Admin endpoints reject missing `storeKey` where required.
-- [ ] Verify ControlPlane Web does not call CommerceNode directly.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore`
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore`
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore`
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore`
+- [x] Run local runtime with fixed ports. 2026-07-14: CommerceNode API ran on `http://localhost:5180`; Storefront V2 ran on `http://localhost:18598`.
+- [x] Verify Swagger JSON endpoints return 200. 2026-07-14: commerce-admin, storefront, and legacy-internal all returned 200 after fixing asset preview route conflict.
+- [x] Verify Storefront scoped endpoints work without `X-Store-Key`. 2026-07-14: `api/storefront/stores/default/catalog/categories` returned 200 without headers.
+- [x] Verify legacy internal endpoints still work with `X-Store-Key`. 2026-07-14: `api/internal/catalog/categories` returned 200 with `X-Store-Key: default`.
+- [x] Verify Commerce Admin endpoints reject missing `storeKey` where required. 2026-07-14: `api/commerce/admin/products` returned 400 with `storeKey query parameter is required.`
+- [x] Verify ControlPlane Web does not call CommerceNode directly. 2026-07-14: static source check found no CommerceNode API routes or node credential headers in Web clients; `localhost:5180` appears only as the editable node URL default on the Nodes page.
 
 ### Phase 10 - Follow-up Legacy Cleanup Plan
 

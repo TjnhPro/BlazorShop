@@ -175,7 +175,7 @@ Status legend:
 - [ ] ControlPlane product/category/order/media/admin pages still load after Commerce Admin missing-`storeKey` enforcement.
 - [ ] Browser network capture confirms ControlPlane Web still calls only ControlPlane API.
 - [ ] ControlPlane API product media preview calls `api/commerce/admin/media/products/{mediaId}?storeKey={storeKey}`.
-- [ ] ControlPlane API asset media preview calls `api/commerce/admin/media/assets/{assetId}?storeKey={storeKey}`.
+- [ ] ControlPlane API asset media preview calls `api/commerce/admin/media/assets/{assetId}/preview?storeKey={storeKey}`.
 
 ## Commerce Storefront Pages
 

@@ -25,21 +25,21 @@ Last verified: 2026-07-10
 
 ## Swagger And Store Scope Rescope
 
-- [ ] `GET /swagger/commerce-admin/swagger.json` returns 200.
-- [ ] Commerce Admin Swagger includes `api/commerce/*` endpoints only.
-- [ ] Commerce Admin Swagger shows required `X-Node-Key` and `X-Node-Secret` headers.
-- [ ] Commerce Admin Swagger shows required `storeKey` query for store-scoped admin endpoints.
-- [ ] Commerce Admin Swagger does not show `X-Store-Key`.
-- [ ] `GET /swagger/storefront/swagger.json` returns 200.
-- [ ] Storefront Swagger includes `api/storefront/stores/{storeKey}/*` endpoints only.
-- [ ] Storefront Swagger shows required `{storeKey}` path parameter.
-- [ ] Storefront Swagger does not show `X-Node-Key`, `X-Node-Secret`, or `X-Store-Key`.
-- [ ] `GET /swagger/legacy-internal/swagger.json` returns 200.
-- [ ] Legacy Internal Swagger includes `api/internal/*` endpoints only and is visibly marked compatibility/legacy.
-- [ ] Legacy Internal Swagger shows `X-Store-Key`.
-- [ ] Store-scoped Commerce Admin endpoint without `storeKey` query returns a clear `success=false` response.
-- [ ] Store-scoped Commerce Admin endpoint with `X-Store-Key` but no `storeKey` query still fails.
-- [ ] Storefront scoped endpoint reads `storeKey` from route and works without `X-Store-Key`.
+- [x] `GET /swagger/commerce-admin/swagger.json` returns 200. 2026-07-14: fixed duplicate media asset debug route conflict; document returned `Commerce Node Admin`.
+- [~] Commerce Admin Swagger includes `api/commerce/*` endpoints only. 2026-07-14: document generated; detailed route membership still pending a full path audit.
+- [x] Commerce Admin Swagger shows required `X-Node-Key` and `X-Node-Secret` headers. 2026-07-14: `GET /api/commerce/admin/products` operation included both required headers.
+- [x] Commerce Admin Swagger shows required `storeKey` query for store-scoped admin endpoints. 2026-07-14: `GET /api/commerce/admin/products` and asset preview operations included required `storeKey`.
+- [x] Commerce Admin Swagger does not show `X-Store-Key`. 2026-07-14: checked sampled admin operations.
+- [x] `GET /swagger/storefront/swagger.json` returns 200. 2026-07-14: document returned `Storefront API`.
+- [~] Storefront Swagger includes `api/storefront/stores/{storeKey}/*` endpoints only. 2026-07-14: document generated; detailed route membership still pending a full path audit.
+- [x] Storefront Swagger shows required `{storeKey}` path parameter. 2026-07-14: sampled scoped categories operation included required path parameter.
+- [x] Storefront Swagger does not show `X-Node-Key`, `X-Node-Secret`, or `X-Store-Key`. 2026-07-14: checked sampled scoped categories operation.
+- [x] `GET /swagger/legacy-internal/swagger.json` returns 200. 2026-07-14: document returned `Legacy Internal`.
+- [~] Legacy Internal Swagger includes `api/internal/*` endpoints only and is visibly marked compatibility/legacy. 2026-07-14: document generated and title/description are legacy; detailed route membership still pending a full path audit.
+- [x] Legacy Internal Swagger shows `X-Store-Key`. 2026-07-14: sampled internal categories operation included required header.
+- [x] Store-scoped Commerce Admin endpoint without `storeKey` query returns a clear `success=false` response. 2026-07-14: `GET /api/commerce/admin/products` returned HTTP 400 with `storeKey query parameter is required.`
+- [x] Store-scoped Commerce Admin endpoint with `X-Store-Key` but no `storeKey` query still fails. 2026-07-14: middleware source only reads query for `api/commerce/admin/*`; sampled missing-query request failed.
+- [x] Storefront scoped endpoint reads `storeKey` from route and works without `X-Store-Key`. 2026-07-14: `GET /api/storefront/stores/default/catalog/categories` returned HTTP 200 without headers.
 - [ ] Storefront scoped endpoint ignores/rejects header-only store scope and does not require node credentials.
 - [ ] Legacy `api/internal/*` remains available with `X-Store-Key` until Storefront scoped route QA passes.
 
@@ -77,7 +77,7 @@ Last verified: 2026-07-10
 
 ### `api/storefront/stores/{storeKey}/*`
 
-- [ ] Scoped catalog routes do not require node key.
+- [x] Scoped catalog routes do not require node key. 2026-07-14: scoped categories smoke returned 200 without node headers.
 - [ ] Scoped SEO routes do not require node key.
 - [ ] Scoped auth register/login/refresh/logout do not require node key.
 - [ ] Scoped Storefront routes do not require `X-Store-Key`.

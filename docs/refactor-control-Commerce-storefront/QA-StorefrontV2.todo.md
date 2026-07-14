@@ -62,7 +62,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] API client parses API response envelope.
 - [x] API client calls Commerce Node scoped Storefront catalog route. 2026-07-14: client tests assert `/api/storefront/stores/default/catalog/categories`.
 - [x] API client auth calls Commerce Node scoped Storefront auth routes. 2026-07-14: client tests assert scoped login/register/logout routes.
-- [ ] Storefront HTTP clients do not send `X-Store-Key` on scoped API requests.
+- [x] Storefront HTTP clients do not send `X-Store-Key` on scoped API requests. 2026-07-14: `ConfigureStorefrontHttpClient` now sets scoped base address and no default store header; `/` runtime log showed scoped CommerceNode URLs.
 - [x] API client does not call legacy fallback when `Api:EnableLegacyFallback=false`.
 - [x] API client can use legacy fallback only when explicitly enabled.
 - [x] Checkout anonymous redirect is covered by V2 host smoke test.
@@ -96,6 +96,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Start Storefront V2.
 - [x] Load `GET http://localhost:18598/`.
   - 2026-07-09: returned 200 while Commerce Node API was running.
+  - 2026-07-14: returned 200 after Storefront V2 client switch; server log showed scoped `api/storefront/stores/default/store/current`, `catalog/categories`, `catalog/products`, and `catalog/categories/tree`.
 - [x] Stop Commerce Node API and reload Storefront V2 `/`.
   - 2026-07-09: returned 503 and did not show legacy fallback markers.
 

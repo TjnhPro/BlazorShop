@@ -51,7 +51,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             this.httpClientFactory = httpClientFactory;
         }
 
-        [HttpGet("/api/commerce/admin/media/assets/{assetPublicId:guid}")]
+        [HttpGet("/api/commerce/admin/media/assets/{assetPublicId:guid}/preview")]
         public async Task<IActionResult> GetAdminDebug(
             Guid assetPublicId,
             [FromQuery] int? w,
