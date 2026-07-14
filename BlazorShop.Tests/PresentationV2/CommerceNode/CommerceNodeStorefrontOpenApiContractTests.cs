@@ -9,6 +9,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
 
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Mvc.Testing;
+    using Microsoft.OpenApi;
+    using Microsoft.OpenApi.Reader;
 
     using Xunit;
 
@@ -94,6 +96,18 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Equal("Storefront API", root.GetProperty("info").GetProperty("title").GetString());
             Assert.True(root.GetProperty("paths").EnumerateObject().Any());
             Assert.True(root.GetProperty("components").GetProperty("schemas").EnumerateObject().Any());
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_PassesOpenApiReaderValidation()
+        {
+            var swagger = await this.GetStorefrontSwaggerTextAsync();
+            var result = OpenApiDocument.Parse(swagger, "json", new OpenApiReaderSettings());
+            var errors = result.Diagnostic?.Errors.Select(error => error.ToString()).ToArray()
+                ?? [];
+
+            Assert.NotNull(result.Document);
+            Assert.Empty(errors);
         }
 
         [Fact]
@@ -387,6 +401,33 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("StorefrontCatalog_QueryProducts", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontPayments_CapturePayPal", client, StringComparison.Ordinal);
             Assert.DoesNotContain("any /* missing operationId */", client, StringComparison.Ordinal);
+            Assert.DoesNotContain("Promise<any>", client, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_FinalHardening_HasNoBrokenSchemaReferences()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var failures = new List<string>();
+
+            VisitReferences(swagger, reference =>
+            {
+                const string schemaPrefix = "#/components/schemas/";
+                if (!reference.StartsWith(schemaPrefix, StringComparison.Ordinal))
+                {
+                    failures.Add($"Unsupported reference target: {reference}");
+                    return;
+                }
+
+                var schemaName = reference[schemaPrefix.Length..];
+                if (!schemas.ContainsKey(schemaName))
+                {
+                    failures.Add($"Missing schema reference: {reference}");
+                }
+            });
+
+            Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures));
         }
 
         private HttpClient CreateSwaggerClient()
@@ -578,6 +619,34 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
 
             builder.AppendLine("}");
             return builder.ToString();
+        }
+
+        private static void VisitReferences(JsonNode? node, Action<string> visit)
+        {
+            switch (node)
+            {
+                case JsonObject jsonObject:
+                    foreach (var property in jsonObject)
+                    {
+                        if (string.Equals(property.Key, "$ref", StringComparison.Ordinal)
+                            && property.Value is not null)
+                        {
+                            visit(property.Value.GetValue<string>());
+                        }
+
+                        VisitReferences(property.Value, visit);
+                    }
+
+                    break;
+
+                case JsonArray jsonArray:
+                    foreach (var item in jsonArray)
+                    {
+                        VisitReferences(item, visit);
+                    }
+
+                    break;
+            }
         }
 
         private static bool IsHttpMethod(string value)
