@@ -344,20 +344,20 @@ X-Store-Key header is required for legacy internal API.
 
 ### Phase 4 - Storefront Scoped Controllers
 
-- [ ] Add `StorefrontScopedAuthController`.
-- [ ] Add `StorefrontScopedCatalogController`.
-- [ ] Add `StorefrontScopedCartController`.
-- [ ] Add `StorefrontScopedNewsletterController`.
-- [ ] Add `StorefrontScopedOrdersController`.
-- [ ] Add `StorefrontScopedPagesController`.
-- [ ] Add `StorefrontScopedPaymentsController`.
-- [ ] Add `StorefrontScopedRecommendationsController`.
-- [ ] Add `StorefrontScopedSeoController`.
-- [ ] Add `StorefrontScopedStoreController`.
-- [ ] Reuse existing service calls and response helpers.
-- [ ] Do not remove legacy `Storefront*Controller` classes yet.
-- [ ] Build CommerceNode API.
-- [ ] Commit Storefront scoped route phase.
+- [x] Add `StorefrontScopedAuthController`.
+- [x] Add `StorefrontScopedCatalogController`.
+- [x] Add `StorefrontScopedCartController`.
+- [x] Add `StorefrontScopedNewsletterController`.
+- [x] Add `StorefrontScopedOrdersController`.
+- [x] Add `StorefrontScopedPagesController`.
+- [x] Add `StorefrontScopedPaymentsController`.
+- [x] Add `StorefrontScopedRecommendationsController`.
+- [x] Add `StorefrontScopedSeoController`.
+- [x] Add `StorefrontScopedStoreController`.
+- [x] Reuse existing service calls and response helpers.
+- [x] Do not remove legacy `Storefront*Controller` classes yet.
+- [x] Build CommerceNode API.
+- [x] Commit Storefront scoped route phase.
 
 ### Phase 5 - Commerce Admin StoreKey Query Enforcement
 
