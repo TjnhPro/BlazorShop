@@ -6,13 +6,18 @@ namespace BlazorShop.Tests.PresentationV2
 
     public sealed partial class LayoutAssetFoundationTests
     {
+        private static readonly string[] StorefrontRootStylesheetAllowlist = ["css/site.css", "css/storefront.css"];
+        private static readonly string[] StorefrontRootScriptAllowlist = ["_framework/blazor.web.js", "js/storefrontCommerce.js"];
+        private static readonly string[] ControlPlaneRootStylesheetAllowlist = ["vendor/fontawesome/css/all.min.css", "css/site.css", "css/app.css"];
+        private static readonly string[] ControlPlaneRootScriptAllowlist = ["_framework/blazor.webassembly.js", "js/downloads.js"];
+
         [Fact]
         public void StorefrontRoot_DefinesExpectedAssetsWithoutDuplicates()
         {
             var appMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/App.razor");
 
-            Assert.Equal(["css/site.css", "css/storefront.css"], ExtractStylesheetHrefs(appMarkup));
-            Assert.Equal(["_framework/blazor.web.js", "js/storefrontCommerce.js"], ExtractScriptSources(appMarkup));
+            Assert.Equal(StorefrontRootStylesheetAllowlist, ExtractStylesheetHrefs(appMarkup));
+            Assert.Equal(StorefrontRootScriptAllowlist, ExtractScriptSources(appMarkup));
             Assert.Contains("<link rel=\"icon\" type=\"image/png\" href=\"icon-192.png\" />", appMarkup);
             Assert.True(
                 appMarkup.IndexOf("<StorefrontBrandHead />", StringComparison.Ordinal) <
@@ -126,10 +131,8 @@ namespace BlazorShop.Tests.PresentationV2
         {
             var indexMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/wwwroot/index.html");
 
-            Assert.Equal(
-                ["vendor/fontawesome/css/all.min.css", "css/site.css", "css/app.css"],
-                ExtractStylesheetHrefs(indexMarkup));
-            Assert.Equal(["_framework/blazor.webassembly.js", "js/downloads.js"], ExtractScriptSources(indexMarkup));
+            Assert.Equal(ControlPlaneRootStylesheetAllowlist, ExtractStylesheetHrefs(indexMarkup));
+            Assert.Equal(ControlPlaneRootScriptAllowlist, ExtractScriptSources(indexMarkup));
             Assert.Contains("<script type=\"importmap\"></script>", indexMarkup);
             AssertRootDoesNotReferenceLegacyPresentationAssets(indexMarkup);
         }
@@ -157,6 +160,20 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.Contains("./js/sessionStorage.js", sessionStorage);
             Assert.Contains("./js/cookieStorage.js", cookieStorage);
             Assert.Contains("./js/authSessionSync.js", authSync);
+        }
+
+        [Fact]
+        public void ArchitectureDocs_RecordStorefrontAssetOwnershipRules()
+        {
+            var projectGuide = ReadRepositoryFile("docs/architecture/05-project-and-folder-guide.md");
+            var decisionRules = ReadRepositoryFile("docs/architecture/08-agent-decision-rules.md");
+
+            Assert.Contains("Root Storefront CSS and scripts must stay explicit in `App.razor`.", projectGuide);
+            Assert.Contains("Page-specific JavaScript should prefer `IJSRuntime` module imports.", projectGuide);
+            Assert.Contains("Store configuration must not accept arbitrary public script or stylesheet injection.", projectGuide);
+            Assert.Contains("Keep root CSS and script entries in `BlazorShop.Storefront.V2/App.razor` allowlisted by tests.", decisionRules);
+            Assert.Contains("Keep `blazor.web.js` before `storefrontCommerce.js`", decisionRules);
+            Assert.Contains("Do not add DB-configured or store-configured arbitrary public scripts/styles.", decisionRules);
         }
 
         private static IReadOnlyList<string> ExtractStylesheetHrefs(string markup)

@@ -161,6 +161,16 @@ Use for:
 - SEO and public discovery documents.
 - Store key propagation to Commerce Node Storefront API.
 
+Asset and layout rules:
+
+- Root Storefront CSS and scripts must stay explicit in `App.razor`.
+- `StorefrontBrandHead` must render before `HeadOutlet`, and brand/runtime metadata must not use layout-level `HeadContent`.
+- Page SEO metadata belongs in page/SEO components such as `SeoHead`.
+- Page-specific CSS should prefer scoped CSS or controlled app-owned classes in `wwwroot/css`.
+- Page-specific JavaScript should prefer `IJSRuntime` module imports. Add root scripts only when they must load with the root document, and update the root asset allowlist tests with the reason.
+- Store configuration must not accept arbitrary public script or stylesheet injection.
+- `MainLayout.razor` owns the global header, toast DOM region, `<main>`, and footer. Page-level structure belongs in optional components such as `StorefrontPageShell` and catalog-only components such as `CatalogFilterPanel`.
+
 Do not:
 
 - Call Control Plane.
