@@ -9,6 +9,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Payments;
+    using BlazorShop.Application.CommerceNode.Settings;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
@@ -737,12 +738,12 @@ namespace BlazorShop.CommerceNode.API.Controllers
     {
         private readonly ICommerceStoreContext storeContext;
         private readonly IPaymentMethodService paymentMethodService;
-        private readonly ISeoSettingsService seoSettingsService;
+        private readonly IStoreSeoSettingsService seoSettingsService;
 
         public StorefrontScopedConfigurationController(
             ICommerceStoreContext storeContext,
             IPaymentMethodService paymentMethodService,
-            ISeoSettingsService seoSettingsService)
+            IStoreSeoSettingsService seoSettingsService)
         {
             this.storeContext = storeContext;
             this.paymentMethodService = paymentMethodService;
@@ -761,7 +762,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             var paymentMethods = (await this.paymentMethodService.GetPaymentMethodsAsync())
                 .Select(method => method.ToStorefrontContract())
                 .ToArray();
-            var seoDefaults = await this.seoSettingsService.GetCurrentAsync();
+            var seoDefaults = await this.seoSettingsService.ResolveAsync(cancellationToken);
 
             return this.Success(
                 storeResult.Payload.ToPublicConfigurationContract(paymentMethods, seoDefaults),
@@ -1085,11 +1086,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
     public sealed class StorefrontScopedSeoController : StorefrontApiControllerBase
     {
         private readonly ISeoRedirectResolutionService seoRedirectResolutionService;
-        private readonly ISeoSettingsService seoSettingsService;
+        private readonly IStoreSeoSettingsService seoSettingsService;
 
         public StorefrontScopedSeoController(
             ISeoRedirectResolutionService seoRedirectResolutionService,
-            ISeoSettingsService seoSettingsService)
+            IStoreSeoSettingsService seoSettingsService)
         {
             this.seoRedirectResolutionService = seoRedirectResolutionService;
             this.seoSettingsService = seoSettingsService;
@@ -1098,7 +1099,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
         [HttpGet("settings")]
         public async Task<IActionResult> GetSettings()
         {
-            var settings = await this.seoSettingsService.GetCurrentAsync();
+            var settings = await this.seoSettingsService.ResolveAsync();
             return this.Success(settings, "SEO settings loaded.");
         }
 

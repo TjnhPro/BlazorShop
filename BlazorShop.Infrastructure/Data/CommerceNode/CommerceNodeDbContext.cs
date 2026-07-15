@@ -49,6 +49,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
         public DbSet<SeoSettings> SeoSettings => Set<SeoSettings>();
 
+        public DbSet<StoreSeoSettings> StoreSeoSettings => Set<StoreSeoSettings>();
+
         public DbSet<CommerceTask> CommerceTasks => Set<CommerceTask>();
 
         public DbSet<CommerceTaskStep> CommerceTaskSteps => Set<CommerceTaskStep>();
@@ -97,6 +99,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             modelBuilder.ApplyConfiguration(new ProductConfiguration());
             modelBuilder.ApplyConfiguration(new SeoRedirectConfiguration());
             modelBuilder.ApplyConfiguration(new SeoSettingsConfiguration());
+            modelBuilder.ApplyConfiguration(new StoreSeoSettingsConfiguration());
             modelBuilder.ApplyConfiguration(new AdminAuditLogConfiguration());
             modelBuilder.ApplyConfiguration(new AdminSettingsConfiguration());
 

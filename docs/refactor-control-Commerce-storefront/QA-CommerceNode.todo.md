@@ -117,6 +117,10 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] `GET /api/storefront/stores/{storeKey}/configuration` has stable OpenAPI metadata and typed success/error response schemas. 2026-07-15: `StorefrontConfiguration_Get` was added to Storefront Swagger and `CommerceNodeStorefrontOpenApiContractTests` passed 23/23 after snapshot refresh.
 - [x] Public configuration projection is allowlist-only and excludes `MetadataJson`, provider `SettingsJson`, credentials, secrets, and internal store linkage. 2026-07-15: public configuration schema guard covers nested config response DTOs.
 - [x] Existing current-store, payment-method, and SEO Storefront endpoints remain available after adding the consolidated configuration endpoint. 2026-07-15: endpoint was additive; Storefront OpenAPI snapshot still contains existing operations.
+- [x] CommerceNode owns typed store-scoped SEO settings schema. 2026-07-15: migration `CommerceNodeStoreSeoSettings` adds `store_seo_settings` with unique `store_id` and FK to `commerce_store`.
+- [x] Store SEO defaults resolve through store override before singleton SEO fallback. 2026-07-15: `StoreSeoSettingsServiceTests` covered no-override fallback and override precedence.
+- [x] Store SEO override save path validates input and invalidates cached resolved settings. 2026-07-15: focused service tests covered invalid canonical URL rejection and update-then-read cache invalidation.
+- [x] Storefront public configuration and scoped SEO settings reads use store-scoped SEO resolver. 2026-07-15: controllers now depend on `IStoreSeoSettingsService`; CommerceNode API build passed.
 
 ## Store Mapping
 

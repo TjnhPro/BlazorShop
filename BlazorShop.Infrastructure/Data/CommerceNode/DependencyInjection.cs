@@ -9,6 +9,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
+    using BlazorShop.Application.CommerceNode.Settings;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.Tasks;
     using BlazorShop.Application.CommerceNode.Stores;
@@ -148,6 +149,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IProductSeoService, ProductSeoService>();
             services.AddScoped<ICategorySeoService, CategorySeoService>();
             services.AddScoped<ISeoSettingsService, SeoSettingsService>();
+            services.AddScoped<IStoreSeoSettingsService, StoreSeoSettingsService>();
             services.AddScoped<ISeoRedirectService, SeoRedirectService>();
             services.AddScoped<ISeoRedirectResolutionService, SeoRedirectResolutionService>();
             services.AddScoped<ISeoRedirectAutomationService, SeoRedirectAutomationService>();

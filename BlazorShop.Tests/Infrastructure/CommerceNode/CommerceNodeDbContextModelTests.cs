@@ -14,6 +14,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         [Theory]
         [InlineData(typeof(Product))]
         [InlineData(typeof(Category))]
+        [InlineData(typeof(StoreSeoSettings))]
         public void CatalogStoreId_IsRequiredInCommerceNode(Type entityType)
         {
             using var context = CreateContext();
@@ -42,6 +43,26 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.NotNull(foreignKey);
             Assert.True(foreignKey!.IsRequired);
             Assert.Equal(DeleteBehavior.Restrict, foreignKey.DeleteBehavior);
+        }
+
+        [Fact]
+        public void StoreSeoSettings_HasOneOverridePerStore()
+        {
+            using var context = CreateContext();
+            var modelEntity = context.Model.FindEntityType(typeof(StoreSeoSettings));
+
+            Assert.NotNull(modelEntity);
+
+            var storeIdIndex = modelEntity!.GetIndexes()
+                .SingleOrDefault(index => index.Properties.Select(property => property.Name).SequenceEqual(["StoreId"]));
+            var foreignKey = modelEntity.GetForeignKeys()
+                .SingleOrDefault(key => key.PrincipalEntityType.ClrType == typeof(CommerceStore)
+                    && key.Properties.Any(property => property.Name == "StoreId"));
+
+            Assert.NotNull(storeIdIndex);
+            Assert.True(storeIdIndex!.IsUnique);
+            Assert.NotNull(foreignKey);
+            Assert.Equal(DeleteBehavior.Cascade, foreignKey!.DeleteBehavior);
         }
 
         private static CommerceNodeDbContext CreateContext()

@@ -351,28 +351,48 @@ Exit criteria:
 
 Goal: add typed settings where the current model is singleton or missing store overrides.
 
+Status 2026-07-15: completed first typed store-scoped settings domain for SEO defaults.
+
+Implementation notes:
+
+- Added Commerce Node entity/table `StoreSeoSettings` with one override row per store.
+- Added `IStoreSeoSettingsService` and `StoreSeoSettingsService`.
+- Resolver fallback order for SEO defaults is:
+  - store override.
+  - existing singleton SEO settings.
+  - empty defensive `SeoSettingsDto` from the existing global service.
+- Resolver cache key is `store-settings:{storeId}:seo-defaults`; saving an override invalidates that store cache key.
+- Storefront public `configuration` and `seo/settings` reads now use the store-scoped SEO resolver.
+- Save path validates with the existing `UpdateSeoSettingsDtoValidator`.
+- No `AdminSettings` extension, no legacy `AppDbContext` migration, and no admin API/UI surface in this phase.
+
+Verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~StoreSeoSettingsServiceTests|FullyQualifiedName~CommerceNodeDbContextModelTests" --no-restore -p:UseSharedCompilation=false` passed 9/9.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore -p:UseSharedCompilation=false` passed.
+
 Tasks:
 
-- Add a small resolver abstraction per typed settings domain.
-- Implement fallback order:
-  - store override.
-  - commerce-node global default if editable global defaults are needed.
-  - code default.
-  - defensive fallback.
-- Add typed tables in `CommerceNodeDbContext` for approved domains.
-- Start with the narrowest useful domains:
-  - checkout/order settings if current behavior needs store-specific control.
-  - SEO defaults if singleton SEO is not enough for multi-store.
-  - notification public/non-secret metadata if needed by admin display.
-- Keep secrets out of typed public settings.
-- Add validators on write DTOs.
-- Add migrations only to Commerce Node.
+- [x] Add a small resolver abstraction per typed settings domain.
+- [x] Implement fallback order:
+  - [x] store override.
+  - [x] commerce-node global default if editable global defaults are needed.
+  - [n/a] code default. Existing global SEO service already returns an empty defensive DTO when no singleton exists.
+  - [x] defensive fallback.
+- [x] Add typed tables in `CommerceNodeDbContext` for approved domains.
+- [x] Start with the narrowest useful domains:
+  - [n/a] checkout/order settings if current behavior needs store-specific control.
+  - [x] SEO defaults if singleton SEO is not enough for multi-store.
+  - [n/a] notification public/non-secret metadata if needed by admin display.
+- [x] Keep secrets out of typed public settings.
+- [x] Add validators on write DTOs.
+- [x] Add migrations only to Commerce Node.
 
 Exit criteria:
 
-- At least one typed store setting can be read, saved, validated, cached, and resolved with fallback.
-- `AdminSettings` is not extended for new store-scoped behavior.
-- No legacy `AppDbContext` migration is added.
+- [x] At least one typed store setting can be read, saved, validated, cached, and resolved with fallback.
+- [x] `AdminSettings` is not extended for new store-scoped behavior.
+- [x] No legacy `AppDbContext` migration is added.
 
 ### Phase 4 - Cache And Invalidation
 
