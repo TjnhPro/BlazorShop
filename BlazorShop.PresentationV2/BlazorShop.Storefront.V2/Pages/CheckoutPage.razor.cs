@@ -1,9 +1,8 @@
 namespace BlazorShop.Storefront.Pages
 {
-    using System.Globalization;
-
     using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Storefront.Services;
+    using BlazorShop.Storefront.Services.Contracts;
     using BlazorShop.Web.SharedV2.Models.Product;
 
     using Microsoft.AspNetCore.Components;
@@ -12,6 +11,7 @@ namespace BlazorShop.Storefront.Pages
     {
         private readonly List<CartLine> lines = [];
         private IReadOnlyList<GetPaymentMethod> paymentMethods = [];
+        private StorefrontDisplayContext displayContext = StorefrontDisplayContext.Fallback;
 
         [CascadingParameter]
         private HttpContext? HttpContext { get; set; }
@@ -30,11 +30,18 @@ namespace BlazorShop.Storefront.Pages
 
         private string IdempotencyKey { get; set; } = Guid.NewGuid().ToString("N");
 
-        private string GrandTotalDisplay => lines.Sum(line => line.LineTotal).ToString("0.00", CultureInfo.InvariantCulture);
+        private string GrandTotalDisplay => FormatPrice(lines.Sum(line => line.LineTotal));
+
+        [Inject]
+        private IStorefrontDisplayContextProvider DisplayContextProvider { get; set; } = default!;
+
+        [Inject]
+        private IStorefrontPriceFormatter PriceFormatter { get; set; } = default!;
 
         protected override async Task OnParametersSetAsync()
         {
             StorefrontResponseHeaders.ApplyPrivatePage(HttpContext);
+            displayContext = await DisplayContextProvider.GetAsync();
 
             if (!string.IsNullOrWhiteSpace(OrderReference))
             {
@@ -120,11 +127,11 @@ namespace BlazorShop.Storefront.Pages
             return result;
         }
 
+        private string FormatPrice(decimal amount) => PriceFormatter.Format(amount, displayContext);
+
         private sealed record CartLine(string DisplayName, int Quantity, decimal UnitPrice)
         {
             public decimal LineTotal => UnitPrice * Quantity;
-
-            public string LineTotalDisplay => LineTotal.ToString("0.00", CultureInfo.InvariantCulture);
         }
     }
 }

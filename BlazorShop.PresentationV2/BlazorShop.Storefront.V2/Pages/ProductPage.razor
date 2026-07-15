@@ -3,6 +3,8 @@
 @inject StorefrontApiClient ApiClient
 @inject IStorefrontSeoComposer SeoComposer
 @inject IStorefrontStructuredDataComposer StructuredDataComposer
+@inject IStorefrontDisplayContextProvider DisplayContextProvider
+@inject IStorefrontPriceFormatter PriceFormatter
 @inject ILogger<ProductPage> Logger
 
 <SeoHead Metadata="_metadata" StructuredData="_structuredData" />
@@ -50,10 +52,10 @@ else if (_product is not null)
                 <div class="mt-5">
                     <div class="text-sm text-neutral-500">@PrimaryPriceLabel</div>
                     <div class="mt-1 flex flex-wrap items-end gap-3">
-                        <span class="text-4xl font-black text-neutral-900">€ @DisplayPrice</span>
+                        <span class="text-4xl font-black text-neutral-900">@DisplayPrice</span>
                         @if (_product.ComparePrice is not null && _product.ComparePrice > _product.Price)
                         {
-                            <span class="pb-1 text-lg font-semibold text-neutral-400 line-through">€ @_product.ComparePrice.Value.ToString("0.00")</span>
+                            <span class="pb-1 text-lg font-semibold text-neutral-400 line-through">@FormatPrice(_product.ComparePrice.Value)</span>
                         }
                     </div>
                 </div>
@@ -84,6 +86,7 @@ else if (_product is not null)
                                             data-size-value="@variant.SizeValue"
                                             data-display-name="@VariantDisplayName(variant)"
                                             data-unit-price="@VariantPriceValue(variant)"
+                                            data-currency-code="@_displayContext.CurrencyCode"
                                             data-stock="@variant.Stock">
                                         @VariantOptionLabel(variant)
                                     </option>
@@ -101,6 +104,7 @@ else if (_product is not null)
                                 data-product-id="@_product.Id"
                                 data-product-name="@_product.Name"
                                 data-unit-price="@BaseUnitPriceValue"
+                                data-currency-code="@_displayContext.CurrencyCode"
                                 data-variant-select="@(_product.Variants.Any() ? "#product-variant-select" : null)"
                                 data-stock="@_product.Quantity"
                                 data-feedback-target="#product-cart-feedback">
@@ -126,7 +130,7 @@ else if (_product is not null)
                                     <div class="font-semibold text-neutral-900">@VariantDisplayName(variant)</div>
                                     <div class="mt-1">@VariantAttributeText(variant)</div>
                                     <div class="mt-2 flex items-center justify-between gap-2">
-                                        <span class="font-semibold text-neutral-900">€ @VariantPriceValue(variant)</span>
+                                        <span class="font-semibold text-neutral-900">@FormatPrice(GetVariantPrice(variant))</span>
                                         <span class="@(variant.Stock > 0 ? "text-emerald-700" : "text-rose-700")">@(variant.Stock > 0 ? $"{variant.Stock} in stock" : "Out of stock")</span>
                                     </div>
                                 </li>
@@ -206,6 +210,7 @@ else if (_product is not null)
     private IReadOnlyList<StorefrontBreadcrumbItem> _breadcrumbs = [];
     private IReadOnlyList<GetCatalogProduct> _relatedProducts = [];
     private StorefrontStructuredDataDocument _structuredData = StorefrontStructuredDataDocument.Empty;
+    private StorefrontDisplayContext _displayContext = StorefrontDisplayContext.Fallback;
 
     private bool IsFreshArrival => _product is not null && DateTime.UtcNow.Subtract(_product.CreatedOn).TotalDays <= 7;
 
@@ -223,7 +228,7 @@ else if (_product is not null)
 
     private string BaseUnitPriceValue => (_product?.Price ?? 0m).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
 
-    private string DisplayPrice => (_product?.Price ?? 0m).ToString("0.00");
+    private string DisplayPrice => FormatPrice(_product?.Price ?? 0m);
 
     private string ProductDescription => !string.IsNullOrWhiteSpace(_product?.FullDescription)
         ? _product.FullDescription!
@@ -251,6 +256,8 @@ else if (_product is not null)
 
     protected override async Task OnParametersSetAsync()
     {
+        _displayContext = await DisplayContextProvider.GetAsync();
+
         var routePath = StorefrontRoutes.Product(Slug);
         var productResult = await ApiClient.GetPublishedProductBySlugAsync(Slug);
 
@@ -359,17 +366,22 @@ else if (_product is not null)
 
     private string VariantPriceValue(GetProductVariant variant)
     {
-        var price = variant.EffectivePrice > 0 ? variant.EffectivePrice : variant.Price ?? _product?.Price ?? 0m;
-        return price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+        return GetVariantPrice(variant).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
     }
 
     private string VariantOptionLabel(GetProductVariant variant)
     {
-        var price = variant.EffectivePrice > 0 ? variant.EffectivePrice : variant.Price ?? _product?.Price ?? 0m;
         var defaultLabel = variant.IsDefault ? " • Default" : string.Empty;
         var stockLabel = variant.Stock > 0 ? $"{variant.Stock} left" : "Out of stock";
-        return $"{VariantDisplayName(variant)} • € {price:0.00} • {stockLabel}{defaultLabel}";
+        return $"{VariantDisplayName(variant)} • {FormatPrice(GetVariantPrice(variant))} • {stockLabel}{defaultLabel}";
     }
+
+    private decimal GetVariantPrice(GetProductVariant variant)
+    {
+        return variant.EffectivePrice > 0 ? variant.EffectivePrice : variant.Price ?? _product?.Price ?? 0m;
+    }
+
+    private string FormatPrice(decimal amount) => PriceFormatter.Format(amount, _displayContext);
 
     private static string VariantDisplayName(GetProductVariant variant)
     {

@@ -643,6 +643,8 @@ namespace BlazorShop.Storefront.Services
 
         public Guid? ProductVariantId { get; set; }
 
+        public string? CurrencyCode { get; set; }
+
         public IReadOnlyList<SelectedAttributeDto>? SelectedAttributes { get; set; }
 
         public int Quantity { get; set; } = 1;

@@ -277,6 +277,7 @@ app.MapPost("/api/cart/lines", async (
         {
             ProductId = request.ProductId,
             ProductVariantId = request.ProductVariantId,
+            CurrencyCode = request.CurrencyCode,
             Quantity = request.Quantity,
             SelectedAttributes = request.SelectedAttributes,
         },
@@ -551,6 +552,8 @@ public sealed class StorefrontLocalCartLineRequest
     public Guid ProductId { get; set; }
 
     public Guid? ProductVariantId { get; set; }
+
+    public string? CurrencyCode { get; set; }
 
     public IReadOnlyList<SelectedAttributeDto>? SelectedAttributes { get; set; }
 

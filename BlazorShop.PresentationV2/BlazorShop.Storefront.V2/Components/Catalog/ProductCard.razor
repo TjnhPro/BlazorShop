@@ -1,3 +1,6 @@
+@inject IStorefrontDisplayContextProvider DisplayContextProvider
+@inject IStorefrontPriceFormatter PriceFormatter
+
 <article class="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/70 bg-white/95 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl">
     <div class="p-6">
         <div class="flex items-start justify-between gap-3">
@@ -44,10 +47,10 @@
 
         <p class="mt-2 text-[15px]">
             <span class="font-semibold text-rose-600">@PriceLabel</span>
-            <span class="font-semibold">€ @Product.Price.ToString("0.00")</span>
+            <span class="font-semibold">@FormatPrice(Product.Price)</span>
             @if (Product.ComparePrice is not null && Product.ComparePrice > Product.Price)
             {
-                <span class="ml-2 text-sm font-semibold text-neutral-400 line-through">€ @Product.ComparePrice.Value.ToString("0.00")</span>
+                <span class="ml-2 text-sm font-semibold text-neutral-400 line-through">@FormatPrice(Product.ComparePrice.Value)</span>
             }
         </p>
 
@@ -81,6 +84,7 @@
                         data-product-id="@Product.Id"
                         data-product-name="@Product.Name"
                         data-unit-price="@UnitPriceValue"
+                        data-currency-code="@_displayContext.CurrencyCode"
                         data-stock="@(Product.InStock ? 1 : 0)">
                     Add to Cart
                 </button>
@@ -122,6 +126,8 @@
     [Parameter, EditorRequired]
     public GetCatalogProduct Product { get; set; } = new();
 
+    private StorefrontDisplayContext _displayContext = StorefrontDisplayContext.Fallback;
+
     private bool IsNewArrival => DateTime.UtcNow.Subtract(Product.CreatedOn).TotalDays <= 7;
 
     private bool CanAddDirectly => !Product.HasVariants && Product.InStock;
@@ -141,6 +147,13 @@
     private string? CardDescription => string.IsNullOrWhiteSpace(Product.ShortDescription)
         ? Product.Description
         : Product.ShortDescription;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _displayContext = await DisplayContextProvider.GetAsync();
+    }
+
+    private string FormatPrice(decimal amount) => PriceFormatter.Format(amount, _displayContext);
 
     private static string Truncate(string? value, int maxLength = 110)
     {

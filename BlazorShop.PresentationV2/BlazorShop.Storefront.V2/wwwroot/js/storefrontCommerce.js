@@ -219,6 +219,7 @@
 
     const payload = {
       ProductId: productId,
+      CurrencyCode: (button.dataset.currencyCode || "").trim() || null,
       Quantity: 1
     };
 
@@ -245,6 +246,7 @@
 
       payload.ProductVariantId = selectedOption.value.trim();
       payload.SizeValue = selectedOption.dataset.displayName || selectedOption.dataset.sizeValue || selectedOption.textContent.trim();
+      payload.CurrencyCode = (selectedOption.dataset.currencyCode || payload.CurrencyCode || "").trim() || null;
     }
 
     return { payload, productName };
@@ -266,6 +268,7 @@
       const summary = await sendCartRequest(`${cartApiRoute}/lines`, "POST", {
         ProductId: payload.ProductId,
         ProductVariantId: payload.ProductVariantId || null,
+        CurrencyCode: payload.CurrencyCode || null,
         Quantity: payload.Quantity
       });
       applyCartSummary(summary);

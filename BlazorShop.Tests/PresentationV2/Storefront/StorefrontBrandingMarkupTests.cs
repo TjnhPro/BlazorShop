@@ -47,6 +47,42 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("object-fit: contain;", styles);
         }
 
+        [Fact]
+        public void StorefrontPricingMarkup_UsesStoreCurrencyContext()
+        {
+            var files = new[]
+            {
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/ProductCard.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/ProductPage.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CartPage.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CheckoutPage.razor",
+            };
+
+            foreach (var relativePath in files)
+            {
+                var markup = ReadRepositoryFile(relativePath);
+                Assert.DoesNotContain("EUR @", markup, StringComparison.Ordinal);
+                Assert.DoesNotContain("€ @", markup, StringComparison.Ordinal);
+                Assert.DoesNotContain("€ {", markup, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("data-currency-code", ReadRepositoryFile(files[0]));
+            Assert.Contains("data-currency-code", ReadRepositoryFile(files[1]));
+        }
+
+        [Fact]
+        public void StorefrontLocalCart_PostsCurrencyCode()
+        {
+            var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
+            var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+            var apiClient = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.cs");
+
+            Assert.Contains("CurrencyCode: (button.dataset.currencyCode", script);
+            Assert.Contains("CurrencyCode: payload.CurrencyCode || null", script);
+            Assert.Contains("CurrencyCode = request.CurrencyCode", program);
+            Assert.Contains("public string? CurrencyCode { get; set; }", apiClient);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath));

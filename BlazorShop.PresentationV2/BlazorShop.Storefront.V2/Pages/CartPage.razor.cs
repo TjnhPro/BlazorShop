@@ -1,8 +1,7 @@
 namespace BlazorShop.Storefront.Pages
 {
-    using System.Globalization;
-
     using BlazorShop.Storefront.Services;
+    using BlazorShop.Storefront.Services.Contracts;
     using BlazorShop.Web.SharedV2.Models.Product;
 
     using Microsoft.AspNetCore.Components;
@@ -11,6 +10,7 @@ namespace BlazorShop.Storefront.Pages
     {
         private readonly List<CartAlert> _alerts = [];
         private IReadOnlyList<CartLine> _lines = [];
+        private StorefrontDisplayContext _displayContext = StorefrontDisplayContext.Fallback;
 
         [CascadingParameter]
         private HttpContext? HttpContext { get; set; }
@@ -21,14 +21,21 @@ namespace BlazorShop.Storefront.Pages
 
         private int ItemCount => _lines.Sum(line => line.Quantity);
 
-        private string GrandTotalDisplay => _lines.Sum(line => line.LineTotal).ToString("0.00", CultureInfo.InvariantCulture);
+        private string GrandTotalDisplay => FormatPrice(_lines.Sum(line => line.LineTotal));
 
         private string CheckoutUrl => StorefrontRoutes.Checkout;
+
+        [Inject]
+        private IStorefrontDisplayContextProvider DisplayContextProvider { get; set; } = default!;
+
+        [Inject]
+        private IStorefrontPriceFormatter PriceFormatter { get; set; } = default!;
 
         protected override async Task OnParametersSetAsync()
         {
             _alerts.Clear();
             StorefrontResponseHeaders.ApplyPrivatePage(HttpContext);
+            _displayContext = await DisplayContextProvider.GetAsync();
 
             var cartResolution = await CartTokenService.ResolveAsync(HttpContext);
             if (!cartResolution.Success)
@@ -132,6 +139,8 @@ namespace BlazorShop.Storefront.Pages
             return lines;
         }
 
+        private string FormatPrice(decimal amount) => PriceFormatter.Format(amount, _displayContext);
+
         private sealed record CartAlert(string Level, string Message);
 
         private sealed record CartLine(
@@ -147,10 +156,6 @@ namespace BlazorShop.Storefront.Pages
             bool IsUnavailable)
         {
             public decimal LineTotal => UnitPrice * Quantity;
-
-            public string UnitPriceDisplay => UnitPrice.ToString("0.00", CultureInfo.InvariantCulture);
-
-            public string LineTotalDisplay => LineTotal.ToString("0.00", CultureInfo.InvariantCulture);
         }
 
         private static string? GetVariantLabel(GetProductVariant variant)
