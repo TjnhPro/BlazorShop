@@ -20,19 +20,22 @@ namespace BlazorShop.CommerceNode.API.Controllers
         private readonly ProductMediaStorageOptions options;
         private readonly IWebHostEnvironment environment;
         private readonly IHttpClientFactory httpClientFactory;
+        private readonly IMediaStorageProvider storageProvider;
 
         public ProductMediaController(
             CommerceNodeDbContext context,
             ICommerceStoreContext storeContext,
             IOptions<ProductMediaStorageOptions> options,
             IWebHostEnvironment environment,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            IMediaStorageProvider storageProvider)
         {
             this.context = context;
             this.storeContext = storeContext;
             this.options = options.Value;
             this.environment = environment;
             this.httpClientFactory = httpClientFactory;
+            this.storageProvider = storageProvider;
         }
 
         [HttpGet("{mediaPublicId:guid}")]
@@ -94,16 +97,18 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         private IActionResult ServeOriginal(Domain.Entities.CommerceNode.ProductMedia media)
         {
-            var rootPath = ProductMediaDownloader.ResolveRootPath(this.environment.ContentRootPath, this.options.RootPath);
-            var physicalPath = Path.Combine(
-                rootPath,
-                media.OriginalStoragePath!.Replace('/', Path.DirectorySeparatorChar));
-
-            if (!System.IO.File.Exists(physicalPath))
+            if (!this.storageProvider.FileExists(
+                this.environment.ContentRootPath,
+                this.options.RootPath,
+                media.OriginalStoragePath!))
             {
                 return this.NotFound();
             }
 
+            var physicalPath = this.storageProvider.ResolvePhysicalPath(
+                this.environment.ContentRootPath,
+                this.options.RootPath,
+                media.OriginalStoragePath!);
             return this.PhysicalFile(physicalPath, media.MimeType ?? "application/octet-stream");
         }
 

@@ -18,19 +18,22 @@ namespace BlazorShop.CommerceNode.API.Controllers
         private readonly CommerceMediaStorageOptions options;
         private readonly IWebHostEnvironment environment;
         private readonly IHttpClientFactory httpClientFactory;
+        private readonly IMediaStorageProvider storageProvider;
 
         public CommerceMediaAssetPublicController(
             CommerceNodeDbContext context,
             ICommerceStoreContext storeContext,
             IOptions<CommerceMediaStorageOptions> options,
             IWebHostEnvironment environment,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            IMediaStorageProvider storageProvider)
         {
             this.context = context;
             this.storeContext = storeContext;
             this.options = options.Value;
             this.environment = environment;
             this.httpClientFactory = httpClientFactory;
+            this.storageProvider = storageProvider;
         }
 
         [HttpGet("/api/commerce/admin/media/assets/{assetPublicId:guid}/preview")]
@@ -162,12 +165,18 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         private IActionResult ServeOriginal(CommerceMediaAsset asset)
         {
-            var physicalPath = this.ResolvePhysicalPath(asset.OriginalStoragePath);
-            if (!System.IO.File.Exists(physicalPath))
+            if (!this.storageProvider.FileExists(
+                this.environment.ContentRootPath,
+                this.options.RootPath,
+                asset.OriginalStoragePath))
             {
                 return this.NotFound();
             }
 
+            var physicalPath = this.storageProvider.ResolvePhysicalPath(
+                this.environment.ContentRootPath,
+                this.options.RootPath,
+                asset.OriginalStoragePath);
             return this.PhysicalFile(physicalPath, asset.MimeType);
         }
 
@@ -203,15 +212,6 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return string.IsNullOrWhiteSpace(prefix)
                 ? normalizedStoragePath
                 : $"{prefix}/{normalizedStoragePath}";
-        }
-
-        private string ResolvePhysicalPath(string storagePath)
-        {
-            var rootPath = Path.IsPathRooted(this.options.RootPath)
-                ? this.options.RootPath
-                : Path.GetFullPath(Path.Combine(this.environment.ContentRootPath, this.options.RootPath));
-
-            return Path.GetFullPath(Path.Combine(rootPath, storagePath.Replace('/', Path.DirectorySeparatorChar)));
         }
 
         private static string ToContentType(string format)

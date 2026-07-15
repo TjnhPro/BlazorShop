@@ -15,15 +15,18 @@ namespace BlazorShop.CommerceNode.API.ProductMedia
         private readonly HttpClient httpClient;
         private readonly IWebHostEnvironment environment;
         private readonly ProductMediaStorageOptions options;
+        private readonly IMediaStorageProvider storageProvider;
 
         public ProductMediaDownloader(
             HttpClient httpClient,
             IWebHostEnvironment environment,
-            IOptions<ProductMediaStorageOptions> options)
+            IOptions<ProductMediaStorageOptions> options,
+            IMediaStorageProvider storageProvider)
         {
             this.httpClient = httpClient;
             this.environment = environment;
             this.options = options.Value;
+            this.storageProvider = storageProvider;
         }
 
         public async Task<ProductMediaDownloadResult> DownloadOriginalAsync(
@@ -68,52 +71,79 @@ namespace BlazorShop.CommerceNode.API.ProductMedia
                     return ProductMediaDownloadResult.Failed("Media source content type is not supported.");
                 }
 
-                var rootPath = ResolveRootPath(this.environment.ContentRootPath, this.options.RootPath);
-                var tempPath = Path.Combine(rootPath, "tmp", $"{Guid.NewGuid():N}.download");
-                Directory.CreateDirectory(Path.GetDirectoryName(tempPath)!);
+                var tempStoragePath = this.storageProvider.BuildStoragePath("tmp", $"{Guid.NewGuid():N}.download");
 
                 await using (var source = await response.Content.ReadAsStreamAsync(timeoutCts.Token))
-                await using (var target = File.Create(tempPath))
+                await using (var target = this.storageProvider.OpenWrite(
+                    this.environment.ContentRootPath,
+                    this.options.RootPath,
+                    tempStoragePath))
                 {
                     var copyResult = await CopyWithLimitAsync(source, target, this.options.MaxDownloadBytes, timeoutCts.Token);
                     if (!copyResult.Success)
                     {
-                        File.Delete(tempPath);
+                        await this.storageProvider.DeleteFileIfExistsAsync(
+                            this.environment.ContentRootPath,
+                            this.options.RootPath,
+                            tempStoragePath,
+                            timeoutCts.Token);
                         return ProductMediaDownloadResult.Failed(copyResult.Message);
                     }
                 }
 
-                await using (var validationStream = File.OpenRead(tempPath))
+                await using (var validationStream = this.storageProvider.OpenRead(
+                    this.environment.ContentRootPath,
+                    this.options.RootPath,
+                    tempStoragePath))
                 {
                     var validImage = await ImageFileSignatureValidator.IsValidAsync(validationStream, contentType, timeoutCts.Token);
                     if (!validImage)
                     {
-                        File.Delete(tempPath);
+                        await this.storageProvider.DeleteFileIfExistsAsync(
+                            this.environment.ContentRootPath,
+                            this.options.RootPath,
+                            tempStoragePath,
+                            timeoutCts.Token);
                         return ProductMediaDownloadResult.Failed("Downloaded media content does not match its declared image type.");
                     }
                 }
 
-                var fileInfo = new FileInfo(tempPath);
-                var fileSizeBytes = fileInfo.Length;
-                var metadata = await ReadImageMetadataAsync(tempPath, contentType, timeoutCts.Token);
-                var contentHash = await ComputeSha256Async(tempPath, timeoutCts.Token);
-                var relativeStoragePath = string.Join(
-                    '/',
+                var fileSizeBytes = this.storageProvider.GetFileSize(
+                    this.environment.ContentRootPath,
+                    this.options.RootPath,
+                    tempStoragePath);
+                ImageMetadata metadata;
+                await using (var metadataStream = this.storageProvider.OpenRead(
+                    this.environment.ContentRootPath,
+                    this.options.RootPath,
+                    tempStoragePath))
+                {
+                    metadata = await ReadImageMetadataAsync(metadataStream, contentType, timeoutCts.Token);
+                }
+
+                string contentHash;
+                await using (var hashStream = this.storageProvider.OpenRead(
+                    this.environment.ContentRootPath,
+                    this.options.RootPath,
+                    tempStoragePath))
+                {
+                    contentHash = await ComputeSha256Async(hashStream, timeoutCts.Token);
+                }
+
+                var relativeStoragePath = this.storageProvider.BuildStoragePath(
                     "stores",
                     storeId.ToString("N"),
                     "products",
                     productId.ToString("N"),
                     mediaPublicId.ToString("N"),
                     $"original{extension}");
-                var finalPath = Path.Combine(rootPath, relativeStoragePath.Replace('/', Path.DirectorySeparatorChar));
-                Directory.CreateDirectory(Path.GetDirectoryName(finalPath)!);
-
-                if (File.Exists(finalPath))
-                {
-                    File.Delete(finalPath);
-                }
-
-                File.Move(tempPath, finalPath);
+                await this.storageProvider.MoveAsync(
+                    this.environment.ContentRootPath,
+                    this.options.RootPath,
+                    tempStoragePath,
+                    relativeStoragePath,
+                    replace: true,
+                    timeoutCts.Token);
 
                 return ProductMediaDownloadResult.Succeeded(
                     relativeStoragePath,
@@ -136,13 +166,6 @@ namespace BlazorShop.CommerceNode.API.ProductMedia
             {
                 return ProductMediaDownloadResult.Failed("Media file could not be stored.");
             }
-        }
-
-        public static string ResolveRootPath(string contentRootPath, string configuredRootPath)
-        {
-            return Path.IsPathRooted(configuredRootPath)
-                ? configuredRootPath
-                : Path.GetFullPath(Path.Combine(contentRootPath, configuredRootPath));
         }
 
         private static async Task<string?> ValidatePublicHostAsync(Uri uri, CancellationToken cancellationToken)
@@ -215,20 +238,18 @@ namespace BlazorShop.CommerceNode.API.ProductMedia
             }
         }
 
-        private static async Task<string> ComputeSha256Async(string path, CancellationToken cancellationToken)
+        private static async Task<string> ComputeSha256Async(Stream stream, CancellationToken cancellationToken)
         {
-            await using var stream = File.OpenRead(path);
             var hash = await SHA256.HashDataAsync(stream, cancellationToken);
             return Convert.ToHexString(hash).ToLowerInvariant();
         }
 
         private static async Task<ImageMetadata> ReadImageMetadataAsync(
-            string path,
+            Stream stream,
             string contentType,
             CancellationToken cancellationToken)
         {
             var buffer = new byte[64 * 1024];
-            await using var stream = File.OpenRead(path);
             var bytesRead = await stream.ReadAsync(buffer, cancellationToken);
             var data = buffer.AsSpan(0, bytesRead);
 

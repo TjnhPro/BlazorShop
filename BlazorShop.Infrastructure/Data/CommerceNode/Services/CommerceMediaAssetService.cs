@@ -20,17 +20,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly ICommerceStoreContext storeContext;
         private readonly CommerceMediaStorageOptions options;
         private readonly IHostEnvironment environment;
+        private readonly IMediaStorageProvider storageProvider;
 
         public CommerceMediaAssetService(
             CommerceNodeDbContext context,
             ICommerceStoreContext storeContext,
             IOptions<CommerceMediaStorageOptions> options,
-            IHostEnvironment environment)
+            IHostEnvironment environment,
+            IMediaStorageProvider storageProvider)
         {
             this.context = context;
             this.storeContext = storeContext;
             this.options = options.Value;
             this.environment = environment;
+            this.storageProvider = storageProvider;
         }
 
         public async Task<CommerceMediaAssetOperationResult<CommerceMediaAssetListResponse>> ListAsync(
@@ -109,11 +112,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var publicId = Guid.NewGuid();
             var canonicalFileName = BuildCanonicalFileName(file.OriginalFileName, file.Extension);
             var generatedName = GenerateDisplayName(file.OriginalFileName);
-            var storagePath = BuildStoragePath(scope.StoreId, publicId, file.Extension);
-            var physicalPath = ResolvePhysicalPath(storagePath);
-
-            Directory.CreateDirectory(Path.GetDirectoryName(physicalPath)!);
-            await File.WriteAllBytesAsync(physicalPath, file.Content, cancellationToken);
+            var storagePath = this.BuildStoragePath(scope.StoreId, publicId, file.Extension);
+            await this.storageProvider.WriteAllBytesAsync(
+                this.environment.ContentRootPath,
+                this.options.RootPath,
+                storagePath,
+                file.Content,
+                cancellationToken);
 
             var asset = new CommerceMediaAsset
             {
@@ -185,15 +190,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var file = validation.File!;
-            var oldPhysicalPath = ResolvePhysicalPath(asset.OriginalStoragePath);
-            var storagePath = BuildStoragePath(asset.StoreId, asset.PublicId, file.Extension);
-            var newPhysicalPath = ResolvePhysicalPath(storagePath);
-
-            Directory.CreateDirectory(Path.GetDirectoryName(newPhysicalPath)!);
-            await File.WriteAllBytesAsync(newPhysicalPath, file.Content, cancellationToken);
-            if (!oldPhysicalPath.Equals(newPhysicalPath, StringComparison.OrdinalIgnoreCase) && File.Exists(oldPhysicalPath))
+            var storagePath = this.BuildStoragePath(asset.StoreId, asset.PublicId, file.Extension);
+            await this.storageProvider.WriteAllBytesAsync(
+                this.environment.ContentRootPath,
+                this.options.RootPath,
+                storagePath,
+                file.Content,
+                cancellationToken);
+            if (!asset.OriginalStoragePath.Equals(storagePath, StringComparison.OrdinalIgnoreCase))
             {
-                File.Delete(oldPhysicalPath);
+                await this.storageProvider.DeleteFileIfExistsAsync(
+                    this.environment.ContentRootPath,
+                    this.options.RootPath,
+                    asset.OriginalStoragePath,
+                    cancellationToken);
             }
 
             asset.OriginalFileName = file.OriginalFileName;
@@ -223,11 +233,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.context.CommerceMediaAssets.Remove(asset);
             await this.context.SaveChangesAsync(cancellationToken);
 
-            var assetDirectory = ResolvePhysicalPath(Path.GetDirectoryName(asset.OriginalStoragePath) ?? string.Empty);
-            if (Directory.Exists(assetDirectory))
-            {
-                Directory.Delete(assetDirectory, recursive: true);
-            }
+            await this.storageProvider.DeleteDirectoryIfExistsAsync(
+                this.environment.ContentRootPath,
+                this.options.RootPath,
+                Path.GetDirectoryName(asset.OriginalStoragePath) ?? string.Empty,
+                recursive: true,
+                cancellationToken);
 
             return Succeeded<object>(new { }, "Media asset deleted.");
         }
@@ -325,23 +336,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     hash));
         }
 
-        private string ResolvePhysicalPath(string storagePath)
+        private string BuildStoragePath(Guid storeId, Guid assetPublicId, string extension)
         {
-            var rootPath = Path.IsPathRooted(this.options.RootPath)
-                ? this.options.RootPath
-                : Path.GetFullPath(Path.Combine(this.environment.ContentRootPath, this.options.RootPath));
-
-            return Path.GetFullPath(Path.Combine(rootPath, storagePath.Replace('/', Path.DirectorySeparatorChar)));
-        }
-
-        private static string BuildStoragePath(Guid storeId, Guid assetPublicId, string extension)
-        {
-            return Path.Combine(
+            return this.storageProvider.BuildStoragePath(
                     "stores",
                     storeId.ToString("N"),
                     assetPublicId.ToString("N"),
-                    "original" + extension.ToLowerInvariant())
-                .Replace('\\', '/');
+                    "original" + extension.ToLowerInvariant());
         }
 
         private static CommerceMediaAssetDto ToDto(CommerceMediaAsset asset)

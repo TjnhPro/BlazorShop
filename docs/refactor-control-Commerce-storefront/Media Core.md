@@ -10,6 +10,7 @@ Updated: 2026-07-15
 
 - Phase 0 complete: baseline inventory captured for ProductMedia, CommerceMediaAsset, Storefront V2 media proxy, Control Plane gateway routes, CommerceNode compose/imgproxy/Nginx config, current query limits, file size limits, and public URL shapes. No runtime behavior changed.
 - Phase 1 complete: shared media file/signature policy, transform normalization, and URL presets added in Application; product media and generic asset controllers/services now reuse the shared policy without route or DB changes.
+- Phase 2 complete: `IMediaStorageProvider` and local filesystem provider added; product media import/original render and generic asset upload/replace/delete/original render use provider-backed path resolution while preserving existing storage layout.
 
 ## Goal
 
@@ -307,15 +308,15 @@ Goal: make local filesystem storage swappable later without adding S3 now.
 
 Tasks:
 
-- [ ] Add `IMediaStorageProvider` contract for storing, replacing, deleting, opening, and resolving local processing paths.
-- [ ] Add `LocalMediaStorageProvider` wrapping current filesystem path behavior.
-- [ ] Move path normalization and trusted ID-based path generation behind the provider.
-- [ ] Preserve current storage layout:
+- [x] Add `IMediaStorageProvider` contract for storing, replacing, deleting, opening, and resolving local processing paths.
+- [x] Add `LocalMediaStorageProvider` wrapping current filesystem path behavior.
+- [x] Move path normalization and trusted ID-based path generation behind the provider.
+- [x] Preserve current storage layout:
   - product media under `runtime/media/stores/.../products/...`
   - generic assets under `runtime/media/assets/stores/...`
-- [ ] Keep imgproxy local filesystem path behavior working.
-- [ ] Add tests for path traversal prevention and storage key normalization.
-- [ ] Do not add S3 package or cloud credentials in this phase.
+- [x] Keep imgproxy local filesystem path behavior working.
+- [x] Add tests for path traversal prevention and storage key normalization.
+- [x] Do not add S3 package or cloud credentials in this phase.
 
 Likely files:
 
@@ -327,11 +328,16 @@ Likely files:
 
 Review gate:
 
-- [ ] Existing files remain readable.
-- [ ] Existing product media import writes to the same effective location.
-- [ ] Existing generic asset upload writes to the same effective location.
-- [ ] No public URL change.
-- [ ] No S3-specific runtime dependency.
+- [x] Existing files remain readable. Original public controllers now resolve physical files through `IMediaStorageProvider`.
+- [x] Existing product media import writes to the same effective location. Provider builds `stores/{storeId}/products/{productId}/{mediaPublicId}/original{extension}`.
+- [x] Existing generic asset upload writes to the same effective location. Provider builds `stores/{storeId}/{assetPublicId}/original{extension}` under the generic asset root.
+- [x] No public URL change.
+- [x] No S3-specific runtime dependency.
+
+Phase 2 verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~LocalMediaStorageProviderTests|FullyQualifiedName~MediaFilePolicyTests|FullyQualifiedName~MediaTransformPolicyTests"` passed 25/25.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
 
 ## Phase 3 - Delivery Hardening
 
