@@ -126,6 +126,35 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public async Task PreviewAsync_Baseline_CurrentlyUsesCartLineCurrencySnapshot()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1,
+                CurrencyCode: "eur"));
+            var service = CreateCheckoutService(context, cartService);
+
+            var result = await service.PreviewAsync(CreateRequest(storeId, cart.Payload.Token!, add.Payload!.Version));
+
+            Assert.True(result.Success);
+            Assert.NotNull(result.Payload);
+            Assert.Equal("EUR", result.Payload!.CurrencyCode);
+            Assert.All(result.Payload.Lines, line => Assert.Equal("EUR", line.CurrencyCode));
+        }
+
+        [Fact]
         public async Task PlaceOrderAsync_WhenPaymentMethodUnavailableForTotal_RejectsOrder()
         {
             using var context = CreateContext();

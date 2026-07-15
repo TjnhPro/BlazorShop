@@ -39,6 +39,20 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         }
 
         [Fact]
+        public async Task CreateHostedSessionAsync_Baseline_CurrentlyAssumesTwoDecimalMinorUnits()
+        {
+            var checkout = new FakeStripeCheckoutSessionService();
+            var provider = CreateProvider(checkout, stripeSecret: "sk_test_123", clientBaseUrl: "https://shop.example.com");
+
+            var result = await provider.CreateHostedSessionAsync(CreateRequest(currencyCode: "JPY"));
+
+            Assert.True(result.Success);
+            Assert.NotNull(checkout.Options);
+            Assert.Equal("jpy", checkout.Options!.LineItems[0].PriceData.Currency);
+            Assert.Equal(1234, checkout.Options.LineItems[0].PriceData.UnitAmount);
+        }
+
+        [Fact]
         public async Task CreateHostedSessionAsync_WhenStripeSecretMissing_ReturnsConflict()
         {
             var provider = CreateProvider(new FakeStripeCheckoutSessionService(), stripeSecret: "", clientBaseUrl: "https://shop.example.com");
@@ -67,7 +81,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 configuration);
         }
 
-        private static CreatePaymentProviderSessionRequest CreateRequest()
+        private static CreatePaymentProviderSessionRequest CreateRequest(string currencyCode = "USD")
         {
             return new CreatePaymentProviderSessionRequest(
                 Guid.NewGuid(),
@@ -76,7 +90,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 PaymentMethodKeys.Stripe,
                 PaymentMethodKeys.Stripe,
                 12.34m,
-                "USD",
+                currencyCode,
                 "stripe-idem-key",
                 [new PaymentProviderSessionLine(Guid.NewGuid(), "T-Shirt", 1, 12.34m)]);
         }
