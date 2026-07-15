@@ -45,6 +45,29 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("CommerceNodeCredentialMiddleware.NodeSecretHeaderName", source);
         }
 
+        [Fact]
+        public void CommerceCurrencyAdminSwaggerFilter_DefinesStableOperationMetadata()
+        {
+            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwaggerExtensions.cs");
+
+            var operationIds = new[]
+            {
+                "CommerceCurrencies_List",
+                "CommerceCurrencies_Update",
+                "CommerceCurrencies_ListExchangeRates",
+                "CommerceCurrencies_UpsertExchangeRate",
+                "CommerceCurrencies_DisableExchangeRate",
+            };
+
+            foreach (var operationId in operationIds)
+            {
+                Assert.Contains(operationId, source);
+            }
+
+            Assert.Contains("typeof(CommerceNodeApiResponse<IReadOnlyList<StoreCurrencyExchangeRateDto>>)", source);
+            Assert.Contains("typeof(CommerceNodeApiResponse<StoreCurrencyExchangeRateDto>)", source);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath));

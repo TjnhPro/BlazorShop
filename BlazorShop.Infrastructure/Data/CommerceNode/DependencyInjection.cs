@@ -147,6 +147,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IStoreCurrencyResolver, StoreCurrencyResolver>();
             services.AddScoped<IStorefrontWorkingCurrencyResolver, StorefrontWorkingCurrencyResolver>();
             services.AddScoped<IStoreCurrencyService, StoreCurrencyService>();
+            services.AddScoped<StoreCurrencyExchangeRateService>();
+            services.AddScoped<IStoreCurrencyExchangeRateService>(provider => provider.GetRequiredService<StoreCurrencyExchangeRateService>());
+            services.AddScoped<IMoneyConversionService>(provider => provider.GetRequiredService<StoreCurrencyExchangeRateService>());
             services.AddSingleton<ICurrencyMetadataService, CurrencyMetadataService>();
             services.AddSingleton<IMoneyRoundingService, MoneyRoundingService>();
             services.AddSingleton<IPaymentMinorUnitConverter, PaymentMinorUnitConverter>();

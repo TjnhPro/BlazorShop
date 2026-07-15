@@ -325,6 +325,21 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "Update a store-supported currency.",
                         typeof(CommerceNodeApiResponse<StoreCurrencyDto>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    ["GetExchangeRates"] = new(
+                        "CommerceCurrencies_ListExchangeRates",
+                        "List store currency exchange rates.",
+                        typeof(CommerceNodeApiResponse<IReadOnlyList<StoreCurrencyExchangeRateDto>>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    ["UpsertExchangeRate"] = new(
+                        "CommerceCurrencies_UpsertExchangeRate",
+                        "Create or update a manual currency exchange rate.",
+                        typeof(CommerceNodeApiResponse<StoreCurrencyExchangeRateDto>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    ["DisableExchangeRate"] = new(
+                        "CommerceCurrencies_DisableExchangeRate",
+                        "Disable a manual currency exchange rate.",
+                        typeof(CommerceNodeApiResponse<StoreCurrencyExchangeRateDto>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                 };
 
             public void Apply(OpenApiOperation operation, OperationFilterContext context)

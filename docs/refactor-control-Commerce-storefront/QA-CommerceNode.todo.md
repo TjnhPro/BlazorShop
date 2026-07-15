@@ -196,6 +196,10 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Storefront working-currency resolver validates client hints against enabled `StoreCurrency` rows and rejects unsupported spoofing by falling back to base currency. 2026-07-15: `StorefrontWorkingCurrencyResolverTests` passed.
 - [x] Storefront cart add-line uses the working-currency resolver and cannot persist a supported non-base currency before conversion is enabled. 2026-07-15: `StorefrontCartServiceTests.AddLineAsync_WhenSupportedNonBaseHintIsRequestedBeforeConversion_SnapshotsBaseCurrency` passed.
 - [x] Storefront currency preference command is POST-only with typed OpenAPI request/response metadata and no side-effecting GET. 2026-07-15: `StorefrontCurrency_SetPreference` added to Storefront Swagger and `CommerceNodeStorefrontOpenApiContractTests` passed after snapshot refresh.
+- [x] Manual exchange-rate schema is store-scoped with one row per `(StoreId, BaseCurrencyCode, TargetCurrencyCode, ProviderKey)`. 2026-07-15: migration `CommerceNodeStoreCurrencyExchangeRates` and `CommerceNodeDbContextModelTests.StoreCurrencyExchangeRate_HasOneRatePerProviderPair` passed.
+- [x] Commerce Admin manual exchange-rate endpoints have stable Swagger operation IDs and typed response schemas. 2026-07-15: `CommerceCurrencies_ListExchangeRates`, `CommerceCurrencies_UpsertExchangeRate`, and `CommerceCurrencies_DisableExchangeRate` are covered by `CommerceCurrencyAdminSwaggerFilter_DefinesStableOperationMetadata`.
+- [x] Manual exchange-rate upsert requires the target currency to be enabled for the store and rejects base-currency rows. 2026-07-15: `StoreCurrencyExchangeRateServiceTests` passed.
+- [x] Money conversion service resolves same-currency conversion as rate `1` and fails non-base conversion when rate is missing, disabled, stale, or not configured. 2026-07-15: focused `StoreCurrencyExchangeRateServiceTests` passed; checkout still remains base-currency until Storefront selector/display conversion phase.
 
 ## Store Resolution Hardening
 

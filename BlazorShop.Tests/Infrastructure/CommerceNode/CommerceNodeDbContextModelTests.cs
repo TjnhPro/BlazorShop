@@ -17,6 +17,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         [InlineData(typeof(StoreSeoSettings))]
         [InlineData(typeof(StoreFeatureState))]
         [InlineData(typeof(StoreCurrency))]
+        [InlineData(typeof(StoreCurrencyExchangeRate))]
         public void CatalogStoreId_IsRequiredInCommerceNode(Type entityType)
         {
             using var context = CreateContext();
@@ -103,6 +104,27 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
 
             Assert.NotNull(storeCurrencyIndex);
             Assert.True(storeCurrencyIndex!.IsUnique);
+            Assert.NotNull(foreignKey);
+            Assert.Equal(DeleteBehavior.Cascade, foreignKey!.DeleteBehavior);
+        }
+
+        [Fact]
+        public void StoreCurrencyExchangeRate_HasOneRatePerProviderPair()
+        {
+            using var context = CreateContext();
+            var modelEntity = context.Model.FindEntityType(typeof(StoreCurrencyExchangeRate));
+
+            Assert.NotNull(modelEntity);
+
+            var rateIndex = modelEntity!.GetIndexes()
+                .SingleOrDefault(index => index.Properties.Select(property => property.Name).SequenceEqual(
+                    ["StoreId", "BaseCurrencyCode", "TargetCurrencyCode", "ProviderKey"]));
+            var foreignKey = modelEntity.GetForeignKeys()
+                .SingleOrDefault(key => key.PrincipalEntityType.ClrType == typeof(CommerceStore)
+                    && key.Properties.Any(property => property.Name == "StoreId"));
+
+            Assert.NotNull(rateIndex);
+            Assert.True(rateIndex!.IsUnique);
             Assert.NotNull(foreignKey);
             Assert.Equal(DeleteBehavior.Cascade, foreignKey!.DeleteBehavior);
         }
