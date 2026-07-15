@@ -24,6 +24,7 @@ Updated: 2026-07-15
 - Phase 6 complete: Storefront SEO redirect API now falls back to canonical slug history resolver while preserving explicit redirect priority and Storefront V2 middleware safety checks.
 - Phase 7 complete: SEO metadata builder now rejects unsafe canonical/Open Graph URLs, falls back to route canonical when an override is unsafe, and keeps title suffix de-duplication covered.
 - Phase 8 complete: Storefront indexing policy centralizes private/search noindex rules and canonical path normalization that strips query, fragment, and trailing slash noise.
+- Phase 9 complete: Storefront sitemap generation now resolves entries through canonical path normalization and excludes private/search noindex routes before absolute URL generation.
 - Phase 11 is conditional and should run only after a real legacy topic URL inventory exists.
 
 Autoplan note: external dual-voice subagents are not available in this Codex runtime. This plan records an internal autoplan audit using the same decision principles: preserve existing working behavior, fix the riskiest foundation first, keep V2 boundaries explicit, avoid speculative localization/manufacturer work, and make each phase independently verifiable.
@@ -701,9 +702,9 @@ Tasks:
 
 Exit criteria:
 
-- Sitemap only contains canonical current-store URLs.
-- No stale old slugs appear in sitemap.
-- Robots points to canonical sitemap URL.
+- Sitemap only contains canonical current-store URLs. Complete; sitemap entries are normalized before absolute URL generation.
+- No stale old slugs appear in sitemap. Complete by relying on Storefront published sitemap feed plus current slug route builders; old redirect/source paths are not enumerated.
+- Robots points to canonical sitemap URL. Complete; existing robots tests still pass and sitemap URL comes from public URL resolver.
 
 Suggested commit:
 

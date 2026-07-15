@@ -55,25 +55,25 @@ namespace BlazorShop.Storefront.Services
 
             entries.AddRange(StorefrontRoutes.SitemapStaticPages
                 .Select(route => new SitemapUrlEntry(
-                    _publicUrlResolver.ResolveAbsoluteUrl(route.Path, configuredBaseUrl),
+                    ResolveSitemapUrl(route.Path, configuredBaseUrl),
                     route.UseCatalogLastModified ? catalogLastModifiedUtc : null)));
 
             entries.AddRange(sitemap.Categories
                 .Where(category => !string.IsNullOrWhiteSpace(category.Slug))
                 .Select(category => new SitemapUrlEntry(
-                    _publicUrlResolver.ResolveAbsoluteUrl(StorefrontRoutes.Category(category.Slug), configuredBaseUrl),
+                    ResolveSitemapUrl(StorefrontRoutes.Category(category.Slug), configuredBaseUrl),
                     category.LastModifiedUtc)));
 
             entries.AddRange(sitemap.Products
                 .Where(product => !string.IsNullOrWhiteSpace(product.Slug))
                 .Select(product => new SitemapUrlEntry(
-                    _publicUrlResolver.ResolveAbsoluteUrl(StorefrontRoutes.Product(product.Slug), configuredBaseUrl),
+                    ResolveSitemapUrl(StorefrontRoutes.Product(product.Slug), configuredBaseUrl),
                     product.LastModifiedUtc)));
 
             entries.AddRange(sitemap.Pages
                 .Where(page => !string.IsNullOrWhiteSpace(page.Slug))
                 .Select(page => new SitemapUrlEntry(
-                    _publicUrlResolver.ResolveAbsoluteUrl(StorefrontRoutes.Page(page.Slug), configuredBaseUrl),
+                    ResolveSitemapUrl(StorefrontRoutes.Page(page.Slug), configuredBaseUrl),
                     page.LastModifiedUtc)));
 
             return entries
@@ -83,6 +83,19 @@ namespace BlazorShop.Storefront.Services
                     .OrderByDescending(entry => entry.LastModifiedUtc)
                     .First())
                 .ToList();
+        }
+
+        private string? ResolveSitemapUrl(string? path, string? configuredBaseUrl)
+        {
+            var canonicalPath = StorefrontIndexingPolicy.NormalizeCanonicalPath(path);
+            if (canonicalPath is null ||
+                StorefrontIndexingPolicy.IsPrivateNoIndexPath(canonicalPath) ||
+                StorefrontIndexingPolicy.IsSearchNoIndexPath(canonicalPath))
+            {
+                return null;
+            }
+
+            return _publicUrlResolver.ResolveAbsoluteUrl(canonicalPath, configuredBaseUrl);
         }
 
         private static string Serialize(IReadOnlyList<SitemapUrlEntry> entries)
