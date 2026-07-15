@@ -81,6 +81,11 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Non-retryable `commerce.test.fail` reaches `failed`.
 - [x] Unknown task type reaches `failed` with `errorCode=handler_not_found`.
 
+### Product Media Import Task
+
+- [x] Media Core Phase 0 confirms product media import still uses existing `commerce_task` type `product.media.import` and the existing CommerceTaskWorker. 2026-07-15: baseline recorded in `Media Core.md`; no new worker or task type was introduced.
+- [ ] Media Core Phase 4 re-verifies product media import/retry/delete/primary behavior after shared media policy/storage provider adoption.
+
 ### Cancel
 
 - [x] Enqueue `commerce.test.wait` with payload `{"delayMs":30000}`.

@@ -403,6 +403,9 @@ Use this checklist whenever Storefront V2 auth UI or Commerce Node auth API chan
 
 - [x] `/css/storefront.css` returns CSS.
 - [x] `/js/storefrontCommerce.js` returns JS.
+- [x] Media Core Phase 0 confirms Storefront V2 proxies public media routes without changing URL shapes. 2026-07-15: reviewed `/media/products/{mediaPublicId}` and `/media/assets/{assetPublicId}/{fileName}` proxy routes in `BlazorShop.Storefront.V2/Program.cs`.
+- [x] Storefront V2 media proxy currently forwards configured store key and copies `Cache-Control`, `ETag`, and `Last-Modified` from Commerce Node media responses. 2026-07-15 Phase 0 baseline.
+- [ ] Media Core Phase 3 verifies Storefront V2 copies `X-Content-Type-Options` from Commerce Node media responses after delivery hardening.
 - [x] Storefront root asset inventory is guarded by automated tests. 2026-07-15: `LayoutAssetFoundationTests.StorefrontRoot_DefinesExpectedAssetsWithoutDuplicates` asserts `css/site.css`, `css/storefront.css`, `_framework/blazor.web.js`, and `js/storefrontCommerce.js` exactly once.
 - [x] Storefront brand head remains before `HeadOutlet` and does not use layout-level `HeadContent`. 2026-07-15: `LayoutAssetFoundationTests` and `StorefrontBrandingMarkupTests` cover the head order and no-`HeadContent` rule.
 - [x] Storefront main layout keeps exactly one `data-storefront-toast-region`. 2026-07-15: `LayoutAssetFoundationTests.StorefrontLayout_KeepsSingleToastRegionAndGlobalShell` protects the cart/toast DOM contract.

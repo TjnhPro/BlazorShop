@@ -431,6 +431,16 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [ ] Transform query for gif/ico returns 400.
 - [ ] Store A cannot read Store B media asset.
 
+### Media Core
+
+- [x] Media Core Phase 0 baseline inventory is captured before shared policy/storage changes. 2026-07-15: reviewed ProductMedia, CommerceMediaAsset, public controllers, Storefront media proxy, ControlPlane gateway routes, compose/imgproxy/Nginx config, query limits, size limits, and current public URL shapes in `Media Core.md`.
+- [x] Product media route shape remains `/media/products/{mediaPublicId}` with `w`, `h`, `fit`, `format`, and `v` query support. 2026-07-15 Phase 0: documented current controller behavior before runtime changes.
+- [x] Generic asset route shape remains `/media/assets/{assetPublicId}/{canonicalFileName}` with transform query support. 2026-07-15 Phase 0: documented current controller behavior before runtime changes.
+- [x] Current product media and generic asset file-size limits are documented. 2026-07-15 Phase 0: product import/download and generic upload both default to `10MB`.
+- [ ] Media Core Phase 1: shared policy tests cover image type constants, MIME/signature validation, fit/format normalization, dimension clamping, and named presets.
+- [ ] Media Core Phase 2: local storage provider tests cover path traversal prevention and preserved effective storage layout.
+- [ ] Media Core Phase 3: delivery tests cover versioned/unversioned cache headers, `nosniff`, ETag, and Storefront proxy header copying.
+
 ### Product Import
 
 - [x] CommerceNode API builds after Product Import Task changes. 2026-07-10: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.

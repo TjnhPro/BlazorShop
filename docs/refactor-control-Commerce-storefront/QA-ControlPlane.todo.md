@@ -264,6 +264,8 @@ Status legend:
 - [x] Delete asset removes it from the grid. 2026-07-13: delete returned the page to `No media assets found`.
 - [x] Link generator emits a local `/media/assets/{assetPublicId}/{canonicalFileName}` URL with transform query. 2026-07-13: generated `/media/assets/.../summer-sale-banner.png?w=320&h=180&fit=cover&format=webp&v=...`.
 - [x] Link generator emits an `<img>` snippet with `alt`, optional `title`, `loading="lazy"`, and width/height when selected. 2026-07-13: snippet included edited alt/title, `width="320"`, `height="180"`, and lazy loading.
+- [x] Media Core Phase 0 confirms existing product media and media library gateway routes stay behind ControlPlane API. 2026-07-15: reviewed `ControlPlaneCommerceCatalogController` routes for product media list/import/order/primary/delete/retry/preview and media asset list/upload/metadata/replace/delete/preview.
+- [ ] Media Core category media assignment route goes through ControlPlane API only after Phase 5/7 implementation.
 
 ## Commerce Admin UX Completion
 
