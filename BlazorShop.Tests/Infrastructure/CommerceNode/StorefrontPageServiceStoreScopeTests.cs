@@ -1,0 +1,231 @@
+namespace BlazorShop.Tests.Infrastructure.CommerceNode
+{
+    using BlazorShop.Application.CommerceNode.StorefrontPages;
+    using BlazorShop.Application.CommerceNode.Stores;
+    using BlazorShop.Application.DTOs;
+    using BlazorShop.Application.DTOs.Admin.Audit;
+    using BlazorShop.Application.Services;
+    using BlazorShop.Application.Services.Contracts.Admin;
+    using BlazorShop.Domain.Contracts;
+    using BlazorShop.Domain.Entities.CommerceNode;
+    using BlazorShop.Infrastructure.Data.CommerceNode;
+    using BlazorShop.Infrastructure.Data.CommerceNode.Services;
+
+    using Microsoft.EntityFrameworkCore;
+
+    using Moq;
+
+    using Xunit;
+
+    public sealed class StorefrontPageServiceStoreScopeTests
+    {
+        [Fact]
+        public async Task ListAsync_ReturnsOnlyCurrentStorePages()
+        {
+            var storeA = Guid.NewGuid();
+            var storeB = Guid.NewGuid();
+            await using var context = CreateContext();
+            await SeedPagesAsync(context, storeA, storeB);
+            var service = CreateService(context, storeA);
+
+            var result = await service.ListAsync(new StorefrontPageListQuery(PageNumber: 1, PageSize: 25));
+
+            Assert.True(result.Success);
+            Assert.Equal(2, result.Payload!.TotalCount);
+            Assert.All(result.Payload.Items, page => Assert.Equal(storeA, page.StoreId));
+            Assert.DoesNotContain(result.Payload.Items, page => page.Slug == "store-b-page");
+        }
+
+        [Fact]
+        public async Task GetByIdAsync_ReturnsNotFoundForOtherStorePage()
+        {
+            var storeA = Guid.NewGuid();
+            var storeB = Guid.NewGuid();
+            await using var context = CreateContext();
+            var (_, storeBPageId) = await SeedPagesAsync(context, storeA, storeB);
+            var service = CreateService(context, storeA);
+
+            var result = await service.GetByIdAsync(storeBPageId);
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.NotFound, result.ResponseType);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_ReturnsNotFoundForOtherStorePage()
+        {
+            var storeA = Guid.NewGuid();
+            var storeB = Guid.NewGuid();
+            await using var context = CreateContext();
+            var (_, storeBPageId) = await SeedPagesAsync(context, storeA, storeB);
+            var service = CreateService(context, storeA);
+
+            var result = await service.UpdateAsync(
+                storeBPageId,
+                new UpdateStorefrontPageRequest("store-b-page", "Updated", null, "<p>Updated</p>", true, true));
+
+            var unchanged = await context.StorefrontPages.SingleAsync(page => page.Id == storeBPageId);
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.NotFound, result.ResponseType);
+            Assert.Equal("Store B Page", unchanged.Title);
+        }
+
+        [Fact]
+        public async Task ArchiveAsync_ReturnsNotFoundForOtherStorePage()
+        {
+            var storeA = Guid.NewGuid();
+            var storeB = Guid.NewGuid();
+            await using var context = CreateContext();
+            var (_, storeBPageId) = await SeedPagesAsync(context, storeA, storeB);
+            var service = CreateService(context, storeA);
+
+            var result = await service.ArchiveAsync(storeBPageId);
+
+            var unchanged = await context.StorefrontPages.SingleAsync(page => page.Id == storeBPageId);
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.NotFound, result.ResponseType);
+            Assert.Null(unchanged.ArchivedAt);
+            Assert.True(unchanged.IsPublished);
+        }
+
+        [Fact]
+        public async Task GetPublishedBySlugAsync_ReturnsOnlyCurrentStorePublishedPage()
+        {
+            var storeA = Guid.NewGuid();
+            var storeB = Guid.NewGuid();
+            await using var context = CreateContext();
+            await SeedPagesAsync(context, storeA, storeB);
+            var service = CreateService(context, storeA);
+
+            var current = await service.GetPublishedBySlugAsync("store-a-page");
+            var other = await service.GetPublishedBySlugAsync("store-b-page");
+
+            Assert.True(current.Success);
+            Assert.Equal("Store A Page", current.Payload!.Title);
+            Assert.False(other.Success);
+            Assert.Equal(ServiceResponseType.NotFound, other.ResponseType);
+        }
+
+        [Fact]
+        public async Task ListSitemapEntriesAsync_ReturnsOnlyCurrentStoreIncludedPages()
+        {
+            var storeA = Guid.NewGuid();
+            var storeB = Guid.NewGuid();
+            await using var context = CreateContext();
+            await SeedPagesAsync(context, storeA, storeB);
+            var service = CreateService(context, storeA);
+
+            var result = await service.ListSitemapEntriesAsync();
+
+            Assert.True(result.Success);
+            Assert.Single(result.Payload!);
+            Assert.Equal("store-a-page", result.Payload![0].Slug);
+        }
+
+        [Fact]
+        public async Task CreateAsync_AllowsSlugThatExistsOnlyInAnotherStore()
+        {
+            var storeA = Guid.NewGuid();
+            var storeB = Guid.NewGuid();
+            await using var context = CreateContext();
+            await SeedPagesAsync(context, storeA, storeB);
+            var service = CreateService(context, storeA);
+
+            var result = await service.CreateAsync(new CreateStorefrontPageRequest(
+                "store-b-page",
+                "Shared Slug In Store A",
+                null,
+                "<p>Shared slug</p>",
+                true,
+                false));
+
+            Assert.True(result.Success);
+            Assert.Equal(storeA, result.Payload!.StoreId);
+            Assert.Equal("store-b-page", result.Payload.Slug);
+            Assert.Equal(2, await context.StorefrontPages.CountAsync(page => page.Slug == "store-b-page"));
+        }
+
+        private static StorefrontPageService CreateService(CommerceNodeDbContext context, Guid storeId)
+        {
+            var audit = new Mock<IAdminAuditService>();
+            audit
+                .Setup(service => service.LogAsync(It.IsAny<CreateAdminAuditLogDto>()))
+                .ReturnsAsync(new ServiceResponse<AdminAuditLogDto>(true, "Logged", Guid.NewGuid())
+                {
+                    ResponseType = ServiceResponseType.Success,
+                });
+
+            return new StorefrontPageService(context, new FixedStoreContext(storeId), new SlugService(), audit.Object);
+        }
+
+        private static CommerceNodeDbContext CreateContext()
+        {
+            var options = new DbContextOptionsBuilder<CommerceNodeDbContext>()
+                .UseInMemoryDatabase($"storefront-page-store-scope-{Guid.NewGuid():N}")
+                .Options;
+
+            return new CommerceNodeDbContext(options);
+        }
+
+        private static async Task<(Guid StoreAPageId, Guid StoreBPageId)> SeedPagesAsync(
+            CommerceNodeDbContext context,
+            Guid storeA,
+            Guid storeB)
+        {
+            var now = new DateTimeOffset(2026, 7, 15, 0, 0, 0, TimeSpan.Zero);
+            var storeAPage = CreatePage(storeA, "store-a-page", "Store A Page", includeInSitemap: true, now);
+            var storeADraft = CreatePage(storeA, "store-a-draft", "Store A Draft", includeInSitemap: false, now);
+            storeADraft.IsPublished = false;
+            var storeBPage = CreatePage(storeB, "store-b-page", "Store B Page", includeInSitemap: true, now);
+
+            context.StorefrontPages.AddRange(storeAPage, storeADraft, storeBPage);
+            await context.SaveChangesAsync();
+
+            return (storeAPage.Id, storeBPage.Id);
+        }
+
+        private static StorefrontPage CreatePage(
+            Guid storeId,
+            string slug,
+            string title,
+            bool includeInSitemap,
+            DateTimeOffset timestamp)
+        {
+            return new StorefrontPage
+            {
+                Id = Guid.NewGuid(),
+                PublicId = Guid.NewGuid(),
+                StoreId = storeId,
+                Slug = slug,
+                Title = title,
+                BodyHtml = $"<p>{title}</p>",
+                IsPublished = true,
+                IncludeInSitemap = includeInSitemap,
+                CreatedAt = timestamp,
+                UpdatedAt = timestamp,
+            };
+        }
+
+        private sealed class FixedStoreContext : ICommerceStoreContext
+        {
+            private readonly Guid storeId;
+
+            public FixedStoreContext(Guid storeId)
+            {
+                this.storeId = storeId;
+            }
+
+            public Task<CommerceStoreOperationResult<CommerceCurrentStore>> GetCurrentStoreAsync(CancellationToken cancellationToken = default)
+            {
+                throw new NotSupportedException();
+            }
+
+            public Task<CommerceStoreOperationResult<Guid>> GetCurrentStoreIdAsync(CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(new CommerceStoreOperationResult<Guid>(true, "Current store resolved.", this.storeId));
+            }
+        }
+    }
+}

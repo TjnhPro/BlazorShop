@@ -120,7 +120,7 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] Category admin list/query/detail/update/delete are scoped to the current Commerce store. 2026-07-15: `CommerceNodeCategoryStoreScopeTests` plus focused `CategoryServiceTests` cross-store update/delete guardrails passed.
 - [x] Category parent/child update rejects cross-store parent assignment through current-store scoped lookup. 2026-07-15: `CategoryServiceTests.UpdateAsync_WhenParentBelongsToDifferentStore_ReturnsValidationFailure` passed.
 - [x] Category SEO slug duplicate check is scoped by store. 2026-07-15: `CategorySeoServiceTests.UpdateAsync_WhenSlugExistsOnlyInAnotherStore_AllowsUpdate` passed and verified `CategorySlugExistsInStoreAsync`.
-- [ ] StorefrontPage list/detail/slug/sitemap scope has dedicated store mapping guardrails.
+- [x] StorefrontPage list/detail/slug/sitemap scope has dedicated store mapping guardrails. 2026-07-15: `StorefrontPageServiceStoreScopeTests` passed 7/7 for list, detail, update, archive, public slug, sitemap, and per-store duplicate slug behavior.
 
 ## Cart, Checkout & Payment Provider MVP
 

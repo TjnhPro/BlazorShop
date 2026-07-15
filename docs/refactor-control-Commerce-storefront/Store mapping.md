@@ -227,21 +227,34 @@ Exit criteria:
 
 Goal: confirm page/topic da store-scoped va bo sung guardrails can thiet.
 
+Status 2026-07-15: completed for `StorefrontPageService` store-scoped behavior.
+
+Implementation notes:
+
+- Added service-level guardrail tests proving list/detail/update/archive/public slug/sitemap page operations stay scoped to current store.
+- Confirmed duplicate page slug is unique per store, not global.
+- No StorefrontPage model or API contract rewrite was needed.
+
+Verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~StorefrontPageServiceStoreScopeTests" --no-restore` passed 7/7.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
+
 Tasks:
 
-- Them integration tests cho `StorefrontPageService`:
+- [x] Them integration tests cho `StorefrontPageService`:
   - List pages chi lay current store.
   - Slug lookup chi lay current store.
   - Sitemap chi include pages cua current store.
-- Verify admin/control page endpoints neu co:
+- [x] Verify admin/control page endpoints neu co:
   - Store scope den tu `storeKey`.
   - Cross-store detail/update/delete tra Not Found.
-- Khong rewrite page model neu tests pass.
+- [x] Khong rewrite page model neu tests pass.
 
 Exit criteria:
 
-- Page/topic behavior co automated coverage.
-- Khong phat sinh schema churn khong can thiet.
+- [x] Page/topic behavior co automated coverage.
+- [x] Khong phat sinh schema churn khong can thiet.
 
 ## Phase 5 - Discount store scope design, deferred
 
