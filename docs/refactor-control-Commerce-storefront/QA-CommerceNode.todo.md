@@ -437,7 +437,9 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Product media route shape remains `/media/products/{mediaPublicId}` with `w`, `h`, `fit`, `format`, and `v` query support. 2026-07-15 Phase 0: documented current controller behavior before runtime changes.
 - [x] Generic asset route shape remains `/media/assets/{assetPublicId}/{canonicalFileName}` with transform query support. 2026-07-15 Phase 0: documented current controller behavior before runtime changes.
 - [x] Current product media and generic asset file-size limits are documented. 2026-07-15 Phase 0: product import/download and generic upload both default to `10MB`.
-- [ ] Media Core Phase 1: shared policy tests cover image type constants, MIME/signature validation, fit/format normalization, dimension clamping, and named presets.
+- [x] Media Core Phase 1 shared policy tests cover image type constants, MIME/signature validation, fit/format normalization, dimension clamping, and named presets. 2026-07-15: `MediaFilePolicyTests` and `MediaTransformPolicyTests` passed 20/20.
+- [x] Product media and generic asset public controllers build after switching query normalization to shared policy. 2026-07-15 Media Core Phase 1: CommerceNode API build passed.
+- [x] Existing image signature validator compatibility remains covered after moving logic behind shared policy. 2026-07-15 Media Core Phase 1: `ImageFileSignatureValidatorTests` focused run passed 3/3.
 - [ ] Media Core Phase 2: local storage provider tests cover path traversal prevention and preserved effective storage layout.
 - [ ] Media Core Phase 3: delivery tests cover versioned/unversioned cache headers, `nosniff`, ETag, and Storefront proxy header copying.
 

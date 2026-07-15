@@ -2,7 +2,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 {
     using System.Globalization;
     using System.Security.Cryptography;
-    using System.Text;
     using System.Text.RegularExpressions;
 
     using BlazorShop.Application.CommerceNode.Media;
@@ -16,27 +15,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     public sealed class CommerceMediaAssetService : ICommerceMediaAssetService
     {
         private const int MaxPageSize = 100;
-        private const int HeaderLength = 32;
-
-        private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
-        {
-            ".jpg",
-            ".jpeg",
-            ".png",
-            ".webp",
-            ".gif",
-            ".ico",
-        };
-
-        private static readonly HashSet<string> AllowedMimeTypes = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "image/jpeg",
-            "image/png",
-            "image/webp",
-            "image/gif",
-            "image/x-icon",
-            "image/vnd.microsoft.icon",
-        };
 
         private readonly CommerceNodeDbContext context;
         private readonly ICommerceStoreContext storeContext;
@@ -303,7 +281,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var extension = Path.GetExtension(originalFileName);
-            if (!AllowedExtensions.Contains(extension))
+            if (!MediaFilePolicy.SupportedGenericImageExtensions.Contains(extension))
             {
                 return FileValidationResult.Failed("Image file type is not supported.");
             }
@@ -316,31 +294,31 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var content = memory.ToArray();
-            var signature = DetectSignature(content);
-            if (signature is null)
+            var fileType = MediaFilePolicy.DetectImageType(content);
+            if (fileType == MediaFileType.Unknown)
             {
                 return FileValidationResult.Failed("Image file signature is not supported.");
             }
 
-            if (!ExtensionMatchesSignature(extension, signature.Value))
+            if (!MediaFilePolicy.ExtensionMatchesType(extension, fileType))
             {
                 return FileValidationResult.Failed("Image file extension does not match its content.");
             }
 
-            var mimeType = NormalizeMimeType(request.ContentType, signature.Value);
-            if (!AllowedMimeTypes.Contains(mimeType))
+            var mimeType = MediaFilePolicy.NormalizeMimeType(request.ContentType, fileType);
+            if (!MediaFilePolicy.SupportedGenericImageMimeTypes.Contains(mimeType))
             {
                 return FileValidationResult.Failed("Image content type is not supported.");
             }
 
-            var dimensions = ReadDimensions(content, signature.Value);
+            var dimensions = MediaFilePolicy.ReadBasicDimensions(content, fileType);
             var hash = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
 
             return FileValidationResult.Succeeded(
                 new ValidatedImageFile(
                     content,
                     originalFileName,
-                    NormalizeExtension(extension, signature.Value),
+                    MediaFilePolicy.NormalizeExtension(extension, fileType),
                     mimeType,
                     dimensions.Width,
                     dimensions.Height,
@@ -417,135 +395,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return char.ToUpperInvariant(word[0]) + (word.Length == 1 ? string.Empty : word[1..].ToLowerInvariant());
         }
 
-        private static ImageSignature? DetectSignature(byte[] content)
-        {
-            if (content.Length >= 3 && content[0] == 0xFF && content[1] == 0xD8 && content[2] == 0xFF)
-            {
-                return ImageSignature.Jpeg;
-            }
-
-            if (content.Length >= 8
-                && content[0] == 0x89
-                && content[1] == 0x50
-                && content[2] == 0x4E
-                && content[3] == 0x47
-                && content[4] == 0x0D
-                && content[5] == 0x0A
-                && content[6] == 0x1A
-                && content[7] == 0x0A)
-            {
-                return ImageSignature.Png;
-            }
-
-            if (content.Length >= 12
-                && Encoding.ASCII.GetString(content, 0, 4) == "RIFF"
-                && Encoding.ASCII.GetString(content, 8, 4) == "WEBP")
-            {
-                return ImageSignature.Webp;
-            }
-
-            if (content.Length >= 6)
-            {
-                var header = Encoding.ASCII.GetString(content, 0, 6);
-                if (header is "GIF87a" or "GIF89a")
-                {
-                    return ImageSignature.Gif;
-                }
-            }
-
-            if (content.Length >= HeaderLength && content[0] == 0 && content[1] == 0 && content[2] == 1 && content[3] == 0)
-            {
-                return ImageSignature.Ico;
-            }
-
-            return null;
-        }
-
-        private static bool ExtensionMatchesSignature(string extension, ImageSignature signature)
-        {
-            return signature switch
-            {
-                ImageSignature.Jpeg => extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase)
-                    || extension.Equals(".jpeg", StringComparison.OrdinalIgnoreCase),
-                ImageSignature.Png => extension.Equals(".png", StringComparison.OrdinalIgnoreCase),
-                ImageSignature.Webp => extension.Equals(".webp", StringComparison.OrdinalIgnoreCase),
-                ImageSignature.Gif => extension.Equals(".gif", StringComparison.OrdinalIgnoreCase),
-                ImageSignature.Ico => extension.Equals(".ico", StringComparison.OrdinalIgnoreCase),
-                _ => false,
-            };
-        }
-
-        private static string NormalizeExtension(string extension, ImageSignature signature)
-        {
-            return signature == ImageSignature.Jpeg ? ".jpg" : extension.ToLowerInvariant();
-        }
-
-        private static string NormalizeMimeType(string? contentType, ImageSignature signature)
-        {
-            return signature switch
-            {
-                ImageSignature.Jpeg => "image/jpeg",
-                ImageSignature.Png => "image/png",
-                ImageSignature.Webp => "image/webp",
-                ImageSignature.Gif => "image/gif",
-                ImageSignature.Ico => "image/x-icon",
-                _ => contentType?.Trim().ToLowerInvariant() ?? "application/octet-stream",
-            };
-        }
-
-        private static ImageDimensions ReadDimensions(byte[] content, ImageSignature signature)
-        {
-            try
-            {
-                return signature switch
-                {
-                    ImageSignature.Png when content.Length >= 24 => new ImageDimensions(
-                        ReadBigEndianInt32(content.AsSpan(16, 4)),
-                        ReadBigEndianInt32(content.AsSpan(20, 4))),
-                    ImageSignature.Gif when content.Length >= 10 => new ImageDimensions(
-                        ReadLittleEndianUInt16(content.AsSpan(6, 2)),
-                        ReadLittleEndianUInt16(content.AsSpan(8, 2))),
-                    ImageSignature.Webp => ReadWebpDimensions(content),
-                    ImageSignature.Ico when content.Length >= 8 => new ImageDimensions(
-                        content[6] == 0 ? 256 : content[6],
-                        content[7] == 0 ? 256 : content[7]),
-                    _ => new ImageDimensions(null, null),
-                };
-            }
-            catch
-            {
-                return new ImageDimensions(null, null);
-            }
-        }
-
-        private static ImageDimensions ReadWebpDimensions(byte[] content)
-        {
-            if (content.Length < 30)
-            {
-                return new ImageDimensions(null, null);
-            }
-
-            var chunkType = Encoding.ASCII.GetString(content, 12, 4);
-            if (chunkType == "VP8X" && content.Length >= 30)
-            {
-                var width = 1 + content[24] + (content[25] << 8) + (content[26] << 16);
-                var height = 1 + content[27] + (content[28] << 8) + (content[29] << 16);
-                return new ImageDimensions(width, height);
-            }
-
-            return new ImageDimensions(null, null);
-        }
-
-        private static int ReadBigEndianInt32(ReadOnlySpan<byte> value)
-        {
-            return (value[0] << 24) | (value[1] << 16) | (value[2] << 8) | value[3];
-        }
-
-        private static int ReadLittleEndianUInt16(ReadOnlySpan<byte> value)
-        {
-            return value[0] | (value[1] << 8);
-        }
-
         private static int CalculateTotalPages(int totalCount, int pageSize)
         {
             return totalCount == 0 ? 0 : (int)Math.Ceiling(totalCount / (double)pageSize);
@@ -593,15 +442,5 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             int? Height,
             string ContentHash);
 
-        private sealed record ImageDimensions(int? Width, int? Height);
-
-        private enum ImageSignature
-        {
-            Jpeg,
-            Png,
-            Webp,
-            Gif,
-            Ico
-        }
     }
 }

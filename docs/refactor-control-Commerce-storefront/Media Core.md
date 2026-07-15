@@ -9,6 +9,7 @@ Scope: Media storage, image processing policy, delivery hardening, and assignmen
 Updated: 2026-07-15
 
 - Phase 0 complete: baseline inventory captured for ProductMedia, CommerceMediaAsset, Storefront V2 media proxy, Control Plane gateway routes, CommerceNode compose/imgproxy/Nginx config, current query limits, file size limits, and public URL shapes. No runtime behavior changed.
+- Phase 1 complete: shared media file/signature policy, transform normalization, and URL presets added in Application; product media and generic asset controllers/services now reuse the shared policy without route or DB changes.
 
 ## Goal
 
@@ -268,17 +269,17 @@ Goal: centralize validation and transform policy without changing behavior.
 
 Tasks:
 
-- [ ] Add shared media type constants for current supported image types.
-- [ ] Add shared MIME/signature validation helper or service.
-- [ ] Reuse existing `ImageFileSignatureValidator` behavior instead of duplicating validation logic.
-- [ ] Define shared max dimension defaults and per-surface limits:
+- [x] Add shared media type constants for current supported image types.
+- [x] Add shared MIME/signature validation helper or service.
+- [x] Reuse existing `ImageFileSignatureValidator` behavior instead of duplicating validation logic.
+- [x] Define shared max dimension defaults and per-surface limits:
   - product media public max dimension currently `2000`.
   - generic asset public max dimension currently `4096`.
-- [ ] Define shared transform value normalization:
+- [x] Define shared transform value normalization:
   - preserve existing `contain`, `cover`, `max`, and `inside` behavior.
   - map equivalent values internally where possible.
-- [ ] Define `MediaUrlPreset` names and default query options.
-- [ ] Add unit tests for policy normalization and invalid values.
+- [x] Define `MediaUrlPreset` names and default query options.
+- [x] Add unit tests for policy normalization and invalid values.
 
 Likely files:
 
@@ -289,10 +290,16 @@ Likely files:
 
 Review gate:
 
-- [ ] No DB migration.
-- [ ] Existing query values still accepted.
-- [ ] Invalid media values return the same or better safe errors.
-- [ ] Product and asset controllers still enforce store scope before rendering.
+- [x] No DB migration.
+- [x] Existing query values still accepted. Covered by `MediaTransformPolicyTests` for product `contain|cover|max` and generic asset `contain|cover|inside`.
+- [x] Invalid media values return the same or better safe errors. Existing error strings are preserved by shared policy results.
+- [x] Product and asset controllers still enforce store scope before rendering. Store scope checks remain before media lookup in both public controllers.
+
+Phase 1 verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~MediaFilePolicyTests|FullyQualifiedName~MediaTransformPolicyTests"` passed 20/20.
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~ImageFileSignatureValidatorTests|FullyQualifiedName~ProductMedia"` passed 3/3 matched existing signature tests.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
 
 ## Phase 2 - Storage Provider Abstraction
 

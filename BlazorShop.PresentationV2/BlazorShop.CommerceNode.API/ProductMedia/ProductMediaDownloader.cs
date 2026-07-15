@@ -4,6 +4,7 @@ namespace BlazorShop.CommerceNode.API.ProductMedia
     using System.Net;
     using System.Security.Cryptography;
 
+    using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.CommerceNode.API.Configuration;
     using BlazorShop.CommerceNode.API.Validation;
 
@@ -11,14 +12,6 @@ namespace BlazorShop.CommerceNode.API.ProductMedia
 
     public sealed class ProductMediaDownloader : IProductMediaDownloader
     {
-        private static readonly Dictionary<string, string> ExtensionsByContentType = new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["image/jpeg"] = ".jpg",
-            ["image/png"] = ".png",
-            ["image/webp"] = ".webp",
-            ["image/gif"] = ".gif",
-        };
-
         private readonly HttpClient httpClient;
         private readonly IWebHostEnvironment environment;
         private readonly ProductMediaStorageOptions options;
@@ -69,8 +62,8 @@ namespace BlazorShop.CommerceNode.API.ProductMedia
                 }
 
                 var contentType = response.Content.Headers.ContentType?.MediaType;
-                if (string.IsNullOrWhiteSpace(contentType) ||
-                    !ExtensionsByContentType.TryGetValue(contentType, out var extension))
+                var extension = MediaFilePolicy.GetPreferredExtensionForContentType(contentType);
+                if (string.IsNullOrWhiteSpace(contentType) || extension is null)
                 {
                     return ProductMediaDownloadResult.Failed("Media source content type is not supported.");
                 }

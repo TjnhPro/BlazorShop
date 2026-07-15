@@ -1,5 +1,6 @@
 namespace BlazorShop.CommerceNode.API.Controllers
 {
+    using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.CommerceNode.API.Configuration;
     using BlazorShop.CommerceNode.API.ProductMedia;
@@ -14,23 +15,6 @@ namespace BlazorShop.CommerceNode.API.Controllers
     [Route("media/products")]
     public sealed class ProductMediaController : ControllerBase
     {
-        private const int DefaultDimension = 1000;
-        private const int MaxDimension = 2000;
-
-        private static readonly HashSet<string> AllowedFormats = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "webp",
-            "jpg",
-            "png",
-        };
-
-        private static readonly Dictionary<string, string> ImgproxyFitByRequestFit = new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["contain"] = "fit",
-            ["cover"] = "fill",
-            ["max"] = "fit",
-        };
-
         private readonly CommerceNodeDbContext context;
         private readonly ICommerceStoreContext storeContext;
         private readonly ProductMediaStorageOptions options;
@@ -62,7 +46,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             [FromQuery] int? v,
             CancellationToken cancellationToken)
         {
-            var query = NormalizeQuery(w, h, fit, format);
+            var query = MediaTransformPolicy.NormalizeProductQuery(w, h, fit, format);
             if (!query.Success)
             {
                 return this.BadRequest(query.Message);
@@ -123,7 +107,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return this.PhysicalFile(physicalPath, media.MimeType ?? "application/octet-stream");
         }
 
-        private void SetCacheHeaders(Domain.Entities.CommerceNode.ProductMedia media, MediaQuery query, int? requestedVersion)
+        private void SetCacheHeaders(Domain.Entities.CommerceNode.ProductMedia media, MediaTransformQuery query, int? requestedVersion)
         {
             var version = requestedVersion is > 0 ? requestedVersion.Value : media.Version;
             this.Response.Headers.CacheControl = "public, max-age=31536000, immutable";
@@ -131,71 +115,18 @@ namespace BlazorShop.CommerceNode.API.Controllers
             this.Response.Headers.XContentTypeOptions = "nosniff";
         }
 
-        private static string BuildImgproxyUrl(string baseUrl, string storagePath, MediaQuery query)
+        private static string BuildImgproxyUrl(string baseUrl, string storagePath, MediaTransformQuery query)
         {
             var normalizedBaseUrl = baseUrl.TrimEnd('/');
-            var imgproxyFit = ImgproxyFitByRequestFit[query.Fit];
+            var imgproxyFit = MediaTransformPolicy.ProductImgproxyFitByRequestFit[query.Fit];
             var height = query.Height ?? 0;
             var source = Uri.EscapeDataString($"local:///{storagePath.Replace('\\', '/')}");
             return $"{normalizedBaseUrl}/insecure/rs:{imgproxyFit}:{query.Width}:{height}/plain/{source}@{query.Format}";
         }
 
-        private static MediaQueryResult NormalizeQuery(int? width, int? height, string? fit, string? format)
-        {
-            var normalizedWidth = NormalizeDimension(width);
-            var normalizedHeight = NormalizeDimension(height);
-            if (normalizedWidth is null && normalizedHeight is null)
-            {
-                normalizedWidth = DefaultDimension;
-            }
-
-            var normalizedFit = string.IsNullOrWhiteSpace(fit) ? "contain" : fit.Trim().ToLowerInvariant();
-            if (!ImgproxyFitByRequestFit.ContainsKey(normalizedFit))
-            {
-                return MediaQueryResult.Failed("Media fit is invalid.");
-            }
-
-            var normalizedFormat = string.IsNullOrWhiteSpace(format) ? "webp" : format.Trim().ToLowerInvariant();
-            if (!AllowedFormats.Contains(normalizedFormat))
-            {
-                return MediaQueryResult.Failed("Media format is invalid.");
-            }
-
-            return MediaQueryResult.Succeeded(new MediaQuery(normalizedWidth!.Value, normalizedHeight, normalizedFit, normalizedFormat));
-        }
-
-        private static int? NormalizeDimension(int? value)
-        {
-            if (value is null || value <= 0)
-            {
-                return null;
-            }
-
-            return Math.Min(value.Value, MaxDimension);
-        }
-
         private static string ToContentType(string format)
         {
-            return format.Equals("png", StringComparison.OrdinalIgnoreCase)
-                ? "image/png"
-                : format.Equals("jpg", StringComparison.OrdinalIgnoreCase)
-                    ? "image/jpeg"
-                    : "image/webp";
-        }
-
-        private sealed record MediaQuery(int Width, int? Height, string Fit, string Format);
-
-        private sealed record MediaQueryResult(bool Success, MediaQuery Value, string? Message = null)
-        {
-            public static MediaQueryResult Succeeded(MediaQuery query)
-            {
-                return new MediaQueryResult(true, query);
-            }
-
-            public static MediaQueryResult Failed(string message)
-            {
-                return new MediaQueryResult(false, new MediaQuery(DefaultDimension, null, "contain", "webp"), message);
-            }
+            return MediaTransformPolicy.ToContentType(format);
         }
     }
 }

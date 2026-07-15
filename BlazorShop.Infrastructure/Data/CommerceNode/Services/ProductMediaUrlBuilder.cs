@@ -1,20 +1,19 @@
 namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 {
+    using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.ProductMedia;
 
     public sealed class ProductMediaUrlBuilder : IProductMediaUrlBuilder
     {
-        private const int DefaultWidth = 1000;
-        private const int MaxDimension = 2000;
-
         public string BuildProductMediaUrl(Guid mediaPublicId, int version, ProductMediaUrlOptions? options = null)
         {
             options ??= new ProductMediaUrlOptions();
 
-            var width = ClampDimension(options.Width) ?? DefaultWidth;
-            var height = ClampDimension(options.Height);
-            var fit = NormalizeOption(options.Fit, "contain");
-            var format = NormalizeOption(options.Format, "webp");
+            var width = MediaTransformPolicy.ClampDimension(options.Width, MediaTransformPolicy.ProductMaxDimension)
+                ?? MediaTransformPolicy.ProductDefaultDimension;
+            var height = MediaTransformPolicy.ClampDimension(options.Height, MediaTransformPolicy.ProductMaxDimension);
+            var fit = MediaTransformPolicy.NormalizeOption(options.Fit, "contain");
+            var format = MediaTransformPolicy.NormalizeOption(options.Format, "webp");
 
             var query = new List<string>
             {
@@ -30,21 +29,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             return $"/media/products/{mediaPublicId:D}?{string.Join("&", query)}";
-        }
-
-        private static int? ClampDimension(int? value)
-        {
-            if (value is null || value <= 0)
-            {
-                return null;
-            }
-
-            return Math.Min(MaxDimension, value.Value);
-        }
-
-        private static string NormalizeOption(string? value, string fallback)
-        {
-            return string.IsNullOrWhiteSpace(value) ? fallback : value.Trim().ToLowerInvariant();
         }
     }
 }
