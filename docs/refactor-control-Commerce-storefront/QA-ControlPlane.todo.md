@@ -414,6 +414,7 @@ Status legend:
 - [x] Payment Methods page loads store-scoped methods. 2026-07-13: visible browser loaded COD, Stripe, and PayPal rows for the selected store.
 - [ ] Payment Methods page can enable/disable a method.
 - [x] Payment Methods page rejects invalid settings JSON via API message. 2026-07-13: COD invalid JSON save showed `Payment settings JSON is invalid.`
+- [x] Payment Methods page does not preload saved provider settings JSON into the form. 2026-07-15: page now shows configured/not configured status and sends replacement JSON only when entered; ControlPlane Web build passed.
 - [x] Orders drawer shows order/payment/shipping statuses separately. 2026-07-13: Orders table/drawer showed order `processing`, payment `paid`, shipping `not_yet_shipped`, then `shipped`.
 - [x] Orders drawer Mark Complete calls ControlPlane API and updates order detail. 2026-07-13: visible browser marked `ORD-20260713-6672B965` complete after shipping update; network capture still showed no direct CommerceNode calls.
 - [ ] Orders drawer Cancel calls ControlPlane API and updates order detail.

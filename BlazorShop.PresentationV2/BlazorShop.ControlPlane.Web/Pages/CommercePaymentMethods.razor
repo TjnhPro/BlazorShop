@@ -59,7 +59,7 @@
                             <th class="px-4 py-3">Enabled</th>
                             <th class="px-4 py-3">Display</th>
                             <th class="px-4 py-3">Order</th>
-                            <th class="px-4 py-3">Settings JSON</th>
+                            <th class="px-4 py-3">Settings</th>
                             <th class="px-4 py-3 text-right">Action</th>
                         </tr>
                     </thead>
@@ -82,7 +82,14 @@
                                     <input class="min-h-10 w-24 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" @bind="method.DisplayOrder" />
                                 </td>
                                 <td class="px-4 py-3 align-top">
-                                    <textarea class="min-h-20 w-72 rounded-md border border-ink-300 px-3 py-2 font-mono text-xs outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="method.SettingsJson"></textarea>
+                                    <div class="mb-2 text-xs font-semibold @(method.SettingsConfigured ? "text-green-700" : "text-ink-500")">
+                                        @(method.SettingsConfigured ? "Configured" : "Not configured")
+                                    </div>
+                                    <textarea class="min-h-20 w-72 rounded-md border border-ink-300 px-3 py-2 font-mono text-xs outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Replacement JSON" @bind="method.SettingsJson"></textarea>
+                                    <label class="mt-2 flex items-center gap-2 text-xs text-ink-600">
+                                        <input class="size-4 rounded border-ink-300 text-control-700 focus:ring-control-500" type="checkbox" @bind="method.ClearSettings" />
+                                        Clear saved settings
+                                    </label>
                                 </td>
                                 <td class="px-4 py-3 text-right align-top">
                                     <button class="cp-button cp-button-primary justify-center" disabled="@isSaving" @onclick="() => SaveMethodAsync(method)">
@@ -166,7 +173,8 @@
                     method.DisplayName,
                     method.Description,
                     method.DisplayOrder,
-                    method.SettingsJson));
+                    method.ClearSettings ? null : method.SettingsJson,
+                    method.ClearSettings));
 
             if (!result.Success || result.Data is null)
             {
@@ -202,6 +210,10 @@
 
         public string? SettingsJson { get; set; }
 
+        public bool SettingsConfigured { get; set; }
+
+        public bool ClearSettings { get; set; }
+
         public DateTime UpdatedAt { get; init; }
 
         public static PaymentMethodForm FromDto(StorePaymentMethodDto method)
@@ -213,7 +225,9 @@
                 Description = method.Description,
                 Enabled = method.Enabled,
                 DisplayOrder = method.DisplayOrder,
-                SettingsJson = method.SettingsJson,
+                SettingsConfigured = method.Settings.Configured,
+                SettingsJson = null,
+                ClearSettings = false,
                 UpdatedAt = method.UpdatedAt,
             };
         }

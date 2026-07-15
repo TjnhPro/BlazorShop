@@ -139,7 +139,15 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             method.DisplayName = request.DisplayName.Trim();
             method.Description = NormalizeNullable(request.Description);
             method.DisplayOrder = request.DisplayOrder;
-            method.SettingsJson = NormalizeNullable(request.SettingsJson);
+            if (request.ClearSettings)
+            {
+                method.SettingsJson = null;
+            }
+            else if (request.SettingsJson is not null)
+            {
+                method.SettingsJson = NormalizeNullable(request.SettingsJson);
+            }
+
             method.UpdatedAt = DateTime.UtcNow;
 
             await this.context.SaveChangesAsync(cancellationToken);
@@ -157,6 +165,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     method.PaymentMethodKey,
                     method.Enabled,
                     method.DisplayOrder,
+                    SettingsConfigured = method.SettingsJson is not null,
+                    SettingsChanged = request.ClearSettings || request.SettingsJson is not null,
                 }),
             });
             await this.publicConfigurationCache.InvalidateAsync(storeResult.Payload, cancellationToken);
@@ -202,7 +212,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 method.Description,
                 method.Enabled,
                 method.DisplayOrder,
-                method.SettingsJson,
+                new StorePaymentMethodSettingsStatusDto(method.SettingsJson is not null),
                 method.CreatedAt,
                 method.UpdatedAt);
         }
@@ -229,8 +239,18 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return "Payment display order must be between 0 and 10000.";
             }
 
-            if (!string.IsNullOrWhiteSpace(request.SettingsJson))
+            if (request.ClearSettings && !string.IsNullOrWhiteSpace(request.SettingsJson))
             {
+                return "Payment settings cannot be cleared and replaced in the same request.";
+            }
+
+            if (request.SettingsJson is not null)
+            {
+                if (string.IsNullOrWhiteSpace(request.SettingsJson))
+                {
+                    return "Payment settings JSON must not be blank. Use clearSettings to remove saved settings.";
+                }
+
                 try
                 {
                     using var _ = JsonDocument.Parse(request.SettingsJson);

@@ -436,6 +436,8 @@ Exit criteria:
 
 ### Phase 5 - Secret Boundary And Provider Config Hardening
 
+Status: completed on 2026-07-15 by commit `pending`.
+
 Goal: prevent provider and notification secrets from leaking through DTOs or logs.
 
 Tasks:
@@ -450,11 +452,26 @@ Tasks:
 - Add audit redaction rules for secret updates.
 - Keep public storefront payment metadata unchanged and safe.
 
+Implementation notes:
+
+- Replaced admin payment method DTO raw `SettingsJson` echo with `StorePaymentMethodSettingsStatusDto`.
+- Changed payment method update semantics so omitted `SettingsJson` preserves existing settings.
+- Added explicit `ClearSettings` request flag for removing saved provider settings.
+- Kept provider settings validation on replacement JSON and rejected blank JSON without explicit clear.
+- Redacted audit metadata to status booleans only: no provider settings JSON or secret values.
+- Updated Control Plane payment method UI to show configured/not configured status and accept replacement JSON without preloading saved secrets.
+
+Verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~CommerceNodePaymentMethodSecretBoundaryTests|FullyQualifiedName~CommerceNodePaymentMethodServiceCacheTests" --no-restore -p:UseSharedCompilation=false` passed 4/4.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore -p:UseSharedCompilation=false` passed.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore -p:UseSharedCompilation=false` passed.
+
 Exit criteria:
 
-- Public APIs never expose provider settings.
-- Admin APIs never echo saved secret values.
-- Tests cover secret redaction and public leak prevention.
+- [x] Public APIs never expose provider settings.
+- [x] Admin APIs never echo saved secret values.
+- [x] Tests cover secret redaction and public leak prevention.
 
 ### Phase 6 - Store Feature State Core
 

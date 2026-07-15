@@ -133,16 +133,20 @@ namespace BlazorShop.Application.CommerceNode.Payments
         string? Description,
         bool Enabled,
         int DisplayOrder,
-        string? SettingsJson,
+        StorePaymentMethodSettingsStatusDto Settings,
         DateTime CreatedAt,
         DateTime UpdatedAt);
+
+    public sealed record StorePaymentMethodSettingsStatusDto(
+        bool Configured);
 
     public sealed record UpdateStorePaymentMethodRequest(
         bool Enabled,
         string DisplayName,
         string? Description,
         int DisplayOrder,
-        string? SettingsJson);
+        string? SettingsJson,
+        bool ClearSettings = false);
 
     public interface IStorePaymentMethodAdminService
     {

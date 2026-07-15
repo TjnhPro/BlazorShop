@@ -125,6 +125,10 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] Commerce store profile updates invalidate the affected Storefront public configuration cache. 2026-07-15: `CommerceStoreServiceValidationTests.UpdateAsync_InvalidatesPublicConfigurationCache` passed.
 - [x] Store SEO override saves invalidate both resolved SEO settings cache and Storefront public configuration cache. 2026-07-15: `StoreSeoSettingsServiceTests.SaveOverrideAsync_InvalidatesPublicConfigurationCacheForStore` passed.
 - [x] Payment method metadata updates invalidate Storefront public configuration cache. 2026-07-15: `CommerceNodePaymentMethodServiceCacheTests.UpdateAsync_InvalidatesPublicConfigurationCacheForStore` passed.
+- [x] Admin payment method DTO does not echo raw provider `SettingsJson` or secret values. 2026-07-15: `CommerceNodePaymentMethodSecretBoundaryTests.GetAsync_ReturnsSettingsStatusWithoutRawSettingsJson` passed.
+- [x] Payment method metadata update with omitted `SettingsJson` preserves existing provider settings. 2026-07-15: `CommerceNodePaymentMethodSecretBoundaryTests.UpdateAsync_WhenSettingsJsonIsNull_PreservesExistingSettings` passed.
+- [x] Provider settings removal requires explicit `ClearSettings` and never echoes the old secret value. 2026-07-15: `CommerceNodePaymentMethodSecretBoundaryTests.UpdateAsync_WhenClearSettingsIsTrue_RemovesSettingsWithoutEchoingSecret` passed.
+- [x] Payment method audit metadata records settings status only, not provider settings JSON. 2026-07-15: secret boundary tests asserted audit metadata does not contain `SettingsJson` or secret values.
 
 ## Store Mapping
 
