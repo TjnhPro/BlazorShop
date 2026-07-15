@@ -116,7 +116,7 @@ namespace BlazorShop.Storefront.Services
         {
             if (IsHtmlGet(context.Request) && !IsDiscoveryDocument(context.Request.Path))
             {
-                StorefrontResponseHeaders.ApplyServiceUnavailable(context);
+                StorefrontResponseHeaders.ApplyPrivatePage(context);
                 context.Response.Redirect(
                     $"{StorefrontRoutes.Maintenance}?reason={Uri.EscapeDataString(ToMaintenanceReason(resolution.Status))}",
                     permanent: false);

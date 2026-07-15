@@ -155,6 +155,13 @@ Status legend:
 - [x] Store status is visible. 2026-07-08: Stores list/detail showed `active` status.
 - [~] Archived/disabled store state is handled correctly. Service tests pass; live archive/disabled-store UI state was not exercised in this run.
 
+### Store Lifecycle
+
+- [x] Control Plane store status supports active, disabled, archived, and provisioning without relying on a missing database status value. 2026-07-15: migration/model update included in store lifecycle phase; focused `FullyQualifiedName~ControlPlaneStore` test set passed.
+- [x] Store display order remains owned by Control Plane manager data. 2026-07-15: lifecycle phase kept display order in Control Plane store DTO/UI flow and did not move it into CommerceNode.
+- [x] Control Plane gateway exposes CommerceNode runtime lifecycle controls through Control Plane API only. 2026-07-15: build passed after gateway/UI changes; no direct Storefront or CommerceNode Web calls were added.
+- [x] Store company/contact fields are managed as CommerceNode runtime profile data instead of duplicated in Control Plane registry. 2026-07-15: lifecycle phase added CommerceNode store profile fields and Storefront current-store contract coverage.
+
 ## Catalog Product Media
 
 - [ ] Catalog page media panel loads for a selected product.

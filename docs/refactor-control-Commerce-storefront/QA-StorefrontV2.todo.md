@@ -224,18 +224,37 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Online provider checkout redirects to provider next action when configured. 2026-07-14: `StorefrontV2HostSmokeTests.Checkout_PostRedirectsToProviderNextAction` covers checkout POST redirect to provider `NextAction.Url` and cart-token cleanup.
 - [x] Provider cancel/failure returns to a recoverable checkout state. 2026-07-14: `/payment-cancel` polls the payment attempt and renders retry checkout action; host smoke test covers failed provider state.
 - [x] Payment attempt polling page shows pending, success, failure, and retry states. 2026-07-14: `/payment-success` and `/payment-cancel` host smoke tests cover captured, pending refresh, failed, and retry states.
-- [ ] Visible browser QA confirms payment return/cancel pages have no console errors.
-- [ ] Browser QA verifies no readable raw cart price payload remains after server-cart migration.
+- [x] Visible browser QA confirms payment return/cancel pages have no console errors. 2026-07-15: Playwright headed run visited `/payment-success?paymentAttemptId=00000000-0000-0000-0000-000000000000` and `/payment-cancel?paymentAttemptId=00000000-0000-0000-0000-000000000000`; console errors/page errors were 0.
+- [x] Browser QA verifies no readable raw cart price payload remains after server-cart migration. 2026-07-15: add-to-cart wrote HttpOnly `bs-cart-token`, `document.cookie` was empty, no `my-cart` cookie existed, and no price hints were readable in browser cookies.
 
 ## Store Resolution And Public URL Hardening
 
-- [x] Storefront V2 resolves current store before downstream page/catalog work when `StoreResolution:RequireCurrentStore=true`. 2026-07-15: `StorefrontCurrentStoreMiddlewareTests` and `StorefrontCurrentStoreProviderTests` passed.
-- [x] Bad/missing configured store maps to `404` and does not continue the Storefront request pipeline. 2026-07-15: middleware unit test covers not-found guard stop.
-- [x] CommerceNode unavailable or maintenance current store maps to `503` and does not fall back to another store. 2026-07-15: middleware/provider unit tests cover unavailable and maintenance paths.
-- [x] Static asset and health paths are skipped by current-store guard. 2026-07-15: middleware unit test covers static asset skip.
-- [x] Public URL resolver prefers `PublicUrl:BaseUrl`, normalizes trailing slash, strips query/fragment, and preserves `PathBase` for request fallback. 2026-07-15: `StorefrontV2PublicUrlResolverTests` passed.
+- [x] Storefront V2 resolves current store before downstream page/catalog work when `StoreResolution:RequireCurrentStore=true`. 2026-07-15: `StorefrontCurrentStoreMiddlewareTests` and `StorefrontCurrentStoreProviderTests` passed. Real QA: `/` called CommerceNode current-store before rendering and blocked maintenance store with HTTP 503.
+- [x] Bad/missing configured store maps to `404` and does not continue the Storefront request pipeline. 2026-07-15: middleware unit test covers not-found guard stop. Real QA: Storefront with `Api:StoreKey=not-a-real-store` returned HTTP 404 `Storefront store was not found.`
+- [x] CommerceNode unavailable or maintenance current store maps to `503` and does not fall back to another store. 2026-07-15: middleware/provider unit tests cover unavailable and maintenance paths. Real QA: API base unavailable returned HTTP 503 `The configured store could not be resolved.`
+- [x] Static asset and health paths are skipped by current-store guard. 2026-07-15: middleware unit test covers static asset skip. Real QA: `/_framework/blazor.web.js` returned HTTP 200 while `/` was guarded.
+- [x] Public URL resolver prefers `PublicUrl:BaseUrl`, normalizes trailing slash, strips query/fragment, and preserves `PathBase` for request fallback. 2026-07-15: `StorefrontV2PublicUrlResolverTests` passed. Real QA: `robots.txt` and `sitemap.xml` used configured `https://public-store.example/shop/`.
 - [x] Storefront V2 configures trusted forwarded headers for `X-Forwarded-For`, `X-Forwarded-Proto`, and `X-Forwarded-Host` with known proxies/networks. 2026-07-15: `StorefrontV2ForwardedHeadersOptionsTests` passed.
-- [ ] Visible browser QA verifies canonical/sitemap/payment return URLs use configured public `https://` base behind a trusted proxy.
+- [~] Visible browser QA verifies canonical/sitemap/payment return URLs use configured public `https://` base behind a trusted proxy. 2026-07-15: Playwright verified Storefront home, guard 404/503 pages, and `robots.txt`/`sitemap.xml` using configured public `https://` base. Payment return URL end-to-end was not re-run in this pass.
+
+## Store Lifecycle And Maintenance Page
+
+- [x] Closed/maintenance/not-ready stores redirect normal HTML page requests to `/maintenance?reason=...` instead of rendering catalog pages. 2026-07-15: HTTP matrix verified `/` returns 302 for maintenance, closed, and provisioning/not-ready states.
+- [x] Maintenance page renders the correct state-specific title and message for maintenance, closed, and not-ready stores. 2026-07-15: Playwright browser QA captured screenshots for all three states under `.gstack/qa-reports/screenshots/`.
+- [x] Maintenance page includes store support email/phone from the runtime store profile. 2026-07-15: browser and HTTP checks verified `support@example.com` and `+1-555-0199` on maintenance pages.
+- [x] Maintenance page remains `503` and noindex while the HTML redirect response remains `302`. 2026-07-15: QA found and fixed ISSUE-001 where service-unavailable headers changed the redirect into HTTP 503; regression test `StorefrontCurrentStoreMiddlewareRegressionTests.HtmlUnavailableRedirect_RemainsRedirectWhenResponseStarts` now covers it.
+- [x] Static framework assets bypass the store readiness guard. 2026-07-15: `/_framework/blazor.web.js` returned HTTP 200 while the current store was blocked.
+- [~] Browser console shows the expected navigation resource error for the intentionally-503 maintenance document; no application JavaScript/page errors were observed in the lifecycle pass.
+
+2026-07-15 visible browser QA plan:
+
+- [x] Run Storefront V2 with Playwright Chromium `headless=false`. Result: `headed=true` in `.gstack/qa-reports/playwright-visible-results-2026-07-15.json`.
+- [x] Visit `/`, `/my-cart`, `/checkout`, `/payment-success`, and `/payment-cancel` against local CommerceNode API. Result: all returned HTTP 200 through Storefront V2.
+- [x] Verify browser console has no unexpected errors after each page and cart interaction. Result: 0 console errors, 0 page errors, 0 HTTP errors captured.
+- [x] Add seeded product to cart if catalog seed data is available; verify `bs-cart-token` is present and no readable `my-cart` price payload remains. Result: `Catalog QA T-Shirt` added through UI; HttpOnly token present; legacy cookie absent.
+- [x] Verify payment return/cancel pages render recoverable states without requiring a side-effecting GET. Result: missing-attempt pages rendered recoverable status/action states and did not mutate via GET.
+- [x] Capture screenshots and write `.gstack/qa-reports/qa-report-localhost-2026-07-15.md`.
+- [~] Development browser overlay `WASM active / Count 0` is visible on every tested page and overlaps part of the mobile checkout form; recorded as dev-environment concern, not fixed in this QA pass.
 
 ## Auth And Checkout Handoff
 

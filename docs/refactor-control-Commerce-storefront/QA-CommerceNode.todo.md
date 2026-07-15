@@ -91,6 +91,13 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] Storefront Swagger passes Microsoft.OpenApi reader parsing and has no broken schema references. 2026-07-14: `StorefrontSwagger_PassesOpenApiReaderValidation` and broken-ref traversal tests passed.
 - [x] Storefront Swagger snapshot is updated after final hardening. 2026-07-14: `storefront-openapi.snapshot.json` refreshed and contract suite passed 16/16.
 
+## Store Lifecycle
+
+- [x] CommerceNode store lifecycle schema contains status, maintenance flag/message, display order, and company/contact profile fields. 2026-07-15: `CommerceNodeStoreLifecycleProfile` migration and model build passed.
+- [x] Storefront current-store contract exposes lifecycle readiness and contact profile data without exposing admin-only entities. 2026-07-15: `CommerceNodeStorefrontOpenApiContractTests` passed after snapshot update.
+- [x] Commerce Admin runtime store update accepts active/inactive and maintenance state through explicit request DTOs. 2026-07-15: focused lifecycle/control tests passed with the new request/response contracts.
+- [x] Provisioning stores remain valid runtime records and can be reported as not ready to Storefront V2. 2026-07-15: Storefront V2 browser QA used a fake scoped current-store API returning `status=provisioning`; storefront rendered the not-ready maintenance state.
+
 ## Cart, Checkout & Payment Provider MVP
 
 Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.md`.
@@ -118,8 +125,17 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 ## Store Resolution Hardening
 
 - [x] CommerceNode Nginx runtime config has an explicit default/catch-all server returning 403 for unmatched hosts. 2026-07-15: `NginxRuntimeConfigTests` passed and `00-default-deny.conf` contains `default_server` plus `return 403`.
-- [ ] Run local Nginx smoke: `docker compose -f compose.commercenode.yml up -d commercenode-nginx`, `docker exec blazorshop-commercenode-nginx nginx -t`, then `curl.exe -i -H "Host: unknown.invalid" http://localhost:8088/` must return `403 Forbidden`.
-- [ ] Verify at least one known generated store host still proxies to the intended Storefront container after the default/catch-all deny file is mounted.
+- [x] Run local Nginx smoke: `docker compose -f compose.commercenode.yml up -d commercenode-nginx`, `docker exec blazorshop-commercenode-nginx nginx -t`, then `curl.exe -i -H "Host: unknown.invalid" http://localhost:8088/` must return `403 Forbidden`. 2026-07-15: real Docker Nginx returned 403 for unmatched `Host` after runtime restart/reload; no fallback host served the request.
+- [x] Verify at least one known generated store host still proxies to the intended Storefront container after the default/catch-all deny file is mounted. 2026-07-15: temporary `qa-storefront.local` server block proxied to a temporary upstream and returned 200 while unknown hosts still returned 403; temporary config/container were removed after verification.
+
+2026-07-15 local API QA plan:
+
+- [x] Start CommerceNode dependencies from `compose.commercenode.yml` and run CommerceNode API on `http://localhost:5180`. Result: PostgreSQL/Nginx/imgproxy were running; API started and applied 5 pending checkout/payment migrations.
+- [x] Verify Storefront Swagger is reachable and contains scoped cart, checkout, payment-attempt, callback, and webhook contracts. Result: `/swagger/storefront/swagger.json` returned 200 and included `/cart/session`, `/cart`, `/cart/lines`, `/checkout/preview`, `/checkout/place-order`, `/payments/attempts/{attemptId}`, `/payments/provider-callback/{providerKey}`, and `/payments/webhooks/{providerKey}`.
+- [x] Verify retired raw checkout route `POST /api/storefront/stores/default/cart/checkout` returns 404 or 405. Result: returned 404; raw checkout path was absent from Swagger.
+- [x] Verify removed `api/internal/*` sample route returns 404. Result: `GET /api/internal/catalog/categories` returned 404.
+- [x] Verify scoped Storefront catalog/payment/cart routes do not require node credentials or `X-Store-Key`. Result: categories and payment methods returned 200 without headers; `/cart/session` returned 200 without node credentials or `X-Store-Key`.
+- [x] Record HTTP smoke results in `.gstack/qa-reports/qa-report-localhost-2026-07-15.md`.
 
 ## Startup Database Migration
 
