@@ -61,7 +61,11 @@ namespace BlazorShop.Application.Services
         {
             if (!string.IsNullOrWhiteSpace(canonicalUrl))
             {
-                return ResolveContentUrl(canonicalUrl, baseCanonicalUrl);
+                var resolvedCanonical = ResolveContentUrl(canonicalUrl, baseCanonicalUrl);
+                if (!string.IsNullOrWhiteSpace(resolvedCanonical))
+                {
+                    return resolvedCanonical;
+                }
             }
 
             if (string.IsNullOrWhiteSpace(relativePath))
@@ -74,7 +78,7 @@ namespace BlazorShop.Application.Services
 
         private static string? ResolveContentUrl(string? value, string? baseCanonicalUrl)
         {
-            return TryCombineAbsoluteUrl(baseCanonicalUrl, value) ?? value?.Trim();
+            return TryCombineAbsoluteUrl(baseCanonicalUrl, value) ?? TryNormalizeRootRelativeUrl(value);
         }
 
         private static string? TryCombineAbsoluteUrl(string? baseCanonicalUrl, string? value)
@@ -99,6 +103,22 @@ namespace BlazorShop.Application.Services
             }
 
             return new Uri(baseUri, value).ToString();
+        }
+
+        private static string? TryNormalizeRootRelativeUrl(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            var normalized = value.Trim();
+            return normalized.StartsWith("/", StringComparison.Ordinal) &&
+                !normalized.StartsWith("//", StringComparison.Ordinal) &&
+                !normalized.Contains("\r", StringComparison.Ordinal) &&
+                !normalized.Contains("\n", StringComparison.Ordinal)
+                    ? normalized
+                    : null;
         }
 
         private static bool IsSupportedAbsoluteUri(Uri uri)

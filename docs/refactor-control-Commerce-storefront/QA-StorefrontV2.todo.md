@@ -390,6 +390,7 @@ Use this checklist whenever Storefront V2 auth UI or Commerce Node auth API chan
 - [x] `/robots.txt` points at V2 public sitemap URL.
 - [x] Redirect middleware uses `api/storefront/stores/{storeKey}/seo/redirects/resolve`. 2026-07-14: API client route switched to scoped SEO redirects.
 - [x] Redirect resolution is backed by CommerceNode current-store scope and does not resolve another store's old slug. 2026-07-15: `CommerceNodeSeoRedirectStoreScopeTests.ResolvePublicPathAsync_DoesNotResolveOtherStoreRedirect` passed.
+- [x] Storefront SEO metadata composition keeps title suffix de-duplication, safe canonical URL resolution, no canonical on 404/503, and robots metadata behavior covered after hardening. 2026-07-15: focused `SeoMetadataBuilderTests`, `StorefrontSeoComposerTests`, `StorefrontRouteSeoAuditTests`, and `StorefrontOnsiteSeoRenderingTests` passed 50/50.
 - [x] Missing route has no canonical and includes noindex.
 - [x] Commerce Node downtime has noindex 503 surface.
 - [ ] Visible browser QA: old slug in current store redirects to canonical slug.

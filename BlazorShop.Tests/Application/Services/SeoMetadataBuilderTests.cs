@@ -84,5 +84,68 @@ namespace BlazorShop.Tests.Application.Services
             Assert.False(result.RobotsIndex);
             Assert.False(result.RobotsFollow);
         }
+
+        [Fact]
+        public void Build_WhenTitleAlreadyContainsSuffix_DoesNotDuplicateSuffix()
+        {
+            var request = new SeoMetadataBuildRequest
+            {
+                PageTitle = "Running Shoes | BlazorShop",
+                RelativePath = "/product/running-shoes",
+                Settings = new SeoSettingsDto
+                {
+                    DefaultTitleSuffix = "| BlazorShop",
+                    BaseCanonicalUrl = "https://shop.example.com",
+                },
+            };
+
+            var result = this._builder.Build(request);
+
+            Assert.Equal("Running Shoes | BlazorShop", result.Title);
+        }
+
+        [Fact]
+        public void Build_WhenCanonicalOverrideIsUnsafe_FallsBackToRelativePathCanonical()
+        {
+            var request = new SeoMetadataBuildRequest
+            {
+                PageTitle = "Running Shoes",
+                RelativePath = "/product/running-shoes",
+                PageSeo = new SeoFieldsDto
+                {
+                    CanonicalUrl = "javascript:alert(1)",
+                },
+                Settings = new SeoSettingsDto
+                {
+                    BaseCanonicalUrl = "https://shop.example.com",
+                },
+            };
+
+            var result = this._builder.Build(request);
+
+            Assert.Equal("https://shop.example.com/product/running-shoes", result.CanonicalUrl);
+        }
+
+        [Fact]
+        public void Build_WhenOpenGraphImageIsUnsafe_OmitsOpenGraphImage()
+        {
+            var request = new SeoMetadataBuildRequest
+            {
+                PageTitle = "Running Shoes",
+                RelativePath = "/product/running-shoes",
+                PageSeo = new SeoFieldsDto
+                {
+                    OgImage = "data:text/html;base64,PHNjcmlwdD4=",
+                },
+                Settings = new SeoSettingsDto
+                {
+                    BaseCanonicalUrl = "https://shop.example.com",
+                },
+            };
+
+            var result = this._builder.Build(request);
+
+            Assert.Null(result.OgImage);
+        }
     }
 }
