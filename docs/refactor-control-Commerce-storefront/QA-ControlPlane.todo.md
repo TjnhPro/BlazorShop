@@ -190,6 +190,7 @@ Status legend:
 - [x] ControlPlane CommerceNode catalog/media gateway appends `storeKey` query to Commerce Admin calls. 2026-07-14: `ControlPlaneCommerceCatalogService` gateway routes were updated in Phase 6.
 - [x] ControlPlane CommerceNode catalog/media gateway keeps `X-Node-Key` and `X-Node-Secret`. 2026-07-14: build verified after Phase 6 gateway update.
 - [x] ControlPlane CommerceNode catalog/media gateway no longer sends `X-Store-Key` to Commerce Admin endpoints. 2026-07-14: Phase 6 removed the header from gateway calls.
+- [x] ControlPlane product/category/page manager gateway requests append `storeKey` and keep node credentials server-side. 2026-07-15: `ControlPlaneCommerceCatalogServiceStoreMappingTests` passed 3/3 for product query, category list, and page list.
 - [ ] ControlPlane product/category/order/media/admin pages still load after Commerce Admin missing-`storeKey` enforcement.
 - [ ] Browser network capture confirms ControlPlane Web still calls only ControlPlane API.
 - [ ] ControlPlane API product media preview calls `api/commerce/admin/media/products/{mediaId}?storeKey={storeKey}`.

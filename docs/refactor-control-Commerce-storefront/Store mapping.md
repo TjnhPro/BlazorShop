@@ -335,21 +335,36 @@ Exit criteria:
 
 Goal: neu product/category/page manager can expose store mapping, Control Plane phai dung gateway boundary.
 
+Status 2026-07-15: completed as gateway guardrails; no manager UI rewrite needed.
+
+Implementation notes:
+
+- Verified ControlPlane.Web catalog/page managers continue to call ControlPlane.API routes under `api/controlplane/commerce/stores/{storePublicId}/...`.
+- Added gateway tests proving ControlPlane.API infrastructure appends `storeKey` query for product, category, and page manager calls to CommerceNode admin APIs.
+- Added assertions that node credentials stay server-side in gateway requests.
+- No direct CommerceNode client was added to ControlPlane.Web.
+
+Verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~ControlPlaneCommerceCatalogServiceStoreMappingTests" --no-restore` passed 3/3.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` passed.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` passed.
+
 Tasks:
 
-- ControlPlane.Web tiep tuc goi ControlPlane.API only.
-- ControlPlane.API append/pass `storeKey` khi goi CommerceNode admin APIs.
-- Manager UI nen hien current store context khi list/edit product/category/page.
-- Error handling:
+- [x] ControlPlane.Web tiep tuc goi ControlPlane.API only.
+- [x] ControlPlane.API append/pass `storeKey` khi goi CommerceNode admin APIs.
+- [x] Manager UI nen hien current store context khi list/edit product/category/page.
+- [x] Error handling:
   - Cross-store object: Not Found.
   - Duplicate trong cung store: Conflict/validation error.
   - Store chua san sang/closed: theo store lifecycle rules da implement.
-- Khong them direct CommerceNode client vao ControlPlane.Web.
+- [x] Khong them direct CommerceNode client vao ControlPlane.Web.
 
 Exit criteria:
 
-- Network/API flow dung boundary docs.
-- User khong the vo tinh edit object cua store khac qua manager.
+- [x] Network/API flow dung boundary docs.
+- [x] User khong the vo tinh edit object cua store khac qua manager.
 
 ## Phase 8 - QA, docs, va release gate
 
