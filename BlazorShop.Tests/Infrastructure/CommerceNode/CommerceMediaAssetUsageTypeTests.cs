@@ -2,6 +2,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
 {
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Stores;
+    using BlazorShop.Domain.Entities;
     using BlazorShop.Domain.Entities.CommerceNode;
     using BlazorShop.Infrastructure.Data.CommerceNode;
     using BlazorShop.Infrastructure.Data.CommerceNode.Services;
@@ -79,6 +80,42 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal(CommerceMediaAssetOperationFailure.Validation, result.Failure);
         }
 
+        [Fact]
+        public async Task DeleteAsync_WhenAssetIsAssignedToCategory_ReturnsConflict()
+        {
+            var storeId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+            var categoryId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
+            var assetPublicId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+            await using var context = CreateContext();
+            var asset = SeedAsset(context, storeId, "assigned.jpg", CommerceMediaAssetUsageTypes.Category, assetPublicId);
+            context.Categories.Add(new Category
+            {
+                Id = categoryId,
+                StoreId = storeId,
+                Name = "Assigned category",
+                Slug = "assigned-category",
+                IsPublished = true,
+            });
+            context.CategoryMediaAssignments.Add(new CategoryMediaAssignment
+            {
+                Id = Guid.NewGuid(),
+                StoreId = storeId,
+                CategoryId = categoryId,
+                MediaAssetId = asset.Id,
+                IsPrimary = true,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            });
+            await context.SaveChangesAsync();
+            var service = CreateService(context, storeId);
+
+            var result = await service.DeleteAsync(assetPublicId);
+
+            Assert.False(result.Success);
+            Assert.Equal(CommerceMediaAssetOperationFailure.Conflict, result.Failure);
+            Assert.True(await context.CommerceMediaAssets.AnyAsync(media => media.PublicId == assetPublicId));
+        }
+
         private static CommerceMediaAssetService CreateService(CommerceNodeDbContext context, Guid storeId)
         {
             return new CommerceMediaAssetService(
@@ -90,7 +127,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 new CommerceMediaUrlBuilder());
         }
 
-        private static void SeedAsset(
+        private static CommerceMediaAsset SeedAsset(
             CommerceNodeDbContext context,
             Guid storeId,
             string canonicalFileName,
@@ -98,7 +135,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Guid? publicId = null)
         {
             var assetPublicId = publicId ?? Guid.NewGuid();
-            context.CommerceMediaAssets.Add(new CommerceMediaAsset
+            var asset = new CommerceMediaAsset
             {
                 Id = Guid.NewGuid(),
                 PublicId = assetPublicId,
@@ -117,7 +154,9 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 FileSizeBytes = 1024,
                 CreatedAt = DateTimeOffset.UtcNow,
                 UpdatedAt = DateTimeOffset.UtcNow,
-            });
+            };
+            context.CommerceMediaAssets.Add(asset);
+            return asset;
         }
 
         private static CommerceNodeDbContext CreateContext()

@@ -15,6 +15,7 @@ Updated: 2026-07-15
 - Phase 4 complete: product media service now invalidates catalog cache after order changes and every delete; deleting primary media excludes the deleted row when selecting the next primary so `Product.Image` is reassigned or cleared correctly; service tests guard primary sync, fallback/clear, invalidation, and alt text preservation.
 - Phase 5 complete: Commerce Node category media assignment table, service, admin API, and Control Plane gateway routes added. Setting primary category media validates both category and asset in the current store, syncs `Category.Image` to the category-card asset URL, invalidates catalog cache, and blocks deletion of assigned generic assets. Control Plane UI picker remains deferred.
 - Phase 6 complete: generic `CommerceMediaAsset` now has allowlisted usage classification (`content`, `branding`, `theme`, `category`) with default `content`, list filtering, metadata update validation, Commerce Node migration, and Control Plane query forwarding. Existing assets backfill/default to `content`.
+- Phase 7 complete: delete policy is now explicit for implemented references. Product media remains soft-delete; generic assets remain hard-delete but deletion is blocked while a category assignment references the asset. Full page-body reference scanning and orphan cleanup worker remain deferred.
 
 ## Goal
 
@@ -523,22 +524,26 @@ Current behavior:
 
 Tasks:
 
-- [ ] Document current delete behavior in admin UI and QA.
-- [ ] Keep product media soft delete.
-- [ ] Keep generic asset hard delete unless reference tracking is added.
-- [ ] Add pre-delete warning for generic assets that page links may break.
-- [ ] If category assignment exists, block or warn before deleting an assigned asset.
-- [ ] Add optional lightweight usage check:
+- [x] Document current delete behavior in admin UI and QA.
+- [x] Keep product media soft delete.
+- [x] Keep generic asset hard delete unless reference tracking is added.
+- [~] Add pre-delete warning for generic assets that page links may break. Deferred to Control Plane UI; backend now returns conflict for known category assignments.
+- [x] If category assignment exists, block or warn before deleting an assigned asset.
+- [x] Add optional lightweight usage check:
   - category assignments.
   - store branding fields if they point to media assets.
   - page body string scan is optional and should be treated as advisory only.
-- [ ] Do not add background orphan cleanup worker yet.
+- [x] Do not add background orphan cleanup worker yet.
 
 Review gate:
 
-- [ ] Product media delete behavior unchanged.
-- [ ] Generic media delete remains explicit and understandable.
-- [ ] Assigned category asset cannot silently break category image without warning or cleanup.
+- [x] Product media delete behavior unchanged.
+- [x] Generic media delete remains explicit and understandable.
+- [x] Assigned category asset cannot silently break category image without warning or cleanup.
+
+Phase 7 verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~CommerceMediaAssetUsageTypeTests"` passed 8/8, including assigned-category asset delete conflict.
 
 ## Phase 8 - Optional Object Storage Adapter
 
