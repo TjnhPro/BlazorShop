@@ -52,9 +52,14 @@ namespace BlazorShop.Storefront.Services
         {
             if (apiResult.IsSuccess && apiResult.Value is { } store)
             {
-                return store.MaintenanceModeEnabled
-                    ? StorefrontCurrentStoreResolution.Maintenance(store)
-                    : StorefrontCurrentStoreResolution.Succeeded(store);
+                return store.Status?.Trim().ToLowerInvariant() switch
+                {
+                    "active" when store.MaintenanceModeEnabled => StorefrontCurrentStoreResolution.Maintenance(store),
+                    "active" => StorefrontCurrentStoreResolution.Succeeded(store),
+                    "provisioning" => StorefrontCurrentStoreResolution.NotReady(store),
+                    "disabled" => StorefrontCurrentStoreResolution.Closed(store),
+                    _ => StorefrontCurrentStoreResolution.NotFound(),
+                };
             }
 
             if (apiResult.IsNotFound)

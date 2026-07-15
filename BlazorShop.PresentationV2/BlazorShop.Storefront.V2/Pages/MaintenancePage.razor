@@ -1,0 +1,107 @@
+@page "/maintenance"
+@inject IStorefrontCurrentStoreProvider CurrentStoreProvider
+
+<PageTitle>@Title</PageTitle>
+
+<section class="mx-auto flex min-h-[70vh] max-w-5xl items-center px-4 py-16 sm:px-6 lg:px-8">
+    <div class="w-full border-l-4 border-amber-500 bg-white px-6 py-8 shadow-sm sm:px-8">
+        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700">@Eyebrow</p>
+        <h1 class="mt-3 text-3xl font-extrabold tracking-tight text-neutral-950">@Title</h1>
+        <p class="mt-4 max-w-2xl text-base leading-7 text-neutral-700">@Message</p>
+
+        @if (!string.IsNullOrWhiteSpace(_store?.SupportEmail) || !string.IsNullOrWhiteSpace(_store?.SupportPhone))
+        {
+            <div class="mt-6 grid gap-2 text-sm text-neutral-700 sm:grid-cols-2">
+                @if (!string.IsNullOrWhiteSpace(_store?.SupportEmail))
+                {
+                    <a class="font-semibold text-neutral-900 underline-offset-4 hover:underline" href="mailto:@_store.SupportEmail">@_store.SupportEmail</a>
+                }
+                @if (!string.IsNullOrWhiteSpace(_store?.SupportPhone))
+                {
+                    <a class="font-semibold text-neutral-900 underline-offset-4 hover:underline" href="tel:@_store.SupportPhone">@_store.SupportPhone</a>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    [SupplyParameterFromQuery(Name = "reason")]
+    public string? Reason { get; set; }
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    private StorefrontCurrentStore? _store;
+    private string Title { get; set; } = "Store temporarily unavailable";
+    private string Eyebrow { get; set; } = "Store unavailable";
+    private string Message { get; set; } = "This storefront is not ready to serve shoppers right now.";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var resolution = await CurrentStoreProvider.ResolveAsync();
+        _store = resolution.Store;
+
+        var reason = string.IsNullOrWhiteSpace(Reason)
+            ? ToReason(resolution.Status)
+            : Reason.Trim().ToLowerInvariant();
+
+        Title = ResolveTitle(reason);
+        Eyebrow = ResolveEyebrow(reason);
+        Message = ResolveMessage(reason, resolution);
+
+        StorefrontResponseHeaders.ApplyServiceUnavailable(HttpContext);
+    }
+
+    private static string ToReason(StorefrontCurrentStoreResolutionStatus status)
+    {
+        return status switch
+        {
+            StorefrontCurrentStoreResolutionStatus.Maintenance => "maintenance",
+            StorefrontCurrentStoreResolutionStatus.Closed => "closed",
+            StorefrontCurrentStoreResolutionStatus.NotReady => "not-ready",
+            StorefrontCurrentStoreResolutionStatus.NotFound => "not-found",
+            _ => "unavailable",
+        };
+    }
+
+    private static string ResolveTitle(string reason)
+    {
+        return reason switch
+        {
+            "maintenance" => "Store maintenance in progress",
+            "closed" => "Store is currently closed",
+            "not-ready" => "Store is not ready yet",
+            "not-found" => "Store was not found",
+            _ => "Store temporarily unavailable",
+        };
+    }
+
+    private static string ResolveEyebrow(string reason)
+    {
+        return reason switch
+        {
+            "maintenance" => "Maintenance",
+            "closed" => "Closed",
+            "not-ready" => "Provisioning",
+            "not-found" => "Not found",
+            _ => "Unavailable",
+        };
+    }
+
+    private static string ResolveMessage(string reason, StorefrontCurrentStoreResolution resolution)
+    {
+        if (reason == "maintenance" && !string.IsNullOrWhiteSpace(resolution.Message))
+        {
+            return resolution.Message;
+        }
+
+        return reason switch
+        {
+            "closed" => "This store is inactive right now. Admins can still manage it from the Control Plane.",
+            "not-ready" => "This store is still being prepared. Check back after provisioning finishes.",
+            "not-found" => "The configured storefront store key or domain does not match an available store.",
+            _ => "The storefront cannot serve shoppers right now.",
+        };
+    }
+}

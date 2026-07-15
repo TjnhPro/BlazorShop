@@ -68,15 +68,17 @@ namespace BlazorShop.Storefront.Services
 
             if (resolution.Status == StorefrontCurrentStoreResolutionStatus.NotFound)
             {
-                await WriteErrorAsync(
+                await WriteUnavailableAsync(
                     context,
+                    resolution,
                     StatusCodes.Status404NotFound,
                     "Storefront store was not found.");
                 return;
             }
 
-            await WriteErrorAsync(
+            await WriteUnavailableAsync(
                 context,
+                resolution,
                 StatusCodes.Status503ServiceUnavailable,
                 resolution.Message);
         }
@@ -90,7 +92,8 @@ namespace BlazorShop.Storefront.Services
             }
 
             if (string.Equals(path, "/health", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(path, "/alive", StringComparison.OrdinalIgnoreCase))
+                || string.Equals(path, "/alive", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(path, StorefrontRoutes.Maintenance, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -103,6 +106,24 @@ namespace BlazorShop.Storefront.Services
             return Path.HasExtension(path)
                 && !string.Equals(path, StorefrontRoutes.Robots, StringComparison.OrdinalIgnoreCase)
                 && !string.Equals(path, StorefrontRoutes.Sitemap, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static Task WriteUnavailableAsync(
+            HttpContext context,
+            StorefrontCurrentStoreResolution resolution,
+            int statusCode,
+            string message)
+        {
+            if (IsHtmlGet(context.Request) && !IsDiscoveryDocument(context.Request.Path))
+            {
+                StorefrontResponseHeaders.ApplyServiceUnavailable(context);
+                context.Response.Redirect(
+                    $"{StorefrontRoutes.Maintenance}?reason={Uri.EscapeDataString(ToMaintenanceReason(resolution.Status))}",
+                    permanent: false);
+                return Task.CompletedTask;
+            }
+
+            return WriteErrorAsync(context, statusCode, message);
         }
 
         private static Task WriteErrorAsync(HttpContext context, int statusCode, string message)
@@ -120,6 +141,38 @@ namespace BlazorShop.Storefront.Services
             }
 
             return context.Response.WriteAsync(message, context.RequestAborted);
+        }
+
+        private static bool IsHtmlGet(HttpRequest request)
+        {
+            if (!HttpMethods.IsGet(request.Method))
+            {
+                return false;
+            }
+
+            var accept = request.Headers.Accept.ToString();
+            return string.IsNullOrWhiteSpace(accept)
+                || accept.Contains("text/html", StringComparison.OrdinalIgnoreCase)
+                || accept.Contains("*/*", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string ToMaintenanceReason(StorefrontCurrentStoreResolutionStatus status)
+        {
+            return status switch
+            {
+                StorefrontCurrentStoreResolutionStatus.Maintenance => "maintenance",
+                StorefrontCurrentStoreResolutionStatus.Closed => "closed",
+                StorefrontCurrentStoreResolutionStatus.NotReady => "not-ready",
+                StorefrontCurrentStoreResolutionStatus.NotFound => "not-found",
+                _ => "unavailable",
+            };
+        }
+
+        private static bool IsDiscoveryDocument(PathString pathString)
+        {
+            var path = pathString.Value;
+            return string.Equals(path, StorefrontRoutes.Robots, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(path, StorefrontRoutes.Sitemap, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

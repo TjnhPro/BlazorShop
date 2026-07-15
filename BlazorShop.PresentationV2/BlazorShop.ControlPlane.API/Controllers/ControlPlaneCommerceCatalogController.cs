@@ -9,6 +9,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
+    using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
@@ -54,6 +55,53 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> GetProduct(Guid storePublicId, Guid productId, CancellationToken cancellationToken)
         {
             return ToActionResult(await this.catalogService.GetProductAsync(storePublicId, productId, cancellationToken));
+        }
+
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/runtime-store")]
+        public async Task<IActionResult> GetRuntimeStore(Guid storePublicId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.GetRuntimeStoreAsync(storePublicId, cancellationToken));
+        }
+
+        [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/runtime-store/{runtimeStorePublicId:guid}")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> UpdateRuntimeStore(
+            Guid storePublicId,
+            Guid runtimeStorePublicId,
+            UpdateCommerceStoreRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.UpdateRuntimeStoreAsync(
+                storePublicId,
+                runtimeStorePublicId,
+                request,
+                cancellationToken));
+        }
+
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/runtime-store/{runtimeStorePublicId:guid}/activate")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> ActivateRuntimeStore(
+            Guid storePublicId,
+            Guid runtimeStorePublicId,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ActivateRuntimeStoreAsync(
+                storePublicId,
+                runtimeStorePublicId,
+                cancellationToken));
+        }
+
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/runtime-store/{runtimeStorePublicId:guid}/deactivate")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> DeactivateRuntimeStore(
+            Guid storePublicId,
+            Guid runtimeStorePublicId,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.DeactivateRuntimeStoreAsync(
+                storePublicId,
+                runtimeStorePublicId,
+                cancellationToken));
         }
 
         [HttpPost("products")]

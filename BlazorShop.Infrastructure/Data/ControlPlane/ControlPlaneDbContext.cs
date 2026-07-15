@@ -434,7 +434,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                     "store_registry",
                     table => table.HasCheckConstraint(
                         "ck_store_registry_status",
-                        "status in ('active', 'disabled', 'archived')"));
+                        "status in ('active', 'provisioning', 'disabled', 'archived')"));
 
                 entity.HasKey(store => store.Id);
                 entity.Property(store => store.Id).HasColumnName("id").UseIdentityAlwaysColumn();

@@ -56,6 +56,24 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return ToActionResult(result);
         }
 
+        [HttpPost("{publicId:guid}/activate")]
+        [ProducesResponseType(typeof(CommerceNodeApiResponse<CommerceStoreDetail>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CommerceNodeApiResponse<CommerceStoreDetail>), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Activate(Guid publicId, CancellationToken cancellationToken)
+        {
+            var result = await this.storeService.SetStatusAsync(publicId, "active", cancellationToken);
+            return ToActionResult(result);
+        }
+
+        [HttpPost("{publicId:guid}/deactivate")]
+        [ProducesResponseType(typeof(CommerceNodeApiResponse<CommerceStoreDetail>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CommerceNodeApiResponse<CommerceStoreDetail>), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Deactivate(Guid publicId, CancellationToken cancellationToken)
+        {
+            var result = await this.storeService.SetStatusAsync(publicId, "disabled", cancellationToken);
+            return ToActionResult(result);
+        }
+
         [HttpPost("{publicId:guid}/archive")]
         public async Task<IActionResult> Archive(Guid publicId, CancellationToken cancellationToken)
         {

@@ -13,6 +13,7 @@ namespace BlazorShop.Application.ControlPlane.Catalog
     using BlazorShop.Application.DTOs.Product;
     using BlazorShop.Application.DTOs.Product.ProductVariant;
     using BlazorShop.Application.DTOs.Seo;
+    using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Domain.Contracts;
 
     public interface IControlPlaneCommerceCatalogService
@@ -25,6 +26,26 @@ namespace BlazorShop.Application.ControlPlane.Catalog
         Task<ControlPlaneCommerceCatalogResult<GetProduct>> GetProductAsync(
             Guid storePublicId,
             Guid productId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> GetRuntimeStoreAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> UpdateRuntimeStoreAsync(
+            Guid storePublicId,
+            Guid runtimeStorePublicId,
+            UpdateCommerceStoreRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> ActivateRuntimeStoreAsync(
+            Guid storePublicId,
+            Guid runtimeStorePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> DeactivateRuntimeStoreAsync(
+            Guid storePublicId,
+            Guid runtimeStorePublicId,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneCommerceCatalogResult<object>> CreateProductAsync(

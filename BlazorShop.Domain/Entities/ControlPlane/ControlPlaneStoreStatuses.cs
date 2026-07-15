@@ -1,6 +1,6 @@
-namespace BlazorShop.Domain.Entities.CommerceNode
+namespace BlazorShop.Domain.Entities.ControlPlane
 {
-    public static class CommerceStoreStatuses
+    public static class ControlPlaneStoreStatuses
     {
         public const string Active = "active";
 

@@ -38,6 +38,20 @@ namespace BlazorShop.Storefront.Services.Contracts
                     ? "The store is temporarily unavailable for maintenance."
                     : store.MaintenanceMessage);
         }
+
+        public static StorefrontCurrentStoreResolution Closed(StorefrontCurrentStore store)
+        {
+            ArgumentNullException.ThrowIfNull(store);
+
+            return new(store, StorefrontCurrentStoreResolutionStatus.Closed, "This store is currently closed.");
+        }
+
+        public static StorefrontCurrentStoreResolution NotReady(StorefrontCurrentStore store)
+        {
+            ArgumentNullException.ThrowIfNull(store);
+
+            return new(store, StorefrontCurrentStoreResolutionStatus.NotReady, "This store is not ready yet.");
+        }
     }
 
     public enum StorefrontCurrentStoreResolutionStatus
@@ -46,5 +60,7 @@ namespace BlazorShop.Storefront.Services.Contracts
         NotFound,
         ServiceUnavailable,
         Maintenance,
+        Closed,
+        NotReady,
     }
 }

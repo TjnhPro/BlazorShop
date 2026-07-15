@@ -4479,6 +4479,22 @@
             "type": "string",
             "nullable": true
           },
+          "companyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyAddress": {
+            "type": "string",
+            "nullable": true
+          },
           "faviconUrl": {
             "type": "string",
             "nullable": true

@@ -132,7 +132,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             if (!string.IsNullOrWhiteSpace(request.Status) &&
-                request.Status.Trim().ToLowerInvariant() is not (CommerceStoreStatuses.Active or CommerceStoreStatuses.Disabled))
+                request.Status.Trim().ToLowerInvariant() is not (
+                    CommerceStoreStatuses.Active or
+                    CommerceStoreStatuses.Disabled or
+                    CommerceStoreStatuses.Provisioning))
             {
                 return Failed<CommerceStoreDetail>(CommerceStoreOperationFailure.Validation, "Store status is invalid.");
             }
@@ -174,6 +177,30 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             await this.context.SaveChangesAsync(cancellationToken);
             this.InvalidateStoreCache(store);
             return Succeeded("Store archived.", MapDetail(store));
+        }
+
+        public async Task<CommerceStoreOperationResult<CommerceStoreDetail>> SetStatusAsync(
+            Guid publicId,
+            string status,
+            CancellationToken cancellationToken = default)
+        {
+            var normalizedStatus = status?.Trim().ToLowerInvariant();
+            if (normalizedStatus is not (CommerceStoreStatuses.Active or CommerceStoreStatuses.Disabled or CommerceStoreStatuses.Provisioning))
+            {
+                return Failed<CommerceStoreDetail>(CommerceStoreOperationFailure.Validation, "Store status is invalid.");
+            }
+
+            var store = await this.LoadStoreAsync(publicId, asTracking: true, cancellationToken);
+            if (store is null)
+            {
+                return Failed<CommerceStoreDetail>(CommerceStoreOperationFailure.NotFound, "Store was not found.");
+            }
+
+            store.Status = normalizedStatus;
+            store.UpdatedAt = DateTimeOffset.UtcNow;
+            await this.context.SaveChangesAsync(cancellationToken);
+            this.InvalidateStoreCache(store);
+            return Succeeded("Store status updated.", MapDetail(store));
         }
 
         public async Task<CommerceStoreOperationResult<CommerceStoreDetail>> AddDomainAsync(
@@ -384,12 +411,26 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return "Store key is invalid.";
             }
 
-            return ValidateSharedValues(request.Name, request.BaseUrl, request.DefaultCurrencyCode, request.DefaultCulture, request.SupportEmail, request.MetadataJson);
+            return ValidateSharedValues(
+                request.Name,
+                request.BaseUrl,
+                request.DefaultCurrencyCode,
+                request.DefaultCulture,
+                request.SupportEmail,
+                request.CompanyEmail,
+                request.MetadataJson);
         }
 
         private static string? ValidateUpdateRequest(UpdateCommerceStoreRequest request)
         {
-            return ValidateSharedValues(request.Name, request.BaseUrl, request.DefaultCurrencyCode, request.DefaultCulture, request.SupportEmail, request.MetadataJson);
+            return ValidateSharedValues(
+                request.Name,
+                request.BaseUrl,
+                request.DefaultCurrencyCode,
+                request.DefaultCulture,
+                request.SupportEmail,
+                request.CompanyEmail,
+                request.MetadataJson);
         }
 
         private static string? ValidateSharedValues(
@@ -398,6 +439,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             string defaultCurrencyCode,
             string defaultCulture,
             string? supportEmail,
+            string? companyEmail,
             string? metadataJson)
         {
             if (string.IsNullOrWhiteSpace(name) || name.Trim().Length > 400)
@@ -432,6 +474,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return "Support email is invalid.";
             }
 
+            if (!string.IsNullOrWhiteSpace(companyEmail) && !EmailRegex().IsMatch(companyEmail.Trim()))
+            {
+                return "Company email is invalid.";
+            }
+
             if (!string.IsNullOrWhiteSpace(metadataJson) && !IsValidJson(metadataJson))
             {
                 return "MetadataJson must be valid JSON.";
@@ -451,6 +498,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             store.HtmlBodyId = NormalizeOptional(request.HtmlBodyId);
             store.CdnHost = NormalizeOptional(request.CdnHost);
             store.LogoUrl = NormalizeOptional(request.LogoUrl);
+            store.CompanyName = NormalizeOptional(request.CompanyName);
+            store.CompanyEmail = NormalizeOptional(request.CompanyEmail);
+            store.CompanyPhone = NormalizeOptional(request.CompanyPhone);
+            store.CompanyAddress = NormalizeOptional(request.CompanyAddress);
             store.FaviconUrl = NormalizeOptional(request.FaviconUrl);
             store.PngIconUrl = NormalizeOptional(request.PngIconUrl);
             store.AppleTouchIconUrl = NormalizeOptional(request.AppleTouchIconUrl);
@@ -477,6 +528,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             store.HtmlBodyId = NormalizeOptional(request.HtmlBodyId);
             store.CdnHost = NormalizeOptional(request.CdnHost);
             store.LogoUrl = NormalizeOptional(request.LogoUrl);
+            store.CompanyName = NormalizeOptional(request.CompanyName);
+            store.CompanyEmail = NormalizeOptional(request.CompanyEmail);
+            store.CompanyPhone = NormalizeOptional(request.CompanyPhone);
+            store.CompanyAddress = NormalizeOptional(request.CompanyAddress);
             store.FaviconUrl = NormalizeOptional(request.FaviconUrl);
             store.PngIconUrl = NormalizeOptional(request.PngIconUrl);
             store.AppleTouchIconUrl = NormalizeOptional(request.AppleTouchIconUrl);
@@ -526,6 +581,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 store.HtmlBodyId,
                 store.CdnHost,
                 store.LogoUrl,
+                store.CompanyName,
+                store.CompanyEmail,
+                store.CompanyPhone,
+                store.CompanyAddress,
                 store.FaviconUrl,
                 store.PngIconUrl,
                 store.AppleTouchIconUrl,

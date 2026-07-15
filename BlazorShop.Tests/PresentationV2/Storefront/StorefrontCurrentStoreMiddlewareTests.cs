@@ -53,6 +53,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             });
             var provider = new StubCurrentStoreProvider(StorefrontCurrentStoreResolution.NotFound);
             var context = CreateContext("/new-releases");
+            context.Request.Headers.Accept = "application/json";
 
             await middleware.InvokeAsync(
                 context,
@@ -78,6 +79,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             });
             var provider = new StubCurrentStoreProvider(StorefrontCurrentStoreResolution.ServiceUnavailable);
             var context = CreateContext("/checkout");
+            context.Request.Headers.Accept = "application/json";
 
             await middleware.InvokeAsync(
                 context,
@@ -134,6 +136,26 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("Maintenance window.", await ReadBodyAsync(context));
         }
 
+        [Fact]
+        public async Task InvokeAsync_WhenHtmlRequestUnavailable_RedirectsToMaintenancePage()
+        {
+            var middleware = CreateMiddleware(_ => Task.CompletedTask);
+            var provider = new StubCurrentStoreProvider(() => StorefrontCurrentStoreResolution.Closed(CreateCurrentStore()));
+            var context = CreateContext("/checkout");
+            context.Request.Headers.Accept = "text/html";
+
+            await middleware.InvokeAsync(
+                context,
+                provider,
+                Options.Create(new StorefrontStoreResolutionOptions { RequireCurrentStore = true }),
+                CreateEnvironment("Production"),
+                CreateConfiguration());
+
+            Assert.Equal(1, provider.CallCount);
+            Assert.Equal(HttpStatusCode.Redirect, (HttpStatusCode)context.Response.StatusCode);
+            Assert.Equal("/maintenance?reason=closed", context.Response.Headers.Location);
+        }
+
         private static StorefrontCurrentStoreMiddleware CreateMiddleware(RequestDelegate next)
         {
             return new StorefrontCurrentStoreMiddleware(
@@ -185,6 +207,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "https://store.example/",
                 "store.example",
                 true,
+                null,
+                null,
+                null,
+                null,
                 null,
                 null,
                 null,

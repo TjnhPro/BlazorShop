@@ -93,7 +93,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             {
                 StoreKey = request.StoreKey.Trim().ToLowerInvariant(),
                 Name = request.Name.Trim(),
-                Status = "disabled",
+                Status = ControlPlaneStoreStatuses.Disabled,
                 MetadataJson = NormalizeOptionalJson(request.MetadataJson),
                 NodeId = node.Id,
                 CreatedAt = now,
@@ -117,7 +117,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 return NotFound("Store was not found.");
             }
 
-            if (store.Status == "archived")
+            if (store.Status == ControlPlaneStoreStatuses.Archived)
             {
                 return ValidationFailed("Archived stores cannot be updated.");
             }
@@ -154,10 +154,10 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 return NotFound("Store was not found.");
             }
 
-            if (store.Status != "archived")
+            if (store.Status != ControlPlaneStoreStatuses.Archived)
             {
                 var now = DateTimeOffset.UtcNow;
-                store.Status = "archived";
+                store.Status = ControlPlaneStoreStatuses.Archived;
                 store.ArchivedAt = now;
                 store.UpdatedAt = now;
                 await this.dbContext.SaveChangesAsync(cancellationToken);
@@ -177,7 +177,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 return NotFound("Store was not found.");
             }
 
-            if (store.Status == "archived")
+            if (store.Status == ControlPlaneStoreStatuses.Archived)
             {
                 return ValidationFailed("Domains cannot be added to archived stores.");
             }

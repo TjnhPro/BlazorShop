@@ -30,6 +30,14 @@ namespace BlazorShop.Domain.Entities.CommerceNode
 
         public string? LogoUrl { get; set; }
 
+        public string? CompanyName { get; set; }
+
+        public string? CompanyEmail { get; set; }
+
+        public string? CompanyPhone { get; set; }
+
+        public string? CompanyAddress { get; set; }
+
         public string? FaviconUrl { get; set; }
 
         public string? PngIconUrl { get; set; }

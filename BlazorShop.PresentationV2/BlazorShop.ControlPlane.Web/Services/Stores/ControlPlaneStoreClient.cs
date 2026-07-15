@@ -31,6 +31,14 @@ namespace BlazorShop.ControlPlane.Web.Services.Stores
         Task<StoreDeploymentResult> DeployAsync(Guid publicId, StoreDeploymentRequest request, CancellationToken cancellationToken = default);
 
         Task<StoreDeploymentDetailResult> GetDeploymentTaskAsync(Guid publicId, Guid taskPublicId, CancellationToken cancellationToken = default);
+
+        Task<RuntimeStoreDetail?> GetRuntimeStoreAsync(Guid publicId, CancellationToken cancellationToken = default);
+
+        Task<RuntimeStoreMutationResult> UpdateRuntimeStoreAsync(Guid publicId, Guid runtimeStorePublicId, RuntimeStoreUpdateRequest request, CancellationToken cancellationToken = default);
+
+        Task<RuntimeStoreMutationResult> ActivateRuntimeStoreAsync(Guid publicId, Guid runtimeStorePublicId, CancellationToken cancellationToken = default);
+
+        Task<RuntimeStoreMutationResult> DeactivateRuntimeStoreAsync(Guid publicId, Guid runtimeStorePublicId, CancellationToken cancellationToken = default);
     }
 
     public sealed class ControlPlaneStoreClient : IControlPlaneStoreClient
@@ -188,6 +196,61 @@ namespace BlazorShop.ControlPlane.Web.Services.Stores
 
             return new StoreDeploymentDetailResult(result.Success, result.Message, result.Data);
         }
+
+        public async Task<RuntimeStoreDetail?> GetRuntimeStoreAsync(Guid publicId, CancellationToken cancellationToken = default)
+        {
+            var result = await this.apiClient.GetPrivateAsync<RuntimeStoreDetail>(
+                $"api/controlplane/commerce/stores/{publicId}/runtime-store",
+                "Unable to load runtime store.",
+                cancellationToken);
+
+            if (result.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+
+            if (result.Success)
+            {
+                return result.Data;
+            }
+
+            throw new InvalidOperationException(result.Message);
+        }
+
+        public async Task<RuntimeStoreMutationResult> UpdateRuntimeStoreAsync(
+            Guid publicId,
+            Guid runtimeStorePublicId,
+            RuntimeStoreUpdateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var result = await this.apiClient.PutPrivateAsync<RuntimeStoreUpdateRequest, RuntimeStoreDetail>(
+                $"api/controlplane/commerce/stores/{publicId}/runtime-store/{runtimeStorePublicId}",
+                request,
+                "Unable to update runtime store.",
+                cancellationToken);
+
+            return new RuntimeStoreMutationResult(result.Success, result.Message, result.Data);
+        }
+
+        public async Task<RuntimeStoreMutationResult> ActivateRuntimeStoreAsync(Guid publicId, Guid runtimeStorePublicId, CancellationToken cancellationToken = default)
+        {
+            var result = await this.apiClient.PostPrivateAsync<RuntimeStoreDetail>(
+                $"api/controlplane/commerce/stores/{publicId}/runtime-store/{runtimeStorePublicId}/activate",
+                "Unable to activate runtime store.",
+                cancellationToken);
+
+            return new RuntimeStoreMutationResult(result.Success, result.Message, result.Data);
+        }
+
+        public async Task<RuntimeStoreMutationResult> DeactivateRuntimeStoreAsync(Guid publicId, Guid runtimeStorePublicId, CancellationToken cancellationToken = default)
+        {
+            var result = await this.apiClient.PostPrivateAsync<RuntimeStoreDetail>(
+                $"api/controlplane/commerce/stores/{publicId}/runtime-store/{runtimeStorePublicId}/deactivate",
+                "Unable to deactivate runtime store.",
+                cancellationToken);
+
+            return new RuntimeStoreMutationResult(result.Success, result.Message, result.Data);
+        }
     }
 
     public sealed record StoreListResponse(
@@ -210,6 +273,82 @@ namespace BlazorShop.ControlPlane.Web.Services.Stores
     public sealed record StoreDomainCreateRequest(string Domain);
 
     public sealed record StoreMutationResult(bool Success, string? Message = null, StoreDetail? Store = null);
+
+    public sealed record RuntimeStoreDetail(
+        Guid PublicId,
+        Guid? ControlPlaneStorePublicId,
+        string StoreKey,
+        string Name,
+        string Status,
+        string? BaseUrl,
+        bool ForceHttps,
+        bool SslEnabled,
+        int? SslPort,
+        int DisplayOrder,
+        string? HtmlBodyId,
+        string? CdnHost,
+        string? LogoUrl,
+        string? CompanyName,
+        string? CompanyEmail,
+        string? CompanyPhone,
+        string? CompanyAddress,
+        string? FaviconUrl,
+        string? PngIconUrl,
+        string? AppleTouchIconUrl,
+        string? MsTileImageUrl,
+        string? MsTileColor,
+        string DefaultCurrencyCode,
+        string DefaultCulture,
+        string? SupportEmail,
+        string? SupportPhone,
+        bool MaintenanceModeEnabled,
+        string? MaintenanceMessage,
+        string? MetadataJson,
+        DateTimeOffset CreatedAt,
+        DateTimeOffset UpdatedAt,
+        DateTimeOffset? ArchivedAt,
+        IReadOnlyList<RuntimeStoreDomain> Domains);
+
+    public sealed record RuntimeStoreDomain(
+        Guid Id,
+        string Domain,
+        string NormalizedDomain,
+        bool IsPrimary,
+        string Status,
+        DateTimeOffset CreatedAt,
+        DateTimeOffset UpdatedAt,
+        DateTimeOffset? VerifiedAt,
+        DateTimeOffset? DisabledAt);
+
+    public sealed record RuntimeStoreUpdateRequest(
+        string Name,
+        string? BaseUrl = null,
+        bool ForceHttps = true,
+        bool SslEnabled = true,
+        int? SslPort = null,
+        int DisplayOrder = 0,
+        string? HtmlBodyId = null,
+        string? CdnHost = null,
+        string? LogoUrl = null,
+        string? CompanyName = null,
+        string? CompanyEmail = null,
+        string? CompanyPhone = null,
+        string? CompanyAddress = null,
+        string? FaviconUrl = null,
+        string? PngIconUrl = null,
+        string? AppleTouchIconUrl = null,
+        string? MsTileImageUrl = null,
+        string? MsTileColor = null,
+        string DefaultCurrencyCode = "USD",
+        string DefaultCulture = "en-US",
+        string? SupportEmail = null,
+        string? SupportPhone = null,
+        bool MaintenanceModeEnabled = false,
+        string? MaintenanceMessage = null,
+        string? MetadataJson = null,
+        string? Status = null);
+
+    public sealed record RuntimeStoreMutationResult(bool Success, string? Message = null, RuntimeStoreDetail? Store = null);
 
     public sealed record StoreDeploymentRequest(
         string StorefrontImage,

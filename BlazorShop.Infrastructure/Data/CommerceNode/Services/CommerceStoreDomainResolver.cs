@@ -59,6 +59,58 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     Failure: storeResult.Failure);
         }
 
+        public async Task<CommerceStoreOperationResult<CommerceCurrentStore>> ResolveForReadinessAsync(
+            string? storeKey = null,
+            string? host = null,
+            CancellationToken cancellationToken = default)
+        {
+            if (!string.IsNullOrWhiteSpace(storeKey))
+            {
+                var normalizedStoreKey = storeKey.Trim().ToLowerInvariant();
+                var store = await this.StoreReadinessQuery()
+                    .FirstOrDefaultAsync(entity => entity.StoreKey == normalizedStoreKey, cancellationToken);
+
+                return store is null
+                    ? Failed(CommerceStoreOperationFailure.NotFound, "Store was not found.")
+                    : Succeeded(MapCurrentStore(store));
+            }
+
+            if (!string.IsNullOrWhiteSpace(host))
+            {
+                var normalizedHost = CommerceStoreService.NormalizeDomain(host);
+                if (normalizedHost is null)
+                {
+                    return Failed(CommerceStoreOperationFailure.Validation, "Store host is invalid.");
+                }
+
+                var store = await this.StoreReadinessQuery()
+                    .FirstOrDefaultAsync(
+                        entity => entity.Domains.Any(
+                            domain =>
+                                domain.NormalizedDomain == normalizedHost &&
+                                domain.DisabledAt == null &&
+                                domain.Status == CommerceStoreDomainStatuses.Verified),
+                        cancellationToken);
+
+                return store is null
+                    ? Failed(CommerceStoreOperationFailure.NotFound, "Store host was not found.")
+                    : Succeeded(MapCurrentStore(store));
+            }
+
+            var stores = await this.StoreReadinessQuery()
+                .OrderBy(store => store.DisplayOrder)
+                .ThenBy(store => store.Name)
+                .Take(2)
+                .ToListAsync(cancellationToken);
+
+            return stores.Count switch
+            {
+                1 => Succeeded(MapCurrentStore(stores[0])),
+                0 => Failed(CommerceStoreOperationFailure.NotFound, "No store is configured."),
+                _ => Failed(CommerceStoreOperationFailure.Conflict, "Multiple stores require an explicit store key or host."),
+            };
+        }
+
         private async Task<CommerceStoreOperationResult<CommerceCurrentStore>> ResolveByStoreKeyAsync(
             string storeKey,
             CancellationToken cancellationToken)
@@ -137,6 +189,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 .Where(store => store.ArchivedAt == null && store.Status == CommerceStoreStatuses.Active);
         }
 
+        private IQueryable<CommerceStore> StoreReadinessQuery()
+        {
+            return this.context.CommerceStores
+                .AsNoTracking()
+                .Include(store => store.Domains.OrderByDescending(domain => domain.IsPrimary).ThenBy(domain => domain.Domain))
+                .Where(store => store.ArchivedAt == null);
+        }
+
         private async Task<CommerceStoreOperationResult<CommerceStore>> ResolveStoreAsync(
             string? storeKey,
             string? host,
@@ -202,6 +262,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 store.ForceHttps,
                 store.CdnHost,
                 store.LogoUrl,
+                store.CompanyName,
+                store.CompanyEmail,
+                store.CompanyPhone,
+                store.CompanyAddress,
                 store.FaviconUrl,
                 store.PngIconUrl,
                 store.AppleTouchIconUrl,

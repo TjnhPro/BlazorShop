@@ -167,6 +167,85 @@
                         <p class="mt-1 text-ink-800">@selectedStore.NodeName (@selectedStore.NodeKey)</p>
                     </div>
                     <div class="grid gap-3 rounded-md border border-ink-200 p-3">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-xs font-semibold uppercase text-ink-500">Runtime lifecycle</p>
+                                <p class="mt-1 text-xs text-ink-500">Manage the public Commerce Store state through the Control Plane gateway.</p>
+                            </div>
+                            @if (runtimeStore is not null)
+                            {
+                                <span class="@GetStatusBadgeClass(runtimeStore.Status)">@runtimeStore.Status</span>
+                            }
+                        </div>
+                        @if (runtimeStore is null)
+                        {
+                            <div class="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">Runtime store is not provisioned yet.</div>
+                        }
+                        else
+                        {
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <button class="cp-button cp-button-primary justify-center" disabled="@(runtimeStore.Status == "active" || isSaving)" @onclick="ActivateRuntimeStoreAsync">
+                                    <i class="fa-solid fa-toggle-on" aria-hidden="true"></i>
+                                    Activate
+                                </button>
+                                <button class="cp-button cp-button-secondary justify-center" disabled="@(runtimeStore.Status == "disabled" || isSaving)" @onclick="DeactivateRuntimeStoreAsync">
+                                    <i class="fa-solid fa-toggle-off" aria-hidden="true"></i>
+                                    Deactivate
+                                </button>
+                            </div>
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" class="h-4 w-4 rounded border-ink-300 text-control-600 focus:ring-control-500" @bind="runtimeMaintenanceEnabled" />
+                                <span class="font-medium text-ink-700">Maintenance mode</span>
+                            </label>
+                            <label class="space-y-1">
+                                <span class="text-xs font-semibold uppercase text-ink-500">Maintenance message</span>
+                                <textarea class="min-h-20 w-full rounded-md border border-ink-300 px-3 py-2 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeMaintenanceMessage"></textarea>
+                            </label>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <label class="space-y-1">
+                                    <span class="text-xs font-semibold uppercase text-ink-500">Display order</span>
+                                    <input type="number" class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeDisplayOrder" />
+                                </label>
+                                <label class="space-y-1">
+                                    <span class="text-xs font-semibold uppercase text-ink-500">Base URL</span>
+                                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeBaseUrl" />
+                                </label>
+                            </div>
+                            <label class="space-y-1">
+                                <span class="text-xs font-semibold uppercase text-ink-500">Company name</span>
+                                <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeCompanyName" />
+                            </label>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <label class="space-y-1">
+                                    <span class="text-xs font-semibold uppercase text-ink-500">Company email</span>
+                                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeCompanyEmail" />
+                                </label>
+                                <label class="space-y-1">
+                                    <span class="text-xs font-semibold uppercase text-ink-500">Company phone</span>
+                                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeCompanyPhone" />
+                                </label>
+                            </div>
+                            <label class="space-y-1">
+                                <span class="text-xs font-semibold uppercase text-ink-500">Company address</span>
+                                <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeCompanyAddress" />
+                            </label>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <label class="space-y-1">
+                                    <span class="text-xs font-semibold uppercase text-ink-500">Support email</span>
+                                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeSupportEmail" />
+                                </label>
+                                <label class="space-y-1">
+                                    <span class="text-xs font-semibold uppercase text-ink-500">Support phone</span>
+                                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeSupportPhone" />
+                                </label>
+                            </div>
+                            <button class="cp-button cp-button-secondary justify-center" disabled="@isSaving" @onclick="SaveRuntimeStoreAsync">
+                                <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                                Save runtime settings
+                            </button>
+                        }
+                    </div>
+                    <div class="grid gap-3 rounded-md border border-ink-200 p-3">
                         <label class="space-y-1">
                             <span class="text-xs font-semibold uppercase text-ink-500">Name</span>
                             <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="editName" />
@@ -279,6 +358,7 @@
     private readonly List<NodeSummary> nodes = [];
     private readonly List<StoreSummary> stores = [];
     private StoreDetail? selectedStore;
+    private RuntimeStoreDetail? runtimeStore;
     private string? search;
     private string? status;
     private string? errorMessage;
@@ -301,6 +381,16 @@
     private string deployBaseUrl = string.Empty;
     private string deployNetworkName = string.Empty;
     private StoreDeploymentTaskSummary? lastDeploymentTask;
+    private bool runtimeMaintenanceEnabled;
+    private int runtimeDisplayOrder;
+    private string runtimeMaintenanceMessage = string.Empty;
+    private string runtimeBaseUrl = string.Empty;
+    private string runtimeCompanyName = string.Empty;
+    private string runtimeCompanyEmail = string.Empty;
+    private string runtimeCompanyPhone = string.Empty;
+    private string runtimeCompanyAddress = string.Empty;
+    private string runtimeSupportEmail = string.Empty;
+    private string runtimeSupportPhone = string.Empty;
     private const int StorePageSize = 25;
     private int storePageNumber = 1;
     private int storeTotalCount;
@@ -400,6 +490,9 @@
     {
         errorMessage = null;
         selectedStore = await StoreClient.GetAsync(publicId);
+        runtimeStore = selectedStore is null
+            ? null
+            : await StoreClient.GetRuntimeStoreAsync(publicId);
         SyncEditFields();
     }
 
@@ -532,6 +625,87 @@
         });
     }
 
+    private async Task SaveRuntimeStoreAsync()
+    {
+        if (selectedStore is null || runtimeStore is null)
+        {
+            return;
+        }
+
+        await SaveStoreOperationAsync(async () =>
+        {
+            var result = await StoreClient.UpdateRuntimeStoreAsync(
+                selectedStore.PublicId,
+                runtimeStore.PublicId,
+                new RuntimeStoreUpdateRequest(
+                    runtimeStore.Name,
+                    EmptyToNull(runtimeBaseUrl),
+                    runtimeStore.ForceHttps,
+                    runtimeStore.SslEnabled,
+                    runtimeStore.SslPort,
+                    runtimeDisplayOrder,
+                    runtimeStore.HtmlBodyId,
+                    runtimeStore.CdnHost,
+                    runtimeStore.LogoUrl,
+                    EmptyToNull(runtimeCompanyName),
+                    EmptyToNull(runtimeCompanyEmail),
+                    EmptyToNull(runtimeCompanyPhone),
+                    EmptyToNull(runtimeCompanyAddress),
+                    runtimeStore.FaviconUrl,
+                    runtimeStore.PngIconUrl,
+                    runtimeStore.AppleTouchIconUrl,
+                    runtimeStore.MsTileImageUrl,
+                    runtimeStore.MsTileColor,
+                    runtimeStore.DefaultCurrencyCode,
+                    runtimeStore.DefaultCulture,
+                    EmptyToNull(runtimeSupportEmail),
+                    EmptyToNull(runtimeSupportPhone),
+                    runtimeMaintenanceEnabled,
+                    EmptyToNull(runtimeMaintenanceMessage),
+                    runtimeStore.MetadataJson,
+                    runtimeStore.Status));
+
+            runtimeStore = result.Store ?? runtimeStore;
+            SyncRuntimeFields();
+            successMessage = result.Success ? "Runtime store updated." : null;
+            errorMessage = result.Success ? null : result.Message;
+        });
+    }
+
+    private async Task ActivateRuntimeStoreAsync()
+    {
+        if (selectedStore is null || runtimeStore is null)
+        {
+            return;
+        }
+
+        await SaveStoreOperationAsync(async () =>
+        {
+            var result = await StoreClient.ActivateRuntimeStoreAsync(selectedStore.PublicId, runtimeStore.PublicId);
+            runtimeStore = result.Store ?? runtimeStore;
+            SyncRuntimeFields();
+            successMessage = result.Success ? "Runtime store activated." : null;
+            errorMessage = result.Success ? null : result.Message;
+        });
+    }
+
+    private async Task DeactivateRuntimeStoreAsync()
+    {
+        if (selectedStore is null || runtimeStore is null)
+        {
+            return;
+        }
+
+        await SaveStoreOperationAsync(async () =>
+        {
+            var result = await StoreClient.DeactivateRuntimeStoreAsync(selectedStore.PublicId, runtimeStore.PublicId);
+            runtimeStore = result.Store ?? runtimeStore;
+            SyncRuntimeFields();
+            successMessage = result.Success ? "Runtime store deactivated." : null;
+            errorMessage = result.Success ? null : result.Message;
+        });
+    }
+
     private async Task SaveStoreOperationAsync(Func<Task> operation)
     {
         isSaving = true;
@@ -597,6 +771,8 @@
             editNodePublicId = string.Empty;
             editMetadataJson = "{}";
             deployPrimaryDomain = string.Empty;
+            runtimeStore = null;
+            SyncRuntimeFields();
             lastDeploymentTask = null;
             return;
         }
@@ -608,6 +784,21 @@
             ?? selectedStore.Domains.FirstOrDefault()?.Domain
             ?? $"{selectedStore.StoreKey}.local";
         lastDeploymentTask = null;
+        SyncRuntimeFields();
+    }
+
+    private void SyncRuntimeFields()
+    {
+        runtimeMaintenanceEnabled = runtimeStore?.MaintenanceModeEnabled ?? false;
+        runtimeDisplayOrder = runtimeStore?.DisplayOrder ?? 0;
+        runtimeMaintenanceMessage = runtimeStore?.MaintenanceMessage ?? string.Empty;
+        runtimeBaseUrl = runtimeStore?.BaseUrl ?? string.Empty;
+        runtimeCompanyName = runtimeStore?.CompanyName ?? string.Empty;
+        runtimeCompanyEmail = runtimeStore?.CompanyEmail ?? string.Empty;
+        runtimeCompanyPhone = runtimeStore?.CompanyPhone ?? string.Empty;
+        runtimeCompanyAddress = runtimeStore?.CompanyAddress ?? string.Empty;
+        runtimeSupportEmail = runtimeStore?.SupportEmail ?? string.Empty;
+        runtimeSupportPhone = runtimeStore?.SupportPhone ?? string.Empty;
     }
 
     private static string? EmptyToNull(string? value)

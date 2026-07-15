@@ -26,7 +26,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Task.FromResult(Failed<CommerceCurrentStore>(hints.FailureMessage));
             }
 
-            return this.resolver.ResolveAsync(hints.StoreKey, hints.Host, cancellationToken);
+            return this.resolver.ResolveForReadinessAsync(hints.StoreKey, hints.Host, cancellationToken);
         }
 
         public Task<CommerceStoreOperationResult<Guid>> GetCurrentStoreIdAsync(

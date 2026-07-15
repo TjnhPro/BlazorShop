@@ -1291,6 +1291,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.Property(store => store.HtmlBodyId).HasColumnName("html_body_id").HasMaxLength(128);
                 entity.Property(store => store.CdnHost).HasColumnName("cdn_host");
                 entity.Property(store => store.LogoUrl).HasColumnName("logo_url");
+                entity.Property(store => store.CompanyName).HasColumnName("company_name").HasMaxLength(200);
+                entity.Property(store => store.CompanyEmail).HasColumnName("company_email").HasMaxLength(254);
+                entity.Property(store => store.CompanyPhone).HasColumnName("company_phone").HasMaxLength(50);
+                entity.Property(store => store.CompanyAddress).HasColumnName("company_address").HasMaxLength(500);
                 entity.Property(store => store.FaviconUrl).HasColumnName("favicon_url");
                 entity.Property(store => store.PngIconUrl).HasColumnName("png_icon_url");
                 entity.Property(store => store.AppleTouchIconUrl).HasColumnName("apple_touch_icon_url");
@@ -1318,7 +1322,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.ToTable(
                     table => table.HasCheckConstraint(
                         "ck_commerce_store_status",
-                        "status in ('active', 'disabled', 'archived')"));
+                        "status in ('active', 'provisioning', 'disabled', 'archived')"));
                 entity.ToTable(
                     table => table.HasCheckConstraint(
                         "ck_commerce_store_default_currency_code",

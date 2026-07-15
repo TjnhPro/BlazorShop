@@ -182,14 +182,14 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
             var status = taskStatus switch
             {
-                "succeeded" => "active",
-                "failed" => "disabled",
-                "cancelled" => "disabled",
-                _ => "provisioning"
+                "succeeded" => ControlPlaneStoreStatuses.Active,
+                "failed" => ControlPlaneStoreStatuses.Disabled,
+                "cancelled" => ControlPlaneStoreStatuses.Disabled,
+                _ => ControlPlaneStoreStatuses.Provisioning
             };
 
             var store = await this.dbContext.Stores.FirstOrDefaultAsync(store => store.Id == storeId, cancellationToken);
-            if (store is null || store.Status == "archived" || store.Status == status)
+            if (store is null || store.Status == ControlPlaneStoreStatuses.Archived || store.Status == status)
             {
                 return;
             }
@@ -206,7 +206,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 return new StoreValidationFailure(ControlPlaneStoreDeploymentOperationFailure.NotFound, "Store was not found.");
             }
 
-            if (store.Status == "archived")
+            if (store.Status == ControlPlaneStoreStatuses.Archived)
             {
                 return new StoreValidationFailure(ControlPlaneStoreDeploymentOperationFailure.Validation, "Archived stores cannot be deployed.");
             }

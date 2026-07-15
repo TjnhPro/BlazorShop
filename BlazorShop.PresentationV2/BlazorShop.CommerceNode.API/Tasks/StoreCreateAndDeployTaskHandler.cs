@@ -90,7 +90,7 @@ namespace BlazorShop.CommerceNode.API.Tasks
             store.ControlPlaneStorePublicId = payload.ControlPlaneStorePublicId;
             store.StoreKey = payload.StoreKey!.Trim();
             store.Name = payload.Name!.Trim();
-            store.Status = CommerceStoreStatuses.Disabled;
+            store.Status = CommerceStoreStatuses.Provisioning;
             store.BaseUrl = payload.BaseUrl?.Trim();
             store.DefaultCurrencyCode = payload.DefaultCurrencyCode!.Trim().ToUpperInvariant();
             store.DefaultCulture = payload.DefaultCulture!.Trim();

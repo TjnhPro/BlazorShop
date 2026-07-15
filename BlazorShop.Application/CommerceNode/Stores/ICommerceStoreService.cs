@@ -19,6 +19,11 @@ namespace BlazorShop.Application.CommerceNode.Stores
             UpdateCommerceStoreRequest request,
             CancellationToken cancellationToken = default);
 
+        Task<CommerceStoreOperationResult<CommerceStoreDetail>> SetStatusAsync(
+            Guid publicId,
+            string status,
+            CancellationToken cancellationToken = default);
+
         Task<CommerceStoreOperationResult<CommerceStoreDetail>> ArchiveAsync(
             Guid publicId,
             CancellationToken cancellationToken = default);

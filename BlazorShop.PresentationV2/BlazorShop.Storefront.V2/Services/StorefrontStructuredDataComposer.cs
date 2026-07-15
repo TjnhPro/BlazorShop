@@ -11,13 +11,16 @@ namespace BlazorShop.Storefront.Services
     {
         private readonly IStorefrontPublicUrlResolver _publicUrlResolver;
         private readonly IStorefrontSeoSettingsProvider _settingsProvider;
+        private readonly IStorefrontCurrentStoreProvider _currentStoreProvider;
 
         public StorefrontStructuredDataComposer(
             IStorefrontPublicUrlResolver publicUrlResolver,
-            IStorefrontSeoSettingsProvider settingsProvider)
+            IStorefrontSeoSettingsProvider settingsProvider,
+            IStorefrontCurrentStoreProvider currentStoreProvider)
         {
             _publicUrlResolver = publicUrlResolver;
             _settingsProvider = settingsProvider;
+            _currentStoreProvider = currentStoreProvider;
         }
 
         public async Task<StorefrontStructuredDataDocument> ComposeHomePageAsync(CancellationToken cancellationToken = default)
@@ -191,20 +194,23 @@ namespace BlazorShop.Storefront.Services
         private async Task<StructuredDataContext?> GetContextAsync(CancellationToken cancellationToken)
         {
             var settings = await _settingsProvider.GetAsync(cancellationToken);
+            var storeResolution = await _currentStoreProvider.ResolveAsync(cancellationToken);
+            var store = storeResolution.Store;
             var baseUrl = _publicUrlResolver.ResolveBaseUrl(settings?.BaseCanonicalUrl);
             if (string.IsNullOrWhiteSpace(baseUrl))
             {
                 return null;
             }
 
-            var siteName = FirstNonEmpty(settings?.SiteName, settings?.CompanyName, "BlazorShop");
-            var organizationName = FirstNonEmpty(settings?.CompanyName, settings?.SiteName, "BlazorShop");
+            var siteName = FirstNonEmpty(settings?.SiteName, store?.Name, store?.CompanyName, settings?.CompanyName, "BlazorShop");
+            var organizationName = FirstNonEmpty(store?.CompanyName, store?.Name, settings?.CompanyName, settings?.SiteName, "BlazorShop");
 
             return new StructuredDataContext(
                 baseUrl,
                 siteName,
                 organizationName,
                 settings,
+                store,
                 CreateNodeId(baseUrl, "organization"),
                 CreateNodeId(baseUrl, "website"));
         }
@@ -220,8 +226,8 @@ namespace BlazorShop.Storefront.Services
             };
 
             AddString(organization, "logo", ResolveAssetUrl(context.Settings?.CompanyLogoUrl, context));
-            AddString(organization, "email", context.Settings?.CompanyEmail);
-            AddString(organization, "telephone", context.Settings?.CompanyPhone);
+            AddString(organization, "email", FirstNonEmpty(context.Store?.CompanyEmail, context.Settings?.CompanyEmail));
+            AddString(organization, "telephone", FirstNonEmpty(context.Store?.CompanyPhone, context.Settings?.CompanyPhone));
 
             var sameAs = CreateStringArray(
                 ResolveAssetUrl(context.Settings?.FacebookUrl, context),
@@ -342,6 +348,7 @@ namespace BlazorShop.Storefront.Services
             string SiteName,
             string OrganizationName,
             SeoSettingsDto? Settings,
+            StorefrontCurrentStore? Store,
             string OrganizationId,
             string WebSiteId);
     }
