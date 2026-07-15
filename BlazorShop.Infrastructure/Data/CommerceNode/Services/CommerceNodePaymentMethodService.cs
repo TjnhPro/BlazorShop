@@ -3,6 +3,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using System.Text.Json;
 
     using BlazorShop.Application.CommerceNode.Payments;
+    using BlazorShop.Application.CommerceNode.Settings;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
@@ -26,15 +27,18 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly CommerceNodeDbContext context;
         private readonly ICommerceStoreContext storeContext;
         private readonly IAdminAuditService auditService;
+        private readonly IStorefrontPublicConfigurationCache publicConfigurationCache;
 
         public CommerceNodePaymentMethodService(
             CommerceNodeDbContext context,
             ICommerceStoreContext storeContext,
-            IAdminAuditService auditService)
+            IAdminAuditService auditService,
+            IStorefrontPublicConfigurationCache publicConfigurationCache)
         {
             this.context = context;
             this.storeContext = storeContext;
             this.auditService = auditService;
+            this.publicConfigurationCache = publicConfigurationCache;
         }
 
         public async Task<IEnumerable<GetPaymentMethod>> GetPaymentMethodsAsync()
@@ -155,6 +159,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     method.DisplayOrder,
                 }),
             });
+            await this.publicConfigurationCache.InvalidateAsync(storeResult.Payload, cancellationToken);
 
             return Success(dto, "Payment method updated successfully.");
         }

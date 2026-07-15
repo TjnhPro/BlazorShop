@@ -87,6 +87,30 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Contains("CDN host", result.Message);
         }
 
+        [Fact]
+        public async Task UpdateAsync_InvalidatesPublicConfigurationCache()
+        {
+            await using var context = CreateContext();
+            using var cache = new MemoryCache(new MemoryCacheOptions());
+            var publicConfigurationCache = new StorefrontPublicConfigurationCache(context, cache);
+            var service = new CommerceStoreService(context, cache, publicConfigurationCache);
+            var created = await service.CreateAsync(CreateRequest());
+            Assert.True(created.Success, created.Message);
+
+            publicConfigurationCache.Set(created.Payload!.StoreKey, "cached-config");
+
+            var updated = await service.UpdateAsync(
+                created.Payload.PublicId,
+                new UpdateCommerceStoreRequest(
+                    Name: "Updated Store",
+                    BaseUrl: created.Payload.BaseUrl,
+                    DefaultCurrencyCode: "USD",
+                    DefaultCulture: "en-US"));
+
+            Assert.True(updated.Success, updated.Message);
+            Assert.False(publicConfigurationCache.TryGet<string>(created.Payload.StoreKey, out _));
+        }
+
         private static CreateCommerceStoreRequest CreateRequest(
             string storeKey = "demo-store",
             string? cdnHost = null,

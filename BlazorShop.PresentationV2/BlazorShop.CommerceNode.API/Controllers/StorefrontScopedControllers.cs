@@ -739,15 +739,18 @@ namespace BlazorShop.CommerceNode.API.Controllers
         private readonly ICommerceStoreContext storeContext;
         private readonly IPaymentMethodService paymentMethodService;
         private readonly IStoreSeoSettingsService seoSettingsService;
+        private readonly IStorefrontPublicConfigurationCache publicConfigurationCache;
 
         public StorefrontScopedConfigurationController(
             ICommerceStoreContext storeContext,
             IPaymentMethodService paymentMethodService,
-            IStoreSeoSettingsService seoSettingsService)
+            IStoreSeoSettingsService seoSettingsService,
+            IStorefrontPublicConfigurationCache publicConfigurationCache)
         {
             this.storeContext = storeContext;
             this.paymentMethodService = paymentMethodService;
             this.seoSettingsService = seoSettingsService;
+            this.publicConfigurationCache = publicConfigurationCache;
         }
 
         [HttpGet]
@@ -759,13 +762,23 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 return this.ToActionResult(storeResult);
             }
 
+            if (this.publicConfigurationCache.TryGet<StorefrontPublicConfigurationResponse>(
+                storeResult.Payload.StoreKey,
+                out var cachedConfiguration) && cachedConfiguration is not null)
+            {
+                return this.Success(cachedConfiguration, "Storefront configuration loaded.");
+            }
+
             var paymentMethods = (await this.paymentMethodService.GetPaymentMethodsAsync())
                 .Select(method => method.ToStorefrontContract())
                 .ToArray();
             var seoDefaults = await this.seoSettingsService.ResolveAsync(cancellationToken);
+            var configuration = storeResult.Payload.ToPublicConfigurationContract(paymentMethods, seoDefaults);
+
+            this.publicConfigurationCache.Set(storeResult.Payload.StoreKey, configuration);
 
             return this.Success(
-                storeResult.Payload.ToPublicConfigurationContract(paymentMethods, seoDefaults),
+                configuration,
                 "Storefront configuration loaded.");
         }
 

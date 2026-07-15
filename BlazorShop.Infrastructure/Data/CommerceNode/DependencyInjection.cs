@@ -150,6 +150,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<ICategorySeoService, CategorySeoService>();
             services.AddScoped<ISeoSettingsService, SeoSettingsService>();
             services.AddScoped<IStoreSeoSettingsService, StoreSeoSettingsService>();
+            services.AddScoped<IStorefrontPublicConfigurationCache, StorefrontPublicConfigurationCache>();
             services.AddScoped<ISeoRedirectService, SeoRedirectService>();
             services.AddScoped<ISeoRedirectResolutionService, SeoRedirectResolutionService>();
             services.AddScoped<ISeoRedirectAutomationService, SeoRedirectAutomationService>();

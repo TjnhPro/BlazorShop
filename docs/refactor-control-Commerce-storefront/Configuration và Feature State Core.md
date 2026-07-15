@@ -396,6 +396,8 @@ Exit criteria:
 
 ### Phase 4 - Cache And Invalidation
 
+Status: completed on 2026-07-15 by commit `pending`.
+
 Goal: make settings fast without stale storefront behavior.
 
 Tasks:
@@ -413,11 +415,24 @@ Tasks:
 - Keep invalidation local to Commerce Node.
 - Add tests for update-then-read behavior.
 
+Implementation notes:
+
+- Added `IStorefrontPublicConfigurationCache` with the explicit `store-public-config:{storeKey}` cache domain.
+- Storefront public configuration reads now cache the consolidated response after resolving the scoped store.
+- Commerce store profile updates invalidate the affected public configuration cache key.
+- Store SEO override saves invalidate both resolved SEO settings and public configuration cache for the same store.
+- Payment method metadata updates invalidate public configuration cache for the same store.
+
+Verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~StoreSeoSettingsServiceTests|FullyQualifiedName~CommerceStoreServiceValidationTests|FullyQualifiedName~CommerceNodePaymentMethodServiceCacheTests" --no-restore -p:UseSharedCompilation=false` passed 20/20.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore -p:UseSharedCompilation=false` passed.
+
 Exit criteria:
 
-- Storefront sees updated public config after admin changes.
-- Cache invalidation is deterministic and scoped.
-- No cross-boundary cache mutation from Control Plane Web.
+- [x] Storefront sees updated public config after admin changes.
+- [x] Cache invalidation is deterministic and scoped.
+- [x] No cross-boundary cache mutation from Control Plane Web.
 
 ### Phase 5 - Secret Boundary And Provider Config Hardening
 

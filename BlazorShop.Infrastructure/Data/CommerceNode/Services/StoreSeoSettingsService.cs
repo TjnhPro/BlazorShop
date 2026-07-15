@@ -25,6 +25,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly IValidationService validationService;
         private readonly IValidator<UpdateSeoSettingsDto> validator;
         private readonly IMemoryCache memoryCache;
+        private readonly IStorefrontPublicConfigurationCache publicConfigurationCache;
 
         public StoreSeoSettingsService(
             CommerceNodeDbContext context,
@@ -32,7 +33,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             ISeoSettingsService globalSeoSettingsService,
             IValidationService validationService,
             IValidator<UpdateSeoSettingsDto> validator,
-            IMemoryCache memoryCache)
+            IMemoryCache memoryCache,
+            IStorefrontPublicConfigurationCache publicConfigurationCache)
         {
             this.context = context;
             this.storeContext = storeContext;
@@ -40,6 +42,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.validationService = validationService;
             this.validator = validator;
             this.memoryCache = memoryCache;
+            this.publicConfigurationCache = publicConfigurationCache;
         }
 
         public async Task<SeoSettingsDto> ResolveAsync(CancellationToken cancellationToken = default)
@@ -110,6 +113,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             await this.context.SaveChangesAsync(cancellationToken);
             this.memoryCache.Remove(BuildCacheKey(storeResult.Payload));
+            await this.publicConfigurationCache.InvalidateAsync(storeResult.Payload, cancellationToken);
 
             return new ServiceResponse<SeoSettingsDto>(true, "Store SEO settings saved successfully.", settings.Id)
             {

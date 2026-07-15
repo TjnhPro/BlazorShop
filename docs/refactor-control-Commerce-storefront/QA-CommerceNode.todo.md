@@ -121,6 +121,10 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] Store SEO defaults resolve through store override before singleton SEO fallback. 2026-07-15: `StoreSeoSettingsServiceTests` covered no-override fallback and override precedence.
 - [x] Store SEO override save path validates input and invalidates cached resolved settings. 2026-07-15: focused service tests covered invalid canonical URL rejection and update-then-read cache invalidation.
 - [x] Storefront public configuration and scoped SEO settings reads use store-scoped SEO resolver. 2026-07-15: controllers now depend on `IStoreSeoSettingsService`; CommerceNode API build passed.
+- [x] Storefront public configuration response is cached by `store-public-config:{storeKey}` after scoped store resolution. 2026-07-15: `StorefrontScopedConfigurationController` uses `IStorefrontPublicConfigurationCache`; CommerceNode API build passed.
+- [x] Commerce store profile updates invalidate the affected Storefront public configuration cache. 2026-07-15: `CommerceStoreServiceValidationTests.UpdateAsync_InvalidatesPublicConfigurationCache` passed.
+- [x] Store SEO override saves invalidate both resolved SEO settings cache and Storefront public configuration cache. 2026-07-15: `StoreSeoSettingsServiceTests.SaveOverrideAsync_InvalidatesPublicConfigurationCacheForStore` passed.
+- [x] Payment method metadata updates invalidate Storefront public configuration cache. 2026-07-15: `CommerceNodePaymentMethodServiceCacheTests.UpdateAsync_InvalidatesPublicConfigurationCacheForStore` passed.
 
 ## Store Mapping
 

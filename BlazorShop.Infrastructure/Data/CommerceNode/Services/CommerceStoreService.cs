@@ -4,6 +4,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using System.Text.Json;
     using System.Text.RegularExpressions;
 
+    using BlazorShop.Application.CommerceNode.Settings;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Domain.Entities.CommerceNode;
 
@@ -23,13 +24,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private readonly CommerceNodeDbContext context;
         private readonly IMemoryCache memoryCache;
+        private readonly IStorefrontPublicConfigurationCache? publicConfigurationCache;
 
         public CommerceStoreService(
             CommerceNodeDbContext context,
-            IMemoryCache memoryCache)
+            IMemoryCache memoryCache,
+            IStorefrontPublicConfigurationCache? publicConfigurationCache = null)
         {
             this.context = context;
             this.memoryCache = memoryCache;
+            this.publicConfigurationCache = publicConfigurationCache;
         }
 
         public async Task<CommerceStoreOperationResult<CommerceStoreListResponse>> ListAsync(
@@ -387,6 +391,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private void InvalidateStoreCache(CommerceStore store)
         {
             this.memoryCache.Remove($"commerce-store:key:{store.StoreKey}");
+            this.publicConfigurationCache?.Invalidate(store.StoreKey);
             foreach (var domain in store.Domains)
             {
                 this.memoryCache.Remove($"commerce-store:host:{domain.NormalizedDomain}");

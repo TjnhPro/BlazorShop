@@ -7,6 +7,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
     using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Application.Validations;
     using BlazorShop.Application.Validations.Seo;
+    using BlazorShop.Domain.Entities.CommerceNode;
     using BlazorShop.Infrastructure.Data.CommerceNode;
     using BlazorShop.Infrastructure.Data.CommerceNode.Services;
 
@@ -82,6 +83,37 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal("After", after.SiteName);
         }
 
+        [Fact]
+        public async Task SaveOverrideAsync_InvalidatesPublicConfigurationCacheForStore()
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            context.CommerceStores.Add(new CommerceStore
+            {
+                Id = storeId,
+                StoreKey = "default",
+                Name = "Default",
+            });
+            await context.SaveChangesAsync();
+
+            using var cache = new MemoryCache(new MemoryCacheOptions());
+            var publicConfigurationCache = new StorefrontPublicConfigurationCache(context, cache);
+            var service = new StoreSeoSettingsService(
+                context,
+                new StubCommerceStoreContext(storeId),
+                new StubSeoSettingsService(new SeoSettingsDto()),
+                new ValidationService(),
+                new UpdateSeoSettingsDtoValidator(),
+                cache,
+                publicConfigurationCache);
+
+            publicConfigurationCache.Set("default", "cached-config");
+
+            await service.SaveOverrideAsync(new UpdateSeoSettingsDto { SiteName = "After" });
+
+            Assert.False(publicConfigurationCache.TryGet<string>("default", out _));
+        }
+
         private static IStoreSeoSettingsService CreateService(
             CommerceNodeDbContext context,
             Guid storeId,
@@ -94,7 +126,8 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 globalSeoSettingsService,
                 new ValidationService(),
                 new UpdateSeoSettingsDtoValidator(),
-                cache);
+                cache,
+                new StorefrontPublicConfigurationCache(context, cache));
         }
 
         private static CommerceNodeDbContext CreateContext()
