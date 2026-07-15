@@ -74,6 +74,34 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             "amountPaid",
         ];
 
+        private static readonly string[] PublicConfigurationSchemaNames =
+        [
+            "StorefrontCurrentStoreResponse",
+            "StorefrontPaymentMethodResponse",
+            "SeoSettingsDto",
+        ];
+
+        private static readonly string[] ForbiddenPublicConfigurationPropertyNames =
+        [
+            "settingsJson",
+            "metadataJson",
+            "smtpPassword",
+            "password",
+            "secret",
+            "nodeSecret",
+            "nodeKey",
+            "privateKey",
+            "apiKey",
+            "accessToken",
+            "refreshToken",
+            "createdBy",
+            "createdByAdminUserId",
+            "updatedBy",
+            "deletedAt",
+            "archivedAt",
+            "controlPlaneStorePublicId",
+        ];
+
         private readonly WebApplicationFactory<CommerceNodeProgram> factory;
 
         public CommerceNodeStorefrontOpenApiContractTests(WebApplicationFactory<CommerceNodeProgram> factory)
@@ -205,6 +233,37 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             var serializedSchemas = schemas.ToJsonString();
             Assert.DoesNotContain("\"userId\"", serializedSchemas, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("\"isPublished\"", serializedSchemas, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_PublicConfigurationSchemasDoNotExposeSecretsOrInternalFields()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+
+            foreach (var schemaName in PublicConfigurationSchemaNames)
+            {
+                var schema = schemas[schemaName]?.AsObject()
+                    ?? throw new InvalidOperationException($"{schemaName} schema was not found.");
+                var propertyNames = GetPropertyNames(schema).ToArray();
+
+                foreach (var forbidden in ForbiddenPublicConfigurationPropertyNames)
+                {
+                    Assert.DoesNotContain(forbidden, propertyNames, StringComparer.OrdinalIgnoreCase);
+                }
+            }
+
+            var currentStore = schemas["StorefrontCurrentStoreResponse"]!.AsObject();
+            var currentStoreProperties = GetPropertyNames(currentStore).ToArray();
+            Assert.Contains("defaultCurrencyCode", currentStoreProperties);
+            Assert.Contains("defaultCulture", currentStoreProperties);
+            Assert.Contains("maintenanceModeEnabled", currentStoreProperties);
+
+            var paymentMethod = schemas["StorefrontPaymentMethodResponse"]!.AsObject();
+            var paymentMethodProperties = GetPropertyNames(paymentMethod).ToArray();
+            Assert.Contains("key", paymentMethodProperties);
+            Assert.Contains("name", paymentMethodProperties);
+            Assert.Contains("description", paymentMethodProperties);
         }
 
         [Fact]

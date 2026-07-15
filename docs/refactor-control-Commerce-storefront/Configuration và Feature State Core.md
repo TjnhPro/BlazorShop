@@ -181,30 +181,51 @@ For MVP, keep secrets in environment/config where possible. If database-backed s
 
 Goal: lock down current behavior before changing configuration.
 
+Status 2026-07-15: completed baseline inventory and public leak contract guardrail.
+
+Inventory:
+
+- `StorefrontCurrentStoreResponse` is the current public-safe store profile projection. It includes identity, branding, locale/currency, contact, maintenance, and HTML body id fields. It does not include `CommerceStore.MetadataJson` or `ControlPlaneStorePublicId`.
+- `StorefrontPaymentMethodResponse` is the current public payment method projection. It includes only id, key, name, and description.
+- `SeoSettingsDto` is the current public SEO defaults projection. It is still backed by singleton SEO settings and is documented as a later store-scoped override candidate.
+- Admin payment DTO `StorePaymentMethodDto` still exposes `SettingsJson`. This is intentionally recorded as a Phase 5 hardening target, not changed in Phase 0.
+- `AdminSettings` remains singleton/compatibility-shaped and is not extended for new store-scoped behavior.
+
+Implementation notes:
+
+- Added a focused Storefront OpenAPI contract test covering public configuration-adjacent schemas.
+- The guardrail rejects public schema properties such as `settingsJson`, `metadataJson`, SMTP/password/secret/private key/token fields, node credentials, audit fields, archived/deleted fields, and `controlPlaneStorePublicId`.
+- No runtime behavior or schema was changed in this phase.
+
+Verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_PublicConfigurationSchemasDoNotExposeSecretsOrInternalFields" --no-restore -p:UseSharedCompilation=false` passed 1/1.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore -p:UseSharedCompilation=false` passed.
+
 Tasks:
 
-- Inventory current public storefront DTOs:
+- [x] Inventory current public storefront DTOs:
   - `StorefrontCurrentStoreResponse`.
   - `StorefrontPaymentMethodResponse`.
   - `SeoSettingsDto`.
-- Inventory admin DTOs that expose raw provider settings, especially payment method admin DTOs.
-- Add or update contract tests proving public storefront APIs do not expose:
+- [x] Inventory admin DTOs that expose raw provider settings, especially payment method admin DTOs.
+- [x] Add or update contract tests proving public storefront APIs do not expose:
   - `SettingsJson`.
   - `MetadataJson`.
   - SMTP password.
   - private keys.
   - node credentials.
   - audit/internal fields.
-- Record current singleton settings sources:
+- [x] Record current singleton settings sources:
   - `AdminSettings`.
   - `SeoSettings`.
-- Confirm no new schema changes are needed in this phase.
+- [x] Confirm no new schema changes are needed in this phase.
 
 Exit criteria:
 
-- Public leak baseline tests exist.
-- Current settings/provider risk points are documented.
-- No runtime behavior changes.
+- [x] Public leak baseline tests exist.
+- [x] Current settings/provider risk points are documented.
+- [x] No runtime behavior changes.
 
 ### Phase 1 - Permissions And API Guardrails
 

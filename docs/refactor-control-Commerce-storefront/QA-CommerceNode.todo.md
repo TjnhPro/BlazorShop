@@ -110,6 +110,11 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] Storefront current-store response exposes only safe public runtime profile fields. 2026-07-15: live current-store response included public branding/contact/runtime fields and did not expose `metadataJson` or `controlPlaneStorePublicId`.
 - [~] Checkout preview/place-order fallback currency uses the current store default when cart/session currency is missing. 2026-07-15: Storefront cart/checkout HTTP smoke rendered current `GBP`; deeper missing-session-currency service/API fallback coverage is still pending.
 
+## Configuration And Feature State Core
+
+- [x] Public configuration-adjacent Storefront schemas do not expose raw settings, metadata, secrets, node credentials, audit fields, or internal store linkage. 2026-07-15: `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_PublicConfigurationSchemasDoNotExposeSecretsOrInternalFields` passed for current-store, payment method, and SEO settings schemas.
+- [x] Admin payment method DTO raw `SettingsJson` exposure is documented as a provider hardening risk, not treated as a public Storefront contract. 2026-07-15: Phase 0 inventory recorded `StorePaymentMethodDto.SettingsJson` for Phase 5 hardening.
+
 ## Store Mapping
 
 - [x] Product admin catalog page is scoped to the current Commerce store. 2026-07-15: `CommerceNodeProductStoreScopeTests.GetCatalogPageForCurrentStoreAsync_ReturnsOnlyCurrentStoreProducts` passed.
