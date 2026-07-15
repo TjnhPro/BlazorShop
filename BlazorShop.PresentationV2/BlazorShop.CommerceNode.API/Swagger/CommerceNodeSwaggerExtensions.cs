@@ -512,6 +512,11 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         typeof(CommerceNodeApiResponse),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status500InternalServerError],
                         Security: StorefrontSecurityRequirement.Bearer),
+                    [("StorefrontScopedCurrency", "SetPreference")] = new(
+                        "StorefrontCurrency_SetPreference",
+                        "Set a Storefront currency preference.",
+                        typeof(CommerceNodeApiResponse<StorefrontCurrencyPreferenceResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedCheckout", "Preview")] = new(
                         "StorefrontCheckout_Preview",
                         "Preview and validate a Storefront checkout session.",

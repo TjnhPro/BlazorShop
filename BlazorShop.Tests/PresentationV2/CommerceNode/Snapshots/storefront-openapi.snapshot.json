@@ -2094,6 +2094,97 @@
         }
       }
     },
+    "/api/storefront/stores/{storeKey}/currency/preference": {
+      "post": {
+        "tags": [
+          "StorefrontScopedCurrency"
+        ],
+        "summary": "Set a Storefront currency preference.",
+        "operationId": "StorefrontCurrency_SetPreference",
+        "parameters": [
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCurrencyPreferenceRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCurrencyPreferenceRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCurrencyPreferenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontCurrencyPreferenceResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/storefront/stores/{storeKey}/newsletter/subscribe": {
       "post": {
         "tags": [
@@ -4591,6 +4682,64 @@
         },
         "additionalProperties": false
       },
+      "StorefrontCurrencyPreferenceRequest": {
+        "required": [
+          "currencyCode"
+        ],
+        "type": "object",
+        "properties": {
+          "currencyCode": {
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCurrencyPreferenceResponse": {
+        "type": "object",
+        "properties": {
+          "currencyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "baseCurrencyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestedCurrencyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestedCurrencySupported": {
+            "type": "boolean"
+          },
+          "checkoutCurrencyEnabled": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCurrencyPreferenceResponseCommerceNodeApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/StorefrontCurrencyPreferenceResponse"
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontCurrentStoreResponse": {
         "type": "object",
         "properties": {
@@ -6276,6 +6425,9 @@
     },
     {
       "name": "StorefrontScopedConfiguration"
+    },
+    {
+      "name": "StorefrontScopedCurrency"
     },
     {
       "name": "StorefrontScopedNewsletter"

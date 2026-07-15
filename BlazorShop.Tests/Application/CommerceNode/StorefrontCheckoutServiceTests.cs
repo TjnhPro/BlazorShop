@@ -507,6 +507,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 new StorefrontCartSessionService(context),
                 productRepository.Object,
                 new FixedStoreCurrencyResolver("USD"),
+                new FixedWorkingCurrencyResolver("USD"),
                 new MoneyRoundingService(new CurrencyMetadataService()));
         }
 
@@ -683,6 +684,30 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 CancellationToken cancellationToken = default)
             {
                 return Task.FromResult(this.defaultCurrencyCode);
+            }
+        }
+
+        private sealed class FixedWorkingCurrencyResolver : IStorefrontWorkingCurrencyResolver
+        {
+            private readonly string currencyCode;
+
+            public FixedWorkingCurrencyResolver(string currencyCode)
+            {
+                this.currencyCode = currencyCode;
+            }
+
+            public Task<StorefrontWorkingCurrencyResolution> ResolveAsync(
+                Guid storeId,
+                string? requestedCurrencyCode,
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(new StorefrontWorkingCurrencyResolution(
+                    this.currencyCode,
+                    this.currencyCode,
+                    requestedCurrencyCode,
+                    RequestedCurrencySupported: string.Equals(requestedCurrencyCode, this.currencyCode, StringComparison.OrdinalIgnoreCase),
+                    CheckoutCurrencyEnabled: true,
+                    Reason: "test"));
             }
         }
     }

@@ -22,17 +22,20 @@ namespace BlazorShop.Application.CommerceNode.Carts
         private readonly IStorefrontCartSessionService sessionService;
         private readonly IProductReadRepository productReadRepository;
         private readonly IStoreCurrencyResolver storeCurrencyResolver;
+        private readonly IStorefrontWorkingCurrencyResolver workingCurrencyResolver;
         private readonly IMoneyRoundingService moneyRoundingService;
 
         public StorefrontCartService(
             IStorefrontCartSessionService sessionService,
             IProductReadRepository productReadRepository,
             IStoreCurrencyResolver storeCurrencyResolver,
+            IStorefrontWorkingCurrencyResolver workingCurrencyResolver,
             IMoneyRoundingService moneyRoundingService)
         {
             this.sessionService = sessionService;
             this.productReadRepository = productReadRepository;
             this.storeCurrencyResolver = storeCurrencyResolver;
+            this.workingCurrencyResolver = workingCurrencyResolver;
             this.moneyRoundingService = moneyRoundingService;
         }
 
@@ -120,7 +123,11 @@ namespace BlazorShop.Application.CommerceNode.Carts
 
             var product = productResult.Product!;
             var variant = productResult.Variant;
-            var currencyCode = await this.storeCurrencyResolver.ResolveDefaultCurrencyCodeAsync(request.StoreId, cancellationToken);
+            var workingCurrency = await this.workingCurrencyResolver.ResolveAsync(
+                request.StoreId,
+                request.CurrencyCode,
+                cancellationToken);
+            var currencyCode = workingCurrency.CurrencyCode;
             var unitPrice = this.moneyRoundingService.RoundUnitPrice(variant?.Price ?? product.Price, currencyCode);
             return await this.sessionService.AddOrUpdateLineAsync(
                 new StorefrontCartLineMutationRequest(

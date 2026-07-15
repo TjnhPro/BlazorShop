@@ -4,6 +4,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
 
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Checkout;
+    using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.Stores;
@@ -268,6 +269,18 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 request.FulfillmentProviderKey,
                 request.Quantity,
                 request.CurrencyCode);
+        }
+
+        public static StorefrontCurrencyPreferenceResponse ToStorefrontContract(
+            this StorefrontWorkingCurrencyResolution resolution)
+        {
+            return new StorefrontCurrencyPreferenceResponse(
+                resolution.CurrencyCode,
+                resolution.BaseCurrencyCode,
+                resolution.RequestedCurrencyCode,
+                resolution.RequestedCurrencySupported,
+                resolution.CheckoutCurrencyEnabled,
+                resolution.Reason);
         }
 
         public static StorefrontCartUpdateLineRequest ToApplicationRequest(

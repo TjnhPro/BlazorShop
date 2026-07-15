@@ -749,6 +749,21 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         string DefaultCurrencyCode,
         IReadOnlyList<string> SupportedCurrencyCodes);
 
+    public sealed class StorefrontCurrencyPreferenceRequest
+    {
+        [Required]
+        [StringLength(3, MinimumLength = 3)]
+        public string CurrencyCode { get; set; } = string.Empty;
+    }
+
+    public sealed record StorefrontCurrencyPreferenceResponse(
+        string CurrencyCode,
+        string BaseCurrencyCode,
+        string? RequestedCurrencyCode,
+        bool RequestedCurrencySupported,
+        bool CheckoutCurrencyEnabled,
+        string Reason);
+
     public sealed record StorefrontMaintenanceStateResponse(
         bool MaintenanceModeEnabled,
         string? MaintenanceMessage);

@@ -545,6 +545,63 @@ namespace BlazorShop.CommerceNode.API.Controllers
     }
 
     [ApiController]
+    [Route("api/storefront/stores/{storeKey}/currency")]
+    public sealed class StorefrontScopedCurrencyController : StorefrontApiControllerBase
+    {
+        private const string WorkingCurrencyCookieName = "blazorshop-working-currency";
+
+        private readonly ICommerceStoreContext storeContext;
+        private readonly IStorefrontWorkingCurrencyResolver workingCurrencyResolver;
+
+        public StorefrontScopedCurrencyController(
+            ICommerceStoreContext storeContext,
+            IStorefrontWorkingCurrencyResolver workingCurrencyResolver)
+        {
+            this.storeContext = storeContext;
+            this.workingCurrencyResolver = workingCurrencyResolver;
+        }
+
+        [HttpPost("preference")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SetPreference(
+            [FromBody] StorefrontCurrencyPreferenceRequest request,
+            CancellationToken cancellationToken)
+        {
+            var storeIdResult = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
+            if (!storeIdResult.Success)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var resolution = await this.workingCurrencyResolver.ResolveAsync(
+                storeIdResult.Payload,
+                request.CurrencyCode,
+                cancellationToken);
+
+            if (resolution.RequestedCurrencySupported && resolution.CheckoutCurrencyEnabled)
+            {
+                this.Response.Cookies.Append(
+                    WorkingCurrencyCookieName,
+                    resolution.CurrencyCode,
+                    new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = this.Request.IsHttps,
+                        SameSite = SameSiteMode.Lax,
+                        Path = "/",
+                        MaxAge = TimeSpan.FromDays(30),
+                    });
+            }
+            else
+            {
+                this.Response.Cookies.Delete(WorkingCurrencyCookieName, new CookieOptions { Path = "/" });
+            }
+
+            return this.Success(resolution.ToStorefrontContract(), "Currency preference resolved.");
+        }
+    }
+
+    [ApiController]
     [Route("api/storefront/stores/{storeKey}/checkout")]
     [Authorize]
     public sealed class StorefrontScopedCheckoutController : StorefrontApiControllerBase

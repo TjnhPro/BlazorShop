@@ -98,6 +98,50 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public async Task AddLineAsync_WhenSupportedNonBaseHintIsRequestedBeforeConversion_SnapshotsBaseCurrency()
+        {
+            await using var context = CreateContext();
+            var productRepository = new Mock<IProductReadRepository>();
+            var storeId = Guid.NewGuid();
+            context.CommerceStores.Add(new CommerceStore
+            {
+                Id = storeId,
+                StoreKey = "default",
+                Name = "Default",
+                DefaultCurrencyCode = "USD",
+            });
+            context.StoreCurrencies.Add(new StoreCurrency
+            {
+                StoreId = storeId,
+                CurrencyCode = "EUR",
+                IsEnabled = true,
+            });
+            await context.SaveChangesAsync();
+            var service = new StorefrontCartService(
+                new StorefrontCartSessionService(context),
+                productRepository.Object,
+                new StoreCurrencyResolver(context),
+                new StorefrontWorkingCurrencyResolver(context, new StoreCurrencyResolver(context)),
+                new MoneyRoundingService(new CurrencyMetadataService()));
+            var product = CreatePublishedProduct(storeId, price: 12.50m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cart = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+
+            var result = await service.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1,
+                CurrencyCode: "eur"));
+
+            Assert.True(result.Success);
+            var line = Assert.Single(result.Payload!.Lines);
+            Assert.Equal("USD", line.CurrencyCodeSnapshot);
+        }
+
+        [Fact]
         public async Task AddLineAsync_RejectsUnpublishedOrUnavailableProduct()
         {
             await using var context = CreateContext();
@@ -304,6 +348,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 new StorefrontCartSessionService(context),
                 productRepository.Object,
                 new FixedStoreCurrencyResolver(defaultCurrencyCode),
+                new FixedWorkingCurrencyResolver(defaultCurrencyCode),
                 new MoneyRoundingService(new CurrencyMetadataService()));
         }
 
@@ -391,6 +436,30 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 CancellationToken cancellationToken = default)
             {
                 return Task.FromResult(this.defaultCurrencyCode);
+            }
+        }
+
+        private sealed class FixedWorkingCurrencyResolver : IStorefrontWorkingCurrencyResolver
+        {
+            private readonly string currencyCode;
+
+            public FixedWorkingCurrencyResolver(string currencyCode)
+            {
+                this.currencyCode = currencyCode;
+            }
+
+            public Task<StorefrontWorkingCurrencyResolution> ResolveAsync(
+                Guid storeId,
+                string? requestedCurrencyCode,
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(new StorefrontWorkingCurrencyResolution(
+                    this.currencyCode,
+                    this.currencyCode,
+                    requestedCurrencyCode,
+                    RequestedCurrencySupported: string.Equals(requestedCurrencyCode, this.currencyCode, StringComparison.OrdinalIgnoreCase),
+                    CheckoutCurrencyEnabled: true,
+                    Reason: "test"));
             }
         }
     }
