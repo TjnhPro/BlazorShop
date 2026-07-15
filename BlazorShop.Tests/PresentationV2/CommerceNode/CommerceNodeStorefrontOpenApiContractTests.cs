@@ -76,6 +76,14 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
 
         private static readonly string[] PublicConfigurationSchemaNames =
         [
+            "StorefrontPublicConfigurationResponse",
+            "StorefrontStoreIdentityResponse",
+            "StorefrontBrandingResponse",
+            "StorefrontLocaleOptionsResponse",
+            "StorefrontCurrencyOptionsResponse",
+            "StorefrontMaintenanceStateResponse",
+            "StorefrontFeatureFlagsResponse",
+            "StorefrontSeoDefaultsResponse",
             "StorefrontCurrentStoreResponse",
             "StorefrontPaymentMethodResponse",
             "SeoSettingsDto",
@@ -264,6 +272,32 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("key", paymentMethodProperties);
             Assert.Contains("name", paymentMethodProperties);
             Assert.Contains("description", paymentMethodProperties);
+
+            var publicConfiguration = schemas["StorefrontPublicConfigurationResponse"]!.AsObject();
+            var publicConfigurationProperties = GetPropertyNames(publicConfiguration).ToArray();
+            Assert.Contains("storeIdentity", publicConfigurationProperties);
+            Assert.Contains("branding", publicConfigurationProperties);
+            Assert.Contains("localeOptions", publicConfigurationProperties);
+            Assert.Contains("currencyOptions", publicConfigurationProperties);
+            Assert.Contains("maintenanceState", publicConfigurationProperties);
+            Assert.Contains("featureFlags", publicConfigurationProperties);
+            Assert.Contains("paymentMethods", publicConfigurationProperties);
+            Assert.Contains("seoDefaults", publicConfigurationProperties);
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_PublicConfigurationEndpointHasGeneratorSafeContract()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var operation = GetOperation(swagger, "StorefrontConfiguration_Get");
+
+            Assert.False(string.IsNullOrWhiteSpace(operation["summary"]?.GetValue<string>()));
+            Assert.True(operation["responses"]?.AsObject().Count > 1);
+            Assert.Null(operation["requestBody"]);
+            Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(operation));
+            Assert.True(schemas.ContainsKey("StorefrontPublicConfigurationResponse"));
+            Assert.True(schemas.ContainsKey("StorefrontSeoDefaultsResponse"));
         }
 
         [Fact]

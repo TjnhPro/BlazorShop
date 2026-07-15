@@ -114,6 +114,9 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 
 - [x] Public configuration-adjacent Storefront schemas do not expose raw settings, metadata, secrets, node credentials, audit fields, or internal store linkage. 2026-07-15: `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_PublicConfigurationSchemasDoNotExposeSecretsOrInternalFields` passed for current-store, payment method, and SEO settings schemas.
 - [x] Admin payment method DTO raw `SettingsJson` exposure is documented as a provider hardening risk, not treated as a public Storefront contract. 2026-07-15: Phase 0 inventory recorded `StorePaymentMethodDto.SettingsJson` for Phase 5 hardening.
+- [x] `GET /api/storefront/stores/{storeKey}/configuration` has stable OpenAPI metadata and typed success/error response schemas. 2026-07-15: `StorefrontConfiguration_Get` was added to Storefront Swagger and `CommerceNodeStorefrontOpenApiContractTests` passed 23/23 after snapshot refresh.
+- [x] Public configuration projection is allowlist-only and excludes `MetadataJson`, provider `SettingsJson`, credentials, secrets, and internal store linkage. 2026-07-15: public configuration schema guard covers nested config response DTOs.
+- [x] Existing current-store, payment-method, and SEO Storefront endpoints remain available after adding the consolidated configuration endpoint. 2026-07-15: endpoint was additive; Storefront OpenAPI snapshot still contains existing operations.
 
 ## Store Mapping
 

@@ -30,6 +30,7 @@ namespace BlazorShop.Storefront.Services
         private const string StorefrontCatalogBaseRoute = "catalog";
         private const string StorefrontPagesBaseRoute = "pages";
         private const string StorefrontSeoBaseRoute = "seo";
+        private const string StorefrontConfigurationRoute = "configuration";
         private const string StorefrontStoreCurrentRoute = "store/current";
         private const string StorefrontPaymentMethodsRoute = "payments/methods";
         private const string StorefrontCheckoutPreviewRoute = "checkout/preview";
@@ -172,6 +173,14 @@ namespace BlazorShop.Storefront.Services
         {
             return GetMaybeNotFoundAsync<StorefrontCurrentStore>(
                 StorefrontStoreCurrentRoute,
+                cancellationToken,
+                CatalogRequestTimeout);
+        }
+
+        public Task<StorefrontApiResult<StorefrontPublicConfiguration>> GetPublicConfigurationAsync(CancellationToken cancellationToken = default)
+        {
+            return GetMaybeNotFoundAsync<StorefrontPublicConfiguration>(
+                StorefrontConfigurationRoute,
                 cancellationToken,
                 CatalogRequestTimeout);
         }
@@ -631,6 +640,82 @@ namespace BlazorShop.Storefront.Services
         bool MaintenanceModeEnabled,
         string? MaintenanceMessage,
         string? HtmlBodyId);
+
+    public sealed record StorefrontPublicConfiguration(
+        StorefrontStoreIdentity StoreIdentity,
+        StorefrontBranding Branding,
+        StorefrontLocaleOptions LocaleOptions,
+        StorefrontCurrencyOptions CurrencyOptions,
+        StorefrontMaintenanceState MaintenanceState,
+        StorefrontFeatureFlags FeatureFlags,
+        IReadOnlyList<StorefrontPublicPaymentMethod> PaymentMethods,
+        StorefrontSeoDefaults SeoDefaults);
+
+    public sealed record StorefrontStoreIdentity(
+        Guid PublicId,
+        string StoreKey,
+        string Name,
+        string Status,
+        string? BaseUrl,
+        string? PrimaryDomain,
+        bool ForceHttps);
+
+    public sealed record StorefrontBranding(
+        string? CdnHost,
+        string? LogoUrl,
+        string? CompanyName,
+        string? CompanyEmail,
+        string? CompanyPhone,
+        string? CompanyAddress,
+        string? FaviconUrl,
+        string? PngIconUrl,
+        string? AppleTouchIconUrl,
+        string? MsTileImageUrl,
+        string? MsTileColor,
+        string? SupportEmail,
+        string? SupportPhone,
+        string? HtmlBodyId);
+
+    public sealed record StorefrontLocaleOptions(
+        string DefaultCulture,
+        IReadOnlyList<string> SupportedCultures);
+
+    public sealed record StorefrontCurrencyOptions(
+        string DefaultCurrencyCode,
+        IReadOnlyList<string> SupportedCurrencyCodes);
+
+    public sealed record StorefrontMaintenanceState(
+        bool MaintenanceModeEnabled,
+        string? MaintenanceMessage);
+
+    public sealed record StorefrontFeatureFlags(
+        bool CustomerAccountsEnabled,
+        bool CartEnabled,
+        bool CheckoutEnabled,
+        bool PaymentsEnabled,
+        bool NewsletterEnabled,
+        bool RecommendationsEnabled);
+
+    public sealed record StorefrontPublicPaymentMethod(
+        Guid Id,
+        string Key,
+        string Name,
+        string? Description);
+
+    public sealed record StorefrontSeoDefaults(
+        string? SiteName,
+        string? DefaultTitleSuffix,
+        string? DefaultMetaDescription,
+        string? DefaultOgImage,
+        string? BaseCanonicalUrl,
+        string? CompanyName,
+        string? CompanyLogoUrl,
+        string? CompanyPhone,
+        string? CompanyEmail,
+        string? CompanyAddress,
+        string? FacebookUrl,
+        string? InstagramUrl,
+        string? XUrl);
 
     public sealed class StorefrontCreateCartSessionRequest
     {

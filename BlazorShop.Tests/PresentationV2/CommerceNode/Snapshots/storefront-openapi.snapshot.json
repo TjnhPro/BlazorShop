@@ -229,7 +229,7 @@
         },
         "security": [
           {
-            "RefreshCookie": []
+            "RefreshCookie": [ ]
           }
         ]
       }
@@ -285,7 +285,7 @@
         },
         "security": [
           {
-            "RefreshCookie": []
+            "RefreshCookie": [ ]
           }
         ]
       }
@@ -371,7 +371,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -532,7 +532,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -1260,7 +1260,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -2023,6 +2023,77 @@
         }
       }
     },
+    "/api/storefront/stores/{storeKey}/configuration": {
+      "get": {
+        "tags": [
+          "StorefrontScopedConfiguration"
+        ],
+        "summary": "Get public Storefront configuration.",
+        "operationId": "StorefrontConfiguration_Get",
+        "parameters": [
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontPublicConfigurationResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/storefront/stores/{storeKey}/newsletter/subscribe": {
       "post": {
         "tags": [
@@ -2204,7 +2275,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -2260,7 +2331,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -2326,7 +2397,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -3393,6 +3464,68 @@
         },
         "additionalProperties": false
       },
+      "StorefrontBrandingResponse": {
+        "type": "object",
+        "properties": {
+          "cdnHost": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "faviconUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "pngIconUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "appleTouchIconUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "msTileImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "msTileColor": {
+            "type": "string",
+            "nullable": true
+          },
+          "supportEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "supportPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "htmlBodyId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontCartItemRequest": {
         "required": [
           "productId"
@@ -4441,6 +4574,23 @@
         },
         "additionalProperties": false
       },
+      "StorefrontCurrencyOptionsResponse": {
+        "type": "object",
+        "properties": {
+          "defaultCurrencyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "supportedCurrencyCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontCurrentStoreResponse": {
         "type": "object",
         "properties": {
@@ -4561,6 +4711,47 @@
         },
         "additionalProperties": false
       },
+      "StorefrontFeatureFlagsResponse": {
+        "type": "object",
+        "properties": {
+          "customerAccountsEnabled": {
+            "type": "boolean"
+          },
+          "cartEnabled": {
+            "type": "boolean"
+          },
+          "checkoutEnabled": {
+            "type": "boolean"
+          },
+          "paymentsEnabled": {
+            "type": "boolean"
+          },
+          "newsletterEnabled": {
+            "type": "boolean"
+          },
+          "recommendationsEnabled": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontLocaleOptionsResponse": {
+        "type": "object",
+        "properties": {
+          "defaultCulture": {
+            "type": "string",
+            "nullable": true
+          },
+          "supportedCultures": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontLoginRequest": {
         "required": [
           "email",
@@ -4618,6 +4809,19 @@
           },
           "data": {
             "$ref": "#/components/schemas/StorefrontMaintenanceResponse"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontMaintenanceStateResponse": {
+        "type": "object",
+        "properties": {
+          "maintenanceModeEnabled": {
+            "type": "boolean"
+          },
+          "maintenanceMessage": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -5670,6 +5874,56 @@
         },
         "additionalProperties": false
       },
+      "StorefrontPublicConfigurationResponse": {
+        "type": "object",
+        "properties": {
+          "storeIdentity": {
+            "$ref": "#/components/schemas/StorefrontStoreIdentityResponse"
+          },
+          "branding": {
+            "$ref": "#/components/schemas/StorefrontBrandingResponse"
+          },
+          "localeOptions": {
+            "$ref": "#/components/schemas/StorefrontLocaleOptionsResponse"
+          },
+          "currencyOptions": {
+            "$ref": "#/components/schemas/StorefrontCurrencyOptionsResponse"
+          },
+          "maintenanceState": {
+            "$ref": "#/components/schemas/StorefrontMaintenanceStateResponse"
+          },
+          "featureFlags": {
+            "$ref": "#/components/schemas/StorefrontFeatureFlagsResponse"
+          },
+          "paymentMethods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontPaymentMethodResponse"
+            },
+            "nullable": true
+          },
+          "seoDefaults": {
+            "$ref": "#/components/schemas/StorefrontSeoDefaultsResponse"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontPublicConfigurationResponseCommerceNodeApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/StorefrontPublicConfigurationResponse"
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontRegisterRequest": {
         "required": [
           "confirmPassword",
@@ -5727,6 +5981,64 @@
         },
         "additionalProperties": false
       },
+      "StorefrontSeoDefaultsResponse": {
+        "type": "object",
+        "properties": {
+          "siteName": {
+            "type": "string",
+            "nullable": true
+          },
+          "defaultTitleSuffix": {
+            "type": "string",
+            "nullable": true
+          },
+          "defaultMetaDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "defaultOgImage": {
+            "type": "string",
+            "nullable": true
+          },
+          "baseCanonicalUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyLogoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "facebookUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "instagramUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "xUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontShippingAddressResponse": {
         "type": "object",
         "properties": {
@@ -5765,6 +6077,39 @@
           "countryCode": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontStoreIdentityResponse": {
+        "type": "object",
+        "properties": {
+          "publicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "storeKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "baseUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "primaryDomain": {
+            "type": "string",
+            "nullable": true
+          },
+          "forceHttps": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -5906,6 +6251,9 @@
     },
     {
       "name": "StorefrontScopedCheckout"
+    },
+    {
+      "name": "StorefrontScopedConfiguration"
     },
     {
       "name": "StorefrontScopedNewsletter"

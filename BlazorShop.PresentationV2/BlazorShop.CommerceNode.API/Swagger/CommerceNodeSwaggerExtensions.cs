@@ -478,6 +478,11 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "Get a published Storefront page by slug.",
                         typeof(CommerceNodeApiResponse<StorefrontPagePublicDto>),
                         [StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedConfiguration", "Get")] = new(
+                        "StorefrontConfiguration_Get",
+                        "Get public Storefront configuration.",
+                        typeof(CommerceNodeApiResponse<StorefrontPublicConfigurationResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedPayments", "GetPaymentMethods")] = new(
                         "StorefrontPayments_ListMethods",
                         "List enabled Storefront payment methods.",

@@ -279,6 +279,8 @@ Exit criteria:
 
 Goal: give Storefront one allowlisted config endpoint without moving existing data.
 
+Status 2026-07-15: completed additive public configuration projection.
+
 Endpoint:
 
 ```text
@@ -299,26 +301,51 @@ StorefrontPublicConfigurationResponse
   SeoDefaults
 ```
 
+Implementation notes:
+
+- Added `StorefrontScopedConfigurationController.Get`.
+- Added nested allowlist response contracts:
+  - `StorefrontPublicConfigurationResponse`.
+  - `StorefrontStoreIdentityResponse`.
+  - `StorefrontBrandingResponse`.
+  - `StorefrontLocaleOptionsResponse`.
+  - `StorefrontCurrencyOptionsResponse`.
+  - `StorefrontMaintenanceStateResponse`.
+  - `StorefrontFeatureFlagsResponse`.
+  - `StorefrontSeoDefaultsResponse`.
+- Added `StorefrontConfiguration_Get` Swagger metadata with success and error response schemas.
+- Added `StorefrontApiClient.GetPublicConfigurationAsync` and Storefront V2 client DTOs.
+- Updated Storefront OpenAPI snapshots after generating Swagger from CommerceNode runtime.
+- Existing `store/current`, `payments/methods`, and `seo/settings` endpoints remain unchanged.
+
+Verification:
+
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore -p:UseSharedCompilation=false` passed.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore -p:UseSharedCompilation=false` passed.
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~CommerceNodeStorefrontOpenApiContractTests" --no-restore -p:UseSharedCompilation=false` passed 23/23.
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~StorefrontV2ApiClientTests.GetPublicConfigurationAsync" --no-restore -p:UseSharedCompilation=false` passed 1/1.
+- A parallel first test attempt hit a Windows PDB file lock from concurrent `dotnet test`; rerunning sequentially passed.
+
 Data sources:
 
-- `CommerceStore` for identity, branding, locale, currency, and maintenance.
-- existing payment method service for public payment metadata.
-- existing SEO settings for initial SEO defaults.
-- code defaults for feature flags until `StoreFeatureState` lands.
+- [x] `CommerceStore` for identity, branding, locale, currency, and maintenance.
+- [x] existing payment method service for public payment metadata.
+- [x] existing SEO settings for initial SEO defaults.
+- [x] code defaults for feature flags until `StoreFeatureState` lands.
 
 Rules:
 
-- Response is allowlist-only.
-- Do not include `CommerceStore.MetadataJson`.
-- Do not include provider `SettingsJson`.
-- Do not include SMTP settings, private keys, node credentials, or internal settings.
-- Do not remove existing current-store/payment/seo endpoints yet; this is additive.
+- [x] Response is allowlist-only.
+- [x] Do not include `CommerceStore.MetadataJson`.
+- [x] Do not include provider `SettingsJson`.
+- [x] Do not include SMTP settings, private keys, node credentials, or internal settings.
+- [x] Do not remove existing current-store/payment/seo endpoints yet; this is additive.
 
 Exit criteria:
 
-- Storefront can request a single safe public config projection.
-- Existing storefront behavior remains compatible.
-- Contract tests prove forbidden fields are absent.
+- [x] Storefront can request a single safe public config projection.
+- [x] Existing storefront behavior remains compatible.
+- [x] Contract tests prove forbidden fields are absent.
 
 ### Phase 3 - Typed Settings Core And Resolver
 

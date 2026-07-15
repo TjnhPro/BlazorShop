@@ -701,4 +701,74 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         bool MaintenanceModeEnabled,
         string? MaintenanceMessage,
         string? HtmlBodyId);
+
+    public sealed record StorefrontPublicConfigurationResponse(
+        StorefrontStoreIdentityResponse StoreIdentity,
+        StorefrontBrandingResponse Branding,
+        StorefrontLocaleOptionsResponse LocaleOptions,
+        StorefrontCurrencyOptionsResponse CurrencyOptions,
+        StorefrontMaintenanceStateResponse MaintenanceState,
+        StorefrontFeatureFlagsResponse FeatureFlags,
+        IReadOnlyList<StorefrontPaymentMethodResponse> PaymentMethods,
+        StorefrontSeoDefaultsResponse SeoDefaults);
+
+    public sealed record StorefrontStoreIdentityResponse(
+        Guid PublicId,
+        string StoreKey,
+        string Name,
+        string Status,
+        string? BaseUrl,
+        string? PrimaryDomain,
+        bool ForceHttps);
+
+    public sealed record StorefrontBrandingResponse(
+        string? CdnHost,
+        string? LogoUrl,
+        string? CompanyName,
+        string? CompanyEmail,
+        string? CompanyPhone,
+        string? CompanyAddress,
+        string? FaviconUrl,
+        string? PngIconUrl,
+        string? AppleTouchIconUrl,
+        string? MsTileImageUrl,
+        string? MsTileColor,
+        string? SupportEmail,
+        string? SupportPhone,
+        string? HtmlBodyId);
+
+    public sealed record StorefrontLocaleOptionsResponse(
+        string DefaultCulture,
+        IReadOnlyList<string> SupportedCultures);
+
+    public sealed record StorefrontCurrencyOptionsResponse(
+        string DefaultCurrencyCode,
+        IReadOnlyList<string> SupportedCurrencyCodes);
+
+    public sealed record StorefrontMaintenanceStateResponse(
+        bool MaintenanceModeEnabled,
+        string? MaintenanceMessage);
+
+    public sealed record StorefrontFeatureFlagsResponse(
+        bool CustomerAccountsEnabled,
+        bool CartEnabled,
+        bool CheckoutEnabled,
+        bool PaymentsEnabled,
+        bool NewsletterEnabled,
+        bool RecommendationsEnabled);
+
+    public sealed record StorefrontSeoDefaultsResponse(
+        string? SiteName,
+        string? DefaultTitleSuffix,
+        string? DefaultMetaDescription,
+        string? DefaultOgImage,
+        string? BaseCanonicalUrl,
+        string? CompanyName,
+        string? CompanyLogoUrl,
+        string? CompanyPhone,
+        string? CompanyEmail,
+        string? CompanyAddress,
+        string? FacebookUrl,
+        string? InstagramUrl,
+        string? XUrl);
 }

@@ -107,6 +107,107 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(["/api/storefront/stores/default/catalog/products"], handler.RequestPaths);
         }
 
+        [Fact]
+        public async Task GetPublicConfigurationAsync_ReadsStoreScopedConfiguration()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal("/api/storefront/stores/default/configuration", request.RequestUri?.AbsolutePath);
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    """
+                    {
+                      "success": true,
+                      "message": "ok",
+                      "data": {
+                        "storeIdentity": {
+                          "publicId": "00000000-0000-0000-0000-000000000001",
+                          "storeKey": "default",
+                          "name": "Default Store",
+                          "status": "active",
+                          "baseUrl": "https://store.example",
+                          "primaryDomain": "store.example",
+                          "forceHttps": true
+                        },
+                        "branding": {
+                          "cdnHost": "cdn.example",
+                          "logoUrl": "/logo.png",
+                          "companyName": "Example Co",
+                          "companyEmail": "support@example.com",
+                          "companyPhone": "555-0100",
+                          "companyAddress": "1 Commerce Way",
+                          "faviconUrl": "/favicon.ico",
+                          "pngIconUrl": "/icon.png",
+                          "appleTouchIconUrl": "/apple-touch-icon.png",
+                          "msTileImageUrl": "/mstile.png",
+                          "msTileColor": "#ffffff",
+                          "supportEmail": "help@example.com",
+                          "supportPhone": "555-0101",
+                          "htmlBodyId": "default-store"
+                        },
+                        "localeOptions": {
+                          "defaultCulture": "en-US",
+                          "supportedCultures": ["en-US"]
+                        },
+                        "currencyOptions": {
+                          "defaultCurrencyCode": "USD",
+                          "supportedCurrencyCodes": ["USD"]
+                        },
+                        "maintenanceState": {
+                          "maintenanceModeEnabled": false,
+                          "maintenanceMessage": null
+                        },
+                        "featureFlags": {
+                          "customerAccountsEnabled": true,
+                          "cartEnabled": true,
+                          "checkoutEnabled": true,
+                          "paymentsEnabled": true,
+                          "newsletterEnabled": true,
+                          "recommendationsEnabled": true
+                        },
+                        "paymentMethods": [
+                          {
+                            "id": "00000000-0000-0000-0000-000000000010",
+                            "key": "cod",
+                            "name": "Cash on Delivery",
+                            "description": "Pay on delivery."
+                          }
+                        ],
+                        "seoDefaults": {
+                          "siteName": "Default Store",
+                          "defaultTitleSuffix": "| Default Store",
+                          "defaultMetaDescription": "Default description.",
+                          "defaultOgImage": null,
+                          "baseCanonicalUrl": "https://store.example",
+                          "companyName": "Example Co",
+                          "companyLogoUrl": "/logo.png",
+                          "companyPhone": "555-0100",
+                          "companyEmail": "support@example.com",
+                          "companyAddress": "1 Commerce Way",
+                          "facebookUrl": null,
+                          "instagramUrl": null,
+                          "xUrl": null
+                        }
+                      }
+                    }
+                    """);
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var result = await apiClient.GetPublicConfigurationAsync();
+
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Equal("default", result.Value!.StoreIdentity.StoreKey);
+            Assert.Equal("USD", result.Value.CurrencyOptions.DefaultCurrencyCode);
+            Assert.True(result.Value.FeatureFlags.CheckoutEnabled);
+            Assert.Single(result.Value.PaymentMethods);
+            Assert.Equal("cod", result.Value.PaymentMethods[0].Key);
+            Assert.Equal(["/api/storefront/stores/default/configuration"], handler.RequestPaths);
+        }
+
         private static StorefrontApiClient CreateApiClient(HttpClient client, bool enableLegacyFallback = false)
         {
             return new StorefrontApiClient(

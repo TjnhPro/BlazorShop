@@ -64,6 +64,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] API client auth calls Commerce Node scoped Storefront auth routes. 2026-07-14: client tests assert scoped login/register/logout routes.
 - [x] API client parses scoped auth token response without nested auth envelope. 2026-07-14: `StorefrontAuthClient` consumes `data.accessToken` / `data.expiresAtUtc`; auth client tests were updated.
 - [x] Storefront HTTP clients do not send `X-Store-Key` on scoped API requests. 2026-07-14: `ConfigureStorefrontHttpClient` now sets scoped base address and no default store header; `/` runtime log showed scoped CommerceNode URLs.
+- [x] API client can request consolidated public store configuration from `api/storefront/stores/{storeKey}/configuration`. 2026-07-15: `StorefrontV2ApiClientTests.GetPublicConfigurationAsync_ReadsStoreScopedConfiguration` passed and asserted the scoped path.
 - [x] API client does not call legacy fallback when `Api:EnableLegacyFallback=false`.
 - [x] API client can use legacy fallback only when explicitly enabled.
 - [x] Checkout anonymous redirect is covered by V2 host smoke test.
@@ -159,6 +160,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Header logo renders when `LogoUrl` is configured and remains stable when it is empty. 2026-07-15: visible Storefront QA rendered configured safe logo path without console errors; `StorefrontBrandingMarkupTests` covers stable logo dimensions.
 - [x] Head icon metadata uses store favicon/png/apple/MS tile values when configured. 2026-07-15: HTTP HTML checks found configured favicon/png/MS tile metadata after fixing `ISSUE-001` head metadata collision.
 - [x] Document language is derived from store `DefaultCulture`. 2026-07-15: current-store `en-GB` produced `bs-storefront-language`/document language `en`; focused Storefront display context tests passed.
+- [x] Storefront V2 has typed client models for the consolidated public configuration projection. 2026-07-15: client test parsed store identity, currency options, feature flags, payment method metadata, and SEO defaults from the new endpoint.
 - [~] Product card, product detail, cart, and checkout price labels use store `DefaultCurrencyCode`. 2026-07-15: focused formatter/markup tests passed and `/my-cart` HTTP smoke showed `GBP`; full product-detail/cart/checkout browser coverage is still pending.
 - [~] Add-to-cart sends the current store currency code and cart line snapshot records it. 2026-07-15: `StorefrontLocalCart_PostsCurrencyCode` and add-to-cart markup coverage passed; live add-to-cart browser snapshot was not exercised in this QA pass.
 - [x] Footer renders configured company/support email, phone, and address. 2026-07-15: visible Storefront/HTTP QA found configured support email/phone and company address in footer.

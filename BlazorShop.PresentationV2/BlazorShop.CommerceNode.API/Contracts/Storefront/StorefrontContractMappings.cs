@@ -11,6 +11,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
     using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Application.DTOs.Product;
     using BlazorShop.Application.DTOs.Product.ProductVariant;
+    using BlazorShop.Application.DTOs.Seo;
     using BlazorShop.Application.DTOs.UserIdentity;
     using BlazorShop.Domain.Contracts;
 
@@ -626,6 +627,68 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 store.MaintenanceModeEnabled,
                 store.MaintenanceMessage,
                 store.HtmlBodyId);
+        }
+
+        public static StorefrontPublicConfigurationResponse ToPublicConfigurationContract(
+            this CommerceCurrentStore store,
+            IReadOnlyList<StorefrontPaymentMethodResponse> paymentMethods,
+            SeoSettingsDto seoDefaults)
+        {
+            return new StorefrontPublicConfigurationResponse(
+                new StorefrontStoreIdentityResponse(
+                    store.PublicId,
+                    store.StoreKey,
+                    store.Name,
+                    store.Status,
+                    store.BaseUrl,
+                    store.PrimaryDomain,
+                    store.ForceHttps),
+                new StorefrontBrandingResponse(
+                    store.CdnHost,
+                    store.LogoUrl,
+                    store.CompanyName,
+                    store.CompanyEmail,
+                    store.CompanyPhone,
+                    store.CompanyAddress,
+                    store.FaviconUrl,
+                    store.PngIconUrl,
+                    store.AppleTouchIconUrl,
+                    store.MsTileImageUrl,
+                    store.MsTileColor,
+                    store.SupportEmail,
+                    store.SupportPhone,
+                    store.HtmlBodyId),
+                new StorefrontLocaleOptionsResponse(
+                    store.DefaultCulture,
+                    [store.DefaultCulture]),
+                new StorefrontCurrencyOptionsResponse(
+                    store.DefaultCurrencyCode,
+                    [store.DefaultCurrencyCode]),
+                new StorefrontMaintenanceStateResponse(
+                    store.MaintenanceModeEnabled,
+                    store.MaintenanceMessage),
+                new StorefrontFeatureFlagsResponse(
+                    CustomerAccountsEnabled: true,
+                    CartEnabled: true,
+                    CheckoutEnabled: true,
+                    PaymentsEnabled: true,
+                    NewsletterEnabled: true,
+                    RecommendationsEnabled: true),
+                paymentMethods,
+                new StorefrontSeoDefaultsResponse(
+                    seoDefaults.SiteName,
+                    seoDefaults.DefaultTitleSuffix,
+                    seoDefaults.DefaultMetaDescription,
+                    seoDefaults.DefaultOgImage,
+                    seoDefaults.BaseCanonicalUrl,
+                    seoDefaults.CompanyName,
+                    seoDefaults.CompanyLogoUrl,
+                    seoDefaults.CompanyPhone,
+                    seoDefaults.CompanyEmail,
+                    seoDefaults.CompanyAddress,
+                    seoDefaults.FacebookUrl,
+                    seoDefaults.InstagramUrl,
+                    seoDefaults.XUrl));
         }
 
         private static ProductCatalogSortBy ToApplicationSortBy(string? sortBy)

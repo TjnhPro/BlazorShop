@@ -732,6 +732,95 @@ namespace BlazorShop.CommerceNode.API.Controllers
     }
 
     [ApiController]
+    [Route("api/storefront/stores/{storeKey}/configuration")]
+    public sealed class StorefrontScopedConfigurationController : StorefrontApiControllerBase
+    {
+        private readonly ICommerceStoreContext storeContext;
+        private readonly IPaymentMethodService paymentMethodService;
+        private readonly ISeoSettingsService seoSettingsService;
+
+        public StorefrontScopedConfigurationController(
+            ICommerceStoreContext storeContext,
+            IPaymentMethodService paymentMethodService,
+            ISeoSettingsService seoSettingsService)
+        {
+            this.storeContext = storeContext;
+            this.paymentMethodService = paymentMethodService;
+            this.seoSettingsService = seoSettingsService;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Get(CancellationToken cancellationToken)
+        {
+            var storeResult = await this.storeContext.GetCurrentStoreAsync(cancellationToken);
+            if (!storeResult.Success || storeResult.Payload is null)
+            {
+                return this.ToActionResult(storeResult);
+            }
+
+            var paymentMethods = (await this.paymentMethodService.GetPaymentMethodsAsync())
+                .Select(method => method.ToStorefrontContract())
+                .ToArray();
+            var seoDefaults = await this.seoSettingsService.GetCurrentAsync();
+
+            return this.Success(
+                storeResult.Payload.ToPublicConfigurationContract(paymentMethods, seoDefaults),
+                "Storefront configuration loaded.");
+        }
+
+        private IActionResult ToActionResult<TPayload>(CommerceStoreOperationResult<TPayload> result)
+        {
+            if (!result.Success)
+            {
+                return this.StatusCode(
+                    ToStatusCode(result.Failure),
+                    new CommerceNodeApiErrorResponse(
+                        false,
+                        ToErrorCode(result.Failure),
+                        NormalizeMessage(result.Message),
+                        this.HttpContext.TraceIdentifier));
+            }
+
+            return this.StatusCode(
+                StatusCodes.Status500InternalServerError,
+                new CommerceNodeApiErrorResponse(
+                    false,
+                    "store.unavailable",
+                    "Storefront store could not be resolved.",
+                    this.HttpContext.TraceIdentifier));
+        }
+
+        private static int ToStatusCode(CommerceStoreOperationFailure? failure)
+        {
+            return failure switch
+            {
+                CommerceStoreOperationFailure.Validation => StatusCodes.Status400BadRequest,
+                CommerceStoreOperationFailure.NotFound => StatusCodes.Status404NotFound,
+                CommerceStoreOperationFailure.Conflict => StatusCodes.Status409Conflict,
+                _ => StatusCodes.Status500InternalServerError,
+            };
+        }
+
+        private static string ToErrorCode(CommerceStoreOperationFailure? failure)
+        {
+            return failure switch
+            {
+                CommerceStoreOperationFailure.Validation => "store.validation_error",
+                CommerceStoreOperationFailure.NotFound => "store.not_found",
+                CommerceStoreOperationFailure.Conflict => "store.conflict",
+                _ => "store.unavailable",
+            };
+        }
+
+        private static string NormalizeMessage(string? message)
+        {
+            return string.IsNullOrWhiteSpace(message)
+                ? "Storefront store could not be resolved."
+                : message;
+        }
+    }
+
+    [ApiController]
     [Route("api/storefront/stores/{storeKey}/payments")]
     public sealed class StorefrontScopedPaymentsController : StorefrontApiControllerBase
     {
