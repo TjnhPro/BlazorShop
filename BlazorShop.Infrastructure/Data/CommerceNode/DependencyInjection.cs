@@ -140,6 +140,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IVariationTemplateService, VariationTemplateService>();
             services.AddScoped<IVariationTemplateLookupService, VariationTemplateLookupService>();
             services.AddScoped<IStorefrontPageService, StorefrontPageService>();
+            services.AddScoped<IStorefrontPageTemplateService, StorefrontPageTemplateService>();
             services.AddSingleton<ICatalogQueryCache, MemoryCatalogQueryCache>();
             services.AddScoped<ICommerceStoreService, CommerceStoreService>();
             services.AddScoped<ICommerceStoreContext, CommerceStoreContext>();
