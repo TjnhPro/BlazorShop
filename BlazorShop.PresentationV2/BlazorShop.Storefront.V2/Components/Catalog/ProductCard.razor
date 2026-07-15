@@ -47,10 +47,10 @@
 
         <p class="mt-2 text-[15px]">
             <span class="font-semibold text-rose-600">@PriceLabel</span>
-            <span class="font-semibold">@FormatPrice(Product.Price)</span>
-            @if (Product.ComparePrice is not null && Product.ComparePrice > Product.Price)
+            <span class="font-semibold">@FormatPrice(DisplayPrice, DisplayCurrencyCode)</span>
+            @if (DisplayComparePrice is not null && DisplayComparePrice > DisplayPrice)
             {
-                <span class="ml-2 text-sm font-semibold text-neutral-400 line-through">@FormatPrice(Product.ComparePrice.Value)</span>
+                <span class="ml-2 text-sm font-semibold text-neutral-400 line-through">@FormatPrice(DisplayComparePrice.Value, DisplayCurrencyCode)</span>
             }
         </p>
 
@@ -84,7 +84,7 @@
                         data-product-id="@Product.Id"
                         data-product-name="@Product.Name"
                         data-unit-price="@UnitPriceValue"
-                        data-currency-code="@_displayContext.CurrencyCode"
+                        data-currency-code="@DisplayCurrencyCode"
                         data-stock="@(Product.InStock ? 1 : 0)">
                     Add to Cart
                 </button>
@@ -142,7 +142,13 @@
         ? null
         : $"{ProductUrl}#purchase";
 
-    private string UnitPriceValue => Product.Price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+    private decimal DisplayPrice => Product.DisplayPrice ?? Product.Price;
+
+    private decimal? DisplayComparePrice => Product.DisplayComparePrice ?? Product.ComparePrice;
+
+    private string DisplayCurrencyCode => NormalizeCurrencyCode(Product.DisplayCurrencyCode) ?? _displayContext.DefaultCurrencyCode;
+
+    private string UnitPriceValue => DisplayPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
 
     private string? CardDescription => string.IsNullOrWhiteSpace(Product.ShortDescription)
         ? Product.Description
@@ -153,7 +159,15 @@
         _displayContext = await DisplayContextProvider.GetAsync();
     }
 
-    private string FormatPrice(decimal amount) => PriceFormatter.Format(amount, _displayContext);
+    private string FormatPrice(decimal amount, string currencyCode) => PriceFormatter.Format(amount, _displayContext with { CurrencyCode = currencyCode });
+
+    private static string? NormalizeCurrencyCode(string? currencyCode)
+    {
+        var normalized = currencyCode?.Trim().ToUpperInvariant();
+        return normalized is { Length: 3 } && normalized.All(char.IsLetter)
+            ? normalized
+            : null;
+    }
 
     private static string Truncate(string? value, int maxLength = 110)
     {

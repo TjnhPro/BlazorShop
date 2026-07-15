@@ -88,7 +88,7 @@
                                         <div class="grid gap-4 sm:grid-cols-3">
                                             <div>
                                                 <p class="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">Unit Price</p>
-                                                <p class="mt-1 text-lg font-bold text-neutral-900">@FormatPrice(line.UnitPrice)</p>
+                                                <p class="mt-1 text-lg font-bold text-neutral-900">@FormatPrice(line.UnitPrice, line.CurrencyCode)</p>
                                             </div>
 
                                             <label class="block">
@@ -108,7 +108,7 @@
 
                                             <div>
                                                 <p class="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">Line Total</p>
-                                                <p class="mt-1 text-lg font-bold text-neutral-900">@FormatPrice(line.LineTotal)</p>
+                                                <p class="mt-1 text-lg font-bold text-neutral-900">@FormatPrice(line.LineTotal, line.CurrencyCode)</p>
                                             </div>
                                         </div>
 

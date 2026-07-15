@@ -250,10 +250,20 @@ namespace BlazorShop.CommerceNode.API.Controllers
     public sealed class StorefrontScopedCatalogController : StorefrontApiControllerBase
     {
         private readonly IPublicCatalogService publicCatalogService;
+        private readonly ICommerceStoreContext storeContext;
+        private readonly IStorefrontWorkingCurrencyResolver workingCurrencyResolver;
+        private readonly IMoneyConversionService moneyConversionService;
 
-        public StorefrontScopedCatalogController(IPublicCatalogService publicCatalogService)
+        public StorefrontScopedCatalogController(
+            IPublicCatalogService publicCatalogService,
+            ICommerceStoreContext storeContext,
+            IStorefrontWorkingCurrencyResolver workingCurrencyResolver,
+            IMoneyConversionService moneyConversionService)
         {
             this.publicCatalogService = publicCatalogService;
+            this.storeContext = storeContext;
+            this.workingCurrencyResolver = workingCurrencyResolver;
+            this.moneyConversionService = moneyConversionService;
         }
 
         [HttpGet("categories")]
@@ -284,16 +294,28 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpGet("categories/slug/{slug}")]
-        public async Task<IActionResult> GetCategoryBySlug(string slug)
+        public async Task<IActionResult> GetCategoryBySlug(
+            string slug,
+            [FromQuery] string? currencyCode,
+            CancellationToken cancellationToken)
         {
             var categoryPage = await this.publicCatalogService.GetPublishedCategoryPageBySlugAsync(slug);
+            var displayCurrency = await this.ResolveDisplayCurrencyAsync(currencyCode, cancellationToken);
+            var mappedProducts = categoryPage is null
+                ? []
+                : await Task.WhenAll(categoryPage.Products.Select(product => this.ToDisplayCatalogProductContractAsync(product, displayCurrency, cancellationToken)));
             return categoryPage is null
                 ? this.Failure<StorefrontCategoryPageResponse>(ServiceResponseType.NotFound, "Published category was not found.")
-                : this.Success(categoryPage.ToStorefrontContract(), "Published category page loaded.");
+                : this.Success(
+                    new StorefrontCategoryPageResponse(categoryPage.Category.ToStorefrontContract(), mappedProducts),
+                    "Published category page loaded.");
         }
 
         [HttpGet("categories/{categoryId:guid}/products")]
-        public async Task<IActionResult> GetProductsByCategory(Guid categoryId)
+        public async Task<IActionResult> GetProductsByCategory(
+            Guid categoryId,
+            [FromQuery] string? currencyCode,
+            CancellationToken cancellationToken)
         {
             var category = await this.publicCatalogService.GetPublishedCategoryByIdAsync(categoryId);
             if (category is null)
@@ -304,36 +326,55 @@ namespace BlazorShop.CommerceNode.API.Controllers
             }
 
             var products = await this.publicCatalogService.GetPublishedProductsByCategoryAsync(categoryId);
+            var displayCurrency = await this.ResolveDisplayCurrencyAsync(currencyCode, cancellationToken);
+            var mappedProducts = await Task.WhenAll(products.Select(product => this.ToDisplayCatalogProductContractAsync(product, displayCurrency, cancellationToken)));
             return this.Success(
-                products.Select(product => product.ToStorefrontContract()).ToArray(),
+                mappedProducts,
                 "Published category products loaded.");
         }
 
         [HttpGet("products")]
-        public async Task<IActionResult> GetProducts([FromQuery] StorefrontProductCatalogQuery query)
+        public async Task<IActionResult> GetProducts(
+            [FromQuery] StorefrontProductCatalogQuery query,
+            CancellationToken cancellationToken)
         {
             var products = await this.publicCatalogService.GetPublishedCatalogPageAsync(query.ToApplicationQuery());
+            var displayCurrency = await this.ResolveDisplayCurrencyAsync(query.CurrencyCode, cancellationToken);
+            var mappedProducts = await Task.WhenAll(products.Items.Select(product => this.ToDisplayCatalogProductContractAsync(product, displayCurrency, cancellationToken)));
             return this.Success(
-                products.ToStorefrontContract(product => product.ToStorefrontContract()),
+                new StorefrontPagedResponse<StorefrontCatalogProductResponse>(
+                    mappedProducts,
+                    products.PageNumber,
+                    products.PageSize,
+                    products.TotalCount,
+                    products.TotalPages),
                 "Published products loaded.");
         }
 
         [HttpGet("products/{id:guid}")]
-        public async Task<IActionResult> GetProductById(Guid id)
+        public async Task<IActionResult> GetProductById(
+            Guid id,
+            [FromQuery] string? currencyCode,
+            CancellationToken cancellationToken)
         {
             var product = await this.publicCatalogService.GetPublishedProductByIdAsync(id);
+            var displayCurrency = await this.ResolveDisplayCurrencyAsync(currencyCode, cancellationToken);
             return product is null
                 ? this.Failure<StorefrontProductResponse>(ServiceResponseType.NotFound, "Published product was not found.")
-                : this.Success(product.ToStorefrontContract(), "Published product loaded.");
+                : this.Success(await this.ToDisplayProductContractAsync(product, displayCurrency, cancellationToken), "Published product loaded.");
         }
 
         [HttpGet("products/slug/{slug}")]
-        public async Task<IActionResult> GetProductBySlug(string slug)
+        public async Task<IActionResult> GetProductBySlug(
+            string slug,
+            [FromQuery] string? currencyCode,
+            CancellationToken cancellationToken)
         {
             var product = await this.publicCatalogService.GetPublishedProductBySlugAsync(slug);
+            var displayCurrency = await this.ResolveDisplayCurrencyAsync(currencyCode, cancellationToken);
             return product is null
                 ? this.Failure<StorefrontProductResponse>(ServiceResponseType.NotFound, "Published product was not found.")
-                : this.Success(product.ToStorefrontContract(), "Published product loaded.");
+                : this.Success(await this.ToDisplayProductContractAsync(product, displayCurrency, cancellationToken), "Published product loaded.");
         }
 
         [HttpGet("sitemap")]
@@ -342,6 +383,119 @@ namespace BlazorShop.CommerceNode.API.Controllers
             var sitemap = await this.publicCatalogService.GetPublishedSitemapAsync();
             return this.Success<GetPublicCatalogSitemap>(sitemap, "Published catalog sitemap loaded.");
         }
+
+        private async Task<StorefrontDisplayCurrency?> ResolveDisplayCurrencyAsync(
+            string? requestedCurrencyCode,
+            CancellationToken cancellationToken)
+        {
+            var storeIdResult = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
+            if (!storeIdResult.Success)
+            {
+                return null;
+            }
+
+            var resolution = await this.workingCurrencyResolver.ResolveAsync(
+                storeIdResult.Payload,
+                requestedCurrencyCode,
+                cancellationToken);
+
+            return new StorefrontDisplayCurrency(
+                storeIdResult.Payload,
+                resolution.CurrencyCode,
+                resolution.BaseCurrencyCode);
+        }
+
+        private async Task<StorefrontCatalogProductResponse> ToDisplayCatalogProductContractAsync(
+            BlazorShop.Application.DTOs.Product.GetCatalogProduct product,
+            StorefrontDisplayCurrency? displayCurrency,
+            CancellationToken cancellationToken)
+        {
+            var displayMoney = displayCurrency is null
+                ? null
+                : await this.ResolveDisplayMoneyAsync(product.Price, product.ComparePrice, displayCurrency, cancellationToken);
+
+            return product.ToStorefrontContract(displayMoney);
+        }
+
+        private async Task<StorefrontProductResponse> ToDisplayProductContractAsync(
+            BlazorShop.Application.DTOs.Product.GetProduct product,
+            StorefrontDisplayCurrency? displayCurrency,
+            CancellationToken cancellationToken)
+        {
+            var displayMoney = displayCurrency is null
+                ? null
+                : await this.ResolveDisplayMoneyAsync(product.Price, product.ComparePrice, displayCurrency, cancellationToken);
+
+            if (displayCurrency is null)
+            {
+                return product.ToStorefrontContract(displayMoney);
+            }
+
+            var variantDisplayMoney = new Dictionary<Guid, StorefrontDisplayMoney>();
+            foreach (var variant in product.Variants)
+            {
+                var effectivePrice = variant.EffectivePrice > 0
+                    ? variant.EffectivePrice
+                    : variant.Price ?? product.Price;
+                variantDisplayMoney[variant.Id] = await this.ResolveDisplayMoneyAsync(
+                    effectivePrice,
+                    comparePrice: null,
+                    displayCurrency,
+                    cancellationToken);
+            }
+
+            return product.ToStorefrontContract(
+                displayMoney,
+                variant => variant.ToStorefrontContract(
+                    variantDisplayMoney.TryGetValue(variant.Id, out var variantMoney)
+                        ? variantMoney
+                        : null));
+        }
+
+        private async Task<StorefrontDisplayMoney> ResolveDisplayMoneyAsync(
+            decimal price,
+            decimal? comparePrice,
+            StorefrontDisplayCurrency displayCurrency,
+            CancellationToken cancellationToken)
+        {
+            if (string.Equals(displayCurrency.CurrencyCode, displayCurrency.BaseCurrencyCode, StringComparison.Ordinal))
+            {
+                return new StorefrontDisplayMoney(price, comparePrice, displayCurrency.BaseCurrencyCode);
+            }
+
+            var priceResult = await this.moneyConversionService.ConvertFromBaseAsync(
+                displayCurrency.StoreId,
+                price,
+                displayCurrency.CurrencyCode,
+                cancellationToken);
+            if (!priceResult.Success || priceResult.Payload is null)
+            {
+                return new StorefrontDisplayMoney(price, comparePrice, displayCurrency.BaseCurrencyCode);
+            }
+
+            decimal? convertedComparePrice = null;
+            if (comparePrice.HasValue)
+            {
+                var compareResult = await this.moneyConversionService.ConvertFromBaseAsync(
+                    displayCurrency.StoreId,
+                    comparePrice.Value,
+                    displayCurrency.CurrencyCode,
+                    cancellationToken);
+                convertedComparePrice = compareResult.Success && compareResult.Payload is not null
+                    ? compareResult.Payload.ConvertedAmount
+                    : comparePrice;
+            }
+
+            return new StorefrontDisplayMoney(
+                priceResult.Payload.ConvertedAmount,
+                convertedComparePrice,
+                priceResult.Payload.TargetCurrencyCode);
+        }
+
+        private sealed record StorefrontDisplayCurrency(
+            Guid StoreId,
+            string CurrencyCode,
+            string BaseCurrencyCode);
     }
 
     [ApiController]

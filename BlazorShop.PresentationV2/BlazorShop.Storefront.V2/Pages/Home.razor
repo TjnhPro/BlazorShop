@@ -2,6 +2,7 @@
 @inject StorefrontApiClient ApiClient
 @inject IStorefrontSeoComposer SeoComposer
 @inject IStorefrontStructuredDataComposer StructuredDataComposer
+@inject IStorefrontDisplayContextProvider DisplayContextProvider
 
 <SeoHead Metadata="_metadata" StructuredData="_structuredData" />
 
@@ -96,6 +97,7 @@ else
     {
         const string fallbackTitle = "Shop Home";
         const string fallbackDescription = "Discover published products, featured categories, and route-based SEO-ready pages across the BlazorShop storefront.";
+        var displayContext = await DisplayContextProvider.GetAsync();
 
         var homeMetadataPageTask = ApiClient.GetPublishedPageBySlugAsync(StorefrontRoutes.HomeMetadataSlug);
         var structuredDataTask = StructuredDataComposer.ComposeHomePageAsync();
@@ -105,7 +107,7 @@ else
             PageNumber = 1,
             PageSize = 6,
             SortBy = ProductCatalogSortBy.Newest,
-        });
+        }, displayContext.CurrencyCode);
 
         await Task.WhenAll(homeMetadataPageTask, structuredDataTask, categoriesTask, latestProductsTask);
 

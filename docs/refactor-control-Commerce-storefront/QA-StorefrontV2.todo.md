@@ -184,8 +184,12 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Storefront currency preference remains server-command driven and checkout-safe; non-base selection UI is still hidden until conversion is available. 2026-07-15: CommerceNode Phase 4 added POST preference endpoint but keeps Storefront V2 selector out of scope.
 - [x] Manual exchange rates can be configured in CommerceNode without Storefront V2 enabling non-base display or checkout. 2026-07-15: CommerceNode Phase 5 added manual rate service/API; Storefront selector and display conversion remain future scope.
 - [x] CommerceNode backend can keep cart, checkout, order, and payment in one converted non-base currency when Storefront sends an approved currency hint. 2026-07-15: service-level EUR conversion guardrails passed; Storefront V2 visible selector/display remains future scope.
-- [ ] Visible product-detail/cart/checkout QA confirms client-sent currency hints cannot change displayed checkout/payment currency.
-- [ ] Future currency selector must stay hidden for stores with only one enabled supported currency.
+- [x] Storefront V2 display context reads supported currencies from public configuration and uses the validated `bs-currency` preference cookie only when it is supported. 2026-07-15: `StorefrontDisplayContextProviderTests.GetAsync_WhenCurrencyCookieIsSupported_UsesWorkingCurrency` passed.
+- [x] Storefront V2 sends `currencyCode` to scoped catalog/product APIs and posts selector changes through the Storefront-local `/currency` command handler. 2026-07-15: `StorefrontV2ApiClientTests.GetPublishedCatalogPageAsync_WhenCurrencyCodeProvided_AddsCurrencyQuery` and `SetCurrencyPreferenceAsync_PostsStoreScopedCurrencyCommand` passed.
+- [x] Product card/detail prefer additive `displayPrice`/`displayCurrencyCode` fields and keep base `price` unchanged for fallback. 2026-07-15: Storefront V2 build and focused formatter/markup/client tests passed.
+- [x] Cart and checkout display line/totals using cart line `CurrencyCodeSnapshot` instead of blindly formatting with current default currency. 2026-07-15: Storefront focused tests and full solution build passed after line currency propagation.
+- [x] Currency selector stays hidden for stores with only one enabled supported currency. 2026-07-15: selector rendering is gated by `SupportedCurrencyCodes.Count > 1`; visible browser QA still pending.
+- [ ] Visible product-detail/cart/checkout QA confirms selected non-base currency, cart snapshot currency, checkout payment methods, and displayed totals agree.
 
 ## Catalog Search MVP
 

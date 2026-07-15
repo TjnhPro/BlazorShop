@@ -22,7 +22,9 @@ namespace BlazorShop.Storefront.Services.Contracts
         string? CompanyPhone,
         string? CompanyAddress,
         string? SupportEmail,
-        string? SupportPhone)
+        string? SupportPhone,
+        string DefaultCurrencyCode,
+        IReadOnlyList<string> SupportedCurrencyCodes)
     {
         public static StorefrontDisplayContext Fallback { get; } = new(
             "default",
@@ -41,6 +43,8 @@ namespace BlazorShop.Storefront.Services.Contracts
             CompanyPhone: null,
             CompanyAddress: null,
             SupportEmail: null,
-            SupportPhone: null);
+            SupportPhone: null,
+            DefaultCurrencyCode: "USD",
+            SupportedCurrencyCodes: ["USD"]);
     }
 }

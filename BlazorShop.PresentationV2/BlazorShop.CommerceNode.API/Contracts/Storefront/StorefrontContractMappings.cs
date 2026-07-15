@@ -410,7 +410,18 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 page.Products.Select(product => product.ToStorefrontContract()).ToArray());
         }
 
-        public static StorefrontCatalogProductResponse ToStorefrontContract(this GetCatalogProduct product)
+        public static StorefrontCategoryPageResponse ToStorefrontContract(
+            this GetCategoryPage page,
+            Func<GetCatalogProduct, StorefrontCatalogProductResponse> mapProduct)
+        {
+            return new StorefrontCategoryPageResponse(
+                page.Category.ToStorefrontContract(),
+                page.Products.Select(mapProduct).ToArray());
+        }
+
+        public static StorefrontCatalogProductResponse ToStorefrontContract(
+            this GetCatalogProduct product,
+            StorefrontDisplayMoney? displayMoney = null)
         {
             return new StorefrontCatalogProductResponse(
                 product.Id,
@@ -434,10 +445,16 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 product.CategorySlug,
                 product.HasVariants,
                 product.ProductType,
-                product.VariationTemplateId);
+                product.VariationTemplateId,
+                displayMoney?.Price,
+                displayMoney?.ComparePrice,
+                displayMoney?.CurrencyCode);
         }
 
-        public static StorefrontProductResponse ToStorefrontContract(this GetProduct product)
+        public static StorefrontProductResponse ToStorefrontContract(
+            this GetProduct product,
+            StorefrontDisplayMoney? displayMoney = null,
+            Func<GetProductVariant, StorefrontProductVariantResponse>? mapVariant = null)
         {
             return new StorefrontProductResponse(
                 product.Id,
@@ -469,10 +486,17 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 product.VariationTemplate,
                 product.CreatedOn,
                 product.UpdatedAt,
-                product.Variants.Select(variant => variant.ToStorefrontContract()).ToArray());
+                product.Variants.Select(variant => mapVariant is null
+                    ? variant.ToStorefrontContract()
+                    : mapVariant(variant)).ToArray(),
+                displayMoney?.Price,
+                displayMoney?.ComparePrice,
+                displayMoney?.CurrencyCode);
         }
 
-        public static StorefrontProductVariantResponse ToStorefrontContract(this GetProductVariant variant)
+        public static StorefrontProductVariantResponse ToStorefrontContract(
+            this GetProductVariant variant,
+            StorefrontDisplayMoney? displayMoney = null)
         {
             return new StorefrontProductVariantResponse(
                 variant.Id,
@@ -487,7 +511,9 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 variant.EffectivePrice,
                 variant.Stock,
                 variant.Color,
-                variant.IsDefault);
+                variant.IsDefault,
+                displayMoney?.Price,
+                displayMoney?.CurrencyCode);
         }
 
         public static StorefrontProductVariantAttributeResponse ToStorefrontContract(
@@ -760,4 +786,9 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
             }
         }
     }
+
+    public sealed record StorefrontDisplayMoney(
+        decimal Price,
+        decimal? ComparePrice,
+        string CurrencyCode);
 }

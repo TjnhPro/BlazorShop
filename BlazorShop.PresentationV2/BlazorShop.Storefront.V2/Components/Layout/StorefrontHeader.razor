@@ -38,6 +38,22 @@
             </nav>
 
             <div class="bs-storefront-header__desktop-actions flex shrink-0 flex-wrap items-center gap-3 text-sm" aria-label="Shop actions">
+                @if (ShowCurrencySelector)
+                {
+                    <form method="post" action="@StorefrontRoutes.CurrencyPreference" class="bs-storefront-currency-form">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
+                        <select name="CurrencyCode" class="bs-storefront-currency-select" aria-label="Currency">
+                            @foreach (var currencyCode in _displayContext.SupportedCurrencyCodes)
+                            {
+                                <option value="@currencyCode" selected="@IsSelectedCurrency(currencyCode)">@currencyCode</option>
+                            }
+                        </select>
+                        <button type="submit" class="bs-storefront-currency-submit" aria-label="Apply currency" title="Apply currency">
+                            <i class="fa-solid fa-check" aria-hidden="true"></i>
+                        </button>
+                    </form>
+                }
                 <a href="@StorefrontRoutes.Cart"
                    class="bs-storefront-icon-button"
                    aria-label="Open cart"
@@ -115,6 +131,22 @@
                     </nav>
 
                     <div class="bs-storefront-header__mobile-panel-actions">
+                        @if (ShowCurrencySelector)
+                        {
+                            <form method="post" action="@StorefrontRoutes.CurrencyPreference" class="bs-storefront-currency-form bs-storefront-currency-form--mobile">
+                                <AntiforgeryToken />
+                                <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
+                                <select name="CurrencyCode" class="bs-storefront-currency-select" aria-label="Currency">
+                                    @foreach (var currencyCode in _displayContext.SupportedCurrencyCodes)
+                                    {
+                                        <option value="@currencyCode" selected="@IsSelectedCurrency(currencyCode)">@currencyCode</option>
+                                    }
+                                </select>
+                                <button type="submit" class="bs-storefront-currency-submit" aria-label="Apply currency" title="Apply currency">
+                                    <i class="fa-solid fa-check" aria-hidden="true"></i>
+                                </button>
+                            </form>
+                        }
                         <a href="@StorefrontRoutes.NewReleases" class="bs-storefront-pill-button">New Releases</a>
                         <a href="@StorefrontRoutes.TodaysDeals" class="bs-storefront-deal-button">Today's Deals</a>
                     </div>
@@ -134,18 +166,29 @@
 
     private string? BrandLogoUrl { get; set; }
 
+    private StorefrontDisplayContext _displayContext = StorefrontDisplayContext.Fallback;
+
     private string BrandHomeLabel => $"{BrandName} shop home";
+
+    private bool ShowCurrencySelector => _displayContext.SupportedCurrencyCodes.Count > 1;
+
+    private string ReturnUrl => HttpContext is null
+        ? StorefrontRoutes.Home
+        : $"{HttpContext.Request.PathBase}{HttpContext.Request.Path}{HttpContext.Request.QueryString}";
 
     private IReadOnlyList<SearchCategoryOption> _searchCategories = [];
 
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
-        var displayContext = await DisplayContextProvider.GetAsync();
-        BrandName = displayContext.StoreName;
-        BrandLabel = string.IsNullOrWhiteSpace(displayContext.CompanyName)
-            ? displayContext.StoreKey.ToUpperInvariant()
-            : displayContext.CompanyName;
-        BrandLogoUrl = displayContext.LogoUrl;
+        _displayContext = await DisplayContextProvider.GetAsync();
+        BrandName = _displayContext.StoreName;
+        BrandLabel = string.IsNullOrWhiteSpace(_displayContext.CompanyName)
+            ? _displayContext.StoreKey.ToUpperInvariant()
+            : _displayContext.CompanyName;
+        BrandLogoUrl = _displayContext.LogoUrl;
 
         var categories = await ApiClient.GetPublishedCategoryTreeAsync();
         if (categories.IsSuccess && categories.Value is not null)
@@ -178,6 +221,11 @@
         {
             AppendCategory(options, child, depth + 1);
         }
+    }
+
+    private bool IsSelectedCurrency(string currencyCode)
+    {
+        return string.Equals(currencyCode, _displayContext.CurrencyCode, StringComparison.Ordinal);
     }
 
     private sealed record SearchCategoryOption(string Slug, string Label);

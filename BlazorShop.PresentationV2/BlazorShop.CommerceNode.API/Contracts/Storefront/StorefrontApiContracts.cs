@@ -104,6 +104,9 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         public string SortBy { get; init; } = StorefrontProductCatalogSortValues.Newest;
 
         public DateTime? CreatedAfterUtc { get; init; }
+
+        [StringLength(3, MinimumLength = 3)]
+        public string? CurrencyCode { get; init; }
     }
 
     public static class StorefrontProductCatalogSortValues
@@ -525,7 +528,10 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         string? CategorySlug,
         bool HasVariants,
         string ProductType,
-        Guid? VariationTemplateId);
+        Guid? VariationTemplateId,
+        decimal? DisplayPrice = null,
+        decimal? DisplayComparePrice = null,
+        string? DisplayCurrencyCode = null);
 
     public sealed record StorefrontProductResponse(
         Guid Id,
@@ -557,7 +563,10 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         StorefrontVariationTemplateDto? VariationTemplate,
         DateTime CreatedOn,
         DateTime UpdatedAt,
-        IReadOnlyList<StorefrontProductVariantResponse> Variants);
+        IReadOnlyList<StorefrontProductVariantResponse> Variants,
+        decimal? DisplayPrice = null,
+        decimal? DisplayComparePrice = null,
+        string? DisplayCurrencyCode = null);
 
     public sealed record StorefrontProductVariantResponse(
         Guid Id,
@@ -572,7 +581,9 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         decimal EffectivePrice,
         int Stock,
         string? Color,
-        bool IsDefault);
+        bool IsDefault,
+        decimal? DisplayPrice = null,
+        string? DisplayCurrencyCode = null);
 
     public sealed record StorefrontProductVariantAttributeResponse(
         string Name,

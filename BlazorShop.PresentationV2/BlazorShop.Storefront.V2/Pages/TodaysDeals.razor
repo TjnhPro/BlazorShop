@@ -2,6 +2,7 @@
 @inject StorefrontApiClient ApiClient
 @inject IStorefrontSeoComposer SeoComposer
 @inject IStorefrontStructuredDataComposer StructuredDataComposer
+@inject IStorefrontDisplayContextProvider DisplayContextProvider
 
 <SeoHead Metadata="_metadata" StructuredData="_structuredData" />
 
@@ -46,6 +47,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        var displayContext = await DisplayContextProvider.GetAsync();
         var metadataTask = SeoComposer.ComposeStaticPageAsync(
             "Today's Deals",
             StorefrontRoutes.TodaysDeals,
@@ -59,7 +61,7 @@
             PageNumber = 1,
             PageSize = 12,
             SortBy = ProductCatalogSortBy.Newest,
-        });
+        }, displayContext.CurrencyCode);
 
         _metadata = await metadataTask;
 

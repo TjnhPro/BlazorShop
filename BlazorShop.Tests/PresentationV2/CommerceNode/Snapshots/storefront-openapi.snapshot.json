@@ -229,7 +229,7 @@
         },
         "security": [
           {
-            "RefreshCookie": [ ]
+            "RefreshCookie": []
           }
         ]
       }
@@ -285,7 +285,7 @@
         },
         "security": [
           {
-            "RefreshCookie": [ ]
+            "RefreshCookie": []
           }
         ]
       }
@@ -371,7 +371,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -532,7 +532,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -1260,7 +1260,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -1424,6 +1424,13 @@
             }
           },
           {
+            "name": "currencyCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "storeKey",
             "in": "path",
             "required": true,
@@ -1481,6 +1488,13 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "currencyCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           },
           {
@@ -1632,6 +1646,15 @@
             }
           },
           {
+            "name": "CurrencyCode",
+            "in": "query",
+            "schema": {
+              "maxLength": 3,
+              "minLength": 3,
+              "type": "string"
+            }
+          },
+          {
             "name": "storeKey",
             "in": "path",
             "required": true,
@@ -1692,6 +1715,13 @@
             }
           },
           {
+            "name": "currencyCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "storeKey",
             "in": "path",
             "required": true,
@@ -1746,6 +1776,13 @@
             "name": "slug",
             "in": "path",
             "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "currencyCode",
+            "in": "query",
             "schema": {
               "type": "string"
             }
@@ -2366,7 +2403,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -2422,7 +2459,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -2488,7 +2525,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -4053,6 +4090,20 @@
           "variationTemplateId": {
             "type": "string",
             "format": "uuid",
+            "nullable": true
+          },
+          "displayPrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "displayComparePrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "displayCurrencyCode": {
+            "type": "string",
             "nullable": true
           }
         },
@@ -5948,6 +5999,20 @@
             "items": {
               "$ref": "#/components/schemas/StorefrontProductVariantResponse"
             }
+          },
+          "displayPrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "displayComparePrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "displayCurrencyCode": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -6041,6 +6106,15 @@
           },
           "isDefault": {
             "type": "boolean"
+          },
+          "displayPrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "displayCurrencyCode": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

@@ -336,6 +336,47 @@
     background: #d97706;
 }
 
+.bs-storefront-currency-form {
+    display: inline-grid;
+    grid-template-columns: minmax(4.75rem, auto) 2.5rem;
+    min-height: 2.5rem;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 0.375rem;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.bs-storefront-currency-form--mobile {
+    width: 100%;
+}
+
+.bs-storefront-currency-select,
+.bs-storefront-currency-submit {
+    min-height: 2.5rem;
+    border: 0;
+    color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 900;
+}
+
+.bs-storefront-currency-select {
+    min-width: 0;
+    background: rgba(23, 23, 23, 0.94);
+    padding: 0 0.65rem;
+    letter-spacing: 0;
+}
+
+.bs-storefront-currency-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f59e0b;
+}
+
+.bs-storefront-currency-submit:hover {
+    background: #d97706;
+}
+
 .bs-storefront-cart-badge {
     position: absolute;
     top: -0.35rem;

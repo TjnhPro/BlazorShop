@@ -3,6 +3,7 @@
 @inject StorefrontApiClient ApiClient
 @inject IStorefrontSeoComposer SeoComposer
 @inject IStorefrontStructuredDataComposer StructuredDataComposer
+@inject IStorefrontDisplayContextProvider DisplayContextProvider
 @inject ILogger<CategoryPage> Logger
 
 <SeoHead Metadata="_metadata" StructuredData="_structuredData" />
@@ -76,6 +77,7 @@ else if (_categoryPage is not null)
     private IReadOnlyList<StorefrontBreadcrumbItem> _breadcrumbs = [];
     private IReadOnlyList<GetCatalogProduct> _displayProducts = [];
     private StorefrontStructuredDataDocument _structuredData = StorefrontStructuredDataDocument.Empty;
+    private StorefrontDisplayContext _displayContext = StorefrontDisplayContext.Fallback;
 
     private string CategorySeoContentTitle => _categoryPage is null
         ? string.Empty
@@ -105,8 +107,9 @@ else if (_categoryPage is not null)
 
     protected override async Task OnParametersSetAsync()
     {
+        _displayContext = await DisplayContextProvider.GetAsync();
         var routePath = StorefrontRoutes.Category(Slug);
-        var categoryPageResult = await ApiClient.GetPublishedCategoryBySlugAsync(Slug);
+        var categoryPageResult = await ApiClient.GetPublishedCategoryBySlugAsync(Slug, _displayContext.CurrencyCode);
 
         if (categoryPageResult.IsServiceUnavailable)
         {
@@ -169,7 +172,7 @@ else if (_categoryPage is not null)
             MaxPrice = MaxPrice,
             InStock = InStock ? true : null,
             SortBy = SortBy,
-        });
+        }, _displayContext.CurrencyCode);
 
         return filteredResult.IsSuccess
             ? filteredResult.Value?.Items ?? []

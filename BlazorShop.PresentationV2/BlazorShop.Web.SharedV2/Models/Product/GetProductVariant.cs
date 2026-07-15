@@ -22,6 +22,10 @@ namespace BlazorShop.Web.SharedV2.Models.Product
 
         public decimal EffectivePrice { get; set; }
 
+        public decimal? DisplayPrice { get; set; }
+
+        public string? DisplayCurrencyCode { get; set; }
+
         public int Stock { get; set; }
 
         public string? Color { get; set; }

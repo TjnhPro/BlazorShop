@@ -108,6 +108,29 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task GetPublishedCatalogPageAsync_WhenCurrencyCodeProvided_AddsCurrencyQuery()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal("/api/storefront/stores/default/catalog/products", request.RequestUri?.AbsolutePath);
+                Assert.Contains("currencyCode=EUR", request.RequestUri?.Query, StringComparison.Ordinal);
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    """{"success":true,"message":"ok","data":{"items":[],"pageNumber":1,"pageSize":24,"totalCount":0,"totalPages":0}}""");
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var result = await apiClient.GetPublishedCatalogPageAsync(
+                new ProductCatalogQuery { SortBy = ProductCatalogSortBy.DisplayOrder },
+                "eur");
+
+            Assert.True(result.IsSuccess);
+            Assert.Equal(["/api/storefront/stores/default/catalog/products"], handler.RequestPaths);
+        }
+
+        [Fact]
         public async Task GetPublicConfigurationAsync_ReadsStoreScopedConfiguration()
         {
             var handler = new RecordingHandler(request =>
@@ -206,6 +229,44 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Single(result.Value.PaymentMethods);
             Assert.Equal("cod", result.Value.PaymentMethods[0].Key);
             Assert.Equal(["/api/storefront/stores/default/configuration"], handler.RequestPaths);
+        }
+
+        [Fact]
+        public async Task SetCurrencyPreferenceAsync_PostsStoreScopedCurrencyCommand()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal(HttpMethod.Post, request.Method);
+                Assert.Equal("/api/storefront/stores/default/currency/preference", request.RequestUri?.AbsolutePath);
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    """
+                    {
+                      "success": true,
+                      "message": "ok",
+                      "data": {
+                        "currencyCode": "EUR",
+                        "baseCurrencyCode": "USD",
+                        "requestedCurrencyCode": "EUR",
+                        "requestedCurrencySupported": true,
+                        "checkoutCurrencyEnabled": true,
+                        "reason": "supported"
+                      }
+                    }
+                    """);
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var result = await apiClient.SetCurrencyPreferenceAsync(new StorefrontCurrencyPreferenceRequest
+            {
+                CurrencyCode = "EUR",
+            });
+
+            Assert.True(result.Success);
+            Assert.Equal("EUR", result.Data?.CurrencyCode);
+            Assert.Equal(["/api/storefront/stores/default/currency/preference"], handler.RequestPaths);
         }
 
         private static StorefrontApiClient CreateApiClient(HttpClient client, bool enableLegacyFallback = false)

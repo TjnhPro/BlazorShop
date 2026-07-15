@@ -203,6 +203,9 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Storefront working-currency resolver accepts supported non-base currency only when conversion is configured. 2026-07-15: `StorefrontWorkingCurrencyResolverTests.ResolveAsync_WhenHintIsSupportedNonBaseWithRate_AcceptsWorkingCurrency` passed; missing-rate supported currency still falls back to base with `conversion_not_configured`.
 - [x] Storefront cart add-line converts base unit price before snapshotting a non-base working currency. 2026-07-15: `StorefrontCartServiceTests.AddLineAsync_WhenSupportedNonBaseHasConversion_SnapshotsConvertedCurrencyAndPrice` passed for USD -> EUR.
 - [x] Storefront checkout preview/place-order/order/payment use the converted cart snapshot currency consistently. 2026-07-15: `StorefrontCheckoutServiceTests.PlaceOrderAsync_WhenCartUsesConvertedCurrency_UsesSnapshotCurrencyForOrderAndPayment` passed for EUR.
+- [x] Storefront catalog/product contracts expose additive display-price fields for working currency without replacing base `price`/`comparePrice`. 2026-07-15: `StorefrontCatalogProductResponse`, `StorefrontProductResponse`, and `StorefrontProductVariantResponse` now include display money fields; Storefront OpenAPI snapshot was refreshed.
+- [x] Storefront catalog/product APIs accept optional `currencyCode` query metadata and keep generator-safe OpenAPI contracts. 2026-07-15: `CommerceNodeStorefrontOpenApiContractTests` passed 23/23 after snapshot refresh.
+- [x] Storefront product display conversion uses server-side working-currency resolution and money conversion services, not browser-side conversion math. 2026-07-15: conversion is resolved inside `StorefrontScopedCatalogController` through `IStorefrontWorkingCurrencyResolver` and `IMoneyConversionService`.
 
 ## Store Resolution Hardening
 

@@ -2,6 +2,7 @@
 @inject StorefrontApiClient ApiClient
 @inject IStorefrontSeoComposer SeoComposer
 @inject IStorefrontStructuredDataComposer StructuredDataComposer
+@inject IStorefrontDisplayContextProvider DisplayContextProvider
 
 <SeoHead Metadata="_metadata" StructuredData="_structuredData" />
 
@@ -46,6 +47,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        var displayContext = await DisplayContextProvider.GetAsync();
         var metadataTask = SeoComposer.ComposeStaticPageAsync(
             "New Releases",
             StorefrontRoutes.NewReleases,
@@ -60,7 +62,7 @@
             PageSize = 24,
             SortBy = ProductCatalogSortBy.Newest,
             CreatedAfterUtc = DateTime.UtcNow.AddDays(-7),
-        });
+        }, displayContext.CurrencyCode);
 
         _metadata = await metadataTask;
 

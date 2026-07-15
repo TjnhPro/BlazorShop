@@ -27,6 +27,14 @@ namespace BlazorShop.Web.SharedV2.Models.Product
         [DataType(DataType.Currency)]
         public decimal? ComparePrice { get; set; }
 
+        [DataType(DataType.Currency)]
+        public decimal? DisplayPrice { get; set; }
+
+        [DataType(DataType.Currency)]
+        public decimal? DisplayComparePrice { get; set; }
+
+        public string? DisplayCurrencyCode { get; set; }
+
         [Required(ErrorMessage = "The Quantity field is required.")]
         public int Quantity { get; set; }
 

@@ -30,7 +30,13 @@ namespace BlazorShop.Storefront.Pages
 
         private string IdempotencyKey { get; set; } = Guid.NewGuid().ToString("N");
 
-        private string GrandTotalDisplay => FormatPrice(lines.Sum(line => line.LineTotal));
+        private string GrandTotalDisplay => FormatPrice(lines.Sum(line => line.LineTotal), GrandTotalCurrencyCode);
+
+        private string GrandTotalCurrencyCode => lines
+            .Select(line => line.CurrencyCode)
+            .Distinct(StringComparer.Ordinal)
+            .SingleOrDefault()
+            ?? displayContext.CurrencyCode;
 
         [Inject]
         private IStorefrontDisplayContextProvider DisplayContextProvider { get; set; } = default!;
@@ -67,7 +73,7 @@ namespace BlazorShop.Storefront.Pages
 
             var paymentResult = await ApiClient.GetPaymentMethodsAsync();
             paymentMethods = paymentResult.IsSuccess && paymentResult.Value is not null
-                ? paymentResult.Value
+                ? paymentResult.Value.Where(method => SupportsCurrency(method, GrandTotalCurrencyCode)).ToArray()
                 : [];
         }
 
@@ -99,7 +105,7 @@ namespace BlazorShop.Storefront.Pages
             return productsById;
         }
 
-        private static IReadOnlyList<CartLine> BuildLines(IEnumerable<StorefrontCartLineResponse> cartItems, IReadOnlyDictionary<Guid, GetProduct> productsById)
+        private IReadOnlyList<CartLine> BuildLines(IEnumerable<StorefrontCartLineResponse> cartItems, IReadOnlyDictionary<Guid, GetProduct> productsById)
         {
             var result = new List<CartLine>();
 
@@ -121,17 +127,37 @@ namespace BlazorShop.Storefront.Pages
                 result.Add(new CartLine(
                     string.IsNullOrWhiteSpace(product.Name) ? "Product" : product.Name,
                     Math.Max(1, cartItem.Quantity),
-                    unitPrice));
+                    unitPrice,
+                    NormalizeCurrencyCode(cartItem.CurrencyCodeSnapshot) ?? displayContext.CurrencyCode));
             }
 
             return result;
         }
 
-        private string FormatPrice(decimal amount) => PriceFormatter.Format(amount, displayContext);
+        private string FormatPrice(decimal amount, string currencyCode) => PriceFormatter.Format(amount, displayContext with { CurrencyCode = currencyCode });
 
-        private sealed record CartLine(string DisplayName, int Quantity, decimal UnitPrice)
+        private sealed record CartLine(string DisplayName, int Quantity, decimal UnitPrice, string CurrencyCode)
         {
             public decimal LineTotal => UnitPrice * Quantity;
+        }
+
+        private static string? NormalizeCurrencyCode(string? currencyCode)
+        {
+            var normalized = currencyCode?.Trim().ToUpperInvariant();
+            return normalized is { Length: 3 } && normalized.All(char.IsLetter)
+                ? normalized
+                : null;
+        }
+
+        private static bool SupportsCurrency(GetPaymentMethod method, string currencyCode)
+        {
+            var supportedCodes = method.SupportedCurrencyCodes
+                .Select(NormalizeCurrencyCode)
+                .Where(code => code is not null)
+                .Select(code => code!)
+                .ToArray();
+
+            return supportedCodes.Length == 0 || supportedCodes.Contains(currencyCode, StringComparer.Ordinal);
         }
     }
 }

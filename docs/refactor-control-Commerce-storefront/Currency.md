@@ -419,6 +419,14 @@ Exit criteria:
 - UI display, cart, checkout, and payment agree on currency and totals.
 - Existing stores with one supported currency show no confusing selector.
 
+Implementation note 2026-07-15:
+
+- Storefront V2 now renders a currency selector in the header only when public configuration exposes multiple supported currencies.
+- Selector changes post to Storefront V2 `/currency`, which calls the scoped Commerce Node `currency/preference` command and writes a Storefront-local `bs-currency` cookie only when the server accepts the requested currency.
+- Storefront catalog/product requests can send optional `currencyCode`; Commerce Node returns additive `displayPrice`, `displayComparePrice`, and `displayCurrencyCode` fields while preserving base `price` and `comparePrice`.
+- Storefront product cards/details prefer additive display money fields, and cart/checkout display cart line `CurrencyCodeSnapshot`.
+- Automated verification passed for Storefront API client currency query/preference command, display-context cookie support, Storefront focused formatter/markup tests, full Storefront OpenAPI contract tests, and solution build. Visible browser QA for the full selector -> cart -> checkout path remains in `QA-StorefrontV2.todo.md`.
+
 ### Phase 7 - Checkout, Order, And Payment Rate Snapshots
 
 Goal: make converted orders auditable.

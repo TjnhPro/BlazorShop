@@ -3,6 +3,9 @@ namespace BlazorShop.Storefront.Services
     using System.Globalization;
 
     using BlazorShop.Storefront.Services.Contracts;
+    using BlazorShop.Web.SharedV2;
+
+    using Microsoft.AspNetCore.Http;
 
     public sealed class StorefrontDisplayContextProvider : IStorefrontDisplayContextProvider
     {
@@ -11,10 +14,17 @@ namespace BlazorShop.Storefront.Services
         private const string DefaultCurrencyCode = "USD";
 
         private readonly IStorefrontCurrentStoreProvider _currentStoreProvider;
+        private readonly StorefrontApiClient? _apiClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public StorefrontDisplayContextProvider(IStorefrontCurrentStoreProvider currentStoreProvider)
+        public StorefrontDisplayContextProvider(
+            IStorefrontCurrentStoreProvider currentStoreProvider,
+            StorefrontApiClient? apiClient = null,
+            IHttpContextAccessor? httpContextAccessor = null)
         {
             _currentStoreProvider = currentStoreProvider;
+            _apiClient = apiClient;
+            _httpContextAccessor = httpContextAccessor ?? new HttpContextAccessor();
         }
 
         public async Task<StorefrontDisplayContext> GetAsync(CancellationToken cancellationToken = default)
@@ -27,7 +37,14 @@ namespace BlazorShop.Storefront.Services
             }
 
             var culture = ResolveCulture(store.DefaultCulture);
-            var currencyCode = NormalizeCurrency(store.DefaultCurrencyCode);
+            var defaultCurrencyCode = NormalizeCurrency(store.DefaultCurrencyCode);
+            var supportedCurrencyCodes = await ResolveSupportedCurrencyCodesAsync(defaultCurrencyCode, cancellationToken);
+            var requestedCurrencyCode = NormalizeCurrencyOrNull(
+                _httpContextAccessor.HttpContext?.Request.Cookies[StorefrontCookieNames.CurrencyPreference]);
+            var currencyCode = requestedCurrencyCode is not null
+                && supportedCurrencyCodes.Contains(requestedCurrencyCode, StringComparer.Ordinal)
+                    ? requestedCurrencyCode
+                    : defaultCurrencyCode;
             var storeName = string.IsNullOrWhiteSpace(store.Name) ? StorefrontDisplayContext.Fallback.StoreName : store.Name.Trim();
 
             return new StorefrontDisplayContext(
@@ -47,7 +64,34 @@ namespace BlazorShop.Storefront.Services
                 NormalizeOptional(store.CompanyPhone),
                 NormalizeOptional(store.CompanyAddress),
                 NormalizeOptional(store.SupportEmail),
-                NormalizeOptional(store.SupportPhone));
+                NormalizeOptional(store.SupportPhone),
+                defaultCurrencyCode,
+                supportedCurrencyCodes);
+        }
+
+        private async Task<IReadOnlyList<string>> ResolveSupportedCurrencyCodesAsync(
+            string defaultCurrencyCode,
+            CancellationToken cancellationToken)
+        {
+            if (_apiClient is null)
+            {
+                return [defaultCurrencyCode];
+            }
+
+            var result = await _apiClient.GetPublicConfigurationAsync(cancellationToken);
+            var configuredCodes = result.IsSuccess
+                ? result.Value?.CurrencyOptions.SupportedCurrencyCodes
+                : null;
+
+            var codes = (configuredCodes ?? [])
+                .Prepend(defaultCurrencyCode)
+                .Select(NormalizeCurrencyOrNull)
+                .Where(code => code is not null)
+                .Select(code => code!)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+
+            return codes.Length == 0 ? [defaultCurrencyCode] : codes;
         }
 
         private static CultureInfo ResolveCulture(string? value)
@@ -69,10 +113,15 @@ namespace BlazorShop.Storefront.Services
 
         private static string NormalizeCurrency(string? value)
         {
+            return NormalizeCurrencyOrNull(value) ?? DefaultCurrencyCode;
+        }
+
+        private static string? NormalizeCurrencyOrNull(string? value)
+        {
             var normalized = NormalizeOptional(value)?.ToUpperInvariant();
             return normalized is { Length: 3 } && normalized.All(char.IsLetter)
                 ? normalized
-                : DefaultCurrencyCode;
+                : null;
         }
 
         private static string? NormalizeOptional(string? value)

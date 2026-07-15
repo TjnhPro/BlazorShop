@@ -36,6 +36,7 @@ namespace BlazorShop.Storefront.Services
         private const string StorefrontCheckoutPreviewRoute = "checkout/preview";
         private const string StorefrontPlaceOrderRoute = "checkout/place-order";
         private const string StorefrontPaymentAttemptsRoute = "payments/attempts";
+        private const string StorefrontCurrencyPreferenceRoute = "currency/preference";
         private const string StorefrontCartRoute = "cart";
         private const string StorefrontCartSessionRoute = StorefrontCartRoute + "/session";
         private const string StorefrontCartLinesRoute = StorefrontCartRoute + "/lines";
@@ -103,8 +104,16 @@ namespace BlazorShop.Storefront.Services
 
         public Task<StorefrontApiResult<PagedResult<GetCatalogProduct>>> GetPublishedCatalogPageAsync(ProductCatalogQuery query, CancellationToken cancellationToken = default)
         {
+            return GetPublishedCatalogPageAsync(query, currencyCode: null, cancellationToken);
+        }
+
+        public Task<StorefrontApiResult<PagedResult<GetCatalogProduct>>> GetPublishedCatalogPageAsync(
+            ProductCatalogQuery query,
+            string? currencyCode,
+            CancellationToken cancellationToken = default)
+        {
             return GetAsyncWithFallback(
-                BuildCatalogRoute(query, StorefrontProductsRoute),
+                BuildCatalogRoute(query, StorefrontProductsRoute, currencyCode),
                 BuildCatalogRoute(query, LegacyProductsRoute),
                 cancellationToken,
                 new PagedResult<GetCatalogProduct>(),
@@ -113,8 +122,16 @@ namespace BlazorShop.Storefront.Services
 
         public Task<StorefrontApiResult<GetCategoryPage>> GetPublishedCategoryBySlugAsync(string slug, CancellationToken cancellationToken = default)
         {
+            return GetPublishedCategoryBySlugAsync(slug, currencyCode: null, cancellationToken);
+        }
+
+        public Task<StorefrontApiResult<GetCategoryPage>> GetPublishedCategoryBySlugAsync(
+            string slug,
+            string? currencyCode,
+            CancellationToken cancellationToken = default)
+        {
             return GetMaybeNotFoundWithFallbackAsync<GetCategoryPage>(
-                $"{StorefrontCategoriesRoute}/slug/{Uri.EscapeDataString(slug)}",
+                AppendCurrencyQuery($"{StorefrontCategoriesRoute}/slug/{Uri.EscapeDataString(slug)}", currencyCode),
                 $"{LegacyCategoriesRoute}/slug/{Uri.EscapeDataString(slug)}",
                 cancellationToken,
                 CatalogRequestTimeout);
@@ -122,8 +139,16 @@ namespace BlazorShop.Storefront.Services
 
         public Task<StorefrontApiResult<GetProduct>> GetPublishedProductBySlugAsync(string slug, CancellationToken cancellationToken = default)
         {
+            return GetPublishedProductBySlugAsync(slug, currencyCode: null, cancellationToken);
+        }
+
+        public Task<StorefrontApiResult<GetProduct>> GetPublishedProductBySlugAsync(
+            string slug,
+            string? currencyCode,
+            CancellationToken cancellationToken = default)
+        {
             return GetMaybeNotFoundWithFallbackAsync<GetProduct>(
-                $"{StorefrontProductsRoute}/slug/{Uri.EscapeDataString(slug)}",
+                AppendCurrencyQuery($"{StorefrontProductsRoute}/slug/{Uri.EscapeDataString(slug)}", currencyCode),
                 $"{LegacyProductsRoute}/slug/{Uri.EscapeDataString(slug)}",
                 cancellationToken,
                 CatalogRequestTimeout);
@@ -139,13 +164,21 @@ namespace BlazorShop.Storefront.Services
 
         public Task<StorefrontApiResult<GetProduct>> GetProductByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
+            return GetProductByIdAsync(id, currencyCode: null, cancellationToken);
+        }
+
+        public Task<StorefrontApiResult<GetProduct>> GetProductByIdAsync(
+            Guid id,
+            string? currencyCode,
+            CancellationToken cancellationToken = default)
+        {
             if (id == Guid.Empty)
             {
                 return Task.FromResult(StorefrontApiResult<GetProduct>.NotFound());
             }
 
             return GetMaybeNotFoundWithFallbackAsync<GetProduct>(
-                $"{StorefrontProductsRoute}/{id}",
+                AppendCurrencyQuery($"{StorefrontProductsRoute}/{id}", currencyCode),
                 $"/api/product/single/{id}",
                 cancellationToken,
                 CatalogRequestTimeout);
@@ -198,6 +231,17 @@ namespace BlazorShop.Storefront.Services
                 : result.IsServiceUnavailable
                     ? StorefrontApiResult<IReadOnlyList<GetPaymentMethod>>.ServiceUnavailable()
                     : StorefrontApiResult<IReadOnlyList<GetPaymentMethod>>.Success([]);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCurrencyPreferenceResponse>> SetCurrencyPreferenceAsync(
+            StorefrontCurrencyPreferenceRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return PostAsync<StorefrontCurrencyPreferenceRequest, StorefrontCurrencyPreferenceResponse>(
+                StorefrontCurrencyPreferenceRoute,
+                request,
+                "Unable to update currency preference right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontSubmitResult<StorefrontCheckoutPreviewResponse>> PreviewCheckoutAsync(
@@ -448,7 +492,7 @@ namespace BlazorShop.Storefront.Services
             return requestTimeoutToken;
         }
 
-        private static string BuildCatalogRoute(ProductCatalogQuery query, string productsRoute)
+        private static string BuildCatalogRoute(ProductCatalogQuery query, string productsRoute, string? currencyCode = null)
         {
             var parameters = new List<string>
             {
@@ -492,7 +536,33 @@ namespace BlazorShop.Storefront.Services
                 parameters.Add($"createdAfterUtc={Uri.EscapeDataString(query.CreatedAfterUtc.Value.ToString("O", CultureInfo.InvariantCulture))}");
             }
 
+            var normalizedCurrencyCode = NormalizeCurrencyCode(currencyCode);
+            if (normalizedCurrencyCode is not null)
+            {
+                parameters.Add($"currencyCode={Uri.EscapeDataString(normalizedCurrencyCode)}");
+            }
+
             return $"{productsRoute}?{string.Join("&", parameters)}";
+        }
+
+        private static string AppendCurrencyQuery(string route, string? currencyCode)
+        {
+            var normalizedCurrencyCode = NormalizeCurrencyCode(currencyCode);
+            if (normalizedCurrencyCode is null)
+            {
+                return route;
+            }
+
+            var separator = route.Contains('?', StringComparison.Ordinal) ? "&" : "?";
+            return $"{route}{separator}currencyCode={Uri.EscapeDataString(normalizedCurrencyCode)}";
+        }
+
+        private static string? NormalizeCurrencyCode(string? currencyCode)
+        {
+            var normalized = currencyCode?.Trim().ToUpperInvariant();
+            return normalized is { Length: 3 } && normalized.All(char.IsLetter)
+                ? normalized
+                : null;
         }
 
         private static async Task<T?> ReadPayloadAsync<T>(HttpResponseMessage response, CancellationToken cancellationToken)
@@ -683,6 +753,19 @@ namespace BlazorShop.Storefront.Services
     public sealed record StorefrontCurrencyOptions(
         string DefaultCurrencyCode,
         IReadOnlyList<string> SupportedCurrencyCodes);
+
+    public sealed class StorefrontCurrencyPreferenceRequest
+    {
+        public string CurrencyCode { get; set; } = string.Empty;
+    }
+
+    public sealed record StorefrontCurrencyPreferenceResponse(
+        string CurrencyCode,
+        string BaseCurrencyCode,
+        string? RequestedCurrencyCode,
+        bool RequestedCurrencySupported,
+        bool CheckoutCurrencyEnabled,
+        string Reason);
 
     public sealed record StorefrontMaintenanceState(
         bool MaintenanceModeEnabled,

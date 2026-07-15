@@ -140,7 +140,7 @@
                                 <div class="font-semibold text-neutral-950">@line.DisplayName</div>
                                 <div class="mt-1 text-neutral-500">Qty @line.Quantity</div>
                             </div>
-                            <div class="font-semibold text-neutral-900">@FormatPrice(line.LineTotal)</div>
+                            <div class="font-semibold text-neutral-900">@FormatPrice(line.LineTotal, line.CurrencyCode)</div>
                         </div>
                     }
                 </div>

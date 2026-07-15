@@ -21,7 +21,13 @@ namespace BlazorShop.Storefront.Pages
 
         private int ItemCount => _lines.Sum(line => line.Quantity);
 
-        private string GrandTotalDisplay => FormatPrice(_lines.Sum(line => line.LineTotal));
+        private string GrandTotalDisplay => FormatPrice(_lines.Sum(line => line.LineTotal), GrandTotalCurrencyCode);
+
+        private string GrandTotalCurrencyCode => _lines
+            .Select(line => line.CurrencyCode)
+            .Distinct(StringComparer.Ordinal)
+            .SingleOrDefault()
+            ?? _displayContext.CurrencyCode;
 
         private string CheckoutUrl => StorefrontRoutes.Checkout;
 
@@ -99,6 +105,7 @@ namespace BlazorShop.Storefront.Pages
                     var unitPrice = cartItem.UnitPriceSnapshot
                         ?? (selectedVariant?.EffectivePrice > 0 ? selectedVariant.EffectivePrice : selectedVariant?.Price)
                         ?? product.Price;
+                    var currencyCode = NormalizeCurrencyCode(cartItem.CurrencyCodeSnapshot) ?? _displayContext.CurrencyCode;
                     lines.Add(new CartLine(
                         LineId: cartItem.LineId,
                         ProductId: cartItem.ProductId,
@@ -108,6 +115,7 @@ namespace BlazorShop.Storefront.Pages
                         ImageUrl: product.Image,
                         Quantity: quantity,
                         UnitPrice: unitPrice,
+                        CurrencyCode: currencyCode,
                         VariantLabel: variantLabel,
                         IsUnavailable: false));
                     continue;
@@ -123,6 +131,7 @@ namespace BlazorShop.Storefront.Pages
                     ImageUrl: null,
                     Quantity: quantity,
                     UnitPrice: cartItem.UnitPriceSnapshot ?? 0m,
+                    CurrencyCode: NormalizeCurrencyCode(cartItem.CurrencyCodeSnapshot) ?? _displayContext.CurrencyCode,
                     VariantLabel: null,
                     IsUnavailable: true));
             }
@@ -139,7 +148,7 @@ namespace BlazorShop.Storefront.Pages
             return lines;
         }
 
-        private string FormatPrice(decimal amount) => PriceFormatter.Format(amount, _displayContext);
+        private string FormatPrice(decimal amount, string currencyCode) => PriceFormatter.Format(amount, _displayContext with { CurrencyCode = currencyCode });
 
         private sealed record CartAlert(string Level, string Message);
 
@@ -152,10 +161,19 @@ namespace BlazorShop.Storefront.Pages
             string? ImageUrl,
             int Quantity,
             decimal UnitPrice,
+            string CurrencyCode,
             string? VariantLabel,
             bool IsUnavailable)
         {
             public decimal LineTotal => UnitPrice * Quantity;
+        }
+
+        private static string? NormalizeCurrencyCode(string? currencyCode)
+        {
+            var normalized = currencyCode?.Trim().ToUpperInvariant();
+            return normalized is { Length: 3 } && normalized.All(char.IsLetter)
+                ? normalized
+                : null;
         }
 
         private static string? GetVariantLabel(GetProductVariant variant)

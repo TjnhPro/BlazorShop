@@ -2,6 +2,7 @@
 @using BlazorShop.Application.DTOs.Category
 @inject StorefrontApiClient ApiClient
 @inject IStorefrontSeoComposer SeoComposer
+@inject IStorefrontDisplayContextProvider DisplayContextProvider
 
 <SeoHead Metadata="_metadata" />
 
@@ -95,6 +96,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        var displayContext = await DisplayContextProvider.GetAsync();
         var metadataTask = SeoComposer.ComposeStaticPageAsync(
             "Search",
             StorefrontRoutes.Search,
@@ -107,7 +109,7 @@
             CategorySlug = Category,
             SearchTerm = Q,
             SortBy = ProductCatalogSortBy.DisplayOrder,
-        });
+        }, displayContext.CurrencyCode);
 
         _metadata = await metadataTask;
         _metadata.RobotsIndex = false;
