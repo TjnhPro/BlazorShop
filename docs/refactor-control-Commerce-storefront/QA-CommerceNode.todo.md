@@ -100,15 +100,15 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 
 ## Store Config Consumption And Hardening
 
-- [ ] Commerce Admin store create/update accepts safe absolute `http`/`https` asset URLs for logo/favicon/icon fields.
-- [ ] Commerce Admin store create/update accepts safe root-relative public asset paths for logo/favicon/icon fields.
-- [ ] Commerce Admin store create/update rejects `javascript:`, `data:`, protocol-relative, malformed, and backslash asset URLs.
-- [ ] Commerce Admin store create/update rejects malformed `CdnHost` and invalid MS tile colors.
-- [ ] Commerce Admin store Swagger documents stable operation IDs and summaries for store endpoints.
-- [ ] Commerce Admin store Swagger declares response schemas for success and expected error responses.
-- [ ] Commerce Admin store Swagger keeps required `X-Node-Key` and `X-Node-Secret` header metadata.
-- [ ] Storefront current-store response exposes only safe public runtime profile fields.
-- [ ] Checkout preview/place-order fallback currency uses the current store default when cart/session currency is missing.
+- [x] Commerce Admin store create/update accepts safe absolute `http`/`https` asset URLs for logo/favicon/icon fields. 2026-07-15: live CommerceNode admin HTTP QA accepted safe absolute logo/favicon/icon URLs.
+- [x] Commerce Admin store create/update accepts safe root-relative public asset paths for logo/favicon/icon fields. 2026-07-15: live CommerceNode admin HTTP QA accepted `/images/banner-bg.jpg`, `/favicon.ico`, `/icon-192.png`, and `/apple-touch-icon.png`.
+- [x] Commerce Admin store create/update rejects `javascript:`, `data:`, protocol-relative, malformed, and backslash asset URLs. 2026-07-15: live CommerceNode admin HTTP QA returned 400 for unsafe asset URL cases; ControlPlane UI also surfaced the unsafe logo validation message.
+- [x] Commerce Admin store create/update rejects malformed `CdnHost` and invalid MS tile colors. 2026-07-15: live CommerceNode admin HTTP QA returned 400 for malformed CDN host and invalid MS tile color.
+- [x] Commerce Admin store Swagger documents stable operation IDs and summaries for store endpoints. 2026-07-15: `/swagger/commerce/swagger.json` store operations were inspected for stable operation IDs and summaries.
+- [x] Commerce Admin store Swagger declares response schemas for success and expected error responses. 2026-07-15: store operations exposed response codes beyond bare 200 and schemas for success/error results.
+- [x] Commerce Admin store Swagger keeps required `X-Node-Key` and `X-Node-Secret` header metadata. 2026-07-15: Swagger inspection confirmed required node credential header metadata on Commerce Admin store operations.
+- [x] Storefront current-store response exposes only safe public runtime profile fields. 2026-07-15: live current-store response included public branding/contact/runtime fields and did not expose `metadataJson` or `controlPlaneStorePublicId`.
+- [~] Checkout preview/place-order fallback currency uses the current store default when cart/session currency is missing. 2026-07-15: Storefront cart/checkout HTTP smoke rendered current `GBP`; deeper missing-session-currency service/API fallback coverage is still pending.
 
 ## Cart, Checkout & Payment Provider MVP
 

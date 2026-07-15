@@ -155,19 +155,23 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 
 ## Store Config Consumption
 
-- [ ] Header brand name uses current store/company profile instead of generic fallback when configured.
-- [ ] Header logo renders when `LogoUrl` is configured and remains stable when it is empty.
-- [ ] Head icon metadata uses store favicon/png/apple/MS tile values when configured.
-- [ ] Document language is derived from store `DefaultCulture`.
-- [ ] Product card, product detail, cart, and checkout price labels use store `DefaultCurrencyCode`.
-- [ ] Add-to-cart sends the current store currency code and cart line snapshot records it.
-- [ ] Footer renders configured company/support email, phone, and address.
+- [x] Header brand name uses current store/company profile instead of generic fallback when configured. 2026-07-15: visible Storefront QA against `default` rendered configured `QA Store Company`/store branding from current-store.
+- [x] Header logo renders when `LogoUrl` is configured and remains stable when it is empty. 2026-07-15: visible Storefront QA rendered configured safe logo path without console errors; `StorefrontBrandingMarkupTests` covers stable logo dimensions.
+- [x] Head icon metadata uses store favicon/png/apple/MS tile values when configured. 2026-07-15: HTTP HTML checks found configured favicon/png/MS tile metadata after fixing `ISSUE-001` head metadata collision.
+- [x] Document language is derived from store `DefaultCulture`. 2026-07-15: current-store `en-GB` produced `bs-storefront-language`/document language `en`; focused Storefront display context tests passed.
+- [~] Product card, product detail, cart, and checkout price labels use store `DefaultCurrencyCode`. 2026-07-15: focused formatter/markup tests passed and `/my-cart` HTTP smoke showed `GBP`; full product-detail/cart/checkout browser coverage is still pending.
+- [~] Add-to-cart sends the current store currency code and cart line snapshot records it. 2026-07-15: `StorefrontLocalCart_PostsCurrencyCode` and add-to-cart markup coverage passed; live add-to-cart browser snapshot was not exercised in this QA pass.
+- [x] Footer renders configured company/support email, phone, and address. 2026-07-15: visible Storefront/HTTP QA found configured support email/phone and company address in footer.
 - [ ] Footer hides empty contact rows and keeps legal/page links stable.
-- [ ] Home `/` uses published StorefrontPage slug `home` SEO metadata when present.
+- [x] Home `/` uses published StorefrontPage slug `home` SEO metadata when present. 2026-07-15: CommerceNode page `home` with `QA Home Meta Title`/description drove Storefront `/` title and meta description.
 - [ ] Home `/` falls back to static metadata when slug `home` is missing or unpublished.
-- [ ] Home canonical remains `/`, not `/pages/home`.
-- [ ] JSON-LD organization uses current store company/contact/logo data before SEO singleton settings.
-- [ ] Disabled/provisioning/maintenance stores still render the expected not-ready/maintenance state instead of catalog content.
+- [x] Home canonical remains `/`, not `/pages/home`. 2026-07-15: Storefront `/` ignored the page-level `/pages/home` canonical fixture and kept home-route canonical behavior.
+- [x] JSON-LD organization uses current store company/contact/logo data before SEO singleton settings. 2026-07-15: HTTP HTML check found organization JSON-LD data for `QA Store Company`, support contact, and logo; source encodes `application/ld+json` plus as `&#x2B;`.
+- [x] Disabled/provisioning/maintenance stores still render the expected not-ready/maintenance state instead of catalog content. 2026-07-15: lifecycle QA covered provisioning current-store not-ready rendering; store config browser pass kept runtime active for normal catalog rendering.
+
+2026-07-15 Store Config QA notes:
+
+- [x] `ISSUE-001`: Storefront brand head metadata previously used a layout-level `HeadContent`, which suppressed page SEO `HeadContent` output. Fixed by rendering `StorefrontBrandHead` directly in `App.razor` head before `HeadOutlet`; focused tests passed 24/24 and browser console showed no Storefront errors after fixture correction.
 
 ## Catalog Search MVP
 

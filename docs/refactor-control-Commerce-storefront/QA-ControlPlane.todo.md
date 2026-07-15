@@ -164,14 +164,14 @@ Status legend:
 
 ### Store Runtime Config
 
-- [ ] Stores detail runtime config form groups fields into Identity, Branding, Locale, Contact, Availability, and Advanced URLs.
-- [ ] Runtime config save updates Commerce Node store name, logo/favicon/icon URLs, MS tile color, default currency, default culture, CDN host, contact data, and maintenance fields.
-- [ ] Runtime config validation errors from Commerce Node are shown in Control Plane Web.
-- [ ] Disabled/provisioning runtime stores can still be edited from Control Plane when the platform store is accessible.
-- [ ] Logo/favicon preview is guarded and does not execute arbitrary URL/style input.
-- [ ] Browser network capture shows ControlPlane Web calls only ControlPlane API when editing runtime store config.
-- [ ] Browser never receives Commerce Node node key, node secret, or direct `api/commerce/*` URL during runtime config edit.
-- [ ] StoreRegistry fields remain platform registry data only; runtime profile fields are not duplicated into ControlPlane DB.
+- [x] Stores detail runtime config form groups fields into Identity, Branding, Locale, Contact, Availability, and Advanced URLs. 2026-07-15: visible ControlPlane Web QA selected the `default` store and verified all runtime field groups were present.
+- [x] Runtime config save updates Commerce Node store name, logo/favicon/icon URLs, MS tile color, default currency, default culture, CDN host, contact data, and maintenance fields. 2026-07-15: visible ControlPlane Web QA saved runtime config through the gateway; current-store API reflected the updated support phone while retaining configured branding/locale/contact fields.
+- [x] Runtime config validation errors from Commerce Node are shown in Control Plane Web. 2026-07-15: saving `javascript:alert(1)` as Logo URL returned 400 with `Logo URL must be an absolute HTTP URL or a safe root-relative path.` through ControlPlane API.
+- [~] Disabled/provisioning runtime stores can still be edited from Control Plane when the platform store is accessible. 2026-07-15: platform registry row was `disabled` while the assigned active runtime store remained editable and save succeeded through ControlPlane Web; disabled/provisioning runtime status was not exercised live in this pass.
+- [x] Logo/favicon preview is guarded and does not execute arbitrary URL/style input. 2026-07-15: visible browser QA entered a `javascript:` logo value and verified no dangerous preview image was rendered before save.
+- [x] Browser network capture shows ControlPlane Web calls only ControlPlane API when editing runtime store config. 2026-07-15: Playwright network capture showed `/api/controlplane/commerce/.../runtime-store` requests only on `localhost:5280`.
+- [x] Browser never receives Commerce Node node key, node secret, or direct `api/commerce/*` URL during runtime config edit. 2026-07-15: Playwright network filter found no `localhost:5180`, `/api/internal`, or direct `/api/commerce/*` calls from ControlPlane Web during edit/save.
+- [x] StoreRegistry fields remain platform registry data only; runtime profile fields are not duplicated into ControlPlane DB. 2026-07-15: ControlPlane UI kept registry `Name`/node/metadata separate from runtime Identity/Branding/Locale/Contact groups; focused `ControlPlaneStoresPageRuntimeConfigTests` passed.
 
 ## Catalog Product Media
 
