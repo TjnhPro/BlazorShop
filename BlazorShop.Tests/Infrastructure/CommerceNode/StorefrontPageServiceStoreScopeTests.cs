@@ -176,6 +176,71 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         }
 
         [Fact]
+        public async Task CreateAsync_PublishedMappedLegacyPage_CreatesApprovedLegacyRedirect()
+        {
+            var storeA = Guid.NewGuid();
+            await using var context = CreateContext();
+            var redirects = new Mock<ISeoRedirectAutomationService>();
+            redirects
+                .Setup(service => service.EnsurePermanentRedirectAsync("/about-us", "/pages/about-us"))
+                .ReturnsAsync(SuccessfulRedirect("/about-us", "/pages/about-us"));
+            var service = CreateService(context, storeA, navigationCache: null, redirectAutomationService: redirects.Object);
+
+            var result = await service.CreateAsync(new CreateStorefrontPageRequest(
+                "about-us",
+                "About us",
+                null,
+                "<p>About</p>",
+                true,
+                true,
+                PageKey: "about"));
+
+            Assert.True(result.Success);
+            redirects.Verify(service => service.EnsurePermanentRedirectAsync("/about-us", "/pages/about-us"), Times.Once);
+        }
+
+        [Fact]
+        public async Task CreateAsync_DraftMappedLegacyPage_DoesNotCreateLegacyRedirect()
+        {
+            var storeA = Guid.NewGuid();
+            await using var context = CreateContext();
+            var redirects = new Mock<ISeoRedirectAutomationService>();
+            var service = CreateService(context, storeA, navigationCache: null, redirectAutomationService: redirects.Object);
+
+            var result = await service.CreateAsync(new CreateStorefrontPageRequest(
+                "about-us",
+                "About us",
+                null,
+                "<p>About</p>",
+                false,
+                true,
+                PageKey: "about"));
+
+            Assert.True(result.Success);
+            redirects.Verify(service => service.EnsurePermanentRedirectAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task CreateAsync_UnknownLegacyPath_DoesNotCreateLegacyRedirect()
+        {
+            var storeA = Guid.NewGuid();
+            await using var context = CreateContext();
+            var redirects = new Mock<ISeoRedirectAutomationService>();
+            var service = CreateService(context, storeA, navigationCache: null, redirectAutomationService: redirects.Object);
+
+            var result = await service.CreateAsync(new CreateStorefrontPageRequest(
+                "custom-page",
+                "Custom page",
+                null,
+                "<p>Custom</p>",
+                true,
+                true));
+
+            Assert.True(result.Success);
+            redirects.Verify(service => service.EnsurePermanentRedirectAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
         public async Task UpdateAsync_InvalidatesNavigationCacheForCurrentStore()
         {
             var storeA = Guid.NewGuid();
@@ -234,17 +299,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var redirects = new Mock<ISeoRedirectAutomationService>();
             redirects
                 .Setup(service => service.EnsurePermanentRedirectAsync("/pages/about-us", "/pages/company"))
-                .ReturnsAsync(new ServiceResponse<BlazorShop.Application.DTOs.Seo.SeoRedirectDto>(true, "Created", Guid.NewGuid())
-                {
-                    ResponseType = ServiceResponseType.Success,
-                    Payload = new BlazorShop.Application.DTOs.Seo.SeoRedirectDto
-                    {
-                        OldPath = "/pages/about-us",
-                        NewPath = "/pages/company",
-                        StatusCode = 301,
-                        IsActive = true,
-                    },
-                });
+                .ReturnsAsync(SuccessfulRedirect("/pages/about-us", "/pages/company"));
             var service = CreateService(
                 context,
                 storeA,
@@ -391,6 +446,23 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 slugPolicy,
                 slugHistory,
                 redirectAutomationService);
+        }
+
+        private static ServiceResponse<BlazorShop.Application.DTOs.Seo.SeoRedirectDto> SuccessfulRedirect(
+            string oldPath,
+            string newPath)
+        {
+            return new ServiceResponse<BlazorShop.Application.DTOs.Seo.SeoRedirectDto>(true, "Created", Guid.NewGuid())
+            {
+                ResponseType = ServiceResponseType.Success,
+                Payload = new BlazorShop.Application.DTOs.Seo.SeoRedirectDto
+                {
+                    OldPath = oldPath,
+                    NewPath = newPath,
+                    StatusCode = 301,
+                    IsActive = true,
+                },
+            };
         }
 
         private static CommerceNodeDbContext CreateContext()

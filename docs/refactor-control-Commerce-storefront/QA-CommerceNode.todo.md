@@ -147,6 +147,9 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [ ] Slug lifecycle endpoints require Commerce Admin node credentials and `storeKey` query in live HTTP QA.
 - [ ] Slug validate returns a 200 envelope with payload `success=false` and shared-policy rejection message for reserved/slash/collision input.
 - [ ] Slug history endpoint returns only the current store's entity history and does not expose another store's slugs.
+- [x] Approved legacy static page routes are converted to store-scoped redirects only when a published page mapping exists. 2026-07-15 SEO Routing Slug Phase 11: `StorefrontPageServiceStoreScopeTests.CreateAsync_PublishedMappedLegacyPage_CreatesApprovedLegacyRedirect` passed for `/about-us -> /pages/about-us`.
+- [x] Draft or unknown legacy page paths do not create broad redirects. 2026-07-15 SEO Routing Slug Phase 11: focused StorefrontPageService tests passed for draft mapped page and custom page no-redirect cases.
+- [x] CommerceNode API builds after legacy topic redirect compatibility. 2026-07-15 SEO Routing Slug Phase 11: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
 - [ ] API smoke: create two active redirects with the same `OldPath` in two different stores through `api/commerce/admin/seo/redirects`.
 - [ ] API smoke: duplicate active `OldPath` in the same store returns conflict/validation failure.
 - [ ] API smoke: `GET /api/storefront/stores/{storeKey}/seo/redirects/resolve` ignores another store's redirect.

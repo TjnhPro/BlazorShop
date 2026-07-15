@@ -9,7 +9,8 @@ namespace BlazorShop.Application.CommerceNode.StorefrontPages
         string DefaultTitle,
         bool RequiredForReadiness,
         string? DefaultNavigationLocation,
-        int DisplayOrder);
+        int DisplayOrder,
+        string? LegacyPath = null);
 
     public sealed record StorefrontPageTemplateStatusDto(
         string PageKey,

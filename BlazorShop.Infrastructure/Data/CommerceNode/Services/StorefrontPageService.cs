@@ -194,6 +194,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             await this.context.SaveChangesAsync(cancellationToken);
             this.navigationCache?.Invalidate(page.StoreId);
+            var legacyRedirectResult = await this.EnsureApprovedLegacyPageRedirectAsync(page);
+            if (!legacyRedirectResult.Success)
+            {
+                return Failure<StorefrontPageDetailDto>(legacyRedirectResult.Message!, legacyRedirectResult.ResponseType);
+            }
+
             await this.LogAsync("StorefrontPage.Created", page.Id, "Storefront page created.", new { page.Title, page.Slug }, cancellationToken);
 
             return Success(MapDetail(page), "Storefront page created.");
@@ -288,6 +294,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             await this.context.SaveChangesAsync(cancellationToken);
             this.navigationCache?.Invalidate(page.StoreId);
+            var legacyRedirectResult = await this.EnsureApprovedLegacyPageRedirectAsync(page);
+            if (!legacyRedirectResult.Success)
+            {
+                return Failure<StorefrontPageDetailDto>(legacyRedirectResult.Message!, legacyRedirectResult.ResponseType);
+            }
+
             await this.LogAsync("StorefrontPage.Updated", page.Id, "Storefront page updated.", new { page.Title, page.Slug, page.IsPublished }, cancellationToken);
 
             return Success(MapDetail(page), "Storefront page updated.");
@@ -620,6 +632,28 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 : SlugPolicyOutcome.Failed(redirect.Message ?? "Storefront page redirect could not be created.", redirect.ResponseType);
         }
 
+        private async Task<SlugPolicyOutcome> EnsureApprovedLegacyPageRedirectAsync(StorefrontPage page)
+        {
+            if (this.seoRedirectAutomationService is null || !page.IsPublished || page.ArchivedAt is not null)
+            {
+                return SlugPolicyOutcome.Succeeded(page.Slug);
+            }
+
+            var legacyPath = ResolveApprovedLegacyPath(page.PageKey, page.Slug);
+            var canonicalPath = BuildPagePublicPath(page.Slug, page.IsPublished);
+            if (string.IsNullOrWhiteSpace(legacyPath) ||
+                string.IsNullOrWhiteSpace(canonicalPath) ||
+                PathsEqual(legacyPath, canonicalPath))
+            {
+                return SlugPolicyOutcome.Succeeded(page.Slug);
+            }
+
+            var redirect = await this.seoRedirectAutomationService.EnsurePermanentRedirectAsync(legacyPath, canonicalPath);
+            return redirect.Success
+                ? SlugPolicyOutcome.Succeeded(page.Slug)
+                : SlugPolicyOutcome.Failed(redirect.Message ?? "Legacy storefront page redirect could not be created.", redirect.ResponseType);
+        }
+
         private static SlugPolicyOutcome ToPageSlugOutcome(StoreSeoSlugPolicyResult result)
         {
             if (result.Success)
@@ -637,6 +671,22 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return isPublished && !string.IsNullOrWhiteSpace(slug)
                 ? $"/pages/{slug}"
                 : null;
+        }
+
+        private static string? ResolveApprovedLegacyPath(string? pageKey, string? slug)
+        {
+            var templateLegacyPath = StorefrontPageTemplateCatalog.FindLegacyPath(pageKey);
+            if (!string.IsNullOrWhiteSpace(templateLegacyPath))
+            {
+                return templateLegacyPath;
+            }
+
+            return slug?.Trim().ToLowerInvariant() switch
+            {
+                "faq" => "/faq",
+                "customer-service" => "/customer-service",
+                _ => null,
+            };
         }
 
         private static bool PathsEqual(string left, string right)

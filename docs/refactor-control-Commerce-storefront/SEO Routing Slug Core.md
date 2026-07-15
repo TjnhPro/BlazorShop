@@ -763,15 +763,22 @@ Goal: handle legacy topic/page URLs only if real legacy URLs exist.
 Tasks:
 
 - Inventory legacy topic/page URL patterns from old app or database.
+  - Complete. Legacy storefront had exact static routes `/about-us`, `/faq`, `/terms`, `/privacy`, and `/customer-service`; no BlazorShop `Topic` entity/table was found in active or legacy app code.
 - Map known topic paths to new `/pages/{slug}` only when there is an active page mapping.
+  - Complete for approved exact paths. Template-mapped pages use `LegacyPath` for `about`, `terms_conditions`, and `privacy_policy`; FAQ and customer-service are supported only when the active page slug exactly matches those legacy paths.
 - Create store-scoped 301 redirects through the shared redirect service.
+  - Complete. Published page create/update calls `ISeoRedirectAutomationService.EnsurePermanentRedirectAsync`, which resolves current store scope and writes store-scoped redirect rows.
 - Do not add broad catch-all topic routes.
+  - Complete. No Storefront route was added; only exact approved legacy paths are converted to redirects.
 - Add tests for known legacy path examples.
+  - Complete. `StorefrontPageServiceStoreScopeTests` covers approved legacy redirect creation and no redirect for draft/unknown pages.
 
 Exit criteria:
 
 - Approved legacy topic URLs redirect to canonical active page URLs.
+  - Complete for approved mapped/published pages.
 - Unknown legacy paths remain 404.
+  - Complete by design because no catch-all route or redirect generation exists for unknown paths.
 
 Suggested commit:
 
