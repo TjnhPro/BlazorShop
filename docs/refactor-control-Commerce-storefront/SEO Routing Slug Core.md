@@ -25,7 +25,8 @@ Updated: 2026-07-15
 - Phase 7 complete: SEO metadata builder now rejects unsafe canonical/Open Graph URLs, falls back to route canonical when an override is unsafe, and keeps title suffix de-duplication covered.
 - Phase 8 complete: Storefront indexing policy centralizes private/search noindex rules and canonical path normalization that strips query, fragment, and trailing slash noise.
 - Phase 9 complete: Storefront sitemap generation now resolves entries through canonical path normalization and excludes private/search noindex routes before absolute URL generation.
-- Phase 11 is conditional and should run only after a real legacy topic URL inventory exists.
+- Phase 11 complete after real legacy topic URL inventory: approved static page URLs are mapped to store-scoped page redirects without adding catch-all routes.
+- Phase 12 complete: Commerce Admin slug lifecycle OpenAPI metadata is guarded, focused SEO routing/slug suites pass, QA checklists are updated, and future-agent slug policy notes are documented.
 
 Autoplan note: external dual-voice subagents are not available in this Codex runtime. This plan records an internal autoplan audit using the same decision principles: preserve existing working behavior, fix the riskiest foundation first, keep V2 boundaries explicit, avoid speculative localization/manufacturer work, and make each phase independently verifiable.
 
@@ -793,27 +794,81 @@ Goal: close the feature with focused verification.
 Tasks:
 
 - Update `QA-CommerceNode.todo.md`.
+  - Complete in Phase 12. Added release-gate evidence for slug lifecycle OpenAPI metadata, focused slug policy/history/resolver tests, redirect/page-flow tests, sitemap/robots/indexing/metadata tests, and CommerceNode API build.
 - Update `QA-ControlPlane.todo.md`.
+  - Complete in Phase 12. Added gateway/contract evidence while keeping visible browser UI checks pending.
 - Update `QA-StorefrontV2.todo.md`.
+  - Complete in Phase 12. Added focused Storefront SEO/discovery release-gate evidence while keeping old-slug visible browser checks pending.
 - Add migration verification for Commerce Node database.
+  - Complete at model/build level through earlier phase migrations and CommerceNode API build; live PostgreSQL migration apply remains a runtime QA concern when the local stack is running.
 - Add API contract tests for new/changed endpoints.
+  - Complete in Phase 12. `CommerceNodeAdminStoreOpenApiMetadataTests.CommerceSeoSlugAdminSwaggerFilter_DefinesStableOperationMetadata` guards stable operation IDs, response schemas, and required request bodies for slug generate/validate/history.
 - Add focused service tests for slug policy, resolver, redirects, sitemap.
+  - Complete in Phase 12. Focused runs covered slug policy/history/resolver, redirect/page flows, sitemap/robots/indexing, and metadata behavior.
 - Add Storefront browser checks for old slug redirect and canonical metadata.
+  - Deferred to visible-browser QA. Automated current-store and resolver tests cover the behavior; live headed browser old-slug checks remain listed in `QA-StorefrontV2.todo.md`.
 - Document slug policy and reserved paths for future agents.
+  - Complete in Phase 12. See "Future Agent Slug Policy Notes" below.
 
 Exit criteria:
 
 - Focused tests pass.
+  - Complete. Phase 12 focused suites passed: 4/4 OpenAPI metadata, 17/17 slug policy/history/resolver, 29/29 redirect/page-flow, and 26/26 sitemap/robots/indexing/metadata.
 - Storefront old slug redirect verified.
+  - Automated verification complete through resolver/API/service tests; visible-browser verification remains pending because no headed runtime stack was started in this phase.
 - Sitemap and robots verified.
+  - Complete through focused Storefront sitemap/robots tests.
 - QA checklists contain evidence.
+  - Complete.
 - No legacy V2 boundary violations.
+  - Complete for this phase. Changes stayed in active V2 CommerceNode Swagger, tests, and docs.
 
 Suggested commit:
 
 ```text
 test(v2): add seo routing slug core qa coverage
 ```
+
+#### Future Agent Slug Policy Notes
+
+The current shared slug policy intentionally preserves Unicode letters and digits after normalization. Do not switch to ASCII-only slugs without a migration plan for existing public URLs.
+
+Route-family prefixes remain stable:
+
+- Product canonical path: `/product/{slug}`
+- Category canonical path: `/category/{slug}`
+- Page canonical path: `/pages/{slug}`
+
+Reserved segments and public paths that must stay blocked for manually supplied slugs:
+
+- `api`
+- `admin`
+- `commerce`
+- `control-plane`
+- `storefront`
+- `media`
+- `uploads`
+- `css`
+- `js`
+- `images`
+- `_framework`
+- `_content`
+- `_blazor`
+- `swagger`
+- `signin`
+- `register`
+- `logout`
+- `my-cart`
+- `cart`
+- `checkout`
+- `search`
+- `new-releases`
+- `todays-deals`
+- `payment-success`
+- `payment-cancel`
+- `maintenance`
+
+Store scope is not optional: slug validation, slug history, redirects, sitemap output, and public redirect resolution must use the current Commerce store context and must never fall back to another store.
 
 ## 10. QA Checklist Draft
 
@@ -962,7 +1017,7 @@ Clear constants, DTOs, and resolver statuses make the system easier for future a
 11. Phase 10 - admin UX and Control Plane gateway.
 12. Phase 12 - QA/docs/release gate.
 
-Phase 11 is conditional and should run only after a real legacy topic URL inventory exists.
+Phase 11 was executed after real legacy topic URL inventory confirmed the exact supported static paths.
 
 ## 16. Definition Of Done
 

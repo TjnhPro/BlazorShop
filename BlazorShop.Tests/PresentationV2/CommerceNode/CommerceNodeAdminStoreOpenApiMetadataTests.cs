@@ -74,6 +74,29 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("typeof(CommerceNodeApiResponse<StoreCurrencyExchangeRateDto>)", source);
         }
 
+        [Fact]
+        public void CommerceSeoSlugAdminSwaggerFilter_DefinesStableOperationMetadata()
+        {
+            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwaggerExtensions.cs");
+
+            var operationIds = new[]
+            {
+                "CommerceSeoSlugs_Generate",
+                "CommerceSeoSlugs_Validate",
+                "CommerceSeoSlugs_ListHistory",
+            };
+
+            foreach (var operationId in operationIds)
+            {
+                Assert.Contains(operationId, source);
+            }
+
+            Assert.Contains("CommerceSeoSlugAdminOperationMetadataFilter", source);
+            Assert.Contains("typeof(CommerceNodeApiResponse<StoreSeoSlugPolicyResult>)", source);
+            Assert.Contains("typeof(CommerceNodeApiResponse<IReadOnlyList<StoreSeoSlugHistoryDto>>)", source);
+            Assert.Contains("requestBody.Required = true", source);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath));
