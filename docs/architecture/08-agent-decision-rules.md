@@ -108,6 +108,14 @@ Storefront cache/versioning rules:
 - Dynamic Storefront pages, maintenance pages, current-store/config reads, checkout/auth pages, SEO documents, and error states must not receive immutable cache headers.
 - Product and asset media proxy responses may forward Commerce Node `Cache-Control`/`ETag` headers, but Storefront V2 must not invent a broader immutable cache policy for dynamic routes.
 
+Control Plane Web asset rules:
+
+- Keep Control Plane root CSS and scripts explicit in `BlazorShop.ControlPlane.Web/wwwroot/index.html`.
+- Keep `vendor/fontawesome/css/all.min.css`, `css/site.css`, `css/app.css`, `_framework/blazor.webassembly.js`, and `js/downloads.js` allowlisted by tests.
+- Keep FontAwesome copied through the existing MSBuild `CopyFontAwesomeAssets` target.
+- Keep Control Plane feature JavaScript module-imported through services when possible. Root scripts are only for boot-time or host-global helpers such as file downloads.
+- Browser static assets and `wwwroot` config must point only to Control Plane API, never directly to Commerce Node `api/commerce/*`, `api/internal/*`, node keys, node secrets, or Commerce Node local ports.
+
 ## Database Rule
 
 Use the correct context:

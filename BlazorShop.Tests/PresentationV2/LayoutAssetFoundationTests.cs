@@ -165,6 +165,43 @@ namespace BlazorShop.Tests.PresentationV2
         }
 
         [Fact]
+        public void ControlPlaneBrowserAssets_DoNotExposeCommerceNodeBoundaryDetails()
+        {
+            var root = FindRepositoryRoot();
+            var assetFiles = Directory
+                .EnumerateFiles(Path.Combine(root, "BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/wwwroot"), "*.*", SearchOption.AllDirectories)
+                .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}vendor{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+                .Where(path => Path.GetExtension(path) is ".html" or ".json" or ".js" or ".css")
+                .ToArray();
+
+            Assert.NotEmpty(assetFiles);
+            foreach (var assetFile in assetFiles)
+            {
+                var content = File.ReadAllText(assetFile);
+
+                Assert.DoesNotContain("localhost:5180", content, StringComparison.OrdinalIgnoreCase);
+                Assert.DoesNotContain("api/commerce", content, StringComparison.OrdinalIgnoreCase);
+                Assert.DoesNotContain("api/internal", content, StringComparison.OrdinalIgnoreCase);
+                Assert.DoesNotContain("X-Node-Key", content, StringComparison.OrdinalIgnoreCase);
+                Assert.DoesNotContain("X-Node-Secret", content, StringComparison.OrdinalIgnoreCase);
+                Assert.DoesNotContain("dev-node-secret", content, StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        [Fact]
+        public void ControlPlaneDownloadsScript_StaysHostGlobalDownloadOnly()
+        {
+            var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/wwwroot/js/downloads.js");
+
+            Assert.Contains("window.controlPlaneDownloads", script);
+            Assert.Contains("downloadBytes", script);
+            Assert.Contains("URL.createObjectURL", script);
+            Assert.DoesNotContain("fetch(", script, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("eval(", script, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("api/", script, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
         public void ControlPlanePageHeader_DefinesOperationalHeaderExtensionPoint()
         {
             var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Components/ControlPlanePageHeader.razor");
@@ -220,6 +257,7 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.Contains("Keep `blazor.web.js` before `storefrontCommerce.js`", decisionRules);
             Assert.Contains("Do not add DB-configured or store-configured arbitrary public scripts/styles.", decisionRules);
             Assert.Contains("Dynamic Storefront pages, maintenance pages, current-store/config reads, checkout/auth pages, SEO documents, and error states must not receive immutable cache headers.", decisionRules);
+            Assert.Contains("Browser static assets and `wwwroot` config must point only to Control Plane API", decisionRules);
         }
 
         private static IReadOnlyList<string> ExtractStylesheetHrefs(string markup)
