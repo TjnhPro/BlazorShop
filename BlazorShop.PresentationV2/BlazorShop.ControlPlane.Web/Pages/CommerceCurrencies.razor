@@ -1,0 +1,674 @@
+@page "/commerce-admin/currencies"
+@attribute [Authorize]
+@inject IControlPlaneStoreClient StoreClient
+@inject IControlPlaneCatalogClient CatalogClient
+
+<PageTitle>Currencies</PageTitle>
+
+<section class="space-y-5">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+            <p class="text-sm font-semibold text-control-700">Commerce Admin</p>
+            <h1 class="text-2xl font-bold text-ink-900">Currencies</h1>
+            <p class="mt-1 text-sm text-ink-500">Configure store currencies, rounding and exchange-rate updates.</p>
+        </div>
+        <div class="flex flex-col gap-2 sm:flex-row">
+            <select class="min-h-10 min-w-64 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="selectedStorePublicId">
+                <option value="">Select store</option>
+                @foreach (var store in stores)
+                {
+                    <option value="@store.PublicId">@store.Name (@store.StoreKey)</option>
+                }
+            </select>
+            <button class="cp-button cp-button-secondary" @onclick="LoadCurrencyStateAsync">
+                <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">@errorMessage</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">@successMessage</div>
+    }
+
+    @if (!HasStore)
+    {
+        <div class="cp-card p-8 text-center text-sm text-ink-500">Select a store to load currency settings.</div>
+    }
+    else if (isLoading)
+    {
+        <div class="cp-card p-8 text-center text-sm text-ink-500">Loading currencies...</div>
+    }
+    else
+    {
+        <div class="grid gap-4 xl:grid-cols-[1fr_360px]">
+            <div class="cp-card overflow-hidden">
+                <div class="border-b border-ink-100 px-4 py-3">
+                    <div class="text-sm font-semibold text-ink-900">Supported currencies</div>
+                    <div class="mt-1 text-xs text-ink-500">Base currency: <span class="font-semibold text-ink-700">@BaseCurrencyLabel</span></div>
+                </div>
+                @if (currencyForms.Count == 0)
+                {
+                    <div class="p-8 text-center text-sm text-ink-500">No currencies found.</div>
+                }
+                else
+                {
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-ink-200 text-left text-sm">
+                            <thead class="bg-ink-50 text-xs font-semibold uppercase text-ink-500">
+                                <tr>
+                                    <th class="px-4 py-3">Currency</th>
+                                    <th class="px-4 py-3">Enabled</th>
+                                    <th class="px-4 py-3">Display</th>
+                                    <th class="px-4 py-3">Unit rounding</th>
+                                    <th class="px-4 py-3">Line rounding</th>
+                                    <th class="px-4 py-3">Order rounding</th>
+                                    <th class="px-4 py-3 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-ink-100">
+                                @foreach (var currency in currencyForms)
+                                {
+                                    <tr>
+                                        <td class="px-4 py-3 align-top">
+                                            <div class="font-mono font-semibold text-ink-900">@currency.CurrencyCode</div>
+                                            <div class="mt-1 text-xs text-ink-500">
+                                                @(currency.IsBaseCurrency ? "Base currency" : currency.IsDefaultDisplayCurrency ? "Default display" : "Store currency")
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3 align-top">
+                                            <input class="size-5 rounded border-ink-300 text-control-700 focus:ring-control-500" type="checkbox" disabled="@currency.IsBaseCurrency" @bind="currency.IsEnabled" />
+                                        </td>
+                                        <td class="px-4 py-3 align-top">
+                                            <label class="mb-2 flex items-center gap-2 text-xs text-ink-600">
+                                                <input class="size-4 rounded border-ink-300 text-control-700 focus:ring-control-500" type="checkbox" disabled="@currency.IsBaseCurrency" @bind="currency.IsDefaultDisplayCurrency" />
+                                                Default display
+                                            </label>
+                                            <div class="grid gap-2">
+                                                <input class="min-h-10 w-32 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Culture" @bind="currency.CultureName" />
+                                                <input class="min-h-10 w-24 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Symbol" @bind="currency.Symbol" />
+                                                <input class="min-h-10 w-24 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="0" max="4" @bind="currency.DecimalDigits" />
+                                                <input class="min-h-10 w-24 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="0" @bind="currency.DisplayOrder" />
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3 align-top">
+                                            <select class="min-h-10 w-44 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="currency.UnitPriceRoundingMode">
+                                                @foreach (var mode in RoundingModes)
+                                                {
+                                                    <option value="@mode">@mode</option>
+                                                }
+                                            </select>
+                                            <input class="mt-2 min-h-10 w-32 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="0.0001" step="0.0001" @bind="currency.UnitPriceRoundingIncrement" />
+                                        </td>
+                                        <td class="px-4 py-3 align-top">
+                                            <select class="min-h-10 w-44 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="currency.LineTotalRoundingMode">
+                                                @foreach (var mode in RoundingModes)
+                                                {
+                                                    <option value="@mode">@mode</option>
+                                                }
+                                            </select>
+                                            <input class="mt-2 min-h-10 w-32 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="0.0001" step="0.0001" @bind="currency.LineTotalRoundingIncrement" />
+                                        </td>
+                                        <td class="px-4 py-3 align-top">
+                                            <select class="min-h-10 w-44 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="currency.OrderTotalRoundingMode">
+                                                @foreach (var mode in RoundingModes)
+                                                {
+                                                    <option value="@mode">@mode</option>
+                                                }
+                                            </select>
+                                            <input class="mt-2 min-h-10 w-32 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="0.0001" step="0.0001" @bind="currency.OrderTotalRoundingIncrement" />
+                                        </td>
+                                        <td class="px-4 py-3 text-right align-top">
+                                            <button class="cp-button cp-button-primary justify-center" disabled="@isSavingCurrency" @onclick="() => SaveCurrencyAsync(currency)">
+                                                <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                                                Save
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+
+            <div class="space-y-4">
+                <div class="cp-card p-4">
+                    <div class="mb-3 text-sm font-semibold text-ink-900">Exchange-rate providers</div>
+                    @if (providers.Count == 0)
+                    {
+                        <div class="text-sm text-ink-500">No providers configured.</div>
+                    }
+                    else
+                    {
+                        <div class="space-y-3">
+                            @foreach (var provider in providers)
+                            {
+                                <div class="rounded-md border border-ink-200 p-3">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <div class="font-mono text-sm font-semibold text-ink-900">@provider.ProviderKey</div>
+                                        <span class="rounded-full px-2 py-1 text-xs font-semibold @(provider.Enabled ? "bg-green-50 text-green-700" : "bg-ink-100 text-ink-500")">
+                                            @(provider.Enabled ? "Enabled" : "Disabled")
+                                        </span>
+                                    </div>
+                                    <div class="mt-2 text-xs text-ink-500">@provider.Status</div>
+                                    <div class="mt-1 text-xs text-ink-500">Source: @(provider.Source ?? "-")</div>
+                                    <div class="mt-1 text-xs text-ink-500">Secrets: @(provider.SecretsConfigured ? "Configured" : "Not exposed")</div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    <div class="mt-4 grid gap-2">
+                        <select class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="selectedProviderKey">
+                            <option value="">Select provider</option>
+                            @foreach (var provider in providers.Where(item => !string.Equals(item.ProviderKey, "manual", StringComparison.OrdinalIgnoreCase)))
+                            {
+                                <option value="@provider.ProviderKey">@provider.ProviderKey</option>
+                            }
+                        </select>
+                        <select class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="selectedProviderTargetCurrencyCode">
+                            <option value="">All enabled targets</option>
+                            @foreach (var code in TargetCurrencyCodes)
+                            {
+                                <option value="@code">@code</option>
+                            }
+                        </select>
+                        <div class="flex gap-2">
+                            <button class="cp-button cp-button-secondary flex-1 justify-center" disabled="@isProviderActionRunning" @onclick="FetchRatesAsync">
+                                <i class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></i>
+                                Fetch
+                            </button>
+                            <button class="cp-button cp-button-primary flex-1 justify-center" disabled="@isProviderActionRunning" @onclick="QueueRateUpdateAsync">
+                                <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+                                Queue
+                            </button>
+                        </div>
+                        @if (lastQueuedTask is not null)
+                        {
+                            <div class="rounded-md border border-control-100 bg-control-50 px-3 py-2 text-xs text-control-800">
+                                Task @lastQueuedTask.PublicId.ToString("N") queued as @lastQueuedTask.Status.
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="cp-card p-4">
+                    <div class="mb-3 text-sm font-semibold text-ink-900">Manual exchange rate</div>
+                    <div class="grid gap-2">
+                        <select class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="manualTargetCurrencyCode">
+                            <option value="">Target currency</option>
+                            @foreach (var code in TargetCurrencyCodes)
+                            {
+                                <option value="@code">@code</option>
+                            }
+                        </select>
+                        <input class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="0.000001" step="0.000001" placeholder="Rate" @bind="manualRate" />
+                        <input class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Source" @bind="manualSource" />
+                        <label class="flex items-center gap-2 text-xs text-ink-600">
+                            <input class="size-4 rounded border-ink-300 text-control-700 focus:ring-control-500" type="checkbox" @bind="manualRateEnabled" />
+                            Enabled
+                        </label>
+                        <button class="cp-button cp-button-primary justify-center" disabled="@isSavingRate" @onclick="SaveManualRateAsync">
+                            <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                            Save manual rate
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cp-card overflow-hidden">
+            <div class="border-b border-ink-100 px-4 py-3 text-sm font-semibold text-ink-900">Exchange rates</div>
+            @if (exchangeRates.Count == 0)
+            {
+                <div class="p-8 text-center text-sm text-ink-500">No exchange rates configured.</div>
+            }
+            else
+            {
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-ink-200 text-left text-sm">
+                        <thead class="bg-ink-50 text-xs font-semibold uppercase text-ink-500">
+                            <tr>
+                                <th class="px-4 py-3">Pair</th>
+                                <th class="px-4 py-3">Rate</th>
+                                <th class="px-4 py-3">Provider</th>
+                                <th class="px-4 py-3">Source</th>
+                                <th class="px-4 py-3">Status</th>
+                                <th class="px-4 py-3">Effective</th>
+                                <th class="px-4 py-3 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-ink-100">
+                            @foreach (var rate in exchangeRates)
+                            {
+                                <tr>
+                                    <td class="px-4 py-3 font-mono font-semibold text-ink-900">@rate.BaseCurrencyCode -> @rate.TargetCurrencyCode</td>
+                                    <td class="px-4 py-3">@rate.Rate</td>
+                                    <td class="px-4 py-3">@rate.ProviderKey</td>
+                                    <td class="px-4 py-3">@(rate.Source ?? "-")</td>
+                                    <td class="px-4 py-3">
+                                        <span class="rounded-full px-2 py-1 text-xs font-semibold @(rate.IsActive ? "bg-green-50 text-green-700" : "bg-ink-100 text-ink-500")">
+                                            @(rate.IsActive ? "Active" : rate.IsEnabled ? "Inactive" : "Disabled")
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 text-xs text-ink-500">
+                                        <div>@rate.EffectiveAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
+                                        <div>@(rate.ExpiresAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "No expiry")</div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right">
+                                        @if (rate.IsManual && rate.IsEnabled)
+                                        {
+                                            <button class="cp-button cp-button-secondary justify-center" disabled="@isSavingRate" @onclick="() => DisableRateAsync(rate.TargetCurrencyCode)">
+                                                <i class="fa-solid fa-ban" aria-hidden="true"></i>
+                                                Disable
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    private static readonly string[] RoundingModes =
+    [
+        "halfAwayFromZero",
+        "halfToEven",
+        "floor",
+        "ceiling",
+        "truncate",
+    ];
+
+    private readonly List<StoreSummary> stores = [];
+    private readonly List<CurrencyForm> currencyForms = [];
+    private readonly List<StoreCurrencyExchangeRateDto> exchangeRates = [];
+    private readonly List<StoreCurrencyExchangeRateProviderDto> providers = [];
+
+    private Guid? selectedStorePublicId;
+    private bool isLoading;
+    private bool isSavingCurrency;
+    private bool isSavingRate;
+    private bool isProviderActionRunning;
+    private string? errorMessage;
+    private string? successMessage;
+    private string? manualTargetCurrencyCode;
+    private decimal manualRate = 1m;
+    private string? manualSource = "manual";
+    private bool manualRateEnabled = true;
+    private string? selectedProviderKey;
+    private string? selectedProviderTargetCurrencyCode;
+    private CommerceTaskSummary? lastQueuedTask;
+
+    private bool HasStore => selectedStorePublicId.HasValue && selectedStorePublicId.Value != Guid.Empty;
+
+    private string BaseCurrencyLabel => currencyForms.FirstOrDefault(currency => currency.IsBaseCurrency)?.CurrencyCode ?? "-";
+
+    private IReadOnlyList<string> TargetCurrencyCodes => currencyForms
+        .Where(currency => currency.IsEnabled && !currency.IsBaseCurrency)
+        .OrderBy(currency => currency.DisplayOrder)
+        .ThenBy(currency => currency.CurrencyCode, StringComparer.Ordinal)
+        .Select(currency => currency.CurrencyCode)
+        .ToArray();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await StoreClient.ListAsync(pageSize: 100);
+        stores.AddRange(response.Items);
+        selectedStorePublicId = stores.FirstOrDefault()?.PublicId;
+        await LoadCurrencyStateAsync();
+    }
+
+    private async Task LoadCurrencyStateAsync()
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        successMessage = null;
+        lastQueuedTask = null;
+        try
+        {
+            var currenciesResult = await CatalogClient.ListCurrenciesAsync(selectedStorePublicId!.Value);
+            if (!currenciesResult.Success || currenciesResult.Data is null)
+            {
+                errorMessage = currenciesResult.Message;
+                return;
+            }
+
+            currencyForms.Clear();
+            currencyForms.AddRange(currenciesResult.Data
+                .OrderBy(currency => currency.DisplayOrder)
+                .ThenBy(currency => currency.CurrencyCode, StringComparer.Ordinal)
+                .Select(CurrencyForm.FromDto));
+
+            var ratesResult = await CatalogClient.ListExchangeRatesAsync(selectedStorePublicId.Value);
+            if (!ratesResult.Success || ratesResult.Data is null)
+            {
+                errorMessage = ratesResult.Message;
+                return;
+            }
+
+            exchangeRates.Clear();
+            exchangeRates.AddRange(ratesResult.Data
+                .OrderBy(rate => rate.TargetCurrencyCode, StringComparer.Ordinal)
+                .ThenBy(rate => rate.ProviderKey, StringComparer.Ordinal));
+
+            var providersResult = await CatalogClient.ListExchangeRateProvidersAsync(selectedStorePublicId.Value);
+            if (!providersResult.Success || providersResult.Data is null)
+            {
+                errorMessage = providersResult.Message;
+                return;
+            }
+
+            providers.Clear();
+            providers.AddRange(providersResult.Data.OrderBy(provider => provider.ProviderKey, StringComparer.Ordinal));
+            selectedProviderKey = providers.FirstOrDefault(provider => !string.Equals(provider.ProviderKey, "manual", StringComparison.OrdinalIgnoreCase))?.ProviderKey;
+            manualTargetCurrencyCode ??= TargetCurrencyCodes.FirstOrDefault();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveCurrencyAsync(CurrencyForm currency)
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        isSavingCurrency = true;
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            var result = await CatalogClient.UpdateCurrencyAsync(
+                selectedStorePublicId!.Value,
+                currency.CurrencyCode,
+                currency.ToRequest());
+
+            if (!result.Success || result.Data is null)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            ReplaceCurrency(result.Data);
+            successMessage = result.Message;
+        }
+        finally
+        {
+            isSavingCurrency = false;
+        }
+    }
+
+    private async Task SaveManualRateAsync()
+    {
+        if (!HasStore || string.IsNullOrWhiteSpace(manualTargetCurrencyCode))
+        {
+            errorMessage = "Select a target currency.";
+            return;
+        }
+
+        isSavingRate = true;
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            var result = await CatalogClient.UpsertExchangeRateAsync(
+                selectedStorePublicId!.Value,
+                manualTargetCurrencyCode,
+                new UpsertStoreCurrencyExchangeRateRequest(manualRate, manualSource, IsEnabled: manualRateEnabled));
+
+            if (!result.Success || result.Data is null)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            ReplaceRate(result.Data);
+            successMessage = result.Message;
+        }
+        finally
+        {
+            isSavingRate = false;
+        }
+    }
+
+    private async Task DisableRateAsync(string targetCurrencyCode)
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        isSavingRate = true;
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            var result = await CatalogClient.DisableExchangeRateAsync(selectedStorePublicId!.Value, targetCurrencyCode);
+            if (!result.Success || result.Data is null)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            ReplaceRate(result.Data);
+            successMessage = result.Message;
+        }
+        finally
+        {
+            isSavingRate = false;
+        }
+    }
+
+    private async Task FetchRatesAsync()
+    {
+        if (!TryBuildProviderRequest(out var request))
+        {
+            return;
+        }
+
+        isProviderActionRunning = true;
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            var result = await CatalogClient.FetchExchangeRatesAsync(selectedStorePublicId!.Value, request);
+            if (!result.Success || result.Data is null)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            foreach (var rate in result.Data.Rates)
+            {
+                ReplaceRate(rate);
+            }
+
+            successMessage = result.Message;
+        }
+        finally
+        {
+            isProviderActionRunning = false;
+        }
+    }
+
+    private async Task QueueRateUpdateAsync()
+    {
+        if (!TryBuildProviderRequest(out var fetchRequest))
+        {
+            return;
+        }
+
+        isProviderActionRunning = true;
+        errorMessage = null;
+        successMessage = null;
+        lastQueuedTask = null;
+        try
+        {
+            var result = await CatalogClient.QueueExchangeRateUpdateAsync(
+                selectedStorePublicId!.Value,
+                new QueueStoreCurrencyExchangeRateUpdateRequest(
+                    fetchRequest.ProviderKey,
+                    fetchRequest.TargetCurrencyCodes,
+                    fetchRequest.IsEnabled));
+
+            if (!result.Success || result.Data is null)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            lastQueuedTask = result.Data;
+            successMessage = result.Message;
+        }
+        finally
+        {
+            isProviderActionRunning = false;
+        }
+    }
+
+    private bool TryBuildProviderRequest(out FetchStoreCurrencyExchangeRatesRequest request)
+    {
+        request = new FetchStoreCurrencyExchangeRatesRequest(string.Empty);
+        if (!HasStore)
+        {
+            errorMessage = "Select a store.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(selectedProviderKey))
+        {
+            errorMessage = "Select an exchange-rate provider.";
+            return false;
+        }
+
+        IReadOnlyList<string>? targets = string.IsNullOrWhiteSpace(selectedProviderTargetCurrencyCode)
+            ? null
+            : [selectedProviderTargetCurrencyCode];
+        request = new FetchStoreCurrencyExchangeRatesRequest(selectedProviderKey, targets);
+        return true;
+    }
+
+    private void ReplaceCurrency(StoreCurrencyDto dto)
+    {
+        var index = currencyForms.FindIndex(item => item.CurrencyCode == dto.CurrencyCode);
+        var form = CurrencyForm.FromDto(dto);
+        if (index >= 0)
+        {
+            currencyForms[index] = form;
+        }
+        else
+        {
+            currencyForms.Add(form);
+        }
+    }
+
+    private void ReplaceRate(StoreCurrencyExchangeRateDto dto)
+    {
+        var index = exchangeRates.FindIndex(item =>
+            item.BaseCurrencyCode == dto.BaseCurrencyCode &&
+            item.TargetCurrencyCode == dto.TargetCurrencyCode &&
+            item.ProviderKey == dto.ProviderKey);
+
+        if (index >= 0)
+        {
+            exchangeRates[index] = dto;
+        }
+        else
+        {
+            exchangeRates.Add(dto);
+        }
+
+        exchangeRates.Sort((left, right) =>
+        {
+            var target = string.CompareOrdinal(left.TargetCurrencyCode, right.TargetCurrencyCode);
+            return target != 0 ? target : string.CompareOrdinal(left.ProviderKey, right.ProviderKey);
+        });
+    }
+
+    private sealed class CurrencyForm
+    {
+        public string CurrencyCode { get; init; } = string.Empty;
+
+        public bool IsEnabled { get; set; }
+
+        public bool IsBaseCurrency { get; init; }
+
+        public bool IsDefaultDisplayCurrency { get; set; }
+
+        public int DisplayOrder { get; set; }
+
+        public string? CultureName { get; set; }
+
+        public string? Symbol { get; set; }
+
+        public int DecimalDigits { get; set; }
+
+        public string UnitPriceRoundingMode { get; set; } = "halfAwayFromZero";
+
+        public decimal UnitPriceRoundingIncrement { get; set; } = 0.01m;
+
+        public string LineTotalRoundingMode { get; set; } = "halfAwayFromZero";
+
+        public decimal LineTotalRoundingIncrement { get; set; } = 0.01m;
+
+        public string OrderTotalRoundingMode { get; set; } = "halfAwayFromZero";
+
+        public decimal OrderTotalRoundingIncrement { get; set; } = 0.01m;
+
+        public UpdateStoreCurrencyRequest ToRequest()
+        {
+            return new UpdateStoreCurrencyRequest(
+                IsEnabled,
+                IsDefaultDisplayCurrency,
+                DisplayOrder,
+                CultureName,
+                Symbol,
+                DecimalDigits,
+                UnitPriceRoundingMode,
+                UnitPriceRoundingIncrement,
+                LineTotalRoundingMode,
+                LineTotalRoundingIncrement,
+                OrderTotalRoundingMode,
+                OrderTotalRoundingIncrement);
+        }
+
+        public static CurrencyForm FromDto(StoreCurrencyDto currency)
+        {
+            return new CurrencyForm
+            {
+                CurrencyCode = currency.CurrencyCode,
+                IsEnabled = currency.IsEnabled,
+                IsBaseCurrency = currency.IsBaseCurrency,
+                IsDefaultDisplayCurrency = currency.IsDefaultDisplayCurrency,
+                DisplayOrder = currency.DisplayOrder,
+                CultureName = currency.CultureName,
+                Symbol = currency.Symbol,
+                DecimalDigits = currency.DecimalDigits,
+                UnitPriceRoundingMode = currency.UnitPriceRoundingMode,
+                UnitPriceRoundingIncrement = currency.UnitPriceRoundingIncrement,
+                LineTotalRoundingMode = currency.LineTotalRoundingMode,
+                LineTotalRoundingIncrement = currency.LineTotalRoundingIncrement,
+                OrderTotalRoundingMode = currency.OrderTotalRoundingMode,
+                OrderTotalRoundingIncrement = currency.OrderTotalRoundingIncrement,
+            };
+        }
+    }
+}

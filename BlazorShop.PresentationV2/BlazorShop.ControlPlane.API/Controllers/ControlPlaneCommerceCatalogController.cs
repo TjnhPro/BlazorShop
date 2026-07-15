@@ -4,6 +4,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
     using System.Text;
     using System.Text.Json;
 
+    using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.ControlPlane.Catalog;
     using BlazorShop.Application.ControlPlane.Security;
     using BlazorShop.Application.CommerceNode.Media;
@@ -817,6 +818,79 @@ namespace BlazorShop.ControlPlane.API.Controllers
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.catalogService.UpdatePaymentMethodAsync(storePublicId, paymentMethodKey, request, cancellationToken));
+        }
+
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/currencies")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsRead)]
+        public async Task<IActionResult> ListCurrencies(Guid storePublicId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ListCurrenciesAsync(storePublicId, cancellationToken));
+        }
+
+        [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/currencies/{currencyCode}")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsWrite)]
+        public async Task<IActionResult> UpdateCurrency(
+            Guid storePublicId,
+            string currencyCode,
+            UpdateStoreCurrencyRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.UpdateCurrencyAsync(storePublicId, currencyCode, request, cancellationToken));
+        }
+
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/currencies/exchange-rates")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsRead)]
+        public async Task<IActionResult> ListExchangeRates(Guid storePublicId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ListExchangeRatesAsync(storePublicId, cancellationToken));
+        }
+
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/currencies/exchange-rate-providers")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceProvidersRead)]
+        public async Task<IActionResult> ListExchangeRateProviders(Guid storePublicId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ListExchangeRateProvidersAsync(storePublicId, cancellationToken));
+        }
+
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/currencies/exchange-rates/fetch")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceProvidersWrite)]
+        public async Task<IActionResult> FetchExchangeRates(
+            Guid storePublicId,
+            FetchStoreCurrencyExchangeRatesRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.FetchExchangeRatesAsync(storePublicId, request, cancellationToken));
+        }
+
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/currencies/exchange-rates/update-tasks")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceProvidersWrite)]
+        public async Task<IActionResult> QueueExchangeRateUpdate(
+            Guid storePublicId,
+            QueueStoreCurrencyExchangeRateUpdateRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.QueueExchangeRateUpdateAsync(storePublicId, request, cancellationToken));
+        }
+
+        [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/currencies/exchange-rates/{targetCurrencyCode}")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsWrite)]
+        public async Task<IActionResult> UpsertExchangeRate(
+            Guid storePublicId,
+            string targetCurrencyCode,
+            UpsertStoreCurrencyExchangeRateRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.UpsertExchangeRateAsync(storePublicId, targetCurrencyCode, request, cancellationToken));
+        }
+
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/currencies/exchange-rates/{targetCurrencyCode}/disable")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsWrite)]
+        public async Task<IActionResult> DisableExchangeRate(
+            Guid storePublicId,
+            string targetCurrencyCode,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.DisableExchangeRateAsync(storePublicId, targetCurrencyCode, cancellationToken));
         }
 
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/orders/{orderId:guid}/shipment")]
