@@ -50,6 +50,8 @@ builder.Services.AddScoped<IStorefrontSeoComposer, StorefrontSeoComposer>();
 builder.Services.AddScoped<IStorefrontStructuredDataComposer, StorefrontStructuredDataComposer>();
 builder.Services.AddScoped<IStorefrontSitemapService, StorefrontSitemapService>();
 builder.Services.AddScoped<IStorefrontCurrentStoreProvider, StorefrontCurrentStoreProvider>();
+builder.Services.AddScoped<IStorefrontDisplayContextProvider, StorefrontDisplayContextProvider>();
+builder.Services.AddScoped<IStorefrontPriceFormatter, StorefrontPriceFormatter>();
 builder.Services.AddScoped<StorefrontCartTokenService>();
 builder.Services.AddHttpClient<IStorefrontSessionResolver, StorefrontSessionResolver>((serviceProvider, client) =>
 {
