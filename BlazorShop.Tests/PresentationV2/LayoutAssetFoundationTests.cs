@@ -28,6 +28,7 @@ namespace BlazorShop.Tests.PresentationV2
         {
             var layoutMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/MainLayout.razor");
             var brandHeadMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Seo/StorefrontBrandHead.razor");
+            var pageShellMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontPageShell.razor");
 
             Assert.Contains("<StorefrontHeader />", layoutMarkup);
             Assert.Contains("<main class=\"bs-storefront-main flex-1\">", layoutMarkup);
@@ -35,6 +36,40 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.Equal(1, CountOccurrences(layoutMarkup, "data-storefront-toast-region"));
             Assert.DoesNotContain("<HeadContent>", layoutMarkup, StringComparison.Ordinal);
             Assert.DoesNotContain("<HeadContent>", brandHeadMarkup, StringComparison.Ordinal);
+            Assert.DoesNotContain("<main", pageShellMarkup, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("<HeadContent>", pageShellMarkup, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void StorefrontPageShell_DefinesOptionalRegionsWithoutOwningSeoOrMain()
+        {
+            var pageShellMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontPageShell.razor");
+
+            Assert.Contains("public RenderFragment? Breadcrumb", pageShellMarkup);
+            Assert.Contains("public RenderFragment? Header", pageShellMarkup);
+            Assert.Contains("public RenderFragment? Actions", pageShellMarkup);
+            Assert.Contains("public RenderFragment? Sidebar", pageShellMarkup);
+            Assert.Contains("public RenderFragment ChildContent", pageShellMarkup);
+            Assert.Contains("[EditorRequired]", pageShellMarkup);
+            Assert.DoesNotContain("<main", pageShellMarkup, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("<SeoHead", pageShellMarkup, StringComparison.Ordinal);
+            Assert.DoesNotContain("<HeadContent>", pageShellMarkup, StringComparison.Ordinal);
+        }
+
+        [Theory]
+        [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CategoryPage.razor")]
+        [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/ProductPage.razor")]
+        [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/StorefrontPage.razor")]
+        public void StorefrontRoutedPages_UsePageShellWhileKeepingSeoBreadcrumbAndHeading(string relativePath)
+        {
+            var pageMarkup = ReadRepositoryFile(relativePath);
+
+            Assert.Contains("<SeoHead", pageMarkup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontPageShell", pageMarkup, StringComparison.Ordinal);
+            Assert.Contains("<Breadcrumb>", pageMarkup, StringComparison.Ordinal);
+            Assert.Contains("<BreadcrumbNav", pageMarkup, StringComparison.Ordinal);
+            Assert.Contains("<ChildContent>", pageMarkup, StringComparison.Ordinal);
+            Assert.Contains("<h1", pageMarkup, StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]

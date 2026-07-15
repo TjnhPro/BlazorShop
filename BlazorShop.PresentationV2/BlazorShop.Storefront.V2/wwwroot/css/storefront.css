@@ -16,6 +16,57 @@
     background: var(--bs-storefront-page-background);
 }
 
+.bs-storefront-page-shell {
+    width: 100%;
+}
+
+.bs-storefront-page-shell__breadcrumb {
+    margin-bottom: 1rem;
+}
+
+.bs-storefront-page-shell__header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.bs-storefront-page-shell__heading {
+    min-width: 0;
+}
+
+.bs-storefront-page-shell__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.bs-storefront-page-shell__layout {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.bs-storefront-page-shell__sidebar {
+    min-width: 0;
+}
+
+.bs-storefront-page-shell__content {
+    min-width: 0;
+}
+
+@media (min-width: 1024px) {
+    .bs-storefront-page-shell__header {
+        flex-direction: row;
+        align-items: flex-end;
+        justify-content: space-between;
+    }
+
+    .bs-storefront-page-shell__layout {
+        grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
+        align-items: start;
+    }
+}
+
 .bs-storefront-header {
     position: sticky;
     top: 0;

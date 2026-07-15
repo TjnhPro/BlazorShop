@@ -16,24 +16,30 @@ else if (_isNotFound)
 }
 else if (_page is not null)
 {
-    <article class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-        <BreadcrumbNav Items="_breadcrumbs" ClassName="mb-4" />
+    <StorefrontPageShell Class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
+        <Breadcrumb>
+            <BreadcrumbNav Items="_breadcrumbs" />
+        </Breadcrumb>
 
-        <header class="mb-8">
-            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">Store page</p>
-            <h1 class="mt-2 text-4xl font-extrabold tracking-tight text-neutral-900">@_page.Title</h1>
-            @if (!string.IsNullOrWhiteSpace(_page.Intro))
-            {
-                <p class="mt-4 text-lg leading-8 text-neutral-700">@_page.Intro</p>
-            }
-        </header>
+        <ChildContent>
+            <article>
+                <header class="mb-8">
+                    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">Store page</p>
+                    <h1 class="mt-2 text-4xl font-extrabold tracking-tight text-neutral-900">@_page.Title</h1>
+                    @if (!string.IsNullOrWhiteSpace(_page.Intro))
+                    {
+                        <p class="mt-4 text-lg leading-8 text-neutral-700">@_page.Intro</p>
+                    }
+                </header>
 
-        <div class="rounded-3xl border border-neutral-200/70 bg-white/90 p-6 shadow-lg sm:p-8">
-            <div class="prose max-w-none prose-neutral">
-                @((MarkupString)_page.BodyHtml)
-            </div>
-        </div>
-    </article>
+                <div class="rounded-3xl border border-neutral-200/70 bg-white/90 p-6 shadow-lg sm:p-8">
+                    <div class="prose max-w-none prose-neutral">
+                        @((MarkupString)_page.BodyHtml)
+                    </div>
+                </div>
+            </article>
+        </ChildContent>
+    </StorefrontPageShell>
 }
 
 @code {
