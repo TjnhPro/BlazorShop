@@ -101,6 +101,13 @@ Storefront root assets are intentionally explicit:
 - Do not add DB-configured or store-configured arbitrary public scripts/styles.
 - Do not add a runtime asset registry until repeated page-specific asset registration creates real maintenance cost.
 
+Storefront cache/versioning rules:
+
+- Use ASP.NET Core static web assets and `MapStaticAssets()` before adding custom cache-busting.
+- Fingerprinted framework/static assets may use long-cache behavior provided by the framework or by Commerce Node media endpoints.
+- Dynamic Storefront pages, maintenance pages, current-store/config reads, checkout/auth pages, SEO documents, and error states must not receive immutable cache headers.
+- Product and asset media proxy responses may forward Commerce Node `Cache-Control`/`ETag` headers, but Storefront V2 must not invent a broader immutable cache policy for dynamic routes.
+
 ## Database Rule
 
 Use the correct context:

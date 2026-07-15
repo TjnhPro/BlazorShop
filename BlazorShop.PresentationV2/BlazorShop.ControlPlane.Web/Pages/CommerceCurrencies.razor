@@ -173,9 +173,9 @@
                         </select>
                         <select class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="selectedProviderTargetCurrencyCode">
                             <option value="">All enabled targets</option>
-                            @foreach (var code in TargetCurrencyCodes)
+                            @foreach (var currencyCode in TargetCurrencyCodes)
                             {
-                                <option value="@code">@code</option>
+                                <option value="@currencyCode">@currencyCode</option>
                             }
                         </select>
                         <div class="flex gap-2">
@@ -202,9 +202,9 @@
                     <div class="grid gap-2">
                         <select class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="manualTargetCurrencyCode">
                             <option value="">Target currency</option>
-                            @foreach (var code in TargetCurrencyCodes)
+                            @foreach (var currencyCode in TargetCurrencyCodes)
                             {
-                                <option value="@code">@code</option>
+                                <option value="@currencyCode">@currencyCode</option>
                             }
                         </select>
                         <input class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="0.000001" step="0.000001" placeholder="Rate" @bind="manualRate" />

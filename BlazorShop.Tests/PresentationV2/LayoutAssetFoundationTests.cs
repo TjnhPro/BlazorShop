@@ -127,6 +127,20 @@ namespace BlazorShop.Tests.PresentationV2
         }
 
         [Fact]
+        public void StorefrontRuntime_DoesNotApplyImmutableCachePolicyToDynamicPipeline()
+        {
+            var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+            var responseHeaders = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontResponseHeaders.cs");
+
+            Assert.DoesNotContain("OnPrepareResponse", program, StringComparison.Ordinal);
+            Assert.DoesNotContain("max-age=31536000, immutable", program, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("public const string ErrorCacheControl = \"no-store, no-cache, max-age=0\"", responseHeaders);
+            Assert.Contains("public const string RobotsCacheControl = \"public, max-age=3600, must-revalidate\"", responseHeaders);
+            Assert.Contains("public const string SitemapCacheControl = \"public, max-age=900, must-revalidate\"", responseHeaders);
+            Assert.DoesNotContain("immutable", responseHeaders, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
         public void ControlPlaneRoot_DefinesExpectedAssetsWithoutDuplicates()
         {
             var indexMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/wwwroot/index.html");
@@ -174,6 +188,7 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.Contains("Keep root CSS and script entries in `BlazorShop.Storefront.V2/App.razor` allowlisted by tests.", decisionRules);
             Assert.Contains("Keep `blazor.web.js` before `storefrontCommerce.js`", decisionRules);
             Assert.Contains("Do not add DB-configured or store-configured arbitrary public scripts/styles.", decisionRules);
+            Assert.Contains("Dynamic Storefront pages, maintenance pages, current-store/config reads, checkout/auth pages, SEO documents, and error states must not receive immutable cache headers.", decisionRules);
         }
 
         private static IReadOnlyList<string> ExtractStylesheetHrefs(string markup)

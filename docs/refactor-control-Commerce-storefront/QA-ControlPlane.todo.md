@@ -357,6 +357,7 @@ Status legend:
 - [x] Control Plane WASM host root asset inventory is guarded by automated tests. 2026-07-15: `LayoutAssetFoundationTests.ControlPlaneRoot_DefinesExpectedAssetsWithoutDuplicates` asserts FontAwesome, `css/site.css`, `css/app.css`, `_framework/blazor.webassembly.js`, and `js/downloads.js` exactly once.
 - [x] Control Plane Web asset build targets remain deterministic. 2026-07-15: `LayoutAssetFoundationTests.ControlPlaneProject_KeepsDeterministicAssetBuildTargets` protects `RestoreNodeModules`, `CopyFontAwesomeAssets`, and `TailwindBuild`.
 - [x] Shared V2 browser helper JS remains module-imported. 2026-07-15: `LayoutAssetFoundationTests.SharedV2BrowserHelpers_KeepJsModuleImports` covers session storage, cookie storage, and auth session sync modules.
+- [x] Control Plane Web publish output contains required WASM/static assets. 2026-07-15 Layout Asset Phase 4: fixed Razor parser issue in `CommerceCurrencies.razor`, then `dotnet publish BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj -c Release` passed and verified `wwwroot/index.html`, `wwwroot/css/site.css`, `wwwroot/css/app.css`, `wwwroot/js/downloads.js`, FontAwesome CSS, and `_framework/blazor.webassembly.js`.
 - [ ] Browser QA after layout/asset changes verifies Dashboard, Stores, Products, Orders, and Payment/Currency admin pages have no asset 404s or unexpected console errors.
 - [ ] Browser network capture after asset/layout changes confirms ControlPlane Web still makes no direct calls to CommerceNode APIs.
 
