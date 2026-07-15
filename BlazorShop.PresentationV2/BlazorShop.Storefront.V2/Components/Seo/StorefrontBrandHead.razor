@@ -2,30 +2,28 @@
 
 @if (_displayContext is not null)
 {
-    <HeadContent>
-        @if (!string.IsNullOrWhiteSpace(_displayContext.FaviconUrl))
-        {
-            <link rel="icon" href="@_displayContext.FaviconUrl" />
-        }
-        @if (!string.IsNullOrWhiteSpace(_displayContext.PngIconUrl))
-        {
-            <link rel="icon" type="image/png" href="@_displayContext.PngIconUrl" />
-        }
-        @if (!string.IsNullOrWhiteSpace(_displayContext.AppleTouchIconUrl))
-        {
-            <link rel="apple-touch-icon" href="@_displayContext.AppleTouchIconUrl" />
-        }
-        @if (!string.IsNullOrWhiteSpace(_displayContext.MsTileImageUrl))
-        {
-            <meta name="msapplication-TileImage" content="@_displayContext.MsTileImageUrl" />
-        }
-        @if (!string.IsNullOrWhiteSpace(_displayContext.MsTileColor))
-        {
-            <meta name="msapplication-TileColor" content="@_displayContext.MsTileColor" />
-        }
-        <meta name="bs-storefront-language" content="@_displayContext.LanguageCode" />
-        <script>document.documentElement.lang = '@_displayContext.LanguageCode';</script>
-    </HeadContent>
+    @if (!string.IsNullOrWhiteSpace(_displayContext.FaviconUrl))
+    {
+        <link rel="icon" href="@_displayContext.FaviconUrl" />
+    }
+    @if (!string.IsNullOrWhiteSpace(_displayContext.PngIconUrl))
+    {
+        <link rel="icon" type="image/png" href="@_displayContext.PngIconUrl" />
+    }
+    @if (!string.IsNullOrWhiteSpace(_displayContext.AppleTouchIconUrl))
+    {
+        <link rel="apple-touch-icon" href="@_displayContext.AppleTouchIconUrl" />
+    }
+    @if (!string.IsNullOrWhiteSpace(_displayContext.MsTileImageUrl))
+    {
+        <meta name="msapplication-TileImage" content="@_displayContext.MsTileImageUrl" />
+    }
+    @if (!string.IsNullOrWhiteSpace(_displayContext.MsTileColor))
+    {
+        <meta name="msapplication-TileColor" content="@_displayContext.MsTileColor" />
+    }
+    <meta name="bs-storefront-language" content="@_displayContext.LanguageCode" />
+    <script>document.documentElement.lang = '@_displayContext.LanguageCode';</script>
 }
 
 @code {

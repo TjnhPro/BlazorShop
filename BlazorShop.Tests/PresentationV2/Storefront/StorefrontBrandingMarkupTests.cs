@@ -26,16 +26,23 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("<link rel=\"apple-touch-icon\" href=\"@_displayContext.AppleTouchIconUrl\" />", markup);
             Assert.Contains("msapplication-TileImage", markup);
             Assert.Contains("document.documentElement.lang", markup);
+            Assert.DoesNotContain("<HeadContent>", markup, StringComparison.Ordinal);
         }
 
         [Fact]
-        public void MainLayout_IncludesStorefrontBrandHead()
+        public void AppHead_IncludesStorefrontBrandHeadBeforeHeadOutlet()
         {
-            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/MainLayout.razor");
+            var appMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/App.razor");
+            var layoutMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/MainLayout.razor");
 
-            Assert.Contains("<StorefrontBrandHead />", markup);
-            Assert.Contains("<StorefrontHeader />", markup);
-            Assert.Contains("<StorefrontFooter />", markup);
+            Assert.Contains("<StorefrontBrandHead />", appMarkup);
+            Assert.Contains("<HeadOutlet />", appMarkup);
+            Assert.True(
+                appMarkup.IndexOf("<StorefrontBrandHead />", StringComparison.Ordinal) <
+                appMarkup.IndexOf("<HeadOutlet />", StringComparison.Ordinal));
+            Assert.DoesNotContain("<StorefrontBrandHead />", layoutMarkup, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontHeader />", layoutMarkup);
+            Assert.Contains("<StorefrontFooter />", layoutMarkup);
         }
 
         [Fact]
