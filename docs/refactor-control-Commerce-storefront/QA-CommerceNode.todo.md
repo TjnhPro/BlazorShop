@@ -111,6 +111,19 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] Storefront scoped OpenAPI contains `GET /api/storefront/stores/{storeKey}/pages/navigation` with typed response schema. 2026-07-15: Storefront OpenAPI contract tests passed and snapshots include `StorefrontPages_ListNavigation`.
 - [x] Commerce Admin/ControlPlane page template endpoints use explicit request/response DTOs and preserve store-key scoped forwarding. 2026-07-15: `ControlPlaneCommerceCatalogServiceStoreMappingTests` passed for template status/navigation gateway routes.
 
+## Menu Navigation Core
+
+- [x] CommerceNode schema contains store-owned navigation menus and items with active unique menu system name per store. 2026-07-15: `CommerceNodeStoreNavigationCore` migration and `CommerceNodeDbContextModelTests` passed.
+- [x] Navigation validation rejects unknown menu names, unsafe external URLs, invalid target requirements, cross-menu parents, and parent cycles. 2026-07-15: `StoreNavigationRulesTests` and `StoreNavigationServiceTests` passed.
+- [x] Admin projection returns target health status while public projection hides broken, invalid, unpublished, archived, and cross-store targets. 2026-07-15: `StoreNavigationServiceTests.GetPublicMenuAsync_ProjectsOnlyValidCurrentStorePublishedTargets` passed.
+- [x] Commerce Admin navigation endpoints and Storefront public `GET /api/storefront/stores/{storeKey}/navigation/{systemName}` endpoint are exposed with V2 DTOs and Swagger metadata. 2026-07-15: CommerceNode API build passed after Phase 3.
+- [x] Menu changes invalidate public navigation cache. 2026-07-15: `StoreNavigationServiceTests.CreateItemAsync_InvalidatesPublicMenuCache` passed.
+- [x] Category/product/page updates and archive operations invalidate navigation cache for the affected store. 2026-07-15: focused `CategoryServiceTests`, `ProductServiceTests`, and `StorefrontPageServiceStoreScopeTests` passed.
+- [x] Cached public menu links follow page slug changes after Storefront page service invalidation. 2026-07-15: `StoreNavigationServiceTests.GetPublicMenuAsync_UsesNewPageSlugAfterPageServiceInvalidatesCache` passed.
+- [x] Final focused CommerceNode verification passed. 2026-07-15: CommerceNode API build passed and `StoreNavigation`, `ControlPlaneCommerceCatalogServiceStoreMappingTests`, and `CommerceNodeDbContextModelTests` focused run passed 33/33.
+- [ ] API smoke: create menu and items through `api/commerce/admin/navigation/*` against PostgreSQL with node credentials.
+- [ ] API smoke: `GET /api/storefront/stores/{storeKey}/navigation/main` returns only safe public fields and no internal IDs.
+
 ## Store Config Consumption And Hardening
 
 - [x] Commerce Admin store create/update accepts safe absolute `http`/`https` asset URLs for logo/favicon/icon fields. 2026-07-15: live CommerceNode admin HTTP QA accepted safe absolute logo/favicon/icon URLs.

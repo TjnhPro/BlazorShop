@@ -9,6 +9,20 @@ Scope:
 - 8.3 Navigation behavior
 - 8.4 Optional navigation extensions
 
+## Implementation Status
+
+Updated: 2026-07-15
+
+- Phase 0 completed and committed in `5ffe7d4`.
+- Phase 1 completed and committed in `2c1b145`.
+- Phase 2 completed and committed in `aa99861`.
+- Phase 3 completed and committed in `8132f0e`.
+- Phase 4 completed and committed in `55df8c1`.
+- Phase 5 completed and committed in `e08bc56`.
+- Phase 6 completed and committed in `9f2c32e`.
+- Phase 7 remains deferred by design. Optional language labels, icons, image assets, mega menu, promotions, role visibility, lazy branches, and manufacturer/brand targets need separate approved mini-plans.
+- Phase 8 completed: QA checklist/docs were updated and final focused verification passed before commit.
+
 Autoplan note: this plan follows the repo architecture rules and the current V2 code shape. External dual-voice review agents were not used in this session, so the plan includes an internal decision audit and phased risk controls.
 
 ## Executive Decision
@@ -631,4 +645,3 @@ Exit criteria:
 - Cache invalidation handles menu and target publish/slug changes.
 - QA todo files are updated and completed for the implemented phase.
 - No legacy `BlazorShop.Presentation/*` project is extended.
-

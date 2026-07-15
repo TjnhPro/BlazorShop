@@ -230,6 +230,17 @@ Status legend:
 - [x] ControlPlane Web still calls ControlPlane API only for page template/readiness operations. 2026-07-15: code path uses `ControlPlaneCatalogClient` gateway methods only; no direct CommerceNode client or route was added to Web.
 - [x] Focused page template/gateway tests pass. 2026-07-15: `dotnet test BlazorShop.Tests\BlazorShop.Tests.csproj --filter "FullyQualifiedName~ControlPlaneCommerceCatalogServiceStoreMappingTests|FullyQualifiedName~StorefrontPageTemplateServiceTests"` passed 12/12 after UI phase.
 
+## Menu Navigation Core
+
+- [x] ControlPlane permissions include `commerce.navigation.read` and `commerce.navigation.write`. 2026-07-15: ControlPlane permission migration and role seed updates were added in Menu Navigation Phase 3.
+- [x] ControlPlane API gateways navigation management through `api/controlplane/commerce/stores/{storePublicId}/navigation/*` and appends the resolved CommerceNode `storeKey`. 2026-07-15: `ControlPlaneCommerceCatalogServiceStoreMappingTests` covers navigation menu and target-option forwarding.
+- [x] ControlPlane Web Navigation manager calls `IControlPlaneCatalogClient` only and does not call CommerceNode directly in code. 2026-07-15: `CommerceNavigation.razor` uses ControlPlane client methods for menu/item/system-target operations.
+- [x] ControlPlane Web builds after Navigation manager UI changes. 2026-07-15: `dotnet build BlazorShop.PresentationV2\BlazorShop.ControlPlane.Web\BlazorShop.ControlPlane.Web.csproj` passed.
+- [x] Final focused ControlPlane verification passed. 2026-07-15: `dotnet build` passed for ControlPlane API/Web and focused gateway tests passed in the Menu Navigation closeout run.
+- [ ] Visible browser QA: Navigation manager can create/edit menus, add system/page/category/product/external/group items, and reload the resolved tree.
+- [ ] Visible browser QA: user without `commerce.navigation.write` cannot save menu changes and write controls are not misleading.
+- [ ] Browser request capture: Navigation manager page makes no direct `localhost:5180`, `/api/commerce/*`, or `/api/internal/*` calls.
+
 ## Commerce Media Library
 
 - [x] ControlPlane API builds after Media Library gateway changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj` passed after stopping the locked local ControlPlane API process.

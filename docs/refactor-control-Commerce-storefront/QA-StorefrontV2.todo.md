@@ -164,6 +164,18 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Header renders only pages explicitly marked with `NavigationLocation=header`; required legal/support pages are not auto-promoted. 2026-07-15: Storefront V2 build and branding markup tests passed.
 - [x] Product/category/deal navigation remains owned by existing route constants and was not rewritten into the page template catalog. 2026-07-15: `StorefrontHeader.razor` and `StorefrontFooter.razor` keep product/deal routes while content links are page-driven.
 
+### Menu Navigation Core
+
+- [x] Storefront API client reads configured menus from `GET /api/storefront/stores/{storeKey}/navigation/{systemName}`. 2026-07-15: Storefront V2 build passed after adding `GetNavigationMenuAsync`.
+- [x] Storefront navigation provider caches menu lookups per request scope and returns empty menus when the API is unavailable. 2026-07-15: provider added with fallback behavior; Storefront V2 build passed.
+- [x] Header renders configured `main` menu when available and preserves hard-coded/page-navigation fallback when unavailable. 2026-07-15: Storefront V2 build passed after header integration.
+- [x] Footer renders configured `footer_company`, `footer_support`, and `footer_legal` menus when available and preserves existing fallback links. 2026-07-15: Storefront V2 build passed after footer integration.
+- [x] Search, cart, account, checkout, login, register, new releases, and todays deals remain reserved system targets instead of menu-owned business logic. 2026-07-15: `StoreNavigationSystemTargets` and header/footer integration keep these as route/component slots.
+- [x] Final focused Storefront verification passed. 2026-07-15: Storefront V2 build passed in the Menu Navigation closeout run.
+- [ ] Visible browser QA: desktop header renders configured menu labels without overlap and cart/account/search remain usable.
+- [ ] Visible browser QA: mobile navigation renders configured menu tree without layout shift or clipped text.
+- [ ] Visible browser QA: footer configured menus render and fallback still works when the menu API is unavailable.
+
 ## Store Config Consumption
 
 - [x] Header brand name uses current store/company profile instead of generic fallback when configured. 2026-07-15: visible Storefront QA against `default` rendered configured `QA Store Company`/store branding from current-store.
