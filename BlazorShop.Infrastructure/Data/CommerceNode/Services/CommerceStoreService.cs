@@ -14,6 +14,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     {
         private const int DefaultTake = 100;
         private const int MaxTake = 200;
+        private static readonly HashSet<string> SafeNamedTileColors = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "black",
+            "transparent",
+            "white",
+        };
 
         private readonly CommerceNodeDbContext context;
         private readonly IMemoryCache memoryCache;
@@ -414,6 +420,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return ValidateSharedValues(
                 request.Name,
                 request.BaseUrl,
+                request.CdnHost,
+                request.LogoUrl,
+                request.FaviconUrl,
+                request.PngIconUrl,
+                request.AppleTouchIconUrl,
+                request.MsTileImageUrl,
+                request.MsTileColor,
                 request.DefaultCurrencyCode,
                 request.DefaultCulture,
                 request.SupportEmail,
@@ -426,6 +439,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return ValidateSharedValues(
                 request.Name,
                 request.BaseUrl,
+                request.CdnHost,
+                request.LogoUrl,
+                request.FaviconUrl,
+                request.PngIconUrl,
+                request.AppleTouchIconUrl,
+                request.MsTileImageUrl,
+                request.MsTileColor,
                 request.DefaultCurrencyCode,
                 request.DefaultCulture,
                 request.SupportEmail,
@@ -436,6 +456,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private static string? ValidateSharedValues(
             string name,
             string? baseUrl,
+            string? cdnHost,
+            string? logoUrl,
+            string? faviconUrl,
+            string? pngIconUrl,
+            string? appleTouchIconUrl,
+            string? msTileImageUrl,
+            string? msTileColor,
             string defaultCurrencyCode,
             string defaultCulture,
             string? supportEmail,
@@ -452,6 +479,41 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                  baseUri.Scheme is not ("http" or "https")))
             {
                 return "Base URL must be an absolute HTTP URL.";
+            }
+
+            if (!IsValidOptionalHost(cdnHost))
+            {
+                return "CDN host must be a valid host name, host:port, or absolute HTTP URL.";
+            }
+
+            if (!IsValidOptionalPublicAssetUrl(logoUrl))
+            {
+                return "Logo URL must be an absolute HTTP URL or a safe root-relative path.";
+            }
+
+            if (!IsValidOptionalPublicAssetUrl(faviconUrl))
+            {
+                return "Favicon URL must be an absolute HTTP URL or a safe root-relative path.";
+            }
+
+            if (!IsValidOptionalPublicAssetUrl(pngIconUrl))
+            {
+                return "PNG icon URL must be an absolute HTTP URL or a safe root-relative path.";
+            }
+
+            if (!IsValidOptionalPublicAssetUrl(appleTouchIconUrl))
+            {
+                return "Apple touch icon URL must be an absolute HTTP URL or a safe root-relative path.";
+            }
+
+            if (!IsValidOptionalPublicAssetUrl(msTileImageUrl))
+            {
+                return "MS tile image URL must be an absolute HTTP URL or a safe root-relative path.";
+            }
+
+            if (!IsValidOptionalTileColor(msTileColor))
+            {
+                return "MS tile color must be a hex color or one of: transparent, black, white.";
             }
 
             if (string.IsNullOrWhiteSpace(defaultCurrencyCode) ||
@@ -648,6 +710,75 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return HostRegex().IsMatch(host) ? host : null;
         }
 
+        private static bool IsValidOptionalPublicAssetUrl(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return true;
+            }
+
+            var candidate = value.Trim();
+            if (candidate.Any(char.IsControl))
+            {
+                return false;
+            }
+
+            if (Uri.TryCreate(candidate, UriKind.Absolute, out var uri))
+            {
+                return uri.Scheme is "http" or "https"
+                    && !string.IsNullOrWhiteSpace(uri.Host);
+            }
+
+            return candidate.StartsWith("/", StringComparison.Ordinal)
+                && !candidate.StartsWith("//", StringComparison.Ordinal)
+                && !candidate.Contains('\\');
+        }
+
+        private static bool IsValidOptionalHost(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return true;
+            }
+
+            var candidate = value.Trim();
+            if (candidate.Any(char.IsControl)
+                || candidate.Contains('/')
+                || candidate.Contains('\\'))
+            {
+                return Uri.TryCreate(candidate, UriKind.Absolute, out var absoluteUri)
+                    && absoluteUri.Scheme is "http" or "https"
+                    && HostRegex().IsMatch(absoluteUri.Host);
+            }
+
+            var host = candidate;
+            var portSeparatorIndex = candidate.LastIndexOf(':');
+            if (portSeparatorIndex > -1)
+            {
+                host = candidate[..portSeparatorIndex];
+                var portText = candidate[(portSeparatorIndex + 1)..];
+                if (!int.TryParse(portText, CultureInfo.InvariantCulture, out var port)
+                    || port is < 1 or > 65535)
+                {
+                    return false;
+                }
+            }
+
+            return HostRegex().IsMatch(host.ToLowerInvariant());
+        }
+
+        private static bool IsValidOptionalTileColor(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return true;
+            }
+
+            var candidate = value.Trim();
+            return HexColorRegex().IsMatch(candidate)
+                || SafeNamedTileColors.Contains(candidate);
+        }
+
         private static bool IsValidJson(string value)
         {
             try
@@ -672,5 +803,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         [GeneratedRegex("^[a-z0-9][a-z0-9.-]*[a-z0-9]$", RegexOptions.Compiled)]
         private static partial Regex HostRegex();
+
+        [GeneratedRegex("^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$", RegexOptions.Compiled)]
+        private static partial Regex HexColorRegex();
     }
 }

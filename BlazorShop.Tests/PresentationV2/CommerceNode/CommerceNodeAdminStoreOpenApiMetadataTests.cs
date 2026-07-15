@@ -1,0 +1,70 @@
+namespace BlazorShop.Tests.PresentationV2.CommerceNode
+{
+    using Xunit;
+
+    public sealed class CommerceNodeAdminStoreOpenApiMetadataTests
+    {
+        [Fact]
+        public void CommerceStoreAdminSwaggerFilter_DefinesStableOperationMetadata()
+        {
+            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwaggerExtensions.cs");
+
+            var operationIds = new[]
+            {
+                "CommerceStores_List",
+                "CommerceStores_Get",
+                "CommerceStores_Create",
+                "CommerceStores_Update",
+                "CommerceStores_Activate",
+                "CommerceStores_Deactivate",
+                "CommerceStores_Archive",
+                "CommerceStores_AddDomain",
+                "CommerceStores_VerifyDomain",
+                "CommerceStores_DisableDomain",
+                "CommerceStores_SetPrimaryDomain",
+            };
+
+            foreach (var operationId in operationIds)
+            {
+                Assert.Contains(operationId, source);
+            }
+
+            Assert.Contains("typeof(CommerceNodeApiResponse<CommerceStoreDetail>)", source);
+            Assert.Contains("typeof(CommerceNodeApiResponse<CommerceStoreListResponse>)", source);
+            Assert.Contains("requestBody.Required = true", source);
+            Assert.Contains("CreateJsonResponse(context, metadata.ResponseType, \"Error.\")", source);
+        }
+
+        [Fact]
+        public void CommerceStoreAdminSwagger_DocumentsNodeCredentialHeaders()
+        {
+            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwaggerExtensions.cs");
+
+            Assert.Contains("CommerceNodeAdminCredentialHeaderOperationFilter", source);
+            Assert.Contains("CommerceNodeCredentialMiddleware.NodeKeyHeaderName", source);
+            Assert.Contains("CommerceNodeCredentialMiddleware.NodeSecretHeaderName", source);
+        }
+
+        private static string ReadRepositoryFile(string relativePath)
+        {
+            return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath));
+        }
+
+        private static string FindRepositoryRoot()
+        {
+            var directory = new DirectoryInfo(AppContext.BaseDirectory);
+
+            while (directory is not null)
+            {
+                if (File.Exists(Path.Combine(directory.FullName, "BlazorShop.sln")))
+                {
+                    return directory.FullName;
+                }
+
+                directory = directory.Parent;
+            }
+
+            throw new InvalidOperationException("Unable to locate BlazorShop.sln from the test output directory.");
+        }
+    }
+}
