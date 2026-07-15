@@ -193,24 +193,71 @@
                                     Deactivate
                                 </button>
                             </div>
-                            <label class="flex items-center gap-2 text-sm">
-                                <input type="checkbox" class="h-4 w-4 rounded border-ink-300 text-control-600 focus:ring-control-500" @bind="runtimeMaintenanceEnabled" />
-                                <span class="font-medium text-ink-700">Maintenance mode</span>
-                            </label>
-                            <label class="space-y-1">
-                                <span class="text-xs font-semibold uppercase text-ink-500">Maintenance message</span>
-                                <textarea class="min-h-20 w-full rounded-md border border-ink-300 px-3 py-2 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeMaintenanceMessage"></textarea>
-                            </label>
+                            <div class="rounded-md bg-ink-50 px-3 py-2 text-xs font-semibold uppercase text-ink-500">Identity</div>
                             <div class="grid gap-3 sm:grid-cols-2">
+                                <label class="space-y-1">
+                                    <span class="text-xs font-semibold uppercase text-ink-500">Runtime name</span>
+                                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeName" />
+                                </label>
                                 <label class="space-y-1">
                                     <span class="text-xs font-semibold uppercase text-ink-500">Display order</span>
                                     <input type="number" class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeDisplayOrder" />
                                 </label>
+                            </div>
+
+                            <div class="rounded-md bg-ink-50 px-3 py-2 text-xs font-semibold uppercase text-ink-500">Branding</div>
+                            <div class="grid gap-3 sm:grid-cols-2">
                                 <label class="space-y-1">
-                                    <span class="text-xs font-semibold uppercase text-ink-500">Base URL</span>
-                                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeBaseUrl" />
+                                    <span class="text-xs font-semibold uppercase text-ink-500">Logo URL</span>
+                                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeLogoUrl" />
+                                    @if (CanPreviewImage(runtimeLogoUrl))
+                                    {
+                                        <img src="@runtimeLogoUrl" alt="Runtime store logo preview" class="mt-2 h-10 max-w-40 rounded border border-ink-200 object-contain p-1" />
+                                    }
+                                </label>
+                                <label class="space-y-1">
+                                    <span class="text-xs font-semibold uppercase text-ink-500">Favicon URL</span>
+                                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeFaviconUrl" />
+                                    @if (CanPreviewImage(runtimeFaviconUrl))
+                                    {
+                                        <img src="@runtimeFaviconUrl" alt="Runtime store favicon preview" class="mt-2 h-10 w-10 rounded border border-ink-200 object-contain p-1" />
+                                    }
+                                </label>
+                                <label class="space-y-1">
+                                    <span class="text-xs font-semibold uppercase text-ink-500">PNG icon URL</span>
+                                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimePngIconUrl" />
+                                </label>
+                                <label class="space-y-1">
+                                    <span class="text-xs font-semibold uppercase text-ink-500">Apple touch icon URL</span>
+                                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeAppleTouchIconUrl" />
+                                </label>
+                                <label class="space-y-1">
+                                    <span class="text-xs font-semibold uppercase text-ink-500">MS tile image URL</span>
+                                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeMsTileImageUrl" />
+                                </label>
+                                <label class="space-y-1">
+                                    <span class="text-xs font-semibold uppercase text-ink-500">MS tile color</span>
+                                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="#0f766e" @bind="runtimeMsTileColor" />
+                                    @if (CanPreviewTileColor(runtimeMsTileColor))
+                                    {
+                                        <span class="mt-2 inline-flex h-6 w-10 rounded border border-ink-200" style="@($"background:{runtimeMsTileColor}")"></span>
+                                    }
                                 </label>
                             </div>
+
+                            <div class="rounded-md bg-ink-50 px-3 py-2 text-xs font-semibold uppercase text-ink-500">Locale</div>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <label class="space-y-1">
+                                    <span class="text-xs font-semibold uppercase text-ink-500">Default currency</span>
+                                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 uppercase outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeDefaultCurrencyCode" />
+                                </label>
+                                <label class="space-y-1">
+                                    <span class="text-xs font-semibold uppercase text-ink-500">Default culture</span>
+                                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeDefaultCulture" />
+                                </label>
+                            </div>
+
+                            <div class="rounded-md bg-ink-50 px-3 py-2 text-xs font-semibold uppercase text-ink-500">Contact</div>
                             <label class="space-y-1">
                                 <span class="text-xs font-semibold uppercase text-ink-500">Company name</span>
                                 <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeCompanyName" />
@@ -237,6 +284,28 @@
                                 <label class="space-y-1">
                                     <span class="text-xs font-semibold uppercase text-ink-500">Support phone</span>
                                     <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeSupportPhone" />
+                                </label>
+                            </div>
+
+                            <div class="rounded-md bg-ink-50 px-3 py-2 text-xs font-semibold uppercase text-ink-500">Availability</div>
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" class="h-4 w-4 rounded border-ink-300 text-control-600 focus:ring-control-500" @bind="runtimeMaintenanceEnabled" />
+                                <span class="font-medium text-ink-700">Maintenance mode</span>
+                            </label>
+                            <label class="space-y-1">
+                                <span class="text-xs font-semibold uppercase text-ink-500">Maintenance message</span>
+                                <textarea class="min-h-20 w-full rounded-md border border-ink-300 px-3 py-2 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeMaintenanceMessage"></textarea>
+                            </label>
+
+                            <div class="rounded-md bg-ink-50 px-3 py-2 text-xs font-semibold uppercase text-ink-500">Advanced URLs</div>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <label class="space-y-1">
+                                    <span class="text-xs font-semibold uppercase text-ink-500">Base URL</span>
+                                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeBaseUrl" />
+                                </label>
+                                <label class="space-y-1">
+                                    <span class="text-xs font-semibold uppercase text-ink-500">CDN host</span>
+                                    <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="runtimeCdnHost" />
                                 </label>
                             </div>
                             <button class="cp-button cp-button-secondary justify-center" disabled="@isSaving" @onclick="SaveRuntimeStoreAsync">
@@ -383,8 +452,18 @@
     private StoreDeploymentTaskSummary? lastDeploymentTask;
     private bool runtimeMaintenanceEnabled;
     private int runtimeDisplayOrder;
+    private string runtimeName = string.Empty;
     private string runtimeMaintenanceMessage = string.Empty;
     private string runtimeBaseUrl = string.Empty;
+    private string runtimeCdnHost = string.Empty;
+    private string runtimeLogoUrl = string.Empty;
+    private string runtimeFaviconUrl = string.Empty;
+    private string runtimePngIconUrl = string.Empty;
+    private string runtimeAppleTouchIconUrl = string.Empty;
+    private string runtimeMsTileImageUrl = string.Empty;
+    private string runtimeMsTileColor = string.Empty;
+    private string runtimeDefaultCurrencyCode = "USD";
+    private string runtimeDefaultCulture = "en-US";
     private string runtimeCompanyName = string.Empty;
     private string runtimeCompanyEmail = string.Empty;
     private string runtimeCompanyPhone = string.Empty;
@@ -638,26 +717,26 @@
                 selectedStore.PublicId,
                 runtimeStore.PublicId,
                 new RuntimeStoreUpdateRequest(
-                    runtimeStore.Name,
+                    string.IsNullOrWhiteSpace(runtimeName) ? runtimeStore.Name : runtimeName.Trim(),
                     EmptyToNull(runtimeBaseUrl),
                     runtimeStore.ForceHttps,
                     runtimeStore.SslEnabled,
                     runtimeStore.SslPort,
                     runtimeDisplayOrder,
                     runtimeStore.HtmlBodyId,
-                    runtimeStore.CdnHost,
-                    runtimeStore.LogoUrl,
+                    EmptyToNull(runtimeCdnHost),
+                    EmptyToNull(runtimeLogoUrl),
                     EmptyToNull(runtimeCompanyName),
                     EmptyToNull(runtimeCompanyEmail),
                     EmptyToNull(runtimeCompanyPhone),
                     EmptyToNull(runtimeCompanyAddress),
-                    runtimeStore.FaviconUrl,
-                    runtimeStore.PngIconUrl,
-                    runtimeStore.AppleTouchIconUrl,
-                    runtimeStore.MsTileImageUrl,
-                    runtimeStore.MsTileColor,
-                    runtimeStore.DefaultCurrencyCode,
-                    runtimeStore.DefaultCulture,
+                    EmptyToNull(runtimeFaviconUrl),
+                    EmptyToNull(runtimePngIconUrl),
+                    EmptyToNull(runtimeAppleTouchIconUrl),
+                    EmptyToNull(runtimeMsTileImageUrl),
+                    EmptyToNull(runtimeMsTileColor),
+                    string.IsNullOrWhiteSpace(runtimeDefaultCurrencyCode) ? runtimeStore.DefaultCurrencyCode : runtimeDefaultCurrencyCode.Trim().ToUpperInvariant(),
+                    string.IsNullOrWhiteSpace(runtimeDefaultCulture) ? runtimeStore.DefaultCulture : runtimeDefaultCulture.Trim(),
                     EmptyToNull(runtimeSupportEmail),
                     EmptyToNull(runtimeSupportPhone),
                     runtimeMaintenanceEnabled,
@@ -791,8 +870,18 @@
     {
         runtimeMaintenanceEnabled = runtimeStore?.MaintenanceModeEnabled ?? false;
         runtimeDisplayOrder = runtimeStore?.DisplayOrder ?? 0;
+        runtimeName = runtimeStore?.Name ?? string.Empty;
         runtimeMaintenanceMessage = runtimeStore?.MaintenanceMessage ?? string.Empty;
         runtimeBaseUrl = runtimeStore?.BaseUrl ?? string.Empty;
+        runtimeCdnHost = runtimeStore?.CdnHost ?? string.Empty;
+        runtimeLogoUrl = runtimeStore?.LogoUrl ?? string.Empty;
+        runtimeFaviconUrl = runtimeStore?.FaviconUrl ?? string.Empty;
+        runtimePngIconUrl = runtimeStore?.PngIconUrl ?? string.Empty;
+        runtimeAppleTouchIconUrl = runtimeStore?.AppleTouchIconUrl ?? string.Empty;
+        runtimeMsTileImageUrl = runtimeStore?.MsTileImageUrl ?? string.Empty;
+        runtimeMsTileColor = runtimeStore?.MsTileColor ?? string.Empty;
+        runtimeDefaultCurrencyCode = runtimeStore?.DefaultCurrencyCode ?? "USD";
+        runtimeDefaultCulture = runtimeStore?.DefaultCulture ?? "en-US";
         runtimeCompanyName = runtimeStore?.CompanyName ?? string.Empty;
         runtimeCompanyEmail = runtimeStore?.CompanyEmail ?? string.Empty;
         runtimeCompanyPhone = runtimeStore?.CompanyPhone ?? string.Empty;
@@ -804,6 +893,26 @@
     private static string? EmptyToNull(string? value)
     {
         return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
+    private static bool CanPreviewImage(string? value)
+    {
+        return Uri.TryCreate(value, UriKind.Absolute, out var uri)
+            && uri.Scheme is "http" or "https";
+    }
+
+    private static bool CanPreviewTileColor(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var candidate = value.Trim();
+        return System.Text.RegularExpressions.Regex.IsMatch(candidate, "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$")
+            || candidate.Equals("transparent", StringComparison.OrdinalIgnoreCase)
+            || candidate.Equals("black", StringComparison.OrdinalIgnoreCase)
+            || candidate.Equals("white", StringComparison.OrdinalIgnoreCase);
     }
 
     private static int DisplayTotalPages(int totalPages)
