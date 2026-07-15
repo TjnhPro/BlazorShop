@@ -18,6 +18,8 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         [InlineData(typeof(StoreFeatureState))]
         [InlineData(typeof(StoreCurrency))]
         [InlineData(typeof(StoreCurrencyExchangeRate))]
+        [InlineData(typeof(StoreNavigationMenu))]
+        [InlineData(typeof(StoreNavigationMenuItem))]
         public void CatalogStoreId_IsRequiredInCommerceNode(Type entityType)
         {
             using var context = CreateContext();
@@ -127,6 +129,51 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.True(rateIndex!.IsUnique);
             Assert.NotNull(foreignKey);
             Assert.Equal(DeleteBehavior.Cascade, foreignKey!.DeleteBehavior);
+        }
+
+        [Fact]
+        public void StoreNavigationMenu_HasOneActiveSystemNamePerStore()
+        {
+            using var context = CreateContext();
+            var modelEntity = context.Model.FindEntityType(typeof(StoreNavigationMenu));
+
+            Assert.NotNull(modelEntity);
+
+            var storeSystemNameIndex = modelEntity!.GetIndexes()
+                .SingleOrDefault(index => index.Properties.Select(property => property.Name).SequenceEqual(["StoreId", "SystemName"]));
+            var foreignKey = modelEntity.GetForeignKeys()
+                .SingleOrDefault(key => key.PrincipalEntityType.ClrType == typeof(CommerceStore)
+                    && key.Properties.Any(property => property.Name == "StoreId"));
+
+            Assert.NotNull(storeSystemNameIndex);
+            Assert.True(storeSystemNameIndex!.IsUnique);
+            Assert.Contains("archived_at IS NULL", storeSystemNameIndex.GetFilter(), StringComparison.OrdinalIgnoreCase);
+            Assert.NotNull(foreignKey);
+            Assert.Equal(DeleteBehavior.Cascade, foreignKey!.DeleteBehavior);
+        }
+
+        [Fact]
+        public void StoreNavigationMenuItem_UsesMenuAndParentRelationships()
+        {
+            using var context = CreateContext();
+            var modelEntity = context.Model.FindEntityType(typeof(StoreNavigationMenuItem));
+
+            Assert.NotNull(modelEntity);
+
+            var menuForeignKey = modelEntity!.GetForeignKeys()
+                .SingleOrDefault(key => key.PrincipalEntityType.ClrType == typeof(StoreNavigationMenu)
+                    && key.Properties.Any(property => property.Name == "MenuId"));
+            var parentForeignKey = modelEntity.GetForeignKeys()
+                .SingleOrDefault(key => key.PrincipalEntityType.ClrType == typeof(StoreNavigationMenuItem)
+                    && key.Properties.Any(property => property.Name == "ParentItemId"));
+            var targetIndex = modelEntity.GetIndexes()
+                .SingleOrDefault(index => index.Properties.Select(property => property.Name).SequenceEqual(["StoreId", "TargetType", "TargetEntityPublicId"]));
+
+            Assert.NotNull(menuForeignKey);
+            Assert.Equal(DeleteBehavior.Cascade, menuForeignKey!.DeleteBehavior);
+            Assert.NotNull(parentForeignKey);
+            Assert.Equal(DeleteBehavior.Restrict, parentForeignKey!.DeleteBehavior);
+            Assert.NotNull(targetIndex);
         }
 
         private static CommerceNodeDbContext CreateContext()

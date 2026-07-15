@@ -1,6 +1,7 @@
 namespace BlazorShop.Infrastructure.Data.CommerceNode
 {
     using BlazorShop.Domain.Constants;
+    using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Domain.Entities;
     using BlazorShop.Domain.Entities.CommerceNode;
     using BlazorShop.Domain.Entities.Identity;
@@ -86,6 +87,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
         public DbSet<CommerceMediaAsset> CommerceMediaAssets => Set<CommerceMediaAsset>();
 
         public DbSet<StorefrontPage> StorefrontPages => Set<StorefrontPage>();
+
+        public DbSet<StoreNavigationMenu> StoreNavigationMenus => Set<StoreNavigationMenu>();
+
+        public DbSet<StoreNavigationMenuItem> StoreNavigationMenuItems => Set<StoreNavigationMenuItem>();
 
         public DbSet<ProductImportJob> ProductImportJobs => Set<ProductImportJob>();
 
@@ -693,6 +698,99 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                     .WithMany()
                     .HasForeignKey(page => page.StoreId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<StoreNavigationMenu>(entity =>
+            {
+                entity.ToTable("store_navigation_menu");
+                entity.HasKey(menu => menu.Id);
+                entity.Property(menu => menu.Id).HasColumnName("id");
+                entity.Property(menu => menu.PublicId).HasColumnName("public_id");
+                entity.Property(menu => menu.StoreId).HasColumnName("store_id");
+                entity.Property(menu => menu.SystemName).HasColumnName("system_name").HasMaxLength(80).IsRequired();
+                entity.Property(menu => menu.DisplayName).HasColumnName("display_name").HasMaxLength(200).IsRequired();
+                entity.Property(menu => menu.IsEnabled).HasColumnName("is_enabled").HasDefaultValue(true);
+                entity.Property(menu => menu.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(menu => menu.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(menu => menu.ArchivedAt).HasColumnName("archived_at").HasColumnType("timestamp with time zone");
+
+                entity.HasIndex(menu => menu.PublicId).IsUnique();
+                entity.HasIndex(menu => new { menu.StoreId, menu.SystemName })
+                    .IsUnique()
+                    .HasFilter("archived_at IS NULL");
+                entity.HasIndex(menu => new { menu.StoreId, menu.IsEnabled });
+
+                entity.HasOne(menu => menu.Store)
+                    .WithMany()
+                    .HasForeignKey(menu => menu.StoreId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.ToTable(
+                    "store_navigation_menu",
+                    table =>
+                    {
+                        table.HasCheckConstraint(
+                            "ck_store_navigation_menu_system_name",
+                            $"system_name in ({SqlIn(StoreNavigationMenuNames.All)})");
+                    });
+            });
+
+            modelBuilder.Entity<StoreNavigationMenuItem>(entity =>
+            {
+                entity.ToTable("store_navigation_menu_item");
+                entity.HasKey(item => item.Id);
+                entity.Property(item => item.Id).HasColumnName("id");
+                entity.Property(item => item.PublicId).HasColumnName("public_id");
+                entity.Property(item => item.StoreId).HasColumnName("store_id");
+                entity.Property(item => item.MenuId).HasColumnName("menu_id");
+                entity.Property(item => item.ParentItemId).HasColumnName("parent_item_id");
+                entity.Property(item => item.Label).HasColumnName("label").HasMaxLength(200).IsRequired();
+                entity.Property(item => item.TargetType).HasColumnName("target_type").HasMaxLength(50).IsRequired();
+                entity.Property(item => item.TargetKey).HasColumnName("target_key").HasMaxLength(120);
+                entity.Property(item => item.TargetEntityPublicId).HasColumnName("target_entity_public_id");
+                entity.Property(item => item.Url).HasColumnName("url").HasMaxLength(2048);
+                entity.Property(item => item.IsEnabled).HasColumnName("is_enabled").HasDefaultValue(true);
+                entity.Property(item => item.DisplayOrder).HasColumnName("display_order").HasDefaultValue(0);
+                entity.Property(item => item.OpensInNewTab).HasColumnName("opens_in_new_tab").HasDefaultValue(false);
+                entity.Property(item => item.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(item => item.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(item => item.ArchivedAt).HasColumnName("archived_at").HasColumnType("timestamp with time zone");
+
+                entity.HasIndex(item => item.PublicId).IsUnique();
+                entity.HasIndex(item => new { item.StoreId, item.MenuId, item.ParentItemId, item.DisplayOrder });
+                entity.HasIndex(item => new { item.StoreId, item.TargetType, item.TargetEntityPublicId });
+                entity.HasIndex(item => new { item.MenuId, item.IsEnabled, item.ArchivedAt });
+
+                entity.HasOne(item => item.Store)
+                    .WithMany()
+                    .HasForeignKey(item => item.StoreId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(item => item.Menu)
+                    .WithMany(menu => menu.Items)
+                    .HasForeignKey(item => item.MenuId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(item => item.ParentItem)
+                    .WithMany(item => item.Children)
+                    .HasForeignKey(item => item.ParentItemId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.ToTable(
+                    "store_navigation_menu_item",
+                    table =>
+                    {
+                        table.HasCheckConstraint(
+                            "ck_store_navigation_menu_item_target_type",
+                            $"target_type in ({SqlIn(StoreNavigationTargetTypes.All)})");
+                        table.HasCheckConstraint("ck_store_navigation_menu_item_display_order", "display_order >= 0");
+                        table.HasCheckConstraint(
+                            "ck_store_navigation_menu_item_external_url",
+                            "target_type <> 'external_url' OR url LIKE 'https://%'");
+                        table.HasCheckConstraint(
+                            "ck_store_navigation_menu_item_group_shape",
+                            "target_type <> 'group' OR (target_key IS NULL AND target_entity_public_id IS NULL AND url IS NULL)");
+                    });
             });
 
             modelBuilder.Entity<ProductImportJob>(entity =>
@@ -1581,6 +1679,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                         "ck_commerce_store_domain_status",
                         "status in ('pending', 'verified', 'disabled')"));
             });
+        }
+
+        private static string SqlIn(IEnumerable<string> values)
+        {
+            return string.Join(", ", values.Select(value => $"'{value.Replace("'", "''", StringComparison.Ordinal)}'"));
         }
     }
 }
