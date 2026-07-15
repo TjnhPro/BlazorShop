@@ -162,6 +162,17 @@ Status legend:
 - [x] Control Plane gateway exposes CommerceNode runtime lifecycle controls through Control Plane API only. 2026-07-15: build passed after gateway/UI changes; no direct Storefront or CommerceNode Web calls were added.
 - [x] Store company/contact fields are managed as CommerceNode runtime profile data instead of duplicated in Control Plane registry. 2026-07-15: lifecycle phase added CommerceNode store profile fields and Storefront current-store contract coverage.
 
+### Store Runtime Config
+
+- [ ] Stores detail runtime config form groups fields into Identity, Branding, Locale, Contact, Availability, and Advanced URLs.
+- [ ] Runtime config save updates Commerce Node store name, logo/favicon/icon URLs, MS tile color, default currency, default culture, CDN host, contact data, and maintenance fields.
+- [ ] Runtime config validation errors from Commerce Node are shown in Control Plane Web.
+- [ ] Disabled/provisioning runtime stores can still be edited from Control Plane when the platform store is accessible.
+- [ ] Logo/favicon preview is guarded and does not execute arbitrary URL/style input.
+- [ ] Browser network capture shows ControlPlane Web calls only ControlPlane API when editing runtime store config.
+- [ ] Browser never receives Commerce Node node key, node secret, or direct `api/commerce/*` URL during runtime config edit.
+- [ ] StoreRegistry fields remain platform registry data only; runtime profile fields are not duplicated into ControlPlane DB.
+
 ## Catalog Product Media
 
 - [ ] Catalog page media panel loads for a selected product.

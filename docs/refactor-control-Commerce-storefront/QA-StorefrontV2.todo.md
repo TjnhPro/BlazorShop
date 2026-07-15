@@ -153,6 +153,22 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Old `/privacy`, `/faq`, `/terms`, `/customer-service`, `/about-us` routes return 404. 2026-07-12: all five routes returned HTTP 404.
 - [~] Header/footer `/pages/about-us`, `/pages/customer-service`, `/pages/faq`, `/pages/privacy`, and `/pages/terms` require matching published CommerceNode pages or they render 404. 2026-07-14 scoped QA DB had no published standard pages, so all five linked `/pages/*` routes returned 404.
 
+## Store Config Consumption
+
+- [ ] Header brand name uses current store/company profile instead of generic fallback when configured.
+- [ ] Header logo renders when `LogoUrl` is configured and remains stable when it is empty.
+- [ ] Head icon metadata uses store favicon/png/apple/MS tile values when configured.
+- [ ] Document language is derived from store `DefaultCulture`.
+- [ ] Product card, product detail, cart, and checkout price labels use store `DefaultCurrencyCode`.
+- [ ] Add-to-cart sends the current store currency code and cart line snapshot records it.
+- [ ] Footer renders configured company/support email, phone, and address.
+- [ ] Footer hides empty contact rows and keeps legal/page links stable.
+- [ ] Home `/` uses published StorefrontPage slug `home` SEO metadata when present.
+- [ ] Home `/` falls back to static metadata when slug `home` is missing or unpublished.
+- [ ] Home canonical remains `/`, not `/pages/home`.
+- [ ] JSON-LD organization uses current store company/contact/logo data before SEO singleton settings.
+- [ ] Disabled/provisioning/maintenance stores still render the expected not-ready/maintenance state instead of catalog content.
+
 ## Catalog Search MVP
 
 Use this checklist whenever `StorefrontHeader`, `/search`, `StorefrontApiClient`, catalog query model, or CommerceNode published catalog search changes.

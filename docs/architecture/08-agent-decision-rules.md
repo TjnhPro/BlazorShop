@@ -84,6 +84,14 @@ Do not make Storefront V2 call Control Plane. Do not give Storefront V2 node cre
 
 Public Storefront media is also store-scoped. Do not design product media as a global file endpoint. Public media URLs stay clean and are scoped by Nginx/domain/rewrite behavior; Commerce Admin media debug endpoints use `storeKey` query.
 
+Storefront-visible store profile fields come from the current Commerce Store runtime profile through the Storefront display context. Use that context before rendering catalog, settings, customer-facing contact data, branding, icons, language, or currency.
+
+`DefaultCulture` is the source for document language; derive language from culture instead of adding a separate `DefaultLanguage` field.
+
+Do not add `DefaultTheme` until a real theme system exists. A future theme setting should be a `ThemeKey` allowlist with implemented themes, not a free-form string.
+
+Home page metadata uses the reserved published StorefrontPage slug `home`. The `/` route may consume that page's SEO fields, but `/` remains the canonical home route. Do not add another generic home metadata blob to `CommerceStore`.
+
 ## Database Rule
 
 Use the correct context:

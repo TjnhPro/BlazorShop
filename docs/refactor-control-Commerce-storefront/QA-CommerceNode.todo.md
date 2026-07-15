@@ -98,6 +98,18 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] Commerce Admin runtime store update accepts active/inactive and maintenance state through explicit request DTOs. 2026-07-15: focused lifecycle/control tests passed with the new request/response contracts.
 - [x] Provisioning stores remain valid runtime records and can be reported as not ready to Storefront V2. 2026-07-15: Storefront V2 browser QA used a fake scoped current-store API returning `status=provisioning`; storefront rendered the not-ready maintenance state.
 
+## Store Config Consumption And Hardening
+
+- [ ] Commerce Admin store create/update accepts safe absolute `http`/`https` asset URLs for logo/favicon/icon fields.
+- [ ] Commerce Admin store create/update accepts safe root-relative public asset paths for logo/favicon/icon fields.
+- [ ] Commerce Admin store create/update rejects `javascript:`, `data:`, protocol-relative, malformed, and backslash asset URLs.
+- [ ] Commerce Admin store create/update rejects malformed `CdnHost` and invalid MS tile colors.
+- [ ] Commerce Admin store Swagger documents stable operation IDs and summaries for store endpoints.
+- [ ] Commerce Admin store Swagger declares response schemas for success and expected error responses.
+- [ ] Commerce Admin store Swagger keeps required `X-Node-Key` and `X-Node-Secret` header metadata.
+- [ ] Storefront current-store response exposes only safe public runtime profile fields.
+- [ ] Checkout preview/place-order fallback currency uses the current store default when cart/session currency is missing.
+
 ## Cart, Checkout & Payment Provider MVP
 
 Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.md`.
