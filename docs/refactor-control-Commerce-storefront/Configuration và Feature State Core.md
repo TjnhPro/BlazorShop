@@ -231,31 +231,49 @@ Exit criteria:
 
 Goal: create explicit authorization boundaries before adding settings surfaces.
 
+Status 2026-07-15: completed permission and policy foundation.
+
+Implementation notes:
+
+- Added granular Control Plane permission constants and policies for commerce settings, features, and providers.
+- Added Control Plane seed permissions and role assignments through migration `ControlPlaneConfigurationFeaturePermissions`.
+- `platform_owner` and `node_operator` receive read/write settings, feature, and provider permissions.
+- `auditor` receives read-only settings, feature, and provider permissions.
+- Added authorization guardrail test proving the new policy names map to granular permission keys and not broad `stores.write`.
+- No new API endpoints were introduced in this phase; endpoint-level OpenAPI contract tests remain attached to the phase that introduces each endpoint.
+
+Verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~ControlPlaneAuthorizationTests" --no-restore -p:UseSharedCompilation=false` passed 6/6.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore -p:UseSharedCompilation=false` passed.
+- `git diff --check` passed, with only existing line-ending normalization warnings.
+
 Tasks:
 
-- Add Control Plane permissions:
-  - `commerce.settings.read`.
-  - `commerce.settings.write`.
-  - `commerce.features.read`.
-  - `commerce.features.write`.
-  - `commerce.providers.read`.
-  - `commerce.providers.write`.
-- Add matching policy names.
-- Apply these permissions to new Control Plane API endpoints as they are introduced.
-- Keep Commerce Node admin routes protected by node credentials and `storeKey` query scope.
-- Keep Control Plane Web calling only Control Plane API.
-- Add OpenAPI contract tests for:
+- [x] Add Control Plane permissions:
+  - [x] `commerce.settings.read`.
+  - [x] `commerce.settings.write`.
+  - [x] `commerce.features.read`.
+  - [x] `commerce.features.write`.
+  - [x] `commerce.providers.read`.
+  - [x] `commerce.providers.write`.
+- [x] Add matching policy names.
+- [n/a] Apply these permissions to new Control Plane API endpoints as they are introduced. No new endpoint exists in this phase.
+- [x] Keep Commerce Node admin routes protected by node credentials and `storeKey` query scope.
+- [x] Keep Control Plane Web calling only Control Plane API.
+- [n/a] Add OpenAPI contract tests for:
   - operation IDs.
   - summaries.
   - request/response DTOs.
   - security metadata.
   - expected errors.
+  No new operation exists in this phase; contract tests will be added with the endpoint phases.
 
 Exit criteria:
 
-- Permission constants and policies are available.
-- New settings/provider/feature APIs cannot reuse only broad `StoresWrite`.
-- API contract standards are enforced from the start.
+- [x] Permission constants and policies are available.
+- [x] New settings/provider/feature APIs cannot reuse only broad `StoresWrite`.
+- [x] API contract standards are enforced from the start.
 
 ### Phase 2 - Public Configuration Projection MVP
 

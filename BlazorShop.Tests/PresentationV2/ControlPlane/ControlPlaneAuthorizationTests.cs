@@ -28,6 +28,27 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
         }
 
         [Fact]
+        public void ConfigurationFeaturePolicies_UseGranularCommercePermissions()
+        {
+            var expected = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                [ControlPlanePolicyNames.CommerceSettingsRead] = ControlPlanePermissions.CommerceSettingsRead,
+                [ControlPlanePolicyNames.CommerceSettingsWrite] = ControlPlanePermissions.CommerceSettingsWrite,
+                [ControlPlanePolicyNames.CommerceFeaturesRead] = ControlPlanePermissions.CommerceFeaturesRead,
+                [ControlPlanePolicyNames.CommerceFeaturesWrite] = ControlPlanePermissions.CommerceFeaturesWrite,
+                [ControlPlanePolicyNames.CommerceProvidersRead] = ControlPlanePermissions.CommerceProvidersRead,
+                [ControlPlanePolicyNames.CommerceProvidersWrite] = ControlPlanePermissions.CommerceProvidersWrite
+            };
+
+            foreach (var policy in expected)
+            {
+                Assert.True(ControlPlanePolicyNames.PermissionByPolicy.TryGetValue(policy.Key, out var permission));
+                Assert.Equal(policy.Value, permission);
+                Assert.NotEqual(ControlPlanePermissions.StoresWrite, permission);
+            }
+        }
+
+        [Fact]
         public async Task PermissionHandler_SucceedsForActiveProfileWithPermission()
         {
             await using var context = CreateContext();

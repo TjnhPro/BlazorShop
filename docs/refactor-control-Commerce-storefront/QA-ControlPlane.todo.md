@@ -97,6 +97,8 @@ Status legend:
 - [~] User without `health.read` cannot view health data. Unit-covered; live no-read role was not created in this run.
 - [~] User without `actions.read` cannot view/control actions. Unit-covered; live no-read role was not created in this run.
 - [n/a] User without `audit.read` cannot view audit logs. No API-backed audit read endpoint yet.
+- [x] Commerce configuration permission policies are granular and do not reuse broad `stores.write`. 2026-07-15: `ControlPlaneAuthorizationTests` verified settings/features/providers read/write policies map to `commerce.settings.*`, `commerce.features.*`, and `commerce.providers.*`.
+- [x] Control Plane seed permissions include commerce settings/features/providers for future configuration APIs. 2026-07-15: migration `ControlPlaneConfigurationFeaturePermissions` adds permission ids 15-20; `platform_owner` and `node_operator` get read/write, `auditor` gets read-only.
 
 ### User Management
 

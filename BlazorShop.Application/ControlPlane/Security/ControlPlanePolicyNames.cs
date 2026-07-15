@@ -16,6 +16,12 @@ namespace BlazorShop.Application.ControlPlane.Security
         public const string PermissionsManage = "ControlPlane.Permissions.Manage";
         public const string CommercePagesRead = "ControlPlane.CommercePages.Read";
         public const string CommercePagesWrite = "ControlPlane.CommercePages.Write";
+        public const string CommerceSettingsRead = "ControlPlane.CommerceSettings.Read";
+        public const string CommerceSettingsWrite = "ControlPlane.CommerceSettings.Write";
+        public const string CommerceFeaturesRead = "ControlPlane.CommerceFeatures.Read";
+        public const string CommerceFeaturesWrite = "ControlPlane.CommerceFeatures.Write";
+        public const string CommerceProvidersRead = "ControlPlane.CommerceProviders.Read";
+        public const string CommerceProvidersWrite = "ControlPlane.CommerceProviders.Write";
 
         public static readonly IReadOnlyDictionary<string, string> PermissionByPolicy =
             new Dictionary<string, string>(StringComparer.Ordinal)
@@ -33,7 +39,13 @@ namespace BlazorShop.Application.ControlPlane.Security
                 [RolesAssign] = ControlPlanePermissions.RolesAssign,
                 [PermissionsManage] = ControlPlanePermissions.PermissionsManage,
                 [CommercePagesRead] = ControlPlanePermissions.CommercePagesRead,
-                [CommercePagesWrite] = ControlPlanePermissions.CommercePagesWrite
+                [CommercePagesWrite] = ControlPlanePermissions.CommercePagesWrite,
+                [CommerceSettingsRead] = ControlPlanePermissions.CommerceSettingsRead,
+                [CommerceSettingsWrite] = ControlPlanePermissions.CommerceSettingsWrite,
+                [CommerceFeaturesRead] = ControlPlanePermissions.CommerceFeaturesRead,
+                [CommerceFeaturesWrite] = ControlPlanePermissions.CommerceFeaturesWrite,
+                [CommerceProvidersRead] = ControlPlanePermissions.CommerceProvidersRead,
+                [CommerceProvidersWrite] = ControlPlanePermissions.CommerceProvidersWrite
             };
     }
 }

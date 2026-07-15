@@ -16,6 +16,12 @@ namespace BlazorShop.Application.ControlPlane.Security
         public const string PermissionsManage = "permissions.manage";
         public const string CommercePagesRead = "commerce.pages.read";
         public const string CommercePagesWrite = "commerce.pages.write";
+        public const string CommerceSettingsRead = "commerce.settings.read";
+        public const string CommerceSettingsWrite = "commerce.settings.write";
+        public const string CommerceFeaturesRead = "commerce.features.read";
+        public const string CommerceFeaturesWrite = "commerce.features.write";
+        public const string CommerceProvidersRead = "commerce.providers.read";
+        public const string CommerceProvidersWrite = "commerce.providers.write";
 
         public static readonly string[] All =
         [
@@ -32,7 +38,13 @@ namespace BlazorShop.Application.ControlPlane.Security
             RolesAssign,
             PermissionsManage,
             CommercePagesRead,
-            CommercePagesWrite
+            CommercePagesWrite,
+            CommerceSettingsRead,
+            CommerceSettingsWrite,
+            CommerceFeaturesRead,
+            CommerceFeaturesWrite,
+            CommerceProvidersRead,
+            CommerceProvidersWrite
         ];
     }
 }
