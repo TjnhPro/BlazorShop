@@ -30,5 +30,40 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             return $"/media/products/{mediaPublicId:D}?{string.Join("&", query)}";
         }
+
+        public string BuildProductMediaPresetUrl(Guid mediaPublicId, int version, string presetName)
+        {
+            var preset = MediaUrlPresets.Get(presetName);
+            return this.BuildProductMediaUrl(
+                mediaPublicId,
+                version,
+                new ProductMediaUrlOptions(
+                    preset.Width,
+                    preset.Height,
+                    preset.Fit,
+                    preset.Format));
+        }
+
+        public string BuildAbsoluteProductMediaUrl(
+            Guid mediaPublicId,
+            int version,
+            string publicBaseUrl,
+            ProductMediaUrlOptions? options = null)
+        {
+            return MediaDeliveryUrlPolicy.BuildAbsoluteUrl(
+                publicBaseUrl,
+                this.BuildProductMediaUrl(mediaPublicId, version, options));
+        }
+
+        public string BuildAbsoluteProductMediaPresetUrl(
+            Guid mediaPublicId,
+            int version,
+            string publicBaseUrl,
+            string presetName)
+        {
+            return MediaDeliveryUrlPolicy.BuildAbsoluteUrl(
+                publicBaseUrl,
+                this.BuildProductMediaPresetUrl(mediaPublicId, version, presetName));
+        }
     }
 }

@@ -496,6 +496,7 @@ static async Task<IResult> ProxyCommerceNodeMediaAsync(
     CopyHeaderIfPresent(response, httpContext.Response, "Cache-Control");
     CopyHeaderIfPresent(response, httpContext.Response, "ETag");
     CopyHeaderIfPresent(response, httpContext.Response, "Last-Modified");
+    CopyHeaderIfPresent(response, httpContext.Response, "X-Content-Type-Options");
 
     var content = await response.Content.ReadAsByteArrayAsync(cancellationToken);
     var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";

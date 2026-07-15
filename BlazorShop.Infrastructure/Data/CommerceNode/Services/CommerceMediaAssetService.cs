@@ -21,19 +21,22 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly CommerceMediaStorageOptions options;
         private readonly IHostEnvironment environment;
         private readonly IMediaStorageProvider storageProvider;
+        private readonly ICommerceMediaUrlBuilder urlBuilder;
 
         public CommerceMediaAssetService(
             CommerceNodeDbContext context,
             ICommerceStoreContext storeContext,
             IOptions<CommerceMediaStorageOptions> options,
             IHostEnvironment environment,
-            IMediaStorageProvider storageProvider)
+            IMediaStorageProvider storageProvider,
+            ICommerceMediaUrlBuilder urlBuilder)
         {
             this.context = context;
             this.storeContext = storeContext;
             this.options = options.Value;
             this.environment = environment;
             this.storageProvider = storageProvider;
+            this.urlBuilder = urlBuilder;
         }
 
         public async Task<CommerceMediaAssetOperationResult<CommerceMediaAssetListResponse>> ListAsync(
@@ -64,13 +67,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var totalCount = await assets.CountAsync(cancellationToken);
-            var items = await assets
+            var assetRows = await assets
                 .OrderByDescending(asset => asset.UpdatedAt)
                 .ThenBy(asset => asset.DisplayName)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .Select(asset => ToDto(asset))
                 .ToListAsync(cancellationToken);
+            var items = assetRows.Select(this.ToDto).ToList();
 
             return Succeeded(
                 new CommerceMediaAssetListResponse(
@@ -88,7 +91,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var asset = await this.GetScopedAssetAsync(assetPublicId, cancellationToken);
             return asset is null
                 ? Failed<CommerceMediaAssetDto>(CommerceMediaAssetOperationFailure.NotFound, "Media asset was not found.")
-                : Succeeded(ToDto(asset));
+                : Succeeded(this.ToDto(asset));
         }
 
         public async Task<CommerceMediaAssetOperationResult<CommerceMediaAssetDto>> UploadAsync(
@@ -143,7 +146,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             this.context.CommerceMediaAssets.Add(asset);
             await this.context.SaveChangesAsync(cancellationToken);
-            return Succeeded(ToDto(asset), "Media asset uploaded.");
+            return Succeeded(this.ToDto(asset), "Media asset uploaded.");
         }
 
         public async Task<CommerceMediaAssetOperationResult<CommerceMediaAssetDto>> UpdateMetadataAsync(
@@ -169,7 +172,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             asset.UpdatedAt = DateTimeOffset.UtcNow;
 
             await this.context.SaveChangesAsync(cancellationToken);
-            return Succeeded(ToDto(asset), "Media asset updated.");
+            return Succeeded(this.ToDto(asset), "Media asset updated.");
         }
 
         public async Task<CommerceMediaAssetOperationResult<CommerceMediaAssetDto>> ReplaceAsync(
@@ -217,7 +220,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             asset.UpdatedAt = DateTimeOffset.UtcNow;
 
             await this.context.SaveChangesAsync(cancellationToken);
-            return Succeeded(ToDto(asset), "Media asset replaced.");
+            return Succeeded(this.ToDto(asset), "Media asset replaced.");
         }
 
         public async Task<CommerceMediaAssetOperationResult<object>> DeleteAsync(
@@ -345,7 +348,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     "original" + extension.ToLowerInvariant());
         }
 
-        private static CommerceMediaAssetDto ToDto(CommerceMediaAsset asset)
+        private CommerceMediaAssetDto ToDto(CommerceMediaAsset asset)
         {
             return new CommerceMediaAssetDto(
                 asset.PublicId,
@@ -355,7 +358,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 asset.DisplayName,
                 asset.AltText,
                 asset.TitleText,
-                $"/media/assets/{asset.PublicId:D}/{Uri.EscapeDataString(asset.CanonicalFileName)}",
+                this.urlBuilder.BuildAssetUrl(asset.PublicId, asset.CanonicalFileName),
                 asset.MimeType,
                 asset.Extension,
                 asset.Width,

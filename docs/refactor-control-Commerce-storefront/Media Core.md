@@ -11,6 +11,7 @@ Updated: 2026-07-15
 - Phase 0 complete: baseline inventory captured for ProductMedia, CommerceMediaAsset, Storefront V2 media proxy, Control Plane gateway routes, CommerceNode compose/imgproxy/Nginx config, current query limits, file size limits, and public URL shapes. No runtime behavior changed.
 - Phase 1 complete: shared media file/signature policy, transform normalization, and URL presets added in Application; product media and generic asset controllers/services now reuse the shared policy without route or DB changes.
 - Phase 2 complete: `IMediaStorageProvider` and local filesystem provider added; product media import/original render and generic asset upload/replace/delete/original render use provider-backed path resolution while preserving existing storage layout.
+- Phase 3 complete: product and generic asset URL builders support named presets and configured-public-base absolute URLs; product media cache now distinguishes versioned immutable URLs from unversioned short-cache URLs; media responses include `nosniff`; Storefront V2 media proxy copies `X-Content-Type-Options`. Placeholder image asset selection is deferred because the current codebase has no semantic placeholder/no-image asset to reference safely.
 
 ## Goal
 
@@ -345,20 +346,20 @@ Goal: make media URLs predictable, cacheable, and safe across Storefront, SEO, e
 
 Tasks:
 
-- [ ] Add shared URL preset builder for products and assets.
-- [ ] Keep `IProductMediaUrlBuilder.BuildProductMediaUrl` backward compatible.
-- [ ] Add generic asset URL builder if not already present in service form.
-- [ ] Add absolute URL generation support using Storefront public URL rules:
+- [x] Add shared URL preset builder for products and assets.
+- [x] Keep `IProductMediaUrlBuilder.BuildProductMediaUrl` backward compatible.
+- [x] Add generic asset URL builder if not already present in service form.
+- [x] Add absolute URL generation support using Storefront public URL rules:
   - prefer configured `PublicUrl:BaseUrl`.
   - fallback only through trusted forwarded headers where existing Storefront infrastructure permits.
-- [ ] Add placeholder/default image policy for missing product/category/page media.
-- [ ] Align cache headers:
+- [~] Add placeholder/default image policy for missing product/category/page media. Deferred: no semantic placeholder/no-image asset exists in the current repo; adding a fake URL or reusing the banner image would create broken or misleading storefront behavior.
+- [x] Align cache headers:
   - versioned URL: long cache and immutable.
   - unversioned URL: shorter cache.
   - `X-Content-Type-Options: nosniff`.
-- [ ] Ensure `ETag` generation includes id, transform, and version.
-- [ ] Ensure admin preview endpoints do not leak another store's media.
-- [ ] Ensure Storefront V2 copies relevant response headers from Commerce Node media responses.
+- [x] Ensure `ETag` generation includes id, transform, and version.
+- [x] Ensure admin preview endpoints do not leak another store's media.
+- [x] Ensure Storefront V2 copies relevant response headers from Commerce Node media responses.
 
 Likely files:
 
@@ -371,11 +372,17 @@ Likely files:
 
 Review gate:
 
-- [ ] `/media/products/*` still renders.
-- [ ] `/media/assets/*` still renders.
-- [ ] Versioned media URL cache busting remains intact.
-- [ ] Store A cannot access Store B media.
-- [ ] Public routes do not expose storage paths.
+- [x] `/media/products/*` route shape is unchanged and CommerceNode API builds.
+- [x] `/media/assets/*` route shape is unchanged and CommerceNode API builds.
+- [x] Versioned media URL cache busting remains intact.
+- [x] Store A cannot access Store B media through public/admin media lookup because existing store-scoped query guards remain in place.
+- [x] Public routes do not expose storage paths.
+
+Phase 3 verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~MediaUrlBuilderTests|FullyQualifiedName~MediaDeliveryHardeningTests|FullyQualifiedName~LocalMediaStorageProviderTests|FullyQualifiedName~MediaFilePolicyTests|FullyQualifiedName~MediaTransformPolicyTests"` passed 35/35.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed.
 
 ## Phase 4 - Product Media Hardening
 

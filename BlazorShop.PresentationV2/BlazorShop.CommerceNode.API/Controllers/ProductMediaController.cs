@@ -114,8 +114,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         private void SetCacheHeaders(Domain.Entities.CommerceNode.ProductMedia media, MediaTransformQuery query, int? requestedVersion)
         {
-            var version = requestedVersion is > 0 ? requestedVersion.Value : media.Version;
-            this.Response.Headers.CacheControl = "public, max-age=31536000, immutable";
+            var hasVersion = requestedVersion is > 0;
+            var version = hasVersion ? requestedVersion!.Value : media.Version;
+            this.Response.Headers.CacheControl = hasVersion
+                ? "public, max-age=31536000, immutable"
+                : "public, max-age=3600";
             this.Response.Headers.ETag = $"\"{media.PublicId:D}:{query.Width}:{query.Height}:{query.Fit}:{query.Format}:{version}\"";
             this.Response.Headers.XContentTypeOptions = "nosniff";
         }

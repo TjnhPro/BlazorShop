@@ -443,7 +443,10 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Media Core Phase 2 local storage provider tests cover path traversal prevention and preserved effective storage layout. 2026-07-15: `LocalMediaStorageProviderTests` passed with shared policy tests, focused run 25/25.
 - [x] Product media import and public original rendering now resolve local paths through `IMediaStorageProvider` without changing URL shape or storage layout. 2026-07-15 Media Core Phase 2: CommerceNode API build passed.
 - [x] Generic media asset upload/replace/delete and public original rendering now resolve local paths through `IMediaStorageProvider` without changing URL shape or storage layout. 2026-07-15 Media Core Phase 2: CommerceNode API build passed.
-- [ ] Media Core Phase 3: delivery tests cover versioned/unversioned cache headers, `nosniff`, ETag, and Storefront proxy header copying.
+- [x] Media Core Phase 3: delivery tests cover versioned/unversioned cache headers, `nosniff`, ETag, and Storefront proxy header copying. 2026-07-15: `MediaDeliveryHardeningTests` passed in focused media run.
+- [x] Media Core Phase 3 URL builder tests cover product presets, generic asset presets, configured-public-base absolute URLs, and unsafe absolute URL rejection. 2026-07-15: `MediaUrlBuilderTests` passed in focused media run.
+- [x] CommerceNode API builds after Media Core Phase 3 delivery hardening. 2026-07-15: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
+- [~] Media Core placeholder/default image policy remains deferred until a real product/category/page placeholder asset is selected. 2026-07-15: repo inspection found no semantic placeholder/no-image asset; Phase 3 avoids introducing broken media URLs.
 
 ### Product Import
 

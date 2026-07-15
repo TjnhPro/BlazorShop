@@ -137,6 +137,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IProductMediaService, ProductMediaService>();
             services.AddScoped<ICommerceMediaAssetService, CommerceMediaAssetService>();
             services.AddScoped<IProductMediaUrlBuilder, ProductMediaUrlBuilder>();
+            services.AddScoped<ICommerceMediaUrlBuilder, CommerceMediaUrlBuilder>();
             services.AddSingleton<IMediaStorageProvider, LocalMediaStorageProvider>();
             services.AddScoped<IProductImportCsvParser, ProductImportCsvParser>();
             services.AddScoped<IProductImportService, ProductImportService>();
