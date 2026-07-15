@@ -16,6 +16,9 @@ Updated: 2026-07-15
 - Phase 5 complete: Commerce Node category media assignment table, service, admin API, and Control Plane gateway routes added. Setting primary category media validates both category and asset in the current store, syncs `Category.Image` to the category-card asset URL, invalidates catalog cache, and blocks deletion of assigned generic assets. Control Plane UI picker remains deferred.
 - Phase 6 complete: generic `CommerceMediaAsset` now has allowlisted usage classification (`content`, `branding`, `theme`, `category`) with default `content`, list filtering, metadata update validation, Commerce Node migration, and Control Plane query forwarding. Existing assets backfill/default to `content`.
 - Phase 7 complete: delete policy is now explicit for implemented references. Product media remains soft-delete; generic assets remain hard-delete but deletion is blocked while a category assignment references the asset. Full page-body reference scanning and orphan cleanup worker remain deferred.
+- Phase 8 deferred: optional S3/object-storage adapter is not implemented because no deployment requirement, provider config, or secret ownership decision has been approved. Local filesystem remains default.
+- Phase 9 deferred: variant/attribute media is not implemented because current `ProductVariant` still has no media model and Storefront variant image UX/fallback rules are not approved.
+- Phase 10 complete for implemented scope: Media Core plan and QA checklists now record phase outcomes, tests, builds, deferred items, and remaining live/browser QA.
 
 ## Goal
 
@@ -549,6 +552,8 @@ Phase 7 verification:
 
 Goal: prepare for S3-compatible storage only after local provider abstraction is stable.
 
+Status: deferred. Entry criteria are not met; do not implement without a real deployment requirement and approved config/secret ownership.
+
 Entry criteria:
 
 - Phase 2 local provider is merged and verified.
@@ -557,28 +562,30 @@ Entry criteria:
 
 Tasks:
 
-- [ ] Add provider options:
+- [~] Add provider options:
   - provider type: `local` or `s3`.
   - bucket/container.
   - region/endpoint.
   - public URL mode.
   - credentials through runtime secrets only.
-- [ ] Implement `S3MediaStorageProvider` behind `IMediaStorageProvider`.
-- [ ] Keep public storefront URL routed through BlazorShop/Nginx, not raw S3 URLs, unless a future CDN decision explicitly changes that.
-- [ ] Ensure imgproxy can read source objects safely, either through configured object storage support or a controlled internal fetch path.
-- [ ] Add integration tests behind opt-in config.
-- [ ] Document local dev still defaults to local filesystem.
+- [~] Implement `S3MediaStorageProvider` behind `IMediaStorageProvider`.
+- [x] Keep public storefront URL routed through BlazorShop/Nginx, not raw S3 URLs, unless a future CDN decision explicitly changes that.
+- [~] Ensure imgproxy can read source objects safely, either through configured object storage support or a controlled internal fetch path.
+- [~] Add integration tests behind opt-in config.
+- [x] Document local dev still defaults to local filesystem.
 
 Review gate:
 
-- [ ] No credentials in client code or repository.
-- [ ] No public raw bucket URL unless explicitly approved.
-- [ ] Local filesystem provider remains default.
-- [ ] Existing media URLs remain stable.
+- [x] No credentials in client code or repository.
+- [x] No public raw bucket URL unless explicitly approved.
+- [x] Local filesystem provider remains default.
+- [x] Existing media URLs remain stable.
 
 ## Phase 9 - Variant And Attribute Media Future Phase
 
 Goal: defer variant media until the variant UX/model needs it.
+
+Status: deferred. This phase remains a future design phase, not an implementation target in the current Media Core slice.
 
 Rationale:
 
@@ -587,14 +594,14 @@ Rationale:
 
 Future tasks when approved:
 
-- [ ] Define whether variant image is one primary image or a gallery.
-- [ ] Add `ProductVariantMediaAssignment` or equivalent Commerce Node model.
-- [ ] Decide fallback order:
+- [~] Define whether variant image is one primary image or a gallery.
+- [~] Add `ProductVariantMediaAssignment` or equivalent Commerce Node model.
+- [~] Decide fallback order:
   - variant image.
   - product primary image.
   - placeholder.
-- [ ] Update Storefront variant selection and cart image behavior.
-- [ ] Update Control Plane product variant editor.
+- [~] Update Storefront variant selection and cart image behavior.
+- [~] Update Control Plane product variant editor.
 
 This is intentionally not part of the first Media Core implementation.
 
@@ -604,26 +611,26 @@ Goal: prove each phase works and record the behavior for future agents.
 
 Tasks:
 
-- [ ] Update `QA-CommerceNode.todo.md` with media policy, storage, public rendering, category assignment, and delete/usage cases.
-- [ ] Update `QA-ControlPlane.todo.md` for admin gateway/UI cases.
-- [ ] Update `QA-StorefrontV2.todo.md` for product/category/page image rendering.
-- [ ] Update `QA-CommerceNode-TaskOrchestration.todo.md` if product media import behavior changes.
-- [ ] Update architecture docs only when a hard runtime rule changes.
-- [ ] Run focused API tests for changed Commerce Node endpoints.
-- [ ] Run contract tests for new/changed V2 APIs.
-- [ ] Run browser QA when Control Plane or Storefront UI changes.
-- [ ] Verify `docker compose -f compose.commercenode.yml up -d` media dependencies when delivery changes touch imgproxy/Nginx.
+- [x] Update `QA-CommerceNode.todo.md` with media policy, storage, public rendering, category assignment, and delete/usage cases.
+- [x] Update `QA-ControlPlane.todo.md` for admin gateway/UI cases.
+- [x] Update `QA-StorefrontV2.todo.md` for product/category/page image rendering.
+- [x] Update `QA-CommerceNode-TaskOrchestration.todo.md` if product media import behavior changes.
+- [x] Update architecture docs only when a hard runtime rule changes.
+- [x] Run focused API tests for changed Commerce Node endpoints.
+- [x] Run contract tests for new/changed V2 APIs.
+- [~] Run browser QA when Control Plane or Storefront UI changes. Deferred: current slice added backend/gateway endpoints and no visible UI picker.
+- [~] Verify `docker compose -f compose.commercenode.yml up -d` media dependencies when delivery changes touch imgproxy/Nginx. Deferred: delivery URL shapes remain stable and no compose/Nginx/imgproxy config changed.
 
 Exit gate:
 
-- [ ] Product media import still works.
-- [ ] Generic media asset upload/list/render still works.
-- [ ] Product listing/detail/cart images still render.
-- [ ] Category image renders when assigned.
-- [ ] Missing media uses placeholder instead of broken UI where implemented.
-- [ ] Store A media does not resolve from Store B.
-- [ ] Public media cache headers are correct.
-- [ ] Swagger/OpenAPI standards are satisfied for every changed API.
+- [~] Product media import still works. Service/task type unchanged; live task-worker QA remains pending.
+- [x] Generic media asset upload/list/render still works for the changed backend contract; focused service tests and builds passed.
+- [x] Product listing/detail/cart images still render through unchanged `Product.Image` compatibility.
+- [~] Category image renders when assigned. Backend syncs `Category.Image`; visible Storefront fixture QA remains pending.
+- [~] Missing media uses placeholder instead of broken UI where implemented. Placeholder asset selection remains deferred.
+- [x] Store A media does not resolve from Store B through service-level store-scope checks.
+- [x] Public media cache headers are correct for Phase 3 controller hardening tests.
+- [x] Swagger/OpenAPI standards are satisfied for every changed API covered in this slice.
 
 ## API Contract Checklist
 
