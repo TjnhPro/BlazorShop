@@ -178,6 +178,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<ISeoRedirectAutomationService, SeoRedirectAutomationService>();
             services.AddScoped<IStoreSeoSlugPolicyService, StoreSeoSlugPolicyService>();
             services.AddScoped<IStoreSeoSlugHistoryService, StoreSeoSlugHistoryService>();
+            services.AddScoped<ISeoUrlResolver, SeoUrlResolver>();
             services.AddScoped<IMetricsService, MetricsService>();
             Stripe.StripeConfiguration.ApiKey = configuration["Stripe:SecretKey"];
             services.AddDefaultIdentity<AppUser>(

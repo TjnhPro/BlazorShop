@@ -136,6 +136,8 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] Product SEO redirect regression remains covered after policy foundation. 2026-07-15: `ProductSeoServiceTests` passed 9/9 after read-detail fallback fix.
 - [x] CommerceNode schema contains `store_seo_slug_history` with active entity/slug indexes and FK to `commerce_store`. 2026-07-15: migration `CommerceNodeStoreSeoSlugHistory` generated and CommerceNode API build passed.
 - [x] Slug history service creates active rows, replaces active slugs while retaining old rows, rejects second active entity/route-family slugs, and backfills idempotently. 2026-07-15: `StoreSeoSlugHistoryServiceTests` passed 5/5.
+- [x] SEO URL resolver resolves active canonical product/category/page paths and returns redirect metadata for old slugs. 2026-07-15: `SeoUrlResolverTests` passed 4/4.
+- [x] SEO URL resolver does not leak another store's slug and returns `gone` for unpublished page history. 2026-07-15: `SeoUrlResolverTests.ResolvePublicPathAsync_SlugBelongsToAnotherStore_ReturnsNotFound` and `ResolvePublicPathAsync_UnpublishedPage_ReturnsGone` passed.
 - [ ] API smoke: create two active redirects with the same `OldPath` in two different stores through `api/commerce/admin/seo/redirects`.
 - [ ] API smoke: duplicate active `OldPath` in the same store returns conflict/validation failure.
 - [ ] API smoke: `GET /api/storefront/stores/{storeKey}/seo/redirects/resolve` ignores another store's redirect.

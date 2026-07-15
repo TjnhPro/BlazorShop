@@ -19,6 +19,7 @@ Updated: 2026-07-15
 - Phase 1 complete: Commerce Node SEO redirects are store-scoped in schema, repository, admin service, automation service, and public redirect resolution.
 - Phase 2 complete: shared SEO slug policy service added with reserved route validation, Unicode-preserving normalization, store-scoped collision checking, and suffix generation.
 - Phase 3 complete: Commerce Node slug history table/service/backfill foundation added without replacing entity `Slug` fields.
+- Phase 4 complete: canonical SEO URL resolver added for store-scoped product/category/page public paths, old-slug canonical redirects, not-found, gone, and invalid outcomes.
 - Phase 11 is conditional and should run only after a real legacy topic URL inventory exists.
 
 Autoplan note: external dual-voice subagents are not available in this Codex runtime. This plan records an internal autoplan audit using the same decision principles: preserve existing working behavior, fix the riskiest foundation first, keep V2 boundaries explicit, avoid speculative localization/manufacturer work, and make each phase independently verifiable.
@@ -515,9 +516,9 @@ Tasks:
 
 Exit criteria:
 
-- Product/category/page public path logic is centralized.
-- Resolver output includes entity type/id, requested slug, canonical slug, language, redirect requirement, and HTTP status.
-- Resolver never returns another store's entity.
+- Product/category/page public path logic is centralized. Complete through `ISeoUrlResolver`.
+- Resolver output includes entity type/id, requested slug, canonical slug, language, redirect requirement, and HTTP status. Complete through `SeoUrlResolutionDto`.
+- Resolver never returns another store's entity. Complete; wrong-store slug lookup returns `not_found`.
 
 Suggested commit:
 
