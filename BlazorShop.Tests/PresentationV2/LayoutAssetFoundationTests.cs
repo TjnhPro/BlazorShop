@@ -165,6 +165,37 @@ namespace BlazorShop.Tests.PresentationV2
         }
 
         [Fact]
+        public void ControlPlanePageHeader_DefinesOperationalHeaderExtensionPoint()
+        {
+            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Components/ControlPlanePageHeader.razor");
+
+            Assert.Contains("public string? Eyebrow", component);
+            Assert.Contains("public string Title", component);
+            Assert.Contains("public string? Description", component);
+            Assert.Contains("public RenderFragment? Actions", component);
+            Assert.Contains("[EditorRequired]", component);
+            Assert.Contains("<h1 class=\"text-2xl font-bold text-ink-900\">@Title</h1>", component);
+            Assert.DoesNotContain("cp-card", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("<main", component, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Theory]
+        [InlineData("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/Home.razor")]
+        [InlineData("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/Stores.razor")]
+        [InlineData("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/CommerceOrders.razor")]
+        [InlineData("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/CommercePaymentMethods.razor")]
+        public void ControlPlaneHighTrafficPages_UseSharedPageHeader(string relativePath)
+        {
+            var pageMarkup = ReadRepositoryFile(relativePath);
+
+            Assert.Contains("<PageTitle>", pageMarkup, StringComparison.Ordinal);
+            Assert.Contains("<ControlPlanePageHeader", pageMarkup, StringComparison.Ordinal);
+            Assert.Contains("Title=", pageMarkup, StringComparison.Ordinal);
+            Assert.Contains("<Actions>", pageMarkup, StringComparison.Ordinal);
+            Assert.DoesNotContain("ControlPlane.Web -> CommerceNode", pageMarkup, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
         public void SharedV2BrowserHelpers_KeepJsModuleImports()
         {
             var sessionStorage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/BrowserStorage/BrowserSessionStorageService.cs");

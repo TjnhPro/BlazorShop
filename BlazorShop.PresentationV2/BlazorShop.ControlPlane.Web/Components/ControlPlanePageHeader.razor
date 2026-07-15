@@ -1,0 +1,50 @@
+@namespace BlazorShop.ControlPlane.Web.Components
+
+<header class="@HeaderClass">
+    <div class="min-w-0">
+        @if (!string.IsNullOrWhiteSpace(Eyebrow))
+        {
+            <p class="text-sm font-semibold text-control-700">@Eyebrow</p>
+        }
+        <h1 class="text-2xl font-bold text-ink-900">@Title</h1>
+        @if (!string.IsNullOrWhiteSpace(Description))
+        {
+            <p class="mt-1 text-sm text-ink-500">@Description</p>
+        }
+    </div>
+
+    @if (Actions is not null)
+    {
+        <div class="@ActionsClass">
+            @Actions
+        </div>
+    }
+</header>
+
+@code {
+    [Parameter]
+    public string? Eyebrow { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Description { get; set; }
+
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+
+    [Parameter]
+    public string LayoutClass { get; set; } = "sm:flex-row sm:items-end sm:justify-between";
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    [Parameter]
+    public string ActionsClass { get; set; } = "flex flex-col gap-2 sm:flex-row";
+
+    private string HeaderClass => string.IsNullOrWhiteSpace(Class)
+        ? $"flex flex-col gap-3 {LayoutClass}"
+        : $"flex flex-col gap-3 {LayoutClass} {Class}";
+}

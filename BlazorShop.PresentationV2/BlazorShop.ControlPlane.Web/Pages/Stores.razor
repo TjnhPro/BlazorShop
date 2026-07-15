@@ -6,17 +6,16 @@
 <PageTitle>Stores</PageTitle>
 
 <section class="space-y-5">
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-            <p class="text-sm font-semibold text-control-700">Stores</p>
-            <h1 class="text-2xl font-bold text-ink-900">Store registry</h1>
-            <p class="mt-1 text-sm text-ink-500">Assign platform store metadata to registered Commerce Nodes.</p>
-        </div>
-        <button class="cp-button cp-button-primary" @onclick="OpenCreateForm">
-            <i class="fa-solid fa-plus" aria-hidden="true"></i>
-            Create store
-        </button>
-    </div>
+    <ControlPlanePageHeader Eyebrow="Stores"
+                            Title="Store registry"
+                            Description="Assign platform store metadata to registered Commerce Nodes.">
+        <Actions>
+            <button class="cp-button cp-button-primary" @onclick="OpenCreateForm">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                Create store
+            </button>
+        </Actions>
+    </ControlPlanePageHeader>
 
     @if (!string.IsNullOrWhiteSpace(errorMessage))
     {

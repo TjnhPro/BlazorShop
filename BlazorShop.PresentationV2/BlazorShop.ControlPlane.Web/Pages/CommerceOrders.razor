@@ -6,13 +6,11 @@
 <PageTitle>Orders</PageTitle>
 
 <section class="space-y-5">
-    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-            <p class="text-sm font-semibold text-control-700">Commerce Admin</p>
-            <h1 class="text-2xl font-bold text-ink-900">Orders</h1>
-            <p class="mt-1 text-sm text-ink-500">Inspect orders and maintain a simple one-shipment record per order.</p>
-        </div>
-        <div class="flex flex-col gap-2 sm:flex-row">
+    <ControlPlanePageHeader Eyebrow="Commerce Admin"
+                            Title="Orders"
+                            Description="Inspect orders and maintain a simple one-shipment record per order."
+                            LayoutClass="lg:flex-row lg:items-end lg:justify-between">
+        <Actions>
             <select class="min-h-10 min-w-64 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="selectedStorePublicId">
                 <option value="">Select store</option>
                 @foreach (var store in stores)
@@ -24,8 +22,8 @@
                 <i class="fa-solid fa-rotate" aria-hidden="true"></i>
                 Refresh
             </button>
-        </div>
-    </div>
+        </Actions>
+    </ControlPlanePageHeader>
 
     @if (!string.IsNullOrWhiteSpace(errorMessage))
     {
