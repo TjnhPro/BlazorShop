@@ -136,7 +136,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 }
             }
 
-            var currencyCode = await this.storeCurrencyResolver.ResolveDefaultCurrencyCodeAsync(request.StoreId, cancellationToken);
+            var currencyCode = cartValidation.Success && cartValidation.Payload is not null
+                ? cartValidation.Payload.CurrencyCode
+                : await this.storeCurrencyResolver.ResolveDefaultCurrencyCodeAsync(request.StoreId, cancellationToken);
             var lines = cart.Lines.Select(line =>
             {
                 var unitPrice = this.moneyRoundingService.RoundUnitPrice(line.UnitPriceSnapshot ?? 0m, currencyCode);
@@ -348,7 +350,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Payment provider is not available for order placement.");
             }
 
-            var currencyCode = await this.storeCurrencyResolver.ResolveDefaultCurrencyCodeAsync(request.StoreId, cancellationToken);
+            var currencyCode = NormalizeCurrency(session.CurrencyCode)
+                ?? await this.storeCurrencyResolver.ResolveDefaultCurrencyCodeAsync(request.StoreId, cancellationToken);
             var lineResolution = await this.ResolveOrderLinesAsync(request.StoreId, cart.Lines, currencyCode, cancellationToken);
             if (!lineResolution.Success)
             {
@@ -783,9 +786,19 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     return OrderLineResolution.Failed(ServiceResponseType.Conflict, "One or more cart items are out of stock.");
                 }
 
-                var unitPrice = this.moneyRoundingService.RoundUnitPrice(
-                    cartLine.UnitPriceSnapshot ?? variant?.Price ?? product.Price,
-                    currencyCode);
+                var snapshotCurrency = NormalizeCurrency(cartLine.CurrencyCodeSnapshot);
+                if (snapshotCurrency is not null
+                    && !string.Equals(snapshotCurrency, currencyCode, StringComparison.Ordinal))
+                {
+                    return OrderLineResolution.Failed(ServiceResponseType.Conflict, "Cart line currency does not match checkout currency.");
+                }
+
+                if (!cartLine.UnitPriceSnapshot.HasValue)
+                {
+                    return OrderLineResolution.Failed(ServiceResponseType.ValidationError, "Cart line price is invalid.");
+                }
+
+                var unitPrice = this.moneyRoundingService.RoundUnitPrice(cartLine.UnitPriceSnapshot.Value, currencyCode);
                 if (unitPrice <= 0m)
                 {
                     return OrderLineResolution.Failed(ServiceResponseType.ValidationError, "Cart line price is invalid.");

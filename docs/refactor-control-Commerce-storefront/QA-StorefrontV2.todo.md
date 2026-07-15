@@ -183,6 +183,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Public configuration can expose multiple supported currency codes from CommerceNode without Storefront V2 showing a selector yet. 2026-07-15: CommerceNode Phase 2 service/config projection added; Storefront selector remains future scope.
 - [x] Storefront currency preference remains server-command driven and checkout-safe; non-base selection UI is still hidden until conversion is available. 2026-07-15: CommerceNode Phase 4 added POST preference endpoint but keeps Storefront V2 selector out of scope.
 - [x] Manual exchange rates can be configured in CommerceNode without Storefront V2 enabling non-base display or checkout. 2026-07-15: CommerceNode Phase 5 added manual rate service/API; Storefront selector and display conversion remain future scope.
+- [x] CommerceNode backend can keep cart, checkout, order, and payment in one converted non-base currency when Storefront sends an approved currency hint. 2026-07-15: service-level EUR conversion guardrails passed; Storefront V2 visible selector/display remains future scope.
 - [ ] Visible product-detail/cart/checkout QA confirms client-sent currency hints cannot change displayed checkout/payment currency.
 - [ ] Future currency selector must stay hidden for stores with only one enabled supported currency.
 

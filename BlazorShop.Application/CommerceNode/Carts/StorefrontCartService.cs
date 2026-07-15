@@ -23,6 +23,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
         private readonly IProductReadRepository productReadRepository;
         private readonly IStoreCurrencyResolver storeCurrencyResolver;
         private readonly IStorefrontWorkingCurrencyResolver workingCurrencyResolver;
+        private readonly IMoneyConversionService moneyConversionService;
         private readonly IMoneyRoundingService moneyRoundingService;
 
         public StorefrontCartService(
@@ -30,12 +31,14 @@ namespace BlazorShop.Application.CommerceNode.Carts
             IProductReadRepository productReadRepository,
             IStoreCurrencyResolver storeCurrencyResolver,
             IStorefrontWorkingCurrencyResolver workingCurrencyResolver,
+            IMoneyConversionService moneyConversionService,
             IMoneyRoundingService moneyRoundingService)
         {
             this.sessionService = sessionService;
             this.productReadRepository = productReadRepository;
             this.storeCurrencyResolver = storeCurrencyResolver;
             this.workingCurrencyResolver = workingCurrencyResolver;
+            this.moneyConversionService = moneyConversionService;
             this.moneyRoundingService = moneyRoundingService;
         }
 
@@ -128,7 +131,20 @@ namespace BlazorShop.Application.CommerceNode.Carts
                 request.CurrencyCode,
                 cancellationToken);
             var currencyCode = workingCurrency.CurrencyCode;
-            var unitPrice = this.moneyRoundingService.RoundUnitPrice(variant?.Price ?? product.Price, currencyCode);
+            var baseUnitPrice = variant?.Price ?? product.Price;
+            var unitPriceResult = await this.ResolveUnitPriceAsync(
+                request.StoreId,
+                baseUnitPrice,
+                workingCurrency.BaseCurrencyCode,
+                currencyCode,
+                cancellationToken);
+            if (!unitPriceResult.Success)
+            {
+                return Failed<StorefrontCartSessionDto>(
+                    unitPriceResult.ResponseType,
+                    unitPriceResult.Message);
+            }
+
             return await this.sessionService.AddOrUpdateLineAsync(
                 new StorefrontCartLineMutationRequest(
                     request.StoreId,
@@ -142,7 +158,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
                     request.ArtworkVersion,
                     NormalizeNullable(request.FulfillmentProviderKey),
                     request.Quantity,
-                    unitPrice,
+                    unitPriceResult.UnitPrice,
                     currencyCode),
                 cancellationToken);
         }
@@ -235,7 +251,17 @@ namespace BlazorShop.Application.CommerceNode.Carts
 
             var issues = new List<StorefrontCartValidationIssueDto>();
             decimal totalAmount = 0;
-            var currencyCode = await this.storeCurrencyResolver.ResolveDefaultCurrencyCodeAsync(storeId, cancellationToken);
+            var baseCurrencyCode = await this.storeCurrencyResolver.ResolveDefaultCurrencyCodeAsync(storeId, cancellationToken);
+            var currencyResolution = await this.ResolveCartSnapshotCurrencyAsync(
+                storeId,
+                cart.Payload.Lines,
+                baseCurrencyCode,
+                cancellationToken);
+            var currencyCode = currencyResolution.CurrencyCode;
+            if (currencyResolution.Issue is not null)
+            {
+                issues.Add(currencyResolution.Issue);
+            }
 
             foreach (var line in cart.Payload.Lines)
             {
@@ -257,9 +283,9 @@ namespace BlazorShop.Application.CommerceNode.Carts
                     continue;
                 }
 
-                var unitPrice = this.moneyRoundingService.RoundUnitPrice(
-                    productResult.Variant?.Price ?? productResult.Product!.Price,
-                    currencyCode);
+                var unitPrice = line.UnitPriceSnapshot.HasValue
+                    ? this.moneyRoundingService.RoundUnitPrice(line.UnitPriceSnapshot.Value, currencyCode)
+                    : this.moneyRoundingService.RoundUnitPrice(productResult.Variant?.Price ?? productResult.Product!.Price, currencyCode);
                 totalAmount += this.moneyRoundingService.RoundLineTotal(unitPrice * line.Quantity, currencyCode);
             }
 
@@ -322,6 +348,83 @@ namespace BlazorShop.Application.CommerceNode.Carts
             }
 
             return CartProductResolution.Succeeded(product, variant.Value, attributes.AttributesJson);
+        }
+
+        private async Task<UnitPriceResolution> ResolveUnitPriceAsync(
+            Guid storeId,
+            decimal baseUnitPrice,
+            string baseCurrencyCode,
+            string currencyCode,
+            CancellationToken cancellationToken)
+        {
+            if (string.Equals(currencyCode, baseCurrencyCode, StringComparison.Ordinal))
+            {
+                return UnitPriceResolution.Succeeded(this.moneyRoundingService.RoundUnitPrice(baseUnitPrice, currencyCode));
+            }
+
+            var conversion = await this.moneyConversionService.ConvertFromBaseAsync(
+                storeId,
+                baseUnitPrice,
+                currencyCode,
+                cancellationToken);
+            if (!conversion.Success || conversion.Payload is null)
+            {
+                return UnitPriceResolution.Failed(
+                    conversion.ResponseType is ServiceResponseType.Success ? ServiceResponseType.Conflict : conversion.ResponseType,
+                    conversion.Message ?? "Currency conversion is not available.");
+            }
+
+            return UnitPriceResolution.Succeeded(
+                this.moneyRoundingService.RoundUnitPrice(conversion.Payload.ConvertedAmount, currencyCode));
+        }
+
+        private async Task<CartCurrencyResolution> ResolveCartSnapshotCurrencyAsync(
+            Guid storeId,
+            IReadOnlyList<StorefrontCartLineDto> lines,
+            string baseCurrencyCode,
+            CancellationToken cancellationToken)
+        {
+            var snapshotCurrencies = lines
+                .Select(line => NormalizeCurrencyCode(line.CurrencyCodeSnapshot))
+                .Where(currency => currency is not null)
+                .Select(currency => currency!)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+
+            if (snapshotCurrencies.Length == 0)
+            {
+                return new CartCurrencyResolution(baseCurrencyCode, null);
+            }
+
+            if (snapshotCurrencies.Length > 1)
+            {
+                return new CartCurrencyResolution(
+                    baseCurrencyCode,
+                    new StorefrontCartValidationIssueDto(
+                        null,
+                        null,
+                        "cart.currency_mixed",
+                        "Cart lines use mixed currencies."));
+            }
+
+            var snapshotCurrency = snapshotCurrencies[0];
+            var resolution = await this.workingCurrencyResolver.ResolveAsync(
+                storeId,
+                snapshotCurrency,
+                cancellationToken);
+            if (!string.Equals(resolution.CurrencyCode, snapshotCurrency, StringComparison.Ordinal)
+                || !resolution.CheckoutCurrencyEnabled)
+            {
+                return new CartCurrencyResolution(
+                    baseCurrencyCode,
+                    new StorefrontCartValidationIssueDto(
+                        null,
+                        null,
+                        "cart.currency_unavailable",
+                        $"Cart currency '{snapshotCurrency}' is not available for checkout."));
+            }
+
+            return new CartCurrencyResolution(snapshotCurrency, null);
         }
 
         private static bool IsStorefrontAvailable(Product product, Guid storeId)
@@ -505,6 +608,12 @@ namespace BlazorShop.Application.CommerceNode.Carts
             return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
 
+        private static string? NormalizeCurrencyCode(string? value)
+        {
+            var normalized = NormalizeNullable(value)?.ToUpperInvariant();
+            return normalized is { Length: 3 } && normalized.All(char.IsLetter) ? normalized : null;
+        }
+
         private static ServiceResponse<TPayload> Succeeded<TPayload>(string message, TPayload payload)
         {
             return new ServiceResponse<TPayload>(true, message)
@@ -581,5 +690,26 @@ namespace BlazorShop.Application.CommerceNode.Carts
                 return new PersonalizationValidation(false, message);
             }
         }
+
+        private sealed record UnitPriceResolution(
+            bool Success,
+            ServiceResponseType ResponseType,
+            string Message,
+            decimal UnitPrice)
+        {
+            public static UnitPriceResolution Succeeded(decimal unitPrice)
+            {
+                return new UnitPriceResolution(true, ServiceResponseType.Success, "Unit price resolved.", unitPrice);
+            }
+
+            public static UnitPriceResolution Failed(ServiceResponseType responseType, string message)
+            {
+                return new UnitPriceResolution(false, responseType, message, 0m);
+            }
+        }
+
+        private sealed record CartCurrencyResolution(
+            string CurrencyCode,
+            StorefrontCartValidationIssueDto? Issue);
     }
 }

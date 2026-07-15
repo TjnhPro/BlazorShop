@@ -200,6 +200,9 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Commerce Admin manual exchange-rate endpoints have stable Swagger operation IDs and typed response schemas. 2026-07-15: `CommerceCurrencies_ListExchangeRates`, `CommerceCurrencies_UpsertExchangeRate`, and `CommerceCurrencies_DisableExchangeRate` are covered by `CommerceCurrencyAdminSwaggerFilter_DefinesStableOperationMetadata`.
 - [x] Manual exchange-rate upsert requires the target currency to be enabled for the store and rejects base-currency rows. 2026-07-15: `StoreCurrencyExchangeRateServiceTests` passed.
 - [x] Money conversion service resolves same-currency conversion as rate `1` and fails non-base conversion when rate is missing, disabled, stale, or not configured. 2026-07-15: focused `StoreCurrencyExchangeRateServiceTests` passed; checkout still remains base-currency until Storefront selector/display conversion phase.
+- [x] Storefront working-currency resolver accepts supported non-base currency only when conversion is configured. 2026-07-15: `StorefrontWorkingCurrencyResolverTests.ResolveAsync_WhenHintIsSupportedNonBaseWithRate_AcceptsWorkingCurrency` passed; missing-rate supported currency still falls back to base with `conversion_not_configured`.
+- [x] Storefront cart add-line converts base unit price before snapshotting a non-base working currency. 2026-07-15: `StorefrontCartServiceTests.AddLineAsync_WhenSupportedNonBaseHasConversion_SnapshotsConvertedCurrencyAndPrice` passed for USD -> EUR.
+- [x] Storefront checkout preview/place-order/order/payment use the converted cart snapshot currency consistently. 2026-07-15: `StorefrontCheckoutServiceTests.PlaceOrderAsync_WhenCartUsesConvertedCurrency_UsesSnapshotCurrencyForOrderAndPayment` passed for EUR.
 
 ## Store Resolution Hardening
 

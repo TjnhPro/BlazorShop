@@ -121,7 +121,11 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 new StorefrontCartSessionService(context),
                 productRepository.Object,
                 new StoreCurrencyResolver(context),
-                new StorefrontWorkingCurrencyResolver(context, new StoreCurrencyResolver(context)),
+                new StorefrontWorkingCurrencyResolver(
+                    context,
+                    new StoreCurrencyResolver(context),
+                    new FakeMoneyConversionService()),
+                new FakeMoneyConversionService(),
                 new MoneyRoundingService(new CurrencyMetadataService()));
             var product = CreatePublishedProduct(storeId, price: 12.50m, stock: 10);
             productRepository
@@ -139,6 +143,38 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.True(result.Success);
             var line = Assert.Single(result.Payload!.Lines);
             Assert.Equal("USD", line.CurrencyCodeSnapshot);
+        }
+
+        [Fact]
+        public async Task AddLineAsync_WhenSupportedNonBaseHasConversion_SnapshotsConvertedCurrencyAndPrice()
+        {
+            await using var context = CreateContext();
+            var productRepository = new Mock<IProductReadRepository>();
+            var service = CreateService(
+                context,
+                productRepository,
+                defaultCurrencyCode: "USD",
+                workingCurrencyCode: "EUR",
+                conversionTargetCurrencyCode: "EUR",
+                conversionRate: 0.9m);
+            var storeId = Guid.NewGuid();
+            var product = CreatePublishedProduct(storeId, price: 12.50m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cart = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+
+            var result = await service.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1,
+                CurrencyCode: "eur"));
+
+            Assert.True(result.Success, result.Message);
+            var line = Assert.Single(result.Payload!.Lines);
+            Assert.Equal("EUR", line.CurrencyCodeSnapshot);
+            Assert.Equal(11.25m, line.UnitPriceSnapshot);
         }
 
         [Fact]
@@ -342,13 +378,17 @@ namespace BlazorShop.Tests.Application.CommerceNode
         private static StorefrontCartService CreateService(
             CommerceNodeDbContext context,
             Mock<IProductReadRepository> productRepository,
-            string defaultCurrencyCode = "USD")
+            string defaultCurrencyCode = "USD",
+            string? workingCurrencyCode = null,
+            string? conversionTargetCurrencyCode = null,
+            decimal conversionRate = 1m)
         {
             return new StorefrontCartService(
                 new StorefrontCartSessionService(context),
                 productRepository.Object,
                 new FixedStoreCurrencyResolver(defaultCurrencyCode),
-                new FixedWorkingCurrencyResolver(defaultCurrencyCode),
+                new FixedWorkingCurrencyResolver(workingCurrencyCode ?? defaultCurrencyCode, defaultCurrencyCode),
+                new FakeMoneyConversionService(conversionTargetCurrencyCode, conversionRate),
                 new MoneyRoundingService(new CurrencyMetadataService()));
         }
 
@@ -442,10 +482,12 @@ namespace BlazorShop.Tests.Application.CommerceNode
         private sealed class FixedWorkingCurrencyResolver : IStorefrontWorkingCurrencyResolver
         {
             private readonly string currencyCode;
+            private readonly string baseCurrencyCode;
 
-            public FixedWorkingCurrencyResolver(string currencyCode)
+            public FixedWorkingCurrencyResolver(string currencyCode, string? baseCurrencyCode = null)
             {
                 this.currencyCode = currencyCode;
+                this.baseCurrencyCode = baseCurrencyCode ?? currencyCode;
             }
 
             public Task<StorefrontWorkingCurrencyResolution> ResolveAsync(
@@ -455,11 +497,51 @@ namespace BlazorShop.Tests.Application.CommerceNode
             {
                 return Task.FromResult(new StorefrontWorkingCurrencyResolution(
                     this.currencyCode,
-                    this.currencyCode,
+                    this.baseCurrencyCode,
                     requestedCurrencyCode,
                     RequestedCurrencySupported: string.Equals(requestedCurrencyCode, this.currencyCode, StringComparison.OrdinalIgnoreCase),
                     CheckoutCurrencyEnabled: true,
                     Reason: "test"));
+            }
+        }
+
+        private sealed class FakeMoneyConversionService : IMoneyConversionService
+        {
+            private readonly string? targetCurrencyCode;
+            private readonly decimal rate;
+
+            public FakeMoneyConversionService(string? targetCurrencyCode = null, decimal rate = 1m)
+            {
+                this.targetCurrencyCode = targetCurrencyCode;
+                this.rate = rate;
+            }
+
+            public Task<ServiceResponse<MoneyConversionResult>> ConvertFromBaseAsync(
+                Guid storeId,
+                decimal amount,
+                string targetCurrencyCode,
+                CancellationToken cancellationToken = default)
+            {
+                if (!string.Equals(targetCurrencyCode, this.targetCurrencyCode, StringComparison.Ordinal))
+                {
+                    return Task.FromResult(new ServiceResponse<MoneyConversionResult>(false, "No active exchange rate is configured.")
+                    {
+                        ResponseType = ServiceResponseType.Conflict,
+                    });
+                }
+
+                return Task.FromResult(new ServiceResponse<MoneyConversionResult>(true, "Currency conversion resolved.")
+                {
+                    Payload = new MoneyConversionResult(
+                        amount,
+                        "USD",
+                        amount * this.rate,
+                        targetCurrencyCode,
+                        this.rate,
+                        DateTimeOffset.UtcNow,
+                        null),
+                    ResponseType = ServiceResponseType.Success,
+                });
             }
         }
     }

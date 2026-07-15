@@ -12,13 +12,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private readonly CommerceNodeDbContext context;
         private readonly IStoreCurrencyResolver storeCurrencyResolver;
+        private readonly IMoneyConversionService moneyConversionService;
 
         public StorefrontWorkingCurrencyResolver(
             CommerceNodeDbContext context,
-            IStoreCurrencyResolver storeCurrencyResolver)
+            IStoreCurrencyResolver storeCurrencyResolver,
+            IMoneyConversionService moneyConversionService)
         {
             this.context = context;
             this.storeCurrencyResolver = storeCurrencyResolver;
+            this.moneyConversionService = moneyConversionService;
         }
 
         public async Task<StorefrontWorkingCurrencyResolution> ResolveAsync(
@@ -70,13 +73,29 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     Reason: "base");
             }
 
+            var conversion = await this.moneyConversionService.ConvertFromBaseAsync(
+                storeId,
+                1m,
+                normalizedRequested,
+                cancellationToken);
+            if (!conversion.Success)
+            {
+                return new StorefrontWorkingCurrencyResolution(
+                    baseCurrencyCode,
+                    baseCurrencyCode,
+                    normalizedRequested,
+                    RequestedCurrencySupported: true,
+                    CheckoutCurrencyEnabled: false,
+                    Reason: "conversion_not_configured");
+            }
+
             return new StorefrontWorkingCurrencyResolution(
-                baseCurrencyCode,
+                normalizedRequested,
                 baseCurrencyCode,
                 normalizedRequested,
                 RequestedCurrencySupported: true,
-                CheckoutCurrencyEnabled: false,
-                Reason: "conversion_not_enabled");
+                CheckoutCurrencyEnabled: true,
+                Reason: "conversion_enabled");
         }
 
         private static string? NormalizeCurrencyCode(string? value)
