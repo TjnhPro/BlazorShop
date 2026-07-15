@@ -28,6 +28,16 @@
             return products.Count > 0 ? products : [];
         }
 
+        public async Task<IReadOnlyList<Category>> GetCategoriesForCurrentStoreAsync()
+        {
+            return await _context.Categories
+                .AsNoTracking()
+                .Where(category => category.ArchivedAt == null)
+                .OrderBy(category => category.DisplayOrder)
+                .ThenBy(category => category.Name)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<Category>> GetPublishedCategoriesAsync()
         {
             var categories = await _context.Categories
@@ -91,11 +101,28 @@
                     && category.Slug == slug);
         }
 
+        public async Task<Category?> GetCategoryByIdForCurrentStoreAsync(Guid id)
+        {
+            return await _context.Categories
+                .AsNoTracking()
+                .FirstOrDefaultAsync(category => category.Id == id && category.ArchivedAt == null);
+        }
+
         public async Task<bool> CategorySlugExistsAsync(string slug, Guid? excludedCategoryId = null)
         {
             return await _context.Categories
                 .AsNoTracking()
                 .AnyAsync(category => category.Slug == slug
+                    && category.ArchivedAt == null
+                    && (!excludedCategoryId.HasValue || category.Id != excludedCategoryId.Value));
+        }
+
+        public async Task<bool> CategorySlugExistsInStoreAsync(string slug, Guid? storeId, Guid? excludedCategoryId = null)
+        {
+            return await _context.Categories
+                .AsNoTracking()
+                .AnyAsync(category => category.Slug == slug
+                    && category.StoreId == storeId
                     && category.ArchivedAt == null
                     && (!excludedCategoryId.HasValue || category.Id != excludedCategoryId.Value));
         }

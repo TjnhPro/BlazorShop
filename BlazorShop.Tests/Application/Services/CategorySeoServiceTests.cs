@@ -1,5 +1,6 @@
 namespace BlazorShop.Tests.Application.Services
 {
+    using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Seo;
     using BlazorShop.Application.Services;
@@ -182,6 +183,125 @@ namespace BlazorShop.Tests.Application.Services
             Assert.False(result.Success);
             Assert.Equal(ServiceResponseType.NotFound, result.ResponseType);
             Assert.Equal("Category not found.", result.Message);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_WhenCategoryIsOutsideCurrentStore_ReturnsNotFound()
+        {
+            var categoryId = Guid.NewGuid();
+            var service = CreateStoreScopedService(Guid.NewGuid());
+
+            _categoryReadRepository
+                .Setup(repository => repository.GetCategoryByIdForCurrentStoreAsync(categoryId))
+                .ReturnsAsync((Category?)null);
+
+            var result = await service.UpdateAsync(categoryId, new UpdateCategorySeoDto
+            {
+                Slug = "valid-category-slug",
+                IsPublished = true,
+            });
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.NotFound, result.ResponseType);
+            Assert.Equal("Category not found.", result.Message);
+            _categoryRepository.Verify(repository => repository.UpdateAsync(It.IsAny<Category>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_WhenSlugExistsOnlyInAnotherStore_AllowsUpdate()
+        {
+            var storeId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
+            var existingCategory = new Category
+            {
+                Id = categoryId,
+                StoreId = storeId,
+                Slug = "old-slug",
+                IsPublished = true,
+            };
+            var service = CreateStoreScopedService(storeId);
+
+            _categoryReadRepository
+                .Setup(repository => repository.GetCategoryByIdForCurrentStoreAsync(categoryId))
+                .ReturnsAsync(new Category
+                {
+                    Id = categoryId,
+                    StoreId = storeId,
+                    Slug = "old-slug",
+                    IsPublished = true,
+                });
+            _categoryReadRepository
+                .Setup(repository => repository.CategorySlugExistsInStoreAsync("shared-category", storeId, categoryId))
+                .ReturnsAsync(false);
+            _categoryRepository
+                .Setup(repository => repository.GetByIdAsync(categoryId))
+                .ReturnsAsync(existingCategory);
+            _categoryRepository
+                .Setup(repository => repository.UpdateAsync(existingCategory))
+                .ReturnsAsync(1);
+            _seoRedirectAutomationService
+                .Setup(service => service.EnsurePermanentRedirectAsync("/category/old-slug", "/category/shared-category"))
+                .ReturnsAsync(new ServiceResponse<SeoRedirectDto>(true, "Created", Guid.NewGuid())
+                {
+                    ResponseType = ServiceResponseType.Success,
+                    Payload = new SeoRedirectDto
+                    {
+                        OldPath = "/category/old-slug",
+                        NewPath = "/category/shared-category",
+                        StatusCode = 301,
+                        IsActive = true,
+                    },
+                });
+
+            var result = await service.UpdateAsync(categoryId, new UpdateCategorySeoDto
+            {
+                Slug = "shared-category",
+                IsPublished = true,
+            });
+
+            Assert.True(result.Success);
+            Assert.Equal("shared-category", existingCategory.Slug);
+            _categoryReadRepository.Verify(
+                repository => repository.CategorySlugExistsInStoreAsync("shared-category", storeId, categoryId),
+                Times.Once);
+            _categoryReadRepository.Verify(
+                repository => repository.CategorySlugExistsAsync(It.IsAny<string>(), It.IsAny<Guid?>()),
+                Times.Never);
+        }
+
+        private CategorySeoService CreateStoreScopedService(Guid storeId)
+        {
+            var slugService = new SlugService();
+            return new CategorySeoService(
+                _categoryRepository.Object,
+                _categoryReadRepository.Object,
+                AutoMapperTestFactory.CreateMapper(),
+                slugService,
+                _transactionManager.Object,
+                _seoRedirectAutomationService.Object,
+                new ValidationService(),
+                new UpdateCategorySeoDtoValidator(slugService),
+                storeContext: new FixedStoreContext(storeId));
+        }
+
+        private sealed class FixedStoreContext : ICommerceStoreContext
+        {
+            private readonly Guid storeId;
+
+            public FixedStoreContext(Guid storeId)
+            {
+                this.storeId = storeId;
+            }
+
+            public Task<CommerceStoreOperationResult<CommerceCurrentStore>> GetCurrentStoreAsync(CancellationToken cancellationToken = default)
+            {
+                throw new NotSupportedException();
+            }
+
+            public Task<CommerceStoreOperationResult<Guid>> GetCurrentStoreIdAsync(CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(new CommerceStoreOperationResult<Guid>(true, "Current store resolved.", this.storeId));
+            }
         }
     }
 }

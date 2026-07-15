@@ -4,6 +4,7 @@ namespace BlazorShop.Application.Services
 
     using AutoMapper;
 
+    using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
     using BlazorShop.Application.DTOs.Seo;
@@ -28,6 +29,7 @@ namespace BlazorShop.Application.Services
         private readonly IValidationService _validationService;
         private readonly IValidator<UpdateCategorySeoDto> _validator;
         private readonly IAdminAuditService? _auditService;
+        private readonly ICommerceStoreContext? _storeContext;
 
         public CategorySeoService(
             IGenericRepository<Category> categoryRepository,
@@ -38,7 +40,8 @@ namespace BlazorShop.Application.Services
             ISeoRedirectAutomationService seoRedirectAutomationService,
             IValidationService validationService,
             IValidator<UpdateCategorySeoDto> validator,
-            IAdminAuditService? auditService = null)
+            IAdminAuditService? auditService = null,
+            ICommerceStoreContext? storeContext = null)
         {
             _categoryRepository = categoryRepository;
             _categoryReadRepository = categoryReadRepository;
@@ -49,6 +52,7 @@ namespace BlazorShop.Application.Services
             _validationService = validationService;
             _validator = validator;
             _auditService = auditService;
+            _storeContext = storeContext;
         }
 
         public async Task<ServiceResponse<CategorySeoDto>> GetByCategoryIdAsync(Guid categoryId)
@@ -58,7 +62,7 @@ namespace BlazorShop.Application.Services
                 return ValidationError("Category id is required.");
             }
 
-            var category = await _categoryRepository.GetByIdAsync(categoryId);
+            var category = await GetReadableCategoryAsync(categoryId);
 
             if (category is null)
             {
@@ -92,17 +96,22 @@ namespace BlazorShop.Application.Services
                 return ValidationError(validationResult.Message ?? "Invalid SEO payload.");
             }
 
-            var category = await _categoryRepository.GetByIdAsync(categoryId);
-
-            if (category is null)
+            var categorySnapshot = await GetReadableCategoryAsync(categoryId);
+            if (categorySnapshot is null)
             {
                 return NotFound("Category not found.");
             }
 
             if (!string.IsNullOrWhiteSpace(normalizedRequest.Slug)
-                && await _categoryReadRepository.CategorySlugExistsAsync(normalizedRequest.Slug, categoryId))
+                && await CategorySlugExistsAsync(normalizedRequest.Slug, categorySnapshot.StoreId, categoryId))
             {
                 return Conflict("Category slug is already in use.");
+            }
+
+            var category = await _categoryRepository.GetByIdAsync(categoryId);
+            if (category is null || !await CategoryBelongsToCurrentStoreAsync(category))
+            {
+                return NotFound("Category not found.");
             }
 
             var oldPublicPath = BuildCategoryPublicPath(category.Slug, category.IsPublished);
@@ -149,6 +158,31 @@ namespace BlazorShop.Application.Services
 
             request.Slug = normalizedSlug;
             return null;
+        }
+
+        private Task<Category?> GetReadableCategoryAsync(Guid categoryId)
+        {
+            return _storeContext is not null
+                ? _categoryReadRepository.GetCategoryByIdForCurrentStoreAsync(categoryId)
+                : _categoryRepository.GetByIdAsync(categoryId);
+        }
+
+        private Task<bool> CategorySlugExistsAsync(string slug, Guid? storeId, Guid categoryId)
+        {
+            return _storeContext is not null
+                ? _categoryReadRepository.CategorySlugExistsInStoreAsync(slug, storeId, categoryId)
+                : _categoryReadRepository.CategorySlugExistsAsync(slug, categoryId);
+        }
+
+        private async Task<bool> CategoryBelongsToCurrentStoreAsync(Category category)
+        {
+            if (_storeContext is null)
+            {
+                return true;
+            }
+
+            var storeResult = await _storeContext.GetCurrentStoreIdAsync();
+            return storeResult.Success && category.StoreId == storeResult.Payload;
         }
 
         private static UpdateCategorySeoDto CopyRequest(Guid categoryId, UpdateCategorySeoDto request)

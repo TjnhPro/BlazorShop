@@ -43,7 +43,9 @@
 
         public async Task<IEnumerable<GetCategory>> GetAllAsync()
         {
-            var result = await _genericRepository.GetAllAsync();
+            var result = _storeContext is not null
+                ? await _categoryRepository.GetCategoriesForCurrentStoreAsync()
+                : await _genericRepository.GetAllAsync();
             return result.Any() ? _mapper.Map<IEnumerable<GetCategory>>(result) : new List<GetCategory>();
         }
 
@@ -70,7 +72,9 @@
 
         public async Task<GetCategory> GetByIdAsync(Guid id)
         {
-            var result = await _genericRepository.GetByIdAsync(id);
+            var result = _storeContext is not null
+                ? await _categoryRepository.GetCategoryByIdForCurrentStoreAsync(id)
+                : await _genericRepository.GetByIdAsync(id);
             return result != null ? _mapper.Map<GetCategory>(result) : new GetCategory();
         }
 
@@ -107,6 +111,11 @@
                 return new ServiceResponse(false, "Category not found");
             }
 
+            if (!await CategoryBelongsToCurrentStoreAsync(existingCategory))
+            {
+                return new ServiceResponse(false, "Category not found");
+            }
+
             var storeId = existingCategory.StoreId;
             _mapper.Map(category, existingCategory);
             existingCategory.StoreId = storeId;
@@ -134,6 +143,11 @@
         {
             var existingCategory = await _genericRepository.GetByIdAsync(id);
             if (existingCategory is null)
+            {
+                return new ServiceResponse(false, "Category not found");
+            }
+
+            if (!await CategoryBelongsToCurrentStoreAsync(existingCategory))
             {
                 return new ServiceResponse(false, "Category not found");
             }
@@ -205,6 +219,17 @@
             }
 
             await _catalogQueryCache.InvalidateStoreCatalogAsync(storeId.Value);
+        }
+
+        private async Task<bool> CategoryBelongsToCurrentStoreAsync(Category category)
+        {
+            if (_storeContext is null)
+            {
+                return true;
+            }
+
+            var storeResult = await _storeContext.GetCurrentStoreIdAsync();
+            return storeResult.Success && category.StoreId == storeResult.Payload;
         }
 
         private async Task<ServiceResponse> ValidateParentAsync(Guid categoryId, Guid? parentCategoryId, Guid? storeId)

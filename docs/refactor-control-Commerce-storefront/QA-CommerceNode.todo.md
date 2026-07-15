@@ -117,8 +117,9 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] Product update/delete rejects cross-store IDs before mutating data. 2026-07-15: focused `ProductServiceTests` cross-store update/delete guardrails passed.
 - [x] Product create/update rejects a category from another current store. 2026-07-15: `AddAsync_WhenCategoryBelongsToDifferentCurrentStore_ReturnsValidationFailure` passed.
 - [x] Product SEO slug duplicate check is scoped by store. 2026-07-15: `ProductSeoServiceTests.UpdateAsync_WhenSlugExistsOnlyInAnotherStore_AllowsUpdate` passed and verified `ProductSlugExistsInStoreAsync`.
-- [ ] Category admin list/query/detail/update/delete are scoped to the current Commerce store.
-- [ ] Category parent/child update rejects cross-store parent assignment through current-store scoped lookup.
+- [x] Category admin list/query/detail/update/delete are scoped to the current Commerce store. 2026-07-15: `CommerceNodeCategoryStoreScopeTests` plus focused `CategoryServiceTests` cross-store update/delete guardrails passed.
+- [x] Category parent/child update rejects cross-store parent assignment through current-store scoped lookup. 2026-07-15: `CategoryServiceTests.UpdateAsync_WhenParentBelongsToDifferentStore_ReturnsValidationFailure` passed.
+- [x] Category SEO slug duplicate check is scoped by store. 2026-07-15: `CategorySeoServiceTests.UpdateAsync_WhenSlugExistsOnlyInAnotherStore_AllowsUpdate` passed and verified `CategorySlugExistsInStoreAsync`.
 - [ ] StorefrontPage list/detail/slug/sitemap scope has dedicated store mapping guardrails.
 
 ## Cart, Checkout & Payment Provider MVP

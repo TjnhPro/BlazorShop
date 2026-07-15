@@ -6,6 +6,8 @@
     {
         Task<IEnumerable<Product>> GetProductsByCategoryAsync(Guid categoryId);
 
+        Task<IReadOnlyList<Category>> GetCategoriesForCurrentStoreAsync();
+
         Task<IEnumerable<Category>> GetPublishedCategoriesAsync();
 
         Task<IReadOnlyList<Category>> GetCategoriesForTreeAsync();
@@ -16,7 +18,11 @@
 
         Task<Category?> GetPublishedCategoryBySlugAsync(string slug);
 
+        Task<Category?> GetCategoryByIdForCurrentStoreAsync(Guid id);
+
         Task<bool> CategorySlugExistsAsync(string slug, Guid? excludedCategoryId = null);
+
+        Task<bool> CategorySlugExistsInStoreAsync(string slug, Guid? storeId, Guid? excludedCategoryId = null);
 
         Task<bool> CategoryBelongsToCurrentStoreAsync(Guid id);
 

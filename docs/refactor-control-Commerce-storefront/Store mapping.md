@@ -165,25 +165,40 @@ Exit criteria:
 
 Goal: category admin khong con dung generic unscoped repository cho luong V2.
 
+Status 2026-07-15: completed for active V2 CommerceNode category admin read/write and category SEO paths.
+
+Implementation notes:
+
+- CommerceNode category admin list/detail reads now use current-store scoped repository methods when `ICommerceStoreContext` is available.
+- Category update/delete now return `Category not found` when the target category does not belong to the current store.
+- Category parent validation continues to reject parent categories from another store.
+- Category SEO get/update now uses current-store readable category lookup and store-scoped slug duplicate checks.
+- Legacy repository fallback methods keep legacy behavior without adding new V2 feature work to `AppDbContext`.
+
+Verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~CommerceNodeCategoryStoreScopeTests|FullyQualifiedName~CategoryServiceTests.UpdateAsync_WhenCategoryBelongsToDifferentCurrentStore_ReturnsNotFound|FullyQualifiedName~CategoryServiceTests.DeleteAsync_WhenCategoryBelongsToDifferentCurrentStore_ReturnsNotFound|FullyQualifiedName~CategoryServiceTests.UpdateAsync_WhenParentBelongsToDifferentStore_ReturnsValidationFailure|FullyQualifiedName~CategorySeoServiceTests.UpdateAsync_WhenCategoryIsOutsideCurrentStore_ReturnsNotFound|FullyQualifiedName~CategorySeoServiceTests.UpdateAsync_WhenSlugExistsOnlyInAnotherStore_AllowsUpdate" --no-restore` passed 9/9.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
+
 Tasks:
 
-- Thay `CategoryService.GetAllAsync`, `QueryAsync`, `GetByIdAsync` bang store-scoped query.
-- Tao repository/query method ro rang cho category current store, uu tien `CommerceNodeDbContext` va `ICommerceStoreContext`.
-- Sua update/delete de verify category thuoc current store.
-- Sua `CategorySlugExistsAsync` de nhan `storeId` bat buoc hoac thay bang method scoped moi.
-- Giu va test `ValidateParentAsync` de parent category phai cung store.
-- Kiem tra luong archive/delete category de khong tac dong product/category cua store khac.
+- [x] Thay `CategoryService.GetAllAsync`, `QueryAsync`, `GetByIdAsync` bang store-scoped query.
+- [x] Tao repository/query method ro rang cho category current store, uu tien `CommerceNodeDbContext` va `ICommerceStoreContext`.
+- [x] Sua update/delete de verify category thuoc current store.
+- [x] Sua `CategorySlugExistsAsync` de nhan `storeId` bat buoc hoac thay bang method scoped moi.
+- [x] Giu va test `ValidateParentAsync` de parent category phai cung store.
+- [x] Kiem tra luong archive/delete category de khong tac dong product/category cua store khac.
 
 API/contract tasks:
 
-- Expected cross-store access nen tra Not Found de khong expose object ton tai o store khac.
-- Cap nhat OpenAPI/contract tests neu endpoint response/error thay doi.
+- [x] Expected cross-store access nen tra Not Found de khong expose object ton tai o store khac.
+- [x] Cap nhat OpenAPI/contract tests neu endpoint response/error thay doi. No public request/response contract shape changed in this phase.
 
 Exit criteria:
 
-- Category store A khong doc/sua/xoa duoc tu store B.
-- Category tree khong the noi parent/child khac store.
-- Storefront category navigation/catalog khong bi regress.
+- [x] Category store A khong doc/sua/xoa duoc tu store B.
+- [x] Category tree khong the noi parent/child khac store.
+- [x] Storefront category navigation/catalog khong bi regress.
 
 ## Phase 3 - Data migration va required store ownership
 

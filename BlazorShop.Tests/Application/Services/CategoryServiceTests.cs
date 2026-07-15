@@ -2,6 +2,7 @@ namespace BlazorShop.Tests.Application.Services
 {
     using AutoMapper;
 
+    using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs.Category;
     using BlazorShop.Application.DTOs.Product;
     using BlazorShop.Application.Services;
@@ -139,6 +140,108 @@ namespace BlazorShop.Tests.Application.Services
             // Assert
             Assert.NotNull(result);
             Assert.Single(result);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_WhenCategoryBelongsToDifferentCurrentStore_ReturnsNotFound()
+        {
+            var currentStoreId = Guid.NewGuid();
+            var otherStoreId = Guid.NewGuid();
+            var updateCategory = new UpdateCategory { Id = Guid.NewGuid(), Name = "Updated Category" };
+            var existingCategory = new Category { Id = updateCategory.Id, StoreId = otherStoreId, Name = "Existing Category" };
+            var service = new CategoryService(
+                this._mockGenericRepository.Object,
+                this._mockMapper.Object,
+                this._mockCategoryRepository.Object,
+                storeContext: new FixedStoreContext(currentStoreId));
+
+            this._mockGenericRepository
+                .Setup(repo => repo.GetByIdAsync(updateCategory.Id))
+                .ReturnsAsync(existingCategory);
+
+            var result = await service.UpdateAsync(updateCategory);
+
+            Assert.False(result.Success);
+            Assert.Equal("Category not found", result.Message);
+            this._mockMapper.Verify(mapper => mapper.Map(It.IsAny<UpdateCategory>(), It.IsAny<Category>()), Times.Never);
+            this._mockGenericRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Category>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task DeleteAsync_WhenCategoryBelongsToDifferentCurrentStore_ReturnsNotFound()
+        {
+            var currentStoreId = Guid.NewGuid();
+            var otherStoreId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
+            var existingCategory = new Category { Id = categoryId, StoreId = otherStoreId, Name = "Existing Category" };
+            var service = new CategoryService(
+                this._mockGenericRepository.Object,
+                this._mockMapper.Object,
+                this._mockCategoryRepository.Object,
+                storeContext: new FixedStoreContext(currentStoreId));
+
+            this._mockGenericRepository
+                .Setup(repo => repo.GetByIdAsync(categoryId))
+                .ReturnsAsync(existingCategory);
+
+            var result = await service.DeleteAsync(categoryId);
+
+            Assert.False(result.Success);
+            Assert.Equal("Category not found", result.Message);
+            this._mockGenericRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Category>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_WhenParentBelongsToDifferentStore_ReturnsValidationFailure()
+        {
+            var storeId = Guid.NewGuid();
+            var otherStoreId = Guid.NewGuid();
+            var parentId = Guid.NewGuid();
+            var updateCategory = new UpdateCategory { Id = Guid.NewGuid(), ParentCategoryId = parentId, Name = "Updated Category" };
+            var existingCategory = new Category { Id = updateCategory.Id, StoreId = storeId, Name = "Existing Category" };
+            var parentCategory = new Category { Id = parentId, StoreId = otherStoreId, Name = "Other Parent" };
+            var service = new CategoryService(
+                this._mockGenericRepository.Object,
+                this._mockMapper.Object,
+                this._mockCategoryRepository.Object,
+                storeContext: new FixedStoreContext(storeId));
+
+            this._mockGenericRepository
+                .Setup(repo => repo.GetByIdAsync(updateCategory.Id))
+                .ReturnsAsync(existingCategory);
+            this._mockMapper
+                .Setup(mapper => mapper.Map(updateCategory, existingCategory))
+                .Callback<UpdateCategory, Category>((source, destination) => destination.ParentCategoryId = source.ParentCategoryId)
+                .Returns(existingCategory);
+            this._mockGenericRepository
+                .Setup(repo => repo.GetByIdAsync(parentId))
+                .ReturnsAsync(parentCategory);
+
+            var result = await service.UpdateAsync(updateCategory);
+
+            Assert.False(result.Success);
+            Assert.Equal("Parent category must belong to the same store.", result.Message);
+            this._mockGenericRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Category>()), Times.Never);
+        }
+
+        private sealed class FixedStoreContext : ICommerceStoreContext
+        {
+            private readonly Guid storeId;
+
+            public FixedStoreContext(Guid storeId)
+            {
+                this.storeId = storeId;
+            }
+
+            public Task<CommerceStoreOperationResult<CommerceCurrentStore>> GetCurrentStoreAsync(CancellationToken cancellationToken = default)
+            {
+                throw new NotSupportedException();
+            }
+
+            public Task<CommerceStoreOperationResult<Guid>> GetCurrentStoreIdAsync(CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(new CommerceStoreOperationResult<Guid>(true, "Current store resolved.", this.storeId));
+            }
         }
     }
 }
