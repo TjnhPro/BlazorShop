@@ -43,22 +43,14 @@ else if (_categoryPage is not null)
                     </div>
                 </div>
 
-                <form method="get" class="mt-6 grid gap-3 rounded-2xl border border-neutral-200 bg-neutral-50/80 p-4 md:grid-cols-[1fr_1fr_1fr_1fr_auto]">
-                    <input name="minPrice" value="@MinPrice" type="number" step="0.01" placeholder="Min price" class="rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 focus:outline-none focus:ring-1 focus:ring-black/10" />
-                    <input name="maxPrice" value="@MaxPrice" type="number" step="0.01" placeholder="Max price" class="rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 focus:outline-none focus:ring-1 focus:ring-black/10" />
-                    <select name="sortBy" class="rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 focus:outline-none focus:ring-1 focus:ring-black/10">
-                        <option value="@ProductCatalogSortBy.DisplayOrder.ToApiValue()" selected="@(SortBy == ProductCatalogSortBy.DisplayOrder)">Featured</option>
-                        <option value="@ProductCatalogSortBy.Updated.ToApiValue()" selected="@(SortBy == ProductCatalogSortBy.Updated)">Recently updated</option>
-                        <option value="@ProductCatalogSortBy.PriceLowToHigh.ToApiValue()" selected="@(SortBy == ProductCatalogSortBy.PriceLowToHigh)">Price low</option>
-                        <option value="@ProductCatalogSortBy.PriceHighToLow.ToApiValue()" selected="@(SortBy == ProductCatalogSortBy.PriceHighToLow)">Price high</option>
-                        <option value="@ProductCatalogSortBy.Newest.ToApiValue()" selected="@(SortBy == ProductCatalogSortBy.Newest)">Newest</option>
-                    </select>
-                    <label class="flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm font-semibold text-neutral-700">
-                        <input name="inStock" value="true" type="checkbox" checked="@InStock" />
-                        In stock
-                    </label>
-                    <button type="submit" class="inline-flex items-center justify-center rounded bg-neutral-900 px-4 py-3 text-sm font-semibold text-white hover:bg-neutral-800">Apply</button>
-                </form>
+                <CatalogFilterPanel Class="mt-6 grid gap-3 rounded-2xl border border-neutral-200 bg-neutral-50/80 p-4 md:grid-cols-[1fr_1fr_1fr_1fr_auto]"
+                                    ShowPriceRange="true"
+                                    MinPrice="MinPrice"
+                                    MaxPrice="MaxPrice"
+                                    ShowSort="true"
+                                    SortBy="SortBy"
+                                    ShowStock="true"
+                                    InStock="InStock" />
             </div>
         </ChildContent>
     </StorefrontPageShell>

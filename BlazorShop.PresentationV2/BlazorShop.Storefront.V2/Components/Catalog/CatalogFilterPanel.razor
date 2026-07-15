@@ -1,0 +1,140 @@
+@namespace BlazorShop.Storefront.Components.Catalog
+
+<form method="get" action="@Action" class="@Class" role="@Role">
+    @if (ShowCategory)
+    {
+        <select name="category" class="@SelectClass" aria-label="Filter by category">
+            <option value="">All</option>
+            @foreach (var category in Categories)
+            {
+                <option value="@category.Slug" selected="@IsSelectedCategory(category.Slug)">@category.Label</option>
+            }
+        </select>
+    }
+
+    @if (ShowSearch)
+    {
+        <input name="q"
+               value="@SearchTerm"
+               type="search"
+               placeholder="@SearchPlaceholder"
+               class="@InputClass"
+               aria-label="@SearchPlaceholder" />
+    }
+
+    @if (ShowPriceRange)
+    {
+        <input name="minPrice"
+               value="@MinPrice"
+               type="number"
+               step="0.01"
+               placeholder="Min price"
+               class="@InputClass" />
+        <input name="maxPrice"
+               value="@MaxPrice"
+               type="number"
+               step="0.01"
+               placeholder="Max price"
+               class="@InputClass" />
+    }
+
+    @if (ShowSort)
+    {
+        <select name="sortBy" class="@SelectClass" aria-label="Sort products">
+            <option value="@ProductCatalogSortBy.DisplayOrder.ToApiValue()" selected="@(SortBy == ProductCatalogSortBy.DisplayOrder)">Featured</option>
+            <option value="@ProductCatalogSortBy.Updated.ToApiValue()" selected="@(SortBy == ProductCatalogSortBy.Updated)">Recently updated</option>
+            <option value="@ProductCatalogSortBy.PriceLowToHigh.ToApiValue()" selected="@(SortBy == ProductCatalogSortBy.PriceLowToHigh)">Price low</option>
+            <option value="@ProductCatalogSortBy.PriceHighToLow.ToApiValue()" selected="@(SortBy == ProductCatalogSortBy.PriceHighToLow)">Price high</option>
+            <option value="@ProductCatalogSortBy.Newest.ToApiValue()" selected="@(SortBy == ProductCatalogSortBy.Newest)">Newest</option>
+        </select>
+    }
+
+    @if (ShowStock)
+    {
+        <label class="@CheckboxLabelClass">
+            <input name="inStock" value="true" type="checkbox" checked="@InStock" />
+            In stock
+        </label>
+    }
+
+    <button type="submit" class="@SubmitButtonClass">
+        @if (!string.IsNullOrWhiteSpace(SubmitIconCssClass))
+        {
+            <i class="@SubmitIconCssClass" aria-hidden="true"></i>
+        }
+        @SubmitLabel
+    </button>
+</form>
+
+@code {
+    [Parameter]
+    public string? Action { get; set; }
+
+    [Parameter]
+    public string Class { get; set; } = "grid gap-3";
+
+    [Parameter]
+    public string? Role { get; set; }
+
+    [Parameter]
+    public bool ShowCategory { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<CatalogFilterCategoryOption> Categories { get; set; } = [];
+
+    [Parameter]
+    public string? CategorySlug { get; set; }
+
+    [Parameter]
+    public bool ShowSearch { get; set; }
+
+    [Parameter]
+    public string? SearchTerm { get; set; }
+
+    [Parameter]
+    public string SearchPlaceholder { get; set; } = "Search products";
+
+    [Parameter]
+    public bool ShowPriceRange { get; set; }
+
+    [Parameter]
+    public decimal? MinPrice { get; set; }
+
+    [Parameter]
+    public decimal? MaxPrice { get; set; }
+
+    [Parameter]
+    public bool ShowSort { get; set; }
+
+    [Parameter]
+    public ProductCatalogSortBy SortBy { get; set; } = ProductCatalogSortBy.DisplayOrder;
+
+    [Parameter]
+    public bool ShowStock { get; set; }
+
+    [Parameter]
+    public bool InStock { get; set; }
+
+    [Parameter]
+    public string SubmitLabel { get; set; } = "Apply";
+
+    [Parameter]
+    public string? SubmitIconCssClass { get; set; }
+
+    [Parameter]
+    public string InputClass { get; set; } = "rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 focus:outline-none focus:ring-1 focus:ring-black/10";
+
+    [Parameter]
+    public string SelectClass { get; set; } = "rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 focus:outline-none focus:ring-1 focus:ring-black/10";
+
+    [Parameter]
+    public string CheckboxLabelClass { get; set; } = "flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm font-semibold text-neutral-700";
+
+    [Parameter]
+    public string SubmitButtonClass { get; set; } = "inline-flex items-center justify-center rounded bg-neutral-900 px-4 py-3 text-sm font-semibold text-white hover:bg-neutral-800";
+
+    private bool IsSelectedCategory(string slug)
+    {
+        return string.Equals(slug, CategorySlug?.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+}

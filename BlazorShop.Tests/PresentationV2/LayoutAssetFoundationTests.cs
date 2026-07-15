@@ -73,6 +73,46 @@ namespace BlazorShop.Tests.PresentationV2
         }
 
         [Fact]
+        public void StorefrontCatalogFilterPanel_PreservesQueryStringContract()
+        {
+            var filterMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/CatalogFilterPanel.razor");
+
+            Assert.Contains("method=\"get\"", filterMarkup, StringComparison.Ordinal);
+            Assert.Contains("name=\"category\"", filterMarkup, StringComparison.Ordinal);
+            Assert.Contains("name=\"q\"", filterMarkup, StringComparison.Ordinal);
+            Assert.Contains("name=\"minPrice\"", filterMarkup, StringComparison.Ordinal);
+            Assert.Contains("name=\"maxPrice\"", filterMarkup, StringComparison.Ordinal);
+            Assert.Contains("name=\"sortBy\"", filterMarkup, StringComparison.Ordinal);
+            Assert.Contains("name=\"inStock\"", filterMarkup, StringComparison.Ordinal);
+            Assert.Contains("ProductCatalogSortBy.DisplayOrder.ToApiValue()", filterMarkup, StringComparison.Ordinal);
+            Assert.Contains("ProductCatalogSortBy.PriceLowToHigh.ToApiValue()", filterMarkup, StringComparison.Ordinal);
+            Assert.Contains("ProductCatalogSortBy.PriceHighToLow.ToApiValue()", filterMarkup, StringComparison.Ordinal);
+            Assert.DoesNotContain("onclick", filterMarkup, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void StorefrontCategoryAndSearchPages_UseCatalogFilterPanelWithoutRouteChanges()
+        {
+            var categoryMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CategoryPage.razor");
+            var searchMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/SearchPage.razor");
+
+            Assert.Contains("<CatalogFilterPanel", categoryMarkup, StringComparison.Ordinal);
+            Assert.Contains("ShowPriceRange=\"true\"", categoryMarkup, StringComparison.Ordinal);
+            Assert.Contains("ShowSort=\"true\"", categoryMarkup, StringComparison.Ordinal);
+            Assert.Contains("ShowStock=\"true\"", categoryMarkup, StringComparison.Ordinal);
+            Assert.Contains("MinPrice=\"MinPrice\"", categoryMarkup, StringComparison.Ordinal);
+            Assert.Contains("MaxPrice=\"MaxPrice\"", categoryMarkup, StringComparison.Ordinal);
+            Assert.Contains("InStock=\"InStock\"", categoryMarkup, StringComparison.Ordinal);
+
+            Assert.Contains("<CatalogFilterPanel", searchMarkup, StringComparison.Ordinal);
+            Assert.Contains("Action=\"@StorefrontRoutes.Search\"", searchMarkup, StringComparison.Ordinal);
+            Assert.Contains("ShowCategory=\"true\"", searchMarkup, StringComparison.Ordinal);
+            Assert.Contains("ShowSearch=\"true\"", searchMarkup, StringComparison.Ordinal);
+            Assert.Contains("SearchTerm=\"Q\"", searchMarkup, StringComparison.Ordinal);
+            Assert.Contains("StorefrontRoutes.SearchUrl(Q, Category, pageNumber)", searchMarkup, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void StorefrontProgram_KeepsStaticAssetMiddleware()
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
