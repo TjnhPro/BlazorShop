@@ -38,6 +38,32 @@ namespace BlazorShop.Storefront.Services
             });
         }
 
+        public async Task<SeoMetadataDto> ComposeHomePageAsync(GetStorefrontPage? homePage, string fallbackTitle, string fallbackMetaDescription, CancellationToken cancellationToken = default)
+        {
+            var settings = await GetEffectiveSettingsAsync(cancellationToken);
+            return _metadataBuilder.Build(new SeoMetadataBuildRequest
+            {
+                PageTitle = string.IsNullOrWhiteSpace(homePage?.Title) ? fallbackTitle : homePage.Title,
+                RelativePath = StorefrontRoutes.Home,
+                Settings = settings,
+                PageSeo = homePage is null
+                    ? new SeoFieldsDto
+                    {
+                        MetaDescription = fallbackMetaDescription,
+                    }
+                    : new SeoFieldsDto
+                    {
+                        MetaTitle = homePage.Seo.MetaTitle,
+                        MetaDescription = string.IsNullOrWhiteSpace(homePage.Seo.MetaDescription) ? Truncate(homePage.Intro, 160) : homePage.Seo.MetaDescription,
+                        OgTitle = homePage.Seo.OgTitle,
+                        OgDescription = homePage.Seo.OgDescription,
+                        OgImage = homePage.Seo.OgImage,
+                        RobotsIndex = homePage.Seo.RobotsIndex,
+                        RobotsFollow = homePage.Seo.RobotsFollow,
+                    },
+            });
+        }
+
         public async Task<SeoMetadataDto> ComposeCategoryPageAsync(GetCategory category, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(category);

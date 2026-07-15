@@ -3,6 +3,7 @@ namespace BlazorShop.Storefront.Services
     public static class StorefrontRoutes
     {
         public const string Home = "/";
+        public const string HomeMetadataSlug = "home";
         public const string Maintenance = "/maintenance";
         public const string Cart = "/my-cart";
         public const string Checkout = "/checkout";

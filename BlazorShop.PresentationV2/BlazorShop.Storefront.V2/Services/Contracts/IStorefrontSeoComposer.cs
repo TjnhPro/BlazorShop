@@ -9,6 +9,8 @@ namespace BlazorShop.Storefront.Services.Contracts
     {
         Task<SeoMetadataDto> ComposeStaticPageAsync(string title, string relativePath, string fallbackMetaDescription, CancellationToken cancellationToken = default);
 
+        Task<SeoMetadataDto> ComposeHomePageAsync(GetStorefrontPage? homePage, string fallbackTitle, string fallbackMetaDescription, CancellationToken cancellationToken = default);
+
         Task<SeoMetadataDto> ComposeCategoryPageAsync(GetCategory category, CancellationToken cancellationToken = default);
 
         Task<SeoMetadataDto> ComposeProductPageAsync(GetProduct product, CancellationToken cancellationToken = default);

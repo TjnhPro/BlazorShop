@@ -94,10 +94,10 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
-        var metadataTask = SeoComposer.ComposeStaticPageAsync(
-            "Shop Home",
-            StorefrontRoutes.Home,
-            "Discover published products, featured categories, and route-based SEO-ready pages across the BlazorShop storefront.");
+        const string fallbackTitle = "Shop Home";
+        const string fallbackDescription = "Discover published products, featured categories, and route-based SEO-ready pages across the BlazorShop storefront.";
+
+        var homeMetadataPageTask = ApiClient.GetPublishedPageBySlugAsync(StorefrontRoutes.HomeMetadataSlug);
         var structuredDataTask = StructuredDataComposer.ComposeHomePageAsync();
         var categoriesTask = ApiClient.GetPublishedCategoriesAsync();
         var latestProductsTask = ApiClient.GetPublishedCatalogPageAsync(new ProductCatalogQuery
@@ -107,9 +107,13 @@ else
             SortBy = ProductCatalogSortBy.Newest,
         });
 
-        await Task.WhenAll(metadataTask, structuredDataTask, categoriesTask, latestProductsTask);
+        await Task.WhenAll(homeMetadataPageTask, structuredDataTask, categoriesTask, latestProductsTask);
 
-        _metadata = await metadataTask;
+        var homeMetadataPageResult = await homeMetadataPageTask;
+        _metadata = await SeoComposer.ComposeHomePageAsync(
+            homeMetadataPageResult.IsSuccess ? homeMetadataPageResult.Value : null,
+            fallbackTitle,
+            fallbackDescription);
 
         var categoriesResult = await categoriesTask;
         var latestProductsResult = await latestProductsTask;
