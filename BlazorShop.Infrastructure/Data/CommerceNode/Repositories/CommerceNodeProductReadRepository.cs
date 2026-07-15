@@ -68,12 +68,79 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<Product>> GetCatalogProductsForCurrentStoreAsync()
+        {
+            var scopedProducts = await this.GetCurrentStoreProductsAsync();
+            return await scopedProducts
+                .AsNoTracking()
+                .OrderByDescending(product => product.CreatedOn)
+                .Select(product => new Product
+                {
+                    Id = product.Id,
+                    Name = product.Name,
+                    Description = product.Description,
+                    Price = product.Price,
+                    Image = product.Image,
+                    Quantity = product.Quantity,
+                    CreatedOn = product.CreatedOn,
+                    UpdatedAt = product.UpdatedAt,
+                    Sku = product.Sku,
+                    ShortDescription = product.ShortDescription,
+                    FullDescription = product.FullDescription,
+                    ComparePrice = product.ComparePrice,
+                    DisplayOrder = product.DisplayOrder,
+                    Slug = product.Slug,
+                    MetaTitle = product.MetaTitle,
+                    MetaDescription = product.MetaDescription,
+                    CanonicalUrl = product.CanonicalUrl,
+                    OgTitle = product.OgTitle,
+                    OgDescription = product.OgDescription,
+                    OgImage = product.OgImage,
+                    RobotsIndex = product.RobotsIndex,
+                    RobotsFollow = product.RobotsFollow,
+                    SeoContent = product.SeoContent,
+                    IsPublished = product.IsPublished,
+                    PublishedOn = product.PublishedOn,
+                    ProductType = product.ProductType,
+                    VariationTemplateId = product.VariationTemplateId,
+                    CategoryId = product.CategoryId,
+                    StoreId = product.StoreId,
+                })
+                .ToListAsync();
+        }
+
         public async Task<PagedResult<CatalogProductReadModel>> GetCatalogPageAsync(ProductCatalogQuery query)
         {
             var pageNumber = query.GetNormalizedPageNumber();
             var pageSize = query.GetNormalizedPageSize();
             IQueryable<Product> products = BuildCatalogQuery(
                 this.context.Products.AsNoTracking().Where(product => product.ArchivedAt == null),
+                query);
+
+            var totalCount = await products.CountAsync();
+            var items = await products
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(MapCatalogProduct())
+                .ToListAsync();
+            items = await this.AttachPrimaryMediaAsync(items);
+
+            return new PagedResult<CatalogProductReadModel>
+            {
+                Items = items,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+            };
+        }
+
+        public async Task<PagedResult<CatalogProductReadModel>> GetCatalogPageForCurrentStoreAsync(ProductCatalogQuery query)
+        {
+            var pageNumber = query.GetNormalizedPageNumber();
+            var pageSize = query.GetNormalizedPageSize();
+            var scopedProducts = await this.GetCurrentStoreProductsAsync();
+            IQueryable<Product> products = BuildCatalogQuery(
+                scopedProducts.AsNoTracking().Where(product => product.ArchivedAt == null),
                 query);
 
             var totalCount = await products.CountAsync();
@@ -183,6 +250,19 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 .FirstOrDefaultAsync(product => product.Id == id);
         }
 
+        public async Task<Product?> GetProductDetailsByIdForCurrentStoreAsync(Guid id)
+        {
+            var scopedProducts = await this.GetCurrentStoreProductsAsync();
+            return await scopedProducts
+                .AsNoTracking()
+                .Include(product => product.Category)
+                .Include(product => product.Variants)
+                .Include(product => product.VariationTemplate!)
+                    .ThenInclude(template => template.Options)
+                    .ThenInclude(option => option.Values)
+                .FirstOrDefaultAsync(product => product.Id == id);
+        }
+
         public async Task<Product?> GetPublishedProductDetailsByIdAsync(Guid id)
         {
             var scopedProducts = await this.GetCurrentStoreProductsAsync();
@@ -253,6 +333,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
             return await this.context.Products
                 .AsNoTracking()
                 .AnyAsync(product => product.Slug == slug
+                    && product.ArchivedAt == null
+                    && (!excludedProductId.HasValue || product.Id != excludedProductId.Value));
+        }
+
+        public async Task<bool> ProductSlugExistsInStoreAsync(string slug, Guid? storeId, Guid? excludedProductId = null)
+        {
+            return await this.context.Products
+                .AsNoTracking()
+                .AnyAsync(product => product.Slug == slug
+                    && product.StoreId == storeId
                     && product.ArchivedAt == null
                     && (!excludedProductId.HasValue || product.Id != excludedProductId.Value));
         }

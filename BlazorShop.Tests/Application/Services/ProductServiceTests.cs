@@ -2,9 +2,11 @@
 {
     using AutoMapper;
 
+    using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs.Product;
     using BlazorShop.Application.Services;
     using BlazorShop.Domain.Contracts;
+    using BlazorShop.Domain.Contracts.CategoryPersistence;
     using BlazorShop.Domain.Entities;
 
     using Moq;
@@ -365,6 +367,104 @@
             Assert.False(result.Success);
             Assert.Equal("Product not found", result.Message);
             this._mockProductRepository.Verify(repo => repo.DeleteAsync(productId), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_WhenProductBelongsToDifferentCurrentStore_ReturnsNotFound()
+        {
+            var currentStoreId = Guid.NewGuid();
+            var otherStoreId = Guid.NewGuid();
+            var product = new UpdateProduct { Id = Guid.NewGuid(), Name = "Cross Store" };
+            var existingProduct = new Product { Id = product.Id, StoreId = otherStoreId, Name = "Existing" };
+            var service = new ProductService(
+                this._mockProductReadRepository.Object,
+                this._mockProductRepository.Object,
+                this._mockMapper.Object,
+                storeContext: new FixedStoreContext(currentStoreId));
+
+            this._mockProductRepository
+                .Setup(repo => repo.GetByIdAsync(product.Id))
+                .ReturnsAsync(existingProduct);
+
+            var result = await service.UpdateAsync(product);
+
+            Assert.False(result.Success);
+            Assert.Equal("Product not found", result.Message);
+            this._mockMapper.Verify(mapper => mapper.Map(It.IsAny<UpdateProduct>(), It.IsAny<Product>()), Times.Never);
+            this._mockProductRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Product>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task DeleteAsync_WhenProductBelongsToDifferentCurrentStore_ReturnsNotFound()
+        {
+            var currentStoreId = Guid.NewGuid();
+            var otherStoreId = Guid.NewGuid();
+            var productId = Guid.NewGuid();
+            var existingProduct = new Product { Id = productId, StoreId = otherStoreId, Name = "Existing" };
+            var service = new ProductService(
+                this._mockProductReadRepository.Object,
+                this._mockProductRepository.Object,
+                this._mockMapper.Object,
+                storeContext: new FixedStoreContext(currentStoreId));
+
+            this._mockProductRepository
+                .Setup(repo => repo.GetByIdAsync(productId))
+                .ReturnsAsync(existingProduct);
+
+            var result = await service.DeleteAsync(productId);
+
+            Assert.False(result.Success);
+            Assert.Equal("Product not found", result.Message);
+            this._mockProductRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Product>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task AddAsync_WhenCategoryBelongsToDifferentCurrentStore_ReturnsValidationFailure()
+        {
+            var currentStoreId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
+            var categoryRepository = new Mock<ICategoryRepository>();
+            var product = new CreateProduct { Name = "Product1", CategoryId = categoryId };
+            var mappedProduct = new Product { Name = "Product1", CategoryId = categoryId };
+            var service = new ProductService(
+                this._mockProductReadRepository.Object,
+                this._mockProductRepository.Object,
+                this._mockMapper.Object,
+                storeContext: new FixedStoreContext(currentStoreId),
+                categoryRepository: categoryRepository.Object);
+
+            this._mockMapper
+                .Setup(mapper => mapper.Map<Product>(product))
+                .Returns(mappedProduct);
+            categoryRepository
+                .Setup(repository => repository.CategoryBelongsToCurrentStoreAsync(categoryId))
+                .ReturnsAsync(false);
+
+            var result = await service.AddAsync(product);
+
+            Assert.False(result.Success);
+            Assert.Equal("Product category was not found for this store.", result.Message);
+            this._mockProductRepository.Verify(repo => repo.AddAsync(It.IsAny<Product>()), Times.Never);
+        }
+
+        private sealed class FixedStoreContext : ICommerceStoreContext
+        {
+            private readonly Guid storeId;
+
+            public FixedStoreContext(Guid storeId)
+            {
+                this.storeId = storeId;
+            }
+
+            public Task<CommerceStoreOperationResult<CommerceCurrentStore>> GetCurrentStoreAsync(CancellationToken cancellationToken = default)
+            {
+                throw new NotSupportedException();
+            }
+
+            public Task<CommerceStoreOperationResult<Guid>> GetCurrentStoreIdAsync(CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(new CommerceStoreOperationResult<Guid>(true, "Current store resolved.", this.storeId));
+            }
         }
     }
 }

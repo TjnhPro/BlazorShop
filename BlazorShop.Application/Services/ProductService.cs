@@ -14,6 +14,7 @@
     using BlazorShop.Application.Services.Contracts.Admin;
     using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Contracts;
+    using BlazorShop.Domain.Contracts.CategoryPersistence;
     using BlazorShop.Domain.Entities;
 
     public class ProductService : IProductService
@@ -25,6 +26,7 @@
         private readonly ICommerceStoreContext? _storeContext;
         private readonly ICatalogQueryCache? _catalogQueryCache;
         private readonly IVariationTemplateLookupService? _variationTemplateLookupService;
+        private readonly ICategoryRepository? _categoryRepository;
 
         public ProductService(
             IProductReadRepository productReadRepository,
@@ -33,7 +35,8 @@
             IAdminAuditService? auditService = null,
             ICommerceStoreContext? storeContext = null,
             ICatalogQueryCache? catalogQueryCache = null,
-            IVariationTemplateLookupService? variationTemplateLookupService = null)
+            IVariationTemplateLookupService? variationTemplateLookupService = null,
+            ICategoryRepository? categoryRepository = null)
         {
             _productReadRepository = productReadRepository;
             _productRepository = productRepository;
@@ -42,11 +45,14 @@
             _storeContext = storeContext;
             _catalogQueryCache = catalogQueryCache;
             _variationTemplateLookupService = variationTemplateLookupService;
+            _categoryRepository = categoryRepository;
         }
 
         public async Task<IEnumerable<GetProduct>> GetAllAsync()
         {
-            var result = await _productReadRepository.GetCatalogProductsAsync();
+            var result = _storeContext is not null
+                ? await _productReadRepository.GetCatalogProductsForCurrentStoreAsync()
+                : await _productReadRepository.GetCatalogProductsAsync();
 
             var mappedData = _mapper.Map<IEnumerable<GetProduct>>(result);
 
@@ -55,7 +61,9 @@
 
         public async Task<PagedResult<GetCatalogProduct>> GetCatalogPageAsync(ProductCatalogQuery query)
         {
-            var result = await _productReadRepository.GetCatalogPageAsync(query);
+            var result = _storeContext is not null
+                ? await _productReadRepository.GetCatalogPageForCurrentStoreAsync(query)
+                : await _productReadRepository.GetCatalogPageAsync(query);
             var mappedItems = _mapper.Map<IReadOnlyList<GetCatalogProduct>>(result.Items);
 
             return new PagedResult<GetCatalogProduct>
@@ -69,7 +77,9 @@
 
         public async Task<GetProduct?> GetByIdAsync(Guid id)
         {
-            var result = await _productReadRepository.GetProductDetailsByIdAsync(id);
+            var result = _storeContext is not null
+                ? await _productReadRepository.GetProductDetailsByIdForCurrentStoreAsync(id)
+                : await _productReadRepository.GetProductDetailsByIdAsync(id);
             return result != null ? MapProductDetails(result) : null;
         }
 
@@ -80,6 +90,12 @@
             NormalizeProduct(mappedData);
 
             var validation = await ValidateProductTypeAsync(mappedData);
+            if (!validation.Success)
+            {
+                return validation;
+            }
+
+            validation = await ValidateProductCategoryAsync(mappedData);
             if (!validation.Success)
             {
                 return validation;
@@ -112,12 +128,23 @@
                 return new ServiceResponse(false, "Product not found");
             }
 
+            if (!await ProductBelongsToCurrentStoreAsync(existingProduct))
+            {
+                return new ServiceResponse(false, "Product not found");
+            }
+
             var storeId = existingProduct.StoreId;
             _mapper.Map(product, existingProduct);
             existingProduct.StoreId = storeId;
             NormalizeProduct(existingProduct);
 
             var validation = await ValidateProductTypeAsync(existingProduct);
+            if (!validation.Success)
+            {
+                return validation;
+            }
+
+            validation = await ValidateProductCategoryAsync(existingProduct);
             if (!validation.Success)
             {
                 return validation;
@@ -145,6 +172,11 @@
         {
             var existingProduct = await _productRepository.GetByIdAsync(id);
             if (existingProduct is null)
+            {
+                return new ServiceResponse(false, "Product not found");
+            }
+
+            if (!await ProductBelongsToCurrentStoreAsync(existingProduct))
             {
                 return new ServiceResponse(false, "Product not found");
             }
@@ -215,6 +247,34 @@
             return isActive
                 ? new ServiceResponse(true, string.Empty)
                 : new ServiceResponse(false, "Variation template was not found or is inactive.");
+        }
+
+        private async Task<ServiceResponse> ValidateProductCategoryAsync(Product product)
+        {
+            if (!product.CategoryId.HasValue || product.CategoryId.Value == Guid.Empty || _categoryRepository is null)
+            {
+                return new ServiceResponse(true, string.Empty);
+            }
+
+            if (_storeContext is null)
+            {
+                return new ServiceResponse(true, string.Empty);
+            }
+
+            return await _categoryRepository.CategoryBelongsToCurrentStoreAsync(product.CategoryId.Value)
+                ? new ServiceResponse(true, string.Empty)
+                : new ServiceResponse(false, "Product category was not found for this store.");
+        }
+
+        private async Task<bool> ProductBelongsToCurrentStoreAsync(Product product)
+        {
+            if (_storeContext is null)
+            {
+                return true;
+            }
+
+            var storeResult = await _storeContext.GetCurrentStoreIdAsync();
+            return storeResult.Success && product.StoreId == storeResult.Payload;
         }
 
         private static string NormalizeProductType(string? productType)

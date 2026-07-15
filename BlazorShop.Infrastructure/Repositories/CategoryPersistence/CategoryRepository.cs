@@ -100,6 +100,13 @@
                     && (!excludedCategoryId.HasValue || category.Id != excludedCategoryId.Value));
         }
 
+        public async Task<bool> CategoryBelongsToCurrentStoreAsync(Guid id)
+        {
+            return await _context.Categories
+                .AsNoTracking()
+                .AnyAsync(category => category.Id == id && category.ArchivedAt == null);
+        }
+
         public async Task<bool> HasActiveChildrenAsync(Guid id)
         {
             return await _context.Categories

@@ -52,6 +52,11 @@ namespace BlazorShop.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public Task<IEnumerable<Product>> GetCatalogProductsForCurrentStoreAsync()
+        {
+            return GetCatalogProductsAsync();
+        }
+
         public async Task<PagedResult<CatalogProductReadModel>> GetCatalogPageAsync(ProductCatalogQuery query)
         {
             var pageNumber = query.GetNormalizedPageNumber();
@@ -74,6 +79,11 @@ namespace BlazorShop.Infrastructure.Repositories
                 PageSize = pageSize,
                 TotalCount = totalCount,
             };
+        }
+
+        public Task<PagedResult<CatalogProductReadModel>> GetCatalogPageForCurrentStoreAsync(ProductCatalogQuery query)
+        {
+            return GetCatalogPageAsync(query);
         }
 
         public async Task<PagedResult<CatalogProductReadModel>> GetPublishedCatalogPageAsync(ProductCatalogQuery query)
@@ -141,6 +151,11 @@ namespace BlazorShop.Infrastructure.Repositories
                 .FirstOrDefaultAsync(product => product.Id == id);
         }
 
+        public Task<Product?> GetProductDetailsByIdForCurrentStoreAsync(Guid id)
+        {
+            return GetProductDetailsByIdAsync(id);
+        }
+
         public async Task<Product?> GetPublishedProductDetailsByIdAsync(Guid id)
         {
             return await _context.Products
@@ -198,6 +213,16 @@ namespace BlazorShop.Infrastructure.Repositories
             return await _context.Products
                 .AsNoTracking()
                 .AnyAsync(product => product.Slug == slug
+                    && product.ArchivedAt == null
+                    && (!excludedProductId.HasValue || product.Id != excludedProductId.Value));
+        }
+
+        public async Task<bool> ProductSlugExistsInStoreAsync(string slug, Guid? storeId, Guid? excludedProductId = null)
+        {
+            return await _context.Products
+                .AsNoTracking()
+                .AnyAsync(product => product.Slug == slug
+                    && product.StoreId == storeId
                     && product.ArchivedAt == null
                     && (!excludedProductId.HasValue || product.Id != excludedProductId.Value));
         }

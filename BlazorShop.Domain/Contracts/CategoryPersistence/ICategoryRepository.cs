@@ -18,6 +18,8 @@
 
         Task<bool> CategorySlugExistsAsync(string slug, Guid? excludedCategoryId = null);
 
+        Task<bool> CategoryBelongsToCurrentStoreAsync(Guid id);
+
         Task<bool> HasActiveChildrenAsync(Guid id);
 
         Task<bool> HasActiveProductsAsync(Guid id);

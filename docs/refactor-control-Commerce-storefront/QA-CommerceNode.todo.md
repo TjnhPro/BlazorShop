@@ -110,6 +110,17 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] Storefront current-store response exposes only safe public runtime profile fields. 2026-07-15: live current-store response included public branding/contact/runtime fields and did not expose `metadataJson` or `controlPlaneStorePublicId`.
 - [~] Checkout preview/place-order fallback currency uses the current store default when cart/session currency is missing. 2026-07-15: Storefront cart/checkout HTTP smoke rendered current `GBP`; deeper missing-session-currency service/API fallback coverage is still pending.
 
+## Store Mapping
+
+- [x] Product admin catalog page is scoped to the current Commerce store. 2026-07-15: `CommerceNodeProductStoreScopeTests.GetCatalogPageForCurrentStoreAsync_ReturnsOnlyCurrentStoreProducts` passed.
+- [x] Product admin detail returns not found/null for a product belonging to another store. 2026-07-15: repository and service guardrails passed for cross-store product detail/update/delete.
+- [x] Product update/delete rejects cross-store IDs before mutating data. 2026-07-15: focused `ProductServiceTests` cross-store update/delete guardrails passed.
+- [x] Product create/update rejects a category from another current store. 2026-07-15: `AddAsync_WhenCategoryBelongsToDifferentCurrentStore_ReturnsValidationFailure` passed.
+- [x] Product SEO slug duplicate check is scoped by store. 2026-07-15: `ProductSeoServiceTests.UpdateAsync_WhenSlugExistsOnlyInAnotherStore_AllowsUpdate` passed and verified `ProductSlugExistsInStoreAsync`.
+- [ ] Category admin list/query/detail/update/delete are scoped to the current Commerce store.
+- [ ] Category parent/child update rejects cross-store parent assignment through current-store scoped lookup.
+- [ ] StorefrontPage list/detail/slug/sitemap scope has dedicated store mapping guardrails.
+
 ## Cart, Checkout & Payment Provider MVP
 
 Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.md`.

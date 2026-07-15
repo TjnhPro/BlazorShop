@@ -111,6 +111,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                     && (!excludedCategoryId.HasValue || category.Id != excludedCategoryId.Value));
         }
 
+        public async Task<bool> CategoryBelongsToCurrentStoreAsync(Guid id)
+        {
+            var scopedCategories = await this.GetCurrentStoreCategoriesAsync();
+            return await scopedCategories
+                .AsNoTracking()
+                .AnyAsync(category => category.Id == id && category.ArchivedAt == null);
+        }
+
         public async Task<bool> HasActiveChildrenAsync(Guid id)
         {
             var scopedCategories = await this.GetCurrentStoreCategoriesAsync();

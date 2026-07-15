@@ -4,6 +4,7 @@ namespace BlazorShop.Application.Services
 
     using AutoMapper;
 
+    using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
     using BlazorShop.Application.DTOs.Seo;
@@ -27,6 +28,7 @@ namespace BlazorShop.Application.Services
         private readonly IValidationService _validationService;
         private readonly IValidator<UpdateProductSeoDto> _validator;
         private readonly IAdminAuditService? _auditService;
+        private readonly ICommerceStoreContext? _storeContext;
 
         public ProductSeoService(
             IGenericRepository<Product> productRepository,
@@ -37,7 +39,8 @@ namespace BlazorShop.Application.Services
             ISeoRedirectAutomationService seoRedirectAutomationService,
             IValidationService validationService,
             IValidator<UpdateProductSeoDto> validator,
-            IAdminAuditService? auditService = null)
+            IAdminAuditService? auditService = null,
+            ICommerceStoreContext? storeContext = null)
         {
             _productRepository = productRepository;
             _productReadRepository = productReadRepository;
@@ -48,6 +51,7 @@ namespace BlazorShop.Application.Services
             _validationService = validationService;
             _validator = validator;
             _auditService = auditService;
+            _storeContext = storeContext;
         }
 
         public async Task<ServiceResponse<ProductSeoDto>> GetByProductIdAsync(Guid productId)
@@ -57,7 +61,7 @@ namespace BlazorShop.Application.Services
                 return ValidationError("Product id is required.");
             }
 
-            var product = await _productRepository.GetByIdAsync(productId);
+            var product = await GetReadableProductAsync(productId);
 
             if (product is null)
             {
@@ -91,20 +95,24 @@ namespace BlazorShop.Application.Services
                 return ValidationError(validationResult.Message ?? "Invalid SEO payload.");
             }
 
-            var product = await _productRepository.GetByIdAsync(productId);
-
-            if (product is null)
+            var productSnapshot = await GetReadableProductAsync(productId);
+            if (productSnapshot is null)
             {
                 return NotFound("Product not found.");
             }
 
             if (!string.IsNullOrWhiteSpace(normalizedRequest.Slug)
-                && await _productReadRepository.ProductSlugExistsAsync(normalizedRequest.Slug, productId))
+                && await ProductSlugExistsAsync(normalizedRequest.Slug, productSnapshot.StoreId, productId))
             {
                 return Conflict("Product slug is already in use.");
             }
 
-            var productSnapshot = await _productReadRepository.GetProductDetailsByIdAsync(productId);
+            var product = await _productRepository.GetByIdAsync(productId);
+            if (product is null || !await ProductBelongsToCurrentStoreAsync(product))
+            {
+                return NotFound("Product not found.");
+            }
+
             var existingPublishedOn = product.PublishedOn;
             var oldPublicPath = BuildProductPublicPath(productSnapshot?.Slug, productSnapshot?.IsPublished == true, productSnapshot?.PublishedOn, productSnapshot?.Category?.IsPublished == true);
             var newPublicPath = BuildProductPublicPath(normalizedRequest.Slug, normalizedRequest.IsPublished, normalizedRequest.PublishedOn ?? existingPublishedOn ?? DateTime.UtcNow, productSnapshot?.Category?.IsPublished == true);
@@ -160,6 +168,31 @@ namespace BlazorShop.Application.Services
 
             request.Slug = normalizedSlug;
             return null;
+        }
+
+        private Task<Product?> GetReadableProductAsync(Guid productId)
+        {
+            return _storeContext is not null
+                ? _productReadRepository.GetProductDetailsByIdForCurrentStoreAsync(productId)
+                : _productRepository.GetByIdAsync(productId);
+        }
+
+        private Task<bool> ProductSlugExistsAsync(string slug, Guid? storeId, Guid productId)
+        {
+            return _storeContext is not null
+                ? _productReadRepository.ProductSlugExistsInStoreAsync(slug, storeId, productId)
+                : _productReadRepository.ProductSlugExistsAsync(slug, productId);
+        }
+
+        private async Task<bool> ProductBelongsToCurrentStoreAsync(Product product)
+        {
+            if (_storeContext is null)
+            {
+                return true;
+            }
+
+            var storeResult = await _storeContext.GetCurrentStoreIdAsync();
+            return storeResult.Success && product.StoreId == storeResult.Payload;
         }
 
         private static UpdateProductSeoDto CopyRequest(Guid productId, UpdateProductSeoDto request)

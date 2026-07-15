@@ -1,5 +1,6 @@
 namespace BlazorShop.Tests.Application.Services
 {
+    using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Seo;
     using BlazorShop.Application.Services;
@@ -223,6 +224,128 @@ namespace BlazorShop.Tests.Application.Services
 
             Assert.True(result.Success);
             _seoRedirectAutomationService.Verify(service => service.EnsurePermanentRedirectAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_WhenProductIsOutsideCurrentStore_ReturnsNotFound()
+        {
+            var productId = Guid.NewGuid();
+            var service = CreateStoreScopedService(Guid.NewGuid());
+
+            _productReadRepository
+                .Setup(repository => repository.GetProductDetailsByIdForCurrentStoreAsync(productId))
+                .ReturnsAsync((Product?)null);
+
+            var result = await service.UpdateAsync(productId, new UpdateProductSeoDto
+            {
+                Slug = "valid-product-slug",
+                IsPublished = true,
+            });
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.NotFound, result.ResponseType);
+            Assert.Equal("Product not found.", result.Message);
+            _productRepository.Verify(repository => repository.UpdateAsync(It.IsAny<Product>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_WhenSlugExistsOnlyInAnotherStore_AllowsUpdate()
+        {
+            var storeId = Guid.NewGuid();
+            var productId = Guid.NewGuid();
+            var existingProduct = new Product
+            {
+                Id = productId,
+                StoreId = storeId,
+                Slug = "old-slug",
+                IsPublished = true,
+                PublishedOn = new DateTime(2026, 4, 18, 0, 0, 0, DateTimeKind.Utc),
+            };
+            var service = CreateStoreScopedService(storeId);
+
+            _productReadRepository
+                .Setup(repository => repository.GetProductDetailsByIdForCurrentStoreAsync(productId))
+                .ReturnsAsync(new Product
+                {
+                    Id = productId,
+                    StoreId = storeId,
+                    Slug = "old-slug",
+                    IsPublished = true,
+                    PublishedOn = existingProduct.PublishedOn,
+                    Category = new Category { Id = Guid.NewGuid(), StoreId = storeId, IsPublished = true },
+                });
+            _productReadRepository
+                .Setup(repository => repository.ProductSlugExistsInStoreAsync("shared-slug", storeId, productId))
+                .ReturnsAsync(false);
+            _productRepository
+                .Setup(repository => repository.GetByIdAsync(productId))
+                .ReturnsAsync(existingProduct);
+            _productRepository
+                .Setup(repository => repository.UpdateAsync(existingProduct))
+                .ReturnsAsync(1);
+            _seoRedirectAutomationService
+                .Setup(service => service.EnsurePermanentRedirectAsync("/product/old-slug", "/product/shared-slug"))
+                .ReturnsAsync(new ServiceResponse<SeoRedirectDto>(true, "Created", Guid.NewGuid())
+                {
+                    ResponseType = ServiceResponseType.Success,
+                    Payload = new SeoRedirectDto
+                    {
+                        OldPath = "/product/old-slug",
+                        NewPath = "/product/shared-slug",
+                        StatusCode = 301,
+                        IsActive = true,
+                    },
+                });
+
+            var result = await service.UpdateAsync(productId, new UpdateProductSeoDto
+            {
+                Slug = "shared-slug",
+                IsPublished = true,
+            });
+
+            Assert.True(result.Success);
+            Assert.Equal("shared-slug", existingProduct.Slug);
+            _productReadRepository.Verify(
+                repository => repository.ProductSlugExistsInStoreAsync("shared-slug", storeId, productId),
+                Times.Once);
+            _productReadRepository.Verify(
+                repository => repository.ProductSlugExistsAsync(It.IsAny<string>(), It.IsAny<Guid?>()),
+                Times.Never);
+        }
+
+        private ProductSeoService CreateStoreScopedService(Guid storeId)
+        {
+            var slugService = new SlugService();
+            return new ProductSeoService(
+                _productRepository.Object,
+                _productReadRepository.Object,
+                AutoMapperTestFactory.CreateMapper(),
+                slugService,
+                _transactionManager.Object,
+                _seoRedirectAutomationService.Object,
+                new ValidationService(),
+                new UpdateProductSeoDtoValidator(slugService),
+                storeContext: new FixedStoreContext(storeId));
+        }
+
+        private sealed class FixedStoreContext : ICommerceStoreContext
+        {
+            private readonly Guid storeId;
+
+            public FixedStoreContext(Guid storeId)
+            {
+                this.storeId = storeId;
+            }
+
+            public Task<CommerceStoreOperationResult<CommerceCurrentStore>> GetCurrentStoreAsync(CancellationToken cancellationToken = default)
+            {
+                throw new NotSupportedException();
+            }
+
+            public Task<CommerceStoreOperationResult<Guid>> GetCurrentStoreIdAsync(CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(new CommerceStoreOperationResult<Guid>(true, "Current store resolved.", this.storeId));
+            }
         }
     }
 }
