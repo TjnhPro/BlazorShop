@@ -1,6 +1,7 @@
 namespace BlazorShop.Application.ControlPlane.Catalog
 {
     using BlazorShop.Application.CommerceNode.Currencies;
+    using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.CommerceNode.Payments;
@@ -202,6 +203,53 @@ namespace BlazorShop.Application.ControlPlane.Catalog
             Guid storePublicId,
             Guid pagePublicId,
             UpdatePageNavigationRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreNavigationMenuSummaryDto>>> ListNavigationMenusAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> GetNavigationMenuAsync(
+            Guid storePublicId,
+            Guid menuPublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> CreateNavigationMenuAsync(
+            Guid storePublicId,
+            CreateStoreNavigationMenuRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> UpdateNavigationMenuAsync(
+            Guid storePublicId,
+            Guid menuPublicId,
+            UpdateStoreNavigationMenuRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> CreateNavigationItemAsync(
+            Guid storePublicId,
+            Guid menuPublicId,
+            CreateStoreNavigationMenuItemRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> UpdateNavigationItemAsync(
+            Guid storePublicId,
+            Guid itemPublicId,
+            UpdateStoreNavigationMenuItemRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> ArchiveNavigationItemAsync(
+            Guid storePublicId,
+            Guid itemPublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> UpdateNavigationItemOrderAsync(
+            Guid storePublicId,
+            Guid menuPublicId,
+            UpdateStoreNavigationMenuItemOrderRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreNavigationTargetOptionDto>>> ListNavigationSystemTargetsAsync(
+            Guid storePublicId,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneCommerceCatalogResult<ProductMediaListResponse>> ListProductMediaAsync(

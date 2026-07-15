@@ -3,6 +3,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
     using System.Net;
     using System.Text;
 
+    using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.ControlPlane.Nodes;
     using BlazorShop.Application.ControlPlane.Stores;
@@ -132,6 +133,52 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             Assert.Contains("storeKey=main-store", request.RequestUri.Query);
         }
 
+        [Fact]
+        public async Task ListNavigationMenusAsync_AppendsStoreKeyToCommerceNodeRequest()
+        {
+            await using var context = CreateContext();
+            var store = await CreateStoreAsync(context);
+            var handler = new RecordingHandler(RecordingHandler.EmptyArrayEnvelope);
+            var service = new ControlPlaneCommerceCatalogService(context, new HttpClient(handler));
+
+            var result = await service.ListNavigationMenusAsync(store.PublicId);
+
+            Assert.True(result.Success);
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal(HttpMethod.Get, request.Method);
+            Assert.Equal("https://node.example.test/api/commerce/admin/navigation/menus", request.RequestUri!.GetLeftPart(UriPartial.Path));
+            Assert.Contains("storeKey=main-store", request.RequestUri.Query);
+            Assert.Equal("node-a", request.Headers.GetValues("X-Node-Key").Single());
+            Assert.Equal("test-node-secret", request.Headers.GetValues("X-Node-Secret").Single());
+        }
+
+        [Fact]
+        public async Task CreateNavigationItemAsync_AppendsStoreKeyToCommerceNodeRequest()
+        {
+            await using var context = CreateContext();
+            var store = await CreateStoreAsync(context);
+            var handler = new RecordingHandler(RecordingHandler.NavigationMenuEnvelope);
+            var service = new ControlPlaneCommerceCatalogService(context, new HttpClient(handler));
+            var menuPublicId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
+            var result = await service.CreateNavigationItemAsync(
+                store.PublicId,
+                menuPublicId,
+                new CreateStoreNavigationMenuItemRequest(
+                    null,
+                    "Home",
+                    StoreNavigationTargetTypes.System,
+                    StoreNavigationSystemTargets.Home,
+                    null,
+                    null));
+
+            Assert.True(result.Success);
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal(HttpMethod.Post, request.Method);
+            Assert.Equal($"https://node.example.test/api/commerce/admin/navigation/menus/{menuPublicId:D}/items", request.RequestUri!.GetLeftPart(UriPartial.Path));
+            Assert.Contains("storeKey=main-store", request.RequestUri.Query);
+        }
+
         private static async Task<ControlPlaneStoreDetail> CreateStoreAsync(ControlPlaneDbContext context)
         {
             var nodeService = new ControlPlaneNodeService(context);
@@ -218,6 +265,21 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
                     "displayOrder": 100,
                     "includeInNavigation": false,
                     "navigationLocation": null
+                  }
+                }
+                """;
+
+            public const string NavigationMenuEnvelope = """
+                {
+                  "success": true,
+                  "message": "ok",
+                  "data": {
+                    "publicId": "11111111-1111-1111-1111-111111111111",
+                    "systemName": "main",
+                    "displayName": "Main",
+                    "isEnabled": true,
+                    "updatedAt": "2026-07-15T00:00:00+00:00",
+                    "items": []
                   }
                 }
                 """;

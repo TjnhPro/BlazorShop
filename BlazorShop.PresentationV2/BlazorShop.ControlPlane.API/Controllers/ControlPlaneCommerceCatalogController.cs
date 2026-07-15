@@ -5,6 +5,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
     using System.Text.Json;
 
     using BlazorShop.Application.CommerceNode.Currencies;
+    using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Application.ControlPlane.Catalog;
     using BlazorShop.Application.ControlPlane.Security;
     using BlazorShop.Application.CommerceNode.Media;
@@ -810,6 +811,98 @@ namespace BlazorShop.ControlPlane.API.Controllers
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.catalogService.ArchiveStorefrontPageAsync(storePublicId, pagePublicId, cancellationToken));
+        }
+
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/navigation/menus")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceNavigationRead)]
+        public async Task<IActionResult> ListNavigationMenus(
+            Guid storePublicId,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ListNavigationMenusAsync(storePublicId, cancellationToken));
+        }
+
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/navigation/menus")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceNavigationWrite)]
+        public async Task<IActionResult> CreateNavigationMenu(
+            Guid storePublicId,
+            [FromBody] CreateStoreNavigationMenuRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.CreateNavigationMenuAsync(storePublicId, request, cancellationToken));
+        }
+
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/navigation/menus/{menuPublicId:guid}")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceNavigationRead)]
+        public async Task<IActionResult> GetNavigationMenu(
+            Guid storePublicId,
+            Guid menuPublicId,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.GetNavigationMenuAsync(storePublicId, menuPublicId, cancellationToken));
+        }
+
+        [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/navigation/menus/{menuPublicId:guid}")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceNavigationWrite)]
+        public async Task<IActionResult> UpdateNavigationMenu(
+            Guid storePublicId,
+            Guid menuPublicId,
+            [FromBody] UpdateStoreNavigationMenuRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.UpdateNavigationMenuAsync(storePublicId, menuPublicId, request, cancellationToken));
+        }
+
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/navigation/menus/{menuPublicId:guid}/items")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceNavigationWrite)]
+        public async Task<IActionResult> CreateNavigationItem(
+            Guid storePublicId,
+            Guid menuPublicId,
+            [FromBody] CreateStoreNavigationMenuItemRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.CreateNavigationItemAsync(storePublicId, menuPublicId, request, cancellationToken));
+        }
+
+        [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/navigation/items/{itemPublicId:guid}")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceNavigationWrite)]
+        public async Task<IActionResult> UpdateNavigationItem(
+            Guid storePublicId,
+            Guid itemPublicId,
+            [FromBody] UpdateStoreNavigationMenuItemRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.UpdateNavigationItemAsync(storePublicId, itemPublicId, request, cancellationToken));
+        }
+
+        [HttpDelete("~/api/controlplane/commerce/stores/{storePublicId:guid}/navigation/items/{itemPublicId:guid}")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceNavigationWrite)]
+        public async Task<IActionResult> ArchiveNavigationItem(
+            Guid storePublicId,
+            Guid itemPublicId,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ArchiveNavigationItemAsync(storePublicId, itemPublicId, cancellationToken));
+        }
+
+        [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/navigation/menus/{menuPublicId:guid}/items/order")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceNavigationWrite)]
+        public async Task<IActionResult> UpdateNavigationItemOrder(
+            Guid storePublicId,
+            Guid menuPublicId,
+            [FromBody] UpdateStoreNavigationMenuItemOrderRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.UpdateNavigationItemOrderAsync(storePublicId, menuPublicId, request, cancellationToken));
+        }
+
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/navigation/system-targets")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceNavigationRead)]
+        public async Task<IActionResult> ListNavigationSystemTargets(
+            Guid storePublicId,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ListNavigationSystemTargetsAsync(storePublicId, cancellationToken));
         }
 
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/orders")]

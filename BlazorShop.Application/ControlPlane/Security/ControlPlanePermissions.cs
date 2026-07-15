@@ -22,6 +22,8 @@ namespace BlazorShop.Application.ControlPlane.Security
         public const string CommerceFeaturesWrite = "commerce.features.write";
         public const string CommerceProvidersRead = "commerce.providers.read";
         public const string CommerceProvidersWrite = "commerce.providers.write";
+        public const string CommerceNavigationRead = "commerce.navigation.read";
+        public const string CommerceNavigationWrite = "commerce.navigation.write";
 
         public static readonly string[] All =
         [
@@ -44,7 +46,9 @@ namespace BlazorShop.Application.ControlPlane.Security
             CommerceFeaturesRead,
             CommerceFeaturesWrite,
             CommerceProvidersRead,
-            CommerceProvidersWrite
+            CommerceProvidersWrite,
+            CommerceNavigationRead,
+            CommerceNavigationWrite
         ];
     }
 }

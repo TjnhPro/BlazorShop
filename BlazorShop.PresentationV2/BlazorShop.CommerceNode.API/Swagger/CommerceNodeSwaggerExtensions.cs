@@ -4,6 +4,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
     using System.Text.Json.Nodes;
 
     using BlazorShop.Application.CommerceNode.Currencies;
+    using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.Tasks;
@@ -73,6 +74,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
                 options.OperationFilter<CommerceAdminStoreKeyOperationFilter>();
                 options.OperationFilter<CommerceStoreAdminOperationMetadataFilter>();
                 options.OperationFilter<CommerceCurrencyAdminOperationMetadataFilter>();
+                options.OperationFilter<CommerceNavigationAdminOperationMetadataFilter>();
                 options.OperationFilter<StorefrontOperationMetadataFilter>();
                 options.DocumentFilter<StorefrontSecurityDocumentFilter>();
                 options.SchemaFilter<StorefrontContractSchemaFilter>();
@@ -411,6 +413,111 @@ namespace BlazorShop.CommerceNode.API.Swagger
                 int[] ErrorStatusCodes);
         }
 
+        private sealed class CommerceNavigationAdminOperationMetadataFilter : IOperationFilter
+        {
+            private static readonly IReadOnlyDictionary<string, CommerceNavigationOperationMetadata> Metadata =
+                new Dictionary<string, CommerceNavigationOperationMetadata>
+                {
+                    ["ListMenus"] = new(
+                        "CommerceNavigation_ListMenus",
+                        "List store navigation menus.",
+                        typeof(CommerceNodeApiResponse<IReadOnlyList<StoreNavigationMenuSummaryDto>>),
+                        [StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    ["CreateMenu"] = new(
+                        "CommerceNavigation_CreateMenu",
+                        "Create a store navigation menu.",
+                        typeof(CommerceNodeApiResponse<StoreNavigationMenuDetailDto>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    ["GetMenu"] = new(
+                        "CommerceNavigation_GetMenu",
+                        "Get a store navigation menu.",
+                        typeof(CommerceNodeApiResponse<StoreNavigationMenuDetailDto>),
+                        [StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    ["UpdateMenu"] = new(
+                        "CommerceNavigation_UpdateMenu",
+                        "Update a store navigation menu.",
+                        typeof(CommerceNodeApiResponse<StoreNavigationMenuDetailDto>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    ["CreateItem"] = new(
+                        "CommerceNavigation_CreateItem",
+                        "Create a store navigation menu item.",
+                        typeof(CommerceNodeApiResponse<StoreNavigationMenuDetailDto>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    ["UpdateItem"] = new(
+                        "CommerceNavigation_UpdateItem",
+                        "Update a store navigation menu item.",
+                        typeof(CommerceNodeApiResponse<StoreNavigationMenuDetailDto>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    ["ArchiveItem"] = new(
+                        "CommerceNavigation_ArchiveItem",
+                        "Archive a store navigation menu item.",
+                        typeof(CommerceNodeApiResponse<StoreNavigationMenuDetailDto>),
+                        [StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    ["UpdateItemOrder"] = new(
+                        "CommerceNavigation_UpdateItemOrder",
+                        "Reorder store navigation menu items.",
+                        typeof(CommerceNodeApiResponse<StoreNavigationMenuDetailDto>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    ["ListSystemTargets"] = new(
+                        "CommerceNavigation_ListSystemTargets",
+                        "List supported navigation system targets.",
+                        typeof(CommerceNodeApiResponse<IReadOnlyList<StoreNavigationTargetOptionDto>>),
+                        [StatusCodes.Status500InternalServerError]),
+                };
+
+            public void Apply(OpenApiOperation operation, OperationFilterContext context)
+            {
+                var relativePath = NormalizePath(context.ApiDescription.RelativePath);
+                if (!relativePath.StartsWith("api/commerce/admin/navigation", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                if (context.ApiDescription.ActionDescriptor is not ControllerActionDescriptor actionDescriptor
+                    || !string.Equals(actionDescriptor.ControllerName, "CommerceNavigation", StringComparison.Ordinal)
+                    || !Metadata.TryGetValue(actionDescriptor.ActionName, out var metadata))
+                {
+                    return;
+                }
+
+                operation.OperationId = metadata.OperationId;
+                operation.Summary = metadata.Summary;
+
+                if (operation.RequestBody is OpenApiRequestBody requestBody)
+                {
+                    requestBody.Required = true;
+                }
+
+                operation.Responses ??= new OpenApiResponses();
+                operation.Responses["200"] = CreateJsonResponse(context, metadata.ResponseType, "Success.");
+                foreach (var statusCode in metadata.ErrorStatusCodes)
+                {
+                    operation.Responses[statusCode.ToString()] = CreateJsonResponse(context, metadata.ResponseType, "Error.");
+                }
+            }
+
+            private static OpenApiResponse CreateJsonResponse(OperationFilterContext context, Type responseType, string description)
+            {
+                return new OpenApiResponse
+                {
+                    Description = description,
+                    Content = new Dictionary<string, OpenApiMediaType>
+                    {
+                        ["application/json"] = new()
+                        {
+                            Schema = context.SchemaGenerator.GenerateSchema(responseType, context.SchemaRepository),
+                        },
+                    },
+                };
+            }
+
+            private sealed record CommerceNavigationOperationMetadata(
+                string OperationId,
+                string Summary,
+                Type ResponseType,
+                int[] ErrorStatusCodes);
+        }
+
         private sealed class StorefrontOperationMetadataFilter : IOperationFilter
         {
             private static readonly IReadOnlyDictionary<(string Controller, string Action), StorefrontOperationMetadata> Metadata =
@@ -590,6 +697,11 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "StorefrontPages_ListNavigation",
                         "List published Storefront content navigation links.",
                         typeof(CommerceNodeApiResponse<IReadOnlyList<StorefrontPageNavigationLinkDto>>),
+                        [StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedNavigation", "GetMenu")] = new(
+                        "StorefrontNavigation_GetMenu",
+                        "Get a Storefront navigation menu.",
+                        typeof(CommerceNodeApiResponse<StoreNavigationPublicMenuDto>),
                         [StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedConfiguration", "Get")] = new(
                         "StorefrontConfiguration_Get",

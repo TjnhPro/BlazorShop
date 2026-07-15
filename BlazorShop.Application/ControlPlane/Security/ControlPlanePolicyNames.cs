@@ -22,6 +22,8 @@ namespace BlazorShop.Application.ControlPlane.Security
         public const string CommerceFeaturesWrite = "ControlPlane.CommerceFeatures.Write";
         public const string CommerceProvidersRead = "ControlPlane.CommerceProviders.Read";
         public const string CommerceProvidersWrite = "ControlPlane.CommerceProviders.Write";
+        public const string CommerceNavigationRead = "ControlPlane.CommerceNavigation.Read";
+        public const string CommerceNavigationWrite = "ControlPlane.CommerceNavigation.Write";
 
         public static readonly IReadOnlyDictionary<string, string> PermissionByPolicy =
             new Dictionary<string, string>(StringComparer.Ordinal)
@@ -45,7 +47,9 @@ namespace BlazorShop.Application.ControlPlane.Security
                 [CommerceFeaturesRead] = ControlPlanePermissions.CommerceFeaturesRead,
                 [CommerceFeaturesWrite] = ControlPlanePermissions.CommerceFeaturesWrite,
                 [CommerceProvidersRead] = ControlPlanePermissions.CommerceProvidersRead,
-                [CommerceProvidersWrite] = ControlPlanePermissions.CommerceProvidersWrite
+                [CommerceProvidersWrite] = ControlPlanePermissions.CommerceProvidersWrite,
+                [CommerceNavigationRead] = ControlPlanePermissions.CommerceNavigationRead,
+                [CommerceNavigationWrite] = ControlPlanePermissions.CommerceNavigationWrite
             };
     }
 }
