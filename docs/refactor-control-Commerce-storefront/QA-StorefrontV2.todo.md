@@ -153,7 +153,16 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Sitemap excludes draft page. 2026-07-12: `GET /sitemap.xml` did not contain `/pages/qa-draft-page-20260712034014`.
 - [ ] Sitemap excludes published page with `include_in_sitemap=false`.
 - [x] Old `/privacy`, `/faq`, `/terms`, `/customer-service`, `/about-us` routes return 404. 2026-07-12: all five routes returned HTTP 404.
-- [~] Header/footer `/pages/about-us`, `/pages/customer-service`, `/pages/faq`, `/pages/privacy`, and `/pages/terms` require matching published CommerceNode pages or they render 404. 2026-07-14 scoped QA DB had no published standard pages, so all five linked `/pages/*` routes returned 404.
+- [x] Header/footer no longer hard-code `/pages/about-us`, `/pages/customer-service`, `/pages/faq`, `/pages/privacy`, or `/pages/terms`. 2026-07-15: `StorefrontBrandingMarkupTests` passed and asserts content links come from `IStorefrontPageNavigationProvider`.
+
+### Basic Page Content Navigation
+
+- [x] Storefront API client reads published content navigation from `GET /api/storefront/stores/{storeKey}/pages/navigation`. 2026-07-15: `StorefrontV2ApiClientTests.GetPageNavigationLinksAsync_ReadsPublishedContentNavigation` passed.
+- [x] Storefront page navigation provider filters links by `NavigationLocation`, orders by display order/title, and caches within the request scope. 2026-07-15: `StorefrontPageNavigationProviderTests.GetLinksByLocationAsync_FiltersOrdersAndCachesWithinScope` passed.
+- [x] Storefront page navigation provider returns an empty list when the navigation endpoint is unavailable, avoiding broken legal/support links. 2026-07-15: `StorefrontPageNavigationProviderTests.GetLinksAsync_WhenNavigationEndpointUnavailable_ReturnsEmptyList` passed.
+- [x] Footer renders company/support/legal links from published page navigation locations `footer_company`, `footer_support`, and `footer_legal`. 2026-07-15: Storefront V2 build and branding markup tests passed.
+- [x] Header renders only pages explicitly marked with `NavigationLocation=header`; required legal/support pages are not auto-promoted. 2026-07-15: Storefront V2 build and branding markup tests passed.
+- [x] Product/category/deal navigation remains owned by existing route constants and was not rewritten into the page template catalog. 2026-07-15: `StorefrontHeader.razor` and `StorefrontFooter.razor` keep product/deal routes while content links are page-driven.
 
 ## Store Config Consumption
 

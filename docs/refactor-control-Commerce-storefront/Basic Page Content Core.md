@@ -9,6 +9,17 @@ Scope:
 - 7.3 Publishing behavior for content pages.
 - 7.4 Contact page decision update: contact form is out of this phase and will be handled as an independent component/WASM surface later.
 
+Implementation status:
+
+- Phase 0 committed as `04ed8dd docs: plan basic page content core`.
+- Phase 1 committed as `da5111e feat(commerce-node): add storefront page content metadata`.
+- Phase 2 committed as `446f91e feat(commerce-node): add page template readiness service`.
+- Phase 3 committed as `d589657 feat(control-plane): expose page template readiness APIs`.
+- Phase 4 committed as `206215f feat(control-plane-web): add page content readiness manager`.
+- Phase 5 committed as `c9e2517 feat(storefront): render content page navigation links`.
+- Phase 8 cache hardening committed as `29bcd4e test(storefront): cover page navigation provider cache`; Commerce Node projections are not persisted/cached, and Storefront uses request-scoped provider caching only.
+- Phase 9 QA/docs recorded on 2026-07-15 with focused builds/tests and QA checklist updates.
+
 Autoplan note: external dual-voice subagents are not available in this Codex runtime. This plan records the CEO, Design, Eng, and DX passes as an internal autoplan audit using the same decision principles: keep the business outcome clear, prefer the narrow path that works, reuse existing code, keep boundaries explicit, avoid speculative framework work, and make each phase verifiable.
 
 ## 1. Premise Challenge

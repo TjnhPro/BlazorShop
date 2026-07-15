@@ -98,6 +98,19 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] Commerce Admin runtime store update accepts active/inactive and maintenance state through explicit request DTOs. 2026-07-15: focused lifecycle/control tests passed with the new request/response contracts.
 - [x] Provisioning stores remain valid runtime records and can be reported as not ready to Storefront V2. 2026-07-15: Storefront V2 browser QA used a fake scoped current-store API returning `status=provisioning`; storefront rendered the not-ready maintenance state.
 
+## Basic Page Content Core
+
+- [x] CommerceNode `StorefrontPage` schema includes nullable `PageKey`, `DisplayOrder`, `IncludeInNavigation`, and nullable `NavigationLocation`. 2026-07-15: migration `CommerceNodeStorefrontPageContentMetadata` and CommerceNode API build passed.
+- [x] Active page key is unique per store while custom pages can keep `PageKey = null`. 2026-07-15: `StorefrontPageServiceStoreScopeTests` covered duplicate active page-key rejection and same page-key allowed across stores.
+- [x] Page key and navigation location are allowlisted before save. 2026-07-15: focused Storefront page service tests passed for invalid page key/location and required location when `IncludeInNavigation=true`.
+- [x] Template catalog includes required legal/support/company keys and excludes `generic`, `contact`, `cart`, `checkout`, and `account`. 2026-07-15: `StorefrontPageTemplateServiceTests` passed.
+- [x] Template status reports missing, mapped draft, mapped published, and suggested existing pages by default slug/title. 2026-07-15: `StorefrontPageTemplateServiceTests` passed.
+- [x] Creating a draft from template creates an unpublished shell with sitemap/navigation disabled. 2026-07-15: `StorefrontPageTemplateServiceTests` passed.
+- [x] Mapping and clearing existing pages updates `PageKey` without recreating page content. 2026-07-15: `StorefrontPageTemplateServiceTests` passed.
+- [x] Storefront public navigation returns only published pages with `IncludeInNavigation=true`, non-null location, and known page key. 2026-07-15: `StorefrontPageTemplateServiceTests.ListNavigationLinksAsync_ReturnsPublishedNavigationPagesOnly` passed.
+- [x] Storefront scoped OpenAPI contains `GET /api/storefront/stores/{storeKey}/pages/navigation` with typed response schema. 2026-07-15: Storefront OpenAPI contract tests passed and snapshots include `StorefrontPages_ListNavigation`.
+- [x] Commerce Admin/ControlPlane page template endpoints use explicit request/response DTOs and preserve store-key scoped forwarding. 2026-07-15: `ControlPlaneCommerceCatalogServiceStoreMappingTests` passed for template status/navigation gateway routes.
+
 ## Store Config Consumption And Hardening
 
 - [x] Commerce Admin store create/update accepts safe absolute `http`/`https` asset URLs for logo/favicon/icon fields. 2026-07-15: live CommerceNode admin HTTP QA accepted safe absolute logo/favicon/icon URLs.

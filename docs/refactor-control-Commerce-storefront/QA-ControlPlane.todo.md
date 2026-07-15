@@ -220,6 +220,16 @@ Status legend:
 - [ ] User without `commerce.pages.read` cannot list/view pages.
 - [ ] User without `commerce.pages.write` cannot create/update/archive pages.
 
+### Basic Page Content Core
+
+- [x] ControlPlane API exposes page template definitions/status/draft/map/clear/navigation gateway endpoints under `api/controlplane/commerce/stores/{storePublicId}/pages/*`. 2026-07-15: ControlPlane API build passed and `ControlPlaneCommerceCatalogServiceStoreMappingTests` covered store-key forwarding.
+- [x] ControlPlane Web pages manager renders a content readiness panel for the selected store. 2026-07-15: `CommercePages.razor` adds template status rows and ControlPlane Web build passed.
+- [x] Readiness panel supports create draft shell, map suggested existing page, open mapped page, and clear mapping actions through `IControlPlaneCatalogClient`. 2026-07-15: ControlPlane Web build passed after wiring template actions.
+- [x] Page drawer exposes page key, display order, include-in-navigation, and navigation location controls without adding contact form/page-builder/component-selector scope. 2026-07-15: `CommercePages.razor` updated and build passed.
+- [x] Page save blocks `IncludeInNavigation=true` without a selected navigation location before sending the request. 2026-07-15: ControlPlane Web build passed with client-side guard.
+- [x] ControlPlane Web still calls ControlPlane API only for page template/readiness operations. 2026-07-15: code path uses `ControlPlaneCatalogClient` gateway methods only; no direct CommerceNode client or route was added to Web.
+- [x] Focused page template/gateway tests pass. 2026-07-15: `dotnet test BlazorShop.Tests\BlazorShop.Tests.csproj --filter "FullyQualifiedName~ControlPlaneCommerceCatalogServiceStoreMappingTests|FullyQualifiedName~StorefrontPageTemplateServiceTests"` passed 12/12 after UI phase.
+
 ## Commerce Media Library
 
 - [x] ControlPlane API builds after Media Library gateway changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj` passed after stopping the locked local ControlPlane API process.
