@@ -258,6 +258,9 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.Contains("Do not add DB-configured or store-configured arbitrary public scripts/styles.", decisionRules);
             Assert.Contains("Dynamic Storefront pages, maintenance pages, current-store/config reads, checkout/auth pages, SEO documents, and error states must not receive immutable cache headers.", decisionRules);
             Assert.Contains("Browser static assets and `wwwroot` config must point only to Control Plane API", decisionRules);
+            Assert.Contains("Use `Web.SharedV2` as a forced visual design system", projectGuide);
+            Assert.Contains("Share browser behavior helpers through `BlazorShop.Web.SharedV2` only when both active V2 frontends have a real use case.", decisionRules);
+            Assert.Contains("Do not create a shared visual shell or asset registry just to reduce superficial markup similarity.", decisionRules);
         }
 
         private static IReadOnlyList<string> ExtractStylesheetHrefs(string markup)

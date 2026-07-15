@@ -190,11 +190,16 @@ Important folders:
 Use for:
 
 - Shared UI/browser utilities across V2 Web projects.
+- Browser storage, cookie, auth-session sync, and toast/helper behavior that is useful to more than one active V2 frontend.
+- Small framework-neutral helper services where sharing reduces duplicated behavior without coupling product UI.
 
 Do not:
 
 - Put project-specific business logic here.
 - Put Commerce Node credentials here.
+- Move Storefront header/footer/cart/toast DOM behavior here unless Control Plane has the same real need.
+- Move Control Plane nav/sidebar/topbar/page chrome here unless Storefront has the same real need.
+- Use `Web.SharedV2` as a forced visual design system; Storefront and Control Plane intentionally keep different UI density and product identity.
 
 ## Legacy Presentation
 

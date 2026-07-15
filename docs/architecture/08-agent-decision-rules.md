@@ -116,6 +116,13 @@ Control Plane Web asset rules:
 - Keep Control Plane feature JavaScript module-imported through services when possible. Root scripts are only for boot-time or host-global helpers such as file downloads.
 - Browser static assets and `wwwroot` config must point only to Control Plane API, never directly to Commerce Node `api/commerce/*`, `api/internal/*`, node keys, node secrets, or Commerce Node local ports.
 
+Shared V2 UI/asset rules:
+
+- Share browser behavior helpers through `BlazorShop.Web.SharedV2` only when both active V2 frontends have a real use case.
+- Keep Storefront-specific header, footer, navigation, cart/toast DOM integration, SEO shell, and public commerce page structure in `BlazorShop.Storefront.V2`.
+- Keep Control Plane-specific nav/sidebar/topbar/page header and dense operational components in `BlazorShop.ControlPlane.Web`.
+- Do not create a shared visual shell or asset registry just to reduce superficial markup similarity.
+
 ## Database Rule
 
 Use the correct context:
