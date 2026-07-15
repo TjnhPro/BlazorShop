@@ -654,7 +654,11 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         Guid Id,
         string Key,
         string Name,
-        string? Description);
+        string? Description,
+        string? ShortDisplayText,
+        string? IconUrl,
+        IReadOnlyList<string> SupportedCurrencyCodes,
+        IReadOnlyList<string> SupportedCountryCodes);
 
     public sealed record StorefrontPayPalCaptureResponse(
         bool Captured,

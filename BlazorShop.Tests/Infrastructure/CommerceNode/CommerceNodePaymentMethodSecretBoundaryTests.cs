@@ -41,6 +41,32 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         }
 
         [Fact]
+        public async Task GetPaymentMethodsAsync_ReturnsSafePublicMetadata()
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            await SeedConfiguredPaymentMethodAsync(
+                context,
+                storeId,
+                method =>
+                {
+                    method.ShortDisplayText = "Cards";
+                    method.IconUrl = "/media/assets/stripe.svg";
+                    method.SupportedCurrencyCodesJson = "[\"USD\",\"EUR\"]";
+                    method.SupportedCountryCodesJson = "[\"US\",\"CA\"]";
+                });
+            var service = CreateService(context, storeId);
+
+            var methods = (await service.GetPaymentMethodsAsync()).ToArray();
+
+            var stripe = Assert.Single(methods, method => method.Key == PaymentMethodKeys.Stripe);
+            Assert.Equal("Cards", stripe.ShortDisplayText);
+            Assert.Equal("/media/assets/stripe.svg", stripe.IconUrl);
+            Assert.Equal(["USD", "EUR"], stripe.SupportedCurrencyCodes);
+            Assert.Equal(["US", "CA"], stripe.SupportedCountryCodes);
+        }
+
+        [Fact]
         public async Task UpdateAsync_WhenSettingsJsonIsNull_PreservesExistingSettings()
         {
             var storeId = Guid.NewGuid();
@@ -93,7 +119,10 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.DoesNotContain("settingsJson", serialized, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static async Task SeedConfiguredPaymentMethodAsync(CommerceNodeDbContext context, Guid storeId)
+        private static async Task SeedConfiguredPaymentMethodAsync(
+            CommerceNodeDbContext context,
+            Guid storeId,
+            Action<StorePaymentMethod>? configure = null)
         {
             context.CommerceStores.Add(new CommerceStore
             {
@@ -101,7 +130,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 StoreKey = "default",
                 Name = "Default",
             });
-            context.StorePaymentMethods.Add(new StorePaymentMethod
+            var method = new StorePaymentMethod
             {
                 Id = Guid.NewGuid(),
                 StoreId = storeId,
@@ -111,7 +140,10 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 Description = "Card payments.",
                 DisplayOrder = 5,
                 SettingsJson = SecretSettingsJson,
-            });
+            };
+            configure?.Invoke(method);
+
+            context.StorePaymentMethods.Add(method);
             await context.SaveChangesAsync();
         }
 

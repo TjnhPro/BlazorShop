@@ -77,6 +77,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     Key = method.PaymentMethodKey,
                     Name = method.DisplayName,
                     Description = method.Description ?? paymentMethod?.Description,
+                    ShortDisplayText = method.ShortDisplayText,
+                    IconUrl = method.IconUrl,
+                    SupportedCurrencyCodes = ParseCodes(method.SupportedCurrencyCodesJson),
+                    SupportedCountryCodes = ParseCodes(method.SupportedCountryCodesJson),
                 };
             });
         }
@@ -135,10 +139,51 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failure("Payment method configuration was not found.", ServiceResponseType.NotFound);
             }
 
+            var effectiveMinOrderTotal = request.MinOrderTotal ?? method.MinOrderTotal;
+            var effectiveMaxOrderTotal = request.MaxOrderTotal ?? method.MaxOrderTotal;
+            if (effectiveMinOrderTotal.HasValue
+                && effectiveMaxOrderTotal.HasValue
+                && effectiveMinOrderTotal.Value > effectiveMaxOrderTotal.Value)
+            {
+                return Failure(
+                    "Payment minimum order total must be less than or equal to maximum order total.",
+                    ServiceResponseType.ValidationError);
+            }
+
             method.Enabled = request.Enabled;
             method.DisplayName = request.DisplayName.Trim();
             method.Description = NormalizeNullable(request.Description);
             method.DisplayOrder = request.DisplayOrder;
+            if (request.ShortDisplayText is not null)
+            {
+                method.ShortDisplayText = NormalizeNullable(request.ShortDisplayText);
+            }
+
+            if (request.IconUrl is not null)
+            {
+                method.IconUrl = NormalizeNullable(request.IconUrl);
+            }
+
+            if (request.SupportedCurrencyCodes is not null)
+            {
+                method.SupportedCurrencyCodesJson = SerializeCodes(request.SupportedCurrencyCodes);
+            }
+
+            if (request.SupportedCountryCodes is not null)
+            {
+                method.SupportedCountryCodesJson = SerializeCodes(request.SupportedCountryCodes);
+            }
+
+            if (request.MinOrderTotal.HasValue)
+            {
+                method.MinOrderTotal = request.MinOrderTotal.Value;
+            }
+
+            if (request.MaxOrderTotal.HasValue)
+            {
+                method.MaxOrderTotal = request.MaxOrderTotal.Value;
+            }
+
             if (request.ClearSettings)
             {
                 method.SettingsJson = null;
@@ -167,6 +212,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     method.DisplayOrder,
                     SettingsConfigured = method.SettingsJson is not null,
                     SettingsChanged = request.ClearSettings || request.SettingsJson is not null,
+                    PublicMetadataChanged = request.ShortDisplayText is not null
+                        || request.IconUrl is not null
+                        || request.SupportedCurrencyCodes is not null
+                        || request.SupportedCountryCodes is not null
+                        || request.MinOrderTotal.HasValue
+                        || request.MaxOrderTotal.HasValue,
                 }),
             });
             await this.publicConfigurationCache.InvalidateAsync(storeResult.Payload, cancellationToken);
@@ -212,6 +263,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 method.Description,
                 method.Enabled,
                 method.DisplayOrder,
+                method.ShortDisplayText,
+                method.IconUrl,
+                ParseCodes(method.SupportedCurrencyCodesJson),
+                ParseCodes(method.SupportedCountryCodesJson),
+                method.MinOrderTotal,
+                method.MaxOrderTotal,
                 new StorePaymentMethodSettingsStatusDto(method.SettingsJson is not null),
                 method.CreatedAt,
                 method.UpdatedAt);
@@ -237,6 +294,40 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             if (request.DisplayOrder < 0 || request.DisplayOrder > 10000)
             {
                 return "Payment display order must be between 0 and 10000.";
+            }
+
+            if (request.ShortDisplayText?.Trim().Length > 160)
+            {
+                return "Payment short display text must be 160 characters or fewer.";
+            }
+
+            if (request.IconUrl?.Trim().Length > 1024)
+            {
+                return "Payment icon URL must be 1024 characters or fewer.";
+            }
+
+            var currencyValidation = ValidateCodes(request.SupportedCurrencyCodes, "currency", expectedLength: 3);
+            if (currencyValidation is not null)
+            {
+                return currencyValidation;
+            }
+
+            var countryValidation = ValidateCodes(request.SupportedCountryCodes, "country", expectedLength: 2);
+            if (countryValidation is not null)
+            {
+                return countryValidation;
+            }
+
+            if (request.MinOrderTotal is < 0m || request.MaxOrderTotal is < 0m)
+            {
+                return "Payment order total limits must be zero or greater.";
+            }
+
+            if (request.MinOrderTotal.HasValue
+                && request.MaxOrderTotal.HasValue
+                && request.MinOrderTotal.Value > request.MaxOrderTotal.Value)
+            {
+                return "Payment minimum order total must be less than or equal to maximum order total.";
             }
 
             if (request.ClearSettings && !string.IsNullOrWhiteSpace(request.SettingsJson))
@@ -277,6 +368,59 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private static string? NormalizeNullable(string? value)
         {
             return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
+
+        private static IReadOnlyList<string> ParseCodes(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return [];
+            }
+
+            try
+            {
+                return JsonSerializer.Deserialize<IReadOnlyList<string>>(json) ?? [];
+            }
+            catch (JsonException)
+            {
+                return [];
+            }
+        }
+
+        private static string? SerializeCodes(IReadOnlyList<string> values)
+        {
+            var codes = values
+                .Select(NormalizeNullable)
+                .Where(value => value is not null)
+                .Select(value => value!.ToUpperInvariant())
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+
+            return codes.Length == 0 ? null : JsonSerializer.Serialize(codes);
+        }
+
+        private static string? ValidateCodes(IReadOnlyList<string>? values, string label, int expectedLength)
+        {
+            if (values is null)
+            {
+                return null;
+            }
+
+            if (values.Count > 100)
+            {
+                return $"Payment {label} restrictions must contain 100 codes or fewer.";
+            }
+
+            foreach (var value in values)
+            {
+                var code = NormalizeNullable(value);
+                if (code is null || code.Length != expectedLength || !code.All(char.IsLetter))
+                {
+                    return $"Payment {label} codes must be {expectedLength} letters.";
+                }
+            }
+
+            return null;
         }
 
         private static ServiceResponse<StorePaymentMethodDto> Success(StorePaymentMethodDto payload, string message)

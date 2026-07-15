@@ -133,6 +133,12 @@ namespace BlazorShop.Application.CommerceNode.Payments
         string? Description,
         bool Enabled,
         int DisplayOrder,
+        string? ShortDisplayText,
+        string? IconUrl,
+        IReadOnlyList<string> SupportedCurrencyCodes,
+        IReadOnlyList<string> SupportedCountryCodes,
+        decimal? MinOrderTotal,
+        decimal? MaxOrderTotal,
         StorePaymentMethodSettingsStatusDto Settings,
         DateTime CreatedAt,
         DateTime UpdatedAt);
@@ -146,7 +152,13 @@ namespace BlazorShop.Application.CommerceNode.Payments
         string? Description,
         int DisplayOrder,
         string? SettingsJson,
-        bool ClearSettings = false);
+        bool ClearSettings = false,
+        string? ShortDisplayText = null,
+        string? IconUrl = null,
+        IReadOnlyList<string>? SupportedCurrencyCodes = null,
+        IReadOnlyList<string>? SupportedCountryCodes = null,
+        decimal? MinOrderTotal = null,
+        decimal? MaxOrderTotal = null);
 
     public interface IStorePaymentMethodAdminService
     {

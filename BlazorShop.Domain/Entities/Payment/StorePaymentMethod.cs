@@ -17,7 +17,19 @@ namespace BlazorShop.Domain.Entities.Payment
 
         public string? Description { get; set; }
 
+        public string? ShortDisplayText { get; set; }
+
+        public string? IconUrl { get; set; }
+
         public int DisplayOrder { get; set; }
+
+        public string? SupportedCurrencyCodesJson { get; set; }
+
+        public string? SupportedCountryCodesJson { get; set; }
+
+        public decimal? MinOrderTotal { get; set; }
+
+        public decimal? MaxOrderTotal { get; set; }
 
         public string? SettingsJson { get; set; }
 

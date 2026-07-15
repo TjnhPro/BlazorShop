@@ -134,6 +134,10 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] Store feature state update validates feature keys, persists overrides, and invalidates public configuration cache. 2026-07-15: `StoreFeatureStateServiceTests` covered unknown-key rejection, checkout disable snapshot, and `store-public-config:{storeKey}` invalidation.
 - [x] Storefront public configuration uses store feature state for public flags. 2026-07-15: `StorefrontScopedConfigurationController` now resolves `IStoreFeatureStateService`; CommerceNode API build and Storefront OpenAPI contract tests passed.
 - [x] Checkout server behavior enforces the `checkout` feature state, not only UI hiding. 2026-07-15: `StorefrontCheckoutServiceTests.CheckoutAsync_WhenCheckoutFeatureDisabled_RejectsPreviewAndPlaceOrder` passed.
+- [x] Store payment methods support safe public metadata without exposing provider settings JSON. 2026-07-15: migration `CommerceNodePaymentProviderAvailability` adds icon, short display text, supported currency/country code JSON, and order total limit fields; `CommerceNodePaymentMethodSecretBoundaryTests.GetPaymentMethodsAsync_ReturnsSafePublicMetadata` passed.
+- [x] Checkout preview enforces payment method country availability. 2026-07-15: `StorefrontCheckoutServiceTests.PreviewAsync_WhenPaymentMethodUnavailableForCountry_ReturnsValidationIssue` passed.
+- [x] Checkout place-order enforces payment method order-total availability after preview. 2026-07-15: `StorefrontCheckoutServiceTests.PlaceOrderAsync_WhenPaymentMethodUnavailableForTotal_RejectsOrder` passed.
+- [x] Storefront payment method OpenAPI schema includes safe metadata fields and no provider settings JSON. 2026-07-15: Storefront Swagger snapshot refreshed and `CommerceNodeStorefrontOpenApiContractTests` passed 23/23.
 
 ## Store Mapping
 

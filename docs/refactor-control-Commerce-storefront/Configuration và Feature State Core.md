@@ -522,6 +522,8 @@ Exit criteria:
 
 ### Phase 7 - Provider Availability And Display Order
 
+Status: completed on 2026-07-15 by commit `pending`.
+
 Goal: evolve payment provider behavior before generalizing.
 
 Tasks:
@@ -540,11 +542,36 @@ Tasks:
 - Avoid arbitrary rule expressions in MVP.
 - Defer shipping provider activation until a shipping method/provider model exists.
 
+Implementation notes:
+
+- Kept `StorePaymentMethod.DisplayOrder` as the Storefront payment ordering source.
+- Added safe public metadata fields to store payment methods:
+  - icon URL.
+  - short display text.
+  - supported currency codes.
+  - supported country codes.
+- Added payment availability fields for concrete checkout needs:
+  - supported currencies.
+  - supported countries.
+  - min/max order total.
+- Storefront payment method DTOs expose only safe public metadata, not provider settings JSON.
+- Checkout preview and place-order enforce payment availability server-side using currency, shipping country, and order total.
+- No arbitrary rule expression or generic provider framework was added.
+- Shipping provider activation remains deferred.
+
+Verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~CommerceNodePaymentMethodSecretBoundaryTests|FullyQualifiedName~StorefrontCheckoutServiceTests.PreviewAsync_WhenPaymentMethodUnavailableForCountry_ReturnsValidationIssue|FullyQualifiedName~StorefrontCheckoutServiceTests.PlaceOrderAsync_WhenPaymentMethodUnavailableForTotal_RejectsOrder" --no-restore -p:UseSharedCompilation=false` passed 6/6.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore -p:UseSharedCompilation=false` passed.
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~CommerceNodeStorefrontOpenApiContractTests" --no-restore -p:UseSharedCompilation=false` passed 23/23 after Storefront Swagger snapshot refresh.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore -p:UseSharedCompilation=false` passed.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore -p:UseSharedCompilation=false` passed.
+
 Exit criteria:
 
-- Payment provider display and availability are deterministic.
-- Storefront receives only available public payment metadata.
-- No generic provider framework is introduced prematurely.
+- [x] Payment provider display and availability are deterministic.
+- [x] Storefront receives only available public payment metadata.
+- [x] No generic provider framework is introduced prematurely.
 
 ### Phase 8 - Control Plane Manager Integration
 

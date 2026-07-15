@@ -9,5 +9,13 @@
         public required string Name { get; set; }
 
         public string? Description { get; set; }
+
+        public string? ShortDisplayText { get; set; }
+
+        public string? IconUrl { get; set; }
+
+        public IReadOnlyList<string> SupportedCurrencyCodes { get; set; } = [];
+
+        public IReadOnlyList<string> SupportedCountryCodes { get; set; } = [];
     }
 }

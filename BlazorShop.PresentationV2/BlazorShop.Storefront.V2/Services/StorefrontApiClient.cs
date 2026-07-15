@@ -700,7 +700,11 @@ namespace BlazorShop.Storefront.Services
         Guid Id,
         string Key,
         string Name,
-        string? Description);
+        string? Description,
+        string? ShortDisplayText,
+        string? IconUrl,
+        IReadOnlyList<string> SupportedCurrencyCodes,
+        IReadOnlyList<string> SupportedCountryCodes);
 
     public sealed record StorefrontSeoDefaults(
         string? SiteName,

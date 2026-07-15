@@ -576,7 +576,11 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 paymentMethod.Id,
                 paymentMethod.Key,
                 paymentMethod.Name,
-                paymentMethod.Description);
+                paymentMethod.Description,
+                paymentMethod.ShortDisplayText,
+                paymentMethod.IconUrl,
+                paymentMethod.SupportedCurrencyCodes,
+                paymentMethod.SupportedCountryCodes);
         }
 
         public static StorefrontProductRecommendationResponse ToStorefrontContract(

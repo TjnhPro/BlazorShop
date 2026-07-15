@@ -106,14 +106,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var paymentMethodKey = NormalizeKey(request.PaymentMethodKey);
-            if (!await this.IsPaymentMethodEnabledAsync(request.StoreId, paymentMethodKey, cancellationToken))
-            {
-                issues.Add(new StorefrontCheckoutValidationIssue(
-                    "payment.method_unavailable",
-                    "Payment method is not available.",
-                    "paymentMethodKey"));
-            }
-
             StorefrontCustomerProfile? customer = null;
             if (!issues.Any(issue => issue.Field is "customerEmail" or "customerName"))
             {
@@ -153,6 +145,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }).ToArray();
 
             var subtotal = lines.Sum(line => line.LineTotal);
+            if (!await this.IsPaymentMethodAvailableAsync(
+                request.StoreId,
+                paymentMethodKey,
+                currencyCode,
+                request.ShippingAddress.CountryCode,
+                subtotal,
+                cancellationToken))
+            {
+                issues.Add(new StorefrontCheckoutValidationIssue(
+                    "payment.method_unavailable",
+                    "Payment method is not available.",
+                    "paymentMethodKey"));
+            }
+
             var isValid = issues.Count == 0;
             var now = DateTimeOffset.UtcNow;
             var session = new CheckoutSession
@@ -329,11 +335,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var paymentMethodKey = NormalizeKey(session.PaymentMethodKey);
-            if (!await this.IsPaymentMethodEnabledAsync(request.StoreId, paymentMethodKey, cancellationToken))
-            {
-                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Payment method is not available.");
-            }
-
             var isCod = string.Equals(paymentMethodKey, PaymentMethodKeys.Cod, StringComparison.OrdinalIgnoreCase);
             var isStripe = string.Equals(paymentMethodKey, PaymentMethodKeys.Stripe, StringComparison.OrdinalIgnoreCase);
             if (!isCod && !isStripe)
@@ -358,6 +359,17 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var currencyCode = NormalizeCurrency(session.CurrencyCode)
                 ?? NormalizeCurrency(cart.Lines.FirstOrDefault()?.CurrencyCodeSnapshot)
                 ?? storeCurrencyCode;
+            if (!await this.IsPaymentMethodAvailableAsync(
+                request.StoreId,
+                paymentMethodKey,
+                currencyCode,
+                session.ShippingCountryCode,
+                totalAmount,
+                cancellationToken))
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Payment method is not available.");
+            }
+
             if (isStripe)
             {
                 return await this.CreateOnlinePaymentSessionAsync(
@@ -644,20 +656,58 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Succeeded("Payment session created.", ToOnlinePlaceOrderResult(session, paymentAttempt, idempotencyKey));
         }
 
-        private async Task<bool> IsPaymentMethodEnabledAsync(Guid storeId, string paymentMethodKey, CancellationToken cancellationToken)
+        private async Task<bool> IsPaymentMethodAvailableAsync(
+            Guid storeId,
+            string paymentMethodKey,
+            string? currencyCode,
+            string? countryCode,
+            decimal orderTotal,
+            CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(paymentMethodKey))
             {
                 return false;
             }
 
-            return await this.context.StorePaymentMethods
+            var method = await this.context.StorePaymentMethods
                 .AsNoTracking()
-                .AnyAsync(
+                .FirstOrDefaultAsync(
                     method => method.StoreId == storeId
-                        && method.PaymentMethodKey == paymentMethodKey
-                        && method.Enabled,
+                        && method.PaymentMethodKey == paymentMethodKey,
                     cancellationToken);
+
+            if (method is null || !method.Enabled)
+            {
+                return false;
+            }
+
+            var currencyCodes = ParseCodes(method.SupportedCurrencyCodesJson);
+            var normalizedCurrency = NormalizeCurrency(currencyCode);
+            if (currencyCodes.Count > 0
+                && (normalizedCurrency is null || !currencyCodes.Contains(normalizedCurrency, StringComparer.Ordinal)))
+            {
+                return false;
+            }
+
+            var countryCodes = ParseCodes(method.SupportedCountryCodesJson);
+            var normalizedCountry = NormalizeCountry(countryCode);
+            if (countryCodes.Count > 0
+                && (normalizedCountry is null || !countryCodes.Contains(normalizedCountry, StringComparer.Ordinal)))
+            {
+                return false;
+            }
+
+            if (method.MinOrderTotal.HasValue && orderTotal < method.MinOrderTotal.Value)
+            {
+                return false;
+            }
+
+            if (method.MaxOrderTotal.HasValue && orderTotal > method.MaxOrderTotal.Value)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private async Task<string> ResolveDefaultCurrencyCodeAsync(Guid storeId, CancellationToken cancellationToken)
@@ -873,6 +923,33 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         {
             var normalized = NormalizeNullable(value);
             return normalized is null ? null : normalized.ToUpperInvariant();
+        }
+
+        private static string? NormalizeCountry(string? value)
+        {
+            var normalized = NormalizeNullable(value);
+            return normalized is null ? null : normalized.ToUpperInvariant();
+        }
+
+        private static IReadOnlyList<string> ParseCodes(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return [];
+            }
+
+            try
+            {
+                return JsonSerializer.Deserialize<IReadOnlyList<string>>(json)
+                    ?.Select(NormalizeCountry)
+                    .Where(code => code is not null)
+                    .Select(code => code!)
+                    .ToArray() ?? [];
+            }
+            catch (JsonException)
+            {
+                return [];
+            }
         }
 
         private static StorefrontPlaceOrderResult ToPlaceOrderResult(

@@ -58,6 +58,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             SeedPaymentMethod(context, storeId);
             var productRepository = new Mock<IProductReadRepository>();
             var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            SeedProduct(context, product);
             productRepository
                 .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
                 .ReturnsAsync(product);
@@ -89,6 +90,75 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Contains(result.Payload.Issues, issue => issue.Code == "shipping.postal_required");
             Assert.Contains(result.Payload.Issues, issue => issue.Code == "shipping.country_invalid");
             Assert.Single(context.CheckoutSessions);
+            Assert.Empty(context.Orders);
+        }
+
+        [Fact]
+        public async Task PreviewAsync_WhenPaymentMethodUnavailableForCountry_ReturnsValidationIssue()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(
+                context,
+                storeId,
+                configure: method => method.SupportedCountryCodesJson = "[\"CA\"]");
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1));
+            var service = CreateCheckoutService(context, cartService);
+
+            var result = await service.PreviewAsync(CreateRequest(storeId, cart.Payload.Token!, add.Payload!.Version, countryCode: "US"));
+
+            Assert.True(result.Success);
+            Assert.NotNull(result.Payload);
+            Assert.False(result.Payload!.IsValid);
+            Assert.Contains(result.Payload.Issues, issue => issue.Code == "payment.method_unavailable");
+            Assert.Equal("review", result.Payload.NextAction);
+        }
+
+        [Fact]
+        public async Task PlaceOrderAsync_WhenPaymentMethodUnavailableForTotal_RejectsOrder()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1));
+            var service = CreateCheckoutService(context, cartService);
+            var preview = await service.PreviewAsync(CreateRequest(storeId, cart.Payload.Token!, add.Payload!.Version));
+            var method = await context.StorePaymentMethods.SingleAsync(item => item.StoreId == storeId && item.PaymentMethodKey == PaymentMethodKeys.Cod);
+            method.MinOrderTotal = 50m;
+            await context.SaveChangesAsync();
+
+            var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                preview.Payload!.CheckoutSessionId,
+                preview.Payload.CartVersion,
+                "payment-unavailable-total"));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.Conflict, result.ResponseType);
+            Assert.Equal("Payment method is not available.", result.Message);
             Assert.Empty(context.Orders);
         }
 
@@ -465,9 +535,10 @@ namespace BlazorShop.Tests.Application.CommerceNode
         private static void SeedPaymentMethod(
             CommerceNodeDbContext context,
             Guid storeId,
-            string paymentMethodKey = PaymentMethodKeys.Cod)
+            string paymentMethodKey = PaymentMethodKeys.Cod,
+            Action<StorePaymentMethod>? configure = null)
         {
-            context.StorePaymentMethods.Add(new StorePaymentMethod
+            var method = new StorePaymentMethod
             {
                 Id = Guid.NewGuid(),
                 StoreId = storeId,
@@ -475,7 +546,10 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 DisplayName = paymentMethodKey,
                 Enabled = true,
                 DisplayOrder = 10,
-            });
+            };
+            configure?.Invoke(method);
+
+            context.StorePaymentMethods.Add(method);
             context.SaveChanges();
         }
 
