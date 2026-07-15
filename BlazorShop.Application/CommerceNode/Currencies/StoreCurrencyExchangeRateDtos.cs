@@ -26,6 +26,41 @@ namespace BlazorShop.Application.CommerceNode.Currencies
         DateTimeOffset? ExpiresAt = null,
         bool IsEnabled = true);
 
+    public sealed record FetchStoreCurrencyExchangeRatesRequest(
+        [property: Required]
+        [property: StringLength(64, MinimumLength = 1)]
+        string ProviderKey,
+        IReadOnlyList<string>? TargetCurrencyCodes = null,
+        bool IsEnabled = true);
+
+    public sealed record StoreCurrencyExchangeRateProviderDto(
+        string ProviderKey,
+        bool Enabled,
+        bool SecretsConfigured,
+        string Status,
+        string? Source);
+
+    public sealed record StoreCurrencyExchangeRateProviderFetchResult(
+        string ProviderKey,
+        int UpdatedCount,
+        IReadOnlyList<StoreCurrencyExchangeRateDto> Rates);
+
+    public sealed record ExchangeRateProviderFetchRequest(
+        Guid StoreId,
+        string BaseCurrencyCode,
+        IReadOnlyList<string> TargetCurrencyCodes);
+
+    public sealed record ExchangeRateProviderRate(
+        string BaseCurrencyCode,
+        string TargetCurrencyCode,
+        decimal Rate,
+        string? Source,
+        DateTimeOffset EffectiveAt,
+        DateTimeOffset? ExpiresAt);
+
+    public sealed record ExchangeRateProviderFetchResult(
+        IReadOnlyList<ExchangeRateProviderRate> Rates);
+
     public sealed record MoneyConversionResult(
         decimal SourceAmount,
         string SourceCurrencyCode,
@@ -48,6 +83,27 @@ namespace BlazorShop.Application.CommerceNode.Currencies
 
         Task<ServiceResponse<StoreCurrencyExchangeRateDto>> DisableAsync(
             string targetCurrencyCode,
+            CancellationToken cancellationToken = default);
+    }
+
+    public interface IExchangeRateProvider
+    {
+        string ProviderKey { get; }
+
+        Task<StoreCurrencyExchangeRateProviderDto> GetStatusAsync(CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<ExchangeRateProviderFetchResult>> FetchAsync(
+            ExchangeRateProviderFetchRequest request,
+            CancellationToken cancellationToken = default);
+    }
+
+    public interface IStoreCurrencyExchangeRateProviderService
+    {
+        Task<IReadOnlyList<StoreCurrencyExchangeRateProviderDto>> GetProvidersAsync(
+            CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<StoreCurrencyExchangeRateProviderFetchResult>> FetchAsync(
+            FetchStoreCurrencyExchangeRatesRequest request,
             CancellationToken cancellationToken = default);
     }
 

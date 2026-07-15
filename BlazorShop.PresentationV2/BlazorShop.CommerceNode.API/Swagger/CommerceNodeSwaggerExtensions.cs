@@ -330,6 +330,16 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "List store currency exchange rates.",
                         typeof(CommerceNodeApiResponse<IReadOnlyList<StoreCurrencyExchangeRateDto>>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    ["GetExchangeRateProviders"] = new(
+                        "CommerceCurrencies_ListExchangeRateProviders",
+                        "List configured exchange-rate providers.",
+                        typeof(CommerceNodeApiResponse<IReadOnlyList<StoreCurrencyExchangeRateProviderDto>>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    ["FetchExchangeRates"] = new(
+                        "CommerceCurrencies_FetchExchangeRates",
+                        "Fetch provider exchange rates into the store rate table.",
+                        typeof(CommerceNodeApiResponse<StoreCurrencyExchangeRateProviderFetchResult>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     ["UpsertExchangeRate"] = new(
                         "CommerceCurrencies_UpsertExchangeRate",
                         "Create or update a manual currency exchange rate.",

@@ -683,6 +683,12 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 
 ## Checkout And Payment Foundation
 
+- [x] Commerce currency admin API exposes safe exchange-rate provider status without raw config/secrets. 2026-07-15: `StoreCurrencyExchangeRateProviderServiceTests.GetProvidersAsync_ReturnsSafeProviderStatus` passed.
+- [x] Configuration exchange-rate provider fetches rates into `store_currency_exchange_rates` with `provider_key=configuration` and `is_manual=false`. 2026-07-15: focused provider service test passed.
+- [x] Provider stale-rate handling rejects stale configured rates without persisting rows. 2026-07-15: focused provider service test passed.
+- [x] Manual exchange-rate upsert remains available and provider-fetched rows do not replace manual provider rows. 2026-07-15: existing `StoreCurrencyExchangeRateServiceTests` passed with Phase 8 focused run.
+- [ ] API smoke lists exchange-rate providers via `GET /api/commerce/admin/currencies/exchange-rate-providers`.
+- [ ] API smoke fetches configuration provider rates via `POST /api/commerce/admin/currencies/exchange-rates/fetch` against PostgreSQL.
 - [x] Converted cart line persists base currency, base unit price, exchange rate, provider/source, and rate timestamp snapshot. 2026-07-15: `StorefrontCartServiceTests` focused run passed.
 - [x] Converted checkout/order/payment persists auditable base and working currency snapshots. 2026-07-15: `StorefrontCheckoutServiceTests` focused run passed.
 - [x] `Order.TotalAmount` and `PaymentAttempt.Amount` remain charged working-currency amounts for converted orders. 2026-07-15: focused checkout test asserted both are `EUR 9.00` while base total is `USD 10.00`.

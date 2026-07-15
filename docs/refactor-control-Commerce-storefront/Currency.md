@@ -493,6 +493,16 @@ Exit criteria:
 - Provider secrets are not exposed.
 - Manual override remains possible.
 
+Implementation note 2026-07-15:
+
+- Added a minimal `IExchangeRateProvider` abstraction with safe status metadata and provider fetch results.
+- Added two providers: `manual` for existing manual upsert behavior and `configuration` for server-side configured rates. The configuration provider is disabled by default and reads only server configuration, not public DTOs.
+- Added Commerce Admin APIs to list configured providers and fetch provider rates into the existing `store_currency_exchange_rates` table.
+- Provider fetch validates enabled target currencies, missing rates, invalid currency/rate data, expired rates, and stale configured rates before persisting.
+- Provider-fetched rows use their provider key and `IsManual=false`; existing manual override rows remain possible through the manual upsert endpoint.
+- Swagger metadata now includes stable operation IDs, response DTOs, required request body metadata, and error responses for the new provider endpoints.
+- Automated verification passed for configuration provider fetch/status/stale handling, existing manual exchange-rate behavior, and Storefront OpenAPI contract tests.
+
 ### Phase 9 - Auto Update Exchange Rates
 
 Goal: schedule safe rate refresh without adding a new worker architecture.

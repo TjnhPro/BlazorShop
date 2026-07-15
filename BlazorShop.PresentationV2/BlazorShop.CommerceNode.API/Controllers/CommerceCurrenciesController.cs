@@ -10,13 +10,16 @@ namespace BlazorShop.CommerceNode.API.Controllers
     {
         private readonly IStoreCurrencyService currencyService;
         private readonly IStoreCurrencyExchangeRateService exchangeRateService;
+        private readonly IStoreCurrencyExchangeRateProviderService exchangeRateProviderService;
 
         public CommerceCurrenciesController(
             IStoreCurrencyService currencyService,
-            IStoreCurrencyExchangeRateService exchangeRateService)
+            IStoreCurrencyExchangeRateService exchangeRateService,
+            IStoreCurrencyExchangeRateProviderService exchangeRateProviderService)
         {
             this.currencyService = currencyService;
             this.exchangeRateService = exchangeRateService;
+            this.exchangeRateProviderService = exchangeRateProviderService;
         }
 
         [HttpGet]
@@ -41,6 +44,22 @@ namespace BlazorShop.CommerceNode.API.Controllers
         {
             var rates = await this.exchangeRateService.GetAsync(cancellationToken);
             return this.Success(rates, "Store currency exchange rates loaded.");
+        }
+
+        [HttpGet("exchange-rate-providers")]
+        public async Task<IActionResult> GetExchangeRateProviders(CancellationToken cancellationToken)
+        {
+            var providers = await this.exchangeRateProviderService.GetProvidersAsync(cancellationToken);
+            return this.Success(providers, "Store currency exchange-rate providers loaded.");
+        }
+
+        [HttpPost("exchange-rates/fetch")]
+        public async Task<IActionResult> FetchExchangeRates(
+            [FromBody] FetchStoreCurrencyExchangeRatesRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await this.exchangeRateProviderService.FetchAsync(request, cancellationToken);
+            return this.FromServiceResponse(result);
         }
 
         [HttpPut("exchange-rates/{targetCurrencyCode}")]
