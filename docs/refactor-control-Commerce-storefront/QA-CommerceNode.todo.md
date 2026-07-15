@@ -683,6 +683,12 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 
 ## Checkout And Payment Foundation
 
+- [x] Converted cart line persists base currency, base unit price, exchange rate, provider/source, and rate timestamp snapshot. 2026-07-15: `StorefrontCartServiceTests` focused run passed.
+- [x] Converted checkout/order/payment persists auditable base and working currency snapshots. 2026-07-15: `StorefrontCheckoutServiceTests` focused run passed.
+- [x] `Order.TotalAmount` and `PaymentAttempt.Amount` remain charged working-currency amounts for converted orders. 2026-07-15: focused checkout test asserted both are `EUR 9.00` while base total is `USD 10.00`.
+- [x] CommerceNode EF model contains nullable snapshot columns for cart lines, checkout sessions, orders, order lines, and payment attempts. 2026-07-15: `CommerceNodeCurrencyRateSnapshots` migration generated and `CommerceNodeDbContextModelTests` focused run passed.
+- [ ] API smoke creates a converted order against PostgreSQL and verifies persisted snapshot columns with SQL.
+- [ ] Admin order API returns conversion snapshot fields for converted orders.
 - [x] CommerceNode API builds after checkout/payment foundation changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
 - [x] `PaymentMethods` seed contains `cod`, `stripe`, and `paypal`. 2026-07-13: ControlPlane payment admin page loaded all three seeded methods for default store.
 - [x] `bank_transfer` is not returned by Storefront payment methods. 2026-07-13: `GET /api/internal/payments/methods` returned COD only.

@@ -8,7 +8,23 @@ namespace BlazorShop.Web.SharedV2.Models.Payment
 
         public string Status { get; set; } = string.Empty;
 
+        public string? CurrencyCode { get; set; }
+
         public decimal TotalAmount { get; set; }
+
+        public string? BaseCurrencyCode { get; set; }
+
+        public decimal? BaseTotalAmount { get; set; }
+
+        public decimal? ExchangeRate { get; set; }
+
+        public string? ExchangeRateProviderKey { get; set; }
+
+        public string? ExchangeRateSource { get; set; }
+
+        public DateTimeOffset? ExchangeRateEffectiveAtUtc { get; set; }
+
+        public DateTimeOffset? ExchangeRateExpiresAtUtc { get; set; }
 
         public DateTime CreatedOn { get; set; }
 

@@ -125,6 +125,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     Quantity = request.Quantity,
                     UnitPriceSnapshot = request.UnitPriceSnapshot,
                     CurrencyCodeSnapshot = NormalizeCurrencyCode(request.CurrencyCodeSnapshot),
+                    BaseUnitPriceSnapshot = request.BaseUnitPriceSnapshot,
+                    BaseCurrencyCodeSnapshot = NormalizeCurrencyCode(request.BaseCurrencyCodeSnapshot),
+                    ExchangeRateSnapshot = request.ExchangeRateSnapshot,
+                    ExchangeRateProviderKey = NormalizeNullable(request.ExchangeRateProviderKey),
+                    ExchangeRateSource = NormalizeNullable(request.ExchangeRateSource),
+                    ExchangeRateEffectiveAtUtc = request.ExchangeRateEffectiveAtUtc,
+                    ExchangeRateExpiresAtUtc = request.ExchangeRateExpiresAtUtc,
                     CreatedAtUtc = now,
                     UpdatedAtUtc = now,
                 };
@@ -136,6 +143,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 line.Quantity += request.Quantity;
                 line.UnitPriceSnapshot = request.UnitPriceSnapshot ?? line.UnitPriceSnapshot;
                 line.CurrencyCodeSnapshot = NormalizeCurrencyCode(request.CurrencyCodeSnapshot) ?? line.CurrencyCodeSnapshot;
+                line.BaseUnitPriceSnapshot = request.BaseUnitPriceSnapshot ?? line.BaseUnitPriceSnapshot;
+                line.BaseCurrencyCodeSnapshot = NormalizeCurrencyCode(request.BaseCurrencyCodeSnapshot) ?? line.BaseCurrencyCodeSnapshot;
+                line.ExchangeRateSnapshot = request.ExchangeRateSnapshot ?? line.ExchangeRateSnapshot;
+                line.ExchangeRateProviderKey = NormalizeNullable(request.ExchangeRateProviderKey) ?? line.ExchangeRateProviderKey;
+                line.ExchangeRateSource = NormalizeNullable(request.ExchangeRateSource) ?? line.ExchangeRateSource;
+                line.ExchangeRateEffectiveAtUtc = request.ExchangeRateEffectiveAtUtc ?? line.ExchangeRateEffectiveAtUtc;
+                line.ExchangeRateExpiresAtUtc = request.ExchangeRateExpiresAtUtc ?? line.ExchangeRateExpiresAtUtc;
                 line.UpdatedAtUtc = now;
             }
 
@@ -281,6 +295,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 line.Quantity,
                 line.UnitPriceSnapshot,
                 line.CurrencyCodeSnapshot,
+                line.BaseUnitPriceSnapshot,
+                line.BaseCurrencyCodeSnapshot,
+                line.ExchangeRateSnapshot,
+                line.ExchangeRateProviderKey,
+                line.ExchangeRateSource,
+                line.ExchangeRateEffectiveAtUtc,
+                line.ExchangeRateExpiresAtUtc,
                 line.CreatedAtUtc,
                 line.UpdatedAtUtc);
         }

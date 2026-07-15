@@ -32,6 +32,20 @@ namespace BlazorShop.Domain.Entities.CommerceNode
 
         public string? CurrencyCodeSnapshot { get; set; }
 
+        public decimal? BaseUnitPriceSnapshot { get; set; }
+
+        public string? BaseCurrencyCodeSnapshot { get; set; }
+
+        public decimal? ExchangeRateSnapshot { get; set; }
+
+        public string? ExchangeRateProviderKey { get; set; }
+
+        public string? ExchangeRateSource { get; set; }
+
+        public DateTimeOffset? ExchangeRateEffectiveAtUtc { get; set; }
+
+        public DateTimeOffset? ExchangeRateExpiresAtUtc { get; set; }
+
         public DateTimeOffset CreatedAtUtc { get; set; } = DateTimeOffset.UtcNow;
 
         public DateTimeOffset UpdatedAtUtc { get; set; } = DateTimeOffset.UtcNow;

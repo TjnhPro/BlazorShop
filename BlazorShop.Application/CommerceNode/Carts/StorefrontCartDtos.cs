@@ -88,7 +88,14 @@ namespace BlazorShop.Application.CommerceNode.Carts
         string? FulfillmentProviderKey = null,
         int Quantity = 1,
         decimal? UnitPriceSnapshot = null,
-        string? CurrencyCodeSnapshot = null);
+        string? CurrencyCodeSnapshot = null,
+        decimal? BaseUnitPriceSnapshot = null,
+        string? BaseCurrencyCodeSnapshot = null,
+        decimal? ExchangeRateSnapshot = null,
+        string? ExchangeRateProviderKey = null,
+        string? ExchangeRateSource = null,
+        DateTimeOffset? ExchangeRateEffectiveAtUtc = null,
+        DateTimeOffset? ExchangeRateExpiresAtUtc = null);
 
     public sealed record StorefrontCartLineDto(
         Guid Id,
@@ -104,6 +111,13 @@ namespace BlazorShop.Application.CommerceNode.Carts
         int Quantity,
         decimal? UnitPriceSnapshot,
         string? CurrencyCodeSnapshot,
+        decimal? BaseUnitPriceSnapshot,
+        string? BaseCurrencyCodeSnapshot,
+        decimal? ExchangeRateSnapshot,
+        string? ExchangeRateProviderKey,
+        string? ExchangeRateSource,
+        DateTimeOffset? ExchangeRateEffectiveAtUtc,
+        DateTimeOffset? ExchangeRateExpiresAtUtc,
         DateTimeOffset CreatedAtUtc,
         DateTimeOffset UpdatedAtUtc);
 }

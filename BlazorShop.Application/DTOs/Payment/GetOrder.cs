@@ -20,6 +20,20 @@ namespace BlazorShop.Application.DTOs.Payment
 
         public decimal TotalAmount { get; set; }
 
+        public string? BaseCurrencyCode { get; set; }
+
+        public decimal? BaseTotalAmount { get; set; }
+
+        public decimal? ExchangeRate { get; set; }
+
+        public string? ExchangeRateProviderKey { get; set; }
+
+        public string? ExchangeRateSource { get; set; }
+
+        public DateTimeOffset? ExchangeRateEffectiveAtUtc { get; set; }
+
+        public DateTimeOffset? ExchangeRateExpiresAtUtc { get; set; }
+
         public DateTime CreatedOn { get; set; }
 
         public string ShippingStatus { get; set; } = string.Empty;

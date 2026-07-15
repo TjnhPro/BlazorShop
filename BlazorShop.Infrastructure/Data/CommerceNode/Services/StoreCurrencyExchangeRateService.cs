@@ -236,7 +236,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                         baseCurrencyCode,
                         1m,
                         DateTimeOffset.UtcNow,
-                        null),
+                        null,
+                        "base",
+                        "same-currency"),
                     "Same-currency conversion resolved with rate 1.");
             }
 
@@ -270,7 +272,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     normalizedTargetCode,
                     rate.Rate,
                     rate.EffectiveAt,
-                    rate.ExpiresAt),
+                    rate.ExpiresAt,
+                    rate.ProviderKey,
+                    rate.Source),
                 "Currency conversion resolved successfully.");
         }
 

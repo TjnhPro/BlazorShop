@@ -33,7 +33,9 @@ namespace BlazorShop.Application.CommerceNode.Currencies
         string TargetCurrencyCode,
         decimal Rate,
         DateTimeOffset EffectiveAt,
-        DateTimeOffset? ExpiresAt);
+        DateTimeOffset? ExpiresAt,
+        string? ProviderKey = null,
+        string? Source = null);
 
     public interface IStoreCurrencyExchangeRateService
     {

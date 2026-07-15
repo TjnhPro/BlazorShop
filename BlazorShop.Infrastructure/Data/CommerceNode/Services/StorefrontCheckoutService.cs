@@ -153,6 +153,15 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }).ToArray();
 
             var subtotal = this.moneyRoundingService.RoundOrderTotal(lines.Sum(line => line.LineTotal), currencyCode);
+            var rateSnapshot = this.ResolveCurrencyRateSnapshot(cart.Lines, currencyCode, subtotal);
+            if (!rateSnapshot.Success)
+            {
+                issues.Add(new StorefrontCheckoutValidationIssue(
+                    "cart.currency_rate_snapshot_invalid",
+                    rateSnapshot.Message,
+                    "cart.lines"));
+            }
+
             if (!await this.IsPaymentMethodAvailableAsync(
                 request.StoreId,
                 paymentMethodKey,
@@ -197,6 +206,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 DiscountTotal = 0m,
                 GrandTotal = subtotal,
                 CurrencyCode = currencyCode,
+                BaseCurrencyCode = rateSnapshot.BaseCurrencyCode,
+                BaseSubtotal = rateSnapshot.BaseTotalAmount,
+                BaseGrandTotal = rateSnapshot.BaseTotalAmount,
+                ExchangeRate = rateSnapshot.ExchangeRate,
+                ExchangeRateProviderKey = rateSnapshot.ExchangeRateProviderKey,
+                ExchangeRateSource = rateSnapshot.ExchangeRateSource,
+                ExchangeRateEffectiveAtUtc = rateSnapshot.ExchangeRateEffectiveAtUtc,
+                ExchangeRateExpiresAtUtc = rateSnapshot.ExchangeRateExpiresAtUtc,
                 ValidationIssuesJson = issues.Count == 0 ? null : JsonSerializer.Serialize(issues, JsonOptions),
                 NextAction = isValid ? "placeOrder" : "review",
                 ExpiresAtUtc = now.AddHours(1),
@@ -362,6 +379,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var totalAmount = this.moneyRoundingService.RoundOrderTotal(
                 lines.Sum(line => this.moneyRoundingService.RoundLineTotal(line.CartLine.Quantity * line.UnitPrice, currencyCode)),
                 currencyCode);
+            var rateSnapshot = this.ResolveCurrencyRateSnapshot(lines, currencyCode, totalAmount);
+            if (!rateSnapshot.Success)
+            {
+                return Failed<StorefrontPlaceOrderResult>(rateSnapshot.ResponseType, rateSnapshot.Message);
+            }
+
             if (totalAmount <= 0m)
             {
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.ValidationError, "Cart total must be greater than zero.");
@@ -388,6 +411,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     lines,
                     paymentAmount,
                     currencyCode,
+                    rateSnapshot,
                     idempotencyKey,
                     cancellationToken);
             }
@@ -435,6 +459,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 State = PaymentAttemptStates.Created,
                 Amount = paymentAmount,
                 CurrencyCode = currencyCode,
+                BaseCurrencyCode = rateSnapshot.BaseCurrencyCode,
+                BaseAmount = rateSnapshot.BaseTotalAmount,
+                ExchangeRate = rateSnapshot.ExchangeRate,
+                ExchangeRateProviderKey = rateSnapshot.ExchangeRateProviderKey,
+                ExchangeRateSource = rateSnapshot.ExchangeRateSource,
+                ExchangeRateEffectiveAtUtc = rateSnapshot.ExchangeRateEffectiveAtUtc,
+                ExchangeRateExpiresAtUtc = rateSnapshot.ExchangeRateExpiresAtUtc,
                 IdempotencyKey = idempotencyKey,
                 ExpiresAtUtc = now.AddMinutes(30),
                 CreatedAtUtc = now,
@@ -454,6 +485,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 PaymentMetadataJson = paymentResult.MetadataJson,
                 CurrencyCode = currencyCode,
                 TotalAmount = totalAmount,
+                BaseCurrencyCode = rateSnapshot.BaseCurrencyCode,
+                BaseTotalAmount = rateSnapshot.BaseTotalAmount,
+                ExchangeRate = rateSnapshot.ExchangeRate,
+                ExchangeRateProviderKey = rateSnapshot.ExchangeRateProviderKey,
+                ExchangeRateSource = rateSnapshot.ExchangeRateSource,
+                ExchangeRateEffectiveAtUtc = rateSnapshot.ExchangeRateEffectiveAtUtc,
+                ExchangeRateExpiresAtUtc = rateSnapshot.ExchangeRateExpiresAtUtc,
                 CustomerName = session.CustomerName,
                 CustomerEmail = session.CustomerEmail,
                 ShippingFullName = session.ShippingFullName,
@@ -484,6 +522,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     FulfillmentProviderKey = line.CartLine.FulfillmentProviderKey,
                     Quantity = line.CartLine.Quantity,
                     UnitPrice = line.UnitPrice,
+                    CurrencyCode = currencyCode,
+                    BaseUnitPrice = line.CartLine.BaseUnitPriceSnapshot,
+                    ConvertedUnitPrice = line.UnitPrice,
+                    LineTotal = this.moneyRoundingService.RoundLineTotal(line.CartLine.Quantity * line.UnitPrice, currencyCode),
+                    BaseLineTotal = line.CartLine.BaseUnitPriceSnapshot.HasValue && rateSnapshot.BaseCurrencyCode is not null
+                        ? this.moneyRoundingService.RoundLineTotal(line.CartLine.Quantity * line.CartLine.BaseUnitPriceSnapshot.Value, rateSnapshot.BaseCurrencyCode)
+                        : null,
                 }).ToList(),
             };
 
@@ -509,6 +554,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             session.IdempotencyKey = idempotencyKey;
             session.NextAction = "complete";
             session.PlacedAtUtc = now;
+            session.BaseCurrencyCode = rateSnapshot.BaseCurrencyCode;
+            session.BaseSubtotal = rateSnapshot.BaseTotalAmount;
+            session.BaseGrandTotal = rateSnapshot.BaseTotalAmount;
+            session.ExchangeRate = rateSnapshot.ExchangeRate;
+            session.ExchangeRateProviderKey = rateSnapshot.ExchangeRateProviderKey;
+            session.ExchangeRateSource = rateSnapshot.ExchangeRateSource;
+            session.ExchangeRateEffectiveAtUtc = rateSnapshot.ExchangeRateEffectiveAtUtc;
+            session.ExchangeRateExpiresAtUtc = rateSnapshot.ExchangeRateExpiresAtUtc;
             session.UpdatedAtUtc = now;
 
             paymentAttempt.OrderId = order.Id;
@@ -551,6 +604,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             IReadOnlyList<OrderLineSnapshot> lines,
             decimal totalAmount,
             string currencyCode,
+            CurrencyRateSnapshot rateSnapshot,
             string idempotencyKey,
             CancellationToken cancellationToken)
         {
@@ -577,6 +631,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 State = PaymentAttemptStates.Created,
                 Amount = totalAmount,
                 CurrencyCode = currencyCode,
+                BaseCurrencyCode = rateSnapshot.BaseCurrencyCode,
+                BaseAmount = rateSnapshot.BaseTotalAmount,
+                ExchangeRate = rateSnapshot.ExchangeRate,
+                ExchangeRateProviderKey = rateSnapshot.ExchangeRateProviderKey,
+                ExchangeRateSource = rateSnapshot.ExchangeRateSource,
+                ExchangeRateEffectiveAtUtc = rateSnapshot.ExchangeRateEffectiveAtUtc,
+                ExchangeRateExpiresAtUtc = rateSnapshot.ExchangeRateExpiresAtUtc,
                 IdempotencyKey = idempotencyKey,
                 ExpiresAtUtc = now.AddMinutes(30),
                 CreatedAtUtc = now,
@@ -657,6 +718,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             session.State = CheckoutSessionStates.OrderPending;
             session.IdempotencyKey = idempotencyKey;
             session.NextAction = "paymentRedirect";
+            session.BaseCurrencyCode = rateSnapshot.BaseCurrencyCode;
+            session.BaseSubtotal = rateSnapshot.BaseTotalAmount;
+            session.BaseGrandTotal = rateSnapshot.BaseTotalAmount;
+            session.ExchangeRate = rateSnapshot.ExchangeRate;
+            session.ExchangeRateProviderKey = rateSnapshot.ExchangeRateProviderKey;
+            session.ExchangeRateSource = rateSnapshot.ExchangeRateSource;
+            session.ExchangeRateEffectiveAtUtc = rateSnapshot.ExchangeRateEffectiveAtUtc;
+            session.ExchangeRateExpiresAtUtc = rateSnapshot.ExchangeRateExpiresAtUtc;
             session.UpdatedAtUtc = DateTimeOffset.UtcNow;
             cart.LastActivityAtUtc = DateTimeOffset.UtcNow;
             cart.UpdatedAtUtc = DateTimeOffset.UtcNow;
@@ -808,6 +877,102 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             return OrderLineResolution.Succeeded(results);
+        }
+
+        private CurrencyRateSnapshot ResolveCurrencyRateSnapshot(
+            IEnumerable<StorefrontCartLineDto> cartLines,
+            string currencyCode,
+            decimal totalAmount)
+        {
+            var snapshots = cartLines.Select(line => new CurrencyRateLineSnapshot(
+                NormalizeCurrency(line.BaseCurrencyCodeSnapshot),
+                line.BaseUnitPriceSnapshot,
+                NormalizeCurrency(line.CurrencyCodeSnapshot) ?? currencyCode,
+                line.ExchangeRateSnapshot,
+                NormalizeKey(line.ExchangeRateProviderKey),
+                NormalizeNullable(line.ExchangeRateSource),
+                line.ExchangeRateEffectiveAtUtc,
+                line.ExchangeRateExpiresAtUtc,
+                line.Quantity)).ToArray();
+
+            return this.ResolveCurrencyRateSnapshot(snapshots, currencyCode, totalAmount);
+        }
+
+        private CurrencyRateSnapshot ResolveCurrencyRateSnapshot(
+            IEnumerable<OrderLineSnapshot> orderLines,
+            string currencyCode,
+            decimal totalAmount)
+        {
+            var snapshots = orderLines.Select(line => new CurrencyRateLineSnapshot(
+                NormalizeCurrency(line.CartLine.BaseCurrencyCodeSnapshot),
+                line.CartLine.BaseUnitPriceSnapshot,
+                NormalizeCurrency(line.CartLine.CurrencyCodeSnapshot) ?? currencyCode,
+                line.CartLine.ExchangeRateSnapshot,
+                NormalizeKey(line.CartLine.ExchangeRateProviderKey),
+                NormalizeNullable(line.CartLine.ExchangeRateSource),
+                line.CartLine.ExchangeRateEffectiveAtUtc,
+                line.CartLine.ExchangeRateExpiresAtUtc,
+                line.CartLine.Quantity)).ToArray();
+
+            return this.ResolveCurrencyRateSnapshot(snapshots, currencyCode, totalAmount);
+        }
+
+        private CurrencyRateSnapshot ResolveCurrencyRateSnapshot(
+            IReadOnlyList<CurrencyRateLineSnapshot> snapshots,
+            string currencyCode,
+            decimal totalAmount)
+        {
+            var convertedSnapshots = snapshots
+                .Where(line => line.ExchangeRate.HasValue)
+                .ToArray();
+            if (convertedSnapshots.Length == 0)
+            {
+                return CurrencyRateSnapshot.None();
+            }
+
+            if (convertedSnapshots.Any(line => line.BaseCurrencyCode is null || line.BaseUnitPrice is null))
+            {
+                return CurrencyRateSnapshot.Failed(
+                    ServiceResponseType.Conflict,
+                    "Cart line currency rate snapshot is missing. Re-add the affected items.");
+            }
+
+            var first = convertedSnapshots[0];
+            var hasMixedSnapshot = convertedSnapshots.Any(line =>
+                !string.Equals(line.BaseCurrencyCode, first.BaseCurrencyCode, StringComparison.Ordinal)
+                || line.ExchangeRate != first.ExchangeRate
+                || !string.Equals(line.ProviderKey, first.ProviderKey, StringComparison.Ordinal)
+                || !string.Equals(line.Source, first.Source, StringComparison.Ordinal)
+                || line.EffectiveAtUtc != first.EffectiveAtUtc
+                || line.ExpiresAtUtc != first.ExpiresAtUtc);
+            if (hasMixedSnapshot)
+            {
+                return CurrencyRateSnapshot.Failed(
+                    ServiceResponseType.Conflict,
+                    "Cart lines use mixed exchange-rate snapshots. Re-add items before checkout.");
+            }
+
+            var normalizedCurrency = NormalizeCurrency(currencyCode) ?? DefaultCurrencyCode;
+            if (!snapshots.All(line => string.Equals(line.CurrencyCode, normalizedCurrency, StringComparison.Ordinal)))
+            {
+                return CurrencyRateSnapshot.Failed(
+                    ServiceResponseType.Conflict,
+                    "Cart line currency does not match checkout currency.");
+            }
+
+            var baseTotal = this.moneyRoundingService.RoundOrderTotal(
+                snapshots.Sum(line => (line.BaseUnitPrice ?? 0m) * line.Quantity),
+                first.BaseCurrencyCode!);
+
+            return CurrencyRateSnapshot.Converted(
+                first.BaseCurrencyCode!,
+                baseTotal,
+                totalAmount,
+                first.ExchangeRate!.Value,
+                first.ProviderKey,
+                first.Source,
+                first.EffectiveAtUtc,
+                first.ExpiresAtUtc);
         }
 
         private static bool IsStorefrontAvailable(Product product, Guid storeId)
@@ -1061,6 +1226,87 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             public static OrderLineResolution Failed(ServiceResponseType responseType, string message)
             {
                 return new OrderLineResolution(false, responseType, message, []);
+            }
+        }
+
+        private sealed record CurrencyRateLineSnapshot(
+            string? BaseCurrencyCode,
+            decimal? BaseUnitPrice,
+            string CurrencyCode,
+            decimal? ExchangeRate,
+            string? ProviderKey,
+            string? Source,
+            DateTimeOffset? EffectiveAtUtc,
+            DateTimeOffset? ExpiresAtUtc,
+            int Quantity);
+
+        private sealed record CurrencyRateSnapshot(
+            bool Success,
+            ServiceResponseType ResponseType,
+            string Message,
+            string? BaseCurrencyCode,
+            decimal? BaseTotalAmount,
+            decimal? ConvertedTotalAmount,
+            decimal? ExchangeRate,
+            string? ExchangeRateProviderKey,
+            string? ExchangeRateSource,
+            DateTimeOffset? ExchangeRateEffectiveAtUtc,
+            DateTimeOffset? ExchangeRateExpiresAtUtc)
+        {
+            public static CurrencyRateSnapshot None()
+            {
+                return new CurrencyRateSnapshot(
+                    true,
+                    ServiceResponseType.Success,
+                    "Currency conversion snapshot is not required.",
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null);
+            }
+
+            public static CurrencyRateSnapshot Converted(
+                string baseCurrencyCode,
+                decimal baseTotalAmount,
+                decimal convertedTotalAmount,
+                decimal exchangeRate,
+                string? exchangeRateProviderKey,
+                string? exchangeRateSource,
+                DateTimeOffset? exchangeRateEffectiveAtUtc,
+                DateTimeOffset? exchangeRateExpiresAtUtc)
+            {
+                return new CurrencyRateSnapshot(
+                    true,
+                    ServiceResponseType.Success,
+                    "Currency conversion snapshot resolved.",
+                    baseCurrencyCode,
+                    baseTotalAmount,
+                    convertedTotalAmount,
+                    exchangeRate,
+                    exchangeRateProviderKey,
+                    exchangeRateSource,
+                    exchangeRateEffectiveAtUtc,
+                    exchangeRateExpiresAtUtc);
+            }
+
+            public static CurrencyRateSnapshot Failed(ServiceResponseType responseType, string message)
+            {
+                return new CurrencyRateSnapshot(
+                    false,
+                    responseType,
+                    message,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null);
             }
         }
     }

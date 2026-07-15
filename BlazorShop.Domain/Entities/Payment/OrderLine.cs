@@ -32,6 +32,16 @@ namespace BlazorShop.Domain.Entities.Payment
 
         public decimal UnitPrice { get; set; }
 
+        public string? CurrencyCode { get; set; }
+
+        public decimal? BaseUnitPrice { get; set; }
+
+        public decimal? ConvertedUnitPrice { get; set; }
+
+        public decimal? LineTotal { get; set; }
+
+        public decimal? BaseLineTotal { get; set; }
+
         public Order? Order { get; set; }
     }
 }

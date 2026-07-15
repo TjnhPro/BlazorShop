@@ -58,6 +58,22 @@ namespace BlazorShop.Domain.Entities.CommerceNode
 
         public string CurrencyCode { get; set; } = "USD";
 
+        public string? BaseCurrencyCode { get; set; }
+
+        public decimal? BaseSubtotal { get; set; }
+
+        public decimal? BaseGrandTotal { get; set; }
+
+        public decimal? ExchangeRate { get; set; }
+
+        public string? ExchangeRateProviderKey { get; set; }
+
+        public string? ExchangeRateSource { get; set; }
+
+        public DateTimeOffset? ExchangeRateEffectiveAtUtc { get; set; }
+
+        public DateTimeOffset? ExchangeRateExpiresAtUtc { get; set; }
+
         public string? ValidationIssuesJson { get; set; }
 
         public string NextAction { get; set; } = "review";

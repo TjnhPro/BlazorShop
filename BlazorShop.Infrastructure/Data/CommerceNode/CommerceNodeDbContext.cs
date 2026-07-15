@@ -281,6 +281,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.Property(line => line.Quantity).HasColumnName("quantity");
                 entity.Property(line => line.UnitPriceSnapshot).HasColumnName("unit_price_snapshot").HasPrecision(18, 2);
                 entity.Property(line => line.CurrencyCodeSnapshot).HasColumnName("currency_code_snapshot").HasMaxLength(3);
+                entity.Property(line => line.BaseUnitPriceSnapshot).HasColumnName("base_unit_price_snapshot").HasPrecision(18, 2);
+                entity.Property(line => line.BaseCurrencyCodeSnapshot).HasColumnName("base_currency_code_snapshot").HasMaxLength(3);
+                entity.Property(line => line.ExchangeRateSnapshot).HasColumnName("exchange_rate_snapshot").HasPrecision(18, 8);
+                entity.Property(line => line.ExchangeRateProviderKey).HasColumnName("exchange_rate_provider_key").HasMaxLength(64);
+                entity.Property(line => line.ExchangeRateSource).HasColumnName("exchange_rate_source").HasMaxLength(256);
+                entity.Property(line => line.ExchangeRateEffectiveAtUtc).HasColumnName("exchange_rate_effective_at_utc").HasColumnType("timestamp with time zone");
+                entity.Property(line => line.ExchangeRateExpiresAtUtc).HasColumnName("exchange_rate_expires_at_utc").HasColumnType("timestamp with time zone");
                 entity.Property(line => line.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
                 entity.Property(line => line.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -336,6 +343,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.Property(session => session.DiscountTotal).HasColumnName("discount_total").HasPrecision(18, 2);
                 entity.Property(session => session.GrandTotal).HasColumnName("grand_total").HasPrecision(18, 2);
                 entity.Property(session => session.CurrencyCode).HasColumnName("currency_code").HasMaxLength(3).IsRequired();
+                entity.Property(session => session.BaseCurrencyCode).HasColumnName("base_currency_code").HasMaxLength(3);
+                entity.Property(session => session.BaseSubtotal).HasColumnName("base_subtotal").HasPrecision(18, 2);
+                entity.Property(session => session.BaseGrandTotal).HasColumnName("base_grand_total").HasPrecision(18, 2);
+                entity.Property(session => session.ExchangeRate).HasColumnName("exchange_rate").HasPrecision(18, 8);
+                entity.Property(session => session.ExchangeRateProviderKey).HasColumnName("exchange_rate_provider_key").HasMaxLength(64);
+                entity.Property(session => session.ExchangeRateSource).HasColumnName("exchange_rate_source").HasMaxLength(256);
+                entity.Property(session => session.ExchangeRateEffectiveAtUtc).HasColumnName("exchange_rate_effective_at_utc").HasColumnType("timestamp with time zone");
+                entity.Property(session => session.ExchangeRateExpiresAtUtc).HasColumnName("exchange_rate_expires_at_utc").HasColumnType("timestamp with time zone");
                 entity.Property(session => session.ValidationIssuesJson).HasColumnName("validation_issues_json").HasColumnType("jsonb");
                 entity.Property(session => session.NextAction).HasColumnName("next_action").HasMaxLength(64).IsRequired();
                 entity.Property(session => session.IdempotencyKey).HasColumnName("idempotency_key").HasMaxLength(128);
@@ -394,6 +409,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.Property(attempt => attempt.State).HasColumnName("state").HasMaxLength(32).IsRequired();
                 entity.Property(attempt => attempt.Amount).HasColumnName("amount").HasPrecision(18, 2);
                 entity.Property(attempt => attempt.CurrencyCode).HasColumnName("currency_code").HasMaxLength(3).IsRequired();
+                entity.Property(attempt => attempt.BaseCurrencyCode).HasColumnName("base_currency_code").HasMaxLength(3);
+                entity.Property(attempt => attempt.BaseAmount).HasColumnName("base_amount").HasPrecision(18, 2);
+                entity.Property(attempt => attempt.ExchangeRate).HasColumnName("exchange_rate").HasPrecision(18, 8);
+                entity.Property(attempt => attempt.ExchangeRateProviderKey).HasColumnName("exchange_rate_provider_key").HasMaxLength(64);
+                entity.Property(attempt => attempt.ExchangeRateSource).HasColumnName("exchange_rate_source").HasMaxLength(256);
+                entity.Property(attempt => attempt.ExchangeRateEffectiveAtUtc).HasColumnName("exchange_rate_effective_at_utc").HasColumnType("timestamp with time zone");
+                entity.Property(attempt => attempt.ExchangeRateExpiresAtUtc).HasColumnName("exchange_rate_expires_at_utc").HasColumnType("timestamp with time zone");
                 entity.Property(attempt => attempt.IdempotencyKey).HasColumnName("idempotency_key").HasMaxLength(128).IsRequired();
                 entity.Property(attempt => attempt.ProviderReference).HasColumnName("provider_reference").HasMaxLength(256);
                 entity.Property(attempt => attempt.ProviderSessionId).HasColumnName("provider_session_id").HasMaxLength(256);
@@ -919,6 +941,34 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 .HasMaxLength(3);
 
             modelBuilder.Entity<Order>()
+                .Property(order => order.BaseCurrencyCode)
+                .HasMaxLength(3);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.BaseTotalAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ExchangeRate)
+                .HasPrecision(18, 8);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ExchangeRateProviderKey)
+                .HasMaxLength(64);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ExchangeRateSource)
+                .HasMaxLength(256);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ExchangeRateEffectiveAtUtc)
+                .HasColumnType("timestamp with time zone");
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ExchangeRateExpiresAtUtc)
+                .HasColumnType("timestamp with time zone");
+
+            modelBuilder.Entity<Order>()
                 .HasIndex(order => new { order.StoreId, order.OrderStatus, order.CreatedOn });
 
             modelBuilder.Entity<Order>()
@@ -964,6 +1014,26 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             modelBuilder.Entity<OrderLine>()
                 .Property(line => line.FulfillmentProviderKey)
                 .HasMaxLength(64);
+
+            modelBuilder.Entity<OrderLine>()
+                .Property(line => line.CurrencyCode)
+                .HasMaxLength(3);
+
+            modelBuilder.Entity<OrderLine>()
+                .Property(line => line.BaseUnitPrice)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<OrderLine>()
+                .Property(line => line.ConvertedUnitPrice)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<OrderLine>()
+                .Property(line => line.LineTotal)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<OrderLine>()
+                .Property(line => line.BaseLineTotal)
+                .HasPrecision(18, 2);
 
             modelBuilder.Entity<OrderLine>()
                 .HasIndex(line => line.ProductVariantId);

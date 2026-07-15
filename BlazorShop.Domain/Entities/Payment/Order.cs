@@ -29,6 +29,20 @@ namespace BlazorShop.Domain.Entities.Payment
 
         public decimal TotalAmount { get; set; }
 
+        public string? BaseCurrencyCode { get; set; }
+
+        public decimal? BaseTotalAmount { get; set; }
+
+        public decimal? ExchangeRate { get; set; }
+
+        public string? ExchangeRateProviderKey { get; set; }
+
+        public string? ExchangeRateSource { get; set; }
+
+        public DateTimeOffset? ExchangeRateEffectiveAtUtc { get; set; }
+
+        public DateTimeOffset? ExchangeRateExpiresAtUtc { get; set; }
+
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
 
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

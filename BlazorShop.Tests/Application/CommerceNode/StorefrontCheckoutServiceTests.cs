@@ -202,9 +202,25 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var order = Assert.Single(context.Orders);
             Assert.Equal("EUR", order.CurrencyCode);
             Assert.Equal(9.00m, order.TotalAmount);
+            Assert.Equal("USD", order.BaseCurrencyCode);
+            Assert.Equal(10.00m, order.BaseTotalAmount);
+            Assert.Equal(0.9m, order.ExchangeRate);
+            Assert.Equal("manual", order.ExchangeRateProviderKey);
+            Assert.Equal("test-rate", order.ExchangeRateSource);
+            Assert.NotNull(order.ExchangeRateEffectiveAtUtc);
+            var orderLine = Assert.Single(order.Lines);
+            Assert.Equal("EUR", orderLine.CurrencyCode);
+            Assert.Equal(10.00m, orderLine.BaseUnitPrice);
+            Assert.Equal(9.00m, orderLine.ConvertedUnitPrice);
+            Assert.Equal(9.00m, orderLine.LineTotal);
+            Assert.Equal(10.00m, orderLine.BaseLineTotal);
             var attempt = Assert.Single(context.PaymentAttempts);
             Assert.Equal("EUR", attempt.CurrencyCode);
             Assert.Equal(9.00m, attempt.Amount);
+            Assert.Equal("USD", attempt.BaseCurrencyCode);
+            Assert.Equal(10.00m, attempt.BaseAmount);
+            Assert.Equal(0.9m, attempt.ExchangeRate);
+            Assert.Equal("manual", attempt.ExchangeRateProviderKey);
         }
 
         [Fact]
@@ -803,7 +819,9 @@ namespace BlazorShop.Tests.Application.CommerceNode
                         targetCurrencyCode,
                         this.rate,
                         DateTimeOffset.UtcNow,
-                        null),
+                        null,
+                        "manual",
+                        "test-rate"),
                     ResponseType = ServiceResponseType.Success,
                 });
             }

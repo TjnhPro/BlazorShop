@@ -175,6 +175,12 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var line = Assert.Single(result.Payload!.Lines);
             Assert.Equal("EUR", line.CurrencyCodeSnapshot);
             Assert.Equal(11.25m, line.UnitPriceSnapshot);
+            Assert.Equal("USD", line.BaseCurrencyCodeSnapshot);
+            Assert.Equal(12.50m, line.BaseUnitPriceSnapshot);
+            Assert.Equal(0.9m, line.ExchangeRateSnapshot);
+            Assert.Equal("manual", line.ExchangeRateProviderKey);
+            Assert.Equal("test-rate", line.ExchangeRateSource);
+            Assert.NotNull(line.ExchangeRateEffectiveAtUtc);
         }
 
         [Fact]
@@ -539,7 +545,9 @@ namespace BlazorShop.Tests.Application.CommerceNode
                         targetCurrencyCode,
                         this.rate,
                         DateTimeOffset.UtcNow,
-                        null),
+                        null,
+                        "manual",
+                        "test-rate"),
                     ResponseType = ServiceResponseType.Success,
                 });
             }

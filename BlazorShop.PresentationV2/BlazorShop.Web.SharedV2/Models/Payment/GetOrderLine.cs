@@ -10,6 +10,16 @@ namespace BlazorShop.Web.SharedV2.Models.Payment
 
         public decimal UnitPrice { get; set; }
 
-        public decimal LineTotal => UnitPrice * Quantity;
+        public string? CurrencyCode { get; set; }
+
+        public decimal? BaseUnitPrice { get; set; }
+
+        public decimal? ConvertedUnitPrice { get; set; }
+
+        public decimal? PersistedLineTotal { get; set; }
+
+        public decimal? BaseLineTotal { get; set; }
+
+        public decimal LineTotal => PersistedLineTotal ?? UnitPrice * Quantity;
     }
 }

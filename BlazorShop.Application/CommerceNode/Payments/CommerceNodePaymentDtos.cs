@@ -19,6 +19,13 @@ namespace BlazorShop.Application.CommerceNode.Payments
         string? NextActionUrl,
         string? FailureCode,
         string? FailureMessage,
+        string? BaseCurrencyCode,
+        decimal? BaseAmount,
+        decimal? ExchangeRate,
+        string? ExchangeRateProviderKey,
+        string? ExchangeRateSource,
+        DateTimeOffset? ExchangeRateEffectiveAtUtc,
+        DateTimeOffset? ExchangeRateExpiresAtUtc,
         DateTimeOffset ExpiresAtUtc,
         DateTimeOffset CreatedAtUtc,
         DateTimeOffset UpdatedAtUtc);
@@ -33,6 +40,13 @@ namespace BlazorShop.Application.CommerceNode.Payments
         string CurrencyCode,
         string IdempotencyKey,
         string? MetadataJson = null,
+        string? BaseCurrencyCode = null,
+        decimal? BaseAmount = null,
+        decimal? ExchangeRate = null,
+        string? ExchangeRateProviderKey = null,
+        string? ExchangeRateSource = null,
+        DateTimeOffset? ExchangeRateEffectiveAtUtc = null,
+        DateTimeOffset? ExchangeRateExpiresAtUtc = null,
         DateTimeOffset? ExpiresAtUtc = null);
 
     public sealed record TransitionPaymentAttemptRequest(

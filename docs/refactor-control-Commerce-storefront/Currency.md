@@ -455,6 +455,16 @@ Exit criteria:
 - Payment attempt and order totals match exactly.
 - Admin can reconcile base and working currency when conversion is used.
 
+Implementation note 2026-07-15:
+
+- Cart lines now snapshot converted unit price plus base unit price, base currency, exchange rate, provider key, source, and rate effective/expiry timestamps when a non-base currency conversion is used.
+- Checkout preview/place-order resolve a single cart rate snapshot and reject mixed or missing exchange-rate metadata instead of creating an order that cannot be audited.
+- Checkout sessions, orders, payment attempts, and order lines now persist nullable conversion snapshot fields. `Order.TotalAmount` and `PaymentAttempt.Amount` remain the charged working-currency amounts.
+- `OrderLine.LineTotal` is persisted for CommerceNode orders so historical totals do not change when rounding rules evolve.
+- Control Plane order detail shows base total/rate/provider/source/effective timestamp and base line totals only when conversion metadata exists.
+- Legacy `AppDbContext` ignores the new V2 order snapshot fields to avoid changing the legacy schema surface.
+- Automated verification passed for focused cart, checkout, payment attempt, and CommerceNode model tests. Visible admin/browser reconciliation remains in QA checklists.
+
 ### Phase 8 - Exchange-Rate Provider Abstraction
 
 Goal: add provider integration after manual rates prove the domain model.

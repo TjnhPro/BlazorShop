@@ -159,7 +159,14 @@ namespace BlazorShop.Application.CommerceNode.Carts
                     NormalizeNullable(request.FulfillmentProviderKey),
                     request.Quantity,
                     unitPriceResult.UnitPrice,
-                    currencyCode),
+                    currencyCode,
+                    unitPriceResult.BaseUnitPrice,
+                    unitPriceResult.BaseCurrencyCode,
+                    unitPriceResult.ExchangeRate,
+                    unitPriceResult.ExchangeRateProviderKey,
+                    unitPriceResult.ExchangeRateSource,
+                    unitPriceResult.ExchangeRateEffectiveAtUtc,
+                    unitPriceResult.ExchangeRateExpiresAtUtc),
                 cancellationToken);
         }
 
@@ -359,7 +366,15 @@ namespace BlazorShop.Application.CommerceNode.Carts
         {
             if (string.Equals(currencyCode, baseCurrencyCode, StringComparison.Ordinal))
             {
-                return UnitPriceResolution.Succeeded(this.moneyRoundingService.RoundUnitPrice(baseUnitPrice, currencyCode));
+                return UnitPriceResolution.Succeeded(
+                    this.moneyRoundingService.RoundUnitPrice(baseUnitPrice, currencyCode),
+                    this.moneyRoundingService.RoundUnitPrice(baseUnitPrice, baseCurrencyCode),
+                    baseCurrencyCode,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null);
             }
 
             var conversion = await this.moneyConversionService.ConvertFromBaseAsync(
@@ -375,7 +390,14 @@ namespace BlazorShop.Application.CommerceNode.Carts
             }
 
             return UnitPriceResolution.Succeeded(
-                this.moneyRoundingService.RoundUnitPrice(conversion.Payload.ConvertedAmount, currencyCode));
+                this.moneyRoundingService.RoundUnitPrice(conversion.Payload.ConvertedAmount, currencyCode),
+                this.moneyRoundingService.RoundUnitPrice(conversion.Payload.SourceAmount, conversion.Payload.SourceCurrencyCode),
+                conversion.Payload.SourceCurrencyCode,
+                conversion.Payload.Rate,
+                conversion.Payload.ProviderKey,
+                conversion.Payload.Source,
+                conversion.Payload.EffectiveAt,
+                conversion.Payload.ExpiresAt);
         }
 
         private async Task<CartCurrencyResolution> ResolveCartSnapshotCurrencyAsync(
@@ -695,16 +717,42 @@ namespace BlazorShop.Application.CommerceNode.Carts
             bool Success,
             ServiceResponseType ResponseType,
             string Message,
-            decimal UnitPrice)
+            decimal UnitPrice,
+            decimal? BaseUnitPrice,
+            string? BaseCurrencyCode,
+            decimal? ExchangeRate,
+            string? ExchangeRateProviderKey,
+            string? ExchangeRateSource,
+            DateTimeOffset? ExchangeRateEffectiveAtUtc,
+            DateTimeOffset? ExchangeRateExpiresAtUtc)
         {
-            public static UnitPriceResolution Succeeded(decimal unitPrice)
+            public static UnitPriceResolution Succeeded(
+                decimal unitPrice,
+                decimal? baseUnitPrice,
+                string? baseCurrencyCode,
+                decimal? exchangeRate,
+                string? exchangeRateProviderKey,
+                string? exchangeRateSource,
+                DateTimeOffset? exchangeRateEffectiveAtUtc,
+                DateTimeOffset? exchangeRateExpiresAtUtc)
             {
-                return new UnitPriceResolution(true, ServiceResponseType.Success, "Unit price resolved.", unitPrice);
+                return new UnitPriceResolution(
+                    true,
+                    ServiceResponseType.Success,
+                    "Unit price resolved.",
+                    unitPrice,
+                    baseUnitPrice,
+                    baseCurrencyCode,
+                    exchangeRate,
+                    exchangeRateProviderKey,
+                    exchangeRateSource,
+                    exchangeRateEffectiveAtUtc,
+                    exchangeRateExpiresAtUtc);
             }
 
             public static UnitPriceResolution Failed(ServiceResponseType responseType, string message)
             {
-                return new UnitPriceResolution(false, responseType, message, 0m);
+                return new UnitPriceResolution(false, responseType, message, 0m, null, null, null, null, null, null, null);
             }
         }
 

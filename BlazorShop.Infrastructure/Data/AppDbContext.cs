@@ -169,6 +169,42 @@
             builder.Entity<Order>()
                 .Ignore(order => order.ShippingCountryCode);
 
+            builder.Entity<Order>()
+                .Ignore(order => order.BaseCurrencyCode);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.BaseTotalAmount);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.ExchangeRate);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.ExchangeRateProviderKey);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.ExchangeRateSource);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.ExchangeRateEffectiveAtUtc);
+
+            builder.Entity<Order>()
+                .Ignore(order => order.ExchangeRateExpiresAtUtc);
+
+            builder.Entity<OrderLine>()
+                .Ignore(line => line.CurrencyCode);
+
+            builder.Entity<OrderLine>()
+                .Ignore(line => line.BaseUnitPrice);
+
+            builder.Entity<OrderLine>()
+                .Ignore(line => line.ConvertedUnitPrice);
+
+            builder.Entity<OrderLine>()
+                .Ignore(line => line.LineTotal);
+
+            builder.Entity<OrderLine>()
+                .Ignore(line => line.BaseLineTotal);
+
             builder.Entity<PaymentMethod>()
                 .Ignore(method => method.Key);
 

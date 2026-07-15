@@ -435,6 +435,9 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 
 ## Checkout And Payment Foundation
 
+- [x] Storefront cart/checkout service tests protect converted currency snapshot flow. 2026-07-15: focused `StorefrontCartServiceTests` and `StorefrontCheckoutServiceTests` passed.
+- [ ] Visible Storefront V2 QA creates a non-base currency cart, places checkout, and confirms displayed cart total, checkout total, order total, and payment amount match.
+- [ ] Visible Control Plane order drawer QA confirms converted order shows charged total plus base total/rate/provider/source snapshot.
 - [x] Storefront V2 builds after checkout/payment foundation changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed.
 - [x] Storefront V2 shared order item model uses public `AmountPaid` spelling. 2026-07-14: SharedV2 `GetOrderItem` was updated to match Storefront API final hardening; public OpenAPI rejects `amountPayed`.
 - [x] `/checkout` renders local Storefront V2 checkout page. 2026-07-13: Playwright MCP visible browser rendered the local checkout form.
