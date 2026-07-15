@@ -25,7 +25,11 @@ namespace BlazorShop.Application.CommerceNode.StorefrontPages
         bool IsPublished,
         bool IncludeInSitemap,
         DateTimeOffset CreatedAt,
-        DateTimeOffset UpdatedAt);
+        DateTimeOffset UpdatedAt,
+        string? PageKey = null,
+        int DisplayOrder = 0,
+        bool IncludeInNavigation = false,
+        string? NavigationLocation = null);
 
     public sealed record StorefrontPageDetailDto(
         Guid Id,
@@ -39,7 +43,11 @@ namespace BlazorShop.Application.CommerceNode.StorefrontPages
         bool IncludeInSitemap,
         StorefrontPageSeoDto Seo,
         DateTimeOffset CreatedAt,
-        DateTimeOffset UpdatedAt);
+        DateTimeOffset UpdatedAt,
+        string? PageKey,
+        int DisplayOrder,
+        bool IncludeInNavigation,
+        string? NavigationLocation);
 
     public sealed record StorefrontPageSeoDto(
         string? MetaTitle,
@@ -58,7 +66,11 @@ namespace BlazorShop.Application.CommerceNode.StorefrontPages
         string? BodyHtml,
         bool IsPublished = false,
         bool IncludeInSitemap = false,
-        StorefrontPageSeoDto? Seo = null);
+        StorefrontPageSeoDto? Seo = null,
+        string? PageKey = null,
+        int DisplayOrder = 0,
+        bool IncludeInNavigation = false,
+        string? NavigationLocation = null);
 
     public sealed record UpdateStorefrontPageRequest(
         string? Slug,
@@ -67,7 +79,11 @@ namespace BlazorShop.Application.CommerceNode.StorefrontPages
         string? BodyHtml,
         bool IsPublished = false,
         bool IncludeInSitemap = false,
-        StorefrontPageSeoDto? Seo = null);
+        StorefrontPageSeoDto? Seo = null,
+        string? PageKey = null,
+        int DisplayOrder = 0,
+        bool IncludeInNavigation = false,
+        string? NavigationLocation = null);
 
     public sealed record StorefrontPagePublicDto(
         string Slug,

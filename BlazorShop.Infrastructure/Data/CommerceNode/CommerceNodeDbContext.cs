@@ -662,6 +662,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.Property(page => page.BodyHtml).HasColumnName("body_html").IsRequired();
                 entity.Property(page => page.IsPublished).HasColumnName("is_published").HasDefaultValue(false);
                 entity.Property(page => page.IncludeInSitemap).HasColumnName("include_in_sitemap").HasDefaultValue(false);
+                entity.Property(page => page.PageKey).HasColumnName("page_key").HasMaxLength(80);
+                entity.Property(page => page.DisplayOrder).HasColumnName("display_order").HasDefaultValue(0);
+                entity.Property(page => page.IncludeInNavigation).HasColumnName("include_in_navigation").HasDefaultValue(false);
+                entity.Property(page => page.NavigationLocation).HasColumnName("navigation_location").HasMaxLength(50);
                 entity.Property(page => page.MetaTitle).HasColumnName("meta_title").HasMaxLength(400);
                 entity.Property(page => page.MetaDescription).HasColumnName("meta_description").HasMaxLength(4000);
                 entity.Property(page => page.CanonicalUrl).HasColumnName("canonical_url").HasMaxLength(2048);
@@ -676,6 +680,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
                 entity.HasIndex(page => page.PublicId).IsUnique();
                 entity.HasIndex(page => new { page.StoreId, page.Slug }).IsUnique();
+                entity.HasIndex(page => new { page.StoreId, page.PageKey })
+                    .IsUnique()
+                    .HasFilter("page_key IS NOT NULL AND archived_at IS NULL");
+                entity.HasIndex(page => new { page.StoreId, page.PageKey, page.ArchivedAt });
+                entity.HasIndex(page => new { page.StoreId, page.IncludeInNavigation, page.IsPublished, page.ArchivedAt, page.DisplayOrder });
                 entity.HasIndex(page => new { page.StoreId, page.IsPublished, page.ArchivedAt });
                 entity.HasIndex(page => new { page.StoreId, page.IncludeInSitemap, page.IsPublished, page.ArchivedAt });
                 entity.HasIndex(page => new { page.StoreId, page.UpdatedAt });

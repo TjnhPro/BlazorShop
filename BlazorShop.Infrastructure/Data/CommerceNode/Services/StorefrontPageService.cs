@@ -119,6 +119,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failure<StorefrontPageDetailDto>("Storefront page slug already exists for this store.", ServiceResponseType.Conflict);
             }
 
+            if (!string.IsNullOrWhiteSpace(normalized.PageKey))
+            {
+                var duplicatePageKey = await this.context.StorefrontPages.AnyAsync(
+                    item =>
+                        item.StoreId == storeId &&
+                        item.PageKey == normalized.PageKey &&
+                        item.ArchivedAt == null,
+                    cancellationToken);
+                if (duplicatePageKey)
+                {
+                    return Failure<StorefrontPageDetailDto>("Storefront page key already exists for this store.", ServiceResponseType.Conflict);
+                }
+            }
+
             var now = DateTimeOffset.UtcNow;
             var page = new StorefrontPage
             {
@@ -129,6 +143,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 BodyHtml = normalized.BodyHtml!,
                 IsPublished = request.IsPublished,
                 IncludeInSitemap = request.IncludeInSitemap,
+                PageKey = normalized.PageKey,
+                DisplayOrder = normalized.DisplayOrder,
+                IncludeInNavigation = normalized.IncludeInNavigation,
+                NavigationLocation = normalized.NavigationLocation,
                 MetaTitle = normalized.Seo.MetaTitle,
                 MetaDescription = normalized.Seo.MetaDescription,
                 CanonicalUrl = normalized.Seo.CanonicalUrl,
@@ -175,12 +193,31 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failure<StorefrontPageDetailDto>("Storefront page slug already exists for this store.", ServiceResponseType.Conflict);
             }
 
+            if (!string.IsNullOrWhiteSpace(normalized.PageKey))
+            {
+                var duplicatePageKey = await this.context.StorefrontPages.AnyAsync(
+                    item =>
+                        item.StoreId == page.StoreId &&
+                        item.PageKey == normalized.PageKey &&
+                        item.Id != page.Id &&
+                        item.ArchivedAt == null,
+                    cancellationToken);
+                if (duplicatePageKey)
+                {
+                    return Failure<StorefrontPageDetailDto>("Storefront page key already exists for this store.", ServiceResponseType.Conflict);
+                }
+            }
+
             page.Slug = normalized.Slug!;
             page.Title = normalized.Title!;
             page.Intro = normalized.Intro;
             page.BodyHtml = normalized.BodyHtml!;
             page.IsPublished = request.IsPublished;
             page.IncludeInSitemap = request.IncludeInSitemap;
+            page.PageKey = normalized.PageKey;
+            page.DisplayOrder = normalized.DisplayOrder;
+            page.IncludeInNavigation = normalized.IncludeInNavigation;
+            page.NavigationLocation = normalized.NavigationLocation;
             page.MetaTitle = normalized.Seo.MetaTitle;
             page.MetaDescription = normalized.Seo.MetaDescription;
             page.CanonicalUrl = normalized.Seo.CanonicalUrl;
@@ -296,12 +333,30 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private NormalizedStorefrontPage NormalizeCreate(CreateStorefrontPageRequest request)
         {
-            return this.Normalize(request.Slug, request.Title, request.Intro, request.BodyHtml, request.Seo);
+            return this.Normalize(
+                request.Slug,
+                request.Title,
+                request.Intro,
+                request.BodyHtml,
+                request.Seo,
+                request.PageKey,
+                request.DisplayOrder,
+                request.IncludeInNavigation,
+                request.NavigationLocation);
         }
 
         private NormalizedStorefrontPage NormalizeUpdate(UpdateStorefrontPageRequest request)
         {
-            return this.Normalize(request.Slug, request.Title, request.Intro, request.BodyHtml, request.Seo);
+            return this.Normalize(
+                request.Slug,
+                request.Title,
+                request.Intro,
+                request.BodyHtml,
+                request.Seo,
+                request.PageKey,
+                request.DisplayOrder,
+                request.IncludeInNavigation,
+                request.NavigationLocation);
         }
 
         private NormalizedStorefrontPage Normalize(
@@ -309,7 +364,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             string? title,
             string? intro,
             string? bodyHtml,
-            StorefrontPageSeoDto? seo)
+            StorefrontPageSeoDto? seo,
+            string? pageKey,
+            int displayOrder,
+            bool includeInNavigation,
+            string? navigationLocation)
         {
             var normalizedTitle = NormalizeRequired(title);
             if (normalizedTitle is null)
@@ -358,9 +417,38 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             var normalizedSeo = NormalizeSeo(seo);
             var seoValidation = ValidateSeo(normalizedSeo);
-            return seoValidation is not null
-                ? NormalizedStorefrontPage.Failed(seoValidation)
-                : NormalizedStorefrontPage.Succeeded(normalizedSlug, normalizedTitle, normalizedIntro, normalizedBody, normalizedSeo);
+            if (seoValidation is not null)
+            {
+                return NormalizedStorefrontPage.Failed(seoValidation);
+            }
+
+            var normalizedPageKey = NormalizePageKey(pageKey);
+            if (normalizedPageKey.Invalid)
+            {
+                return NormalizedStorefrontPage.Failed("Page key is not supported.");
+            }
+
+            var normalizedNavigationLocation = NormalizeNavigationLocation(navigationLocation);
+            if (normalizedNavigationLocation.Invalid)
+            {
+                return NormalizedStorefrontPage.Failed("Navigation location is not supported.");
+            }
+
+            if (includeInNavigation && normalizedNavigationLocation.Value is null)
+            {
+                return NormalizedStorefrontPage.Failed("Navigation location is required when the page is included in navigation.");
+            }
+
+            return NormalizedStorefrontPage.Succeeded(
+                normalizedSlug,
+                normalizedTitle,
+                normalizedIntro,
+                normalizedBody,
+                normalizedSeo,
+                normalizedPageKey.Value,
+                displayOrder,
+                includeInNavigation,
+                normalizedNavigationLocation.Value);
         }
 
         private string? NormalizeSlug(string? value)
@@ -424,6 +512,34 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return null;
         }
 
+        private static NormalizedOptionalValue NormalizePageKey(string? value)
+        {
+            var normalized = NormalizeOptional(value);
+            if (normalized is null)
+            {
+                return NormalizedOptionalValue.Valid(null);
+            }
+
+            normalized = normalized.ToLowerInvariant();
+            return StorefrontPageContentRules.IsKnownPageKey(normalized)
+                ? NormalizedOptionalValue.Valid(normalized)
+                : NormalizedOptionalValue.InvalidValue();
+        }
+
+        private static NormalizedOptionalValue NormalizeNavigationLocation(string? value)
+        {
+            var normalized = NormalizeOptional(value);
+            if (normalized is null)
+            {
+                return NormalizedOptionalValue.Valid(null);
+            }
+
+            normalized = normalized.ToLowerInvariant();
+            return StorefrontPageContentRules.IsKnownNavigationLocation(normalized)
+                ? NormalizedOptionalValue.Valid(normalized)
+                : NormalizedOptionalValue.InvalidValue();
+        }
+
         private static string? ValidateBodyHtml(string bodyHtml)
         {
             if (DangerousTagRegex().IsMatch(bodyHtml))
@@ -476,7 +592,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 page.IsPublished,
                 page.IncludeInSitemap,
                 page.CreatedAt,
-                page.UpdatedAt);
+                page.UpdatedAt,
+                page.PageKey,
+                page.DisplayOrder,
+                page.IncludeInNavigation,
+                page.NavigationLocation);
         }
 
         private static StorefrontPageDetailDto MapDetail(StorefrontPage page)
@@ -493,7 +613,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 page.IncludeInSitemap,
                 MapSeo(page),
                 page.CreatedAt,
-                page.UpdatedAt);
+                page.UpdatedAt,
+                page.PageKey,
+                page.DisplayOrder,
+                page.IncludeInNavigation,
+                page.NavigationLocation);
         }
 
         private static StorefrontPagePublicDto MapPublic(StorefrontPage page)
@@ -596,6 +720,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             string? Intro,
             string? BodyHtml,
             StorefrontPageSeoDto Seo,
+            string? PageKey,
+            int DisplayOrder,
+            bool IncludeInNavigation,
+            string? NavigationLocation,
             string? Message = null)
         {
             public static NormalizedStorefrontPage Succeeded(
@@ -603,14 +731,52 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 string title,
                 string? intro,
                 string bodyHtml,
-                StorefrontPageSeoDto seo)
+                StorefrontPageSeoDto seo,
+                string? pageKey,
+                int displayOrder,
+                bool includeInNavigation,
+                string? navigationLocation)
             {
-                return new NormalizedStorefrontPage(true, slug, title, intro, bodyHtml, seo);
+                return new NormalizedStorefrontPage(
+                    true,
+                    slug,
+                    title,
+                    intro,
+                    bodyHtml,
+                    seo,
+                    pageKey,
+                    displayOrder,
+                    includeInNavigation,
+                    navigationLocation);
             }
 
             public static NormalizedStorefrontPage Failed(string message)
             {
-                return new NormalizedStorefrontPage(false, null, null, null, null, new StorefrontPageSeoDto(null, null, null, null, null, null), message);
+                return new NormalizedStorefrontPage(
+                    false,
+                    null,
+                    null,
+                    null,
+                    null,
+                    new StorefrontPageSeoDto(null, null, null, null, null, null),
+                    null,
+                    0,
+                    false,
+                    null,
+                    message);
+            }
+        }
+
+        private sealed record NormalizedOptionalValue(bool Invalid, string? Value)
+        {
+            public static NormalizedOptionalValue Valid(string? value)
+            {
+                return new NormalizedOptionalValue(false, value);
+            }
+
+            public static NormalizedOptionalValue InvalidValue()
+            {
+                return new NormalizedOptionalValue(true, null);
             }
         }
     }

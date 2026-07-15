@@ -147,6 +147,110 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal(2, await context.StorefrontPages.CountAsync(page => page.Slug == "store-b-page"));
         }
 
+        [Fact]
+        public async Task CreateAsync_PersistsPageContentMetadata()
+        {
+            var storeA = Guid.NewGuid();
+            await using var context = CreateContext();
+            var service = CreateService(context, storeA);
+
+            var result = await service.CreateAsync(new CreateStorefrontPageRequest(
+                "about-us",
+                "About us",
+                null,
+                "<p>About</p>",
+                true,
+                true,
+                PageKey: "about",
+                DisplayOrder: 100,
+                IncludeInNavigation: true,
+                NavigationLocation: StorefrontPageContentRules.FooterCompany));
+
+            Assert.True(result.Success);
+            Assert.Equal("about", result.Payload!.PageKey);
+            Assert.Equal(100, result.Payload.DisplayOrder);
+            Assert.True(result.Payload.IncludeInNavigation);
+            Assert.Equal(StorefrontPageContentRules.FooterCompany, result.Payload.NavigationLocation);
+        }
+
+        [Fact]
+        public async Task CreateAsync_RejectsUnknownPageKey()
+        {
+            var storeA = Guid.NewGuid();
+            await using var context = CreateContext();
+            var service = CreateService(context, storeA);
+
+            var result = await service.CreateAsync(new CreateStorefrontPageRequest(
+                "generic",
+                "Generic",
+                null,
+                "<p>Generic</p>",
+                PageKey: "generic"));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.ValidationError, result.ResponseType);
+        }
+
+        [Fact]
+        public async Task CreateAsync_RejectsNavigationWithoutLocation()
+        {
+            var storeA = Guid.NewGuid();
+            await using var context = CreateContext();
+            var service = CreateService(context, storeA);
+
+            var result = await service.CreateAsync(new CreateStorefrontPageRequest(
+                "privacy",
+                "Privacy",
+                null,
+                "<p>Privacy</p>",
+                IncludeInNavigation: true));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.ValidationError, result.ResponseType);
+        }
+
+        [Fact]
+        public async Task CreateAsync_RejectsDuplicateActivePageKeyInCurrentStore()
+        {
+            var storeA = Guid.NewGuid();
+            await using var context = CreateContext();
+            context.StorefrontPages.Add(CreatePage(storeA, "about-us", "About us", includeInSitemap: true, DateTimeOffset.UtcNow, pageKey: "about"));
+            await context.SaveChangesAsync();
+            var service = CreateService(context, storeA);
+
+            var result = await service.CreateAsync(new CreateStorefrontPageRequest(
+                "about-company",
+                "About company",
+                null,
+                "<p>About company</p>",
+                PageKey: "about"));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.Conflict, result.ResponseType);
+        }
+
+        [Fact]
+        public async Task CreateAsync_AllowsSamePageKeyInDifferentStore()
+        {
+            var storeA = Guid.NewGuid();
+            var storeB = Guid.NewGuid();
+            await using var context = CreateContext();
+            context.StorefrontPages.Add(CreatePage(storeB, "about-us", "About us", includeInSitemap: true, DateTimeOffset.UtcNow, pageKey: "about"));
+            await context.SaveChangesAsync();
+            var service = CreateService(context, storeA);
+
+            var result = await service.CreateAsync(new CreateStorefrontPageRequest(
+                "about-us",
+                "About us",
+                null,
+                "<p>About us</p>",
+                PageKey: "about"));
+
+            Assert.True(result.Success);
+            Assert.Equal(storeA, result.Payload!.StoreId);
+            Assert.Equal("about", result.Payload.PageKey);
+        }
+
         private static StorefrontPageService CreateService(CommerceNodeDbContext context, Guid storeId)
         {
             var audit = new Mock<IAdminAuditService>();
@@ -191,7 +295,8 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             string slug,
             string title,
             bool includeInSitemap,
-            DateTimeOffset timestamp)
+            DateTimeOffset timestamp,
+            string? pageKey = null)
         {
             return new StorefrontPage
             {
@@ -203,6 +308,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 BodyHtml = $"<p>{title}</p>",
                 IsPublished = true,
                 IncludeInSitemap = includeInSitemap,
+                PageKey = pageKey,
                 CreatedAt = timestamp,
                 UpdatedAt = timestamp,
             };

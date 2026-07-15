@@ -20,6 +20,14 @@ namespace BlazorShop.Domain.Entities.CommerceNode
 
         public bool IncludeInSitemap { get; set; }
 
+        public string? PageKey { get; set; }
+
+        public int DisplayOrder { get; set; }
+
+        public bool IncludeInNavigation { get; set; }
+
+        public string? NavigationLocation { get; set; }
+
         public string? MetaTitle { get; set; }
 
         public string? MetaDescription { get; set; }
