@@ -292,6 +292,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             await this.context.SaveChangesAsync(cancellationToken);
+            await this.catalogQueryCache.InvalidateStoreCatalogAsync(scope.StoreId, cancellationToken);
             return await this.ListAsync(productId, new ProductMediaListQuery(PageSize: 100), cancellationToken);
         }
 
@@ -329,14 +330,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             if (wasPrimary)
             {
-                await this.AssignNextPrimaryAsync(scope.Product!, scope.StoreId, productId, now, cancellationToken);
+                await this.AssignNextPrimaryAsync(scope.Product!, scope.StoreId, productId, media.PublicId, now, cancellationToken);
             }
 
             await this.context.SaveChangesAsync(cancellationToken);
-            if (wasPrimary)
-            {
-                await this.catalogQueryCache.InvalidateStoreCatalogAsync(scope.StoreId, cancellationToken);
-            }
+            await this.catalogQueryCache.InvalidateStoreCatalogAsync(scope.StoreId, cancellationToken);
 
             return await this.ListAsync(productId, new ProductMediaListQuery(PageSize: 100), cancellationToken);
         }
@@ -469,6 +467,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             Product product,
             Guid storeId,
             Guid productId,
+            Guid excludedMediaPublicId,
             DateTimeOffset now,
             CancellationToken cancellationToken)
         {
@@ -476,6 +475,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 .Where(media =>
                     media.StoreId == storeId &&
                     media.ProductId == productId &&
+                    media.PublicId != excludedMediaPublicId &&
                     media.Status == ProductMediaStatuses.Stored &&
                     media.DeletedAt == null)
                 .OrderBy(media => media.SortOrder)

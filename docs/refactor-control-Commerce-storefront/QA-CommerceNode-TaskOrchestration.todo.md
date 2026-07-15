@@ -84,7 +84,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 ### Product Media Import Task
 
 - [x] Media Core Phase 0 confirms product media import still uses existing `commerce_task` type `product.media.import` and the existing CommerceTaskWorker. 2026-07-15: baseline recorded in `Media Core.md`; no new worker or task type was introduced.
-- [ ] Media Core Phase 4 re-verifies product media import/retry/delete/primary behavior after shared media policy/storage provider adoption.
+- [~] Media Core Phase 4 re-verifies product media import/retry/delete/primary behavior after shared media policy/storage provider adoption. 2026-07-15: service tests covered delete/primary fallback/clear and cache invalidation; import/retry task worker live QA remains pending because Phase 4 did not change task type or worker model.
 
 ### Cancel
 

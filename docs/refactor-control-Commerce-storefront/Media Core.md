@@ -12,6 +12,7 @@ Updated: 2026-07-15
 - Phase 1 complete: shared media file/signature policy, transform normalization, and URL presets added in Application; product media and generic asset controllers/services now reuse the shared policy without route or DB changes.
 - Phase 2 complete: `IMediaStorageProvider` and local filesystem provider added; product media import/original render and generic asset upload/replace/delete/original render use provider-backed path resolution while preserving existing storage layout.
 - Phase 3 complete: product and generic asset URL builders support named presets and configured-public-base absolute URLs; product media cache now distinguishes versioned immutable URLs from unversioned short-cache URLs; media responses include `nosniff`; Storefront V2 media proxy copies `X-Content-Type-Options`. Placeholder image asset selection is deferred because the current codebase has no semantic placeholder/no-image asset to reference safely.
+- Phase 4 complete: product media service now invalidates catalog cache after order changes and every delete; deleting primary media excludes the deleted row when selecting the next primary so `Product.Image` is reassigned or cleared correctly; service tests guard primary sync, fallback/clear, invalidation, and alt text preservation.
 
 ## Goal
 
@@ -390,15 +391,15 @@ Goal: improve product media behavior while preserving existing product gallery a
 
 Tasks:
 
-- [ ] Update product media service/controller to use shared policy from Phase 1.
-- [ ] Update downloader/storage path use to go through storage provider from Phase 2.
-- [ ] Add URL preset helper for product card, product detail, and cart thumbnails.
-- [ ] Ensure primary media sync still writes `Product.Image`.
-- [ ] Ensure deleting primary media still chooses next stored media or clears `Product.Image`.
-- [ ] Ensure catalog cache invalidation still runs when primary/order/delete changes.
-- [ ] Expose or preserve `AltText` in admin DTOs.
-- [ ] Evaluate whether Storefront product response needs primary image alt text without breaking existing DTOs.
-- [ ] Do not change product import task type or worker model.
+- [x] Update product media service/controller to use shared policy from Phase 1.
+- [x] Update downloader/storage path use to go through storage provider from Phase 2.
+- [x] Add URL preset helper for product card, product detail, and cart thumbnails.
+- [x] Ensure primary media sync still writes `Product.Image`.
+- [x] Ensure deleting primary media still chooses next stored media or clears `Product.Image`.
+- [x] Ensure catalog cache invalidation still runs when primary/order/delete changes.
+- [x] Expose or preserve `AltText` in admin DTOs.
+- [x] Evaluate whether Storefront product response needs primary image alt text without breaking existing DTOs. Decision: keep current Storefront public contract unchanged in Phase 4; it still exposes `Image`, `PrimaryMediaPublicId`, and `HasPrimaryMedia`, while admin product media DTO preserves `AltText`.
+- [x] Do not change product import task type or worker model.
 
 Likely files:
 
@@ -411,11 +412,16 @@ Likely files:
 
 Review gate:
 
-- [ ] No replacement of `ProductMedia`.
-- [ ] No replacement of `Product.Image`.
-- [ ] Import/retry/delete/primary/order behavior remains available.
-- [ ] Existing Control Plane Web still calls Control Plane API only.
-- [ ] Storefront product listing/detail/cart still render product image.
+- [x] No replacement of `ProductMedia`.
+- [x] No replacement of `Product.Image`.
+- [x] Import/retry/delete/primary/order behavior remains available.
+- [x] Existing Control Plane Web still calls Control Plane API only.
+- [x] Storefront product listing/detail/cart still render product image through existing `Product.Image` compatibility.
+
+Phase 4 verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~ProductMediaServiceTests|FullyQualifiedName~MediaUrlBuilderTests|FullyQualifiedName~MediaDeliveryHardeningTests|FullyQualifiedName~MediaFilePolicyTests|FullyQualifiedName~MediaTransformPolicyTests|FullyQualifiedName~LocalMediaStorageProviderTests"` passed 40/40.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
 
 ## Phase 5 - Category Media Assignment
 

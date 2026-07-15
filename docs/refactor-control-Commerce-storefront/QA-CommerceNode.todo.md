@@ -447,6 +447,8 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Media Core Phase 3 URL builder tests cover product presets, generic asset presets, configured-public-base absolute URLs, and unsafe absolute URL rejection. 2026-07-15: `MediaUrlBuilderTests` passed in focused media run.
 - [x] CommerceNode API builds after Media Core Phase 3 delivery hardening. 2026-07-15: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
 - [~] Media Core placeholder/default image policy remains deferred until a real product/category/page placeholder asset is selected. 2026-07-15: repo inspection found no semantic placeholder/no-image asset; Phase 3 avoids introducing broken media URLs.
+- [x] Media Core Phase 4 product media service tests cover order-change catalog invalidation, delete invalidation, primary delete fallback/clear behavior, and admin alt text preservation. 2026-07-15: `ProductMediaServiceTests` passed 5/5 and focused media run passed 40/40.
+- [x] CommerceNode API builds after Media Core Phase 4 product media hardening. 2026-07-15: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
 
 ### Product Import
 
