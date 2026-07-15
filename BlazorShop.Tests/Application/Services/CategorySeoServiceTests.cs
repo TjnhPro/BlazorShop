@@ -269,7 +269,103 @@ namespace BlazorShop.Tests.Application.Services
                 Times.Never);
         }
 
-        private CategorySeoService CreateStoreScopedService(Guid storeId)
+        [Fact]
+        public async Task UpdateAsync_WhenStoreScopedSlugChanges_UsesPolicyAndSlugHistory()
+        {
+            var storeId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
+            var existingCategory = new Category
+            {
+                Id = categoryId,
+                StoreId = storeId,
+                Name = "Men",
+                Slug = "old-category",
+                IsPublished = true,
+            };
+            var slugPolicy = new Mock<IStoreSeoSlugPolicyService>();
+            var slugHistory = new Mock<IStoreSeoSlugHistoryService>();
+            var service = CreateStoreScopedService(storeId, slugPolicy.Object, slugHistory.Object);
+
+            _categoryReadRepository
+                .Setup(repository => repository.GetCategoryByIdForCurrentStoreAsync(categoryId))
+                .ReturnsAsync(new Category
+                {
+                    Id = categoryId,
+                    StoreId = storeId,
+                    Slug = "old-category",
+                    IsPublished = true,
+                });
+            _categoryRepository
+                .Setup(repository => repository.GetByIdAsync(categoryId))
+                .ReturnsAsync(existingCategory);
+            _categoryRepository
+                .Setup(repository => repository.UpdateAsync(existingCategory))
+                .ReturnsAsync(1);
+            slugPolicy
+                .Setup(service => service.ValidateSlugAsync(
+                    SeoSlugEntityTypes.Category,
+                    "new-category",
+                    storeId,
+                    null,
+                    categoryId,
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(StoreSeoSlugPolicyResult.Succeeded("new-category"));
+            slugHistory
+                .Setup(service => service.GetActiveSlugAsync(
+                    SeoSlugEntityTypes.Category,
+                    categoryId,
+                    storeId,
+                    null,
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync((StoreSeoSlugHistoryDto?)null);
+            slugHistory
+                .Setup(service => service.RecordInitialActiveSlugAsync(
+                    SeoSlugEntityTypes.Category,
+                    categoryId,
+                    storeId,
+                    "old-category",
+                    null,
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(SlugHistorySuccess(storeId, SeoSlugEntityTypes.Category, categoryId, "old-category"));
+            slugHistory
+                .Setup(service => service.ReplaceActiveSlugAsync(
+                    SeoSlugEntityTypes.Category,
+                    categoryId,
+                    storeId,
+                    "new-category",
+                    null,
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(SlugHistorySuccess(storeId, SeoSlugEntityTypes.Category, categoryId, "new-category"));
+            _seoRedirectAutomationService
+                .Setup(service => service.EnsurePermanentRedirectAsync("/category/old-category", "/category/new-category"))
+                .ReturnsAsync(new ServiceResponse<SeoRedirectDto>(true, "Created", Guid.NewGuid())
+                {
+                    ResponseType = ServiceResponseType.Success,
+                    Payload = new SeoRedirectDto
+                    {
+                        OldPath = "/category/old-category",
+                        NewPath = "/category/new-category",
+                        StatusCode = 301,
+                        IsActive = true,
+                    },
+                });
+
+            var result = await service.UpdateAsync(categoryId, new UpdateCategorySeoDto
+            {
+                Slug = "New Category",
+                IsPublished = true,
+            });
+
+            Assert.True(result.Success);
+            Assert.Equal("new-category", existingCategory.Slug);
+            slugPolicy.VerifyAll();
+            slugHistory.VerifyAll();
+        }
+
+        private CategorySeoService CreateStoreScopedService(
+            Guid storeId,
+            IStoreSeoSlugPolicyService? slugPolicyService = null,
+            IStoreSeoSlugHistoryService? slugHistoryService = null)
         {
             var slugService = new SlugService();
             return new CategorySeoService(
@@ -281,7 +377,32 @@ namespace BlazorShop.Tests.Application.Services
                 _seoRedirectAutomationService.Object,
                 new ValidationService(),
                 new UpdateCategorySeoDtoValidator(slugService),
-                storeContext: new FixedStoreContext(storeId));
+                storeContext: new FixedStoreContext(storeId),
+                slugPolicyService: slugPolicyService,
+                slugHistoryService: slugHistoryService);
+        }
+
+        private static ServiceResponse<StoreSeoSlugHistoryDto> SlugHistorySuccess(
+            Guid storeId,
+            string entityType,
+            Guid entityId,
+            string slug)
+        {
+            return new ServiceResponse<StoreSeoSlugHistoryDto>(true, "Recorded", Guid.NewGuid())
+            {
+                ResponseType = ServiceResponseType.Success,
+                Payload = new StoreSeoSlugHistoryDto(
+                    Guid.NewGuid(),
+                    storeId,
+                    entityType,
+                    entityId,
+                    slug,
+                    null,
+                    true,
+                    DateTimeOffset.UtcNow,
+                    null,
+                    null),
+            };
         }
 
         private sealed class FixedStoreContext : ICommerceStoreContext

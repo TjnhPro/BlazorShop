@@ -8,6 +8,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
+    using BlazorShop.Application.DTOs.Seo;
+    using BlazorShop.Application.Services;
     using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Application.Services.Contracts.Admin;
     using BlazorShop.Domain.Entities.CommerceNode;
@@ -25,19 +27,28 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly ISlugService slugService;
         private readonly IAdminAuditService auditService;
         private readonly IStorefrontNavigationCache? navigationCache;
+        private readonly IStoreSeoSlugPolicyService? slugPolicyService;
+        private readonly IStoreSeoSlugHistoryService? slugHistoryService;
+        private readonly ISeoRedirectAutomationService? seoRedirectAutomationService;
 
         public StorefrontPageService(
             CommerceNodeDbContext context,
             ICommerceStoreContext storeContext,
             ISlugService slugService,
             IAdminAuditService auditService,
-            IStorefrontNavigationCache? navigationCache = null)
+            IStorefrontNavigationCache? navigationCache = null,
+            IStoreSeoSlugPolicyService? slugPolicyService = null,
+            IStoreSeoSlugHistoryService? slugHistoryService = null,
+            ISeoRedirectAutomationService? seoRedirectAutomationService = null)
         {
             this.context = context;
             this.storeContext = storeContext;
             this.slugService = slugService;
             this.auditService = auditService;
             this.navigationCache = navigationCache;
+            this.slugPolicyService = slugPolicyService;
+            this.slugHistoryService = slugHistoryService;
+            this.seoRedirectAutomationService = seoRedirectAutomationService;
         }
 
         public async Task<ServiceResponse<StorefrontPageListResponse>> ListAsync(
@@ -115,12 +126,23 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failure<StorefrontPageDetailDto>(normalized.Message!, ServiceResponseType.ValidationError);
             }
 
-            var duplicate = await this.context.StorefrontPages.AnyAsync(
-                page => page.StoreId == storeId && page.Slug == normalized.Slug,
-                cancellationToken);
-            if (duplicate)
+            var slugResult = await this.ResolveCreateSlugAsync(normalized, request.Slug, storeId.Value, cancellationToken);
+            if (!slugResult.Success)
             {
-                return Failure<StorefrontPageDetailDto>("Storefront page slug already exists for this store.", ServiceResponseType.Conflict);
+                return Failure<StorefrontPageDetailDto>(slugResult.Message!, slugResult.ResponseType);
+            }
+
+            normalized = normalized with { Slug = slugResult.Slug };
+
+            if (this.slugPolicyService is null)
+            {
+                var duplicate = await this.context.StorefrontPages.AnyAsync(
+                    page => page.StoreId == storeId && page.Slug == normalized.Slug,
+                    cancellationToken);
+                if (duplicate)
+                {
+                    return Failure<StorefrontPageDetailDto>("Storefront page slug already exists for this store.", ServiceResponseType.Conflict);
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(normalized.PageKey))
@@ -164,6 +186,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             };
 
             this.context.StorefrontPages.Add(page);
+            var historyResult = await this.EnsureSlugHistoryAsync(page.StoreId, page.Id, oldSlug: null, page.Slug, cancellationToken);
+            if (!historyResult.Success)
+            {
+                return Failure<StorefrontPageDetailDto>(historyResult.Message!, historyResult.ResponseType);
+            }
+
             await this.context.SaveChangesAsync(cancellationToken);
             this.navigationCache?.Invalidate(page.StoreId);
             await this.LogAsync("StorefrontPage.Created", page.Id, "Storefront page created.", new { page.Title, page.Slug }, cancellationToken);
@@ -190,12 +218,21 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failure<StorefrontPageDetailDto>(normalized.Message!, ServiceResponseType.ValidationError);
             }
 
-            var duplicate = await this.context.StorefrontPages.AnyAsync(
-                item => item.StoreId == page.StoreId && item.Slug == normalized.Slug && item.Id != page.Id,
-                cancellationToken);
-            if (duplicate)
+            var slugResult = await this.ValidateUpdateSlugAsync(normalized.Slug!, page.StoreId, page.Id, cancellationToken);
+            if (!slugResult.Success)
             {
-                return Failure<StorefrontPageDetailDto>("Storefront page slug already exists for this store.", ServiceResponseType.Conflict);
+                return Failure<StorefrontPageDetailDto>(slugResult.Message!, slugResult.ResponseType);
+            }
+
+            if (this.slugPolicyService is null)
+            {
+                var duplicate = await this.context.StorefrontPages.AnyAsync(
+                    item => item.StoreId == page.StoreId && item.Slug == normalized.Slug && item.Id != page.Id,
+                    cancellationToken);
+                if (duplicate)
+                {
+                    return Failure<StorefrontPageDetailDto>("Storefront page slug already exists for this store.", ServiceResponseType.Conflict);
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(normalized.PageKey))
@@ -211,6 +248,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 {
                     return Failure<StorefrontPageDetailDto>("Storefront page key already exists for this store.", ServiceResponseType.Conflict);
                 }
+            }
+
+            var oldSlug = page.Slug;
+            var oldPublicPath = BuildPagePublicPath(page.Slug, page.IsPublished);
+            var newPublicPath = BuildPagePublicPath(normalized.Slug, request.IsPublished);
+
+            var redirectResult = await this.EnsureRedirectAsync(oldPublicPath, newPublicPath);
+            if (!redirectResult.Success)
+            {
+                return Failure<StorefrontPageDetailDto>(redirectResult.Message!, redirectResult.ResponseType);
             }
 
             page.Slug = normalized.Slug!;
@@ -232,6 +279,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             page.RobotsIndex = normalized.Seo.RobotsIndex;
             page.RobotsFollow = normalized.Seo.RobotsFollow;
             page.UpdatedAt = DateTimeOffset.UtcNow;
+
+            var historyResult = await this.EnsureSlugHistoryAsync(page.StoreId, page.Id, oldSlug, page.Slug, cancellationToken);
+            if (!historyResult.Success)
+            {
+                return Failure<StorefrontPageDetailDto>(historyResult.Message!, historyResult.ResponseType);
+            }
 
             await this.context.SaveChangesAsync(cancellationToken);
             this.navigationCache?.Invalidate(page.StoreId);
@@ -341,7 +394,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private NormalizedStorefrontPage NormalizeCreate(CreateStorefrontPageRequest request)
         {
             return this.Normalize(
-                request.Slug,
+                string.IsNullOrWhiteSpace(request.Slug) ? request.Title : request.Slug,
                 request.Title,
                 request.Intro,
                 request.BodyHtml,
@@ -469,6 +522,126 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return string.IsNullOrWhiteSpace(normalized) || !this.slugService.IsSlugSafe(normalized) || normalized.Contains('/')
                 ? null
                 : normalized;
+        }
+
+        private async Task<SlugPolicyOutcome> ResolveCreateSlugAsync(
+            NormalizedStorefrontPage normalized,
+            string? requestedSlug,
+            Guid storeId,
+            CancellationToken cancellationToken)
+        {
+            if (this.slugPolicyService is null)
+            {
+                return SlugPolicyOutcome.Succeeded(normalized.Slug!);
+            }
+
+            var result = string.IsNullOrWhiteSpace(requestedSlug)
+                ? await this.slugPolicyService.GenerateSlugAsync(SeoSlugEntityTypes.Page, normalized.Title, storeId, excludedEntityId: null, cancellationToken: cancellationToken)
+                : await this.slugPolicyService.ValidateSlugAsync(SeoSlugEntityTypes.Page, normalized.Slug, storeId, excludedEntityId: null, cancellationToken: cancellationToken);
+
+            return ToPageSlugOutcome(result);
+        }
+
+        private async Task<SlugPolicyOutcome> ValidateUpdateSlugAsync(
+            string slug,
+            Guid storeId,
+            Guid pageId,
+            CancellationToken cancellationToken)
+        {
+            if (this.slugPolicyService is null)
+            {
+                return SlugPolicyOutcome.Succeeded(slug);
+            }
+
+            return ToPageSlugOutcome(await this.slugPolicyService.ValidateSlugAsync(
+                SeoSlugEntityTypes.Page,
+                slug,
+                storeId,
+                excludedEntityId: pageId,
+                cancellationToken: cancellationToken));
+        }
+
+        private async Task<SlugPolicyOutcome> EnsureSlugHistoryAsync(
+            Guid storeId,
+            Guid pageId,
+            string? oldSlug,
+            string newSlug,
+            CancellationToken cancellationToken)
+        {
+            if (this.slugHistoryService is null)
+            {
+                return SlugPolicyOutcome.Succeeded(newSlug);
+            }
+
+            var active = await this.slugHistoryService.GetActiveSlugAsync(SeoSlugEntityTypes.Page, pageId, storeId, cancellationToken: cancellationToken);
+            if (active is null && !string.IsNullOrWhiteSpace(oldSlug))
+            {
+                var initial = await this.slugHistoryService.RecordInitialActiveSlugAsync(
+                    SeoSlugEntityTypes.Page,
+                    pageId,
+                    storeId,
+                    oldSlug,
+                    cancellationToken: cancellationToken);
+                if (!initial.Success)
+                {
+                    return SlugPolicyOutcome.Failed(
+                        initial.Message ?? "Storefront page slug history could not be recorded.",
+                        initial.ResponseType);
+                }
+            }
+
+            var replacement = await this.slugHistoryService.ReplaceActiveSlugAsync(
+                SeoSlugEntityTypes.Page,
+                pageId,
+                storeId,
+                newSlug,
+                cancellationToken: cancellationToken);
+
+            return replacement.Success
+                ? SlugPolicyOutcome.Succeeded(replacement.Payload?.Slug ?? newSlug)
+                : SlugPolicyOutcome.Failed(
+                    replacement.Message ?? "Storefront page slug history could not be updated.",
+                    replacement.ResponseType);
+        }
+
+        private async Task<SlugPolicyOutcome> EnsureRedirectAsync(string? oldPublicPath, string? newPublicPath)
+        {
+            if (this.seoRedirectAutomationService is null ||
+                string.IsNullOrWhiteSpace(oldPublicPath) ||
+                string.IsNullOrWhiteSpace(newPublicPath) ||
+                PathsEqual(oldPublicPath, newPublicPath))
+            {
+                return SlugPolicyOutcome.Succeeded(newPublicPath ?? string.Empty);
+            }
+
+            var redirect = await this.seoRedirectAutomationService.EnsurePermanentRedirectAsync(oldPublicPath, newPublicPath);
+            return redirect.Success
+                ? SlugPolicyOutcome.Succeeded(newPublicPath)
+                : SlugPolicyOutcome.Failed(redirect.Message ?? "Storefront page redirect could not be created.", redirect.ResponseType);
+        }
+
+        private static SlugPolicyOutcome ToPageSlugOutcome(StoreSeoSlugPolicyResult result)
+        {
+            if (result.Success)
+            {
+                return SlugPolicyOutcome.Succeeded(result.Slug!);
+            }
+
+            return string.Equals(result.Message, "Slug is already in use.", StringComparison.Ordinal)
+                ? SlugPolicyOutcome.Failed("Storefront page slug already exists for this store.", ServiceResponseType.Conflict)
+                : SlugPolicyOutcome.Failed(result.Message ?? "Storefront page slug is invalid.", ServiceResponseType.ValidationError);
+        }
+
+        private static string? BuildPagePublicPath(string? slug, bool isPublished)
+        {
+            return isPublished && !string.IsNullOrWhiteSpace(slug)
+                ? $"/pages/{slug}"
+                : null;
+        }
+
+        private static bool PathsEqual(string left, string right)
+        {
+            return string.Equals(left.TrimEnd('/'), right.TrimEnd('/'), StringComparison.OrdinalIgnoreCase);
         }
 
         private static StorefrontPageSeoDto NormalizeSeo(StorefrontPageSeoDto? seo)
@@ -784,6 +957,23 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             public static NormalizedOptionalValue InvalidValue()
             {
                 return new NormalizedOptionalValue(true, null);
+            }
+        }
+
+        private sealed record SlugPolicyOutcome(
+            bool Success,
+            string? Slug,
+            ServiceResponseType ResponseType,
+            string? Message = null)
+        {
+            public static SlugPolicyOutcome Succeeded(string slug)
+            {
+                return new SlugPolicyOutcome(true, slug, ServiceResponseType.Success);
+            }
+
+            public static SlugPolicyOutcome Failed(string message, ServiceResponseType responseType)
+            {
+                return new SlugPolicyOutcome(false, null, responseType, message);
             }
         }
     }

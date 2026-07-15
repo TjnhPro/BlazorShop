@@ -30,6 +30,8 @@ namespace BlazorShop.Application.Services
         private readonly IValidator<UpdateCategorySeoDto> _validator;
         private readonly IAdminAuditService? _auditService;
         private readonly ICommerceStoreContext? _storeContext;
+        private readonly IStoreSeoSlugPolicyService? _slugPolicyService;
+        private readonly IStoreSeoSlugHistoryService? _slugHistoryService;
 
         public CategorySeoService(
             IGenericRepository<Category> categoryRepository,
@@ -41,7 +43,9 @@ namespace BlazorShop.Application.Services
             IValidationService validationService,
             IValidator<UpdateCategorySeoDto> validator,
             IAdminAuditService? auditService = null,
-            ICommerceStoreContext? storeContext = null)
+            ICommerceStoreContext? storeContext = null,
+            IStoreSeoSlugPolicyService? slugPolicyService = null,
+            IStoreSeoSlugHistoryService? slugHistoryService = null)
         {
             _categoryRepository = categoryRepository;
             _categoryReadRepository = categoryReadRepository;
@@ -53,6 +57,8 @@ namespace BlazorShop.Application.Services
             _validator = validator;
             _auditService = auditService;
             _storeContext = storeContext;
+            _slugPolicyService = slugPolicyService;
+            _slugHistoryService = slugHistoryService;
         }
 
         public async Task<ServiceResponse<CategorySeoDto>> GetByCategoryIdAsync(Guid categoryId)
@@ -102,10 +108,13 @@ namespace BlazorShop.Application.Services
                 return NotFound("Category not found.");
             }
 
-            if (!string.IsNullOrWhiteSpace(normalizedRequest.Slug)
-                && await CategorySlugExistsAsync(normalizedRequest.Slug, categorySnapshot.StoreId, categoryId))
+            if (!string.IsNullOrWhiteSpace(normalizedRequest.Slug))
             {
-                return Conflict("Category slug is already in use.");
+                var slugPolicyResponse = await ValidateCategorySlugAsync(normalizedRequest.Slug, categorySnapshot.StoreId, categoryId);
+                if (slugPolicyResponse is not null)
+                {
+                    return slugPolicyResponse;
+                }
             }
 
             var category = await _categoryRepository.GetByIdAsync(categoryId);
@@ -122,6 +131,7 @@ namespace BlazorShop.Application.Services
                 return await _transactionManager.ExecuteInTransactionAsync(async () =>
                 {
                     await EnsureRedirectAsync(oldPublicPath, newPublicPath);
+                    await EnsureSlugHistoryAsync(category.StoreId, category.Id, categorySnapshot?.Slug, normalizedRequest.Slug);
 
                     _mapper.Map(normalizedRequest, category);
                     var rowsAffected = await _categoryRepository.UpdateAsync(category);
@@ -172,6 +182,26 @@ namespace BlazorShop.Application.Services
             return _storeContext is not null
                 ? _categoryReadRepository.CategorySlugExistsInStoreAsync(slug, storeId, categoryId)
                 : _categoryReadRepository.CategorySlugExistsAsync(slug, categoryId);
+        }
+
+        private async Task<ServiceResponse<CategorySeoDto>?> ValidateCategorySlugAsync(string slug, Guid? storeId, Guid categoryId)
+        {
+            if (_slugPolicyService is not null && _storeContext is not null && storeId.HasValue)
+            {
+                var result = await _slugPolicyService.ValidateSlugAsync(SeoSlugEntityTypes.Category, slug, storeId.Value, excludedEntityId: categoryId);
+                if (result.Success)
+                {
+                    return null;
+                }
+
+                return string.Equals(result.Message, "Slug is already in use.", StringComparison.Ordinal)
+                    ? Conflict("Category slug is already in use.")
+                    : ValidationError(result.Message ?? "Category slug is invalid.");
+            }
+
+            return await CategorySlugExistsAsync(slug, storeId, categoryId)
+                ? Conflict("Category slug is already in use.")
+                : null;
         }
 
         private async Task<bool> CategoryBelongsToCurrentStoreAsync(Category category)
@@ -236,6 +266,39 @@ namespace BlazorShop.Application.Services
                 throw new ServiceResponseException(
                     redirectResult.Message ?? "Automatic redirect could not be created.",
                     redirectResult.ResponseType);
+            }
+        }
+
+        private async Task EnsureSlugHistoryAsync(Guid? storeId, Guid categoryId, string? oldSlug, string? newSlug)
+        {
+            if (_slugHistoryService is null || !storeId.HasValue || string.IsNullOrWhiteSpace(newSlug))
+            {
+                return;
+            }
+
+            var active = await _slugHistoryService.GetActiveSlugAsync(SeoSlugEntityTypes.Category, categoryId, storeId.Value);
+            if (active is null && !string.IsNullOrWhiteSpace(oldSlug))
+            {
+                await EnsureSlugHistoryResultAsync(
+                    _slugHistoryService.RecordInitialActiveSlugAsync(SeoSlugEntityTypes.Category, categoryId, storeId.Value, oldSlug),
+                    "Category SEO slug history could not be recorded.");
+            }
+
+            await EnsureSlugHistoryResultAsync(
+                _slugHistoryService.ReplaceActiveSlugAsync(SeoSlugEntityTypes.Category, categoryId, storeId.Value, newSlug),
+                "Category SEO slug history could not be updated.");
+        }
+
+        private static async Task EnsureSlugHistoryResultAsync(
+            Task<ServiceResponse<StoreSeoSlugHistoryDto>> operation,
+            string fallbackMessage)
+        {
+            var result = await operation;
+            if (!result.Success)
+            {
+                throw new ServiceResponseException(
+                    result.Message ?? fallbackMessage,
+                    result.ResponseType);
             }
         }
 

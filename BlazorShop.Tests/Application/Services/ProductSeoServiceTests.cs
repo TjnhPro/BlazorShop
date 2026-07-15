@@ -313,7 +313,109 @@ namespace BlazorShop.Tests.Application.Services
                 Times.Never);
         }
 
-        private ProductSeoService CreateStoreScopedService(Guid storeId)
+        [Fact]
+        public async Task UpdateAsync_WhenStoreScopedSlugChanges_UsesPolicyAndSlugHistory()
+        {
+            var storeId = Guid.NewGuid();
+            var productId = Guid.NewGuid();
+            var categoryId = Guid.NewGuid();
+            var existingPublishedOn = new DateTime(2026, 4, 18, 0, 0, 0, DateTimeKind.Utc);
+            var existingProduct = new Product
+            {
+                Id = productId,
+                StoreId = storeId,
+                Name = "Running Shoes",
+                Slug = "old-shoes",
+                IsPublished = true,
+                PublishedOn = existingPublishedOn,
+                CategoryId = categoryId,
+            };
+            var slugPolicy = new Mock<IStoreSeoSlugPolicyService>();
+            var slugHistory = new Mock<IStoreSeoSlugHistoryService>();
+            var service = CreateStoreScopedService(storeId, slugPolicy.Object, slugHistory.Object);
+
+            _productReadRepository
+                .Setup(repository => repository.GetProductDetailsByIdForCurrentStoreAsync(productId))
+                .ReturnsAsync(new Product
+                {
+                    Id = productId,
+                    StoreId = storeId,
+                    Slug = "old-shoes",
+                    IsPublished = true,
+                    PublishedOn = existingPublishedOn,
+                    Category = new Category { Id = categoryId, StoreId = storeId, IsPublished = true },
+                });
+            _productRepository
+                .Setup(repository => repository.GetByIdAsync(productId))
+                .ReturnsAsync(existingProduct);
+            _productRepository
+                .Setup(repository => repository.UpdateAsync(existingProduct))
+                .ReturnsAsync(1);
+            slugPolicy
+                .Setup(service => service.ValidateSlugAsync(
+                    SeoSlugEntityTypes.Product,
+                    "new-shoes",
+                    storeId,
+                    null,
+                    productId,
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(StoreSeoSlugPolicyResult.Succeeded("new-shoes"));
+            slugHistory
+                .Setup(service => service.GetActiveSlugAsync(
+                    SeoSlugEntityTypes.Product,
+                    productId,
+                    storeId,
+                    null,
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync((StoreSeoSlugHistoryDto?)null);
+            slugHistory
+                .Setup(service => service.RecordInitialActiveSlugAsync(
+                    SeoSlugEntityTypes.Product,
+                    productId,
+                    storeId,
+                    "old-shoes",
+                    null,
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(SlugHistorySuccess(storeId, SeoSlugEntityTypes.Product, productId, "old-shoes"));
+            slugHistory
+                .Setup(service => service.ReplaceActiveSlugAsync(
+                    SeoSlugEntityTypes.Product,
+                    productId,
+                    storeId,
+                    "new-shoes",
+                    null,
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(SlugHistorySuccess(storeId, SeoSlugEntityTypes.Product, productId, "new-shoes"));
+            _seoRedirectAutomationService
+                .Setup(service => service.EnsurePermanentRedirectAsync("/product/old-shoes", "/product/new-shoes"))
+                .ReturnsAsync(new ServiceResponse<SeoRedirectDto>(true, "Created", Guid.NewGuid())
+                {
+                    ResponseType = ServiceResponseType.Success,
+                    Payload = new SeoRedirectDto
+                    {
+                        OldPath = "/product/old-shoes",
+                        NewPath = "/product/new-shoes",
+                        StatusCode = 301,
+                        IsActive = true,
+                    },
+                });
+
+            var result = await service.UpdateAsync(productId, new UpdateProductSeoDto
+            {
+                Slug = "New Shoes",
+                IsPublished = true,
+            });
+
+            Assert.True(result.Success);
+            Assert.Equal("new-shoes", existingProduct.Slug);
+            slugPolicy.VerifyAll();
+            slugHistory.VerifyAll();
+        }
+
+        private ProductSeoService CreateStoreScopedService(
+            Guid storeId,
+            IStoreSeoSlugPolicyService? slugPolicyService = null,
+            IStoreSeoSlugHistoryService? slugHistoryService = null)
         {
             var slugService = new SlugService();
             return new ProductSeoService(
@@ -325,7 +427,32 @@ namespace BlazorShop.Tests.Application.Services
                 _seoRedirectAutomationService.Object,
                 new ValidationService(),
                 new UpdateProductSeoDtoValidator(slugService),
-                storeContext: new FixedStoreContext(storeId));
+                storeContext: new FixedStoreContext(storeId),
+                slugPolicyService: slugPolicyService,
+                slugHistoryService: slugHistoryService);
+        }
+
+        private static ServiceResponse<StoreSeoSlugHistoryDto> SlugHistorySuccess(
+            Guid storeId,
+            string entityType,
+            Guid entityId,
+            string slug)
+        {
+            return new ServiceResponse<StoreSeoSlugHistoryDto>(true, "Recorded", Guid.NewGuid())
+            {
+                ResponseType = ServiceResponseType.Success,
+                Payload = new StoreSeoSlugHistoryDto(
+                    Guid.NewGuid(),
+                    storeId,
+                    entityType,
+                    entityId,
+                    slug,
+                    null,
+                    true,
+                    DateTimeOffset.UtcNow,
+                    null,
+                    null),
+            };
         }
 
         private sealed class FixedStoreContext : ICommerceStoreContext

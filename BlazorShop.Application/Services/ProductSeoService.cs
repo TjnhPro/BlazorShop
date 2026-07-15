@@ -29,6 +29,8 @@ namespace BlazorShop.Application.Services
         private readonly IValidator<UpdateProductSeoDto> _validator;
         private readonly IAdminAuditService? _auditService;
         private readonly ICommerceStoreContext? _storeContext;
+        private readonly IStoreSeoSlugPolicyService? _slugPolicyService;
+        private readonly IStoreSeoSlugHistoryService? _slugHistoryService;
 
         public ProductSeoService(
             IGenericRepository<Product> productRepository,
@@ -40,7 +42,9 @@ namespace BlazorShop.Application.Services
             IValidationService validationService,
             IValidator<UpdateProductSeoDto> validator,
             IAdminAuditService? auditService = null,
-            ICommerceStoreContext? storeContext = null)
+            ICommerceStoreContext? storeContext = null,
+            IStoreSeoSlugPolicyService? slugPolicyService = null,
+            IStoreSeoSlugHistoryService? slugHistoryService = null)
         {
             _productRepository = productRepository;
             _productReadRepository = productReadRepository;
@@ -52,6 +56,8 @@ namespace BlazorShop.Application.Services
             _validator = validator;
             _auditService = auditService;
             _storeContext = storeContext;
+            _slugPolicyService = slugPolicyService;
+            _slugHistoryService = slugHistoryService;
         }
 
         public async Task<ServiceResponse<ProductSeoDto>> GetByProductIdAsync(Guid productId)
@@ -101,10 +107,13 @@ namespace BlazorShop.Application.Services
                 return NotFound("Product not found.");
             }
 
-            if (!string.IsNullOrWhiteSpace(normalizedRequest.Slug)
-                && await ProductSlugExistsAsync(normalizedRequest.Slug, productSnapshot.StoreId, productId))
+            if (!string.IsNullOrWhiteSpace(normalizedRequest.Slug))
             {
-                return Conflict("Product slug is already in use.");
+                var slugPolicyResponse = await ValidateProductSlugAsync(normalizedRequest.Slug, productSnapshot.StoreId, productId);
+                if (slugPolicyResponse is not null)
+                {
+                    return slugPolicyResponse;
+                }
             }
 
             var product = await _productRepository.GetByIdAsync(productId);
@@ -122,6 +131,7 @@ namespace BlazorShop.Application.Services
                 return await _transactionManager.ExecuteInTransactionAsync(async () =>
                 {
                     await EnsureRedirectAsync(oldPublicPath, newPublicPath);
+                    await EnsureSlugHistoryAsync(product.StoreId, product.Id, productSnapshot?.Slug, normalizedRequest.Slug);
 
                     _mapper.Map(normalizedRequest, product);
 
@@ -188,6 +198,26 @@ namespace BlazorShop.Application.Services
                 : _productReadRepository.ProductSlugExistsAsync(slug, productId);
         }
 
+        private async Task<ServiceResponse<ProductSeoDto>?> ValidateProductSlugAsync(string slug, Guid? storeId, Guid productId)
+        {
+            if (_slugPolicyService is not null && _storeContext is not null && storeId.HasValue)
+            {
+                var result = await _slugPolicyService.ValidateSlugAsync(SeoSlugEntityTypes.Product, slug, storeId.Value, excludedEntityId: productId);
+                if (result.Success)
+                {
+                    return null;
+                }
+
+                return string.Equals(result.Message, "Slug is already in use.", StringComparison.Ordinal)
+                    ? Conflict("Product slug is already in use.")
+                    : ValidationError(result.Message ?? "Product slug is invalid.");
+            }
+
+            return await ProductSlugExistsAsync(slug, storeId, productId)
+                ? Conflict("Product slug is already in use.")
+                : null;
+        }
+
         private async Task<bool> ProductBelongsToCurrentStoreAsync(Product product)
         {
             if (_storeContext is null)
@@ -251,6 +281,39 @@ namespace BlazorShop.Application.Services
                 throw new ServiceResponseException(
                     redirectResult.Message ?? "Automatic redirect could not be created.",
                     redirectResult.ResponseType);
+            }
+        }
+
+        private async Task EnsureSlugHistoryAsync(Guid? storeId, Guid productId, string? oldSlug, string? newSlug)
+        {
+            if (_slugHistoryService is null || !storeId.HasValue || string.IsNullOrWhiteSpace(newSlug))
+            {
+                return;
+            }
+
+            var active = await _slugHistoryService.GetActiveSlugAsync(SeoSlugEntityTypes.Product, productId, storeId.Value);
+            if (active is null && !string.IsNullOrWhiteSpace(oldSlug))
+            {
+                await EnsureSlugHistoryResultAsync(
+                    _slugHistoryService.RecordInitialActiveSlugAsync(SeoSlugEntityTypes.Product, productId, storeId.Value, oldSlug),
+                    "Product SEO slug history could not be recorded.");
+            }
+
+            await EnsureSlugHistoryResultAsync(
+                _slugHistoryService.ReplaceActiveSlugAsync(SeoSlugEntityTypes.Product, productId, storeId.Value, newSlug),
+                "Product SEO slug history could not be updated.");
+        }
+
+        private static async Task EnsureSlugHistoryResultAsync(
+            Task<ServiceResponse<StoreSeoSlugHistoryDto>> operation,
+            string fallbackMessage)
+        {
+            var result = await operation;
+            if (!result.Success)
+            {
+                throw new ServiceResponseException(
+                    result.Message ?? fallbackMessage,
+                    result.ResponseType);
             }
         }
 

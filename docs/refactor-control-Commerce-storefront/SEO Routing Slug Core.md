@@ -20,6 +20,7 @@ Updated: 2026-07-15
 - Phase 2 complete: shared SEO slug policy service added with reserved route validation, Unicode-preserving normalization, store-scoped collision checking, and suffix generation.
 - Phase 3 complete: Commerce Node slug history table/service/backfill foundation added without replacing entity `Slug` fields.
 - Phase 4 complete: canonical SEO URL resolver added for store-scoped product/category/page public paths, old-slug canonical redirects, not-found, gone, and invalid outcomes.
+- Phase 5 complete: product, category, and storefront page slug update flows now use shared slug policy/history in V2; published page slug changes create store-scoped 301 redirects; page create can generate a slug from title.
 - Phase 11 is conditional and should run only after a real legacy topic URL inventory exists.
 
 Autoplan note: external dual-voice subagents are not available in this Codex runtime. This plan records an internal autoplan audit using the same decision principles: preserve existing working behavior, fix the riskiest foundation first, keep V2 boundaries explicit, avoid speculative localization/manufacturer work, and make each phase independently verifiable.
@@ -547,9 +548,9 @@ Tasks:
 
 Exit criteria:
 
-- Product/category/page slug lifecycle behaves consistently.
-- Existing public routes still work.
-- Old page slug redirects now work.
+- Product/category/page slug lifecycle behaves consistently. Complete; store-scoped V2 flows validate through shared slug policy when available and persist active slug history.
+- Existing public routes still work. Complete; entity `Slug` fields and route shapes remain unchanged.
+- Old page slug redirects now work. Complete; published page slug changes call `ISeoRedirectAutomationService` for `/pages/{old}` -> `/pages/{new}`.
 
 Suggested commit:
 

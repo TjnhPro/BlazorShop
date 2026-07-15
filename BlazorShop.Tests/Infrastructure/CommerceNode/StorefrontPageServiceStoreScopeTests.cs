@@ -6,6 +6,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
     using BlazorShop.Application.Services;
+    using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Application.Services.Contracts.Admin;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities.CommerceNode;
@@ -200,6 +201,80 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         }
 
         [Fact]
+        public async Task CreateAsync_WhenSlugIsMissing_GeneratesSlugFromTitleAndRecordsHistory()
+        {
+            var storeA = Guid.NewGuid();
+            await using var context = CreateContext();
+            var service = CreateService(context, storeA, navigationCache: null, enableSlugLifecycle: true);
+
+            var result = await service.CreateAsync(new CreateStorefrontPageRequest(
+                null,
+                "About Us",
+                null,
+                "<p>About us</p>",
+                true,
+                true));
+
+            Assert.True(result.Success);
+            Assert.Equal("about-us", result.Payload!.Slug);
+
+            var history = await context.StoreSeoSlugHistories.SingleAsync(item => item.EntityId == result.Payload.Id);
+            Assert.Equal("about-us", history.Slug);
+            Assert.True(history.IsActive);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_WhenPublishedSlugChanges_CreatesRedirectAndSlugHistory()
+        {
+            var storeA = Guid.NewGuid();
+            await using var context = CreateContext();
+            var page = CreatePage(storeA, "about-us", "About us", includeInSitemap: true, DateTimeOffset.UtcNow);
+            context.StorefrontPages.Add(page);
+            await context.SaveChangesAsync();
+            var redirects = new Mock<ISeoRedirectAutomationService>();
+            redirects
+                .Setup(service => service.EnsurePermanentRedirectAsync("/pages/about-us", "/pages/company"))
+                .ReturnsAsync(new ServiceResponse<BlazorShop.Application.DTOs.Seo.SeoRedirectDto>(true, "Created", Guid.NewGuid())
+                {
+                    ResponseType = ServiceResponseType.Success,
+                    Payload = new BlazorShop.Application.DTOs.Seo.SeoRedirectDto
+                    {
+                        OldPath = "/pages/about-us",
+                        NewPath = "/pages/company",
+                        StatusCode = 301,
+                        IsActive = true,
+                    },
+                });
+            var service = CreateService(
+                context,
+                storeA,
+                navigationCache: null,
+                enableSlugLifecycle: true,
+                redirectAutomationService: redirects.Object);
+
+            var result = await service.UpdateAsync(
+                page.Id,
+                new UpdateStorefrontPageRequest(
+                    "company",
+                    "Company",
+                    null,
+                    "<p>Company</p>",
+                    true,
+                    true));
+
+            Assert.True(result.Success);
+            redirects.Verify(service => service.EnsurePermanentRedirectAsync("/pages/about-us", "/pages/company"), Times.Once);
+
+            var history = await context.StoreSeoSlugHistories
+                .Where(item => item.EntityId == page.Id)
+                .OrderBy(item => item.IsActive)
+                .ToListAsync();
+            Assert.Equal(2, history.Count);
+            Assert.Contains(history, item => item.Slug == "about-us" && !item.IsActive && item.ReplacedBySlug == "company");
+            Assert.Contains(history, item => item.Slug == "company" && item.IsActive);
+        }
+
+        [Fact]
         public async Task CreateAsync_RejectsUnknownPageKey()
         {
             var storeA = Guid.NewGuid();
@@ -285,7 +360,9 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         private static StorefrontPageService CreateService(
             CommerceNodeDbContext context,
             Guid storeId,
-            IStorefrontNavigationCache? navigationCache)
+            IStorefrontNavigationCache? navigationCache,
+            bool enableSlugLifecycle = false,
+            ISeoRedirectAutomationService? redirectAutomationService = null)
         {
             var audit = new Mock<IAdminAuditService>();
             audit
@@ -295,7 +372,25 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                     ResponseType = ServiceResponseType.Success,
                 });
 
-            return new StorefrontPageService(context, new FixedStoreContext(storeId), new SlugService(), audit.Object, navigationCache);
+            var slugService = new SlugService();
+            IStoreSeoSlugPolicyService? slugPolicy = enableSlugLifecycle
+                ? new StoreSeoSlugPolicyService(
+                    slugService,
+                    new IStoreSeoSlugCollisionChecker[] { new CommerceNodeStoreSeoSlugCollisionChecker(context) })
+                : null;
+            IStoreSeoSlugHistoryService? slugHistory = enableSlugLifecycle
+                ? new StoreSeoSlugHistoryService(context)
+                : null;
+
+            return new StorefrontPageService(
+                context,
+                new FixedStoreContext(storeId),
+                slugService,
+                audit.Object,
+                navigationCache,
+                slugPolicy,
+                slugHistory,
+                redirectAutomationService);
         }
 
         private static CommerceNodeDbContext CreateContext()
