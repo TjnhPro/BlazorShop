@@ -372,6 +372,22 @@ namespace BlazorShop.Application.ControlPlane.Catalog
             Guid categoryId,
             CancellationToken cancellationToken = default);
 
+        Task<ControlPlaneCommerceCatalogResult<CategoryMediaAssignmentDto>> GetCategoryMediaAsync(
+            Guid storePublicId,
+            Guid categoryId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<CategoryMediaAssignmentDto>> SetCategoryPrimaryMediaAsync(
+            Guid storePublicId,
+            Guid categoryId,
+            SetCategoryPrimaryMediaRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<CategoryMediaAssignmentDto>> ClearCategoryPrimaryMediaAsync(
+            Guid storePublicId,
+            Guid categoryId,
+            CancellationToken cancellationToken = default);
+
         Task<ControlPlaneCommerceCatalogResult<PagedResult<GetProductVariant>>> ListVariantsAsync(
             Guid storePublicId,
             Guid productId,

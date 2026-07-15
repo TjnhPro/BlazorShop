@@ -97,6 +97,28 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("requestBody.Required = true", source);
         }
 
+        [Fact]
+        public void CommerceCategoryMediaAdminSwaggerFilter_DefinesStableOperationMetadata()
+        {
+            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwaggerExtensions.cs");
+
+            var operationIds = new[]
+            {
+                "CommerceCategoryMedia_GetPrimary",
+                "CommerceCategoryMedia_SetPrimary",
+                "CommerceCategoryMedia_ClearPrimary",
+            };
+
+            foreach (var operationId in operationIds)
+            {
+                Assert.Contains(operationId, source);
+            }
+
+            Assert.Contains("CommerceCategoryMediaAdminOperationMetadataFilter", source);
+            Assert.Contains("typeof(CommerceNodeApiResponse<CategoryMediaAssignmentDto>)", source);
+            Assert.Contains("requestBody.Required = true", source);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath));

@@ -571,6 +571,39 @@ namespace BlazorShop.ControlPlane.API.Controllers
             return ToActionResult(await this.catalogService.ArchiveCategoryAsync(storePublicId, categoryId, cancellationToken));
         }
 
+        [HttpGet("categories/{categoryId:guid}/media")]
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/categories/{categoryId:guid}/media")]
+        public async Task<IActionResult> GetCategoryMedia(
+            Guid storePublicId,
+            Guid categoryId,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.GetCategoryMediaAsync(storePublicId, categoryId, cancellationToken));
+        }
+
+        [HttpPut("categories/{categoryId:guid}/media/primary")]
+        [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/categories/{categoryId:guid}/media/primary")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> SetCategoryPrimaryMedia(
+            Guid storePublicId,
+            Guid categoryId,
+            SetCategoryPrimaryMediaRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.SetCategoryPrimaryMediaAsync(storePublicId, categoryId, request, cancellationToken));
+        }
+
+        [HttpDelete("categories/{categoryId:guid}/media/primary")]
+        [HttpDelete("~/api/controlplane/commerce/stores/{storePublicId:guid}/categories/{categoryId:guid}/media/primary")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> ClearCategoryPrimaryMedia(
+            Guid storePublicId,
+            Guid categoryId,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ClearCategoryPrimaryMediaAsync(storePublicId, categoryId, cancellationToken));
+        }
+
         [HttpGet("products/{productId:guid}/variants")]
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/products/{productId:guid}/variants")]
         public async Task<IActionResult> ListVariants(

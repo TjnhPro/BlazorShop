@@ -449,6 +449,10 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [~] Media Core placeholder/default image policy remains deferred until a real product/category/page placeholder asset is selected. 2026-07-15: repo inspection found no semantic placeholder/no-image asset; Phase 3 avoids introducing broken media URLs.
 - [x] Media Core Phase 4 product media service tests cover order-change catalog invalidation, delete invalidation, primary delete fallback/clear behavior, and admin alt text preservation. 2026-07-15: `ProductMediaServiceTests` passed 5/5 and focused media run passed 40/40.
 - [x] CommerceNode API builds after Media Core Phase 4 product media hardening. 2026-07-15: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
+- [x] Media Core Phase 5 category media assignment validates current-store category and asset, syncs `Category.Image`, clears assignment/image, and invalidates catalog cache. 2026-07-15: `CategoryMediaServiceTests` passed in focused run.
+- [x] Media Core Phase 5 prevents deleting a generic asset while it is assigned to a category. 2026-07-15: `CommerceMediaAssetService.DeleteAsync` checks `CategoryMediaAssignments` and returns conflict before deleting.
+- [x] Media Core Phase 5 Commerce Admin category media endpoints have stable OpenAPI operation IDs and response schemas. 2026-07-15: `CommerceNodeAdminStoreOpenApiMetadataTests` passed with `CommerceCategoryMedia_GetPrimary`, `CommerceCategoryMedia_SetPrimary`, and `CommerceCategoryMedia_ClearPrimary`.
+- [x] CommerceNode API builds after Media Core Phase 5 category media assignment API and migration. 2026-07-15: CommerceNode API build passed.
 
 ### Product Import
 

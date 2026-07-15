@@ -13,6 +13,7 @@ Updated: 2026-07-15
 - Phase 2 complete: `IMediaStorageProvider` and local filesystem provider added; product media import/original render and generic asset upload/replace/delete/original render use provider-backed path resolution while preserving existing storage layout.
 - Phase 3 complete: product and generic asset URL builders support named presets and configured-public-base absolute URLs; product media cache now distinguishes versioned immutable URLs from unversioned short-cache URLs; media responses include `nosniff`; Storefront V2 media proxy copies `X-Content-Type-Options`. Placeholder image asset selection is deferred because the current codebase has no semantic placeholder/no-image asset to reference safely.
 - Phase 4 complete: product media service now invalidates catalog cache after order changes and every delete; deleting primary media excludes the deleted row when selecting the next primary so `Product.Image` is reassigned or cleared correctly; service tests guard primary sync, fallback/clear, invalidation, and alt text preservation.
+- Phase 5 complete: Commerce Node category media assignment table, service, admin API, and Control Plane gateway routes added. Setting primary category media validates both category and asset in the current store, syncs `Category.Image` to the category-card asset URL, invalidates catalog cache, and blocks deletion of assigned generic assets. Control Plane UI picker remains deferred.
 
 ## Goal
 
@@ -435,21 +436,21 @@ Design:
 
 Tasks:
 
-- [ ] Add `CategoryMediaAssignment` entity under Commerce Node domain namespace or another Commerce Node-only model location.
-- [ ] Add `DbSet` and EF configuration to `CommerceNodeDbContext`.
-- [ ] Add Commerce Node migration only.
-- [ ] Add application DTOs and service methods:
+- [x] Add `CategoryMediaAssignment` entity under Commerce Node domain namespace or another Commerce Node-only model location.
+- [x] Add `DbSet` and EF configuration to `CommerceNodeDbContext`.
+- [x] Add Commerce Node migration only.
+- [x] Add application DTOs and service methods:
   - get category media assignment.
   - set category primary media asset.
   - clear category media assignment.
   - update category media alt text if needed.
-- [ ] Validate category belongs to current store.
-- [ ] Validate asset belongs to current store.
-- [ ] Sync `Category.Image` on set/clear.
-- [ ] Invalidate category/catalog cache after changes.
-- [ ] Add Commerce Node admin endpoint under the existing Commerce Admin route style.
-- [ ] Add Control Plane API gateway endpoint.
-- [ ] Add Control Plane Web UI control only if it fits current category manager UX; otherwise expose API first and defer UI polish.
+- [x] Validate category belongs to current store.
+- [x] Validate asset belongs to current store.
+- [x] Sync `Category.Image` on set/clear.
+- [x] Invalidate category/catalog cache after changes.
+- [x] Add Commerce Node admin endpoint under the existing Commerce Admin route style.
+- [x] Add Control Plane API gateway endpoint.
+- [~] Add Control Plane Web UI control only if it fits current category manager UX; otherwise expose API first and defer UI polish. Deferred: Phase 5 exposes API/gateway first; UI picker can be added after Media Library selection UX is agreed.
 
 Suggested route shape:
 
@@ -467,11 +468,17 @@ api/control-plane/stores/{storePublicId}/catalog/categories/{categoryId}/media
 
 Review gate:
 
-- [ ] Store scope checked for both category and asset.
-- [ ] `Category.Image` remains populated for old DTOs.
-- [ ] Existing category APIs do not break.
-- [ ] Migration touches `CommerceNodeDbContext` only.
-- [ ] No legacy `AppDbContext` migration.
+- [x] Store scope checked for both category and asset.
+- [x] `Category.Image` remains populated for old DTOs.
+- [x] Existing category APIs do not break.
+- [x] Migration touches `CommerceNodeDbContext` only.
+- [x] No legacy `AppDbContext` migration.
+
+Phase 5 verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~CategoryMediaServiceTests|FullyQualifiedName~ProductMediaServiceTests|FullyQualifiedName~MediaUrlBuilderTests|FullyQualifiedName~CommerceNodeAdminStoreOpenApiMetadataTests"` passed 22/22.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` passed.
 
 ## Phase 6 - Content, Branding, And Theme Asset Classification
 

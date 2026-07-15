@@ -947,6 +947,46 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
+        public Task<ControlPlaneCommerceCatalogResult<CategoryMediaAssignmentDto>> GetCategoryMediaAsync(
+            Guid storePublicId,
+            Guid categoryId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<CategoryMediaAssignmentDto>(
+                storePublicId,
+                HttpMethod.Get,
+                $"api/commerce/admin/categories/{categoryId:D}/media",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<CategoryMediaAssignmentDto>> SetCategoryPrimaryMediaAsync(
+            Guid storePublicId,
+            Guid categoryId,
+            SetCategoryPrimaryMediaRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<CategoryMediaAssignmentDto>(
+                storePublicId,
+                HttpMethod.Put,
+                $"api/commerce/admin/categories/{categoryId:D}/media/primary",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<CategoryMediaAssignmentDto>> ClearCategoryPrimaryMediaAsync(
+            Guid storePublicId,
+            Guid categoryId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<CategoryMediaAssignmentDto>(
+                storePublicId,
+                HttpMethod.Delete,
+                $"api/commerce/admin/categories/{categoryId:D}/media/primary",
+                null,
+                cancellationToken);
+        }
+
         public Task<ControlPlaneCommerceCatalogResult<PagedResult<GetProductVariant>>> ListVariantsAsync(
             Guid storePublicId,
             Guid productId,

@@ -233,6 +233,18 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failed<object>(CommerceMediaAssetOperationFailure.NotFound, "Media asset was not found.");
             }
 
+            var isAssignedToCategory = await this.context.CategoryMediaAssignments
+                .AsNoTracking()
+                .AnyAsync(
+                    assignment => assignment.StoreId == asset.StoreId && assignment.MediaAssetId == asset.Id,
+                    cancellationToken);
+            if (isAssignedToCategory)
+            {
+                return Failed<object>(
+                    CommerceMediaAssetOperationFailure.Conflict,
+                    "Media asset is assigned to a category and cannot be deleted until the assignment is cleared.");
+            }
+
             this.context.CommerceMediaAssets.Remove(asset);
             await this.context.SaveChangesAsync(cancellationToken);
 
