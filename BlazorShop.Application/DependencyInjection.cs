@@ -24,6 +24,7 @@
         {
             services.AddAutoMapper(cfg => cfg.AddProfile<MappingConfig>());
             services.AddSingleton<ISlugService, SlugService>();
+            services.AddScoped<IStoreSeoSlugPolicyService, StoreSeoSlugPolicyService>();
             services.AddSingleton<ISeoMetadataBuilder, SeoMetadataBuilder>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ICategoryService, CategoryService>();

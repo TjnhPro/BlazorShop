@@ -170,11 +170,15 @@ namespace BlazorShop.Application.Services
             return null;
         }
 
-        private Task<Product?> GetReadableProductAsync(Guid productId)
+        private async Task<Product?> GetReadableProductAsync(Guid productId)
         {
-            return _storeContext is not null
-                ? _productReadRepository.GetProductDetailsByIdForCurrentStoreAsync(productId)
-                : _productRepository.GetByIdAsync(productId);
+            if (_storeContext is not null)
+            {
+                return await _productReadRepository.GetProductDetailsByIdForCurrentStoreAsync(productId);
+            }
+
+            return await _productReadRepository.GetProductDetailsByIdAsync(productId)
+                ?? await _productRepository.GetByIdAsync(productId);
         }
 
         private Task<bool> ProductSlugExistsAsync(string slug, Guid? storeId, Guid productId)

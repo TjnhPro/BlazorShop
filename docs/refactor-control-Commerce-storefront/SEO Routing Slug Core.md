@@ -17,6 +17,7 @@ Updated: 2026-07-15
 
 - Phase 0 complete: baseline plan committed.
 - Phase 1 complete: Commerce Node SEO redirects are store-scoped in schema, repository, admin service, automation service, and public redirect resolution.
+- Phase 2 complete: shared SEO slug policy service added with reserved route validation, Unicode-preserving normalization, store-scoped collision checking, and suffix generation.
 - Phase 11 is conditional and should run only after a real legacy topic URL inventory exists.
 
 Autoplan note: external dual-voice subagents are not available in this Codex runtime. This plan records an internal autoplan audit using the same decision principles: preserve existing working behavior, fix the riskiest foundation first, keep V2 boundaries explicit, avoid speculative localization/manufacturer work, and make each phase independently verifiable.
@@ -445,8 +446,8 @@ Tasks:
 
 Exit criteria:
 
-- Product/category/page services can use one policy service.
-- No public route behavior changes yet.
+- Product/category/page services can use one policy service. Complete through `IStoreSeoSlugPolicyService` and `CommerceNodeStoreSeoSlugCollisionChecker`.
+- No public route behavior changes yet. Complete; Phase 2 adds service foundation and one product SEO read fallback regression fix only.
 
 Suggested commit:
 

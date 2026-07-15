@@ -131,6 +131,9 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] Storefront redirect resolution cannot cross stores. 2026-07-15: `CommerceNodeSeoRedirectStoreScopeTests.ResolvePublicPathAsync_DoesNotResolveOtherStoreRedirect` passed.
 - [x] Same old path is allowed across different stores while duplicate lookup is scoped to current store. 2026-07-15: `CommerceNodeSeoRedirectStoreScopeTests` passed.
 - [x] Focused SEO redirect regression tests passed. 2026-07-15: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~SeoRedirect"` passed 28/28.
+- [x] Shared SEO slug policy validates lowercase normalization, Unicode letter preservation, empty/slash/reserved rejection, duplicate rejection, and suffix generation. 2026-07-15: `StoreSeoSlugPolicyServiceTests` passed.
+- [x] CommerceNode slug collision checker scopes product, category, and page slug lookup by store. 2026-07-15: `CommerceNodeStoreSeoSlugCollisionCheckerTests` passed.
+- [x] Product SEO redirect regression remains covered after policy foundation. 2026-07-15: `ProductSeoServiceTests` passed 9/9 after read-detail fallback fix.
 - [ ] API smoke: create two active redirects with the same `OldPath` in two different stores through `api/commerce/admin/seo/redirects`.
 - [ ] API smoke: duplicate active `OldPath` in the same store returns conflict/validation failure.
 - [ ] API smoke: `GET /api/storefront/stores/{storeKey}/seo/redirects/resolve` ignores another store's redirect.

@@ -100,6 +100,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<INewsletterSubscriberRepository, CommerceNodeNewsletterSubscriberRepository>();
             services.AddScoped<ISeoSettingsRepository, CommerceNodeSeoSettingsRepository>();
             services.AddScoped<ISeoRedirectRepository, CommerceNodeSeoRedirectRepository>();
+            services.AddScoped<IStoreSeoSlugCollisionChecker, CommerceNodeStoreSeoSlugCollisionChecker>();
             services.AddScoped<IApplicationTransactionManager, CommerceNodeTransactionManager>();
             services.AddScoped<ICommerceNodeAuditActorAccessor, CommerceNodeAuditActorAccessor>();
             services.AddScoped<IAdminAuditService, CommerceNodeAdminAuditService>();
@@ -175,6 +176,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<ISeoRedirectService, SeoRedirectService>();
             services.AddScoped<ISeoRedirectResolutionService, SeoRedirectResolutionService>();
             services.AddScoped<ISeoRedirectAutomationService, SeoRedirectAutomationService>();
+            services.AddScoped<IStoreSeoSlugPolicyService, StoreSeoSlugPolicyService>();
             services.AddScoped<IMetricsService, MetricsService>();
             Stripe.StripeConfiguration.ApiKey = configuration["Stripe:SecretKey"];
             services.AddDefaultIdentity<AppUser>(
