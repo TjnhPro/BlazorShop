@@ -370,23 +370,37 @@ Exit criteria:
 
 Goal: phase chi duoc ket thuc khi co verification du cho blast radius.
 
+Status 2026-07-15: completed release gate for active V2 store mapping scope.
+
+Verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~CommerceNodeProductStoreScopeTests|FullyQualifiedName~CommerceNodeCategoryStoreScopeTests|FullyQualifiedName~StorefrontPageServiceStoreScopeTests|FullyQualifiedName~CommerceNodeDbContextModelTests|FullyQualifiedName~ControlPlaneCommerceCatalogServiceStoreMappingTests" --no-restore -p:UseSharedCompilation=false` passed 21/21.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore -p:UseSharedCompilation=false` passed.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore -p:UseSharedCompilation=false` passed.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore -p:UseSharedCompilation=false` passed.
+
+Notes:
+
+- An earlier parallel verification attempt hit transient Windows build file locks in `obj`; rerunning sequentially with shared compilation disabled passed.
+- Existing package vulnerability warnings for `MessagePack` and legacy `Microsoft.OpenApi`, plus Browserslist stale data warnings, remain outside this phase.
+
 Tasks:
 
-- Cap nhat checklist lien quan:
+- [x] Cap nhat checklist lien quan:
   - `QA-CommerceNode.todo.md`
   - `QA-ControlPlane.todo.md` neu Control Plane gateway/UI thay doi.
   - `QA-StorefrontV2.todo.md` neu storefront product/category/page flow thay doi.
-- Chay focused tests cho CommerceNode services/controllers.
-- Chay API contract/OpenAPI tests neu endpoint contract thay doi.
-- Neu UI manager thay doi, dung Playwright de verify browser flow.
-- Review diff de dam bao khong sua legacy presentation/AppDbContext ngoai y muon.
+- [x] Chay focused tests cho CommerceNode services/controllers.
+- [n/a] Chay API contract/OpenAPI tests neu endpoint contract thay doi.
+- [n/a] Neu UI manager thay doi, dung Playwright de verify browser flow.
+- [x] Review diff de dam bao khong sua legacy presentation/AppDbContext ngoai y muon.
 
 Release gate:
 
-- Khong con unscoped Product/Category admin paths trong active V2.
-- Product/Category/Page cross-store cases co tests.
-- Migration/backfill co rollback/operational note.
-- Discount/module deferred scope duoc ghi ro, khong co speculative code.
+- [x] Khong con unscoped Product/Category admin paths trong active V2.
+- [x] Product/Category/Page cross-store cases co tests.
+- [x] Migration/backfill co rollback/operational note.
+- [x] Discount/module deferred scope duoc ghi ro, khong co speculative code.
 
 ## Risk controls
 
