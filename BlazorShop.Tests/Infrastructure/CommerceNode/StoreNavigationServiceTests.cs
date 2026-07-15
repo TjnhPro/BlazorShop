@@ -1,9 +1,11 @@
 namespace BlazorShop.Tests.Infrastructure.CommerceNode
 {
     using BlazorShop.Application.CommerceNode.Navigation;
+    using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
+    using BlazorShop.Application.Services;
     using BlazorShop.Application.Services.Contracts.Admin;
     using BlazorShop.Domain.Entities;
     using BlazorShop.Domain.Entities.CommerceNode;
@@ -144,12 +146,68 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal("Home", updated.Payload.Items[0].Label);
         }
 
+        [Fact]
+        public async Task GetPublicMenuAsync_UsesNewPageSlugAfterPageServiceInvalidatesCache()
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            var page = CreatePage(storeId, "about-us", "About us", isPublished: true);
+            var menu = CreateMenu(storeId, StoreNavigationMenuNames.Main);
+            context.StorefrontPages.Add(page);
+            context.StoreNavigationMenus.Add(menu);
+            context.StoreNavigationMenuItems.Add(CreateItem(
+                storeId,
+                menu.Id,
+                "About",
+                StoreNavigationTargetTypes.Page,
+                targetEntityPublicId: page.PublicId));
+            await context.SaveChangesAsync();
+
+            var cache = new StorefrontNavigationCache(new MemoryCache(new MemoryCacheOptions()));
+            var navigation = CreateService(context, storeId, cache);
+            var pages = new StorefrontPageService(
+                context,
+                new FixedStoreContext(storeId),
+                new SlugService(),
+                CreateAuditService().Object,
+                cache);
+
+            var before = await navigation.GetPublicMenuAsync(StoreNavigationMenuNames.Main);
+            var updated = await pages.UpdateAsync(
+                page.Id,
+                new UpdateStorefrontPageRequest(
+                    "company",
+                    "About us",
+                    null,
+                    "<p>About us</p>",
+                    IsPublished: true,
+                    IncludeInSitemap: true));
+            var after = await navigation.GetPublicMenuAsync(StoreNavigationMenuNames.Main);
+
+            Assert.True(before.Success);
+            Assert.Equal("/pages/about-us", before.Payload!.Items.Single().Href);
+            Assert.True(updated.Success);
+            Assert.True(after.Success);
+            Assert.Equal("/pages/company", after.Payload!.Items.Single().Href);
+        }
+
         private static StoreNavigationService CreateService(CommerceNodeDbContext context, Guid storeId)
+        {
+            return CreateService(
+                context,
+                storeId,
+                new StorefrontNavigationCache(new MemoryCache(new MemoryCacheOptions())));
+        }
+
+        private static StoreNavigationService CreateService(
+            CommerceNodeDbContext context,
+            Guid storeId,
+            IStorefrontNavigationCache cache)
         {
             return new StoreNavigationService(
                 context,
                 new FixedStoreContext(storeId),
-                new StorefrontNavigationCache(new MemoryCache(new MemoryCacheOptions())),
+                cache,
                 CreateAuditService().Object);
         }
 

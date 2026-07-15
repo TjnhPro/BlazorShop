@@ -2,6 +2,7 @@ namespace BlazorShop.Tests.Application.Services
 {
     using AutoMapper;
 
+    using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs.Category;
     using BlazorShop.Application.DTOs.Product;
@@ -81,16 +82,24 @@ namespace BlazorShop.Tests.Application.Services
         public async Task UpdateAsync_ShouldReturnSuccessResponse()
         {
             // Arrange
+            var storeId = Guid.NewGuid();
             var updateCategory = new UpdateCategory { Id = Guid.NewGuid(), Name = "Updated Category" };
             var existingCategory = new Category
             {
                 Id = updateCategory.Id,
+                StoreId = storeId,
                 Name = "Existing Category",
                 Slug = "existing-category",
                 RobotsIndex = true,
                 RobotsFollow = true,
                 IsPublished = true,
             };
+            var navigationCache = new Mock<IStorefrontNavigationCache>();
+            var service = new CategoryService(
+                this._mockGenericRepository.Object,
+                this._mockMapper.Object,
+                this._mockCategoryRepository.Object,
+                navigationCache: navigationCache.Object);
             this._mockGenericRepository.Setup(repo => repo.GetByIdAsync(updateCategory.Id)).ReturnsAsync(existingCategory);
             this._mockGenericRepository.Setup(repo => repo.UpdateAsync(existingCategory)).ReturnsAsync(1);
             this._mockMapper.Setup(m => m.Map(updateCategory, existingCategory))
@@ -98,7 +107,7 @@ namespace BlazorShop.Tests.Application.Services
                 .Returns(existingCategory);
 
             // Act
-            var result = await this._categoryService.UpdateAsync(updateCategory);
+            var result = await service.UpdateAsync(updateCategory);
 
             // Assert
             Assert.True(result.Success);
@@ -108,6 +117,7 @@ namespace BlazorShop.Tests.Application.Services
             Assert.True(existingCategory.RobotsIndex);
             Assert.True(existingCategory.RobotsFollow);
             Assert.True(existingCategory.IsPublished);
+            navigationCache.Verify(cache => cache.Invalidate(storeId), Times.Once);
         }
 
         [Fact]
@@ -115,14 +125,21 @@ namespace BlazorShop.Tests.Application.Services
         {
             // Arrange
             var categoryId = Guid.NewGuid();
-            this._mockGenericRepository.Setup(repo => repo.DeleteAsync(It.IsAny<Guid>())).ReturnsAsync(1);
+            var existingCategory = new Category { Id = categoryId, Name = "Test Category", IsPublished = true };
+            this._mockGenericRepository.Setup(repo => repo.GetByIdAsync(categoryId)).ReturnsAsync(existingCategory);
+            this._mockGenericRepository.Setup(repo => repo.UpdateAsync(existingCategory)).ReturnsAsync(1);
+            this._mockCategoryRepository.Setup(repo => repo.HasActiveChildrenAsync(categoryId)).ReturnsAsync(false);
+            this._mockCategoryRepository.Setup(repo => repo.HasActiveProductsAsync(categoryId)).ReturnsAsync(false);
 
             // Act
             var result = await this._categoryService.DeleteAsync(categoryId);
 
             // Assert
             Assert.True(result.Success);
-            Assert.Equal("Category deleted successfully", result.Message);
+            Assert.Equal("Category archived successfully", result.Message);
+            Assert.False(existingCategory.IsPublished);
+            Assert.NotNull(existingCategory.ArchivedAt);
+            this._mockGenericRepository.Verify(repo => repo.UpdateAsync(existingCategory), Times.Once);
         }
 
         [Fact]

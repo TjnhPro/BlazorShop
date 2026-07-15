@@ -5,6 +5,7 @@
     using AutoMapper;
 
     using BlazorShop.Application.CommerceNode.Catalog;
+    using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
@@ -24,6 +25,7 @@
         private readonly IAdminAuditService? _auditService;
         private readonly ICommerceStoreContext? _storeContext;
         private readonly ICatalogQueryCache? _catalogQueryCache;
+        private readonly IStorefrontNavigationCache? _navigationCache;
 
         public CategoryService(
             IGenericRepository<Category> genericRepository,
@@ -31,7 +33,8 @@
             ICategoryRepository categoryRepository,
             IAdminAuditService? auditService = null,
             ICommerceStoreContext? storeContext = null,
-            ICatalogQueryCache? catalogQueryCache = null)
+            ICatalogQueryCache? catalogQueryCache = null,
+            IStorefrontNavigationCache? navigationCache = null)
         {
             _genericRepository = genericRepository;
             _mapper = mapper;
@@ -39,6 +42,7 @@
             _auditService = auditService;
             _storeContext = storeContext;
             _catalogQueryCache = catalogQueryCache;
+            _navigationCache = navigationCache;
         }
 
         public async Task<IEnumerable<GetCategory>> GetAllAsync()
@@ -213,12 +217,17 @@
 
         private async Task InvalidateCatalogAsync(Guid? storeId)
         {
-            if (_catalogQueryCache is null || !storeId.HasValue || storeId.Value == Guid.Empty)
+            if (!storeId.HasValue || storeId.Value == Guid.Empty)
             {
                 return;
             }
 
-            await _catalogQueryCache.InvalidateStoreCatalogAsync(storeId.Value);
+            if (_catalogQueryCache is not null)
+            {
+                await _catalogQueryCache.InvalidateStoreCatalogAsync(storeId.Value);
+            }
+
+            _navigationCache?.Invalidate(storeId.Value);
         }
 
         private async Task<bool> CategoryBelongsToCurrentStoreAsync(Category category)

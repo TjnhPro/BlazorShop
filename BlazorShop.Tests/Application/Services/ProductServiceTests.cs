@@ -2,6 +2,7 @@
 {
     using AutoMapper;
 
+    using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs.Product;
     using BlazorShop.Application.Services;
@@ -235,16 +236,24 @@
         public async Task UpdateAsync_WhenProductIsUpdated_ShouldReturnSuccessResponse()
         {
             // Arrange
+            var storeId = Guid.NewGuid();
             var product = new UpdateProduct { Id = Guid.NewGuid(), Name = "Product1" };
             var existingProduct = new Product
             {
                 Id = product.Id,
+                StoreId = storeId,
                 Name = "Existing Product",
                 Slug = "existing-product",
                 RobotsIndex = true,
                 RobotsFollow = true,
                 IsPublished = true,
             };
+            var navigationCache = new Mock<IStorefrontNavigationCache>();
+            var service = new ProductService(
+                this._mockProductReadRepository.Object,
+                this._mockProductRepository.Object,
+                this._mockMapper.Object,
+                navigationCache: navigationCache.Object);
             this._mockProductRepository.Setup(repo => repo.GetByIdAsync(product.Id))
                 .ReturnsAsync(existingProduct);
             this._mockMapper.Setup(mapper => mapper.Map(product, existingProduct))
@@ -254,7 +263,7 @@
                                   .ReturnsAsync(1);
 
             // Act
-            var result = await this._productService.UpdateAsync(product);
+            var result = await service.UpdateAsync(product);
 
             // Assert
             Assert.NotNull(result);
@@ -268,6 +277,7 @@
             this._mockProductRepository.Verify(repo => repo.GetByIdAsync(product.Id), Times.Once);
             this._mockMapper.Verify(mapper => mapper.Map(product, existingProduct), Times.Once);
             this._mockProductRepository.Verify(repo => repo.UpdateAsync(existingProduct), Times.Once);
+            navigationCache.Verify(cache => cache.Invalidate(storeId), Times.Once);
         }
 
         [Fact]
@@ -320,8 +330,11 @@
         {
             // Arrange
             var productId = Guid.NewGuid();
-            this._mockProductRepository.Setup(repo => repo.DeleteAsync(productId))
-                                  .ReturnsAsync(1);
+            var existingProduct = new Product { Id = productId, Name = "Product1", IsPublished = true };
+            this._mockProductRepository.Setup(repo => repo.GetByIdAsync(productId))
+                .ReturnsAsync(existingProduct);
+            this._mockProductRepository.Setup(repo => repo.UpdateAsync(existingProduct))
+                .ReturnsAsync(1);
 
             // Act
             var result = await this._productService.DeleteAsync(productId);
@@ -329,8 +342,10 @@
             // Assert
             Assert.NotNull(result);
             Assert.True(result.Success);
-            Assert.Equal("Product deleted successfully", result.Message);
-            this._mockProductRepository.Verify(repo => repo.DeleteAsync(productId), Times.Once);
+            Assert.Equal("Product archived successfully", result.Message);
+            Assert.False(existingProduct.IsPublished);
+            Assert.NotNull(existingProduct.ArchivedAt);
+            this._mockProductRepository.Verify(repo => repo.UpdateAsync(existingProduct), Times.Once);
         }
 
         [Fact]
@@ -338,8 +353,11 @@
         {
             // Arrange
             var productId = Guid.NewGuid();
-            this._mockProductRepository.Setup(repo => repo.DeleteAsync(productId))
-                                  .ReturnsAsync(0);
+            var existingProduct = new Product { Id = productId, Name = "Product1" };
+            this._mockProductRepository.Setup(repo => repo.GetByIdAsync(productId))
+                .ReturnsAsync(existingProduct);
+            this._mockProductRepository.Setup(repo => repo.UpdateAsync(existingProduct))
+                .ReturnsAsync(0);
 
             // Act
             var result = await this._productService.DeleteAsync(productId);
@@ -348,7 +366,7 @@
             Assert.NotNull(result);
             Assert.False(result.Success);
             Assert.Equal("Product not found", result.Message);
-            this._mockProductRepository.Verify(repo => repo.DeleteAsync(productId), Times.Once);
+            this._mockProductRepository.Verify(repo => repo.UpdateAsync(existingProduct), Times.Once);
         }
 
         [Fact]
@@ -356,8 +374,8 @@
         {
             // Arrange
             var productId = Guid.NewGuid();
-            this._mockProductRepository.Setup(repo => repo.DeleteAsync(productId))
-                                  .ReturnsAsync(-1);
+            this._mockProductRepository.Setup(repo => repo.GetByIdAsync(productId))
+                .ReturnsAsync((Product?)null);
 
             // Act
             var result = await this._productService.DeleteAsync(productId);
@@ -366,7 +384,7 @@
             Assert.NotNull(result);
             Assert.False(result.Success);
             Assert.Equal("Product not found", result.Message);
-            this._mockProductRepository.Verify(repo => repo.DeleteAsync(productId), Times.Once);
+            this._mockProductRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Product>()), Times.Never);
         }
 
         [Fact]

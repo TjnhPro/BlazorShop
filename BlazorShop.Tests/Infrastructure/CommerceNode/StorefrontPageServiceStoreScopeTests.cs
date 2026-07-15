@@ -1,5 +1,6 @@
 namespace BlazorShop.Tests.Infrastructure.CommerceNode
 {
+    using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
@@ -174,6 +175,31 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         }
 
         [Fact]
+        public async Task UpdateAsync_InvalidatesNavigationCacheForCurrentStore()
+        {
+            var storeA = Guid.NewGuid();
+            await using var context = CreateContext();
+            var page = CreatePage(storeA, "about-us", "About us", includeInSitemap: true, DateTimeOffset.UtcNow);
+            context.StorefrontPages.Add(page);
+            await context.SaveChangesAsync();
+            var navigationCache = new Mock<IStorefrontNavigationCache>();
+            var service = CreateService(context, storeA, navigationCache.Object);
+
+            var result = await service.UpdateAsync(
+                page.Id,
+                new UpdateStorefrontPageRequest(
+                    "company",
+                    "Company",
+                    null,
+                    "<p>Company</p>",
+                    true,
+                    true));
+
+            Assert.True(result.Success);
+            navigationCache.Verify(cache => cache.Invalidate(storeA), Times.Once);
+        }
+
+        [Fact]
         public async Task CreateAsync_RejectsUnknownPageKey()
         {
             var storeA = Guid.NewGuid();
@@ -253,6 +279,14 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
 
         private static StorefrontPageService CreateService(CommerceNodeDbContext context, Guid storeId)
         {
+            return CreateService(context, storeId, navigationCache: null);
+        }
+
+        private static StorefrontPageService CreateService(
+            CommerceNodeDbContext context,
+            Guid storeId,
+            IStorefrontNavigationCache? navigationCache)
+        {
             var audit = new Mock<IAdminAuditService>();
             audit
                 .Setup(service => service.LogAsync(It.IsAny<CreateAdminAuditLogDto>()))
@@ -261,7 +295,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                     ResponseType = ServiceResponseType.Success,
                 });
 
-            return new StorefrontPageService(context, new FixedStoreContext(storeId), new SlugService(), audit.Object);
+            return new StorefrontPageService(context, new FixedStoreContext(storeId), new SlugService(), audit.Object, navigationCache);
         }
 
         private static CommerceNodeDbContext CreateContext()

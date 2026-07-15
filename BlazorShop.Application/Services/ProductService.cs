@@ -5,6 +5,7 @@
     using AutoMapper;
 
     using BlazorShop.Application.CommerceNode.Catalog;
+    using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs;
@@ -25,6 +26,7 @@
         private readonly IAdminAuditService? _auditService;
         private readonly ICommerceStoreContext? _storeContext;
         private readonly ICatalogQueryCache? _catalogQueryCache;
+        private readonly IStorefrontNavigationCache? _navigationCache;
         private readonly IVariationTemplateLookupService? _variationTemplateLookupService;
         private readonly ICategoryRepository? _categoryRepository;
 
@@ -36,7 +38,8 @@
             ICommerceStoreContext? storeContext = null,
             ICatalogQueryCache? catalogQueryCache = null,
             IVariationTemplateLookupService? variationTemplateLookupService = null,
-            ICategoryRepository? categoryRepository = null)
+            ICategoryRepository? categoryRepository = null,
+            IStorefrontNavigationCache? navigationCache = null)
         {
             _productReadRepository = productReadRepository;
             _productRepository = productRepository;
@@ -44,6 +47,7 @@
             _auditService = auditService;
             _storeContext = storeContext;
             _catalogQueryCache = catalogQueryCache;
+            _navigationCache = navigationCache;
             _variationTemplateLookupService = variationTemplateLookupService;
             _categoryRepository = categoryRepository;
         }
@@ -319,12 +323,17 @@
 
         private async Task InvalidateCatalogAsync(Guid? storeId)
         {
-            if (_catalogQueryCache is null || !storeId.HasValue || storeId.Value == Guid.Empty)
+            if (!storeId.HasValue || storeId.Value == Guid.Empty)
             {
                 return;
             }
 
-            await _catalogQueryCache.InvalidateStoreCatalogAsync(storeId.Value);
+            if (_catalogQueryCache is not null)
+            {
+                await _catalogQueryCache.InvalidateStoreCatalogAsync(storeId.Value);
+            }
+
+            _navigationCache?.Invalidate(storeId.Value);
         }
 
         private GetProduct MapProductDetails(Product product)

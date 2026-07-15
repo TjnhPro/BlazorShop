@@ -3,6 +3,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using System.Text.Json;
     using System.Text.RegularExpressions;
 
+    using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
@@ -23,17 +24,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly ICommerceStoreContext storeContext;
         private readonly ISlugService slugService;
         private readonly IAdminAuditService auditService;
+        private readonly IStorefrontNavigationCache? navigationCache;
 
         public StorefrontPageService(
             CommerceNodeDbContext context,
             ICommerceStoreContext storeContext,
             ISlugService slugService,
-            IAdminAuditService auditService)
+            IAdminAuditService auditService,
+            IStorefrontNavigationCache? navigationCache = null)
         {
             this.context = context;
             this.storeContext = storeContext;
             this.slugService = slugService;
             this.auditService = auditService;
+            this.navigationCache = navigationCache;
         }
 
         public async Task<ServiceResponse<StorefrontPageListResponse>> ListAsync(
@@ -161,6 +165,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             this.context.StorefrontPages.Add(page);
             await this.context.SaveChangesAsync(cancellationToken);
+            this.navigationCache?.Invalidate(page.StoreId);
             await this.LogAsync("StorefrontPage.Created", page.Id, "Storefront page created.", new { page.Title, page.Slug }, cancellationToken);
 
             return Success(MapDetail(page), "Storefront page created.");
@@ -229,6 +234,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             page.UpdatedAt = DateTimeOffset.UtcNow;
 
             await this.context.SaveChangesAsync(cancellationToken);
+            this.navigationCache?.Invalidate(page.StoreId);
             await this.LogAsync("StorefrontPage.Updated", page.Id, "Storefront page updated.", new { page.Title, page.Slug, page.IsPublished }, cancellationToken);
 
             return Success(MapDetail(page), "Storefront page updated.");
@@ -250,6 +256,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             page.UpdatedAt = now;
 
             await this.context.SaveChangesAsync(cancellationToken);
+            this.navigationCache?.Invalidate(page.StoreId);
             await this.LogAsync("StorefrontPage.Archived", page.Id, "Storefront page archived.", new { page.Title, page.Slug }, cancellationToken);
 
             return Success(MapDetail(page), "Storefront page archived.");
