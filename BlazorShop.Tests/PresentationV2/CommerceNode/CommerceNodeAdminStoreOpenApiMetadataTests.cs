@@ -57,6 +57,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 "CommerceCurrencies_ListExchangeRates",
                 "CommerceCurrencies_ListExchangeRateProviders",
                 "CommerceCurrencies_FetchExchangeRates",
+                "CommerceCurrencies_QueueExchangeRateUpdateTask",
                 "CommerceCurrencies_UpsertExchangeRate",
                 "CommerceCurrencies_DisableExchangeRate",
             };
@@ -69,6 +70,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("typeof(CommerceNodeApiResponse<IReadOnlyList<StoreCurrencyExchangeRateDto>>)", source);
             Assert.Contains("typeof(CommerceNodeApiResponse<IReadOnlyList<StoreCurrencyExchangeRateProviderDto>>)", source);
             Assert.Contains("typeof(CommerceNodeApiResponse<StoreCurrencyExchangeRateProviderFetchResult>)", source);
+            Assert.Contains("typeof(CommerceNodeApiResponse<CommerceTaskSummary>)", source);
             Assert.Contains("typeof(CommerceNodeApiResponse<StoreCurrencyExchangeRateDto>)", source);
         }
 

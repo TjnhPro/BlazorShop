@@ -62,6 +62,15 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return this.FromServiceResponse(result);
         }
 
+        [HttpPost("exchange-rates/update-tasks")]
+        public async Task<IActionResult> QueueExchangeRateUpdate(
+            [FromBody] QueueStoreCurrencyExchangeRateUpdateRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await this.exchangeRateProviderService.QueueUpdateAsync(request, cancellationToken);
+            return this.FromServiceResponse(result);
+        }
+
         [HttpPut("exchange-rates/{targetCurrencyCode}")]
         public async Task<IActionResult> UpsertExchangeRate(
             string targetCurrencyCode,

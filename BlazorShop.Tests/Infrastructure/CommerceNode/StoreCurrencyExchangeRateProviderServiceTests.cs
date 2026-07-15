@@ -1,7 +1,9 @@
 namespace BlazorShop.Tests.Infrastructure.CommerceNode
 {
     using BlazorShop.Application.CommerceNode.Currencies;
+    using BlazorShop.Application.CommerceNode.Settings;
     using BlazorShop.Application.CommerceNode.Stores;
+    using BlazorShop.Application.CommerceNode.Tasks;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
     using BlazorShop.Application.Services;
@@ -12,6 +14,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
     using BlazorShop.Infrastructure.Data.CommerceNode.Services;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Options;
 
     using Xunit;
@@ -85,6 +88,77 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         }
 
         [Fact]
+        public async Task FetchForStoreAsync_WhenConfigurationProviderHasRate_InvalidatesPublicConfigurationCache()
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            SeedStore(context, storeId);
+            SeedStoreCurrency(context, storeId, "EUR");
+            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var publicConfigurationCache = new StorefrontPublicConfigurationCache(context, memoryCache);
+            publicConfigurationCache.Set("default", "cached-config");
+            var service = CreateService(
+                context,
+                Guid.NewGuid(),
+                new ConfigurationExchangeRateProviderOptions
+                {
+                    Enabled = true,
+                    Rates =
+                    [
+                        new ConfigurationExchangeRateEntry
+                        {
+                            BaseCurrencyCode = "USD",
+                            TargetCurrencyCode = "EUR",
+                            Rate = 0.91m,
+                        },
+                    ],
+                },
+                publicConfigurationCache: publicConfigurationCache);
+
+            var result = await service.FetchForStoreAsync(
+                storeId,
+                new FetchStoreCurrencyExchangeRatesRequest("configuration", ["EUR"]));
+
+            Assert.True(result.Success, result.Message);
+            Assert.False(publicConfigurationCache.TryGet<string>("default", out _));
+        }
+
+        [Fact]
+        public async Task QueueUpdateAsync_WhenProviderAndTargetsAreValid_QueuesCommerceTask()
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            SeedStore(context, storeId);
+            SeedStoreCurrency(context, storeId, "EUR");
+            var service = CreateService(
+                context,
+                storeId,
+                new ConfigurationExchangeRateProviderOptions
+                {
+                    Enabled = true,
+                });
+
+            var result = await service.QueueUpdateAsync(new QueueStoreCurrencyExchangeRateUpdateRequest(
+                "configuration",
+                ["eur"],
+                IdempotencyKey: "currency-sync",
+                CorrelationId: "unit-test"));
+
+            Assert.True(result.Success, result.Message);
+            Assert.NotNull(result.Payload);
+            var task = Assert.Single(context.CommerceTasks);
+            Assert.Equal(CurrencyExchangeRateTaskTypes.Update, task.TaskType);
+            Assert.Equal($"currency-exchange-rate:{storeId:D}:configuration", task.LockKey);
+            Assert.Equal("currency-sync", task.IdempotencyKey);
+            Assert.Equal("unit-test", task.CorrelationId);
+            Assert.Equal(3, task.MaxAttempts);
+            Assert.Contains("\"storeId\"", task.PayloadJson);
+            Assert.Contains(storeId.ToString("D"), task.PayloadJson);
+            Assert.Contains("\"providerKey\":\"configuration\"", task.PayloadJson);
+            Assert.Contains("\"targetCurrencyCodes\":[\"EUR\"]", task.PayloadJson);
+        }
+
+        [Fact]
         public async Task FetchAsync_WhenConfigurationRateIsStale_ReturnsConflict()
         {
             var storeId = Guid.NewGuid();
@@ -123,7 +197,9 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         private static StoreCurrencyExchangeRateProviderService CreateService(
             CommerceNodeDbContext context,
             Guid storeId,
-            ConfigurationExchangeRateProviderOptions options)
+            ConfigurationExchangeRateProviderOptions options,
+            ICommerceTaskService? taskService = null,
+            IStorefrontPublicConfigurationCache? publicConfigurationCache = null)
         {
             IExchangeRateProvider[] providers =
             [
@@ -135,6 +211,8 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 context,
                 new StubCommerceStoreContext(storeId),
                 new NoopAdminAuditService(),
+                taskService ?? new CommerceTaskService(context),
+                publicConfigurationCache ?? new StorefrontPublicConfigurationCache(context, new MemoryCache(new MemoryCacheOptions())),
                 providers);
         }
 

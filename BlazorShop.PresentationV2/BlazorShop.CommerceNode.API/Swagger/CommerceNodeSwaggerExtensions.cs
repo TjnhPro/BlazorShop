@@ -6,6 +6,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
+    using BlazorShop.Application.CommerceNode.Tasks;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs.Discovery;
     using BlazorShop.Application.DTOs.Seo;
@@ -339,6 +340,11 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "CommerceCurrencies_FetchExchangeRates",
                         "Fetch provider exchange rates into the store rate table.",
                         typeof(CommerceNodeApiResponse<StoreCurrencyExchangeRateProviderFetchResult>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    ["QueueExchangeRateUpdate"] = new(
+                        "CommerceCurrencies_QueueExchangeRateUpdateTask",
+                        "Queue an exchange-rate provider update task.",
+                        typeof(CommerceNodeApiResponse<CommerceTaskSummary>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     ["UpsertExchangeRate"] = new(
                         "CommerceCurrencies_UpsertExchangeRate",

@@ -4,7 +4,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using System.Text.RegularExpressions;
 
     using BlazorShop.Application.CommerceNode.Currencies;
+    using BlazorShop.Application.CommerceNode.Settings;
     using BlazorShop.Application.CommerceNode.Stores;
+    using BlazorShop.Application.CommerceNode.Tasks;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
     using BlazorShop.Application.Services.Contracts.Admin;
@@ -16,22 +18,30 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     public sealed class StoreCurrencyExchangeRateProviderService : IStoreCurrencyExchangeRateProviderService
     {
         private const string ManualProviderKey = "manual";
+        private const string PayloadSchemaVersion = "v1";
+        private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
         private static readonly Regex CurrencyCodeRegex = new("^[A-Z]{3}$", RegexOptions.Compiled);
 
         private readonly CommerceNodeDbContext context;
         private readonly ICommerceStoreContext storeContext;
         private readonly IAdminAuditService auditService;
+        private readonly ICommerceTaskService taskService;
+        private readonly IStorefrontPublicConfigurationCache publicConfigurationCache;
         private readonly IReadOnlyDictionary<string, IExchangeRateProvider> providers;
 
         public StoreCurrencyExchangeRateProviderService(
             CommerceNodeDbContext context,
             ICommerceStoreContext storeContext,
             IAdminAuditService auditService,
+            ICommerceTaskService taskService,
+            IStorefrontPublicConfigurationCache publicConfigurationCache,
             IEnumerable<IExchangeRateProvider> providers)
         {
             this.context = context;
             this.storeContext = storeContext;
             this.auditService = auditService;
+            this.taskService = taskService;
+            this.publicConfigurationCache = publicConfigurationCache;
             this.providers = providers.ToDictionary(
                 provider => provider.ProviderKey,
                 StringComparer.OrdinalIgnoreCase);
@@ -75,6 +85,43 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             if (store is null)
             {
                 return Failed("Current store could not be resolved.", ServiceResponseType.NotFound);
+            }
+
+            return await this.FetchForStoreAsync(store.Id, request, cancellationToken);
+        }
+
+        public async Task<ServiceResponse<StoreCurrencyExchangeRateProviderFetchResult>> FetchForStoreAsync(
+            Guid storeId,
+            FetchStoreCurrencyExchangeRatesRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(request);
+
+            if (storeId == Guid.Empty)
+            {
+                return Failed("Store id is required.", ServiceResponseType.ValidationError);
+            }
+
+            var providerKey = NormalizeProviderKey(request.ProviderKey);
+            if (providerKey is null)
+            {
+                return Failed("Provider key is required.", ServiceResponseType.ValidationError);
+            }
+
+            if (string.Equals(providerKey, ManualProviderKey, StringComparison.Ordinal))
+            {
+                return Failed("Manual rates cannot be fetched. Use the manual exchange-rate upsert endpoint.", ServiceResponseType.ValidationError);
+            }
+
+            if (!this.providers.TryGetValue(providerKey, out var provider))
+            {
+                return Failed($"Exchange-rate provider '{providerKey}' is not configured.", ServiceResponseType.NotFound);
+            }
+
+            var store = await this.GetStoreAsync(storeId, cancellationToken);
+            if (store is null)
+            {
+                return Failed("Store could not be resolved.", ServiceResponseType.NotFound);
             }
 
             var baseCurrencyCode = NormalizeCurrencyCode(store.DefaultCurrencyCode) ?? "USD";
@@ -148,6 +195,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             await this.context.SaveChangesAsync(cancellationToken);
+            await this.publicConfigurationCache.InvalidateAsync(store.Id, cancellationToken);
             await this.auditService.LogAsync(new CreateAdminAuditLogDto
             {
                 Action = "StoreCurrencyExchangeRate.ProviderFetched",
@@ -168,6 +216,75 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 "Exchange rates fetched successfully.");
         }
 
+        public async Task<ServiceResponse<CommerceTaskSummary>> QueueUpdateAsync(
+            QueueStoreCurrencyExchangeRateUpdateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(request);
+
+            var providerKey = NormalizeProviderKey(request.ProviderKey);
+            if (providerKey is null)
+            {
+                return TaskFailure("Provider key is required.", ServiceResponseType.ValidationError);
+            }
+
+            if (string.Equals(providerKey, ManualProviderKey, StringComparison.Ordinal))
+            {
+                return TaskFailure("Manual rates cannot be fetched. Use the manual exchange-rate upsert endpoint.", ServiceResponseType.ValidationError);
+            }
+
+            if (!this.providers.ContainsKey(providerKey))
+            {
+                return TaskFailure($"Exchange-rate provider '{providerKey}' is not configured.", ServiceResponseType.NotFound);
+            }
+
+            var store = await this.GetCurrentStoreAsync(cancellationToken);
+            if (store is null)
+            {
+                return TaskFailure("Current store could not be resolved.", ServiceResponseType.NotFound);
+            }
+
+            var baseCurrencyCode = NormalizeCurrencyCode(store.DefaultCurrencyCode) ?? "USD";
+            var targetCurrencyCodes = await this.ResolveTargetCurrencyCodesAsync(
+                store.Id,
+                baseCurrencyCode,
+                request.TargetCurrencyCodes,
+                cancellationToken);
+            if (!targetCurrencyCodes.Success)
+            {
+                return TaskFailure(targetCurrencyCodes.Message, targetCurrencyCodes.ResponseType);
+            }
+
+            var payload = new StoreCurrencyExchangeRateUpdateTaskPayload(
+                PayloadSchemaVersion,
+                store.Id,
+                providerKey,
+                targetCurrencyCodes.TargetCurrencyCodes,
+                request.IsEnabled,
+                DateTimeOffset.UtcNow);
+
+            var enqueue = await this.taskService.EnqueueAsync(
+                new EnqueueCommerceTaskRequest(
+                    CurrencyExchangeRateTaskTypes.Update,
+                    NormalizeNullable(request.IdempotencyKey),
+                    PayloadSchemaVersion,
+                    JsonSerializer.Serialize(payload, SerializerOptions),
+                    $"currency-exchange-rate:{store.Id:D}:{providerKey}",
+                    Math.Clamp(request.MaxAttempts, 1, 10),
+                    CorrelationId: NormalizeNullable(request.CorrelationId)),
+                cancellationToken);
+            if (!enqueue.Success || enqueue.Payload is null)
+            {
+                return TaskFailure(
+                    enqueue.Message ?? "Exchange-rate update task could not be queued.",
+                    ServiceResponseType.Failure);
+            }
+
+            return TaskSuccess(enqueue.Payload, enqueue.AlreadyExists
+                ? "Exchange-rate update task already exists."
+                : "Exchange-rate update task queued.");
+        }
+
         private async Task<StoreProjection?> GetCurrentStoreAsync(CancellationToken cancellationToken)
         {
             var storeResult = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
@@ -179,6 +296,15 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return await this.context.CommerceStores
                 .AsNoTracking()
                 .Where(candidate => candidate.Id == storeResult.Payload)
+                .Select(candidate => new StoreProjection(candidate.Id, candidate.DefaultCurrencyCode))
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        private async Task<StoreProjection?> GetStoreAsync(Guid storeId, CancellationToken cancellationToken)
+        {
+            return await this.context.CommerceStores
+                .AsNoTracking()
+                .Where(candidate => candidate.Id == storeId)
                 .Select(candidate => new StoreProjection(candidate.Id, candidate.DefaultCurrencyCode))
                 .FirstOrDefaultAsync(cancellationToken);
         }
@@ -270,6 +396,27 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             ServiceResponseType responseType)
         {
             return new ServiceResponse<StoreCurrencyExchangeRateProviderFetchResult>(false, message)
+            {
+                ResponseType = responseType,
+            };
+        }
+
+        private static ServiceResponse<CommerceTaskSummary> TaskSuccess(
+            CommerceTaskSummary payload,
+            string message)
+        {
+            return new ServiceResponse<CommerceTaskSummary>(true, message)
+            {
+                Payload = payload,
+                ResponseType = ServiceResponseType.Success,
+            };
+        }
+
+        private static ServiceResponse<CommerceTaskSummary> TaskFailure(
+            string message,
+            ServiceResponseType responseType)
+        {
+            return new ServiceResponse<CommerceTaskSummary>(false, message)
             {
                 ResponseType = responseType,
             };

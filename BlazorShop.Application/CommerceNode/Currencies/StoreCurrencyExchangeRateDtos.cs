@@ -2,7 +2,13 @@ namespace BlazorShop.Application.CommerceNode.Currencies
 {
     using System.ComponentModel.DataAnnotations;
 
+    using BlazorShop.Application.CommerceNode.Tasks;
     using BlazorShop.Application.DTOs;
+
+    public static class CurrencyExchangeRateTaskTypes
+    {
+        public const string Update = "currency.exchange-rate.update";
+    }
 
     public sealed record StoreCurrencyExchangeRateDto(
         Guid Id,
@@ -33,6 +39,19 @@ namespace BlazorShop.Application.CommerceNode.Currencies
         IReadOnlyList<string>? TargetCurrencyCodes = null,
         bool IsEnabled = true);
 
+    public sealed record QueueStoreCurrencyExchangeRateUpdateRequest(
+        [property: Required]
+        [property: StringLength(64, MinimumLength = 1)]
+        string ProviderKey,
+        IReadOnlyList<string>? TargetCurrencyCodes = null,
+        bool IsEnabled = true,
+        [property: Range(1, 10)]
+        int MaxAttempts = 3,
+        [property: StringLength(128)]
+        string? IdempotencyKey = null,
+        [property: StringLength(128)]
+        string? CorrelationId = null);
+
     public sealed record StoreCurrencyExchangeRateProviderDto(
         string ProviderKey,
         bool Enabled,
@@ -60,6 +79,14 @@ namespace BlazorShop.Application.CommerceNode.Currencies
 
     public sealed record ExchangeRateProviderFetchResult(
         IReadOnlyList<ExchangeRateProviderRate> Rates);
+
+    public sealed record StoreCurrencyExchangeRateUpdateTaskPayload(
+        string SchemaVersion,
+        Guid StoreId,
+        string ProviderKey,
+        IReadOnlyList<string> TargetCurrencyCodes,
+        bool IsEnabled,
+        DateTimeOffset RequestedAt);
 
     public sealed record MoneyConversionResult(
         decimal SourceAmount,
@@ -104,6 +131,15 @@ namespace BlazorShop.Application.CommerceNode.Currencies
 
         Task<ServiceResponse<StoreCurrencyExchangeRateProviderFetchResult>> FetchAsync(
             FetchStoreCurrencyExchangeRatesRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<StoreCurrencyExchangeRateProviderFetchResult>> FetchForStoreAsync(
+            Guid storeId,
+            FetchStoreCurrencyExchangeRatesRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<CommerceTaskSummary>> QueueUpdateAsync(
+            QueueStoreCurrencyExchangeRateUpdateRequest request,
             CancellationToken cancellationToken = default);
     }
 
