@@ -18,6 +18,8 @@ namespace BlazorShop.Domain.Entities.CommerceNode
 
         public string? TitleText { get; set; }
 
+        public string UsageType { get; set; } = "content";
+
         public string OriginalStoragePath { get; set; } = string.Empty;
 
         public string ContentHash { get; set; } = string.Empty;

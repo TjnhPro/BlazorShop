@@ -1,6 +1,7 @@
 namespace BlazorShop.Infrastructure.Data.CommerceNode
 {
     using BlazorShop.Domain.Constants;
+    using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Domain.Entities;
     using BlazorShop.Domain.Entities.CommerceNode;
@@ -641,6 +642,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.Property(asset => asset.DisplayName).HasColumnName("display_name").HasMaxLength(260).IsRequired();
                 entity.Property(asset => asset.AltText).HasColumnName("alt_text").HasMaxLength(500).IsRequired();
                 entity.Property(asset => asset.TitleText).HasColumnName("title_text").HasMaxLength(500);
+                entity.Property(asset => asset.UsageType).HasColumnName("usage_type").HasMaxLength(32).HasDefaultValue(CommerceMediaAssetUsageTypes.Content).IsRequired();
                 entity.Property(asset => asset.OriginalStoragePath).HasColumnName("original_storage_path").IsRequired();
                 entity.Property(asset => asset.ContentHash).HasColumnName("content_hash").HasMaxLength(128).IsRequired();
                 entity.Property(asset => asset.MimeType).HasColumnName("mime_type").HasMaxLength(128).IsRequired();
@@ -653,6 +655,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
                 entity.HasIndex(asset => asset.PublicId).IsUnique();
                 entity.HasIndex(asset => new { asset.StoreId, asset.UpdatedAt });
+                entity.HasIndex(asset => new { asset.StoreId, asset.UsageType, asset.UpdatedAt });
                 entity.HasIndex(asset => new { asset.StoreId, asset.CanonicalFileName });
                 entity.HasIndex(asset => new { asset.StoreId, asset.ContentHash });
 
@@ -663,6 +666,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                         table.HasCheckConstraint("ck_commerce_media_asset_file_size", "file_size_bytes > 0");
                         table.HasCheckConstraint("ck_commerce_media_asset_width", "width IS NULL OR width > 0");
                         table.HasCheckConstraint("ck_commerce_media_asset_height", "height IS NULL OR height > 0");
+                        table.HasCheckConstraint("ck_commerce_media_asset_usage_type", "usage_type in ('content', 'branding', 'theme', 'category')");
                     });
             });
 

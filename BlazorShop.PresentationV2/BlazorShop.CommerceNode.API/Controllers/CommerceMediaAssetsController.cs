@@ -21,10 +21,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 25,
             [FromQuery] string? search = null,
+            [FromQuery] string? usageType = null,
             CancellationToken cancellationToken = default)
         {
             var result = await this.mediaAssetService.ListAsync(
-                new CommerceMediaAssetListQuery(pageNumber, pageSize, search),
+                new CommerceMediaAssetListQuery(pageNumber, pageSize, search, usageType),
                 cancellationToken);
             return this.FromMediaAssetResult(result);
         }

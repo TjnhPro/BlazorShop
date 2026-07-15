@@ -453,6 +453,8 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Media Core Phase 5 prevents deleting a generic asset while it is assigned to a category. 2026-07-15: `CommerceMediaAssetService.DeleteAsync` checks `CategoryMediaAssignments` and returns conflict before deleting.
 - [x] Media Core Phase 5 Commerce Admin category media endpoints have stable OpenAPI operation IDs and response schemas. 2026-07-15: `CommerceNodeAdminStoreOpenApiMetadataTests` passed with `CommerceCategoryMedia_GetPrimary`, `CommerceCategoryMedia_SetPrimary`, and `CommerceCategoryMedia_ClearPrimary`.
 - [x] CommerceNode API builds after Media Core Phase 5 category media assignment API and migration. 2026-07-15: CommerceNode API build passed.
+- [x] Media Core Phase 6 generic media assets default to `content` usage and validate allowlisted usage values. 2026-07-15: `CommerceMediaAssetUsageTypeTests` covered normalization, list filtering, metadata update, and invalid usage rejection.
+- [x] CommerceNode API builds after Media Core Phase 6 media asset usage classification migration/API changes. 2026-07-15: CommerceNode API build passed.
 
 ### Product Import
 

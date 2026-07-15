@@ -266,6 +266,7 @@ Status legend:
 - [x] Link generator emits an `<img>` snippet with `alt`, optional `title`, `loading="lazy"`, and width/height when selected. 2026-07-13: snippet included edited alt/title, `width="320"`, `height="180"`, and lazy loading.
 - [x] Media Core Phase 0 confirms existing product media and media library gateway routes stay behind ControlPlane API. 2026-07-15: reviewed `ControlPlaneCommerceCatalogController` routes for product media list/import/order/primary/delete/retry/preview and media asset list/upload/metadata/replace/delete/preview.
 - [x] Media Core category media assignment route goes through ControlPlane API only after Phase 5/7 implementation. 2026-07-15: ControlPlane API exposes `GET/PUT/DELETE /api/control-plane/stores/{storePublicId}/catalog/categories/{categoryId}/media[/primary]` and forwards to CommerceNode through `ControlPlaneCommerceCatalogService`; ControlPlane API build passed.
+- [x] Media Core Phase 6 media library list can forward `usageType` filter through ControlPlane API. 2026-07-15: ControlPlane `ListMediaAssets` accepts `usageType` and `ControlPlaneCommerceCatalogService` forwards it to CommerceNode; ControlPlane API build passed.
 
 ## Commerce Admin UX Completion
 

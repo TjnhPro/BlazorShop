@@ -14,6 +14,7 @@ Updated: 2026-07-15
 - Phase 3 complete: product and generic asset URL builders support named presets and configured-public-base absolute URLs; product media cache now distinguishes versioned immutable URLs from unversioned short-cache URLs; media responses include `nosniff`; Storefront V2 media proxy copies `X-Content-Type-Options`. Placeholder image asset selection is deferred because the current codebase has no semantic placeholder/no-image asset to reference safely.
 - Phase 4 complete: product media service now invalidates catalog cache after order changes and every delete; deleting primary media excludes the deleted row when selecting the next primary so `Product.Image` is reassigned or cleared correctly; service tests guard primary sync, fallback/clear, invalidation, and alt text preservation.
 - Phase 5 complete: Commerce Node category media assignment table, service, admin API, and Control Plane gateway routes added. Setting primary category media validates both category and asset in the current store, syncs `Category.Image` to the category-card asset URL, invalidates catalog cache, and blocks deletion of assigned generic assets. Control Plane UI picker remains deferred.
+- Phase 6 complete: generic `CommerceMediaAsset` now has allowlisted usage classification (`content`, `branding`, `theme`, `category`) with default `content`, list filtering, metadata update validation, Commerce Node migration, and Control Plane query forwarding. Existing assets backfill/default to `content`.
 
 ## Goal
 
@@ -486,24 +487,30 @@ Goal: clarify asset usage without forcing a full folder/reference-tracking syste
 
 Tasks:
 
-- [ ] Add optional usage classification for generic assets only if it materially helps UI and assignment:
+- [x] Add optional usage classification for generic assets only if it materially helps UI and assignment:
   - `content`
   - `branding`
   - `theme`
   - `category`
-- [ ] Prefer a nullable/defaulted field on `CommerceMediaAsset` or a small side table only if migration risk is lower.
-- [ ] Keep existing generic asset upload/list behavior compatible.
-- [ ] Add filters in API/UI only after the data field exists.
-- [ ] Use `CommerceMediaAsset` for page embedded media and branding assets.
-- [ ] Do not mix theme/runtime deployment files with product gallery media.
-- [ ] Do not add page editor picker in this phase unless a separate page-editor phase approves it.
+- [x] Prefer a nullable/defaulted field on `CommerceMediaAsset` or a small side table only if migration risk is lower.
+- [x] Keep existing generic asset upload/list behavior compatible.
+- [x] Add filters in API/UI only after the data field exists.
+- [x] Use `CommerceMediaAsset` for page embedded media and branding assets.
+- [x] Do not mix theme/runtime deployment files with product gallery media.
+- [x] Do not add page editor picker in this phase unless a separate page-editor phase approves it.
 
 Review gate:
 
-- [ ] Existing media library still lists old assets.
-- [ ] Old assets default to `content` or equivalent.
-- [ ] Existing copied page `<img>` snippets still work.
-- [ ] No product media rows are migrated into generic assets.
+- [x] Existing media library still lists old assets.
+- [x] Old assets default to `content` or equivalent.
+- [x] Existing copied page `<img>` snippets still work.
+- [x] No product media rows are migrated into generic assets.
+
+Phase 6 verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~CommerceMediaAssetUsageTypeTests|FullyQualifiedName~CategoryMediaServiceTests|FullyQualifiedName~CommerceNodeAdminStoreOpenApiMetadataTests"` passed 16/16.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` passed.
 
 ## Phase 7 - Orphan And Delete Policy
 

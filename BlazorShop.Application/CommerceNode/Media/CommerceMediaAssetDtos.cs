@@ -3,7 +3,8 @@ namespace BlazorShop.Application.CommerceNode.Media
     public sealed record CommerceMediaAssetListQuery(
         int PageNumber = 1,
         int PageSize = 25,
-        string? Search = null);
+        string? Search = null,
+        string? UsageType = null);
 
     public sealed record CommerceMediaAssetListResponse(
         IReadOnlyList<CommerceMediaAssetDto> Items,
@@ -20,6 +21,7 @@ namespace BlazorShop.Application.CommerceNode.Media
         string DisplayName,
         string AltText,
         string? TitleText,
+        string UsageType,
         string PublicUrl,
         string MimeType,
         string Extension,
@@ -33,7 +35,8 @@ namespace BlazorShop.Application.CommerceNode.Media
     public sealed record CommerceMediaAssetMetadataRequest(
         string? DisplayName,
         string? AltText,
-        string? TitleText);
+        string? TitleText,
+        string? UsageType = null);
 
     public sealed record CommerceMediaAssetUploadRequest(
         Stream Content,

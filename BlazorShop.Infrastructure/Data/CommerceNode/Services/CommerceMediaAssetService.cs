@@ -66,6 +66,19 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                         EF.Functions.ILike(asset.CanonicalFileName, $"%{search}%"));
             }
 
+            if (!string.IsNullOrWhiteSpace(query.UsageType))
+            {
+                var usageType = CommerceMediaAssetUsageTypes.NormalizeOrDefault(query.UsageType);
+                if (!CommerceMediaAssetUsageTypes.IsValid(usageType))
+                {
+                    return Failed<CommerceMediaAssetListResponse>(
+                        CommerceMediaAssetOperationFailure.Validation,
+                        "Media asset usage type is not supported.");
+                }
+
+                assets = assets.Where(asset => asset.UsageType == usageType);
+            }
+
             var totalCount = await assets.CountAsync(cancellationToken);
             var assetRows = await assets
                 .OrderByDescending(asset => asset.UpdatedAt)
@@ -133,6 +146,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 DisplayName = generatedName,
                 AltText = generatedName,
                 TitleText = generatedName,
+                UsageType = CommerceMediaAssetUsageTypes.Content,
                 OriginalStoragePath = storagePath,
                 ContentHash = file.ContentHash,
                 MimeType = file.MimeType,
@@ -169,6 +183,19 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             asset.DisplayName = displayName;
             asset.AltText = string.IsNullOrWhiteSpace(request.AltText) ? displayName : request.AltText.Trim();
             asset.TitleText = string.IsNullOrWhiteSpace(request.TitleText) ? null : request.TitleText.Trim();
+            if (!string.IsNullOrWhiteSpace(request.UsageType))
+            {
+                var usageType = CommerceMediaAssetUsageTypes.NormalizeOrDefault(request.UsageType);
+                if (!CommerceMediaAssetUsageTypes.IsValid(usageType))
+                {
+                    return Failed<CommerceMediaAssetDto>(
+                        CommerceMediaAssetOperationFailure.Validation,
+                        "Media asset usage type is not supported.");
+                }
+
+                asset.UsageType = usageType;
+            }
+
             asset.UpdatedAt = DateTimeOffset.UtcNow;
 
             await this.context.SaveChangesAsync(cancellationToken);
@@ -370,6 +397,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 asset.DisplayName,
                 asset.AltText,
                 asset.TitleText,
+                asset.UsageType,
                 this.urlBuilder.BuildAssetUrl(asset.PublicId, asset.CanonicalFileName),
                 asset.MimeType,
                 asset.Extension,

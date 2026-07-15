@@ -1763,6 +1763,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             };
 
             AddIfPresent(values, "search", query.Search);
+            AddIfPresent(values, "usageType", query.UsageType);
             return ToQueryString(values);
         }
 

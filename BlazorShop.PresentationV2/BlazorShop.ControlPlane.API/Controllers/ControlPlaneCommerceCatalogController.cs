@@ -396,11 +396,12 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 25,
             [FromQuery] string? search = null,
+            [FromQuery] string? usageType = null,
             CancellationToken cancellationToken = default)
         {
             return ToActionResult(await this.catalogService.ListMediaAssetsAsync(
                 storePublicId,
-                new CommerceMediaAssetListQuery(pageNumber, pageSize, search),
+                new CommerceMediaAssetListQuery(pageNumber, pageSize, search, usageType),
                 cancellationToken));
         }
 
