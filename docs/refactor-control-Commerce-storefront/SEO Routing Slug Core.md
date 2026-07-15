@@ -18,6 +18,7 @@ Updated: 2026-07-15
 - Phase 0 complete: baseline plan committed.
 - Phase 1 complete: Commerce Node SEO redirects are store-scoped in schema, repository, admin service, automation service, and public redirect resolution.
 - Phase 2 complete: shared SEO slug policy service added with reserved route validation, Unicode-preserving normalization, store-scoped collision checking, and suffix generation.
+- Phase 3 complete: Commerce Node slug history table/service/backfill foundation added without replacing entity `Slug` fields.
 - Phase 11 is conditional and should run only after a real legacy topic URL inventory exists.
 
 Autoplan note: external dual-voice subagents are not available in this Codex runtime. This plan records an internal autoplan audit using the same decision principles: preserve existing working behavior, fix the riskiest foundation first, keep V2 boundaries explicit, avoid speculative localization/manufacturer work, and make each phase independently verifiable.
@@ -481,9 +482,9 @@ Tasks:
 
 Exit criteria:
 
-- History exists for current active slugs.
-- Existing entity `Slug` fields remain source-compatible.
-- No Storefront route change yet.
+- History exists for current active slugs. Complete through `StoreSeoSlugHistoryService.BackfillCurrentSlugsAsync`.
+- Existing entity `Slug` fields remain source-compatible. Complete; product/category/page `Slug` fields were not replaced.
+- No Storefront route change yet. Complete; Phase 3 only adds schema/service/history tests.
 
 Suggested commit:
 
