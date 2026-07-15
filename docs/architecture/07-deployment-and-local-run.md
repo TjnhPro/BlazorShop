@@ -71,6 +71,20 @@ The Commerce Node compose file includes:
 - Mounted Nginx config and log folders under `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/nginx`.
 - Bind-mounted product media storage under `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/media`.
 
+Nginx store-resolution smoke:
+
+```powershell
+docker compose -f compose.commercenode.yml up -d commercenode-nginx
+docker exec blazorshop-commercenode-nginx nginx -t
+curl.exe -i -H "Host: unknown.invalid" http://localhost:8088/
+```
+
+Expected:
+
+- `nginx -t` succeeds.
+- Unknown host returns `HTTP/1.1 403 Forbidden` from the default/catch-all server.
+- Known generated store hosts continue to proxy to the intended Storefront container.
+
 Product media local QA notes:
 
 - Admin media APIs use `api/commerce/admin/products/{productId}/media/*` with node credentials and `storeKey` query.
@@ -96,11 +110,21 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorSh
 
 Storefront V2 calls Commerce Node Storefront APIs under `api/storefront/stores/{storeKey}/*`. It resolves the route store key from configuration:
 
-- `StorefrontApi:StoreKey`
+- `Api:StoreKey`
 - `StoreKey`
 - `STORE_KEY`
 
 Development default is currently `default`.
+
+Storefront V2 resolves the current store before store-scoped page/API work when `StoreResolution:RequireCurrentStore=true`, or by default outside Development. Static assets and health endpoints are skipped. A missing store returns `404`; CommerceNode unavailable, maintenance, or invalid current-store response returns `503`; Storefront V2 must not fall back to another store.
+
+Public URL configuration:
+
+- `PublicUrl:BaseUrl` is authoritative for canonical, discovery, sitemap, robots, and payment/client redirect URLs when configured.
+- SEO configured base URL is second priority.
+- Request fallback uses `Request.Scheme`, `Request.Host`, and `PathBase` only after `UseForwardedHeaders()` has run.
+- Storefront trusted forwarded header config lives under `Storefront:ForwardedHeaders:KnownProxies` and `Storefront:ForwardedHeaders:KnownNetworks`.
+- Configure trusted proxies/networks for the public ingress before relying on `X-Forwarded-Proto` or `X-Forwarded-Host`.
 
 ## Store Deployment Flow
 

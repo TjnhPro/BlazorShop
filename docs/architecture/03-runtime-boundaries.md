@@ -139,6 +139,28 @@ Responsibilities:
 
 It must not call Control Plane APIs and must not use Control Plane credentials.
 
+### Storefront Store Resolution
+
+Storefront V2 still resolves store scope from configuration, not from a host-derived public API route. The accepted configuration keys are:
+
+- `Api:StoreKey`
+- `StoreKey`
+- `STORE_KEY`
+
+Before reading catalog, settings, SEO, media, cart, checkout, or customer context, Storefront V2 resolves the current store through:
+
+```text
+GET api/storefront/stores/{storeKey}/store/current
+```
+
+Rules:
+
+- A missing or invalid store must return a clear failure (`404` for missing store, `503` for unavailable/maintenance/config failure).
+- Storefront V2 must not fall back to another store when current-store resolution fails.
+- Static assets and health endpoints may skip the current-store guard.
+- Production Storefront V2 requires a configured store key when current-store resolution is enabled.
+- Storefront public absolute URLs prefer `PublicUrl:BaseUrl`, then SEO configured base URL, then request fallback after trusted forwarded headers have run.
+
 ## Public Product Media Boundary
 
 Product media URLs are public storefront URLs, but they are still store-scoped:
@@ -149,6 +171,7 @@ Product media URLs are public storefront URLs, but they are still store-scoped:
 
 Resolution rules:
 
+- Commerce Node Nginx keeps an explicit default/catch-all server returning `403` for unmatched hosts.
 - Production/storefront traffic should resolve the store through Nginx/domain/rewrite behavior.
 - Local admin/debug media QA should use Commerce Admin media debug endpoints with `storeKey` query.
 - A plain `localhost:5180/media/products/{mediaId}` request can return `404` when the Commerce Node database has multiple active stores, because `localhost` is not enough store identity.

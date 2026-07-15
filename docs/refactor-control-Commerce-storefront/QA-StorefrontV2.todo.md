@@ -227,6 +227,16 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [ ] Visible browser QA confirms payment return/cancel pages have no console errors.
 - [ ] Browser QA verifies no readable raw cart price payload remains after server-cart migration.
 
+## Store Resolution And Public URL Hardening
+
+- [x] Storefront V2 resolves current store before downstream page/catalog work when `StoreResolution:RequireCurrentStore=true`. 2026-07-15: `StorefrontCurrentStoreMiddlewareTests` and `StorefrontCurrentStoreProviderTests` passed.
+- [x] Bad/missing configured store maps to `404` and does not continue the Storefront request pipeline. 2026-07-15: middleware unit test covers not-found guard stop.
+- [x] CommerceNode unavailable or maintenance current store maps to `503` and does not fall back to another store. 2026-07-15: middleware/provider unit tests cover unavailable and maintenance paths.
+- [x] Static asset and health paths are skipped by current-store guard. 2026-07-15: middleware unit test covers static asset skip.
+- [x] Public URL resolver prefers `PublicUrl:BaseUrl`, normalizes trailing slash, strips query/fragment, and preserves `PathBase` for request fallback. 2026-07-15: `StorefrontV2PublicUrlResolverTests` passed.
+- [x] Storefront V2 configures trusted forwarded headers for `X-Forwarded-For`, `X-Forwarded-Proto`, and `X-Forwarded-Host` with known proxies/networks. 2026-07-15: `StorefrontV2ForwardedHeadersOptionsTests` passed.
+- [ ] Visible browser QA verifies canonical/sitemap/payment return URLs use configured public `https://` base behind a trusted proxy.
+
 ## Auth And Checkout Handoff
 
 - [x] Empty anonymous `/checkout` renders the local empty-cart state. 2026-07-14 host smoke test covers current local checkout behavior.

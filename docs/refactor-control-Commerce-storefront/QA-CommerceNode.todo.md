@@ -115,6 +115,12 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Storefront Swagger snapshot is refreshed after cart/checkout/payment API cutover. 2026-07-14: refreshed through Phase 10 first online provider result-shape update; focused checkout/payment/contract/Storefront suite passed 63/63 before Storefront host redirect test, then Storefront host suite passed 27/27.
 - [x] Direct raw Storefront checkout path is retired after Storefront V2 cutover. 2026-07-14: `POST /cart/checkout` removed from active Storefront API contract/client; focused contract/Storefront suite passed 51/51.
 
+## Store Resolution Hardening
+
+- [x] CommerceNode Nginx runtime config has an explicit default/catch-all server returning 403 for unmatched hosts. 2026-07-15: `NginxRuntimeConfigTests` passed and `00-default-deny.conf` contains `default_server` plus `return 403`.
+- [ ] Run local Nginx smoke: `docker compose -f compose.commercenode.yml up -d commercenode-nginx`, `docker exec blazorshop-commercenode-nginx nginx -t`, then `curl.exe -i -H "Host: unknown.invalid" http://localhost:8088/` must return `403 Forbidden`.
+- [ ] Verify at least one known generated store host still proxies to the intended Storefront container after the default/catch-all deny file is mounted.
+
 ## Startup Database Migration
 
 - [x] Clean `CommerceNodeConnection` database is created/migrated by `BlazorShop.CommerceNode.API` startup when `CommerceNode:Database:MigrateOnStartup=true`. 2026-07-11: startup smoke passed against disposable DB `blazorshop_commerce_node_startup_qa_20260711`.
