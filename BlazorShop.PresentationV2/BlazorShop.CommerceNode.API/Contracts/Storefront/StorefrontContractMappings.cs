@@ -638,8 +638,10 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
             this CommerceCurrentStore store,
             IReadOnlyList<StorefrontPaymentMethodResponse> paymentMethods,
             SeoSettingsDto seoDefaults,
-            StoreFeatureStateSnapshot featureStates)
+            StoreFeatureStateSnapshot featureStates,
+            IReadOnlyList<string>? supportedCurrencyCodes = null)
         {
+            var currencyCodes = NormalizeSupportedCurrencyCodes(store.DefaultCurrencyCode, supportedCurrencyCodes);
             return new StorefrontPublicConfigurationResponse(
                 new StorefrontStoreIdentityResponse(
                     store.PublicId,
@@ -669,7 +671,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                     [store.DefaultCulture]),
                 new StorefrontCurrencyOptionsResponse(
                     store.DefaultCurrencyCode,
-                    [store.DefaultCurrencyCode]),
+                    currencyCodes),
                 new StorefrontMaintenanceStateResponse(
                     store.MaintenanceModeEnabled,
                     store.MaintenanceMessage),
@@ -695,6 +697,24 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                     seoDefaults.FacebookUrl,
                     seoDefaults.InstagramUrl,
                     seoDefaults.XUrl));
+        }
+
+        private static IReadOnlyList<string> NormalizeSupportedCurrencyCodes(
+            string defaultCurrencyCode,
+            IReadOnlyList<string>? supportedCurrencyCodes)
+        {
+            var baseCurrencyCode = NormalizeCurrencyCode(defaultCurrencyCode) ?? "USD";
+            return (supportedCurrencyCodes ?? [])
+                .Prepend(baseCurrencyCode)
+                .Select(code => NormalizeCurrencyCode(code) ?? baseCurrencyCode)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+        }
+
+        private static string? NormalizeCurrencyCode(string? currencyCode)
+        {
+            var normalized = currencyCode?.Trim().ToUpperInvariant();
+            return normalized is { Length: 3 } ? normalized : null;
         }
 
         private static ProductCatalogSortBy ToApplicationSortBy(string? sortBy)

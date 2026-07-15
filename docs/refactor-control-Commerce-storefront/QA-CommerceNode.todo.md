@@ -185,6 +185,11 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Cart add-line snapshots use server-resolved `CommerceStore.DefaultCurrencyCode` instead of client `CurrencyCode`. 2026-07-15: `StorefrontCartServiceTests.AddLineAsync_UsesServerDefaultCurrency_WhenClientSendsDifferentCurrency` and `AddLineAsync_UsesResolvedStoreCurrency_AsLineSnapshot` passed.
 - [x] Cart validation returns the store default currency and does not let mixed line snapshots drive totals. 2026-07-15: covered by Phase 1 cart/checkout service tests.
 - [x] Checkout preview and place-order use server-resolved store default currency for payment availability, order, and payment attempts in current single-currency mode. 2026-07-15: focused checkout service tests passed after resolver hardening.
+- [x] Store-supported currency schema is store-scoped with one row per `(StoreId, CurrencyCode)` and CommerceNode migration backfills one base currency row per existing store. 2026-07-15: migration `CommerceNodeStoreCurrencies` and `CommerceNodeDbContextModelTests.StoreCurrency_HasOneCurrencyPerStore` passed.
+- [x] Commerce Admin currency service creates the base currency row from `CommerceStore.DefaultCurrencyCode` and prevents disabling the base currency. 2026-07-15: `StoreCurrencyServiceTests` passed.
+- [x] Commerce Admin currency updates invalidate Storefront public configuration cache. 2026-07-15: `StoreCurrencyServiceTests.UpdateAsync_KeepsBaseCurrencyEnabledAndInvalidatesPublicConfiguration` passed.
+- [x] Storefront public configuration `currencyOptions.supportedCurrencyCodes` resolves from enabled `StoreCurrency` rows and always includes the base currency. 2026-07-15: `StoreCurrencyServiceTests.ResolveSupportedCurrencyCodesAsync_ReturnsEnabledCurrenciesWithBaseFirst` passed.
+- [x] Commerce Admin currency endpoints have stable Swagger operation IDs, summaries, required body metadata, and typed response schemas. 2026-07-15: `CommerceCurrencyAdminOperationMetadataFilter` covers `CommerceCurrencies_List` and `CommerceCurrencies_Update`; full admin Swagger smoke still pending.
 - [ ] Stripe minor-unit conversion uses currency decimal metadata instead of assuming two decimal places.
 - [ ] Store-supported currency metadata is exposed through public configuration without enabling checkout conversion.
 

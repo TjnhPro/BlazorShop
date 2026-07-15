@@ -8,6 +8,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using IStorefrontCheckoutService = BlazorShop.Application.CommerceNode.Checkout.IStorefrontCheckoutService;
 
     using BlazorShop.Application.CommerceNode.Carts;
+    using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.Settings;
@@ -739,6 +740,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     {
         private readonly ICommerceStoreContext storeContext;
         private readonly IPaymentMethodService paymentMethodService;
+        private readonly IStoreCurrencyService currencyService;
         private readonly IStoreSeoSettingsService seoSettingsService;
         private readonly IStoreFeatureStateService featureStateService;
         private readonly IStorefrontPublicConfigurationCache publicConfigurationCache;
@@ -746,12 +748,14 @@ namespace BlazorShop.CommerceNode.API.Controllers
         public StorefrontScopedConfigurationController(
             ICommerceStoreContext storeContext,
             IPaymentMethodService paymentMethodService,
+            IStoreCurrencyService currencyService,
             IStoreSeoSettingsService seoSettingsService,
             IStoreFeatureStateService featureStateService,
             IStorefrontPublicConfigurationCache publicConfigurationCache)
         {
             this.storeContext = storeContext;
             this.paymentMethodService = paymentMethodService;
+            this.currencyService = currencyService;
             this.seoSettingsService = seoSettingsService;
             this.featureStateService = featureStateService;
             this.publicConfigurationCache = publicConfigurationCache;
@@ -782,9 +786,16 @@ namespace BlazorShop.CommerceNode.API.Controllers
             var paymentMethods = (await this.paymentMethodService.GetPaymentMethodsAsync())
                 .Select(method => method.ToStorefrontContract())
                 .ToArray();
+            var supportedCurrencyCodes = await this.currencyService.ResolveSupportedCurrencyCodesAsync(
+                storeIdResult.Payload,
+                cancellationToken);
             var seoDefaults = await this.seoSettingsService.ResolveAsync(cancellationToken);
             var featureStates = await this.featureStateService.ResolveAsync(storeIdResult.Payload, cancellationToken);
-            var configuration = storeResult.Payload.ToPublicConfigurationContract(paymentMethods, seoDefaults, featureStates);
+            var configuration = storeResult.Payload.ToPublicConfigurationContract(
+                paymentMethods,
+                seoDefaults,
+                featureStates,
+                supportedCurrencyCodes);
 
             this.publicConfigurationCache.Set(storeResult.Payload.StoreKey, configuration);
 

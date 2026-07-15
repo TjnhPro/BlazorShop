@@ -3,6 +3,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
     using System.Reflection;
     using System.Text.Json.Nodes;
 
+    using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
@@ -70,6 +71,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
                 options.OperationFilter<CommerceNodeAdminCredentialHeaderOperationFilter>();
                 options.OperationFilter<CommerceAdminStoreKeyOperationFilter>();
                 options.OperationFilter<CommerceStoreAdminOperationMetadataFilter>();
+                options.OperationFilter<CommerceCurrencyAdminOperationMetadataFilter>();
                 options.OperationFilter<StorefrontOperationMetadataFilter>();
                 options.DocumentFilter<StorefrontSecurityDocumentFilter>();
                 options.SchemaFilter<StorefrontContractSchemaFilter>();
@@ -301,7 +303,77 @@ namespace BlazorShop.CommerceNode.API.Swagger
                 };
             }
 
-            private sealed record CommerceStoreOperationMetadata(
+        private sealed record CommerceStoreOperationMetadata(
+            string OperationId,
+            string Summary,
+            Type ResponseType,
+            int[] ErrorStatusCodes);
+        }
+
+        private sealed class CommerceCurrencyAdminOperationMetadataFilter : IOperationFilter
+        {
+            private static readonly IReadOnlyDictionary<string, CommerceCurrencyOperationMetadata> Metadata =
+                new Dictionary<string, CommerceCurrencyOperationMetadata>
+                {
+                    ["Get"] = new(
+                        "CommerceCurrencies_List",
+                        "List store-supported currencies.",
+                        typeof(CommerceNodeApiResponse<IReadOnlyList<StoreCurrencyDto>>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    ["Update"] = new(
+                        "CommerceCurrencies_Update",
+                        "Update a store-supported currency.",
+                        typeof(CommerceNodeApiResponse<StoreCurrencyDto>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                };
+
+            public void Apply(OpenApiOperation operation, OperationFilterContext context)
+            {
+                var relativePath = NormalizePath(context.ApiDescription.RelativePath);
+                if (!relativePath.StartsWith("api/commerce/admin/currencies", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                if (context.ApiDescription.ActionDescriptor is not ControllerActionDescriptor actionDescriptor
+                    || !string.Equals(actionDescriptor.ControllerName, "CommerceCurrencies", StringComparison.Ordinal)
+                    || !Metadata.TryGetValue(actionDescriptor.ActionName, out var metadata))
+                {
+                    return;
+                }
+
+                operation.OperationId = metadata.OperationId;
+                operation.Summary = metadata.Summary;
+
+                if (operation.RequestBody is OpenApiRequestBody requestBody)
+                {
+                    requestBody.Required = true;
+                }
+
+                operation.Responses ??= new OpenApiResponses();
+                operation.Responses["200"] = CreateJsonResponse(context, metadata.ResponseType, "Success.");
+                foreach (var statusCode in metadata.ErrorStatusCodes)
+                {
+                    operation.Responses[statusCode.ToString()] = CreateJsonResponse(context, metadata.ResponseType, "Error.");
+                }
+            }
+
+            private static OpenApiResponse CreateJsonResponse(OperationFilterContext context, Type responseType, string description)
+            {
+                return new OpenApiResponse
+                {
+                    Description = description,
+                    Content = new Dictionary<string, OpenApiMediaType>
+                    {
+                        ["application/json"] = new()
+                        {
+                            Schema = context.SchemaGenerator.GenerateSchema(responseType, context.SchemaRepository),
+                        },
+                    },
+                };
+            }
+
+            private sealed record CommerceCurrencyOperationMetadata(
                 string OperationId,
                 string Summary,
                 Type ResponseType,
