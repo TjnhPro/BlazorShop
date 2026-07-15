@@ -352,6 +352,14 @@ Status legend:
 - [x] Mobile viewport does not overlap navigation, tables, or forms. 2026-07-08: 375x812 login smoke test had no horizontal overflow.
 - [x] Error messages are actionable and do not expose sensitive detail. 2026-07-08: unauthenticated messages are safe and actionable.
 
+## Layout And Asset Foundation
+
+- [x] Control Plane WASM host root asset inventory is guarded by automated tests. 2026-07-15: `LayoutAssetFoundationTests.ControlPlaneRoot_DefinesExpectedAssetsWithoutDuplicates` asserts FontAwesome, `css/site.css`, `css/app.css`, `_framework/blazor.webassembly.js`, and `js/downloads.js` exactly once.
+- [x] Control Plane Web asset build targets remain deterministic. 2026-07-15: `LayoutAssetFoundationTests.ControlPlaneProject_KeepsDeterministicAssetBuildTargets` protects `RestoreNodeModules`, `CopyFontAwesomeAssets`, and `TailwindBuild`.
+- [x] Shared V2 browser helper JS remains module-imported. 2026-07-15: `LayoutAssetFoundationTests.SharedV2BrowserHelpers_KeepJsModuleImports` covers session storage, cookie storage, and auth session sync modules.
+- [ ] Browser QA after layout/asset changes verifies Dashboard, Stores, Products, Orders, and Payment/Currency admin pages have no asset 404s or unexpected console errors.
+- [ ] Browser network capture after asset/layout changes confirms ControlPlane Web still makes no direct calls to CommerceNode APIs.
+
 ## Regression Automation Suggestions
 
 - [~] Backlog: add API integration tests for auth success/failure/session.

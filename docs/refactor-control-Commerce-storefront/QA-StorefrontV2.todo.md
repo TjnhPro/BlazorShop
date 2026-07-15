@@ -375,6 +375,11 @@ Use this checklist whenever Storefront V2 auth UI or Commerce Node auth API chan
 
 - [x] `/css/storefront.css` returns CSS.
 - [x] `/js/storefrontCommerce.js` returns JS.
+- [x] Storefront root asset inventory is guarded by automated tests. 2026-07-15: `LayoutAssetFoundationTests.StorefrontRoot_DefinesExpectedAssetsWithoutDuplicates` asserts `css/site.css`, `css/storefront.css`, `_framework/blazor.web.js`, and `js/storefrontCommerce.js` exactly once.
+- [x] Storefront brand head remains before `HeadOutlet` and does not use layout-level `HeadContent`. 2026-07-15: `LayoutAssetFoundationTests` and `StorefrontBrandingMarkupTests` cover the head order and no-`HeadContent` rule.
+- [x] Storefront main layout keeps exactly one `data-storefront-toast-region`. 2026-07-15: `LayoutAssetFoundationTests.StorefrontLayout_KeepsSingleToastRegionAndGlobalShell` protects the cart/toast DOM contract.
+- [x] Storefront `Program.cs` keeps both `UseStaticFiles()` and `MapStaticAssets()`. 2026-07-15: `LayoutAssetFoundationTests.StorefrontProgram_KeepsStaticAssetMiddleware` passed.
+- [ ] Browser QA after layout/asset changes verifies home/category/product/search/cart/checkout/auth pages have no asset 404s or unexpected console errors.
 - [x] Storefront V2 serves required assets from `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot`, not from legacy `BlazorShop.Presentation/BlazorShop.Web/wwwroot`.
   - 2026-07-09: `/css/site.css`, `/css/storefront.css`, `/js/storefrontCommerce.js`, `/images/banner-bg.jpg`, and `/icon-192.png` returned 200 from Storefront V2.
 - [x] No missing image/static asset requests on home/category/product pages.
