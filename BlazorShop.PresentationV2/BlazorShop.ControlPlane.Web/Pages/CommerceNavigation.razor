@@ -1,0 +1,636 @@
+@page "/commerce-admin/navigation"
+@attribute [Authorize]
+@inject IControlPlaneStoreClient StoreClient
+@inject IControlPlaneCatalogClient CatalogClient
+
+<PageTitle>Storefront Navigation</PageTitle>
+
+<section class="space-y-5">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+            <p class="text-sm font-semibold text-control-700">Commerce Admin</p>
+            <h1 class="text-2xl font-bold text-ink-900">Storefront navigation</h1>
+            <p class="mt-1 text-sm text-ink-500">Configure store-scoped menus for header, footer, utility, and mobile placement.</p>
+        </div>
+        <div class="flex flex-col gap-2 sm:flex-row">
+            <select class="min-h-10 min-w-64 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="selectedStorePublicId">
+                <option value="">Select store</option>
+                @foreach (var store in stores)
+                {
+                    <option value="@store.PublicId">@store.Name (@store.StoreKey)</option>
+                }
+            </select>
+            <button class="cp-button cp-button-secondary" @onclick="LoadAsync">
+                <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">@errorMessage</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">@successMessage</div>
+    }
+
+    <div class="grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
+        <div class="space-y-5">
+            <div class="cp-card p-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-semibold text-ink-900">Menus</h2>
+                    <button class="cp-button cp-button-secondary" disabled="@(!HasStore)" @onclick="NewMenu">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                        Menu
+                    </button>
+                </div>
+
+                @if (!HasStore)
+                {
+                    <div class="mt-4 text-sm text-ink-500">Select a store to load navigation menus.</div>
+                }
+                else if (isLoading)
+                {
+                    <div class="mt-4 text-sm text-ink-500">Loading menus...</div>
+                }
+                else if (menus.Count == 0)
+                {
+                    <div class="mt-4 text-sm text-ink-500">No menus have been created for this store.</div>
+                }
+                else
+                {
+                    <div class="mt-4 grid gap-2">
+                        @foreach (var menu in menus)
+                        {
+                            <button class="@MenuButtonClass(menu)" @onclick="() => SelectMenuAsync(menu.PublicId)">
+                                <span class="min-w-0 text-left">
+                                    <span class="block truncate font-semibold">@menu.DisplayName</span>
+                                    <span class="block font-mono text-xs text-ink-500">@menu.SystemName</span>
+                                </span>
+                                <span class="text-xs text-ink-500">@menu.ItemCount</span>
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+
+            <div class="cp-card p-4">
+                <h2 class="text-sm font-semibold text-ink-900">@MenuFormTitle</h2>
+                <div class="mt-3 grid gap-3 text-sm">
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">System name</span>
+                        <select class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" disabled="@IsEditingMenu" @bind="menuForm.SystemName">
+                            @foreach (var systemName in MenuSystemNames)
+                            {
+                                <option value="@systemName">@systemName</option>
+                            }
+                        </select>
+                    </label>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Display name</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="menuForm.DisplayName" />
+                    </label>
+                    <label class="flex items-center gap-2 text-ink-700">
+                        <input type="checkbox" @bind="menuForm.IsEnabled" />
+                        Enabled
+                    </label>
+                    <button class="cp-button cp-button-primary justify-center" disabled="@(!HasStore || isSavingMenu)" @onclick="SaveMenuAsync">
+                        <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                        Save menu
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="cp-card overflow-hidden">
+            <div class="flex flex-col gap-3 border-b border-ink-100 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h2 class="text-sm font-semibold text-ink-900">@SelectedMenuTitle</h2>
+                    <p class="mt-1 text-sm text-ink-500">@SelectedMenuSubtitle</p>
+                </div>
+                <button class="cp-button cp-button-primary" disabled="@(selectedMenu is null)" @onclick="NewItem">
+                    <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                    Add item
+                </button>
+            </div>
+
+            @if (selectedMenu is null)
+            {
+                <div class="p-8 text-center text-sm text-ink-500">Select or create a menu to edit items.</div>
+            }
+            else if (FlattenedItems.Count == 0)
+            {
+                <div class="p-8 text-center text-sm text-ink-500">This menu has no items yet.</div>
+            }
+            else
+            {
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-ink-100 text-left text-sm">
+                        <thead class="bg-ink-50 text-xs font-semibold uppercase text-ink-500">
+                            <tr>
+                                <th class="px-4 py-3">Item</th>
+                                <th class="px-4 py-3">Target</th>
+                                <th class="px-4 py-3">Status</th>
+                                <th class="px-4 py-3">Order</th>
+                                <th class="px-4 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-ink-100">
+                            @foreach (var row in FlattenedItems)
+                            {
+                                <tr>
+                                    <td class="px-4 py-3">
+                                        <div class="font-semibold text-ink-900" style="@IndentStyle(row.Depth)">@row.Item.Label</div>
+                                        @if (!string.IsNullOrWhiteSpace(row.Item.ResolvedHref))
+                                        {
+                                            <div class="mt-1 font-mono text-xs text-ink-500" style="@IndentStyle(row.Depth)">@row.Item.ResolvedHref</div>
+                                        }
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="font-mono text-xs text-ink-700">@row.Item.TargetType</div>
+                                        <div class="mt-1 text-xs text-ink-500">@FirstNonEmpty(row.Item.TargetKey, row.Item.TargetEntityPublicId?.ToString("D"), row.Item.Url)</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <StatusBadge Text="@row.Item.TargetStatus" Tone="@TargetTone(row.Item.TargetStatus)" />
+                                        @if (!row.Item.IsEnabled)
+                                        {
+                                            <div class="mt-1"><StatusBadge Text="Disabled" Tone="neutral" /></div>
+                                        }
+                                    </td>
+                                    <td class="px-4 py-3 text-ink-500">@row.Item.DisplayOrder</td>
+                                    <td class="px-4 py-3 text-right">
+                                        <div class="flex justify-end gap-2">
+                                            <button class="cp-button cp-button-secondary" @onclick="() => EditItem(row.Item)">Edit</button>
+                                            <button class="cp-button cp-button-secondary" @onclick="() => ArchiveItemAsync(row.Item.PublicId)">Archive</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<RightDrawer IsOpen="@isItemDrawerOpen" IsOpenChanged="OnItemDrawerChanged" Title="@ItemFormTitle" Subtitle="@itemForm.TargetType" Eyebrow="Navigation Item">
+    <div class="space-y-4">
+        <label class="block space-y-1 text-sm">
+            <span class="font-medium text-ink-700">Label</span>
+            <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="itemForm.Label" />
+        </label>
+
+        <div class="grid gap-3 md:grid-cols-2">
+            <label class="space-y-1 text-sm">
+                <span class="font-medium text-ink-700">Parent</span>
+                <select class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="itemForm.ParentItemPublicId">
+                    <option value="">Root</option>
+                    @foreach (var row in FlattenedItems.Where(row => row.Item.PublicId != itemForm.PublicId))
+                    {
+                        <option value="@row.Item.PublicId">@($"{new string('-', row.Depth * 2)} {row.Item.Label}")</option>
+                    }
+                </select>
+            </label>
+            <label class="space-y-1 text-sm">
+                <span class="font-medium text-ink-700">Display order</span>
+                <input type="number" class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="itemForm.DisplayOrder" />
+            </label>
+        </div>
+
+        <div class="grid gap-3 md:grid-cols-2">
+            <label class="space-y-1 text-sm">
+                <span class="font-medium text-ink-700">Target type</span>
+                <select class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="itemForm.TargetType">
+                    @foreach (var targetType in TargetTypes)
+                    {
+                        <option value="@targetType">@targetType</option>
+                    }
+                </select>
+            </label>
+            <label class="flex items-center gap-2 pt-7 text-sm text-ink-700">
+                <input type="checkbox" @bind="itemForm.IsEnabled" />
+                Enabled
+            </label>
+        </div>
+
+        @if (itemForm.TargetType == StoreNavigationTargetTypes.System || itemForm.TargetType == StoreNavigationTargetTypes.InternalRoute)
+        {
+            <label class="block space-y-1 text-sm">
+                <span class="font-medium text-ink-700">Target key</span>
+                <select class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="itemForm.TargetKey">
+                    @foreach (var target in systemTargets)
+                    {
+                        <option value="@target.Key">@target.Label (@target.Href)</option>
+                    }
+                </select>
+            </label>
+        }
+        else if (itemForm.TargetType == StoreNavigationTargetTypes.ExternalUrl)
+        {
+            <label class="block space-y-1 text-sm">
+                <span class="font-medium text-ink-700">HTTPS URL</span>
+                <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="itemForm.Url" />
+            </label>
+        }
+        else if (itemForm.TargetType is StoreNavigationTargetTypes.Category or StoreNavigationTargetTypes.Page or StoreNavigationTargetTypes.Product)
+        {
+            <label class="block space-y-1 text-sm">
+                <span class="font-medium text-ink-700">Target entity public ID</span>
+                <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 font-mono text-xs outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="itemForm.TargetEntityPublicIdText" />
+            </label>
+        }
+
+        <label class="flex items-center gap-2 text-sm text-ink-700">
+            <input type="checkbox" @bind="itemForm.OpensInNewTab" />
+            Open in new tab
+        </label>
+
+        <div class="flex flex-col gap-2 sm:flex-row">
+            <button class="cp-button cp-button-primary justify-center" disabled="@isSavingItem" @onclick="SaveItemAsync">
+                <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                Save item
+            </button>
+        </div>
+    </div>
+</RightDrawer>
+
+@code {
+    private static readonly string[] MenuSystemNames =
+    [
+        StoreNavigationMenuNames.Main,
+        StoreNavigationMenuNames.FooterCompany,
+        StoreNavigationMenuNames.FooterSupport,
+        StoreNavigationMenuNames.FooterLegal,
+        StoreNavigationMenuNames.Utility,
+        StoreNavigationMenuNames.Mobile,
+    ];
+
+    private static readonly string[] TargetTypes =
+    [
+        StoreNavigationTargetTypes.System,
+        StoreNavigationTargetTypes.Category,
+        StoreNavigationTargetTypes.Page,
+        StoreNavigationTargetTypes.Product,
+        StoreNavigationTargetTypes.ExternalUrl,
+        StoreNavigationTargetTypes.Group,
+        StoreNavigationTargetTypes.InternalRoute,
+    ];
+
+    private readonly List<StoreSummary> stores = [];
+    private readonly List<StoreNavigationMenuSummaryDto> menus = [];
+    private readonly List<StoreNavigationTargetOptionDto> systemTargets = [];
+    private Guid? selectedStorePublicId;
+    private StoreNavigationMenuDetailDto? selectedMenu;
+    private MenuFormState menuForm = new();
+    private ItemFormState itemForm = new();
+    private bool isLoading;
+    private bool isSavingMenu;
+    private bool isSavingItem;
+    private bool isItemDrawerOpen;
+    private string? errorMessage;
+    private string? successMessage;
+
+    private bool HasStore => selectedStorePublicId.HasValue && selectedStorePublicId.Value != Guid.Empty;
+
+    private bool IsEditingMenu => selectedMenu is not null;
+
+    private string MenuFormTitle => IsEditingMenu ? "Menu settings" : "Create menu";
+
+    private string SelectedMenuTitle => selectedMenu?.DisplayName ?? "Menu items";
+
+    private string SelectedMenuSubtitle => selectedMenu is null
+        ? "No menu selected."
+        : $"{selectedMenu.SystemName} · {(selectedMenu.IsEnabled ? "enabled" : "disabled")}";
+
+    private string ItemFormTitle => itemForm.PublicId.HasValue ? "Edit item" : "Create item";
+
+    private IReadOnlyList<ItemRow> FlattenedItems => selectedMenu is null ? [] : Flatten(selectedMenu.Items, 0).ToArray();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await StoreClient.ListAsync(status: "active", pageSize: 100);
+        stores.AddRange(response.Items);
+        selectedStorePublicId = stores.FirstOrDefault()?.PublicId;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        try
+        {
+            var menuResult = await CatalogClient.ListNavigationMenusAsync(selectedStorePublicId!.Value);
+            if (!menuResult.Success)
+            {
+                errorMessage = menuResult.Message;
+                return;
+            }
+
+            menus.Clear();
+            menus.AddRange(menuResult.Data ?? []);
+
+            var targetResult = await CatalogClient.ListNavigationSystemTargetsAsync(selectedStorePublicId.Value);
+            if (targetResult.Success)
+            {
+                systemTargets.Clear();
+                systemTargets.AddRange(targetResult.Data ?? []);
+            }
+
+            if (selectedMenu is not null && menus.Any(menu => menu.PublicId == selectedMenu.PublicId))
+            {
+                await SelectMenuAsync(selectedMenu.PublicId);
+            }
+            else
+            {
+                selectedMenu = null;
+                menuForm = new MenuFormState();
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SelectMenuAsync(Guid menuPublicId)
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        var result = await CatalogClient.GetNavigationMenuAsync(selectedStorePublicId!.Value, menuPublicId);
+        if (!result.Success || result.Data is null)
+        {
+            errorMessage = result.Message;
+            return;
+        }
+
+        selectedMenu = result.Data;
+        menuForm = MenuFormState.From(result.Data);
+    }
+
+    private void NewMenu()
+    {
+        selectedMenu = null;
+        menuForm = new MenuFormState
+        {
+            SystemName = MenuSystemNames.First(),
+            DisplayName = "Main",
+            IsEnabled = true,
+        };
+    }
+
+    private async Task SaveMenuAsync()
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        isSavingMenu = true;
+        errorMessage = null;
+        try
+        {
+            var result = selectedMenu is null
+                ? await CatalogClient.CreateNavigationMenuAsync(selectedStorePublicId!.Value, menuForm.ToCreateRequest())
+                : await CatalogClient.UpdateNavigationMenuAsync(selectedStorePublicId!.Value, selectedMenu.PublicId, menuForm.ToUpdateRequest());
+            if (!result.Success || result.Data is null)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            selectedMenu = result.Data;
+            menuForm = MenuFormState.From(result.Data);
+            successMessage = "Navigation menu saved.";
+            await LoadAsync();
+        }
+        finally
+        {
+            isSavingMenu = false;
+        }
+    }
+
+    private void NewItem()
+    {
+        itemForm = new ItemFormState
+        {
+            TargetType = StoreNavigationTargetTypes.System,
+            TargetKey = systemTargets.FirstOrDefault()?.Key ?? StoreNavigationSystemTargets.Home,
+            IsEnabled = true,
+        };
+        isItemDrawerOpen = true;
+    }
+
+    private void EditItem(StoreNavigationMenuItemAdminDto item)
+    {
+        itemForm = ItemFormState.From(item);
+        isItemDrawerOpen = true;
+    }
+
+    private async Task SaveItemAsync()
+    {
+        if (!HasStore || selectedMenu is null)
+        {
+            return;
+        }
+
+        isSavingItem = true;
+        errorMessage = null;
+        try
+        {
+            var result = itemForm.PublicId.HasValue
+                ? await CatalogClient.UpdateNavigationItemAsync(selectedStorePublicId!.Value, itemForm.PublicId.Value, itemForm.ToUpdateRequest())
+                : await CatalogClient.CreateNavigationItemAsync(selectedStorePublicId!.Value, selectedMenu.PublicId, itemForm.ToCreateRequest());
+            if (!result.Success || result.Data is null)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            selectedMenu = result.Data;
+            successMessage = "Navigation item saved.";
+            isItemDrawerOpen = false;
+            await LoadAsync();
+        }
+        finally
+        {
+            isSavingItem = false;
+        }
+    }
+
+    private async Task ArchiveItemAsync(Guid itemPublicId)
+    {
+        if (!HasStore || selectedMenu is null)
+        {
+            return;
+        }
+
+        var result = await CatalogClient.ArchiveNavigationItemAsync(selectedStorePublicId!.Value, itemPublicId);
+        if (!result.Success || result.Data is null)
+        {
+            errorMessage = result.Message;
+            return;
+        }
+
+        selectedMenu = result.Data;
+        successMessage = "Navigation item archived.";
+        await LoadAsync();
+    }
+
+    private Task OnItemDrawerChanged(bool value)
+    {
+        isItemDrawerOpen = value;
+        return Task.CompletedTask;
+    }
+
+    private static IEnumerable<ItemRow> Flatten(IEnumerable<StoreNavigationMenuItemAdminDto> items, int depth)
+    {
+        foreach (var item in items)
+        {
+            yield return new ItemRow(item, depth);
+            foreach (var child in Flatten(item.Children, depth + 1))
+            {
+                yield return child;
+            }
+        }
+    }
+
+    private string MenuButtonClass(StoreNavigationMenuSummaryDto menu)
+    {
+        var active = selectedMenu?.PublicId == menu.PublicId ? " border-control-500 bg-control-50" : " border-ink-200 bg-white hover:bg-ink-50";
+        return "flex min-h-12 items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm text-ink-700" + active;
+    }
+
+    private static string IndentStyle(int depth)
+    {
+        return $"padding-left:{Math.Min(depth * 1.25, 5):0.##}rem";
+    }
+
+    private static string TargetTone(string status)
+    {
+        return status switch
+        {
+            StoreNavigationTargetStatuses.Ok => "success",
+            StoreNavigationTargetStatuses.Broken => "warning",
+            StoreNavigationTargetStatuses.Invalid => "danger",
+            _ => "neutral",
+        };
+    }
+
+    private static string FirstNonEmpty(params string?[] values)
+    {
+        return values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)) ?? "n/a";
+    }
+
+    private sealed record ItemRow(StoreNavigationMenuItemAdminDto Item, int Depth);
+
+    private sealed class MenuFormState
+    {
+        public string? SystemName { get; set; } = StoreNavigationMenuNames.Main;
+
+        public string? DisplayName { get; set; }
+
+        public bool IsEnabled { get; set; } = true;
+
+        public static MenuFormState From(StoreNavigationMenuDetailDto detail)
+        {
+            return new MenuFormState
+            {
+                SystemName = detail.SystemName,
+                DisplayName = detail.DisplayName,
+                IsEnabled = detail.IsEnabled,
+            };
+        }
+
+        public CreateStoreNavigationMenuRequest ToCreateRequest()
+        {
+            return new CreateStoreNavigationMenuRequest(this.SystemName, this.DisplayName, this.IsEnabled);
+        }
+
+        public UpdateStoreNavigationMenuRequest ToUpdateRequest()
+        {
+            return new UpdateStoreNavigationMenuRequest(this.DisplayName, this.IsEnabled);
+        }
+    }
+
+    private sealed class ItemFormState
+    {
+        public Guid? PublicId { get; set; }
+
+        public Guid? ParentItemPublicId { get; set; }
+
+        public string? Label { get; set; }
+
+        public string TargetType { get; set; } = StoreNavigationTargetTypes.System;
+
+        public string? TargetKey { get; set; }
+
+        public string? TargetEntityPublicIdText { get; set; }
+
+        public string? Url { get; set; }
+
+        public bool IsEnabled { get; set; } = true;
+
+        public int DisplayOrder { get; set; }
+
+        public bool OpensInNewTab { get; set; }
+
+        public static ItemFormState From(StoreNavigationMenuItemAdminDto item)
+        {
+            return new ItemFormState
+            {
+                PublicId = item.PublicId,
+                ParentItemPublicId = item.ParentItemPublicId,
+                Label = item.Label,
+                TargetType = item.TargetType,
+                TargetKey = item.TargetKey,
+                TargetEntityPublicIdText = item.TargetEntityPublicId?.ToString("D"),
+                Url = item.Url,
+                IsEnabled = item.IsEnabled,
+                DisplayOrder = item.DisplayOrder,
+                OpensInNewTab = item.OpensInNewTab,
+            };
+        }
+
+        public CreateStoreNavigationMenuItemRequest ToCreateRequest()
+        {
+            return new CreateStoreNavigationMenuItemRequest(
+                this.ParentItemPublicId,
+                this.Label,
+                this.TargetType,
+                this.TargetKey,
+                this.TargetEntityPublicId,
+                this.Url,
+                this.IsEnabled,
+                this.DisplayOrder,
+                this.OpensInNewTab);
+        }
+
+        public UpdateStoreNavigationMenuItemRequest ToUpdateRequest()
+        {
+            return new UpdateStoreNavigationMenuItemRequest(
+                this.ParentItemPublicId,
+                this.Label,
+                this.TargetType,
+                this.TargetKey,
+                this.TargetEntityPublicId,
+                this.Url,
+                this.IsEnabled,
+                this.DisplayOrder,
+                this.OpensInNewTab);
+        }
+
+        private Guid? TargetEntityPublicId => Guid.TryParse(this.TargetEntityPublicIdText, out var value) ? value : null;
+    }
+}

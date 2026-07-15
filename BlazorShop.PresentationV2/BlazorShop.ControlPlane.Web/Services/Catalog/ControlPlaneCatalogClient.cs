@@ -6,6 +6,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
     using BlazorShop.Application.ControlPlane.Catalog;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
+    using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
@@ -346,6 +347,53 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             Guid storePublicId,
             Guid pagePublicId,
             UpdatePageNavigationRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<IReadOnlyList<StoreNavigationMenuSummaryDto>>> ListNavigationMenusAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StoreNavigationMenuDetailDto>> GetNavigationMenuAsync(
+            Guid storePublicId,
+            Guid menuPublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StoreNavigationMenuDetailDto>> CreateNavigationMenuAsync(
+            Guid storePublicId,
+            CreateStoreNavigationMenuRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StoreNavigationMenuDetailDto>> UpdateNavigationMenuAsync(
+            Guid storePublicId,
+            Guid menuPublicId,
+            UpdateStoreNavigationMenuRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StoreNavigationMenuDetailDto>> CreateNavigationItemAsync(
+            Guid storePublicId,
+            Guid menuPublicId,
+            CreateStoreNavigationMenuItemRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StoreNavigationMenuDetailDto>> UpdateNavigationItemAsync(
+            Guid storePublicId,
+            Guid itemPublicId,
+            UpdateStoreNavigationMenuItemRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StoreNavigationMenuDetailDto>> ArchiveNavigationItemAsync(
+            Guid storePublicId,
+            Guid itemPublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StoreNavigationMenuDetailDto>> UpdateNavigationItemOrderAsync(
+            Guid storePublicId,
+            Guid menuPublicId,
+            UpdateStoreNavigationMenuItemOrderRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<IReadOnlyList<StoreNavigationTargetOptionDto>>> ListNavigationSystemTargetsAsync(
+            Guid storePublicId,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneClientResult<PagedResult<GetOrder>>> QueryOrdersAsync(
@@ -1147,6 +1195,112 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
                 CommerceRoute(storePublicId, $"pages/{pagePublicId:D}/navigation"),
                 request,
                 "Unable to update storefront page navigation.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<IReadOnlyList<StoreNavigationMenuSummaryDto>>> ListNavigationMenusAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<IReadOnlyList<StoreNavigationMenuSummaryDto>>(
+                CommerceRoute(storePublicId, "navigation/menus"),
+                "Unable to load navigation menus.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StoreNavigationMenuDetailDto>> GetNavigationMenuAsync(
+            Guid storePublicId,
+            Guid menuPublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<StoreNavigationMenuDetailDto>(
+                CommerceRoute(storePublicId, $"navigation/menus/{menuPublicId:D}"),
+                "Unable to load navigation menu.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StoreNavigationMenuDetailDto>> CreateNavigationMenuAsync(
+            Guid storePublicId,
+            CreateStoreNavigationMenuRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<CreateStoreNavigationMenuRequest, StoreNavigationMenuDetailDto>(
+                CommerceRoute(storePublicId, "navigation/menus"),
+                request,
+                "Unable to create navigation menu.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StoreNavigationMenuDetailDto>> UpdateNavigationMenuAsync(
+            Guid storePublicId,
+            Guid menuPublicId,
+            UpdateStoreNavigationMenuRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<UpdateStoreNavigationMenuRequest, StoreNavigationMenuDetailDto>(
+                CommerceRoute(storePublicId, $"navigation/menus/{menuPublicId:D}"),
+                request,
+                "Unable to update navigation menu.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StoreNavigationMenuDetailDto>> CreateNavigationItemAsync(
+            Guid storePublicId,
+            Guid menuPublicId,
+            CreateStoreNavigationMenuItemRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<CreateStoreNavigationMenuItemRequest, StoreNavigationMenuDetailDto>(
+                CommerceRoute(storePublicId, $"navigation/menus/{menuPublicId:D}/items"),
+                request,
+                "Unable to create navigation item.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StoreNavigationMenuDetailDto>> UpdateNavigationItemAsync(
+            Guid storePublicId,
+            Guid itemPublicId,
+            UpdateStoreNavigationMenuItemRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<UpdateStoreNavigationMenuItemRequest, StoreNavigationMenuDetailDto>(
+                CommerceRoute(storePublicId, $"navigation/items/{itemPublicId:D}"),
+                request,
+                "Unable to update navigation item.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StoreNavigationMenuDetailDto>> ArchiveNavigationItemAsync(
+            Guid storePublicId,
+            Guid itemPublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.DeletePrivateAsync<StoreNavigationMenuDetailDto>(
+                CommerceRoute(storePublicId, $"navigation/items/{itemPublicId:D}"),
+                "Unable to archive navigation item.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StoreNavigationMenuDetailDto>> UpdateNavigationItemOrderAsync(
+            Guid storePublicId,
+            Guid menuPublicId,
+            UpdateStoreNavigationMenuItemOrderRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<UpdateStoreNavigationMenuItemOrderRequest, StoreNavigationMenuDetailDto>(
+                CommerceRoute(storePublicId, $"navigation/menus/{menuPublicId:D}/items/order"),
+                request,
+                "Unable to update navigation item order.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<IReadOnlyList<StoreNavigationTargetOptionDto>>> ListNavigationSystemTargetsAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<IReadOnlyList<StoreNavigationTargetOptionDto>>(
+                CommerceRoute(storePublicId, "navigation/system-targets"),
+                "Unable to load navigation system targets.",
                 cancellationToken);
         }
 
