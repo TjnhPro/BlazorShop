@@ -296,6 +296,14 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             StorefrontPageListQuery query,
             CancellationToken cancellationToken = default);
 
+        Task<ControlPlaneClientResult<IReadOnlyList<StorefrontPageTemplateDefinitionDto>>> ListStorefrontPageTemplatesAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<IReadOnlyList<StorefrontPageTemplateStatusDto>>> GetStorefrontPageTemplateStatusAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
         Task<ControlPlaneClientResult<StorefrontPageDetailDto>> GetStorefrontPageAsync(
             Guid storePublicId,
             Guid pagePublicId,
@@ -315,6 +323,29 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
         Task<ControlPlaneClientResult<StorefrontPageDetailDto>> ArchiveStorefrontPageAsync(
             Guid storePublicId,
             Guid pagePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StorefrontPageDetailDto>> CreateStorefrontPageDraftFromTemplateAsync(
+            Guid storePublicId,
+            string pageKey,
+            CreatePageFromTemplateRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StorefrontPageDetailDto>> MapStorefrontPageTemplateAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            MapPageTemplateRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StorefrontPageDetailDto>> ClearStorefrontPageTemplateAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StorefrontPageDetailDto>> UpdateStorefrontPageNavigationAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            UpdatePageNavigationRequest request,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneClientResult<PagedResult<GetOrder>>> QueryOrdersAsync(
@@ -1002,6 +1033,26 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
                 cancellationToken);
         }
 
+        public Task<ControlPlaneClientResult<IReadOnlyList<StorefrontPageTemplateDefinitionDto>>> ListStorefrontPageTemplatesAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<IReadOnlyList<StorefrontPageTemplateDefinitionDto>>(
+                CommerceRoute(storePublicId, "pages/templates"),
+                "Unable to load storefront page templates.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<IReadOnlyList<StorefrontPageTemplateStatusDto>>> GetStorefrontPageTemplateStatusAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<IReadOnlyList<StorefrontPageTemplateStatusDto>>(
+                CommerceRoute(storePublicId, "pages/template-status"),
+                "Unable to load storefront page template status.",
+                cancellationToken);
+        }
+
         public Task<ControlPlaneClientResult<StorefrontPageDetailDto>> GetStorefrontPageAsync(
             Guid storePublicId,
             Guid pagePublicId,
@@ -1046,6 +1097,56 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             return this.apiClient.DeletePrivateAsync<StorefrontPageDetailDto>(
                 CommerceRoute(storePublicId, $"pages/{pagePublicId:D}"),
                 "Unable to archive storefront page.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StorefrontPageDetailDto>> CreateStorefrontPageDraftFromTemplateAsync(
+            Guid storePublicId,
+            string pageKey,
+            CreatePageFromTemplateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<CreatePageFromTemplateRequest, StorefrontPageDetailDto>(
+                CommerceRoute(storePublicId, $"pages/templates/{Uri.EscapeDataString(pageKey)}/draft"),
+                request,
+                "Unable to create storefront page draft.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StorefrontPageDetailDto>> MapStorefrontPageTemplateAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            MapPageTemplateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<MapPageTemplateRequest, StorefrontPageDetailDto>(
+                CommerceRoute(storePublicId, $"pages/{pagePublicId:D}/template"),
+                request,
+                "Unable to map storefront page template.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StorefrontPageDetailDto>> ClearStorefrontPageTemplateAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.DeletePrivateAsync<StorefrontPageDetailDto>(
+                CommerceRoute(storePublicId, $"pages/{pagePublicId:D}/template"),
+                "Unable to clear storefront page template.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StorefrontPageDetailDto>> UpdateStorefrontPageNavigationAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            UpdatePageNavigationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<UpdatePageNavigationRequest, StorefrontPageDetailDto>(
+                CommerceRoute(storePublicId, $"pages/{pagePublicId:D}/navigation"),
+                request,
+                "Unable to update storefront page navigation.",
                 cancellationToken);
         }
 

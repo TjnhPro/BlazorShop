@@ -586,6 +586,11 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "Get a published Storefront page by slug.",
                         typeof(CommerceNodeApiResponse<StorefrontPagePublicDto>),
                         [StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedPages", "ListNavigation")] = new(
+                        "StorefrontPages_ListNavigation",
+                        "List published Storefront content navigation links.",
+                        typeof(CommerceNodeApiResponse<IReadOnlyList<StorefrontPageNavigationLinkDto>>),
+                        [StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedConfiguration", "Get")] = new(
                         "StorefrontConfiguration_Get",
                         "Get public Storefront configuration.",

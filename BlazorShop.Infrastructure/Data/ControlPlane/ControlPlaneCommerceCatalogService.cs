@@ -399,6 +399,30 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
+        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StorefrontPageTemplateDefinitionDto>>> ListStorefrontPageTemplatesAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<IReadOnlyList<StorefrontPageTemplateDefinitionDto>>(
+                storePublicId,
+                HttpMethod.Get,
+                "api/commerce/admin/pages/templates",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StorefrontPageTemplateStatusDto>>> GetStorefrontPageTemplateStatusAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<IReadOnlyList<StorefrontPageTemplateStatusDto>>(
+                storePublicId,
+                HttpMethod.Get,
+                "api/commerce/admin/pages/template-status",
+                null,
+                cancellationToken);
+        }
+
         public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> GetStorefrontPageAsync(
             Guid storePublicId,
             Guid pagePublicId,
@@ -449,6 +473,61 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 HttpMethod.Delete,
                 $"api/commerce/admin/pages/{pagePublicId:D}",
                 null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> CreateStorefrontPageDraftFromTemplateAsync(
+            Guid storePublicId,
+            string pageKey,
+            CreatePageFromTemplateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<StorefrontPageDetailDto>(
+                storePublicId,
+                HttpMethod.Post,
+                $"api/commerce/admin/pages/templates/{Uri.EscapeDataString(pageKey)}/draft",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> MapStorefrontPageTemplateAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            MapPageTemplateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<StorefrontPageDetailDto>(
+                storePublicId,
+                HttpMethod.Put,
+                $"api/commerce/admin/pages/{pagePublicId:D}/template",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> ClearStorefrontPageTemplateAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<StorefrontPageDetailDto>(
+                storePublicId,
+                HttpMethod.Delete,
+                $"api/commerce/admin/pages/{pagePublicId:D}/template",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> UpdateStorefrontPageNavigationAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            UpdatePageNavigationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<StorefrontPageDetailDto>(
+                storePublicId,
+                HttpMethod.Put,
+                $"api/commerce/admin/pages/{pagePublicId:D}/navigation",
+                request,
                 cancellationToken);
         }
 

@@ -152,6 +152,14 @@ namespace BlazorShop.Application.ControlPlane.Catalog
             StorefrontPageListQuery query,
             CancellationToken cancellationToken = default);
 
+        Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StorefrontPageTemplateDefinitionDto>>> ListStorefrontPageTemplatesAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StorefrontPageTemplateStatusDto>>> GetStorefrontPageTemplateStatusAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
         Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> GetStorefrontPageAsync(
             Guid storePublicId,
             Guid pagePublicId,
@@ -171,6 +179,29 @@ namespace BlazorShop.Application.ControlPlane.Catalog
         Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> ArchiveStorefrontPageAsync(
             Guid storePublicId,
             Guid pagePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> CreateStorefrontPageDraftFromTemplateAsync(
+            Guid storePublicId,
+            string pageKey,
+            CreatePageFromTemplateRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> MapStorefrontPageTemplateAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            MapPageTemplateRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> ClearStorefrontPageTemplateAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> UpdateStorefrontPageNavigationAsync(
+            Guid storePublicId,
+            Guid pagePublicId,
+            UpdatePageNavigationRequest request,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneCommerceCatalogResult<ProductMediaListResponse>> ListProductMediaAsync(

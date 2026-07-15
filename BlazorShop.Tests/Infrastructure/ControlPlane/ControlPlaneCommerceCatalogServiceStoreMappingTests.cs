@@ -73,6 +73,65 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             Assert.Contains("storeKey=main-store", request.RequestUri.Query);
         }
 
+        [Fact]
+        public async Task GetStorefrontPageTemplateStatusAsync_AppendsStoreKeyToCommerceNodeRequest()
+        {
+            await using var context = CreateContext();
+            var store = await CreateStoreAsync(context);
+            var handler = new RecordingHandler(RecordingHandler.EmptyArrayEnvelope);
+            var service = new ControlPlaneCommerceCatalogService(context, new HttpClient(handler));
+
+            var result = await service.GetStorefrontPageTemplateStatusAsync(store.PublicId);
+
+            Assert.True(result.Success);
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal("https://node.example.test/api/commerce/admin/pages/template-status", request.RequestUri!.GetLeftPart(UriPartial.Path));
+            Assert.Contains("storeKey=main-store", request.RequestUri.Query);
+            Assert.Equal("node-a", request.Headers.GetValues("X-Node-Key").Single());
+            Assert.Equal("test-node-secret", request.Headers.GetValues("X-Node-Secret").Single());
+        }
+
+        [Fact]
+        public async Task CreateStorefrontPageDraftFromTemplateAsync_AppendsStoreKeyToCommerceNodeRequest()
+        {
+            await using var context = CreateContext();
+            var store = await CreateStoreAsync(context);
+            var handler = new RecordingHandler(RecordingHandler.EmptyPageEnvelope);
+            var service = new ControlPlaneCommerceCatalogService(context, new HttpClient(handler));
+
+            var result = await service.CreateStorefrontPageDraftFromTemplateAsync(
+                store.PublicId,
+                "about",
+                new CreatePageFromTemplateRequest());
+
+            Assert.True(result.Success);
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal(HttpMethod.Post, request.Method);
+            Assert.Equal("https://node.example.test/api/commerce/admin/pages/templates/about/draft", request.RequestUri!.GetLeftPart(UriPartial.Path));
+            Assert.Contains("storeKey=main-store", request.RequestUri.Query);
+        }
+
+        [Fact]
+        public async Task UpdateStorefrontPageNavigationAsync_AppendsStoreKeyToCommerceNodeRequest()
+        {
+            await using var context = CreateContext();
+            var store = await CreateStoreAsync(context);
+            var handler = new RecordingHandler(RecordingHandler.EmptyPageEnvelope);
+            var service = new ControlPlaneCommerceCatalogService(context, new HttpClient(handler));
+            var pageId = Guid.Parse("7a89bf2d-3177-4923-9806-902ab6625c72");
+
+            var result = await service.UpdateStorefrontPageNavigationAsync(
+                store.PublicId,
+                pageId,
+                new UpdatePageNavigationRequest(100, true, StorefrontPageContentRules.FooterCompany));
+
+            Assert.True(result.Success);
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal(HttpMethod.Put, request.Method);
+            Assert.Equal($"https://node.example.test/api/commerce/admin/pages/{pageId:D}/navigation", request.RequestUri!.GetLeftPart(UriPartial.Path));
+            Assert.Contains("storeKey=main-store", request.RequestUri.Query);
+        }
+
         private static async Task<ControlPlaneStoreDetail> CreateStoreAsync(ControlPlaneDbContext context)
         {
             var nodeService = new ControlPlaneNodeService(context);
@@ -121,6 +180,60 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
                 }
                 """;
 
+            public const string EmptyArrayEnvelope = """
+                {
+                  "success": true,
+                  "message": "ok",
+                  "data": []
+                }
+                """;
+
+            public const string EmptyPageEnvelope = """
+                {
+                  "success": true,
+                  "message": "ok",
+                  "data": {
+                    "id": "00000000-0000-0000-0000-000000000001",
+                    "publicId": "00000000-0000-0000-0000-000000000002",
+                    "storeId": "00000000-0000-0000-0000-000000000003",
+                    "slug": "about-us",
+                    "title": "About us",
+                    "intro": null,
+                    "bodyHtml": "<p>About</p>",
+                    "isPublished": false,
+                    "includeInSitemap": false,
+                    "seo": {
+                      "metaTitle": null,
+                      "metaDescription": null,
+                      "canonicalUrl": null,
+                      "ogTitle": null,
+                      "ogDescription": null,
+                      "ogImage": null,
+                      "robotsIndex": true,
+                      "robotsFollow": true
+                    },
+                    "createdAt": "2026-07-15T00:00:00+00:00",
+                    "updatedAt": "2026-07-15T00:00:00+00:00",
+                    "pageKey": "about",
+                    "displayOrder": 100,
+                    "includeInNavigation": false,
+                    "navigationLocation": null
+                  }
+                }
+                """;
+
+            private readonly string responseBody;
+
+            public RecordingHandler()
+                : this(EmptyPagedEnvelope)
+            {
+            }
+
+            public RecordingHandler(string responseBody)
+            {
+                this.responseBody = responseBody;
+            }
+
             public List<HttpRequestMessage> Requests { get; } = [];
 
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -129,7 +242,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
 
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                 {
-                    Content = new StringContent(EmptyPagedEnvelope, Encoding.UTF8, "application/json")
+                    Content = new StringContent(this.responseBody, Encoding.UTF8, "application/json")
                 });
             }
 

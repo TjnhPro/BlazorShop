@@ -229,7 +229,7 @@
         },
         "security": [
           {
-            "RefreshCookie": []
+            "RefreshCookie": [ ]
           }
         ]
       }
@@ -285,7 +285,7 @@
         },
         "security": [
           {
-            "RefreshCookie": []
+            "RefreshCookie": [ ]
           }
         ]
       }
@@ -371,7 +371,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -532,7 +532,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -1260,7 +1260,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -2403,7 +2403,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -2459,7 +2459,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -2525,9 +2525,60 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
+      }
+    },
+    "/api/storefront/stores/{storeKey}/pages/navigation": {
+      "get": {
+        "tags": [
+          "StorefrontScopedPages"
+        ],
+        "summary": "List published Storefront content navigation links.",
+        "operationId": "StorefrontPages_ListNavigation",
+        "parameters": [
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontPageNavigationLinkDtoIReadOnlyListCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/storefront/stores/{storeKey}/pages/{slug}": {
@@ -5299,6 +5350,52 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/StorefrontOrderResponse"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontPageNavigationLinkDto": {
+        "type": "object",
+        "properties": {
+          "pageKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "slug": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "navigationLocation": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontPageNavigationLinkDtoIReadOnlyListCommerceNodeApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontPageNavigationLinkDto"
             },
             "nullable": true
           }

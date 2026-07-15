@@ -931,10 +931,21 @@ namespace BlazorShop.CommerceNode.API.Controllers
     public sealed class StorefrontScopedPagesController : StorefrontApiControllerBase
     {
         private readonly IStorefrontPageService storefrontPageService;
+        private readonly IStorefrontPageTemplateService templateService;
 
-        public StorefrontScopedPagesController(IStorefrontPageService storefrontPageService)
+        public StorefrontScopedPagesController(
+            IStorefrontPageService storefrontPageService,
+            IStorefrontPageTemplateService templateService)
         {
             this.storefrontPageService = storefrontPageService;
+            this.templateService = templateService;
+        }
+
+        [HttpGet("navigation")]
+        public async Task<IActionResult> ListNavigation(CancellationToken cancellationToken)
+        {
+            var result = await this.templateService.ListNavigationLinksAsync(cancellationToken);
+            return this.FromServiceResponse(result);
         }
 
         [HttpGet("{slug}")]
