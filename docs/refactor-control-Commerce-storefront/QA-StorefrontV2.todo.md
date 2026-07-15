@@ -389,8 +389,11 @@ Use this checklist whenever Storefront V2 auth UI or Commerce Node auth API chan
 - [x] `/sitemap.xml` uses `api/storefront/stores/{storeKey}/catalog/sitemap`. 2026-07-14: API client route switched to scoped catalog sitemap.
 - [x] `/robots.txt` points at V2 public sitemap URL.
 - [x] Redirect middleware uses `api/storefront/stores/{storeKey}/seo/redirects/resolve`. 2026-07-14: API client route switched to scoped SEO redirects.
+- [x] Redirect resolution is backed by CommerceNode current-store scope and does not resolve another store's old slug. 2026-07-15: `CommerceNodeSeoRedirectStoreScopeTests.ResolvePublicPathAsync_DoesNotResolveOtherStoreRedirect` passed.
 - [x] Missing route has no canonical and includes noindex.
 - [x] Commerce Node downtime has noindex 503 surface.
+- [ ] Visible browser QA: old slug in current store redirects to canonical slug.
+- [ ] Visible browser QA: same old slug owned only by another store does not redirect in current store.
 
 ## Static Assets
 

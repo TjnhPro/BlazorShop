@@ -124,6 +124,17 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [ ] API smoke: create menu and items through `api/commerce/admin/navigation/*` against PostgreSQL with node credentials.
 - [ ] API smoke: `GET /api/storefront/stores/{storeKey}/navigation/main` returns only safe public fields and no internal IDs.
 
+## SEO Routing Slug Core
+
+- [x] CommerceNode `SeoRedirects` schema is store-scoped and no longer has a global unique `OldPath` index. 2026-07-15: migration `CommerceNodeStoreScopedSeoRedirects` adds nullable `StoreId`, future entity/language columns, FK to `commerce_store`, and active unique `(StoreId, OldPath)`.
+- [x] Existing unscoped redirect rows are handled safely. 2026-07-15: migration backfills only when there is exactly one non-archived store; runtime store-scoped resolution ignores remaining `StoreId = null` rows.
+- [x] Storefront redirect resolution cannot cross stores. 2026-07-15: `CommerceNodeSeoRedirectStoreScopeTests.ResolvePublicPathAsync_DoesNotResolveOtherStoreRedirect` passed.
+- [x] Same old path is allowed across different stores while duplicate lookup is scoped to current store. 2026-07-15: `CommerceNodeSeoRedirectStoreScopeTests` passed.
+- [x] Focused SEO redirect regression tests passed. 2026-07-15: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~SeoRedirect"` passed 28/28.
+- [ ] API smoke: create two active redirects with the same `OldPath` in two different stores through `api/commerce/admin/seo/redirects`.
+- [ ] API smoke: duplicate active `OldPath` in the same store returns conflict/validation failure.
+- [ ] API smoke: `GET /api/storefront/stores/{storeKey}/seo/redirects/resolve` ignores another store's redirect.
+
 ## Store Config Consumption And Hardening
 
 - [x] Commerce Admin store create/update accepts safe absolute `http`/`https` asset URLs for logo/favicon/icon fields. 2026-07-15: live CommerceNode admin HTTP QA accepted safe absolute logo/favicon/icon URLs.

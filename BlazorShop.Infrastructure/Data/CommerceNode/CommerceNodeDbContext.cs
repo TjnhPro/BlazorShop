@@ -114,6 +114,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             modelBuilder.ApplyConfiguration(new AdminAuditLogConfiguration());
             modelBuilder.ApplyConfiguration(new AdminSettingsConfiguration());
 
+            modelBuilder.Entity<SeoRedirect>(entity =>
+            {
+                entity.HasOne<CommerceStore>()
+                    .WithMany()
+                    .HasForeignKey(redirect => redirect.StoreId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
             modelBuilder.Entity<Category>(entity =>
             {
                 entity.Property(category => category.StoreId).IsRequired();

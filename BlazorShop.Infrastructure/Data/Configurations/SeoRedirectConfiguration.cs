@@ -15,8 +15,19 @@ namespace BlazorShop.Infrastructure.Data.Configurations
                     "CK_SeoRedirects_StatusCode",
                     $"\"StatusCode\" IN ({SeoConstraints.PermanentRedirectStatusCode}, {SeoConstraints.TemporaryRedirectStatusCode})"));
 
-            builder.HasIndex(redirect => redirect.OldPath)
-                .IsUnique();
+            builder.HasIndex(redirect => new { redirect.StoreId, redirect.OldPath })
+                .IsUnique()
+                .HasFilter("\"IsActive\" = TRUE AND \"StoreId\" IS NOT NULL");
+
+            builder.HasIndex(redirect => new { redirect.StoreId, redirect.IsActive, redirect.OldPath });
+
+            builder.HasIndex(redirect => new { redirect.StoreId, redirect.EntityType, redirect.EntityId });
+
+            builder.Property(redirect => redirect.EntityType)
+                .HasMaxLength(64);
+
+            builder.Property(redirect => redirect.LanguageCode)
+                .HasMaxLength(20);
 
             builder.Property(redirect => redirect.OldPath)
                 .IsRequired()

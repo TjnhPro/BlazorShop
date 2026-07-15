@@ -4,6 +4,7 @@ namespace BlazorShop.Application.Services
 
     using AutoMapper;
 
+    using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
     using BlazorShop.Application.DTOs.Seo;
@@ -24,6 +25,7 @@ namespace BlazorShop.Application.Services
         private readonly IValidationService _validationService;
         private readonly IValidator<SeoRedirectDto> _validator;
         private readonly IAdminAuditService? _auditService;
+        private readonly ICommerceStoreContext? _storeContext;
 
         public SeoRedirectService(
             IGenericRepository<SeoRedirect> genericRepository,
@@ -31,7 +33,8 @@ namespace BlazorShop.Application.Services
             IMapper mapper,
             IValidationService validationService,
             IValidator<SeoRedirectDto> validator,
-            IAdminAuditService? auditService = null)
+            IAdminAuditService? auditService = null,
+            ICommerceStoreContext? storeContext = null)
         {
             _genericRepository = genericRepository;
             _seoRedirectRepository = seoRedirectRepository;
@@ -39,11 +42,18 @@ namespace BlazorShop.Application.Services
             _validationService = validationService;
             _validator = validator;
             _auditService = auditService;
+            _storeContext = storeContext;
         }
 
         public async Task<IReadOnlyList<SeoRedirectDto>> GetAllAsync()
         {
-            var redirects = await _genericRepository.GetAllAsync();
+            var storeId = await ResolveCurrentStoreIdAsync();
+            var redirects = _storeContext is not null
+                ? storeId.HasValue
+                    ? await _seoRedirectRepository.ListForStoreAsync(storeId.Value)
+                    : []
+                : await _genericRepository.GetAllAsync();
+
             return _mapper.Map<List<SeoRedirectDto>>(redirects.OrderByDescending(redirect => redirect.CreatedOn).ThenBy(redirect => redirect.OldPath));
         }
 
@@ -54,7 +64,7 @@ namespace BlazorShop.Application.Services
                 return ValidationError("Redirect id is required.");
             }
 
-            var redirect = await _genericRepository.GetByIdAsync(id);
+            var redirect = await GetReadableRedirectAsync(id);
 
             if (redirect is null)
             {
@@ -77,12 +87,19 @@ namespace BlazorShop.Application.Services
                 return validationResult;
             }
 
-            if (await _seoRedirectRepository.OldPathExistsAsync(request.OldPath!))
+            var storeId = await ResolveCurrentStoreIdAsync();
+            if (_storeContext is not null && !storeId.HasValue)
+            {
+                return ValidationError("Current store is required.");
+            }
+
+            if (await OldPathExistsAsync(request.OldPath!, storeId))
             {
                 return Conflict("Redirect old path is already in use.");
             }
 
             var redirect = _mapper.Map<SeoRedirect>(request);
+            redirect.StoreId = storeId;
             var rowsAffected = await _genericRepository.AddAsync(redirect);
 
             if (rowsAffected <= 0)
@@ -112,19 +129,27 @@ namespace BlazorShop.Application.Services
                 return validationResult;
             }
 
-            var redirect = await _genericRepository.GetByIdAsync(id);
+            var storeId = await ResolveCurrentStoreIdAsync();
+            if (_storeContext is not null && !storeId.HasValue)
+            {
+                return NotFound("Redirect not found.");
+            }
+
+            var redirect = await GetReadableRedirectAsync(id, storeId);
 
             if (redirect is null)
             {
                 return NotFound("Redirect not found.");
             }
 
-            if (await _seoRedirectRepository.OldPathExistsAsync(request.OldPath!, id))
+            if (await OldPathExistsAsync(request.OldPath!, storeId, id))
             {
                 return Conflict("Redirect old path is already in use.");
             }
 
+            var existingStoreId = redirect.StoreId;
             _mapper.Map(request, redirect);
+            redirect.StoreId = existingStoreId ?? storeId;
             var rowsAffected = await _genericRepository.UpdateAsync(redirect);
 
             if (rowsAffected <= 0)
@@ -143,7 +168,7 @@ namespace BlazorShop.Application.Services
                 return ValidationError("Redirect id is required.");
             }
 
-            var redirect = await _genericRepository.GetByIdAsync(id);
+            var redirect = await GetReadableRedirectAsync(id);
 
             if (redirect is null)
             {
@@ -169,7 +194,7 @@ namespace BlazorShop.Application.Services
                 return ValidationError("Redirect id is required.");
             }
 
-            var redirect = await _genericRepository.GetByIdAsync(id);
+            var redirect = await GetReadableRedirectAsync(id);
 
             if (redirect is null)
             {
@@ -201,8 +226,43 @@ namespace BlazorShop.Application.Services
                 EntityType = "SeoRedirect",
                 EntityId = entityId.ToString(),
                 Summary = summary,
-                MetadataJson = JsonSerializer.Serialize(new { redirect.OldPath, redirect.NewPath, redirect.StatusCode, redirect.IsActive }),
+                MetadataJson = JsonSerializer.Serialize(new { redirect.StoreId, redirect.OldPath, redirect.NewPath, redirect.StatusCode, redirect.IsActive }),
             });
+        }
+
+        private async Task<SeoRedirect?> GetReadableRedirectAsync(Guid id, Guid? storeId = null)
+        {
+            storeId ??= await ResolveCurrentStoreIdAsync();
+            if (_storeContext is null)
+            {
+                return await _genericRepository.GetByIdAsync(id);
+            }
+
+            return storeId.HasValue
+                ? await _seoRedirectRepository.GetByIdForStoreAsync(storeId.Value, id)
+                : null;
+        }
+
+        private async Task<bool> OldPathExistsAsync(string oldPath, Guid? storeId, Guid? excludedRedirectId = null)
+        {
+            if (_storeContext is null)
+            {
+                return await _seoRedirectRepository.OldPathExistsAsync(oldPath, excludedRedirectId);
+            }
+
+            return storeId.HasValue
+                && await _seoRedirectRepository.OldPathExistsInStoreAsync(storeId.Value, oldPath, excludedRedirectId);
+        }
+
+        private async Task<Guid?> ResolveCurrentStoreIdAsync()
+        {
+            if (_storeContext is null)
+            {
+                return null;
+            }
+
+            var result = await _storeContext.GetCurrentStoreIdAsync();
+            return result.Success ? result.Payload : null;
         }
 
         private async Task<ServiceResponse<SeoRedirectDto>> ValidateAsync(UpsertSeoRedirectDto request)

@@ -9,6 +9,14 @@ namespace BlazorShop.Domain.Entities
         [Key]
         public Guid Id { get; set; }
 
+        public Guid? StoreId { get; set; }
+
+        public string? EntityType { get; set; }
+
+        public Guid? EntityId { get; set; }
+
+        public string? LanguageCode { get; set; }
+
         public string? OldPath { get; set; }
 
         public string? NewPath { get; set; }

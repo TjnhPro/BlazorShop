@@ -15,7 +15,8 @@ Scope:
 
 Updated: 2026-07-15
 
-- Phase 0 in progress: baseline plan is being committed before schema/runtime edits.
+- Phase 0 complete: baseline plan committed.
+- Phase 1 complete: Commerce Node SEO redirects are store-scoped in schema, repository, admin service, automation service, and public redirect resolution.
 - Phase 11 is conditional and should run only after a real legacy topic URL inventory exists.
 
 Autoplan note: external dual-voice subagents are not available in this Codex runtime. This plan records an internal autoplan audit using the same decision principles: preserve existing working behavior, fix the riskiest foundation first, keep V2 boundaries explicit, avoid speculative localization/manufacturer work, and make each phase independently verifiable.
@@ -410,9 +411,9 @@ Tasks:
 
 Exit criteria:
 
-- Store A `/product/x` redirect cannot affect Store B.
-- Storefront redirect middleware behavior remains the same from the browser perspective.
-- Existing product/category auto-redirect still works.
+- Store A `/product/x` redirect cannot affect Store B. Complete in `CommerceNodeSeoRedirectStoreScopeTests`.
+- Storefront redirect middleware behavior remains the same from the browser perspective. Preserved because public middleware still calls the same resolution service contract.
+- Existing product/category auto-redirect still works. Preserved through `SeoRedirectAutomationService`, now setting `StoreId` when Commerce Node store context exists.
 
 Suggested commit:
 

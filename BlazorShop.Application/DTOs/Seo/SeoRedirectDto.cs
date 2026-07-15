@@ -8,6 +8,14 @@ namespace BlazorShop.Application.DTOs.Seo
     {
         public Guid Id { get; set; }
 
+        public Guid? StoreId { get; set; }
+
+        public string? EntityType { get; set; }
+
+        public Guid? EntityId { get; set; }
+
+        public string? LanguageCode { get; set; }
+
         [Required]
         [MaxLength(SeoConstraints.UrlMaxLength)]
         public string? OldPath { get; set; }
