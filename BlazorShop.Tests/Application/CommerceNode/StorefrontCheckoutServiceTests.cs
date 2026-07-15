@@ -3,6 +3,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Checkout;
     using BlazorShop.Application.CommerceNode.Customers;
+    using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs;
@@ -349,15 +350,49 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Equal(PaymentAttemptStates.Failed, context.PaymentAttempts.Single().State);
         }
 
+        [Fact]
+        public async Task CheckoutAsync_WhenCheckoutFeatureDisabled_RejectsPreviewAndPlaceOrder()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var productRepository = new Mock<IProductReadRepository>();
+            var cartService = CreateCartService(context, productRepository);
+            var service = CreateCheckoutService(context, cartService, checkoutEnabled: false);
+
+            var preview = await service.PreviewAsync(CreateRequest(storeId, "cart-token", expectedCartVersion: 1));
+            var placeOrder = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                Guid.NewGuid(),
+                ExpectedCartVersion: 1,
+                IdempotencyKey: "disabled-checkout"));
+
+            Assert.False(preview.Success);
+            Assert.Equal(ServiceResponseType.Conflict, preview.ResponseType);
+            Assert.Equal("Checkout is disabled for this store.", preview.Message);
+            Assert.False(placeOrder.Success);
+            Assert.Equal(ServiceResponseType.Conflict, placeOrder.ResponseType);
+            Assert.Equal("Checkout is disabled for this store.", placeOrder.Message);
+        }
+
         private static StorefrontCheckoutService CreateCheckoutService(
             CommerceNodeDbContext context,
             IStorefrontCartService cartService,
+            params IStorefrontPaymentProvider[] providers)
+        {
+            return CreateCheckoutService(context, cartService, checkoutEnabled: true, providers);
+        }
+
+        private static StorefrontCheckoutService CreateCheckoutService(
+            CommerceNodeDbContext context,
+            IStorefrontCartService cartService,
+            bool checkoutEnabled,
             params IStorefrontPaymentProvider[] providers)
         {
             return new StorefrontCheckoutService(
                 context,
                 cartService,
                 new StorefrontCustomerService(context),
+                new StubStoreFeatureStateService(checkoutEnabled),
                 new PaymentHandlerResolver([new CodPaymentHandler()]),
                 new StorefrontPaymentProviderResolver(providers));
         }
@@ -457,6 +492,41 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 .Options;
 
             return new CommerceNodeDbContext(options);
+        }
+
+        private sealed class StubStoreFeatureStateService : IStoreFeatureStateService
+        {
+            private readonly bool checkoutEnabled;
+
+            public StubStoreFeatureStateService(bool checkoutEnabled)
+            {
+                this.checkoutEnabled = checkoutEnabled;
+            }
+
+            public Task<IReadOnlyList<StoreFeatureStateDto>> GetAsync(CancellationToken cancellationToken = default)
+            {
+                throw new NotSupportedException();
+            }
+
+            public Task<ServiceResponse<StoreFeatureStateDto>> UpdateAsync(
+                string featureKey,
+                UpdateStoreFeatureStateRequest request,
+                CancellationToken cancellationToken = default)
+            {
+                throw new NotSupportedException();
+            }
+
+            public Task<StoreFeatureStateSnapshot> ResolveAsync(Guid storeId, CancellationToken cancellationToken = default)
+            {
+                throw new NotSupportedException();
+            }
+
+            public Task<bool> IsEnabledAsync(Guid storeId, string featureKey, CancellationToken cancellationToken = default)
+            {
+                var enabled = !string.Equals(featureKey, StoreFeatureKeys.Checkout, StringComparison.Ordinal)
+                    || this.checkoutEnabled;
+                return Task.FromResult(enabled);
+            }
         }
 
         private sealed class FakePaymentProvider : IStorefrontPaymentProvider

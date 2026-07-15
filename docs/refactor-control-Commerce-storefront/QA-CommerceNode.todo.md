@@ -129,6 +129,11 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] Payment method metadata update with omitted `SettingsJson` preserves existing provider settings. 2026-07-15: `CommerceNodePaymentMethodSecretBoundaryTests.UpdateAsync_WhenSettingsJsonIsNull_PreservesExistingSettings` passed.
 - [x] Provider settings removal requires explicit `ClearSettings` and never echoes the old secret value. 2026-07-15: `CommerceNodePaymentMethodSecretBoundaryTests.UpdateAsync_WhenClearSettingsIsTrue_RemovesSettingsWithoutEchoingSecret` passed.
 - [x] Payment method audit metadata records settings status only, not provider settings JSON. 2026-07-15: secret boundary tests asserted audit metadata does not contain `SettingsJson` or secret values.
+- [x] Store feature state schema is store-scoped with one state per feature per store. 2026-07-15: migration `CommerceNodeStoreFeatureStateCore` and `CommerceNodeDbContextModelTests.StoreFeatureState_HasOneStatePerFeaturePerStore` passed.
+- [x] Store feature state service lists only allowlisted feature keys and does not write default rows on read. 2026-07-15: `StoreFeatureStateServiceTests.GetAsync_ReturnsAllowlistedDefaultsWithoutPersistingRows` passed.
+- [x] Store feature state update validates feature keys, persists overrides, and invalidates public configuration cache. 2026-07-15: `StoreFeatureStateServiceTests` covered unknown-key rejection, checkout disable snapshot, and `store-public-config:{storeKey}` invalidation.
+- [x] Storefront public configuration uses store feature state for public flags. 2026-07-15: `StorefrontScopedConfigurationController` now resolves `IStoreFeatureStateService`; CommerceNode API build and Storefront OpenAPI contract tests passed.
+- [x] Checkout server behavior enforces the `checkout` feature state, not only UI hiding. 2026-07-15: `StorefrontCheckoutServiceTests.CheckoutAsync_WhenCheckoutFeatureDisabled_RejectsPreviewAndPlaceOrder` passed.
 
 ## Store Mapping
 

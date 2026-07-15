@@ -8,6 +8,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using IStorefrontCheckoutService = BlazorShop.Application.CommerceNode.Checkout.IStorefrontCheckoutService;
 
     using BlazorShop.Application.CommerceNode.Carts;
+    using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.Settings;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
@@ -739,17 +740,20 @@ namespace BlazorShop.CommerceNode.API.Controllers
         private readonly ICommerceStoreContext storeContext;
         private readonly IPaymentMethodService paymentMethodService;
         private readonly IStoreSeoSettingsService seoSettingsService;
+        private readonly IStoreFeatureStateService featureStateService;
         private readonly IStorefrontPublicConfigurationCache publicConfigurationCache;
 
         public StorefrontScopedConfigurationController(
             ICommerceStoreContext storeContext,
             IPaymentMethodService paymentMethodService,
             IStoreSeoSettingsService seoSettingsService,
+            IStoreFeatureStateService featureStateService,
             IStorefrontPublicConfigurationCache publicConfigurationCache)
         {
             this.storeContext = storeContext;
             this.paymentMethodService = paymentMethodService;
             this.seoSettingsService = seoSettingsService;
+            this.featureStateService = featureStateService;
             this.publicConfigurationCache = publicConfigurationCache;
         }
 
@@ -769,11 +773,18 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 return this.Success(cachedConfiguration, "Storefront configuration loaded.");
             }
 
+            var storeIdResult = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
+            if (!storeIdResult.Success)
+            {
+                return this.ToActionResult(storeIdResult);
+            }
+
             var paymentMethods = (await this.paymentMethodService.GetPaymentMethodsAsync())
                 .Select(method => method.ToStorefrontContract())
                 .ToArray();
             var seoDefaults = await this.seoSettingsService.ResolveAsync(cancellationToken);
-            var configuration = storeResult.Payload.ToPublicConfigurationContract(paymentMethods, seoDefaults);
+            var featureStates = await this.featureStateService.ResolveAsync(storeIdResult.Payload, cancellationToken);
+            var configuration = storeResult.Payload.ToPublicConfigurationContract(paymentMethods, seoDefaults, featureStates);
 
             this.publicConfigurationCache.Set(storeResult.Payload.StoreKey, configuration);
 

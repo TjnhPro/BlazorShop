@@ -4,6 +4,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
 
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Checkout;
+    using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
@@ -632,7 +633,8 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         public static StorefrontPublicConfigurationResponse ToPublicConfigurationContract(
             this CommerceCurrentStore store,
             IReadOnlyList<StorefrontPaymentMethodResponse> paymentMethods,
-            SeoSettingsDto seoDefaults)
+            SeoSettingsDto seoDefaults,
+            StoreFeatureStateSnapshot featureStates)
         {
             return new StorefrontPublicConfigurationResponse(
                 new StorefrontStoreIdentityResponse(
@@ -668,12 +670,12 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                     store.MaintenanceModeEnabled,
                     store.MaintenanceMessage),
                 new StorefrontFeatureFlagsResponse(
-                    CustomerAccountsEnabled: true,
+                    CustomerAccountsEnabled: featureStates.CustomerAccountsEnabled,
                     CartEnabled: true,
-                    CheckoutEnabled: true,
+                    CheckoutEnabled: featureStates.CheckoutEnabled,
                     PaymentsEnabled: true,
-                    NewsletterEnabled: true,
-                    RecommendationsEnabled: true),
+                    NewsletterEnabled: featureStates.NewsletterEnabled,
+                    RecommendationsEnabled: featureStates.RecommendationsEnabled),
                 paymentMethods,
                 new StorefrontSeoDefaultsResponse(
                     seoDefaults.SiteName,

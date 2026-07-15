@@ -6,6 +6,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Checkout;
     using BlazorShop.Application.CommerceNode.Customers;
+    using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Domain.Constants;
@@ -23,6 +24,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly CommerceNodeDbContext context;
         private readonly IStorefrontCartService cartService;
         private readonly IStorefrontCustomerService customerService;
+        private readonly IStoreFeatureStateService featureStateService;
         private readonly IPaymentHandlerResolver paymentHandlerResolver;
         private readonly IStorefrontPaymentProviderResolver paymentProviderResolver;
 
@@ -30,12 +32,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             CommerceNodeDbContext context,
             IStorefrontCartService cartService,
             IStorefrontCustomerService customerService,
+            IStoreFeatureStateService featureStateService,
             IPaymentHandlerResolver paymentHandlerResolver,
             IStorefrontPaymentProviderResolver paymentProviderResolver)
         {
             this.context = context;
             this.cartService = cartService;
             this.customerService = customerService;
+            this.featureStateService = featureStateService;
             this.paymentHandlerResolver = paymentHandlerResolver;
             this.paymentProviderResolver = paymentProviderResolver;
         }
@@ -47,6 +51,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             if (request.StoreId == Guid.Empty)
             {
                 return Failed(ServiceResponseType.ValidationError, "Store is required.");
+            }
+
+            if (!await this.featureStateService.IsEnabledAsync(request.StoreId, StoreFeatureKeys.Checkout, cancellationToken))
+            {
+                return Failed(ServiceResponseType.Conflict, "Checkout is disabled for this store.");
             }
 
             if (string.IsNullOrWhiteSpace(request.CartToken))
@@ -214,6 +223,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             if (request.StoreId == Guid.Empty)
             {
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.ValidationError, "Store is required.");
+            }
+
+            if (!await this.featureStateService.IsEnabledAsync(request.StoreId, StoreFeatureKeys.Checkout, cancellationToken))
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Checkout is disabled for this store.");
             }
 
             if (request.CheckoutSessionId == Guid.Empty)

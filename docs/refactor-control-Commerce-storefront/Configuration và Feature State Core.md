@@ -475,6 +475,8 @@ Exit criteria:
 
 ### Phase 6 - Store Feature State Core
 
+Status: completed on 2026-07-15 by commit `pending`.
+
 Goal: add store-scoped feature activation without a generic module system.
 
 Tasks:
@@ -496,11 +498,27 @@ Initial candidate features should be added only when consumed:
 - `reviews`.
 - `recommendations`.
 
+Implementation notes:
+
+- Added `StoreFeatureState` entity/table in `CommerceNodeDbContext` with store-scoped unique `(store_id, feature_key)` and DB check constraint.
+- Added code allowlist for `checkout`, `customerAccounts`, `newsletter`, `recommendations`, and `reviews`.
+- Added Commerce Node admin endpoints under `api/commerce/admin/features` for list/update; existing Commerce Admin middleware requires `storeKey`.
+- Added feature state service that overlays default-enabled definitions without writing rows on read.
+- Public Storefront configuration now resolves feature flags from store feature state instead of hard-coding all flags to true.
+- Storefront checkout preview/place-order now reject when `checkout` is disabled server-side.
+- Feature state updates invalidate `store-public-config:{storeKey}` through existing public configuration cache.
+
+Verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~StoreFeatureStateServiceTests|FullyQualifiedName~StorefrontCheckoutServiceTests.CheckoutAsync_WhenCheckoutFeatureDisabled_RejectsPreviewAndPlaceOrder|FullyQualifiedName~CommerceNodeDbContextModelTests" --no-restore -p:UseSharedCompilation=false` passed 12/12.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore -p:UseSharedCompilation=false` passed.
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~CommerceNodeStorefrontOpenApiContractTests" --no-restore -p:UseSharedCompilation=false` passed 23/23.
+
 Exit criteria:
 
-- Feature state is store-scoped.
-- Public projection exposes only safe feature flags.
-- Server-side behavior does not rely only on UI hiding.
+- [x] Feature state is store-scoped.
+- [x] Public projection exposes only safe feature flags.
+- [x] Server-side behavior does not rely only on UI hiding.
 
 ### Phase 7 - Provider Availability And Display Order
 
