@@ -5,7 +5,7 @@ namespace BlazorShop.Storefront.Services
         public const string ErrorCacheControl = "no-store, no-cache, max-age=0";
         public const string RobotsCacheControl = "public, max-age=3600, must-revalidate";
         public const string SitemapCacheControl = "public, max-age=900, must-revalidate";
-        public const string NoIndexNoFollow = "noindex, nofollow";
+        public const string NoIndexNoFollow = StorefrontIndexingPolicy.NoIndexNoFollow;
         public const string RetryAfterSeconds = "600";
 
         public static void ApplyNotFound(HttpContext? httpContext)

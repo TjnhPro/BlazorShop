@@ -23,6 +23,7 @@ Updated: 2026-07-15
 - Phase 5 complete: product, category, and storefront page slug update flows now use shared slug policy/history in V2; published page slug changes create store-scoped 301 redirects; page create can generate a slug from title.
 - Phase 6 complete: Storefront SEO redirect API now falls back to canonical slug history resolver while preserving explicit redirect priority and Storefront V2 middleware safety checks.
 - Phase 7 complete: SEO metadata builder now rejects unsafe canonical/Open Graph URLs, falls back to route canonical when an override is unsafe, and keeps title suffix de-duplication covered.
+- Phase 8 complete: Storefront indexing policy centralizes private/search noindex rules and canonical path normalization that strips query, fragment, and trailing slash noise.
 - Phase 11 is conditional and should run only after a real legacy topic URL inventory exists.
 
 Autoplan note: external dual-voice subagents are not available in this Codex runtime. This plan records an internal autoplan audit using the same decision principles: preserve existing working behavior, fix the riskiest foundation first, keep V2 boundaries explicit, avoid speculative localization/manufacturer work, and make each phase independently verifiable.
@@ -663,8 +664,8 @@ Tasks:
 
 Exit criteria:
 
-- Search/cart/checkout/login/register noindex behavior is consistent.
-- Duplicate filtered URLs do not get canonicalized as separate primary pages.
+- Search/cart/checkout/login/register noindex behavior is consistent. Complete through `StorefrontIndexingPolicy` and existing response/header rendering tests.
+- Duplicate filtered URLs do not get canonicalized as separate primary pages. Complete at policy level; canonical path normalization strips query/fragment and Search metadata suppresses canonical entirely.
 
 Suggested commit:
 

@@ -111,9 +111,7 @@
         }, displayContext.CurrencyCode);
 
         _metadata = await metadataTask;
-        _metadata.RobotsIndex = false;
-        _metadata.RobotsFollow = true;
-        _metadata.CanonicalUrl = null;
+        StorefrontIndexingPolicy.ApplySearchMetadata(_metadata);
 
         var categories = await categoriesTask;
         _searchCategories = categories.IsSuccess && categories.Value is not null
