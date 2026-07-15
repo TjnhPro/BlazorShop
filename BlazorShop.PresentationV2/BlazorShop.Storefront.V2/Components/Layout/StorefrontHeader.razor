@@ -1,10 +1,15 @@
 @inject StorefrontApiClient ApiClient
+@inject IStorefrontDisplayContextProvider DisplayContextProvider
 @using BlazorShop.Application.DTOs.Category
 
 <header class="bs-storefront-header relative text-neutral-100">
     <div class="bs-storefront-header__shell">
         <div class="bs-storefront-header__desktop relative mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
             <a href="@StorefrontRoutes.Home" class="bs-storefront-header__brand" aria-label="@BrandHomeLabel">
+                @if (!string.IsNullOrWhiteSpace(BrandLogoUrl))
+                {
+                    <img class="bs-storefront-header__brand-logo" src="@BrandLogoUrl" alt="" loading="eager" decoding="async" />
+                }
                 <span class="bs-storefront-header__brand-mark">@BrandName</span>
                 <span class="bs-storefront-header__brand-label">@BrandLabel</span>
             </a>
@@ -53,6 +58,10 @@
 
         <div class="bs-storefront-header__mobile relative mx-auto max-w-7xl px-4 py-3 sm:px-6">
             <a href="@StorefrontRoutes.Home" class="bs-storefront-header__brand" aria-label="@BrandHomeLabel">
+                @if (!string.IsNullOrWhiteSpace(BrandLogoUrl))
+                {
+                    <img class="bs-storefront-header__brand-logo" src="@BrandLogoUrl" alt="" loading="eager" decoding="async" />
+                }
                 <span class="bs-storefront-header__brand-mark">@BrandName</span>
                 <span class="bs-storefront-header__brand-label">@BrandLabel</span>
             </a>
@@ -123,20 +132,20 @@
 
     private string BrandLabel { get; set; } = DefaultBrandLabel;
 
+    private string? BrandLogoUrl { get; set; }
+
     private string BrandHomeLabel => $"{BrandName} shop home";
 
     private IReadOnlyList<SearchCategoryOption> _searchCategories = [];
 
     protected override async Task OnInitializedAsync()
     {
-        var result = await ApiClient.GetCurrentStoreAsync();
-        if (result.IsSuccess && result.Value is not null)
-        {
-            BrandName = result.Value.Name;
-            BrandLabel = string.IsNullOrWhiteSpace(result.Value.PrimaryDomain)
-                ? result.Value.StoreKey.ToUpperInvariant()
-                : result.Value.PrimaryDomain;
-        }
+        var displayContext = await DisplayContextProvider.GetAsync();
+        BrandName = displayContext.StoreName;
+        BrandLabel = string.IsNullOrWhiteSpace(displayContext.CompanyName)
+            ? displayContext.StoreKey.ToUpperInvariant()
+            : displayContext.CompanyName;
+        BrandLogoUrl = displayContext.LogoUrl;
 
         var categories = await ApiClient.GetPublishedCategoryTreeAsync();
         if (categories.IsSuccess && categories.Value is not null)

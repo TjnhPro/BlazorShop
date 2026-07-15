@@ -175,6 +175,16 @@
     letter-spacing: 0.12em;
 }
 
+.bs-storefront-header__brand-logo {
+    display: block;
+    width: auto;
+    max-width: 9rem;
+    height: 2rem;
+    margin-bottom: 0.35rem;
+    object-fit: contain;
+    object-position: left center;
+}
+
 .bs-storefront-header__brand-label {
     margin-top: 0.3rem;
     color: #a3a3a3;
