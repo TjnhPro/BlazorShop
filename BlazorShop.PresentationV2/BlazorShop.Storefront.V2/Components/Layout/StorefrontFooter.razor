@@ -1,0 +1,112 @@
+@inject IStorefrontDisplayContextProvider DisplayContextProvider
+
+<footer class="border-t border-white/10 bg-neutral-900 text-neutral-100">
+    <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+                <div class="text-lg font-extrabold tracking-wider">@BrandName</div>
+                <p class="mt-1 text-sm text-neutral-300">@StoreLabel</p>
+                <p class="mt-3 text-sm leading-6 text-neutral-400">@BrandDescription</p>
+            </div>
+
+            <div>
+                <div class="text-sm font-semibold uppercase text-neutral-300">Shop</div>
+                <ul class="mt-3 space-y-2 text-sm text-neutral-300">
+                    <li><a href="@StorefrontRoutes.Home" class="hover:text-white/80">Home</a></li>
+                    <li><a href="@StorefrontRoutes.NewReleases" class="hover:text-white/80">New Releases</a></li>
+                    <li><a href="@StorefrontRoutes.TodaysDeals" class="hover:text-white/80">Today's Deals</a></li>
+                    <li><a href="@StorefrontRoutes.About" class="hover:text-white/80">About</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <div class="text-sm font-semibold uppercase text-neutral-300">Support</div>
+                <ul class="mt-3 space-y-2 text-sm text-neutral-300">
+                    <li><a href="@StorefrontRoutes.CustomerService" class="hover:text-white/80">Customer Service</a></li>
+                    <li><a href="@StorefrontRoutes.Faq" class="hover:text-white/80">FAQ</a></li>
+                    <li><a href="@StorefrontRoutes.Privacy" class="hover:text-white/80">Privacy</a></li>
+                    <li><a href="@StorefrontRoutes.Terms" class="hover:text-white/80">Terms</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <div class="text-sm font-semibold uppercase text-neutral-300">Contact</div>
+                @if (HasContactDetails)
+                {
+                    <ul class="mt-3 space-y-2 text-sm leading-6 text-neutral-300">
+                        @if (!string.IsNullOrWhiteSpace(ContactEmail))
+                        {
+                            <li><a href="mailto:@ContactEmail" class="hover:text-white/80">@ContactEmail</a></li>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(ContactPhone))
+                        {
+                            <li><a href="@ContactPhoneHref" class="hover:text-white/80">@ContactPhone</a></li>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(_displayContext.CompanyAddress))
+                        {
+                            <li class="text-neutral-400">@_displayContext.CompanyAddress</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="mt-3 text-sm leading-6 text-neutral-400">Visit customer service for store support and order questions.</p>
+                }
+                <div class="mt-4 flex flex-wrap gap-3">
+                    <a href="@StorefrontRoutes.NewReleases" class="inline-flex items-center rounded bg-neutral-100 px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-white">Shop New</a>
+                    <a href="@StorefrontRoutes.TodaysDeals" class="inline-flex items-center rounded bg-amber-500 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-600">View Deals</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 border-t border-white/10 pt-4 text-xs text-neutral-400 sm:flex sm:items-center sm:justify-between">
+            <p>© @DateTime.UtcNow.Year @BrandName. All rights reserved.</p>
+            <div class="mt-3 flex justify-center gap-4 sm:mt-0">
+                <a href="@StorefrontRoutes.Privacy" class="hover:text-white/80">Privacy</a>
+                <a href="@StorefrontRoutes.Terms" class="hover:text-white/80">Terms</a>
+                <a href="@StorefrontRoutes.CustomerService" class="hover:text-white/80">Customer Service</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+@code {
+    private StorefrontDisplayContext _displayContext = StorefrontDisplayContext.Fallback;
+
+    private string BrandName => FirstNonEmpty(_displayContext.CompanyName, _displayContext.StoreName, "BlazorShop");
+
+    private string StoreLabel => string.Equals(_displayContext.StoreKey, StorefrontDisplayContext.Fallback.StoreKey, StringComparison.OrdinalIgnoreCase)
+        ? "Public shop"
+        : _displayContext.StoreKey;
+
+    private string BrandDescription => !string.IsNullOrWhiteSpace(_displayContext.CompanyAddress)
+        ? $"Products and support from {BrandName}."
+        : "Quality products, fair prices, and route-based public shopping pages.";
+
+    private string? ContactEmail => FirstNonEmptyOrNull(_displayContext.SupportEmail, _displayContext.CompanyEmail);
+
+    private string? ContactPhone => FirstNonEmptyOrNull(_displayContext.SupportPhone, _displayContext.CompanyPhone);
+
+    private string? ContactPhoneHref => string.IsNullOrWhiteSpace(ContactPhone)
+        ? null
+        : $"tel:{ContactPhone.Replace(" ", string.Empty, StringComparison.Ordinal)}";
+
+    private bool HasContactDetails => !string.IsNullOrWhiteSpace(ContactEmail)
+        || !string.IsNullOrWhiteSpace(ContactPhone)
+        || !string.IsNullOrWhiteSpace(_displayContext.CompanyAddress);
+
+    protected override async Task OnInitializedAsync()
+    {
+        _displayContext = await DisplayContextProvider.GetAsync();
+    }
+
+    private static string FirstNonEmpty(params string?[] values)
+    {
+        return FirstNonEmptyOrNull(values) ?? string.Empty;
+    }
+
+    private static string? FirstNonEmptyOrNull(params string?[] values)
+    {
+        return values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
+    }
+}

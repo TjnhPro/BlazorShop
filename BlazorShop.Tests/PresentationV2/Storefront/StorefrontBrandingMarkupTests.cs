@@ -35,6 +35,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("<StorefrontBrandHead />", markup);
             Assert.Contains("<StorefrontHeader />", markup);
+            Assert.Contains("<StorefrontFooter />", markup);
         }
 
         [Fact]
@@ -45,6 +46,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains(".bs-storefront-header__brand-logo", styles);
             Assert.Contains("height: 2rem;", styles);
             Assert.Contains("object-fit: contain;", styles);
+        }
+
+        [Fact]
+        public void StorefrontFooter_ConsumesDisplayContextAndContactFields()
+        {
+            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontFooter.razor");
+
+            Assert.Contains("@inject IStorefrontDisplayContextProvider DisplayContextProvider", markup);
+            Assert.Contains("DisplayContextProvider.GetAsync()", markup);
+            Assert.Contains("ContactEmail", markup);
+            Assert.Contains("ContactPhone", markup);
+            Assert.Contains("_displayContext.CompanyAddress", markup);
+            Assert.Contains("mailto:@ContactEmail", markup);
+            Assert.DoesNotContain("BLAZORSHOP", markup, StringComparison.Ordinal);
         }
 
         [Fact]

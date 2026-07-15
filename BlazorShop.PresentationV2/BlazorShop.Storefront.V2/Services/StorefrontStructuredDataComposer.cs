@@ -202,7 +202,7 @@ namespace BlazorShop.Storefront.Services
                 return null;
             }
 
-            var siteName = FirstNonEmpty(settings?.SiteName, store?.Name, store?.CompanyName, settings?.CompanyName, "BlazorShop");
+            var siteName = FirstNonEmpty(store?.Name, store?.CompanyName, settings?.SiteName, settings?.CompanyName, "BlazorShop");
             var organizationName = FirstNonEmpty(store?.CompanyName, store?.Name, settings?.CompanyName, settings?.SiteName, "BlazorShop");
 
             return new StructuredDataContext(
@@ -225,9 +225,10 @@ namespace BlazorShop.Storefront.Services
                 ["url"] = context.BaseUrl,
             };
 
-            AddString(organization, "logo", ResolveAssetUrl(context.Settings?.CompanyLogoUrl, context));
+            AddString(organization, "logo", ResolveAssetUrl(FirstNonEmpty(context.Store?.LogoUrl, context.Settings?.CompanyLogoUrl), context));
             AddString(organization, "email", FirstNonEmpty(context.Store?.CompanyEmail, context.Settings?.CompanyEmail));
             AddString(organization, "telephone", FirstNonEmpty(context.Store?.CompanyPhone, context.Settings?.CompanyPhone));
+            AddString(organization, "address", FirstNonEmpty(context.Store?.CompanyAddress, context.Settings?.CompanyAddress));
 
             var sameAs = CreateStringArray(
                 ResolveAssetUrl(context.Settings?.FacebookUrl, context),
