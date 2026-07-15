@@ -202,6 +202,13 @@ Status legend:
 
 - [x] ControlPlane API builds after storefront page gateway changes. 2026-07-11: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` passed.
 - [x] ControlPlane Web builds after storefront page admin UI changes. 2026-07-11: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` passed.
+- [x] ControlPlane API exposes slug lifecycle gateway endpoints through ControlPlane API only. 2026-07-15 SEO Routing Slug Phase 10: added `seo/slugs/generate`, `seo/slugs/validate`, and `seo/slugs/history`; `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` passed.
+- [x] ControlPlane Web product/category/page managers build with slug lifecycle preview/history UI. 2026-07-15 SEO Routing Slug Phase 10: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` passed.
+- [ ] Product SEO panel shows generated slug suggestion, normalized preview, canonical/public path preview, validation message, and old slug history in visible browser QA.
+- [ ] Category SEO panel loads through ControlPlane API, saves SEO through category SEO gateway, and shows slug lifecycle preview/history in visible browser QA.
+- [ ] Page manager shows generated slug suggestion, normalized preview, canonical/public path preview, validation message, and old slug history in visible browser QA.
+- [ ] Manual slug override surfaces reserved path/collision/slash validation messages without a failed page state.
+- [ ] Browser network capture confirms slug generate/validate/history calls use only `localhost:5280/api/controlplane/commerce/...` and never direct CommerceNode URLs or node credentials.
 - [x] Apply `ControlPlaneCommercePagePermissions` migration to ControlPlane PostgreSQL on port `5433`. 2026-07-12: `run-v2-local.ps1` startup migration applied `20260711164138_ControlPlaneCommercePagePermissions` to `blazorshop_controlplane_v2_local`.
 - [x] Pages nav item renders under Commerce Admin. 2026-07-12: Playwright MCP visible browser showed `Pages` nav item and loaded `/commerce-admin/pages`.
 - [x] Pages list loads after selecting a store. 2026-07-12: selected `Default QA Store (default)` and list loaded `QA Dynamic Page 20260712034014` plus draft row.

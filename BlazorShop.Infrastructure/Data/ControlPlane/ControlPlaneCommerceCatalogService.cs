@@ -194,6 +194,34 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
+        public Task<ControlPlaneCommerceCatalogResult<CategorySeoDto>> GetCategorySeoAsync(
+            Guid storePublicId,
+            Guid categoryId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<CategorySeoDto>(
+                storePublicId,
+                HttpMethod.Get,
+                $"api/commerce/admin/categories/{categoryId:D}/seo",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<CategorySeoDto>> UpdateCategorySeoAsync(
+            Guid storePublicId,
+            Guid categoryId,
+            UpdateCategorySeoDto request,
+            CancellationToken cancellationToken = default)
+        {
+            request.CategoryId = categoryId;
+            return this.SendAsync<CategorySeoDto>(
+                storePublicId,
+                HttpMethod.Put,
+                $"api/commerce/admin/categories/{categoryId:D}/seo",
+                request,
+                cancellationToken);
+        }
+
         public Task<ControlPlaneCommerceCatalogResult<ProductSeoDto>> GetProductSeoAsync(
             Guid storePublicId,
             Guid productId,
@@ -219,6 +247,45 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 HttpMethod.Put,
                 $"api/commerce/admin/products/{productId:D}/seo",
                 request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<StoreSeoSlugPolicyResult>> GenerateSeoSlugAsync(
+            Guid storePublicId,
+            StoreSeoSlugGenerateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<StoreSeoSlugPolicyResult>(
+                storePublicId,
+                HttpMethod.Post,
+                "api/commerce/admin/seo/slugs/generate",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<StoreSeoSlugPolicyResult>> ValidateSeoSlugAsync(
+            Guid storePublicId,
+            StoreSeoSlugValidateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<StoreSeoSlugPolicyResult>(
+                storePublicId,
+                HttpMethod.Post,
+                "api/commerce/admin/seo/slugs/validate",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreSeoSlugHistoryDto>>> ListSeoSlugHistoryAsync(
+            Guid storePublicId,
+            StoreSeoSlugHistoryQuery query,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<IReadOnlyList<StoreSeoSlugHistoryDto>>(
+                storePublicId,
+                HttpMethod.Get,
+                "api/commerce/admin/seo/slugs/history" + BuildSeoSlugHistoryQuery(query),
+                null,
                 cancellationToken);
         }
 
@@ -1578,6 +1645,19 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             AddIfPresent(values, "inStock", query.InStock?.ToString());
             AddIfPresent(values, "isPublished", query.IsPublished?.ToString());
 
+            return ToQueryString(values);
+        }
+
+        private static string BuildSeoSlugHistoryQuery(StoreSeoSlugHistoryQuery query)
+        {
+            var values = new List<KeyValuePair<string, string>>();
+            AddIfPresent(values, "entityType", query.EntityType);
+            if (query.EntityId != Guid.Empty)
+            {
+                values.Add(new KeyValuePair<string, string>("entityId", query.EntityId.ToString("D")));
+            }
+
+            AddIfPresent(values, "languageCode", query.LanguageCode);
             return ToQueryString(values);
         }
 

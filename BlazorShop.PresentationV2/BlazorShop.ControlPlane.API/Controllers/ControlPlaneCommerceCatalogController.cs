@@ -137,6 +137,23 @@ namespace BlazorShop.ControlPlane.API.Controllers
             return ToActionResult(await this.catalogService.ArchiveProductAsync(storePublicId, productId, cancellationToken));
         }
 
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/categories/{categoryId:guid}/seo")]
+        public async Task<IActionResult> GetCategorySeo(Guid storePublicId, Guid categoryId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.GetCategorySeoAsync(storePublicId, categoryId, cancellationToken));
+        }
+
+        [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/categories/{categoryId:guid}/seo")]
+        [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
+        public async Task<IActionResult> UpdateCategorySeo(
+            Guid storePublicId,
+            Guid categoryId,
+            UpdateCategorySeoDto request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.UpdateCategorySeoAsync(storePublicId, categoryId, request, cancellationToken));
+        }
+
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/products/{productId:guid}/seo")]
         public async Task<IActionResult> GetProductSeo(Guid storePublicId, Guid productId, CancellationToken cancellationToken)
         {
@@ -152,6 +169,33 @@ namespace BlazorShop.ControlPlane.API.Controllers
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.catalogService.UpdateProductSeoAsync(storePublicId, productId, request, cancellationToken));
+        }
+
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/seo/slugs/generate")]
+        public async Task<IActionResult> GenerateSeoSlug(
+            Guid storePublicId,
+            [FromBody] StoreSeoSlugGenerateRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.GenerateSeoSlugAsync(storePublicId, request, cancellationToken));
+        }
+
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/seo/slugs/validate")]
+        public async Task<IActionResult> ValidateSeoSlug(
+            Guid storePublicId,
+            [FromBody] StoreSeoSlugValidateRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ValidateSeoSlugAsync(storePublicId, request, cancellationToken));
+        }
+
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/seo/slugs/history")]
+        public async Task<IActionResult> ListSeoSlugHistory(
+            Guid storePublicId,
+            [FromQuery] StoreSeoSlugHistoryQuery query,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ListSeoSlugHistoryAsync(storePublicId, query, cancellationToken));
         }
 
         [HttpGet("~/api/controlplane/commerce/product-imports/template")]

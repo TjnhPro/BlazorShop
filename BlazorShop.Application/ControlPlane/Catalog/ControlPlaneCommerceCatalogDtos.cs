@@ -67,6 +67,17 @@ namespace BlazorShop.Application.ControlPlane.Catalog
             Guid productId,
             CancellationToken cancellationToken = default);
 
+        Task<ControlPlaneCommerceCatalogResult<CategorySeoDto>> GetCategorySeoAsync(
+            Guid storePublicId,
+            Guid categoryId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<CategorySeoDto>> UpdateCategorySeoAsync(
+            Guid storePublicId,
+            Guid categoryId,
+            UpdateCategorySeoDto request,
+            CancellationToken cancellationToken = default);
+
         Task<ControlPlaneCommerceCatalogResult<ProductSeoDto>> GetProductSeoAsync(
             Guid storePublicId,
             Guid productId,
@@ -76,6 +87,21 @@ namespace BlazorShop.Application.ControlPlane.Catalog
             Guid storePublicId,
             Guid productId,
             UpdateProductSeoDto request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StoreSeoSlugPolicyResult>> GenerateSeoSlugAsync(
+            Guid storePublicId,
+            StoreSeoSlugGenerateRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StoreSeoSlugPolicyResult>> ValidateSeoSlugAsync(
+            Guid storePublicId,
+            StoreSeoSlugValidateRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreSeoSlugHistoryDto>>> ListSeoSlugHistoryAsync(
+            Guid storePublicId,
+            StoreSeoSlugHistoryQuery query,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneCommerceCatalogResult<ProductImportUploadResponse>> UploadProductImportAsync(

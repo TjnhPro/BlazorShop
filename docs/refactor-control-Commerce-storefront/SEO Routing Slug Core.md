@@ -725,20 +725,30 @@ Tasks:
   - reserved path/collision validation message.
   - old slug history list.
   - canonical URL preview.
+  - Complete in Phase 10 implementation. Product and category managers now call Control Plane API slug lifecycle endpoints and show normalized/public path/canonical preview plus history.
 - Extend page manager slug field similarly.
+  - Complete in Phase 10 implementation. Page manager supports generate/validate/history with page-safe exclude id behavior.
 - Add SEO redirects manager store-scoped view if not already sufficient.
+  - Deferred. Existing redirect ownership stays store-scoped from earlier phases; this phase focused slug lifecycle diagnostics.
 - Ensure Control Plane Web calls Control Plane API only.
+  - Complete by design. Web client uses `api/controlplane/commerce/stores/{storePublicId}/...`; Commerce Node URL/node credentials remain in Control Plane API/infrastructure gateway.
 - Add Control Plane gateway endpoints for new slug validate/generate/history APIs.
+  - Complete. Added Control Plane API/service/client routes for slug generate, validate, and history, plus category SEO get/update gateway routes.
 - Add permissions:
   - reuse existing SEO/page/catalog permissions where already present.
   - add `commerce.seo.redirects.write` only if current permission model proves too broad.
+  - Complete for current scope. Slug preview/history uses existing store read policy; product/category SEO writes reuse stores write; page writes continue using commerce pages write.
 - Add browser tests for validation and error messages.
+  - Deferred to QA pass. Build verification completed; visible browser checklist updated.
 
 Exit criteria:
 
 - Admin can see what slug will be published before save.
+  - Complete for product, category, and page managers through normalized slug/public path/canonical preview.
 - Admin can understand why a slug is rejected.
+  - Complete at UI contract level; validation payload surfaces reserved/collision/slash/empty messages from shared slug policy.
 - No Commerce Node credentials leak to Control Plane Web.
+  - Complete by boundary: Web calls Control Plane API client only; gateway appends `storeKey` and node credentials server-side.
 
 Suggested commit:
 

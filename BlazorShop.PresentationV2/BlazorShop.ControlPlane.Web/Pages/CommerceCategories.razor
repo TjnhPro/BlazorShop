@@ -149,16 +149,70 @@
 
         @if (selectedCategory is not null)
         {
-            <div class="rounded-md border border-ink-200 bg-ink-50 p-4 text-sm">
-                <div class="flex items-center justify-between gap-3">
-                    <span class="font-medium text-ink-700">Slug</span>
-                    <div class="flex items-center gap-2 font-mono text-xs text-ink-600">
-                        <span>@selectedCategory.Slug</span>
-                        @if (!string.IsNullOrWhiteSpace(selectedCategory.Slug))
+            <div class="rounded-md border border-ink-200 p-4">
+                <h2 class="text-sm font-semibold text-ink-900">SEO</h2>
+                <div class="mt-3 grid gap-3 text-sm">
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Slug</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 font-mono text-xs outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="categorySeoForm.Slug" />
+                    </label>
+                    <div class="space-y-2 rounded-md border border-ink-200 bg-ink-50 p-3">
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" class="cp-button cp-button-secondary" disabled="@isSlugActionBusy" @onclick="GenerateCategorySlugAsync">
+                                <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+                                Generate
+                            </button>
+                            <button type="button" class="cp-button cp-button-secondary" disabled="@isSlugActionBusy" @onclick="ValidateCategorySlugAsync">
+                                <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                                Validate
+                            </button>
+                        </div>
+                        <div class="grid gap-1 text-xs text-ink-600">
+                            <div>Normalized: <span class="font-mono">@SlugPreviewText(categorySlugResult?.Slug)</span></div>
+                            <div>Public path: <span class="font-mono">@BuildSeoPublicPath("category", categorySlugResult?.Slug ?? categorySeoForm.Slug)</span></div>
+                            <div>Canonical preview: <span class="font-mono">@BuildSeoPublicPath("category", categorySlugResult?.Slug ?? categorySeoForm.Slug)</span></div>
+                            @if (categorySlugResult is not null)
+                            {
+                                <div class="@(categorySlugResult.Success ? "text-green-700" : "text-red-700")">@SlugPreviewMessage(categorySlugResult)</div>
+                            }
+                        </div>
+                        @if (categorySlugHistory.Count > 0)
                         {
-                            <CopyButton Text="@selectedCategory.Slug" />
+                            <div class="border-t border-ink-200 pt-2">
+                                <div class="text-xs font-semibold uppercase text-ink-500">Slug history</div>
+                                <div class="mt-2 space-y-1">
+                                    @foreach (var item in categorySlugHistory)
+                                    {
+                                        <div class="flex items-center justify-between gap-3 text-xs">
+                                            <span class="font-mono text-ink-700">@item.Slug</span>
+                                            <span class="text-ink-500">@(item.IsActive ? "active" : item.ReplacedAt?.ToLocalTime().ToString("yyyy-MM-dd"))</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
                         }
                     </div>
+                    <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Meta title" @bind="categorySeoForm.MetaTitle" />
+                    <textarea class="min-h-20 rounded-md border border-ink-300 px-3 py-2 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Meta description" @bind="categorySeoForm.MetaDescription"></textarea>
+                    <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Canonical URL" @bind="categorySeoForm.CanonicalUrl" />
+                    <div class="grid gap-3 md:grid-cols-2">
+                        <label class="flex items-center gap-2 text-ink-700">
+                            <input type="checkbox" @bind="categorySeoForm.IsPublished" />
+                            Published
+                        </label>
+                        <label class="flex items-center gap-2 text-ink-700">
+                            <input type="checkbox" @bind="categorySeoForm.RobotsIndex" />
+                            Robots index
+                        </label>
+                        <label class="flex items-center gap-2 text-ink-700">
+                            <input type="checkbox" @bind="categorySeoForm.RobotsFollow" />
+                            Robots follow
+                        </label>
+                    </div>
+                    <button class="cp-button cp-button-primary justify-center" disabled="@isSaving" @onclick="SaveCategorySeoAsync">
+                        <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                        Save SEO
+                    </button>
                 </div>
             </div>
         }
@@ -182,12 +236,16 @@
     private readonly List<StoreSummary> stores = [];
     private readonly List<GetCategory> categories = [];
     private readonly List<GetCategoryTreeNode> categoryTree = [];
+    private readonly List<StoreSeoSlugHistoryDto> categorySlugHistory = [];
     private Guid? selectedStorePublicId;
     private GetCategory? selectedCategory;
     private CreateCategory categoryForm = new();
+    private CategorySeoDto categorySeoForm = new();
+    private StoreSeoSlugPolicyResult? categorySlugResult;
     private string categoryParentId = string.Empty;
     private bool isLoading;
     private bool isSaving;
+    private bool isSlugActionBusy;
     private bool isDrawerOpen;
     private string? errorMessage;
     private string? successMessage;
@@ -248,11 +306,14 @@
     {
         selectedCategory = null;
         categoryForm = new CreateCategory();
+        categorySeoForm = new CategorySeoDto();
+        categorySlugResult = null;
+        categorySlugHistory.Clear();
         categoryParentId = string.Empty;
         isDrawerOpen = true;
     }
 
-    private void EditCategory(GetCategory category)
+    private async Task EditCategory(GetCategory category)
     {
         selectedCategory = category;
         categoryForm = new CreateCategory
@@ -263,7 +324,141 @@
             DisplayOrder = category.DisplayOrder,
         };
         categoryParentId = category.ParentCategoryId?.ToString("D") ?? string.Empty;
+        categorySeoForm = new CategorySeoDto
+        {
+            CategoryId = category.Id,
+            Slug = category.Slug,
+            MetaTitle = category.MetaTitle,
+            MetaDescription = category.MetaDescription,
+            CanonicalUrl = category.CanonicalUrl,
+            OgTitle = category.OgTitle,
+            OgDescription = category.OgDescription,
+            OgImage = category.OgImage,
+            SeoContent = category.SeoContent,
+            RobotsIndex = category.RobotsIndex,
+            RobotsFollow = category.RobotsFollow,
+            IsPublished = true,
+        };
+        await LoadCategorySeoAsync();
+        await LoadCategorySlugLifecycleAsync();
         isDrawerOpen = true;
+    }
+
+    private async Task LoadCategorySeoAsync()
+    {
+        if (!HasStore || selectedCategory is null)
+        {
+            return;
+        }
+
+        var result = await CatalogClient.GetCategorySeoAsync(selectedStorePublicId!.Value, selectedCategory.Id);
+        if (result.Success && result.Data is not null)
+        {
+            categorySeoForm = result.Data;
+        }
+    }
+
+    private async Task LoadCategorySlugLifecycleAsync()
+    {
+        categorySlugResult = null;
+        categorySlugHistory.Clear();
+        if (!HasStore || selectedCategory is null)
+        {
+            return;
+        }
+
+        var validation = await CatalogClient.ValidateSeoSlugAsync(
+            selectedStorePublicId!.Value,
+            new StoreSeoSlugValidateRequest
+            {
+                EntityType = "category",
+                Slug = categorySeoForm.Slug,
+                ExcludedEntityId = selectedCategory.Id,
+            });
+        if (validation.Success)
+        {
+            categorySlugResult = validation.Data;
+        }
+
+        var history = await CatalogClient.ListSeoSlugHistoryAsync(
+            selectedStorePublicId.Value,
+            new StoreSeoSlugHistoryQuery
+            {
+                EntityType = "category",
+                EntityId = selectedCategory.Id,
+            });
+        if (history.Success)
+        {
+            categorySlugHistory.AddRange(history.Data ?? []);
+        }
+    }
+
+    private async Task GenerateCategorySlugAsync()
+    {
+        if (!HasStore || selectedCategory is null)
+        {
+            return;
+        }
+
+        isSlugActionBusy = true;
+        errorMessage = null;
+        try
+        {
+            var result = await CatalogClient.GenerateSeoSlugAsync(
+                selectedStorePublicId!.Value,
+                new StoreSeoSlugGenerateRequest
+                {
+                    EntityType = "category",
+                    SourceName = categoryForm.Name ?? selectedCategory.Name,
+                    ExcludedEntityId = selectedCategory.Id,
+                });
+            categorySlugResult = result.Data;
+            if (!result.Success)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            if (result.Data?.Success == true)
+            {
+                categorySeoForm.Slug = result.Data.Slug;
+            }
+        }
+        finally
+        {
+            isSlugActionBusy = false;
+        }
+    }
+
+    private async Task ValidateCategorySlugAsync()
+    {
+        if (!HasStore || selectedCategory is null)
+        {
+            return;
+        }
+
+        isSlugActionBusy = true;
+        errorMessage = null;
+        try
+        {
+            var result = await CatalogClient.ValidateSeoSlugAsync(
+                selectedStorePublicId!.Value,
+                new StoreSeoSlugValidateRequest
+                {
+                    EntityType = "category",
+                    Slug = categorySeoForm.Slug,
+                    ExcludedEntityId = selectedCategory.Id,
+                });
+            categorySlugResult = result.Data;
+            if (!result.Success)
+            {
+                errorMessage = result.Message;
+            }
+        }
+        finally
+        {
+            isSlugActionBusy = false;
+        }
     }
 
     private async Task SaveCategoryAsync()
@@ -301,6 +496,54 @@
 
             successMessage = result.Message;
             isDrawerOpen = false;
+            await LoadAsync();
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task SaveCategorySeoAsync()
+    {
+        if (!HasStore || selectedCategory is null)
+        {
+            return;
+        }
+
+        isSaving = true;
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            var result = await CatalogClient.UpdateCategorySeoAsync(
+                selectedStorePublicId!.Value,
+                selectedCategory.Id,
+                new UpdateCategorySeoDto
+                {
+                    CategoryId = selectedCategory.Id,
+                    Slug = categorySeoForm.Slug,
+                    MetaTitle = categorySeoForm.MetaTitle,
+                    MetaDescription = categorySeoForm.MetaDescription,
+                    CanonicalUrl = categorySeoForm.CanonicalUrl,
+                    OgTitle = categorySeoForm.OgTitle,
+                    OgDescription = categorySeoForm.OgDescription,
+                    OgImage = categorySeoForm.OgImage,
+                    SeoContent = categorySeoForm.SeoContent,
+                    RobotsIndex = categorySeoForm.RobotsIndex,
+                    RobotsFollow = categorySeoForm.RobotsFollow,
+                    IsPublished = categorySeoForm.IsPublished,
+                });
+
+            if (!result.Success || result.Data is null)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            categorySeoForm = result.Data;
+            successMessage = result.Message;
+            await LoadCategorySlugLifecycleAsync();
             await LoadAsync();
         }
         finally
@@ -355,6 +598,35 @@
         return Task.CompletedTask;
     }
 
+    private static string SlugPreviewText(string? slug)
+    {
+        return string.IsNullOrWhiteSpace(slug) ? "not generated" : slug;
+    }
+
+    private static string SlugPreviewMessage(StoreSeoSlugPolicyResult result)
+    {
+        return result.Success
+            ? "Slug is available."
+            : string.IsNullOrWhiteSpace(result.Message) ? "Slug is not available." : result.Message;
+    }
+
+    private static string BuildSeoPublicPath(string entityType, string? slug)
+    {
+        if (string.IsNullOrWhiteSpace(slug))
+        {
+            return "not available";
+        }
+
+        var trimmedSlug = slug.Trim();
+        return entityType switch
+        {
+            "product" => $"/product/{trimmedSlug}",
+            "category" => $"/category/{trimmedSlug}",
+            "page" => $"/pages/{trimmedSlug}",
+            _ => $"/{trimmedSlug}",
+        };
+    }
+
     private RenderFragment RenderCategoryNode(GetCategoryTreeNode category, int depth) => builder =>
     {
         var sequence = 0;
@@ -378,12 +650,12 @@
         }
     };
 
-    private void EditCategoryById(Guid categoryId)
+    private async Task EditCategoryById(Guid categoryId)
     {
         var category = categories.FirstOrDefault(item => item.Id == categoryId);
         if (category is not null)
         {
-            EditCategory(category);
+            await EditCategory(category);
         }
     }
 }

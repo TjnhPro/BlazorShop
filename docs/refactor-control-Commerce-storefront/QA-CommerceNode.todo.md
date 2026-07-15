@@ -143,6 +143,10 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] Storefront SEO redirect API preserves explicit redirect priority and falls back to slug-history canonical redirects when no explicit redirect exists. 2026-07-15: `StorefrontScopedSeoControllerTests` passed.
 - [x] Storefront redirect loop/invalid target safety remains covered after resolver-backed redirect API change. 2026-07-15: `SeoRedirectResolutionServiceTests`, `SeoUrlResolverTests`, and `StorefrontRedirectMonitoringTests` focused run passed 15/15.
 - [x] Shared SEO metadata builder does not emit unsafe canonical or Open Graph URLs and falls back to route canonical when an override is unsafe. 2026-07-15: `SeoMetadataBuilderTests` passed.
+- [x] Commerce Admin exposes store-scoped slug lifecycle endpoints for manager diagnostics. 2026-07-15 SEO Routing Slug Phase 10: added `POST /api/commerce/admin/seo/slugs/generate`, `POST /api/commerce/admin/seo/slugs/validate`, and `GET /api/commerce/admin/seo/slugs/history`; `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
+- [ ] Slug lifecycle endpoints require Commerce Admin node credentials and `storeKey` query in live HTTP QA.
+- [ ] Slug validate returns a 200 envelope with payload `success=false` and shared-policy rejection message for reserved/slash/collision input.
+- [ ] Slug history endpoint returns only the current store's entity history and does not expose another store's slugs.
 - [ ] API smoke: create two active redirects with the same `OldPath` in two different stores through `api/commerce/admin/seo/redirects`.
 - [ ] API smoke: duplicate active `OldPath` in the same store returns conflict/validation failure.
 - [ ] API smoke: `GET /api/storefront/stores/{storeKey}/seo/redirects/resolve` ignores another store's redirect.

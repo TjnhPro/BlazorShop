@@ -51,6 +51,17 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             Guid productId,
             CancellationToken cancellationToken = default);
 
+        Task<ControlPlaneClientResult<CategorySeoDto>> GetCategorySeoAsync(
+            Guid storePublicId,
+            Guid categoryId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<CategorySeoDto>> UpdateCategorySeoAsync(
+            Guid storePublicId,
+            Guid categoryId,
+            UpdateCategorySeoDto request,
+            CancellationToken cancellationToken = default);
+
         Task<ControlPlaneClientResult<ProductSeoDto>> GetProductSeoAsync(
             Guid storePublicId,
             Guid productId,
@@ -60,6 +71,21 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             Guid storePublicId,
             Guid productId,
             UpdateProductSeoDto request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StoreSeoSlugPolicyResult>> GenerateSeoSlugAsync(
+            Guid storePublicId,
+            StoreSeoSlugGenerateRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StoreSeoSlugPolicyResult>> ValidateSeoSlugAsync(
+            Guid storePublicId,
+            StoreSeoSlugValidateRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<IReadOnlyList<StoreSeoSlugHistoryDto>>> ListSeoSlugHistoryAsync(
+            Guid storePublicId,
+            StoreSeoSlugHistoryQuery query,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneFileResult> DownloadProductImportTemplateAsync(
@@ -556,6 +582,30 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
                 cancellationToken);
         }
 
+        public Task<ControlPlaneClientResult<CategorySeoDto>> GetCategorySeoAsync(
+            Guid storePublicId,
+            Guid categoryId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<CategorySeoDto>(
+                CommerceRoute(storePublicId, $"categories/{categoryId:D}/seo"),
+                "Unable to load category SEO.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<CategorySeoDto>> UpdateCategorySeoAsync(
+            Guid storePublicId,
+            Guid categoryId,
+            UpdateCategorySeoDto request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<UpdateCategorySeoDto, CategorySeoDto>(
+                CommerceRoute(storePublicId, $"categories/{categoryId:D}/seo"),
+                request,
+                "Unable to update category SEO.",
+                cancellationToken);
+        }
+
         public Task<ControlPlaneClientResult<ProductSeoDto>> GetProductSeoAsync(
             Guid storePublicId,
             Guid productId,
@@ -577,6 +627,41 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
                 CommerceRoute(storePublicId, $"products/{productId:D}/seo"),
                 request,
                 "Unable to update product SEO.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StoreSeoSlugPolicyResult>> GenerateSeoSlugAsync(
+            Guid storePublicId,
+            StoreSeoSlugGenerateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<StoreSeoSlugGenerateRequest, StoreSeoSlugPolicyResult>(
+                CommerceRoute(storePublicId, "seo/slugs/generate"),
+                request,
+                "Unable to generate SEO slug.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StoreSeoSlugPolicyResult>> ValidateSeoSlugAsync(
+            Guid storePublicId,
+            StoreSeoSlugValidateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<StoreSeoSlugValidateRequest, StoreSeoSlugPolicyResult>(
+                CommerceRoute(storePublicId, "seo/slugs/validate"),
+                request,
+                "Unable to validate SEO slug.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<IReadOnlyList<StoreSeoSlugHistoryDto>>> ListSeoSlugHistoryAsync(
+            Guid storePublicId,
+            StoreSeoSlugHistoryQuery query,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<IReadOnlyList<StoreSeoSlugHistoryDto>>(
+                CommerceRoute(storePublicId, "seo/slugs/history") + BuildSeoSlugHistoryQuery(query),
+                "Unable to load SEO slug history.",
                 cancellationToken);
         }
 
@@ -1590,6 +1675,19 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
 
             AddIfPresent(values, "search", query.Search);
             AddIfPresent(values, "status", query.Status);
+            return ToQueryString(values);
+        }
+
+        private static string BuildSeoSlugHistoryQuery(StoreSeoSlugHistoryQuery query)
+        {
+            var values = new List<KeyValuePair<string, string>>();
+            AddIfPresent(values, "entityType", query.EntityType);
+            if (query.EntityId != Guid.Empty)
+            {
+                values.Add(new KeyValuePair<string, string>("entityId", query.EntityId.ToString("D")));
+            }
+
+            AddIfPresent(values, "languageCode", query.LanguageCode);
             return ToQueryString(values);
         }
 
