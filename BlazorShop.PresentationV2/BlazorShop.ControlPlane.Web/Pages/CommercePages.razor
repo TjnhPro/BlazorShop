@@ -60,6 +60,98 @@
         <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">@successMessage</div>
     }
 
+    @if (HasStore)
+    {
+        <div class="cp-card p-4">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h2 class="text-sm font-semibold text-ink-900">Content readiness</h2>
+                    <p class="mt-1 text-sm text-ink-500">Required store content slots are mapped by page key; custom pages remain unmapped.</p>
+                </div>
+                <button class="cp-button cp-button-secondary" disabled="@isTemplateLoading" @onclick="LoadTemplateStatusAsync">
+                    <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                    Refresh readiness
+                </button>
+            </div>
+            @if (isTemplateLoading)
+            {
+                <div class="mt-4 text-sm text-ink-500">Loading content readiness...</div>
+            }
+            else if (templateStatuses.Count == 0)
+            {
+                <div class="mt-4 text-sm text-ink-500">No content templates were returned for this store.</div>
+            }
+            else
+            {
+                <div class="mt-4 overflow-x-auto">
+                    <table class="min-w-full divide-y divide-ink-100 text-left text-sm">
+                        <thead class="text-xs font-semibold uppercase text-ink-500">
+                            <tr>
+                                <th class="py-2 pr-4">Template</th>
+                                <th class="py-2 pr-4">Status</th>
+                                <th class="py-2 pr-4">Mapped page</th>
+                                <th class="py-2 pr-4">Default slug</th>
+                                <th class="py-2 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-ink-100">
+                            @foreach (var item in templateStatuses)
+                            {
+                                <tr>
+                                    <td class="py-3 pr-4">
+                                        <div class="font-semibold text-ink-900">@item.DisplayName</div>
+                                        <div class="mt-1 font-mono text-xs text-ink-500">@item.PageKey</div>
+                                    </td>
+                                    <td class="py-3 pr-4">
+                                        <StatusBadge Text="@TemplateStatusLabel(item.Status)" Tone="@TemplateStatusTone(item.Status)" />
+                                        @if (item.RequiredForReadiness)
+                                        {
+                                            <div class="mt-1 text-xs text-ink-500">Required</div>
+                                        }
+                                    </td>
+                                    <td class="py-3 pr-4 text-ink-700">
+                                        @if (item.MappedPage is not null)
+                                        {
+                                            <button class="text-left font-semibold text-control-700 hover:underline" @onclick="() => OpenPageAsync(item.MappedPage.PublicId)">@item.MappedPage.Title</button>
+                                            <div class="mt-1 font-mono text-xs text-ink-500">/pages/@item.MappedPage.Slug</div>
+                                        }
+                                        else if (item.SuggestedExistingPages.Count > 0)
+                                        {
+                                            <div>@item.SuggestedExistingPages[0].Title</div>
+                                            <div class="mt-1 font-mono text-xs text-ink-500">Suggested: /pages/@item.SuggestedExistingPages[0].Slug</div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-ink-500">Not mapped</span>
+                                        }
+                                    </td>
+                                    <td class="py-3 pr-4 font-mono text-xs text-ink-500">/pages/@item.DefaultSlug</td>
+                                    <td class="py-3 text-right">
+                                        <div class="flex justify-end gap-2">
+                                            @if (item.MappedPage is not null)
+                                            {
+                                                <button class="cp-button cp-button-secondary" disabled="@isTemplateActionBusy" @onclick="() => OpenPageAsync(item.MappedPage.PublicId)">Edit</button>
+                                                <button class="cp-button cp-button-secondary" disabled="@isTemplateActionBusy" @onclick="() => ClearTemplateAsync(item.MappedPage.PublicId)">Clear</button>
+                                            }
+                                            else
+                                            {
+                                                @if (item.SuggestedExistingPages.Count > 0)
+                                                {
+                                                    <button class="cp-button cp-button-secondary" disabled="@isTemplateActionBusy" @onclick="() => MapSuggestedPageAsync(item)">Map suggested</button>
+                                                }
+                                                <button class="cp-button cp-button-primary" disabled="@isTemplateActionBusy" @onclick="() => CreateDraftFromTemplateAsync(item.PageKey)">Create draft</button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    }
+
     <div class="cp-card overflow-hidden">
         @if (!HasStore)
         {
@@ -161,6 +253,34 @@
         </div>
 
         <div class="rounded-md border border-ink-200 p-4">
+            <h2 class="mb-3 text-sm font-semibold text-ink-900">Content governance</h2>
+            <div class="grid gap-3 text-sm md:grid-cols-2">
+                <label class="space-y-1">
+                    <span class="font-medium text-ink-700">Page key</span>
+                    <input class="min-h-10 w-full rounded-md border border-ink-200 bg-ink-50 px-3 font-mono text-xs text-ink-600" value="@(form.PageKey ?? "custom")" readonly />
+                </label>
+                <label class="space-y-1">
+                    <span class="font-medium text-ink-700">Display order</span>
+                    <input type="number" class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="form.DisplayOrder" />
+                </label>
+                <label class="flex items-center gap-2 text-ink-700">
+                    <input type="checkbox" @bind="form.IncludeInNavigation" />
+                    Include in content navigation
+                </label>
+                <label class="space-y-1">
+                    <span class="font-medium text-ink-700">Navigation location</span>
+                    <select class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="form.NavigationLocation">
+                        <option value="">Not selected</option>
+                        <option value="@StorefrontPageContentRules.Header">Header</option>
+                        <option value="@StorefrontPageContentRules.FooterCompany">Footer company</option>
+                        <option value="@StorefrontPageContentRules.FooterSupport">Footer support</option>
+                        <option value="@StorefrontPageContentRules.FooterLegal">Footer legal</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+
+        <div class="rounded-md border border-ink-200 p-4">
             <h2 class="mb-3 text-sm font-semibold text-ink-900">SEO</h2>
             <div class="grid gap-3 text-sm">
                 <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Meta title" @bind="form.MetaTitle" />
@@ -191,6 +311,7 @@
 @code {
     private readonly List<StoreSummary> stores = [];
     private readonly List<StorefrontPageSummaryDto> pages = [];
+    private readonly List<StorefrontPageTemplateStatusDto> templateStatuses = [];
     private Guid? selectedStorePublicId;
     private StorefrontPageDetailDto? selectedPage;
     private PageFormState form = new();
@@ -201,6 +322,8 @@
     private int totalCount;
     private int totalPages;
     private bool isLoading;
+    private bool isTemplateLoading;
+    private bool isTemplateActionBusy;
     private bool isSaving;
     private bool isDrawerOpen;
     private string? errorMessage;
@@ -257,6 +380,7 @@
             totalPages = payload.TotalPages;
             pageNumber = payload.PageNumber;
             pageSize = payload.PageSize;
+            await LoadTemplateStatusAsync();
         }
         finally
         {
@@ -312,6 +436,12 @@
         if (string.IsNullOrWhiteSpace(form.Title) || string.IsNullOrWhiteSpace(form.Slug) || string.IsNullOrWhiteSpace(form.BodyHtml))
         {
             errorMessage = "Title, slug, and body HTML are required.";
+            return;
+        }
+
+        if (form.IncludeInNavigation && string.IsNullOrWhiteSpace(form.NavigationLocation))
+        {
+            errorMessage = "Navigation location is required when the page is included in content navigation.";
             return;
         }
 
@@ -375,6 +505,152 @@
         return Task.CompletedTask;
     }
 
+    private async Task LoadTemplateStatusAsync()
+    {
+        if (!HasStore)
+        {
+            templateStatuses.Clear();
+            return;
+        }
+
+        isTemplateLoading = true;
+        errorMessage = null;
+        try
+        {
+            var result = await CatalogClient.GetStorefrontPageTemplateStatusAsync(selectedStorePublicId!.Value);
+            if (!result.Success)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            templateStatuses.Clear();
+            templateStatuses.AddRange(result.Data ?? []);
+        }
+        finally
+        {
+            isTemplateLoading = false;
+        }
+    }
+
+    private async Task CreateDraftFromTemplateAsync(string pageKey)
+    {
+        if (!HasStore || string.IsNullOrWhiteSpace(pageKey))
+        {
+            return;
+        }
+
+        isTemplateActionBusy = true;
+        errorMessage = null;
+        try
+        {
+            var result = await CatalogClient.CreateStorefrontPageDraftFromTemplateAsync(
+                selectedStorePublicId!.Value,
+                pageKey,
+                new CreatePageFromTemplateRequest());
+            if (!result.Success || result.Data is null)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            selectedPage = result.Data;
+            form = PageFormState.From(result.Data);
+            isDrawerOpen = true;
+            successMessage = "Draft page created from template.";
+            await LoadAsync();
+        }
+        finally
+        {
+            isTemplateActionBusy = false;
+        }
+    }
+
+    private async Task MapSuggestedPageAsync(StorefrontPageTemplateStatusDto status)
+    {
+        if (!HasStore || status.SuggestedExistingPages.Count == 0)
+        {
+            return;
+        }
+
+        isTemplateActionBusy = true;
+        errorMessage = null;
+        try
+        {
+            var suggested = status.SuggestedExistingPages[0];
+            var result = await CatalogClient.MapStorefrontPageTemplateAsync(
+                selectedStorePublicId!.Value,
+                suggested.PublicId,
+                new MapPageTemplateRequest(status.PageKey));
+            if (!result.Success || result.Data is null)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            selectedPage = result.Data;
+            form = PageFormState.From(result.Data);
+            isDrawerOpen = true;
+            successMessage = "Suggested page mapped to content slot.";
+            await LoadAsync();
+        }
+        finally
+        {
+            isTemplateActionBusy = false;
+        }
+    }
+
+    private async Task ClearTemplateAsync(Guid pagePublicId)
+    {
+        if (!HasStore || pagePublicId == Guid.Empty)
+        {
+            return;
+        }
+
+        isTemplateActionBusy = true;
+        errorMessage = null;
+        try
+        {
+            var result = await CatalogClient.ClearStorefrontPageTemplateAsync(selectedStorePublicId!.Value, pagePublicId);
+            if (!result.Success || result.Data is null)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            selectedPage = result.Data;
+            form = PageFormState.From(result.Data);
+            successMessage = "Content slot cleared from page.";
+            await LoadAsync();
+        }
+        finally
+        {
+            isTemplateActionBusy = false;
+        }
+    }
+
+    private static string TemplateStatusLabel(string? status)
+    {
+        return status switch
+        {
+            StorefrontPageTemplateStatuses.MappedPublished => "Published",
+            StorefrontPageTemplateStatuses.MappedDraft => "Draft mapped",
+            StorefrontPageTemplateStatuses.Missing => "Missing",
+            _ => "Unknown",
+        };
+    }
+
+    private static string TemplateStatusTone(string? status)
+    {
+        return status switch
+        {
+            StorefrontPageTemplateStatuses.MappedPublished => "success",
+            StorefrontPageTemplateStatuses.MappedDraft => "warning",
+            StorefrontPageTemplateStatuses.Missing => "danger",
+            _ => "neutral",
+        };
+    }
+
     private sealed class PageFormState
     {
         public string? Slug { get; set; }
@@ -388,6 +664,14 @@
         public bool IsPublished { get; set; }
 
         public bool IncludeInSitemap { get; set; }
+
+        public string? PageKey { get; set; }
+
+        public int DisplayOrder { get; set; }
+
+        public bool IncludeInNavigation { get; set; }
+
+        public string? NavigationLocation { get; set; }
 
         public string? MetaTitle { get; set; }
 
@@ -415,6 +699,10 @@
                 BodyHtml = detail.BodyHtml,
                 IsPublished = detail.IsPublished,
                 IncludeInSitemap = detail.IncludeInSitemap,
+                PageKey = detail.PageKey,
+                DisplayOrder = detail.DisplayOrder,
+                IncludeInNavigation = detail.IncludeInNavigation,
+                NavigationLocation = detail.NavigationLocation,
                 MetaTitle = detail.Seo.MetaTitle,
                 MetaDescription = detail.Seo.MetaDescription,
                 CanonicalUrl = detail.Seo.CanonicalUrl,
@@ -429,25 +717,33 @@
         public CreateStorefrontPageRequest ToCreateRequest()
         {
             return new CreateStorefrontPageRequest(
-                this.Slug,
-                this.Title,
-                this.Intro,
-                this.BodyHtml,
-                this.IsPublished,
-                this.IncludeInSitemap,
-                this.BuildSeo());
+                Slug: this.Slug,
+                Title: this.Title,
+                Intro: this.Intro,
+                BodyHtml: this.BodyHtml,
+                IsPublished: this.IsPublished,
+                IncludeInSitemap: this.IncludeInSitemap,
+                Seo: this.BuildSeo(),
+                PageKey: this.PageKey,
+                DisplayOrder: this.DisplayOrder,
+                IncludeInNavigation: this.IncludeInNavigation,
+                NavigationLocation: this.NavigationLocation);
         }
 
         public UpdateStorefrontPageRequest ToUpdateRequest()
         {
             return new UpdateStorefrontPageRequest(
-                this.Slug,
-                this.Title,
-                this.Intro,
-                this.BodyHtml,
-                this.IsPublished,
-                this.IncludeInSitemap,
-                this.BuildSeo());
+                Slug: this.Slug,
+                Title: this.Title,
+                Intro: this.Intro,
+                BodyHtml: this.BodyHtml,
+                IsPublished: this.IsPublished,
+                IncludeInSitemap: this.IncludeInSitemap,
+                Seo: this.BuildSeo(),
+                PageKey: this.PageKey,
+                DisplayOrder: this.DisplayOrder,
+                IncludeInNavigation: this.IncludeInNavigation,
+                NavigationLocation: this.NavigationLocation);
         }
 
         private StorefrontPageSeoDto BuildSeo()
