@@ -140,6 +140,8 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] SEO URL resolver does not leak another store's slug and returns `gone` for unpublished page history. 2026-07-15: `SeoUrlResolverTests.ResolvePublicPathAsync_SlugBelongsToAnotherStore_ReturnsNotFound` and `ResolvePublicPathAsync_UnpublishedPage_ReturnsGone` passed.
 - [x] Product and category SEO updates use shared store-scoped slug policy/history when V2 services are available while preserving existing public redirect behavior. 2026-07-15: `ProductSeoServiceTests` and `CategorySeoServiceTests` focused run passed.
 - [x] Storefront page create/update uses shared slug lifecycle, generates a slug from title when create slug is omitted, and creates a 301 for published page slug changes. 2026-07-15: `StorefrontPageServiceStoreScopeTests` focused run passed.
+- [x] Storefront SEO redirect API preserves explicit redirect priority and falls back to slug-history canonical redirects when no explicit redirect exists. 2026-07-15: `StorefrontScopedSeoControllerTests` passed.
+- [x] Storefront redirect loop/invalid target safety remains covered after resolver-backed redirect API change. 2026-07-15: `SeoRedirectResolutionServiceTests`, `SeoUrlResolverTests`, and `StorefrontRedirectMonitoringTests` focused run passed 15/15.
 - [ ] API smoke: create two active redirects with the same `OldPath` in two different stores through `api/commerce/admin/seo/redirects`.
 - [ ] API smoke: duplicate active `OldPath` in the same store returns conflict/validation failure.
 - [ ] API smoke: `GET /api/storefront/stores/{storeKey}/seo/redirects/resolve` ignores another store's redirect.

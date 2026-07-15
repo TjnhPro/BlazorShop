@@ -21,6 +21,7 @@ Updated: 2026-07-15
 - Phase 3 complete: Commerce Node slug history table/service/backfill foundation added without replacing entity `Slug` fields.
 - Phase 4 complete: canonical SEO URL resolver added for store-scoped product/category/page public paths, old-slug canonical redirects, not-found, gone, and invalid outcomes.
 - Phase 5 complete: product, category, and storefront page slug update flows now use shared slug policy/history in V2; published page slug changes create store-scoped 301 redirects; page create can generate a slug from title.
+- Phase 6 complete: Storefront SEO redirect API now falls back to canonical slug history resolver while preserving explicit redirect priority and Storefront V2 middleware safety checks.
 - Phase 11 is conditional and should run only after a real legacy topic URL inventory exists.
 
 Autoplan note: external dual-voice subagents are not available in this Codex runtime. This plan records an internal autoplan audit using the same decision principles: preserve existing working behavior, fix the riskiest foundation first, keep V2 boundaries explicit, avoid speculative localization/manufacturer work, and make each phase independently verifiable.
@@ -580,9 +581,9 @@ Tasks:
 
 Exit criteria:
 
-- Browser old slug request gets 301 to canonical route.
-- No redirect loop.
-- Middleware exclusions remain safe.
+- Browser old slug request gets 301 to canonical route. Complete at API contract level; `StorefrontSeo_ResolveRedirect` returns the existing `SeoRedirectResolutionDto` from slug-history resolver when explicit redirect is absent.
+- No redirect loop. Complete; existing redirect resolution and middleware loop tests remain covered.
+- Middleware exclusions remain safe. Complete; `StorefrontPublicRedirectMiddleware` was not widened and existing monitoring tests passed.
 
 Suggested commit:
 

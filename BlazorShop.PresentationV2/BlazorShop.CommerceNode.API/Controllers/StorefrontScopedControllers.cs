@@ -1343,13 +1343,16 @@ namespace BlazorShop.CommerceNode.API.Controllers
     public sealed class StorefrontScopedSeoController : StorefrontApiControllerBase
     {
         private readonly ISeoRedirectResolutionService seoRedirectResolutionService;
+        private readonly ISeoUrlResolver seoUrlResolver;
         private readonly IStoreSeoSettingsService seoSettingsService;
 
         public StorefrontScopedSeoController(
             ISeoRedirectResolutionService seoRedirectResolutionService,
+            ISeoUrlResolver seoUrlResolver,
             IStoreSeoSettingsService seoSettingsService)
         {
             this.seoRedirectResolutionService = seoRedirectResolutionService;
+            this.seoUrlResolver = seoUrlResolver;
             this.seoSettingsService = seoSettingsService;
         }
 
@@ -1361,12 +1364,25 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpGet("redirects/resolve")]
-        public async Task<IActionResult> ResolveRedirect([FromQuery] string path)
+        public async Task<IActionResult> ResolveRedirect([FromQuery] string path, CancellationToken cancellationToken)
         {
             var redirect = await this.seoRedirectResolutionService.ResolvePublicPathAsync(path);
+            redirect ??= ToRedirectResolution(await this.seoUrlResolver.ResolvePublicPathAsync(path, cancellationToken));
+
             return redirect is null
                 ? this.Failure<SeoRedirectResolutionDto>(ServiceResponseType.NotFound, "SEO redirect was not found.")
                 : this.Success(redirect, "SEO redirect resolved.");
+        }
+
+        private static SeoRedirectResolutionDto? ToRedirectResolution(SeoUrlResolutionDto resolution)
+        {
+            return resolution.RequiresRedirect && !string.IsNullOrWhiteSpace(resolution.CanonicalPath)
+                ? new SeoRedirectResolutionDto
+                {
+                    NewPath = resolution.CanonicalPath,
+                    StatusCode = resolution.HttpStatusCode,
+                }
+                : null;
         }
     }
 
