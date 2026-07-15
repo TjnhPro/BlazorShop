@@ -2,6 +2,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
 {
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Checkout;
+    using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Customers;
     using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Payments;
@@ -126,7 +127,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
-        public async Task PreviewAsync_Baseline_CurrentlyUsesCartLineCurrencySnapshot()
+        public async Task PreviewAsync_UsesStoreDefaultCurrency_WhenCartLineSnapshotDiffers()
         {
             using var context = CreateContext();
             var storeId = Guid.NewGuid();
@@ -150,8 +151,8 @@ namespace BlazorShop.Tests.Application.CommerceNode
 
             Assert.True(result.Success);
             Assert.NotNull(result.Payload);
-            Assert.Equal("EUR", result.Payload!.CurrencyCode);
-            Assert.All(result.Payload.Lines, line => Assert.Equal("EUR", line.CurrencyCode));
+            Assert.Equal("USD", result.Payload!.CurrencyCode);
+            Assert.All(result.Payload.Lines, line => Assert.Equal("USD", line.CurrencyCode));
         }
 
         [Fact]
@@ -490,6 +491,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             return new StorefrontCheckoutService(
                 context,
                 cartService,
+                new FixedStoreCurrencyResolver("USD"),
                 new StorefrontCustomerService(context),
                 new StubStoreFeatureStateService(checkoutEnabled),
                 new PaymentHandlerResolver([new CodPaymentHandler()]),
@@ -502,7 +504,8 @@ namespace BlazorShop.Tests.Application.CommerceNode
         {
             return new StorefrontCartService(
                 new StorefrontCartSessionService(context),
-                productRepository.Object);
+                productRepository.Object,
+                new FixedStoreCurrencyResolver("USD"));
         }
 
         private static StorefrontCheckoutPreviewRequest CreateRequest(
@@ -661,6 +664,23 @@ namespace BlazorShop.Tests.Application.CommerceNode
                         Payload = result,
                         ResponseType = ServiceResponseType.Success,
                     });
+            }
+        }
+
+        private sealed class FixedStoreCurrencyResolver : IStoreCurrencyResolver
+        {
+            private readonly string defaultCurrencyCode;
+
+            public FixedStoreCurrencyResolver(string defaultCurrencyCode)
+            {
+                this.defaultCurrencyCode = defaultCurrencyCode;
+            }
+
+            public Task<string> ResolveDefaultCurrencyCodeAsync(
+                Guid storeId,
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(this.defaultCurrencyCode);
             }
         }
     }

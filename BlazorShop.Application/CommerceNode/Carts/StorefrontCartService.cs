@@ -2,6 +2,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
 {
     using System.Text.Json;
 
+    using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Domain.Constants;
@@ -16,19 +17,20 @@ namespace BlazorShop.Application.CommerceNode.Carts
         private const int MaxPersonalizationJsonLength = 8192;
         private const int MaxPersonalizationHashLength = 128;
         private const int MaxFulfillmentProviderKeyLength = 64;
-        private const string DefaultCurrencyCode = "USD";
-
         private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
         private readonly IStorefrontCartSessionService sessionService;
         private readonly IProductReadRepository productReadRepository;
+        private readonly IStoreCurrencyResolver storeCurrencyResolver;
 
         public StorefrontCartService(
             IStorefrontCartSessionService sessionService,
-            IProductReadRepository productReadRepository)
+            IProductReadRepository productReadRepository,
+            IStoreCurrencyResolver storeCurrencyResolver)
         {
             this.sessionService = sessionService;
             this.productReadRepository = productReadRepository;
+            this.storeCurrencyResolver = storeCurrencyResolver;
         }
 
         public async Task<ServiceResponse<StorefrontCartResult>> CreateOrResumeAsync(
@@ -115,6 +117,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
 
             var product = productResult.Product!;
             var variant = productResult.Variant;
+            var currencyCode = await this.storeCurrencyResolver.ResolveDefaultCurrencyCodeAsync(request.StoreId, cancellationToken);
             return await this.sessionService.AddOrUpdateLineAsync(
                 new StorefrontCartLineMutationRequest(
                     request.StoreId,
@@ -129,7 +132,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
                     NormalizeNullable(request.FulfillmentProviderKey),
                     request.Quantity,
                     variant?.Price ?? product.Price,
-                    NormalizeCurrencyCode(request.CurrencyCode)),
+                    currencyCode),
                 cancellationToken);
         }
 
@@ -221,7 +224,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
 
             var issues = new List<StorefrontCartValidationIssueDto>();
             decimal totalAmount = 0;
-            var currencyCode = DefaultCurrencyCode;
+            var currencyCode = await this.storeCurrencyResolver.ResolveDefaultCurrencyCodeAsync(storeId, cancellationToken);
 
             foreach (var line in cart.Payload.Lines)
             {
@@ -245,7 +248,6 @@ namespace BlazorShop.Application.CommerceNode.Carts
 
                 var unitPrice = productResult.Variant?.Price ?? productResult.Product!.Price;
                 totalAmount += unitPrice * line.Quantity;
-                currencyCode = NormalizeCurrencyCode(line.CurrencyCodeSnapshot) ?? currencyCode;
             }
 
             return Succeeded(
@@ -481,12 +483,6 @@ namespace BlazorShop.Application.CommerceNode.Carts
                 ServiceResponseType.ValidationError => "cart.line_invalid",
                 _ => "cart.validation_failed",
             };
-        }
-
-        private static string? NormalizeCurrencyCode(string? value)
-        {
-            var normalized = NormalizeNullable(value);
-            return normalized is null ? null : normalized.ToUpperInvariant();
         }
 
         private static string? NormalizeNullable(string? value)

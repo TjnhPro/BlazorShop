@@ -30,6 +30,8 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
             {
                 Assert.Contains(field, markup);
             }
+
+            Assert.Contains("Existing carts, orders, and payment attempts keep their stored currency.", markup);
         }
 
         [Fact]

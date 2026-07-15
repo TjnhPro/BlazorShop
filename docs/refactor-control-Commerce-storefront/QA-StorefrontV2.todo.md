@@ -176,6 +176,13 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 
 - [x] `ISSUE-001`: Storefront brand head metadata previously used a layout-level `HeadContent`, which suppressed page SEO `HeadContent` output. Fixed by rendering `StorefrontBrandHead` directly in `App.razor` head before `HeadOutlet`; focused tests passed 24/24 and browser console showed no Storefront errors after fixture correction.
 
+## Currency
+
+- [x] Storefront V2 remains single-currency in the current phase; price labels should use the current store default currency from configuration/display context. 2026-07-15: Phase 1 keeps selector/exchange-rate UI out of scope.
+- [x] Add-to-cart may still send a client currency hint for compatibility, but CommerceNode ignores it and snapshots the server-resolved store default currency. 2026-07-15: CommerceNode Phase 1 service tests cover spoofed client currency.
+- [ ] Visible product-detail/cart/checkout QA confirms client-sent currency hints cannot change displayed checkout/payment currency.
+- [ ] Future currency selector must stay hidden for stores with only one enabled supported currency.
+
 ## Catalog Search MVP
 
 Use this checklist whenever `StorefrontHeader`, `/search`, `StorefrontApiClient`, catalog query model, or CommerceNode published catalog search changes.

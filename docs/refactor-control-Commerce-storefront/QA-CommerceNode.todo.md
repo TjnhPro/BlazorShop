@@ -179,6 +179,15 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Storefront Swagger snapshot is refreshed after cart/checkout/payment API cutover. 2026-07-14: refreshed through Phase 10 first online provider result-shape update; focused checkout/payment/contract/Storefront suite passed 63/63 before Storefront host redirect test, then Storefront host suite passed 27/27.
 - [x] Direct raw Storefront checkout path is retired after Storefront V2 cutover. 2026-07-14: `POST /cart/checkout` removed from active Storefront API contract/client; focused contract/Storefront suite passed 51/51.
 
+## Currency
+
+- [x] Phase 0 baseline guardrails document the old client-supplied cart currency and Stripe two-decimal minor-unit assumptions. 2026-07-15: focused cart/checkout/Stripe tests passed before Phase 1 hardening.
+- [x] Cart add-line snapshots use server-resolved `CommerceStore.DefaultCurrencyCode` instead of client `CurrencyCode`. 2026-07-15: `StorefrontCartServiceTests.AddLineAsync_UsesServerDefaultCurrency_WhenClientSendsDifferentCurrency` and `AddLineAsync_UsesResolvedStoreCurrency_AsLineSnapshot` passed.
+- [x] Cart validation returns the store default currency and does not let mixed line snapshots drive totals. 2026-07-15: covered by Phase 1 cart/checkout service tests.
+- [x] Checkout preview and place-order use server-resolved store default currency for payment availability, order, and payment attempts in current single-currency mode. 2026-07-15: focused checkout service tests passed after resolver hardening.
+- [ ] Stripe minor-unit conversion uses currency decimal metadata instead of assuming two decimal places.
+- [ ] Store-supported currency metadata is exposed through public configuration without enabling checkout conversion.
+
 ## Store Resolution Hardening
 
 - [x] CommerceNode Nginx runtime config has an explicit default/catch-all server returning 403 for unmatched hosts. 2026-07-15: `NginxRuntimeConfigTests` passed and `00-default-deny.conf` contains `default_server` plus `return 403`.

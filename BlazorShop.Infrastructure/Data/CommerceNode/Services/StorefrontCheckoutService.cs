@@ -5,6 +5,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Checkout;
+    using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Customers;
     using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Payments;
@@ -23,6 +24,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private readonly CommerceNodeDbContext context;
         private readonly IStorefrontCartService cartService;
+        private readonly IStoreCurrencyResolver storeCurrencyResolver;
         private readonly IStorefrontCustomerService customerService;
         private readonly IStoreFeatureStateService featureStateService;
         private readonly IPaymentHandlerResolver paymentHandlerResolver;
@@ -31,6 +33,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         public StorefrontCheckoutService(
             CommerceNodeDbContext context,
             IStorefrontCartService cartService,
+            IStoreCurrencyResolver storeCurrencyResolver,
             IStorefrontCustomerService customerService,
             IStoreFeatureStateService featureStateService,
             IPaymentHandlerResolver paymentHandlerResolver,
@@ -38,6 +41,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         {
             this.context = context;
             this.cartService = cartService;
+            this.storeCurrencyResolver = storeCurrencyResolver;
             this.customerService = customerService;
             this.featureStateService = featureStateService;
             this.paymentHandlerResolver = paymentHandlerResolver;
@@ -129,8 +133,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 }
             }
 
-            var storeCurrencyCode = await this.ResolveDefaultCurrencyCodeAsync(request.StoreId, cancellationToken);
-            var currencyCode = NormalizeCurrency(cart.Lines.FirstOrDefault()?.CurrencyCodeSnapshot) ?? storeCurrencyCode;
+            var currencyCode = await this.storeCurrencyResolver.ResolveDefaultCurrencyCodeAsync(request.StoreId, cancellationToken);
             var lines = cart.Lines.Select(line =>
             {
                 var unitPrice = line.UnitPriceSnapshot ?? 0m;
@@ -141,7 +144,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     Math.Max(0, line.Quantity),
                     unitPrice,
                     unitPrice * Math.Max(0, line.Quantity),
-                    NormalizeCurrency(line.CurrencyCodeSnapshot) ?? currencyCode);
+                    currencyCode);
             }).ToArray();
 
             var subtotal = lines.Sum(line => line.LineTotal);
@@ -355,10 +358,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.ValidationError, "Cart total must be greater than zero.");
             }
 
-            var storeCurrencyCode = await this.ResolveDefaultCurrencyCodeAsync(request.StoreId, cancellationToken);
-            var currencyCode = NormalizeCurrency(session.CurrencyCode)
-                ?? NormalizeCurrency(cart.Lines.FirstOrDefault()?.CurrencyCodeSnapshot)
-                ?? storeCurrencyCode;
+            var currencyCode = await this.storeCurrencyResolver.ResolveDefaultCurrencyCodeAsync(request.StoreId, cancellationToken);
             if (!await this.IsPaymentMethodAvailableAsync(
                 request.StoreId,
                 paymentMethodKey,
@@ -708,22 +708,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             return true;
-        }
-
-        private async Task<string> ResolveDefaultCurrencyCodeAsync(Guid storeId, CancellationToken cancellationToken)
-        {
-            if (storeId == Guid.Empty)
-            {
-                return DefaultCurrencyCode;
-            }
-
-            var currencyCode = await this.context.CommerceStores
-                .AsNoTracking()
-                .Where(store => store.Id == storeId)
-                .Select(store => store.DefaultCurrencyCode)
-                .FirstOrDefaultAsync(cancellationToken);
-
-            return NormalizeCurrency(currencyCode) ?? DefaultCurrencyCode;
         }
 
         private async Task<StorefrontPlaceOrderResult?> FindCompletedByIdempotencyKeyAsync(
