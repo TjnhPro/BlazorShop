@@ -25,6 +25,7 @@ builder.Services.AddSingleton<IValidateOptions<StorefrontApiOptions>, Storefront
 builder.Services.AddSingleton<IValidateOptions<ClientAppOptions>, StorefrontClientAppOptionsValidator>();
 builder.Services.AddSingleton<IValidateOptions<StorefrontPublicUrlOptions>, StorefrontPublicUrlOptionsValidator>();
 builder.Services.AddSingleton<IValidateOptions<StorefrontStoreResolutionOptions>, StorefrontStoreResolutionOptionsValidator>();
+builder.Services.ConfigureOptions<StorefrontForwardedHeadersOptionsSetup>();
 builder.Services.AddOptions<StorefrontApiOptions>()
     .Bind(builder.Configuration.GetSection(StorefrontApiOptions.SectionName))
     .ValidateOnStart();
@@ -73,6 +74,7 @@ if (app.Environment.IsDevelopment())
     app.UseWebAssemblyDebugging();
 }
 
+app.UseForwardedHeaders();
 app.UseStaticFiles();
 app.Use(async (context, next) =>
 {

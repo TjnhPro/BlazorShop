@@ -42,9 +42,7 @@ namespace BlazorShop.Storefront.Services
                 return null;
             }
 
-            var relativePath = relativeOrAbsoluteUrl.StartsWith("/", StringComparison.Ordinal)
-                ? relativeOrAbsoluteUrl.Trim()
-                : $"/{relativeOrAbsoluteUrl.TrimStart('/')}";
+            var relativePath = relativeOrAbsoluteUrl.Trim().TrimStart('/');
 
             return new Uri(new Uri(baseUrl, UriKind.Absolute), relativePath).ToString();
         }
@@ -53,6 +51,11 @@ namespace BlazorShop.Storefront.Services
         {
             var request = _httpContextAccessor.HttpContext?.Request;
             if (request is null || !request.Host.HasValue)
+            {
+                return null;
+            }
+
+            if (request.Scheme != Uri.UriSchemeHttp && request.Scheme != Uri.UriSchemeHttps)
             {
                 return null;
             }

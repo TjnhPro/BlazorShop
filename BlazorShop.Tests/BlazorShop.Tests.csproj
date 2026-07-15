@@ -28,6 +28,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\BlazorShop.AppHost\BlazorShop.AppHost.csproj" Aliases="AppHost" />
     <ProjectReference Include="..\BlazorShop.Application\BlazorShop.Application.csproj" />
     <ProjectReference Include="..\BlazorShop.Infrastructure\BlazorShop.Infrastructure.csproj" />
