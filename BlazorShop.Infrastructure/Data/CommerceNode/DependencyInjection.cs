@@ -8,6 +8,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
     using BlazorShop.Application.CommerceNode.Customers;
     using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Media;
+    using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
@@ -141,6 +142,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IVariationTemplateLookupService, VariationTemplateLookupService>();
             services.AddScoped<IStorefrontPageService, StorefrontPageService>();
             services.AddScoped<IStorefrontPageTemplateService, StorefrontPageTemplateService>();
+            services.AddScoped<IStoreNavigationService, StoreNavigationService>();
+            services.AddSingleton<IStorefrontNavigationCache, StorefrontNavigationCache>();
             services.AddSingleton<ICatalogQueryCache, MemoryCatalogQueryCache>();
             services.AddScoped<ICommerceStoreService, CommerceStoreService>();
             services.AddScoped<ICommerceStoreContext, CommerceStoreContext>();
