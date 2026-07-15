@@ -10,9 +10,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontHeader.razor");
 
             Assert.Contains("@inject IStorefrontDisplayContextProvider DisplayContextProvider", markup);
+            Assert.Contains("@inject IStorefrontPageNavigationProvider PageNavigationProvider", markup);
             Assert.Contains("BrandLogoUrl", markup);
             Assert.Contains("bs-storefront-header__brand-logo", markup);
             Assert.Contains("DisplayContextProvider.GetAsync()", markup);
+            Assert.Contains("StorefrontPageContentRules.Header", markup);
+            Assert.DoesNotContain("StorefrontRoutes.About", markup, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontRoutes.CustomerService", markup, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -61,12 +65,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontFooter.razor");
 
             Assert.Contains("@inject IStorefrontDisplayContextProvider DisplayContextProvider", markup);
+            Assert.Contains("@inject IStorefrontPageNavigationProvider PageNavigationProvider", markup);
             Assert.Contains("DisplayContextProvider.GetAsync()", markup);
+            Assert.Contains("StorefrontPageContentRules.FooterCompany", markup);
+            Assert.Contains("StorefrontPageContentRules.FooterSupport", markup);
+            Assert.Contains("StorefrontPageContentRules.FooterLegal", markup);
             Assert.Contains("ContactEmail", markup);
             Assert.Contains("ContactPhone", markup);
             Assert.Contains("_displayContext.CompanyAddress", markup);
             Assert.Contains("mailto:@ContactEmail", markup);
             Assert.DoesNotContain("BLAZORSHOP", markup, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontRoutes.About", markup, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontRoutes.Privacy", markup, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontRoutes.Terms", markup, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontRoutes.CustomerService", markup, StringComparison.Ordinal);
         }
 
         [Fact]

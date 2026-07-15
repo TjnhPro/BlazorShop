@@ -5,6 +5,7 @@ namespace BlazorShop.Storefront.Services
     using System.Net.Http.Json;
     using System.Text.Json;
 
+    using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Web.SharedV2.Models.Discovery;
     using BlazorShop.Web.SharedV2.Models;
@@ -160,6 +161,22 @@ namespace BlazorShop.Storefront.Services
                 $"{StorefrontPagesBaseRoute}/{Uri.EscapeDataString(slug)}",
                 cancellationToken,
                 CatalogRequestTimeout);
+        }
+
+        public async Task<StorefrontApiResult<IReadOnlyList<StorefrontPageNavigationLinkDto>>> GetPageNavigationLinksAsync(
+            CancellationToken cancellationToken = default)
+        {
+            var result = await GetAsync<List<StorefrontPageNavigationLinkDto>>(
+                $"{StorefrontPagesBaseRoute}/navigation",
+                cancellationToken,
+                [],
+                CatalogRequestTimeout);
+
+            return result.IsSuccess && result.Value is not null
+                ? StorefrontApiResult<IReadOnlyList<StorefrontPageNavigationLinkDto>>.Success(result.Value)
+                : result.IsServiceUnavailable
+                    ? StorefrontApiResult<IReadOnlyList<StorefrontPageNavigationLinkDto>>.ServiceUnavailable()
+                    : StorefrontApiResult<IReadOnlyList<StorefrontPageNavigationLinkDto>>.Success([]);
         }
 
         public Task<StorefrontApiResult<GetProduct>> GetProductByIdAsync(Guid id, CancellationToken cancellationToken = default)

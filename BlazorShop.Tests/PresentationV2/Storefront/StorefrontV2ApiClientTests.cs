@@ -232,6 +232,45 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task GetPageNavigationLinksAsync_ReadsPublishedContentNavigation()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal("/api/storefront/stores/default/pages/navigation", request.RequestUri?.AbsolutePath);
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    """
+                    {
+                      "success": true,
+                      "message": "ok",
+                      "data": [
+                        {
+                          "pageKey": "privacy_policy",
+                          "slug": "privacy",
+                          "title": "Privacy policy",
+                          "navigationLocation": "footer_legal",
+                          "displayOrder": 310
+                        }
+                      ]
+                    }
+                    """);
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var result = await apiClient.GetPageNavigationLinksAsync();
+
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            var link = Assert.Single(result.Value!);
+            Assert.Equal("privacy_policy", link.PageKey);
+            Assert.Equal("privacy", link.Slug);
+            Assert.Equal("footer_legal", link.NavigationLocation);
+            Assert.Equal(["/api/storefront/stores/default/pages/navigation"], handler.RequestPaths);
+        }
+
+        [Fact]
         public async Task SetCurrencyPreferenceAsync_PostsStoreScopedCurrencyCommand()
         {
             var handler = new RecordingHandler(request =>
