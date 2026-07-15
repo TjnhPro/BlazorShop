@@ -492,6 +492,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 context,
                 cartService,
                 new FixedStoreCurrencyResolver("USD"),
+                new MoneyRoundingService(new CurrencyMetadataService()),
                 new StorefrontCustomerService(context),
                 new StubStoreFeatureStateService(checkoutEnabled),
                 new PaymentHandlerResolver([new CodPaymentHandler()]),
@@ -505,7 +506,8 @@ namespace BlazorShop.Tests.Application.CommerceNode
             return new StorefrontCartService(
                 new StorefrontCartSessionService(context),
                 productRepository.Object,
-                new FixedStoreCurrencyResolver("USD"));
+                new FixedStoreCurrencyResolver("USD"),
+                new MoneyRoundingService(new CurrencyMetadataService()));
         }
 
         private static StorefrontCheckoutPreviewRequest CreateRequest(

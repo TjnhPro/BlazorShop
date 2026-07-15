@@ -22,15 +22,18 @@ namespace BlazorShop.Application.CommerceNode.Carts
         private readonly IStorefrontCartSessionService sessionService;
         private readonly IProductReadRepository productReadRepository;
         private readonly IStoreCurrencyResolver storeCurrencyResolver;
+        private readonly IMoneyRoundingService moneyRoundingService;
 
         public StorefrontCartService(
             IStorefrontCartSessionService sessionService,
             IProductReadRepository productReadRepository,
-            IStoreCurrencyResolver storeCurrencyResolver)
+            IStoreCurrencyResolver storeCurrencyResolver,
+            IMoneyRoundingService moneyRoundingService)
         {
             this.sessionService = sessionService;
             this.productReadRepository = productReadRepository;
             this.storeCurrencyResolver = storeCurrencyResolver;
+            this.moneyRoundingService = moneyRoundingService;
         }
 
         public async Task<ServiceResponse<StorefrontCartResult>> CreateOrResumeAsync(
@@ -118,6 +121,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
             var product = productResult.Product!;
             var variant = productResult.Variant;
             var currencyCode = await this.storeCurrencyResolver.ResolveDefaultCurrencyCodeAsync(request.StoreId, cancellationToken);
+            var unitPrice = this.moneyRoundingService.RoundUnitPrice(variant?.Price ?? product.Price, currencyCode);
             return await this.sessionService.AddOrUpdateLineAsync(
                 new StorefrontCartLineMutationRequest(
                     request.StoreId,
@@ -131,7 +135,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
                     request.ArtworkVersion,
                     NormalizeNullable(request.FulfillmentProviderKey),
                     request.Quantity,
-                    variant?.Price ?? product.Price,
+                    unitPrice,
                     currencyCode),
                 cancellationToken);
         }
@@ -246,9 +250,13 @@ namespace BlazorShop.Application.CommerceNode.Carts
                     continue;
                 }
 
-                var unitPrice = productResult.Variant?.Price ?? productResult.Product!.Price;
-                totalAmount += unitPrice * line.Quantity;
+                var unitPrice = this.moneyRoundingService.RoundUnitPrice(
+                    productResult.Variant?.Price ?? productResult.Product!.Price,
+                    currencyCode);
+                totalAmount += this.moneyRoundingService.RoundLineTotal(unitPrice * line.Quantity, currencyCode);
             }
+
+            totalAmount = this.moneyRoundingService.RoundOrderTotal(totalAmount, currencyCode);
 
             return Succeeded(
                 issues.Count == 0 ? "Cart is valid." : "Cart has validation issues.",

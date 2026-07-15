@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 {
     using System.Text.Json;
 
+    using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.Options;
@@ -18,15 +19,18 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
         private readonly IStripeCheckoutSessionService checkoutSessionService;
+        private readonly IPaymentMinorUnitConverter minorUnitConverter;
         private readonly ClientAppOptions clientAppOptions;
         private readonly IConfiguration configuration;
 
         public StripeStorefrontPaymentProvider(
             IStripeCheckoutSessionService checkoutSessionService,
+            IPaymentMinorUnitConverter minorUnitConverter,
             IOptions<ClientAppOptions> clientAppOptions,
             IConfiguration configuration)
         {
             this.checkoutSessionService = checkoutSessionService;
+            this.minorUnitConverter = minorUnitConverter;
             this.clientAppOptions = clientAppOptions.Value;
             this.configuration = configuration;
         }
@@ -85,7 +89,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                         {
                             Name = string.IsNullOrWhiteSpace(line.Name) ? "Product" : line.Name,
                         },
-                        UnitAmount = ToMinorUnits(line.UnitAmount),
+                        UnitAmount = this.minorUnitConverter.ToMinorUnits(line.UnitAmount, request.CurrencyCode),
                     },
                     Quantity = line.Quantity,
                 }).ToList(),
@@ -129,11 +133,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private string BuildClientUrl(string path)
         {
             return $"{this.clientAppOptions.BaseUrl.TrimEnd('/')}/{path.TrimStart('/')}";
-        }
-
-        private static long ToMinorUnits(decimal amount)
-        {
-            return decimal.ToInt64(decimal.Round(amount * 100m, 0, MidpointRounding.AwayFromZero));
         }
 
         private static ServiceResponse<PaymentProviderSessionResult> Failed(string message)

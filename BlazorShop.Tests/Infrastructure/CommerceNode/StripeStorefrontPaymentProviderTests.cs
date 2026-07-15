@@ -1,5 +1,6 @@
 namespace BlazorShop.Tests.Infrastructure.CommerceNode
 {
+    using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.Options;
@@ -39,7 +40,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         }
 
         [Fact]
-        public async Task CreateHostedSessionAsync_Baseline_CurrentlyAssumesTwoDecimalMinorUnits()
+        public async Task CreateHostedSessionAsync_UsesCurrencyDecimalDigitsForMinorUnits()
         {
             var checkout = new FakeStripeCheckoutSessionService();
             var provider = CreateProvider(checkout, stripeSecret: "sk_test_123", clientBaseUrl: "https://shop.example.com");
@@ -49,7 +50,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.True(result.Success);
             Assert.NotNull(checkout.Options);
             Assert.Equal("jpy", checkout.Options!.LineItems[0].PriceData.Currency);
-            Assert.Equal(1234, checkout.Options.LineItems[0].PriceData.UnitAmount);
+            Assert.Equal(12, checkout.Options.LineItems[0].PriceData.UnitAmount);
         }
 
         [Fact]
@@ -77,6 +78,9 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
 
             return new StripeStorefrontPaymentProvider(
                 checkout,
+                new PaymentMinorUnitConverter(
+                    new CurrencyMetadataService(),
+                    new MoneyRoundingService(new CurrencyMetadataService())),
                 Options.Create(new ClientAppOptions { BaseUrl = clientBaseUrl }),
                 configuration);
         }

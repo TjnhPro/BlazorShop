@@ -303,7 +303,8 @@ namespace BlazorShop.Tests.Application.CommerceNode
             return new StorefrontCartService(
                 new StorefrontCartSessionService(context),
                 productRepository.Object,
-                new FixedStoreCurrencyResolver(defaultCurrencyCode));
+                new FixedStoreCurrencyResolver(defaultCurrencyCode),
+                new MoneyRoundingService(new CurrencyMetadataService()));
         }
 
         private static Product CreatePublishedProduct(Guid storeId, decimal price, int stock)

@@ -190,7 +190,8 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Commerce Admin currency updates invalidate Storefront public configuration cache. 2026-07-15: `StoreCurrencyServiceTests.UpdateAsync_KeepsBaseCurrencyEnabledAndInvalidatesPublicConfiguration` passed.
 - [x] Storefront public configuration `currencyOptions.supportedCurrencyCodes` resolves from enabled `StoreCurrency` rows and always includes the base currency. 2026-07-15: `StoreCurrencyServiceTests.ResolveSupportedCurrencyCodesAsync_ReturnsEnabledCurrenciesWithBaseFirst` passed.
 - [x] Commerce Admin currency endpoints have stable Swagger operation IDs, summaries, required body metadata, and typed response schemas. 2026-07-15: `CommerceCurrencyAdminOperationMetadataFilter` covers `CommerceCurrencies_List` and `CommerceCurrencies_Update`; full admin Swagger smoke still pending.
-- [ ] Stripe minor-unit conversion uses currency decimal metadata instead of assuming two decimal places.
+- [x] Unit price, line total, order total, and payment amount use central rounding services in current cart/checkout flow. 2026-07-15: focused `MoneyServicesTests`, `StorefrontCartServiceTests`, and `StorefrontCheckoutServiceTests` passed.
+- [x] Stripe minor-unit conversion uses currency decimal metadata instead of assuming two decimal places. 2026-07-15: `StripeStorefrontPaymentProviderTests.CreateHostedSessionAsync_UsesCurrencyDecimalDigitsForMinorUnits` and `MoneyServicesTests.ToMinorUnits_UsesCurrencyDecimalDigits` passed for USD and JPY.
 - [ ] Store-supported currency metadata is exposed through public configuration without enabling checkout conversion.
 
 ## Store Resolution Hardening

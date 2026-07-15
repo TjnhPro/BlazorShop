@@ -25,6 +25,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly CommerceNodeDbContext context;
         private readonly IStorefrontCartService cartService;
         private readonly IStoreCurrencyResolver storeCurrencyResolver;
+        private readonly IMoneyRoundingService moneyRoundingService;
         private readonly IStorefrontCustomerService customerService;
         private readonly IStoreFeatureStateService featureStateService;
         private readonly IPaymentHandlerResolver paymentHandlerResolver;
@@ -34,6 +35,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             CommerceNodeDbContext context,
             IStorefrontCartService cartService,
             IStoreCurrencyResolver storeCurrencyResolver,
+            IMoneyRoundingService moneyRoundingService,
             IStorefrontCustomerService customerService,
             IStoreFeatureStateService featureStateService,
             IPaymentHandlerResolver paymentHandlerResolver,
@@ -42,6 +44,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.context = context;
             this.cartService = cartService;
             this.storeCurrencyResolver = storeCurrencyResolver;
+            this.moneyRoundingService = moneyRoundingService;
             this.customerService = customerService;
             this.featureStateService = featureStateService;
             this.paymentHandlerResolver = paymentHandlerResolver;
@@ -136,18 +139,18 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var currencyCode = await this.storeCurrencyResolver.ResolveDefaultCurrencyCodeAsync(request.StoreId, cancellationToken);
             var lines = cart.Lines.Select(line =>
             {
-                var unitPrice = line.UnitPriceSnapshot ?? 0m;
+                var unitPrice = this.moneyRoundingService.RoundUnitPrice(line.UnitPriceSnapshot ?? 0m, currencyCode);
                 return new StorefrontCheckoutLineSummary(
                     line.Id,
                     line.ProductId,
                     line.ProductVariantId,
                     Math.Max(0, line.Quantity),
                     unitPrice,
-                    unitPrice * Math.Max(0, line.Quantity),
+                    this.moneyRoundingService.RoundLineTotal(unitPrice * Math.Max(0, line.Quantity), currencyCode),
                     currencyCode);
             }).ToArray();
 
-            var subtotal = lines.Sum(line => line.LineTotal);
+            var subtotal = this.moneyRoundingService.RoundOrderTotal(lines.Sum(line => line.LineTotal), currencyCode);
             if (!await this.IsPaymentMethodAvailableAsync(
                 request.StoreId,
                 paymentMethodKey,
@@ -345,20 +348,23 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Payment provider is not available for order placement.");
             }
 
-            var lineResolution = await this.ResolveOrderLinesAsync(request.StoreId, cart.Lines, cancellationToken);
+            var currencyCode = await this.storeCurrencyResolver.ResolveDefaultCurrencyCodeAsync(request.StoreId, cancellationToken);
+            var lineResolution = await this.ResolveOrderLinesAsync(request.StoreId, cart.Lines, currencyCode, cancellationToken);
             if (!lineResolution.Success)
             {
                 return Failed<StorefrontPlaceOrderResult>(lineResolution.ResponseType, lineResolution.Message);
             }
 
             var lines = lineResolution.Lines;
-            var totalAmount = lines.Sum(line => line.CartLine.Quantity * line.UnitPrice);
+            var totalAmount = this.moneyRoundingService.RoundOrderTotal(
+                lines.Sum(line => this.moneyRoundingService.RoundLineTotal(line.CartLine.Quantity * line.UnitPrice, currencyCode)),
+                currencyCode);
             if (totalAmount <= 0m)
             {
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.ValidationError, "Cart total must be greater than zero.");
             }
 
-            var currencyCode = await this.storeCurrencyResolver.ResolveDefaultCurrencyCodeAsync(request.StoreId, cancellationToken);
+            var paymentAmount = this.moneyRoundingService.RoundPaymentAmount(totalAmount, currencyCode);
             if (!await this.IsPaymentMethodAvailableAsync(
                 request.StoreId,
                 paymentMethodKey,
@@ -377,7 +383,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     session,
                     cart,
                     lines,
-                    totalAmount,
+                    paymentAmount,
                     currencyCode,
                     idempotencyKey,
                     cancellationToken);
@@ -392,7 +398,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                         request.StoreId,
                         Guid.Empty,
                         paymentMethodKey,
-                        totalAmount,
+                        paymentAmount,
                         currencyCode,
                         JsonSerializer.Serialize(new
                         {
@@ -424,7 +430,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 PaymentMethodKey = paymentMethodKey,
                 ProviderKey = paymentMethodKey,
                 State = PaymentAttemptStates.Created,
-                Amount = totalAmount,
+                Amount = paymentAmount,
                 CurrencyCode = currencyCode,
                 IdempotencyKey = idempotencyKey,
                 ExpiresAtUtc = now.AddMinutes(30),
@@ -742,6 +748,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private async Task<OrderLineResolution> ResolveOrderLinesAsync(
             Guid storeId,
             IEnumerable<CartLine> cartLines,
+            string currencyCode,
             CancellationToken cancellationToken)
         {
             var results = new List<OrderLineSnapshot>();
@@ -776,7 +783,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     return OrderLineResolution.Failed(ServiceResponseType.Conflict, "One or more cart items are out of stock.");
                 }
 
-                var unitPrice = cartLine.UnitPriceSnapshot ?? variant?.Price ?? product.Price;
+                var unitPrice = this.moneyRoundingService.RoundUnitPrice(
+                    cartLine.UnitPriceSnapshot ?? variant?.Price ?? product.Price,
+                    currencyCode);
                 if (unitPrice <= 0m)
                 {
                     return OrderLineResolution.Failed(ServiceResponseType.ValidationError, "Cart line price is invalid.");

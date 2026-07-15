@@ -146,6 +146,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<ICommerceStoreDomainResolver, CommerceStoreDomainResolver>();
             services.AddScoped<IStoreCurrencyResolver, StoreCurrencyResolver>();
             services.AddScoped<IStoreCurrencyService, StoreCurrencyService>();
+            services.AddSingleton<ICurrencyMetadataService, CurrencyMetadataService>();
+            services.AddSingleton<IMoneyRoundingService, MoneyRoundingService>();
+            services.AddSingleton<IPaymentMinorUnitConverter, PaymentMinorUnitConverter>();
             services.AddScoped<IStorefrontCustomerService, StorefrontCustomerService>();
             services.AddScoped<IStorefrontCartSessionService, StorefrontCartSessionService>();
             services.AddScoped<IStorefrontCartService, StorefrontCartService>();
