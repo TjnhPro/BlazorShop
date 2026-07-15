@@ -5,6 +5,7 @@ namespace BlazorShop.Storefront.Services
     using System.Net.Http.Json;
     using System.Text.Json;
 
+    using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Web.SharedV2.Models.Discovery;
@@ -29,6 +30,7 @@ namespace BlazorShop.Storefront.Services
         private static readonly TimeSpan SeoSettingsRequestTimeout = TimeSpan.FromMilliseconds(500);
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
         private const string StorefrontCatalogBaseRoute = "catalog";
+        private const string StorefrontNavigationBaseRoute = "navigation";
         private const string StorefrontPagesBaseRoute = "pages";
         private const string StorefrontSeoBaseRoute = "seo";
         private const string StorefrontConfigurationRoute = "configuration";
@@ -177,6 +179,21 @@ namespace BlazorShop.Storefront.Services
                 : result.IsServiceUnavailable
                     ? StorefrontApiResult<IReadOnlyList<StorefrontPageNavigationLinkDto>>.ServiceUnavailable()
                     : StorefrontApiResult<IReadOnlyList<StorefrontPageNavigationLinkDto>>.Success([]);
+        }
+
+        public Task<StorefrontApiResult<StoreNavigationPublicMenuDto>> GetNavigationMenuAsync(
+            string systemName,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(systemName))
+            {
+                return Task.FromResult(StorefrontApiResult<StoreNavigationPublicMenuDto>.NotFound());
+            }
+
+            return GetMaybeNotFoundAsync<StoreNavigationPublicMenuDto>(
+                $"{StorefrontNavigationBaseRoute}/{Uri.EscapeDataString(systemName.Trim().ToLowerInvariant())}",
+                cancellationToken,
+                CatalogRequestTimeout);
         }
 
         public Task<StorefrontApiResult<GetProduct>> GetProductByIdAsync(Guid id, CancellationToken cancellationToken = default)

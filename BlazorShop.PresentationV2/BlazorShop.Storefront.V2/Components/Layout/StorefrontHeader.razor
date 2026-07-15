@@ -1,6 +1,7 @@
 @inject StorefrontApiClient ApiClient
 @inject IStorefrontDisplayContextProvider DisplayContextProvider
 @inject IStorefrontPageNavigationProvider PageNavigationProvider
+@inject IStorefrontNavigationProvider NavigationProvider
 @using BlazorShop.Application.DTOs.Category
 
 <header class="bs-storefront-header relative text-neutral-100">
@@ -31,12 +32,25 @@
             </form>
 
             <nav class="bs-storefront-header__desktop-nav flex flex-wrap items-center gap-2 text-sm font-medium lg:justify-center" aria-label="Primary shop navigation">
-                <NavLink href="@StorefrontRoutes.Home" Match="NavLinkMatch.All" class="bs-storefront-nav-link" ActiveClass="is-active">Home</NavLink>
-                <NavLink href="@StorefrontRoutes.NewReleases" class="bs-storefront-nav-link" ActiveClass="is-active">New Releases</NavLink>
-                <NavLink href="@StorefrontRoutes.TodaysDeals" class="bs-storefront-nav-link" ActiveClass="is-active">Today's Deals</NavLink>
-                @foreach (var link in headerLinks)
+                @if (mainMenu is not null)
                 {
-                    <NavLink href="@PageHref(link)" class="bs-storefront-nav-link" ActiveClass="is-active">@link.Title</NavLink>
+                    @foreach (var item in mainMenu.Items)
+                    {
+                        @if (!string.IsNullOrWhiteSpace(item.Href))
+                        {
+                            <NavLink href="@item.Href" target="@Target(item)" class="bs-storefront-nav-link" ActiveClass="is-active">@item.Label</NavLink>
+                        }
+                    }
+                }
+                else
+                {
+                    <NavLink href="@StorefrontRoutes.Home" Match="NavLinkMatch.All" class="bs-storefront-nav-link" ActiveClass="is-active">Home</NavLink>
+                    <NavLink href="@StorefrontRoutes.NewReleases" class="bs-storefront-nav-link" ActiveClass="is-active">New Releases</NavLink>
+                    <NavLink href="@StorefrontRoutes.TodaysDeals" class="bs-storefront-nav-link" ActiveClass="is-active">Today's Deals</NavLink>
+                    @foreach (var link in headerLinks)
+                    {
+                        <NavLink href="@PageHref(link)" class="bs-storefront-nav-link" ActiveClass="is-active">@link.Title</NavLink>
+                    }
                 }
             </nav>
 
@@ -126,12 +140,25 @@
 
                 <div class="bs-storefront-header__mobile-panel">
                     <nav class="bs-storefront-header__mobile-nav" aria-label="Mobile shop navigation">
-                        <NavLink href="@StorefrontRoutes.Home" Match="NavLinkMatch.All" class="bs-storefront-nav-link" ActiveClass="is-active">Home</NavLink>
-                        <NavLink href="@StorefrontRoutes.NewReleases" class="bs-storefront-nav-link" ActiveClass="is-active">New Releases</NavLink>
-                        <NavLink href="@StorefrontRoutes.TodaysDeals" class="bs-storefront-nav-link" ActiveClass="is-active">Today's Deals</NavLink>
-                        @foreach (var link in headerLinks)
+                        @if (mainMenu is not null)
                         {
-                            <NavLink href="@PageHref(link)" class="bs-storefront-nav-link" ActiveClass="is-active">@link.Title</NavLink>
+                            @foreach (var item in FlattenMenu(mainMenu.Items))
+                            {
+                                @if (!string.IsNullOrWhiteSpace(item.Href))
+                                {
+                                    <NavLink href="@item.Href" target="@Target(item)" class="bs-storefront-nav-link" ActiveClass="is-active">@item.Label</NavLink>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <NavLink href="@StorefrontRoutes.Home" Match="NavLinkMatch.All" class="bs-storefront-nav-link" ActiveClass="is-active">Home</NavLink>
+                            <NavLink href="@StorefrontRoutes.NewReleases" class="bs-storefront-nav-link" ActiveClass="is-active">New Releases</NavLink>
+                            <NavLink href="@StorefrontRoutes.TodaysDeals" class="bs-storefront-nav-link" ActiveClass="is-active">Today's Deals</NavLink>
+                            @foreach (var link in headerLinks)
+                            {
+                                <NavLink href="@PageHref(link)" class="bs-storefront-nav-link" ActiveClass="is-active">@link.Title</NavLink>
+                            }
                         }
                     </nav>
 
@@ -183,6 +210,7 @@
 
     private IReadOnlyList<SearchCategoryOption> _searchCategories = [];
     private IReadOnlyList<StorefrontPageNavigationLinkDto> headerLinks = [];
+    private StoreNavigationPublicMenuDto? mainMenu;
 
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
@@ -203,6 +231,7 @@
         }
 
         headerLinks = await PageNavigationProvider.GetLinksByLocationAsync(StorefrontPageContentRules.Header);
+        mainMenu = await NavigationProvider.GetMenuAsync(StoreNavigationMenuNames.Main);
     }
 
     private static string PageHref(StorefrontPageNavigationLinkDto link)
@@ -239,6 +268,23 @@
     private bool IsSelectedCurrency(string currencyCode)
     {
         return string.Equals(currencyCode, _displayContext.CurrencyCode, StringComparison.Ordinal);
+    }
+
+    private static string? Target(StoreNavigationPublicItemDto item)
+    {
+        return item.OpensInNewTab ? "_blank" : null;
+    }
+
+    private static IEnumerable<StoreNavigationPublicItemDto> FlattenMenu(IEnumerable<StoreNavigationPublicItemDto> items)
+    {
+        foreach (var item in items)
+        {
+            yield return item;
+            foreach (var child in FlattenMenu(item.Children))
+            {
+                yield return child;
+            }
+        }
     }
 
     private sealed record SearchCategoryOption(string Slug, string Label);
