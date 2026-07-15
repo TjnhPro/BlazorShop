@@ -204,24 +204,41 @@ Exit criteria:
 
 Goal: xoa debt `StoreId` nullable tren Product/Category trong CommerceNode ma khong pha legacy.
 
+Status 2026-07-15: completed for CommerceNode Product/Category required store ownership.
+
+Implementation notes:
+
+- Kept shared domain CLR properties as `Guid?` to avoid broad legacy `AppDbContext` impact.
+- Enforced Product/Category `StoreId` as required only in `CommerceNodeDbContext`.
+- Added CommerceNode-only FK constraints from Product/Category to `CommerceStore` with `Restrict` delete behavior.
+- Added migration backfill path:
+  - Product null `StoreId` first inherits category `StoreId` when available.
+  - If remaining null rows exist and there is exactly one active Commerce store, rows are assigned to that store.
+  - If remaining null rows exist with zero or multiple active stores, migration fails with a clear manual mapping error instead of guessing.
+
+Verification:
+
+- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~CommerceNodeDbContextModelTests" --no-restore` passed 4/4.
+- `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
+
 Tasks:
 
-- Audit du lieu Product/Category co `StoreId == null` trong CommerceNode.
-- Tao migration backfill:
+- [x] Audit du lieu Product/Category co `StoreId == null` trong CommerceNode.
+- [x] Tao migration backfill:
   - Neu CommerceNode chi co mot store, gan null rows vao store do.
   - Neu co nhieu store va null rows khong suy luan duoc, migration phai fail ro rang hoac yeu cau manual mapping truoc khi apply.
-- Sau backfill, enforce required `StoreId` o CommerceNode model/database.
-- Can than voi shared domain entity:
+- [x] Sau backfill, enforce required `StoreId` o CommerceNode model/database.
+- [x] Can than voi shared domain entity:
   - Neu doi CLR `Guid?` thanh `Guid` lam legacy `AppDbContext` bi anh huong, tam thoi giu CLR nullable va enforce `.IsRequired()`/DB constraint trong CommerceNode.
   - Chi doi domain nullability khi co phase tach legacy hoac user chap thuan migration rong hon.
-- Xem xet FK Product/Category -> CommerceStore voi delete restrict neu EF model cho phep khong tac dong legacy.
-- Them tests/migration verification cho null store rows.
+- [x] Xem xet FK Product/Category -> CommerceStore voi delete restrict neu EF model cho phep khong tac dong legacy.
+- [x] Them tests/migration verification cho null store rows.
 
 Exit criteria:
 
-- CommerceNode Product/Category moi va cu deu co store ownership.
-- Startup migration cua CommerceNode chi tac dong `CommerceNodeDbContext`.
-- Legacy `AppDbContext` khong bi them migration/feature V2.
+- [x] CommerceNode Product/Category moi va cu deu co store ownership.
+- [x] Startup migration cua CommerceNode chi tac dong `CommerceNodeDbContext`.
+- [x] Legacy `AppDbContext` khong bi them migration/feature V2.
 
 ## Phase 4 - Topic/page verification
 

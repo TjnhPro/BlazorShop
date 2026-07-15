@@ -121,6 +121,9 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] Category parent/child update rejects cross-store parent assignment through current-store scoped lookup. 2026-07-15: `CategoryServiceTests.UpdateAsync_WhenParentBelongsToDifferentStore_ReturnsValidationFailure` passed.
 - [x] Category SEO slug duplicate check is scoped by store. 2026-07-15: `CategorySeoServiceTests.UpdateAsync_WhenSlugExistsOnlyInAnotherStore_AllowsUpdate` passed and verified `CategorySlugExistsInStoreAsync`.
 - [x] StorefrontPage list/detail/slug/sitemap scope has dedicated store mapping guardrails. 2026-07-15: `StorefrontPageServiceStoreScopeTests` passed 7/7 for list, detail, update, archive, public slug, sitemap, and per-store duplicate slug behavior.
+- [x] Product/Category `StoreId` is required in the CommerceNode EF model without changing the shared domain CLR nullability. 2026-07-15: `CommerceNodeDbContextModelTests.CatalogStoreId_IsRequiredInCommerceNode` passed.
+- [x] Product/Category Commerce store FK uses restrict delete behavior. 2026-07-15: `CommerceNodeDbContextModelTests.CatalogStoreForeignKey_RestrictsCommerceStoreDelete` passed.
+- [x] CommerceNode migration backfills null catalog `StoreId` only when ownership can be derived safely or there is exactly one active store; otherwise it fails with a manual mapping error. 2026-07-15: migration `CommerceNodeRequiredCatalogStoreOwnership` reviewed and model tests passed.
 
 ## Cart, Checkout & Payment Provider MVP
 

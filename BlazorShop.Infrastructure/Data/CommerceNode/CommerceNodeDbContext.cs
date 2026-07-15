@@ -100,6 +100,24 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             modelBuilder.ApplyConfiguration(new AdminAuditLogConfiguration());
             modelBuilder.ApplyConfiguration(new AdminSettingsConfiguration());
 
+            modelBuilder.Entity<Category>(entity =>
+            {
+                entity.Property(category => category.StoreId).IsRequired();
+                entity.HasOne<CommerceStore>()
+                    .WithMany()
+                    .HasForeignKey(category => category.StoreId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Product>(entity =>
+            {
+                entity.Property(product => product.StoreId).IsRequired();
+                entity.HasOne<CommerceStore>()
+                    .WithMany()
+                    .HasForeignKey(product => product.StoreId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
             modelBuilder.Entity<ProductVariant>()
                 .Property(variant => variant.AttributesJson)
                 .HasColumnType("jsonb");
