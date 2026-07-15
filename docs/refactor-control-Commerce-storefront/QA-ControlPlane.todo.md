@@ -191,10 +191,10 @@ Status legend:
 - [x] ControlPlane CommerceNode catalog/media gateway keeps `X-Node-Key` and `X-Node-Secret`. 2026-07-14: build verified after Phase 6 gateway update.
 - [x] ControlPlane CommerceNode catalog/media gateway no longer sends `X-Store-Key` to Commerce Admin endpoints. 2026-07-14: Phase 6 removed the header from gateway calls.
 - [x] ControlPlane product/category/page manager gateway requests append `storeKey` and keep node credentials server-side. 2026-07-15: `ControlPlaneCommerceCatalogServiceStoreMappingTests` passed 3/3 for product query, category list, and page list.
-- [ ] ControlPlane product/category/order/media/admin pages still load after Commerce Admin missing-`storeKey` enforcement.
-- [ ] Browser network capture confirms ControlPlane Web still calls only ControlPlane API.
-- [ ] ControlPlane API product media preview calls `api/commerce/admin/media/products/{mediaId}?storeKey={storeKey}`.
-- [ ] ControlPlane API asset media preview calls `api/commerce/admin/media/assets/{assetId}/preview?storeKey={storeKey}`.
+- [x] ControlPlane product/category/order/media/admin pages still load after Commerce Admin missing-`storeKey` enforcement. 2026-07-15: visible browser QA loaded Products, Categories, Pages, Orders, and Media Library for `Default QA Store (default)`.
+- [x] Browser network capture confirms ControlPlane Web still calls only ControlPlane API. 2026-07-15: Playwright request capture across Products, Categories, Pages, Orders, and Media Library found 0 direct `localhost:5180` or `/api/commerce/*` browser calls; all commerce calls used `localhost:5280/api/controlplane/commerce/...`.
+- [x] ControlPlane API product media preview calls `api/commerce/admin/media/products/{mediaId}?storeKey={storeKey}`. 2026-07-15: Products page media previews returned 200 through ControlPlane API; ControlPlane API log showed server-side CommerceNode product media preview calls and CommerceNode resolved the request by store key.
+- [x] ControlPlane API asset media preview calls `api/commerce/admin/media/assets/{assetId}/preview?storeKey={storeKey}`. 2026-07-15: Media Library asset preview returned 200 through ControlPlane API; ControlPlane API log showed server-side CommerceNode asset preview call and CommerceNode resolved the request by store key.
 
 ## Commerce Storefront Pages
 
