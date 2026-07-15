@@ -86,6 +86,30 @@ namespace BlazorShop.Storefront.Configuration
         }
     }
 
+    public sealed class StorefrontStoreResolutionOptionsValidator : IValidateOptions<StorefrontStoreResolutionOptions>
+    {
+        private readonly IConfiguration _configuration;
+        private readonly IHostEnvironment _hostEnvironment;
+
+        public StorefrontStoreResolutionOptionsValidator(IConfiguration configuration, IHostEnvironment hostEnvironment)
+        {
+            _configuration = configuration;
+            _hostEnvironment = hostEnvironment;
+        }
+
+        public ValidateOptionsResult Validate(string? name, StorefrontStoreResolutionOptions options)
+        {
+            if (!StorefrontStoreResolutionOptions.IsCurrentStoreRequired(options, _hostEnvironment))
+            {
+                return ValidateOptionsResult.Success;
+            }
+
+            return string.IsNullOrWhiteSpace(StorefrontStoreKeyResolver.Resolve(_configuration))
+                ? ValidateOptionsResult.Fail("Api:StoreKey, StoreKey, or STORE_KEY is required when StoreResolution:RequireCurrentStore is enabled.")
+                : ValidateOptionsResult.Success;
+        }
+    }
+
     public sealed class StorefrontPublicUrlOptionsValidator : IValidateOptions<StorefrontPublicUrlOptions>
     {
         private readonly IHostEnvironment _hostEnvironment;

@@ -24,6 +24,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<IValidateOptions<StorefrontApiOptions>, StorefrontApiOptionsValidator>();
 builder.Services.AddSingleton<IValidateOptions<ClientAppOptions>, StorefrontClientAppOptionsValidator>();
 builder.Services.AddSingleton<IValidateOptions<StorefrontPublicUrlOptions>, StorefrontPublicUrlOptionsValidator>();
+builder.Services.AddSingleton<IValidateOptions<StorefrontStoreResolutionOptions>, StorefrontStoreResolutionOptionsValidator>();
 builder.Services.AddOptions<StorefrontApiOptions>()
     .Bind(builder.Configuration.GetSection(StorefrontApiOptions.SectionName))
     .ValidateOnStart();
@@ -32,6 +33,9 @@ builder.Services.AddOptions<ClientAppOptions>()
     .ValidateOnStart();
 builder.Services.AddOptions<StorefrontPublicUrlOptions>()
     .Bind(builder.Configuration.GetSection(StorefrontPublicUrlOptions.SectionName))
+    .ValidateOnStart();
+builder.Services.AddOptions<StorefrontStoreResolutionOptions>()
+    .Bind(builder.Configuration.GetSection(StorefrontStoreResolutionOptions.SectionName))
     .ValidateOnStart();
 builder.Services
     .AddRazorComponents()
@@ -44,6 +48,7 @@ builder.Services.AddScoped<IStorefrontSeoSettingsProvider, StorefrontSeoSettings
 builder.Services.AddScoped<IStorefrontSeoComposer, StorefrontSeoComposer>();
 builder.Services.AddScoped<IStorefrontStructuredDataComposer, StorefrontStructuredDataComposer>();
 builder.Services.AddScoped<IStorefrontSitemapService, StorefrontSitemapService>();
+builder.Services.AddScoped<IStorefrontCurrentStoreProvider, StorefrontCurrentStoreProvider>();
 builder.Services.AddScoped<StorefrontCartTokenService>();
 builder.Services.AddHttpClient<IStorefrontSessionResolver, StorefrontSessionResolver>((serviceProvider, client) =>
 {
@@ -69,12 +74,13 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseStaticFiles();
-app.UseMiddleware<StorefrontPublicRedirectMiddleware>();
 app.Use(async (context, next) =>
 {
     StorefrontResponseHeaders.RegisterErrorStatusHeaders(context);
     await next();
 });
+app.UseMiddleware<StorefrontCurrentStoreMiddleware>();
+app.UseMiddleware<StorefrontPublicRedirectMiddleware>();
 app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapDefaultEndpoints();
@@ -489,23 +495,7 @@ static Uri ResolveScopedStorefrontApiBaseAddress(IConfiguration configuration)
 
 static string? ResolveStoreKey(IConfiguration configuration)
 {
-    return FirstNonEmpty(
-        configuration[$"{StorefrontApiOptions.SectionName}:StoreKey"],
-        configuration["StoreKey"],
-        configuration["STORE_KEY"]);
-}
-
-static string? FirstNonEmpty(params string?[] values)
-{
-    foreach (var value in values)
-    {
-        if (!string.IsNullOrWhiteSpace(value))
-        {
-            return value.Trim();
-        }
-    }
-
-    return null;
+    return StorefrontStoreKeyResolver.Resolve(configuration);
 }
 
 static StorefrontCheckoutPreviewRequest BuildCheckoutPreviewRequest(StorefrontCheckoutForm form, int expectedCartVersion)
