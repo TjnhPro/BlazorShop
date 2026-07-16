@@ -147,6 +147,18 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] `/todays-deals`
   - [x] Shows discount/deal products when available.
 
+## Catalog Product Search
+
+- [x] Phase 0 baseline confirms `SearchPage.razor` uses the paged Storefront catalog API, keeps `noindex, follow`, renders pagination, and has an empty-result state. 2026-07-16: source review plus focused Storefront API client/static markup tests are the baseline guard.
+- [x] Phase 0 baseline confirms `CategoryPage.razor` uses the paged Storefront catalog API and existing `CatalogFilterPanel`, while real category page/page-size UX remains planned for Phase 2. 2026-07-16: source review recorded before code changes.
+- [x] Phase 0 baseline confirms `CatalogFilterPanel.razor` already preserves category/search/minPrice/maxPrice/sortBy/inStock query contract. 2026-07-16: existing `LayoutAssetFoundationTests.StorefrontCatalogFilterPanel_PreservesQueryStringContract` remains the guard.
+- [ ] Search page supports `pageSize=12|24|48` and preserves it through pagination.
+- [ ] Search page shows a clear too-short search state for non-empty search terms shorter than the public minimum.
+- [ ] Category page supports `page` and `pageSize` query values.
+- [ ] Category page uses paged API metadata for pagination rather than visible item count.
+- [ ] Browser QA verifies search/category pagination and page-size selector on desktop.
+- [ ] Browser QA verifies search/category pagination and page-size selector on mobile.
+
 ## Dynamic Storefront Pages
 
 - [x] Storefront V2 builds after dynamic StorefrontPage rendering changes. 2026-07-11: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed.
