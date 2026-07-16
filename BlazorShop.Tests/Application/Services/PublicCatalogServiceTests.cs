@@ -2,6 +2,7 @@ namespace BlazorShop.Tests.Application.Services
 {
     using AutoMapper;
 
+    using BlazorShop.Domain.Constants;
     using BlazorShop.Application.DTOs.Category;
     using BlazorShop.Application.DTOs.Product;
     using BlazorShop.Application.Services;
@@ -9,6 +10,7 @@ namespace BlazorShop.Tests.Application.Services
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Contracts.CategoryPersistence;
     using BlazorShop.Domain.Entities;
+    using BlazorShop.Domain.Entities.CommerceNode;
 
     using Moq;
 
@@ -38,6 +40,69 @@ namespace BlazorShop.Tests.Application.Services
             Assert.NotNull(result);
             Assert.Equal("running-shoes", result!.Slug);
             _productReadRepository.Verify(repository => repository.GetPublishedProductBySlugAsync("running-shoes"), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetPublishedProductBySlugAsync_MapsActiveVariationTemplateOptionsAndValues()
+        {
+            var storeId = Guid.NewGuid();
+            var product = new Product
+            {
+                Id = Guid.NewGuid(),
+                StoreId = storeId,
+                Name = "Custom Tee",
+                Slug = "custom-tee",
+                IsPublished = true,
+                ProductType = ProductTypes.CustomVariations,
+                VariationTemplate = new VariationTemplate
+                {
+                    Id = Guid.NewGuid(),
+                    StoreId = storeId,
+                    Name = "Tee options",
+                    Slug = "tee-options",
+                    IsActive = true,
+                    Options =
+                    {
+                        new VariationTemplateOption
+                        {
+                            Name = "Color",
+                            SortOrder = 1,
+                            IsActive = true,
+                            Values =
+                            {
+                                new VariationTemplateValue { Value = "Red", SortOrder = 1, IsActive = true },
+                                new VariationTemplateValue { Value = "Blue", SortOrder = 2, IsActive = false },
+                            },
+                        },
+                        new VariationTemplateOption
+                        {
+                            Name = "Hidden",
+                            SortOrder = 2,
+                            IsActive = false,
+                            Values =
+                            {
+                                new VariationTemplateValue { Value = "Secret", SortOrder = 1, IsActive = true },
+                            },
+                        },
+                    },
+                },
+            };
+            var mappedProduct = new GetProduct { Id = product.Id, Name = product.Name, Slug = product.Slug };
+
+            _slugService.Setup(service => service.NormalizeSlug("Custom Tee")).Returns("custom-tee");
+            _productReadRepository.Setup(repository => repository.GetPublishedProductBySlugAsync("custom-tee")).ReturnsAsync(product);
+            _mapper.Setup(mapper => mapper.Map<GetProduct>(product)).Returns(mappedProduct);
+
+            var service = CreateService();
+
+            var result = await service.GetPublishedProductBySlugAsync("Custom Tee");
+
+            Assert.NotNull(result?.VariationTemplate);
+            Assert.Equal("Tee options", result!.VariationTemplate!.Name);
+            var option = Assert.Single(result.VariationTemplate.Options);
+            Assert.Equal("Color", option.Name);
+            var value = Assert.Single(option.Values);
+            Assert.Equal("Red", value.Value);
         }
 
         [Fact]

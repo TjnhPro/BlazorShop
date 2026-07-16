@@ -87,6 +87,36 @@ namespace BlazorShop.Tests.Application.Services
         }
 
         [Fact]
+        public async Task AddAsync_WhenAttributeSignatureAlreadyExistsForProduct_ReturnsFailure()
+        {
+            var productId = Guid.NewGuid();
+            var request = new CreateProductVariant
+            {
+                ProductId = productId,
+                Attributes =
+                [
+                    new ProductVariantAttributeDto { Name = "Color", Value = "Red" },
+                ],
+            };
+            var mapped = new ProductVariant { ProductId = productId, AttributeSignature = "color=red" };
+            this.productReadRepository.Setup(repository => repository.GetProductDetailsByIdAsync(productId))
+                .ReturnsAsync(new Product { Id = productId, Price = 10m });
+            this.mapper.Setup(mapper => mapper.Map<ProductVariant>(request))
+                .Returns(mapped);
+            this.variantRepository.Setup(repository => repository.GetAllAsync())
+                .ReturnsAsync(
+                [
+                    new ProductVariant { ProductId = productId, AttributeSignature = "color=red" },
+                ]);
+
+            var result = await this.service.AddAsync(request);
+
+            Assert.False(result.Success);
+            Assert.Equal("Variant attribute combination already exists for this product.", result.Message);
+            this.variantRepository.Verify(repository => repository.AddAsync(It.IsAny<ProductVariant>()), Times.Never);
+        }
+
+        [Fact]
         public async Task AddAsync_WhenSkuIsUnique_TrimsBeforePersisting()
         {
             var productId = Guid.NewGuid();

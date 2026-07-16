@@ -475,3 +475,15 @@ Status legend:
 - [x] Catalog structure fields stay behind Control Plane API gateway and storeKey forwarding. 2026-07-16 Phase 7: `ControlPlaneCommerceCatalogServiceStoreMappingTests|ControlPlaneArchitectureBoundaryTests` passed 14/14; Control Plane API build passed; Control Plane Web build passed with one transient file-lock retry warning.
 - [x] Catalog Structure Core final Control Plane release gate passed. 2026-07-16 Phase 10: `ControlPlaneCommerceCatalogServiceStoreMappingTests|ControlPlaneArchitectureBoundaryTests|ControlPlaneCommerceCatalogControllerTests` passed 16/16 and ControlPlane Web build passed with 0 warnings.
 - [ ] Visible browser QA creates/updates a category description through Control Plane and confirms it reloads in the drawer.
+
+## Product Variant Attribute
+
+- [x] Phase 0 baseline confirms existing Control Plane variation template/product variant work remains behind Control Plane API. 2026-07-16: no Control Plane Web route changes in baseline; focused backend/storefront guardrails passed 48/48.
+- [ ] Variation template manager can edit option control type.
+- [ ] Variation template manager can edit option required state.
+- [ ] Variation template manager can edit color hex for color values.
+- [ ] Product variant manager can mark a variant inactive.
+- [ ] Product variant manager shows normalized signature read-only.
+- [ ] Product variant manager warns for missing required option.
+- [ ] Product variant manager warns for stale template value.
+- [ ] ControlPlane Web calls only ControlPlane API.

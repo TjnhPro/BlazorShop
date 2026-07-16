@@ -834,3 +834,22 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Unsupported product types are rejected by admin service and product import resolver. 2026-07-16 Phase 9: `CatalogProductTypeGateTests|ProductServiceTests` passed 29/29.
 - [x] Catalog Structure Core final focused release gate passed. 2026-07-16 Phase 10: Commerce Node catalog/service/repository/import/model/OpenAPI focused run passed 110/110 after stabilizing timestamp-based catalog ordering seed.
 - [ ] Live API smoke creates a category with description, updates it, and reads it back through Commerce admin API.
+
+## Product Variant Attribute
+
+- [x] Phase 0 baseline confirms existing variation template, product variant, cart, and public catalog behavior before schema changes. 2026-07-16: `ProductVariantServiceTests|StorefrontCartServiceTests|PublicCatalogServiceTests|CommerceNodeStorefrontOpenApiContractTests` passed 48/48.
+- [x] Duplicate product variant attribute signature is rejected. 2026-07-16 Phase 0: `ProductVariantServiceTests.AddAsync_WhenAttributeSignatureAlreadyExistsForProduct_ReturnsFailure` passed.
+- [x] Storefront product detail mapping exposes only active variation template options and values. 2026-07-16 Phase 0: `PublicCatalogServiceTests.GetPublishedProductBySlugAsync_MapsActiveVariationTemplateOptionsAndValues` passed.
+- [ ] Variation template option control type defaults to `dropdown` for existing data.
+- [ ] Variation template option required state defaults to `true` for existing data.
+- [ ] Unknown variation control type is rejected.
+- [ ] Invalid color hex is rejected.
+- [ ] Storefront product detail response includes variation option control metadata.
+- [ ] Product variant active state defaults to `true`.
+- [ ] Inactive variant cannot be set as default.
+- [ ] Variant combination validation rejects unknown template option names.
+- [ ] Variant combination validation rejects unknown template values.
+- [ ] Shared product selection resolver rejects missing required options.
+- [ ] Shared product selection resolver rejects inactive variants.
+- [ ] Storefront selection-preview endpoint is store-scoped.
+- [ ] Storefront selection-preview endpoint rejects quantity below 1.

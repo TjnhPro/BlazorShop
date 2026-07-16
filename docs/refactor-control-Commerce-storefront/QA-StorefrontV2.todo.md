@@ -516,3 +516,16 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Catalog Structure Core final Storefront focused release gate passed. 2026-07-16 Phase 10: `StorefrontV2ApiClientTests|StorefrontStructuredDataComposerTests|StorefrontCartServiceTests|StorefrontCheckoutServiceTests|StorefrontSitemapServiceTests` passed 43/43.
 - [ ] Visible browser QA confirms `/category/{slug}` displays category description from CommerceNode data.
 - [ ] Visible browser QA confirms `/category/{slug}` shows full breadcrumb hierarchy and direct product count.
+
+## Product Variant Attribute
+
+- [x] Phase 0 baseline confirms Storefront cart and product detail variation-template guardrails before UI changes. 2026-07-16: `StorefrontCartServiceTests|PublicCatalogServiceTests|CommerceNodeStorefrontOpenApiContractTests` included in focused run passed 48/48.
+- [x] Product detail service mapping returns active variation options and values only. 2026-07-16 Phase 0: `PublicCatalogServiceTests.GetPublishedProductBySlugAsync_MapsActiveVariationTemplateOptionsAndValues` passed.
+- [ ] Product detail renders dropdown controls from option metadata.
+- [ ] Product detail renders radio controls from option metadata.
+- [ ] Product detail renders color swatches from option metadata.
+- [ ] Product detail preview updates price/SKU/stock after selection.
+- [ ] Product detail preview blocks invalid selection.
+- [ ] Product detail add-to-cart sends the same selected attributes used by preview.
+- [ ] Inactive variants are not selectable.
+- [ ] Product detail remains usable before JavaScript loads.
