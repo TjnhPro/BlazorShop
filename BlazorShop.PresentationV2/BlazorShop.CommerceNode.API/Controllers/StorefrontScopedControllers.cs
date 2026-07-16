@@ -13,6 +13,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Payments;
+    using BlazorShop.Application.CommerceNode.ProductSelections;
     using BlazorShop.Application.CommerceNode.SecurityPrivacy;
     using BlazorShop.Application.CommerceNode.Settings;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
@@ -317,17 +318,20 @@ namespace BlazorShop.CommerceNode.API.Controllers
         private readonly ICommerceStoreContext storeContext;
         private readonly IStorefrontWorkingCurrencyResolver workingCurrencyResolver;
         private readonly IMoneyConversionService moneyConversionService;
+        private readonly IProductSelectionResolver productSelectionResolver;
 
         public StorefrontScopedCatalogController(
             IPublicCatalogService publicCatalogService,
             ICommerceStoreContext storeContext,
             IStorefrontWorkingCurrencyResolver workingCurrencyResolver,
-            IMoneyConversionService moneyConversionService)
+            IMoneyConversionService moneyConversionService,
+            IProductSelectionResolver productSelectionResolver)
         {
             this.publicCatalogService = publicCatalogService;
             this.storeContext = storeContext;
             this.workingCurrencyResolver = workingCurrencyResolver;
             this.moneyConversionService = moneyConversionService;
+            this.productSelectionResolver = productSelectionResolver;
         }
 
         [HttpGet("categories")]
@@ -444,6 +448,27 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return product is null
                 ? this.Failure<StorefrontProductResponse>(ServiceResponseType.NotFound, "Published product was not found.")
                 : this.Success(await this.ToDisplayProductContractAsync(product, displayCurrency, cancellationToken), "Published product loaded.");
+        }
+
+        [HttpPost("products/{productId:guid}/selection-preview")]
+        public async Task<IActionResult> PreviewProductSelection(
+            Guid productId,
+            [FromBody] StorefrontProductSelectionPreviewRequest request,
+            CancellationToken cancellationToken)
+        {
+            var storeIdResult = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
+            if (!storeIdResult.Success)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.productSelectionResolver.ResolveAsync(
+                request.ToApplicationRequest(storeIdResult.Payload, productId),
+                cancellationToken);
+
+            return result.ResponseType == ServiceResponseType.NotFound
+                ? this.Failure<StorefrontProductSelectionPreviewResponse>(ServiceResponseType.NotFound, result.Message)
+                : this.Success(result.ToStorefrontContract(), result.Message);
         }
 
         [HttpGet("sitemap")]

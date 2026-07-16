@@ -66,6 +66,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Storefront HTTP clients do not send `X-Store-Key` on scoped API requests. 2026-07-14: `ConfigureStorefrontHttpClient` now sets scoped base address and no default store header; `/` runtime log showed scoped CommerceNode URLs.
 - [x] API client can request consolidated public store configuration from `api/storefront/stores/{storeKey}/configuration`. 2026-07-15: `StorefrontV2ApiClientTests.GetPublicConfigurationAsync_ReadsStoreScopedConfiguration` passed and asserted the scoped path.
 - [x] API client models can read safe public payment metadata from consolidated configuration. 2026-07-15: `StorefrontPublicPaymentMethod` now includes short display text, icon URL, supported currencies, and supported countries; Storefront V2 build passed.
+- [x] API client can post product selection preview to `api/storefront/stores/{storeKey}/catalog/products/{productId}/selection-preview`. 2026-07-16 Phase 4: `StorefrontApiClient.PreviewProductSelectionAsync` added; CommerceNode controller/OpenAPI focused run passed 32/32.
 - [x] API client does not call legacy fallback when `Api:EnableLegacyFallback=false`.
 - [x] API client can use legacy fallback only when explicitly enabled.
 - [x] Checkout anonymous redirect is covered by V2 host smoke test.

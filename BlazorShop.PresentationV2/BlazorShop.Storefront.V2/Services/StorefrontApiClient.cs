@@ -222,6 +222,23 @@ namespace BlazorShop.Storefront.Services
                 CatalogRequestTimeout);
         }
 
+        public Task<StorefrontSubmitResult<StorefrontProductSelectionPreviewResponse>> PreviewProductSelectionAsync(
+            Guid productId,
+            StorefrontProductSelectionPreviewRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            if (productId == Guid.Empty)
+            {
+                return Task.FromResult(StorefrontSubmitResult<StorefrontProductSelectionPreviewResponse>.Failed("Product is required."));
+            }
+
+            return PostAsync<StorefrontProductSelectionPreviewRequest, StorefrontProductSelectionPreviewResponse>(
+                $"{StorefrontProductsRoute}/{productId:D}/selection-preview",
+                request,
+                "Unable to preview this product selection right now.",
+                cancellationToken);
+        }
+
         public Task<StorefrontApiResult<GetSeoSettings>> GetSeoSettingsAsync(CancellationToken cancellationToken = default)
         {
             return GetAsyncWithFallback<GetSeoSettings>(
@@ -891,6 +908,38 @@ namespace BlazorShop.Storefront.Services
         bool RequestedCurrencySupported,
         bool CheckoutCurrencyEnabled,
         string Reason);
+
+    public sealed class StorefrontProductSelectionPreviewRequest
+    {
+        public Guid? ProductVariantId { get; set; }
+
+        public IReadOnlyList<SelectedAttributeDto>? SelectedAttributes { get; set; }
+
+        public int Quantity { get; set; } = 1;
+
+        public string? CurrencyCode { get; set; }
+    }
+
+    public sealed record StorefrontProductSelectionPreviewResponse(
+        Guid ProductId,
+        Guid? ProductVariantId,
+        bool IsValid,
+        bool IsAvailable,
+        bool CanAddToCart,
+        IReadOnlyList<string> ValidationMessages,
+        IReadOnlyList<StorefrontProductSelectionAttribute> SelectedAttributes,
+        string? AttributeSignature,
+        string? Sku,
+        string? DisplayName,
+        decimal UnitPrice,
+        decimal? ComparePrice,
+        string CurrencyCode,
+        int StockQuantity,
+        int MinQuantity,
+        int MaxQuantity,
+        string? PrimaryImageUrl);
+
+    public sealed record StorefrontProductSelectionAttribute(string Name, string Value);
 
     public sealed record StorefrontConsentConfiguration(
         bool Enabled,

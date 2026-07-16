@@ -9,6 +9,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Payments;
+    using BlazorShop.Application.CommerceNode.ProductSelections;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Category;
@@ -540,6 +541,47 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
             this ProductVariantAttributeDto attribute)
         {
             return new StorefrontProductVariantAttributeResponse(attribute.Name, attribute.Value);
+        }
+
+        public static ProductSelectionRequest ToApplicationRequest(
+            this StorefrontProductSelectionPreviewRequest request,
+            Guid storeId,
+            Guid productId)
+        {
+            return new ProductSelectionRequest(
+                storeId,
+                productId,
+                request.ProductVariantId,
+                request.SelectedAttributes,
+                SelectedAttributesJson: null,
+                request.Quantity,
+                request.CurrencyCode,
+                ProductSelectionMode.Preview);
+        }
+
+        public static StorefrontProductSelectionPreviewResponse ToStorefrontContract(
+            this ProductSelectionResult result)
+        {
+            return new StorefrontProductSelectionPreviewResponse(
+                result.ProductId,
+                result.ProductVariantId,
+                result.IsValid,
+                result.IsAvailable,
+                result.CanAddToCart,
+                result.ValidationMessages,
+                result.SelectedAttributes
+                    .Select(attribute => new StorefrontProductVariantAttributeResponse(attribute.Name, attribute.Value))
+                    .ToArray(),
+                result.AttributeSignature,
+                result.Sku,
+                result.DisplayName,
+                result.UnitPrice,
+                result.ComparePrice,
+                result.CurrencyCode,
+                result.StockQuantity,
+                result.MinQuantity,
+                result.MaxQuantity,
+                result.Product?.Image);
         }
 
         public static StorefrontPagedResponse<TTarget> ToStorefrontContract<TSource, TTarget>(

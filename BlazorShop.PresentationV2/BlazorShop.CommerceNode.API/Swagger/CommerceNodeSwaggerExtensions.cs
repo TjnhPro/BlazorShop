@@ -829,6 +829,11 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "Get a published product by slug.",
                         typeof(CommerceNodeApiResponse<StorefrontProductResponse>),
                         [StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedCatalog", "PreviewProductSelection")] = new(
+                        "StorefrontCatalog_PreviewProductSelection",
+                        "Preview a Storefront product selection.",
+                        typeof(CommerceNodeApiResponse<StorefrontProductSelectionPreviewResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedCatalog", "GetSitemap")] = new(
                         "StorefrontCatalog_GetSitemap",
                         "Get the published catalog sitemap.",
@@ -1239,6 +1244,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
                     [typeof(StorefrontCategoryPageResponse)] = ["products"],
                     [typeof(StorefrontProductResponse)] = ["variants"],
                     [typeof(StorefrontProductVariantResponse)] = ["attributes"],
+                    [typeof(StorefrontProductSelectionPreviewResponse)] = ["validationMessages", "selectedAttributes"],
                     [typeof(StorefrontCartResponse)] = ["lines"],
                     [typeof(StorefrontCartValidationResponse)] = ["issues"],
                     [typeof(StorefrontOrderResponse)] = ["lines"],

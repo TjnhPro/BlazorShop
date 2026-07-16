@@ -53,6 +53,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             ("StorefrontCategoryPageResponse", "products"),
             ("StorefrontProductResponse", "variants"),
             ("StorefrontProductVariantResponse", "attributes"),
+            ("StorefrontProductSelectionPreviewResponse", "validationMessages"),
+            ("StorefrontProductSelectionPreviewResponse", "selectedAttributes"),
             ("StorefrontCartResponse", "lines"),
             ("StorefrontCartValidationResponse", "issues"),
             ("StorefrontOrderResponse", "lines"),
@@ -303,6 +305,40 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(operation));
             Assert.True(schemas.ContainsKey("StorefrontPublicConfigurationResponse"));
             Assert.True(schemas.ContainsKey("StorefrontSeoDefaultsResponse"));
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_ProductSelectionPreviewHasGeneratorSafeContract()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var operation = GetOperation(swagger, "StorefrontCatalog_PreviewProductSelection");
+
+            Assert.False(string.IsNullOrWhiteSpace(operation["summary"]?.GetValue<string>()));
+            Assert.True(operation["responses"]?.AsObject().Count > 1);
+            AssertRequiredRequestBody(operation);
+            Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(operation));
+
+            var requestSchema = ResolveRequestBodySchema(operation, schemas);
+            var requestProperties = GetPropertyNames(requestSchema);
+            Assert.Contains("productVariantId", requestProperties);
+            Assert.Contains("selectedAttributes", requestProperties);
+            Assert.Contains("quantity", requestProperties);
+            Assert.Contains("currencyCode", requestProperties);
+            Assert.Equal(1, requestSchema["properties"]?["quantity"]?["minimum"]?.GetValue<int>());
+
+            Assert.True(schemas.ContainsKey("StorefrontProductSelectionPreviewRequest"));
+            Assert.True(schemas.ContainsKey("StorefrontProductSelectionPreviewResponse"));
+
+            var responseSchema = schemas["StorefrontProductSelectionPreviewResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontProductSelectionPreviewResponse schema was not found.");
+            var responseProperties = GetPropertyNames(responseSchema);
+            Assert.Contains("canAddToCart", responseProperties);
+            Assert.Contains("validationMessages", responseProperties);
+            Assert.Contains("selectedAttributes", responseProperties);
+            Assert.Contains("primaryImageUrl", responseProperties);
+            Assert.DoesNotContain("product", responseProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("variant", responseProperties, StringComparer.OrdinalIgnoreCase);
         }
 
         [Fact]

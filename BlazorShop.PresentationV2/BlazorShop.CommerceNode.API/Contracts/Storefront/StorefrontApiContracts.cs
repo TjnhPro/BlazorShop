@@ -613,6 +613,38 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         string Name,
         string Value);
 
+    public sealed class StorefrontProductSelectionPreviewRequest
+    {
+        public Guid? ProductVariantId { get; set; }
+
+        public IReadOnlyList<SelectedAttributeDto>? SelectedAttributes { get; set; }
+
+        [Range(1, int.MaxValue)]
+        public int Quantity { get; set; } = 1;
+
+        [StringLength(3, MinimumLength = 3)]
+        public string? CurrencyCode { get; set; }
+    }
+
+    public sealed record StorefrontProductSelectionPreviewResponse(
+        Guid ProductId,
+        Guid? ProductVariantId,
+        bool IsValid,
+        bool IsAvailable,
+        bool CanAddToCart,
+        IReadOnlyList<string> ValidationMessages,
+        IReadOnlyList<StorefrontProductVariantAttributeResponse> SelectedAttributes,
+        string? AttributeSignature,
+        string? Sku,
+        string? DisplayName,
+        decimal UnitPrice,
+        decimal? ComparePrice,
+        string CurrencyCode,
+        int StockQuantity,
+        int MinQuantity,
+        int MaxQuantity,
+        string? PrimaryImageUrl);
+
     public sealed record StorefrontPagedResponse<TItem>(
         IReadOnlyList<TItem> Items,
         int PageNumber,

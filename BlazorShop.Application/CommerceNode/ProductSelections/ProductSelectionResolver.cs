@@ -86,6 +86,7 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
             var unitPrice = await this.ResolveUnitPriceAsync(
                 request.StoreId,
                 baseUnitPrice,
+                product.ComparePrice,
                 workingCurrency.BaseCurrencyCode,
                 workingCurrency.CurrencyCode,
                 cancellationToken);
@@ -113,7 +114,7 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
                 unitPrice.BaseUnitPrice,
                 unitPrice.CurrencyCode,
                 unitPrice.BaseCurrencyCode,
-                product.ComparePrice,
+                unitPrice.ComparePrice,
                 availableStock,
                 1,
                 Math.Max(1, availableStock),
@@ -129,6 +130,7 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
         private async Task<UnitPriceResolution> ResolveUnitPriceAsync(
             Guid storeId,
             decimal baseUnitPrice,
+            decimal? baseComparePrice,
             string baseCurrencyCode,
             string currencyCode,
             CancellationToken cancellationToken)
@@ -138,6 +140,9 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
                 return UnitPriceResolution.Succeeded(
                     this.moneyRoundingService.RoundUnitPrice(baseUnitPrice, currencyCode),
                     this.moneyRoundingService.RoundUnitPrice(baseUnitPrice, baseCurrencyCode),
+                    baseComparePrice.HasValue
+                        ? this.moneyRoundingService.RoundUnitPrice(baseComparePrice.Value, currencyCode)
+                        : null,
                     currencyCode,
                     baseCurrencyCode,
                     null,
@@ -159,9 +164,23 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
                     conversion.Message ?? "Currency conversion is not available.");
             }
 
+            decimal? comparePrice = null;
+            if (baseComparePrice.HasValue)
+            {
+                var compareConversion = await this.moneyConversionService.ConvertFromBaseAsync(
+                    storeId,
+                    baseComparePrice.Value,
+                    currencyCode,
+                    cancellationToken);
+                comparePrice = compareConversion.Success && compareConversion.Payload is not null
+                    ? this.moneyRoundingService.RoundUnitPrice(compareConversion.Payload.ConvertedAmount, currencyCode)
+                    : null;
+            }
+
             return UnitPriceResolution.Succeeded(
                 this.moneyRoundingService.RoundUnitPrice(conversion.Payload.ConvertedAmount, currencyCode),
                 this.moneyRoundingService.RoundUnitPrice(conversion.Payload.SourceAmount, conversion.Payload.SourceCurrencyCode),
+                comparePrice,
                 currencyCode,
                 conversion.Payload.SourceCurrencyCode,
                 conversion.Payload.Rate,
@@ -428,6 +447,7 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
             string Message,
             decimal UnitPrice,
             decimal BaseUnitPrice,
+            decimal? ComparePrice,
             string CurrencyCode,
             string BaseCurrencyCode,
             decimal? ExchangeRate,
@@ -439,6 +459,7 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
             public static UnitPriceResolution Succeeded(
                 decimal unitPrice,
                 decimal baseUnitPrice,
+                decimal? comparePrice,
                 string currencyCode,
                 string baseCurrencyCode,
                 decimal? exchangeRate,
@@ -453,6 +474,7 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
                     string.Empty,
                     unitPrice,
                     baseUnitPrice,
+                    comparePrice,
                     currencyCode,
                     baseCurrencyCode,
                     exchangeRate,
@@ -464,7 +486,7 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
 
             public static UnitPriceResolution Failed(ServiceResponseType responseType, string message)
             {
-                return new UnitPriceResolution(false, responseType, message, 0, 0, string.Empty, string.Empty, null, null, null, null, null);
+                return new UnitPriceResolution(false, responseType, message, 0, 0, null, string.Empty, string.Empty, null, null, null, null, null);
             }
         }
     }

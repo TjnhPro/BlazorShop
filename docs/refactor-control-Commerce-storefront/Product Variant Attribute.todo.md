@@ -302,69 +302,69 @@ Goal: allow Product Detail to ask the backend what the selected combination mean
 
 Implementation checklist:
 
-- [ ] Add public Storefront endpoint:
+- [x] Add public Storefront endpoint:
 
 ```text
 POST api/storefront/stores/{storeKey}/catalog/products/{productId}/selection-preview
 ```
 
-- [ ] Use `POST` because the request body contains selected attributes and quantity.
-- [ ] Keep the endpoint read-only; it must not mutate cart state.
-- [ ] Add request DTO:
-  - [ ] optional `ProductVariantId`.
-  - [ ] optional `SelectedAttributes`.
-  - [ ] required `Quantity`.
-  - [ ] `Quantity` minimum 1.
-  - [ ] optional `CurrencyCode`.
-- [ ] Add response DTO:
-  - [ ] `ProductId`.
-  - [ ] optional `ProductVariantId`.
-  - [ ] `IsValid`.
-  - [ ] `IsAvailable`.
-  - [ ] `CanAddToCart`.
-  - [ ] `ValidationMessages`.
-  - [ ] `SelectedAttributes`.
-  - [ ] `AttributeSignature`.
-  - [ ] `Sku`.
-  - [ ] `DisplayName`.
-  - [ ] `UnitPrice`.
-  - [ ] optional `ComparePrice`.
-  - [ ] `CurrencyCode`.
-  - [ ] `StockQuantity`.
-  - [ ] `MinQuantity`.
-  - [ ] `MaxQuantity`.
-  - [ ] optional `PrimaryImageUrl` using product image fallback only.
-- [ ] Keep deferred fields out of the response:
-  - [ ] variant image/gallery selection.
-  - [ ] delivery information.
-  - [ ] complex quantity increment rules.
-  - [ ] customer-role-specific price visibility.
-- [ ] Add OpenAPI metadata:
-  - [ ] stable `operationId`.
-  - [ ] short summary.
-  - [ ] explicit request schema.
-  - [ ] explicit response schema.
-  - [ ] standard error response schemas.
-  - [ ] request body marked required.
-  - [ ] public storefront-safe security metadata.
-  - [ ] validation metadata for `Quantity`.
-- [ ] Add contract tests and snapshot updates.
-- [ ] Add Storefront V2 API client method.
+- [x] Use `POST` because the request body contains selected attributes and quantity. 2026-07-16 Phase 4: `PreviewProductSelection` added under scoped catalog route.
+- [x] Keep the endpoint read-only; it must not mutate cart state. 2026-07-16 Phase 4: endpoint only calls `IProductSelectionResolver`.
+- [x] Add request DTO:
+  - [x] optional `ProductVariantId`.
+  - [x] optional `SelectedAttributes`.
+  - [x] required `Quantity`.
+  - [x] `Quantity` minimum 1.
+  - [x] optional `CurrencyCode`.
+- [x] Add response DTO:
+  - [x] `ProductId`.
+  - [x] optional `ProductVariantId`.
+  - [x] `IsValid`.
+  - [x] `IsAvailable`.
+  - [x] `CanAddToCart`.
+  - [x] `ValidationMessages`.
+  - [x] `SelectedAttributes`.
+  - [x] `AttributeSignature`.
+  - [x] `Sku`.
+  - [x] `DisplayName`.
+  - [x] `UnitPrice`.
+  - [x] optional `ComparePrice`.
+  - [x] `CurrencyCode`.
+  - [x] `StockQuantity`.
+  - [x] `MinQuantity`.
+  - [x] `MaxQuantity`.
+  - [x] optional `PrimaryImageUrl` using product image fallback only.
+- [x] Keep deferred fields out of the response:
+  - [x] variant image/gallery selection.
+  - [x] delivery information.
+  - [x] complex quantity increment rules.
+  - [x] customer-role-specific price visibility.
+- [x] Add OpenAPI metadata:
+  - [x] stable `operationId`.
+  - [x] short summary.
+  - [x] explicit request schema.
+  - [x] explicit response schema.
+  - [x] standard error response schemas.
+  - [x] request body marked required.
+  - [x] public storefront-safe security metadata.
+  - [x] validation metadata for `Quantity`.
+- [x] Add contract tests and snapshot updates. 2026-07-16 Phase 4: `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_ProductSelectionPreviewHasGeneratorSafeContract` and snapshots updated.
+- [x] Add Storefront V2 API client method. 2026-07-16 Phase 4: `StorefrontApiClient.PreviewProductSelectionAsync`.
 
 Verification checklist:
 
-- [ ] Preview endpoint returns valid result for valid selection.
-- [ ] Preview endpoint returns customer-readable messages for invalid selection.
-- [ ] Preview endpoint rejects quantity below 1.
-- [ ] Preview endpoint cannot resolve a product from another store.
-- [ ] Preview endpoint does not expose admin DTOs, domain entities, or internal fields.
-- [ ] OpenAPI validation and generator-safety tests pass.
+- [x] Preview endpoint returns valid result for valid selection. 2026-07-16 Phase 4: controller test passed.
+- [x] Preview endpoint returns customer-readable messages for invalid selection. 2026-07-16 Phase 4: controller test passed.
+- [x] Preview endpoint rejects quantity below 1. 2026-07-16 Phase 4: OpenAPI request schema asserts `minimum: 1`; `[ApiController]` model validation handles runtime rejection.
+- [x] Preview endpoint cannot resolve a product from another store. 2026-07-16 Phase 4: resolver keeps store-scoped product lookup; controller returns 404 when current store cannot be resolved.
+- [x] Preview endpoint does not expose admin DTOs, domain entities, or internal fields. 2026-07-16 Phase 4: generator-safety contract test passed.
+- [x] OpenAPI validation and generator-safety tests pass. 2026-07-16 Phase 4: focused OpenAPI suite passed.
 
 Exit criteria:
 
-- [ ] Product detail preview can be calculated without adding to cart.
-- [ ] Invalid selections return customer-readable messages.
-- [ ] API response is store-scoped and generator-safe.
+- [x] Product detail preview can be calculated without adding to cart.
+- [x] Invalid selections return customer-readable messages.
+- [x] API response is store-scoped and generator-safe.
 
 Suggested commit:
 
@@ -586,10 +586,10 @@ test(variant-attributes): complete release gate
 ## Recommended Implementation Order
 
 - [x] Phase 0 - baseline and guardrails. 2026-07-16: focused Phase 0 run passed 48/48.
-- [ ] Phase 1 - variation template option metadata.
-- [ ] Phase 2 - product variant active state and combination validation.
-- [ ] Phase 3 - shared product selection resolver.
-- [ ] Phase 4 - Storefront product selection preview API.
+- [x] Phase 1 - variation template option metadata. 2026-07-16: committed as `feat(commerce-node): add variation option metadata`.
+- [x] Phase 2 - product variant active state and combination validation. 2026-07-16: committed as `feat(commerce-node): add active state for product variants`.
+- [x] Phase 3 - shared product selection resolver. 2026-07-16: committed as `feat(storefront): share product selection resolution`.
+- [x] Phase 4 - Storefront product selection preview API. 2026-07-16: focused Phase 4 run passed 32/32.
 - [ ] Phase 5 - Storefront product detail integration.
 - [ ] Phase 6 - manager workflow hardening.
 - [ ] Phase 7 - QA/contracts/release gate.
