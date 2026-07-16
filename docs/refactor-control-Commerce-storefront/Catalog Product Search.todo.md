@@ -416,65 +416,65 @@ Goal: finish with reliable contracts and practical runtime behavior.
 
 Implementation checklist:
 
-- [ ] Add/update Commerce Node API contract tests for:
-  - [ ] operation IDs.
-  - [ ] summaries.
-  - [ ] response schemas.
-  - [ ] error responses.
-  - [ ] validation metadata.
-  - [ ] generator-safe names.
-  - [ ] OpenAPI validation.
-  - [ ] snapshot coverage.
-- [ ] Add/update service/repository tests for:
-  - [ ] search fields.
-  - [ ] minimum term length.
-  - [ ] category scope.
-  - [ ] page-size clamp.
-  - [ ] filter metadata.
-  - [ ] suggestions.
-- [ ] Add/update Storefront tests for:
-  - [ ] API client route building.
-  - [ ] API client model compatibility.
-  - [ ] search page query state.
-  - [ ] category page query state.
-  - [ ] pagination controls.
-  - [ ] page-size selector.
-  - [ ] empty result state.
-  - [ ] noindex metadata.
-- [ ] Confirm catalog cache invalidation still fires after:
-  - [ ] product changes.
-  - [ ] category changes.
-  - [ ] inventory changes.
-  - [ ] primary media changes.
-- [ ] Update QA docs:
-  - [ ] `QA-CommerceNode.todo.md`.
-  - [ ] `QA-StorefrontV2.todo.md`.
-  - [ ] `QA-ControlPlane.todo.md` only if Control Plane boundary evidence is touched.
-- [ ] Build active V2 projects touched by the phase.
-- [ ] Review diff for:
-  - [ ] no legacy `BlazorShop.Presentation` feature changes.
-  - [ ] no `AppDbContext` migration.
-  - [ ] no new `api/internal/*`.
-  - [ ] no search engine/search-index table.
-  - [ ] no unsupported facets.
+- [x] Add/update Commerce Node API contract tests for:
+  - [x] operation IDs.
+  - [x] summaries.
+  - [x] response schemas.
+  - [x] error responses.
+  - [x] validation metadata.
+  - [x] generator-safe names.
+  - [x] OpenAPI validation.
+  - [x] snapshot coverage.
+- [x] Add/update service/repository tests for:
+  - [x] search fields.
+  - [x] minimum term length.
+  - [x] category scope.
+  - [x] page-size clamp.
+  - [x] filter metadata.
+  - [x] suggestions.
+- [x] Add/update Storefront tests for:
+  - [x] API client route building.
+  - [x] API client model compatibility.
+  - [x] search page query state.
+  - [x] category page query state.
+  - [x] pagination controls.
+  - [x] page-size selector.
+  - [x] empty result state.
+  - [x] noindex metadata.
+- [x] Confirm catalog cache invalidation still fires after:
+  - [x] product changes.
+  - [x] category changes.
+  - [x] inventory changes.
+  - [x] primary media changes.
+- [x] Update QA docs:
+  - [x] `QA-CommerceNode.todo.md`.
+  - [x] `QA-StorefrontV2.todo.md`.
+  - [n/a] `QA-ControlPlane.todo.md` only if Control Plane boundary evidence is touched.
+- [x] Build active V2 projects touched by the phase.
+- [x] Review diff for:
+  - [x] no legacy `BlazorShop.Presentation` feature changes.
+  - [x] no `AppDbContext` migration.
+  - [x] no new `api/internal/*`.
+  - [x] no search engine/search-index table.
+  - [x] no unsupported facets.
 
 Verification checklist:
 
-- [ ] CommerceNode API build passes.
-- [ ] Storefront V2 build passes.
-- [ ] Storefront OpenAPI contract tests pass.
-- [ ] Focused repository/service tests pass.
-- [ ] Focused Storefront API client tests pass.
-- [ ] Storefront host/static tests pass.
-- [ ] Visible browser QA passes for changed Storefront flows when runtime is available.
+- [x] CommerceNode API build passes.
+- [x] Storefront V2 build passes.
+- [x] Storefront OpenAPI contract tests pass.
+- [x] Focused repository/service tests pass.
+- [x] Focused Storefront API client tests pass.
+- [x] Storefront host/static tests pass.
+- [~] Visible browser QA passes for changed Storefront flows when runtime is available. Automated host/static/API coverage passed; visible browser QA remains listed in QA docs.
 
 Exit criteria:
 
-- [ ] Focused tests pass.
-- [ ] Browser QA evidence is recorded or explicitly marked pending with reason.
-- [ ] QA checklists contain evidence.
-- [ ] No active V2 route is added under `api/internal/*`.
-- [ ] Deferred advanced search/facet/merchandising features remain unimplemented.
+- [x] Focused tests pass.
+- [x] Browser QA evidence is recorded or explicitly marked pending with reason.
+- [x] QA checklists contain evidence.
+- [x] No active V2 route is added under `api/internal/*`.
+- [x] Deferred advanced search/facet/merchandising features remain unimplemented.
 
 Suggested commit:
 
@@ -486,49 +486,49 @@ test(catalog-search): complete release gate
 
 ### Commerce Node
 
-- [ ] Product catalog listing remains store-scoped.
-- [ ] Product catalog listing excludes unpublished products.
-- [ ] Product catalog listing excludes archived products.
-- [ ] Product catalog listing excludes wrong-store products.
-- [ ] Category slug includes descendant categories.
-- [ ] Invalid category slug returns empty page.
-- [ ] Search by product name works.
-- [ ] Search by SKU works.
-- [ ] Search by short description works.
-- [ ] Search by description works.
-- [ ] One-character non-empty search follows minimum term policy.
-- [ ] Empty search still browses current scope.
-- [ ] Page-size clamp still protects API max page size.
-- [ ] Sort values remain named strings in Storefront OpenAPI.
-- [ ] Product filter metadata endpoint returns only supported facets.
-- [ ] Product filter metadata endpoint is store-scoped.
-- [ ] Product filter metadata endpoint exposes page sizes and sort options.
-- [ ] Product filter metadata endpoint exposes price range.
-- [ ] Search suggestions endpoint returns empty for too-short terms.
-- [ ] Search suggestions endpoint caps result count at 10.
-- [ ] Search suggestions endpoint excludes unpublished/wrong-store products.
-- [ ] Search suggestions endpoint includes safe URL/display fields.
-- [ ] Storefront OpenAPI validates and snapshot passes.
+- [x] Product catalog listing remains store-scoped.
+- [x] Product catalog listing excludes unpublished products.
+- [x] Product catalog listing excludes archived products.
+- [x] Product catalog listing excludes wrong-store products.
+- [x] Category slug includes descendant categories.
+- [x] Invalid category slug returns empty page.
+- [x] Search by product name works.
+- [x] Search by SKU works.
+- [x] Search by short description works.
+- [x] Search by description works.
+- [x] One-character non-empty search follows minimum term policy.
+- [x] Empty search still browses current scope.
+- [x] Page-size clamp still protects API max page size.
+- [x] Sort values remain named strings in Storefront OpenAPI.
+- [x] Product filter metadata endpoint returns only supported facets.
+- [x] Product filter metadata endpoint is store-scoped.
+- [x] Product filter metadata endpoint exposes page sizes and sort options.
+- [x] Product filter metadata endpoint exposes price range.
+- [x] Search suggestions endpoint returns empty for too-short terms.
+- [x] Search suggestions endpoint caps result count at 10.
+- [x] Search suggestions endpoint excludes unpublished/wrong-store products.
+- [x] Search suggestions endpoint includes safe URL/display fields.
+- [x] Storefront OpenAPI validates and snapshot passes.
 
 ### Storefront V2
 
-- [ ] Search page supports `page`.
-- [ ] Search page supports `pageSize`.
-- [ ] Search page supports named `sortBy`.
-- [ ] Search page preserves query state across pagination.
-- [ ] Search page shows clear empty result state.
-- [ ] Search page shows clear too-short search state.
-- [ ] Search page remains noindex.
-- [ ] Category page supports `page`.
-- [ ] Category page supports `pageSize`.
-- [ ] Category page uses paged metadata for pagination.
-- [ ] Category page preserves filters across pagination.
-- [ ] Listing page-size selector supports 12/24/48.
-- [ ] Listing sort selector uses named sort values.
-- [ ] Product grid remains stable and responsive.
-- [ ] Instant search suggestions render keyboard-friendly list if UI is implemented.
-- [ ] Instant search suggestions render mobile-friendly list if UI is implemented.
-- [ ] Browser QA finds no unexpected console errors.
+- [x] Search page supports `page`.
+- [x] Search page supports `pageSize`.
+- [x] Search page supports named `sortBy`.
+- [x] Search page preserves query state across pagination.
+- [x] Search page shows clear empty result state.
+- [x] Search page shows clear too-short search state.
+- [x] Search page remains noindex.
+- [x] Category page supports `page`.
+- [x] Category page supports `pageSize`.
+- [x] Category page uses paged metadata for pagination.
+- [x] Category page preserves filters across pagination.
+- [x] Listing page-size selector supports 12/24/48.
+- [x] Listing sort selector uses named sort values.
+- [x] Product grid remains stable and responsive.
+- [n/a] Instant search suggestions render keyboard-friendly list if UI is implemented.
+- [n/a] Instant search suggestions render mobile-friendly list if UI is implemented.
+- [~] Browser QA finds no unexpected console errors. Automated host/static coverage passed; visible browser QA remains pending.
 
 ### Control Plane
 
@@ -538,14 +538,14 @@ test(catalog-search): complete release gate
 
 ## Final Release Gate
 
-- [ ] Existing `GET catalog/products` contract remains compatible.
-- [ ] New Storefront filter metadata contract is explicit and generator-safe.
-- [ ] New Storefront search suggestions contract is explicit and generator-safe.
-- [ ] Search/category pages have real paging and page-size UX.
-- [ ] Search behavior is normalized and minimum-length protected.
-- [ ] Store scope is enforced throughout listing, metadata, and suggestions.
-- [ ] Search and suggestion APIs expose no unpublished, archived, or wrong-store products.
-- [ ] Search page stays noindex and suggestion API is not discoverable as SEO content.
-- [ ] Cache invalidation remains correct after catalog/inventory/media changes.
-- [ ] QA checklist files contain evidence.
-- [ ] No unsupported facets/search engine/analytics/merchandising features were implemented.
+- [x] Existing `GET catalog/products` contract remains compatible.
+- [x] New Storefront filter metadata contract is explicit and generator-safe.
+- [x] New Storefront search suggestions contract is explicit and generator-safe.
+- [x] Search/category pages have real paging and page-size UX.
+- [x] Search behavior is normalized and minimum-length protected.
+- [x] Store scope is enforced throughout listing, metadata, and suggestions.
+- [x] Search and suggestion APIs expose no unpublished, archived, or wrong-store products.
+- [x] Search page stays noindex and suggestion API is not discoverable as SEO content.
+- [x] Cache invalidation remains correct after catalog/inventory/media changes.
+- [x] QA checklist files contain evidence.
+- [x] No unsupported facets/search engine/analytics/merchandising features were implemented.

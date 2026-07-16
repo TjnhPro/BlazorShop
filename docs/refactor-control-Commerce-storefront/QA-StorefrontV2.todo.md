@@ -159,6 +159,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Storefront API client can read product filter metadata from scoped CommerceNode route. 2026-07-16 Phase 3: `StorefrontV2ApiClientTests.GetProductFilterMetadataAsync_ReadsFilterMetadataContract` passed and asserted route/query/model shape.
 - [x] Storefront API client can read search suggestions from scoped CommerceNode route. 2026-07-16 Phase 4: `StorefrontV2ApiClientTests.GetSearchSuggestionsAsync_ReadsSuggestionContract` passed and asserted URL/display fields.
 - [x] Search and category route helpers preserve page, page-size, sort, category/search term, price, and stock query state. 2026-07-16 Phase 5: `StorefrontRoutesTests` added and focused Storefront route/static tests passed.
+- [x] Catalog Product Search automated release gate passed. 2026-07-16 Phase 6: CommerceNode API and Storefront V2 builds passed; focused OpenAPI/repository/cache/client/static/host tests passed. Visible browser desktop/mobile pagination QA remains pending below.
 - [ ] Browser QA verifies search/category pagination and page-size selector on desktop.
 - [ ] Browser QA verifies search/category pagination and page-size selector on mobile.
 
