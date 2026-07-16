@@ -1,5 +1,6 @@
 @page "/commerce-admin/variation-templates"
 @attribute [Authorize]
+@using BlazorShop.Domain.Constants
 @inject IControlPlaneStoreClient StoreClient
 @inject IControlPlaneCatalogClient CatalogClient
 
@@ -123,9 +124,18 @@
         {
             <div class="rounded-md border border-ink-200 p-4">
                 <h2 class="text-sm font-semibold text-ink-900">Options</h2>
-                <div class="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_110px_120px_auto]">
+                <div class="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_120px_130px_120px_120px_auto]">
                     <input class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Option name, e.g. Color" @bind="optionForm.Name" />
                     <input class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" @bind="optionForm.SortOrder" />
+                    <select class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="optionForm.ControlType">
+                        <option value="@VariationControlTypes.Dropdown">Dropdown</option>
+                        <option value="@VariationControlTypes.Radio">Radio</option>
+                        <option value="@VariationControlTypes.Color">Color</option>
+                    </select>
+                    <label class="flex min-h-10 items-center gap-2 rounded-md border border-ink-300 px-3 text-sm text-ink-700">
+                        <input type="checkbox" @bind="optionForm.IsRequired" />
+                        Required
+                    </label>
                     <label class="flex min-h-10 items-center gap-2 rounded-md border border-ink-300 px-3 text-sm text-ink-700">
                         <input type="checkbox" @bind="optionForm.IsActive" />
                         Active
@@ -141,7 +151,7 @@
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <button class="text-left" @onclick="() => EditOption(option)">
                                 <div class="font-semibold text-ink-900">@option.Name</div>
-                                <div class="text-xs text-ink-500">Sort @option.SortOrder · @option.Values.Count values</div>
+                                <div class="text-xs text-ink-500">Sort @option.SortOrder · @option.ControlType · @(option.IsRequired ? "required" : "optional") · @option.Values.Count values</div>
                             </button>
                             <StatusBadge Text="@(option.IsActive ? "Active" : "Disabled")" Tone="@(option.IsActive ? "success" : "neutral")" />
                         </div>
@@ -149,6 +159,10 @@
                             @foreach (var value in option.Values.OrderByDescending(value => value.IsActive).ThenBy(value => value.SortOrder).ThenBy(value => value.Value))
                             {
                                 <button class="rounded-md border border-ink-200 px-3 py-1.5 text-xs text-ink-700 hover:bg-ink-50" @onclick="() => EditValue(option, value)">
+                                    @if (!string.IsNullOrWhiteSpace(value.ColorHex))
+                                    {
+                                        <span class="mr-1 inline-block h-3 w-3 rounded-sm border border-ink-200 align-middle" style="@($"background-color:{value.ColorHex}")"></span>
+                                    }
                                     @value.Value
                                     <span class="ml-1 text-ink-400">#@value.SortOrder</span>
                                     @if (!value.IsActive)
@@ -158,9 +172,13 @@
                                 </button>
                             }
                         </div>
-                        <div class="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_110px_120px_auto]">
+                        <div class="@GetValueFormGridClass(option)">
                             <input class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Value, e.g. Red" value="@GetValueText(option.PublicId)" @onchange="args => SetValueText(option.PublicId, args.Value?.ToString())" />
                             <input class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" value="@GetValueSortOrder(option.PublicId)" @onchange="args => SetValueSortOrder(option.PublicId, args.Value?.ToString())" />
+                            @if (IsColorOption(option))
+                            {
+                                <input class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="#RRGGBB" value="@GetValueColorHex(option.PublicId)" @onchange="args => SetValueColorHex(option.PublicId, args.Value?.ToString())" />
+                            }
                             <label class="flex min-h-10 items-center gap-2 rounded-md border border-ink-300 px-3 text-sm text-ink-700">
                                 <input type="checkbox" checked="@GetValueIsActive(option.PublicId)" @onchange="args => SetValueIsActive(option.PublicId, args.Value)" />
                                 Active
@@ -329,15 +347,15 @@
                 ? await CatalogClient.CreateVariationTemplateOptionAsync(
                     selectedStorePublicId!.Value,
                     selectedTemplate.PublicId,
-                    new CreateVariationTemplateOptionRequest(optionForm.Name, optionForm.SortOrder, optionForm.IsActive))
+                    new CreateVariationTemplateOptionRequest(optionForm.Name, optionForm.SortOrder, optionForm.IsActive, optionForm.ControlType, optionForm.IsRequired))
                 : await CatalogClient.UpdateVariationTemplateOptionAsync(
                     selectedStorePublicId!.Value,
                     selectedTemplate.PublicId,
                     editingOptionPublicId.Value,
-                    new UpdateVariationTemplateOptionRequest(optionForm.Name, optionForm.SortOrder, optionForm.IsActive));
+                    new UpdateVariationTemplateOptionRequest(optionForm.Name, optionForm.SortOrder, optionForm.IsActive, optionForm.ControlType, optionForm.IsRequired));
 
             await ApplyResultAsync(result, "Variation option saved.");
-            optionForm = new OptionFormState { IsActive = true };
+            optionForm = new OptionFormState { IsActive = true, IsRequired = true };
             editingOptionPublicId = null;
         }
         finally
@@ -369,13 +387,13 @@
                     selectedStorePublicId!.Value,
                     selectedTemplate.PublicId,
                     optionPublicId,
-                    new CreateVariationTemplateValueRequest(form.Value, form.SortOrder, form.IsActive))
+                    new CreateVariationTemplateValueRequest(form.Value, form.SortOrder, form.IsActive, NormalizeColorHexForOption(optionPublicId, form.ColorHex)))
                 : await CatalogClient.UpdateVariationTemplateValueAsync(
                     selectedStorePublicId!.Value,
                     selectedTemplate.PublicId,
                     optionPublicId,
                     form.EditingValuePublicId.Value,
-                    new UpdateVariationTemplateValueRequest(form.Value, form.SortOrder, form.IsActive));
+                    new UpdateVariationTemplateValueRequest(form.Value, form.SortOrder, form.IsActive, NormalizeColorHexForOption(optionPublicId, form.ColorHex)));
 
             await ApplyResultAsync(result, "Variation value saved.");
             valueForms[optionPublicId] = new ValueFormState { IsActive = true };
@@ -394,6 +412,8 @@
             Name = option.Name,
             SortOrder = option.SortOrder,
             IsActive = option.IsActive,
+            ControlType = option.ControlType,
+            IsRequired = option.IsRequired,
         };
     }
 
@@ -405,6 +425,7 @@
             Value = value.Value,
             SortOrder = value.SortOrder,
             IsActive = value.IsActive,
+            ColorHex = value.ColorHex,
         };
     }
 
@@ -461,9 +482,31 @@
 
     private bool GetValueIsActive(Guid optionPublicId) => GetValueForm(optionPublicId).IsActive;
 
+    private string? GetValueColorHex(Guid optionPublicId) => GetValueForm(optionPublicId).ColorHex;
+
     private string GetValueActionText(Guid optionPublicId) => GetValueForm(optionPublicId).EditingValuePublicId is null ? "Add value" : "Update value";
 
+    private string GetValueFormGridClass(VariationTemplateOptionDto option)
+    {
+        return IsColorOption(option)
+            ? "mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_110px_120px_120px_auto]"
+            : "mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_110px_120px_auto]";
+    }
+
+    private bool IsColorOption(VariationTemplateOptionDto option)
+    {
+        return string.Equals(option.ControlType, VariationControlTypes.Color, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string? NormalizeColorHexForOption(Guid optionPublicId, string? colorHex)
+    {
+        var option = selectedTemplate?.Options.FirstOrDefault(item => item.PublicId == optionPublicId);
+        return option is not null && IsColorOption(option) ? colorHex : null;
+    }
+
     private void SetValueText(Guid optionPublicId, string? value) => GetValueForm(optionPublicId).Value = value;
+
+    private void SetValueColorHex(Guid optionPublicId, string? value) => GetValueForm(optionPublicId).ColorHex = value;
 
     private void SetValueSortOrder(Guid optionPublicId, string? value)
     {
@@ -494,6 +537,10 @@
         public int SortOrder { get; set; }
 
         public bool IsActive { get; set; } = true;
+
+        public string ControlType { get; set; } = VariationControlTypes.Dropdown;
+
+        public bool IsRequired { get; set; } = true;
     }
 
     private sealed class ValueFormState
@@ -505,5 +552,7 @@
         public int SortOrder { get; set; }
 
         public bool IsActive { get; set; } = true;
+
+        public string? ColorHex { get; set; }
     }
 }

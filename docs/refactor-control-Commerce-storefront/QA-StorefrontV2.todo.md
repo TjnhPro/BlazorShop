@@ -521,6 +521,7 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 
 - [x] Phase 0 baseline confirms Storefront cart and product detail variation-template guardrails before UI changes. 2026-07-16: `StorefrontCartServiceTests|PublicCatalogServiceTests|CommerceNodeStorefrontOpenApiContractTests` included in focused run passed 48/48.
 - [x] Product detail service mapping returns active variation options and values only. 2026-07-16 Phase 0: `PublicCatalogServiceTests.GetPublishedProductBySlugAsync_MapsActiveVariationTemplateOptionsAndValues` passed.
+- [x] Product detail API contract exposes option control type, required state, and value color hex metadata. 2026-07-16 Phase 1: `CommerceNodeStorefrontOpenApiContractTests` passed after snapshot update.
 - [ ] Product detail renders dropdown controls from option metadata.
 - [ ] Product detail renders radio controls from option metadata.
 - [ ] Product detail renders color swatches from option metadata.

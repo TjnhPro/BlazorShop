@@ -31,6 +31,8 @@ namespace BlazorShop.Web.SharedV2.Models.Product
 
         public GetCategory? Category { get; set; }
 
+        public StorefrontVariationTemplateDto? VariationTemplate { get; set; }
+
         public DateTime CreatedOn { get; set; }
 
         public DateTime UpdatedAt { get; set; }
@@ -39,4 +41,19 @@ namespace BlazorShop.Web.SharedV2.Models.Product
 
         public IEnumerable<GetProductVariant> Variants { get; set; } = Array.Empty<GetProductVariant>();
     }
+
+    public sealed record StorefrontVariationTemplateDto(
+        string? Name,
+        string? Slug,
+        IReadOnlyList<StorefrontVariationOptionDto> Options);
+
+    public sealed record StorefrontVariationOptionDto(
+        string? Name,
+        string? ControlType,
+        bool IsRequired,
+        IReadOnlyList<StorefrontVariationValueDto> Values);
+
+    public sealed record StorefrontVariationValueDto(
+        string? Value,
+        string? ColorHex = null);
 }

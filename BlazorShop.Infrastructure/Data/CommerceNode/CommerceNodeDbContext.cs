@@ -542,6 +542,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.Property(option => option.Name).HasColumnName("name").HasMaxLength(100).IsRequired();
                 entity.Property(option => option.SortOrder).HasColumnName("sort_order").HasDefaultValue(0);
                 entity.Property(option => option.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+                entity.Property(option => option.ControlType)
+                    .HasColumnName("control_type")
+                    .HasMaxLength(32)
+                    .HasDefaultValue(VariationControlTypes.Dropdown)
+                    .IsRequired();
+                entity.Property(option => option.IsRequired).HasColumnName("is_required").HasDefaultValue(true);
                 entity.Property(option => option.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
                 entity.Property(option => option.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -553,6 +559,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                     .WithMany(template => template.Options)
                     .HasForeignKey(option => option.TemplateId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                entity.ToTable(
+                    table => table.HasCheckConstraint(
+                        "ck_variation_template_option_control_type",
+                        $"control_type in ({SqlIn(VariationControlTypes.All)})"));
             });
 
             modelBuilder.Entity<VariationTemplateValue>(entity =>
@@ -565,6 +576,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.Property(value => value.Value).HasColumnName("value").HasMaxLength(200).IsRequired();
                 entity.Property(value => value.SortOrder).HasColumnName("sort_order").HasDefaultValue(0);
                 entity.Property(value => value.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+                entity.Property(value => value.ColorHex).HasColumnName("color_hex").HasMaxLength(7);
                 entity.Property(value => value.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
                 entity.Property(value => value.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
 

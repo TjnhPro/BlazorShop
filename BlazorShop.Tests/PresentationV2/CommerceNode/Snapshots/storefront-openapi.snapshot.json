@@ -7128,6 +7128,13 @@
             "type": "string",
             "nullable": true
           },
+          "controlType": {
+            "type": "string",
+            "nullable": true
+          },
+          "isRequired": {
+            "type": "boolean"
+          },
           "values": {
             "type": "array",
             "items": {
@@ -7164,6 +7171,10 @@
         "type": "object",
         "properties": {
           "value": {
+            "type": "string",
+            "nullable": true
+          },
+          "colorHex": {
             "type": "string",
             "nullable": true
           }

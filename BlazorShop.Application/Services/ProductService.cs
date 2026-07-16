@@ -463,11 +463,13 @@
                     .ThenBy(option => option.Name)
                     .Select(option => new StorefrontVariationOptionDto(
                         option.Name,
+                        option.ControlType,
+                        option.IsRequired,
                         option.Values
                             .Where(value => value.IsActive)
                             .OrderBy(value => value.SortOrder)
                             .ThenBy(value => value.Value)
-                            .Select(value => new StorefrontVariationValueDto(value.Value))
+                            .Select(value => new StorefrontVariationValueDto(value.Value, value.ColorHex))
                             .ToArray()))
                     .Where(option => option.Values.Count > 0)
                     .ToArray());

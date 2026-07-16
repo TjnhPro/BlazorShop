@@ -840,11 +840,11 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Phase 0 baseline confirms existing variation template, product variant, cart, and public catalog behavior before schema changes. 2026-07-16: `ProductVariantServiceTests|StorefrontCartServiceTests|PublicCatalogServiceTests|CommerceNodeStorefrontOpenApiContractTests` passed 48/48.
 - [x] Duplicate product variant attribute signature is rejected. 2026-07-16 Phase 0: `ProductVariantServiceTests.AddAsync_WhenAttributeSignatureAlreadyExistsForProduct_ReturnsFailure` passed.
 - [x] Storefront product detail mapping exposes only active variation template options and values. 2026-07-16 Phase 0: `PublicCatalogServiceTests.GetPublishedProductBySlugAsync_MapsActiveVariationTemplateOptionsAndValues` passed.
-- [ ] Variation template option control type defaults to `dropdown` for existing data.
-- [ ] Variation template option required state defaults to `true` for existing data.
-- [ ] Unknown variation control type is rejected.
-- [ ] Invalid color hex is rejected.
-- [ ] Storefront product detail response includes variation option control metadata.
+- [x] Variation template option control type defaults to `dropdown` for existing data. 2026-07-16 Phase 1: `CommerceNodeVariationOptionMetadata` migration and `CommerceNodeDbContextModelTests.VariationTemplateOption_MetadataFieldsHaveDefaults` passed.
+- [x] Variation template option required state defaults to `true` for existing data. 2026-07-16 Phase 1: migration/model test passed.
+- [x] Unknown variation control type is rejected. 2026-07-16 Phase 1: `VariationTemplateServiceTests.CreateOptionAsync_RejectsUnknownControlType` passed.
+- [x] Invalid color hex is rejected. 2026-07-16 Phase 1: `VariationTemplateServiceTests.CreateValueAsync_RejectsInvalidColorHex` passed.
+- [x] Storefront product detail response includes variation option control metadata. 2026-07-16 Phase 1: `PublicCatalogServiceTests.GetPublishedProductBySlugAsync_MapsActiveVariationTemplateOptionsAndValues` and Storefront OpenAPI snapshot passed.
 - [ ] Product variant active state defaults to `true`.
 - [ ] Inactive variant cannot be set as default.
 - [ ] Variant combination validation rejects unknown template option names.

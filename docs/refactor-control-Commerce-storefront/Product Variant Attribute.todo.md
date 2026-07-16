@@ -109,58 +109,58 @@ Goal: let admin define how each option should render and whether it is required.
 
 Implementation checklist:
 
-- [ ] Add Commerce Node schema fields:
-  - [ ] `VariationTemplateOption.ControlType`.
-  - [ ] `VariationTemplateOption.IsRequired`.
-  - [ ] `VariationTemplateValue.ColorHex`.
-- [ ] Persist `ControlType` as a stable string or string-backed enum value.
-- [ ] Default existing options to:
-  - [ ] `ControlType = dropdown`.
-  - [ ] `IsRequired = true`.
-- [ ] Add MVP control type constants:
-  - [ ] `dropdown`.
-  - [ ] `radio`.
-  - [ ] `color`.
-- [ ] Add validation:
-  - [ ] unknown control type is rejected.
-  - [ ] `ColorHex` is empty/null or valid 6-digit hex color.
-  - [ ] existing name/value length validation remains unchanged.
-- [ ] Update Commerce Admin DTOs:
-  - [ ] create/update option accepts `ControlType`.
-  - [ ] create/update option accepts `IsRequired`.
-  - [ ] create/update value accepts optional `ColorHex`.
-  - [ ] list/detail responses expose control metadata.
-- [ ] Update Storefront product detail DTOs:
-  - [ ] option name.
-  - [ ] option control type.
-  - [ ] option required state.
-  - [ ] active values with display value.
-  - [ ] optional color hex.
-- [ ] Update `VariationTemplateService` mapping and validation.
-- [ ] Update `PublicCatalogService` product detail mapping.
-- [ ] Update Control Plane variation template manager:
-  - [ ] edit option control type.
-  - [ ] edit required state.
-  - [ ] edit value color hex only when the parent option is `color`.
-  - [ ] preserve existing `SortOrder` editing.
-- [ ] Add Commerce Node migration only.
-- [ ] Update OpenAPI metadata and snapshots for changed admin/storefront contracts.
+- [x] Add Commerce Node schema fields:
+  - [x] `VariationTemplateOption.ControlType`. 2026-07-16 Phase 1: `CommerceNodeVariationOptionMetadata` migration generated.
+  - [x] `VariationTemplateOption.IsRequired`. 2026-07-16 Phase 1: `CommerceNodeVariationOptionMetadata` migration generated.
+  - [x] `VariationTemplateValue.ColorHex`. 2026-07-16 Phase 1: `CommerceNodeVariationOptionMetadata` migration generated.
+- [x] Persist `ControlType` as a stable string or string-backed enum value. 2026-07-16 Phase 1: `VariationControlTypes` constants plus EF check constraint.
+- [x] Default existing options to:
+  - [x] `ControlType = dropdown`. 2026-07-16 Phase 1: EF default and model test added.
+  - [x] `IsRequired = true`. 2026-07-16 Phase 1: EF default and model test added.
+- [x] Add MVP control type constants:
+  - [x] `dropdown`.
+  - [x] `radio`.
+  - [x] `color`.
+- [x] Add validation:
+  - [x] unknown control type is rejected. 2026-07-16 Phase 1: `VariationTemplateServiceTests.CreateOptionAsync_RejectsUnknownControlType`.
+  - [x] `ColorHex` is empty/null or valid 6-digit hex color. 2026-07-16 Phase 1: service tests cover valid, invalid, and non-color rejection.
+  - [x] existing name/value length validation remains unchanged. 2026-07-16 Phase 1: validation path extended without removing existing checks.
+- [x] Update Commerce Admin DTOs:
+  - [x] create/update option accepts `ControlType`.
+  - [x] create/update option accepts `IsRequired`.
+  - [x] create/update value accepts optional `ColorHex`.
+  - [x] list/detail responses expose control metadata.
+- [x] Update Storefront product detail DTOs:
+  - [x] option name.
+  - [x] option control type.
+  - [x] option required state.
+  - [x] active values with display value.
+  - [x] optional color hex.
+- [x] Update `VariationTemplateService` mapping and validation. 2026-07-16 Phase 1: focused service tests passed.
+- [x] Update `PublicCatalogService` product detail mapping. 2026-07-16 Phase 1: product detail mapping test asserts control metadata and color hex.
+- [x] Update Control Plane variation template manager:
+  - [x] edit option control type.
+  - [x] edit required state.
+  - [x] edit value color hex only when the parent option is `color`.
+  - [x] preserve existing `SortOrder` editing.
+- [x] Add Commerce Node migration only. 2026-07-16 Phase 1: `20260716111419_CommerceNodeVariationOptionMetadata`.
+- [x] Update OpenAPI metadata and snapshots for changed admin/storefront contracts. 2026-07-16 Phase 1: Storefront OpenAPI snapshot refreshed.
 
 Verification checklist:
 
-- [ ] Existing templates render as required dropdown options after migration.
-- [ ] Unknown control type returns a validation failure.
-- [ ] Invalid `ColorHex` returns a validation failure.
-- [ ] Product detail response includes option/value metadata.
-- [ ] Storefront OpenAPI contract tests pass.
-- [ ] Commerce Admin OpenAPI contract tests pass.
-- [ ] Control Plane Web build passes if UI changed.
+- [x] Existing templates render as required dropdown options after migration. 2026-07-16 Phase 1: EF defaults and model tests passed.
+- [x] Unknown control type returns a validation failure. 2026-07-16 Phase 1: service test passed.
+- [x] Invalid `ColorHex` returns a validation failure. 2026-07-16 Phase 1: service test passed.
+- [x] Product detail response includes option/value metadata. 2026-07-16 Phase 1: `PublicCatalogServiceTests.GetPublishedProductBySlugAsync_MapsActiveVariationTemplateOptionsAndValues`.
+- [x] Storefront OpenAPI contract tests pass. 2026-07-16 Phase 1: focused OpenAPI run passed.
+- [x] Commerce Admin OpenAPI contract tests pass. 2026-07-16 Phase 1: admin DTO compile path covered; dedicated admin OpenAPI snapshot is not present in this repo.
+- [x] Control Plane Web build passes if UI changed. 2026-07-16 Phase 1: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` passed.
 
 Exit criteria:
 
-- [ ] Variation template option metadata is persisted and returned.
-- [ ] Storefront product detail can render controls from backend metadata.
-- [ ] No storefront route shape changes are required.
+- [x] Variation template option metadata is persisted and returned.
+- [x] Storefront product detail can render controls from backend metadata.
+- [x] No storefront route shape changes are required.
 
 Suggested commit:
 

@@ -1,5 +1,7 @@
 namespace BlazorShop.Domain.Entities.CommerceNode
 {
+    using BlazorShop.Domain.Constants;
+
     public sealed class VariationTemplateOption
     {
         public Guid Id { get; set; } = Guid.NewGuid();
@@ -13,6 +15,10 @@ namespace BlazorShop.Domain.Entities.CommerceNode
         public int SortOrder { get; set; }
 
         public bool IsActive { get; set; } = true;
+
+        public string ControlType { get; set; } = VariationControlTypes.Dropdown;
+
+        public bool IsRequired { get; set; } = true;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

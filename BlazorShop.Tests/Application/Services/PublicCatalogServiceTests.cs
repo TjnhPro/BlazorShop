@@ -68,9 +68,11 @@ namespace BlazorShop.Tests.Application.Services
                             Name = "Color",
                             SortOrder = 1,
                             IsActive = true,
+                            ControlType = VariationControlTypes.Color,
+                            IsRequired = true,
                             Values =
                             {
-                                new VariationTemplateValue { Value = "Red", SortOrder = 1, IsActive = true },
+                                new VariationTemplateValue { Value = "Red", SortOrder = 1, IsActive = true, ColorHex = "#FF0000" },
                                 new VariationTemplateValue { Value = "Blue", SortOrder = 2, IsActive = false },
                             },
                         },
@@ -101,8 +103,11 @@ namespace BlazorShop.Tests.Application.Services
             Assert.Equal("Tee options", result!.VariationTemplate!.Name);
             var option = Assert.Single(result.VariationTemplate.Options);
             Assert.Equal("Color", option.Name);
+            Assert.Equal(VariationControlTypes.Color, option.ControlType);
+            Assert.True(option.IsRequired);
             var value = Assert.Single(option.Values);
             Assert.Equal("Red", value.Value);
+            Assert.Equal("#FF0000", value.ColorHex);
         }
 
         [Fact]

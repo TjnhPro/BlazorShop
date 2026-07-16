@@ -1,5 +1,6 @@
 namespace BlazorShop.Tests.Infrastructure.CommerceNode
 {
+    using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Entities;
     using BlazorShop.Domain.Entities.CommerceNode;
     using BlazorShop.Infrastructure.Data.CommerceNode;
@@ -174,6 +175,43 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.NotNull(parentForeignKey);
             Assert.Equal(DeleteBehavior.Restrict, parentForeignKey!.DeleteBehavior);
             Assert.NotNull(targetIndex);
+        }
+
+        [Fact]
+        public void VariationTemplateOption_MetadataFieldsHaveDefaults()
+        {
+            using var context = CreateContext();
+            var modelEntity = context.Model.FindEntityType(typeof(VariationTemplateOption));
+
+            Assert.NotNull(modelEntity);
+            var controlType = modelEntity!.FindProperty(nameof(VariationTemplateOption.ControlType));
+            var isRequired = modelEntity.FindProperty(nameof(VariationTemplateOption.IsRequired));
+
+            Assert.NotNull(controlType);
+            Assert.Equal("control_type", controlType!.GetColumnName());
+            Assert.Equal(32, controlType.GetMaxLength());
+            Assert.False(controlType.IsNullable);
+            Assert.Equal(VariationControlTypes.Dropdown, controlType.GetDefaultValue());
+
+            Assert.NotNull(isRequired);
+            Assert.Equal("is_required", isRequired!.GetColumnName());
+            Assert.False(isRequired.IsNullable);
+            Assert.Equal(true, isRequired.GetDefaultValue());
+        }
+
+        [Fact]
+        public void VariationTemplateValue_ColorHexHasMaxLength()
+        {
+            using var context = CreateContext();
+            var modelEntity = context.Model.FindEntityType(typeof(VariationTemplateValue));
+
+            Assert.NotNull(modelEntity);
+            var colorHex = modelEntity!.FindProperty(nameof(VariationTemplateValue.ColorHex));
+
+            Assert.NotNull(colorHex);
+            Assert.Equal("color_hex", colorHex!.GetColumnName());
+            Assert.Equal(7, colorHex.GetMaxLength());
+            Assert.True(colorHex.IsNullable);
         }
 
         private static CommerceNodeDbContext CreateContext()

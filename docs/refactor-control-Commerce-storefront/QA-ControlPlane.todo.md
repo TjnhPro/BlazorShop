@@ -479,9 +479,9 @@ Status legend:
 ## Product Variant Attribute
 
 - [x] Phase 0 baseline confirms existing Control Plane variation template/product variant work remains behind Control Plane API. 2026-07-16: no Control Plane Web route changes in baseline; focused backend/storefront guardrails passed 48/48.
-- [ ] Variation template manager can edit option control type.
-- [ ] Variation template manager can edit option required state.
-- [ ] Variation template manager can edit color hex for color values.
+- [x] Variation template manager can edit option control type. 2026-07-16 Phase 1: `CommerceVariationTemplates.razor` sends `ControlType` through `CatalogClient`; ControlPlane Web build passed.
+- [x] Variation template manager can edit option required state. 2026-07-16 Phase 1: option form sends `IsRequired`; ControlPlane Web build passed.
+- [x] Variation template manager can edit color hex for color values. 2026-07-16 Phase 1: value form shows color hex only for `color` options and sends through ControlPlane API client; ControlPlane Web build passed.
 - [ ] Product variant manager can mark a variant inactive.
 - [ ] Product variant manager shows normalized signature read-only.
 - [ ] Product variant manager warns for missing required option.

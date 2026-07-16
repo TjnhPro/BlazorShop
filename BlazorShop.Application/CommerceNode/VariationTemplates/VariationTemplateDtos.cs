@@ -41,6 +41,8 @@ namespace BlazorShop.Application.CommerceNode.VariationTemplates
         string Name,
         int SortOrder,
         bool IsActive,
+        string ControlType,
+        bool IsRequired,
         IReadOnlyList<VariationTemplateValueDto> Values,
         DateTime CreatedAt,
         DateTime UpdatedAt);
@@ -51,6 +53,7 @@ namespace BlazorShop.Application.CommerceNode.VariationTemplates
         string Value,
         int SortOrder,
         bool IsActive,
+        string? ColorHex,
         DateTime CreatedAt,
         DateTime UpdatedAt);
 
@@ -61,9 +64,13 @@ namespace BlazorShop.Application.CommerceNode.VariationTemplates
 
     public sealed record StorefrontVariationOptionDto(
         string Name,
+        string ControlType,
+        bool IsRequired,
         IReadOnlyList<StorefrontVariationValueDto> Values);
 
-    public sealed record StorefrontVariationValueDto(string Value);
+    public sealed record StorefrontVariationValueDto(
+        string Value,
+        string? ColorHex = null);
 
     public sealed record SelectedAttributeDto(string Name, string Value);
 
@@ -80,22 +87,28 @@ namespace BlazorShop.Application.CommerceNode.VariationTemplates
     public sealed record CreateVariationTemplateOptionRequest(
         string? Name,
         int SortOrder = 0,
-        bool IsActive = true);
+        bool IsActive = true,
+        string? ControlType = null,
+        bool IsRequired = true);
 
     public sealed record UpdateVariationTemplateOptionRequest(
         string? Name,
         int SortOrder = 0,
-        bool IsActive = true);
+        bool IsActive = true,
+        string? ControlType = null,
+        bool IsRequired = true);
 
     public sealed record CreateVariationTemplateValueRequest(
         string? Value,
         int SortOrder = 0,
-        bool IsActive = true);
+        bool IsActive = true,
+        string? ColorHex = null);
 
     public sealed record UpdateVariationTemplateValueRequest(
         string? Value,
         int SortOrder = 0,
-        bool IsActive = true);
+        bool IsActive = true,
+        string? ColorHex = null);
 
     public interface IVariationTemplateService
     {

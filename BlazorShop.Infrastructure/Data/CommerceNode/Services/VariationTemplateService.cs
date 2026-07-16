@@ -1,6 +1,8 @@
 namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 {
+    using System.Globalization;
     using System.Text.Json;
+    using System.Text.RegularExpressions;
 
     using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.CommerceNode.Stores;
@@ -9,6 +11,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using BlazorShop.Application.DTOs.Admin.Audit;
     using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Application.Services.Contracts.Admin;
+    using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities.CommerceNode;
 
@@ -16,6 +19,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
     public sealed class VariationTemplateService : IVariationTemplateService
     {
+        private static readonly Regex HexColorPattern = new("^#?[0-9a-fA-F]{6}$", RegexOptions.Compiled);
+
         private readonly CommerceNodeDbContext context;
         private readonly ICommerceStoreContext storeContext;
         private readonly ISlugService slugService;
@@ -240,12 +245,21 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failure<VariationTemplateDetailDto>("Variation option name already exists for this template.", ServiceResponseType.Conflict);
             }
 
+            var controlType = NormalizeControlType(request.ControlType);
+            var controlTypeValidation = ValidateControlType(controlType);
+            if (controlTypeValidation is not null)
+            {
+                return Failure<VariationTemplateDetailDto>(controlTypeValidation, ServiceResponseType.ValidationError);
+            }
+
             var now = DateTime.UtcNow;
             var option = new VariationTemplateOption
             {
                 Name = name!,
                 SortOrder = request.SortOrder,
                 IsActive = request.IsActive,
+                ControlType = controlType,
+                IsRequired = request.IsRequired,
                 CreatedAt = now,
                 UpdatedAt = now,
             };
@@ -292,10 +306,27 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failure<VariationTemplateDetailDto>("Variation option name already exists for this template.", ServiceResponseType.Conflict);
             }
 
+            var controlType = NormalizeControlType(request.ControlType);
+            var controlTypeValidation = ValidateControlType(controlType);
+            if (controlTypeValidation is not null)
+            {
+                return Failure<VariationTemplateDetailDto>(controlTypeValidation, ServiceResponseType.ValidationError);
+            }
+
             var now = DateTime.UtcNow;
             option.Name = name!;
             option.SortOrder = request.SortOrder;
             option.IsActive = request.IsActive;
+            option.ControlType = controlType;
+            option.IsRequired = request.IsRequired;
+            if (!string.Equals(controlType, VariationControlTypes.Color, StringComparison.Ordinal))
+            {
+                foreach (var value in option.Values)
+                {
+                    value.ColorHex = null;
+                }
+            }
+
             option.UpdatedAt = now;
             template.UpdatedAt = now;
 
@@ -338,12 +369,19 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failure<VariationTemplateDetailDto>("Variation value already exists for this option.", ServiceResponseType.Conflict);
             }
 
+            var colorHexResult = NormalizeColorHex(request.ColorHex, option.ControlType);
+            if (!colorHexResult.Success)
+            {
+                return Failure<VariationTemplateDetailDto>(colorHexResult.ErrorMessage, ServiceResponseType.ValidationError);
+            }
+
             var now = DateTime.UtcNow;
             var valueRow = new VariationTemplateValue
             {
                 Value = value!,
                 SortOrder = request.SortOrder,
                 IsActive = request.IsActive,
+                ColorHex = colorHexResult.Value,
                 CreatedAt = now,
                 UpdatedAt = now,
             };
@@ -398,10 +436,17 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failure<VariationTemplateDetailDto>("Variation value already exists for this option.", ServiceResponseType.Conflict);
             }
 
+            var colorHexResult = NormalizeColorHex(request.ColorHex, option.ControlType);
+            if (!colorHexResult.Success)
+            {
+                return Failure<VariationTemplateDetailDto>(colorHexResult.ErrorMessage, ServiceResponseType.ValidationError);
+            }
+
             var now = DateTime.UtcNow;
             value.Value = normalizedValue!;
             value.SortOrder = request.SortOrder;
             value.IsActive = request.IsActive;
+            value.ColorHex = colorHexResult.Value;
             value.UpdatedAt = now;
             option.UpdatedAt = now;
             template.UpdatedAt = now;
@@ -485,6 +530,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                         option.Name,
                         option.SortOrder,
                         option.IsActive,
+                        NormalizeControlType(option.ControlType),
+                        option.IsRequired,
                         option.Values
                             .OrderBy(value => value.SortOrder)
                             .ThenBy(value => value.Value)
@@ -494,6 +541,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                                 value.Value,
                                 value.SortOrder,
                                 value.IsActive,
+                                value.ColorHex,
                                 value.CreatedAt,
                                 value.UpdatedAt))
                             .ToArray(),
@@ -519,6 +567,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return name.Length > 100 ? "Variation option name must be 100 characters or fewer." : null;
         }
 
+        private static string NormalizeControlType(string? controlType)
+        {
+            return string.IsNullOrWhiteSpace(controlType)
+                ? VariationControlTypes.Dropdown
+                : controlType.Trim().ToLowerInvariant();
+        }
+
+        private static string? ValidateControlType(string controlType)
+        {
+            return VariationControlTypes.All.Contains(controlType)
+                ? null
+                : "Variation option control type is invalid.";
+        }
+
         private static string? ValidateValue(string? value)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -527,6 +589,28 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             return value.Length > 200 ? "Variation value must be 200 characters or fewer." : null;
+        }
+
+        private static ColorHexNormalization NormalizeColorHex(string? colorHex, string controlType)
+        {
+            if (string.IsNullOrWhiteSpace(colorHex))
+            {
+                return ColorHexNormalization.Ok(null);
+            }
+
+            if (!string.Equals(NormalizeControlType(controlType), VariationControlTypes.Color, StringComparison.Ordinal))
+            {
+                return ColorHexNormalization.Failed("Color hex is only allowed for color variation options.");
+            }
+
+            var normalized = colorHex.Trim();
+            if (!HexColorPattern.IsMatch(normalized))
+            {
+                return ColorHexNormalization.Failed("Color hex must be a 6-digit hex color.");
+            }
+
+            normalized = normalized.TrimStart('#').ToUpper(CultureInfo.InvariantCulture);
+            return ColorHexNormalization.Ok($"#{normalized}");
         }
 
         private static ServiceResponse<TPayload> Success<TPayload>(TPayload payload, string message)
@@ -544,6 +628,19 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             {
                 ResponseType = responseType,
             };
+        }
+
+        private sealed record ColorHexNormalization(bool Success, string? Value, string ErrorMessage)
+        {
+            public static ColorHexNormalization Ok(string? value)
+            {
+                return new ColorHexNormalization(true, value, string.Empty);
+            }
+
+            public static ColorHexNormalization Failed(string message)
+            {
+                return new ColorHexNormalization(false, null, message);
+            }
         }
     }
 }
