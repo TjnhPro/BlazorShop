@@ -17,6 +17,8 @@ namespace BlazorShop.Application.Services.Contracts
 
         Task<ProductFilterMetadataReadModel> GetPublishedProductFilterMetadataAsync(ProductCatalogQuery query);
 
+        Task<IReadOnlyList<GetCatalogProduct>> GetPublishedSearchSuggestionsAsync(ProductCatalogQuery query, int limit);
+
         Task<GetProduct?> GetPublishedProductByIdAsync(Guid id);
 
         Task<GetProduct?> GetPublishedProductBySlugAsync(string slug);

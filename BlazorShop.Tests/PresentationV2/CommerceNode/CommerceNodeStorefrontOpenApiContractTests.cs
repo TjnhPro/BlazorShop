@@ -63,6 +63,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             ("StorefrontProductFilterMetadataResponse", "sortOptions"),
             ("StorefrontProductFilterMetadataResponse", "facets"),
             ("StorefrontFilterFacetResponse", "choices"),
+            ("StorefrontSearchSuggestionResponse", "items"),
             ("GetPublicCatalogSitemap", "categories"),
             ("GetPublicCatalogSitemap", "products"),
             ("GetPublicCatalogSitemap", "pages"),
@@ -383,6 +384,48 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         }
 
         [Fact]
+        public async Task StorefrontSwagger_SearchSuggestionsHaveGeneratorSafeContract()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var operation = GetOperation(swagger, "StorefrontCatalog_GetSearchSuggestions");
+
+            Assert.False(string.IsNullOrWhiteSpace(operation["summary"]?.GetValue<string>()));
+            Assert.True(operation["responses"]?.AsObject().Count > 1);
+            Assert.Null(operation["requestBody"]);
+            Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(operation));
+
+            var parameters = operation["parameters"]?.AsArray()
+                ?? throw new InvalidOperationException("Search suggestions operation does not contain parameters.");
+            Assert.Contains(parameters, parameter =>
+                string.Equals(parameter?["name"]?.GetValue<string>(), "searchTerm", StringComparison.Ordinal));
+            Assert.Contains(parameters, parameter =>
+                string.Equals(parameter?["name"]?.GetValue<string>(), "categorySlug", StringComparison.Ordinal));
+            Assert.Contains(parameters, parameter =>
+                string.Equals(parameter?["name"]?.GetValue<string>(), "limit", StringComparison.Ordinal));
+            Assert.Contains(parameters, parameter =>
+                string.Equals(parameter?["name"]?.GetValue<string>(), "currencyCode", StringComparison.Ordinal));
+
+            Assert.True(schemas.ContainsKey("StorefrontSearchSuggestionResponse"));
+            Assert.True(schemas.ContainsKey("StorefrontSearchSuggestionItemResponse"));
+
+            var responseSchema = schemas["StorefrontSearchSuggestionResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontSearchSuggestionResponse schema was not found.");
+            var responseProperties = GetPropertyNames(responseSchema).ToArray();
+            Assert.Contains("minimumSearchTermLength", responseProperties);
+            Assert.Contains("limit", responseProperties);
+            Assert.Contains("items", responseProperties);
+
+            var itemSchema = schemas["StorefrontSearchSuggestionItemResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontSearchSuggestionItemResponse schema was not found.");
+            var itemProperties = GetPropertyNames(itemSchema).ToArray();
+            Assert.Contains("url", itemProperties);
+            Assert.Contains("displayPrice", itemProperties);
+            Assert.Contains("displayCurrencyCode", itemProperties);
+            Assert.DoesNotContain("isPublished", itemProperties, StringComparer.OrdinalIgnoreCase);
+        }
+
+        [Fact]
         public async Task StorefrontSwagger_ProductSellabilityProjectionHasGeneratorSafeContract()
         {
             var swagger = await this.GetStorefrontSwaggerAsync();
@@ -623,6 +666,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("export class StorefrontApiClient", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCatalog_QueryProducts", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCatalog_GetProductFilterMetadata", client, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCatalog_GetSearchSuggestions", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCart_CreateSession", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCart_AddLine", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontPayments_CapturePayPal", client, StringComparison.Ordinal);

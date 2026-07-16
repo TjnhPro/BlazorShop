@@ -298,57 +298,57 @@ Goal: add low-risk autocomplete support that future header/WASM components can c
 
 Implementation checklist:
 
-- [ ] Add Storefront query DTO:
-  - [ ] `StorefrontSearchSuggestionQuery`.
-- [ ] Add response DTOs:
-  - [ ] `StorefrontSearchSuggestionResponse`.
-  - [ ] `StorefrontSearchSuggestionItemResponse`.
-- [ ] Add Storefront endpoint:
-  - [ ] `GET /api/storefront/stores/{storeKey}/catalog/search-suggestions`.
-- [ ] Add service/repository method using same published catalog visibility rules.
-- [ ] Apply suggestion rules:
-  - [ ] normalized term.
-  - [ ] minimum term length.
-  - [ ] default limit `6`.
-  - [ ] max limit `10`.
-  - [ ] optional category slug scope.
-  - [ ] optional image projection.
-  - [ ] optional currency display mapping.
-- [ ] Suggestion item includes:
-  - [ ] id.
-  - [ ] slug.
-  - [ ] name.
-  - [ ] SKU.
-  - [ ] image.
-  - [ ] primary media public id.
-  - [ ] has primary media.
-  - [ ] price.
-  - [ ] display price.
-  - [ ] display currency code.
-  - [ ] category name.
-  - [ ] category slug.
-  - [ ] in-stock flag.
-  - [ ] URL.
-- [ ] Add `StorefrontApiClient.GetSearchSuggestionsAsync`.
-- [ ] Ensure suggestion API is not linked in sitemap/robots discovery.
-- [ ] Update OpenAPI metadata and snapshot.
+- [x] Add Storefront query DTO:
+  - [x] `StorefrontSearchSuggestionQuery`.
+- [x] Add response DTOs:
+  - [x] `StorefrontSearchSuggestionResponse`.
+  - [x] `StorefrontSearchSuggestionItemResponse`.
+- [x] Add Storefront endpoint:
+  - [x] `GET /api/storefront/stores/{storeKey}/catalog/search-suggestions`.
+- [x] Add service/repository method using same published catalog visibility rules.
+- [x] Apply suggestion rules:
+  - [x] normalized term.
+  - [x] minimum term length.
+  - [x] default limit `6`.
+  - [x] max limit `10`.
+  - [x] optional category slug scope.
+  - [x] optional image projection.
+  - [x] optional currency display mapping.
+- [x] Suggestion item includes:
+  - [x] id.
+  - [x] slug.
+  - [x] name.
+  - [x] SKU.
+  - [x] image.
+  - [x] primary media public id.
+  - [x] has primary media.
+  - [x] price.
+  - [x] display price.
+  - [x] display currency code.
+  - [x] category name.
+  - [x] category slug.
+  - [x] in-stock flag.
+  - [x] URL.
+- [x] Add `StorefrontApiClient.GetSearchSuggestionsAsync`.
+- [x] Ensure suggestion API is not linked in sitemap/robots discovery.
+- [x] Update OpenAPI metadata and snapshot.
 
 Verification checklist:
 
-- [ ] Too-short term returns empty suggestions.
-- [ ] Suggestions return at most 10 items.
-- [ ] Suggestions never expose unpublished products.
-- [ ] Suggestions never expose archived products.
-- [ ] Suggestions never expose wrong-store products.
-- [ ] Suggestions honor category scope.
-- [ ] Suggestions include URL and safe display fields.
-- [ ] Storefront API client tests pass.
-- [ ] Storefront OpenAPI contract tests pass.
+- [x] Too-short term returns empty suggestions.
+- [x] Suggestions return at most 10 items.
+- [x] Suggestions never expose unpublished products.
+- [x] Suggestions never expose archived products.
+- [x] Suggestions never expose wrong-store products.
+- [x] Suggestions honor category scope.
+- [x] Suggestions include URL and safe display fields.
+- [x] Storefront API client tests pass.
+- [x] Storefront OpenAPI contract tests pass.
 
 Exit criteria:
 
-- [ ] Suggestion endpoint is read-only, store-scoped, and generator-safe.
-- [ ] Future header/typeahead UI can consume suggestions without guessing models.
+- [x] Suggestion endpoint is read-only, store-scoped, and generator-safe.
+- [x] Future header/typeahead UI can consume suggestions without guessing models.
 
 Suggested commit:
 

@@ -52,6 +52,7 @@ namespace BlazorShop.Storefront.Services
         private const string StorefrontCategoriesRoute = StorefrontCatalogBaseRoute + "/categories";
         private const string StorefrontCategoryTreeRoute = StorefrontCategoriesRoute + "/tree";
         private const string StorefrontProductFilterMetadataRoute = StorefrontCatalogBaseRoute + "/product-filter-metadata";
+        private const string StorefrontSearchSuggestionsRoute = StorefrontCatalogBaseRoute + "/search-suggestions";
         private const string StorefrontProductsRoute = StorefrontCatalogBaseRoute + "/products";
         private const string SeoSettingsRoute = StorefrontSeoBaseRoute + "/settings";
         private const string LegacyCatalogBaseRoute = "/api/public/catalog";
@@ -153,6 +154,20 @@ namespace BlazorShop.Storefront.Services
         {
             return GetAsync<StorefrontProductFilterMetadataResponse>(
                 BuildProductFilterMetadataRoute(categorySlug, searchTerm, currencyCode),
+                cancellationToken,
+                fallbackValue: null,
+                CatalogRequestTimeout);
+        }
+
+        public Task<StorefrontApiResult<StorefrontSearchSuggestionResponse>> GetSearchSuggestionsAsync(
+            string? searchTerm,
+            string? categorySlug = null,
+            int? limit = null,
+            string? currencyCode = null,
+            CancellationToken cancellationToken = default)
+        {
+            return GetAsync<StorefrontSearchSuggestionResponse>(
+                BuildSearchSuggestionsRoute(searchTerm, categorySlug, limit, currencyCode),
                 cancellationToken,
                 fallbackValue: null,
                 CatalogRequestTimeout);
@@ -684,6 +699,36 @@ namespace BlazorShop.Storefront.Services
                 : $"{StorefrontProductFilterMetadataRoute}?{string.Join("&", parameters)}";
         }
 
+        private static string BuildSearchSuggestionsRoute(string? searchTerm, string? categorySlug, int? limit, string? currencyCode)
+        {
+            var parameters = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                parameters.Add($"searchTerm={Uri.EscapeDataString(searchTerm.Trim())}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(categorySlug))
+            {
+                parameters.Add($"categorySlug={Uri.EscapeDataString(categorySlug.Trim())}");
+            }
+
+            if (limit is > 0)
+            {
+                parameters.Add($"limit={limit.Value.ToString(CultureInfo.InvariantCulture)}");
+            }
+
+            var normalizedCurrencyCode = NormalizeCurrencyCode(currencyCode);
+            if (normalizedCurrencyCode is not null)
+            {
+                parameters.Add($"currencyCode={Uri.EscapeDataString(normalizedCurrencyCode)}");
+            }
+
+            return parameters.Count == 0
+                ? StorefrontSearchSuggestionsRoute
+                : $"{StorefrontSearchSuggestionsRoute}?{string.Join("&", parameters)}";
+        }
+
         private static string AppendCurrencyQuery(string route, string? currencyCode)
         {
             var normalizedCurrencyCode = NormalizeCurrencyCode(currencyCode);
@@ -896,6 +941,28 @@ namespace BlazorShop.Storefront.Services
         string Value,
         string Label,
         int DisplayOrder);
+
+    public sealed record StorefrontSearchSuggestionResponse(
+        string? SearchTerm,
+        int MinimumSearchTermLength,
+        int Limit,
+        IReadOnlyList<StorefrontSearchSuggestionItemResponse> Items);
+
+    public sealed record StorefrontSearchSuggestionItemResponse(
+        Guid Id,
+        string Slug,
+        string Name,
+        string? Sku,
+        string? Image,
+        Guid? PrimaryMediaPublicId,
+        bool HasPrimaryMedia,
+        decimal Price,
+        decimal? DisplayPrice,
+        string? DisplayCurrencyCode,
+        string? CategoryName,
+        string? CategorySlug,
+        bool InStock,
+        string Url);
 
     public sealed record StorefrontCurrentStore(
         Guid PublicId,

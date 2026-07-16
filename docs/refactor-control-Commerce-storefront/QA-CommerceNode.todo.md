@@ -85,7 +85,8 @@ Baseline recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFoundationS
 - [x] Product filter metadata endpoint returns only supported facets. 2026-07-16 Phase 3: `GET /api/storefront/stores/{storeKey}/catalog/product-filter-metadata` returns category, availability, new-arrival, price range, page sizes, and named sort options; no brand/rating/delivery/spec facets were added.
 - [x] Product filter metadata endpoint is generator-safe in Storefront OpenAPI. 2026-07-16 Phase 3: `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_ProductFilterMetadataHasGeneratorSafeContract` passed and snapshots were refreshed.
 - [x] Product filter metadata price range is store/category/search scoped. 2026-07-16 Phase 3: `CommerceNodeProductStoreScopeTests.GetPublishedProductFilterMetadataAsync_ReturnsScopedPriceRange` passed.
-- [ ] Search suggestions endpoint is store-scoped and returns safe display fields only.
+- [x] Search suggestions endpoint is store-scoped and returns safe display fields only. 2026-07-16 Phase 4: `GET /api/storefront/stores/{storeKey}/catalog/search-suggestions` returns typed safe suggestion items; Storefront OpenAPI contract and scoped repository visibility tests passed in focused 54/54 run.
+- [x] Search suggestions endpoint caps limit at 10 and returns empty results for too-short terms. 2026-07-16 Phase 4: endpoint uses `CatalogSearchPolicy` default/max/minimum rules and OpenAPI publishes `limit` range metadata.
 
 ## Storefront API Contract Final Hardening
 

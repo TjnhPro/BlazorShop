@@ -165,6 +165,23 @@ namespace BlazorShop.Application.Services
             return await _productReadRepository.GetPublishedProductFilterMetadataAsync(query);
         }
 
+        public async Task<IReadOnlyList<GetCatalogProduct>> GetPublishedSearchSuggestionsAsync(ProductCatalogQuery query, int limit)
+        {
+            var page = await this.GetPublishedCatalogPageAsync(new ProductCatalogQuery
+            {
+                PageNumber = 1,
+                PageSize = Math.Clamp(limit, 1, CatalogSearchPolicy.SuggestionMaxLimit),
+                CategoryId = query.CategoryId,
+                CategorySlug = query.CategorySlug,
+                IncludeSubcategories = query.IncludeSubcategories,
+                SearchTerm = query.SearchTerm,
+                InStock = query.InStock,
+                SortBy = ProductCatalogSortBy.DisplayOrder,
+            });
+
+            return page.Items;
+        }
+
         public async Task<GetProduct?> GetPublishedProductByIdAsync(Guid id)
         {
             if (id == Guid.Empty)

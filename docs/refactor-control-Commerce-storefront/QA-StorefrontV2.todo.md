@@ -157,6 +157,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Category page supports `page` and `pageSize` query values. 2026-07-16 Phase 2: `CategoryPage.razor` reads both query values and sends them to the paged catalog API.
 - [x] Category page uses paged API metadata for pagination rather than visible item count. 2026-07-16 Phase 2: category result count and pager now use `TotalCount`, `PageNumber`, `PageSize`, and `TotalPages`.
 - [x] Storefront API client can read product filter metadata from scoped CommerceNode route. 2026-07-16 Phase 3: `StorefrontV2ApiClientTests.GetProductFilterMetadataAsync_ReadsFilterMetadataContract` passed and asserted route/query/model shape.
+- [x] Storefront API client can read search suggestions from scoped CommerceNode route. 2026-07-16 Phase 4: `StorefrontV2ApiClientTests.GetSearchSuggestionsAsync_ReadsSuggestionContract` passed and asserted URL/display fields.
 - [ ] Browser QA verifies search/category pagination and page-size selector on desktop.
 - [ ] Browser QA verifies search/category pagination and page-size selector on mobile.
 

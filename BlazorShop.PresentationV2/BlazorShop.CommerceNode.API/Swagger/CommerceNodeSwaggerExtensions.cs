@@ -819,6 +819,11 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "Get Storefront product filter metadata.",
                         typeof(CommerceNodeApiResponse<StorefrontProductFilterMetadataResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedCatalog", "GetSearchSuggestions")] = new(
+                        "StorefrontCatalog_GetSearchSuggestions",
+                        "Get Storefront catalog search suggestions.",
+                        typeof(CommerceNodeApiResponse<StorefrontSearchSuggestionResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedCatalog", "GetProducts")] = new(
                         "StorefrontCatalog_QueryProducts",
                         "Query published Storefront products.",

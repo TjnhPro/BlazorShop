@@ -2,6 +2,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
 {
     using System.ComponentModel.DataAnnotations;
 
+    using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
 
     public static class StorefrontContractValidation
@@ -129,6 +130,21 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         public string? CurrencyCode { get; init; }
     }
 
+    public sealed class StorefrontSearchSuggestionQuery
+    {
+        [MaxLength(256)]
+        public string? SearchTerm { get; init; }
+
+        [MaxLength(256)]
+        public string? CategorySlug { get; init; }
+
+        [Range(1, CatalogSearchPolicy.SuggestionMaxLimit)]
+        public int? Limit { get; init; }
+
+        [StringLength(3, MinimumLength = 3)]
+        public string? CurrencyCode { get; init; }
+    }
+
     public sealed record StorefrontProductFilterMetadataResponse(
         [property: Required]
         IReadOnlyList<int> PageSizes,
@@ -166,6 +182,29 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         string Value,
         string Label,
         int DisplayOrder);
+
+    public sealed record StorefrontSearchSuggestionResponse(
+        string? SearchTerm,
+        int MinimumSearchTermLength,
+        int Limit,
+        [property: Required]
+        IReadOnlyList<StorefrontSearchSuggestionItemResponse> Items);
+
+    public sealed record StorefrontSearchSuggestionItemResponse(
+        Guid Id,
+        string Slug,
+        string Name,
+        string? Sku,
+        string? Image,
+        Guid? PrimaryMediaPublicId,
+        bool HasPrimaryMedia,
+        decimal Price,
+        decimal? DisplayPrice,
+        string? DisplayCurrencyCode,
+        string? CategoryName,
+        string? CategorySlug,
+        bool InStock,
+        string Url);
 
     public static class StorefrontProductCatalogSortValues
     {

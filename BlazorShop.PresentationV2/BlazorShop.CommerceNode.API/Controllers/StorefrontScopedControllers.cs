@@ -452,6 +452,72 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return this.Success(response, "Product filter metadata loaded.");
         }
 
+        [HttpGet("search-suggestions")]
+        public async Task<IActionResult> GetSearchSuggestions(
+            [FromQuery(Name = "searchTerm")]
+            [MaxLength(256)]
+            string? searchTerm,
+            [FromQuery(Name = "categorySlug")]
+            [MaxLength(256)]
+            string? categorySlug,
+            [FromQuery(Name = "limit")]
+            [Range(1, CatalogSearchPolicy.SuggestionMaxLimit)]
+            int? limit,
+            [FromQuery(Name = "currencyCode")]
+            [StringLength(3, MinimumLength = 3)]
+            string? currencyCode,
+            CancellationToken cancellationToken)
+        {
+            var query = new StorefrontSearchSuggestionQuery
+            {
+                SearchTerm = searchTerm,
+                CategorySlug = categorySlug,
+                Limit = limit,
+                CurrencyCode = currencyCode,
+            };
+            var normalizedSearchTerm = CatalogSearchPolicy.NormalizeSearchTerm(query.SearchTerm);
+            var suggestionLimit = Math.Clamp(
+                query.Limit ?? CatalogSearchPolicy.SuggestionDefaultLimit,
+                1,
+                CatalogSearchPolicy.SuggestionMaxLimit);
+
+            if (CatalogSearchPolicy.IsSearchTermTooShort(normalizedSearchTerm))
+            {
+                return this.Success(
+                    new StorefrontSearchSuggestionResponse(
+                        normalizedSearchTerm,
+                        CatalogSearchPolicy.MinimumSearchTermLength,
+                        suggestionLimit,
+                        []),
+                    "Search suggestions loaded.");
+            }
+
+            var displayCurrency = await this.ResolveDisplayCurrencyAsync(query.CurrencyCode, cancellationToken);
+            IReadOnlyList<BlazorShop.Application.DTOs.Product.GetCatalogProduct> suggestions = [];
+            if (!string.IsNullOrWhiteSpace(normalizedSearchTerm))
+            {
+                suggestions = await this.publicCatalogService.GetPublishedSearchSuggestionsAsync(new ProductCatalogQuery
+                {
+                    SearchTerm = normalizedSearchTerm,
+                    CategorySlug = query.CategorySlug,
+                    IncludeSubcategories = !string.IsNullOrWhiteSpace(query.CategorySlug),
+                }, suggestionLimit);
+            }
+
+            var mappedSuggestions = await Task.WhenAll(suggestions.Select(product => this.ToSearchSuggestionContractAsync(
+                product,
+                displayCurrency,
+                cancellationToken)));
+
+            return this.Success(
+                new StorefrontSearchSuggestionResponse(
+                    normalizedSearchTerm,
+                    CatalogSearchPolicy.MinimumSearchTermLength,
+                    suggestionLimit,
+                    mappedSuggestions),
+                "Search suggestions loaded.");
+        }
+
         [HttpGet("products")]
         public async Task<IActionResult> GetProducts(
             [FromQuery] StorefrontProductCatalogQuery query,
@@ -679,6 +745,32 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 : await this.ResolveDisplayMoneyAsync(product.Price, product.ComparePrice, displayCurrency, cancellationToken);
 
             return product.ToStorefrontContract(displayMoney);
+        }
+
+        private async Task<StorefrontSearchSuggestionItemResponse> ToSearchSuggestionContractAsync(
+            BlazorShop.Application.DTOs.Product.GetCatalogProduct product,
+            StorefrontDisplayCurrency? displayCurrency,
+            CancellationToken cancellationToken)
+        {
+            var displayMoney = displayCurrency is null
+                ? null
+                : await this.ResolveDisplayMoneyAsync(product.Price, comparePrice: null, displayCurrency, cancellationToken);
+            var slug = product.Slug ?? string.Empty;
+            return new StorefrontSearchSuggestionItemResponse(
+                product.Id,
+                slug,
+                product.Name ?? string.Empty,
+                product.Sku,
+                product.Image,
+                product.PrimaryMediaPublicId,
+                product.HasPrimaryMedia,
+                product.Price,
+                displayMoney?.Price,
+                displayMoney?.CurrencyCode,
+                product.CategoryName,
+                product.CategorySlug,
+                product.InStock,
+                string.IsNullOrWhiteSpace(slug) ? "/product" : $"/product/{Uri.EscapeDataString(slug)}");
         }
 
         private async Task<StorefrontProductResponse> ToDisplayProductContractAsync(

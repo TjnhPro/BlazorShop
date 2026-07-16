@@ -23,6 +23,7 @@ GET /api/storefront/stores/{storeKey}/catalog/products
 GET /api/storefront/stores/{storeKey}/catalog/products/slug/{slug}
 GET /api/storefront/stores/{storeKey}/catalog/products/{id}
 POST /api/storefront/stores/{storeKey}/catalog/products/{productId}/selection-preview
+GET /api/storefront/stores/{storeKey}/catalog/search-suggestions
 GET /api/storefront/stores/{storeKey}/catalog/sitemap
 POST /api/storefront/stores/{storeKey}/checkout/place-order
 POST /api/storefront/stores/{storeKey}/checkout/preview

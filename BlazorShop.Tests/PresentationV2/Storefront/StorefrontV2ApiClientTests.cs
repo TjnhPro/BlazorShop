@@ -213,6 +213,67 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task GetSearchSuggestionsAsync_ReadsSuggestionContract()
+        {
+            var productId = Guid.Parse("00000000-0000-0000-0000-000000000123");
+            var mediaId = Guid.Parse("00000000-0000-0000-0000-000000000456");
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal("/api/storefront/stores/default/catalog/search-suggestions", request.RequestUri?.AbsolutePath);
+                Assert.Contains("searchTerm=runner", request.RequestUri?.Query, StringComparison.Ordinal);
+                Assert.Contains("categorySlug=shoes", request.RequestUri?.Query, StringComparison.Ordinal);
+                Assert.Contains("limit=6", request.RequestUri?.Query, StringComparison.Ordinal);
+                Assert.Contains("currencyCode=EUR", request.RequestUri?.Query, StringComparison.Ordinal);
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    $$"""
+                    {
+                      "success": true,
+                      "message": "ok",
+                      "data": {
+                        "searchTerm": "runner",
+                        "minimumSearchTermLength": 2,
+                        "limit": 6,
+                        "items": [
+                          {
+                            "id": "{{productId}}",
+                            "slug": "runner-shoe",
+                            "name": "Runner Shoe",
+                            "sku": "RUN-1",
+                            "image": "/media/products/test",
+                            "primaryMediaPublicId": "{{mediaId}}",
+                            "hasPrimaryMedia": true,
+                            "price": 12.50,
+                            "displayPrice": 10.00,
+                            "displayCurrencyCode": "EUR",
+                            "categoryName": "Shoes",
+                            "categorySlug": "shoes",
+                            "inStock": true,
+                            "url": "/product/runner-shoe"
+                          }
+                        ]
+                      }
+                    }
+                    """);
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var result = await apiClient.GetSearchSuggestionsAsync("runner", "shoes", 6, "eur");
+
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Equal("runner", result.Value!.SearchTerm);
+            Assert.Equal(6, result.Value.Limit);
+            Assert.Single(result.Value.Items);
+            Assert.Equal(productId, result.Value.Items[0].Id);
+            Assert.Equal(mediaId, result.Value.Items[0].PrimaryMediaPublicId);
+            Assert.Equal("/product/runner-shoe", result.Value.Items[0].Url);
+            Assert.Equal(10.00m, result.Value.Items[0].DisplayPrice);
+        }
+
+        [Fact]
         public async Task GetPublishedProductBySlugAsync_ReadsDeliveryMetadata()
         {
             var handler = new RecordingHandler(request =>
