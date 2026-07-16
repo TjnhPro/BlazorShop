@@ -372,6 +372,12 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 Assert.Contains("quantity", properties);
             }
 
+            var productProperties = GetPropertyNames(product);
+            Assert.Contains("weight", productProperties);
+            Assert.Contains("length", productProperties);
+            Assert.Contains("width", productProperties);
+            Assert.Contains("height", productProperties);
+
             var variantProperties = GetPropertyNames(variant);
             Assert.Contains("isActive", variantProperties);
             Assert.Contains("purchasable", variantProperties);

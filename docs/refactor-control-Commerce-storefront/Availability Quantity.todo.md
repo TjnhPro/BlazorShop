@@ -384,33 +384,33 @@ Goal: add lightweight delivery hints without building Shipping Core.
 
 Implementation checklist:
 
-- [ ] Confirm delivery fields are persisted:
-  - [ ] `ShippingRequired`.
-  - [ ] `FreeShipping`.
-  - [ ] `DeliveryEstimateText`.
-  - [ ] `Weight`.
-  - [ ] `Length`.
-  - [ ] `Width`.
-  - [ ] `Height`.
-- [ ] Expose delivery metadata in Storefront product detail response.
-- [ ] Show delivery estimate on product detail only when set.
-- [ ] Show free-shipping indicator only when true.
-- [ ] Keep checkout `ShippingTotal = 0m`.
-- [ ] Do not calculate additional shipping charges.
-- [ ] Do not block checkout based on delivery metadata.
-- [ ] Keep fields ready for a later Shipping Core phase.
+- [x] Confirm delivery fields are persisted:
+  - [x] `ShippingRequired`. 2026-07-16 Phase 6: persisted product purchase field already covered by model tests.
+  - [x] `FreeShipping`. 2026-07-16 Phase 6: persisted product purchase field already covered by model tests.
+  - [x] `DeliveryEstimateText`. 2026-07-16 Phase 6: persisted product purchase field already covered by model tests.
+  - [x] `Weight`. 2026-07-16 Phase 6: product identity field already persisted and covered by model tests.
+  - [x] `Length`. 2026-07-16 Phase 6: product identity field already persisted and covered by model tests.
+  - [x] `Width`. 2026-07-16 Phase 6: product identity field already persisted and covered by model tests.
+  - [x] `Height`. 2026-07-16 Phase 6: product identity field already persisted and covered by model tests.
+- [x] Expose delivery metadata in Storefront product detail response. 2026-07-16 Phase 6: `StorefrontProductResponse` now exposes `weight`, `length`, `width`, and `height` in addition to shipping/free-shipping/delivery estimate.
+- [x] Show delivery estimate on product detail only when set. 2026-07-16 Phase 6: Phase 5 UI condition remains guarded by `!string.IsNullOrWhiteSpace(_product.DeliveryEstimateText)`.
+- [x] Show free-shipping indicator only when true. 2026-07-16 Phase 6: Phase 5 UI condition remains guarded by `_product.FreeShipping`.
+- [x] Keep checkout `ShippingTotal = 0m`. 2026-07-16 Phase 6: `StorefrontCheckoutServiceTests.PreviewAsync_KeepsDeliveryMetadataDisplayOnly` passed.
+- [x] Do not calculate additional shipping charges. 2026-07-16 Phase 6: checkout preview keeps `GrandTotal == Subtotal` with delivery metadata configured.
+- [x] Do not block checkout based on delivery metadata. 2026-07-16 Phase 6: checkout preview stayed valid with shipping-not-required/free-shipping/dimensions configured.
+- [x] Keep fields ready for a later Shipping Core phase. 2026-07-16 Phase 6: metadata is exposed as contract data only; no shipping charge/eligibility service introduced.
 
 Verification checklist:
 
-- [ ] Delivery metadata appears in Storefront response when configured.
-- [ ] Product detail displays delivery estimate only when configured.
-- [ ] Checkout totals do not change from delivery metadata.
-- [ ] Shipping-related contract tests pass.
+- [x] Delivery metadata appears in Storefront response when configured. 2026-07-16 Phase 6: `StorefrontV2ApiClientTests.GetPublishedProductBySlugAsync_ReadsDeliveryMetadata` passed.
+- [x] Product detail displays delivery estimate only when configured. 2026-07-16 Phase 6: `StorefrontBrandingMarkupTests.ProductPage_RendersSellabilityAndQuantityMetadata` passed in Phase 5.
+- [x] Checkout totals do not change from delivery metadata. 2026-07-16 Phase 6: `StorefrontCheckoutServiceTests.PreviewAsync_KeepsDeliveryMetadataDisplayOnly` passed.
+- [x] Shipping-related contract tests pass. 2026-07-16 Phase 6: `CommerceNodeStorefrontOpenApiContractTests` passed 25/25 after snapshot refresh.
 
 Exit criteria:
 
-- [ ] Product can communicate basic shipping/delivery expectations.
-- [ ] Delivery metadata remains display-only.
+- [x] Product can communicate basic shipping/delivery expectations. 2026-07-16 Phase 6: Storefront product detail contract/client include shipping flags, delivery estimate, and dimensions.
+- [x] Delivery metadata remains display-only. 2026-07-16 Phase 6: checkout totals and validation are unchanged.
 
 Suggested commit:
 

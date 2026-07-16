@@ -157,6 +157,45 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public async Task PreviewAsync_KeepsDeliveryMetadataDisplayOnly()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            product.ShippingRequired = false;
+            product.FreeShipping = true;
+            product.DeliveryEstimateText = "Ships in 2 days";
+            product.Weight = 1.25m;
+            product.Length = 10.5m;
+            product.Width = 5.25m;
+            product.Height = 2.75m;
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 2));
+            var service = CreateCheckoutService(context, cartService);
+
+            var result = await service.PreviewAsync(CreateRequest(storeId, cart.Payload.Token!, add.Payload!.Version));
+
+            Assert.True(result.Success, result.Message);
+            Assert.NotNull(result.Payload);
+            Assert.Equal(40m, result.Payload!.Subtotal);
+            Assert.Equal(0m, result.Payload.ShippingTotal);
+            Assert.Equal(40m, result.Payload.GrandTotal);
+            var session = Assert.Single(context.CheckoutSessions);
+            Assert.Equal(0m, session.ShippingTotal);
+            Assert.Equal(session.Subtotal, session.GrandTotal);
+        }
+
+        [Fact]
         public async Task PlaceOrderAsync_WhenCartUsesConvertedCurrency_UsesSnapshotCurrencyForOrderAndPayment()
         {
             using var context = CreateContext();

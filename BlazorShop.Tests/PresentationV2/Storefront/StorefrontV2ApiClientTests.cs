@@ -157,6 +157,74 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task GetPublishedProductBySlugAsync_ReadsDeliveryMetadata()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal("/api/storefront/stores/default/catalog/products/slug/test-product", request.RequestUri?.AbsolutePath);
+                Assert.Contains("currencyCode=USD", request.RequestUri?.Query, StringComparison.Ordinal);
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    """
+                    {
+                      "success": true,
+                      "message": "ok",
+                      "data": {
+                        "id": "00000000-0000-0000-0000-000000000001",
+                        "slug": "test-product",
+                        "name": "Test product",
+                        "description": "Test description",
+                        "sku": "TEST-1",
+                        "price": 12.50,
+                        "comparePrice": null,
+                        "weight": 1.25,
+                        "length": 10.5,
+                        "width": 5.25,
+                        "height": 2.75,
+                        "image": "/images/test.png",
+                        "quantity": 5,
+                        "purchasable": true,
+                        "purchaseBlockReasons": [],
+                        "stockStatus": "in_stock",
+                        "availableQuantity": 5,
+                        "minOrderQuantity": 1,
+                        "maxOrderQuantity": null,
+                        "quantityStep": 1,
+                        "manageStock": true,
+                        "shippingRequired": true,
+                        "freeShipping": true,
+                        "deliveryEstimateText": "Ships in 2 days",
+                        "displayOrder": 1,
+                        "inStock": true,
+                        "productType": "simple",
+                        "robotsIndex": true,
+                        "robotsFollow": true,
+                        "createdOn": "2026-07-16T00:00:00Z",
+                        "updatedAt": "2026-07-16T00:00:00Z",
+                        "variants": []
+                      }
+                    }
+                    """);
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var result = await apiClient.GetPublishedProductBySlugAsync("test-product", "USD");
+
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Equal(1.25m, result.Value!.Weight);
+            Assert.Equal(10.5m, result.Value.Length);
+            Assert.Equal(5.25m, result.Value.Width);
+            Assert.Equal(2.75m, result.Value.Height);
+            Assert.True(result.Value.ShippingRequired);
+            Assert.True(result.Value.FreeShipping);
+            Assert.Equal("Ships in 2 days", result.Value.DeliveryEstimateText);
+            Assert.Equal(["/api/storefront/stores/default/catalog/products/slug/test-product"], handler.RequestPaths);
+        }
+
+        [Fact]
         public async Task GetPublicConfigurationAsync_ReadsStoreScopedConfiguration()
         {
             var handler = new RecordingHandler(request =>
