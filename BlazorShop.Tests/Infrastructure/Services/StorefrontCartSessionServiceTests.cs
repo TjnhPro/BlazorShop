@@ -7,6 +7,7 @@ namespace BlazorShop.Tests.Infrastructure.Services
     using BlazorShop.Infrastructure.Data.CommerceNode.Services;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Options;
 
     using Xunit;
 
@@ -31,6 +32,24 @@ namespace BlazorShop.Tests.Infrastructure.Services
             Assert.Equal(64, stored.TokenHash.Length);
             Assert.Equal(CartSessionStates.Active, stored.State);
             Assert.Equal(1, stored.Version);
+        }
+
+        [Fact]
+        public async Task CreateAsync_UsesConfiguredExpirationPolicy_WhenRequestDoesNotSpecifyExpiration()
+        {
+            await using var context = CreateContext();
+            var service = new StorefrontCartSessionService(
+                context,
+                Options.Create(new StorefrontCartOptions { ExpirationDays = 7 }));
+            var before = DateTimeOffset.UtcNow;
+
+            var result = await service.CreateAsync(new StorefrontCartSessionCreateRequest(Guid.NewGuid()));
+
+            Assert.True(result.Success);
+            Assert.NotNull(result.Payload);
+            var expectedMinimum = before.AddDays(7).AddSeconds(-1);
+            var expectedMaximum = DateTimeOffset.UtcNow.AddDays(7).AddSeconds(1);
+            Assert.InRange(result.Payload!.ExpiresAtUtc, expectedMinimum, expectedMaximum);
         }
 
         [Fact]
@@ -286,6 +305,57 @@ namespace BlazorShop.Tests.Infrastructure.Services
             Assert.Equal(0, await context.CartLines.CountAsync());
         }
 
+        [Fact]
+        public async Task ExpireStaleActiveSessionsAsync_ExpiresOnlyMatchingActiveExpiredSessions()
+        {
+            await using var context = CreateContext();
+            var service = new StorefrontCartSessionService(context);
+            var storeId = Guid.NewGuid();
+            var otherStoreId = Guid.NewGuid();
+            var now = DateTimeOffset.Parse("2026-07-16T00:00:00Z");
+            var activeExpired = CreateStoredSession(storeId, CartSessionStates.Active, now.AddMinutes(-1));
+            var activeFuture = CreateStoredSession(storeId, CartSessionStates.Active, now.AddMinutes(10));
+            var mergedExpired = CreateStoredSession(storeId, CartSessionStates.Merged, now.AddHours(-1));
+            var orderedExpired = CreateStoredSession(storeId, CartSessionStates.Ordered, now.AddHours(-1));
+            var otherStoreExpired = CreateStoredSession(otherStoreId, CartSessionStates.Active, now.AddHours(-1));
+            context.CartSessions.AddRange(activeExpired, activeFuture, mergedExpired, orderedExpired, otherStoreExpired);
+            await context.SaveChangesAsync();
+
+            var result = await service.ExpireStaleActiveSessionsAsync(storeId, now);
+
+            Assert.True(result.Success);
+            Assert.NotNull(result.Payload);
+            Assert.Equal(1, result.Payload!.ExpiredCount);
+            Assert.Equal(CartSessionStates.Expired, (await context.CartSessions.FindAsync(activeExpired.Id))!.State);
+            Assert.Equal(CartSessionStates.Active, (await context.CartSessions.FindAsync(activeFuture.Id))!.State);
+            Assert.Equal(CartSessionStates.Merged, (await context.CartSessions.FindAsync(mergedExpired.Id))!.State);
+            Assert.Equal(CartSessionStates.Ordered, (await context.CartSessions.FindAsync(orderedExpired.Id))!.State);
+            Assert.Equal(CartSessionStates.Active, (await context.CartSessions.FindAsync(otherStoreExpired.Id))!.State);
+        }
+
+        [Fact]
+        public async Task ExpireStaleActiveSessionsAsync_RespectsConfiguredBatchSize()
+        {
+            await using var context = CreateContext();
+            var service = new StorefrontCartSessionService(
+                context,
+                Options.Create(new StorefrontCartOptions { CleanupBatchSize = 2 }));
+            var storeId = Guid.NewGuid();
+            var now = DateTimeOffset.Parse("2026-07-16T00:00:00Z");
+            context.CartSessions.AddRange(
+                CreateStoredSession(storeId, CartSessionStates.Active, now.AddMinutes(-3)),
+                CreateStoredSession(storeId, CartSessionStates.Active, now.AddMinutes(-2)),
+                CreateStoredSession(storeId, CartSessionStates.Active, now.AddMinutes(-1)));
+            await context.SaveChangesAsync();
+
+            var result = await service.ExpireStaleActiveSessionsAsync(storeId, now);
+
+            Assert.True(result.Success);
+            Assert.Equal(2, result.Payload!.ExpiredCount);
+            Assert.Equal(2, await context.CartSessions.CountAsync(cart => cart.State == CartSessionStates.Expired));
+            Assert.Equal(1, await context.CartSessions.CountAsync(cart => cart.State == CartSessionStates.Active));
+        }
+
         private static CommerceNodeDbContext CreateContext()
         {
             var options = new DbContextOptionsBuilder<CommerceNodeDbContext>()
@@ -293,6 +363,23 @@ namespace BlazorShop.Tests.Infrastructure.Services
                 .Options;
 
             return new CommerceNodeDbContext(options);
+        }
+
+        private static CartSession CreateStoredSession(Guid storeId, string state, DateTimeOffset expiresAtUtc)
+        {
+            return new CartSession
+            {
+                Id = Guid.NewGuid(),
+                PublicId = Guid.NewGuid(),
+                StoreId = storeId,
+                TokenHash = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"),
+                State = state,
+                Version = 1,
+                LastActivityAtUtc = expiresAtUtc.AddMinutes(-30),
+                ExpiresAtUtc = expiresAtUtc,
+                CreatedAtUtc = expiresAtUtc.AddHours(-1),
+                UpdatedAtUtc = expiresAtUtc.AddHours(-1),
+            };
         }
     }
 }

@@ -7,6 +7,8 @@ namespace BlazorShop.Application.CommerceNode.Carts
         public const int DefaultMaxPersonalizationHashLength = 128;
         public const int DefaultMaxPersonalizationJsonLength = 8192;
         public const int DefaultMaxFulfillmentProviderKeyLength = 64;
+        public const int DefaultExpirationDays = 30;
+        public const int DefaultCleanupBatchSize = 500;
 
         public int MaxLines { get; set; } = DefaultMaxLines;
 
@@ -17,6 +19,10 @@ namespace BlazorShop.Application.CommerceNode.Carts
         public int MaxPersonalizationJsonLength { get; set; } = DefaultMaxPersonalizationJsonLength;
 
         public int MaxFulfillmentProviderKeyLength { get; set; } = DefaultMaxFulfillmentProviderKeyLength;
+
+        public int ExpirationDays { get; set; } = DefaultExpirationDays;
+
+        public int CleanupBatchSize { get; set; } = DefaultCleanupBatchSize;
 
         public int EffectiveMaxLines => MaxLines > 0 ? MaxLines : DefaultMaxLines;
 
@@ -30,5 +36,9 @@ namespace BlazorShop.Application.CommerceNode.Carts
 
         public int EffectiveMaxFulfillmentProviderKeyLength =>
             MaxFulfillmentProviderKeyLength > 0 ? MaxFulfillmentProviderKeyLength : DefaultMaxFulfillmentProviderKeyLength;
+
+        public int EffectiveExpirationDays => ExpirationDays > 0 ? ExpirationDays : DefaultExpirationDays;
+
+        public int EffectiveCleanupBatchSize => CleanupBatchSize > 0 ? CleanupBatchSize : DefaultCleanupBatchSize;
     }
 }

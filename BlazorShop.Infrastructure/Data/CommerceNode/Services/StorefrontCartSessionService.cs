@@ -8,16 +8,21 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using BlazorShop.Domain.Entities.CommerceNode;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Options;
 
     public sealed class StorefrontCartSessionService : IStorefrontCartSessionService
     {
         private const int TokenBytes = 32;
 
         private readonly CommerceNodeDbContext context;
+        private readonly StorefrontCartOptions cartOptions;
 
-        public StorefrontCartSessionService(CommerceNodeDbContext context)
+        public StorefrontCartSessionService(
+            CommerceNodeDbContext context,
+            IOptions<StorefrontCartOptions>? cartOptions = null)
         {
             this.context = context;
+            this.cartOptions = cartOptions?.Value ?? new StorefrontCartOptions();
         }
 
         public async Task<ServiceResponse<StorefrontCartSessionCreated>> CreateAsync(
@@ -30,7 +35,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var now = DateTimeOffset.UtcNow;
-            var expiresAt = request.ExpiresAtUtc ?? now.AddDays(30);
+            var expiresAt = request.ExpiresAtUtc ?? now.AddDays(this.cartOptions.EffectiveExpirationDays);
             if (expiresAt <= now)
             {
                 return Failed<StorefrontCartSessionCreated>(ServiceResponseType.ValidationError, "Cart expiration must be in the future.");
@@ -365,6 +370,47 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             Touch(session, DateTimeOffset.UtcNow);
             await this.context.SaveChangesAsync(cancellationToken);
             return Succeeded("Cart line removed.", Map(session));
+        }
+
+        public async Task<ServiceResponse<StorefrontCartCleanupResult>> ExpireStaleActiveSessionsAsync(
+            Guid? storeId = null,
+            DateTimeOffset? now = null,
+            CancellationToken cancellationToken = default)
+        {
+            if (storeId == Guid.Empty)
+            {
+                return Failed<StorefrontCartCleanupResult>(ServiceResponseType.ValidationError, "Store is required.");
+            }
+
+            var cutoff = now ?? DateTimeOffset.UtcNow;
+            var query = this.context.CartSessions
+                .Where(cart => cart.State == CartSessionStates.Active && cart.ExpiresAtUtc <= cutoff);
+
+            if (storeId.HasValue)
+            {
+                query = query.Where(cart => cart.StoreId == storeId.Value);
+            }
+
+            var sessions = await query
+                .OrderBy(cart => cart.ExpiresAtUtc)
+                .ThenBy(cart => cart.Id)
+                .Take(this.cartOptions.EffectiveCleanupBatchSize)
+                .ToListAsync(cancellationToken);
+
+            foreach (var session in sessions)
+            {
+                session.State = CartSessionStates.Expired;
+                session.UpdatedAtUtc = cutoff;
+            }
+
+            if (sessions.Count > 0)
+            {
+                await this.context.SaveChangesAsync(cancellationToken);
+            }
+
+            return Succeeded(
+                "Expired stale cart sessions.",
+                new StorefrontCartCleanupResult(sessions.Count, sessions.Count, cutoff));
         }
 
         private async Task<CartSessionLoadResult> LoadActiveSessionAsync(

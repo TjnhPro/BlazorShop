@@ -390,80 +390,80 @@ Goal: finish with operational behavior, contract safety, and regression coverage
 
 Implementation checklist:
 
-- [ ] Formalize cart expiration policy in application options.
-- [ ] Confirm expired carts cannot be used.
-- [ ] Add cleanup job/task for expired carts if current task infrastructure is suitable.
-- [ ] Keep cleanup simple:
-  - [ ] expire active sessions older than `ExpiresAtUtc`.
-  - [ ] do not hard delete by default.
-  - [ ] do not remove active, merged, or ordered carts incorrectly.
-- [ ] Update Commerce Node API contract tests:
-  - [ ] stable operation ids.
-  - [ ] summaries.
-  - [ ] `X-Cart-Token` metadata.
-  - [ ] request body required metadata.
-  - [ ] quantity validation metadata.
-  - [ ] auth metadata for merge endpoint.
-  - [ ] typed response/error schemas.
-  - [ ] no domain/admin schemas in public cart schemas.
-  - [ ] recalculate uses POST.
-  - [ ] snapshots refreshed.
-- [ ] Update application/session tests:
-  - [ ] create/resume guest cart.
-  - [ ] token hash only.
-  - [ ] store-scoped token loading.
-  - [ ] expired cart marked expired.
-  - [ ] merged/ordered carts are not active.
-  - [ ] version increments on mutating commands.
-  - [ ] add-line snapshot behavior.
-  - [ ] same line merges quantity.
-  - [ ] different variant/attributes/personalization/artwork keeps separate lines.
-  - [ ] validate is non-mutating.
-  - [ ] recalculate updates stale snapshots.
-  - [ ] guest cart merges into current customer cart.
-- [ ] Update checkout regression tests:
-  - [ ] checkout rejects stale cart version.
-  - [ ] checkout rejects invalid cart after product/variant availability changes.
-  - [ ] checkout uses server-side snapshots/totals.
-  - [ ] ordered cart cannot be loaded as active.
-- [ ] Update Storefront V2 tests:
-  - [ ] `/api/cart/lines` creates HttpOnly `bs-cart-token`.
-  - [ ] browser request does not send price/customer identity.
-  - [ ] cart page renders projection.
-  - [ ] badge uses server summary count.
-  - [ ] invalid cart blocks checkout.
-  - [ ] login merge keeps guest cart lines.
-  - [ ] legacy `my-cart` cookie import still works and deletes legacy cookie.
-- [ ] Update QA docs:
-  - [ ] `QA-CommerceNode.todo.md`.
-  - [ ] `QA-StorefrontV2.todo.md`.
-  - [ ] `QA-ControlPlane.todo.md` only if boundary evidence changed.
-- [ ] Build active V2 projects touched by the phase.
-- [ ] Run focused verification.
-- [ ] Review diff for:
-  - [ ] no legacy `BlazorShop.Presentation` feature changes.
-  - [ ] no `AppDbContext` migration.
-  - [ ] no new `api/internal/*`.
-  - [ ] no discount/tax/shipping estimator engines.
-  - [ ] no browser-owned customer identity or price fields.
+- [x] Formalize cart expiration policy in application options. 2026-07-16 Phase 6: `StorefrontCartOptions` now owns cart `ExpirationDays` with a 30-day default.
+- [x] Confirm expired carts cannot be used. 2026-07-16 Phase 6: session service tests still cover expired cart conflict and state transition.
+- [x] Add cleanup job/task for expired carts if current task infrastructure is suitable. 2026-07-16 Phase 6: added an internal session-service cleanup command instead of a public route or new worker.
+- [x] Keep cleanup simple:
+  - [x] expire active sessions older than `ExpiresAtUtc`.
+  - [x] do not hard delete by default.
+  - [x] do not remove active, merged, or ordered carts incorrectly.
+- [x] Update Commerce Node API contract tests:
+  - [x] stable operation ids.
+  - [x] summaries.
+  - [x] `X-Cart-Token` metadata.
+  - [x] request body required metadata.
+  - [x] quantity validation metadata.
+  - [x] auth metadata for merge endpoint.
+  - [x] typed response/error schemas.
+  - [x] no domain/admin schemas in public cart schemas.
+  - [x] recalculate uses POST.
+  - [x] snapshots refreshed.
+- [x] Update application/session tests:
+  - [x] create/resume guest cart.
+  - [x] token hash only.
+  - [x] store-scoped token loading.
+  - [x] expired cart marked expired.
+  - [x] merged/ordered carts are not active.
+  - [x] version increments on mutating commands.
+  - [x] add-line snapshot behavior.
+  - [x] same line merges quantity.
+  - [x] different variant/attributes/personalization/artwork keeps separate lines.
+  - [x] validate is non-mutating.
+  - [x] recalculate updates stale snapshots.
+  - [x] guest cart merges into current customer cart.
+- [x] Update checkout regression tests:
+  - [x] checkout rejects stale cart version.
+  - [x] checkout rejects invalid cart after product/variant availability changes.
+  - [x] checkout uses server-side snapshots/totals.
+  - [x] ordered cart cannot be loaded as active.
+- [x] Update Storefront V2 tests:
+  - [x] `/api/cart/lines` creates HttpOnly `bs-cart-token`.
+  - [x] browser request does not send price/customer identity.
+  - [x] cart page renders projection.
+  - [x] badge uses server summary count.
+  - [x] invalid cart blocks checkout.
+  - [x] login merge keeps guest cart lines.
+  - [x] legacy `my-cart` cookie import still works and deletes legacy cookie.
+- [x] Update QA docs:
+  - [x] `QA-CommerceNode.todo.md`.
+  - [x] `QA-StorefrontV2.todo.md`.
+  - [x] `QA-ControlPlane.todo.md` only if boundary evidence changed.
+- [x] Build active V2 projects touched by the phase. 2026-07-16 Phase 6: focused test run built Application, Infrastructure, CommerceNode API, and Storefront V2.
+- [x] Run focused verification. 2026-07-16 Phase 6: focused cart/session/OpenAPI/checkout/Storefront client/static run passed 107/107.
+- [x] Review diff for:
+  - [x] no legacy `BlazorShop.Presentation` feature changes.
+  - [x] no `AppDbContext` migration.
+  - [x] no new `api/internal/*`.
+  - [x] no discount/tax/shipping estimator engines.
+  - [x] no browser-owned customer identity or price fields.
 
 Verification checklist:
 
-- [ ] CommerceNode API build passes.
-- [ ] Storefront V2 build passes.
-- [ ] Storefront OpenAPI contract tests pass.
-- [ ] Cart application/session tests pass.
-- [ ] Checkout regression tests pass.
-- [ ] Storefront V2 host/static/API client tests pass.
-- [ ] Visible browser QA passes for changed cart flows when runtime is available, or is explicitly marked pending with reason.
+- [x] CommerceNode API build passes. 2026-07-16 Phase 6: CommerceNode API built during focused test run.
+- [x] Storefront V2 build passes. 2026-07-16 Phase 6: Storefront V2 built during focused test run.
+- [x] Storefront OpenAPI contract tests pass. 2026-07-16 Phase 6: included in 107/107 focused run.
+- [x] Cart application/session tests pass. 2026-07-16 Phase 6: included in 107/107 focused run.
+- [x] Checkout regression tests pass. 2026-07-16 Phase 6: included in 107/107 focused run.
+- [x] Storefront V2 host/static/API client tests pass. 2026-07-16 Phase 6: API client/static guardrails included in 107/107; host smoke passed in Phase 5 with no browser-flow changes in Phase 6.
+- [~] Visible browser QA passes for changed cart flows when runtime is available, or is explicitly marked pending with reason. 2026-07-16 Phase 6: no UI/browser flow changed; expiration cleanup is application-service behavior guarded by automated tests.
 
 Exit criteria:
 
-- [ ] Expired carts cannot be used.
-- [ ] Cleanup does not corrupt active/merged/ordered carts.
-- [ ] OpenAPI remains generator-safe.
-- [ ] Checkout/order tests still pass.
-- [ ] QA checklist files contain evidence.
+- [x] Expired carts cannot be used. 2026-07-16 Phase 6: expired cart conflict test passed.
+- [x] Cleanup does not corrupt active/merged/ordered carts. 2026-07-16 Phase 6: cleanup test verifies only matching active expired sessions are marked expired.
+- [x] OpenAPI remains generator-safe. 2026-07-16 Phase 6: Storefront OpenAPI contract tests passed.
+- [x] Checkout/order tests still pass. 2026-07-16 Phase 6: checkout regression tests included in focused 107/107 run.
+- [x] QA checklist files contain evidence. 2026-07-16 Phase 6: CommerceNode, StorefrontV2, and ControlPlane cart QA notes updated.
 
 Suggested commit:
 
@@ -475,20 +475,20 @@ test(cart-core): complete release gate
 
 ### Commerce Node
 
-- [ ] Cart session token is stored hashed only.
-- [ ] Cart token lookup is store-scoped.
-- [ ] Expired cart is rejected or marked expired.
+- [x] Cart session token is stored hashed only. 2026-07-16 Phase 6: session service focused tests passed.
+- [x] Cart token lookup is store-scoped. 2026-07-16 Phase 6: session service focused tests passed.
+- [x] Expired cart is rejected or marked expired. 2026-07-16 Phase 6: session service expiration and cleanup tests passed.
 - [x] Merged cart is not loadable as active. 2026-07-16 Phase 3: session service test verifies merged cart token returns conflict.
-- [ ] Ordered cart is not loadable as active.
-- [ ] Guest cart create/resume works.
-- [ ] Cart add-line snapshots server price and currency.
-- [ ] Same line key merges quantity and increments version.
-- [ ] Different variant/attributes/personalization/artwork keeps separate lines.
-- [ ] Add-line rejects wrong-store product.
-- [ ] Add-line rejects unpublished product.
-- [ ] Add-line rejects archived product.
-- [ ] Add-line rejects invalid variant.
-- [ ] Add-line rejects invalid selected attributes.
+- [x] Ordered cart is not loadable as active. 2026-07-16 Phase 6: checkout/session focused tests passed and cleanup test preserves ordered carts.
+- [x] Guest cart create/resume works. 2026-07-16 Phase 6: cart/session focused tests passed.
+- [x] Cart add-line snapshots server price and currency. 2026-07-16 Phase 6: cart service focused tests passed.
+- [x] Same line key merges quantity and increments version. 2026-07-16 Phase 6: session service focused tests passed.
+- [x] Different variant/attributes/personalization/artwork keeps separate lines. 2026-07-16 Phase 6: cart service focused tests passed.
+- [x] Add-line rejects wrong-store product. 2026-07-16 Phase 6: cart service focused tests passed.
+- [x] Add-line rejects unpublished product. 2026-07-16 Phase 6: cart service focused tests passed.
+- [x] Add-line rejects archived product. 2026-07-16 Phase 6: cart service focused tests passed.
+- [x] Add-line rejects invalid variant. 2026-07-16 Phase 6: cart service focused tests passed.
+- [x] Add-line rejects invalid selected attributes. 2026-07-16 Phase 6: cart service focused tests passed.
 - [x] Add-line rejects invalid quantity. 2026-07-16 Phase 4: min/default max/product quantity tests passed.
 - [x] Add/update rejects managed stock shortage. 2026-07-16 Phase 4: existing sellability/cart tests remain green.
 - [x] Cart projection includes line display fields and totals. 2026-07-16 Phase 5: Storefront V2 cart page consumes display fields, line totals, and warnings directly from the projection.
@@ -496,29 +496,29 @@ test(cart-core): complete release gate
 - [x] Recalculate updates stale snapshots. 2026-07-16 Phase 2: application/session tests guard stale price and snapshot currency updates.
 - [x] Recalculate returns 409 for stale expected version. 2026-07-16 Phase 2: application service test guards stale expected version conflict.
 - [x] Customer cart merge derives identity from auth context only. 2026-07-16 Phase 3: merge endpoint is Bearer-protected and accepts no request body.
-- [ ] Public request schemas do not include customer id, app user id, price, discount, tax, or order-owned fields.
-- [ ] Storefront OpenAPI validates and snapshot passes.
+- [x] Public request schemas do not include customer id, app user id, price, discount, tax, or order-owned fields. 2026-07-16 Phase 6: static contract guard included in focused run.
+- [x] Storefront OpenAPI validates and snapshot passes. 2026-07-16 Phase 6: Storefront OpenAPI contract tests passed.
 
 ### Storefront V2
 
-- [ ] Local `/api/cart` uses HttpOnly `bs-cart-token`.
-- [ ] Local `/api/cart` imports legacy `my-cart` cookie and deletes it after import.
-- [ ] Browser add-line request does not send price/customer identity.
+- [x] Local `/api/cart` uses HttpOnly `bs-cart-token`. 2026-07-16 Phase 6: static/token guardrails included in focused run.
+- [x] Local `/api/cart` imports legacy `my-cart` cookie and deletes it after import. 2026-07-16 Phase 6: static/token guardrails included in focused run.
+- [x] Browser add-line request does not send price/customer identity. 2026-07-16 Phase 6: static guard included in focused run.
 - [x] Cart page renders projection without product N+1 calls. 2026-07-16 Phase 5: static guard verifies no cart page product detail fetch.
 - [x] Cart page shows image, URL, selected attributes, unit price, line total, and warnings. 2026-07-16 Phase 5: projection-backed cart page renders these fields.
 - [x] Cart page shows subtotal/grand total from projection. 2026-07-16 Phase 5: local cart response exposes projection totals.
-- [ ] Cart badge uses server summary count.
-- [ ] Add/update/remove/clear flows still work.
+- [x] Cart badge uses server summary count. 2026-07-16 Phase 6: Storefront API client/static guardrails included in focused run.
+- [x] Add/update/remove/clear flows still work. 2026-07-16 Phase 6: Storefront client/static and cart service focused tests passed.
 - [x] Invalid/unavailable cart line blocks checkout. 2026-07-16 Phase 5: `CheckoutAllowed` disables checkout and line warnings remain visible.
-- [ ] Cart page remains noindex/private.
-- [ ] Login merge keeps guest cart lines.
-- [ ] Browser QA finds no unexpected console errors.
+- [x] Cart page remains noindex/private. 2026-07-16 Phase 6: static guardrails and Phase 5 host smoke evidence remain valid.
+- [x] Login merge keeps guest cart lines. 2026-07-16 Phase 6: Storefront client/session focused tests passed.
+- [~] Browser QA finds no unexpected console errors. 2026-07-16 Phase 6: no UI/browser flow changed; Phase 5 Storefront host smoke evidence remains current.
 
 ### Control Plane
 
-- [ ] ControlPlane Web still calls only ControlPlane API.
-- [ ] Control Plane does not participate in Storefront cart runtime.
-- [ ] No ControlPlane Web direct call to CommerceNode cart API is introduced.
+- [x] ControlPlane Web still calls only ControlPlane API. 2026-07-16 Phase 6: no ControlPlane Web code changed.
+- [x] Control Plane does not participate in Storefront cart runtime. 2026-07-16 Phase 6: cart expiration/cleanup remains inside CommerceNode application/session service.
+- [x] No ControlPlane Web direct call to CommerceNode cart API is introduced. 2026-07-16 Phase 6: no ControlPlane Web code changed.
 
 ## Deferred Scope Checklist
 
@@ -532,13 +532,13 @@ test(cart-core): complete release gate
 - [ ] Customer-role pricing remains deferred.
 - [ ] Store-specific price hooks remain deferred.
 - [ ] Signed JWT cart tokens remain deferred.
-- [ ] Hard delete cleanup remains deferred unless storage pressure requires it.
+- [x] Hard delete cleanup remains deferred unless storage pressure requires it. 2026-07-16 Phase 6: cleanup marks stale active sessions `expired` and does not delete rows.
 
 ## Risk Register
 
-- [ ] Unknown store token loads another store's cart.
+- [x] Unknown store token loads another store's cart. 2026-07-16 Phase 6: wrong-store token lookup remains covered by session service tests.
 - [x] Browser sends customer id and attaches cart to another account. 2026-07-16 Phase 3: risk mitigated by ignoring public create identity and using no-body authenticated merge.
-- [ ] Cart token is persisted in plaintext.
+- [x] Cart token is persisted in plaintext. 2026-07-16 Phase 6: hash-only token storage remains covered by session service tests.
 - [x] Recalculate mutates state from a GET route. 2026-07-16 Phase 2: risk mitigated by POST-only `/cart/recalculate` OpenAPI contract assertion.
 - [ ] Checkout uses stale price snapshots after product price changes.
 - [x] Storefront hides an unavailable item but still allows checkout. 2026-07-16 Phase 5: risk mitigated by projection warnings plus `CheckoutAllowed` disabled state.
@@ -558,15 +558,15 @@ test(cart-core): complete release gate
 - [x] Phase 3 - authenticated cart attach and merge. 2026-07-16: trusted-identity merge endpoint, Storefront login hook, OpenAPI security metadata, and focused tests completed.
 - [x] Phase 4 - quantity constraints and item limits. 2026-07-16: cart options, max lines, max quantity, projection caps, OpenAPI assertions, and focused tests completed.
 - [x] Phase 5 - Storefront V2 cart UI consumption. 2026-07-16: local cart response, cart page projection rendering, checkout disabled state, QA docs, and focused tests completed.
-- [ ] Phase 6 - expiration, cleanup, QA, and contract finish.
+- [x] Phase 6 - expiration, cleanup, QA, and contract finish. 2026-07-16: expiration policy options, internal cleanup command, QA docs, and focused 107/107 verification completed.
 
 ## Definition Of Done
 
-- [ ] Storefront V2 can add, view, update, remove, clear, recalculate, and checkout cart lines through the server cart.
-- [ ] Guest cart is store-scoped and token-secured.
-- [ ] Authenticated login can attach or merge the current guest cart without trusting browser identity.
-- [ ] Cart projection is rich enough for cart page, badge, warnings, and checkout eligibility.
-- [ ] Server validates product, variant, quantity, price, currency, and availability before cart mutation and checkout.
-- [ ] OpenAPI and tests protect the contract.
-- [ ] No active V2 code depends on legacy cart storage.
-- [ ] Deferred discount, tax, shipping, saved-cart, partial-checkout, wishlist, and marketing features remain unimplemented.
+- [x] Storefront V2 can add, view, update, remove, clear, recalculate, and checkout cart lines through the server cart. 2026-07-16: phases 0-6 focused tests and host smoke evidence completed.
+- [x] Guest cart is store-scoped and token-secured. 2026-07-16: token hash, wrong-store lookup, HttpOnly cookie, and local endpoint guardrails passed.
+- [x] Authenticated login can attach or merge the current guest cart without trusting browser identity. 2026-07-16: merge endpoint/client/session tests passed.
+- [x] Cart projection is rich enough for cart page, badge, warnings, and checkout eligibility. 2026-07-16: projection DTO/API/UI phases completed.
+- [x] Server validates product, variant, quantity, price, currency, and availability before cart mutation and checkout. 2026-07-16: cart/checkout focused tests passed.
+- [x] OpenAPI and tests protect the contract. 2026-07-16: Storefront OpenAPI contract tests and snapshots passed.
+- [x] No active V2 code depends on legacy cart storage. 2026-07-16: legacy readable `my-cart` remains import-only and is deleted after import.
+- [x] Deferred discount, tax, shipping, saved-cart, partial-checkout, wishlist, and marketing features remain unimplemented. 2026-07-16: Phase 6 made no engine/scope expansion.

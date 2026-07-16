@@ -399,6 +399,7 @@ Status legend:
 
 - [x] Control Plane is not part of Storefront cart runtime in Phase 0. 2026-07-16: cart baseline changed docs/tests only; `Cart Core.todo.md` keeps Storefront cart runtime under Commerce Node Storefront API plus Storefront V2 local `/api/cart`.
 - [x] ControlPlane Web must not call CommerceNode cart APIs directly. 2026-07-16: existing architecture boundary tests and browser network QA remain the guard; no ControlPlane Web cart code was added.
+- [x] Cart Core expiration/cleanup remains outside Control Plane. 2026-07-16 Phase 6: cleanup is an internal CommerceNode session-service command; no ControlPlane API/Web code or direct CommerceNode browser path was added.
 
 ## Regression Automation Suggestions
 

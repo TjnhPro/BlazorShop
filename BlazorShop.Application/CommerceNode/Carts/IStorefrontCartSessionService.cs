@@ -39,5 +39,10 @@ namespace BlazorShop.Application.CommerceNode.Carts
             string token,
             Guid lineId,
             CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<StorefrontCartCleanupResult>> ExpireStaleActiveSessionsAsync(
+            Guid? storeId = null,
+            DateTimeOffset? now = null,
+            CancellationToken cancellationToken = default);
     }
 }

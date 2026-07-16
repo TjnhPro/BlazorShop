@@ -74,6 +74,11 @@ namespace BlazorShop.Application.CommerceNode.Carts
         DateTimeOffset ExpiresAtUtc,
         DateTimeOffset CreatedAtUtc);
 
+    public sealed record StorefrontCartCleanupResult(
+        int MatchedCount,
+        int ExpiredCount,
+        DateTimeOffset CutoffUtc);
+
     public sealed record StorefrontCartSessionDto(
         Guid Id,
         Guid PublicId,

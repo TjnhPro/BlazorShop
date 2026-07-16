@@ -305,6 +305,10 @@ Plan: `Cart Core.todo.md`.
 - [x] Recalculate command refreshes stale snapshots through POST and keeps validate non-mutating. 2026-07-16 Phase 2: `StorefrontCartServiceTests` covers stale price refresh, stale expected version conflict, and non-mutating validate; `CommerceNodeStorefrontOpenApiContractTests` guards POST metadata and refreshed snapshot.
 - [x] Authenticated cart merge derives customer identity from trusted auth context only. 2026-07-16 Phase 3: merge endpoint is Bearer-protected, accepts no identity body, derives `AppUserId` from claims, and session tests cover attach/merge/conflict behavior.
 - [x] Cart quantity constraints and cart limits are enforced consistently. 2026-07-16 Phase 4: `StorefrontCartOptions` adds max lines/default max quantity/personalization limits; focused cart/OpenAPI/client tests passed 78/78.
+- [x] Cart expiration policy is configurable and defaults safely. 2026-07-16 Phase 6: `StorefrontCartOptions.ExpirationDays` defaults to 30 and `StorefrontCartSessionServiceTests.CreateAsync_UsesConfiguredExpirationPolicy_WhenRequestDoesNotSpecifyExpiration` passed.
+- [x] Expired active carts are marked expired and cannot be used. 2026-07-16 Phase 6: session service expiration tests passed; expired cart mutation returns conflict and changes state to `expired`.
+- [x] Cart cleanup does not hard delete or corrupt active, merged, ordered, or another-store carts. 2026-07-16 Phase 6: `ExpireStaleActiveSessionsAsync_ExpiresOnlyMatchingActiveExpiredSessions` and batch-size cleanup tests passed.
+- [x] Cart Core release gate passed. 2026-07-16 Phase 6: focused `StorefrontCartSessionServiceTests|StorefrontCartServiceTests|CommerceNodeStorefrontOpenApiContractTests|StorefrontCheckoutServiceTests|StorefrontV2ApiClientTests|CartCorePhase0InventoryTests` run passed 107/107.
 
 ## Store Resolution Hardening
 

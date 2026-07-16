@@ -328,6 +328,7 @@ Plan: `Cart Core.todo.md`.
 - [x] Storefront V2 has a typed API client command for Storefront cart recalculation. 2026-07-16 Phase 2: `StorefrontV2ApiClientTests.RecalculateCartAsync_PostsStoreScopedCartCommand` passed and guards route, `X-Cart-Token`, and `expectedVersion` body.
 - [x] Invalid/unavailable cart line blocks checkout from projection state. 2026-07-16 Phase 5: cart page uses `CheckoutAllowed` and line warnings from projection; host smoke tests passed.
 - [x] Login merge keeps guest cart lines without browser-supplied identity. 2026-07-16 Phase 3: sign-in flow calls `StorefrontCartTokenService.MergeCurrentCustomerAsync` with the access token from login, and Storefront API client test verifies Bearer + `X-Cart-Token` without request body.
+- [x] Cart Core automated release gate passed without adding new browser-owned cart state. 2026-07-16 Phase 6: focused cart/session/OpenAPI/checkout/Storefront client/static run passed 107/107; Phase 6 changed service expiration/cleanup only, so headed browser QA remains unchanged from Phase 5 host smoke evidence.
 
 ## Store Resolution And Public URL Hardening
 
