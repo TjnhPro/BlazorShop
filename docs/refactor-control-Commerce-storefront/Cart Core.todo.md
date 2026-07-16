@@ -282,49 +282,49 @@ Goal: enforce practical cart limits and prepare the cart contract for availabili
 
 Implementation checklist:
 
-- [ ] Centralize cart quantity validation for:
-  - [ ] minimum quantity.
-  - [ ] maximum quantity.
-  - [ ] quantity step.
-  - [ ] allowed quantities list when available.
-  - [ ] managed stock ceiling.
-- [ ] Use existing sellability/selection services where available.
-- [ ] Add application options for conservative cart limits:
-  - [ ] max lines per cart.
-  - [ ] max quantity per line where product max is absent.
-  - [ ] max personalization payload size.
-  - [ ] max selected attributes payload size if needed.
-- [ ] Enforce item limit before creating database/checkout risk.
-- [ ] Enforce personalization/artwork payload limits consistently.
-- [ ] Return quantity constraints in line projection.
-- [ ] Return stable warning/error codes; UI must not parse message text.
-- [ ] Keep initial defaults simple where catalog fields do not exist:
-  - [ ] minimum quantity `1`.
-  - [ ] step `1`.
-  - [ ] maximum from managed stock when applicable.
-  - [ ] otherwise configured cart option limit.
-- [ ] Publish validation metadata in OpenAPI:
-  - [ ] `minimum: 1` for quantity.
-  - [ ] payload max lengths where applicable.
-  - [ ] request body required.
+- [x] Centralize cart quantity validation for:
+  - [x] minimum quantity. 2026-07-16 Phase 4: add/update still enforce `minimum: 1` and product sellability min.
+  - [x] maximum quantity. 2026-07-16 Phase 4: configured default max and product max are enforced.
+  - [x] quantity step. 2026-07-16 Phase 4: existing product selection/sellability resolver remains the source of truth.
+  - [x] allowed quantities list when available. 2026-07-16 Phase 4: no allowed-quantity list exists yet, projection keeps it null.
+  - [x] managed stock ceiling. 2026-07-16 Phase 4: existing sellability resolver continues to enforce stock ceiling.
+- [x] Use existing sellability/selection services where available. 2026-07-16 Phase 4: add/update paths still resolve through `ProductSelectionResolver`.
+- [x] Add application options for conservative cart limits:
+  - [x] max lines per cart.
+  - [x] max quantity per line where product max is absent.
+  - [x] max personalization payload size.
+  - [x] max selected attributes payload size if needed.
+- [x] Enforce item limit before creating database/checkout risk. 2026-07-16 Phase 4: new-line count is checked before `AddOrUpdateLineAsync` writes.
+- [x] Enforce personalization/artwork payload limits consistently. 2026-07-16 Phase 4: personalization hash/payload/provider limits are option-backed; artwork version retains range validation.
+- [x] Return quantity constraints in line projection. 2026-07-16 Phase 4: projection caps `QuantityMaximum` by configured max.
+- [x] Return stable warning/error codes; UI must not parse message text. 2026-07-16 Phase 4: max/default limit uses validation response and projection warnings keep stable reason codes.
+- [x] Keep initial defaults simple where catalog fields do not exist:
+  - [x] minimum quantity `1`.
+  - [x] step `1`.
+  - [x] maximum from managed stock when applicable.
+  - [x] otherwise configured cart option limit.
+- [x] Publish validation metadata in OpenAPI:
+  - [x] `minimum: 1` for quantity.
+  - [x] payload max lengths where applicable.
+  - [x] request body required.
 
 Verification checklist:
 
-- [ ] Add-line rejects quantity below minimum.
-- [ ] Update-line rejects quantity below minimum.
-- [ ] Add/update reject quantity above max.
-- [ ] Add/update reject invalid step.
-- [ ] Add/update reject managed stock shortage.
-- [ ] Large cart line count is rejected before write.
-- [ ] Oversized personalization payload is rejected before write.
-- [ ] Projection includes enough data to render quantity controls correctly.
-- [ ] OpenAPI validation metadata is present.
+- [x] Add-line rejects quantity below minimum. 2026-07-16 Phase 4: existing cart tests remain green.
+- [x] Update-line rejects quantity below minimum. 2026-07-16 Phase 4: existing update validation remains guarded by focused tests.
+- [x] Add/update reject quantity above max. 2026-07-16 Phase 4: tests added for configured default max.
+- [x] Add/update reject invalid step. 2026-07-16 Phase 4: existing sellability tests remain green.
+- [x] Add/update reject managed stock shortage. 2026-07-16 Phase 4: existing sellability/cart tests remain green.
+- [x] Large cart line count is rejected before write. 2026-07-16 Phase 4: max-line tests added.
+- [x] Oversized personalization payload is rejected before write. 2026-07-16 Phase 4: option-backed personalization limits remain in add-line validation.
+- [x] Projection includes enough data to render quantity controls correctly. 2026-07-16 Phase 4: projection max cap test added.
+- [x] OpenAPI validation metadata is present. 2026-07-16 Phase 4: OpenAPI contract test asserts quantity minimum and payload max lengths.
 
 Exit criteria:
 
-- [ ] Cart quantity rules are enforced consistently.
-- [ ] Large carts and oversized payloads are bounded.
-- [ ] Storefront can render quantity controls from projection data.
+- [x] Cart quantity rules are enforced consistently. 2026-07-16 Phase 4: add/update use selection resolver plus configured default cap.
+- [x] Large carts and oversized payloads are bounded. 2026-07-16 Phase 4: `StorefrontCartOptions` backs max lines, max quantity, and personalization limits.
+- [x] Storefront can render quantity controls from projection data. 2026-07-16 Phase 4: quantity min/max/step projection remains present and capped.
 
 Suggested commit:
 
@@ -489,8 +489,8 @@ test(cart-core): complete release gate
 - [ ] Add-line rejects archived product.
 - [ ] Add-line rejects invalid variant.
 - [ ] Add-line rejects invalid selected attributes.
-- [ ] Add-line rejects invalid quantity.
-- [ ] Add/update rejects managed stock shortage.
+- [x] Add-line rejects invalid quantity. 2026-07-16 Phase 4: min/default max/product quantity tests passed.
+- [x] Add/update rejects managed stock shortage. 2026-07-16 Phase 4: existing sellability/cart tests remain green.
 - [ ] Cart projection includes line display fields and totals.
 - [x] Validate is non-mutating. 2026-07-16 Phase 2: application service test guards snapshot/version unchanged.
 - [x] Recalculate updates stale snapshots. 2026-07-16 Phase 2: application/session tests guard stale price and snapshot currency updates.
@@ -544,7 +544,7 @@ test(cart-core): complete release gate
 - [ ] Storefront hides an unavailable item but still allows checkout.
 - [ ] Product deleted/unpublished after add-to-cart causes null reference or checkout crash.
 - [ ] Variant selection becomes invalid but checkout still places an order.
-- [ ] Quantity update bypasses min/max/step or stock checks.
+- [x] Quantity update bypasses min/max/step or stock checks. 2026-07-16 Phase 4: risk mitigated by update max/default cap and existing selection resolver checks.
 - [ ] Merge duplicates lines incorrectly or loses personalization/artwork differences.
 - [ ] Legacy `my-cart` readable cookie remains after server cart import.
 - [ ] Public API leaks provider secrets, internal ids, admin fields, or domain entities.
@@ -556,7 +556,7 @@ test(cart-core): complete release gate
 - [x] Phase 1 - cart projection and basic totals. 2026-07-16: server projection, public response, Storefront client model, snapshot, and focused tests completed.
 - [x] Phase 2 - recalculate command. 2026-07-16: POST command, OpenAPI metadata/snapshot, Storefront V2 typed client, and focused tests completed.
 - [x] Phase 3 - authenticated cart attach and merge. 2026-07-16: trusted-identity merge endpoint, Storefront login hook, OpenAPI security metadata, and focused tests completed.
-- [ ] Phase 4 - quantity constraints and item limits.
+- [x] Phase 4 - quantity constraints and item limits. 2026-07-16: cart options, max lines, max quantity, projection caps, OpenAPI assertions, and focused tests completed.
 - [ ] Phase 5 - Storefront V2 cart UI consumption.
 - [ ] Phase 6 - expiration, cleanup, QA, and contract finish.
 

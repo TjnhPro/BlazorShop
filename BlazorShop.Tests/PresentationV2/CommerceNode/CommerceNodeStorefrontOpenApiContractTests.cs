@@ -724,6 +724,9 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             var addLineSchema = schemas["StorefrontCartLineCreateRequest"]?.AsObject()
                 ?? throw new InvalidOperationException("StorefrontCartLineCreateRequest schema was not found.");
             Assert.Equal(1, addLineSchema["properties"]?["quantity"]?["minimum"]?.GetValue<int>());
+            Assert.Equal(128, addLineSchema["properties"]?["personalizationHash"]?["maxLength"]?.GetValue<int>());
+            Assert.Equal(8192, addLineSchema["properties"]?["personalizationJson"]?["maxLength"]?.GetValue<int>());
+            Assert.Equal(64, addLineSchema["properties"]?["fulfillmentProviderKey"]?["maxLength"]?.GetValue<int>());
 
             var updateLineSchema = schemas["StorefrontCartLineUpdateRequest"]?.AsObject()
                 ?? throw new InvalidOperationException("StorefrontCartLineUpdateRequest schema was not found.");

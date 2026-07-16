@@ -13,6 +13,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
     using BlazorShop.Infrastructure.Data.CommerceNode.Services;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Options;
 
     using Moq;
 
@@ -117,6 +118,34 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.True(result.Success);
             var line = Assert.Single(result.Payload!.Lines);
             Assert.Equal("USD", line.CurrencyCodeSnapshot);
+        }
+
+        [Fact]
+        public async Task AddLineAsync_CapsProjectionQuantityMaximumWithConfiguredDefaultMax()
+        {
+            await using var context = CreateContext();
+            var productRepository = new Mock<IProductReadRepository>();
+            var service = CreateService(context, productRepository, cartOptions: new StorefrontCartOptions
+            {
+                MaxQuantityPerLine = 3,
+            });
+            var storeId = Guid.NewGuid();
+            var product = CreatePublishedProduct(storeId, price: 12.50m, stock: 10);
+            product.MinOrderQuantity = 1;
+            product.MaxOrderQuantity = 5;
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cart = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+
+            var result = await service.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 2));
+
+            Assert.True(result.Success);
+            Assert.Equal(3, Assert.Single(result.Payload!.Lines).QuantityMaximum);
         }
 
         [Fact]
@@ -460,6 +489,135 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public async Task AddLineAsync_RejectsQuantityAboveConfiguredDefaultMax()
+        {
+            await using var context = CreateContext();
+            var productRepository = new Mock<IProductReadRepository>();
+            var service = CreateService(context, productRepository, cartOptions: new StorefrontCartOptions
+            {
+                MaxQuantityPerLine = 3,
+            });
+            var storeId = Guid.NewGuid();
+            var cart = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+
+            var result = await service.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                Guid.NewGuid(),
+                Quantity: 4));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.ValidationError, result.ResponseType);
+            Assert.Equal("Quantity must be 3 or fewer.", result.Message);
+            Assert.Empty(context.CartLines);
+            productRepository.Verify(repository => repository.GetPublishedProductDetailsByIdAsync(It.IsAny<Guid>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateLineAsync_RejectsQuantityAboveConfiguredDefaultMax()
+        {
+            await using var context = CreateContext();
+            var productRepository = new Mock<IProductReadRepository>();
+            var service = CreateService(context, productRepository, cartOptions: new StorefrontCartOptions
+            {
+                MaxQuantityPerLine = 3,
+            });
+            var storeId = Guid.NewGuid();
+            var product = CreatePublishedProduct(storeId, price: 15m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cart = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await service.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1));
+
+            var result = await service.UpdateLineAsync(new StorefrontCartUpdateLineRequest(
+                storeId,
+                cart.Payload.Token!,
+                add.Payload!.Lines.Single().Id,
+                Quantity: 4));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.ValidationError, result.ResponseType);
+            Assert.Equal("Quantity must be 3 or fewer.", result.Message);
+            Assert.Equal(1, (await context.CartLines.SingleAsync()).Quantity);
+        }
+
+        [Fact]
+        public async Task AddLineAsync_RejectsNewLineWhenConfiguredLineLimitReached()
+        {
+            await using var context = CreateContext();
+            var productRepository = new Mock<IProductReadRepository>();
+            var service = CreateService(context, productRepository, cartOptions: new StorefrontCartOptions
+            {
+                MaxLines = 1,
+            });
+            var storeId = Guid.NewGuid();
+            var firstProduct = CreatePublishedProduct(storeId, price: 15m, stock: 10);
+            var secondProduct = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(firstProduct.Id))
+                .ReturnsAsync(firstProduct);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(secondProduct.Id))
+                .ReturnsAsync(secondProduct);
+            var cart = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var first = await service.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                firstProduct.Id,
+                Quantity: 1));
+
+            var second = await service.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload.Token!,
+                secondProduct.Id,
+                Quantity: 1));
+
+            Assert.True(first.Success);
+            Assert.False(second.Success);
+            Assert.Equal(ServiceResponseType.Conflict, second.ResponseType);
+            Assert.Equal("Cart can contain at most 1 lines.", second.Message);
+            Assert.Equal(1, await context.CartLines.CountAsync());
+        }
+
+        [Fact]
+        public async Task AddLineAsync_AllowsExistingLineMergeWhenConfiguredLineLimitReached()
+        {
+            await using var context = CreateContext();
+            var productRepository = new Mock<IProductReadRepository>();
+            var service = CreateService(context, productRepository, cartOptions: new StorefrontCartOptions
+            {
+                MaxLines = 1,
+            });
+            var storeId = Guid.NewGuid();
+            var product = CreatePublishedProduct(storeId, price: 15m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cart = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var first = await service.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1));
+
+            var second = await service.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload.Token!,
+                product.Id,
+                Quantity: 1));
+
+            Assert.True(first.Success);
+            Assert.True(second.Success);
+            Assert.Single(second.Payload!.Lines);
+            Assert.Equal(2, second.Payload.Lines.Single().Quantity);
+        }
+
+        [Fact]
         public async Task AddLineAsync_RejectsMissingRequiredSelectedAttribute()
         {
             await using var context = CreateContext();
@@ -712,7 +870,8 @@ namespace BlazorShop.Tests.Application.CommerceNode
             string defaultCurrencyCode = "USD",
             string? workingCurrencyCode = null,
             string? conversionTargetCurrencyCode = null,
-            decimal conversionRate = 1m)
+            decimal conversionRate = 1m,
+            StorefrontCartOptions? cartOptions = null)
         {
             return new StorefrontCartService(
                 new StorefrontCartSessionService(context),
@@ -720,7 +879,8 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 new FixedStoreCurrencyResolver(defaultCurrencyCode),
                 new FixedWorkingCurrencyResolver(workingCurrencyCode ?? defaultCurrencyCode, defaultCurrencyCode),
                 new FakeMoneyConversionService(conversionTargetCurrencyCode, conversionRate),
-                new MoneyRoundingService(new CurrencyMetadataService()));
+                new MoneyRoundingService(new CurrencyMetadataService()),
+                cartOptions: Options.Create(cartOptions ?? new StorefrontCartOptions()));
         }
 
         private static Product CreatePublishedProduct(Guid storeId, decimal price, int stock)

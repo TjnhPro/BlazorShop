@@ -1,5 +1,7 @@
 namespace BlazorShop.Application.CommerceNode.Carts
 {
+    using System.Security.Cryptography;
+    using System.Text;
     using System.Text.Json;
 
     using BlazorShop.Application.CommerceNode.Currencies;
@@ -10,14 +12,13 @@ namespace BlazorShop.Application.CommerceNode.Carts
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities;
 
+    using Microsoft.Extensions.Options;
+
     public sealed class StorefrontCartService : IStorefrontCartService
     {
         private const int MaxSelectedAttributes = 5;
         private const int MaxSelectedAttributeNameLength = 100;
         private const int MaxSelectedAttributeValueLength = 200;
-        private const int MaxPersonalizationJsonLength = 8192;
-        private const int MaxPersonalizationHashLength = 128;
-        private const int MaxFulfillmentProviderKeyLength = 64;
         private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
         private readonly IStorefrontCartSessionService sessionService;
@@ -27,6 +28,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
         private readonly IMoneyConversionService moneyConversionService;
         private readonly IMoneyRoundingService moneyRoundingService;
         private readonly IProductSelectionResolver productSelectionResolver;
+        private readonly StorefrontCartOptions cartOptions;
 
         public StorefrontCartService(
             IStorefrontCartSessionService sessionService,
@@ -35,7 +37,8 @@ namespace BlazorShop.Application.CommerceNode.Carts
             IStorefrontWorkingCurrencyResolver workingCurrencyResolver,
             IMoneyConversionService moneyConversionService,
             IMoneyRoundingService moneyRoundingService,
-            IProductSelectionResolver? productSelectionResolver = null)
+            IProductSelectionResolver? productSelectionResolver = null,
+            IOptions<StorefrontCartOptions>? cartOptions = null)
         {
             this.sessionService = sessionService;
             this.productReadRepository = productReadRepository;
@@ -43,6 +46,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
             this.workingCurrencyResolver = workingCurrencyResolver;
             this.moneyConversionService = moneyConversionService;
             this.moneyRoundingService = moneyRoundingService;
+            this.cartOptions = cartOptions?.Value ?? new StorefrontCartOptions();
             this.productSelectionResolver = productSelectionResolver
                 ?? new ProductSelectionResolver(
                     productReadRepository,
@@ -143,7 +147,14 @@ namespace BlazorShop.Application.CommerceNode.Carts
                 return Failed<StorefrontCartSessionDto>(ServiceResponseType.ValidationError, "Quantity must be at least 1.");
             }
 
-            var personalization = ValidatePersonalization(request.PersonalizationHash, request.PersonalizationJson, request.FulfillmentProviderKey);
+            if (request.Quantity > this.cartOptions.EffectiveMaxQuantityPerLine)
+            {
+                return Failed<StorefrontCartSessionDto>(
+                    ServiceResponseType.ValidationError,
+                    $"Quantity must be {this.cartOptions.EffectiveMaxQuantityPerLine} or fewer.");
+            }
+
+            var personalization = this.ValidatePersonalization(request.PersonalizationHash, request.PersonalizationJson, request.FulfillmentProviderKey);
             if (!personalization.Success)
             {
                 return Failed<StorefrontCartSessionDto>(ServiceResponseType.ValidationError, personalization.Message);
@@ -162,6 +173,15 @@ namespace BlazorShop.Application.CommerceNode.Carts
             if (!selection.Success)
             {
                 return Failed<StorefrontCartSessionDto>(selection.ResponseType, selection.Message);
+            }
+
+            var cartLimit = await this.ValidateCartLineLimitAsync(
+                request,
+                selection.SelectedAttributesJson,
+                cancellationToken);
+            if (!cartLimit.Success)
+            {
+                return Failed<StorefrontCartSessionDto>(cartLimit.ResponseType, cartLimit.Message);
             }
 
             return await this.EnrichCartResponseAsync(
@@ -199,6 +219,13 @@ namespace BlazorShop.Application.CommerceNode.Carts
             if (request.Quantity < 1)
             {
                 return Failed<StorefrontCartSessionDto>(ServiceResponseType.ValidationError, "Quantity must be at least 1.");
+            }
+
+            if (request.Quantity > this.cartOptions.EffectiveMaxQuantityPerLine)
+            {
+                return Failed<StorefrontCartSessionDto>(
+                    ServiceResponseType.ValidationError,
+                    $"Quantity must be {this.cartOptions.EffectiveMaxQuantityPerLine} or fewer.");
             }
 
             var cart = await this.sessionService.ResolveAsync(request.StoreId, request.Token, cancellationToken);
@@ -273,6 +300,37 @@ namespace BlazorShop.Application.CommerceNode.Carts
             }
 
             return await this.EnrichCartResponseAsync(current, storeId, cancellationToken);
+        }
+
+        private async Task<CartLimitValidation> ValidateCartLineLimitAsync(
+            StorefrontCartAddLineRequest request,
+            string? selectedAttributesJson,
+            CancellationToken cancellationToken)
+        {
+            var cart = await this.sessionService.ResolveAsync(request.StoreId, request.Token, cancellationToken);
+            if (!cart.Success || cart.Payload is null)
+            {
+                return CartLimitValidation.Succeeded();
+            }
+
+            var lineKey = BuildLineKey(
+                request.ProductId,
+                request.ProductVariantId,
+                selectedAttributesJson,
+                request.PersonalizationHash,
+                request.ArtworkAssetId,
+                request.ArtworkVersion,
+                request.FulfillmentProviderKey);
+            if (cart.Payload.Lines.Any(line => string.Equals(line.LineKey, lineKey, StringComparison.Ordinal)))
+            {
+                return CartLimitValidation.Succeeded();
+            }
+
+            return cart.Payload.Lines.Count >= this.cartOptions.EffectiveMaxLines
+                ? CartLimitValidation.Failed(
+                    ServiceResponseType.Conflict,
+                    $"Cart can contain at most {this.cartOptions.EffectiveMaxLines} lines.")
+                : CartLimitValidation.Succeeded();
         }
 
         private async Task<ServiceResponse<StorefrontCartSessionDto>> EnrichCartResponseAsync(
@@ -413,6 +471,9 @@ namespace BlazorShop.Application.CommerceNode.Carts
                     ? Math.Min(maxQuantity.Value, availableQuantity.Value)
                     : availableQuantity.Value;
             }
+            var effectiveMaxQuantity = maxQuantity.HasValue
+                ? Math.Min(maxQuantity.Value, this.cartOptions.EffectiveMaxQuantityPerLine)
+                : this.cartOptions.EffectiveMaxQuantityPerLine;
 
             if (product.PurchasingDisabled)
             {
@@ -439,6 +500,15 @@ namespace BlazorShop.Application.CommerceNode.Carts
                 warnings.Add(new StorefrontCartWarningDto(
                     availableQuantity.HasValue ? ProductPurchaseBlockReasons.NotEnoughStock : ProductPurchaseBlockReasons.AboveMaxQuantity,
                     $"Maximum quantity is {maxQuantity.Value}.",
+                    line.Id,
+                    line.ProductId));
+            }
+
+            if (line.Quantity > this.cartOptions.EffectiveMaxQuantityPerLine)
+            {
+                warnings.Add(new StorefrontCartWarningDto(
+                    ProductPurchaseBlockReasons.AboveMaxQuantity,
+                    $"Maximum quantity is {this.cartOptions.EffectiveMaxQuantityPerLine}.",
                     line.Id,
                     line.ProductId));
             }
@@ -470,7 +540,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
                 LineSubtotal = lineTotal,
                 LineTotal = lineTotal,
                 QuantityMinimum = minQuantity,
-                QuantityMaximum = maxQuantity,
+                QuantityMaximum = effectiveMaxQuantity,
                 QuantityStep = quantityStep,
                 AllowedQuantities = null,
                 Purchasable = warnings.Count == 0,
@@ -943,27 +1013,55 @@ namespace BlazorShop.Application.CommerceNode.Carts
             return SelectedAttributesResolution.Ok(null);
         }
 
-        private static PersonalizationValidation ValidatePersonalization(
+        private PersonalizationValidation ValidatePersonalization(
             string? personalizationHash,
             string? personalizationJson,
             string? fulfillmentProviderKey)
         {
-            if (NormalizeNullable(personalizationHash) is { Length: > MaxPersonalizationHashLength })
+            if (NormalizeNullable(personalizationHash) is { Length: var hashLength }
+                && hashLength > this.cartOptions.EffectiveMaxPersonalizationHashLength)
             {
-                return PersonalizationValidation.Failed("Personalization hash must be 128 characters or fewer.");
+                return PersonalizationValidation.Failed(
+                    $"Personalization hash must be {this.cartOptions.EffectiveMaxPersonalizationHashLength} characters or fewer.");
             }
 
-            if (NormalizeNullable(personalizationJson) is { Length: > MaxPersonalizationJsonLength })
+            if (NormalizeNullable(personalizationJson) is { Length: var payloadLength }
+                && payloadLength > this.cartOptions.EffectiveMaxPersonalizationJsonLength)
             {
-                return PersonalizationValidation.Failed("Personalization payload must be 8192 characters or fewer.");
+                return PersonalizationValidation.Failed(
+                    $"Personalization payload must be {this.cartOptions.EffectiveMaxPersonalizationJsonLength} characters or fewer.");
             }
 
-            if (NormalizeNullable(fulfillmentProviderKey) is { Length: > MaxFulfillmentProviderKeyLength })
+            if (NormalizeNullable(fulfillmentProviderKey) is { Length: var providerLength }
+                && providerLength > this.cartOptions.EffectiveMaxFulfillmentProviderKeyLength)
             {
-                return PersonalizationValidation.Failed("Fulfillment provider key must be 64 characters or fewer.");
+                return PersonalizationValidation.Failed(
+                    $"Fulfillment provider key must be {this.cartOptions.EffectiveMaxFulfillmentProviderKeyLength} characters or fewer.");
             }
 
             return PersonalizationValidation.Succeeded();
+        }
+
+        private static string BuildLineKey(
+            Guid productId,
+            Guid? productVariantId,
+            string? selectedAttributesJson,
+            string? personalizationHash,
+            Guid? artworkAssetId,
+            int? artworkVersion,
+            string? fulfillmentProviderKey)
+        {
+            var material = string.Join(
+                "|",
+                productId.ToString("N"),
+                productVariantId?.ToString("N") ?? string.Empty,
+                NormalizeNullable(selectedAttributesJson) ?? string.Empty,
+                NormalizeNullable(personalizationHash) ?? string.Empty,
+                artworkAssetId?.ToString("N") ?? string.Empty,
+                artworkVersion?.ToString() ?? string.Empty,
+                NormalizeNullable(fulfillmentProviderKey)?.ToLowerInvariant() ?? string.Empty);
+
+            return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(material))).ToLowerInvariant();
         }
 
         private static string ResponseTypeToCode(ServiceResponseType responseType)
@@ -1069,6 +1167,19 @@ namespace BlazorShop.Application.CommerceNode.Carts
             public static PersonalizationValidation Failed(string message)
             {
                 return new PersonalizationValidation(false, message);
+            }
+        }
+
+        private sealed record CartLimitValidation(bool Success, ServiceResponseType ResponseType, string Message)
+        {
+            public static CartLimitValidation Succeeded()
+            {
+                return new CartLimitValidation(true, ServiceResponseType.Success, string.Empty);
+            }
+
+            public static CartLimitValidation Failed(ServiceResponseType responseType, string message)
+            {
+                return new CartLimitValidation(false, responseType, message);
             }
         }
 
