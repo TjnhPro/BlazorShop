@@ -73,6 +73,10 @@
                                 <tr class="cursor-pointer hover:bg-ink-50" @onclick="() => EditCategory(category)">
                                     <td class="px-4 py-3">
                                         <div class="font-semibold text-ink-900">@category.Name</div>
+                                        @if (!string.IsNullOrWhiteSpace(category.Description))
+                                        {
+                                            <div class="mt-1 line-clamp-2 text-xs text-ink-500">@category.Description</div>
+                                        }
                                         @if (!string.IsNullOrWhiteSpace(category.Image))
                                         {
                                             <div class="truncate text-xs text-ink-500">@category.Image</div>
@@ -125,6 +129,10 @@
                 <label class="space-y-1">
                     <span class="font-medium text-ink-700">Name</span>
                     <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="categoryForm.Name" />
+                </label>
+                <label class="space-y-1">
+                    <span class="font-medium text-ink-700">Description</span>
+                    <textarea class="min-h-24 w-full rounded-md border border-ink-300 px-3 py-2 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="categoryForm.Description"></textarea>
                 </label>
                 <label class="space-y-1">
                     <span class="font-medium text-ink-700">Parent</span>
@@ -319,6 +327,7 @@
         categoryForm = new CreateCategory
         {
             Name = category.Name,
+            Description = category.Description,
             ParentCategoryId = category.ParentCategoryId,
             Image = category.Image,
             DisplayOrder = category.DisplayOrder,
@@ -483,6 +492,7 @@
                     {
                         Id = selectedCategory.Id,
                         Name = categoryForm.Name,
+                        Description = categoryForm.Description,
                         ParentCategoryId = categoryForm.ParentCategoryId,
                         Image = categoryForm.Image,
                         DisplayOrder = categoryForm.DisplayOrder,

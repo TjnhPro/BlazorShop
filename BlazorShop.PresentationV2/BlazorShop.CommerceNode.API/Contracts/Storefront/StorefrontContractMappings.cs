@@ -380,6 +380,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 category.Id,
                 category.ParentCategoryId,
                 category.Name,
+                category.Description,
                 category.Slug,
                 category.Image,
                 category.DisplayOrder,

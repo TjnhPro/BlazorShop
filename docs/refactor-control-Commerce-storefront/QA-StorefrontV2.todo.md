@@ -497,3 +497,9 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Cart cookie is cleared after checkout success. 2026-07-13: browser `document.cookie` returned empty after successful checkout.
 - [ ] Browser network shows no legacy API/Web requests.
 - [ ] Checkout page is noindex/private and absent from sitemap.
+
+## Catalog Structure Core
+
+- [x] Category page renders category `Description` before falling back to `MetaDescription`. 2026-07-16: `CategoryPage.razor` updated and focused build/test compilation passed.
+- [x] Storefront API client can deserialize nullable category `description` from Storefront scoped catalog responses. 2026-07-16: SharedV2 category model updated and Storefront OpenAPI contract passed.
+- [ ] Visible browser QA confirms `/category/{slug}` displays category description from CommerceNode data.

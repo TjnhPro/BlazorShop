@@ -23,6 +23,9 @@ namespace BlazorShop.Infrastructure.Data.Configurations
                 .HasForeignKey(category => category.ParentCategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Property(category => category.Description)
+                .HasColumnType("text");
+
             builder.Property(category => category.Image)
                 .HasColumnType("text");
 

@@ -810,3 +810,10 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [ ] Admin mark complete rejects unpaid order.
 - [ ] Store isolation blocks another store from reading/completing the order.
 - [ ] Audit log includes `Order.Completed`.
+
+## Catalog Structure Core
+
+- [x] Category create/update contract carries nullable `description` without replacing SEO metadata. 2026-07-16: `CategoryServiceTests.AddAsync_NormalizesDescriptionBeforePersisting` and `UpdateAsync_NormalizesBlankDescriptionToNull` passed.
+- [x] Storefront category response schema includes nullable `description`. 2026-07-16: `CommerceNodeStorefrontOpenApiContractTests` passed after snapshot update.
+- [x] CommerceNode migration adds only nullable `Categories.Description`. 2026-07-16: `CommerceNodeCategoryDescription` migration generated and `CommerceNodeDbContextModelTests` passed.
+- [ ] Live API smoke creates a category with description, updates it, and reads it back through Commerce admin API.

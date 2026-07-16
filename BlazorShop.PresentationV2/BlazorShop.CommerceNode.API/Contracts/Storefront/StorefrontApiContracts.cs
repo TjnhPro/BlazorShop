@@ -490,6 +490,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         Guid Id,
         Guid? ParentCategoryId,
         string? Name,
+        string? Description,
         string? Slug,
         string? Image,
         int DisplayOrder,

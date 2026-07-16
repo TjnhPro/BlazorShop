@@ -7,6 +7,7 @@ namespace BlazorShop.Tests.Application.Services
     using BlazorShop.Application.DTOs.Category;
     using BlazorShop.Application.DTOs.Product;
     using BlazorShop.Application.Services;
+    using BlazorShop.Tests.TestUtilities;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Contracts.CategoryPersistence;
     using BlazorShop.Domain.Entities;
@@ -79,6 +80,32 @@ namespace BlazorShop.Tests.Application.Services
         }
 
         [Fact]
+        public async Task AddAsync_NormalizesDescriptionBeforePersisting()
+        {
+            var createCategory = new CreateCategory
+            {
+                Name = "New Category",
+                Description = "  Seasonal landing page content.  ",
+            };
+            Category? persistedCategory = null;
+            var service = new CategoryService(
+                this._mockGenericRepository.Object,
+                AutoMapperTestFactory.CreateMapper(),
+                this._mockCategoryRepository.Object);
+
+            this._mockGenericRepository
+                .Setup(repo => repo.AddAsync(It.IsAny<Category>()))
+                .Callback<Category>(category => persistedCategory = category)
+                .ReturnsAsync(1);
+
+            var result = await service.AddAsync(createCategory);
+
+            Assert.True(result.Success);
+            Assert.NotNull(persistedCategory);
+            Assert.Equal("Seasonal landing page content.", persistedCategory.Description);
+        }
+
+        [Fact]
         public async Task UpdateAsync_ShouldReturnSuccessResponse()
         {
             // Arrange
@@ -118,6 +145,40 @@ namespace BlazorShop.Tests.Application.Services
             Assert.True(existingCategory.RobotsFollow);
             Assert.True(existingCategory.IsPublished);
             navigationCache.Verify(cache => cache.Invalidate(storeId), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_NormalizesBlankDescriptionToNull()
+        {
+            var updateCategory = new UpdateCategory
+            {
+                Id = Guid.NewGuid(),
+                Name = "Updated Category",
+                Description = "   ",
+            };
+            var existingCategory = new Category
+            {
+                Id = updateCategory.Id,
+                Name = "Existing Category",
+                Description = "Old content",
+                IsPublished = true,
+            };
+            var service = new CategoryService(
+                this._mockGenericRepository.Object,
+                AutoMapperTestFactory.CreateMapper(),
+                this._mockCategoryRepository.Object);
+
+            this._mockGenericRepository
+                .Setup(repo => repo.GetByIdAsync(updateCategory.Id))
+                .ReturnsAsync(existingCategory);
+            this._mockGenericRepository
+                .Setup(repo => repo.UpdateAsync(existingCategory))
+                .ReturnsAsync(1);
+
+            var result = await service.UpdateAsync(updateCategory);
+
+            Assert.True(result.Success);
+            Assert.Null(existingCategory.Description);
         }
 
         [Fact]

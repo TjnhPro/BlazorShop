@@ -31,7 +31,11 @@ else if (_categoryPage is not null)
                     <div>
                         <p class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">Category</p>
                         <h1 class="mt-2 text-4xl font-extrabold tracking-tight text-neutral-900">@_categoryPage.Category.Name</h1>
-                        @if (!string.IsNullOrWhiteSpace(_categoryPage.Category.MetaDescription))
+                        @if (!string.IsNullOrWhiteSpace(_categoryPage.Category.Description))
+                        {
+                            <p class="mt-4 max-w-3xl text-base leading-7 text-neutral-700">@_categoryPage.Category.Description</p>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(_categoryPage.Category.MetaDescription))
                         {
                             <p class="mt-4 max-w-3xl text-base leading-7 text-neutral-700">@_categoryPage.Category.MetaDescription</p>
                         }

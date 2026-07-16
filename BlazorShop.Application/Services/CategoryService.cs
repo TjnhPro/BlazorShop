@@ -290,6 +290,7 @@
         private static void NormalizeCategory(Category category)
         {
             category.Name = category.Name?.Trim();
+            category.Description = string.IsNullOrWhiteSpace(category.Description) ? null : category.Description.Trim();
             category.Image = string.IsNullOrWhiteSpace(category.Image) ? null : category.Image.Trim();
             category.UpdatedAt = DateTime.UtcNow;
         }

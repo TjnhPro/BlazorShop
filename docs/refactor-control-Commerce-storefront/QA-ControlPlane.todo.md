@@ -462,3 +462,9 @@ Status legend:
 - [x] Orders drawer shows order/payment/shipping statuses separately. 2026-07-13: Orders table/drawer showed order `processing`, payment `paid`, shipping `not_yet_shipped`, then `shipped`.
 - [x] Orders drawer Mark Complete calls ControlPlane API and updates order detail. 2026-07-13: visible browser marked `ORD-20260713-6672B965` complete after shipping update; network capture still showed no direct CommerceNode calls.
 - [ ] Orders drawer Cancel calls ControlPlane API and updates order detail.
+
+## Catalog Structure Core
+
+- [x] Category manager has a description editor and preserves parent/display/image fields. 2026-07-16: Control Plane categories page was updated and focused build/test compilation passed through Storefront OpenAPI run.
+- [x] ControlPlane Web still uses ControlPlane API category client/gateway, not direct CommerceNode calls. 2026-07-16: category page changes reused existing `CatalogClient.CreateCategoryAsync`/`UpdateCategoryAsync`.
+- [ ] Visible browser QA creates/updates a category description through Control Plane and confirms it reloads in the drawer.

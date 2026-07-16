@@ -108,6 +108,7 @@ namespace BlazorShop.Tests.Application.Mapping
             {
                 Id = Guid.NewGuid(),
                 Name = "Shoes",
+                Description = "All footwear collections.",
                 MetaTitle = "Shop Shoes",
                 MetaDescription = "Browse the latest shoes.",
                 CanonicalUrl = "https://shop.example.com/categories/shoes",
@@ -121,6 +122,7 @@ namespace BlazorShop.Tests.Application.Mapping
 
             var result = this._mapper.Map<GetCategory>(category);
 
+            Assert.Equal(category.Description, result.Description);
             Assert.Equal(category.MetaTitle, result.MetaTitle);
             Assert.Equal(category.MetaDescription, result.MetaDescription);
             Assert.Equal(category.CanonicalUrl, result.CanonicalUrl);
@@ -138,6 +140,7 @@ namespace BlazorShop.Tests.Application.Mapping
             {
                 Id = Guid.NewGuid(),
                 Name = "Shoes",
+                Description = "Draft body content still belongs to category content.",
                 MetaTitle = "Draft title",
                 MetaDescription = "Draft description",
                 CanonicalUrl = "https://shop.example.com/categories/shoes",
@@ -151,6 +154,7 @@ namespace BlazorShop.Tests.Application.Mapping
 
             var result = this._mapper.Map<GetCategory>(category);
 
+            Assert.Equal(category.Description, result.Description);
             Assert.Null(result.MetaTitle);
             Assert.Null(result.MetaDescription);
             Assert.Null(result.CanonicalUrl);

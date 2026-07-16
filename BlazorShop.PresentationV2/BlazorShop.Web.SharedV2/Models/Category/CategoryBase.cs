@@ -6,5 +6,7 @@ namespace BlazorShop.Web.SharedV2.Models.Category
     {
         [Required(ErrorMessage = "The Category Name field is required.")]
         public string Name { get; set; } = string.Empty;
+
+        public string? Description { get; set; }
     }
 }

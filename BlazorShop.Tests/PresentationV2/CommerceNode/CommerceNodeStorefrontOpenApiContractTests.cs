@@ -273,6 +273,10 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("name", paymentMethodProperties);
             Assert.Contains("description", paymentMethodProperties);
 
+            var category = schemas["StorefrontCategoryResponse"]!.AsObject();
+            var categoryProperties = GetPropertyNames(category).ToArray();
+            Assert.Contains("description", categoryProperties);
+
             var publicConfiguration = schemas["StorefrontPublicConfigurationResponse"]!.AsObject();
             var publicConfigurationProperties = GetPropertyNames(publicConfiguration).ToArray();
             Assert.Contains("storeIdentity", publicConfigurationProperties);
