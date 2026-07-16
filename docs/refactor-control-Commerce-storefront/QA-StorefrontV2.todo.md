@@ -442,6 +442,14 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [n/a] Browser screenshots for this legacy-independence pass.
   - 2026-07-09: no new screenshots captured; this phase used build/test/Docker/runtime HTTP checks.
 
+## Security Privacy
+
+- [x] Antiforgery token is projected for browser JSON mutations and `/api/cart/*` mutations reject missing tokens. 2026-07-16: `SecurityPrivacyPhase1CsrfTests` and `StorefrontV2HostSmokeTests` cover token projection and cart mutation behavior.
+- [x] Consent banner/change/revoke hooks are rendered in Storefront V2 and backed by store-scoped Consent APIs. 2026-07-16: `SecurityPrivacyPhase3ConsentTests` and focused Storefront host smoke suite passed.
+- [x] Captcha rendering hook submits optional token fields for login/register and public config exposes only provider metadata. 2026-07-16: `SecurityPrivacyPhase4CaptchaTests` and focused Storefront host smoke suite passed.
+- [x] Return URL regression rejects external/protocol-relative/backslash/CR/LF values. 2026-07-16: covered by `StorefrontV2HostSmokeTests` in security/privacy focused verification.
+- [x] Account/order protected Storefront flows still require customer auth. 2026-07-16: focused Storefront host smoke suite and Storefront OpenAPI contract tests passed after security/privacy changes.
+
 ## Failure States
 
 - [x] Commerce Node down returns Storefront V2 service-unavailable behavior instead of legacy fallback.

@@ -327,44 +327,44 @@ Goal: finish the phase with regression coverage and QA checklist updates.
 
 Implementation checklist:
 
-- [ ] Update `QA-CommerceNode.todo.md`:
-  - [ ] rate limit behavior
-  - [ ] captcha verification
-  - [ ] consent APIs
-  - [ ] public config secret guardrails
-  - [ ] privacy retention
-- [ ] Update `QA-StorefrontV2.todo.md`:
-  - [ ] antiforgery for JSON mutations
-  - [ ] consent banner/change/revoke
-  - [ ] captcha rendering hook
-  - [ ] return URL regression
-  - [ ] account/order authorization smoke
-- [ ] Update `QA-ControlPlane.todo.md` when admin management phase is implemented.
-- [ ] Add or update OpenAPI metadata tests:
-  - [ ] security requirements
-  - [ ] operation ids
-  - [ ] error response schemas
-  - [ ] required request bodies
-  - [ ] public schema secret exclusion
-- [ ] Run focused verification:
-  - [ ] Commerce Node API build
-  - [ ] Storefront V2 build
-  - [ ] Storefront V2 host smoke tests
-  - [ ] Commerce Node Storefront OpenAPI tests
-  - [ ] new security/privacy unit tests
+- [x] Update `QA-CommerceNode.todo.md`:
+  - [x] rate limit behavior
+  - [x] captcha verification
+  - [x] consent APIs
+  - [x] public config secret guardrails
+  - [x] privacy retention
+- [x] Update `QA-StorefrontV2.todo.md`:
+  - [x] antiforgery for JSON mutations
+  - [x] consent banner/change/revoke
+  - [x] captcha rendering hook
+  - [x] return URL regression
+  - [x] account/order authorization smoke
+- [x] Update `QA-ControlPlane.todo.md` when admin management phase is implemented.
+- [x] Add or update OpenAPI metadata tests:
+  - [x] security requirements
+  - [x] operation ids
+  - [x] error response schemas
+  - [x] required request bodies
+  - [x] public schema secret exclusion
+- [x] Run focused verification:
+  - [x] Commerce Node API build
+  - [x] Storefront V2 build
+  - [x] Storefront V2 host smoke tests
+  - [x] Commerce Node Storefront OpenAPI tests
+  - [x] new security/privacy unit tests
 
 Exit criteria:
 
-- [ ] All changed API contracts are generator-safe.
-- [ ] Public config remains secret-safe.
-- [ ] QA checklists describe manual/browser coverage still needed.
+- [x] All changed API contracts are generator-safe.
+- [x] Public config remains secret-safe.
+- [x] QA checklists describe manual/browser coverage still needed.
 
 ## Cross-Phase Guardrails
 
-- [ ] Harden existing auth/browser mutation surfaces before adding broad features.
-- [ ] Keep guest cart and guest checkout.
-- [ ] Put consent and captcha runtime state in Commerce Node.
-- [ ] Verify captcha server-side and expose only public-safe metadata.
-- [ ] Defer secure file downloads until a private download feature exists.
-- [ ] Defer password recovery implementation but keep anti-enumeration policy ready.
-- [ ] Reuse feature state and public configuration projection patterns.
+- [x] Harden existing auth/browser mutation surfaces before adding broad features.
+- [x] Keep guest cart and guest checkout.
+- [x] Put consent and captcha runtime state in Commerce Node.
+- [x] Verify captcha server-side and expose only public-safe metadata.
+- [x] Defer secure file downloads until a private download feature exists.
+- [x] Defer password recovery implementation but keep anti-enumeration policy ready.
+- [x] Reuse feature state and public configuration projection patterns.
