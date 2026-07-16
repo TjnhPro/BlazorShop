@@ -503,28 +503,28 @@ Goal: close the phase with focused verification and checklist evidence.
 
 Implementation checklist:
 
-- [ ] Update `QA-CommerceNode.todo.md`.
-- [ ] Update `QA-ControlPlane.todo.md` if gateway/UI changed.
-- [ ] Update `QA-StorefrontV2.todo.md` if public rendering changed.
-- [ ] Update `QA-CommerceNode-TaskOrchestration.todo.md` if product import changes.
-- [ ] Run focused tests for changed services/repositories/controllers.
-- [ ] Run API contract/OpenAPI tests for new/changed V2 APIs.
-- [ ] Run Storefront tests for category/product public visibility.
-- [ ] Run Control Plane Web build/browser QA if manager UI changes.
-- [ ] Verify Commerce Node migration model snapshot.
-- [ ] Review diff for:
-  - [ ] no legacy `BlazorShop.Presentation` feature changes.
-  - [ ] no `AppDbContext` V2 migration.
-  - [ ] no direct ControlPlane.Web to CommerceNode API call.
+- [x] Update `QA-CommerceNode.todo.md`. 2026-07-16 Phase 10: final Catalog Structure Core evidence added.
+- [x] Update `QA-ControlPlane.todo.md` if gateway/UI changed. 2026-07-16 Phase 10: gateway/boundary/build evidence added.
+- [x] Update `QA-StorefrontV2.todo.md` if public rendering changed. 2026-07-16 Phase 10: public catalog/cart/checkout evidence added.
+- [x] Update `QA-CommerceNode-TaskOrchestration.todo.md` if product import changes. 2026-07-16 Phase 10: product import remains on existing task pipeline and rejects unsupported product types.
+- [x] Run focused tests for changed services/repositories/controllers. 2026-07-16: Commerce Node focused run passed 110/110 after stabilizing timestamp-based catalog ordering seed.
+- [x] Run API contract/OpenAPI tests for new/changed V2 APIs. 2026-07-16: Commerce Node Storefront/Admin OpenAPI contract tests included in 110/110 focused run.
+- [x] Run Storefront tests for category/product public visibility. 2026-07-16: Storefront API/client/structured-data/cart/checkout/sitemap focused run passed 43/43.
+- [x] Run Control Plane Web build/browser QA if manager UI changes. 2026-07-16: Control Plane gateway/boundary/controller tests passed 16/16 and ControlPlane Web build passed; visible browser category edit remains a QA checklist follow-up.
+- [x] Verify Commerce Node migration model snapshot. 2026-07-16: `CommerceNodeDbContextModelTests` included in the 110/110 focused run.
+- [x] Review diff for:
+  - [x] no legacy `BlazorShop.Presentation` feature changes.
+  - [x] no `AppDbContext` V2 migration.
+  - [x] no direct ControlPlane.Web to CommerceNode API call.
 
 Release gate:
 
-- [ ] Category description/publish/count/breadcrumb behavior is verified.
-- [ ] Product availability rules are enforced in public catalog, detail, sitemap, cart, and checkout.
-- [ ] Product identity fields are optional and validated.
-- [ ] Product mapping, if implemented, preserves primary category compatibility.
-- [ ] Advanced product types remain deferred unless fully implemented.
-- [ ] QA checklist contains evidence.
+- [x] Category description/publish/count/breadcrumb behavior is verified. 2026-07-16: focused catalog service/repository/contract tests passed.
+- [x] Product availability rules are enforced in public catalog, detail, sitemap, cart, and checkout. 2026-07-16: Commerce Node and Storefront focused runs passed.
+- [x] Product identity fields are optional and validated. 2026-07-16: ProductService/import/structured-data/model tests passed.
+- [x] Product mapping, if implemented, preserves primary category compatibility. 2026-07-16: multi-category mapping remains explicitly deferred; existing primary `Product.CategoryId` compatibility was preserved.
+- [x] Advanced product types remain deferred unless fully implemented. 2026-07-16: `ProductTypes.All` gate and unsupported admin/import tests passed.
+- [x] QA checklist contains evidence. 2026-07-16: Commerce Node, Storefront V2, Control Plane, and task-orchestration QA files updated.
 
 Suggested commit:
 
@@ -609,16 +609,16 @@ test(catalog): complete catalog structure core qa
 - [x] Phase 7 - Control Plane/admin integration. 2026-07-16: verified existing gateway/UI integration with Control Plane API/Web builds and storeKey boundary tests.
 - [x] Phase 8 - Storefront rendering/SEO/sitemap/cache alignment. 2026-07-16: verified with Storefront V2 build, host smoke, sitemap, API client, structured data, cart, and checkout tests.
 - [x] Phase 9 - advanced product type gates. 2026-07-16: `CatalogProductTypeGateTests|ProductServiceTests` passed 29/29.
-- [ ] Phase 10 - QA/release gate.
+- [x] Phase 10 - QA/release gate. 2026-07-16: Commerce Node 110/110, Storefront 43/43, Control Plane 16/16, and ControlPlane Web build passed.
 
 ## Definition Of Done
 
 - [ ] Category content, tree, breadcrumb, publish state, display order, store mapping, SEO/slug, image, and product counts are verified.
 - [x] Product publication has clear admin state and public availability rules. 2026-07-16 Phase 4: Control Plane derives Draft/Scheduled/Published/Expired; public catalog/detail/sitemap/cart/checkout/recommendation filters use availability windows.
 - [x] Product identity fields exist as optional validated data.
-- [ ] Current variant/product-with-attributes behavior is tested across admin, Storefront, cart, and checkout.
-- [ ] Product-category mapping is either implemented compatibly or explicitly deferred with entry criteria.
+- [x] Current variant/product-with-attributes behavior is tested across admin, Storefront, cart, and checkout. 2026-07-16 Phase 10: variant service, cart, checkout, and Storefront focused runs passed.
+- [x] Product-category mapping is either implemented compatibly or explicitly deferred with entry criteria. 2026-07-16: Phase 3 remains deferred unless multi-category/per-category ordering is approved.
 - [x] Advanced product types remain blocked until their runtime behavior is designed and approved. 2026-07-16 Phase 9: documented entry criteria and tests keep `ProductTypes.All` limited to implemented MVP behavior.
-- [ ] All changed V2 APIs satisfy API contract standards.
-- [ ] QA checklists contain verification evidence.
-- [ ] No legacy presentation or `AppDbContext` V2 feature work is introduced.
+- [x] All changed V2 APIs satisfy API contract standards. 2026-07-16 Phase 10: Storefront/Admin OpenAPI contract tests passed.
+- [x] QA checklists contain verification evidence. 2026-07-16 Phase 10: final evidence recorded in QA docs.
+- [x] No legacy presentation or `AppDbContext` V2 feature work is introduced. 2026-07-16 Phase 10: final diff review scoped changes to V2/domain/application/infrastructure tests/docs.

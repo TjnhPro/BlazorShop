@@ -275,6 +275,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
 
             var rootProduct = CreateProduct(storeA, rootCategory.Id, "Root Product", "root-product");
             var childProduct = CreateProduct(storeA, childCategory.Id, "Child Product", "child-product");
+            childProduct.CreatedOn = rootProduct.CreatedOn.AddMinutes(-1);
             childProduct.DisplayOrder = 1;
             var hiddenProduct = CreateProduct(storeA, hiddenCategory.Id, "Hidden Product", "hidden-product");
             var draftProduct = CreateProduct(storeA, childCategory.Id, "Draft Product", "draft-product");
