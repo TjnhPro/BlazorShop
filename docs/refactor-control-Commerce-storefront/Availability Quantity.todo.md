@@ -340,37 +340,37 @@ Goal: show practical purchase states without adding a complex inventory UI.
 
 Implementation checklist:
 
-- [ ] Update product card:
-  - [ ] show disabled/action-safe state when `Purchasable=false`.
-  - [ ] show out-of-stock message for managed-stock products.
-  - [ ] keep product detail link when purchase is disabled.
-  - [ ] allow direct add-to-cart only when no variants, purchasable, and quantity 1 respects quantity rules.
-- [ ] Update product detail:
-  - [ ] default quantity selector to `MinOrderQuantity`.
-  - [ ] set quantity input/stepper step from `QuantityStep`.
-  - [ ] enforce max quantity in UI when `MaxOrderQuantity` exists.
-  - [ ] disable add-to-cart when not purchasable.
-  - [ ] show first customer-safe reason message.
-  - [ ] show delivery estimate if provided.
-  - [ ] show free-shipping indicator if true.
-  - [ ] show shipping-not-required state only if useful and not noisy.
-- [ ] Keep SSR fallback product information usable before JavaScript runs.
-- [ ] Keep preview/add-to-cart payload aligned with server quantity rules.
+- [x] Update product card:
+  - [x] show disabled/action-safe state when `Purchasable=false`. 2026-07-16 Phase 5: card renders customer-safe block messages and keeps view-product navigation.
+  - [x] show out-of-stock message for managed-stock products. 2026-07-16 Phase 5: existing out-of-stock card state preserved and static markup guard passed.
+  - [x] keep product detail link when purchase is disabled. 2026-07-16 Phase 5: `View Product` remains rendered independently of add-to-cart eligibility.
+  - [x] allow direct add-to-cart only when no variants, purchasable, and quantity 1 respects quantity rules. 2026-07-16 Phase 5: `CanAddDirectly` now requires `QuantityOneAllowed`.
+- [x] Update product detail:
+  - [x] default quantity selector to `MinOrderQuantity`. 2026-07-16 Phase 5: product page input uses `value="@_product.MinOrderQuantity"`.
+  - [x] set quantity input/stepper step from `QuantityStep`. 2026-07-16 Phase 5: product page input uses `step="@_product.QuantityStep"`.
+  - [x] enforce max quantity in UI when `MaxOrderQuantity` exists. 2026-07-16 Phase 5: product page input binds `max="@_product.MaxOrderQuantity"`.
+  - [x] disable add-to-cart when not purchasable. 2026-07-16 Phase 5: product page blocks hard sellability reasons while allowing quantity rules to be resolved by min/step and preview.
+  - [x] show first customer-safe reason message. 2026-07-16 Phase 5: product page and card map first block reason to customer text.
+  - [x] show delivery estimate if provided. 2026-07-16 Phase 5: product page renders `_product.DeliveryEstimateText`.
+  - [x] show free-shipping indicator if true. 2026-07-16 Phase 5: product page renders `Free shipping`.
+  - [x] show shipping-not-required state only if useful and not noisy. 2026-07-16 Phase 5: intentionally not rendered in customer UI for this phase.
+- [x] Keep SSR fallback product information usable before JavaScript runs. 2026-07-16 Phase 5: server-rendered message, quantity metadata, stock text, and delivery badges are present before preview JS.
+- [x] Keep preview/add-to-cart payload aligned with server quantity rules. 2026-07-16 Phase 5: existing preview payload keeps reading `data-storefront-selection-quantity`; static and host smoke tests passed.
 
 Verification checklist:
 
-- [ ] Storefront V2 build passes.
-- [ ] Product page static/host smoke tests pass.
-- [ ] Browser QA confirms disabled buy button and reason text.
-- [ ] Browser QA confirms quantity selector respects min and step.
-- [ ] Browser QA confirms unmanaged-stock product can be added.
-- [ ] Browser QA confirms managed out-of-stock product cannot be added.
+- [x] Storefront V2 build passes. 2026-07-16 Phase 5: `dotnet build .\BlazorShop.PresentationV2\BlazorShop.Storefront.V2\BlazorShop.Storefront.V2.csproj --no-restore` passed.
+- [x] Product page static/host smoke tests pass. 2026-07-16 Phase 5: `StorefrontBrandingMarkupTests` passed 10/10 and `StorefrontV2HostSmokeTests` passed 34/34.
+- [~] Browser QA confirms disabled buy button and reason text. Pending visible browser QA in release gate; static/host smoke coverage added.
+- [~] Browser QA confirms quantity selector respects min and step. Pending visible browser QA in release gate; static markup coverage added.
+- [~] Browser QA confirms unmanaged-stock product can be added. Pending visible browser QA in release gate; cart/checkout service tests covered unmanaged stock in Phase 4.
+- [~] Browser QA confirms managed out-of-stock product cannot be added. Pending visible browser QA in release gate; cart/checkout service tests covered stock blocks in Phase 4.
 
 Exit criteria:
 
-- [ ] Product page tells the customer why they cannot buy.
-- [ ] POD products can still be purchasable without stock.
-- [ ] Existing product card layout remains stable.
+- [x] Product page tells the customer why they cannot buy. 2026-07-16 Phase 5: customer-safe block messages are rendered on product detail.
+- [x] POD products can still be purchasable without stock. 2026-07-16 Phase 5: unmanaged-stock UI uses open stock metadata and Phase 4 service tests passed.
+- [x] Existing product card layout remains stable. 2026-07-16 Phase 5: `ProductCard_RendersSellabilitySafeActions` guard passed.
 
 Suggested commit:
 

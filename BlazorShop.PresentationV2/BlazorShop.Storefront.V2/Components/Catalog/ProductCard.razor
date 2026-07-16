@@ -42,6 +42,10 @@
                 {
                     <span class="inline-block rounded bg-rose-100 px-2 py-0.5 text-rose-800">Out</span>
                 }
+                @if (IsPurchasePaused && !Product.HasVariants && Product.InStock)
+                {
+                    <span class="inline-block rounded bg-neutral-100 px-2 py-0.5 text-neutral-700">Paused</span>
+                }
             </div>
         </div>
 
@@ -85,7 +89,7 @@
                         data-product-name="@Product.Name"
                         data-unit-price="@UnitPriceValue"
                         data-currency-code="@DisplayCurrencyCode"
-                        data-stock="@(Product.InStock ? 1 : 0)">
+                        data-stock="@DirectAddStockValue">
                     Add to Cart
                 </button>
             }
@@ -112,6 +116,10 @@
         {
             <p class="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-rose-600">Currently out of stock.</p>
         }
+        else if (!Product.Purchasable)
+        {
+            <p class="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-neutral-600">@PurchaseBlockMessage</p>
+        }
 
         @if (!string.IsNullOrWhiteSpace(Product.CategorySlug) && !string.IsNullOrWhiteSpace(Product.CategoryName))
         {
@@ -130,7 +138,24 @@
 
     private bool IsNewArrival => DateTime.UtcNow.Subtract(Product.CreatedOn).TotalDays <= 7;
 
-    private bool CanAddDirectly => !Product.HasVariants && Product.InStock;
+    private bool CanAddDirectly => !Product.HasVariants && Product.Purchasable && QuantityOneAllowed;
+
+    private bool IsPurchasePaused => Product.PurchaseBlockReasons.Contains("purchase_disabled", StringComparer.Ordinal);
+
+    private bool QuantityOneAllowed =>
+        Product.MinOrderQuantity <= 1
+        && (!Product.MaxOrderQuantity.HasValue || Product.MaxOrderQuantity.Value >= 1)
+        && Product.QuantityStep <= 1;
+
+    private int DirectAddStockValue => Product.ManageStock ? Math.Max(0, Product.AvailableQuantity ?? Product.Quantity) : 999999;
+
+    private string PurchaseBlockMessage => Product.PurchaseBlockReasons.FirstOrDefault() switch
+    {
+        "purchase_disabled" => "Purchasing is paused.",
+        "below_min_quantity" => $"Minimum order quantity is {Product.MinOrderQuantity}.",
+        "out_of_stock" => "Currently out of stock.",
+        _ => "Currently unavailable.",
+    };
 
     private string PriceLabel => Product.HasVariants ? "From" : "Price";
 

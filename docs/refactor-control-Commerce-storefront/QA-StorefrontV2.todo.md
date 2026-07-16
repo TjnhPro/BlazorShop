@@ -131,6 +131,12 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Product detail renders variation template dropdown/radio/color controls and backend preview markers. 2026-07-16 Phase 5: `StorefrontBrandingMarkupTests.ProductPage_UsesBackendSelectionPreviewForVariantAttributes` passed.
 - [x] Product detail posts selected attributes and quantity through the Storefront V2 selection-preview proxy before add-to-cart. 2026-07-16 Phase 5: JS guardrail test and `node --check` passed.
 - [x] Product detail add-to-cart sends the same selected attributes used for preview. 2026-07-16 Phase 5: JS posts `SelectedAttributes` to `/api/cart/lines`; focused Storefront/Cart tests passed 43/43.
+- [x] Product card direct add-to-cart is suppressed unless no variants, product is purchasable, and quantity `1` satisfies min/max/step rules. 2026-07-16 Availability Quantity Phase 5: `StorefrontBrandingMarkupTests.ProductCard_RendersSellabilitySafeActions` passed.
+- [x] Product detail renders sellability quantity metadata, disabled hard-block state, free-shipping badge, and delivery estimate before preview JS runs. 2026-07-16 Availability Quantity Phase 5: `StorefrontBrandingMarkupTests.ProductPage_RendersSellabilityAndQuantityMetadata` and `StorefrontV2HostSmokeTests` passed.
+- [ ] Visible browser QA confirms disabled buy button and customer-safe reason text for a purchase-disabled product.
+- [ ] Visible browser QA confirms quantity selector respects min quantity and step for a product with custom quantity rules.
+- [ ] Visible browser QA confirms unmanaged-stock product can be added to cart.
+- [ ] Visible browser QA confirms managed out-of-stock product cannot be added to cart.
   - [x] Shows add-to-cart button.
   - [x] Shows related products/recommendations block.
   - [x] Missing slug returns noindex 404 state.

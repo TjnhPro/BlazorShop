@@ -141,6 +141,40 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("StorefrontLocalProductSelectionPreviewResponse", program);
         }
 
+        [Fact]
+        public void ProductCard_RendersSellabilitySafeActions()
+        {
+            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/ProductCard.razor");
+
+            Assert.Contains("Product.Purchasable && QuantityOneAllowed", markup);
+            Assert.Contains("Product.MinOrderQuantity <= 1", markup);
+            Assert.Contains("Product.QuantityStep <= 1", markup);
+            Assert.Contains("Product.ManageStock ? Math.Max(0, Product.AvailableQuantity ?? Product.Quantity) : 999999", markup);
+            Assert.Contains("IsPurchasePaused", markup);
+            Assert.Contains("\"purchase_disabled\" => \"Purchasing is paused.\"", markup);
+            Assert.Contains("\"below_min_quantity\" => $\"Minimum order quantity is {Product.MinOrderQuantity}.\"", markup);
+            Assert.Contains("View Product", markup);
+        }
+
+        [Fact]
+        public void ProductPage_RendersSellabilityAndQuantityMetadata()
+        {
+            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/ProductPage.razor");
+
+            Assert.Contains("min=\"@_product.MinOrderQuantity\"", markup);
+            Assert.Contains("max=\"@_product.MaxOrderQuantity\"", markup);
+            Assert.Contains("step=\"@_product.QuantityStep\"", markup);
+            Assert.Contains("value=\"@_product.MinOrderQuantity\"", markup);
+            Assert.Contains("disabled=\"@(!CanSubmitInitialPurchase)\"", markup);
+            Assert.Contains("data-stock=\"@InitialStockValue\"", markup);
+            Assert.Contains("Free shipping", markup);
+            Assert.Contains("@_product.DeliveryEstimateText", markup);
+            Assert.Contains("IsInitialPurchaseHardBlock", markup);
+            Assert.Contains("or \"purchase_disabled\"", markup);
+            Assert.Contains("or \"out_of_stock\"", markup);
+            Assert.Contains("private int InitialStockValue => _product?.ManageStock == false ? 999999", markup);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath));
