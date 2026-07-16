@@ -157,6 +157,26 @@ namespace BlazorShop.Storefront.Services
             return StorefrontCartMutationResult.Failed(result.Message);
         }
 
+        public async Task<StorefrontCartMutationResult> MergeCurrentCustomerAsync(
+            HttpContext httpContext,
+            string accessToken,
+            CancellationToken cancellationToken = default)
+        {
+            var token = httpContext.Request.Cookies[StorefrontCookieNames.CartToken];
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return StorefrontCartMutationResult.Succeeded(null);
+            }
+
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                return StorefrontCartMutationResult.Failed("Customer identity was not found.");
+            }
+
+            var result = await this.apiClient.MergeCurrentCustomerCartAsync(token, accessToken, cancellationToken);
+            return this.ApplyMutationResult(httpContext, token, result);
+        }
+
         private StorefrontCartMutationResult ApplyMutationResult(
             HttpContext httpContext,
             string cartToken,

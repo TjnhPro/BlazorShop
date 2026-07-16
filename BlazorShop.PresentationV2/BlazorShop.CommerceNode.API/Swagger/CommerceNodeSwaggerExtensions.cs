@@ -890,6 +890,12 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "Recalculate server cart snapshots.",
                         typeof(CommerceNodeApiResponse<StorefrontCartResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedCart", "MergeCurrentCustomer")] = new(
+                        "StorefrontCart_MergeCurrentCustomer",
+                        "Merge the current guest cart into the authenticated customer cart.",
+                        typeof(CommerceNodeApiResponse<StorefrontCartResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError],
+                        Security: StorefrontSecurityRequirement.Bearer),
                     [("StorefrontScopedCart", "SaveCheckout")] = new(
                         "StorefrontCart_SaveCheckout",
                         "Save the current customer's checkout history.",
@@ -1207,6 +1213,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
                     ["StorefrontAuth_Logout"] = StorefrontSecurityRequirement.RefreshCookie,
                     ["StorefrontAuth_ChangePassword"] = StorefrontSecurityRequirement.Bearer,
                     ["StorefrontAuth_UpdateProfile"] = StorefrontSecurityRequirement.Bearer,
+                    ["StorefrontCart_MergeCurrentCustomer"] = StorefrontSecurityRequirement.Bearer,
                     ["StorefrontCart_SaveCheckout"] = StorefrontSecurityRequirement.Bearer,
                     ["StorefrontOrders_Confirm"] = StorefrontSecurityRequirement.Bearer,
                     ["StorefrontOrders_ListCurrentUserOrders"] = StorefrontSecurityRequirement.Bearer,

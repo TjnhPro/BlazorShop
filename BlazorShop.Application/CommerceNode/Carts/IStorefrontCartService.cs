@@ -40,5 +40,9 @@ namespace BlazorShop.Application.CommerceNode.Carts
         Task<ServiceResponse<StorefrontCartSessionDto>> RecalculateAsync(
             StorefrontCartRecalculateRequest request,
             CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<StorefrontCartSessionDto>> AttachOrMergeCurrentCustomerAsync(
+            StorefrontCartAttachCurrentCustomerRequest request,
+            CancellationToken cancellationToken = default);
     }
 }

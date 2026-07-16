@@ -78,10 +78,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
             }
 
             var created = await this.sessionService.CreateAsync(
-                new StorefrontCartSessionCreateRequest(
-                    request.StoreId,
-                    request.CustomerId,
-                    request.AppUserId),
+                new StorefrontCartSessionCreateRequest(request.StoreId),
                 cancellationToken);
             if (!created.Success || created.Payload is null)
             {
@@ -99,6 +96,31 @@ namespace BlazorShop.Application.CommerceNode.Carts
                 new StorefrontCartResult(
                     await this.EnrichCartAsync(resolved.Payload, request.StoreId, cancellationToken),
                     created.Payload.Token));
+        }
+
+        public async Task<ServiceResponse<StorefrontCartSessionDto>> AttachOrMergeCurrentCustomerAsync(
+            StorefrontCartAttachCurrentCustomerRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            if (request.StoreId == Guid.Empty)
+            {
+                return Failed<StorefrontCartSessionDto>(ServiceResponseType.ValidationError, "Store is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Token))
+            {
+                return Failed<StorefrontCartSessionDto>(ServiceResponseType.ValidationError, "Cart token is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.AppUserId))
+            {
+                return Failed<StorefrontCartSessionDto>(ServiceResponseType.ValidationError, "Customer identity was not found.");
+            }
+
+            return await this.EnrichCartResponseAsync(
+                await this.sessionService.AttachOrMergeCurrentCustomerAsync(request, cancellationToken),
+                request.StoreId,
+                cancellationToken);
         }
 
         public async Task<ServiceResponse<StorefrontCartSessionDto>> GetAsync(

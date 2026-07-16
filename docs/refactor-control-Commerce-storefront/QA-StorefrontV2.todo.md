@@ -327,7 +327,7 @@ Plan: `Cart Core.todo.md`.
 - [x] Cart badge uses server summary count. 2026-07-16 Phase 1: local `/api/cart` response now prefers server `SummaryCount` with old sum fallback; Storefront V2 host tests passed.
 - [x] Storefront V2 has a typed API client command for Storefront cart recalculation. 2026-07-16 Phase 2: `StorefrontV2ApiClientTests.RecalculateCartAsync_PostsStoreScopedCartCommand` passed and guards route, `X-Cart-Token`, and `expectedVersion` body.
 - [ ] Invalid/unavailable cart line blocks checkout from projection state.
-- [ ] Login merge keeps guest cart lines without browser-supplied identity.
+- [x] Login merge keeps guest cart lines without browser-supplied identity. 2026-07-16 Phase 3: sign-in flow calls `StorefrontCartTokenService.MergeCurrentCustomerAsync` with the access token from login, and Storefront API client test verifies Bearer + `X-Cart-Token` without request body.
 
 ## Store Resolution And Public URL Hardening
 

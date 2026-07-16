@@ -82,6 +82,88 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 : Failed<StorefrontCartSessionDto>(sessionResult.ResponseType, sessionResult.Message);
         }
 
+        public async Task<ServiceResponse<StorefrontCartSessionDto>> AttachOrMergeCurrentCustomerAsync(
+            StorefrontCartAttachCurrentCustomerRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            if (request.StoreId == Guid.Empty)
+            {
+                return Failed<StorefrontCartSessionDto>(ServiceResponseType.ValidationError, "Store is required.");
+            }
+
+            var appUserId = NormalizeNullable(request.AppUserId);
+            if (appUserId is null)
+            {
+                return Failed<StorefrontCartSessionDto>(ServiceResponseType.ValidationError, "Customer identity was not found.");
+            }
+
+            var sourceResult = await this.LoadActiveSessionAsync(request.StoreId, request.Token, cancellationToken);
+            if (!sourceResult.Success)
+            {
+                return Failed<StorefrontCartSessionDto>(sourceResult.ResponseType, sourceResult.Message);
+            }
+
+            var source = sourceResult.Session!;
+            if (source.CustomerId.HasValue
+                && request.CustomerId.HasValue
+                && source.CustomerId.Value != request.CustomerId.Value)
+            {
+                return Failed<StorefrontCartSessionDto>(ServiceResponseType.Conflict, "Cart belongs to another customer.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(source.AppUserId)
+                && !string.Equals(source.AppUserId, appUserId, StringComparison.Ordinal))
+            {
+                return Failed<StorefrontCartSessionDto>(ServiceResponseType.Conflict, "Cart belongs to another customer.");
+            }
+
+            var existing = await this.context.CartSessions
+                .Include(cart => cart.Lines)
+                .Where(cart => cart.StoreId == request.StoreId
+                    && cart.Id != source.Id
+                    && cart.State == CartSessionStates.Active)
+                .Where(cart =>
+                    (request.CustomerId.HasValue && cart.CustomerId == request.CustomerId.Value)
+                    || cart.AppUserId == appUserId)
+                .OrderByDescending(cart => cart.LastActivityAtUtc)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            var now = DateTimeOffset.UtcNow;
+            var changed = false;
+            if (source.CustomerId != request.CustomerId)
+            {
+                source.CustomerId = request.CustomerId;
+                changed = true;
+            }
+
+            if (!string.Equals(source.AppUserId, appUserId, StringComparison.Ordinal))
+            {
+                source.AppUserId = appUserId;
+                changed = true;
+            }
+
+            if (existing is not null)
+            {
+                MergeLinesInto(source, existing, now);
+                existing.State = CartSessionStates.Merged;
+                existing.MergedIntoCartId = source.Id;
+                existing.Version++;
+                existing.LastActivityAtUtc = now;
+                existing.UpdatedAtUtc = now;
+                changed = true;
+            }
+
+            if (changed)
+            {
+                Touch(source, now);
+                await this.context.SaveChangesAsync(cancellationToken);
+            }
+
+            return Succeeded(
+                existing is null ? "Cart attached to current customer." : "Cart merged for current customer.",
+                Map(source));
+        }
+
         public async Task<ServiceResponse<StorefrontCartSessionDto>> AddOrUpdateLineAsync(
             StorefrontCartLineMutationRequest request,
             CancellationToken cancellationToken = default)
@@ -373,6 +455,50 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 line.ExchangeRateExpiresAtUtc,
                 line.CreatedAtUtc,
                 line.UpdatedAtUtc);
+        }
+
+        private void MergeLinesInto(CartSession target, CartSession source, DateTimeOffset now)
+        {
+            foreach (var sourceLine in source.Lines.OrderBy(line => line.CreatedAtUtc).ThenBy(line => line.Id).ToArray())
+            {
+                var targetLine = target.Lines.FirstOrDefault(line => line.LineKey == sourceLine.LineKey);
+                if (targetLine is not null)
+                {
+                    targetLine.Quantity += sourceLine.Quantity;
+                    targetLine.UpdatedAtUtc = now;
+                    continue;
+                }
+
+                var cloned = new CartLine
+                {
+                    Id = Guid.NewGuid(),
+                    CartSessionId = target.Id,
+                    ProductId = sourceLine.ProductId,
+                    ProductVariantId = sourceLine.ProductVariantId,
+                    LineKey = sourceLine.LineKey,
+                    SelectedAttributesJson = sourceLine.SelectedAttributesJson,
+                    PersonalizationHash = sourceLine.PersonalizationHash,
+                    PersonalizationJson = sourceLine.PersonalizationJson,
+                    ArtworkAssetId = sourceLine.ArtworkAssetId,
+                    ArtworkVersion = sourceLine.ArtworkVersion,
+                    FulfillmentProviderKey = sourceLine.FulfillmentProviderKey,
+                    Quantity = sourceLine.Quantity,
+                    UnitPriceSnapshot = sourceLine.UnitPriceSnapshot,
+                    CurrencyCodeSnapshot = sourceLine.CurrencyCodeSnapshot,
+                    BaseUnitPriceSnapshot = sourceLine.BaseUnitPriceSnapshot,
+                    BaseCurrencyCodeSnapshot = sourceLine.BaseCurrencyCodeSnapshot,
+                    ExchangeRateSnapshot = sourceLine.ExchangeRateSnapshot,
+                    ExchangeRateProviderKey = sourceLine.ExchangeRateProviderKey,
+                    ExchangeRateSource = sourceLine.ExchangeRateSource,
+                    ExchangeRateEffectiveAtUtc = sourceLine.ExchangeRateEffectiveAtUtc,
+                    ExchangeRateExpiresAtUtc = sourceLine.ExchangeRateExpiresAtUtc,
+                    CreatedAtUtc = now,
+                    UpdatedAtUtc = now,
+                };
+
+                target.Lines.Add(cloned);
+                this.context.CartLines.Add(cloned);
+            }
         }
 
         private static string BuildLineKey(StorefrontCartLineMutationRequest request)

@@ -10,6 +10,7 @@ GET /api/storefront/stores/{storeKey}/cart
 POST /api/storefront/stores/{storeKey}/cart/lines
 DELETE /api/storefront/stores/{storeKey}/cart/lines/{lineId}
 PUT /api/storefront/stores/{storeKey}/cart/lines/{lineId}
+POST /api/storefront/stores/{storeKey}/cart/merge-current-customer
 POST /api/storefront/stores/{storeKey}/cart/recalculate
 POST /api/storefront/stores/{storeKey}/cart/save-checkout
 POST /api/storefront/stores/{storeKey}/cart/session

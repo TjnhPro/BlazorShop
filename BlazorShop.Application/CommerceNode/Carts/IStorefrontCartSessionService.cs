@@ -13,6 +13,10 @@ namespace BlazorShop.Application.CommerceNode.Carts
             string token,
             CancellationToken cancellationToken = default);
 
+        Task<ServiceResponse<StorefrontCartSessionDto>> AttachOrMergeCurrentCustomerAsync(
+            StorefrontCartAttachCurrentCustomerRequest request,
+            CancellationToken cancellationToken = default);
+
         Task<ServiceResponse<StorefrontCartSessionDto>> AddOrUpdateLineAsync(
             StorefrontCartLineMutationRequest request,
             CancellationToken cancellationToken = default);

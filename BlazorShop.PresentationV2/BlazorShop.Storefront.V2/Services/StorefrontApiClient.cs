@@ -47,6 +47,7 @@ namespace BlazorShop.Storefront.Services
         private const string StorefrontCartSessionRoute = StorefrontCartRoute + "/session";
         private const string StorefrontCartLinesRoute = StorefrontCartRoute + "/lines";
         private const string StorefrontCartRecalculateRoute = StorefrontCartRoute + "/recalculate";
+        private const string StorefrontCartMergeCurrentCustomerRoute = StorefrontCartRoute + "/merge-current-customer";
         private const string CartTokenHeaderName = "X-Cart-Token";
         private const string ConsentVisitorHeaderName = "X-Consent-Visitor";
         private const string StorefrontCatalogSitemapRoute = StorefrontCatalogBaseRoute + "/sitemap";
@@ -504,6 +505,21 @@ namespace BlazorShop.Storefront.Services
                 cancellationToken);
         }
 
+        public Task<StorefrontSubmitResult<StorefrontCartResponse>> MergeCurrentCustomerCartAsync(
+            string cartToken,
+            string accessToken,
+            CancellationToken cancellationToken = default)
+        {
+            return SendCartAsync<StorefrontCartResponse>(
+                HttpMethod.Post,
+                StorefrontCartMergeCurrentCustomerRoute,
+                cartToken,
+                request: null,
+                "Unable to merge cart right now.",
+                cancellationToken,
+                accessToken);
+        }
+
         private async Task<StorefrontApiResult<T>> GetAsyncWithFallback<T>(
             string route,
             string fallbackRoute,
@@ -819,7 +835,8 @@ namespace BlazorShop.Storefront.Services
             string cartToken,
             object? request,
             string unavailableMessage,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            string? bearerToken = null)
         {
             if (string.IsNullOrWhiteSpace(cartToken))
             {
@@ -830,6 +847,11 @@ namespace BlazorShop.Storefront.Services
             {
                 using var message = new HttpRequestMessage(method, route);
                 message.Headers.TryAddWithoutValidation(CartTokenHeaderName, cartToken);
+                if (!string.IsNullOrWhiteSpace(bearerToken))
+                {
+                    message.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
+                }
+
                 if (request is not null)
                 {
                     message.Content = JsonContent.Create(request, options: JsonOptions);

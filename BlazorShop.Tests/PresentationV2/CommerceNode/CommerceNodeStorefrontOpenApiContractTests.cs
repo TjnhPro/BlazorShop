@@ -26,6 +26,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         [
             "StorefrontAuth_ChangePassword",
             "StorefrontAuth_UpdateProfile",
+            "StorefrontCart_MergeCurrentCustomer",
             "StorefrontCart_SaveCheckout",
             "StorefrontOrders_Confirm",
             "StorefrontOrders_ListCurrentUserOrders",
@@ -39,6 +40,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 ["StorefrontAuth_Logout"] = "RefreshCookie",
                 ["StorefrontAuth_ChangePassword"] = "Bearer",
                 ["StorefrontAuth_UpdateProfile"] = "Bearer",
+                ["StorefrontCart_MergeCurrentCustomer"] = "Bearer",
                 ["StorefrontCart_SaveCheckout"] = "Bearer",
                 ["StorefrontOrders_Confirm"] = "Bearer",
                 ["StorefrontOrders_ListCurrentUserOrders"] = "Bearer",
@@ -670,6 +672,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("StorefrontCart_CreateSession", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCart_AddLine", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCart_Recalculate", client, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCart_MergeCurrentCustomer", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontPayments_CapturePayPal", client, StringComparison.Ordinal);
             Assert.DoesNotContain("any /* missing operationId */", client, StringComparison.Ordinal);
             Assert.DoesNotContain("Promise<any>", client, StringComparison.Ordinal);
@@ -697,6 +700,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 "StorefrontCart_Clear",
                 "StorefrontCart_Validate",
                 "StorefrontCart_Recalculate",
+                "StorefrontCart_MergeCurrentCustomer",
             };
 
             foreach (var operationId in expectedOperationIds)
@@ -757,6 +761,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
 
             Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(operations["StorefrontCart_Get"]));
             Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(operations["StorefrontCart_AddLine"]));
+            Assert.Contains("Bearer", GetSecuritySchemeNames(operations["StorefrontCart_MergeCurrentCustomer"]));
         }
 
         [Fact]
@@ -882,6 +887,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 "StorefrontCart_Clear",
                 "StorefrontCart_Validate",
                 "StorefrontCart_Recalculate",
+                "StorefrontCart_MergeCurrentCustomer",
                 "StorefrontCheckout_Preview",
                 "StorefrontCheckout_PlaceOrder",
                 "StorefrontPayments_GetAttempt",

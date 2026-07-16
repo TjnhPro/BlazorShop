@@ -303,7 +303,7 @@ Plan: `Cart Core.todo.md`.
 - [x] Storefront OpenAPI keeps generator-safe cart operation metadata, `X-Cart-Token`, required request body, and quantity minimum metadata. 2026-07-16: existing `CommerceNodeStorefrontOpenApiContractTests` remain in the Phase 0 focused verification gate.
 - [x] Cart projection includes display fields, totals, warnings, checkout eligibility, and badge summary. 2026-07-16 Phase 1: `StorefrontCartServiceTests` asserts line projection/totals and cart summary; Storefront OpenAPI contract tests assert response schema fields.
 - [x] Recalculate command refreshes stale snapshots through POST and keeps validate non-mutating. 2026-07-16 Phase 2: `StorefrontCartServiceTests` covers stale price refresh, stale expected version conflict, and non-mutating validate; `CommerceNodeStorefrontOpenApiContractTests` guards POST metadata and refreshed snapshot.
-- [ ] Authenticated cart merge derives customer identity from trusted auth context only.
+- [x] Authenticated cart merge derives customer identity from trusted auth context only. 2026-07-16 Phase 3: merge endpoint is Bearer-protected, accepts no identity body, derives `AppUserId` from claims, and session tests cover attach/merge/conflict behavior.
 - [ ] Cart quantity constraints and cart limits are enforced consistently.
 
 ## Store Resolution Hardening

@@ -52,6 +52,12 @@ namespace BlazorShop.Application.CommerceNode.Carts
         string Token,
         int? ExpectedVersion = null);
 
+    public sealed record StorefrontCartAttachCurrentCustomerRequest(
+        Guid StoreId,
+        string Token,
+        string AppUserId,
+        Guid? CustomerId = null);
+
     public sealed record StorefrontCartSessionCreateRequest(
         Guid StoreId,
         Guid? CustomerId = null,

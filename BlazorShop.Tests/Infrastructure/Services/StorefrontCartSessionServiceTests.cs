@@ -147,6 +147,97 @@ namespace BlazorShop.Tests.Infrastructure.Services
         }
 
         [Fact]
+        public async Task AttachOrMergeCurrentCustomerAsync_WhenNoCustomerCart_AttachesCurrentTokenCart()
+        {
+            await using var context = CreateContext();
+            var service = new StorefrontCartSessionService(context);
+            var storeId = Guid.NewGuid();
+            var created = await service.CreateAsync(new StorefrontCartSessionCreateRequest(storeId));
+
+            var result = await service.AttachOrMergeCurrentCustomerAsync(
+                new StorefrontCartAttachCurrentCustomerRequest(
+                    storeId,
+                    created.Payload!.Token,
+                    AppUserId: "user-1"));
+
+            Assert.True(result.Success);
+            Assert.Equal("user-1", result.Payload!.AppUserId);
+            Assert.Equal(CartSessionStates.Active, result.Payload.State);
+            Assert.Equal(2, result.Payload.Version);
+        }
+
+        [Fact]
+        public async Task AttachOrMergeCurrentCustomerAsync_WhenCustomerCartExists_MergesIntoCurrentTokenCart()
+        {
+            await using var context = CreateContext();
+            var service = new StorefrontCartSessionService(context);
+            var storeId = Guid.NewGuid();
+            var sameProductId = Guid.NewGuid();
+            var guest = await service.CreateAsync(new StorefrontCartSessionCreateRequest(storeId));
+            var customer = await service.CreateAsync(new StorefrontCartSessionCreateRequest(storeId, AppUserId: "user-1"));
+            await service.AddOrUpdateLineAsync(new StorefrontCartLineMutationRequest(
+                storeId,
+                guest.Payload!.Token,
+                sameProductId,
+                Quantity: 1,
+                UnitPriceSnapshot: 10m,
+                CurrencyCodeSnapshot: "usd"));
+            await service.AddOrUpdateLineAsync(new StorefrontCartLineMutationRequest(
+                storeId,
+                customer.Payload!.Token,
+                sameProductId,
+                Quantity: 2,
+                UnitPriceSnapshot: 9m,
+                CurrencyCodeSnapshot: "usd"));
+            await service.AddOrUpdateLineAsync(new StorefrontCartLineMutationRequest(
+                storeId,
+                customer.Payload.Token,
+                sameProductId,
+                SelectedAttributesJson: """[{"name":"Color","value":"Red"}]""",
+                Quantity: 1,
+                UnitPriceSnapshot: 11m,
+                CurrencyCodeSnapshot: "usd"));
+
+            var merged = await service.AttachOrMergeCurrentCustomerAsync(
+                new StorefrontCartAttachCurrentCustomerRequest(
+                    storeId,
+                    guest.Payload.Token,
+                    AppUserId: "user-1"));
+
+            Assert.True(merged.Success);
+            Assert.Equal(2, merged.Payload!.Lines.Count);
+            Assert.Equal("user-1", merged.Payload.AppUserId);
+            Assert.Contains(merged.Payload.Lines, line => line.ProductId == sameProductId && line.Quantity == 3 && line.SelectedAttributesJson is null);
+            Assert.Contains(merged.Payload.Lines, line => line.ProductId == sameProductId && line.Quantity == 1 && line.SelectedAttributesJson is not null);
+            var oldCustomerCart = await context.CartSessions.SingleAsync(cart => cart.Id == customer.Payload.Id);
+            Assert.Equal(CartSessionStates.Merged, oldCustomerCart.State);
+            Assert.Equal(guest.Payload.Id, oldCustomerCart.MergedIntoCartId);
+
+            var oldCustomerTokenResult = await service.ResolveAsync(storeId, customer.Payload.Token);
+            Assert.False(oldCustomerTokenResult.Success);
+            Assert.Equal(ServiceResponseType.Conflict, oldCustomerTokenResult.ResponseType);
+        }
+
+        [Fact]
+        public async Task AttachOrMergeCurrentCustomerAsync_WhenTokenBelongsToAnotherCustomer_ReturnsConflict()
+        {
+            await using var context = CreateContext();
+            var service = new StorefrontCartSessionService(context);
+            var storeId = Guid.NewGuid();
+            var cart = await service.CreateAsync(new StorefrontCartSessionCreateRequest(storeId, AppUserId: "user-1"));
+
+            var result = await service.AttachOrMergeCurrentCustomerAsync(
+                new StorefrontCartAttachCurrentCustomerRequest(
+                    storeId,
+                    cart.Payload!.Token,
+                    AppUserId: "user-2"));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.Conflict, result.ResponseType);
+            Assert.Equal("user-1", (await context.CartSessions.SingleAsync()).AppUserId);
+        }
+
+        [Fact]
         public async Task UpdateAndRemoveLineAsync_MutateLine_AndIncrementVersion()
         {
             await using var context = CreateContext();

@@ -118,6 +118,7 @@ app.MapDefaultEndpoints();
 app.MapPost(StorefrontRoutes.SignIn, async (
     [FromForm] StorefrontLoginForm form,
     IStorefrontAuthClient authClient,
+    StorefrontCartTokenService cartTokenService,
     HttpContext httpContext,
     CancellationToken cancellationToken) =>
 {
@@ -142,6 +143,7 @@ app.MapPost(StorefrontRoutes.SignIn, async (
     }
 
     StorefrontCookieBridge.CopySetCookieHeaders(result.SetCookieHeaders, httpContext.Response);
+    await cartTokenService.MergeCurrentCustomerAsync(httpContext, result.Data.AccessToken, cancellationToken);
     return Results.Redirect(safeReturnUrl);
 });
 app.MapPost(StorefrontRoutes.Register, async (

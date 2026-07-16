@@ -74,6 +74,27 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public async Task CreateOrResumeAsync_DoesNotHonorBrowserSuppliedCustomerIdentity()
+        {
+            await using var context = CreateContext();
+            var productRepository = new Mock<IProductReadRepository>();
+            var service = CreateService(context, productRepository);
+            var storeId = Guid.NewGuid();
+
+            var result = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(
+                storeId,
+                CustomerId: Guid.NewGuid(),
+                AppUserId: "browser-user"));
+
+            Assert.True(result.Success);
+            Assert.Null(result.Payload!.Cart.CustomerId);
+            Assert.Null(result.Payload.Cart.AppUserId);
+            var stored = await context.CartSessions.SingleAsync();
+            Assert.Null(stored.CustomerId);
+            Assert.Null(stored.AppUserId);
+        }
+
+        [Fact]
         public async Task AddLineAsync_UsesServerDefaultCurrency_WhenClientSendsDifferentCurrency()
         {
             await using var context = CreateContext();

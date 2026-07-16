@@ -1059,6 +1059,36 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 payload => payload?.ToStorefrontContract());
         }
 
+        [HttpPost("merge-current-customer")]
+        [Authorize]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Cart)]
+        public async Task<IActionResult> MergeCurrentCustomer(
+            [FromHeader(Name = CartTokenHeaderName)] string cartToken,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var appUserId = this.GetCurrentCustomerId();
+            if (string.IsNullOrWhiteSpace(appUserId))
+            {
+                return this.Error(StatusCodes.Status401Unauthorized, "unauthorized", "Customer identity was not found.");
+            }
+
+            var result = await this.storefrontCartService.AttachOrMergeCurrentCustomerAsync(
+                new StorefrontCartAttachCurrentCustomerRequest(
+                    storeId.Value,
+                    cartToken,
+                    appUserId),
+                cancellationToken);
+            return this.FromServiceResponse(
+                result,
+                payload => payload?.ToStorefrontContract());
+        }
+
         [HttpPost("save-checkout")]
         [EnableRateLimiting(StorefrontRateLimitPolicyNames.Cart)]
         public async Task<IActionResult> SaveCheckout([FromBody] IReadOnlyList<StorefrontOrderItemRequest> orderItems)

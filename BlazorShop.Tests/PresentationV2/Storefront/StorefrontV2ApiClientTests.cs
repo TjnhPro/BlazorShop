@@ -561,6 +561,46 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(["/api/storefront/stores/default/cart/recalculate"], handler.RequestPaths);
         }
 
+        [Fact]
+        public async Task MergeCurrentCustomerCartAsync_PostsBearerProtectedCartCommandWithoutBody()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal(HttpMethod.Post, request.Method);
+                Assert.Equal("/api/storefront/stores/default/cart/merge-current-customer", request.RequestUri?.AbsolutePath);
+                Assert.True(request.Headers.TryGetValues("X-Cart-Token", out var values));
+                Assert.Equal("cart-token", Assert.Single(values));
+                Assert.Equal("Bearer", request.Headers.Authorization?.Scheme);
+                Assert.Equal("access-token", request.Headers.Authorization?.Parameter);
+                Assert.Null(request.Content);
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    """
+                    {
+                      "success": true,
+                      "message": "ok",
+                      "data": {
+                        "cartId": "00000000-0000-0000-0000-000000000001",
+                        "state": "active",
+                        "version": 3,
+                        "lastActivityAtUtc": "2026-07-16T00:00:00Z",
+                        "expiresAtUtc": "2026-07-17T00:00:00Z",
+                        "lines": []
+                      }
+                    }
+                    """);
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var result = await apiClient.MergeCurrentCustomerCartAsync("cart-token", "access-token");
+
+            Assert.True(result.Success);
+            Assert.Equal(3, result.Data?.Version);
+            Assert.Equal(["/api/storefront/stores/default/cart/merge-current-customer"], handler.RequestPaths);
+        }
+
         private static StorefrontApiClient CreateApiClient(HttpClient client, bool enableLegacyFallback = false)
         {
             return new StorefrontApiClient(
