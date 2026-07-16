@@ -510,5 +510,7 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Storefront cart rejects unavailable products before mutation. 2026-07-16: `StorefrontCartServiceTests.AddLineAsync_RejectsScheduledProduct` passed.
 - [x] Product structured data exposes safe identity fields only. 2026-07-16 Phase 5: `StorefrontStructuredDataComposerTests.ComposeProductPageAsync_AddsSafeProductIdentifiers` passed for SKU/GTIN/MPN/itemCondition and asserts dimensions are omitted.
 - [x] Storefront public schema guardrails still pass after product identity fields. 2026-07-16 Phase 5: `CommerceNodeStorefrontOpenApiContractTests` passed 23/23.
+- [x] Storefront cart rejects invalid variant/selected-attribute combinations and keeps custom attributes normalized. 2026-07-16 Phase 6: focused `StorefrontCartServiceTests` run passed.
+- [x] Storefront checkout snapshots selected attributes into order lines. 2026-07-16 Phase 6: focused `StorefrontCheckoutServiceTests` run passed.
 - [ ] Visible browser QA confirms `/category/{slug}` displays category description from CommerceNode data.
 - [ ] Visible browser QA confirms `/category/{slug}` shows full breadcrumb hierarchy and direct product count.

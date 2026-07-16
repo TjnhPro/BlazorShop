@@ -313,37 +313,37 @@ Goal: strengthen the product-with-variants path that already exists before addin
 
 Implementation checklist:
 
-- [ ] Re-test `Simple`, `VariantInventory`, and `CustomVariations` behavior across:
-  - [ ] admin.
-  - [ ] product import.
-  - [ ] Storefront product detail.
-  - [ ] cart.
-  - [ ] checkout.
-  - [ ] inventory stock deduction.
-- [ ] Ensure variant SKU uniqueness is scoped to product/store according to current model.
-- [ ] Ensure default variant behavior is deterministic.
-- [ ] Ensure selected attributes are normalized consistently.
-- [ ] Ensure cart/checkout error messages clearly say when variant selection is required or invalid.
-- [ ] Add product detail DTO fields only if Storefront needs them for variant selector.
-- [ ] Do not add variant media in this phase.
-- [ ] Add tests for product with no variants.
-- [ ] Add tests for product with default variant.
-- [ ] Add tests for product requiring variant selection.
-- [ ] Add tests for invalid variant from another product/store.
-- [ ] Add tests for custom variation attributes normalized into cart/order lines.
+- [x] Re-test `Simple`, `VariantInventory`, and `CustomVariations` behavior across:
+  - [x] admin.
+  - [~] product import. Product import variant behavior was not changed in Phase 6; existing `variation_template_slug` validation remains in place.
+  - [~] Storefront product detail. No product-detail DTO change was required in Phase 6.
+  - [x] cart.
+  - [x] checkout.
+  - [~] inventory stock deduction. Inventory deduction behavior was re-covered through focused checkout tests, not changed directly in this phase.
+- [x] Ensure variant SKU uniqueness is scoped to product/store according to current model.
+- [x] Ensure default variant behavior is deterministic.
+- [x] Ensure selected attributes are normalized consistently.
+- [x] Ensure cart/checkout error messages clearly say when variant selection is required or invalid.
+- [x] Add product detail DTO fields only if Storefront needs them for variant selector.
+- [x] Do not add variant media in this phase.
+- [x] Add tests for product with no variants.
+- [x] Add tests for product with default variant.
+- [x] Add tests for product requiring variant selection.
+- [x] Add tests for invalid variant from another product/store.
+- [x] Add tests for custom variation attributes normalized into cart/order lines.
 
 Verification checklist:
 
-- [ ] Product variant service tests pass.
-- [ ] Storefront product detail tests pass.
-- [ ] Cart/checkout variant tests pass.
-- [ ] Product import variant tests pass if import changed.
+- [x] Product variant service tests pass.
+- [~] Storefront product detail tests pass. No product-detail code path changed; not re-run as a dedicated browser/detail test in Phase 6.
+- [x] Cart/checkout variant tests pass.
+- [~] Product import variant tests pass if import changed. Product import was unchanged in Phase 6.
 
 Exit criteria:
 
-- [ ] Current variant model is reliable enough for Storefront use.
-- [ ] Product type constants still match implemented behavior only.
-- [ ] No advanced product type constant is added without cart/checkout behavior.
+- [x] Current variant model is reliable enough for Storefront use.
+- [x] Product type constants still match implemented behavior only.
+- [x] No advanced product type constant is added without cart/checkout behavior.
 
 Suggested commit:
 
@@ -547,7 +547,7 @@ test(catalog): complete catalog structure core qa
 - [x] Product availability end hides expired product from list/detail/sitemap/cart/checkout. 2026-07-16: repository public catalog/detail/sitemap tests passed for expired products and cart/checkout validation paths include end-window checks.
 - [x] Product identity fields validate max length and non-negative dimensions. 2026-07-16 Phase 5: ProductService validation tests cover invalid condition, negative dimensions, and normalized persistence.
 - [ ] Unsupported product type is rejected.
-- [ ] Variant-required product cannot be checked out without valid variant selection.
+- [x] Variant-required product cannot be checked out without valid variant selection. 2026-07-16 Phase 6: focused cart/checkout variant tests passed.
 
 ### Control Plane
 
@@ -604,7 +604,7 @@ test(catalog): complete catalog structure core qa
 - [x] Phase 2 - category breadcrumb/count/descendant product behavior. 2026-07-16: implemented and verified with focused catalog/client/OpenAPI tests.
 - [x] Phase 4 - product availability window. 2026-07-16: implemented and verified with focused product service, repository, cart, import, Control Plane, DbContext model, and Storefront OpenAPI contract tests.
 - [x] Phase 5 - product identity fields. 2026-07-16: implemented with migration, validation, admin edit, import columns, and structured data tests.
-- [ ] Phase 6 - variant MVP hardening.
+- [x] Phase 6 - variant MVP hardening. 2026-07-16: added ProductVariantService guard tests and re-ran cart/checkout variant tests.
 - [ ] Phase 3 - product-category mapping only if multi-category/per-category order is approved for implementation.
 - [ ] Phase 7 - Control Plane/admin integration.
 - [ ] Phase 8 - Storefront rendering/SEO/sitemap/cache alignment.

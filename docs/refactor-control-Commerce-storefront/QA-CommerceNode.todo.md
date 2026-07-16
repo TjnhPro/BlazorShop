@@ -828,4 +828,7 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Product identity migration adds nullable GTIN/barcode/MPN/condition/weight/dimensions fields. 2026-07-16 Phase 5: `CommerceNodeProductIdentityFields` migration generated and `CommerceNodeDbContextModelTests` passed.
 - [x] Product identity validation rejects invalid condition and negative dimensions while preserving optional create/update compatibility. 2026-07-16 Phase 5: `ProductServiceTests` focused run passed.
 - [x] Product import accepts optional identity/dimension columns and keeps previous CSV shape compatible. 2026-07-16 Phase 5: `ProductImportCsvParserTests` and ControlPlane template test passed.
+- [x] Product variant service rejects duplicate SKU within the same product and duplicate default variants. 2026-07-16 Phase 6: `ProductVariantServiceTests` passed.
+- [x] Product variant service trims SKU before persisting. 2026-07-16 Phase 6: `ProductVariantServiceTests.AddAsync_WhenSkuIsUnique_TrimsBeforePersisting` passed.
+- [x] Cart/checkout variant and selected-attribute flows still pass after hardening. 2026-07-16 Phase 6: focused `StorefrontCartServiceTests` and `StorefrontCheckoutServiceTests` run passed.
 - [ ] Live API smoke creates a category with description, updates it, and reads it back through Commerce admin API.

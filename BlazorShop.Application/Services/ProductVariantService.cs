@@ -73,6 +73,7 @@ namespace BlazorShop.Application.Services
             }
 
             var mapped = _mapper.Map<ProductVariant>(variant);
+            NormalizeVariant(mapped);
             var validation = await ValidateVariantAsync(mapped);
             if (!validation.Success)
             {
@@ -109,6 +110,7 @@ namespace BlazorShop.Application.Services
             }
 
             _mapper.Map(variant, existing);
+            NormalizeVariant(existing);
             var validation = await ValidateVariantAsync(existing, existing.Id);
             if (!validation.Success)
             {
@@ -163,12 +165,23 @@ namespace BlazorShop.Application.Services
                 return new ServiceResponse(false, "Variant attribute combination already exists for this product.");
             }
 
+            if (!string.IsNullOrWhiteSpace(variant.Sku)
+                && variants.Any(item => string.Equals(item.Sku, variant.Sku, StringComparison.OrdinalIgnoreCase)))
+            {
+                return new ServiceResponse(false, "Variant SKU already exists for this product.");
+            }
+
             if (variant.IsDefault && variants.Any(item => item.IsDefault))
             {
                 return new ServiceResponse(false, "Product already has a default variant.");
             }
 
             return new ServiceResponse(true, string.Empty);
+        }
+
+        private static void NormalizeVariant(ProductVariant variant)
+        {
+            variant.Sku = string.IsNullOrWhiteSpace(variant.Sku) ? null : variant.Sku.Trim();
         }
 
         private async Task<Product?> GetProductForCurrentStoreAsync(Guid productId)
