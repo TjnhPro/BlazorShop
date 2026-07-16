@@ -26,6 +26,7 @@ POST /api/storefront/stores/{storeKey}/checkout/place-order
 POST /api/storefront/stores/{storeKey}/checkout/preview
 GET /api/storefront/stores/{storeKey}/configuration
 POST /api/storefront/stores/{storeKey}/currency/preference
+GET /api/storefront/stores/{storeKey}/navigation/{systemName}
 POST /api/storefront/stores/{storeKey}/newsletter/subscribe
 POST /api/storefront/stores/{storeKey}/orders/confirm
 GET /api/storefront/stores/{storeKey}/orders/current-user

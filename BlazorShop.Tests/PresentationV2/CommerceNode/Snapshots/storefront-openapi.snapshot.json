@@ -2222,6 +2222,65 @@
         }
       }
     },
+    "/api/storefront/stores/{storeKey}/navigation/{systemName}": {
+      "get": {
+        "tags": [
+          "StorefrontScopedNavigation"
+        ],
+        "summary": "Get a Storefront navigation menu.",
+        "operationId": "StorefrontNavigation_GetMenu",
+        "parameters": [
+          {
+            "name": "systemName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreNavigationPublicMenuDtoCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/storefront/stores/{storeKey}/newsletter/subscribe": {
       "post": {
         "tags": [
@@ -3639,6 +3698,75 @@
           },
           "data": {
             "$ref": "#/components/schemas/SeoSettingsDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StoreNavigationPublicItemDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "href": {
+            "type": "string",
+            "nullable": true
+          },
+          "targetType": {
+            "type": "string",
+            "nullable": true
+          },
+          "targetKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "opensInNewTab": {
+            "type": "boolean"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreNavigationPublicItemDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StoreNavigationPublicMenuDto": {
+        "type": "object",
+        "properties": {
+          "systemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreNavigationPublicItemDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StoreNavigationPublicMenuDtoCommerceNodeApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/StoreNavigationPublicMenuDto"
           }
         },
         "additionalProperties": false
@@ -6599,6 +6727,9 @@
     },
     {
       "name": "StorefrontScopedCurrency"
+    },
+    {
+      "name": "StorefrontScopedNavigation"
     },
     {
       "name": "StorefrontScopedNewsletter"

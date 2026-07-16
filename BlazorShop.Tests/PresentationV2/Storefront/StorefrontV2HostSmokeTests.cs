@@ -141,6 +141,33 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal("/", response.Headers.Location?.ToString());
         }
 
+        [Theory]
+        [InlineData("/signin")]
+        [InlineData("/register")]
+        [InlineData("/logout")]
+        [InlineData("/currency")]
+        [InlineData("/checkout")]
+        public async Task StorefrontFormPost_WithoutAntiforgeryToken_ReturnsBadRequest(string path)
+        {
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontCurrentStoreProvider>();
+                    services.AddScoped<IStorefrontCurrentStoreProvider>(_ => new StubCurrentStoreProvider(
+                        StorefrontCurrentStoreResolution.Succeeded(CreateActiveCurrentStore())));
+                },
+                allowAutoRedirect: false);
+
+            using var response = await client.PostAsync(
+                path,
+                new FormUrlEncodedContent(
+                [
+                    new KeyValuePair<string, string>("ReturnUrl", StorefrontRoutes.Home),
+                ]));
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
         [Fact]
         public async Task Register_ReturnsStorefrontRegisterPage()
         {
@@ -278,6 +305,33 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("Sign out", content, StringComparison.Ordinal);
             Assert.DoesNotContain("My Account", content, StringComparison.Ordinal);
             Assert.DoesNotContain("Admin Panel", content, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task CurrencyPreference_PostSuccess_SetsPreferenceCookieAndRedirectsToSafeReturnUrl()
+        {
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontSessionResolver>();
+                    services.RemoveAll<StorefrontApiClient>();
+                    services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
+                    services.AddScoped(_ => new StorefrontApiClient(
+                        new HttpClient(new CurrencyPreferenceHandler())
+                        {
+                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
+                        },
+                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.SignIn);
+            using var request = CreateCurrencyPreferencePost(token, cookieHeader, "EUR", StorefrontRoutes.NewReleases);
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal(StorefrontRoutes.NewReleases, response.Headers.Location?.ToString());
+            Assert.Contains(response.Headers.GetValues("Set-Cookie"), value => value.Contains("bs-currency=EUR", StringComparison.Ordinal));
         }
 
         [Fact]
@@ -562,7 +616,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var configuredFactory = _factory.WithWebHostBuilder(builder =>
             {
-                builder.ConfigureServices(configureServices);
+                builder.ConfigureServices(services =>
+                {
+                    services.RemoveAll<IStorefrontCurrentStoreProvider>();
+                    services.AddScoped<IStorefrontCurrentStoreProvider>(_ => new StubCurrentStoreProvider(
+                        StorefrontCurrentStoreResolution.Succeeded(CreateActiveCurrentStore())));
+                    configureServices(services);
+                });
             });
 
             return configuredFactory.CreateClient(new WebApplicationFactoryClientOptions
@@ -690,6 +750,27 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 [
                     new KeyValuePair<string, string>("__RequestVerificationToken", antiforgeryToken),
                     new KeyValuePair<string, string>("ReturnUrl", StorefrontRoutes.Home),
+                ]),
+            };
+
+            request.Headers.Add("Cookie", cookieHeader);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            return request;
+        }
+
+        private static HttpRequestMessage CreateCurrencyPreferencePost(
+            string antiforgeryToken,
+            string cookieHeader,
+            string currencyCode,
+            string returnUrl)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, StorefrontRoutes.CurrencyPreference)
+            {
+                Content = new FormUrlEncodedContent(
+                [
+                    new KeyValuePair<string, string>("__RequestVerificationToken", antiforgeryToken),
+                    new KeyValuePair<string, string>("CurrencyCode", currencyCode),
+                    new KeyValuePair<string, string>("ReturnUrl", returnUrl),
                 ]),
             };
 
@@ -882,6 +963,35 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             public Task<StorefrontSitemapGenerationResult> GenerateAsync(CancellationToken cancellationToken = default)
             {
                 return Task.FromResult(_result);
+            }
+        }
+
+        private sealed class CurrencyPreferenceHandler : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                var path = request.RequestUri?.AbsolutePath ?? string.Empty;
+                if (request.Method == HttpMethod.Post && path.EndsWith("/currency/preference", StringComparison.Ordinal))
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = JsonContent(new
+                        {
+                            success = true,
+                            message = "OK",
+                            data = new
+                            {
+                                currencyCode = "EUR",
+                                requestedCurrencySupported = true,
+                                checkoutCurrencyEnabled = true,
+                                availableCurrencies = new[] { "USD", "EUR" },
+                                checkoutCurrencies = new[] { "USD", "EUR" },
+                            },
+                        }),
+                    });
+                }
+
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
             }
         }
 
