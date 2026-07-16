@@ -327,6 +327,61 @@ app.MapGet("/api/cart", async (
         ? Results.Ok(ToLocalCartResponse(result.Cart))
         : Results.Ok(ToLocalCartResponse(null));
 });
+app.MapPost("/api/product-selection-preview", async (
+    StorefrontLocalProductSelectionPreviewRequest request,
+    StorefrontApiClient apiClient,
+    IStorefrontDisplayContextProvider displayContextProvider,
+    IStorefrontPriceFormatter priceFormatter,
+    CancellationToken cancellationToken) =>
+{
+    if (request.ProductId == Guid.Empty || request.Quantity < 1)
+    {
+        return Results.BadRequest(new StorefrontLocalCartErrorResponse("Product and quantity are required."));
+    }
+
+    var displayContext = await displayContextProvider.GetAsync(cancellationToken);
+    var currencyCode = NormalizeCurrencyCode(request.CurrencyCode) ?? displayContext.CurrencyCode;
+    var result = await apiClient.PreviewProductSelectionAsync(
+        request.ProductId,
+        new StorefrontProductSelectionPreviewRequest
+        {
+            ProductVariantId = request.ProductVariantId,
+            SelectedAttributes = request.SelectedAttributes,
+            Quantity = request.Quantity,
+            CurrencyCode = currencyCode,
+        },
+        cancellationToken);
+
+    if (!result.Success || result.Data is null)
+    {
+        return Results.BadRequest(new StorefrontLocalCartErrorResponse(result.Message));
+    }
+
+    var preview = result.Data;
+    var previewContext = displayContext with { CurrencyCode = preview.CurrencyCode };
+    return Results.Ok(new StorefrontLocalProductSelectionPreviewResponse(
+        preview.ProductId,
+        preview.ProductVariantId,
+        preview.IsValid,
+        preview.IsAvailable,
+        preview.CanAddToCart,
+        preview.ValidationMessages,
+        preview.SelectedAttributes
+            .Select(attribute => new SelectedAttributeDto(attribute.Name, attribute.Value))
+            .ToArray(),
+        preview.AttributeSignature,
+        preview.Sku,
+        preview.DisplayName,
+        preview.UnitPrice,
+        preview.ComparePrice,
+        preview.CurrencyCode,
+        priceFormatter.Format(preview.UnitPrice, previewContext),
+        preview.ComparePrice.HasValue ? priceFormatter.Format(preview.ComparePrice.Value, previewContext) : null,
+        preview.StockQuantity,
+        preview.MinQuantity,
+        preview.MaxQuantity,
+        preview.PrimaryImageUrl));
+});
 app.MapPost("/api/cart/lines", async (
     StorefrontLocalCartLineRequest request,
     StorefrontCartTokenService cartTokenService,
@@ -806,6 +861,40 @@ public sealed class StorefrontLocalCartLineRequest
 
     public int Quantity { get; set; } = 1;
 }
+
+public sealed class StorefrontLocalProductSelectionPreviewRequest
+{
+    public Guid ProductId { get; set; }
+
+    public Guid? ProductVariantId { get; set; }
+
+    public IReadOnlyList<SelectedAttributeDto>? SelectedAttributes { get; set; }
+
+    public int Quantity { get; set; } = 1;
+
+    public string? CurrencyCode { get; set; }
+}
+
+public sealed record StorefrontLocalProductSelectionPreviewResponse(
+    Guid ProductId,
+    Guid? ProductVariantId,
+    bool IsValid,
+    bool IsAvailable,
+    bool CanAddToCart,
+    IReadOnlyList<string> ValidationMessages,
+    IReadOnlyList<SelectedAttributeDto> SelectedAttributes,
+    string? AttributeSignature,
+    string? Sku,
+    string? DisplayName,
+    decimal UnitPrice,
+    decimal? ComparePrice,
+    string CurrencyCode,
+    string FormattedUnitPrice,
+    string? FormattedComparePrice,
+    int StockQuantity,
+    int MinQuantity,
+    int MaxQuantity,
+    string? PrimaryImageUrl);
 
 public sealed class StorefrontLocalCartQuantityRequest
 {

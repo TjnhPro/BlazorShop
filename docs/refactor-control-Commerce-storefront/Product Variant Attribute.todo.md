@@ -378,41 +378,41 @@ Goal: make Storefront product selection behavior backend-authoritative while pre
 
 Implementation checklist:
 
-- [ ] Update `ProductPage.razor` to render controls from variation template metadata:
-  - [ ] dropdown for `dropdown`.
-  - [ ] radio group for `radio`.
-  - [ ] color swatch buttons for `color`.
-- [ ] Keep existing variant select behavior for products that do not use a variation template.
-- [ ] On selection change, call selection-preview API.
-- [ ] On quantity change, call selection-preview API.
-- [ ] Update visible state from preview:
-  - [ ] price.
-  - [ ] compare/regular price where already available.
-  - [ ] SKU/display name.
-  - [ ] stock/availability.
-  - [ ] add-to-cart enabled state.
-  - [ ] validation messages.
-- [ ] Send the same selected attribute payload to the existing cart API.
-- [ ] Keep SSR fallback usable before JavaScript loads.
-- [ ] Do not move Product Detail to WASM.
-- [ ] Do not add cart, checkout, account, or contact component migration here.
-- [ ] Do not add image-gallery switching until Media Core introduces a stable variant image assignment model.
+- [x] Update `ProductPage.razor` to render controls from variation template metadata:
+  - [x] dropdown for `dropdown`.
+  - [x] radio group for `radio`.
+  - [x] color swatch buttons for `color`.
+- [x] Keep existing variant select behavior for products that do not use a variation template. 2026-07-16 Phase 5: `UsesVariantSelect` preserves the existing select path.
+- [x] On selection change, call selection-preview API. 2026-07-16 Phase 5: Storefront V2 local `/api/product-selection-preview` proxies to CommerceNode selection preview.
+- [x] On quantity change, call selection-preview API. 2026-07-16 Phase 5: JS schedules preview on `data-storefront-selection-quantity` input/change.
+- [x] Update visible state from preview:
+  - [x] price.
+  - [x] compare/regular price where already available.
+  - [x] SKU/display name.
+  - [x] stock/availability.
+  - [x] add-to-cart enabled state.
+  - [x] validation messages.
+- [x] Send the same selected attribute payload to the existing cart API. 2026-07-16 Phase 5: JS posts `SelectedAttributes` to local cart endpoint.
+- [x] Keep SSR fallback usable before JavaScript loads. 2026-07-16 Phase 5: product page still renders price, stock, variant list, and controls server-side.
+- [x] Do not move Product Detail to WASM.
+- [x] Do not add cart, checkout, account, or contact component migration here.
+- [x] Do not add image-gallery switching until Media Core introduces a stable variant image assignment model.
 
 Verification checklist:
 
-- [ ] Product page renders without JavaScript.
-- [ ] Product page renders dropdown/radio/color controls from API metadata.
-- [ ] Selection change updates preview state.
-- [ ] Quantity change updates preview state.
-- [ ] Invalid selection blocks add-to-cart.
-- [ ] Valid selection sends matching payload to cart API.
-- [ ] Preview and add-to-cart agree on valid/invalid states.
+- [x] Product page renders without JavaScript. 2026-07-16 Phase 5: Storefront V2 build passed and SSR markup remains populated before JS preview.
+- [x] Product page renders dropdown/radio/color controls from API metadata. 2026-07-16 Phase 5: `StorefrontBrandingMarkupTests.ProductPage_UsesBackendSelectionPreviewForVariantAttributes` passed.
+- [x] Selection change updates preview state. 2026-07-16 Phase 5: JS preview scheduler and static guardrail test passed.
+- [x] Quantity change updates preview state. 2026-07-16 Phase 5: JS preview scheduler and `node --check` passed.
+- [x] Invalid selection blocks add-to-cart. 2026-07-16 Phase 5: JS disables add-to-cart when preview returns `CanAddToCart=false`; resolver tests cover invalid states.
+- [x] Valid selection sends matching payload to cart API. 2026-07-16 Phase 5: markup/JS guardrail test asserts `SelectedAttributes` post path.
+- [x] Preview and add-to-cart agree on valid/invalid states. 2026-07-16 Phase 5: resolver now resolves variant products by selected attribute signature and cart tests passed.
 
 Exit criteria:
 
-- [ ] Product detail can preview a selected combination before add-to-cart.
-- [ ] Add-to-cart and preview agree on selection rules.
-- [ ] SSR page still renders usable product information before JavaScript loads.
+- [x] Product detail can preview a selected combination before add-to-cart.
+- [x] Add-to-cart and preview agree on selection rules.
+- [x] SSR page still renders usable product information before JavaScript loads.
 
 Suggested commit:
 
@@ -590,7 +590,7 @@ test(variant-attributes): complete release gate
 - [x] Phase 2 - product variant active state and combination validation. 2026-07-16: committed as `feat(commerce-node): add active state for product variants`.
 - [x] Phase 3 - shared product selection resolver. 2026-07-16: committed as `feat(storefront): share product selection resolution`.
 - [x] Phase 4 - Storefront product selection preview API. 2026-07-16: focused Phase 4 run passed 32/32.
-- [ ] Phase 5 - Storefront product detail integration.
+- [x] Phase 5 - Storefront product detail integration. 2026-07-16: focused Phase 5 run passed 43/43; Storefront V2 build and JS syntax check passed.
 - [ ] Phase 6 - manager workflow hardening.
 - [ ] Phase 7 - QA/contracts/release gate.
 

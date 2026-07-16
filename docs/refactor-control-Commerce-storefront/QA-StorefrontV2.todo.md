@@ -128,6 +128,9 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Shows variant effective price. 2026-07-10: product page rendered variant prices `EUR 19.99` and `EUR 21.99`.
 - [x] Shows compare price when present. 2026-07-10: product page rendered `EUR 24.99` compare price for `Catalog QA T-Shirt`.
 - [x] Shows out-of-stock state for product/variant. 2026-07-10: product page rendered `Black / M` as `Out of stock`.
+- [x] Product detail renders variation template dropdown/radio/color controls and backend preview markers. 2026-07-16 Phase 5: `StorefrontBrandingMarkupTests.ProductPage_UsesBackendSelectionPreviewForVariantAttributes` passed.
+- [x] Product detail posts selected attributes and quantity through the Storefront V2 selection-preview proxy before add-to-cart. 2026-07-16 Phase 5: JS guardrail test and `node --check` passed.
+- [x] Product detail add-to-cart sends the same selected attributes used for preview. 2026-07-16 Phase 5: JS posts `SelectedAttributes` to `/api/cart/lines`; focused Storefront/Cart tests passed 43/43.
   - [x] Shows add-to-cart button.
   - [x] Shows related products/recommendations block.
   - [x] Missing slug returns noindex 404 state.

@@ -55,26 +55,107 @@ else if (_product is not null)
                     <div class="mt-5">
                         <div class="text-sm text-neutral-500">@PrimaryPriceLabel</div>
                         <div class="mt-1 flex flex-wrap items-end gap-3">
-                            <span class="text-4xl font-black text-neutral-900">@DisplayPrice</span>
-                            @if (DisplayComparePriceAmount is not null && DisplayComparePriceAmount > DisplayPriceAmount)
-                            {
-                                <span class="pb-1 text-lg font-semibold text-neutral-400 line-through">@FormatPrice(DisplayComparePriceAmount.Value, DisplayCurrencyCode)</span>
-                            }
+                            <span class="text-4xl font-black text-neutral-900" data-storefront-selection-price>@DisplayPrice</span>
+                            <span class="pb-1 text-lg font-semibold text-neutral-400 line-through @(HasComparePrice ? null : "hidden")" data-storefront-selection-compare>
+                                @(HasComparePrice ? FormatPrice(DisplayComparePriceAmount!.Value, DisplayCurrencyCode) : string.Empty)
+                            </span>
                         </div>
                     </div>
 
                     <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-neutral-600">
                         <span class="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 font-semibold text-neutral-700">@VariantSummary</span>
-                        <span class="@StockBadgeClass">@StockSummary</span>
+                        <span class="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 font-semibold text-neutral-700 @(string.IsNullOrWhiteSpace(DefaultSkuLabel) ? "hidden" : null)" data-storefront-selection-sku>@DefaultSkuLabel</span>
+                        <span class="@StockBadgeClass" data-storefront-selection-stock>@StockSummary</span>
                     </div>
 
                     <p class="mt-6 text-base leading-7 text-neutral-700">@ProductDescription</p>
 
-                <div id="purchase" class="mt-8 rounded-2xl border border-neutral-200 bg-neutral-50/80 p-5">
+                <div id="purchase"
+                     class="mt-8 rounded-2xl border border-neutral-200 bg-neutral-50/80 p-5"
+                     data-storefront-selection-preview
+                     data-preview-route="/api/product-selection-preview"
+                     data-product-id="@_product.Id"
+                     data-currency-code="@DisplayCurrencyCode">
                     <p class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">Add to Cart</p>
                     <p class="mt-2 text-sm leading-6 text-neutral-700">@PurchaseMessage</p>
 
-                    @if (_product.Variants.Any())
+                    @if (HasVariationTemplate)
+                    {
+                        <div class="mt-5 grid gap-5" data-storefront-attribute-group>
+                            @foreach (var option in ActiveVariationOptions)
+                            {
+                                <div>
+                                    <div class="flex items-center justify-between gap-3">
+                                        <label class="text-sm font-semibold text-neutral-900" for="@OptionInputId(option)">@option.Name</label>
+                                        @if (!option.IsRequired)
+                                        {
+                                            <span class="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">Optional</span>
+                                        }
+                                    </div>
+
+                                    @if (IsRadioControl(option))
+                                    {
+                                        <div class="mt-2 flex flex-wrap gap-2" id="@OptionInputId(option)">
+                                            @foreach (var value in ActiveVariationValues(option))
+                                            {
+                                                var inputId = OptionValueInputId(option, value);
+                                                <label class="inline-flex cursor-pointer items-center gap-2 rounded border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-800 hover:border-neutral-400">
+                                                    <input id="@inputId"
+                                                           type="radio"
+                                                           name="@OptionInputName(option)"
+                                                           value="@value.Value"
+                                                           checked="@ShouldSelectOptionValue(option, value)"
+                                                           data-storefront-attribute-control
+                                                           data-attribute-name="@option.Name"
+                                                           class="h-4 w-4 accent-neutral-900" />
+                                                    <span>@value.Value</span>
+                                                </label>
+                                            }
+                                        </div>
+                                    }
+                                    else if (IsColorControl(option))
+                                    {
+                                        <div class="mt-2 flex flex-wrap gap-2" id="@OptionInputId(option)">
+                                            @foreach (var value in ActiveVariationValues(option))
+                                            {
+                                                var inputId = OptionValueInputId(option, value);
+                                                <label class="inline-flex cursor-pointer items-center gap-2 rounded border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-800 hover:border-neutral-400">
+                                                    <input id="@inputId"
+                                                           type="radio"
+                                                           name="@OptionInputName(option)"
+                                                           value="@value.Value"
+                                                           checked="@ShouldSelectOptionValue(option, value)"
+                                                           data-storefront-attribute-control
+                                                           data-attribute-name="@option.Name"
+                                                           class="sr-only" />
+                                                    <span class="h-5 w-5 rounded-full border border-neutral-300" style="@ColorSwatchStyle(value)"></span>
+                                                    <span>@value.Value</span>
+                                                </label>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <select id="@OptionInputId(option)"
+                                                class="mt-2 w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 focus:outline-none focus:ring-1 focus:ring-black/10"
+                                                data-storefront-attribute-control
+                                                data-attribute-name="@option.Name">
+                                            @if (!option.IsRequired)
+                                            {
+                                                <option value="">Select @option.Name</option>
+                                            }
+
+                                            @foreach (var value in ActiveVariationValues(option))
+                                            {
+                                                <option value="@value.Value" selected="@ShouldSelectOptionValue(option, value)">@value.Value</option>
+                                            }
+                                        </select>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                    else if (_product.Variants.Any())
                     {
                         <div class="mt-4">
                             <label for="product-variant-select" class="block text-sm font-semibold text-neutral-900">Choose a variant</label>
@@ -98,6 +179,16 @@ else if (_product is not null)
                         </div>
                     }
 
+                    <div class="mt-4">
+                        <label for="product-selection-quantity" class="block text-sm font-semibold text-neutral-900">Quantity</label>
+                        <input id="product-selection-quantity"
+                               type="number"
+                               min="1"
+                               value="1"
+                               class="mt-2 w-28 rounded-xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 focus:outline-none focus:ring-1 focus:ring-black/10"
+                               data-storefront-selection-quantity />
+                    </div>
+
                     <div class="mt-4 flex flex-wrap gap-3">
                         <button type="button"
                                 class="inline-flex items-center rounded bg-amber-500 px-4 py-2 font-semibold text-white hover:bg-amber-600"
@@ -108,7 +199,8 @@ else if (_product is not null)
                                 data-product-name="@_product.Name"
                                 data-unit-price="@BaseUnitPriceValue"
                                 data-currency-code="@DisplayCurrencyCode"
-                                data-variant-select="@(_product.Variants.Any() ? "#product-variant-select" : null)"
+                                data-preview-container="#purchase"
+                                data-variant-select="@(UsesVariantSelect ? "#product-variant-select" : null)"
                                 data-stock="@_product.Quantity"
                                 data-feedback-target="#product-cart-feedback">
                             Add to Cart
@@ -119,7 +211,7 @@ else if (_product is not null)
                         </a>
                     </div>
 
-                    <p id="product-cart-feedback" class="mt-3 text-sm font-medium text-emerald-700" aria-live="polite"></p>
+                    <p id="product-cart-feedback" class="mt-3 text-sm font-medium text-emerald-700" aria-live="polite" data-storefront-selection-message></p>
                 </div>
 
                 @if (_product.Variants.Any())
@@ -220,6 +312,19 @@ else if (_product is not null)
 
     private string PrimaryPriceLabel => _product?.Variants.Any() == true ? "From" : "Price";
 
+    private bool HasComparePrice => DisplayComparePriceAmount is not null && DisplayComparePriceAmount > DisplayPriceAmount;
+
+    private bool HasVariationTemplate => ActiveVariationOptions.Count > 0;
+
+    private bool UsesVariantSelect => _product?.Variants.Any() == true && !HasVariationTemplate;
+
+    private IReadOnlyList<StorefrontVariationOptionDto> ActiveVariationOptions =>
+        _product?.VariationTemplate?.Options
+            .Where(option => !string.IsNullOrWhiteSpace(option.Name))
+            .Where(option => ActiveVariationValues(option).Count > 0)
+            .ToArray()
+        ?? [];
+
     private string VariantSummary => _product?.Variants.Any() == true
         ? string.Concat(_product.Variants.Count(), " options")
         : "Single option";
@@ -239,6 +344,12 @@ else if (_product is not null)
     private string BaseUnitPriceValue => DisplayPriceAmount.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
 
     private string DisplayPrice => FormatPrice(DisplayPriceAmount, DisplayCurrencyCode);
+
+    private string DefaultSkuLabel => !string.IsNullOrWhiteSpace(DefaultSelectionSku)
+        ? $"SKU {DefaultSelectionSku}"
+        : string.Empty;
+
+    private string? DefaultSelectionSku => _product?.Variants.FirstOrDefault(variant => variant.IsDefault)?.Sku ?? _product?.Sku;
 
     private string ProductDescription => !string.IsNullOrWhiteSpace(_product?.FullDescription)
         ? _product.FullDescription!
@@ -409,6 +520,61 @@ else if (_product is not null)
         return normalized is { Length: 3 } && normalized.All(char.IsLetter)
             ? normalized
             : null;
+    }
+
+    private static IReadOnlyList<StorefrontVariationValueDto> ActiveVariationValues(StorefrontVariationOptionDto option)
+    {
+        return option.Values
+            .Where(value => !string.IsNullOrWhiteSpace(value.Value))
+            .ToArray();
+    }
+
+    private static bool IsRadioControl(StorefrontVariationOptionDto option)
+    {
+        return string.Equals(option.ControlType, "radio", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsColorControl(StorefrontVariationOptionDto option)
+    {
+        return string.Equals(option.ControlType, "color", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool ShouldSelectOptionValue(StorefrontVariationOptionDto option, StorefrontVariationValueDto value)
+    {
+        var values = ActiveVariationValues(option);
+        return option.IsRequired
+            && values.Count > 0
+            && string.Equals(values[0].Value, value.Value, StringComparison.Ordinal);
+    }
+
+    private static string OptionInputId(StorefrontVariationOptionDto option)
+    {
+        return $"product-option-{SanitizeDomToken(option.Name)}";
+    }
+
+    private static string OptionInputName(StorefrontVariationOptionDto option)
+    {
+        return $"product_option_{SanitizeDomToken(option.Name)}";
+    }
+
+    private static string OptionValueInputId(StorefrontVariationOptionDto option, StorefrontVariationValueDto value)
+    {
+        return $"{OptionInputId(option)}-{SanitizeDomToken(value.Value)}";
+    }
+
+    private static string ColorSwatchStyle(StorefrontVariationValueDto value)
+    {
+        return !string.IsNullOrWhiteSpace(value.ColorHex)
+            ? $"background-color: {value.ColorHex};"
+            : "background-color: #f5f5f5;";
+    }
+
+    private static string SanitizeDomToken(string? value)
+    {
+        var raw = string.IsNullOrWhiteSpace(value) ? "option" : value.Trim().ToLowerInvariant();
+        var chars = raw.Select(character => char.IsLetterOrDigit(character) ? character : '-').ToArray();
+        var token = new string(chars).Trim('-');
+        return string.IsNullOrWhiteSpace(token) ? "option" : token;
     }
 
     private static string VariantDisplayName(GetProductVariant variant)

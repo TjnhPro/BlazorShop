@@ -117,6 +117,30 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("public string? CurrencyCode { get; set; }", apiClient);
         }
 
+        [Fact]
+        public void ProductPage_UsesBackendSelectionPreviewForVariantAttributes()
+        {
+            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/ProductPage.razor");
+            var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
+            var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+
+            Assert.Contains("data-storefront-selection-preview", markup);
+            Assert.Contains("data-preview-route=\"/api/product-selection-preview\"", markup);
+            Assert.Contains("data-storefront-attribute-control", markup);
+            Assert.Contains("data-storefront-selection-quantity", markup);
+            Assert.Contains("data-storefront-selection-price", markup);
+            Assert.Contains("data-storefront-selection-stock", markup);
+
+            Assert.Contains("const selectionPreviewSelector", script);
+            Assert.Contains("collectSelectedAttributes", script);
+            Assert.Contains("SelectedAttributes: payload.SelectedAttributes || null", script);
+            Assert.Contains("/api/product-selection-preview", script);
+
+            Assert.Contains("app.MapPost(\"/api/product-selection-preview\"", program);
+            Assert.Contains("PreviewProductSelectionAsync", program);
+            Assert.Contains("StorefrontLocalProductSelectionPreviewResponse", program);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath));

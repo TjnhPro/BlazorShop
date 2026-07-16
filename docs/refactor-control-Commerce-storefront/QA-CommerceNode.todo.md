@@ -851,5 +851,7 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Variant combination validation rejects unknown template values. 2026-07-16 Phase 2: `ProductVariantServiceTests.AddAsync_WhenTemplateValueIsUnknown_ReturnsFailure` passed.
 - [x] Shared product selection resolver rejects missing required options. 2026-07-16 Phase 3: `ProductSelectionResolverTests.ResolveAsync_RejectsMissingRequiredOption` passed.
 - [x] Shared product selection resolver rejects inactive variants. 2026-07-16 Phase 3: `ProductSelectionResolverTests.ResolveAsync_RejectsInactiveVariant` passed.
+- [x] Shared product selection resolver resolves active variants from selected template attributes. 2026-07-16 Phase 5: `ProductSelectionResolverTests.ResolveAsync_ResolvesVariantFromSelectedTemplateAttributes` passed.
+- [x] Shared product selection resolver rejects selected attributes that do not match an explicit variant. 2026-07-16 Phase 5: `ProductSelectionResolverTests.ResolveAsync_RejectsSelectedAttributesThatDoNotMatchExplicitVariant` passed.
 - [x] Storefront selection-preview endpoint is store-scoped. 2026-07-16 Phase 4: `StorefrontScopedCatalogControllerSelectionPreviewTests.PreviewProductSelection_WhenStoreCannotBeResolved_ReturnsNotFoundAndSkipsResolver` passed; resolver remains store-scoped by `StoreId`.
 - [x] Storefront selection-preview endpoint rejects quantity below 1. 2026-07-16 Phase 4: Storefront OpenAPI contract asserts `StorefrontProductSelectionPreviewRequest.quantity minimum: 1`; `[ApiController]` model validation enforces runtime 400.

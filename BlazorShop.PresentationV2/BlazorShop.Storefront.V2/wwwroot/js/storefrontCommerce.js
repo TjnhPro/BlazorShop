@@ -5,6 +5,9 @@
   const cartRemoveSelector = "[data-storefront-cart-remove]";
   const cartClearSelector = "[data-storefront-cart-clear]";
   const cartQuantitySelector = "[data-storefront-cart-quantity]";
+  const selectionPreviewSelector = "[data-storefront-selection-preview]";
+  const selectionQuantitySelector = "[data-storefront-selection-quantity]";
+  const attributeControlSelector = "[data-storefront-attribute-control]";
   const toastRegionSelector = "[data-storefront-toast-region]";
   const toastTemplateSelector = "[data-storefront-toast-template]";
   const antiforgeryTokenSelector = 'meta[name="blazorshop-antiforgery-token"]';
@@ -17,6 +20,7 @@
   const buttonResetDelayMs = 1600;
   const toastDurationMs = 5000;
   const buttonResetTimers = new WeakMap();
+  const previewTimers = new WeakMap();
   let badgePollHandle = 0;
 
   function parseInteger(value, fallback = 0) {
@@ -313,6 +317,178 @@
     return resolvedSize ? `${resolvedName} (size ${resolvedSize})` : resolvedName;
   }
 
+  function findPreviewContainer(button) {
+    const selector = button.dataset.previewContainer;
+    if (selector) {
+      const container = document.querySelector(selector);
+      if (container instanceof HTMLElement) {
+        return container;
+      }
+    }
+
+    return button.closest(selectionPreviewSelector);
+  }
+
+  function readSelectionQuantity(container) {
+    const input = container?.querySelector(selectionQuantitySelector);
+    if (!(input instanceof HTMLInputElement)) {
+      return 1;
+    }
+
+    const quantity = parseInteger(input.value, 1);
+    return Math.max(1, quantity);
+  }
+
+  function collectSelectedAttributes(container) {
+    if (!(container instanceof HTMLElement)) {
+      return [];
+    }
+
+    const attributes = [];
+    container.querySelectorAll(attributeControlSelector).forEach((control) => {
+      if (!(control instanceof HTMLElement)) {
+        return;
+      }
+
+      const name = (control.dataset.attributeName || "").trim();
+      if (!name) {
+        return;
+      }
+
+      if (control instanceof HTMLInputElement && control.type === "radio" && !control.checked) {
+        return;
+      }
+
+      const value = (control.value || "").trim();
+      if (!value) {
+        return;
+      }
+
+      if (attributes.some((attribute) => attribute.Name.toLowerCase() === name.toLowerCase())) {
+        return;
+      }
+
+      attributes.push({ Name: name, Value: value });
+    });
+
+    return attributes;
+  }
+
+  function resolveSelectedVariantId(button, container, includeResolvedVariant = true) {
+    const variantSelectSelector = button.dataset.variantSelect;
+    if (variantSelectSelector) {
+      const select = document.querySelector(variantSelectSelector);
+      if (select instanceof HTMLSelectElement && select.value) {
+        return select.value.trim();
+      }
+    }
+
+    return includeResolvedVariant
+      ? (container?.dataset.resolvedVariantId || button.dataset.resolvedVariantId || "").trim()
+      : "";
+  }
+
+  function buildSelectionPreviewPayload(container) {
+    const button = container.querySelector(buttonSelector);
+    if (!(button instanceof HTMLButtonElement)) {
+      return { error: "This product cannot be previewed right now." };
+    }
+
+    const productId = (container.dataset.productId || button.dataset.productId || "").trim();
+    if (!productId) {
+      return { error: "This product cannot be previewed right now." };
+    }
+
+    const selectedAttributes = collectSelectedAttributes(container);
+    return {
+      payload: {
+        ProductId: productId,
+        ProductVariantId: resolveSelectedVariantId(button, container, false) || null,
+        SelectedAttributes: selectedAttributes.length > 0 ? selectedAttributes : null,
+        Quantity: readSelectionQuantity(container),
+        CurrencyCode: (container.dataset.currencyCode || button.dataset.currencyCode || "").trim() || null
+      },
+      button
+    };
+  }
+
+  function setText(element, text) {
+    if (element instanceof HTMLElement) {
+      element.textContent = text || "";
+    }
+  }
+
+  function toggleHidden(element, hidden) {
+    if (element instanceof HTMLElement) {
+      element.classList.toggle("hidden", Boolean(hidden));
+    }
+  }
+
+  function applySelectionPreview(container, preview) {
+    const button = container.querySelector(buttonSelector);
+    const price = container.closest("main")?.querySelector("[data-storefront-selection-price]") || document.querySelector("[data-storefront-selection-price]");
+    const compare = container.closest("main")?.querySelector("[data-storefront-selection-compare]") || document.querySelector("[data-storefront-selection-compare]");
+    const stock = container.closest("main")?.querySelector("[data-storefront-selection-stock]") || document.querySelector("[data-storefront-selection-stock]");
+    const sku = container.closest("main")?.querySelector("[data-storefront-selection-sku]") || document.querySelector("[data-storefront-selection-sku]");
+    const message = container.querySelector("[data-storefront-selection-message]");
+    const validationMessages = Array.isArray(preview.validationMessages)
+      ? preview.validationMessages.filter(Boolean)
+      : [];
+
+    setText(price, preview.formattedUnitPrice || "");
+    setText(compare, preview.formattedComparePrice || "");
+    toggleHidden(compare, !preview.formattedComparePrice);
+    setText(stock, preview.isAvailable ? `${preview.stockQuantity} in stock` : "Out of stock");
+    setText(sku, preview.sku ? `SKU ${preview.sku}` : "");
+    toggleHidden(sku, !preview.sku);
+    setText(message, validationMessages[0] || (preview.canAddToCart ? "Selection ready." : "This selection is not available."));
+
+    if (button instanceof HTMLButtonElement) {
+      button.disabled = !preview.canAddToCart;
+      button.dataset.resolvedVariantId = preview.productVariantId || "";
+      button.dataset.unitPrice = String(preview.unitPrice ?? button.dataset.unitPrice ?? "");
+      button.dataset.currencyCode = preview.currencyCode || button.dataset.currencyCode || "";
+      button.dataset.stock = String(preview.stockQuantity ?? button.dataset.stock ?? "0");
+    }
+
+    container.dataset.resolvedVariantId = preview.productVariantId || "";
+  }
+
+  async function previewSelection(container) {
+    const request = buildSelectionPreviewPayload(container);
+    if (request.error) {
+      return;
+    }
+
+    try {
+      const preview = await sendCartRequest(container.dataset.previewRoute || "/api/product-selection-preview", "POST", request.payload);
+      applySelectionPreview(container, preview);
+    } catch (error) {
+      const button = request.button;
+      if (button instanceof HTMLButtonElement) {
+        button.disabled = true;
+        setFeedback(button, error instanceof Error ? error.message : "This selection could not be previewed.", true);
+      }
+    }
+  }
+
+  function scheduleSelectionPreview(container) {
+    if (!(container instanceof HTMLElement)) {
+      return;
+    }
+
+    const existing = previewTimers.get(container);
+    if (existing) {
+      window.clearTimeout(existing);
+    }
+
+    const timer = window.setTimeout(() => {
+      previewTimers.delete(container);
+      void previewSelection(container);
+    }, 180);
+    previewTimers.set(container, timer);
+  }
+
   function buildCartPayload(button) {
     const productId = (button.dataset.productId || "").trim();
     const productName = (button.dataset.productName || "Product").trim() || "Product";
@@ -326,6 +502,20 @@
       CurrencyCode: (button.dataset.currencyCode || "").trim() || null,
       Quantity: 1
     };
+
+    const previewContainer = findPreviewContainer(button);
+    if (previewContainer instanceof HTMLElement) {
+      payload.Quantity = readSelectionQuantity(previewContainer);
+      const selectedAttributes = collectSelectedAttributes(previewContainer);
+      if (selectedAttributes.length > 0) {
+        payload.SelectedAttributes = selectedAttributes;
+      }
+
+      const resolvedVariantId = resolveSelectedVariantId(button, previewContainer);
+      if (resolvedVariantId) {
+        payload.ProductVariantId = resolvedVariantId;
+      }
+    }
 
     const variantSelectSelector = button.dataset.variantSelect;
     const productStock = parseInteger(button.dataset.stock, 0);
@@ -372,6 +562,7 @@
       const summary = await sendCartRequest(`${cartApiRoute}/lines`, "POST", {
         ProductId: payload.ProductId,
         ProductVariantId: payload.ProductVariantId || null,
+        SelectedAttributes: payload.SelectedAttributes || null,
         CurrencyCode: payload.CurrencyCode || null,
         Quantity: payload.Quantity
       });
@@ -483,12 +674,35 @@
   }
 
   function handleChange(event) {
-    const quantityInput = event.target;
-    if (!(quantityInput instanceof HTMLInputElement) || !quantityInput.matches(cartQuantitySelector)) {
+    const target = event.target;
+    if (target instanceof HTMLElement && target.matches(attributeControlSelector)) {
+      scheduleSelectionPreview(target.closest(selectionPreviewSelector));
       return;
     }
 
-    updateCartQuantity(quantityInput);
+    if (target instanceof HTMLInputElement && target.matches(selectionQuantitySelector)) {
+      scheduleSelectionPreview(target.closest(selectionPreviewSelector));
+      return;
+    }
+
+    if (target instanceof HTMLSelectElement && target.matches("[data-storefront-variant-select]")) {
+      const container = document.querySelector(selectionPreviewSelector);
+      scheduleSelectionPreview(container);
+      return;
+    }
+
+    if (!(target instanceof HTMLInputElement) || !target.matches(cartQuantitySelector)) {
+      return;
+    }
+
+    updateCartQuantity(target);
+  }
+
+  function handleInput(event) {
+    const target = event.target;
+    if (target instanceof HTMLInputElement && target.matches(selectionQuantitySelector)) {
+      scheduleSelectionPreview(target.closest(selectionPreviewSelector));
+    }
   }
 
   function startBadgePolling() {
@@ -504,8 +718,14 @@
     initConsentBanner();
     refreshCartSummary();
     startBadgePolling();
+    document.querySelectorAll(selectionPreviewSelector).forEach((container) => {
+      if (container instanceof HTMLElement) {
+        scheduleSelectionPreview(container);
+      }
+    });
     document.addEventListener("click", handleClick);
     document.addEventListener("change", handleChange);
+    document.addEventListener("input", handleInput);
   }
 
   if (document.readyState === "loading") {

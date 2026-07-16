@@ -5,6 +5,8 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs;
+    using BlazorShop.Application.DTOs.Product.ProductVariant;
+    using BlazorShop.Application.Services;
     using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities;
@@ -66,7 +68,7 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
                 return Failed(request, ServiceResponseType.ValidationError, attributes.ErrorMessage, product: product);
             }
 
-            var variant = ResolveVariant(product, request.ProductVariantId);
+            var variant = ResolveVariant(product, request.ProductVariantId, attributes.AttributeSignature);
             if (!variant.Success)
             {
                 return Failed(request, ServiceResponseType.ValidationError, variant.ErrorMessage, product: product);
@@ -206,7 +208,10 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
                 && product.Category.IsPublished;
         }
 
-        private static VariantResolution ResolveVariant(Product product, Guid? productVariantId)
+        private static VariantResolution ResolveVariant(
+            Product product,
+            Guid? productVariantId,
+            string? selectedAttributeSignature)
         {
             if (string.Equals(product.ProductType, ProductTypes.CustomVariations, StringComparison.OrdinalIgnoreCase))
             {
@@ -225,6 +230,12 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
                     return VariantResolution.Failed("Selected product variant was not found.");
                 }
 
+                if (!string.IsNullOrWhiteSpace(selectedAttributeSignature)
+                    && !string.Equals(variant.AttributeSignature, selectedAttributeSignature, StringComparison.Ordinal))
+                {
+                    return VariantResolution.Failed("Selected attributes do not match the selected product variant.");
+                }
+
                 return variant.IsActive
                     ? VariantResolution.Succeeded(variant)
                     : VariantResolution.Failed("Selected product variant is not available.");
@@ -238,6 +249,15 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
             if (variants.Length == 0)
             {
                 return VariantResolution.Failed("Product variants are not available.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(selectedAttributeSignature))
+            {
+                var selectedVariant = variants.FirstOrDefault(candidate =>
+                    string.Equals(candidate.AttributeSignature, selectedAttributeSignature, StringComparison.Ordinal));
+                return selectedVariant is null
+                    ? VariantResolution.Failed("Selected product variant combination is not available.")
+                    : VariantResolution.Succeeded(selectedVariant);
             }
 
             var defaultVariants = variants.Where(candidate => candidate.IsDefault).ToArray();
@@ -258,11 +278,15 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
                     || !string.IsNullOrWhiteSpace(attribute.Value))
                 .ToArray();
 
-            if (!string.Equals(product.ProductType, ProductTypes.CustomVariations, StringComparison.OrdinalIgnoreCase))
+            var isCustomVariation = string.Equals(product.ProductType, ProductTypes.CustomVariations, StringComparison.OrdinalIgnoreCase);
+            if (!isCustomVariation && attributes.Length == 0)
             {
-                return attributes.Length == 0
-                    ? SelectedAttributesResolution.Ok([], null)
-                    : SelectedAttributesResolution.Failed("Selected attributes are only allowed for custom variation products.");
+                return SelectedAttributesResolution.Ok([], null, null);
+            }
+
+            if (!isCustomVariation && product.VariationTemplate is null)
+            {
+                return SelectedAttributesResolution.Failed("Selected attributes are only allowed for products with variation templates.");
             }
 
             if (attributes.Length > MaxSelectedAttributes)
@@ -307,7 +331,24 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
 
             return SelectedAttributesResolution.Ok(
                 normalized,
-                normalized.Length == 0 ? null : JsonSerializer.Serialize(normalized, SerializerOptions));
+                normalized.Length == 0 ? null : JsonSerializer.Serialize(normalized, SerializerOptions),
+                CreateAttributeSignature(normalized));
+        }
+
+        private static string? CreateAttributeSignature(IReadOnlyList<SelectedAttributeDto> attributes)
+        {
+            if (attributes.Count == 0)
+            {
+                return null;
+            }
+
+            return ProductVariantAttributeNormalizer
+                .Normalize(attributes.Select(attribute => new ProductVariantAttributeDto
+                {
+                    Name = attribute.Name,
+                    Value = attribute.Value,
+                }))
+                .AttributeSignature;
         }
 
         private static SelectedAttributesResolution ValidateTemplateAttributes(
@@ -317,7 +358,7 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
             var template = product.VariationTemplate;
             if (template is null)
             {
-                return SelectedAttributesResolution.Ok(attributes, null);
+                return SelectedAttributesResolution.Ok(attributes, null, CreateAttributeSignature(attributes));
             }
 
             if (!template.IsActive)
@@ -351,7 +392,7 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
                 }
             }
 
-            return SelectedAttributesResolution.Ok(attributes, null);
+            return SelectedAttributesResolution.Ok(attributes, null, CreateAttributeSignature(attributes));
         }
 
         private static IReadOnlyList<SelectedAttributeDto> DeserializeSelectedAttributes(string? selectedAttributesJson)
@@ -428,16 +469,20 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
             bool Success,
             IReadOnlyList<SelectedAttributeDto> Attributes,
             string? AttributesJson,
+            string? AttributeSignature,
             string ErrorMessage)
         {
-            public static SelectedAttributesResolution Ok(IReadOnlyList<SelectedAttributeDto> attributes, string? attributesJson)
+            public static SelectedAttributesResolution Ok(
+                IReadOnlyList<SelectedAttributeDto> attributes,
+                string? attributesJson,
+                string? attributeSignature)
             {
-                return new SelectedAttributesResolution(true, attributes, attributesJson, string.Empty);
+                return new SelectedAttributesResolution(true, attributes, attributesJson, attributeSignature, string.Empty);
             }
 
             public static SelectedAttributesResolution Failed(string message)
             {
-                return new SelectedAttributesResolution(false, [], null, message);
+                return new SelectedAttributesResolution(false, [], null, null, message);
             }
         }
 

@@ -4,6 +4,8 @@ namespace BlazorShop.Tests.Application.CommerceNode
     using BlazorShop.Application.CommerceNode.ProductSelections;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs;
+    using BlazorShop.Application.DTOs.Product.ProductVariant;
+    using BlazorShop.Application.Services;
     using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities;
@@ -89,6 +91,46 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public async Task ResolveAsync_ResolvesVariantFromSelectedTemplateAttributes()
+        {
+            var storeId = Guid.NewGuid();
+            var product = CreateTemplatedVariantProduct(storeId);
+            var resolver = CreateResolver(product);
+
+            var result = await resolver.ResolveAsync(new ProductSelectionRequest(
+                storeId,
+                product.Id,
+                SelectedAttributes: [new SelectedAttributeDto("Color", "Red")],
+                Quantity: 2));
+
+            Assert.True(result.Success);
+            var variant = Assert.Single(product.Variants);
+            Assert.Equal(variant.Id, result.ProductVariantId);
+            Assert.Equal("Color=Red".ToLowerInvariant(), result.AttributeSignature);
+            Assert.Equal(22m, result.UnitPrice);
+            Assert.True(result.CanAddToCart);
+        }
+
+        [Fact]
+        public async Task ResolveAsync_RejectsSelectedAttributesThatDoNotMatchExplicitVariant()
+        {
+            var storeId = Guid.NewGuid();
+            var product = CreateTemplatedVariantProduct(storeId);
+            var variant = product.Variants.Single();
+            var resolver = CreateResolver(product);
+
+            var result = await resolver.ResolveAsync(new ProductSelectionRequest(
+                storeId,
+                product.Id,
+                ProductVariantId: variant.Id,
+                SelectedAttributes: [new SelectedAttributeDto("Color", "Blue")]));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.ValidationError, result.ResponseType);
+            Assert.Equal("Selected attributes do not match the selected product variant.", result.Message);
+        }
+
+        [Fact]
         public async Task ResolveAsync_RejectsStockLimitedSelection()
         {
             var storeId = Guid.NewGuid();
@@ -167,6 +209,67 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 Price = 22m,
                 Stock = stock,
                 IsActive = isActive,
+            });
+
+            return product;
+        }
+
+        private static Product CreateTemplatedVariantProduct(Guid storeId)
+        {
+            var product = CreatePublishedProduct(storeId, 20m, 10);
+            product.ProductType = ProductTypes.VariantInventory;
+            product.VariationTemplate = new VariationTemplate
+            {
+                Id = Guid.NewGuid(),
+                StoreId = storeId,
+                IsActive = true,
+                Name = "Color options",
+                Slug = "color-options",
+                Options =
+                {
+                    new VariationTemplateOption
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Color",
+                        IsActive = true,
+                        IsRequired = true,
+                        Values =
+                        {
+                            new VariationTemplateValue
+                            {
+                                Id = Guid.NewGuid(),
+                                Value = "Red",
+                                IsActive = true,
+                            },
+                            new VariationTemplateValue
+                            {
+                                Id = Guid.NewGuid(),
+                                Value = "Blue",
+                                IsActive = true,
+                            },
+                        },
+                    },
+                },
+            };
+
+            var normalization = ProductVariantAttributeNormalizer.Normalize(
+                [
+                    new ProductVariantAttributeDto
+                    {
+                        Name = "Color",
+                        Value = "Red",
+                    },
+                ]);
+            product.Variants.Add(new ProductVariant
+            {
+                Id = Guid.NewGuid(),
+                ProductId = product.Id,
+                Price = 22m,
+                Stock = 7,
+                IsActive = true,
+                AttributeSignature = normalization.AttributeSignature,
+                AttributesJson = normalization.AttributesJson,
+                DisplayName = normalization.DisplayName,
             });
 
             return product;
