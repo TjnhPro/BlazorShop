@@ -145,6 +145,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 success,
                 success,
                 success ? [] : ["Required selected attribute 'Color' is missing."],
+                [],
+                success ? ProductStockStatuses.InStock : null,
                 "SKU-RED",
                 "Red Shirt",
                 success ? 19.99m : 0m,

@@ -302,31 +302,31 @@ Goal: enforce the same rules that Storefront displays.
 
 Implementation checklist:
 
-- [ ] Update `StorefrontCartService.AddLineAsync` to call `IProductSellabilityResolver`.
-- [ ] Update cart line quantity update behavior to call the resolver.
-- [ ] Return validation/conflict responses with stable reason codes when blocked.
-- [ ] Do not mutate cart when resolver blocks purchase.
-- [ ] Preserve existing cart persistence and currency snapshot behavior.
-- [ ] Update checkout validation to resolve every cart line before preview/place order.
-- [ ] Return checkout validation issues with line id and reason when blocked.
-- [ ] Keep current stock snapshot behavior.
-- [ ] Do not reserve or release stock.
+- [x] Update `StorefrontCartService.AddLineAsync` to call `IProductSellabilityResolver`.
+- [x] Update cart line quantity update behavior to call the resolver.
+- [x] Return validation/conflict responses with stable reason codes when blocked.
+- [x] Do not mutate cart when resolver blocks purchase.
+- [x] Preserve existing cart persistence and currency snapshot behavior.
+- [x] Update checkout validation to resolve every cart line before preview/place order.
+- [x] Return checkout validation issues with line id and reason when blocked.
+- [x] Keep current stock snapshot behavior.
+- [x] Do not reserve or release stock.
 
 Verification checklist:
 
-- [ ] Cart add-line rejects non-purchasable product.
-- [ ] Cart update-line rejects invalid quantity.
-- [ ] Cart add-line rejects future/expired purchase availability.
-- [ ] Cart add-line rejects purchase-disabled product.
-- [ ] Cart add-line rejects managed stock shortage.
-- [ ] Cart add-line allows unmanaged-stock product with zero stock.
-- [ ] Checkout blocks non-purchasable cart lines.
-- [ ] Checkout does not place orders for blocked products.
+- [x] Cart add-line rejects non-purchasable product.
+- [x] Cart update-line rejects invalid quantity.
+- [x] Cart add-line rejects future/expired purchase availability.
+- [x] Cart add-line rejects purchase-disabled product.
+- [x] Cart add-line rejects managed stock shortage.
+- [x] Cart add-line allows unmanaged-stock product with zero stock.
+- [x] Checkout blocks non-purchasable cart lines.
+- [x] Checkout does not place orders for blocked products.
 
 Exit criteria:
 
-- [ ] Storefront projection, cart, and checkout enforce the same decisions.
-- [ ] No reservation/ledger behavior is introduced.
+- [x] Storefront projection, cart, and checkout enforce the same decisions.
+- [x] No reservation/ledger behavior is introduced.
 
 Suggested commit:
 

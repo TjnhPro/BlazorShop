@@ -876,3 +876,8 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Unmanaged stock/POD products can be purchasable with zero quantity. 2026-07-16 Phase 2: `ProductSellabilityResolverTests.Resolve_WhenStockIsUnmanaged_AllowsZeroQuantityProduct` passed.
 - [x] Storefront catalog/detail/variant schemas expose product sellability projection without exposing domain entities. 2026-07-16 Phase 3: `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_ProductSellabilityProjectionHasGeneratorSafeContract` passed.
 - [x] Storefront OpenAPI snapshot refreshed for availability quantity sellability fields. 2026-07-16 Phase 3: focused contract/client/catalog run passed 41/41.
+- [x] Storefront cart add-line rejects purchase-disabled products without mutating the cart. 2026-07-16 Phase 4: `StorefrontCartServiceTests.AddLineAsync_RejectsPurchaseDisabledProduct` passed.
+- [x] Storefront cart validation returns stable sellability reason codes for min/max/step quantity rules. 2026-07-16 Phase 4: `ValidateAsync_ReturnsStableSellabilityReasonCode_ForQuantityRules` passed.
+- [x] Storefront cart allows unmanaged-stock product with zero stored quantity. 2026-07-16 Phase 4: `AddLineAsync_AllowsUnmanagedStockProductWithZeroQuantity` passed.
+- [x] Checkout preview blocks non-purchasable cart lines with line/product-aware reason codes. 2026-07-16 Phase 4: `PreviewAsync_ReturnsSellabilityIssue_WhenProductPurchaseIsDisabledAfterAdd` passed.
+- [x] Checkout place-order allows unmanaged-stock products without decrementing quantity below zero. 2026-07-16 Phase 4: `PlaceOrderAsync_AllowsUnmanagedStockProductWithoutDeductingQuantity` passed.

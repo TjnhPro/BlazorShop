@@ -2,6 +2,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
 {
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Currencies;
+    using BlazorShop.Application.CommerceNode.ProductSelections;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Domain.Constants;
@@ -466,6 +467,100 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.False(validation.Payload!.IsValid);
             var issue = Assert.Single(validation.Payload.Issues);
             Assert.Equal("cart.product_unavailable", issue.Code);
+        }
+
+        [Fact]
+        public async Task AddLineAsync_RejectsPurchaseDisabledProduct()
+        {
+            await using var context = CreateContext();
+            var productRepository = new Mock<IProductReadRepository>();
+            var service = CreateService(context, productRepository);
+            var storeId = Guid.NewGuid();
+            var product = CreatePublishedProduct(storeId, price: 15m, stock: 10);
+            product.PurchasingDisabled = true;
+            product.PurchasingDisabledReason = "Paused";
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cart = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+
+            var result = await service.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.Conflict, result.ResponseType);
+            Assert.Equal("Paused", result.Message);
+            Assert.Equal(0, await context.CartLines.CountAsync());
+        }
+
+        [Theory]
+        [InlineData(1, ProductPurchaseBlockReasons.BelowMinQuantity)]
+        [InlineData(7, ProductPurchaseBlockReasons.AboveMaxQuantity)]
+        [InlineData(3, ProductPurchaseBlockReasons.InvalidQuantityStep)]
+        public async Task ValidateAsync_ReturnsStableSellabilityReasonCode_ForQuantityRules(int lineQuantity, string expectedCode)
+        {
+            await using var context = CreateContext();
+            var productRepository = new Mock<IProductReadRepository>();
+            var service = CreateService(context, productRepository);
+            var storeId = Guid.NewGuid();
+            var product = CreatePublishedProduct(storeId, price: 15m, stock: 10);
+            product.MinOrderQuantity = 2;
+            product.MaxOrderQuantity = 6;
+            product.QuantityStep = 2;
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cart = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            await context.CartLines.AddAsync(new CartLine
+            {
+                Id = Guid.NewGuid(),
+                CartSessionId = cart.Payload!.Cart.Id,
+                ProductId = product.Id,
+                Quantity = lineQuantity,
+                UnitPriceSnapshot = product.Price,
+                CurrencyCodeSnapshot = "USD",
+                BaseUnitPriceSnapshot = product.Price,
+                BaseCurrencyCodeSnapshot = "USD",
+                LineKey = Guid.NewGuid().ToString("N"),
+                CreatedAtUtc = DateTimeOffset.UtcNow,
+                UpdatedAtUtc = DateTimeOffset.UtcNow,
+            });
+            await context.SaveChangesAsync();
+
+            var validation = await service.ValidateAsync(storeId, cart.Payload.Token!);
+
+            Assert.True(validation.Success);
+            Assert.False(validation.Payload!.IsValid);
+            var issue = Assert.Single(validation.Payload.Issues);
+            Assert.Equal(expectedCode, issue.Code);
+        }
+
+        [Fact]
+        public async Task AddLineAsync_AllowsUnmanagedStockProductWithZeroQuantity()
+        {
+            await using var context = CreateContext();
+            var productRepository = new Mock<IProductReadRepository>();
+            var service = CreateService(context, productRepository);
+            var storeId = Guid.NewGuid();
+            var product = CreatePublishedProduct(storeId, price: 15m, stock: 0);
+            product.ManageStock = false;
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cart = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+
+            var result = await service.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 2));
+
+            Assert.True(result.Success, result.Message);
+            var line = Assert.Single(result.Payload!.Lines);
+            Assert.Equal(2, line.Quantity);
         }
 
         private static StorefrontCartService CreateService(

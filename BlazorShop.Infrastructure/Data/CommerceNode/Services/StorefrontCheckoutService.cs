@@ -9,6 +9,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using BlazorShop.Application.CommerceNode.Customers;
     using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Payments;
+    using BlazorShop.Application.CommerceNode.ProductSelections;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Entities;
@@ -30,6 +31,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly IStoreFeatureStateService featureStateService;
         private readonly IPaymentHandlerResolver paymentHandlerResolver;
         private readonly IStorefrontPaymentProviderResolver paymentProviderResolver;
+        private readonly IProductSellabilityResolver sellabilityResolver;
 
         public StorefrontCheckoutService(
             CommerceNodeDbContext context,
@@ -39,7 +41,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             IStorefrontCustomerService customerService,
             IStoreFeatureStateService featureStateService,
             IPaymentHandlerResolver paymentHandlerResolver,
-            IStorefrontPaymentProviderResolver paymentProviderResolver)
+            IStorefrontPaymentProviderResolver paymentProviderResolver,
+            IProductSellabilityResolver? sellabilityResolver = null)
         {
             this.context = context;
             this.cartService = cartService;
@@ -49,6 +52,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.featureStateService = featureStateService;
             this.paymentHandlerResolver = paymentHandlerResolver;
             this.paymentProviderResolver = paymentProviderResolver;
+            this.sellabilityResolver = sellabilityResolver ?? new ProductSellabilityResolver();
         }
 
         public async Task<ServiceResponse<StorefrontCheckoutPreviewResult>> PreviewAsync(
@@ -836,7 +840,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     .Include(item => item.Category)
                     .Include(item => item.Variants)
                     .FirstOrDefaultAsync(item => item.Id == cartLine.ProductId, cancellationToken);
-                if (product is null || !IsStorefrontAvailable(product, storeId))
+                if (product is null)
                 {
                     return OrderLineResolution.Failed(ServiceResponseType.Conflict, "Product is not available for this store.");
                 }
@@ -849,10 +853,17 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     return OrderLineResolution.Failed(ServiceResponseType.Conflict, "Selected product variant was not found.");
                 }
 
-                var availableStock = variant?.Stock ?? product.Quantity;
-                if (availableStock < cartLine.Quantity)
+                var sellability = this.sellabilityResolver.Resolve(new ProductSellabilityRequest(
+                    storeId,
+                    product,
+                    variant,
+                    cartLine.Quantity,
+                    Mode: ProductSellabilityMode.Storefront));
+                if (!sellability.Purchasable)
                 {
-                    return OrderLineResolution.Failed(ServiceResponseType.Conflict, "One or more cart items are out of stock.");
+                    return OrderLineResolution.Failed(
+                        ResolveOrderLineFailureResponseType(sellability.PurchaseBlockReasons),
+                        sellability.PurchaseBlockMessages.FirstOrDefault() ?? "Product cannot be purchased right now.");
                 }
 
                 var snapshotCurrency = NormalizeCurrency(cartLine.CurrencyCodeSnapshot);
@@ -995,6 +1006,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return;
             }
 
+            if (!line.Product.ManageStock)
+            {
+                return;
+            }
+
             if (line.Variant is not null)
             {
                 line.Variant.Stock -= line.CartLine.Quantity;
@@ -1002,6 +1018,17 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             line.Product.Quantity -= line.CartLine.Quantity;
+        }
+
+        private static ServiceResponseType ResolveOrderLineFailureResponseType(IReadOnlyList<string> reasons)
+        {
+            return reasons.Any(reason => reason is ProductPurchaseBlockReasons.BelowMinQuantity
+                    or ProductPurchaseBlockReasons.AboveMaxQuantity
+                    or ProductPurchaseBlockReasons.InvalidQuantityStep
+                    or ProductPurchaseBlockReasons.VariantRequired
+                    or ProductPurchaseBlockReasons.VariantInactive)
+                ? ServiceResponseType.ValidationError
+                : ServiceResponseType.Conflict;
         }
 
         private static IEnumerable<StorefrontCheckoutValidationIssue> ValidateCheckoutFields(StorefrontCheckoutPreviewRequest request)

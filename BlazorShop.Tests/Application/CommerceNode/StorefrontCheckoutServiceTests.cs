@@ -6,6 +6,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
     using BlazorShop.Application.CommerceNode.Customers;
     using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Payments;
+    using BlazorShop.Application.CommerceNode.ProductSelections;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Domain.Constants;
@@ -374,6 +375,70 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.False(result.Success);
             Assert.Equal(ServiceResponseType.Conflict, result.ResponseType);
             Assert.Empty(context.Orders);
+        }
+
+        [Fact]
+        public async Task PreviewAsync_ReturnsSellabilityIssue_WhenProductPurchaseIsDisabledAfterAdd()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 15m, stock: 10);
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1));
+            product.PurchasingDisabled = true;
+            product.PurchasingDisabledReason = "Paused";
+
+            var service = CreateCheckoutService(context, cartService);
+            var preview = await service.PreviewAsync(CreateRequest(storeId, cart.Payload.Token!, add.Payload!.Version));
+
+            Assert.True(preview.Success);
+            Assert.False(preview.Payload!.IsValid);
+            Assert.Contains(preview.Payload.Issues, issue => issue.Code == ProductPurchaseBlockReasons.PurchaseDisabled);
+        }
+
+        [Fact]
+        public async Task PlaceOrderAsync_AllowsUnmanagedStockProductWithoutDeductingQuantity()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 15m, stock: 0);
+            product.ManageStock = false;
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 2));
+            var service = CreateCheckoutService(context, cartService);
+            var preview = await service.PreviewAsync(CreateRequest(storeId, cart.Payload.Token!, add.Payload!.Version));
+
+            var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                preview.Payload!.CheckoutSessionId,
+                preview.Payload.CartVersion,
+                "unmanaged-stock-order"));
+
+            Assert.True(result.Success, result.Message);
+            Assert.Single(context.Orders);
+            Assert.Equal(0, context.Products.Single(item => item.Id == product.Id).Quantity);
         }
 
         [Fact]

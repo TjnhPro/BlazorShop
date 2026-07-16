@@ -280,7 +280,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
                     issues.Add(new StorefrontCartValidationIssueDto(
                         line.Id,
                         line.ProductId,
-                        ResponseTypeToCode(selection.ResponseType),
+                        SelectionIssueCode(selection),
                         selection.Message));
                     continue;
                 }
@@ -640,6 +640,13 @@ namespace BlazorShop.Application.CommerceNode.Carts
                 ServiceResponseType.ValidationError => "cart.line_invalid",
                 _ => "cart.validation_failed",
             };
+        }
+
+        private static string SelectionIssueCode(ProductSelectionResult selection)
+        {
+            return selection.PurchaseBlockReasons.Count > 0
+                ? selection.PurchaseBlockReasons[0]
+                : ResponseTypeToCode(selection.ResponseType);
         }
 
         private static string? NormalizeNullable(string? value)

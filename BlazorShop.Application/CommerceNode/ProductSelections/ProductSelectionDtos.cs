@@ -33,6 +33,8 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
         bool IsAvailable,
         bool CanAddToCart,
         IReadOnlyList<string> ValidationMessages,
+        IReadOnlyList<string> PurchaseBlockReasons,
+        string? StockStatus,
         string? Sku,
         string? DisplayName,
         decimal UnitPrice,
