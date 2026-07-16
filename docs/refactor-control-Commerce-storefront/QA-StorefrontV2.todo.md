@@ -138,6 +138,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [ ] Visible browser QA confirms quantity selector respects min quantity and step for a product with custom quantity rules.
 - [ ] Visible browser QA confirms unmanaged-stock product can be added to cart.
 - [ ] Visible browser QA confirms managed out-of-stock product cannot be added to cart.
+- [x] Availability Quantity Storefront automated release gate passed. 2026-07-16 Phase 8: Storefront V2 build passed; focused `StorefrontV2ApiClientTests|StorefrontV2HostSmokeTests|StorefrontBrandingMarkupTests` passed 54/54. Visible browser QA remains pending for live runtime fixture coverage.
   - [x] Shows add-to-cart button.
   - [x] Shows related products/recommendations block.
   - [x] Missing slug returns noindex 404 state.

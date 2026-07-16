@@ -471,54 +471,54 @@ Goal: finish without breaking catalog, cart, checkout, API clients, or manager b
 
 Implementation checklist:
 
-- [ ] Update `QA-CommerceNode.todo.md`.
-- [ ] Update `QA-StorefrontV2.todo.md`.
-- [ ] Update `QA-ControlPlane.todo.md` if manager UI changed.
-- [ ] Build active V2 projects:
-  - [ ] CommerceNode API.
-  - [ ] ControlPlane API.
-  - [ ] ControlPlane Web.
-  - [ ] Storefront V2.
-- [ ] Run focused Commerce Node tests:
-  - [ ] product validation.
-  - [ ] sellability resolver reason codes.
-  - [ ] catalog visibility.
-  - [ ] Storefront API contract.
-  - [ ] cart add/update.
-  - [ ] checkout validation.
-- [ ] Run Storefront V2 tests:
-  - [ ] API client model compatibility.
-  - [ ] host smoke tests.
-  - [ ] product card/detail static guardrails.
-- [ ] Run Control Plane tests:
-  - [ ] gateway forwarding.
-  - [ ] boundary tests.
-  - [ ] manager workflow static guardrails.
-- [ ] Run visible browser QA when runtime is available:
-  - [ ] in-stock product can be added.
-  - [ ] out-of-stock managed product cannot be added.
-  - [ ] unmanaged-stock product can be added with zero stock.
-  - [ ] purchase disabled product shows reason.
-  - [ ] future availability product is visible if published but not buyable.
-  - [ ] quantity selector respects min and step.
-  - [ ] delivery estimate displays only when set.
-- [ ] Review diff for:
-  - [ ] no legacy `BlazorShop.Presentation` feature changes.
-  - [ ] no `AppDbContext` V2 migration.
-  - [ ] no direct ControlPlane.Web to CommerceNode API calls.
-  - [ ] no inventory ledger/reservation/backorder/shipping-rate implementation.
+- [x] Update `QA-CommerceNode.todo.md`. 2026-07-16 Phase 8: release-gate evidence added.
+- [x] Update `QA-StorefrontV2.todo.md`. 2026-07-16 Phase 8: release-gate evidence added.
+- [x] Update `QA-ControlPlane.todo.md` if manager UI changed. 2026-07-16 Phase 8: release-gate evidence added.
+- [x] Build active V2 projects:
+  - [x] CommerceNode API. 2026-07-16 Phase 8: build passed.
+  - [x] ControlPlane API. 2026-07-16 Phase 8: build passed.
+  - [x] ControlPlane Web. 2026-07-16 Phase 8: build passed.
+  - [x] Storefront V2. 2026-07-16 Phase 8: build passed.
+- [x] Run focused Commerce Node tests:
+  - [x] product validation. 2026-07-16 Phase 8: included in 122/122 focused CommerceNode run.
+  - [x] sellability resolver reason codes. 2026-07-16 Phase 8: included in 122/122 focused CommerceNode run.
+  - [x] catalog visibility. 2026-07-16 Phase 8: included in 122/122 focused CommerceNode run.
+  - [x] Storefront API contract. 2026-07-16 Phase 8: included in 122/122 focused CommerceNode run.
+  - [x] cart add/update. 2026-07-16 Phase 8: included in 122/122 focused CommerceNode run.
+  - [x] checkout validation. 2026-07-16 Phase 8: included in 122/122 focused CommerceNode run.
+- [x] Run Storefront V2 tests:
+  - [x] API client model compatibility. 2026-07-16 Phase 8: included in 54/54 focused Storefront run.
+  - [x] host smoke tests. 2026-07-16 Phase 8: included in 54/54 focused Storefront run.
+  - [x] product card/detail static guardrails. 2026-07-16 Phase 8: included in 54/54 focused Storefront run.
+- [x] Run Control Plane tests:
+  - [x] gateway forwarding. 2026-07-16 Phase 8: included in 21/21 focused ControlPlane run.
+  - [x] boundary tests. 2026-07-16 Phase 8: included in 21/21 focused ControlPlane run.
+  - [x] manager workflow static guardrails. 2026-07-16 Phase 8: included in 21/21 focused ControlPlane run.
+- [~] Run visible browser QA when runtime is available:
+  - [~] in-stock product can be added. Pending live runtime/browser QA.
+  - [~] out-of-stock managed product cannot be added. Pending live runtime/browser QA.
+  - [~] unmanaged-stock product can be added with zero stock. Pending live runtime/browser QA.
+  - [~] purchase disabled product shows reason. Pending live runtime/browser QA.
+  - [~] future availability product is visible if published but not buyable. Pending live runtime/browser QA.
+  - [~] quantity selector respects min and step. Pending live runtime/browser QA.
+  - [~] delivery estimate displays only when set. Pending live runtime/browser QA.
+- [x] Review diff for:
+  - [x] no legacy `BlazorShop.Presentation` feature changes. 2026-07-16 Phase 8: code changes stayed in active V2/domain/application/infrastructure paths.
+  - [x] no `AppDbContext` V2 migration. 2026-07-16 Phase 8: only `CommerceNodeDbContext` migration/model changed for product purchase fields.
+  - [x] no direct ControlPlane.Web to CommerceNode API calls. 2026-07-16 Phase 8: boundary tests passed.
+  - [x] no inventory ledger/reservation/backorder/shipping-rate implementation. 2026-07-16 Phase 8: release diff keeps those as deferred.
 
 Release gate:
 
-- [ ] Products have availability, quantity, stock-management, and delivery metadata fields.
-- [ ] Storefront API returns `Purchasable` and reason codes.
-- [ ] Cart and checkout enforce the same sellability rules.
-- [ ] POD/unmanaged-stock products can be purchased without strict stock.
-- [ ] Managed-stock products still block when quantity is not enough.
-- [ ] Product detail can show why add-to-cart is disabled.
-- [ ] Existing `InStock`, `Quantity`, and `Stock` fields still work.
-- [ ] QA checklists contain evidence.
-- [ ] Deferred advanced inventory/shipping features are not implemented.
+- [x] Products have availability, quantity, stock-management, and delivery metadata fields.
+- [x] Storefront API returns `Purchasable` and reason codes.
+- [x] Cart and checkout enforce the same sellability rules.
+- [x] POD/unmanaged-stock products can be purchased without strict stock.
+- [x] Managed-stock products still block when quantity is not enough.
+- [x] Product detail can show why add-to-cart is disabled.
+- [x] Existing `InStock`, `Quantity`, and `Stock` fields still work.
+- [x] QA checklists contain evidence.
+- [x] Deferred advanced inventory/shipping features are not implemented.
 
 Suggested commit:
 
