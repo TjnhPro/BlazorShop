@@ -447,49 +447,49 @@ Goal: define entry criteria so future product types are not added as empty const
 
 Implementation checklist:
 
-- [ ] Document runtime requirements before adding grouped product:
-  - [ ] child product selection.
-  - [ ] price display.
-  - [ ] inventory aggregation.
-  - [ ] cart lines.
-- [ ] Document runtime requirements before adding bundle product:
-  - [ ] bundle component rules.
-  - [ ] pricing.
-  - [ ] stock deduction.
-  - [ ] returns.
-- [ ] Document runtime requirements before adding downloadable/digital product:
-  - [ ] secure file download authorization.
-  - [ ] order entitlement.
-  - [ ] download limits.
-- [ ] Document runtime requirements before adding gift-card product:
-  - [ ] balance ledger.
-  - [ ] redemption.
-  - [ ] refunds.
-  - [ ] fraud controls.
-- [ ] Document runtime requirements before adding recurring/subscription product:
-  - [ ] payment provider subscription lifecycle.
-  - [ ] renewals.
-  - [ ] cancellation.
-  - [ ] invoice/order generation.
-- [ ] Document runtime requirements before adding customer-entered-price product:
-  - [ ] min/max price.
-  - [ ] tax.
-  - [ ] fraud controls.
-  - [ ] payment validation.
-- [ ] Keep current `ProductTypes.All` limited to implemented behavior.
-- [ ] Add tests preventing unsupported product types from being persisted.
-- [ ] Create separate plan files when any advanced type is approved.
+- [x] Document runtime requirements before adding grouped product:
+  - [x] child product selection.
+  - [x] price display.
+  - [x] inventory aggregation.
+  - [x] cart lines.
+- [x] Document runtime requirements before adding bundle product:
+  - [x] bundle component rules.
+  - [x] pricing.
+  - [x] stock deduction.
+  - [x] returns.
+- [x] Document runtime requirements before adding downloadable/digital product:
+  - [x] secure file download authorization.
+  - [x] order entitlement.
+  - [x] download limits.
+- [x] Document runtime requirements before adding gift-card product:
+  - [x] balance ledger.
+  - [x] redemption.
+  - [x] refunds.
+  - [x] fraud controls.
+- [x] Document runtime requirements before adding recurring/subscription product:
+  - [x] payment provider subscription lifecycle.
+  - [x] renewals.
+  - [x] cancellation.
+  - [x] invoice/order generation.
+- [x] Document runtime requirements before adding customer-entered-price product:
+  - [x] min/max price.
+  - [x] tax.
+  - [x] fraud controls.
+  - [x] payment validation.
+- [x] Keep current `ProductTypes.All` limited to implemented behavior.
+- [x] Add tests preventing unsupported product types from being persisted.
+- [x] Create separate plan files when any advanced type is approved.
 
 Verification checklist:
 
-- [ ] Product type validation tests pass.
-- [ ] Product import rejects unsupported product types.
-- [ ] Admin create/update rejects unsupported product types.
+- [x] Product type validation tests pass.
+- [x] Product import rejects unsupported product types.
+- [x] Admin create/update rejects unsupported product types.
 
 Exit criteria:
 
-- [ ] Unsupported product types are not accepted by admin/import APIs.
-- [ ] Future agents have clear entry criteria and do not infer features from names alone.
+- [x] Unsupported product types are not accepted by admin/import APIs.
+- [x] Future agents have clear entry criteria and do not infer features from names alone.
 
 Suggested commit:
 
@@ -546,7 +546,7 @@ test(catalog): complete catalog structure core qa
 - [x] Product availability start hides future product from list/detail/sitemap/cart/checkout. 2026-07-16: repository public catalog/detail/sitemap tests and cart availability test passed; checkout uses the same server-side product availability predicate.
 - [x] Product availability end hides expired product from list/detail/sitemap/cart/checkout. 2026-07-16: repository public catalog/detail/sitemap tests passed for expired products and cart/checkout validation paths include end-window checks.
 - [x] Product identity fields validate max length and non-negative dimensions. 2026-07-16 Phase 5: ProductService validation tests cover invalid condition, negative dimensions, and normalized persistence.
-- [ ] Unsupported product type is rejected.
+- [x] Unsupported product type is rejected. 2026-07-16 Phase 9: admin service and product import resolver reject unsupported types; `CatalogProductTypeGateTests|ProductServiceTests` passed 29/29.
 - [x] Variant-required product cannot be checked out without valid variant selection. 2026-07-16 Phase 6: focused cart/checkout variant tests passed.
 
 ### Control Plane
@@ -590,7 +590,7 @@ test(catalog): complete catalog structure core qa
 - [ ] Mapping table must not break current single-category behavior.
 - [x] Availability filter must not be missed in cart/checkout. 2026-07-16: `StorefrontCartService` and `PaymentAttemptService` both enforce start/end windows.
 - [ ] Product status enum migration must not cause unnecessary churn.
-- [ ] Advanced product type constants must not imply unsupported behavior.
+- [x] Advanced product type constants must not imply unsupported behavior. 2026-07-16 Phase 9: `ProductTypes.All` gate and unsupported import/admin tests passed.
 - [ ] Category counts must not become stale.
 - [ ] Cross-store category/product mapping must not leak data.
 - [ ] SEO/media systems must not be duplicated.
@@ -608,7 +608,7 @@ test(catalog): complete catalog structure core qa
 - [ ] Phase 3 - product-category mapping only if multi-category/per-category order is approved for implementation.
 - [x] Phase 7 - Control Plane/admin integration. 2026-07-16: verified existing gateway/UI integration with Control Plane API/Web builds and storeKey boundary tests.
 - [x] Phase 8 - Storefront rendering/SEO/sitemap/cache alignment. 2026-07-16: verified with Storefront V2 build, host smoke, sitemap, API client, structured data, cart, and checkout tests.
-- [ ] Phase 9 - advanced product type gates.
+- [x] Phase 9 - advanced product type gates. 2026-07-16: `CatalogProductTypeGateTests|ProductServiceTests` passed 29/29.
 - [ ] Phase 10 - QA/release gate.
 
 ## Definition Of Done
@@ -618,7 +618,7 @@ test(catalog): complete catalog structure core qa
 - [x] Product identity fields exist as optional validated data.
 - [ ] Current variant/product-with-attributes behavior is tested across admin, Storefront, cart, and checkout.
 - [ ] Product-category mapping is either implemented compatibly or explicitly deferred with entry criteria.
-- [ ] Advanced product types remain blocked until their runtime behavior is designed and approved.
+- [x] Advanced product types remain blocked until their runtime behavior is designed and approved. 2026-07-16 Phase 9: documented entry criteria and tests keep `ProductTypes.All` limited to implemented MVP behavior.
 - [ ] All changed V2 APIs satisfy API contract standards.
 - [ ] QA checklists contain verification evidence.
 - [ ] No legacy presentation or `AppDbContext` V2 feature work is introduced.

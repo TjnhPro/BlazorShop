@@ -831,4 +831,5 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Product variant service rejects duplicate SKU within the same product and duplicate default variants. 2026-07-16 Phase 6: `ProductVariantServiceTests` passed.
 - [x] Product variant service trims SKU before persisting. 2026-07-16 Phase 6: `ProductVariantServiceTests.AddAsync_WhenSkuIsUnique_TrimsBeforePersisting` passed.
 - [x] Cart/checkout variant and selected-attribute flows still pass after hardening. 2026-07-16 Phase 6: focused `StorefrontCartServiceTests` and `StorefrontCheckoutServiceTests` run passed.
+- [x] Unsupported product types are rejected by admin service and product import resolver. 2026-07-16 Phase 9: `CatalogProductTypeGateTests|ProductServiceTests` passed 29/29.
 - [ ] Live API smoke creates a category with description, updates it, and reads it back through Commerce admin API.

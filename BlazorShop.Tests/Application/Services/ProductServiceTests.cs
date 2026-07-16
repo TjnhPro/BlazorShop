@@ -273,6 +273,21 @@
         }
 
         [Fact]
+        public async Task AddAsync_WhenProductTypeIsUnsupported_ShouldReturnFailureResponse()
+        {
+            var product = new CreateProduct { Name = "Product", ProductType = "Bundle" };
+            var mappedProduct = new Product { Name = product.Name, ProductType = product.ProductType };
+            this._mockMapper.Setup(mapper => mapper.Map<Product>(product))
+                .Returns(mappedProduct);
+
+            var result = await this._productService.AddAsync(product);
+
+            Assert.False(result.Success);
+            Assert.Equal("Product type is invalid.", result.Message);
+            this._mockProductRepository.Verify(repo => repo.AddAsync(It.IsAny<Product>()), Times.Never);
+        }
+
+        [Fact]
         public async Task AddAsync_WhenDimensionIsNegative_ShouldReturnFailureResponse()
         {
             var product = new CreateProduct { Name = "Product", Width = -1m };
