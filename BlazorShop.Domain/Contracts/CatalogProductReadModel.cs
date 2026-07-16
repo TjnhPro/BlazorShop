@@ -48,6 +48,8 @@ namespace BlazorShop.Domain.Contracts
 
         public bool InStock { get; init; }
 
+        public int Quantity { get; init; }
+
         public int MinOrderQuantity { get; init; } = 1;
 
         public int? MaxOrderQuantity { get; init; }

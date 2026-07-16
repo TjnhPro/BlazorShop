@@ -62,6 +62,30 @@ namespace BlazorShop.Web.SharedV2.Models.Product
 
         public bool InStock { get; set; }
 
+        public int Quantity { get; set; }
+
+        public bool Purchasable { get; set; }
+
+        public IReadOnlyList<string> PurchaseBlockReasons { get; set; } = Array.Empty<string>();
+
+        public string StockStatus { get; set; } = string.Empty;
+
+        public int? AvailableQuantity { get; set; }
+
+        public int MinOrderQuantity { get; set; } = 1;
+
+        public int? MaxOrderQuantity { get; set; }
+
+        public int QuantityStep { get; set; } = 1;
+
+        public bool ManageStock { get; set; } = true;
+
+        public bool ShippingRequired { get; set; } = true;
+
+        public bool FreeShipping { get; set; }
+
+        public string? DeliveryEstimateText { get; set; }
+
         public DateTime? AvailableStartUtc { get; set; }
 
         public DateTime? AvailableEndUtc { get; set; }

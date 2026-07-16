@@ -540,10 +540,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
             return product.ToStorefrontContract(
                 displayMoney,
-                variant => variant.ToStorefrontContract(
+                (variant, parentProduct) => variant.ToStorefrontContract(
                     variantDisplayMoney.TryGetValue(variant.Id, out var variantMoney)
                         ? variantMoney
-                        : null));
+                        : null,
+                    parentProduct));
         }
 
         private async Task<StorefrontDisplayMoney> ResolveDisplayMoneyAsync(

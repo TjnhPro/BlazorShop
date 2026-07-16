@@ -546,4 +546,5 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Storefront V2 cart endpoint rejects quantity below 1. 2026-07-16 Phase 0: local endpoint source and `StorefrontCartServiceTests` baseline confirmed.
 - [x] Phase 1 does not change Storefront V2 sellability or rendering behavior. 2026-07-16: purchase fields are persisted/contracted but no Storefront V2 UI or cart resolver behavior was changed.
 - [x] Storefront cart service remains green after centralized sellability resolver. 2026-07-16 Phase 2: `StorefrontCartServiceTests` passed inside focused 36/36 run.
+- [x] Storefront V2 client models can deserialize catalog/detail sellability metadata. 2026-07-16 Phase 3: SharedV2 product models include purchasable, purchase block reasons, stock status, available quantity, min/max/step, manage-stock, shipping, and delivery fields; `StorefrontV2ApiClientTests` passed inside focused 41/41 run.
 - [ ] Storefront V2 host smoke remains green before sellability UI changes.

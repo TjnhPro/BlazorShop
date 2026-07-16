@@ -456,10 +456,22 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 product.Image,
                 product.PrimaryMediaPublicId,
                 product.HasPrimaryMedia,
+                product.Quantity,
                 product.CreatedOn,
                 product.UpdatedAt,
                 product.DisplayOrder,
                 product.InStock,
+                IsCatalogProductPurchasable(product),
+                ResolveCatalogProductPurchaseBlockReasons(product),
+                ResolveCatalogProductStockStatus(product),
+                ResolveCatalogProductAvailableQuantity(product),
+                product.MinOrderQuantity,
+                product.MaxOrderQuantity,
+                product.QuantityStep,
+                product.ManageStock,
+                product.ShippingRequired,
+                product.FreeShipping,
+                product.DeliveryEstimateText,
                 product.PublishedOn,
                 product.CategoryId,
                 product.CategoryName,
@@ -475,8 +487,9 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         public static StorefrontProductResponse ToStorefrontContract(
             this GetProduct product,
             StorefrontDisplayMoney? displayMoney = null,
-            Func<GetProductVariant, StorefrontProductVariantResponse>? mapVariant = null)
+            Func<GetProductVariant, GetProduct, StorefrontProductVariantResponse>? mapVariant = null)
         {
+            var purchaseBlockReasons = ResolveProductPurchaseBlockReasons(product);
             return new StorefrontProductResponse(
                 product.Id,
                 product.Slug,
@@ -489,7 +502,19 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 product.ComparePrice,
                 product.Image,
                 product.Quantity,
+                purchaseBlockReasons.Count == 0,
+                purchaseBlockReasons,
+                ResolveProductStockStatus(product),
+                ResolveProductAvailableQuantity(product),
+                product.MinOrderQuantity,
+                product.MaxOrderQuantity,
+                product.QuantityStep,
+                product.ManageStock,
+                product.ShippingRequired,
+                product.FreeShipping,
+                product.DeliveryEstimateText,
                 product.DisplayOrder,
+                IsProductInStock(product),
                 product.PublishedOn,
                 product.ProductType,
                 product.VariationTemplateId,
@@ -508,8 +533,8 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 product.CreatedOn,
                 product.UpdatedAt,
                 product.Variants.Select(variant => mapVariant is null
-                    ? variant.ToStorefrontContract()
-                    : mapVariant(variant)).ToArray(),
+                    ? variant.ToStorefrontContract(product: product)
+                    : mapVariant(variant, product)).ToArray(),
                 displayMoney?.Price,
                 displayMoney?.ComparePrice,
                 displayMoney?.CurrencyCode);
@@ -517,8 +542,10 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
 
         public static StorefrontProductVariantResponse ToStorefrontContract(
             this GetProductVariant variant,
-            StorefrontDisplayMoney? displayMoney = null)
+            StorefrontDisplayMoney? displayMoney = null,
+            GetProduct? product = null)
         {
+            var purchaseBlockReasons = ResolveVariantPurchaseBlockReasons(variant, product);
             return new StorefrontProductVariantResponse(
                 variant.Id,
                 variant.ProductId,
@@ -531,6 +558,11 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 variant.Price,
                 variant.EffectivePrice,
                 variant.Stock,
+                variant.IsActive,
+                purchaseBlockReasons.Count == 0,
+                purchaseBlockReasons,
+                ResolveVariantStockStatus(variant, product),
+                product?.ManageStock == false ? null : variant.Stock,
                 variant.Color,
                 variant.IsDefault,
                 displayMoney?.Price,
@@ -582,6 +614,138 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 result.MinQuantity,
                 result.MaxQuantity,
                 result.Product?.Image);
+        }
+
+        private static IReadOnlyList<string> ResolveCatalogProductPurchaseBlockReasons(GetCatalogProduct product)
+        {
+            var reasons = new List<string>();
+            AddCommonPurchaseReasons(
+                reasons,
+                product.PurchasingDisabled,
+                product.ManageStock,
+                product.HasVariants,
+                product.InStock,
+                product.Quantity);
+            return reasons;
+        }
+
+        private static bool IsCatalogProductPurchasable(GetCatalogProduct product)
+        {
+            return ResolveCatalogProductPurchaseBlockReasons(product).Count == 0;
+        }
+
+        private static string ResolveCatalogProductStockStatus(GetCatalogProduct product)
+        {
+            if (!product.ManageStock)
+            {
+                return ProductStockStatuses.NotManaged;
+            }
+
+            if (product.HasVariants)
+            {
+                return ProductStockStatuses.VariantRequired;
+            }
+
+            return product.InStock ? ProductStockStatuses.InStock : ProductStockStatuses.OutOfStock;
+        }
+
+        private static int? ResolveCatalogProductAvailableQuantity(GetCatalogProduct product)
+        {
+            return product.ManageStock && !product.HasVariants ? product.Quantity : null;
+        }
+
+        private static IReadOnlyList<string> ResolveProductPurchaseBlockReasons(GetProduct product)
+        {
+            var reasons = new List<string>();
+            AddCommonPurchaseReasons(
+                reasons,
+                product.PurchasingDisabled,
+                product.ManageStock,
+                product.Variants.Any(),
+                product.Variants.Any(variant => variant.IsActive && variant.Stock > 0),
+                product.Quantity);
+            return reasons;
+        }
+
+        private static bool IsProductInStock(GetProduct product)
+        {
+            return product.Quantity > 0 || product.Variants.Any(variant => variant.Stock > 0);
+        }
+
+        private static string ResolveProductStockStatus(GetProduct product)
+        {
+            if (!product.ManageStock)
+            {
+                return ProductStockStatuses.NotManaged;
+            }
+
+            if (product.Variants.Any())
+            {
+                return ProductStockStatuses.VariantRequired;
+            }
+
+            return product.Quantity > 0 ? ProductStockStatuses.InStock : ProductStockStatuses.OutOfStock;
+        }
+
+        private static int? ResolveProductAvailableQuantity(GetProduct product)
+        {
+            return product.ManageStock && !product.Variants.Any() ? product.Quantity : null;
+        }
+
+        private static IReadOnlyList<string> ResolveVariantPurchaseBlockReasons(GetProductVariant variant, GetProduct? product)
+        {
+            var reasons = new List<string>();
+            if (product?.PurchasingDisabled == true)
+            {
+                reasons.Add(ProductPurchaseBlockReasons.PurchaseDisabled);
+            }
+
+            if (!variant.IsActive)
+            {
+                reasons.Add(ProductPurchaseBlockReasons.VariantInactive);
+            }
+
+            if (product?.ManageStock != false && variant.Stock <= 0)
+            {
+                reasons.Add(ProductPurchaseBlockReasons.OutOfStock);
+            }
+
+            return reasons;
+        }
+
+        private static string ResolveVariantStockStatus(GetProductVariant variant, GetProduct? product)
+        {
+            if (product?.ManageStock == false)
+            {
+                return ProductStockStatuses.NotManaged;
+            }
+
+            return variant.Stock > 0 ? ProductStockStatuses.InStock : ProductStockStatuses.OutOfStock;
+        }
+
+        private static void AddCommonPurchaseReasons(
+            List<string> reasons,
+            bool purchasingDisabled,
+            bool manageStock,
+            bool requiresVariant,
+            bool inStock,
+            int quantity)
+        {
+            if (purchasingDisabled)
+            {
+                reasons.Add(ProductPurchaseBlockReasons.PurchaseDisabled);
+            }
+
+            if (requiresVariant)
+            {
+                reasons.Add(ProductPurchaseBlockReasons.VariantRequired);
+                return;
+            }
+
+            if (manageStock && (!inStock || quantity <= 0))
+            {
+                reasons.Add(ProductPurchaseBlockReasons.OutOfStock);
+            }
         }
 
         public static StorefrontPagedResponse<TTarget> ToStorefrontContract<TSource, TTarget>(

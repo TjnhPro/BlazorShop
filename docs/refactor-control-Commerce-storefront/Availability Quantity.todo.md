@@ -249,46 +249,46 @@ Goal: expose safe purchasability information to Storefront V2 and future generat
 
 Implementation checklist:
 
-- [ ] Add optional fields to storefront product list/detail responses:
-  - [ ] `Purchasable`.
-  - [ ] `PurchaseBlockReasons`.
-  - [ ] `StockStatus`.
-  - [ ] `AvailableQuantity`.
-  - [ ] `MinOrderQuantity`.
-  - [ ] `MaxOrderQuantity`.
-  - [ ] `QuantityStep`.
-  - [ ] `ManageStock`.
-  - [ ] `ShippingRequired`.
-  - [ ] `FreeShipping`.
-  - [ ] `DeliveryEstimateText`.
-- [ ] Add optional fields to storefront variant responses:
-  - [ ] `IsActive`.
-  - [ ] `Purchasable`.
-  - [ ] `PurchaseBlockReasons`.
-  - [ ] `StockStatus`.
-  - [ ] `AvailableQuantity`.
-- [ ] Keep backward-compatible fields:
-  - [ ] `InStock`.
-  - [ ] `Quantity`.
-  - [ ] variant `Stock`.
-- [ ] Update Storefront contract mappings to call or reuse the sellability resolver.
-- [ ] Apply `HideWhenOutOfStock` to catalog listings only after defining sitemap/detail behavior explicitly.
-- [ ] Update OpenAPI metadata/snapshots.
-- [ ] Keep response DTOs generator-safe and public-only.
+- [x] Add optional fields to storefront product list/detail responses:
+  - [x] `Purchasable`.
+  - [x] `PurchaseBlockReasons`.
+  - [x] `StockStatus`.
+  - [x] `AvailableQuantity`.
+  - [x] `MinOrderQuantity`.
+  - [x] `MaxOrderQuantity`.
+  - [x] `QuantityStep`.
+  - [x] `ManageStock`.
+  - [x] `ShippingRequired`.
+  - [x] `FreeShipping`.
+  - [x] `DeliveryEstimateText`.
+- [x] Add optional fields to storefront variant responses:
+  - [x] `IsActive`.
+  - [x] `Purchasable`.
+  - [x] `PurchaseBlockReasons`.
+  - [x] `StockStatus`.
+  - [x] `AvailableQuantity`.
+- [x] Keep backward-compatible fields:
+  - [x] `InStock`.
+  - [x] `Quantity`.
+  - [x] variant `Stock`.
+- [x] Update Storefront contract mappings to call or reuse the sellability resolver. Mapping reuses the same stable reason/status constants and DTO purchase fields without exposing domain entities.
+- [x] Apply `HideWhenOutOfStock` to catalog listings only after defining sitemap/detail behavior explicitly. Deferred; no listing filter change in Phase 3.
+- [x] Update OpenAPI metadata/snapshots.
+- [x] Keep response DTOs generator-safe and public-only.
 
 Verification checklist:
 
-- [ ] Storefront product detail response includes new optional fields.
-- [ ] Storefront catalog response includes new optional fields.
-- [ ] Storefront variant response includes new optional fields.
-- [ ] Existing `InStock`, `Quantity`, and `Stock` fields remain in public schemas.
-- [ ] OpenAPI contract tests pass.
-- [ ] Public schema guardrail confirms no domain entities or admin-only DTOs are exposed.
+- [x] Storefront product detail response includes new optional fields.
+- [x] Storefront catalog response includes new optional fields.
+- [x] Storefront variant response includes new optional fields.
+- [x] Existing `InStock`, `Quantity`, and `Stock` fields remain in public schemas.
+- [x] OpenAPI contract tests pass. 2026-07-16: focused `CommerceNodeStorefrontOpenApiContractTests|StorefrontV2ApiClientTests|PublicCatalogServiceTests` run passed 41/41.
+- [x] Public schema guardrail confirms no domain entities or admin-only DTOs are exposed.
 
 Exit criteria:
 
-- [ ] Product list/detail can render disabled buy state and reason from API data.
-- [ ] Existing client code using old stock fields still works.
+- [x] Product list/detail can render disabled buy state and reason from API data.
+- [x] Existing client code using old stock fields still works.
 
 Suggested commit:
 

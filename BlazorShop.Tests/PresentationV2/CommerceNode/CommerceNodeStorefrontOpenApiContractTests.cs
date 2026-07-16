@@ -342,6 +342,46 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         }
 
         [Fact]
+        public async Task StorefrontSwagger_ProductSellabilityProjectionHasGeneratorSafeContract()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+
+            var catalogProduct = schemas["StorefrontCatalogProductResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCatalogProductResponse schema was not found.");
+            var product = schemas["StorefrontProductResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontProductResponse schema was not found.");
+            var variant = schemas["StorefrontProductVariantResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontProductVariantResponse schema was not found.");
+
+            foreach (var schema in new[] { catalogProduct, product })
+            {
+                var properties = GetPropertyNames(schema);
+                Assert.Contains("purchasable", properties);
+                Assert.Contains("purchaseBlockReasons", properties);
+                Assert.Contains("stockStatus", properties);
+                Assert.Contains("availableQuantity", properties);
+                Assert.Contains("minOrderQuantity", properties);
+                Assert.Contains("maxOrderQuantity", properties);
+                Assert.Contains("quantityStep", properties);
+                Assert.Contains("manageStock", properties);
+                Assert.Contains("shippingRequired", properties);
+                Assert.Contains("freeShipping", properties);
+                Assert.Contains("deliveryEstimateText", properties);
+                Assert.Contains("inStock", properties);
+                Assert.Contains("quantity", properties);
+            }
+
+            var variantProperties = GetPropertyNames(variant);
+            Assert.Contains("isActive", variantProperties);
+            Assert.Contains("purchasable", variantProperties);
+            Assert.Contains("purchaseBlockReasons", variantProperties);
+            Assert.Contains("stockStatus", variantProperties);
+            Assert.Contains("availableQuantity", variantProperties);
+            Assert.Contains("stock", variantProperties);
+        }
+
+        [Fact]
         public async Task StorefrontSwagger_RiskyContractFixesAreReflectedInOpenApi()
         {
             var swagger = await this.GetStorefrontSwaggerAsync();

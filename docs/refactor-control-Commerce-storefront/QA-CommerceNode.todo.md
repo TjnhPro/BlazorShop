@@ -874,3 +874,5 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Product sellability resolver covers every planned block reason and stock status. 2026-07-16 Phase 2: `ProductSellabilityResolverTests` passed inside focused 36/36 run.
 - [x] Product selection/cart flow consumes centralized sellability without regressing existing cart behavior. 2026-07-16 Phase 2: `ProductSelectionResolverTests|StorefrontCartServiceTests` passed inside focused 36/36 run.
 - [x] Unmanaged stock/POD products can be purchasable with zero quantity. 2026-07-16 Phase 2: `ProductSellabilityResolverTests.Resolve_WhenStockIsUnmanaged_AllowsZeroQuantityProduct` passed.
+- [x] Storefront catalog/detail/variant schemas expose product sellability projection without exposing domain entities. 2026-07-16 Phase 3: `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_ProductSellabilityProjectionHasGeneratorSafeContract` passed.
+- [x] Storefront OpenAPI snapshot refreshed for availability quantity sellability fields. 2026-07-16 Phase 3: focused contract/client/catalog run passed 41/41.

@@ -4598,6 +4598,10 @@
           "hasPrimaryMedia": {
             "type": "boolean"
           },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
           "createdOn": {
             "type": "string",
             "format": "date-time"
@@ -4612,6 +4616,51 @@
           },
           "inStock": {
             "type": "boolean"
+          },
+          "purchasable": {
+            "type": "boolean"
+          },
+          "purchaseBlockReasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "stockStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "availableQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "minOrderQuantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maxOrderQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "quantityStep": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "manageStock": {
+            "type": "boolean"
+          },
+          "shippingRequired": {
+            "type": "boolean"
+          },
+          "freeShipping": {
+            "type": "boolean"
+          },
+          "deliveryEstimateText": {
+            "type": "string",
+            "nullable": true
           },
           "publishedOn": {
             "type": "string",
@@ -6704,9 +6753,57 @@
             "type": "integer",
             "format": "int32"
           },
+          "purchasable": {
+            "type": "boolean"
+          },
+          "purchaseBlockReasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "stockStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "availableQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "minOrderQuantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maxOrderQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "quantityStep": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "manageStock": {
+            "type": "boolean"
+          },
+          "shippingRequired": {
+            "type": "boolean"
+          },
+          "freeShipping": {
+            "type": "boolean"
+          },
+          "deliveryEstimateText": {
+            "type": "string",
+            "nullable": true
+          },
           "displayOrder": {
             "type": "integer",
             "format": "int32"
+          },
+          "inStock": {
+            "type": "boolean"
           },
           "publishedOn": {
             "type": "string",
@@ -7007,6 +7104,28 @@
           "stock": {
             "type": "integer",
             "format": "int32"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "purchasable": {
+            "type": "boolean"
+          },
+          "purchaseBlockReasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "stockStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "availableQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           },
           "color": {
             "type": "string",

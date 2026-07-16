@@ -28,6 +28,14 @@ namespace BlazorShop.Web.SharedV2.Models.Product
 
         public int Stock { get; set; }
 
+        public bool Purchasable { get; set; }
+
+        public IReadOnlyList<string> PurchaseBlockReasons { get; set; } = Array.Empty<string>();
+
+        public string StockStatus { get; set; } = string.Empty;
+
+        public int? AvailableQuantity { get; set; }
+
         public string? Color { get; set; }
 
         public bool IsActive { get; set; } = true;
