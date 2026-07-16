@@ -849,7 +849,7 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Inactive variant cannot be set as default. 2026-07-16 Phase 2: `ProductVariantServiceTests.AddAsync_WhenDefaultVariantIsInactive_ReturnsFailure` passed.
 - [x] Variant combination validation rejects unknown template option names. 2026-07-16 Phase 2: `ProductVariantServiceTests.AddAsync_WhenTemplateOptionIsUnknown_ReturnsFailure` passed.
 - [x] Variant combination validation rejects unknown template values. 2026-07-16 Phase 2: `ProductVariantServiceTests.AddAsync_WhenTemplateValueIsUnknown_ReturnsFailure` passed.
-- [x] Shared product selection resolver rejects missing required options. 2026-07-16 Phase 2: direct cart resolver path rejects missing required selected attribute; dedicated shared resolver begins in Phase 3.
-- [x] Shared product selection resolver rejects inactive variants. 2026-07-16 Phase 2: Storefront cart and checkout variant resolution paths reject inactive variants; dedicated shared resolver begins in Phase 3.
+- [x] Shared product selection resolver rejects missing required options. 2026-07-16 Phase 3: `ProductSelectionResolverTests.ResolveAsync_RejectsMissingRequiredOption` passed.
+- [x] Shared product selection resolver rejects inactive variants. 2026-07-16 Phase 3: `ProductSelectionResolverTests.ResolveAsync_RejectsInactiveVariant` passed.
 - [ ] Storefront selection-preview endpoint is store-scoped.
 - [ ] Storefront selection-preview endpoint rejects quantity below 1.

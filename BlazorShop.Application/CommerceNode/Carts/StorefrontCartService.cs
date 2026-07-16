@@ -3,6 +3,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
     using System.Text.Json;
 
     using BlazorShop.Application.CommerceNode.Currencies;
+    using BlazorShop.Application.CommerceNode.ProductSelections;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Domain.Constants;
@@ -25,6 +26,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
         private readonly IStorefrontWorkingCurrencyResolver workingCurrencyResolver;
         private readonly IMoneyConversionService moneyConversionService;
         private readonly IMoneyRoundingService moneyRoundingService;
+        private readonly IProductSelectionResolver productSelectionResolver;
 
         public StorefrontCartService(
             IStorefrontCartSessionService sessionService,
@@ -32,7 +34,8 @@ namespace BlazorShop.Application.CommerceNode.Carts
             IStoreCurrencyResolver storeCurrencyResolver,
             IStorefrontWorkingCurrencyResolver workingCurrencyResolver,
             IMoneyConversionService moneyConversionService,
-            IMoneyRoundingService moneyRoundingService)
+            IMoneyRoundingService moneyRoundingService,
+            IProductSelectionResolver? productSelectionResolver = null)
         {
             this.sessionService = sessionService;
             this.productReadRepository = productReadRepository;
@@ -40,6 +43,12 @@ namespace BlazorShop.Application.CommerceNode.Carts
             this.workingCurrencyResolver = workingCurrencyResolver;
             this.moneyConversionService = moneyConversionService;
             this.moneyRoundingService = moneyRoundingService;
+            this.productSelectionResolver = productSelectionResolver
+                ?? new ProductSelectionResolver(
+                    productReadRepository,
+                    workingCurrencyResolver,
+                    moneyConversionService,
+                    moneyRoundingService);
         }
 
         public async Task<ServiceResponse<StorefrontCartResult>> CreateOrResumeAsync(
@@ -112,61 +121,43 @@ namespace BlazorShop.Application.CommerceNode.Carts
                 return Failed<StorefrontCartSessionDto>(ServiceResponseType.ValidationError, personalization.Message);
             }
 
-            var productResult = await this.ResolveProductForCartAsync(
-                request.StoreId,
-                request.ProductId,
-                request.ProductVariantId,
-                request.Quantity,
-                request.SelectedAttributes,
+            var selection = await this.productSelectionResolver.ResolveAsync(
+                new ProductSelectionRequest(
+                    request.StoreId,
+                    request.ProductId,
+                    request.ProductVariantId,
+                    request.SelectedAttributes,
+                    Quantity: request.Quantity,
+                    CurrencyCode: request.CurrencyCode,
+                    Mode: ProductSelectionMode.Cart),
                 cancellationToken);
-            if (!productResult.Success)
+            if (!selection.Success)
             {
-                return Failed<StorefrontCartSessionDto>(productResult.ResponseType, productResult.Message);
-            }
-
-            var product = productResult.Product!;
-            var variant = productResult.Variant;
-            var workingCurrency = await this.workingCurrencyResolver.ResolveAsync(
-                request.StoreId,
-                request.CurrencyCode,
-                cancellationToken);
-            var currencyCode = workingCurrency.CurrencyCode;
-            var baseUnitPrice = variant?.Price ?? product.Price;
-            var unitPriceResult = await this.ResolveUnitPriceAsync(
-                request.StoreId,
-                baseUnitPrice,
-                workingCurrency.BaseCurrencyCode,
-                currencyCode,
-                cancellationToken);
-            if (!unitPriceResult.Success)
-            {
-                return Failed<StorefrontCartSessionDto>(
-                    unitPriceResult.ResponseType,
-                    unitPriceResult.Message);
+                return Failed<StorefrontCartSessionDto>(selection.ResponseType, selection.Message);
             }
 
             return await this.sessionService.AddOrUpdateLineAsync(
                 new StorefrontCartLineMutationRequest(
                     request.StoreId,
                     request.Token,
-                    product.Id,
-                    variant?.Id,
-                    productResult.SelectedAttributesJson,
+                    selection.ProductId,
+                    selection.ProductVariantId,
+                    selection.SelectedAttributesJson,
                     NormalizeNullable(request.PersonalizationHash),
                     NormalizeNullable(request.PersonalizationJson),
                     request.ArtworkAssetId,
                     request.ArtworkVersion,
                     NormalizeNullable(request.FulfillmentProviderKey),
                     request.Quantity,
-                    unitPriceResult.UnitPrice,
-                    currencyCode,
-                    unitPriceResult.BaseUnitPrice,
-                    unitPriceResult.BaseCurrencyCode,
-                    unitPriceResult.ExchangeRate,
-                    unitPriceResult.ExchangeRateProviderKey,
-                    unitPriceResult.ExchangeRateSource,
-                    unitPriceResult.ExchangeRateEffectiveAtUtc,
-                    unitPriceResult.ExchangeRateExpiresAtUtc),
+                    selection.UnitPrice,
+                    selection.CurrencyCode,
+                    selection.BaseUnitPrice,
+                    selection.BaseCurrencyCode,
+                    selection.ExchangeRate,
+                    selection.ExchangeRateProviderKey,
+                    selection.ExchangeRateSource,
+                    selection.ExchangeRateEffectiveAtUtc,
+                    selection.ExchangeRateExpiresAtUtc),
                 cancellationToken);
         }
 
@@ -191,17 +182,19 @@ namespace BlazorShop.Application.CommerceNode.Carts
                 return Failed<StorefrontCartSessionDto>(ServiceResponseType.NotFound, "Cart line was not found.");
             }
 
-            var productResult = await this.ResolveProductForCartAsync(
-                request.StoreId,
-                line.ProductId,
-                line.ProductVariantId,
-                request.Quantity,
-                null,
-                cancellationToken,
-                line.SelectedAttributesJson);
-            if (!productResult.Success)
+            var selection = await this.productSelectionResolver.ResolveAsync(
+                new ProductSelectionRequest(
+                    request.StoreId,
+                    line.ProductId,
+                    line.ProductVariantId,
+                    SelectedAttributesJson: line.SelectedAttributesJson,
+                    Quantity: request.Quantity,
+                    CurrencyCode: line.CurrencyCodeSnapshot,
+                    Mode: ProductSelectionMode.Cart),
+                cancellationToken);
+            if (!selection.Success)
             {
-                return Failed<StorefrontCartSessionDto>(productResult.ResponseType, productResult.Message);
+                return Failed<StorefrontCartSessionDto>(selection.ResponseType, selection.Message);
             }
 
             return await this.sessionService.UpdateLineQuantityAsync(
@@ -272,27 +265,29 @@ namespace BlazorShop.Application.CommerceNode.Carts
 
             foreach (var line in cart.Payload.Lines)
             {
-                var productResult = await this.ResolveProductForCartAsync(
-                    storeId,
-                    line.ProductId,
-                    line.ProductVariantId,
-                    line.Quantity,
-                    null,
-                    cancellationToken,
-                    line.SelectedAttributesJson);
-                if (!productResult.Success)
+                var selection = await this.productSelectionResolver.ResolveAsync(
+                    new ProductSelectionRequest(
+                        storeId,
+                        line.ProductId,
+                        line.ProductVariantId,
+                        SelectedAttributesJson: line.SelectedAttributesJson,
+                        Quantity: line.Quantity,
+                        CurrencyCode: currencyCode,
+                        Mode: ProductSelectionMode.Cart),
+                    cancellationToken);
+                if (!selection.Success)
                 {
                     issues.Add(new StorefrontCartValidationIssueDto(
                         line.Id,
                         line.ProductId,
-                        ResponseTypeToCode(productResult.ResponseType),
-                        productResult.Message));
+                        ResponseTypeToCode(selection.ResponseType),
+                        selection.Message));
                     continue;
                 }
 
                 var unitPrice = line.UnitPriceSnapshot.HasValue
                     ? this.moneyRoundingService.RoundUnitPrice(line.UnitPriceSnapshot.Value, currencyCode)
-                    : this.moneyRoundingService.RoundUnitPrice(productResult.Variant?.Price ?? productResult.Product!.Price, currencyCode);
+                    : selection.UnitPrice;
                 totalAmount += this.moneyRoundingService.RoundLineTotal(unitPrice * line.Quantity, currencyCode);
             }
 

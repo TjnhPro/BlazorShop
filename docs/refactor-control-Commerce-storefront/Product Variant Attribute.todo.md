@@ -227,68 +227,68 @@ Goal: prevent cart, checkout, product detail, and preview behavior from drifting
 
 Implementation checklist:
 
-- [ ] Add application service interface such as `IProductSelectionResolver`.
-- [ ] Add resolver input model with:
-  - [ ] store id or store context.
-  - [ ] product id or slug.
-  - [ ] optional product variant id.
-  - [ ] optional selected attributes.
-  - [ ] quantity with minimum 1.
-  - [ ] optional working currency code.
-  - [ ] resolution mode: preview or cart.
-- [ ] Add resolver output model with:
-  - [ ] product id.
-  - [ ] resolved product variant id.
-  - [ ] normalized selected attributes.
-  - [ ] attribute signature.
-  - [ ] `IsValid`.
-  - [ ] `IsAvailable`.
-  - [ ] `CanAddToCart`.
-  - [ ] validation messages.
-  - [ ] SKU.
-  - [ ] display name.
-  - [ ] unit price.
-  - [ ] compare price when available.
-  - [ ] currency code.
-  - [ ] stock quantity.
-  - [ ] min quantity.
-  - [ ] max quantity.
-- [ ] Resolver responsibilities:
-  - [ ] confirm product belongs to current store.
-  - [ ] confirm product is publicly visible for storefront mode.
-  - [ ] validate selected attributes against active variation templates.
-  - [ ] resolve default variant when applicable.
-  - [ ] reject inactive variants.
-  - [ ] reject invalid or incomplete required selections.
-  - [ ] apply existing price/currency conversion/rounding rules.
-  - [ ] return structured validation messages for customer-correctable input.
-- [ ] Refactor reusable logic out of `StorefrontCartService`:
-  - [ ] product lookup.
-  - [ ] selected-attribute normalization.
-  - [ ] template attribute validation.
-  - [ ] variant resolution.
-  - [ ] price/currency calculation.
-- [ ] Keep `StorefrontCartService` responsible for:
-  - [ ] cart persistence.
-  - [ ] cart-line snapshots.
-  - [ ] cart session behavior.
-- [ ] Keep checkout responsible for order placement and final stock re-checking.
+- [x] Add application service interface such as `IProductSelectionResolver`.
+- [x] Add resolver input model with:
+  - [x] store id or store context.
+  - [x] product id or slug. 2026-07-16 Phase 3: product id implemented; slug remains outside this phase.
+  - [x] optional product variant id.
+  - [x] optional selected attributes.
+  - [x] quantity with minimum 1.
+  - [x] optional working currency code.
+  - [x] resolution mode: preview or cart.
+- [x] Add resolver output model with:
+  - [x] product id.
+  - [x] resolved product variant id.
+  - [x] normalized selected attributes.
+  - [x] attribute signature.
+  - [x] `IsValid`.
+  - [x] `IsAvailable`.
+  - [x] `CanAddToCart`.
+  - [x] validation messages.
+  - [x] SKU.
+  - [x] display name.
+  - [x] unit price.
+  - [x] compare price when available.
+  - [x] currency code.
+  - [x] stock quantity.
+  - [x] min quantity.
+  - [x] max quantity.
+- [x] Resolver responsibilities:
+  - [x] confirm product belongs to current store.
+  - [x] confirm product is publicly visible for storefront mode.
+  - [x] validate selected attributes against active variation templates.
+  - [x] resolve default variant when applicable.
+  - [x] reject inactive variants.
+  - [x] reject invalid or incomplete required selections.
+  - [x] apply existing price/currency conversion/rounding rules.
+  - [x] return structured validation messages for customer-correctable input.
+- [x] Refactor reusable logic out of `StorefrontCartService`:
+  - [x] product lookup.
+  - [x] selected-attribute normalization.
+  - [x] template attribute validation.
+  - [x] variant resolution.
+  - [x] price/currency calculation.
+- [x] Keep `StorefrontCartService` responsible for:
+  - [x] cart persistence.
+  - [x] cart-line snapshots.
+  - [x] cart session behavior.
+- [x] Keep checkout responsible for order placement and final stock re-checking.
 
 Verification checklist:
 
-- [ ] Resolver valid-selection test passes.
-- [ ] Resolver invalid-attribute test passes.
-- [ ] Resolver missing-required-option test passes.
-- [ ] Resolver inactive-variant test passes.
-- [ ] Resolver stock-limited test passes.
-- [ ] Storefront cart behavior remains backward compatible.
-- [ ] Checkout behavior remains backward compatible.
+- [x] Resolver valid-selection test passes. 2026-07-16 Phase 3: `ProductSelectionResolverTests.ResolveAsync_ReturnsResolvedSelection_ForValidAttributes`.
+- [x] Resolver invalid-attribute test passes. 2026-07-16 Phase 3: resolver test passed.
+- [x] Resolver missing-required-option test passes. 2026-07-16 Phase 3: resolver test passed.
+- [x] Resolver inactive-variant test passes. 2026-07-16 Phase 3: resolver test passed.
+- [x] Resolver stock-limited test passes. 2026-07-16 Phase 3: resolver test passed.
+- [x] Storefront cart behavior remains backward compatible. 2026-07-16 Phase 3: focused cart tests passed.
+- [x] Checkout behavior remains backward compatible. 2026-07-16 Phase 3: focused checkout tests passed.
 
 Exit criteria:
 
-- [ ] Add-to-cart and preview can use the same selection rules.
-- [ ] Cart behavior remains compatible with existing tests.
-- [ ] Resolver has focused unit tests for valid, invalid, inactive, missing, and stock-limited combinations.
+- [x] Add-to-cart and preview can use the same selection rules.
+- [x] Cart behavior remains compatible with existing tests.
+- [x] Resolver has focused unit tests for valid, invalid, inactive, missing, and stock-limited combinations.
 
 Suggested commit:
 

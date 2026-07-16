@@ -14,6 +14,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
+    using BlazorShop.Application.CommerceNode.ProductSelections;
     using BlazorShop.Application.CommerceNode.SecurityPrivacy;
     using BlazorShop.Application.CommerceNode.Settings;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
@@ -174,6 +175,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddSingleton<IPaymentMinorUnitConverter, PaymentMinorUnitConverter>();
             services.AddScoped<IStorefrontCustomerService, StorefrontCustomerService>();
             services.AddScoped<IStorefrontCartSessionService, StorefrontCartSessionService>();
+            services.AddScoped<IProductSelectionResolver, ProductSelectionResolver>();
             services.AddScoped<IStorefrontCartService, StorefrontCartService>();
             services.AddScoped<IStorefrontCheckoutService, StorefrontCheckoutService>();
             services.AddScoped<IStorefrontConsentService, StorefrontConsentService>();
