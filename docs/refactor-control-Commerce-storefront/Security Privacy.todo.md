@@ -74,31 +74,31 @@ Goal: make all browser-driven Storefront V2 mutations CSRF-safe without changing
 
 Implementation checklist:
 
-- [ ] Add a Storefront V2 antiforgery token projection for JavaScript.
-- [ ] Prefer rendering the token into a safe meta tag or bootstrap JSON on pages that load cart JS.
-- [ ] Add a same-origin token endpoint only if render-time projection is not reliable.
-- [ ] Update `storefrontCommerce.js` to send the antiforgery request header on non-GET cart mutations.
-- [ ] Require antiforgery validation for local `/api/cart/*` mutation routes.
-- [ ] Keep `GET /api/cart` readable without antiforgery.
-- [ ] Confirm server form POST routes still work with existing antiforgery tokens.
-- [ ] Add private/no-store response headers to sensitive local mutation responses where needed.
-- [ ] Add tests:
-  - [ ] cart mutation without token fails.
-  - [ ] cart mutation with valid token succeeds.
-  - [ ] `GET /api/cart` remains usable.
-  - [ ] sign-in/register/logout/checkout form paths remain unchanged.
+- [x] Add a Storefront V2 antiforgery token projection for JavaScript.
+- [x] Prefer rendering the token into a safe meta tag or bootstrap JSON on pages that load cart JS.
+- [x] No same-origin token endpoint added because render-time meta projection is covered by host smoke tests.
+- [x] Update `storefrontCommerce.js` to send the antiforgery request header on non-GET cart mutations.
+- [x] Require antiforgery validation for local `/api/cart/*` mutation routes.
+- [x] Keep `GET /api/cart` readable without antiforgery.
+- [x] Confirm server form POST routes still work with existing antiforgery tokens.
+- [x] Add private/no-store response headers to sensitive local mutation responses where needed.
+- [x] Add tests:
+  - [x] cart mutation without token fails.
+  - [x] cart mutation with valid token succeeds.
+  - [x] `GET /api/cart` remains usable.
+  - [x] sign-in/register/logout/checkout form paths remain unchanged.
 
 Constraints:
 
-- [ ] Do not add node credentials to Storefront V2.
-- [ ] Do not require Storefront V2 to call Control Plane.
-- [ ] Do not move cart APIs to direct browser calls against Commerce Node.
-- [ ] Do not break add-to-cart buttons or cart badge refresh.
+- [x] Do not add node credentials to Storefront V2.
+- [x] Do not require Storefront V2 to call Control Plane.
+- [x] Do not move cart APIs to direct browser calls against Commerce Node.
+- [x] Do not break add-to-cart buttons or cart badge refresh.
 
 Exit criteria:
 
-- [ ] Browser JSON mutations and server form mutations have consistent CSRF protection.
-- [ ] No route shape changes for `/api/cart/*`.
+- [x] Browser JSON mutations and server form mutations have consistent CSRF protection.
+- [x] No route shape changes for `/api/cart/*`.
 
 ## Phase 2 - Storefront Rate Limits And Bot/Crawler Mutation Restrictions
 

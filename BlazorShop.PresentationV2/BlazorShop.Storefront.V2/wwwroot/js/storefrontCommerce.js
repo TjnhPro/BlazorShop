@@ -7,6 +7,8 @@
   const cartQuantitySelector = "[data-storefront-cart-quantity]";
   const toastRegionSelector = "[data-storefront-toast-region]";
   const toastTemplateSelector = "[data-storefront-toast-template]";
+  const antiforgeryTokenSelector = 'meta[name="blazorshop-antiforgery-token"]';
+  const antiforgeryHeaderSelector = 'meta[name="blazorshop-antiforgery-header"]';
   const cartChangedEventName = "blazorshop:cart-changed";
   const pendingToastStorageKey = "blazorshop:storefront:pending-toast";
   const badgePollIntervalMs = 1500;
@@ -34,12 +36,26 @@
     document.dispatchEvent(new CustomEvent(cartChangedEventName, { detail: { count } }));
   }
 
+  function readAntiforgeryHeader() {
+    const token = document.querySelector(antiforgeryTokenSelector)?.getAttribute("content");
+    const headerName = document.querySelector(antiforgeryHeaderSelector)?.getAttribute("content") || "X-CSRF-TOKEN";
+    return token ? { headerName, token } : null;
+  }
+
   async function sendCartRequest(route, method, body) {
+    const normalizedMethod = (method || "GET").toUpperCase();
     const options = {
-      method,
+      method: normalizedMethod,
       credentials: "same-origin",
       headers: { "Accept": "application/json" }
     };
+
+    if (normalizedMethod !== "GET") {
+      const antiforgery = readAntiforgeryHeader();
+      if (antiforgery) {
+        options.headers[antiforgery.headerName] = antiforgery.token;
+      }
+    }
 
     if (body !== undefined) {
       options.headers["Content-Type"] = "application/json";

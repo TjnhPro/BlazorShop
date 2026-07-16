@@ -466,6 +466,39 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("cart", content, StringComparison.OrdinalIgnoreCase);
         }
 
+        [Theory]
+        [InlineData("POST", "/api/cart/lines")]
+        [InlineData("PUT", "/api/cart/lines/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")]
+        [InlineData("DELETE", "/api/cart/lines/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")]
+        [InlineData("DELETE", "/api/cart")]
+        public async Task CartApi_MutationWithoutAntiforgeryToken_ReturnsBadRequest(string method, string path)
+        {
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<StorefrontApiClient>();
+                    services.AddScoped(_ => new StorefrontApiClient(
+                        new HttpClient(new ServiceUnavailableHandler())
+                        {
+                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
+                        },
+                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                },
+                allowAutoRedirect: false);
+
+            using var request = new HttpRequestMessage(new HttpMethod(method), path);
+            if (!string.Equals(method, "DELETE", StringComparison.OrdinalIgnoreCase))
+            {
+                request.Content = JsonContent(new { ProductId = Guid.NewGuid(), Quantity = 1 });
+            }
+
+            using var response = await client.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Contains("Security validation failed", content, StringComparison.Ordinal);
+        }
+
         [Fact]
         public async Task CartApi_PostLine_SetsHttpOnlyCartToken_AndDoesNotSendUnitPrice()
         {
@@ -484,19 +517,24 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 },
                 allowAutoRedirect: false);
 
-            using var response = await client.PostAsync(
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.SignIn);
+            using var request = CreateJsonRequest(
+                HttpMethod.Post,
                 "/api/cart/lines",
-                JsonContent(
-                    new
-                    {
-                        ProductId = productId,
-                        Quantity = 1,
-                        UnitPrice = 99.95m,
-                    }));
+                new
+                {
+                    ProductId = productId,
+                    Quantity = 1,
+                    UnitPrice = 99.95m,
+                },
+                token,
+                cookieHeader);
+            using var response = await client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Contains("\"count\":1", content, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("no-store", response.Headers.CacheControl?.ToString() ?? string.Empty, StringComparison.OrdinalIgnoreCase);
             Assert.Contains(response.Headers.GetValues("Set-Cookie"), value =>
                 value.Contains("bs-cart-token=server-token", StringComparison.Ordinal)
                 && value.Contains("httponly", StringComparison.OrdinalIgnoreCase)
@@ -776,6 +814,23 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             request.Headers.Add("Cookie", cookieHeader);
             request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            return request;
+        }
+
+        private static HttpRequestMessage CreateJsonRequest(
+            HttpMethod method,
+            string path,
+            object value,
+            string antiforgeryToken,
+            string cookieHeader)
+        {
+            var request = new HttpRequestMessage(method, path)
+            {
+                Content = JsonContent(value),
+            };
+
+            request.Headers.Add("Cookie", cookieHeader);
+            request.Headers.Add("X-CSRF-TOKEN", antiforgeryToken);
             return request;
         }
 

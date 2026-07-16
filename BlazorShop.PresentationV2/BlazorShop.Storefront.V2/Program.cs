@@ -13,6 +13,7 @@ using BlazorShop.Storefront.WASM;
 using BlazorShop.Web.SharedV2;
 
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +22,10 @@ builder.AddServiceDefaults();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-CSRF-TOKEN";
+});
 builder.Services.AddSingleton<IValidateOptions<StorefrontApiOptions>, StorefrontApiOptionsValidator>();
 builder.Services.AddSingleton<IValidateOptions<ClientAppOptions>, StorefrontClientAppOptionsValidator>();
 builder.Services.AddSingleton<IValidateOptions<StorefrontPublicUrlOptions>, StorefrontPublicUrlOptionsValidator>();
@@ -303,9 +308,16 @@ app.MapGet("/api/cart", async (
 app.MapPost("/api/cart/lines", async (
     StorefrontLocalCartLineRequest request,
     StorefrontCartTokenService cartTokenService,
+    IAntiforgery antiforgery,
     HttpContext httpContext,
     CancellationToken cancellationToken) =>
 {
+    var antiforgeryFailure = await ValidateLocalCartAntiforgeryAsync(httpContext, antiforgery);
+    if (antiforgeryFailure is not null)
+    {
+        return antiforgeryFailure;
+    }
+
     if (request.ProductId == Guid.Empty || request.Quantity < 1)
     {
         return Results.BadRequest(new StorefrontLocalCartErrorResponse("Product and quantity are required."));
@@ -329,9 +341,16 @@ app.MapPut("/api/cart/lines/{lineId:guid}", async (
     Guid lineId,
     StorefrontLocalCartQuantityRequest request,
     StorefrontCartTokenService cartTokenService,
+    IAntiforgery antiforgery,
     HttpContext httpContext,
     CancellationToken cancellationToken) =>
 {
+    var antiforgeryFailure = await ValidateLocalCartAntiforgeryAsync(httpContext, antiforgery);
+    if (antiforgeryFailure is not null)
+    {
+        return antiforgeryFailure;
+    }
+
     if (request.Quantity < 1)
     {
         return Results.BadRequest(new StorefrontLocalCartErrorResponse("Quantity must be at least 1."));
@@ -343,17 +362,31 @@ app.MapPut("/api/cart/lines/{lineId:guid}", async (
 app.MapDelete("/api/cart/lines/{lineId:guid}", async (
     Guid lineId,
     StorefrontCartTokenService cartTokenService,
+    IAntiforgery antiforgery,
     HttpContext httpContext,
     CancellationToken cancellationToken) =>
 {
+    var antiforgeryFailure = await ValidateLocalCartAntiforgeryAsync(httpContext, antiforgery);
+    if (antiforgeryFailure is not null)
+    {
+        return antiforgeryFailure;
+    }
+
     var result = await cartTokenService.RemoveLineAsync(httpContext, lineId, cancellationToken);
     return ToLocalCartMutationResult(result);
 });
 app.MapDelete("/api/cart", async (
     StorefrontCartTokenService cartTokenService,
+    IAntiforgery antiforgery,
     HttpContext httpContext,
     CancellationToken cancellationToken) =>
 {
+    var antiforgeryFailure = await ValidateLocalCartAntiforgeryAsync(httpContext, antiforgery);
+    if (antiforgeryFailure is not null)
+    {
+        return antiforgeryFailure;
+    }
+
     var result = await cartTokenService.ClearAsync(httpContext, cancellationToken);
     return ToLocalCartMutationResult(result);
 });
@@ -585,6 +618,23 @@ static IResult ToLocalCartMutationResult(StorefrontCartMutationResult result)
     return Results.Json(
         new StorefrontLocalCartErrorResponse(result.Message),
         statusCode: StatusCodes.Status400BadRequest);
+}
+
+static async Task<IResult?> ValidateLocalCartAntiforgeryAsync(HttpContext httpContext, IAntiforgery antiforgery)
+{
+    StorefrontResponseHeaders.ApplyPrivatePage(httpContext);
+
+    try
+    {
+        await antiforgery.ValidateRequestAsync(httpContext);
+        return null;
+    }
+    catch (AntiforgeryValidationException)
+    {
+        return Results.Json(
+            new StorefrontLocalCartErrorResponse("Security validation failed. Refresh the page and try again."),
+            statusCode: StatusCodes.Status400BadRequest);
+    }
 }
 
 static StorefrontLocalCartResponse ToLocalCartResponse(StorefrontCartResponse? cart)

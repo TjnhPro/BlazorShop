@@ -1,0 +1,25 @@
+@using Microsoft.AspNetCore.Antiforgery
+@inject IAntiforgery Antiforgery
+
+@if (!string.IsNullOrWhiteSpace(_requestToken))
+{
+    <meta name="blazorshop-antiforgery-token" content="@_requestToken" />
+    <meta name="blazorshop-antiforgery-header" content="X-CSRF-TOKEN" />
+}
+
+@code {
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    private string? _requestToken;
+
+    protected override void OnInitialized()
+    {
+        if (HttpContext is null)
+        {
+            return;
+        }
+
+        _requestToken = Antiforgery.GetAndStoreTokens(HttpContext).RequestToken;
+    }
+}
