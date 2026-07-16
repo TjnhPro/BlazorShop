@@ -176,66 +176,66 @@ Goal: centralize purchase eligibility so catalog, product detail, cart, and chec
 
 Implementation checklist:
 
-- [ ] Add application service interface such as `IProductSellabilityResolver`.
-- [ ] Add resolver input model with:
-  - [ ] product.
-  - [ ] optional product variant.
-  - [ ] requested quantity.
-  - [ ] current time provider or explicit `now`.
-  - [ ] public/storefront mode.
-- [ ] Add resolver output model with:
-  - [ ] product id.
-  - [ ] optional product variant id.
-  - [ ] `Purchasable`.
-  - [ ] stable reason codes.
-  - [ ] customer-safe reason messages.
-  - [ ] `StockStatus`.
-  - [ ] optional available quantity.
-  - [ ] min/max/step quantity rules.
-  - [ ] `ManageStock`.
-  - [ ] delivery metadata projection.
-- [ ] Add reason code constants:
-  - [ ] `not_visible`.
-  - [ ] `not_published`.
-  - [ ] `not_started`.
-  - [ ] `expired`.
-  - [ ] `purchase_disabled`.
-  - [ ] `variant_required`.
-  - [ ] `variant_inactive`.
-  - [ ] `out_of_stock`.
-  - [ ] `below_min_quantity`.
-  - [ ] `above_max_quantity`.
-  - [ ] `invalid_quantity_step`.
-  - [ ] `not_enough_stock`.
-- [ ] Add stock status constants:
-  - [ ] `in_stock`.
-  - [ ] `out_of_stock`.
-  - [ ] `not_managed`.
-  - [ ] `variant_required`.
-- [ ] Implement core rules:
-  - [ ] product must remain store-visible and published.
-  - [ ] future availability blocks purchase.
-  - [ ] expired availability blocks purchase.
-  - [ ] purchase disabled blocks purchase but does not hide product.
-  - [ ] variant-required state blocks purchase when no usable variant is selected.
-  - [ ] inactive variant blocks purchase.
-  - [ ] managed stock enforces available stock.
-  - [ ] unmanaged stock bypasses stock shortage checks.
-  - [ ] requested quantity respects min/max/step.
-- [ ] Register resolver through existing DI patterns.
+- [x] Add application service interface such as `IProductSellabilityResolver`.
+- [x] Add resolver input model with:
+  - [x] product.
+  - [x] optional product variant.
+  - [x] requested quantity.
+  - [x] current time provider or explicit `now`.
+  - [x] public/storefront mode.
+- [x] Add resolver output model with:
+  - [x] product id.
+  - [x] optional product variant id.
+  - [x] `Purchasable`.
+  - [x] stable reason codes.
+  - [x] customer-safe reason messages.
+  - [x] `StockStatus`.
+  - [x] optional available quantity.
+  - [x] min/max/step quantity rules.
+  - [x] `ManageStock`.
+  - [x] delivery metadata projection.
+- [x] Add reason code constants:
+  - [x] `not_visible`.
+  - [x] `not_published`.
+  - [x] `not_started`.
+  - [x] `expired`.
+  - [x] `purchase_disabled`.
+  - [x] `variant_required`.
+  - [x] `variant_inactive`.
+  - [x] `out_of_stock`.
+  - [x] `below_min_quantity`.
+  - [x] `above_max_quantity`.
+  - [x] `invalid_quantity_step`.
+  - [x] `not_enough_stock`.
+- [x] Add stock status constants:
+  - [x] `in_stock`.
+  - [x] `out_of_stock`.
+  - [x] `not_managed`.
+  - [x] `variant_required`.
+- [x] Implement core rules:
+  - [x] product must remain store-visible and published.
+  - [x] future availability blocks purchase.
+  - [x] expired availability blocks purchase.
+  - [x] purchase disabled blocks purchase but does not hide product.
+  - [x] variant-required state blocks purchase when no usable variant is selected.
+  - [x] inactive variant blocks purchase.
+  - [x] managed stock enforces available stock.
+  - [x] unmanaged stock bypasses stock shortage checks.
+  - [x] requested quantity respects min/max/step.
+- [x] Register resolver through existing DI patterns.
 
 Verification checklist:
 
-- [ ] Resolver tests cover every reason code.
-- [ ] Resolver tests cover unmanaged-stock/POD product with zero quantity.
-- [ ] Resolver tests cover existing variant active state.
-- [ ] Resolver tests cover existing products without variants.
-- [ ] Resolver tests cover products with variants and no selected/default variant.
+- [x] Resolver tests cover every reason code.
+- [x] Resolver tests cover unmanaged-stock/POD product with zero quantity.
+- [x] Resolver tests cover existing variant active state.
+- [x] Resolver tests cover existing products without variants.
+- [x] Resolver tests cover products with variants and no selected/default variant.
 
 Exit criteria:
 
-- [ ] One service owns sellability rules.
-- [ ] Cart and storefront projection can consume the same result.
+- [x] One service owns sellability rules.
+- [x] Cart and storefront projection can consume the same result.
 
 Suggested commit:
 

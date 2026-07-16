@@ -175,6 +175,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddSingleton<IPaymentMinorUnitConverter, PaymentMinorUnitConverter>();
             services.AddScoped<IStorefrontCustomerService, StorefrontCustomerService>();
             services.AddScoped<IStorefrontCartSessionService, StorefrontCartSessionService>();
+            services.AddScoped<IProductSellabilityResolver, ProductSellabilityResolver>();
             services.AddScoped<IProductSelectionResolver, ProductSelectionResolver>();
             services.AddScoped<IStorefrontCartService, StorefrontCartService>();
             services.AddScoped<IStorefrontCheckoutService, StorefrontCheckoutService>();

@@ -871,3 +871,6 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Product purchase fields have safe defaults and length limits. 2026-07-16 Phase 1: `CommerceNodeDbContextModelTests.ProductPurchaseFields_HaveSafeDefaultsAndMaxLengths` passed.
 - [x] Product service rejects invalid min/max/step and overlong purchase-disabled reason. 2026-07-16 Phase 1: focused `ProductServiceTests` passed inside 52/52 run.
 - [x] Phase 1 does not add stock ledger, reservation, backorder, warehouse, or shipping charge tables. 2026-07-16: migration inspection confirmed only additive `Products` columns.
+- [x] Product sellability resolver covers every planned block reason and stock status. 2026-07-16 Phase 2: `ProductSellabilityResolverTests` passed inside focused 36/36 run.
+- [x] Product selection/cart flow consumes centralized sellability without regressing existing cart behavior. 2026-07-16 Phase 2: `ProductSelectionResolverTests|StorefrontCartServiceTests` passed inside focused 36/36 run.
+- [x] Unmanaged stock/POD products can be purchasable with zero quantity. 2026-07-16 Phase 2: `ProductSellabilityResolverTests.Resolve_WhenStockIsUnmanaged_AllowsZeroQuantityProduct` passed.

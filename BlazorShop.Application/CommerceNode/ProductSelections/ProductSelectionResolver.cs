@@ -22,17 +22,20 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
         private readonly IStorefrontWorkingCurrencyResolver workingCurrencyResolver;
         private readonly IMoneyConversionService moneyConversionService;
         private readonly IMoneyRoundingService moneyRoundingService;
+        private readonly IProductSellabilityResolver sellabilityResolver;
 
         public ProductSelectionResolver(
             IProductReadRepository productReadRepository,
             IStorefrontWorkingCurrencyResolver workingCurrencyResolver,
             IMoneyConversionService moneyConversionService,
-            IMoneyRoundingService moneyRoundingService)
+            IMoneyRoundingService moneyRoundingService,
+            IProductSellabilityResolver? sellabilityResolver = null)
         {
             this.productReadRepository = productReadRepository;
             this.workingCurrencyResolver = workingCurrencyResolver;
             this.moneyConversionService = moneyConversionService;
             this.moneyRoundingService = moneyRoundingService;
+            this.sellabilityResolver = sellabilityResolver ?? new ProductSellabilityResolver();
         }
 
         public async Task<ProductSelectionResult> ResolveAsync(
@@ -54,8 +57,9 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
                 return Failed(request, ServiceResponseType.ValidationError, "Quantity must be at least 1.");
             }
 
-            var product = await this.productReadRepository.GetPublishedProductDetailsByIdAsync(request.ProductId);
-            if (product is null || !IsStorefrontAvailable(product, request.StoreId))
+            var product = await this.productReadRepository.GetProductDetailsByIdAsync(request.ProductId)
+                ?? await this.productReadRepository.GetPublishedProductDetailsByIdAsync(request.ProductId);
+            if (product is null)
             {
                 return Failed(request, ServiceResponseType.NotFound, "Product is not available for this store.");
             }
@@ -74,10 +78,21 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
                 return Failed(request, ServiceResponseType.ValidationError, variant.ErrorMessage, product: product);
             }
 
-            var availableStock = variant.Value?.Stock ?? product.Quantity;
-            if (availableStock < request.Quantity)
+            var sellability = this.sellabilityResolver.Resolve(new ProductSellabilityRequest(
+                request.StoreId,
+                product,
+                variant.Value,
+                request.Quantity,
+                Mode: ProductSellabilityMode.Storefront));
+            if (!sellability.Purchasable)
             {
-                return Failed(request, ServiceResponseType.Conflict, "One or more cart items are out of stock.", product: product, variant: variant.Value);
+                return Failed(
+                    request,
+                    ResponseTypeFor(sellability.PurchaseBlockReasons),
+                    sellability.PurchaseBlockMessages.FirstOrDefault() ?? "Product cannot be purchased right now.",
+                    product: product,
+                    variant: variant.Value,
+                    sellability: sellability);
             }
 
             var workingCurrency = await this.workingCurrencyResolver.ResolveAsync(
@@ -117,9 +132,9 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
                 unitPrice.CurrencyCode,
                 unitPrice.BaseCurrencyCode,
                 unitPrice.ComparePrice,
-                availableStock,
-                1,
-                Math.Max(1, availableStock),
+                sellability.AvailableQuantity ?? 0,
+                sellability.MinOrderQuantity,
+                ResolveMaxQuantity(sellability),
                 unitPrice.ExchangeRate,
                 unitPrice.ExchangeRateProviderKey,
                 unitPrice.ExchangeRateSource,
@@ -192,22 +207,6 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
                 conversion.Payload.ExpiresAt);
         }
 
-        private static bool IsStorefrontAvailable(Product product, Guid storeId)
-        {
-            var utcNow = DateTime.UtcNow;
-            return product.StoreId == storeId
-                && product.ArchivedAt is null
-                && product.IsPublished
-                && product.PublishedOn is not null
-                && (product.AvailableStartUtc is null || product.AvailableStartUtc <= utcNow)
-                && (product.AvailableEndUtc is null || product.AvailableEndUtc > utcNow)
-                && !string.IsNullOrWhiteSpace(product.Slug)
-                && product.Category is not null
-                && product.Category.StoreId == product.StoreId
-                && product.Category.ArchivedAt is null
-                && product.Category.IsPublished;
-        }
-
         private static VariantResolution ResolveVariant(
             Product product,
             Guid? productVariantId,
@@ -236,9 +235,7 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
                     return VariantResolution.Failed("Selected attributes do not match the selected product variant.");
                 }
 
-                return variant.IsActive
-                    ? VariantResolution.Succeeded(variant)
-                    : VariantResolution.Failed("Selected product variant is not available.");
+                return VariantResolution.Succeeded(variant);
             }
 
             if (allVariants.Length == 0)
@@ -417,7 +414,8 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
             ServiceResponseType responseType,
             string message,
             Product? product = null,
-            ProductVariant? variant = null)
+            ProductVariant? variant = null,
+            ProductSellabilityResult? sellability = null)
         {
             return new ProductSelectionResult(
                 false,
@@ -431,7 +429,7 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
                 false,
                 false,
                 false,
-                [message],
+                sellability?.PurchaseBlockMessages.Count > 0 ? sellability.PurchaseBlockMessages : [message],
                 variant?.Sku ?? product?.Sku,
                 variant?.DisplayName ?? product?.Name,
                 0,
@@ -439,11 +437,43 @@ namespace BlazorShop.Application.CommerceNode.ProductSelections
                 NormalizeCurrencyCode(request.CurrencyCode) ?? string.Empty,
                 string.Empty,
                 product?.ComparePrice,
-                0,
-                1,
-                1,
+                sellability?.AvailableQuantity ?? 0,
+                sellability?.MinOrderQuantity ?? 1,
+                sellability is null ? 1 : ResolveMaxQuantity(sellability),
                 Product: product,
                 Variant: variant);
+        }
+
+        private static ServiceResponseType ResponseTypeFor(IReadOnlyList<string> reasons)
+        {
+            if (reasons.Any(reason => reason is ProductPurchaseBlockReasons.NotVisible
+                    or ProductPurchaseBlockReasons.NotPublished
+                    or ProductPurchaseBlockReasons.NotStarted
+                    or ProductPurchaseBlockReasons.Expired))
+            {
+                return ServiceResponseType.NotFound;
+            }
+
+            if (reasons.Any(reason => reason is ProductPurchaseBlockReasons.OutOfStock
+                    or ProductPurchaseBlockReasons.NotEnoughStock
+                    or ProductPurchaseBlockReasons.PurchaseDisabled))
+            {
+                return ServiceResponseType.Conflict;
+            }
+
+            return ServiceResponseType.ValidationError;
+        }
+
+        private static int ResolveMaxQuantity(ProductSellabilityResult sellability)
+        {
+            if (sellability.MaxOrderQuantity.HasValue)
+            {
+                return sellability.MaxOrderQuantity.Value;
+            }
+
+            return sellability.AvailableQuantity.HasValue
+                ? Math.Max(sellability.MinOrderQuantity, sellability.AvailableQuantity.Value)
+                : int.MaxValue;
         }
 
         private static string? NormalizeCurrencyCode(string? value)

@@ -153,7 +153,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
         {
             var productReadRepository = new Mock<IProductReadRepository>();
             productReadRepository
-                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .Setup(repository => repository.GetProductDetailsByIdAsync(product.Id))
                 .ReturnsAsync(product);
 
             return new ProductSelectionResolver(
