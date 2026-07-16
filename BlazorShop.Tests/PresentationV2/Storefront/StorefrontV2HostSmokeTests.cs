@@ -351,6 +351,47 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task Maintenance_WhenCurrentStoreRecovered_RedirectsHome()
+        {
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontCurrentStoreProvider>();
+                    services.AddScoped<IStorefrontCurrentStoreProvider>(_ => new StubCurrentStoreProvider(
+                        StorefrontCurrentStoreResolution.Succeeded(CreateActiveCurrentStore())));
+                },
+                allowAutoRedirect: false);
+
+            using var response = await client.GetAsync($"{StorefrontRoutes.Maintenance}?reason=maintenance");
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal(StorefrontRoutes.Home, response.Headers.Location?.ToString());
+        }
+
+        [Fact]
+        public async Task Maintenance_WhenCurrentStoreStillInMaintenance_RendersAutoRefresh()
+        {
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontCurrentStoreProvider>();
+                    services.AddScoped<IStorefrontCurrentStoreProvider>(_ => new StubCurrentStoreProvider(
+                        StorefrontCurrentStoreResolution.Maintenance(CreateActiveCurrentStore(
+                            maintenanceModeEnabled: true,
+                            maintenanceMessage: "Scheduled maintenance."))));
+                },
+                allowAutoRedirect: false);
+
+            using var response = await client.GetAsync($"{StorefrontRoutes.Maintenance}?reason=maintenance");
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+            Assert.Contains("Scheduled maintenance.", content, StringComparison.Ordinal);
+            Assert.Contains("http-equiv=\"refresh\"", content, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("content=\"10\"", content, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
         public async Task Cart_RendersEmptyCartWithoutCommerceNode()
         {
             using var client = CreateClient(services =>
@@ -686,6 +727,53 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 });
 
             return $"my-cart={Uri.EscapeDataString(cartJson)}";
+        }
+
+        private static StorefrontCurrentStore CreateActiveCurrentStore(
+            bool maintenanceModeEnabled = false,
+            string? maintenanceMessage = null)
+        {
+            return new StorefrontCurrentStore(
+                Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                "default",
+                "Default Store",
+                "active",
+                "https://shop.example.test",
+                "shop.example.test",
+                true,
+                null,
+                null,
+                "Default Company",
+                "company@example.test",
+                "5550100",
+                "1 Test Street",
+                null,
+                null,
+                null,
+                null,
+                null,
+                "USD",
+                "en-US",
+                "support@example.test",
+                "5550101",
+                maintenanceModeEnabled,
+                maintenanceMessage,
+                null);
+        }
+
+        private sealed class StubCurrentStoreProvider : IStorefrontCurrentStoreProvider
+        {
+            private readonly StorefrontCurrentStoreResolution _resolution;
+
+            public StubCurrentStoreProvider(StorefrontCurrentStoreResolution resolution)
+            {
+                _resolution = resolution;
+            }
+
+            public Task<StorefrontCurrentStoreResolution> ResolveAsync(CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(_resolution);
+            }
         }
 
         private sealed class StubStorefrontSessionResolver : IStorefrontSessionResolver
