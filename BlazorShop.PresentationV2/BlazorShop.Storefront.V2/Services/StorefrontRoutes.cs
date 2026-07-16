@@ -1,5 +1,9 @@
 namespace BlazorShop.Storefront.Services
 {
+    using System.Globalization;
+
+    using BlazorShop.Web.SharedV2.Models.Product;
+
     public static class StorefrontRoutes
     {
         public const string Home = "/";
@@ -53,28 +57,91 @@ namespace BlazorShop.Storefront.Services
                 : $"{PagesBase}/{Uri.EscapeDataString(slug.Trim())}";
         }
 
-        public static string SearchUrl(string? query, string? categorySlug = null, int? pageNumber = null)
+        public static string CategoryUrl(
+            string? slug,
+            int? pageNumber = null,
+            int? pageSize = null,
+            ProductCatalogSortBy? sortBy = null,
+            decimal? minPrice = null,
+            decimal? maxPrice = null,
+            bool? inStock = null)
         {
-            var parameters = new List<string>();
+            var parameters = BuildCatalogQueryParameters(pageNumber, pageSize, sortBy, minPrice, maxPrice, inStock);
+            var route = Category(slug);
+
+            return parameters.Count == 0
+                ? route
+                : $"{route}?{string.Join("&", parameters)}";
+        }
+
+        public static string SearchUrl(
+            string? query,
+            string? categorySlug = null,
+            int? pageNumber = null,
+            int? pageSize = null,
+            ProductCatalogSortBy? sortBy = null,
+            decimal? minPrice = null,
+            decimal? maxPrice = null,
+            bool? inStock = null)
+        {
+            var parameters = BuildCatalogQueryParameters(pageNumber, pageSize, sortBy, minPrice, maxPrice, inStock);
 
             if (!string.IsNullOrWhiteSpace(query))
             {
-                parameters.Add($"q={Uri.EscapeDataString(query.Trim())}");
+                parameters.Insert(0, $"q={Uri.EscapeDataString(query.Trim())}");
             }
 
             if (!string.IsNullOrWhiteSpace(categorySlug))
             {
-                parameters.Add($"category={Uri.EscapeDataString(categorySlug.Trim())}");
+                parameters.Insert(string.IsNullOrWhiteSpace(query) ? 0 : 1, $"category={Uri.EscapeDataString(categorySlug.Trim())}");
             }
+
+            return parameters.Count == 0
+                ? Search
+                : $"{Search}?{string.Join("&", parameters)}";
+        }
+
+        private static List<string> BuildCatalogQueryParameters(
+            int? pageNumber,
+            int? pageSize,
+            ProductCatalogSortBy? sortBy,
+            decimal? minPrice,
+            decimal? maxPrice,
+            bool? inStock)
+        {
+            var parameters = new List<string>();
 
             if (pageNumber.HasValue && pageNumber.Value > 1)
             {
                 parameters.Add($"page={pageNumber.Value}");
             }
 
-            return parameters.Count == 0
-                ? Search
-                : $"{Search}?{string.Join("&", parameters)}";
+            if (pageSize.HasValue && pageSize.Value > 0)
+            {
+                parameters.Add($"pageSize={pageSize.Value}");
+            }
+
+            if (sortBy.HasValue)
+            {
+                parameters.Add($"sortBy={Uri.EscapeDataString(sortBy.Value.ToApiValue())}");
+            }
+
+            if (minPrice.HasValue)
+            {
+                parameters.Add($"minPrice={Uri.EscapeDataString(minPrice.Value.ToString(CultureInfo.InvariantCulture))}");
+            }
+
+            if (maxPrice.HasValue)
+            {
+                parameters.Add($"maxPrice={Uri.EscapeDataString(maxPrice.Value.ToString(CultureInfo.InvariantCulture))}");
+            }
+
+            if (inStock == true)
+            {
+                parameters.Add("inStock=true");
+            }
+
+            return parameters;
         }
     }
 

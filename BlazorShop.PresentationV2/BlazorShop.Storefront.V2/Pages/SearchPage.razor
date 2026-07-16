@@ -1,4 +1,5 @@
 @page "/search"
+@using BlazorShop.Application.CommerceNode.Catalog
 @using BlazorShop.Application.DTOs.Category
 @inject StorefrontApiClient ApiClient
 @inject IStorefrontSeoComposer SeoComposer
@@ -16,13 +17,22 @@
             </div>
 
             <CatalogFilterPanel Action="@StorefrontRoutes.Search"
-                                Class="grid gap-3 md:grid-cols-[minmax(10rem,14rem)_minmax(16rem,1fr)_auto]"
+                                Class="grid gap-3 md:grid-cols-4 xl:grid-cols-8"
                                 Role="search"
                                 ShowCategory="true"
                                 Categories="_searchCategories"
                                 CategorySlug="Category"
                                 ShowSearch="true"
                                 SearchTerm="Q"
+                                ShowPriceRange="true"
+                                MinPrice="MinPrice"
+                                MaxPrice="MaxPrice"
+                                ShowSort="true"
+                                SortBy="SortBy"
+                                ShowPageSize="true"
+                                PageSize="_pageSize"
+                                ShowStock="true"
+                                InStock="InStock"
                                 SelectClass="rounded border border-neutral-300 bg-white px-3 py-3 text-sm font-semibold text-neutral-900"
                                 InputClass="rounded border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900"
                                 SubmitButtonClass="inline-flex items-center justify-center gap-2 rounded bg-amber-500 px-4 py-3 text-sm font-semibold text-white hover:bg-amber-600"
@@ -45,6 +55,13 @@
             <span class="inline-flex items-center rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-neutral-700 shadow">@ResultCountText</span>
         </div>
 
+        @if (_isSearchTermTooShort)
+        {
+            <div class="mb-6 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
+                Enter at least @CatalogSearchPolicy.MinimumSearchTermLength characters to search products.
+            </div>
+        }
+
         <ProductGrid Products="_products" EmptyMessage="No products found" />
 
         @if (_totalPages > 1)
@@ -52,7 +69,7 @@
             <nav class="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="Search result pages">
                 @for (var pageNumber = 1; pageNumber <= _totalPages; pageNumber++)
                 {
-                    <a href="@StorefrontRoutes.SearchUrl(Q, Category, pageNumber)"
+                    <a href="@StorefrontRoutes.SearchUrl(Q, Category, pageNumber, _pageSize, SortBy, MinPrice, MaxPrice, InStock ? true : null)"
                        class="@GetPageLinkClass(pageNumber)"
                        aria-current="@(pageNumber == _pageNumber ? "page" : null)">
                         @pageNumber
@@ -65,7 +82,10 @@
 
 @code {
     private bool _isServiceUnavailable;
+    private bool _isSearchTermTooShort;
     private int _pageNumber = 1;
+    private int _pageSize = 24;
+    private int _totalCount;
     private int _totalPages;
     private IReadOnlyList<GetCatalogProduct> _products = [];
     private IReadOnlyList<CatalogFilterCategoryOption> _searchCategories = [];
@@ -80,6 +100,25 @@
     [SupplyParameterFromQuery(Name = "page")]
     public int Page { get; set; } = 1;
 
+    [SupplyParameterFromQuery(Name = "pageSize")]
+    public int PageSize { get; set; } = 24;
+
+    [SupplyParameterFromQuery(Name = "minPrice")]
+    public decimal? MinPrice { get; set; }
+
+    [SupplyParameterFromQuery(Name = "maxPrice")]
+    public decimal? MaxPrice { get; set; }
+
+    [SupplyParameterFromQuery(Name = "inStock")]
+    public bool InStock { get; set; }
+
+    [SupplyParameterFromQuery(Name = "sortBy")]
+    public string? SortByQuery { get; set; }
+
+    private ProductCatalogSortBy SortBy => ProductCatalogSortByExtensions.TryParseApiValue(SortByQuery, out var sortBy)
+        ? sortBy
+        : ProductCatalogSortBy.DisplayOrder;
+
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
 
@@ -91,25 +130,32 @@
         ? "Showing published products across the store."
         : $"Showing published products in {Category.Trim()}.";
 
-    private string ResultCountText => _products.Count == 1 ? "1 item" : $"{_products.Count} items";
+    private string ResultCountText => _totalCount == 1 ? "1 item" : $"{_totalCount} items";
 
     protected override async Task OnParametersSetAsync()
     {
         var displayContext = await DisplayContextProvider.GetAsync();
+        _pageSize = NormalizePageSize(PageSize);
+        _isSearchTermTooShort = CatalogSearchPolicy.IsSearchTermTooShort(CatalogSearchPolicy.NormalizeSearchTerm(Q));
         var metadataTask = SeoComposer.ComposeStaticPageAsync(
             "Search",
             StorefrontRoutes.Search,
             "Search published products in the BlazorShop catalog.");
         var categoriesTask = ApiClient.GetPublishedCategoryTreeAsync();
-        var productsTask = ApiClient.GetPublishedCatalogPageAsync(new ProductCatalogQuery
-        {
-            PageNumber = Math.Max(1, Page),
-            PageSize = 24,
-            CategorySlug = Category,
-            IncludeSubcategories = !string.IsNullOrWhiteSpace(Category),
-            SearchTerm = Q,
-            SortBy = ProductCatalogSortBy.DisplayOrder,
-        }, displayContext.CurrencyCode);
+        var productsTask = _isSearchTermTooShort
+            ? null
+            : ApiClient.GetPublishedCatalogPageAsync(new ProductCatalogQuery
+            {
+                PageNumber = Math.Max(1, Page),
+                PageSize = _pageSize,
+                CategorySlug = Category,
+                IncludeSubcategories = !string.IsNullOrWhiteSpace(Category),
+                SearchTerm = Q,
+                MinPrice = MinPrice,
+                MaxPrice = MaxPrice,
+                InStock = InStock ? true : null,
+                SortBy = SortBy,
+            }, displayContext.CurrencyCode);
 
         _metadata = await metadataTask;
         StorefrontIndexingPolicy.ApplySearchMetadata(_metadata);
@@ -119,12 +165,23 @@
             ? FlattenCategories(categories.Value)
             : [];
 
-        var products = await productsTask;
+        if (_isSearchTermTooShort)
+        {
+            _isServiceUnavailable = false;
+            _products = [];
+            _pageNumber = 1;
+            _totalCount = 0;
+            _totalPages = 0;
+            return;
+        }
+
+        var products = await productsTask!;
         if (products.IsServiceUnavailable)
         {
             _isServiceUnavailable = true;
             _products = [];
             _pageNumber = 1;
+            _totalCount = 0;
             _totalPages = 0;
             StorefrontResponseHeaders.ApplyServiceUnavailable(HttpContext);
             _metadata = await SeoComposer.ComposeServiceUnavailablePageAsync(
@@ -137,6 +194,8 @@
         _isServiceUnavailable = false;
         _products = products.Value?.Items ?? [];
         _pageNumber = products.Value?.PageNumber ?? Math.Max(1, Page);
+        _pageSize = products.Value?.PageSize ?? _pageSize;
+        _totalCount = products.Value?.TotalCount ?? _products.Count;
         _totalPages = Math.Min(10, products.Value?.TotalPages ?? 0);
     }
 
@@ -172,5 +231,12 @@
         {
             AppendCategory(options, child, depth + 1);
         }
+    }
+
+    private static int NormalizePageSize(int pageSize)
+    {
+        return CatalogSearchPolicy.StorefrontPageSizes.Contains(pageSize)
+            ? pageSize
+            : 24;
     }
 }

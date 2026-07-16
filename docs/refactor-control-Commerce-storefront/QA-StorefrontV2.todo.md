@@ -152,10 +152,10 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Phase 0 baseline confirms `SearchPage.razor` uses the paged Storefront catalog API, keeps `noindex, follow`, renders pagination, and has an empty-result state. 2026-07-16: source review plus focused Storefront API client/static markup tests are the baseline guard.
 - [x] Phase 0 baseline confirms `CategoryPage.razor` uses the paged Storefront catalog API and existing `CatalogFilterPanel`, while real category page/page-size UX remains planned for Phase 2. 2026-07-16: source review recorded before code changes.
 - [x] Phase 0 baseline confirms `CatalogFilterPanel.razor` already preserves category/search/minPrice/maxPrice/sortBy/inStock query contract. 2026-07-16: existing `LayoutAssetFoundationTests.StorefrontCatalogFilterPanel_PreservesQueryStringContract` remains the guard.
-- [ ] Search page supports `pageSize=12|24|48` and preserves it through pagination.
-- [ ] Search page shows a clear too-short search state for non-empty search terms shorter than the public minimum.
-- [ ] Category page supports `page` and `pageSize` query values.
-- [ ] Category page uses paged API metadata for pagination rather than visible item count.
+- [x] Search page supports `pageSize=12|24|48` and preserves it through pagination. 2026-07-16 Phase 2: `SearchPage.razor` uses `CatalogFilterPanel` page-size select and `StorefrontRoutes.SearchUrl(..., _pageSize, ...)`; Storefront focused tests passed 65/65.
+- [x] Search page shows a clear too-short search state for non-empty search terms shorter than the public minimum. 2026-07-16 Phase 2: `SearchPage.razor` renders minimum-length message from `CatalogSearchPolicy.MinimumSearchTermLength`.
+- [x] Category page supports `page` and `pageSize` query values. 2026-07-16 Phase 2: `CategoryPage.razor` reads both query values and sends them to the paged catalog API.
+- [x] Category page uses paged API metadata for pagination rather than visible item count. 2026-07-16 Phase 2: category result count and pager now use `TotalCount`, `PageNumber`, `PageSize`, and `TotalPages`.
 - [ ] Browser QA verifies search/category pagination and page-size selector on desktop.
 - [ ] Browser QA verifies search/category pagination and page-size selector on mobile.
 

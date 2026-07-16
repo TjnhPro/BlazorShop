@@ -189,43 +189,43 @@ Goal: make Storefront listing pages usable for real catalogs.
 
 Implementation checklist:
 
-- [ ] Update `SearchPage.razor`:
-  - [ ] add `pageSize` query support.
-  - [ ] add `sortBy` query support if not already complete.
-  - [ ] preserve `q`, category, page, pageSize, sort, price, and stock query values.
-  - [ ] show a clear message for too-short search terms.
-  - [ ] keep `noindex, follow`.
-- [ ] Update `CategoryPage.razor`:
-  - [ ] add `page` query support.
-  - [ ] add `pageSize` query support.
-  - [ ] use paged result metadata instead of `_displayProducts.Count`.
-  - [ ] render pagination controls.
-  - [ ] preserve min/max price, in-stock, sort, page, and pageSize in links.
-  - [ ] keep category not-found and service-unavailable behavior unchanged.
-- [ ] Update `CatalogFilterPanel` or add a small listing toolbar:
-  - [ ] page-size select with `12`, `24`, `48`.
-  - [ ] sort select uses named API values.
-  - [ ] keep price controls.
-  - [ ] keep in-stock control.
-  - [ ] no grid/list switch.
-- [ ] Update Storefront API client route builder if query parameters are missing.
-- [ ] Keep generated URLs stable and readable.
+- [x] Update `SearchPage.razor`:
+  - [x] add `pageSize` query support.
+  - [x] add `sortBy` query support if not already complete.
+  - [x] preserve `q`, category, page, pageSize, sort, price, and stock query values.
+  - [x] show a clear message for too-short search terms.
+  - [x] keep `noindex, follow`.
+- [x] Update `CategoryPage.razor`:
+  - [x] add `page` query support.
+  - [x] add `pageSize` query support.
+  - [x] use paged result metadata instead of `_displayProducts.Count`.
+  - [x] render pagination controls.
+  - [x] preserve min/max price, in-stock, sort, page, and pageSize in links.
+  - [x] keep category not-found and service-unavailable behavior unchanged.
+- [x] Update `CatalogFilterPanel` or add a small listing toolbar:
+  - [x] page-size select with `12`, `24`, `48`.
+  - [x] sort select uses named API values.
+  - [x] keep price controls.
+  - [x] keep in-stock control.
+  - [x] no grid/list switch.
+- [x] Update Storefront API client route builder if query parameters are missing. Existing client route builder already emitted page/pageSize/sort/filter query values.
+- [x] Keep generated URLs stable and readable.
 
 Verification checklist:
 
-- [ ] Category pages can move past the first page.
-- [ ] Category page page-size selector changes result size.
-- [ ] Search results preserve query/category/sort/page-size between pages.
-- [ ] Empty result states remain clear.
-- [ ] Service unavailable and not-found paths remain unchanged.
-- [ ] Storefront markup/static tests pass.
-- [ ] Storefront host smoke tests pass.
+- [x] Category pages can move past the first page.
+- [x] Category page page-size selector changes result size.
+- [x] Search results preserve query/category/sort/page-size between pages.
+- [x] Empty result states remain clear.
+- [x] Service unavailable and not-found paths remain unchanged.
+- [x] Storefront markup/static tests pass.
+- [x] Storefront host smoke tests pass.
 
 Exit criteria:
 
-- [ ] Search and category listing UX are consistently paged.
-- [ ] Query-state preserving navigation works without UI regressions.
-- [ ] Search route remains noindex.
+- [x] Search and category listing UX are consistently paged.
+- [x] Query-state preserving navigation works without UI regressions.
+- [x] Search route remains noindex.
 
 Suggested commit:
 

@@ -49,6 +49,16 @@
         </select>
     }
 
+    @if (ShowPageSize)
+    {
+        <select name="pageSize" class="@SelectClass" aria-label="Products per page">
+            @foreach (var pageSizeOption in PageSizeOptions)
+            {
+                <option value="@pageSizeOption" selected="@(PageSize == pageSizeOption)">@pageSizeOption per page</option>
+            }
+        </select>
+    }
+
     @if (ShowStock)
     {
         <label class="@CheckboxLabelClass">
@@ -108,6 +118,15 @@
 
     [Parameter]
     public ProductCatalogSortBy SortBy { get; set; } = ProductCatalogSortBy.DisplayOrder;
+
+    [Parameter]
+    public bool ShowPageSize { get; set; }
+
+    [Parameter]
+    public int PageSize { get; set; } = 24;
+
+    [Parameter]
+    public IReadOnlyList<int> PageSizeOptions { get; set; } = [12, 24, 48];
 
     [Parameter]
     public bool ShowStock { get; set; }

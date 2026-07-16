@@ -1,4 +1,5 @@
 @page "/category/{Slug}"
+@using BlazorShop.Application.CommerceNode.Catalog
 @using BlazorShop.Application.Diagnostics
 @inject StorefrontApiClient ApiClient
 @inject IStorefrontSeoComposer SeoComposer
@@ -42,17 +43,19 @@ else if (_categoryPage is not null)
                     </div>
 
                     <div class="flex flex-wrap items-center gap-3">
-                        <span class="inline-flex items-center rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-800 shadow">@_categoryPage.DirectProductCount items</span>
+                        <span class="inline-flex items-center rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-800 shadow">@CategoryResultCountText</span>
                         <a href="@StorefrontRoutes.Home" class="inline-flex items-center rounded bg-amber-500 px-4 py-2 font-semibold text-white hover:bg-amber-600">Back to Home</a>
                     </div>
                 </div>
 
-                <CatalogFilterPanel Class="mt-6 grid gap-3 rounded-2xl border border-neutral-200 bg-neutral-50/80 p-4 md:grid-cols-[1fr_1fr_1fr_1fr_auto]"
+                <CatalogFilterPanel Class="mt-6 grid gap-3 rounded-2xl border border-neutral-200 bg-neutral-50/80 p-4 md:grid-cols-3 xl:grid-cols-6"
                                     ShowPriceRange="true"
                                     MinPrice="MinPrice"
                                     MaxPrice="MaxPrice"
                                     ShowSort="true"
                                     SortBy="SortBy"
+                                    ShowPageSize="true"
+                                    PageSize="_pageSize"
                                     ShowStock="true"
                                     InStock="InStock" />
             </div>
@@ -62,6 +65,20 @@ else if (_categoryPage is not null)
     <section class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
         <ProductGrid Products="_displayProducts"
                      EmptyMessage="No products are available in this category right now." />
+
+        @if (_totalPages > 1)
+        {
+            <nav class="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="Category product pages">
+                @for (var pageNumber = 1; pageNumber <= _totalPages; pageNumber++)
+                {
+                    <a href="@StorefrontRoutes.CategoryUrl(Slug, pageNumber, _pageSize, SortBy, MinPrice, MaxPrice, InStock ? true : null)"
+                       class="@GetPageLinkClass(pageNumber)"
+                       aria-current="@(pageNumber == _pageNumber ? "page" : null)">
+                        @pageNumber
+                    </a>
+                }
+            </nav>
+        }
     </section>
 
     <SeoContentSection Title="@CategorySeoContentTitle"
@@ -76,12 +93,18 @@ else if (_categoryPage is not null)
     private SeoMetadataDto _metadata = new();
     private IReadOnlyList<StorefrontBreadcrumbItem> _breadcrumbs = [];
     private IReadOnlyList<GetCatalogProduct> _displayProducts = [];
+    private int _pageNumber = 1;
+    private int _pageSize = 24;
+    private int _totalCount;
+    private int _totalPages;
     private StorefrontStructuredDataDocument _structuredData = StorefrontStructuredDataDocument.Empty;
     private StorefrontDisplayContext _displayContext = StorefrontDisplayContext.Fallback;
 
     private string CategorySeoContentTitle => _categoryPage is null
         ? string.Empty
         : $"More about {_categoryPage.Category.Name}";
+
+    private string CategoryResultCountText => _totalCount == 1 ? "1 item" : $"{_totalCount} items";
 
     [Parameter]
     public string Slug { get; set; } = string.Empty;
@@ -94,6 +117,12 @@ else if (_categoryPage is not null)
 
     [SupplyParameterFromQuery(Name = "inStock")]
     public bool InStock { get; set; }
+
+    [SupplyParameterFromQuery(Name = "page")]
+    public int Page { get; set; } = 1;
+
+    [SupplyParameterFromQuery(Name = "pageSize")]
+    public int PageSize { get; set; } = 24;
 
     [SupplyParameterFromQuery(Name = "sortBy")]
     public string? SortByQuery { get; set; }
@@ -118,6 +147,9 @@ else if (_categoryPage is not null)
             _isServiceUnavailable = true;
             _breadcrumbs = [];
             _displayProducts = [];
+            _pageNumber = 1;
+            _totalCount = 0;
+            _totalPages = 0;
             _structuredData = StorefrontStructuredDataDocument.Empty;
             StorefrontResponseHeaders.ApplyServiceUnavailable(HttpContext);
             SeoRuntimeLogger.PublicCategoryServiceUnavailable(Logger, routePath, Slug);
@@ -137,6 +169,9 @@ else if (_categoryPage is not null)
             _isServiceUnavailable = false;
             _breadcrumbs = [];
             _displayProducts = [];
+            _pageNumber = 1;
+            _totalCount = 0;
+            _totalPages = 0;
             _structuredData = StorefrontStructuredDataDocument.Empty;
             StorefrontResponseHeaders.ApplyNotFound(HttpContext);
             SeoRuntimeLogger.PublicCategoryNotFound(Logger, routePath, Slug);
@@ -162,15 +197,16 @@ else if (_categoryPage is not null)
         ];
         _metadata = await SeoComposer.ComposeCategoryPageAsync(_categoryPage.Category);
         _structuredData = await StructuredDataComposer.ComposeCategoryPageAsync(_categoryPage.Category);
-        _displayProducts = await LoadFilteredProductsAsync(_categoryPage);
+        await LoadFilteredProductsAsync(_categoryPage);
     }
 
-    private async Task<IReadOnlyList<GetCatalogProduct>> LoadFilteredProductsAsync(GetCategoryPage categoryPage)
+    private async Task LoadFilteredProductsAsync(GetCategoryPage categoryPage)
     {
+        _pageSize = NormalizePageSize(PageSize);
         var filteredResult = await ApiClient.GetPublishedCatalogPageAsync(new ProductCatalogQuery
         {
-            PageNumber = 1,
-            PageSize = 48,
+            PageNumber = Math.Max(1, Page),
+            PageSize = _pageSize,
             CategoryId = categoryPage.Category.Id,
             MinPrice = MinPrice,
             MaxPrice = MaxPrice,
@@ -178,8 +214,34 @@ else if (_categoryPage is not null)
             SortBy = SortBy,
         }, _displayContext.CurrencyCode);
 
-        return filteredResult.IsSuccess
-            ? filteredResult.Value?.Items ?? []
-            : categoryPage.Products;
+        if (filteredResult.IsSuccess && filteredResult.Value is not null)
+        {
+            _displayProducts = filteredResult.Value.Items;
+            _pageNumber = filteredResult.Value.PageNumber;
+            _pageSize = filteredResult.Value.PageSize;
+            _totalCount = filteredResult.Value.TotalCount;
+            _totalPages = Math.Min(10, filteredResult.Value.TotalPages);
+            return;
+        }
+
+        _displayProducts = categoryPage.Products;
+        _pageNumber = 1;
+        _totalCount = categoryPage.DirectProductCount;
+        _totalPages = 0;
+    }
+
+    private string GetPageLinkClass(int page)
+    {
+        var baseClass = "inline-flex min-h-10 min-w-10 items-center justify-center rounded border px-3 text-sm font-semibold";
+        return page == _pageNumber
+            ? $"{baseClass} border-neutral-900 bg-neutral-900 text-white"
+            : $"{baseClass} border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-100";
+    }
+
+    private static int NormalizePageSize(int pageSize)
+    {
+        return CatalogSearchPolicy.StorefrontPageSizes.Contains(pageSize)
+            ? pageSize
+            : 24;
     }
 }
