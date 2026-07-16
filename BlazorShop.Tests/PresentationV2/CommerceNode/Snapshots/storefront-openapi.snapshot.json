@@ -229,7 +229,7 @@
         },
         "security": [
           {
-            "RefreshCookie": [ ]
+            "RefreshCookie": []
           }
         ]
       }
@@ -285,7 +285,7 @@
         },
         "security": [
           {
-            "RefreshCookie": [ ]
+            "RefreshCookie": []
           }
         ]
       }
@@ -371,7 +371,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -532,7 +532,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -1260,7 +1260,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -2131,6 +2131,250 @@
         }
       }
     },
+    "/api/storefront/stores/{storeKey}/consent/current": {
+      "get": {
+        "tags": [
+          "StorefrontScopedConsent"
+        ],
+        "summary": "Get the current Storefront consent state.",
+        "operationId": "StorefrontConsent_Current",
+        "parameters": [
+          {
+            "name": "X-Consent-Visitor",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontConsentResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/storefront/stores/{storeKey}/consent": {
+      "post": {
+        "tags": [
+          "StorefrontScopedConsent"
+        ],
+        "summary": "Save Storefront consent category selections.",
+        "operationId": "StorefrontConsent_Save",
+        "parameters": [
+          {
+            "name": "X-Consent-Visitor",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontConsentSaveRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontConsentSaveRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontConsentSaveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontConsentResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/storefront/stores/{storeKey}/consent/revoke": {
+      "post": {
+        "tags": [
+          "StorefrontScopedConsent"
+        ],
+        "summary": "Revoke Storefront optional consent categories.",
+        "operationId": "StorefrontConsent_Revoke",
+        "parameters": [
+          {
+            "name": "X-Consent-Visitor",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontConsentResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/storefront/stores/{storeKey}/currency/preference": {
       "post": {
         "tags": [
@@ -2462,7 +2706,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -2518,7 +2762,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -2584,7 +2828,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -4884,6 +5128,140 @@
         },
         "additionalProperties": false
       },
+      "StorefrontConsentCategoryResponse": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "defaultEnabled": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontConsentCategorySelectionResponse": {
+        "type": "object",
+        "properties": {
+          "essential": {
+            "type": "boolean"
+          },
+          "preferences": {
+            "type": "boolean"
+          },
+          "analytics": {
+            "type": "boolean"
+          },
+          "marketing": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontConsentConfigurationResponse": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "bannerRequired": {
+            "type": "boolean"
+          },
+          "currentVersion": {
+            "type": "string",
+            "nullable": true
+          },
+          "policyPagePath": {
+            "type": "string",
+            "nullable": true
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontConsentCategoryResponse"
+            },
+            "nullable": true
+          },
+          "visitorCookieLifetimeDays": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontConsentResponse": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "bannerRequired": {
+            "type": "boolean"
+          },
+          "consentVersion": {
+            "type": "string",
+            "nullable": true
+          },
+          "consentKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "categories": {
+            "$ref": "#/components/schemas/StorefrontConsentCategorySelectionResponse"
+          },
+          "updatedAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "revokedAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "expiresAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontConsentResponseCommerceNodeApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/StorefrontConsentResponse"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontConsentSaveRequest": {
+        "type": "object",
+        "properties": {
+          "preferences": {
+            "type": "boolean"
+          },
+          "analytics": {
+            "type": "boolean"
+          },
+          "marketing": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontCreateCartSessionRequest": {
         "type": "object",
         "properties": {
@@ -5216,6 +5594,9 @@
             "minLength": 1,
             "type": "string",
             "format": "email"
+          },
+          "marketingConsentAccepted": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -6359,6 +6740,9 @@
           "currencyOptions": {
             "$ref": "#/components/schemas/StorefrontCurrencyOptionsResponse"
           },
+          "consent": {
+            "$ref": "#/components/schemas/StorefrontConsentConfigurationResponse"
+          },
           "maintenanceState": {
             "$ref": "#/components/schemas/StorefrontMaintenanceStateResponse"
           },
@@ -6724,6 +7108,9 @@
     },
     {
       "name": "StorefrontScopedConfiguration"
+    },
+    {
+      "name": "StorefrontScopedConsent"
     },
     {
       "name": "StorefrontScopedCurrency"

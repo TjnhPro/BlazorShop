@@ -862,6 +862,21 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "Get public Storefront configuration.",
                         typeof(CommerceNodeApiResponse<StorefrontPublicConfigurationResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedConsent", "Current")] = new(
+                        "StorefrontConsent_Current",
+                        "Get the current Storefront consent state.",
+                        typeof(CommerceNodeApiResponse<StorefrontConsentResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedConsent", "Save")] = new(
+                        "StorefrontConsent_Save",
+                        "Save Storefront consent category selections.",
+                        typeof(CommerceNodeApiResponse<StorefrontConsentResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status429TooManyRequests, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedConsent", "Revoke")] = new(
+                        "StorefrontConsent_Revoke",
+                        "Revoke Storefront optional consent categories.",
+                        typeof(CommerceNodeApiResponse<StorefrontConsentResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status429TooManyRequests, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedPayments", "GetPaymentMethods")] = new(
                         "StorefrontPayments_ListMethods",
                         "List enabled Storefront payment methods.",

@@ -4,6 +4,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
 
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Checkout;
+    using BlazorShop.Application.CommerceNode.Consent;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Payments;
@@ -678,6 +679,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
             IReadOnlyList<StorefrontPaymentMethodResponse> paymentMethods,
             SeoSettingsDto seoDefaults,
             StoreFeatureStateSnapshot featureStates,
+            StorefrontConsentOptions consentOptions,
             IReadOnlyList<string>? supportedCurrencyCodes = null)
         {
             var currencyCodes = NormalizeSupportedCurrencyCodes(store.DefaultCurrencyCode, supportedCurrencyCodes);
@@ -711,6 +713,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 new StorefrontCurrencyOptionsResponse(
                     store.DefaultCurrencyCode,
                     currencyCodes),
+                ToStorefrontContract(consentOptions),
                 new StorefrontMaintenanceStateResponse(
                     store.MaintenanceModeEnabled,
                     store.MaintenanceMessage),
@@ -736,6 +739,40 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                     seoDefaults.FacebookUrl,
                     seoDefaults.InstagramUrl,
                     seoDefaults.XUrl));
+        }
+
+        public static StorefrontConsentConfigurationResponse ToStorefrontContract(StorefrontConsentOptions options)
+        {
+            var optionalDefault = options.OptionalCategoriesDefaultEnabled;
+            return new StorefrontConsentConfigurationResponse(
+                options.Enabled,
+                options.BannerRequired,
+                string.IsNullOrWhiteSpace(options.CurrentVersion) ? "default" : options.CurrentVersion,
+                string.IsNullOrWhiteSpace(options.PolicyPagePath) ? "/pages/cookies" : options.PolicyPagePath,
+                [
+                    new StorefrontConsentCategoryResponse(StorefrontConsentCategoryNames.Essential, Required: true, DefaultEnabled: true),
+                    new StorefrontConsentCategoryResponse(StorefrontConsentCategoryNames.Preferences, Required: false, DefaultEnabled: optionalDefault),
+                    new StorefrontConsentCategoryResponse(StorefrontConsentCategoryNames.Analytics, Required: false, DefaultEnabled: optionalDefault),
+                    new StorefrontConsentCategoryResponse(StorefrontConsentCategoryNames.Marketing, Required: false, DefaultEnabled: optionalDefault),
+                ],
+                Math.Clamp(options.VisitorCookieLifetimeDays, 1, 3650));
+        }
+
+        public static StorefrontConsentResponse ToStorefrontContract(this StorefrontConsentSnapshot snapshot)
+        {
+            return new StorefrontConsentResponse(
+                snapshot.Enabled,
+                snapshot.BannerRequired,
+                snapshot.ConsentVersion,
+                snapshot.ConsentKey,
+                new StorefrontConsentCategorySelectionResponse(
+                    snapshot.Categories.Essential,
+                    snapshot.Categories.Preferences,
+                    snapshot.Categories.Analytics,
+                    snapshot.Categories.Marketing),
+                snapshot.UpdatedAtUtc,
+                snapshot.RevokedAtUtc,
+                snapshot.ExpiresAtUtc);
         }
 
         private static IReadOnlyList<string> NormalizeSupportedCurrencyCodes(

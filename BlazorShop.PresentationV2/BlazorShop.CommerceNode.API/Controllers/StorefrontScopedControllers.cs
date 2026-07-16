@@ -8,6 +8,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using IStorefrontCheckoutService = BlazorShop.Application.CommerceNode.Checkout.IStorefrontCheckoutService;
 
     using BlazorShop.Application.CommerceNode.Carts;
+    using BlazorShop.Application.CommerceNode.Consent;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Payments;
@@ -985,6 +986,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
         private readonly IStoreSeoSettingsService seoSettingsService;
         private readonly IStoreFeatureStateService featureStateService;
         private readonly IStorefrontPublicConfigurationCache publicConfigurationCache;
+        private readonly StorefrontConsentOptions consentOptions;
 
         public StorefrontScopedConfigurationController(
             ICommerceStoreContext storeContext,
@@ -992,7 +994,8 @@ namespace BlazorShop.CommerceNode.API.Controllers
             IStoreCurrencyService currencyService,
             IStoreSeoSettingsService seoSettingsService,
             IStoreFeatureStateService featureStateService,
-            IStorefrontPublicConfigurationCache publicConfigurationCache)
+            IStorefrontPublicConfigurationCache publicConfigurationCache,
+            IOptions<StorefrontConsentOptions> consentOptions)
         {
             this.storeContext = storeContext;
             this.paymentMethodService = paymentMethodService;
@@ -1000,6 +1003,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             this.seoSettingsService = seoSettingsService;
             this.featureStateService = featureStateService;
             this.publicConfigurationCache = publicConfigurationCache;
+            this.consentOptions = consentOptions.Value;
         }
 
         [HttpGet]
@@ -1036,6 +1040,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 paymentMethods,
                 seoDefaults,
                 featureStates,
+                this.consentOptions,
                 supportedCurrencyCodes);
 
             this.publicConfigurationCache.Set(storeResult.Payload.StoreKey, configuration);
@@ -1094,6 +1099,85 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return string.IsNullOrWhiteSpace(message)
                 ? "Storefront store could not be resolved."
                 : message;
+        }
+    }
+
+    [ApiController]
+    [Route("api/storefront/stores/{storeKey}/consent")]
+    public sealed class StorefrontScopedConsentController : StorefrontApiControllerBase
+    {
+        private const string ConsentVisitorHeaderName = "X-Consent-Visitor";
+
+        private readonly ICommerceStoreContext storeContext;
+        private readonly IStorefrontConsentService consentService;
+
+        public StorefrontScopedConsentController(
+            ICommerceStoreContext storeContext,
+            IStorefrontConsentService consentService)
+        {
+            this.storeContext = storeContext;
+            this.consentService = consentService;
+        }
+
+        [HttpGet("current")]
+        public async Task<IActionResult> Current(
+            [FromHeader(Name = ConsentVisitorHeaderName)] string? visitorKey,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.consentService.GetCurrentAsync(storeId.Value, visitorKey, cancellationToken);
+            return this.FromServiceResponse(result, snapshot => snapshot?.ToStorefrontContract());
+        }
+
+        [HttpPost]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Newsletter)]
+        public async Task<IActionResult> Save(
+            [FromHeader(Name = ConsentVisitorHeaderName)] string visitorKey,
+            [FromBody] BlazorShop.CommerceNode.API.Contracts.Storefront.StorefrontConsentSaveRequest request,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.consentService.SaveAsync(
+                storeId.Value,
+                visitorKey,
+                new BlazorShop.Application.CommerceNode.Consent.StorefrontConsentSaveRequest(
+                    request.Preferences,
+                    request.Analytics,
+                    request.Marketing),
+                cancellationToken);
+            return this.FromServiceResponse(result, snapshot => snapshot?.ToStorefrontContract());
+        }
+
+        [HttpPost("revoke")]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Newsletter)]
+        public async Task<IActionResult> Revoke(
+            [FromHeader(Name = ConsentVisitorHeaderName)] string visitorKey,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.consentService.RevokeAsync(storeId.Value, visitorKey, cancellationToken);
+            return this.FromServiceResponse(result, snapshot => snapshot?.ToStorefrontContract());
+        }
+
+        private async Task<Guid?> ResolveStoreIdAsync(CancellationToken cancellationToken)
+        {
+            var result = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
+            return result.Success ? result.Payload : null;
         }
     }
 

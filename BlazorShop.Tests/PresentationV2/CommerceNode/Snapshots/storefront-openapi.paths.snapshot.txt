@@ -25,6 +25,9 @@ GET /api/storefront/stores/{storeKey}/catalog/sitemap
 POST /api/storefront/stores/{storeKey}/checkout/place-order
 POST /api/storefront/stores/{storeKey}/checkout/preview
 GET /api/storefront/stores/{storeKey}/configuration
+POST /api/storefront/stores/{storeKey}/consent
+GET /api/storefront/stores/{storeKey}/consent/current
+POST /api/storefront/stores/{storeKey}/consent/revoke
 POST /api/storefront/stores/{storeKey}/currency/preference
 GET /api/storefront/stores/{storeKey}/navigation/{systemName}
 POST /api/storefront/stores/{storeKey}/newsletter/subscribe

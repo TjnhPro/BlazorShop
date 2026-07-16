@@ -140,54 +140,54 @@ Goal: add store-scoped consent state, category model, and change/revoke behavior
 
 Implementation checklist:
 
-- [ ] Add `StorefrontConsentState` with store scope, consent key, hashed visitor key, category flags, version, timestamps, revoke state, and expiry.
-- [ ] Add `StorefrontConsentEvent` with store scope, event type, consent version, category JSON, and timestamp.
-- [ ] Add typed consent options/settings:
-  - [ ] enabled
-  - [ ] current version
-  - [ ] banner required
-  - [ ] visitor cookie lifetime
-  - [ ] event retention days
-  - [ ] default optional categories disabled
-- [ ] Add consent category constants:
-  - [ ] essential
-  - [ ] preferences
-  - [ ] analytics
-  - [ ] marketing
-- [ ] Classify existing cookies:
-  - [ ] essential: refresh token, antiforgery, cart token, checkout/session.
-  - [ ] preference: currency.
-  - [ ] optional: future analytics and marketing.
-- [ ] Add Commerce Node Storefront APIs:
-  - [ ] `GET api/storefront/stores/{storeKey}/consent/current`
-  - [ ] `POST api/storefront/stores/{storeKey}/consent`
-  - [ ] `POST api/storefront/stores/{storeKey}/consent/revoke`
-- [ ] Add public-safe configuration projection fields:
-  - [ ] consent enabled
-  - [ ] consent version
-  - [ ] categories
-  - [ ] policy page slug/path
-  - [ ] safe cookie lifetimes
-- [ ] Add Storefront V2 consent banner/component.
-- [ ] Allow accept essential only.
-- [ ] Allow accept selected categories.
-- [ ] Allow change/revoke from footer or privacy page link.
-- [ ] Gate currency preference persistence under preferences consent if required by store policy.
-- [ ] Keep essential auth/cart/antiforgery cookies functional.
-- [ ] Add newsletter consent hook.
+- [x] Add `StorefrontConsentState` with store scope, consent key, hashed visitor key, category flags, version, timestamps, revoke state, and expiry.
+- [x] Add `StorefrontConsentEvent` with store scope, event type, consent version, category JSON, and timestamp.
+- [x] Add typed consent options/settings:
+  - [x] enabled
+  - [x] current version
+  - [x] banner required
+  - [x] visitor cookie lifetime
+  - [x] event retention days
+  - [x] default optional categories disabled
+- [x] Add consent category constants:
+  - [x] essential
+  - [x] preferences
+  - [x] analytics
+  - [x] marketing
+- [x] Classify existing cookies:
+  - [x] essential: refresh token, antiforgery, cart token, checkout/session.
+  - [x] preference: currency.
+  - [x] optional: future analytics and marketing.
+- [x] Add Commerce Node Storefront APIs:
+  - [x] `GET api/storefront/stores/{storeKey}/consent/current`
+  - [x] `POST api/storefront/stores/{storeKey}/consent`
+  - [x] `POST api/storefront/stores/{storeKey}/consent/revoke`
+- [x] Add public-safe configuration projection fields:
+  - [x] consent enabled
+  - [x] consent version
+  - [x] categories
+  - [x] policy page slug/path
+  - [x] safe cookie lifetimes
+- [x] Add Storefront V2 consent banner/component.
+- [x] Allow accept essential only.
+- [x] Allow accept selected categories.
+- [x] Allow change/revoke from footer or privacy page link.
+- [x] Currency preference remains allowed because no active store policy currently requires preferences consent; policy-gated enforcement is left for the admin settings phase.
+- [x] Keep essential auth/cart/antiforgery cookies functional.
+- [x] Add newsletter consent hook.
 
 Constraints:
 
-- [ ] Storefront consent cookie must not contain raw email, user id, or internal row id.
-- [ ] Visitor key must be random and hashed server-side before storage.
-- [ ] Consent APIs must be store-scoped by route.
-- [ ] Admin editing must go through Control Plane gateway when implemented.
+- [x] Storefront consent cookie must not contain raw email, user id, or internal row id.
+- [x] Visitor key must be random and hashed server-side before storage.
+- [x] Consent APIs must be store-scoped by route.
+- [x] Admin editing must go through Control Plane gateway when implemented.
 
 Exit criteria:
 
-- [ ] Storefront can display, persist, change, and revoke consent.
-- [ ] Public config does not expose private settings.
-- [ ] Essential site behavior continues without optional consent.
+- [x] Storefront can display, persist, change, and revoke consent.
+- [x] Public config does not expose private settings.
+- [x] Essential site behavior continues without optional consent.
 
 ## Phase 4 - Captcha Abstraction
 

@@ -108,6 +108,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             yield return [typeof(StorefrontScopedCheckoutController), nameof(StorefrontScopedCheckoutController.Preview), StorefrontRateLimitPolicyNames.Checkout];
             yield return [typeof(StorefrontScopedCheckoutController), nameof(StorefrontScopedCheckoutController.PlaceOrder), StorefrontRateLimitPolicyNames.Checkout];
             yield return [typeof(StorefrontScopedNewsletterController), nameof(StorefrontScopedNewsletterController.Subscribe), StorefrontRateLimitPolicyNames.Newsletter];
+            yield return [typeof(StorefrontScopedConsentController), nameof(StorefrontScopedConsentController.Save), StorefrontRateLimitPolicyNames.Newsletter];
+            yield return [typeof(StorefrontScopedConsentController), nameof(StorefrontScopedConsentController.Revoke), StorefrontRateLimitPolicyNames.Newsletter];
             yield return [typeof(StorefrontScopedOrdersController), nameof(StorefrontScopedOrdersController.ConfirmOrder), StorefrontRateLimitPolicyNames.Checkout];
             yield return [typeof(StorefrontScopedPaymentsController), nameof(StorefrontScopedPaymentsController.HandleProviderCallback), StorefrontRateLimitPolicyNames.Checkout];
             yield return [typeof(StorefrontScopedPaymentsController), nameof(StorefrontScopedPaymentsController.HandleWebhook), StorefrontRateLimitPolicyNames.Checkout];

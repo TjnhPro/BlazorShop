@@ -4,6 +4,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.CommerceNode.Checkout;
+    using BlazorShop.Application.CommerceNode.Consent;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Customers;
     using BlazorShop.Application.CommerceNode.Features;
@@ -78,6 +79,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
             services.AddMemoryCache();
             services.Configure<RecommendationOptions>(configuration.GetSection(RecommendationOptions.SectionName));
+            services.Configure<StorefrontConsentOptions>(configuration.GetSection("Runtime:Consent"));
             services.Configure<IdentityConfirmationOptions>(configuration.GetSection(IdentityConfirmationOptions.SectionName));
             services.Configure<BankTransferSettings>(configuration.GetSection("BankTransfer"));
             services.AddOptions<ClientAppOptions>()
@@ -170,6 +172,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IStorefrontCartSessionService, StorefrontCartSessionService>();
             services.AddScoped<IStorefrontCartService, StorefrontCartService>();
             services.AddScoped<IStorefrontCheckoutService, StorefrontCheckoutService>();
+            services.AddScoped<IStorefrontConsentService, StorefrontConsentService>();
             services.AddScoped<IProductSeoService, ProductSeoService>();
             services.AddScoped<ICategorySeoService, CategorySeoService>();
             services.AddScoped<ISeoSettingsService, SeoSettingsService>();

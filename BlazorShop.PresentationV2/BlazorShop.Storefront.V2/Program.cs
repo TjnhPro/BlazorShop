@@ -21,6 +21,7 @@ using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 const string StorefrontLocalCartRateLimitPolicyName = "storefront-local-cart";
+const string StorefrontConsentVisitorCookieName = "bs-consent-visitor";
 var storefrontRateLimitingOptions = builder.Configuration
     .GetSection(StorefrontRateLimitingOptions.SectionName)
     .Get<StorefrontRateLimitingOptions>() ?? new StorefrontRateLimitingOptions();
@@ -409,6 +410,55 @@ app.MapDelete("/api/cart", async (
     var result = await cartTokenService.ClearAsync(httpContext, cancellationToken);
     return ToLocalCartMutationResult(result);
 }).RequireRateLimiting(StorefrontLocalCartRateLimitPolicyName);
+app.MapGet("/api/consent/current", async (
+    StorefrontApiClient apiClient,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    StorefrontResponseHeaders.ApplyPrivatePage(httpContext);
+    var visitorKey = ResolveConsentVisitorKey(httpContext, createIfMissing: true);
+    var result = await apiClient.GetConsentAsync(visitorKey, cancellationToken);
+    return result.Success
+        ? Results.Ok(result.Data)
+        : Results.Json(new StorefrontLocalCartErrorResponse(result.Message), statusCode: StatusCodes.Status503ServiceUnavailable);
+});
+app.MapPost("/api/consent", async (
+    StorefrontConsentSaveRequest request,
+    StorefrontApiClient apiClient,
+    IAntiforgery antiforgery,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    var antiforgeryFailure = await ValidateLocalCartAntiforgeryAsync(httpContext, antiforgery);
+    if (antiforgeryFailure is not null)
+    {
+        return antiforgeryFailure;
+    }
+
+    var visitorKey = ResolveConsentVisitorKey(httpContext, createIfMissing: true);
+    var result = await apiClient.SaveConsentAsync(visitorKey, request, cancellationToken);
+    return result.Success
+        ? Results.Ok(result.Data)
+        : Results.Json(new StorefrontLocalCartErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+});
+app.MapPost("/api/consent/revoke", async (
+    StorefrontApiClient apiClient,
+    IAntiforgery antiforgery,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    var antiforgeryFailure = await ValidateLocalCartAntiforgeryAsync(httpContext, antiforgery);
+    if (antiforgeryFailure is not null)
+    {
+        return antiforgeryFailure;
+    }
+
+    var visitorKey = ResolveConsentVisitorKey(httpContext, createIfMissing: true);
+    var result = await apiClient.RevokeConsentAsync(visitorKey, cancellationToken);
+    return result.Success
+        ? Results.Ok(result.Data)
+        : Results.Json(new StorefrontLocalCartErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+});
 app.MapGet(StorefrontRoutes.Robots, async (HttpContext httpContext, IStorefrontRobotsService robotsService, CancellationToken cancellationToken) =>
 {
     try
@@ -702,6 +752,35 @@ static async Task<IResult?> ValidateLocalCartAntiforgeryAsync(HttpContext httpCo
             new StorefrontLocalCartErrorResponse("Security validation failed. Refresh the page and try again."),
             statusCode: StatusCodes.Status400BadRequest);
     }
+}
+
+static string ResolveConsentVisitorKey(HttpContext httpContext, bool createIfMissing)
+{
+    if (httpContext.Request.Cookies.TryGetValue(StorefrontConsentVisitorCookieName, out var existing)
+        && !string.IsNullOrWhiteSpace(existing))
+    {
+        return existing;
+    }
+
+    if (!createIfMissing)
+    {
+        return string.Empty;
+    }
+
+    var visitorKey = Guid.NewGuid().ToString("N");
+    httpContext.Response.Cookies.Append(
+        StorefrontConsentVisitorCookieName,
+        visitorKey,
+        new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = httpContext.Request.IsHttps,
+            SameSite = SameSiteMode.Lax,
+            Path = "/",
+            IsEssential = true,
+            MaxAge = TimeSpan.FromDays(180),
+        });
+    return visitorKey;
 }
 
 static StorefrontLocalCartResponse ToLocalCartResponse(StorefrontCartResponse? cart)

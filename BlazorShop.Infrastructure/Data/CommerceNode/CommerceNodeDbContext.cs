@@ -81,6 +81,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
         public DbSet<CommerceStoreDomain> CommerceStoreDomains => Set<CommerceStoreDomain>();
 
+        public DbSet<StorefrontConsentState> StorefrontConsentStates => Set<StorefrontConsentState>();
+
+        public DbSet<StorefrontConsentEvent> StorefrontConsentEvents => Set<StorefrontConsentEvent>();
+
         public DbSet<StorefrontDeploymentImage> StorefrontDeploymentImages => Set<StorefrontDeploymentImage>();
 
         public DbSet<ProductMedia> ProductMedia => Set<ProductMedia>();
@@ -1761,6 +1765,55 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                     table => table.HasCheckConstraint(
                         "ck_commerce_store_domain_status",
                         "status in ('pending', 'verified', 'disabled')"));
+            });
+
+            modelBuilder.Entity<StorefrontConsentState>(entity =>
+            {
+                entity.ToTable("storefront_consent_state");
+                entity.HasKey(consent => consent.Id);
+                entity.Property(consent => consent.Id).HasColumnName("id");
+                entity.Property(consent => consent.StoreId).HasColumnName("store_id");
+                entity.Property(consent => consent.ConsentKey).HasColumnName("consent_key").HasMaxLength(64).IsRequired();
+                entity.Property(consent => consent.VisitorKeyHash).HasColumnName("visitor_key_hash").HasMaxLength(64).IsRequired();
+                entity.Property(consent => consent.ConsentVersion).HasColumnName("consent_version").HasMaxLength(64).IsRequired();
+                entity.Property(consent => consent.EssentialAccepted).HasColumnName("essential_accepted").HasDefaultValue(true);
+                entity.Property(consent => consent.PreferencesAccepted).HasColumnName("preferences_accepted");
+                entity.Property(consent => consent.AnalyticsAccepted).HasColumnName("analytics_accepted");
+                entity.Property(consent => consent.MarketingAccepted).HasColumnName("marketing_accepted");
+                entity.Property(consent => consent.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(consent => consent.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(consent => consent.RevokedAtUtc).HasColumnName("revoked_at_utc").HasColumnType("timestamp with time zone");
+                entity.Property(consent => consent.ExpiresAtUtc).HasColumnName("expires_at_utc").HasColumnType("timestamp with time zone");
+
+                entity.HasOne(consent => consent.Store)
+                    .WithMany()
+                    .HasForeignKey(consent => consent.StoreId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(consent => consent.ConsentKey).IsUnique();
+                entity.HasIndex(consent => new { consent.StoreId, consent.VisitorKeyHash, consent.ConsentVersion }).IsUnique();
+                entity.HasIndex(consent => consent.ExpiresAtUtc);
+            });
+
+            modelBuilder.Entity<StorefrontConsentEvent>(entity =>
+            {
+                entity.ToTable("storefront_consent_event");
+                entity.HasKey(consentEvent => consentEvent.Id);
+                entity.Property(consentEvent => consentEvent.Id).HasColumnName("id");
+                entity.Property(consentEvent => consentEvent.StoreId).HasColumnName("store_id");
+                entity.Property(consentEvent => consentEvent.ConsentKey).HasColumnName("consent_key").HasMaxLength(64).IsRequired();
+                entity.Property(consentEvent => consentEvent.EventType).HasColumnName("event_type").HasMaxLength(32).IsRequired();
+                entity.Property(consentEvent => consentEvent.ConsentVersion).HasColumnName("consent_version").HasMaxLength(64).IsRequired();
+                entity.Property(consentEvent => consentEvent.CategoriesJson).HasColumnName("categories_json").HasColumnType("jsonb").IsRequired();
+                entity.Property(consentEvent => consentEvent.OccurredAtUtc).HasColumnName("occurred_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasOne(consentEvent => consentEvent.Store)
+                    .WithMany()
+                    .HasForeignKey(consentEvent => consentEvent.StoreId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(consentEvent => new { consentEvent.StoreId, consentEvent.ConsentKey });
+                entity.HasIndex(consentEvent => consentEvent.OccurredAtUtc);
             });
         }
 

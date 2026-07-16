@@ -9,6 +9,8 @@
   const toastTemplateSelector = "[data-storefront-toast-template]";
   const antiforgeryTokenSelector = 'meta[name="blazorshop-antiforgery-token"]';
   const antiforgeryHeaderSelector = 'meta[name="blazorshop-antiforgery-header"]';
+  const consentBannerSelector = "[data-storefront-consent-banner]";
+  const consentManageSelector = "[data-storefront-consent-manage]";
   const cartChangedEventName = "blazorshop:cart-changed";
   const pendingToastStorageKey = "blazorshop:storefront:pending-toast";
   const badgePollIntervalMs = 1500;
@@ -40,6 +42,92 @@
     const token = document.querySelector(antiforgeryTokenSelector)?.getAttribute("content");
     const headerName = document.querySelector(antiforgeryHeaderSelector)?.getAttribute("content") || "X-CSRF-TOKEN";
     return token ? { headerName, token } : null;
+  }
+
+  async function sendConsentRequest(route, method, body) {
+    const normalizedMethod = (method || "GET").toUpperCase();
+    const options = {
+      method: normalizedMethod,
+      credentials: "same-origin",
+      headers: { "Accept": "application/json" }
+    };
+
+    if (normalizedMethod !== "GET") {
+      const antiforgery = readAntiforgeryHeader();
+      if (antiforgery) {
+        options.headers[antiforgery.headerName] = antiforgery.token;
+      }
+    }
+
+    if (body !== undefined) {
+      options.headers["Content-Type"] = "application/json";
+      options.body = JSON.stringify(body);
+    }
+
+    const response = await fetch(route, options);
+    const text = await response.text();
+    const payload = text ? JSON.parse(text) : null;
+    if (!response.ok) {
+      throw new Error(payload?.message || payload?.Message || "Consent could not be updated.");
+    }
+
+    return payload;
+  }
+
+  function initConsentBanner() {
+    const banner = document.querySelector(consentBannerSelector);
+    if (!(banner instanceof HTMLElement)) {
+      return;
+    }
+
+    const preferences = banner.querySelector("[data-storefront-consent-preferences]");
+    const analytics = banner.querySelector("[data-storefront-consent-analytics]");
+    const marketing = banner.querySelector("[data-storefront-consent-marketing]");
+
+    if (!(preferences instanceof HTMLInputElement) || !(analytics instanceof HTMLInputElement) || !(marketing instanceof HTMLInputElement)) {
+      return;
+    }
+
+    const applyState = (state) => {
+      if (!state || state.enabled === false || state.bannerRequired === false) {
+        banner.classList.add("hidden");
+        return;
+      }
+
+      preferences.checked = Boolean(state.categories?.preferences);
+      analytics.checked = Boolean(state.categories?.analytics);
+      marketing.checked = Boolean(state.categories?.marketing);
+      banner.classList.remove("hidden");
+    };
+
+    const save = async (selection) => {
+      const state = await sendConsentRequest("/api/consent", "POST", selection);
+      applyState({ ...state, bannerRequired: false });
+    };
+
+    banner.querySelector("[data-storefront-consent-essential]")?.addEventListener("click", () => {
+      void save({ preferences: false, analytics: false, marketing: false });
+    });
+    banner.querySelector("[data-storefront-consent-selected]")?.addEventListener("click", () => {
+      void save({ preferences: preferences.checked, analytics: analytics.checked, marketing: marketing.checked });
+    });
+    banner.querySelector("[data-storefront-consent-all]")?.addEventListener("click", () => {
+      void save({ preferences: true, analytics: true, marketing: true });
+    });
+    banner.querySelector("[data-storefront-consent-revoke]")?.addEventListener("click", () => {
+      void sendConsentRequest("/api/consent/revoke", "POST")
+        .then(applyState)
+        .catch(() => banner.classList.add("hidden"));
+    });
+    document.querySelectorAll(consentManageSelector).forEach((button) => {
+      button.addEventListener("click", () => {
+        banner.classList.remove("hidden");
+      });
+    });
+
+    void sendConsentRequest("/api/consent/current", "GET")
+      .then(applyState)
+      .catch(() => banner.classList.add("hidden"));
   }
 
   async function sendCartRequest(route, method, body) {
@@ -413,6 +501,7 @@
 
   function initialize() {
     flushQueuedToast();
+    initConsentBanner();
     refreshCartSummary();
     startBadgePolling();
     document.addEventListener("click", handleClick);

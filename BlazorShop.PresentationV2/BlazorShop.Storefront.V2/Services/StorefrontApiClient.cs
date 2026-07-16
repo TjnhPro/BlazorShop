@@ -34,6 +34,9 @@ namespace BlazorShop.Storefront.Services
         private const string StorefrontPagesBaseRoute = "pages";
         private const string StorefrontSeoBaseRoute = "seo";
         private const string StorefrontConfigurationRoute = "configuration";
+        private const string StorefrontConsentCurrentRoute = "consent/current";
+        private const string StorefrontConsentRoute = "consent";
+        private const string StorefrontConsentRevokeRoute = "consent/revoke";
         private const string StorefrontStoreCurrentRoute = "store/current";
         private const string StorefrontPaymentMethodsRoute = "payments/methods";
         private const string StorefrontCheckoutPreviewRoute = "checkout/preview";
@@ -44,6 +47,7 @@ namespace BlazorShop.Storefront.Services
         private const string StorefrontCartSessionRoute = StorefrontCartRoute + "/session";
         private const string StorefrontCartLinesRoute = StorefrontCartRoute + "/lines";
         private const string CartTokenHeaderName = "X-Cart-Token";
+        private const string ConsentVisitorHeaderName = "X-Consent-Visitor";
         private const string StorefrontCatalogSitemapRoute = StorefrontCatalogBaseRoute + "/sitemap";
         private const string StorefrontCategoriesRoute = StorefrontCatalogBaseRoute + "/categories";
         private const string StorefrontCategoryTreeRoute = StorefrontCategoriesRoute + "/tree";
@@ -250,6 +254,46 @@ namespace BlazorShop.Storefront.Services
                 StorefrontConfigurationRoute,
                 cancellationToken,
                 CatalogRequestTimeout);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontConsentState>> GetConsentAsync(
+            string? visitorKey,
+            CancellationToken cancellationToken = default)
+        {
+            return SendConsentAsync<StorefrontConsentState>(
+                HttpMethod.Get,
+                StorefrontConsentCurrentRoute,
+                visitorKey,
+                request: null,
+                "Unable to load consent state right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontConsentState>> SaveConsentAsync(
+            string visitorKey,
+            StorefrontConsentSaveRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return SendConsentAsync<StorefrontConsentState>(
+                HttpMethod.Post,
+                StorefrontConsentRoute,
+                visitorKey,
+                request,
+                "Unable to save consent right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontConsentState>> RevokeConsentAsync(
+            string visitorKey,
+            CancellationToken cancellationToken = default)
+        {
+            return SendConsentAsync<StorefrontConsentState>(
+                HttpMethod.Post,
+                StorefrontConsentRevokeRoute,
+                visitorKey,
+                request: null,
+                "Unable to revoke consent right now.",
+                cancellationToken);
         }
 
         public async Task<StorefrontApiResult<IReadOnlyList<GetPaymentMethod>>> GetPaymentMethodsAsync(CancellationToken cancellationToken = default)
@@ -689,6 +733,46 @@ namespace BlazorShop.Storefront.Services
             }
         }
 
+        private async Task<StorefrontSubmitResult<TData>> SendConsentAsync<TData>(
+            HttpMethod method,
+            string route,
+            string? visitorKey,
+            object? request,
+            string unavailableMessage,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                using var message = new HttpRequestMessage(method, route);
+                if (!string.IsNullOrWhiteSpace(visitorKey))
+                {
+                    message.Headers.TryAddWithoutValidation(ConsentVisitorHeaderName, visitorKey);
+                }
+
+                if (request is not null)
+                {
+                    message.Content = JsonContent.Create(request, options: JsonOptions);
+                }
+
+                using var response = await _httpClient.SendAsync(message, cancellationToken);
+                var envelope = await ReadEnvelopeAsync<TData>(response, cancellationToken);
+                if (envelope is not null)
+                {
+                    return envelope.Success
+                        ? StorefrontSubmitResult<TData>.Succeeded(envelope.Data, envelope.Message)
+                        : StorefrontSubmitResult<TData>.Failed(envelope.Message);
+                }
+
+                return response.IsSuccessStatusCode
+                    ? StorefrontSubmitResult<TData>.Succeeded(default, "Request completed.")
+                    : StorefrontSubmitResult<TData>.Failed(unavailableMessage);
+            }
+            catch (Exception exception) when (exception is HttpRequestException or JsonException or NotSupportedException or TaskCanceledException)
+            {
+                return StorefrontSubmitResult<TData>.Failed(unavailableMessage);
+            }
+        }
+
         private static async Task<StorefrontApiEnvelope<TData>?> ReadEnvelopeAsync<TData>(
             HttpResponseMessage response,
             CancellationToken cancellationToken)
@@ -750,6 +834,7 @@ namespace BlazorShop.Storefront.Services
         StorefrontBranding Branding,
         StorefrontLocaleOptions LocaleOptions,
         StorefrontCurrencyOptions CurrencyOptions,
+        StorefrontConsentConfiguration Consent,
         StorefrontMaintenanceState MaintenanceState,
         StorefrontFeatureFlags FeatureFlags,
         IReadOnlyList<StorefrontPublicPaymentMethod> PaymentMethods,
@@ -800,6 +885,44 @@ namespace BlazorShop.Storefront.Services
         bool RequestedCurrencySupported,
         bool CheckoutCurrencyEnabled,
         string Reason);
+
+    public sealed record StorefrontConsentConfiguration(
+        bool Enabled,
+        bool BannerRequired,
+        string CurrentVersion,
+        string PolicyPagePath,
+        IReadOnlyList<StorefrontConsentCategory> Categories,
+        int VisitorCookieLifetimeDays);
+
+    public sealed record StorefrontConsentCategory(
+        string Name,
+        bool Required,
+        bool DefaultEnabled);
+
+    public sealed record StorefrontConsentState(
+        bool Enabled,
+        bool BannerRequired,
+        string ConsentVersion,
+        string? ConsentKey,
+        StorefrontConsentCategorySelection Categories,
+        DateTimeOffset? UpdatedAtUtc,
+        DateTimeOffset? RevokedAtUtc,
+        DateTimeOffset? ExpiresAtUtc);
+
+    public sealed record StorefrontConsentCategorySelection(
+        bool Essential,
+        bool Preferences,
+        bool Analytics,
+        bool Marketing);
+
+    public sealed class StorefrontConsentSaveRequest
+    {
+        public bool Preferences { get; set; }
+
+        public bool Analytics { get; set; }
+
+        public bool Marketing { get; set; }
+    }
 
     public sealed record StorefrontMaintenanceState(
         bool MaintenanceModeEnabled,
