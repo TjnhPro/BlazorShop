@@ -14,6 +14,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
+    using BlazorShop.Application.CommerceNode.SecurityPrivacy;
     using BlazorShop.Application.CommerceNode.Settings;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.Tasks;
@@ -82,6 +83,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.Configure<RecommendationOptions>(configuration.GetSection(RecommendationOptions.SectionName));
             services.Configure<StorefrontConsentOptions>(configuration.GetSection("Runtime:Consent"));
             services.Configure<CaptchaOptions>(configuration.GetSection("Runtime:Captcha"));
+            services.Configure<SecurityPrivacyOptions>(configuration.GetSection(SecurityPrivacyOptions.SectionName));
             services.Configure<IdentityConfirmationOptions>(configuration.GetSection(IdentityConfirmationOptions.SectionName));
             services.Configure<BankTransferSettings>(configuration.GetSection("BankTransfer"));
             services.AddOptions<ClientAppOptions>()

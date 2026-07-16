@@ -6,6 +6,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
     using System.Security.Cryptography;
     using System.Text;
 
+    using BlazorShop.Application.CommerceNode.SecurityPrivacy;
     using BlazorShop.Domain.Contracts.Authentication;
     using BlazorShop.Domain.Entities.Identity;
 
@@ -51,8 +52,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 TokenHash = HashRefreshToken(refreshToken),
                 CreatedAtUtc = createdAtUtc,
                 ExpiresAtUtc = createdAtUtc.AddDays(this.GetRefreshTokenLifetimeDays()),
-                CreatedByIp = createdByIp,
-                UserAgent = userAgent,
+                CreatedByIp = PrivacyDataSanitizer.NormalizeIpAddress(createdByIp),
+                UserAgent = PrivacyDataSanitizer.NormalizeUserAgent(userAgent),
             };
         }
 
@@ -107,7 +108,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
             if (storedRefreshToken.RevokedAtUtc is null)
             {
                 storedRefreshToken.RevokedAtUtc = DateTime.UtcNow;
-                storedRefreshToken.RevokedByIp = revokedByIp;
+                storedRefreshToken.RevokedByIp = PrivacyDataSanitizer.NormalizeIpAddress(revokedByIp);
                 hasChanges = true;
             }
 
@@ -145,7 +146,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 if (descendantRefreshToken.RevokedAtUtc is null)
                 {
                     descendantRefreshToken.RevokedAtUtc = DateTime.UtcNow;
-                    descendantRefreshToken.RevokedByIp = revokedByIp;
+                    descendantRefreshToken.RevokedByIp = PrivacyDataSanitizer.NormalizeIpAddress(revokedByIp);
                     revokedCount++;
                 }
 

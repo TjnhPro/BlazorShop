@@ -247,36 +247,45 @@ Goal: make privacy-sensitive retention and account enumeration behavior explicit
 
 Implementation checklist:
 
-- [ ] Add privacy/security settings:
-  - [ ] refresh token IP retention days
-  - [ ] refresh token user-agent retention days
-  - [ ] consent event retention days
-  - [ ] captcha verification log retention days
-  - [ ] newsletter consent evidence retention days
-  - [ ] anonymize IP after retention window
-- [ ] Add retention cleanup service or task using existing Commerce Node task/worker pattern only if recurring cleanup is needed.
-- [ ] Prefer existing task orchestration before adding a new worker.
-- [ ] Add policy tests for IP/user-agent truncation/anonymization helpers.
-- [ ] Define anti-enumeration rules:
-  - [ ] login remains generic for invalid user/password.
-  - [ ] password recovery returns generic success-like response when implemented.
-  - [ ] registration duplicate-user response is decided explicitly before changing behavior.
-- [ ] Add future secure file-download authorization docs:
-  - [ ] require `[Authorize]`.
-  - [ ] verify current user owns resource or has active download entitlement.
-  - [ ] verify store id.
-  - [ ] never serve by path alone.
+- [x] Add privacy/security settings:
+  - [x] refresh token IP retention days
+  - [x] refresh token user-agent retention days
+  - [x] consent event retention days
+  - [x] captcha verification log retention days
+  - [x] newsletter consent evidence retention days
+  - [x] anonymize IP after retention window
+- [x] Add retention cleanup service or task using existing Commerce Node task/worker pattern only if recurring cleanup is needed.
+  - Phase 5 decision: no cleanup worker yet; the phase only adds typed policy and normalization hooks because there is no recurring cleanup requirement wired to runtime tasks yet.
+- [x] Prefer existing task orchestration before adding a new worker.
+- [x] Add policy tests for IP/user-agent truncation/anonymization helpers.
+- [x] Define anti-enumeration rules:
+  - [x] login remains generic for invalid user/password.
+  - [x] password recovery returns generic success-like response when implemented.
+  - [x] registration duplicate-user response is decided explicitly before changing behavior.
+- [x] Add future secure file-download authorization docs:
+  - [x] require `[Authorize]`.
+  - [x] verify current user owns resource or has active download entitlement.
+  - [x] verify store id.
+  - [x] never serve by path alone.
 
 Constraints:
 
-- [ ] Do not add private download tables until a real private file feature exists.
-- [ ] Do not remove useful audit data without explicit retention migration.
-- [ ] Do not log captcha tokens, refresh tokens, or raw consent visitor keys.
+- [x] Do not add private download tables until a real private file feature exists.
+- [x] Do not remove useful audit data without explicit retention migration.
+- [x] Do not log captcha tokens, refresh tokens, or raw consent visitor keys.
 
 Exit criteria:
 
-- [ ] Privacy-sensitive data retention is policy-driven.
-- [ ] Future password recovery and private download work has clear security requirements.
+- [x] Privacy-sensitive data retention is policy-driven.
+- [x] Future password recovery and private download work has clear security requirements.
+
+Phase 5 policy notes:
+
+- Refresh token IP and user-agent values are normalized before persistence; future cleanup should anonymize stored IPs after `RefreshTokenIpRetentionDays` when a recurring cleanup task is introduced.
+- Captcha verifier remains token-log-free; any provider adapter must keep raw captcha tokens out of logs and persistence.
+- Password recovery is not implemented in this phase. When added, it must use a generic success-like response for both known and unknown emails.
+- Registration duplicate-user behavior remains unchanged in runtime code for compatibility; changing it requires a separate contract decision because clients may rely on the current response.
+- Future private file/download endpoints must be authenticated, store-scoped, entitlement-checked, and must never serve files by trusting a raw path alone.
 
 ## Phase 6 - Admin Management And Permissions
 

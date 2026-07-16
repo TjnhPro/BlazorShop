@@ -6,6 +6,7 @@
     using System.Security.Cryptography;
     using System.Text;
 
+    using BlazorShop.Application.CommerceNode.SecurityPrivacy;
     using BlazorShop.Domain.Contracts.Authentication;
     using BlazorShop.Domain.Entities.Identity;
     using BlazorShop.Infrastructure.Data;
@@ -50,8 +51,8 @@
                 TokenHash = HashRefreshToken(refreshToken),
                 CreatedAtUtc = createdAtUtc,
                 ExpiresAtUtc = createdAtUtc.AddDays(GetRefreshTokenLifetimeDays()),
-                CreatedByIp = createdByIp,
-                UserAgent = userAgent,
+                CreatedByIp = PrivacyDataSanitizer.NormalizeIpAddress(createdByIp),
+                UserAgent = PrivacyDataSanitizer.NormalizeUserAgent(userAgent),
             };
         }
 
@@ -106,7 +107,7 @@
             if (storedRefreshToken.RevokedAtUtc is null)
             {
                 storedRefreshToken.RevokedAtUtc = DateTime.UtcNow;
-                storedRefreshToken.RevokedByIp = revokedByIp;
+                storedRefreshToken.RevokedByIp = PrivacyDataSanitizer.NormalizeIpAddress(revokedByIp);
                 hasChanges = true;
             }
 
@@ -144,7 +145,7 @@
                 if (descendantRefreshToken.RevokedAtUtc is null)
                 {
                     descendantRefreshToken.RevokedAtUtc = DateTime.UtcNow;
-                    descendantRefreshToken.RevokedByIp = revokedByIp;
+                    descendantRefreshToken.RevokedByIp = PrivacyDataSanitizer.NormalizeIpAddress(revokedByIp);
                     revokedCount++;
                 }
 
