@@ -179,51 +179,51 @@ Goal: keep `validate` non-mutating and add an explicit command that can refresh 
 
 Implementation checklist:
 
-- [ ] Add request DTO for cart recalculation.
-- [ ] Add response DTO or reuse enriched cart projection response.
-- [ ] Add `POST /api/storefront/stores/{storeKey}/cart/recalculate`.
-- [ ] Require `X-Cart-Token`.
-- [ ] Accept optional expected cart version.
-- [ ] Return `409 Conflict` for stale expected version.
-- [ ] Resolve every line against current:
-  - [ ] product visibility and publication.
-  - [ ] variant/attribute validity.
-  - [ ] availability/sellability.
-  - [ ] quantity constraints.
-  - [ ] managed stock.
-  - [ ] price.
-  - [ ] currency.
-  - [ ] rounding rules.
-- [ ] Update persisted snapshots only when values changed:
-  - [ ] unit price snapshot.
-  - [ ] currency snapshot.
-  - [ ] base currency snapshot.
-  - [ ] exchange-rate snapshot.
-- [ ] Increment cart version only when persisted line/cart data changes.
-- [ ] Keep `ValidateAsync` non-mutating.
-- [ ] Return stable warning codes for invalid products, unavailable products, invalid variant, invalid quantity, insufficient stock, mixed/unavailable currency, and missing price.
-- [ ] Update OpenAPI operation metadata:
-  - [ ] stable `operationId`.
-  - [ ] short summary.
-  - [ ] required request body metadata.
-  - [ ] typed success/error schemas.
-  - [ ] `X-Cart-Token` metadata.
+- [x] Add request DTO for cart recalculation. 2026-07-16 Phase 2: added application/API/Storefront V2 typed recalculation request DTOs.
+- [x] Add response DTO or reuse enriched cart projection response. 2026-07-16 Phase 2: recalculate reuses the enriched `StorefrontCartResponse`.
+- [x] Add `POST /api/storefront/stores/{storeKey}/cart/recalculate`. 2026-07-16 Phase 2: Commerce Node Storefront scoped cart controller exposes the POST command.
+- [x] Require `X-Cart-Token`. 2026-07-16 Phase 2: controller and Storefront V2 client keep the cart token header; OpenAPI/client tests guard it.
+- [x] Accept optional expected cart version. 2026-07-16 Phase 2: `ExpectedVersion` is optional with `minimum: 1` OpenAPI validation metadata.
+- [x] Return `409 Conflict` for stale expected version. 2026-07-16 Phase 2: `StorefrontCartServiceTests.RecalculateAsync_WhenExpectedVersionIsStale_ReturnsConflict` passed.
+- [x] Resolve every line against current:
+  - [x] product visibility and publication. 2026-07-16 Phase 2: recalculation resolves lines through `ProductSelectionResolver`.
+  - [x] variant/attribute validity. 2026-07-16 Phase 2: selection resolver is reused for current line variant/attribute state.
+  - [x] availability/sellability. 2026-07-16 Phase 2: selection resolver sellability path is reused.
+  - [x] quantity constraints. 2026-07-16 Phase 2: line quantity is passed back through selection resolver.
+  - [x] managed stock. 2026-07-16 Phase 2: selection resolver stock checks remain the source of truth.
+  - [x] price. 2026-07-16 Phase 2: stale product price snapshot refresh is covered by `StorefrontCartServiceTests`.
+  - [x] currency. 2026-07-16 Phase 2: snapshot currency fields are updated through `StorefrontCartLineSnapshotUpdate`.
+  - [x] rounding rules. 2026-07-16 Phase 2: recalculated selections and enriched projection use existing money rounding services.
+- [x] Update persisted snapshots only when values changed:
+  - [x] unit price snapshot.
+  - [x] currency snapshot.
+  - [x] base currency snapshot.
+  - [x] exchange-rate snapshot.
+- [x] Increment cart version only when persisted line/cart data changes. 2026-07-16 Phase 2: `StorefrontCartSessionServiceTests.UpdateLineSnapshotsAsync_IncrementsVersionOnlyWhenSnapshotsChange` passed.
+- [x] Keep `ValidateAsync` non-mutating. 2026-07-16 Phase 2: `StorefrontCartServiceTests.ValidateAsync_DoesNotMutateCartSnapshots` passed.
+- [x] Return stable warning codes for invalid products, unavailable products, invalid variant, invalid quantity, insufficient stock, mixed/unavailable currency, and missing price. 2026-07-16 Phase 2: recalculate leaves invalid lines for existing enriched warning-code projection instead of silently mutating them.
+- [x] Update OpenAPI operation metadata:
+  - [x] stable `operationId`.
+  - [x] short summary.
+  - [x] required request body metadata.
+  - [x] typed success/error schemas.
+  - [x] `X-Cart-Token` metadata.
 
 Verification checklist:
 
-- [ ] Recalculate uses POST and is not exposed as GET.
-- [ ] Stale expected cart version returns 409.
-- [ ] Recalculate refreshes stale snapshots after product/price/currency changes.
-- [ ] Recalculate increments version only when persisted values change.
-- [ ] Validate remains non-mutating.
-- [ ] Checkout can rely on recalculated/validated cart state before order placement.
-- [ ] Storefront OpenAPI contract tests pass.
+- [x] Recalculate uses POST and is not exposed as GET. 2026-07-16 Phase 2: OpenAPI contract test asserts POST `/cart/recalculate`.
+- [x] Stale expected cart version returns 409. 2026-07-16 Phase 2: focused cart service test passed.
+- [x] Recalculate refreshes stale snapshots after product/price/currency changes. 2026-07-16 Phase 2: focused cart service/session tests passed for price/currency snapshot updates.
+- [x] Recalculate increments version only when persisted values change. 2026-07-16 Phase 2: session service test passed.
+- [x] Validate remains non-mutating. 2026-07-16 Phase 2: application service test passed.
+- [x] Checkout can rely on recalculated/validated cart state before order placement. 2026-07-16 Phase 2: command/validate semantics are separated and existing checkout validation contract remains unchanged.
+- [x] Storefront OpenAPI contract tests pass. 2026-07-16 Phase 2: focused cart/session/OpenAPI/client run passed 69/69 after snapshot refresh.
 
 Exit criteria:
 
-- [ ] Cart validation and recalculation have separate semantics.
-- [ ] Stale cart data can be refreshed explicitly.
-- [ ] The command is safe for generated clients and AI agents.
+- [x] Cart validation and recalculation have separate semantics. 2026-07-16 Phase 2: `ValidateAsync` remains read-only and `RecalculateAsync` owns snapshot mutation.
+- [x] Stale cart data can be refreshed explicitly. 2026-07-16 Phase 2: new POST command refreshes server snapshots.
+- [x] The command is safe for generated clients and AI agents. 2026-07-16 Phase 2: OpenAPI operation metadata, request schema, response schema, error responses, and snapshot were refreshed.
 
 Suggested commit:
 
@@ -492,9 +492,9 @@ test(cart-core): complete release gate
 - [ ] Add-line rejects invalid quantity.
 - [ ] Add/update rejects managed stock shortage.
 - [ ] Cart projection includes line display fields and totals.
-- [ ] Validate is non-mutating.
-- [ ] Recalculate updates stale snapshots.
-- [ ] Recalculate returns 409 for stale expected version.
+- [x] Validate is non-mutating. 2026-07-16 Phase 2: application service test guards snapshot/version unchanged.
+- [x] Recalculate updates stale snapshots. 2026-07-16 Phase 2: application/session tests guard stale price and snapshot currency updates.
+- [x] Recalculate returns 409 for stale expected version. 2026-07-16 Phase 2: application service test guards stale expected version conflict.
 - [ ] Customer cart merge derives identity from auth context only.
 - [ ] Public request schemas do not include customer id, app user id, price, discount, tax, or order-owned fields.
 - [ ] Storefront OpenAPI validates and snapshot passes.
@@ -539,7 +539,7 @@ test(cart-core): complete release gate
 - [ ] Unknown store token loads another store's cart.
 - [ ] Browser sends customer id and attaches cart to another account.
 - [ ] Cart token is persisted in plaintext.
-- [ ] Recalculate mutates state from a GET route.
+- [x] Recalculate mutates state from a GET route. 2026-07-16 Phase 2: risk mitigated by POST-only `/cart/recalculate` OpenAPI contract assertion.
 - [ ] Checkout uses stale price snapshots after product price changes.
 - [ ] Storefront hides an unavailable item but still allows checkout.
 - [ ] Product deleted/unpublished after add-to-cart causes null reference or checkout crash.
@@ -554,7 +554,7 @@ test(cart-core): complete release gate
 
 - [x] Phase 0 - baseline guardrails. 2026-07-16: guardrails added and focused verification passed.
 - [x] Phase 1 - cart projection and basic totals. 2026-07-16: server projection, public response, Storefront client model, snapshot, and focused tests completed.
-- [ ] Phase 2 - recalculate command.
+- [x] Phase 2 - recalculate command. 2026-07-16: POST command, OpenAPI metadata/snapshot, Storefront V2 typed client, and focused tests completed.
 - [ ] Phase 3 - authenticated cart attach and merge.
 - [ ] Phase 4 - quantity constraints and item limits.
 - [ ] Phase 5 - Storefront V2 cart UI consumption.

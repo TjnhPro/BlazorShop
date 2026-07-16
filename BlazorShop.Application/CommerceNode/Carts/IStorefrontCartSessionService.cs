@@ -24,6 +24,12 @@ namespace BlazorShop.Application.CommerceNode.Carts
             int quantity,
             CancellationToken cancellationToken = default);
 
+        Task<ServiceResponse<StorefrontCartSessionDto>> UpdateLineSnapshotsAsync(
+            Guid storeId,
+            string token,
+            IReadOnlyList<StorefrontCartLineSnapshotUpdate> updates,
+            CancellationToken cancellationToken = default);
+
         Task<ServiceResponse<StorefrontCartSessionDto>> RemoveLineAsync(
             Guid storeId,
             string token,

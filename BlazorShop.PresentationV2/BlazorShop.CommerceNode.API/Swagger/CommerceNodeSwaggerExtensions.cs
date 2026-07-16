@@ -882,8 +882,13 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedCart", "Validate")] = new(
                         "StorefrontCart_Validate",
-                        "Validate and reprice the server cart.",
+                        "Validate the server cart without changing it.",
                         typeof(CommerceNodeApiResponse<StorefrontCartValidationResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedCart", "Recalculate")] = new(
+                        "StorefrontCart_Recalculate",
+                        "Recalculate server cart snapshots.",
+                        typeof(CommerceNodeApiResponse<StorefrontCartResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedCart", "SaveCheckout")] = new(
                         "StorefrontCart_SaveCheckout",

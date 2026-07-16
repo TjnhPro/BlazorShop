@@ -191,6 +191,75 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Succeeded("Cart line updated.", Map(session));
         }
 
+        public async Task<ServiceResponse<StorefrontCartSessionDto>> UpdateLineSnapshotsAsync(
+            Guid storeId,
+            string token,
+            IReadOnlyList<StorefrontCartLineSnapshotUpdate> updates,
+            CancellationToken cancellationToken = default)
+        {
+            var sessionResult = await this.LoadActiveSessionAsync(storeId, token, cancellationToken);
+            if (!sessionResult.Success)
+            {
+                return Failed<StorefrontCartSessionDto>(sessionResult.ResponseType, sessionResult.Message);
+            }
+
+            var session = sessionResult.Session!;
+            if (updates.Count == 0)
+            {
+                return Succeeded("Cart line snapshots unchanged.", Map(session));
+            }
+
+            var changed = false;
+            var now = DateTimeOffset.UtcNow;
+            foreach (var update in updates)
+            {
+                var line = session.Lines.FirstOrDefault(candidate => candidate.Id == update.LineId);
+                if (line is null)
+                {
+                    return Failed<StorefrontCartSessionDto>(ServiceResponseType.NotFound, "Cart line was not found.");
+                }
+
+                var currencyCode = NormalizeCurrencyCode(update.CurrencyCodeSnapshot);
+                var baseCurrencyCode = NormalizeCurrencyCode(update.BaseCurrencyCodeSnapshot);
+                var providerKey = NormalizeNullable(update.ExchangeRateProviderKey);
+                var source = NormalizeNullable(update.ExchangeRateSource);
+
+                if (line.UnitPriceSnapshot == update.UnitPriceSnapshot
+                    && string.Equals(line.CurrencyCodeSnapshot, currencyCode, StringComparison.Ordinal)
+                    && line.BaseUnitPriceSnapshot == update.BaseUnitPriceSnapshot
+                    && string.Equals(line.BaseCurrencyCodeSnapshot, baseCurrencyCode, StringComparison.Ordinal)
+                    && line.ExchangeRateSnapshot == update.ExchangeRateSnapshot
+                    && string.Equals(line.ExchangeRateProviderKey, providerKey, StringComparison.Ordinal)
+                    && string.Equals(line.ExchangeRateSource, source, StringComparison.Ordinal)
+                    && line.ExchangeRateEffectiveAtUtc == update.ExchangeRateEffectiveAtUtc
+                    && line.ExchangeRateExpiresAtUtc == update.ExchangeRateExpiresAtUtc)
+                {
+                    continue;
+                }
+
+                line.UnitPriceSnapshot = update.UnitPriceSnapshot;
+                line.CurrencyCodeSnapshot = currencyCode;
+                line.BaseUnitPriceSnapshot = update.BaseUnitPriceSnapshot;
+                line.BaseCurrencyCodeSnapshot = baseCurrencyCode;
+                line.ExchangeRateSnapshot = update.ExchangeRateSnapshot;
+                line.ExchangeRateProviderKey = providerKey;
+                line.ExchangeRateSource = source;
+                line.ExchangeRateEffectiveAtUtc = update.ExchangeRateEffectiveAtUtc;
+                line.ExchangeRateExpiresAtUtc = update.ExchangeRateExpiresAtUtc;
+                line.UpdatedAtUtc = now;
+                changed = true;
+            }
+
+            if (changed)
+            {
+                Touch(session, now);
+                await this.context.SaveChangesAsync(cancellationToken);
+                return Succeeded("Cart line snapshots recalculated.", Map(session));
+            }
+
+            return Succeeded("Cart line snapshots unchanged.", Map(session));
+        }
+
         public async Task<ServiceResponse<StorefrontCartSessionDto>> RemoveLineAsync(
             Guid storeId,
             string token,

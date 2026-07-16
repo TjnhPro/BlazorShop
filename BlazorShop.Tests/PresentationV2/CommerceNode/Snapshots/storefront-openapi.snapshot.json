@@ -1077,7 +1077,7 @@
         "tags": [
           "StorefrontScopedCart"
         ],
-        "summary": "Validate and reprice the server cart.",
+        "summary": "Validate the server cart without changing it.",
         "operationId": "StorefrontCart_Validate",
         "parameters": [
           {
@@ -1123,6 +1123,104 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StorefrontCartValidationResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/storefront/stores/{storeKey}/cart/recalculate": {
+      "post": {
+        "tags": [
+          "StorefrontScopedCart"
+        ],
+        "summary": "Recalculate server cart snapshots.",
+        "operationId": "StorefrontCart_Recalculate",
+        "parameters": [
+          {
+            "name": "X-Cart-Token",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCartRecalculateRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCartRecalculateRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCartRecalculateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontCartResponseCommerceNodeApiResponse"
                 }
               }
             }
@@ -4619,6 +4717,19 @@
             "minimum": 1,
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCartRecalculateRequest": {
+        "type": "object",
+        "properties": {
+          "expectedVersion": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false

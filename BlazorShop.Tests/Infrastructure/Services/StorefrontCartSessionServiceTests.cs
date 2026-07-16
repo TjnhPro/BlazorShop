@@ -81,6 +81,72 @@ namespace BlazorShop.Tests.Infrastructure.Services
         }
 
         [Fact]
+        public async Task UpdateLineSnapshotsAsync_IncrementsVersionOnlyWhenSnapshotsChange()
+        {
+            await using var context = CreateContext();
+            var service = new StorefrontCartSessionService(context);
+            var storeId = Guid.NewGuid();
+            var productId = Guid.NewGuid();
+            var created = await service.CreateAsync(new StorefrontCartSessionCreateRequest(storeId));
+            var withLine = await service.AddOrUpdateLineAsync(new StorefrontCartLineMutationRequest(
+                storeId,
+                created.Payload!.Token,
+                productId,
+                Quantity: 1,
+                UnitPriceSnapshot: 10m,
+                CurrencyCodeSnapshot: "usd",
+                BaseUnitPriceSnapshot: 10m,
+                BaseCurrencyCodeSnapshot: "usd"));
+            var lineId = withLine.Payload!.Lines.Single().Id;
+
+            var unchanged = await service.UpdateLineSnapshotsAsync(
+                storeId,
+                created.Payload.Token,
+                [
+                    new StorefrontCartLineSnapshotUpdate(
+                        lineId,
+                        UnitPriceSnapshot: 10m,
+                        CurrencyCodeSnapshot: "usd",
+                        BaseUnitPriceSnapshot: 10m,
+                        BaseCurrencyCodeSnapshot: "usd",
+                        ExchangeRateSnapshot: null,
+                        ExchangeRateProviderKey: null,
+                        ExchangeRateSource: null,
+                        ExchangeRateEffectiveAtUtc: null,
+                        ExchangeRateExpiresAtUtc: null),
+                ]);
+            var changed = await service.UpdateLineSnapshotsAsync(
+                storeId,
+                created.Payload.Token,
+                [
+                    new StorefrontCartLineSnapshotUpdate(
+                        lineId,
+                        UnitPriceSnapshot: 12m,
+                        CurrencyCodeSnapshot: "eur",
+                        BaseUnitPriceSnapshot: 10m,
+                        BaseCurrencyCodeSnapshot: "usd",
+                        ExchangeRateSnapshot: 1.2m,
+                        ExchangeRateProviderKey: "manual",
+                        ExchangeRateSource: "test",
+                        ExchangeRateEffectiveAtUtc: DateTimeOffset.Parse("2026-07-16T00:00:00Z"),
+                        ExchangeRateExpiresAtUtc: null),
+                ]);
+
+            Assert.True(unchanged.Success);
+            Assert.Equal(2, unchanged.Payload!.Version);
+            Assert.True(changed.Success);
+            Assert.Equal(3, changed.Payload!.Version);
+            var line = Assert.Single(changed.Payload.Lines);
+            Assert.Equal(12m, line.UnitPriceSnapshot);
+            Assert.Equal("EUR", line.CurrencyCodeSnapshot);
+            Assert.Equal(10m, line.BaseUnitPriceSnapshot);
+            Assert.Equal("USD", line.BaseCurrencyCodeSnapshot);
+            Assert.Equal(1.2m, line.ExchangeRateSnapshot);
+            Assert.Equal("manual", line.ExchangeRateProviderKey);
+            Assert.Equal("test", line.ExchangeRateSource);
+        }
+
+        [Fact]
         public async Task UpdateAndRemoveLineAsync_MutateLine_AndIncrementVersion()
         {
             await using var context = CreateContext();

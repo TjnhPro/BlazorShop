@@ -491,6 +491,12 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         public int? ExpectedVersion { get; set; }
     }
 
+    public sealed class StorefrontCartRecalculateRequest
+    {
+        [Range(1, int.MaxValue)]
+        public int? ExpectedVersion { get; set; }
+    }
+
     public sealed record StorefrontCartSessionResponse(
         Guid CartId,
         string CartToken,

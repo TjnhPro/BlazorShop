@@ -1034,6 +1034,31 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 payload => payload?.ToStorefrontContract());
         }
 
+        [HttpPost("recalculate")]
+        [AllowAnonymous]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Cart)]
+        public async Task<IActionResult> Recalculate(
+            [FromHeader(Name = CartTokenHeaderName)] string cartToken,
+            [FromBody] Contracts.Storefront.StorefrontCartRecalculateRequest request,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.storefrontCartService.RecalculateAsync(
+                new BlazorShop.Application.CommerceNode.Carts.StorefrontCartRecalculateRequest(
+                    storeId.Value,
+                    cartToken,
+                    request.ExpectedVersion),
+                cancellationToken);
+            return this.FromServiceResponse(
+                result,
+                payload => payload?.ToStorefrontContract());
+        }
+
         [HttpPost("save-checkout")]
         [EnableRateLimiting(StorefrontRateLimitPolicyNames.Cart)]
         public async Task<IActionResult> SaveCheckout([FromBody] IReadOnlyList<StorefrontOrderItemRequest> orderItems)

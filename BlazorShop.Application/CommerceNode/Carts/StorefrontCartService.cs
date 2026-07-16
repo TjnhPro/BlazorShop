@@ -554,6 +554,69 @@ namespace BlazorShop.Application.CommerceNode.Carts
                     issues));
         }
 
+        public async Task<ServiceResponse<StorefrontCartSessionDto>> RecalculateAsync(
+            StorefrontCartRecalculateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var cart = await this.sessionService.ResolveAsync(request.StoreId, request.Token, cancellationToken);
+            if (!cart.Success || cart.Payload is null)
+            {
+                return cart;
+            }
+
+            if (request.ExpectedVersion.HasValue && request.ExpectedVersion.Value != cart.Payload.Version)
+            {
+                return Failed<StorefrontCartSessionDto>(
+                    ServiceResponseType.Conflict,
+                    "Cart has changed. Refresh the cart and try again.");
+            }
+
+            var updates = new List<StorefrontCartLineSnapshotUpdate>();
+            foreach (var line in cart.Payload.Lines)
+            {
+                var selection = await this.productSelectionResolver.ResolveAsync(
+                    new ProductSelectionRequest(
+                        request.StoreId,
+                        line.ProductId,
+                        line.ProductVariantId,
+                        SelectedAttributesJson: line.SelectedAttributesJson,
+                        Quantity: line.Quantity,
+                        CurrencyCode: line.CurrencyCodeSnapshot,
+                        Mode: ProductSelectionMode.Cart),
+                    cancellationToken);
+                if (!selection.Success)
+                {
+                    continue;
+                }
+
+                updates.Add(new StorefrontCartLineSnapshotUpdate(
+                    line.Id,
+                    selection.UnitPrice,
+                    selection.CurrencyCode,
+                    selection.BaseUnitPrice,
+                    selection.BaseCurrencyCode,
+                    selection.ExchangeRate,
+                    selection.ExchangeRateProviderKey,
+                    selection.ExchangeRateSource,
+                    selection.ExchangeRateEffectiveAtUtc,
+                    selection.ExchangeRateExpiresAtUtc));
+            }
+
+            if (updates.Count == 0)
+            {
+                return await this.EnrichCartResponseAsync(cart, request.StoreId, cancellationToken);
+            }
+
+            return await this.EnrichCartResponseAsync(
+                await this.sessionService.UpdateLineSnapshotsAsync(
+                    request.StoreId,
+                    request.Token,
+                    updates,
+                    cancellationToken),
+                request.StoreId,
+                cancellationToken);
+        }
+
         private async Task<CartProductResolution> ResolveProductForCartAsync(
             Guid storeId,
             Guid productId,

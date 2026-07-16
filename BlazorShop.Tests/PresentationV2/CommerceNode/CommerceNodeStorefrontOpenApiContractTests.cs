@@ -669,6 +669,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("StorefrontCatalog_GetSearchSuggestions", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCart_CreateSession", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCart_AddLine", client, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCart_Recalculate", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontPayments_CapturePayPal", client, StringComparison.Ordinal);
             Assert.DoesNotContain("any /* missing operationId */", client, StringComparison.Ordinal);
             Assert.DoesNotContain("Promise<any>", client, StringComparison.Ordinal);
@@ -679,7 +680,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         {
             var swagger = await this.GetStorefrontSwaggerAsync();
             var schemas = GetSchemas(swagger);
-            var operations = GetOperations(swagger)
+            var storefrontOperations = GetOperations(swagger).ToArray();
+            var operations = storefrontOperations
                 .ToDictionary(
                     operation => operation.Value["operationId"]?.GetValue<string>() ?? string.Empty,
                     operation => operation.Value,
@@ -694,6 +696,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 "StorefrontCart_RemoveLine",
                 "StorefrontCart_Clear",
                 "StorefrontCart_Validate",
+                "StorefrontCart_Recalculate",
             };
 
             foreach (var operationId in expectedOperationIds)
@@ -703,10 +706,16 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 Assert.True(operation["responses"]?.AsObject().Count > 1, $"{operationId} must declare success and error responses.");
             }
 
+            var recalculateOperation = storefrontOperations.Single(operation =>
+                string.Equals(operation.Value["operationId"]?.GetValue<string>(), "StorefrontCart_Recalculate", StringComparison.Ordinal));
+            Assert.Equal("post", recalculateOperation.Method);
+            Assert.EndsWith("/cart/recalculate", recalculateOperation.Path, StringComparison.Ordinal);
+
             AssertRequiredRequestBody(operations["StorefrontCart_CreateSession"]);
             AssertRequiredRequestBody(operations["StorefrontCart_AddLine"]);
             AssertRequiredRequestBody(operations["StorefrontCart_UpdateLine"]);
             AssertRequiredRequestBody(operations["StorefrontCart_Validate"]);
+            AssertRequiredRequestBody(operations["StorefrontCart_Recalculate"]);
 
             var addLineSchema = schemas["StorefrontCartLineCreateRequest"]?.AsObject()
                 ?? throw new InvalidOperationException("StorefrontCartLineCreateRequest schema was not found.");
@@ -715,6 +724,10 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             var updateLineSchema = schemas["StorefrontCartLineUpdateRequest"]?.AsObject()
                 ?? throw new InvalidOperationException("StorefrontCartLineUpdateRequest schema was not found.");
             Assert.Equal(1, updateLineSchema["properties"]?["quantity"]?["minimum"]?.GetValue<int>());
+
+            var recalculateSchema = schemas["StorefrontCartRecalculateRequest"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCartRecalculateRequest schema was not found.");
+            Assert.Equal(1, recalculateSchema["properties"]?["expectedVersion"]?["minimum"]?.GetValue<int>());
 
             var cartResponseSchema = schemas["StorefrontCartResponse"]?.AsObject()
                 ?? throw new InvalidOperationException("StorefrontCartResponse schema was not found.");
@@ -868,6 +881,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 "StorefrontCart_RemoveLine",
                 "StorefrontCart_Clear",
                 "StorefrontCart_Validate",
+                "StorefrontCart_Recalculate",
                 "StorefrontCheckout_Preview",
                 "StorefrontCheckout_PlaceOrder",
                 "StorefrontPayments_GetAttempt",

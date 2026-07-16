@@ -36,5 +36,9 @@ namespace BlazorShop.Application.CommerceNode.Carts
             Guid storeId,
             string token,
             CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<StorefrontCartSessionDto>> RecalculateAsync(
+            StorefrontCartRecalculateRequest request,
+            CancellationToken cancellationToken = default);
     }
 }

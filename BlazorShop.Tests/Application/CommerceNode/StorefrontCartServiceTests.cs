@@ -495,6 +495,103 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public async Task RecalculateAsync_RefreshesStalePriceSnapshot_AndIncrementsVersion()
+        {
+            await using var context = CreateContext();
+            var productRepository = new Mock<IProductReadRepository>();
+            var service = CreateService(context, productRepository);
+            var storeId = Guid.NewGuid();
+            var product = CreatePublishedProduct(storeId, price: 10m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cart = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await service.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 2));
+            Assert.True(add.Success);
+            Assert.Equal(10m, add.Payload!.Lines.Single().UnitPriceSnapshot);
+            var versionBeforeRecalculate = add.Payload.Version;
+            product.Price = 12m;
+
+            var recalculated = await service.RecalculateAsync(new StorefrontCartRecalculateRequest(
+                storeId,
+                cart.Payload.Token!,
+                ExpectedVersion: versionBeforeRecalculate));
+
+            Assert.True(recalculated.Success, recalculated.Message);
+            Assert.Equal(versionBeforeRecalculate + 1, recalculated.Payload!.Version);
+            var line = Assert.Single(recalculated.Payload.Lines);
+            Assert.Equal(12m, line.UnitPriceSnapshot);
+            Assert.Equal(12m, line.UnitPrice);
+            Assert.Equal(24m, line.LineTotal);
+            Assert.Equal(24m, recalculated.Payload.GrandTotal);
+        }
+
+        [Fact]
+        public async Task RecalculateAsync_WhenExpectedVersionIsStale_ReturnsConflict()
+        {
+            await using var context = CreateContext();
+            var productRepository = new Mock<IProductReadRepository>();
+            var service = CreateService(context, productRepository);
+            var storeId = Guid.NewGuid();
+            var product = CreatePublishedProduct(storeId, price: 10m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cart = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await service.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1));
+            Assert.True(add.Success);
+
+            var recalculated = await service.RecalculateAsync(new StorefrontCartRecalculateRequest(
+                storeId,
+                cart.Payload.Token!,
+                ExpectedVersion: add.Payload!.Version - 1));
+
+            Assert.False(recalculated.Success);
+            Assert.Equal(ServiceResponseType.Conflict, recalculated.ResponseType);
+            Assert.Equal(add.Payload.Version, (await context.CartSessions.SingleAsync()).Version);
+        }
+
+        [Fact]
+        public async Task ValidateAsync_DoesNotMutateCartSnapshots()
+        {
+            await using var context = CreateContext();
+            var productRepository = new Mock<IProductReadRepository>();
+            var service = CreateService(context, productRepository);
+            var storeId = Guid.NewGuid();
+            var product = CreatePublishedProduct(storeId, price: 10m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cart = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await service.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 2));
+            Assert.True(add.Success);
+            product.Price = 12m;
+
+            var validation = await service.ValidateAsync(storeId, cart.Payload.Token!);
+            var storedLine = await context.CartLines.SingleAsync();
+
+            Assert.True(validation.Success);
+            Assert.True(validation.Payload!.IsValid);
+            Assert.Equal(20m, validation.Payload.TotalAmount);
+            Assert.Equal(add.Payload!.Version, validation.Payload.Version);
+            Assert.Equal(add.Payload.Version, (await context.CartSessions.SingleAsync()).Version);
+            Assert.Equal(10m, storedLine.UnitPriceSnapshot);
+            Assert.Equal("USD", storedLine.CurrencyCodeSnapshot);
+        }
+
+        [Fact]
         public async Task AddLineAsync_RejectsPurchaseDisabledProduct()
         {
             await using var context = CreateContext();

@@ -47,6 +47,11 @@ namespace BlazorShop.Application.CommerceNode.Carts
         string Code,
         string Message);
 
+    public sealed record StorefrontCartRecalculateRequest(
+        Guid StoreId,
+        string Token,
+        int? ExpectedVersion = null);
+
     public sealed record StorefrontCartSessionCreateRequest(
         Guid StoreId,
         Guid? CustomerId = null,
@@ -106,6 +111,18 @@ namespace BlazorShop.Application.CommerceNode.Carts
         string? ExchangeRateSource = null,
         DateTimeOffset? ExchangeRateEffectiveAtUtc = null,
         DateTimeOffset? ExchangeRateExpiresAtUtc = null);
+
+    public sealed record StorefrontCartLineSnapshotUpdate(
+        Guid LineId,
+        decimal? UnitPriceSnapshot,
+        string? CurrencyCodeSnapshot,
+        decimal? BaseUnitPriceSnapshot,
+        string? BaseCurrencyCodeSnapshot,
+        decimal? ExchangeRateSnapshot,
+        string? ExchangeRateProviderKey,
+        string? ExchangeRateSource,
+        DateTimeOffset? ExchangeRateEffectiveAtUtc,
+        DateTimeOffset? ExchangeRateExpiresAtUtc);
 
     public sealed record StorefrontCartLineDto(
         Guid Id,

@@ -46,6 +46,7 @@ namespace BlazorShop.Storefront.Services
         private const string StorefrontCartRoute = "cart";
         private const string StorefrontCartSessionRoute = StorefrontCartRoute + "/session";
         private const string StorefrontCartLinesRoute = StorefrontCartRoute + "/lines";
+        private const string StorefrontCartRecalculateRoute = StorefrontCartRoute + "/recalculate";
         private const string CartTokenHeaderName = "X-Cart-Token";
         private const string ConsentVisitorHeaderName = "X-Consent-Visitor";
         private const string StorefrontCatalogSitemapRoute = StorefrontCatalogBaseRoute + "/sitemap";
@@ -486,6 +487,20 @@ namespace BlazorShop.Storefront.Services
                 cartToken,
                 request: null,
                 "Unable to clear cart right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCartResponse>> RecalculateCartAsync(
+            string cartToken,
+            StorefrontCartRecalculateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return SendCartAsync<StorefrontCartResponse>(
+                HttpMethod.Post,
+                StorefrontCartRecalculateRoute,
+                cartToken,
+                request,
+                "Unable to refresh cart right now.",
                 cancellationToken);
         }
 
@@ -1184,6 +1199,11 @@ namespace BlazorShop.Storefront.Services
     public sealed class StorefrontCartLineUpdateRequest
     {
         public int Quantity { get; set; }
+    }
+
+    public sealed class StorefrontCartRecalculateRequest
+    {
+        public int? ExpectedVersion { get; set; }
     }
 
     public sealed record StorefrontCartSessionResponse(
