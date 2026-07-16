@@ -28,6 +28,10 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var service = CreateService(context, productRepository);
             var storeId = Guid.NewGuid();
             var product = CreatePublishedProduct(storeId, price: 12.50m, stock: 10);
+            product.Image = "/media/products/projection-image";
+            product.MinOrderQuantity = 2;
+            product.MaxOrderQuantity = 5;
+            product.QuantityStep = 1;
             productRepository
                 .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
                 .ReturnsAsync(product);
@@ -46,6 +50,27 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Equal(2, line.Quantity);
             Assert.Equal(12.50m, line.UnitPriceSnapshot);
             Assert.Equal("USD", line.CurrencyCodeSnapshot);
+            Assert.Equal("Published product", line.DisplayName);
+            Assert.Equal(product.Slug, line.ProductSlug);
+            Assert.Equal($"/products/{product.Slug}", line.ProductUrl);
+            Assert.Equal("/media/products/projection-image", line.ImageUrl);
+            Assert.Equal(12.50m, line.UnitPrice);
+            Assert.Equal(25.00m, line.LineSubtotal);
+            Assert.Equal(25.00m, line.LineTotal);
+            Assert.Equal(2, line.QuantityMinimum);
+            Assert.Equal(5, line.QuantityMaximum);
+            Assert.Equal(1, line.QuantityStep);
+            Assert.True(line.Purchasable);
+            Assert.Empty(line.Warnings ?? []);
+            Assert.Equal("USD", result.Payload.CurrencyCode);
+            Assert.Equal(2, result.Payload.SummaryCount);
+            Assert.Equal(25.00m, result.Payload.Subtotal);
+            Assert.Equal(0m, result.Payload.DiscountTotal);
+            Assert.Equal(0m, result.Payload.ShippingEstimate);
+            Assert.Equal(0m, result.Payload.TaxEstimate);
+            Assert.Equal(25.00m, result.Payload.GrandTotal);
+            Assert.True(result.Payload.CheckoutAllowed);
+            Assert.Contains(result.Payload.Adjustments ?? [], adjustment => adjustment.Code == "total" && adjustment.Amount == 25.00m);
         }
 
         [Fact]

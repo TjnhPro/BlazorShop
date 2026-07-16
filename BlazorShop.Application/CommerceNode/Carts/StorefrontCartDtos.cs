@@ -73,7 +73,17 @@ namespace BlazorShop.Application.CommerceNode.Carts
         int Version,
         DateTimeOffset LastActivityAtUtc,
         DateTimeOffset ExpiresAtUtc,
-        IReadOnlyList<StorefrontCartLineDto> Lines);
+        IReadOnlyList<StorefrontCartLineDto> Lines,
+        string CurrencyCode = "USD",
+        int SummaryCount = 0,
+        decimal Subtotal = 0m,
+        decimal DiscountTotal = 0m,
+        decimal ShippingEstimate = 0m,
+        decimal TaxEstimate = 0m,
+        decimal GrandTotal = 0m,
+        bool CheckoutAllowed = true,
+        IReadOnlyList<StorefrontCartWarningDto>? Warnings = null,
+        IReadOnlyList<StorefrontCartAdjustmentDto>? Adjustments = null);
 
     public sealed record StorefrontCartLineMutationRequest(
         Guid StoreId,
@@ -119,5 +129,31 @@ namespace BlazorShop.Application.CommerceNode.Carts
         DateTimeOffset? ExchangeRateEffectiveAtUtc,
         DateTimeOffset? ExchangeRateExpiresAtUtc,
         DateTimeOffset CreatedAtUtc,
-        DateTimeOffset UpdatedAtUtc);
+        DateTimeOffset UpdatedAtUtc,
+        string? DisplayName = null,
+        string? ProductSlug = null,
+        string? ProductUrl = null,
+        string? ImageUrl = null,
+        IReadOnlyList<SelectedAttributeDto>? SelectedAttributes = null,
+        decimal? UnitPrice = null,
+        decimal? LineSubtotal = null,
+        decimal? LineTotal = null,
+        int QuantityMinimum = 1,
+        int? QuantityMaximum = null,
+        int QuantityStep = 1,
+        IReadOnlyList<int>? AllowedQuantities = null,
+        bool Purchasable = true,
+        IReadOnlyList<StorefrontCartWarningDto>? Warnings = null);
+
+    public sealed record StorefrontCartWarningDto(
+        string Code,
+        string Message,
+        Guid? LineId = null,
+        Guid? ProductId = null);
+
+    public sealed record StorefrontCartAdjustmentDto(
+        string Code,
+        string Label,
+        decimal Amount,
+        string CurrencyCode);
 }

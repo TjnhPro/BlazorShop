@@ -301,7 +301,7 @@ Plan: `Cart Core.todo.md`.
 - [x] Cart token lookup remains store-scoped and token hashes are stored instead of plaintext tokens. 2026-07-16: existing `StorefrontCartSessionServiceTests` cover hash-only storage and wrong-store token rejection.
 - [x] Cart add/update keeps server-side product, variant, selected-attribute, quantity, availability, stock, and price snapshot validation. 2026-07-16: existing `StorefrontCartServiceTests` remain in the Phase 0 focused verification gate.
 - [x] Storefront OpenAPI keeps generator-safe cart operation metadata, `X-Cart-Token`, required request body, and quantity minimum metadata. 2026-07-16: existing `CommerceNodeStorefrontOpenApiContractTests` remain in the Phase 0 focused verification gate.
-- [ ] Cart projection includes display fields, totals, warnings, checkout eligibility, and badge summary.
+- [x] Cart projection includes display fields, totals, warnings, checkout eligibility, and badge summary. 2026-07-16 Phase 1: `StorefrontCartServiceTests` asserts line projection/totals and cart summary; Storefront OpenAPI contract tests assert response schema fields.
 - [ ] Recalculate command refreshes stale snapshots through POST and keeps validate non-mutating.
 - [ ] Authenticated cart merge derives customer identity from trusted auth context only.
 - [ ] Cart quantity constraints and cart limits are enforced consistently.

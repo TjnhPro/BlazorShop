@@ -65,9 +65,10 @@ namespace BlazorShop.Application.CommerceNode.Carts
                 var existing = await this.sessionService.ResolveAsync(request.StoreId, request.Token, cancellationToken);
                 if (existing.Success && existing.Payload is not null)
                 {
+                    var enrichedExisting = await this.EnrichCartAsync(existing.Payload, request.StoreId, cancellationToken);
                     return Succeeded(
                         "Cart session resolved.",
-                        new StorefrontCartResult(existing.Payload));
+                        new StorefrontCartResult(enrichedExisting));
                 }
 
                 if (existing.ResponseType is not ServiceResponseType.NotFound)
@@ -95,15 +96,20 @@ namespace BlazorShop.Application.CommerceNode.Carts
 
             return Succeeded(
                 "Cart session created.",
-                new StorefrontCartResult(resolved.Payload, created.Payload.Token));
+                new StorefrontCartResult(
+                    await this.EnrichCartAsync(resolved.Payload, request.StoreId, cancellationToken),
+                    created.Payload.Token));
         }
 
-        public Task<ServiceResponse<StorefrontCartSessionDto>> GetAsync(
+        public async Task<ServiceResponse<StorefrontCartSessionDto>> GetAsync(
             Guid storeId,
             string token,
             CancellationToken cancellationToken = default)
         {
-            return this.sessionService.ResolveAsync(storeId, token, cancellationToken);
+            return await this.EnrichCartResponseAsync(
+                await this.sessionService.ResolveAsync(storeId, token, cancellationToken),
+                storeId,
+                cancellationToken);
         }
 
         public async Task<ServiceResponse<StorefrontCartSessionDto>> AddLineAsync(
@@ -136,28 +142,31 @@ namespace BlazorShop.Application.CommerceNode.Carts
                 return Failed<StorefrontCartSessionDto>(selection.ResponseType, selection.Message);
             }
 
-            return await this.sessionService.AddOrUpdateLineAsync(
-                new StorefrontCartLineMutationRequest(
-                    request.StoreId,
-                    request.Token,
-                    selection.ProductId,
-                    selection.ProductVariantId,
-                    selection.SelectedAttributesJson,
-                    NormalizeNullable(request.PersonalizationHash),
-                    NormalizeNullable(request.PersonalizationJson),
-                    request.ArtworkAssetId,
-                    request.ArtworkVersion,
-                    NormalizeNullable(request.FulfillmentProviderKey),
-                    request.Quantity,
-                    selection.UnitPrice,
-                    selection.CurrencyCode,
-                    selection.BaseUnitPrice,
-                    selection.BaseCurrencyCode,
-                    selection.ExchangeRate,
-                    selection.ExchangeRateProviderKey,
-                    selection.ExchangeRateSource,
-                    selection.ExchangeRateEffectiveAtUtc,
-                    selection.ExchangeRateExpiresAtUtc),
+            return await this.EnrichCartResponseAsync(
+                await this.sessionService.AddOrUpdateLineAsync(
+                    new StorefrontCartLineMutationRequest(
+                        request.StoreId,
+                        request.Token,
+                        selection.ProductId,
+                        selection.ProductVariantId,
+                        selection.SelectedAttributesJson,
+                        NormalizeNullable(request.PersonalizationHash),
+                        NormalizeNullable(request.PersonalizationJson),
+                        request.ArtworkAssetId,
+                        request.ArtworkVersion,
+                        NormalizeNullable(request.FulfillmentProviderKey),
+                        request.Quantity,
+                        selection.UnitPrice,
+                        selection.CurrencyCode,
+                        selection.BaseUnitPrice,
+                        selection.BaseCurrencyCode,
+                        selection.ExchangeRate,
+                        selection.ExchangeRateProviderKey,
+                        selection.ExchangeRateSource,
+                        selection.ExchangeRateEffectiveAtUtc,
+                        selection.ExchangeRateExpiresAtUtc),
+                    cancellationToken),
+                request.StoreId,
                 cancellationToken);
         }
 
@@ -197,21 +206,27 @@ namespace BlazorShop.Application.CommerceNode.Carts
                 return Failed<StorefrontCartSessionDto>(selection.ResponseType, selection.Message);
             }
 
-            return await this.sessionService.UpdateLineQuantityAsync(
+            return await this.EnrichCartResponseAsync(
+                await this.sessionService.UpdateLineQuantityAsync(
+                    request.StoreId,
+                    request.Token,
+                    request.LineId,
+                    request.Quantity,
+                    cancellationToken),
                 request.StoreId,
-                request.Token,
-                request.LineId,
-                request.Quantity,
                 cancellationToken);
         }
 
-        public Task<ServiceResponse<StorefrontCartSessionDto>> RemoveLineAsync(
+        public async Task<ServiceResponse<StorefrontCartSessionDto>> RemoveLineAsync(
             Guid storeId,
             string token,
             Guid lineId,
             CancellationToken cancellationToken = default)
         {
-            return this.sessionService.RemoveLineAsync(storeId, token, lineId, cancellationToken);
+            return await this.EnrichCartResponseAsync(
+                await this.sessionService.RemoveLineAsync(storeId, token, lineId, cancellationToken),
+                storeId,
+                cancellationToken);
         }
 
         public async Task<ServiceResponse<StorefrontCartSessionDto>> ClearAsync(
@@ -235,7 +250,242 @@ namespace BlazorShop.Application.CommerceNode.Carts
                 }
             }
 
-            return current;
+            return await this.EnrichCartResponseAsync(current, storeId, cancellationToken);
+        }
+
+        private async Task<ServiceResponse<StorefrontCartSessionDto>> EnrichCartResponseAsync(
+            ServiceResponse<StorefrontCartSessionDto> response,
+            Guid storeId,
+            CancellationToken cancellationToken)
+        {
+            if (!response.Success || response.Payload is null)
+            {
+                return response;
+            }
+
+            return Succeeded(
+                response.Message ?? "Cart session resolved.",
+                await this.EnrichCartAsync(response.Payload, storeId, cancellationToken));
+        }
+
+        private async Task<StorefrontCartSessionDto> EnrichCartAsync(
+            StorefrontCartSessionDto cart,
+            Guid storeId,
+            CancellationToken cancellationToken)
+        {
+            var baseCurrencyCode = await this.storeCurrencyResolver.ResolveDefaultCurrencyCodeAsync(storeId, cancellationToken);
+            var currencyResolution = await this.ResolveCartSnapshotCurrencyAsync(
+                storeId,
+                cart.Lines,
+                baseCurrencyCode,
+                cancellationToken);
+            var currencyCode = currencyResolution.CurrencyCode;
+            var cartWarnings = new List<StorefrontCartWarningDto>();
+            if (currencyResolution.Issue is not null)
+            {
+                cartWarnings.Add(ToCartWarning(currencyResolution.Issue));
+            }
+
+            var enrichedLines = new List<StorefrontCartLineDto>(cart.Lines.Count);
+            decimal subtotal = 0m;
+            var checkoutAllowed = true;
+            foreach (var line in cart.Lines)
+            {
+                var enrichedLine = await this.EnrichLineAsync(storeId, line, currencyCode, cancellationToken);
+                enrichedLines.Add(enrichedLine);
+                subtotal += enrichedLine.LineTotal ?? 0m;
+                if (!enrichedLine.Purchasable || (enrichedLine.Warnings?.Count ?? 0) > 0)
+                {
+                    checkoutAllowed = false;
+                }
+            }
+
+            subtotal = this.moneyRoundingService.RoundOrderTotal(subtotal, currencyCode);
+            var grandTotal = subtotal;
+
+            return cart with
+            {
+                Lines = enrichedLines,
+                CurrencyCode = currencyCode,
+                SummaryCount = enrichedLines.Sum(line => Math.Max(0, line.Quantity)),
+                Subtotal = subtotal,
+                DiscountTotal = 0m,
+                ShippingEstimate = 0m,
+                TaxEstimate = 0m,
+                GrandTotal = grandTotal,
+                CheckoutAllowed = checkoutAllowed && cartWarnings.Count == 0,
+                Warnings = cartWarnings,
+                Adjustments =
+                [
+                    new StorefrontCartAdjustmentDto("subtotal", "Subtotal", subtotal, currencyCode),
+                    new StorefrontCartAdjustmentDto("discount", "Discount", 0m, currencyCode),
+                    new StorefrontCartAdjustmentDto("shipping", "Shipping estimate", 0m, currencyCode),
+                    new StorefrontCartAdjustmentDto("tax", "Tax estimate", 0m, currencyCode),
+                    new StorefrontCartAdjustmentDto("total", "Total", grandTotal, currencyCode),
+                ],
+            };
+        }
+
+        private async Task<StorefrontCartLineDto> EnrichLineAsync(
+            Guid storeId,
+            StorefrontCartLineDto line,
+            string currencyCode,
+            CancellationToken cancellationToken)
+        {
+            var warnings = new List<StorefrontCartWarningDto>();
+            var selectedAttributes = DeserializeSelectedAttributes(line.SelectedAttributesJson);
+            var product = await this.productReadRepository.GetPublishedProductDetailsByIdAsync(line.ProductId);
+            if (product is null || !IsStorefrontAvailable(product, storeId))
+            {
+                warnings.Add(new StorefrontCartWarningDto(
+                    "cart.line.product_unavailable",
+                    "Product is no longer available.",
+                    line.Id,
+                    line.ProductId));
+
+                var unavailableUnitPrice = line.UnitPriceSnapshot.HasValue
+                    ? this.moneyRoundingService.RoundUnitPrice(line.UnitPriceSnapshot.Value, currencyCode)
+                    : 0m;
+                var unavailableLineTotal = this.moneyRoundingService.RoundLineTotal(unavailableUnitPrice * line.Quantity, currencyCode);
+                return line with
+                {
+                    DisplayName = "Unavailable product",
+                    SelectedAttributes = selectedAttributes,
+                    UnitPrice = unavailableUnitPrice,
+                    LineSubtotal = unavailableLineTotal,
+                    LineTotal = unavailableLineTotal,
+                    QuantityMinimum = 1,
+                    QuantityStep = 1,
+                    Purchasable = false,
+                    Warnings = warnings,
+                };
+            }
+
+            var variant = line.ProductVariantId.HasValue
+                ? product.Variants.FirstOrDefault(candidate => candidate.Id == line.ProductVariantId.Value)
+                : null;
+            if (line.ProductVariantId.HasValue && variant is null)
+            {
+                warnings.Add(new StorefrontCartWarningDto(
+                    "cart.line.variant_unavailable",
+                    "Selected product variant is no longer available.",
+                    line.Id,
+                    line.ProductId));
+            }
+            else if (variant?.IsActive == false)
+            {
+                warnings.Add(new StorefrontCartWarningDto(
+                    "cart.line.variant_inactive",
+                    "Selected product variant is no longer active.",
+                    line.Id,
+                    line.ProductId));
+            }
+
+            var minQuantity = Math.Max(1, product.MinOrderQuantity);
+            var quantityStep = Math.Max(1, product.QuantityStep);
+            var availableQuantity = product.ManageStock ? variant?.Stock ?? product.Quantity : (int?)null;
+            var maxQuantity = product.MaxOrderQuantity;
+            if (availableQuantity.HasValue)
+            {
+                maxQuantity = maxQuantity.HasValue
+                    ? Math.Min(maxQuantity.Value, availableQuantity.Value)
+                    : availableQuantity.Value;
+            }
+
+            if (product.PurchasingDisabled)
+            {
+                warnings.Add(new StorefrontCartWarningDto(
+                    ProductPurchaseBlockReasons.PurchaseDisabled,
+                    string.IsNullOrWhiteSpace(product.PurchasingDisabledReason)
+                        ? "Product cannot be purchased right now."
+                        : product.PurchasingDisabledReason.Trim(),
+                    line.Id,
+                    line.ProductId));
+            }
+
+            if (line.Quantity < minQuantity)
+            {
+                warnings.Add(new StorefrontCartWarningDto(
+                    ProductPurchaseBlockReasons.BelowMinQuantity,
+                    $"Minimum quantity is {minQuantity}.",
+                    line.Id,
+                    line.ProductId));
+            }
+
+            if (maxQuantity.HasValue && line.Quantity > maxQuantity.Value)
+            {
+                warnings.Add(new StorefrontCartWarningDto(
+                    availableQuantity.HasValue ? ProductPurchaseBlockReasons.NotEnoughStock : ProductPurchaseBlockReasons.AboveMaxQuantity,
+                    $"Maximum quantity is {maxQuantity.Value}.",
+                    line.Id,
+                    line.ProductId));
+            }
+
+            if (line.Quantity >= minQuantity && ((line.Quantity - minQuantity) % quantityStep) != 0)
+            {
+                warnings.Add(new StorefrontCartWarningDto(
+                    ProductPurchaseBlockReasons.InvalidQuantityStep,
+                    $"Quantity must increase by {quantityStep}.",
+                    line.Id,
+                    line.ProductId));
+            }
+
+            var unitPrice = line.UnitPriceSnapshot
+                ?? variant?.Price
+                ?? product.Price;
+            unitPrice = this.moneyRoundingService.RoundUnitPrice(unitPrice, currencyCode);
+            var lineTotal = this.moneyRoundingService.RoundLineTotal(unitPrice * line.Quantity, currencyCode);
+            var displayName = ResolveLineDisplayName(product, variant);
+
+            return line with
+            {
+                DisplayName = displayName,
+                ProductSlug = product.Slug,
+                ProductUrl = string.IsNullOrWhiteSpace(product.Slug) ? null : $"/products/{product.Slug.Trim()}",
+                ImageUrl = product.Image,
+                SelectedAttributes = selectedAttributes,
+                UnitPrice = unitPrice,
+                LineSubtotal = lineTotal,
+                LineTotal = lineTotal,
+                QuantityMinimum = minQuantity,
+                QuantityMaximum = maxQuantity,
+                QuantityStep = quantityStep,
+                AllowedQuantities = null,
+                Purchasable = warnings.Count == 0,
+                Warnings = warnings,
+            };
+        }
+
+        private static StorefrontCartWarningDto ToCartWarning(StorefrontCartValidationIssueDto issue)
+        {
+            return new StorefrontCartWarningDto(issue.Code, issue.Message, issue.LineId, issue.ProductId);
+        }
+
+        private static string ResolveLineDisplayName(Product product, ProductVariant? variant)
+        {
+            if (!string.IsNullOrWhiteSpace(variant?.DisplayName))
+            {
+                return variant.DisplayName.Trim();
+            }
+
+            return string.IsNullOrWhiteSpace(product.Name) ? "Product" : product.Name.Trim();
+        }
+
+        private static IReadOnlyList<SelectedAttributeDto> DeserializeSelectedAttributes(string? selectedAttributesJson)
+        {
+            if (string.IsNullOrWhiteSpace(selectedAttributesJson))
+            {
+                return [];
+            }
+
+            try
+            {
+                return JsonSerializer.Deserialize<IReadOnlyList<SelectedAttributeDto>>(selectedAttributesJson, SerializerOptions) ?? [];
+            }
+            catch (JsonException)
+            {
+                return [];
+            }
         }
 
         public async Task<ServiceResponse<StorefrontCartValidationResult>> ValidateAsync(

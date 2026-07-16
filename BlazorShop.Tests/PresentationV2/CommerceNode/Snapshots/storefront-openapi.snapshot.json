@@ -35,7 +35,7 @@
                 "$ref": "#/components/schemas/StorefrontRegisterRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontRegisterRequest"
               }
@@ -116,7 +116,7 @@
                 "$ref": "#/components/schemas/StorefrontLoginRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontLoginRequest"
               }
@@ -229,7 +229,7 @@
         },
         "security": [
           {
-            "RefreshCookie": []
+            "RefreshCookie": [ ]
           }
         ]
       }
@@ -285,7 +285,7 @@
         },
         "security": [
           {
-            "RefreshCookie": []
+            "RefreshCookie": [ ]
           }
         ]
       }
@@ -295,7 +295,7 @@
         "tags": [
           "StorefrontScopedAuth"
         ],
-        "summary": "Change the current customer\u0027s password.",
+        "summary": "Change the current customer's password.",
         "operationId": "StorefrontAuth_ChangePassword",
         "parameters": [
           {
@@ -319,7 +319,7 @@
                 "$ref": "#/components/schemas/StorefrontChangePasswordRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontChangePasswordRequest"
               }
@@ -371,7 +371,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -480,7 +480,7 @@
                 "$ref": "#/components/schemas/StorefrontUpdateProfileRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontUpdateProfileRequest"
               }
@@ -532,7 +532,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -566,7 +566,7 @@
                 "$ref": "#/components/schemas/StorefrontCreateCartSessionRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCreateCartSessionRequest"
               }
@@ -818,7 +818,7 @@
                 "$ref": "#/components/schemas/StorefrontCartLineCreateRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCartLineCreateRequest"
               }
@@ -925,7 +925,7 @@
                 "$ref": "#/components/schemas/StorefrontCartLineUpdateRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCartLineUpdateRequest"
               }
@@ -1108,7 +1108,7 @@
                 "$ref": "#/components/schemas/StorefrontCartValidateRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCartValidateRequest"
               }
@@ -1175,7 +1175,7 @@
         "tags": [
           "StorefrontScopedCart"
         ],
-        "summary": "Save the current customer\u0027s checkout history.",
+        "summary": "Save the current customer's checkout history.",
         "operationId": "StorefrontCart_SaveCheckout",
         "parameters": [
           {
@@ -1205,7 +1205,7 @@
                 }
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "type": "array",
                 "items": {
@@ -1260,7 +1260,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -2037,7 +2037,7 @@
                 "$ref": "#/components/schemas/StorefrontProductSelectionPreviewRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontProductSelectionPreviewRequest"
               }
@@ -2166,7 +2166,7 @@
                 "$ref": "#/components/schemas/StorefrontCheckoutPreviewRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCheckoutPreviewRequest"
               }
@@ -2257,7 +2257,7 @@
                 "$ref": "#/components/schemas/StorefrontPlaceOrderRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontPlaceOrderRequest"
               }
@@ -2494,7 +2494,7 @@
                 "$ref": "#/components/schemas/StorefrontConsentSaveRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontConsentSaveRequest"
               }
@@ -2663,7 +2663,7 @@
                 "$ref": "#/components/schemas/StorefrontCurrencyPreferenceRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCurrencyPreferenceRequest"
               }
@@ -2813,7 +2813,7 @@
                 "$ref": "#/components/schemas/StorefrontNewsletterSubscribeRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontNewsletterSubscribeRequest"
               }
@@ -2900,7 +2900,7 @@
                 }
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "type": "array",
                 "items": {
@@ -2965,7 +2965,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -3021,7 +3021,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -3087,7 +3087,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -3360,7 +3360,7 @@
                 "$ref": "#/components/schemas/StorefrontPaymentCallbackRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontPaymentCallbackRequest"
               }
@@ -3466,7 +3466,7 @@
                 "$ref": "#/components/schemas/StorefrontPaymentWebhookRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontPaymentWebhookRequest"
               }
@@ -3557,7 +3557,7 @@
                 "$ref": "#/components/schemas/StorefrontPayPalCaptureRequest"
               }
             },
-            "application/*\u002Bjson": {
+            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontPayPalCaptureRequest"
               }
@@ -4367,6 +4367,28 @@
         },
         "additionalProperties": false
       },
+      "StorefrontCartAdjustmentResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "currencyCode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontCartItemRequest": {
         "required": [
           "productId"
@@ -4516,6 +4538,75 @@
           "currencyCodeSnapshot": {
             "type": "string",
             "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "productSlug": {
+            "type": "string",
+            "nullable": true
+          },
+          "productUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "selectedAttributes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontCartSelectedAttributeResponse"
+            },
+            "nullable": true
+          },
+          "unitPrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "lineSubtotal": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "lineTotal": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "quantityMinimum": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantityMaximum": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "quantityStep": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "allowedQuantities": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "purchasable": {
+            "type": "boolean"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontCartWarningResponse"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -4563,6 +4654,51 @@
             "items": {
               "$ref": "#/components/schemas/StorefrontCartLineResponse"
             }
+          },
+          "currencyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "summaryCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "subtotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "discountTotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "shippingEstimate": {
+            "type": "number",
+            "format": "double"
+          },
+          "taxEstimate": {
+            "type": "number",
+            "format": "double"
+          },
+          "grandTotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "checkoutAllowed": {
+            "type": "boolean"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontCartWarningResponse"
+            },
+            "nullable": true
+          },
+          "adjustments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontCartAdjustmentResponse"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -4579,6 +4715,20 @@
           },
           "data": {
             "$ref": "#/components/schemas/StorefrontCartResponse"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCartSelectedAttributeResponse": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -4708,6 +4858,30 @@
           },
           "data": {
             "$ref": "#/components/schemas/StorefrontCartValidationResponse"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCartWarningResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "lineId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "productId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
           }
         },
         "additionalProperties": false

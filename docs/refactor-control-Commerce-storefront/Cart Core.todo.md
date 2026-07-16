@@ -118,54 +118,54 @@ Goal: give Storefront V2 one stable cart shape for cart page, mini-cart badge, w
 
 Implementation checklist:
 
-- [ ] Add or extend application-level cart projection DTOs additively.
-- [ ] Keep existing response fields/routes compatible.
-- [ ] Compute per-line projection:
-  - [ ] display name.
-  - [ ] product slug.
-  - [ ] product URL.
-  - [ ] image URL.
-  - [ ] selected attribute labels.
-  - [ ] unit price.
-  - [ ] line subtotal.
-  - [ ] line total.
-  - [ ] quantity minimum.
-  - [ ] quantity maximum.
-  - [ ] quantity step.
-  - [ ] allowed quantities only if already available; otherwise leave null/empty.
-  - [ ] purchasable flag.
-  - [ ] line warnings with stable codes.
-- [ ] Compute cart-level projection:
-  - [ ] currency code.
-  - [ ] summary count.
-  - [ ] subtotal.
-  - [ ] discount total placeholder.
-  - [ ] shipping estimate placeholder.
-  - [ ] tax estimate placeholder.
-  - [ ] grand total.
-  - [ ] checkout allowed flag.
-  - [ ] cart warnings with stable codes.
-  - [ ] adjustment breakdown with zero/default placeholders where engines do not exist.
-- [ ] Keep rounding aligned with existing currency/pricing services.
-- [ ] Keep projection product/media/identity fields Storefront-safe.
-- [ ] Update Commerce Node Storefront API response DTOs additively.
-- [ ] Update Storefront API client models additively.
-- [ ] Update OpenAPI metadata/snapshots.
+- [x] Add or extend application-level cart projection DTOs additively. 2026-07-16 Phase 1: `StorefrontCartSessionDto` and `StorefrontCartLineDto` gained additive projection fields.
+- [x] Keep existing response fields/routes compatible. 2026-07-16 Phase 1: no route changes; old fields remain in cart responses.
+- [x] Compute per-line projection:
+  - [x] display name.
+  - [x] product slug.
+  - [x] product URL.
+  - [x] image URL.
+  - [x] selected attribute labels.
+  - [x] unit price.
+  - [x] line subtotal.
+  - [x] line total.
+  - [x] quantity minimum.
+  - [x] quantity maximum.
+  - [x] quantity step.
+  - [x] allowed quantities only if already available; otherwise leave null/empty.
+  - [x] purchasable flag.
+  - [x] line warnings with stable codes.
+- [x] Compute cart-level projection:
+  - [x] currency code.
+  - [x] summary count.
+  - [x] subtotal.
+  - [x] discount total placeholder.
+  - [x] shipping estimate placeholder.
+  - [x] tax estimate placeholder.
+  - [x] grand total.
+  - [x] checkout allowed flag.
+  - [x] cart warnings with stable codes.
+  - [x] adjustment breakdown with zero/default placeholders where engines do not exist.
+- [x] Keep rounding aligned with existing currency/pricing services. 2026-07-16 Phase 1: projection uses `IMoneyRoundingService`.
+- [x] Keep projection product/media/identity fields Storefront-safe. 2026-07-16 Phase 1: public response exposes display/product URL/image/warnings only; no admin/domain entity output.
+- [x] Update Commerce Node Storefront API response DTOs additively.
+- [x] Update Storefront API client models additively.
+- [x] Update OpenAPI metadata/snapshots.
 
 Verification checklist:
 
-- [ ] `GET cart` returns projection data without requiring Storefront V2 per-line product detail fetches.
-- [ ] Existing clients still deserialize old fields.
-- [ ] Product identity and media fields are public-safe.
-- [ ] No admin-only DTOs or domain entities appear in public schemas.
-- [ ] Storefront OpenAPI contract tests pass.
-- [ ] Storefront API client tests pass.
+- [x] `GET cart` returns projection data without requiring Storefront V2 per-line product detail fetches. 2026-07-16 Phase 1: Commerce Node cart response now includes server projection fields; Storefront UI consumption remains Phase 5.
+- [x] Existing clients still deserialize old fields. 2026-07-16 Phase 1: existing Storefront host/client tests passed with fallback behavior.
+- [x] Product identity and media fields are public-safe. 2026-07-16 Phase 1: projection is limited to display name, slug/path, image URL, selected attributes, quantity metadata, totals, and warning codes.
+- [x] No admin-only DTOs or domain entities appear in public schemas. 2026-07-16 Phase 1: Storefront OpenAPI contract tests passed.
+- [x] Storefront OpenAPI contract tests pass. 2026-07-16 Phase 1: focused OpenAPI/cart run passed 47/47 after snapshot refresh.
+- [x] Storefront API client tests pass. 2026-07-16 Phase 1: `StorefrontV2ApiClientTests|StorefrontV2HostSmokeTests|CartCorePhase0InventoryTests` passed 54/54.
 
 Exit criteria:
 
-- [ ] Storefront has one stable cart projection shape.
-- [ ] Basic totals and checkout eligibility are explicit in the response.
-- [ ] Projection remains additive and generator-safe.
+- [x] Storefront has one stable cart projection shape.
+- [x] Basic totals and checkout eligibility are explicit in the response.
+- [x] Projection remains additive and generator-safe.
 
 Suggested commit:
 
@@ -553,7 +553,7 @@ test(cart-core): complete release gate
 ## Recommended Implementation Order
 
 - [x] Phase 0 - baseline guardrails. 2026-07-16: guardrails added and focused verification passed.
-- [ ] Phase 1 - cart projection and basic totals.
+- [x] Phase 1 - cart projection and basic totals. 2026-07-16: server projection, public response, Storefront client model, snapshot, and focused tests completed.
 - [ ] Phase 2 - recalculate command.
 - [ ] Phase 3 - authenticated cart attach and merge.
 - [ ] Phase 4 - quantity constraints and item limits.

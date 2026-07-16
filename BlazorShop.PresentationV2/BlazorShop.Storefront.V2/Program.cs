@@ -843,8 +843,11 @@ static string ResolveConsentVisitorKey(HttpContext httpContext, bool createIfMis
 static StorefrontLocalCartResponse ToLocalCartResponse(StorefrontCartResponse? cart)
 {
     var lines = cart?.Lines ?? [];
+    var count = cart is not null && cart.SummaryCount > 0
+        ? cart.SummaryCount
+        : lines.Sum(line => Math.Max(0, line.Quantity));
     return new StorefrontLocalCartResponse(
-        Count: lines.Sum(line => Math.Max(0, line.Quantity)),
+        Count: count,
         Version: cart?.Version ?? 0,
         Lines: lines);
 }

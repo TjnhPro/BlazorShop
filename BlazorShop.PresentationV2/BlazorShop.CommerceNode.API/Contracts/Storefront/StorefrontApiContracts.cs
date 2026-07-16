@@ -504,7 +504,17 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         int Version,
         DateTimeOffset LastActivityAtUtc,
         DateTimeOffset ExpiresAtUtc,
-        IReadOnlyList<StorefrontCartLineResponse> Lines);
+        IReadOnlyList<StorefrontCartLineResponse> Lines,
+        string CurrencyCode = "USD",
+        int SummaryCount = 0,
+        decimal Subtotal = 0m,
+        decimal DiscountTotal = 0m,
+        decimal ShippingEstimate = 0m,
+        decimal TaxEstimate = 0m,
+        decimal GrandTotal = 0m,
+        bool CheckoutAllowed = true,
+        IReadOnlyList<StorefrontCartWarningResponse>? Warnings = null,
+        IReadOnlyList<StorefrontCartAdjustmentResponse>? Adjustments = null);
 
     public sealed record StorefrontCartLineResponse(
         Guid LineId,
@@ -518,7 +528,37 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         string? FulfillmentProviderKey,
         int Quantity,
         decimal? UnitPriceSnapshot,
-        string? CurrencyCodeSnapshot);
+        string? CurrencyCodeSnapshot,
+        string? DisplayName = null,
+        string? ProductSlug = null,
+        string? ProductUrl = null,
+        string? ImageUrl = null,
+        IReadOnlyList<StorefrontCartSelectedAttributeResponse>? SelectedAttributes = null,
+        decimal? UnitPrice = null,
+        decimal? LineSubtotal = null,
+        decimal? LineTotal = null,
+        int QuantityMinimum = 1,
+        int? QuantityMaximum = null,
+        int QuantityStep = 1,
+        IReadOnlyList<int>? AllowedQuantities = null,
+        bool Purchasable = true,
+        IReadOnlyList<StorefrontCartWarningResponse>? Warnings = null);
+
+    public sealed record StorefrontCartSelectedAttributeResponse(
+        string Name,
+        string Value);
+
+    public sealed record StorefrontCartWarningResponse(
+        string Code,
+        string Message,
+        Guid? LineId,
+        Guid? ProductId);
+
+    public sealed record StorefrontCartAdjustmentResponse(
+        string Code,
+        string Label,
+        decimal Amount,
+        string CurrencyCode);
 
     public sealed record StorefrontCartValidationResponse(
         Guid CartId,

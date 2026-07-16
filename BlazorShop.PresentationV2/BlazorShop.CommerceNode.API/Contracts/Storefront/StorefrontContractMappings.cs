@@ -320,7 +320,17 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 cart.Version,
                 cart.LastActivityAtUtc,
                 cart.ExpiresAtUtc,
-                cart.Lines.Select(line => line.ToStorefrontContract()).ToArray());
+                cart.Lines.Select(line => line.ToStorefrontContract()).ToArray(),
+                cart.CurrencyCode,
+                cart.SummaryCount,
+                cart.Subtotal,
+                cart.DiscountTotal,
+                cart.ShippingEstimate,
+                cart.TaxEstimate,
+                cart.GrandTotal,
+                cart.CheckoutAllowed,
+                cart.Warnings?.Select(warning => warning.ToStorefrontContract()).ToArray() ?? [],
+                cart.Adjustments?.Select(adjustment => adjustment.ToStorefrontContract()).ToArray() ?? []);
         }
 
         public static StorefrontCartLineResponse ToStorefrontContract(this StorefrontCartLineDto line)
@@ -337,7 +347,41 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 line.FulfillmentProviderKey,
                 line.Quantity,
                 line.UnitPriceSnapshot,
-                line.CurrencyCodeSnapshot);
+                line.CurrencyCodeSnapshot,
+                line.DisplayName,
+                line.ProductSlug,
+                line.ProductUrl,
+                line.ImageUrl,
+                line.SelectedAttributes?
+                    .Select(attribute => new StorefrontCartSelectedAttributeResponse(attribute.Name, attribute.Value))
+                    .ToArray() ?? [],
+                line.UnitPrice,
+                line.LineSubtotal,
+                line.LineTotal,
+                line.QuantityMinimum,
+                line.QuantityMaximum,
+                line.QuantityStep,
+                line.AllowedQuantities,
+                line.Purchasable,
+                line.Warnings?.Select(warning => warning.ToStorefrontContract()).ToArray() ?? []);
+        }
+
+        public static StorefrontCartWarningResponse ToStorefrontContract(this StorefrontCartWarningDto warning)
+        {
+            return new StorefrontCartWarningResponse(
+                warning.Code,
+                warning.Message,
+                warning.LineId,
+                warning.ProductId);
+        }
+
+        public static StorefrontCartAdjustmentResponse ToStorefrontContract(this StorefrontCartAdjustmentDto adjustment)
+        {
+            return new StorefrontCartAdjustmentResponse(
+                adjustment.Code,
+                adjustment.Label,
+                adjustment.Amount,
+                adjustment.CurrencyCode);
         }
 
         public static StorefrontCartValidationResponse ToStorefrontContract(this StorefrontCartValidationResult validation)

@@ -324,7 +324,7 @@ Plan: `Cart Core.todo.md`.
 - [x] Legacy readable `my-cart` import posts product, variant, quantity, and selected attributes only, then deletes the legacy cookie after import. 2026-07-16: Phase 0 inventory test guards token service import behavior.
 - [x] Storefront V2 local cart API still uses the scoped Commerce Node Storefront API client with `X-Cart-Token`, not direct browser calls to Commerce Node. 2026-07-16: Phase 0 source review confirmed local endpoint/client boundary.
 - [ ] Cart page consumes server cart projection without product detail N+1 fetches.
-- [ ] Cart badge uses server summary count.
+- [x] Cart badge uses server summary count. 2026-07-16 Phase 1: local `/api/cart` response now prefers server `SummaryCount` with old sum fallback; Storefront V2 host tests passed.
 - [ ] Invalid/unavailable cart line blocks checkout from projection state.
 - [ ] Login merge keeps guest cart lines without browser-supplied identity.
 

@@ -716,6 +716,32 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 ?? throw new InvalidOperationException("StorefrontCartLineUpdateRequest schema was not found.");
             Assert.Equal(1, updateLineSchema["properties"]?["quantity"]?["minimum"]?.GetValue<int>());
 
+            var cartResponseSchema = schemas["StorefrontCartResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCartResponse schema was not found.");
+            var cartResponseProperties = cartResponseSchema["properties"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCartResponse properties were not found.");
+            Assert.Contains("summaryCount", cartResponseProperties);
+            Assert.Contains("subtotal", cartResponseProperties);
+            Assert.Contains("grandTotal", cartResponseProperties);
+            Assert.Contains("checkoutAllowed", cartResponseProperties);
+            Assert.Contains("warnings", cartResponseProperties);
+            Assert.Contains("adjustments", cartResponseProperties);
+
+            var cartLineResponseSchema = schemas["StorefrontCartLineResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCartLineResponse schema was not found.");
+            var cartLineResponseProperties = cartLineResponseSchema["properties"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCartLineResponse properties were not found.");
+            Assert.Contains("displayName", cartLineResponseProperties);
+            Assert.Contains("productUrl", cartLineResponseProperties);
+            Assert.Contains("imageUrl", cartLineResponseProperties);
+            Assert.Contains("selectedAttributes", cartLineResponseProperties);
+            Assert.Contains("lineTotal", cartLineResponseProperties);
+            Assert.Contains("quantityMinimum", cartLineResponseProperties);
+            Assert.Contains("quantityMaximum", cartLineResponseProperties);
+            Assert.Contains("quantityStep", cartLineResponseProperties);
+            Assert.Contains("purchasable", cartLineResponseProperties);
+            Assert.Contains("warnings", cartLineResponseProperties);
+
             Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(operations["StorefrontCart_Get"]));
             Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(operations["StorefrontCart_AddLine"]));
         }
