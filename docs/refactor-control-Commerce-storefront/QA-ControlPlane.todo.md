@@ -482,8 +482,9 @@ Status legend:
 - [x] Variation template manager can edit option control type. 2026-07-16 Phase 1: `CommerceVariationTemplates.razor` sends `ControlType` through `CatalogClient`; ControlPlane Web build passed.
 - [x] Variation template manager can edit option required state. 2026-07-16 Phase 1: option form sends `IsRequired`; ControlPlane Web build passed.
 - [x] Variation template manager can edit color hex for color values. 2026-07-16 Phase 1: value form shows color hex only for `color` options and sends through ControlPlane API client; ControlPlane Web build passed.
-- [x] Product variant manager can mark a variant inactive. 2026-07-16 Phase 2: product drawer sends `UpdateVariantAsync` with `IsActive=false` through ControlPlane API.
-- [x] Product variant manager shows normalized signature read-only. 2026-07-16 Phase 2: product drawer displays `AttributeSignature` in the variant list.
-- [x] Product variant manager warns for missing required option. 2026-07-16 Phase 2: CommerceNode service returns required-option validation; ControlPlane Web surfaces API message.
-- [x] Product variant manager warns for stale template value. 2026-07-16 Phase 2: CommerceNode service returns inactive/unknown value validation; ControlPlane Web surfaces API message.
-- [x] ControlPlane Web calls only ControlPlane API. 2026-07-16 Phase 2: active toggle reuses existing `CatalogClient.UpdateVariantAsync` gateway path.
+- [x] Product variant manager can mark a variant inactive. 2026-07-16 Phase 6: product drawer sends `UpdateVariantAsync` with `IsActive=false` through ControlPlane API and focused gateway tests passed.
+- [x] Product variant manager shows default state. 2026-07-16 Phase 6: product drawer shows a `Default` badge for default variants; `ControlPlaneVariantAttributeWorkflowTests` guards the marker.
+- [x] Product variant manager shows normalized signature read-only. 2026-07-16 Phase 6: product drawer labels `Combination signature` and falls back to `not generated`; ControlPlane Web build passed.
+- [x] Product variant manager warns for missing required option. 2026-07-16 Phase 6: product drawer renders missing required-option warnings from active template metadata; static workflow test guards the warning path.
+- [x] Product variant manager warns for stale template value. 2026-07-16 Phase 6: product drawer renders stale option/value warnings when saved variant attributes no longer match active template metadata.
+- [x] ControlPlane Web calls only ControlPlane API. 2026-07-16 Phase 6: `ControlPlaneVariantAttributeWorkflowTests.ControlPlaneWeb_UsesControlPlaneCommerceGatewayRoutesOnly` and `ControlPlaneArchitectureBoundaryTests` passed.

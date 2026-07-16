@@ -426,36 +426,36 @@ Goal: make admin workflows clear enough that stores do not accidentally create b
 
 Implementation checklist:
 
-- [ ] Update variation template manager:
-  - [ ] show option control type.
-  - [ ] edit option control type.
-  - [ ] show required/optional state.
-  - [ ] edit required/optional state.
-  - [ ] show active/inactive state.
-  - [ ] show value color hex for color options.
-- [ ] Update product variant manager:
-  - [ ] show active/inactive state.
-  - [ ] edit active/inactive state.
-  - [ ] show default state.
-  - [ ] show normalized combination signature read-only.
-  - [ ] warn when product has a template and a required option is missing.
-  - [ ] warn when a variant value no longer exists in the active template.
-- [ ] Preserve existing ControlPlane Web routing through ControlPlane API.
-- [ ] Do not call CommerceNode API directly from ControlPlane Web.
-- [ ] Keep validation errors visible and actionable in ControlPlane Web.
+- [x] Update variation template manager:
+  - [x] show option control type. 2026-07-16 Phase 6: existing manager metadata locked by `ControlPlaneVariantAttributeWorkflowTests`.
+  - [x] edit option control type. 2026-07-16 Phase 6: existing option form posts `ControlType` through `CatalogClient`.
+  - [x] show required/optional state. 2026-07-16 Phase 6: existing manager metadata locked by static workflow test.
+  - [x] edit required/optional state. 2026-07-16 Phase 6: existing option form posts `IsRequired` through `CatalogClient`.
+  - [x] show active/inactive state. 2026-07-16 Phase 6: existing template/option/value badges and toggles remain in the manager.
+  - [x] show value color hex for color options. 2026-07-16 Phase 6: existing color-only value editor and swatches remain guarded.
+- [x] Update product variant manager:
+  - [x] show active/inactive state. 2026-07-16 Phase 6: product drawer keeps variant active badge.
+  - [x] edit active/inactive state. 2026-07-16 Phase 6: active toggle still calls `CatalogClient.UpdateVariantAsync`.
+  - [x] show default state. 2026-07-16 Phase 6: product drawer now shows a `Default` badge for default variants.
+  - [x] show normalized combination signature read-only. 2026-07-16 Phase 6: product drawer labels `Combination signature` and falls back to `not generated`.
+  - [x] warn when product has a template and a required option is missing. 2026-07-16 Phase 6: `GetVariantWorkflowWarnings` renders missing required-option warnings in the drawer.
+  - [x] warn when a variant value no longer exists in the active template. 2026-07-16 Phase 6: stale option/value warnings render against active product detail template data.
+- [x] Preserve existing ControlPlane Web routing through ControlPlane API. 2026-07-16 Phase 6: no new route/client added; variant edits reuse `api/controlplane/commerce/*` gateway client.
+- [x] Do not call CommerceNode API directly from ControlPlane Web. 2026-07-16 Phase 6: boundary guardrail test asserts no `api/commerce` or `api/storefront` direct routes in ControlPlane Web.
+- [x] Keep validation errors visible and actionable in ControlPlane Web. 2026-07-16 Phase 6: existing `errorMessage` surfacing remains; stale/incomplete warnings are visible before mutation.
 
 Verification checklist:
 
-- [ ] Control Plane Web build passes.
-- [ ] Control Plane API gateway tests pass.
-- [ ] Control Plane boundary tests prove Web does not call CommerceNode API directly.
-- [ ] Manager UI shows disabled/default/incomplete combination states.
-- [ ] Validation errors from Commerce Node surface clearly.
+- [x] Control Plane Web build passes. 2026-07-16 Phase 6: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` passed.
+- [x] Control Plane API gateway tests pass. 2026-07-16 Phase 6: `ControlPlaneCommerceCatalogControllerTests|ControlPlaneCommerceCatalogServiceStoreMappingTests` passed.
+- [x] Control Plane boundary tests prove Web does not call CommerceNode API directly. 2026-07-16 Phase 6: `ControlPlaneArchitectureBoundaryTests|ControlPlaneVariantAttributeWorkflowTests` passed.
+- [x] Manager UI shows disabled/default/incomplete combination states. 2026-07-16 Phase 6: static workflow test covers inactive/default/signature/warning markers.
+- [x] Validation errors from Commerce Node surface clearly. 2026-07-16 Phase 6: no API error handling path changed; ControlPlane Web still renders gateway result messages and now adds pre-save combination warnings.
 
 Exit criteria:
 
-- [ ] Admin can tell which combinations are valid, disabled, default, or incomplete.
-- [ ] UI edits call only approved V2 API boundaries.
+- [x] Admin can tell which combinations are valid, disabled, default, or incomplete. 2026-07-16 Phase 6: product drawer shows active/default/signature and review warnings.
+- [x] UI edits call only approved V2 API boundaries. 2026-07-16 Phase 6: focused gateway/boundary tests passed 19/19.
 
 Suggested commit:
 
@@ -591,7 +591,7 @@ test(variant-attributes): complete release gate
 - [x] Phase 3 - shared product selection resolver. 2026-07-16: committed as `feat(storefront): share product selection resolution`.
 - [x] Phase 4 - Storefront product selection preview API. 2026-07-16: focused Phase 4 run passed 32/32.
 - [x] Phase 5 - Storefront product detail integration. 2026-07-16: focused Phase 5 run passed 43/43; Storefront V2 build and JS syntax check passed.
-- [ ] Phase 6 - manager workflow hardening.
+- [x] Phase 6 - manager workflow hardening. 2026-07-16: ControlPlane Web build passed; focused ControlPlane gateway/boundary/workflow tests passed 19/19.
 - [ ] Phase 7 - QA/contracts/release gate.
 
 ## Definition Of Done
