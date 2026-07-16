@@ -535,3 +535,13 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Inactive variants are not selectable. 2026-07-16 Phase 2: Storefront product detail filters inactive variants and cart rejects inactive selected variants; focused tests passed.
 - [x] Product detail remains usable before JavaScript loads. 2026-07-16 Phase 7: `StorefrontV2HostSmokeTests` passed 34/34 and product page still renders SSR fallback product data before JS preview updates.
 - [~] Visible browser QA for Product Variant Attribute remains pending. 2026-07-16 Phase 7: local V2 ports did not respond during automated release gate and no root `run-v2-local.ps1` was present; automated host/static/API coverage passed.
+
+## Availability Quantity
+
+- [x] Phase 0 baseline confirms current product card/detail quantity and stock states before sellability changes. 2026-07-16: source review plus active V2 focused backend/contract run passed 67/67.
+- [x] Product card direct add-to-cart is shown only for no-variant in-stock products. 2026-07-16 Phase 0: `ProductCard.razor` baseline confirmed.
+- [x] Product card preserves product detail link for products with variants. 2026-07-16 Phase 0: `ProductCard.razor` baseline confirmed.
+- [x] Product detail quantity input currently defaults to 1 with minimum 1. 2026-07-16 Phase 0: `ProductPage.razor` baseline confirmed.
+- [x] Product detail uses product quantity and variant stock markers for existing add-to-cart behavior. 2026-07-16 Phase 0: `ProductPage.razor` baseline confirmed.
+- [x] Storefront V2 cart endpoint rejects quantity below 1. 2026-07-16 Phase 0: local endpoint source and `StorefrontCartServiceTests` baseline confirmed.
+- [ ] Storefront V2 host smoke remains green before sellability UI changes.

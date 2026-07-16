@@ -856,3 +856,14 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Storefront selection-preview endpoint is store-scoped. 2026-07-16 Phase 4: `StorefrontScopedCatalogControllerSelectionPreviewTests.PreviewProductSelection_WhenStoreCannotBeResolved_ReturnsNotFoundAndSkipsResolver` passed; resolver remains store-scoped by `StoreId`.
 - [x] Storefront selection-preview endpoint rejects quantity below 1. 2026-07-16 Phase 4: Storefront OpenAPI contract asserts `StorefrontProductSelectionPreviewRequest.quantity minimum: 1`; `[ApiController]` model validation enforces runtime 400.
 - [x] Product Variant Attribute automated release gate passed. 2026-07-16 Phase 7: active V2 builds passed; focused CommerceNode/Storefront contract/client/cart/checkout/control-plane release-gate tests passed 140/140, and Storefront host smoke passed 34/34. Existing warnings remain NuGet vulnerability advisories and Browserslist freshness notices.
+
+## Availability Quantity
+
+- [x] Phase 0 baseline confirms current catalog visibility, stock, cart, checkout, and Storefront contract behavior before sellability changes. 2026-07-16: active V2 focused run passed 67/67.
+- [x] Published store-visible products appear in public catalog. 2026-07-16 Phase 0: `CommerceNodeProductStoreScopeTests` passed.
+- [x] Unpublished, archived, scheduled, expired, and wrong-store products do not appear in public catalog. 2026-07-16 Phase 0: `CommerceNodeProductStoreScopeTests` and `PublicCatalogServiceTests` passed.
+- [x] Public catalog `InStock` still reflects product quantity or variant stock. 2026-07-16 Phase 0: Storefront contract/OpenAPI guardrails passed; stronger projection-specific assertions are reserved for Phase 3.
+- [x] Storefront cart rejects quantity below 1 before product lookup. 2026-07-16 Phase 0: `StorefrontCartServiceTests` passed.
+- [x] Storefront cart rejects stock shortage and unavailable variants. 2026-07-16 Phase 0: `StorefrontCartServiceTests` passed.
+- [x] Storefront checkout validates cart lines before order creation. 2026-07-16 Phase 0: `StorefrontCheckoutServiceTests` passed.
+- [x] Storefront OpenAPI preserves `InStock`, `Quantity`, and variant `Stock`. 2026-07-16 Phase 0: `CommerceNodeStorefrontOpenApiContractTests` passed.

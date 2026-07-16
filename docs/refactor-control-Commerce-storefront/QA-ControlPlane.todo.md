@@ -489,3 +489,11 @@ Status legend:
 - [x] Product variant manager warns for stale template value. 2026-07-16 Phase 6: product drawer renders stale option/value warnings when saved variant attributes no longer match active template metadata.
 - [x] ControlPlane Web calls only ControlPlane API. 2026-07-16 Phase 6: `ControlPlaneVariantAttributeWorkflowTests.ControlPlaneWeb_UsesControlPlaneCommerceGatewayRoutesOnly` and `ControlPlaneArchitectureBoundaryTests` passed.
 - [x] Product Variant Attribute Control Plane release gate passed. 2026-07-16 Phase 7: ControlPlane API/Web builds passed, `ControlPlaneCommerceCatalogControllerTests|ControlPlaneCommerceCatalogServiceStoreMappingTests|ControlPlaneArchitectureBoundaryTests|ControlPlaneVariantAttributeWorkflowTests` passed inside the 140-test focused release-gate run.
+
+## Availability Quantity
+
+- [x] Phase 0 baseline confirms current product and inventory manager behavior remains behind Control Plane API before purchase-field changes. 2026-07-16: source review confirmed no Phase 0 manager route changes.
+- [x] Product editor currently preserves existing availability window, quantity, identity, and dimension fields. 2026-07-16 Phase 0: `CommerceProducts.razor` baseline confirmed.
+- [x] Inventory manager continues to update product quantity and variant stock through Control Plane API. 2026-07-16 Phase 0: existing `CatalogClient.UpdateProductStockAsync` and `UpdateVariantStockAsync` path confirmed.
+- [x] ControlPlane Web does not call CommerceNode API directly. 2026-07-16 Phase 0: no ControlPlane Web changes in baseline; existing boundary tests remain applicable.
+- [ ] Future manager work must expose manage-stock, min/max/step, purchase-disabled reason, hide-when-out-of-stock, and delivery metadata through the Control Plane gateway.
