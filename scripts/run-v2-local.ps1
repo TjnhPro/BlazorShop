@@ -467,7 +467,7 @@ if (-not $NoStorefront) {
         -Url $storefrontUrl `
         -Prefix "STOREFRONT_V2__"
 
-    Wait-HttpOk -Url $storefrontUrl
+    Wait-HttpOk -Url "$($storefrontUrl.TrimEnd('/'))/health"
 }
 
 if ($bootstrapControlPlane -and -not $SkipBootstrap) {

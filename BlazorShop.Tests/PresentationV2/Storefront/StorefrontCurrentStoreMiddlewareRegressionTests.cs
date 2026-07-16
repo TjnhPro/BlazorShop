@@ -20,6 +20,29 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     public sealed class StorefrontCurrentStoreMiddlewareRegressionTests
     {
         [Fact]
+        public void DevelopmentConfiguration_RequiresCurrentStoreGuard()
+        {
+            var repositoryRoot = FindRepositoryRoot();
+            var storefrontRoot = Path.Combine(
+                repositoryRoot,
+                "BlazorShop.PresentationV2",
+                "BlazorShop.Storefront.V2");
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(storefrontRoot)
+                .AddJsonFile("appsettings.Development.json", optional: false)
+                .Build();
+            var localEnv = ReadEnvFile(Path.Combine(repositoryRoot, "scripts", "env", "v2-local.env"));
+
+            Assert.Equal("default", configuration["Api:StoreKey"]);
+            Assert.True(bool.TryParse(configuration["StoreResolution:RequireCurrentStore"], out var requireCurrentStore));
+            Assert.True(requireCurrentStore);
+            Assert.Equal("true", localEnv["STOREFRONT_V2__StoreResolution__RequireCurrentStore"]);
+            Assert.True(StorefrontStoreResolutionOptions.IsCurrentStoreRequired(
+                new StorefrontStoreResolutionOptions { RequireCurrentStore = requireCurrentStore },
+                new StubEnvironment { EnvironmentName = "Development" }));
+        }
+
+        [Fact]
         public async Task HtmlUnavailableRedirect_RemainsRedirectWhenResponseStarts()
         {
             // Regression: ISSUE-001 - service-unavailable headers changed HTML redirect into HTTP 503.
@@ -47,6 +70,27 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(HttpStatusCode.Redirect, (HttpStatusCode)context.Response.StatusCode);
             Assert.Equal("/maintenance?reason=closed", context.Response.Headers.Location);
             Assert.Equal(StorefrontResponseHeaders.NoIndexNoFollow, context.Response.Headers["X-Robots-Tag"]);
+        }
+
+        private static string FindRepositoryRoot()
+        {
+            var directory = new DirectoryInfo(AppContext.BaseDirectory);
+            while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "BlazorShop.sln")))
+            {
+                directory = directory.Parent;
+            }
+
+            return directory?.FullName ?? throw new InvalidOperationException("Repository root was not found.");
+        }
+
+        private static IReadOnlyDictionary<string, string> ReadEnvFile(string path)
+        {
+            return File.ReadLines(path)
+                .Select(line => line.Trim())
+                .Where(line => line.Length > 0 && !line.StartsWith("#", StringComparison.Ordinal))
+                .Select(line => line.Split('=', 2))
+                .Where(parts => parts.Length == 2)
+                .ToDictionary(parts => parts[0].Trim(), parts => parts[1].Trim(), StringComparer.OrdinalIgnoreCase);
         }
 
         private static StorefrontCurrentStore CreateCurrentStore()
