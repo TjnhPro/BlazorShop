@@ -2,6 +2,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 {
     using System.Security.Claims;
 
+    using BlazorShop.Application.CommerceNode.Captcha;
     using ApplicationStorefrontCheckoutResult = BlazorShop.Application.DTOs.Payment.StorefrontCheckoutResult;
     using ApplicationStorefrontCheckoutPreviewResult = BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutPreviewResult;
     using ApplicationStorefrontPlaceOrderResult = BlazorShop.Application.CommerceNode.Checkout.StorefrontPlaceOrderResult;
@@ -37,20 +38,32 @@ namespace BlazorShop.CommerceNode.API.Controllers
     public sealed class StorefrontScopedAuthController : StorefrontApiControllerBase
     {
         private readonly IAuthenticationService authenticationService;
+        private readonly ICaptchaVerifier captchaVerifier;
+        private readonly CaptchaOptions captchaOptions;
         private readonly CommerceNodeRuntimeOptions runtimeOptions;
 
         public StorefrontScopedAuthController(
             IAuthenticationService authenticationService,
+            ICaptchaVerifier captchaVerifier,
+            IOptions<CaptchaOptions> captchaOptions,
             IOptions<CommerceNodeRuntimeOptions> runtimeOptions)
         {
             this.authenticationService = authenticationService;
+            this.captchaVerifier = captchaVerifier;
+            this.captchaOptions = captchaOptions.Value;
             this.runtimeOptions = runtimeOptions.Value;
         }
 
         [HttpPost("register")]
         [EnableRateLimiting(StorefrontRateLimitPolicyNames.AuthStrict)]
-        public async Task<IActionResult> Register([FromBody] StorefrontRegisterRequest user)
+        public async Task<IActionResult> Register([FromBody] StorefrontRegisterRequest user, CancellationToken cancellationToken)
         {
+            var captchaFailure = await this.ValidateCaptchaAsync(CaptchaTargetNames.Registration, user.CaptchaToken, cancellationToken);
+            if (captchaFailure is not null)
+            {
+                return captchaFailure;
+            }
+
             var result = await this.authenticationService.CreateUser(user.ToApplicationRequest());
             return this.FromServiceResponse(
                 result,
@@ -61,8 +74,14 @@ namespace BlazorShop.CommerceNode.API.Controllers
         [HttpPost("login")]
         [EnableRateLimiting(StorefrontRateLimitPolicyNames.AuthStrict)]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
-        public async Task<IActionResult> Login([FromBody] StorefrontLoginRequest user)
+        public async Task<IActionResult> Login([FromBody] StorefrontLoginRequest user, CancellationToken cancellationToken)
         {
+            var captchaFailure = await this.ValidateCaptchaAsync(CaptchaTargetNames.Login, user.CaptchaToken, cancellationToken);
+            if (captchaFailure is not null)
+            {
+                return captchaFailure;
+            }
+
             var result = await this.authenticationService.LoginUser(
                 user.ToApplicationRequest(),
                 this.GetClientIpAddress(),
@@ -240,6 +259,41 @@ namespace BlazorShop.CommerceNode.API.Controllers
         private string? GetUserAgent()
         {
             return this.Request.Headers.UserAgent.ToString();
+        }
+
+        private async Task<IActionResult?> ValidateCaptchaAsync(string target, string? token, CancellationToken cancellationToken)
+        {
+            if (!this.IsCaptchaEnabled(target))
+            {
+                return null;
+            }
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return this.Error(StatusCodes.Status400BadRequest, "captcha.required", "Security verification is required.");
+            }
+
+            var result = await this.captchaVerifier.VerifyAsync(
+                new CaptchaVerificationRequest(target, token, this.GetClientIpAddress(), this.GetUserAgent()),
+                cancellationToken);
+            return result.Success
+                ? null
+                : this.Error(StatusCodes.Status400BadRequest, "captcha.failed", "Security verification failed.");
+        }
+
+        private bool IsCaptchaEnabled(string target)
+        {
+            if (!this.captchaOptions.Enabled)
+            {
+                return false;
+            }
+
+            return target switch
+            {
+                CaptchaTargetNames.Login => this.captchaOptions.Targets.Login,
+                CaptchaTargetNames.Registration => this.captchaOptions.Targets.Registration,
+                _ => false,
+            };
         }
 
         private static LoginResponse SanitizeLoginResponse(LoginResponse response)
@@ -848,19 +902,48 @@ namespace BlazorShop.CommerceNode.API.Controllers
     public sealed class StorefrontScopedNewsletterController : StorefrontApiControllerBase
     {
         private readonly INewsletterService newsletterService;
+        private readonly ICaptchaVerifier captchaVerifier;
+        private readonly CaptchaOptions captchaOptions;
 
-        public StorefrontScopedNewsletterController(INewsletterService newsletterService)
+        public StorefrontScopedNewsletterController(
+            INewsletterService newsletterService,
+            ICaptchaVerifier captchaVerifier,
+            IOptions<CaptchaOptions> captchaOptions)
         {
             this.newsletterService = newsletterService;
+            this.captchaVerifier = captchaVerifier;
+            this.captchaOptions = captchaOptions.Value;
         }
 
         [HttpPost("subscribe")]
         [EnableRateLimiting(StorefrontRateLimitPolicyNames.Newsletter)]
-        public async Task<IActionResult> Subscribe([FromBody] StorefrontNewsletterSubscribeRequest request)
+        public async Task<IActionResult> Subscribe(
+            [FromBody] StorefrontNewsletterSubscribeRequest request,
+            CancellationToken cancellationToken)
         {
             if (request is null || string.IsNullOrWhiteSpace(request.Email))
             {
                 return this.Failure<object>(ServiceResponseType.ValidationError, "Email is required.");
+            }
+
+            if (this.captchaOptions.Enabled && this.captchaOptions.Targets.Newsletter)
+            {
+                if (string.IsNullOrWhiteSpace(request.CaptchaToken))
+                {
+                    return this.Error(StatusCodes.Status400BadRequest, "captcha.required", "Security verification is required.");
+                }
+
+                var captcha = await this.captchaVerifier.VerifyAsync(
+                    new CaptchaVerificationRequest(
+                        CaptchaTargetNames.Newsletter,
+                        request.CaptchaToken,
+                        this.HttpContext.Connection.RemoteIpAddress?.ToString(),
+                        this.Request.Headers.UserAgent.ToString()),
+                    cancellationToken);
+                if (!captcha.Success)
+                {
+                    return this.Error(StatusCodes.Status400BadRequest, "captcha.failed", "Security verification failed.");
+                }
             }
 
             var result = await this.newsletterService.SubscribeAsync(request.Email);
@@ -987,6 +1070,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
         private readonly IStoreFeatureStateService featureStateService;
         private readonly IStorefrontPublicConfigurationCache publicConfigurationCache;
         private readonly StorefrontConsentOptions consentOptions;
+        private readonly CaptchaOptions captchaOptions;
 
         public StorefrontScopedConfigurationController(
             ICommerceStoreContext storeContext,
@@ -995,7 +1079,8 @@ namespace BlazorShop.CommerceNode.API.Controllers
             IStoreSeoSettingsService seoSettingsService,
             IStoreFeatureStateService featureStateService,
             IStorefrontPublicConfigurationCache publicConfigurationCache,
-            IOptions<StorefrontConsentOptions> consentOptions)
+            IOptions<StorefrontConsentOptions> consentOptions,
+            IOptions<CaptchaOptions> captchaOptions)
         {
             this.storeContext = storeContext;
             this.paymentMethodService = paymentMethodService;
@@ -1004,6 +1089,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             this.featureStateService = featureStateService;
             this.publicConfigurationCache = publicConfigurationCache;
             this.consentOptions = consentOptions.Value;
+            this.captchaOptions = captchaOptions.Value;
         }
 
         [HttpGet]
@@ -1041,6 +1127,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 seoDefaults,
                 featureStates,
                 this.consentOptions,
+                this.captchaOptions,
                 supportedCurrencyCodes);
 
             this.publicConfigurationCache.Set(storeResult.Payload.StoreKey, configuration);

@@ -835,6 +835,7 @@ namespace BlazorShop.Storefront.Services
         StorefrontLocaleOptions LocaleOptions,
         StorefrontCurrencyOptions CurrencyOptions,
         StorefrontConsentConfiguration Consent,
+        StorefrontCaptchaConfiguration Captcha,
         StorefrontMaintenanceState MaintenanceState,
         StorefrontFeatureFlags FeatureFlags,
         IReadOnlyList<StorefrontPublicPaymentMethod> PaymentMethods,
@@ -923,6 +924,13 @@ namespace BlazorShop.Storefront.Services
 
         public bool Marketing { get; set; }
     }
+
+    public sealed record StorefrontCaptchaConfiguration(
+        bool Enabled,
+        string ProviderSystemName,
+        string? PublicSiteKey,
+        IReadOnlyList<string> EnabledTargets,
+        IReadOnlyDictionary<string, string> ActionNames);
 
     public sealed record StorefrontMaintenanceState(
         bool MaintenanceModeEnabled,

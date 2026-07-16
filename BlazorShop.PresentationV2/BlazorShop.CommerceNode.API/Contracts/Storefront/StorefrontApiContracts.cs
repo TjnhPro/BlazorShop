@@ -33,6 +33,9 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         [Required]
         [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
         public string ConfirmPassword { get; set; } = string.Empty;
+
+        [MaxLength(4096)]
+        public string? CaptchaToken { get; set; }
     }
 
     public sealed class StorefrontLoginRequest
@@ -44,6 +47,9 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
 
         [Required]
         public string Password { get; set; } = string.Empty;
+
+        [MaxLength(4096)]
+        public string? CaptchaToken { get; set; }
     }
 
     public sealed class StorefrontChangePasswordRequest
@@ -458,6 +464,9 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         public string Email { get; set; } = string.Empty;
 
         public bool MarketingConsentAccepted { get; set; }
+
+        [MaxLength(4096)]
+        public string? CaptchaToken { get; set; }
     }
 
     public sealed class StorefrontPayPalCaptureRequest
@@ -725,6 +734,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         StorefrontLocaleOptionsResponse LocaleOptions,
         StorefrontCurrencyOptionsResponse CurrencyOptions,
         StorefrontConsentConfigurationResponse Consent,
+        StorefrontCaptchaConfigurationResponse Captcha,
         StorefrontMaintenanceStateResponse MaintenanceState,
         StorefrontFeatureFlagsResponse FeatureFlags,
         IReadOnlyList<StorefrontPaymentMethodResponse> PaymentMethods,
@@ -815,6 +825,13 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
 
         public bool Marketing { get; set; }
     }
+
+    public sealed record StorefrontCaptchaConfigurationResponse(
+        bool Enabled,
+        string ProviderSystemName,
+        string? PublicSiteKey,
+        IReadOnlyList<string> EnabledTargets,
+        IReadOnlyDictionary<string, string> ActionNames);
 
     public sealed record StorefrontMaintenanceStateResponse(
         bool MaintenanceModeEnabled,

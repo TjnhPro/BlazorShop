@@ -132,6 +132,7 @@ app.MapPost(StorefrontRoutes.SignIn, async (
         {
             Email = form.Email.Trim(),
             Password = form.Password,
+            CaptchaToken = form.CaptchaToken,
         },
         cancellationToken);
 
@@ -169,6 +170,7 @@ app.MapPost(StorefrontRoutes.Register, async (
             Email = form.Email.Trim(),
             Password = form.Password,
             ConfirmPassword = form.ConfirmPassword,
+            CaptchaToken = form.CaptchaToken,
         },
         cancellationToken);
 

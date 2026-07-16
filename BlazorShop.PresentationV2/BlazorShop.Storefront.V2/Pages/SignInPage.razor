@@ -35,6 +35,7 @@
                 <form method="post" action="@PostAction" class="max-w-xl space-y-5">
                     <AntiforgeryToken />
                     <input type="hidden" name="ReturnUrl" value="@SafeReturnUrl" />
+                    <input type="hidden" name="CaptchaToken" data-storefront-captcha-token="login" />
 
                     <label class="block text-sm">
                         <span class="font-semibold text-neutral-800">Email address</span>

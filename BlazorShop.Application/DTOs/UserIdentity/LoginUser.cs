@@ -2,5 +2,6 @@
 {
     public class LoginUser : BaseModel
     {
+        public string? CaptchaToken { get; set; }
     }
 }

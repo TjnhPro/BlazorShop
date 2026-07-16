@@ -6,6 +6,8 @@ namespace BlazorShop.Storefront.Services
 
         public string? Password { get; set; }
 
+        public string? CaptchaToken { get; set; }
+
         public string? ReturnUrl { get; set; }
     }
 }

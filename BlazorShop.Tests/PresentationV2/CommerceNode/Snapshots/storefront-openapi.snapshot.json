@@ -4077,6 +4077,37 @@
         },
         "additionalProperties": false
       },
+      "StorefrontCaptchaConfigurationResponse": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "providerSystemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "publicSiteKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "enabledTargets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "actionNames": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontCartItemRequest": {
         "required": [
           "productId"
@@ -5525,6 +5556,11 @@
           "password": {
             "minLength": 1,
             "type": "string"
+          },
+          "captchaToken": {
+            "maxLength": 4096,
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -5597,6 +5633,11 @@
           },
           "marketingConsentAccepted": {
             "type": "boolean"
+          },
+          "captchaToken": {
+            "maxLength": 4096,
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -6743,6 +6784,9 @@
           "consent": {
             "$ref": "#/components/schemas/StorefrontConsentConfigurationResponse"
           },
+          "captcha": {
+            "$ref": "#/components/schemas/StorefrontCaptchaConfigurationResponse"
+          },
           "maintenanceState": {
             "$ref": "#/components/schemas/StorefrontMaintenanceStateResponse"
           },
@@ -6805,6 +6849,11 @@
           "confirmPassword": {
             "minLength": 1,
             "type": "string"
+          },
+          "captchaToken": {
+            "maxLength": 4096,
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

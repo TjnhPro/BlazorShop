@@ -2,6 +2,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
 {
     using System.IdentityModel.Tokens.Jwt;
 
+    using BlazorShop.Application.CommerceNode.Captcha;
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Checkout;
     using BlazorShop.Application.CommerceNode.Consent;
@@ -28,6 +29,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 Email = request.Email,
                 Password = request.Password,
                 ConfirmPassword = request.ConfirmPassword,
+                CaptchaToken = request.CaptchaToken,
             };
         }
 
@@ -37,6 +39,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
             {
                 Email = request.Email,
                 Password = request.Password,
+                CaptchaToken = request.CaptchaToken,
             };
         }
 
@@ -680,6 +683,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
             SeoSettingsDto seoDefaults,
             StoreFeatureStateSnapshot featureStates,
             StorefrontConsentOptions consentOptions,
+            CaptchaOptions captchaOptions,
             IReadOnlyList<string>? supportedCurrencyCodes = null)
         {
             var currencyCodes = NormalizeSupportedCurrencyCodes(store.DefaultCurrencyCode, supportedCurrencyCodes);
@@ -714,6 +718,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                     store.DefaultCurrencyCode,
                     currencyCodes),
                 ToStorefrontContract(consentOptions),
+                ToStorefrontContract(captchaOptions),
                 new StorefrontMaintenanceStateResponse(
                     store.MaintenanceModeEnabled,
                     store.MaintenanceMessage),
@@ -773,6 +778,32 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 snapshot.UpdatedAtUtc,
                 snapshot.RevokedAtUtc,
                 snapshot.ExpiresAtUtc);
+        }
+
+        public static StorefrontCaptchaConfigurationResponse ToStorefrontContract(CaptchaOptions options)
+        {
+            var enabledTargets = new List<string>();
+            if (options.Enabled && options.Targets.Login)
+            {
+                enabledTargets.Add(CaptchaTargetNames.Login);
+            }
+
+            if (options.Enabled && options.Targets.Registration)
+            {
+                enabledTargets.Add(CaptchaTargetNames.Registration);
+            }
+
+            if (options.Enabled && options.Targets.Newsletter)
+            {
+                enabledTargets.Add(CaptchaTargetNames.Newsletter);
+            }
+
+            return new StorefrontCaptchaConfigurationResponse(
+                options.Enabled,
+                string.IsNullOrWhiteSpace(options.ProviderSystemName) ? "none" : options.ProviderSystemName,
+                options.Enabled ? options.PublicSiteKey : null,
+                enabledTargets,
+                enabledTargets.ToDictionary(target => target, target => target, StringComparer.Ordinal));
         }
 
         private static IReadOnlyList<string> NormalizeSupportedCurrencyCodes(

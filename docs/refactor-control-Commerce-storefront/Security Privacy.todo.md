@@ -195,51 +195,51 @@ Goal: provide provider-neutral captcha verification for high-abuse Storefront ta
 
 Implementation checklist:
 
-- [ ] Add `ICaptchaVerifier`.
-- [ ] Add `CaptchaVerificationRequest`.
-- [ ] Add `CaptchaVerificationResult`.
+- [x] Add `ICaptchaVerifier`.
+- [x] Add `CaptchaVerificationRequest`.
+- [x] Add `CaptchaVerificationResult`.
 - [ ] Add target constants:
-  - [ ] login
-  - [ ] registration
-  - [ ] newsletter
-  - [ ] password-recovery future
-  - [ ] contact future
-  - [ ] review future
-  - [ ] checkout optional only if abuse appears
-- [ ] Add typed captcha settings:
-  - [ ] enabled globally
-  - [ ] provider system name
-  - [ ] per-target activation
-  - [ ] minimum score where supported
-  - [ ] public site/widget key
-  - [ ] private secret reference outside public projection
-- [ ] Add `NoopCaptchaVerifier` for disabled/default behavior.
-- [ ] Add provider adapter shape for future reCAPTCHA/hCaptcha without provider-specific types in Domain.
-- [ ] Add server-side verification before enabled login/register/newsletter actions.
-- [ ] Add public-safe config projection:
-  - [ ] captcha enabled targets
-  - [ ] provider system name
-  - [ ] public site key when needed
-  - [ ] action names
-- [ ] Add Storefront V2 rendering hook for captcha metadata/token submission.
-- [ ] Add tests:
-  - [ ] disabled captcha does not block existing flows.
-  - [ ] enabled captcha with missing token fails.
-  - [ ] enabled captcha with failed verifier fails.
-  - [ ] enabled captcha with successful verifier allows action.
-  - [ ] public config never returns secret key.
+  - [x] login
+  - [x] registration
+  - [x] newsletter
+  - [x] password-recovery future
+  - [x] contact future
+  - [x] review future
+  - [x] checkout optional only if abuse appears: deferred, no checkout target enabled by default.
+- [x] Add typed captcha settings:
+  - [x] enabled globally
+  - [x] provider system name
+  - [x] per-target activation
+  - [x] minimum score where supported
+  - [x] public site/widget key
+  - [x] private secret reference outside public projection
+- [x] Add `NoopCaptchaVerifier` for disabled/default behavior.
+- [x] Add provider adapter shape for future reCAPTCHA/hCaptcha without provider-specific types in Domain.
+- [x] Add server-side verification before enabled login/register/newsletter actions.
+- [x] Add public-safe config projection:
+  - [x] captcha enabled targets
+  - [x] provider system name
+  - [x] public site key when needed
+  - [x] action names
+- [x] Add Storefront V2 rendering hook for captcha metadata/token submission.
+- [x] Add tests:
+  - [x] disabled captcha does not block existing flows.
+  - [x] enabled captcha with missing token fails.
+  - [x] enabled captcha with failed verifier fails.
+  - [x] enabled captcha with successful verifier allows action.
+  - [x] public config never returns secret key.
 
 Constraints:
 
-- [ ] Provider secrets must never appear in DTOs, public config, logs, or OpenAPI examples.
-- [ ] Captcha failure messages must be safe and generic.
-- [ ] Do not add captcha to every endpoint by default.
-- [ ] Do not use captcha as a substitute for rate limiting.
+- [x] Provider secrets must never appear in DTOs, public config, logs, or OpenAPI examples.
+- [x] Captcha failure messages must be safe and generic.
+- [x] Do not add captcha to every endpoint by default.
+- [x] Do not use captcha as a substitute for rate limiting.
 
 Exit criteria:
 
-- [ ] Captcha can be enabled per store/target without route rewrites.
-- [ ] Provider details stay behind server-side abstraction.
+- [x] Captcha can be enabled per store/target without route rewrites.
+- [x] Provider details stay behind server-side abstraction.
 
 ## Phase 5 - Privacy Retention And Anti-Enumeration Policy
 

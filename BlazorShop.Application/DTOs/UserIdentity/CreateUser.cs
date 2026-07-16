@@ -5,5 +5,7 @@
         public required string FullName { get; set; }
 
         public required string ConfirmPassword { get; set; }
+
+        public string? CaptchaToken { get; set; }
     }
 }
