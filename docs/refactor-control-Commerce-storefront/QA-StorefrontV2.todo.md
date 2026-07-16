@@ -526,11 +526,12 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Phase 0 baseline confirms Storefront cart and product detail variation-template guardrails before UI changes. 2026-07-16: `StorefrontCartServiceTests|PublicCatalogServiceTests|CommerceNodeStorefrontOpenApiContractTests` included in focused run passed 48/48.
 - [x] Product detail service mapping returns active variation options and values only. 2026-07-16 Phase 0: `PublicCatalogServiceTests.GetPublishedProductBySlugAsync_MapsActiveVariationTemplateOptionsAndValues` passed.
 - [x] Product detail API contract exposes option control type, required state, and value color hex metadata. 2026-07-16 Phase 1: `CommerceNodeStorefrontOpenApiContractTests` passed after snapshot update.
-- [ ] Product detail renders dropdown controls from option metadata.
-- [ ] Product detail renders radio controls from option metadata.
-- [ ] Product detail renders color swatches from option metadata.
-- [ ] Product detail preview updates price/SKU/stock after selection.
-- [ ] Product detail preview blocks invalid selection.
-- [ ] Product detail add-to-cart sends the same selected attributes used by preview.
+- [x] Product detail renders dropdown controls from option metadata. 2026-07-16 Phase 7: `StorefrontBrandingMarkupTests.ProductPage_UsesBackendSelectionPreviewForVariantAttributes` and `StorefrontV2HostSmokeTests` passed.
+- [x] Product detail renders radio controls from option metadata. 2026-07-16 Phase 7: ProductPage static markup/host smoke coverage passed; visible browser QA remains pending.
+- [x] Product detail renders color swatches from option metadata. 2026-07-16 Phase 7: ProductPage static markup/host smoke coverage passed; visible browser QA remains pending.
+- [x] Product detail preview updates price/SKU/stock after selection. 2026-07-16 Phase 7: Storefront local preview route, JS markers, API client, and resolver tests passed in focused release gate.
+- [x] Product detail preview blocks invalid selection. 2026-07-16 Phase 7: `ProductSelectionResolverTests`, `StorefrontCartServiceTests`, and preview controller tests passed.
+- [x] Product detail add-to-cart sends the same selected attributes used by preview. 2026-07-16 Phase 7: static JS guard plus cart/checkout selected-attribute tests passed.
 - [x] Inactive variants are not selectable. 2026-07-16 Phase 2: Storefront product detail filters inactive variants and cart rejects inactive selected variants; focused tests passed.
-- [ ] Product detail remains usable before JavaScript loads.
+- [x] Product detail remains usable before JavaScript loads. 2026-07-16 Phase 7: `StorefrontV2HostSmokeTests` passed 34/34 and product page still renders SSR fallback product data before JS preview updates.
+- [~] Visible browser QA for Product Variant Attribute remains pending. 2026-07-16 Phase 7: local V2 ports did not respond during automated release gate and no root `run-v2-local.ps1` was present; automated host/static/API coverage passed.

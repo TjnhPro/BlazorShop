@@ -469,49 +469,52 @@ Goal: finish the phase without breaking catalog, cart, checkout, or API clients.
 
 Implementation checklist:
 
-- [ ] Update `QA-CommerceNode.todo.md`.
-- [ ] Update `QA-StorefrontV2.todo.md`.
-- [ ] Update `QA-ControlPlane.todo.md` if manager UI changed.
-- [ ] Build active V2 projects.
-- [ ] Run focused Commerce Node tests for:
-  - [ ] template option metadata validation.
-  - [ ] color hex validation.
-  - [ ] variant active/inactive behavior.
-  - [ ] required option validation.
-  - [ ] duplicate signature rejection.
-  - [ ] default variant behavior.
-  - [ ] resolver output.
-  - [ ] cart add-line compatibility.
-- [ ] Run Storefront API contract tests for:
-  - [ ] product detail response schema.
-  - [ ] selection-preview request/response schema.
-  - [ ] error response schemas.
-  - [ ] quantity minimum metadata.
-  - [ ] security metadata.
-  - [ ] no domain entities in public schemas.
-- [ ] Run Storefront V2 browser QA when UI changes land:
-  - [ ] product page renders.
-  - [ ] attribute selection updates preview.
-  - [ ] invalid selection blocks add-to-cart.
-  - [ ] valid selection adds to cart.
-  - [ ] inactive variant is not selectable.
-- [ ] Review diff for:
-  - [ ] no legacy `BlazorShop.Presentation` feature changes.
-  - [ ] no `AppDbContext` V2 migration.
-  - [ ] no direct ControlPlane.Web to CommerceNode API call.
+- [x] Update `QA-CommerceNode.todo.md`. 2026-07-16 Phase 7: release-gate evidence added.
+- [x] Update `QA-StorefrontV2.todo.md`. 2026-07-16 Phase 7: product variant attribute evidence added.
+- [x] Update `QA-ControlPlane.todo.md` if manager UI changed. 2026-07-16 Phase 7: Phase 6 manager workflow evidence retained.
+- [x] Build active V2 projects. 2026-07-16 Phase 7: CommerceNode API, ControlPlane API, ControlPlane Web, and Storefront V2 builds passed. CommerceNode API had one transient parallel-build file-copy retry warning, then succeeded.
+- [x] Run focused Commerce Node tests for:
+  - [x] template option metadata validation.
+  - [x] color hex validation.
+  - [x] variant active/inactive behavior.
+  - [x] required option validation.
+  - [x] duplicate signature rejection.
+  - [x] default variant behavior.
+  - [x] resolver output.
+  - [x] cart add-line compatibility.
+  - 2026-07-16 Phase 7: focused release-gate run passed 140/140.
+- [x] Run Storefront API contract tests for:
+  - [x] product detail response schema.
+  - [x] selection-preview request/response schema.
+  - [x] error response schemas.
+  - [x] quantity minimum metadata.
+  - [x] security metadata.
+  - [x] no domain entities in public schemas.
+  - 2026-07-16 Phase 7: `CommerceNodeStorefrontOpenApiContractTests` passed inside the 140-test release-gate run.
+- [~] Run Storefront V2 browser QA when UI changes land:
+  - [x] product page renders. 2026-07-16 Phase 7: `StorefrontV2HostSmokeTests` passed 34/34 and `StorefrontBrandingMarkupTests` guards product selection markup.
+  - [x] attribute selection updates preview. 2026-07-16 Phase 7: static JS/markup guard plus selection preview API/client tests passed.
+  - [x] invalid selection blocks add-to-cart. 2026-07-16 Phase 7: resolver/cart tests passed.
+  - [x] valid selection adds to cart. 2026-07-16 Phase 7: cart/checkout focused tests passed.
+  - [x] inactive variant is not selectable. 2026-07-16 Phase 7: public catalog/resolver/cart tests passed.
+  - [~] Visible browser run is pending; local V2 ports did not respond during this phase and no root `run-v2-local.ps1` was present.
+- [x] Review diff for:
+  - [x] no legacy `BlazorShop.Presentation` feature changes.
+  - [x] no `AppDbContext` V2 migration.
+  - [x] no direct ControlPlane.Web to CommerceNode API call.
 
 Release gate:
 
-- [ ] Variation template options support control type and required state.
-- [ ] Variation template values support optional color hex.
-- [ ] Product variants support active/inactive state.
-- [ ] Invalid template/variant combinations are rejected or clearly reported.
-- [ ] Storefront product detail has a backend selection-preview API.
-- [ ] Product detail preview and add-to-cart use the same selection rules.
-- [ ] Storefront does not expose inactive variants as selectable choices.
-- [ ] OpenAPI is generator-safe for changed Storefront and admin contracts.
-- [ ] QA checklists contain evidence.
-- [ ] No Specification Attribute implementation is included.
+- [x] Variation template options support control type and required state.
+- [x] Variation template values support optional color hex.
+- [x] Product variants support active/inactive state.
+- [x] Invalid template/variant combinations are rejected or clearly reported.
+- [x] Storefront product detail has a backend selection-preview API.
+- [x] Product detail preview and add-to-cart use the same selection rules.
+- [x] Storefront does not expose inactive variants as selectable choices.
+- [x] OpenAPI is generator-safe for changed Storefront and admin contracts.
+- [x] QA checklists contain evidence.
+- [x] No Specification Attribute implementation is included.
 
 Suggested commit:
 
@@ -523,55 +526,55 @@ test(variant-attributes): complete release gate
 
 ### Commerce Node
 
-- [ ] Variation template option control type defaults to `dropdown` for existing data.
-- [ ] Variation template option required state defaults to `true` for existing data.
-- [ ] Unknown variation control type is rejected.
-- [ ] Invalid color hex is rejected.
-- [ ] Storefront product detail response includes variation option control metadata.
-- [ ] Product variant active state defaults to `true`.
-- [ ] Inactive variant cannot be set as default.
-- [ ] Variant combination validation rejects unknown template option names.
-- [ ] Variant combination validation rejects unknown template values.
-- [ ] Duplicate variant attribute signature is still rejected.
-- [ ] Shared product selection resolver rejects missing required options.
-- [ ] Shared product selection resolver rejects inactive variants.
-- [ ] Cart add-line uses resolver output without changing cart persistence behavior.
-- [ ] Storefront selection-preview endpoint is store-scoped.
-- [ ] Storefront selection-preview endpoint rejects quantity below 1.
+- [x] Variation template option control type defaults to `dropdown` for existing data. 2026-07-16 Phase 7 release gate passed.
+- [x] Variation template option required state defaults to `true` for existing data. 2026-07-16 Phase 7 release gate passed.
+- [x] Unknown variation control type is rejected. 2026-07-16 Phase 7 release gate passed.
+- [x] Invalid color hex is rejected. 2026-07-16 Phase 7 release gate passed.
+- [x] Storefront product detail response includes variation option control metadata. 2026-07-16 Phase 7 release gate passed.
+- [x] Product variant active state defaults to `true`. 2026-07-16 Phase 7 release gate passed.
+- [x] Inactive variant cannot be set as default. 2026-07-16 Phase 7 release gate passed.
+- [x] Variant combination validation rejects unknown template option names. 2026-07-16 Phase 7 release gate passed.
+- [x] Variant combination validation rejects unknown template values. 2026-07-16 Phase 7 release gate passed.
+- [x] Duplicate variant attribute signature is still rejected. 2026-07-16 Phase 7 release gate passed.
+- [x] Shared product selection resolver rejects missing required options. 2026-07-16 Phase 7 release gate passed.
+- [x] Shared product selection resolver rejects inactive variants. 2026-07-16 Phase 7 release gate passed.
+- [x] Cart add-line uses resolver output without changing cart persistence behavior. 2026-07-16 Phase 7 release gate passed.
+- [x] Storefront selection-preview endpoint is store-scoped. 2026-07-16 Phase 7 release gate passed.
+- [x] Storefront selection-preview endpoint rejects quantity below 1. 2026-07-16 Phase 7 release gate passed.
 
 ### Storefront V2
 
-- [ ] Product detail renders dropdown controls from option metadata.
-- [ ] Product detail renders radio controls from option metadata.
-- [ ] Product detail renders color swatches from option metadata.
-- [ ] Product detail preview updates price/SKU/stock after selection.
-- [ ] Product detail preview blocks invalid selection.
-- [ ] Product detail add-to-cart sends the same selected attributes used by preview.
-- [ ] Inactive variants are not selectable.
-- [ ] Product detail remains usable before JavaScript loads.
+- [x] Product detail renders dropdown controls from option metadata. 2026-07-16 Phase 7 automated host/static coverage passed.
+- [x] Product detail renders radio controls from option metadata. 2026-07-16 Phase 7 automated host/static coverage passed.
+- [x] Product detail renders color swatches from option metadata. 2026-07-16 Phase 7 automated host/static coverage passed.
+- [x] Product detail preview updates price/SKU/stock after selection. 2026-07-16 Phase 7 release gate passed.
+- [x] Product detail preview blocks invalid selection. 2026-07-16 Phase 7 release gate passed.
+- [x] Product detail add-to-cart sends the same selected attributes used by preview. 2026-07-16 Phase 7 release gate passed.
+- [x] Inactive variants are not selectable. 2026-07-16 Phase 7 release gate passed.
+- [x] Product detail remains usable before JavaScript loads. 2026-07-16 Phase 7 `StorefrontV2HostSmokeTests` passed 34/34.
 
 ### Control Plane
 
-- [ ] Variation template manager can edit option control type.
-- [ ] Variation template manager can edit option required state.
-- [ ] Variation template manager can edit color hex for color values.
-- [ ] Product variant manager can mark a variant inactive.
-- [ ] Product variant manager shows normalized signature read-only.
-- [ ] Product variant manager warns for missing required option.
-- [ ] Product variant manager warns for stale template value.
-- [ ] ControlPlane Web calls only ControlPlane API.
+- [x] Variation template manager can edit option control type. 2026-07-16 Phase 7 ControlPlane release gate passed.
+- [x] Variation template manager can edit option required state. 2026-07-16 Phase 7 ControlPlane release gate passed.
+- [x] Variation template manager can edit color hex for color values. 2026-07-16 Phase 7 ControlPlane release gate passed.
+- [x] Product variant manager can mark a variant inactive. 2026-07-16 Phase 7 ControlPlane release gate passed.
+- [x] Product variant manager shows normalized signature read-only. 2026-07-16 Phase 7 ControlPlane release gate passed.
+- [x] Product variant manager warns for missing required option. 2026-07-16 Phase 7 ControlPlane release gate passed.
+- [x] Product variant manager warns for stale template value. 2026-07-16 Phase 7 ControlPlane release gate passed.
+- [x] ControlPlane Web calls only ControlPlane API. 2026-07-16 Phase 7 ControlPlane release gate passed.
 
 ## Deferred Scope Checklist
 
-- [ ] Specification attributes remain deferred.
-- [ ] Full localization for attribute labels/values remains deferred.
-- [ ] Variant image/gallery switching remains deferred.
-- [ ] Variant media assignment remains deferred.
-- [ ] Delivery promise calculation remains deferred.
-- [ ] Variant GTIN/barcode remains deferred unless separately approved.
-- [ ] Price adjustment rules beyond existing variant price override remain deferred.
-- [ ] Bundle/gift-card/subscription/downloadable/customer-entered-price product types remain deferred.
-- [ ] Product Detail WASM rewrite remains deferred.
+- [x] Specification attributes remain deferred.
+- [x] Full localization for attribute labels/values remains deferred.
+- [x] Variant image/gallery switching remains deferred.
+- [x] Variant media assignment remains deferred.
+- [x] Delivery promise calculation remains deferred.
+- [x] Variant GTIN/barcode remains deferred unless separately approved.
+- [x] Price adjustment rules beyond existing variant price override remain deferred.
+- [x] Bundle/gift-card/subscription/downloadable/customer-entered-price product types remain deferred.
+- [x] Product Detail WASM rewrite remains deferred.
 
 ## Risk Register
 
@@ -592,17 +595,17 @@ test(variant-attributes): complete release gate
 - [x] Phase 4 - Storefront product selection preview API. 2026-07-16: focused Phase 4 run passed 32/32.
 - [x] Phase 5 - Storefront product detail integration. 2026-07-16: focused Phase 5 run passed 43/43; Storefront V2 build and JS syntax check passed.
 - [x] Phase 6 - manager workflow hardening. 2026-07-16: ControlPlane Web build passed; focused ControlPlane gateway/boundary/workflow tests passed 19/19.
-- [ ] Phase 7 - QA/contracts/release gate.
+- [x] Phase 7 - QA/contracts/release gate. 2026-07-16: active V2 builds passed, focused release-gate tests passed 140/140, Storefront host smoke passed 34/34; visible browser QA remains a runtime follow-up.
 
 ## Definition Of Done
 
-- [ ] Variation template options support control type and required state.
-- [ ] Variation template values support optional color hex.
-- [ ] Product variants support active/inactive state.
-- [ ] Invalid template/variant combinations are rejected or clearly reported.
-- [ ] Storefront product detail has a backend selection-preview API.
-- [ ] Product detail preview and add-to-cart use the same selection rules.
-- [ ] Storefront does not expose inactive variants as selectable choices.
-- [ ] QA checklists and focused tests cover the new behavior.
-- [ ] No Specification Attribute implementation is included.
-- [ ] No legacy presentation or `AppDbContext` V2 feature work is introduced.
+- [x] Variation template options support control type and required state.
+- [x] Variation template values support optional color hex.
+- [x] Product variants support active/inactive state.
+- [x] Invalid template/variant combinations are rejected or clearly reported.
+- [x] Storefront product detail has a backend selection-preview API.
+- [x] Product detail preview and add-to-cart use the same selection rules.
+- [x] Storefront does not expose inactive variants as selectable choices.
+- [x] QA checklists and focused tests cover the new behavior.
+- [x] No Specification Attribute implementation is included.
+- [x] No legacy presentation or `AppDbContext` V2 feature work is introduced.
