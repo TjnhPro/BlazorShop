@@ -31,6 +31,43 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
         }
 
         [Fact]
+        public void ProductManager_ExposesAvailabilityQuantityWorkflowControls()
+        {
+            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/CommerceProducts.razor");
+
+            Assert.Contains("Availability & purchase", markup, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"basicForm.MinOrderQuantity\"", markup, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"basicForm.MaxOrderQuantity\"", markup, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"basicForm.QuantityStep\"", markup, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"basicForm.PurchasingDisabled\"", markup, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"basicForm.PurchasingDisabledReason\"", markup, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"basicForm.ManageStock\"", markup, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"basicForm.HideWhenOutOfStock\"", markup, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"basicForm.ShippingRequired\"", markup, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"basicForm.FreeShipping\"", markup, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"basicForm.DeliveryEstimateText\"", markup, StringComparison.Ordinal);
+            Assert.Contains("MinOrderQuantity = basicForm.MinOrderQuantity", markup, StringComparison.Ordinal);
+            Assert.Contains("PurchasingDisabled = basicForm.PurchasingDisabled", markup, StringComparison.Ordinal);
+            Assert.Contains("DeliveryEstimateText = basicForm.DeliveryEstimateText", markup, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void ProductManager_ShowsAvailabilityQuantityWorkflowState()
+        {
+            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/CommerceProducts.razor");
+
+            Assert.Contains("InventoryStatusLabel", markup, StringComparison.Ordinal);
+            Assert.Contains("Low stock", markup, StringComparison.Ordinal);
+            Assert.Contains("Out of stock", markup, StringComparison.Ordinal);
+            Assert.Contains("Stock unmanaged", markup, StringComparison.Ordinal);
+            Assert.Contains("Purchase paused", markup, StringComparison.Ordinal);
+            Assert.Contains("Hide when out", markup, StringComparison.Ordinal);
+            Assert.Contains("PurchasingDisabledReason", markup, StringComparison.Ordinal);
+            Assert.Contains("AdminInventoryItemDto?", markup, StringComparison.Ordinal);
+            Assert.Contains("AdminInventoryVariantDto", markup, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void ControlPlaneWeb_UsesControlPlaneCommerceGatewayRoutesOnly()
         {
             var client = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Services/Catalog/ControlPlaneCatalogClient.cs");

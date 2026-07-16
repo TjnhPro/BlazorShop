@@ -129,7 +129,20 @@
                                         <span class="ml-1 text-xs text-ink-400 line-through">@product.ComparePrice.Value.ToString("0.00")</span>
                                     }
                                 </td>
-                                <td class="px-4 py-3"><StatusBadge Text="@PublicationStatusLabel(product)" Tone="@PublicationStatusTone(product)" /></td>
+                                <td class="px-4 py-3">
+                                    <div class="flex flex-wrap gap-2">
+                                        <StatusBadge Text="@PublicationStatusLabel(product)" Tone="@PublicationStatusTone(product)" />
+                                        <StatusBadge Text="@InventoryStatusLabel(product)" Tone="@InventoryStatusTone(product)" />
+                                        @if (IsPurchaseDisabled(product))
+                                        {
+                                            <StatusBadge Text="Purchase paused" Tone="warning" />
+                                        }
+                                        @if (product.HideWhenOutOfStock)
+                                        {
+                                            <StatusBadge Text="Hide when out" Tone="neutral" />
+                                        }
+                                    </div>
+                                </td>
                                 <td class="px-4 py-3 text-ink-500">@product.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd")</td>
                             </tr>
                         }
@@ -238,6 +251,14 @@
 
             <section class="rounded-md border border-ink-200 p-4">
                 <h2 class="text-sm font-semibold text-ink-900">Basic info</h2>
+                <div class="mt-3 flex flex-wrap gap-2">
+                    <StatusBadge Text="@InventoryStatusLabel(selectedProduct)" Tone="@InventoryStatusTone(selectedProduct)" />
+                    <StatusBadge Text="@PurchaseStatusLabel(selectedProduct)" Tone="@PurchaseStatusTone(selectedProduct)" />
+                    @if (selectedProduct.HideWhenOutOfStock)
+                    {
+                        <StatusBadge Text="Hide when out of stock" Tone="neutral" />
+                    }
+                </div>
                 <div class="mt-3 grid gap-3 text-sm md:grid-cols-2">
                     <label class="space-y-1 md:col-span-2">
                         <span class="font-medium text-ink-700">Title</span>
@@ -280,6 +301,49 @@
                     <label class="space-y-1">
                         <span class="font-medium text-ink-700">Available end UTC</span>
                         <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="datetime-local" @bind="basicForm.AvailableEndUtc" />
+                    </label>
+                    <div class="md:col-span-2 pt-2 text-xs font-semibold uppercase text-ink-500">Availability & purchase</div>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Minimum order quantity</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="1" @bind="basicForm.MinOrderQuantity" />
+                    </label>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Maximum order quantity</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="1" @bind="basicForm.MaxOrderQuantity" />
+                    </label>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Quantity step</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="1" @bind="basicForm.QuantityStep" />
+                    </label>
+                    <div class="flex flex-wrap gap-4 rounded-md border border-ink-200 bg-ink-50 p-3 md:col-span-2">
+                        <label class="flex items-center gap-2 text-ink-700">
+                            <input type="checkbox" @bind="basicForm.ManageStock" />
+                            Manage stock
+                        </label>
+                        <label class="flex items-center gap-2 text-ink-700">
+                            <input type="checkbox" @bind="basicForm.HideWhenOutOfStock" />
+                            Hide when out of stock
+                        </label>
+                        <label class="flex items-center gap-2 text-ink-700">
+                            <input type="checkbox" @bind="basicForm.PurchasingDisabled" />
+                            Pause purchasing
+                        </label>
+                        <label class="flex items-center gap-2 text-ink-700">
+                            <input type="checkbox" @bind="basicForm.ShippingRequired" />
+                            Shipping required
+                        </label>
+                        <label class="flex items-center gap-2 text-ink-700">
+                            <input type="checkbox" @bind="basicForm.FreeShipping" />
+                            Free shipping
+                        </label>
+                    </div>
+                    <label class="space-y-1 md:col-span-2">
+                        <span class="font-medium text-ink-700">Purchasing disabled reason</span>
+                        <textarea class="min-h-20 w-full rounded-md border border-ink-300 px-3 py-2 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" maxlength="@ProductPurchaseConstraints.PurchasingDisabledReasonMaxLength" @bind="basicForm.PurchasingDisabledReason"></textarea>
+                    </label>
+                    <label class="space-y-1 md:col-span-2">
+                        <span class="font-medium text-ink-700">Delivery estimate</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" maxlength="@ProductPurchaseConstraints.DeliveryEstimateTextMaxLength" @bind="basicForm.DeliveryEstimateText" />
                     </label>
                     <div class="md:col-span-2 pt-2 text-xs font-semibold uppercase text-ink-500">Identity & shipping prep</div>
                     <label class="space-y-1">
@@ -483,6 +547,22 @@
 
             <section class="rounded-md border border-ink-200 p-4">
                 <h2 class="text-sm font-semibold text-ink-900">Inventory</h2>
+                <div class="mt-3 flex flex-wrap gap-2">
+                    <StatusBadge Text="@InventoryStatusLabel(inventoryItem, selectedProduct)" Tone="@InventoryStatusTone(inventoryItem, selectedProduct)" />
+                    <StatusBadge Text="@(selectedProduct.ManageStock ? "Managed stock" : "Stock unmanaged")" Tone="@(selectedProduct.ManageStock ? "neutral" : "warning")" />
+                    @if (selectedProduct.PurchasingDisabled)
+                    {
+                        <StatusBadge Text="Purchase paused" Tone="warning" />
+                    }
+                    @if (selectedProduct.HideWhenOutOfStock)
+                    {
+                        <StatusBadge Text="Hide when out" Tone="neutral" />
+                    }
+                </div>
+                @if (selectedProduct.PurchasingDisabled && !string.IsNullOrWhiteSpace(selectedProduct.PurchasingDisabledReason))
+                {
+                    <div class="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">@selectedProduct.PurchasingDisabledReason</div>
+                }
                 <div class="mt-3 grid gap-3 text-sm md:grid-cols-[180px_auto]">
                     <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" @bind="productQuantity" />
                     <button class="cp-button cp-button-secondary justify-center" disabled="@isSaving" @onclick="SaveProductInventoryAsync">Update product quantity</button>
@@ -496,6 +576,9 @@
                                 <div>
                                     <div class="font-medium text-ink-900">@VariantName(variant)</div>
                                     <div class="font-mono text-xs text-ink-500">@variant.Sku</div>
+                                    <div class="mt-2 flex flex-wrap gap-2">
+                                        <StatusBadge Text="@InventoryStatusLabel(variant)" Tone="@InventoryStatusTone(variant)" />
+                                    </div>
                                 </div>
                                 <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" value="@GetVariantStock(variant.VariantId)" @onchange="args => SetVariantStock(variant.VariantId, args.Value?.ToString())" />
                                 <button class="cp-button cp-button-secondary justify-center" disabled="@isSaving" @onclick="() => SaveVariantInventoryAsync(variant.VariantId)">Update stock</button>
@@ -867,16 +950,16 @@
                     ComparePrice = basicForm.ComparePrice,
                     Image = selectedProduct.Image,
                     Quantity = selectedProduct.Quantity,
-                    MinOrderQuantity = selectedProduct.MinOrderQuantity,
-                    MaxOrderQuantity = selectedProduct.MaxOrderQuantity,
-                    QuantityStep = selectedProduct.QuantityStep,
-                    PurchasingDisabled = selectedProduct.PurchasingDisabled,
-                    PurchasingDisabledReason = selectedProduct.PurchasingDisabledReason,
-                    ManageStock = selectedProduct.ManageStock,
-                    HideWhenOutOfStock = selectedProduct.HideWhenOutOfStock,
-                    ShippingRequired = selectedProduct.ShippingRequired,
-                    FreeShipping = selectedProduct.FreeShipping,
-                    DeliveryEstimateText = selectedProduct.DeliveryEstimateText,
+                    MinOrderQuantity = basicForm.MinOrderQuantity,
+                    MaxOrderQuantity = basicForm.MaxOrderQuantity,
+                    QuantityStep = basicForm.QuantityStep,
+                    PurchasingDisabled = basicForm.PurchasingDisabled,
+                    PurchasingDisabledReason = basicForm.PurchasingDisabledReason,
+                    ManageStock = basicForm.ManageStock,
+                    HideWhenOutOfStock = basicForm.HideWhenOutOfStock,
+                    ShippingRequired = basicForm.ShippingRequired,
+                    FreeShipping = basicForm.FreeShipping,
+                    DeliveryEstimateText = basicForm.DeliveryEstimateText,
                     DisplayOrder = basicForm.DisplayOrder,
                     ProductType = selectedProduct.ProductType,
                     VariationTemplateId = selectedProduct.VariationTemplateId,
@@ -1329,6 +1412,163 @@
         };
     }
 
+    private static bool IsPurchaseDisabled(GetCatalogProduct product)
+    {
+        return product.PurchasingDisabled;
+    }
+
+    private static string PurchaseStatusLabel(GetProduct product)
+    {
+        if (product.PurchasingDisabled)
+        {
+            return "Purchase paused";
+        }
+
+        if (!product.IsPublished)
+        {
+            return "Draft";
+        }
+
+        var now = DateTime.UtcNow;
+        if (product.AvailableStartUtc is not null && product.AvailableStartUtc.Value > now)
+        {
+            return "Scheduled";
+        }
+
+        if (product.AvailableEndUtc is not null && product.AvailableEndUtc.Value <= now)
+        {
+            return "Expired";
+        }
+
+        if (product.ManageStock && product.Quantity <= 0)
+        {
+            return "Out of stock";
+        }
+
+        if (string.Equals(product.ProductType, ProductTypes.VariantInventory, StringComparison.OrdinalIgnoreCase)
+            && product.Variants.Any())
+        {
+            return "Variant selection required";
+        }
+
+        return "Purchasable";
+    }
+
+    private static string PurchaseStatusTone(GetProduct product)
+    {
+        return PurchaseStatusLabel(product) == "Purchasable" ? "success" : "warning";
+    }
+
+    private static string InventoryStatusLabel(GetCatalogProduct product)
+    {
+        if (!product.ManageStock)
+        {
+            return "Stock unmanaged";
+        }
+
+        if (product.Quantity <= 0)
+        {
+            return "Out of stock";
+        }
+
+        return product.Quantity <= 5 ? "Low stock" : "In stock";
+    }
+
+    private static string InventoryStatusTone(GetCatalogProduct product)
+    {
+        if (!product.ManageStock)
+        {
+            return "warning";
+        }
+
+        if (product.Quantity <= 0)
+        {
+            return "danger";
+        }
+
+        return product.Quantity <= 5 ? "warning" : "success";
+    }
+
+    private static string InventoryStatusLabel(GetProduct product)
+    {
+        if (!product.ManageStock)
+        {
+            return "Stock unmanaged";
+        }
+
+        if (product.Quantity <= 0)
+        {
+            return "Out of stock";
+        }
+
+        return product.Quantity <= 5 ? "Low stock" : "In stock";
+    }
+
+    private static string InventoryStatusTone(GetProduct product)
+    {
+        if (!product.ManageStock)
+        {
+            return "warning";
+        }
+
+        if (product.Quantity <= 0)
+        {
+            return "danger";
+        }
+
+        return product.Quantity <= 5 ? "warning" : "success";
+    }
+
+    private static string InventoryStatusLabel(AdminInventoryItemDto? item, GetProduct product)
+    {
+        if (!product.ManageStock)
+        {
+            return "Stock unmanaged";
+        }
+
+        if (item?.IsOutOfStock == true || product.Quantity <= 0)
+        {
+            return "Out of stock";
+        }
+
+        return item?.IsLowStock == true ? "Low stock" : "In stock";
+    }
+
+    private static string InventoryStatusTone(AdminInventoryItemDto? item, GetProduct product)
+    {
+        if (!product.ManageStock)
+        {
+            return "warning";
+        }
+
+        if (item?.IsOutOfStock == true || product.Quantity <= 0)
+        {
+            return "danger";
+        }
+
+        return item?.IsLowStock == true ? "warning" : "success";
+    }
+
+    private static string InventoryStatusLabel(AdminInventoryVariantDto variant)
+    {
+        if (variant.IsOutOfStock)
+        {
+            return "Out of stock";
+        }
+
+        return variant.IsLowStock ? "Low stock" : "In stock";
+    }
+
+    private static string InventoryStatusTone(AdminInventoryVariantDto variant)
+    {
+        if (variant.IsOutOfStock)
+        {
+            return "danger";
+        }
+
+        return variant.IsLowStock ? "warning" : "success";
+    }
+
     private static string MediaTone(string? status)
     {
         return status?.ToLowerInvariant() switch
@@ -1368,6 +1608,26 @@
 
         public DateTime? AvailableEndUtc { get; set; }
 
+        public int MinOrderQuantity { get; set; } = 1;
+
+        public int? MaxOrderQuantity { get; set; }
+
+        public int QuantityStep { get; set; } = 1;
+
+        public bool PurchasingDisabled { get; set; }
+
+        public string? PurchasingDisabledReason { get; set; }
+
+        public bool ManageStock { get; set; } = true;
+
+        public bool HideWhenOutOfStock { get; set; }
+
+        public bool ShippingRequired { get; set; } = true;
+
+        public bool FreeShipping { get; set; }
+
+        public string? DeliveryEstimateText { get; set; }
+
         public string? Gtin { get; set; }
 
         public string? Barcode { get; set; }
@@ -1396,6 +1656,16 @@
                 DisplayOrder = product.DisplayOrder,
                 AvailableStartUtc = product.AvailableStartUtc,
                 AvailableEndUtc = product.AvailableEndUtc,
+                MinOrderQuantity = product.MinOrderQuantity,
+                MaxOrderQuantity = product.MaxOrderQuantity,
+                QuantityStep = product.QuantityStep,
+                PurchasingDisabled = product.PurchasingDisabled,
+                PurchasingDisabledReason = product.PurchasingDisabledReason,
+                ManageStock = product.ManageStock,
+                HideWhenOutOfStock = product.HideWhenOutOfStock,
+                ShippingRequired = product.ShippingRequired,
+                FreeShipping = product.FreeShipping,
+                DeliveryEstimateText = product.DeliveryEstimateText,
                 Gtin = product.Gtin,
                 Barcode = product.Barcode,
                 ManufacturerPartNumber = product.ManufacturerPartNumber,

@@ -424,40 +424,40 @@ Goal: keep manager workflow clear enough for store managers to understand sellab
 
 Implementation checklist:
 
-- [ ] Update Control Plane product editor:
-  - [ ] available start/end.
-  - [ ] min/max/step quantity.
-  - [ ] purchasing disabled.
-  - [ ] purchasing disabled reason.
-  - [ ] manage stock.
-  - [ ] hide when out of stock.
-  - [ ] shipping required.
-  - [ ] free shipping.
-  - [ ] delivery estimate.
-  - [ ] dimensions/weight if not already exposed.
-- [ ] Update inventory/product views to show:
-  - [ ] manage stock.
-  - [ ] low-stock state.
-  - [ ] out-of-stock state.
-  - [ ] purchasing disabled state.
-  - [ ] hide-when-out-of-stock state.
-- [ ] Keep product quantity and variant stock update workflows.
-- [ ] Keep ControlPlane Web -> ControlPlane API -> CommerceNode API boundary.
-- [ ] Surface validation errors clearly in ControlPlane Web.
-- [ ] Do not build stock ledger, reservation audit trail, or multi-location stock UI.
+- [x] Update Control Plane product editor:
+  - [x] available start/end. 2026-07-16 Phase 7: existing ControlPlane product editor fields preserved.
+  - [x] min/max/step quantity. 2026-07-16 Phase 7: basic form now binds and saves `MinOrderQuantity`, `MaxOrderQuantity`, and `QuantityStep`.
+  - [x] purchasing disabled. 2026-07-16 Phase 7: basic form now binds and saves `PurchasingDisabled`.
+  - [x] purchasing disabled reason. 2026-07-16 Phase 7: basic form now binds and saves `PurchasingDisabledReason`.
+  - [x] manage stock. 2026-07-16 Phase 7: basic form now binds and saves `ManageStock`.
+  - [x] hide when out of stock. 2026-07-16 Phase 7: basic form now binds and saves `HideWhenOutOfStock`.
+  - [x] shipping required. 2026-07-16 Phase 7: basic form now binds and saves `ShippingRequired`.
+  - [x] free shipping. 2026-07-16 Phase 7: basic form now binds and saves `FreeShipping`.
+  - [x] delivery estimate. 2026-07-16 Phase 7: basic form now binds and saves `DeliveryEstimateText`.
+  - [x] dimensions/weight if not already exposed. 2026-07-16 Phase 7: existing weight/dimension fields remain in the editor.
+- [x] Update inventory/product views to show:
+  - [x] manage stock. 2026-07-16 Phase 7: product list/detail inventory badges show managed/unmanaged stock.
+  - [x] low-stock state. 2026-07-16 Phase 7: product and variant inventory badges show low-stock state from quantity/inventory DTOs.
+  - [x] out-of-stock state. 2026-07-16 Phase 7: product and variant inventory badges show out-of-stock state.
+  - [x] purchasing disabled state. 2026-07-16 Phase 7: product list/detail badges show purchase paused state and reason.
+  - [x] hide-when-out-of-stock state. 2026-07-16 Phase 7: product list/detail badges show hide-when-out state.
+- [x] Keep product quantity and variant stock update workflows. 2026-07-16 Phase 7: existing `UpdateProductStockAsync` and `UpdateVariantStockAsync` flows were left in place.
+- [x] Keep ControlPlane Web -> ControlPlane API -> CommerceNode API boundary. 2026-07-16 Phase 7: `ControlPlaneVariantAttributeWorkflowTests.ControlPlaneWeb_UsesControlPlaneCommerceGatewayRoutesOnly` passed.
+- [x] Surface validation errors clearly in ControlPlane Web. 2026-07-16 Phase 7: existing `errorMessage = result.Message` behavior remains for product save/inventory commands.
+- [x] Do not build stock ledger, reservation audit trail, or multi-location stock UI. 2026-07-16 Phase 7: change is limited to existing product/inventory editor controls and badges.
 
 Verification checklist:
 
-- [ ] ControlPlane Web build passes.
-- [ ] ControlPlane API gateway tests pass.
-- [ ] ControlPlane boundary tests prove Web does not call CommerceNode directly.
-- [ ] Manager UI shows why a product is not buyable.
-- [ ] Validation errors are visible and actionable.
+- [x] ControlPlane Web build passes. 2026-07-16 Phase 7: `dotnet build .\BlazorShop.PresentationV2\BlazorShop.ControlPlane.Web\BlazorShop.ControlPlane.Web.csproj --no-restore` passed.
+- [x] ControlPlane API gateway tests pass. 2026-07-16 Phase 7: focused ControlPlane markup/boundary test run passed 5/5; no new API route was added.
+- [x] ControlPlane boundary tests prove Web does not call CommerceNode directly. 2026-07-16 Phase 7: `ControlPlaneWeb_UsesControlPlaneCommerceGatewayRoutesOnly` passed.
+- [x] Manager UI shows why a product is not buyable. 2026-07-16 Phase 7: product detail shows purchase paused reason, publication status, stock state, and variant-required state.
+- [x] Validation errors are visible and actionable. 2026-07-16 Phase 7: existing product save error message path is preserved and static guardrails passed.
 
 Exit criteria:
 
-- [ ] Store manager can configure stock management and quantity rules.
-- [ ] Store manager can see why a product is not buyable.
+- [x] Store manager can configure stock management and quantity rules. 2026-07-16 Phase 7: product editor exposes stock management and min/max/step fields.
+- [x] Store manager can see why a product is not buyable. 2026-07-16 Phase 7: badges and purchase-disabled reason show in product list/detail.
 
 Suggested commit:
 
