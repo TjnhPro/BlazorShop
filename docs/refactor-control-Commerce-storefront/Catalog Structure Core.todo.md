@@ -357,35 +357,35 @@ Goal: expose the approved catalog structure safely to managers.
 
 Implementation checklist:
 
-- [ ] Keep Control Plane Web calling Control Plane API only.
-- [ ] Add or extend Control Plane API gateway routes for:
-  - [ ] category description/publish fields.
-  - [ ] category product counts if manager list needs them.
-  - [ ] product availability window.
-  - [ ] product identity fields.
-  - [ ] product category mappings if Phase 3 is approved.
-- [ ] Ensure Commerce Node admin endpoints use `storeKey` query and current store context.
-- [ ] Add permissions only if current catalog/SEO/store permissions are too broad.
-- [ ] UI behavior:
-  - [ ] product manager shows publication status.
-  - [ ] product editor shows availability window.
-  - [ ] category manager shows publish state, display order, parent, product count.
-  - [ ] mapping UI clearly marks primary category if Phase 3 is implemented.
-- [ ] Add API contract tests for any changed endpoints.
-- [ ] Add browser QA only for visible UI changes.
+- [x] Keep Control Plane Web calling Control Plane API only.
+- [x] Add or extend Control Plane API gateway routes for:
+  - [x] category description/publish fields.
+  - [~] category product counts if manager list needs them. Storefront category counts are available from CommerceNode public catalog API; Control Plane category list does not currently require count display.
+  - [x] product availability window.
+  - [x] product identity fields.
+  - [~] product category mappings if Phase 3 is approved. Phase 3 remains deferred.
+- [x] Ensure Commerce Node admin endpoints use `storeKey` query and current store context.
+- [x] Add permissions only if current catalog/SEO/store permissions are too broad. No new permission was required; existing catalog store read/write policies cover these fields.
+- [x] UI behavior:
+  - [x] product manager shows publication status.
+  - [x] product editor shows availability window.
+  - [~] category manager shows publish state, display order, parent, product count. Description/display/parent are shown; publish remains in SEO drawer; product count not required in current list.
+  - [~] mapping UI clearly marks primary category if Phase 3 is implemented. Phase 3 remains deferred.
+- [x] Add API contract tests for any changed endpoints.
+- [~] Add browser QA only for visible UI changes. Visible browser QA remains in the QA checklist; Phase 7 used build/gateway verification.
 
 Verification checklist:
 
-- [ ] Control Plane API build passes.
-- [ ] Control Plane Web build passes if UI changed.
-- [ ] Gateway tests prove `storeKey` forwarding and no direct Web-to-CommerceNode call.
-- [ ] Permission tests pass if permissions changed.
+- [x] Control Plane API build passes.
+- [x] Control Plane Web build passes if UI changed.
+- [x] Gateway tests prove `storeKey` forwarding and no direct Web-to-CommerceNode call.
+- [x] Permission tests pass if permissions changed.
 
 Exit criteria:
 
-- [ ] No Commerce Node credentials/base URLs leak to Control Plane Web.
-- [ ] Cross-store object access returns Not Found or standard safe error.
-- [ ] Manager can understand publication/mapping state before save.
+- [x] No Commerce Node credentials/base URLs leak to Control Plane Web.
+- [x] Cross-store object access returns Not Found or standard safe error.
+- [x] Manager can understand publication/mapping state before save.
 
 Suggested commit:
 
@@ -606,7 +606,7 @@ test(catalog): complete catalog structure core qa
 - [x] Phase 5 - product identity fields. 2026-07-16: implemented with migration, validation, admin edit, import columns, and structured data tests.
 - [x] Phase 6 - variant MVP hardening. 2026-07-16: added ProductVariantService guard tests and re-ran cart/checkout variant tests.
 - [ ] Phase 3 - product-category mapping only if multi-category/per-category order is approved for implementation.
-- [ ] Phase 7 - Control Plane/admin integration.
+- [x] Phase 7 - Control Plane/admin integration. 2026-07-16: verified existing gateway/UI integration with Control Plane API/Web builds and storeKey boundary tests.
 - [ ] Phase 8 - Storefront rendering/SEO/sitemap/cache alignment.
 - [ ] Phase 9 - advanced product type gates.
 - [ ] Phase 10 - QA/release gate.

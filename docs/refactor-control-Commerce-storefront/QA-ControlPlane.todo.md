@@ -472,4 +472,5 @@ Status legend:
 - [x] Product import template exposes availability columns. 2026-07-16: `ControlPlaneCommerceCatalogControllerTests.DownloadProductImportTemplate_ReturnsCanonicalParserHeader` passed.
 - [x] Product editor can set GTIN, barcode, manufacturer part number, condition, weight, length, width, and height through Control Plane Web. 2026-07-16 Phase 5: Basic info form sends fields through existing `CatalogClient.UpdateProductAsync`; focused build/test run passed.
 - [x] Product import template exposes optional identity/dimension columns. 2026-07-16 Phase 5: ControlPlane template test passed with `gtin`, `barcode`, `manufacturer_part_number`, `condition`, `weight`, `length`, `width`, and `height`.
+- [x] Catalog structure fields stay behind Control Plane API gateway and storeKey forwarding. 2026-07-16 Phase 7: `ControlPlaneCommerceCatalogServiceStoreMappingTests|ControlPlaneArchitectureBoundaryTests` passed 14/14; Control Plane API build passed; Control Plane Web build passed with one transient file-lock retry warning.
 - [ ] Visible browser QA creates/updates a category description through Control Plane and confirms it reloads in the drawer.
