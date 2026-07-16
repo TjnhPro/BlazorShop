@@ -95,6 +95,8 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         [MaxLength(256)]
         public string? CategorySlug { get; init; }
 
+        public bool IncludeSubcategories { get; init; }
+
         [MaxLength(256)]
         public string? SearchTerm { get; init; }
 
@@ -516,7 +518,17 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
 
     public sealed record StorefrontCategoryPageResponse(
         StorefrontCategoryResponse Category,
-        IReadOnlyList<StorefrontCatalogProductResponse> Products);
+        [property: Required]
+        IReadOnlyList<StorefrontCategoryBreadcrumbItemResponse> Breadcrumbs,
+        [property: Required]
+        IReadOnlyList<StorefrontCatalogProductResponse> Products,
+        int DirectProductCount,
+        int DescendantProductCount);
+
+    public sealed record StorefrontCategoryBreadcrumbItemResponse(
+        Guid Id,
+        string? Name,
+        string? Slug);
 
     public sealed record StorefrontCatalogProductResponse(
         Guid Id,

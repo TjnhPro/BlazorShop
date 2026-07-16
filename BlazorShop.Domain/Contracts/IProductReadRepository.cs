@@ -26,6 +26,8 @@ namespace BlazorShop.Domain.Contracts
 
         Task<IReadOnlyList<CatalogProductReadModel>> GetPublishedProductsByCategoryAsync(Guid categoryId);
 
+        Task<int> CountPublishedProductsByCategoryIdsAsync(IReadOnlyCollection<Guid> categoryIds);
+
         Task<bool> ProductSlugExistsAsync(string slug, Guid? excludedProductId = null);
 
         Task<bool> ProductSlugExistsInStoreAsync(string slug, Guid? storeId, Guid? excludedProductId = null);

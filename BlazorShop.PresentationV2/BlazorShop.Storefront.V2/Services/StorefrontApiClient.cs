@@ -589,6 +589,11 @@ namespace BlazorShop.Storefront.Services
                 parameters.Add($"categorySlug={Uri.EscapeDataString(query.CategorySlug.Trim())}");
             }
 
+            if (query.IncludeSubcategories)
+            {
+                parameters.Add("includeSubcategories=true");
+            }
+
             if (!string.IsNullOrWhiteSpace(query.SearchTerm))
             {
                 parameters.Add($"searchTerm={Uri.EscapeDataString(query.SearchTerm.Trim())}");

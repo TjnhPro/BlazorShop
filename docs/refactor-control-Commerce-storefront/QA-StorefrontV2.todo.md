@@ -502,4 +502,8 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 
 - [x] Category page renders category `Description` before falling back to `MetaDescription`. 2026-07-16: `CategoryPage.razor` updated and focused build/test compilation passed.
 - [x] Storefront API client can deserialize nullable category `description` from Storefront scoped catalog responses. 2026-07-16: SharedV2 category model updated and Storefront OpenAPI contract passed.
+- [x] Category page uses Storefront API breadcrumbs instead of rebuilding only Home/current locally. 2026-07-16: `CategoryPage.razor` consumes `GetCategoryPage.Breadcrumbs`; application service breadcrumb test passed.
+- [x] Category page product count uses direct visible product count from CommerceNode response. 2026-07-16: `DirectProductCount` drives the item chip; focused Storefront/API tests passed.
+- [x] Search category filter preserves descendant behavior by sending `includeSubcategories=true`. 2026-07-16: `StorefrontV2ApiClientTests.GetPublishedCatalogPageAsync_WhenIncludeSubcategoriesProvided_AddsQueryFlag` passed.
 - [ ] Visible browser QA confirms `/category/{slug}` displays category description from CommerceNode data.
+- [ ] Visible browser QA confirms `/category/{slug}` shows full breadcrumb hierarchy and direct product count.

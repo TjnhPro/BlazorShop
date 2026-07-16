@@ -71,6 +71,49 @@ namespace BlazorShop.Tests.Application.Services
         }
 
         [Fact]
+        public async Task GetPublishedCategoryPageBySlugAsync_AddsBreadcrumbsAndProductCounts()
+        {
+            var rootCategory = new Category { Id = Guid.NewGuid(), Name = "Apparel", Slug = "apparel", IsPublished = true };
+            var childCategory = new Category { Id = Guid.NewGuid(), ParentCategoryId = rootCategory.Id, Name = "Shoes", Slug = "shoes", IsPublished = true };
+            var grandChildCategory = new Category { Id = Guid.NewGuid(), ParentCategoryId = childCategory.Id, Name = "Running", Slug = "running", IsPublished = true };
+            var hiddenChild = new Category { Id = Guid.NewGuid(), ParentCategoryId = childCategory.Id, Name = "Hidden", Slug = "hidden", IsPublished = false };
+            var mappedCategory = new GetCategory { Id = childCategory.Id, Name = childCategory.Name, Slug = childCategory.Slug };
+
+            _slugService.Setup(service => service.NormalizeSlug("Shoes")).Returns("shoes");
+            _categoryRepository.Setup(repository => repository.GetPublishedCategoryBySlugAsync("shoes")).ReturnsAsync(childCategory);
+            _categoryRepository.Setup(repository => repository.GetCategoriesForTreeAsync()).ReturnsAsync(
+            [
+                rootCategory,
+                childCategory,
+                grandChildCategory,
+                hiddenChild,
+            ]);
+            _productReadRepository.Setup(repository => repository.GetPublishedProductsByCategoryAsync(childCategory.Id)).ReturnsAsync([]);
+            _productReadRepository
+                .Setup(repository => repository.CountPublishedProductsByCategoryIdsAsync(
+                    It.Is<IReadOnlyCollection<Guid>>(ids => ids.Count == 1 && ids.Contains(childCategory.Id))))
+                .ReturnsAsync(2);
+            _productReadRepository
+                .Setup(repository => repository.CountPublishedProductsByCategoryIdsAsync(
+                    It.Is<IReadOnlyCollection<Guid>>(ids => ids.Count == 2
+                        && ids.Contains(childCategory.Id)
+                        && ids.Contains(grandChildCategory.Id))))
+                .ReturnsAsync(5);
+            _mapper.Setup(mapper => mapper.Map<GetCategory>(childCategory)).Returns(mappedCategory);
+            _mapper.Setup(mapper => mapper.Map<IReadOnlyList<GetCatalogProduct>>(It.IsAny<IReadOnlyList<CatalogProductReadModel>>())).Returns([]);
+
+            var service = CreateService();
+
+            var result = await service.GetPublishedCategoryPageBySlugAsync("Shoes");
+
+            Assert.NotNull(result);
+            Assert.Equal(2, result!.DirectProductCount);
+            Assert.Equal(5, result.DescendantProductCount);
+            Assert.Equal(["Apparel", "Shoes"], result.Breadcrumbs.Select(crumb => crumb.Name ?? string.Empty).ToArray());
+            Assert.DoesNotContain(result.Breadcrumbs, crumb => crumb.Name == "Hidden");
+        }
+
+        [Fact]
         public async Task GetPublishedCategoryPageBySlugAsync_ReturnsNullWhenCategoryIsMissing()
         {
             _slugService.Setup(service => service.NormalizeSlug("Missing Category")).Returns("missing-category");

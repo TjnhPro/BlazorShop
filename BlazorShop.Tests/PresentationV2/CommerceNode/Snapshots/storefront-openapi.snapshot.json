@@ -229,7 +229,7 @@
         },
         "security": [
           {
-            "RefreshCookie": []
+            "RefreshCookie": [ ]
           }
         ]
       }
@@ -285,7 +285,7 @@
         },
         "security": [
           {
-            "RefreshCookie": []
+            "RefreshCookie": [ ]
           }
         ]
       }
@@ -371,7 +371,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -532,7 +532,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -1260,7 +1260,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -1582,6 +1582,13 @@
             "schema": {
               "maxLength": 256,
               "type": "string"
+            }
+          },
+          {
+            "name": "IncludeSubcategories",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           },
           {
@@ -2706,7 +2713,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -2762,7 +2769,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -2828,7 +2835,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -4630,8 +4637,27 @@
         },
         "additionalProperties": false
       },
+      "StorefrontCategoryBreadcrumbItemResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "slug": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontCategoryPageResponse": {
         "required": [
+          "breadcrumbs",
           "products"
         ],
         "type": "object",
@@ -4639,11 +4665,25 @@
           "category": {
             "$ref": "#/components/schemas/StorefrontCategoryResponse"
           },
+          "breadcrumbs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontCategoryBreadcrumbItemResponse"
+            }
+          },
           "products": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/StorefrontCatalogProductResponse"
             }
+          },
+          "directProductCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "descendantProductCount": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false

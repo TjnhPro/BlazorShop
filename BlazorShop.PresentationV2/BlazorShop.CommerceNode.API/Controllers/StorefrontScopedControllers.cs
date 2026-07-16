@@ -371,7 +371,12 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return categoryPage is null
                 ? this.Failure<StorefrontCategoryPageResponse>(ServiceResponseType.NotFound, "Published category was not found.")
                 : this.Success(
-                    new StorefrontCategoryPageResponse(categoryPage.Category.ToStorefrontContract(), mappedProducts),
+                    new StorefrontCategoryPageResponse(
+                        categoryPage.Category.ToStorefrontContract(),
+                        categoryPage.Breadcrumbs.Select(crumb => crumb.ToStorefrontContract()).ToArray(),
+                        mappedProducts,
+                        categoryPage.DirectProductCount,
+                        categoryPage.DescendantProductCount),
                     "Published category page loaded.");
         }
 

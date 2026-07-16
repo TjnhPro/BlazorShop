@@ -71,6 +71,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 PageSize = Math.Clamp(query.PageSize, 1, StorefrontContractValidation.MaxPageSize),
                 CategoryId = query.CategoryId,
                 CategorySlug = query.CategorySlug,
+                IncludeSubcategories = query.IncludeSubcategories,
                 SearchTerm = query.SearchTerm,
                 MinPrice = query.MinPrice,
                 MaxPrice = query.MaxPrice,
@@ -412,7 +413,10 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         {
             return new StorefrontCategoryPageResponse(
                 page.Category.ToStorefrontContract(),
-                page.Products.Select(product => product.ToStorefrontContract()).ToArray());
+                page.Breadcrumbs.Select(crumb => crumb.ToStorefrontContract()).ToArray(),
+                page.Products.Select(product => product.ToStorefrontContract()).ToArray(),
+                page.DirectProductCount,
+                page.DescendantProductCount);
         }
 
         public static StorefrontCategoryPageResponse ToStorefrontContract(
@@ -421,7 +425,18 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         {
             return new StorefrontCategoryPageResponse(
                 page.Category.ToStorefrontContract(),
-                page.Products.Select(mapProduct).ToArray());
+                page.Breadcrumbs.Select(crumb => crumb.ToStorefrontContract()).ToArray(),
+                page.Products.Select(mapProduct).ToArray(),
+                page.DirectProductCount,
+                page.DescendantProductCount);
+        }
+
+        public static StorefrontCategoryBreadcrumbItemResponse ToStorefrontContract(this GetCategoryBreadcrumbItem crumb)
+        {
+            return new StorefrontCategoryBreadcrumbItemResponse(
+                crumb.Id,
+                crumb.Name,
+                crumb.Slug);
         }
 
         public static StorefrontCatalogProductResponse ToStorefrontContract(

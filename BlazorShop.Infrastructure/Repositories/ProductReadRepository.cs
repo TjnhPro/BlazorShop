@@ -208,6 +208,32 @@ namespace BlazorShop.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<int> CountPublishedProductsByCategoryIdsAsync(IReadOnlyCollection<Guid> categoryIds)
+        {
+            var ids = categoryIds
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .ToArray();
+            if (ids.Length == 0)
+            {
+                return 0;
+            }
+
+            return await _context.Products
+                .AsNoTracking()
+                .Where(product => product.CategoryId.HasValue
+                    && ids.Contains(product.CategoryId.Value)
+                    && product.ArchivedAt == null
+                    && product.IsPublished
+                    && product.PublishedOn != null
+                    && product.Slug != null
+                    && product.Slug != string.Empty
+                    && product.Category != null
+                    && product.Category.ArchivedAt == null
+                    && product.Category.IsPublished)
+                .CountAsync();
+        }
+
         public async Task<bool> ProductSlugExistsAsync(string slug, Guid? excludedProductId = null)
         {
             return await _context.Products

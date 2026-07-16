@@ -14,6 +14,8 @@ namespace BlazorShop.Domain.Contracts
 
         public string? CategorySlug { get; init; }
 
+        public bool IncludeSubcategories { get; init; }
+
         public string? SearchTerm { get; init; }
 
         public decimal? MinPrice { get; init; }

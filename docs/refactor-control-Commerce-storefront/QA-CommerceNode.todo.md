@@ -816,4 +816,9 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Category create/update contract carries nullable `description` without replacing SEO metadata. 2026-07-16: `CategoryServiceTests.AddAsync_NormalizesDescriptionBeforePersisting` and `UpdateAsync_NormalizesBlankDescriptionToNull` passed.
 - [x] Storefront category response schema includes nullable `description`. 2026-07-16: `CommerceNodeStorefrontOpenApiContractTests` passed after snapshot update.
 - [x] CommerceNode migration adds only nullable `Categories.Description`. 2026-07-16: `CommerceNodeCategoryDescription` migration generated and `CommerceNodeDbContextModelTests` passed.
+- [x] Storefront category page response exposes non-null `breadcrumbs`, `products`, `directProductCount`, and `descendantProductCount`. 2026-07-16: `CommerceNodeStorefrontOpenApiContractTests` passed 23/23 after snapshot update.
+- [x] Category breadcrumb projection is ordered root-to-current and excludes unpublished category branches. 2026-07-16: `PublicCatalogServiceTests.GetPublishedCategoryPageBySlugAsync_AddsBreadcrumbsAndProductCounts` passed.
+- [x] Storefront product query has explicit `includeSubcategories` behavior for both category slug and category id filters. 2026-07-16: `CommerceNodeProductStoreScopeTests` covered direct-only default plus descendant slug/id queries.
+- [x] Category product counts exclude draft products, unpublished categories, and products from another store. 2026-07-16: `CountPublishedProductsByCategoryIdsAsync_ExcludesHiddenCategoriesAndOtherStores` passed.
+- [x] Storefront Swagger snapshot includes `includeSubcategories` query metadata and category breadcrumb/count schemas. 2026-07-16: snapshot refreshed and contract tests passed.
 - [ ] Live API smoke creates a category with description, updates it, and reads it back through Commerce admin API.

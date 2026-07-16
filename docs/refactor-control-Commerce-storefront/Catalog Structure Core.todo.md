@@ -107,38 +107,38 @@ Goal: make public category behavior predictable.
 
 Implementation checklist:
 
-- [ ] Add category breadcrumb projection using existing parent chain and store-scoped category repository.
-- [ ] Add category product count projection:
-  - [ ] direct product count.
-  - [ ] descendant-inclusive count.
-- [ ] Add explicit product query option:
-  - [ ] `includeSubcategories=false` by default unless current route behavior already implies true.
-  - [ ] document current default before changing public behavior.
-- [ ] Normalize category page and product catalog query behavior so category slug and category id paths use the same descendant rule.
-- [ ] Ensure counts include only public-visible products:
-  - [ ] same store.
-  - [ ] `IsPublished=true`.
-  - [ ] `ArchivedAt=null`.
-  - [ ] availability window valid after Phase 4.
-  - [ ] category published and not archived.
-- [ ] Cache/invalidate category tree/count data through existing catalog cache invalidation.
-- [ ] Add tests for direct count.
-- [ ] Add tests for descendant count.
-- [ ] Add tests for hidden products.
-- [ ] Add tests for hidden categories.
-- [ ] Add tests for breadcrumb order.
+- [x] Add category breadcrumb projection using existing parent chain and store-scoped category repository. 2026-07-16: category page response now carries root-to-current breadcrumbs from published category tree data.
+- [x] Add category product count projection:
+  - [x] direct product count. 2026-07-16: `DirectProductCount` added to category page response and Storefront display.
+  - [x] descendant-inclusive count. 2026-07-16: `DescendantProductCount` added using published descendant category ids.
+- [x] Add explicit product query option:
+  - [x] `includeSubcategories=false` by default unless current route behavior already implies true. 2026-07-16: Storefront product query exposes `includeSubcategories`; default API behavior is direct-only.
+  - [x] document current default before changing public behavior. 2026-07-16: Storefront Search sends `includeSubcategories=true` when filtering by category slug to preserve the previous descendant search UX.
+- [x] Normalize category page and product catalog query behavior so category slug and category id paths use the same descendant rule. 2026-07-16: repository applies the same `IncludeSubcategories` descendant expansion to slug and id filters.
+- [x] Ensure counts include only public-visible products:
+  - [x] same store. 2026-07-16: repository count test excludes other-store products.
+  - [x] `IsPublished=true`. 2026-07-16: repository count/query filters remain public-only and tests include a draft product.
+  - [x] `ArchivedAt=null`. 2026-07-16: repository count/query filters retain archived exclusion.
+  - [n/a] availability window valid after Phase 4. Availability window fields are not implemented yet.
+  - [x] category published and not archived. 2026-07-16: descendant ids come from published categories and repository counts also require published category.
+- [n/a] Cache/invalidate category tree/count data through existing catalog cache invalidation. 2026-07-16: counts are computed live; category tree keeps the existing catalog cache path.
+- [x] Add tests for direct count. 2026-07-16: `PublicCatalogServiceTests.GetPublishedCategoryPageBySlugAsync_AddsBreadcrumbsAndProductCounts`.
+- [x] Add tests for descendant count. 2026-07-16: `CommerceNodeProductStoreScopeTests.CountPublishedProductsByCategoryIdsAsync_ExcludesHiddenCategoriesAndOtherStores`.
+- [x] Add tests for hidden products. 2026-07-16: repository tests include draft/hidden category products.
+- [x] Add tests for hidden categories. 2026-07-16: descendant query/count tests exclude products in unpublished child category.
+- [x] Add tests for breadcrumb order. 2026-07-16: application service test asserts root-to-current order.
 
 Verification checklist:
 
-- [ ] Storefront catalog tests pass.
-- [ ] Sitemap tests pass.
-- [ ] OpenAPI contract tests pass if query contracts changed.
+- [x] Storefront catalog tests pass. 2026-07-16: focused `PublicCatalogServiceTests`, `CommerceNodeProductStoreScopeTests`, and `StorefrontV2ApiClientTests` passed 21/21.
+- [n/a] Sitemap tests pass. Phase 2 did not change sitemap behavior.
+- [x] OpenAPI contract tests pass if query contracts changed. 2026-07-16: `CommerceNodeStorefrontOpenApiContractTests` passed 23/23 after snapshot refresh.
 
 Exit criteria:
 
-- [ ] Category breadcrumb and counts are store-scoped.
-- [ ] Category product listing behavior is explicit and tested.
-- [ ] Storefront and sitemap do not include unpublished/archived category/product data.
+- [x] Category breadcrumb and counts are store-scoped. 2026-07-16: service/repository tests cover current-store category breadcrumbs and count filters.
+- [x] Category product listing behavior is explicit and tested. 2026-07-16: `includeSubcategories` controls descendant expansion; direct-only default and descendant true paths are tested.
+- [~] Storefront and sitemap do not include unpublished/archived category/product data. 2026-07-16: catalog query/count paths are verified; sitemap awaits later availability/publication release gate.
 
 Suggested commit:
 
@@ -538,9 +538,9 @@ test(catalog): complete catalog structure core qa
 
 - [x] Category create/update stores description. 2026-07-16: service normalization/mapping tests and CommerceNode migration added.
 - [ ] Category publish toggle hides/shows category in public tree.
-- [ ] Category breadcrumb is store-scoped and ordered root to leaf.
-- [ ] Category direct product count excludes hidden/unavailable products.
-- [ ] Category descendant product count excludes hidden/unavailable products.
+- [x] Category breadcrumb is store-scoped and ordered root to leaf. 2026-07-16: application service breadcrumb test passed.
+- [x] Category direct product count excludes hidden/unavailable products. 2026-07-16: direct count uses public product count repository; availability waits for Phase 4.
+- [x] Category descendant product count excludes hidden/unavailable products. 2026-07-16: descendant count/query tests exclude draft, hidden-category, and other-store products; availability waits for Phase 4.
 - [ ] Product category mapping rejects cross-store category/product pairs.
 - [ ] Product primary category syncs to `Product.CategoryId` when mappings are enabled.
 - [ ] Product availability start hides future product from list/detail/sitemap/cart/checkout.
@@ -561,9 +561,9 @@ test(catalog): complete catalog structure core qa
 
 ### Storefront V2
 
-- [~] Category page renders description and breadcrumb. 2026-07-16 Phase 1: description renders; full breadcrumb waits for Phase 2.
-- [ ] Category product list follows approved include-subcategories rule.
-- [ ] Product count matches visible products.
+- [x] Category page renders description and breadcrumb. 2026-07-16 Phase 2: category page consumes API breadcrumbs; Phase 1 rendered description.
+- [x] Category product list follows approved include-subcategories rule. 2026-07-16: category page remains direct-only; search category filter sends explicit descendant flag.
+- [x] Product count matches visible products. 2026-07-16: category page displays direct product count; descendant count is available in the API contract.
 - [ ] Future scheduled product is not accessible publicly.
 - [ ] Expired product is not accessible publicly.
 - [ ] Product sitemap excludes hidden/unavailable products.
@@ -601,7 +601,7 @@ test(catalog): complete catalog structure core qa
 
 - [ ] Phase 0 - baseline and guardrails.
 - [x] Phase 1 - category content/admin publish surface. 2026-07-16: committed after focused tests.
-- [ ] Phase 2 - category breadcrumb/count/descendant product behavior.
+- [x] Phase 2 - category breadcrumb/count/descendant product behavior. 2026-07-16: implemented and verified with focused catalog/client/OpenAPI tests.
 - [ ] Phase 4 - product availability window.
 - [ ] Phase 5 - product identity fields.
 - [ ] Phase 6 - variant MVP hardening.

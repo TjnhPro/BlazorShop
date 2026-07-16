@@ -6,6 +6,12 @@ namespace BlazorShop.Application.DTOs.Category
     {
         public GetCategory Category { get; set; } = new();
 
+        public IReadOnlyList<GetCategoryBreadcrumbItem> Breadcrumbs { get; set; } = Array.Empty<GetCategoryBreadcrumbItem>();
+
         public IReadOnlyList<GetCatalogProduct> Products { get; set; } = Array.Empty<GetCatalogProduct>();
+
+        public int DirectProductCount { get; set; }
+
+        public int DescendantProductCount { get; set; }
     }
 }

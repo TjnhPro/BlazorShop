@@ -328,6 +328,34 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
             return await this.AttachPrimaryMediaAsync(items);
         }
 
+        public async Task<int> CountPublishedProductsByCategoryIdsAsync(IReadOnlyCollection<Guid> categoryIds)
+        {
+            var ids = categoryIds
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .ToArray();
+            if (ids.Length == 0)
+            {
+                return 0;
+            }
+
+            var scopedProducts = await this.GetCurrentStoreProductsAsync();
+            return await scopedProducts
+                .AsNoTracking()
+                .Where(product => product.CategoryId.HasValue
+                    && ids.Contains(product.CategoryId.Value)
+                    && product.ArchivedAt == null
+                    && product.IsPublished
+                    && product.PublishedOn != null
+                    && product.Slug != null
+                    && product.Slug != string.Empty
+                    && product.Category != null
+                    && product.Category.ArchivedAt == null
+                    && product.Category.IsPublished
+                    && product.Category.StoreId == product.StoreId)
+                .CountAsync();
+        }
+
         public async Task<bool> ProductSlugExistsAsync(string slug, Guid? excludedProductId = null)
         {
             return await this.context.Products
@@ -500,15 +528,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
         private async Task<IReadOnlyCollection<Guid>?> GetPublishedCategoryIdsForQueryAsync(Guid storeId, ProductCatalogQuery query)
         {
             var categorySlug = query.GetNormalizedCategorySlug();
-            if (string.IsNullOrWhiteSpace(categorySlug))
+            var hasCategoryId = query.CategoryId.HasValue && query.CategoryId.Value != Guid.Empty;
+            if (string.IsNullOrWhiteSpace(categorySlug) && (!hasCategoryId || !query.IncludeSubcategories))
             {
                 return null;
-            }
-
-            var normalizedSlug = this.slugService.NormalizeSlug(categorySlug);
-            if (string.IsNullOrWhiteSpace(normalizedSlug))
-            {
-                return [];
             }
 
             var categories = await this.context.Categories
@@ -521,13 +544,30 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 .Select(category => new CategoryScopeNode(category.Id, category.ParentCategoryId, category.Slug!))
                 .ToListAsync();
 
-            var root = categories.FirstOrDefault(category => category.Slug == normalizedSlug);
+            CategoryScopeNode? root;
+            if (!string.IsNullOrWhiteSpace(categorySlug))
+            {
+                var normalizedSlug = this.slugService.NormalizeSlug(categorySlug);
+                if (string.IsNullOrWhiteSpace(normalizedSlug))
+                {
+                    return [];
+                }
+
+                root = categories.FirstOrDefault(category => category.Slug == normalizedSlug);
+            }
+            else
+            {
+                root = categories.FirstOrDefault(category => category.Id == query.CategoryId!.Value);
+            }
+
             if (root is null)
             {
                 return [];
             }
 
-            return CollectDescendantCategoryIds(root.Id, categories);
+            return query.IncludeSubcategories
+                ? CollectDescendantCategoryIds(root.Id, categories)
+                : [root.Id];
         }
 
         private static IReadOnlyCollection<Guid> CollectDescendantCategoryIds(Guid rootCategoryId, IReadOnlyList<CategoryScopeNode> categories)

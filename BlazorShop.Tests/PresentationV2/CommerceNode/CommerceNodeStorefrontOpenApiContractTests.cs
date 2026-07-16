@@ -49,6 +49,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         [
             ("StorefrontPagedResponse", "items"),
             ("StorefrontCategoryTreeNodeResponse", "children"),
+            ("StorefrontCategoryPageResponse", "breadcrumbs"),
             ("StorefrontCategoryPageResponse", "products"),
             ("StorefrontProductResponse", "variants"),
             ("StorefrontProductVariantResponse", "attributes"),

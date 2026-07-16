@@ -64,6 +64,90 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.False(duplicateOnlyInStoreB);
         }
 
+        [Fact]
+        public async Task GetPublishedCatalogPageAsync_CategorySlugDefaultsToDirectProductsOnly()
+        {
+            var storeA = Guid.NewGuid();
+            var storeB = Guid.NewGuid();
+            await using var context = CreateContext();
+            var catalog = await SeedCategoryHierarchyAsync(context, storeA, storeB);
+            var repository = CreateRepository(context, storeA);
+
+            var result = await repository.GetPublishedCatalogPageAsync(new ProductCatalogQuery
+            {
+                CategorySlug = "root",
+                PageSize = 10,
+            });
+
+            Assert.Single(result.Items);
+            Assert.Equal("Root Product", result.Items[0].Name);
+            Assert.Equal(catalog.RootCategoryId, result.Items[0].CategoryId);
+        }
+
+        [Fact]
+        public async Task GetPublishedCatalogPageAsync_WithIncludeSubcategoriesReturnsVisibleDescendantProducts()
+        {
+            var storeA = Guid.NewGuid();
+            var storeB = Guid.NewGuid();
+            await using var context = CreateContext();
+            await SeedCategoryHierarchyAsync(context, storeA, storeB);
+            var repository = CreateRepository(context, storeA);
+
+            var result = await repository.GetPublishedCatalogPageAsync(new ProductCatalogQuery
+            {
+                CategorySlug = "root",
+                IncludeSubcategories = true,
+                PageSize = 10,
+                SortBy = ProductCatalogSortBy.DisplayOrder,
+            });
+
+            Assert.Equal(2, result.TotalCount);
+            Assert.Equal(["Root Product", "Child Product"], result.Items.Select(product => product.Name ?? string.Empty).ToArray());
+            Assert.DoesNotContain(result.Items, product => product.Name == "Hidden Product");
+            Assert.DoesNotContain(result.Items, product => product.Name == "Store B Child Product");
+        }
+
+        [Fact]
+        public async Task GetPublishedCatalogPageAsync_CategoryIdUsesSameIncludeSubcategoriesRule()
+        {
+            var storeA = Guid.NewGuid();
+            var storeB = Guid.NewGuid();
+            await using var context = CreateContext();
+            var catalog = await SeedCategoryHierarchyAsync(context, storeA, storeB);
+            var repository = CreateRepository(context, storeA);
+
+            var result = await repository.GetPublishedCatalogPageAsync(new ProductCatalogQuery
+            {
+                CategoryId = catalog.RootCategoryId,
+                IncludeSubcategories = true,
+                PageSize = 10,
+                SortBy = ProductCatalogSortBy.DisplayOrder,
+            });
+
+            Assert.Equal(2, result.TotalCount);
+            Assert.Equal(["Root Product", "Child Product"], result.Items.Select(product => product.Name ?? string.Empty).ToArray());
+        }
+
+        [Fact]
+        public async Task CountPublishedProductsByCategoryIdsAsync_ExcludesHiddenCategoriesAndOtherStores()
+        {
+            var storeA = Guid.NewGuid();
+            var storeB = Guid.NewGuid();
+            await using var context = CreateContext();
+            var catalog = await SeedCategoryHierarchyAsync(context, storeA, storeB);
+            var repository = CreateRepository(context, storeA);
+
+            var count = await repository.CountPublishedProductsByCategoryIdsAsync(
+            [
+                catalog.RootCategoryId,
+                catalog.ChildCategoryId,
+                catalog.HiddenCategoryId,
+                catalog.StoreBChildCategoryId,
+            ]);
+
+            Assert.Equal(2, count);
+        }
+
         private static CommerceNodeProductReadRepository CreateRepository(CommerceNodeDbContext context, Guid storeId)
         {
             return new CommerceNodeProductReadRepository(context, new SlugService(), new FixedStoreContext(storeId));
@@ -111,6 +195,70 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             return (storeAProduct1.Id, storeBProduct.Id);
         }
 
+        private static async Task<CategoryHierarchySeed> SeedCategoryHierarchyAsync(
+            CommerceNodeDbContext context,
+            Guid storeA,
+            Guid storeB)
+        {
+            var rootCategory = new Category
+            {
+                Id = Guid.NewGuid(),
+                StoreId = storeA,
+                Name = "Root",
+                Slug = "root",
+                IsPublished = true,
+            };
+            var childCategory = new Category
+            {
+                Id = Guid.NewGuid(),
+                StoreId = storeA,
+                ParentCategoryId = rootCategory.Id,
+                Name = "Child",
+                Slug = "child",
+                IsPublished = true,
+            };
+            var hiddenCategory = new Category
+            {
+                Id = Guid.NewGuid(),
+                StoreId = storeA,
+                ParentCategoryId = rootCategory.Id,
+                Name = "Hidden",
+                Slug = "hidden",
+                IsPublished = false,
+            };
+            var storeBRootCategory = new Category
+            {
+                Id = Guid.NewGuid(),
+                StoreId = storeB,
+                Name = "Store B Root",
+                Slug = "root",
+                IsPublished = true,
+            };
+            var storeBChildCategory = new Category
+            {
+                Id = Guid.NewGuid(),
+                StoreId = storeB,
+                ParentCategoryId = storeBRootCategory.Id,
+                Name = "Store B Child",
+                Slug = "child",
+                IsPublished = true,
+            };
+
+            var rootProduct = CreateProduct(storeA, rootCategory.Id, "Root Product", "root-product");
+            var childProduct = CreateProduct(storeA, childCategory.Id, "Child Product", "child-product");
+            childProduct.DisplayOrder = 1;
+            var hiddenProduct = CreateProduct(storeA, hiddenCategory.Id, "Hidden Product", "hidden-product");
+            var draftProduct = CreateProduct(storeA, childCategory.Id, "Draft Product", "draft-product");
+            draftProduct.IsPublished = false;
+            var storeBChildProduct = CreateProduct(storeB, storeBChildCategory.Id, "Store B Child Product", "store-b-child-product");
+
+            context.Categories.AddRange(rootCategory, childCategory, hiddenCategory, storeBRootCategory, storeBChildCategory);
+            context.Products.AddRange(rootProduct, childProduct, hiddenProduct, draftProduct, storeBChildProduct);
+            await context.SaveChangesAsync();
+
+            return new CategoryHierarchySeed(rootCategory.Id, childCategory.Id, hiddenCategory.Id, storeBChildCategory.Id);
+        }
+
         private static Product CreateProduct(Guid storeId, Guid categoryId, string name, string slug)
         {
             return new Product
@@ -130,6 +278,12 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 UpdatedAt = new DateTime(2026, 7, 15, 0, 0, 0, DateTimeKind.Utc),
             };
         }
+
+        private sealed record CategoryHierarchySeed(
+            Guid RootCategoryId,
+            Guid ChildCategoryId,
+            Guid HiddenCategoryId,
+            Guid StoreBChildCategoryId);
 
         private sealed class FixedStoreContext : ICommerceStoreContext
         {

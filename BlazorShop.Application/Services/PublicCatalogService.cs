@@ -68,7 +68,7 @@ namespace BlazorShop.Application.Services
                 }
             }
 
-            var categories = await _categoryRepository.GetCategoriesForTreeAsync();
+            var categories = await _categoryRepository.GetCategoriesForTreeAsync() ?? [];
             var publishedCategories = categories
                 .Where(category => category.IsPublished
                     && category.ArchivedAt == null
@@ -220,11 +220,23 @@ namespace BlazorShop.Application.Services
             }
 
             var products = await _productReadRepository.GetPublishedProductsByCategoryAsync(category.Id);
+            var categoriesForTree = await _categoryRepository.GetCategoriesForTreeAsync() ?? [];
+            var publishedCategories = categoriesForTree
+                .Where(candidate => candidate.IsPublished
+                    && candidate.ArchivedAt == null
+                    && !string.IsNullOrWhiteSpace(candidate.Slug))
+                .ToArray();
+            var descendantCategoryIds = CollectDescendantCategoryIds(category.Id, publishedCategories);
+            var directProductCount = await _productReadRepository.CountPublishedProductsByCategoryIdsAsync([category.Id]);
+            var descendantProductCount = await _productReadRepository.CountPublishedProductsByCategoryIdsAsync(descendantCategoryIds);
 
             return new GetCategoryPage
             {
                 Category = _mapper.Map<GetCategory>(category),
+                Breadcrumbs = BuildBreadcrumbs(category.Id, publishedCategories),
                 Products = _mapper.Map<IReadOnlyList<GetCatalogProduct>>(products),
+                DirectProductCount = directProductCount,
+                DescendantProductCount = descendantProductCount,
             };
         }
 
@@ -352,6 +364,55 @@ namespace BlazorShop.Application.Services
                 .OrderBy(category => category.DisplayOrder)
                 .ThenBy(category => category.Name)
                 .ToArray();
+        }
+
+        private static IReadOnlyList<GetCategoryBreadcrumbItem> BuildBreadcrumbs(Guid categoryId, IReadOnlyList<Category> categories)
+        {
+            var byId = categories.ToDictionary(category => category.Id);
+            var breadcrumbs = new List<GetCategoryBreadcrumbItem>();
+            var visited = new HashSet<Guid>();
+            var currentId = categoryId;
+
+            while (byId.TryGetValue(currentId, out var category) && visited.Add(currentId))
+            {
+                breadcrumbs.Add(new GetCategoryBreadcrumbItem
+                {
+                    Id = category.Id,
+                    Name = category.Name,
+                    Slug = category.Slug,
+                });
+
+                if (!category.ParentCategoryId.HasValue)
+                {
+                    break;
+                }
+
+                currentId = category.ParentCategoryId.Value;
+            }
+
+            breadcrumbs.Reverse();
+            return breadcrumbs;
+        }
+
+        private static IReadOnlyCollection<Guid> CollectDescendantCategoryIds(Guid rootCategoryId, IReadOnlyList<Category> categories)
+        {
+            var categoryIds = new HashSet<Guid> { rootCategoryId };
+            var pending = new Queue<Guid>();
+            pending.Enqueue(rootCategoryId);
+
+            while (pending.Count > 0)
+            {
+                var currentId = pending.Dequeue();
+                foreach (var child in categories.Where(category => category.ParentCategoryId == currentId))
+                {
+                    if (categoryIds.Add(child.Id))
+                    {
+                        pending.Enqueue(child.Id);
+                    }
+                }
+            }
+
+            return categoryIds;
         }
     }
 }

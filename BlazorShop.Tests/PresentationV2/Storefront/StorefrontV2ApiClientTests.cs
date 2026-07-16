@@ -131,6 +131,32 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task GetPublishedCatalogPageAsync_WhenIncludeSubcategoriesProvided_AddsQueryFlag()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal("/api/storefront/stores/default/catalog/products", request.RequestUri?.AbsolutePath);
+                Assert.Contains("categorySlug=shoes", request.RequestUri?.Query, StringComparison.Ordinal);
+                Assert.Contains("includeSubcategories=true", request.RequestUri?.Query, StringComparison.Ordinal);
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    """{"success":true,"message":"ok","data":{"items":[],"pageNumber":1,"pageSize":24,"totalCount":0,"totalPages":0}}""");
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var result = await apiClient.GetPublishedCatalogPageAsync(new ProductCatalogQuery
+            {
+                CategorySlug = "shoes",
+                IncludeSubcategories = true,
+            });
+
+            Assert.True(result.IsSuccess);
+            Assert.Equal(["/api/storefront/stores/default/catalog/products"], handler.RequestPaths);
+        }
+
+        [Fact]
         public async Task GetPublicConfigurationAsync_ReadsStoreScopedConfiguration()
         {
             var handler = new RecordingHandler(request =>

@@ -10,6 +10,8 @@ namespace BlazorShop.Web.SharedV2.Models.Product
 
         public string? CategorySlug { get; set; }
 
+        public bool IncludeSubcategories { get; set; }
+
         public string? SearchTerm { get; set; }
 
         public decimal? MinPrice { get; set; }

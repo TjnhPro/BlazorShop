@@ -42,7 +42,7 @@ else if (_categoryPage is not null)
                     </div>
 
                     <div class="flex flex-wrap items-center gap-3">
-                        <span class="inline-flex items-center rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-800 shadow">@_displayProducts.Count items</span>
+                        <span class="inline-flex items-center rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-800 shadow">@_categoryPage.DirectProductCount items</span>
                         <a href="@StorefrontRoutes.Home" class="inline-flex items-center rounded bg-amber-500 px-4 py-2 font-semibold text-white hover:bg-amber-600">Back to Home</a>
                     </div>
                 </div>
@@ -154,7 +154,11 @@ else if (_categoryPage is not null)
         _breadcrumbs =
         [
             new StorefrontBreadcrumbItem("Home", StorefrontRoutes.Home),
-            new StorefrontBreadcrumbItem(_categoryPage.Category.Name ?? "Category"),
+            .._categoryPage.Breadcrumbs.Select((crumb, index) => new StorefrontBreadcrumbItem(
+                crumb.Name ?? "Category",
+                index == _categoryPage.Breadcrumbs.Count - 1 || string.IsNullOrWhiteSpace(crumb.Slug)
+                    ? null
+                    : StorefrontRoutes.Category(crumb.Slug))),
         ];
         _metadata = await SeoComposer.ComposeCategoryPageAsync(_categoryPage.Category);
         _structuredData = await StructuredDataComposer.ComposeCategoryPageAsync(_categoryPage.Category);
