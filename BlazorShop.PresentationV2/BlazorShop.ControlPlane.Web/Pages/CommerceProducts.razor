@@ -403,19 +403,26 @@
                         </div>
                     </div>
                 }
-                else if (selectedProduct.Variants.Any())
+                @if (selectedProduct.Variants.Any())
                 {
                     <div class="mt-3 divide-y divide-ink-100 rounded-md border border-ink-200">
                         @foreach (var variant in selectedProduct.Variants)
                         {
-                            <div class="p-3 text-sm">
-                                <div class="font-medium text-ink-900">@VariantName(variant)</div>
-                                <div class="mt-1 font-mono text-xs text-ink-500">@variant.Sku</div>
+                            <div class="grid gap-3 p-3 text-sm md:grid-cols-[minmax(0,1fr)_120px_auto] md:items-center">
+                                <div>
+                                    <div class="font-medium text-ink-900">@VariantName(variant)</div>
+                                    <div class="mt-1 font-mono text-xs text-ink-500">@variant.Sku</div>
+                                    <div class="mt-1 font-mono text-xs text-ink-400">@variant.AttributeSignature</div>
+                                </div>
+                                <StatusBadge Text="@(variant.IsActive ? "Active" : "Inactive")" Tone="@(variant.IsActive ? "success" : "neutral")" />
+                                <button class="cp-button cp-button-secondary justify-center" disabled="@isSaving" @onclick="() => SetVariantActiveAsync(variant, !variant.IsActive)">
+                                    @(variant.IsActive ? "Disable" : "Enable")
+                                </button>
                             </div>
                         }
                     </div>
                 }
-                else
+                else if (selectedProduct.VariationTemplate is null)
                 {
                     <div class="mt-3 rounded-md border border-ink-200 p-4 text-center text-sm text-ink-500">No variation structure.</div>
                 }
@@ -1006,6 +1013,57 @@
 
         successMessage = result.Message;
         await LoadInventoryAsync();
+    }
+
+    private async Task SetVariantActiveAsync(GetProductVariant variant, bool isActive)
+    {
+        if (!HasStore || selectedProduct is null)
+        {
+            return;
+        }
+
+        if (!isActive && variant.IsDefault)
+        {
+            errorMessage = "Default variant must stay active. Set another active default before disabling this variant.";
+            return;
+        }
+
+        isSaving = true;
+        errorMessage = null;
+        try
+        {
+            var result = await CatalogClient.UpdateVariantAsync(
+                selectedStorePublicId!.Value,
+                selectedProduct.Id,
+                variant.Id,
+                new UpdateProductVariant
+                {
+                    Id = variant.Id,
+                    ProductId = selectedProduct.Id,
+                    Sku = variant.Sku,
+                    Attributes = variant.Attributes,
+                    SizeScale = variant.SizeScale,
+                    SizeValue = variant.SizeValue,
+                    Price = variant.Price,
+                    Stock = variant.Stock,
+                    Color = variant.Color,
+                    IsActive = isActive,
+                    IsDefault = variant.IsDefault,
+                });
+
+            if (!result.Success)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            successMessage = result.Message;
+            await OpenProductAsync(selectedProduct.Id);
+        }
+        finally
+        {
+            isSaving = false;
+        }
     }
 
     private async Task PreviousPageAsync()

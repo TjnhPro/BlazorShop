@@ -164,6 +164,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 .HasMaxLength(256);
 
             modelBuilder.Entity<ProductVariant>()
+                .Property(variant => variant.IsActive)
+                .HasDefaultValue(true);
+
+            modelBuilder.Entity<ProductVariant>()
                 .HasIndex(variant => new { variant.ProductId, variant.AttributeSignature })
                 .IsUnique()
                 .HasFilter("\"AttributeSignature\" IS NOT NULL");

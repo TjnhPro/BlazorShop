@@ -291,6 +291,42 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public async Task AddLineAsync_RejectsInactiveVariant()
+        {
+            await using var context = CreateContext();
+            var productRepository = new Mock<IProductReadRepository>();
+            var service = CreateService(context, productRepository);
+            var storeId = Guid.NewGuid();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            var variant = new ProductVariant
+            {
+                Id = Guid.NewGuid(),
+                ProductId = product.Id,
+                Stock = 5,
+                Price = 22m,
+                IsActive = false,
+            };
+            product.ProductType = ProductTypes.VariantInventory;
+            product.Variants.Add(variant);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cart = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+
+            var result = await service.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                ProductVariantId: variant.Id,
+                Quantity: 1));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.ValidationError, result.ResponseType);
+            Assert.Equal("Selected product variant is not available.", result.Message);
+            Assert.Equal(0, await context.CartLines.CountAsync());
+        }
+
+        [Fact]
         public async Task AddLineAsync_RejectsQuantityBelowMinimum_BeforeProductLookup()
         {
             await using var context = CreateContext();
@@ -373,6 +409,32 @@ namespace BlazorShop.Tests.Application.CommerceNode
 
             Assert.False(result.Success);
             Assert.Equal(ServiceResponseType.ValidationError, result.ResponseType);
+            Assert.Equal(0, await context.CartLines.CountAsync());
+        }
+
+        [Fact]
+        public async Task AddLineAsync_RejectsMissingRequiredSelectedAttribute()
+        {
+            await using var context = CreateContext();
+            var productRepository = new Mock<IProductReadRepository>();
+            var service = CreateService(context, productRepository);
+            var storeId = Guid.NewGuid();
+            var product = CreateCustomVariationProduct(storeId);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cart = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+
+            var result = await service.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                SelectedAttributes: [],
+                Quantity: 1));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.ValidationError, result.ResponseType);
+            Assert.Equal("Required selected attribute 'Color' is missing.", result.Message);
             Assert.Equal(0, await context.CartLines.CountAsync());
         }
 

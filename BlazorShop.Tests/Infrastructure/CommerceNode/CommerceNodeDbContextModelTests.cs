@@ -214,6 +214,20 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.True(colorHex.IsNullable);
         }
 
+        [Fact]
+        public void ProductVariant_IsActiveDefaultsToTrue()
+        {
+            using var context = CreateContext();
+            var modelEntity = context.Model.FindEntityType(typeof(ProductVariant));
+
+            Assert.NotNull(modelEntity);
+            var isActive = modelEntity!.FindProperty(nameof(ProductVariant.IsActive));
+
+            Assert.NotNull(isActive);
+            Assert.False(isActive!.IsNullable);
+            Assert.Equal(true, isActive.GetDefaultValue());
+        }
+
         private static CommerceNodeDbContext CreateContext()
         {
             var options = new DbContextOptionsBuilder<CommerceNodeDbContext>()

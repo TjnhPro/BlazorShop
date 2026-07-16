@@ -5,6 +5,7 @@ namespace BlazorShop.Tests.Application.Services
     using BlazorShop.Domain.Constants;
     using BlazorShop.Application.DTOs.Category;
     using BlazorShop.Application.DTOs.Product;
+    using BlazorShop.Application.DTOs.Product.ProductVariant;
     using BlazorShop.Application.Services;
     using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Domain.Contracts;
@@ -108,6 +109,47 @@ namespace BlazorShop.Tests.Application.Services
             var value = Assert.Single(option.Values);
             Assert.Equal("Red", value.Value);
             Assert.Equal("#FF0000", value.ColorHex);
+        }
+
+        [Fact]
+        public async Task GetPublishedProductBySlugAsync_ExposesOnlyActiveVariants()
+        {
+            var product = new Product
+            {
+                Id = Guid.NewGuid(),
+                Name = "Variant product",
+                Slug = "variant-product",
+                IsPublished = true,
+                ProductType = ProductTypes.VariantInventory,
+                Variants =
+                {
+                    new ProductVariant { Id = Guid.NewGuid(), Sku = "ACTIVE", IsActive = true, Stock = 5 },
+                    new ProductVariant { Id = Guid.NewGuid(), Sku = "INACTIVE", IsActive = false, Stock = 5 },
+                },
+            };
+            var mappedProduct = new GetProduct
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Slug = product.Slug,
+                Variants =
+                [
+                    new GetProductVariant { Id = product.Variants.ElementAt(0).Id, ProductId = product.Id, Sku = "ACTIVE", IsActive = true },
+                    new GetProductVariant { Id = product.Variants.ElementAt(1).Id, ProductId = product.Id, Sku = "INACTIVE", IsActive = false },
+                ],
+            };
+
+            _slugService.Setup(service => service.NormalizeSlug("Variant Product")).Returns("variant-product");
+            _productReadRepository.Setup(repository => repository.GetPublishedProductBySlugAsync("variant-product")).ReturnsAsync(product);
+            _mapper.Setup(mapper => mapper.Map<GetProduct>(product)).Returns(mappedProduct);
+
+            var service = CreateService();
+
+            var result = await service.GetPublishedProductBySlugAsync("Variant Product");
+
+            Assert.NotNull(result);
+            var variant = Assert.Single(result!.Variants);
+            Assert.Equal("ACTIVE", variant.Sku);
         }
 
         [Fact]

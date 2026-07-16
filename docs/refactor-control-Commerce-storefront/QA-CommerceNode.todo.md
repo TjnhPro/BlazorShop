@@ -845,11 +845,11 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Unknown variation control type is rejected. 2026-07-16 Phase 1: `VariationTemplateServiceTests.CreateOptionAsync_RejectsUnknownControlType` passed.
 - [x] Invalid color hex is rejected. 2026-07-16 Phase 1: `VariationTemplateServiceTests.CreateValueAsync_RejectsInvalidColorHex` passed.
 - [x] Storefront product detail response includes variation option control metadata. 2026-07-16 Phase 1: `PublicCatalogServiceTests.GetPublishedProductBySlugAsync_MapsActiveVariationTemplateOptionsAndValues` and Storefront OpenAPI snapshot passed.
-- [ ] Product variant active state defaults to `true`.
-- [ ] Inactive variant cannot be set as default.
-- [ ] Variant combination validation rejects unknown template option names.
-- [ ] Variant combination validation rejects unknown template values.
-- [ ] Shared product selection resolver rejects missing required options.
-- [ ] Shared product selection resolver rejects inactive variants.
+- [x] Product variant active state defaults to `true`. 2026-07-16 Phase 2: `CommerceNodeProductVariantActiveState` migration and `CommerceNodeDbContextModelTests.ProductVariant_IsActiveDefaultsToTrue` passed.
+- [x] Inactive variant cannot be set as default. 2026-07-16 Phase 2: `ProductVariantServiceTests.AddAsync_WhenDefaultVariantIsInactive_ReturnsFailure` passed.
+- [x] Variant combination validation rejects unknown template option names. 2026-07-16 Phase 2: `ProductVariantServiceTests.AddAsync_WhenTemplateOptionIsUnknown_ReturnsFailure` passed.
+- [x] Variant combination validation rejects unknown template values. 2026-07-16 Phase 2: `ProductVariantServiceTests.AddAsync_WhenTemplateValueIsUnknown_ReturnsFailure` passed.
+- [x] Shared product selection resolver rejects missing required options. 2026-07-16 Phase 2: direct cart resolver path rejects missing required selected attribute; dedicated shared resolver begins in Phase 3.
+- [x] Shared product selection resolver rejects inactive variants. 2026-07-16 Phase 2: Storefront cart and checkout variant resolution paths reject inactive variants; dedicated shared resolver begins in Phase 3.
 - [ ] Storefront selection-preview endpoint is store-scoped.
 - [ ] Storefront selection-preview endpoint rejects quantity below 1.

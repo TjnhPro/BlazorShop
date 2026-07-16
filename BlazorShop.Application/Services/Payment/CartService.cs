@@ -623,18 +623,29 @@ namespace BlazorShop.Application.Services.Payment
                 return VariantResolution.Success(null);
             }
 
-            var variants = product.Variants.ToArray();
+            var allVariants = product.Variants.ToArray();
+            var variants = allVariants.Where(item => item.IsActive).ToArray();
             if (productVariantId.HasValue)
             {
-                var variant = variants.FirstOrDefault(item => item.Id == productVariantId.Value);
-                return variant is null
-                    ? VariantResolution.Failure("Selected product variant was not found.")
-                    : VariantResolution.Success(variant);
+                var variant = allVariants.FirstOrDefault(item => item.Id == productVariantId.Value);
+                if (variant is null)
+                {
+                    return VariantResolution.Failure("Selected product variant was not found.");
+                }
+
+                return variant.IsActive
+                    ? VariantResolution.Success(variant)
+                    : VariantResolution.Failure("Selected product variant is not available.");
+            }
+
+            if (allVariants.Length == 0)
+            {
+                return VariantResolution.Success(null);
             }
 
             if (variants.Length == 0)
             {
-                return VariantResolution.Success(null);
+                return VariantResolution.Failure("Product variants are not available.");
             }
 
             var defaultVariants = variants.Where(item => item.IsDefault).ToArray();
@@ -658,7 +669,7 @@ namespace BlazorShop.Application.Services.Payment
                 if (line.Variant is not null)
                 {
                     var variant = await _variantRepository.GetByIdAsync(line.Variant.Id);
-                    if (variant is null || variant.Stock < line.Quantity)
+                    if (variant is null || !variant.IsActive || variant.Stock < line.Quantity)
                     {
                         return new ServiceResponse(false, "One or more variants are out of stock.");
                     }

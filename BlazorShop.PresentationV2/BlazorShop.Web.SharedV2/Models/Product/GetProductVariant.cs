@@ -30,6 +30,8 @@ namespace BlazorShop.Web.SharedV2.Models.Product
 
         public string? Color { get; set; }
 
+        public bool IsActive { get; set; } = true;
+
         public bool IsDefault { get; set; }
     }
 }

@@ -174,46 +174,46 @@ Goal: support unavailable combinations without deleting them and prevent invalid
 
 Implementation checklist:
 
-- [ ] Add `ProductVariant.IsActive`.
-- [ ] Backfill existing variants as active.
-- [ ] Update create/update/get variant DTOs with `IsActive`.
-- [ ] Preserve unique combination behavior by `ProductId + AttributeSignature`.
-- [ ] Preserve one-default-variant behavior.
-- [ ] Enforce `IsDefault` requires `IsActive`.
-- [ ] When product has `VariationTemplateId`, validate:
-  - [ ] attribute names match active template options.
-  - [ ] attribute values match active template values.
-  - [ ] required options are present unless intentionally allowed by product type.
-  - [ ] inactive options/values are rejected for new or updated variants.
-- [ ] Keep additive compatibility:
-  - [ ] do not assume only `ProductTypes.CustomVariations` can have variants.
-  - [ ] only enforce template option/value matching when a product has a `VariationTemplateId`.
-- [ ] Update Storefront product detail to expose active variants by default.
-- [ ] Update cart/checkout resolution to reject inactive variants.
-- [ ] Update default variant resolution:
-  - [ ] ignore inactive variants where safe.
-  - [ ] return clear validation if saved default is inactive and no usable fallback exists.
-- [ ] Update Control Plane product variant manager:
-  - [ ] active/inactive toggle.
-  - [ ] validation messages before save.
-  - [ ] existing SKU, stock, price, color, and default controls remain.
-- [ ] Add Commerce Node migration only.
+- [x] Add `ProductVariant.IsActive`.
+- [x] Backfill existing variants as active. 2026-07-16 Phase 2: migration default value true.
+- [x] Update create/update/get variant DTOs with `IsActive`.
+- [x] Preserve unique combination behavior by `ProductId + AttributeSignature`. 2026-07-16 Phase 2: existing duplicate-signature test remains green.
+- [x] Preserve one-default-variant behavior. 2026-07-16 Phase 2: existing default guard remains green.
+- [x] Enforce `IsDefault` requires `IsActive`. 2026-07-16 Phase 2: `ProductVariantServiceTests.AddAsync_WhenDefaultVariantIsInactive_ReturnsFailure`.
+- [x] When product has `VariationTemplateId`, validate:
+  - [x] attribute names match active template options. 2026-07-16 Phase 2: unknown option test passed.
+  - [x] attribute values match active template values. 2026-07-16 Phase 2: inactive/unknown value test passed.
+  - [x] required options are present unless intentionally allowed by product type. 2026-07-16 Phase 2: service/cart required option checks passed.
+  - [x] inactive options/values are rejected for new or updated variants.
+- [x] Keep additive compatibility:
+  - [x] do not assume only `ProductTypes.CustomVariations` can have variants.
+  - [x] only enforce template option/value matching when a product has a `VariationTemplateId`.
+- [x] Update Storefront product detail to expose active variants by default. 2026-07-16 Phase 2: public catalog test asserts inactive variants are filtered.
+- [x] Update cart/checkout resolution to reject inactive variants. 2026-07-16 Phase 2: Storefront cart test passed; checkout cart path now checks active before stock deduction.
+- [x] Update default variant resolution:
+  - [x] ignore inactive variants where safe.
+  - [x] return clear validation if saved default is inactive and no usable fallback exists.
+- [x] Update Control Plane product variant manager:
+  - [x] active/inactive toggle.
+  - [x] validation messages before save.
+  - [x] existing SKU, stock, price, color, and default controls remain.
+- [x] Add Commerce Node migration only. 2026-07-16 Phase 2: `20260716112609_CommerceNodeProductVariantActiveState`.
 
 Verification checklist:
 
-- [ ] Existing variants remain active after migration.
-- [ ] Inactive variant cannot be default.
-- [ ] Inactive variant is not exposed as selectable in Storefront detail.
-- [ ] Cart rejects inactive variant.
-- [ ] Template option/value mismatch is rejected when product has a template.
-- [ ] Variant data without a template remains compatible.
+- [x] Existing variants remain active after migration. 2026-07-16 Phase 2: EF default/model test passed.
+- [x] Inactive variant cannot be default. 2026-07-16 Phase 2: service test passed.
+- [x] Inactive variant is not exposed as selectable in Storefront detail. 2026-07-16 Phase 2: public catalog test passed.
+- [x] Cart rejects inactive variant. 2026-07-16 Phase 2: Storefront cart test passed.
+- [x] Template option/value mismatch is rejected when product has a template. 2026-07-16 Phase 2: service tests passed.
+- [x] Variant data without a template remains compatible. 2026-07-16 Phase 2: compatibility test passed.
 
 Exit criteria:
 
-- [ ] Admin can disable a variant without deleting it.
-- [ ] Storefront does not offer inactive variants.
-- [ ] Add-to-cart cannot add inactive variants.
-- [ ] Existing variant data remains valid after migration.
+- [x] Admin can disable a variant without deleting it.
+- [x] Storefront does not offer inactive variants.
+- [x] Add-to-cart cannot add inactive variants.
+- [x] Existing variant data remains valid after migration.
 
 Suggested commit:
 

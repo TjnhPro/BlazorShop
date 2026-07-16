@@ -8,6 +8,7 @@ namespace BlazorShop.Application.Services
     using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities;
+    using BlazorShop.Domain.Entities.CommerceNode;
 
     public class ProductVariantService : IProductVariantService
     {
@@ -74,7 +75,7 @@ namespace BlazorShop.Application.Services
 
             var mapped = _mapper.Map<ProductVariant>(variant);
             NormalizeVariant(mapped);
-            var validation = await ValidateVariantAsync(mapped);
+            var validation = await ValidateVariantAsync(mapped, product);
             if (!validation.Success)
             {
                 return validation;
@@ -111,7 +112,7 @@ namespace BlazorShop.Application.Services
 
             _mapper.Map(variant, existing);
             NormalizeVariant(existing);
-            var validation = await ValidateVariantAsync(existing, existing.Id);
+            var validation = await ValidateVariantAsync(existing, product, existing.Id);
             if (!validation.Success)
             {
                 return validation;
@@ -151,7 +152,7 @@ namespace BlazorShop.Application.Services
             return new ServiceResponse(true, "Variant deleted successfully");
         }
 
-        private async Task<ServiceResponse> ValidateVariantAsync(ProductVariant variant, Guid? excludedVariantId = null)
+        private async Task<ServiceResponse> ValidateVariantAsync(ProductVariant variant, Product product, Guid? excludedVariantId = null)
         {
             var all = await _variantRepository.GetAllAsync();
             var variants = all
@@ -171,9 +172,67 @@ namespace BlazorShop.Application.Services
                 return new ServiceResponse(false, "Variant SKU already exists for this product.");
             }
 
+            if (variant.IsDefault && !variant.IsActive)
+            {
+                return new ServiceResponse(false, "Inactive variant cannot be the default variant.");
+            }
+
             if (variant.IsDefault && variants.Any(item => item.IsDefault))
             {
                 return new ServiceResponse(false, "Product already has a default variant.");
+            }
+
+            var templateValidation = ValidateTemplateAttributes(variant, product);
+            if (!templateValidation.Success)
+            {
+                return templateValidation;
+            }
+
+            return new ServiceResponse(true, string.Empty);
+        }
+
+        private static ServiceResponse ValidateTemplateAttributes(ProductVariant variant, Product product)
+        {
+            if (!product.VariationTemplateId.HasValue && product.VariationTemplate is null)
+            {
+                return new ServiceResponse(true, string.Empty);
+            }
+
+            var template = product.VariationTemplate;
+            if (template is null || !template.IsActive)
+            {
+                return new ServiceResponse(false, "Variation template is not available for this product.");
+            }
+
+            var options = template.Options
+                .Where(option => option.IsActive)
+                .ToDictionary(option => NormalizeAttributePart(option.Name), StringComparer.Ordinal);
+            var attributes = ProductVariantAttributeNormalizer.Deserialize(variant.AttributesJson)
+                .ToDictionary(attribute => NormalizeAttributePart(attribute.Name), StringComparer.Ordinal);
+
+            foreach (var option in template.Options.Where(option => option.IsActive && option.IsRequired))
+            {
+                if (!attributes.ContainsKey(NormalizeAttributePart(option.Name)))
+                {
+                    return new ServiceResponse(false, $"Required variation option '{option.Name}' is missing.");
+                }
+            }
+
+            foreach (var attribute in attributes.Values)
+            {
+                var optionKey = NormalizeAttributePart(attribute.Name);
+                if (!options.TryGetValue(optionKey, out var option))
+                {
+                    return new ServiceResponse(false, $"Variation option '{attribute.Name}' is not available for this product.");
+                }
+
+                var valueKey = NormalizeAttributePart(attribute.Value);
+                var valueAllowed = option.Values.Any(value =>
+                    value.IsActive && string.Equals(NormalizeAttributePart(value.Value), valueKey, StringComparison.Ordinal));
+                if (!valueAllowed)
+                {
+                    return new ServiceResponse(false, $"Variation value '{attribute.Value}' is not available for option '{option.Name}'.");
+                }
             }
 
             return new ServiceResponse(true, string.Empty);
@@ -182,6 +241,11 @@ namespace BlazorShop.Application.Services
         private static void NormalizeVariant(ProductVariant variant)
         {
             variant.Sku = string.IsNullOrWhiteSpace(variant.Sku) ? null : variant.Sku.Trim();
+        }
+
+        private static string NormalizeAttributePart(string value)
+        {
+            return value.Trim().ToLowerInvariant();
         }
 
         private async Task<Product?> GetProductForCurrentStoreAsync(Guid productId)

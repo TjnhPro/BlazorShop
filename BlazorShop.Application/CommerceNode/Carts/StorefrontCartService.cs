@@ -474,18 +474,29 @@ namespace BlazorShop.Application.CommerceNode.Carts
                     : VariantResolution.Succeeded(null);
             }
 
-            var variants = product.Variants.ToArray();
+            var allVariants = product.Variants.ToArray();
+            var variants = allVariants.Where(candidate => candidate.IsActive).ToArray();
             if (productVariantId.HasValue)
             {
-                var variant = variants.FirstOrDefault(candidate => candidate.Id == productVariantId.Value);
-                return variant is null
-                    ? VariantResolution.Failed("Selected product variant was not found.")
-                    : VariantResolution.Succeeded(variant);
+                var variant = allVariants.FirstOrDefault(candidate => candidate.Id == productVariantId.Value);
+                if (variant is null)
+                {
+                    return VariantResolution.Failed("Selected product variant was not found.");
+                }
+
+                return variant.IsActive
+                    ? VariantResolution.Succeeded(variant)
+                    : VariantResolution.Failed("Selected product variant is not available.");
+            }
+
+            if (allVariants.Length == 0)
+            {
+                return VariantResolution.Succeeded(null);
             }
 
             if (variants.Length == 0)
             {
-                return VariantResolution.Succeeded(null);
+                return VariantResolution.Failed("Product variants are not available.");
             }
 
             var defaultVariants = variants.Where(candidate => candidate.IsDefault).ToArray();
@@ -576,6 +587,14 @@ namespace BlazorShop.Application.CommerceNode.Carts
             var options = template.Options
                 .Where(option => option.IsActive)
                 .ToDictionary(option => option.Name, StringComparer.OrdinalIgnoreCase);
+            foreach (var option in options.Values.Where(option => option.IsRequired))
+            {
+                if (!attributes.Any(attribute => string.Equals(attribute.Name, option.Name, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return SelectedAttributesResolution.Failed($"Required selected attribute '{option.Name}' is missing.");
+                }
+            }
+
             foreach (var attribute in attributes)
             {
                 if (!options.TryGetValue(attribute.Name, out var option))

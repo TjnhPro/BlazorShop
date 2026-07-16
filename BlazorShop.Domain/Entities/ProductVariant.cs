@@ -37,6 +37,8 @@ namespace BlazorShop.Domain.Entities
         [MaxLength(32)]
         public string? Color { get; set; }
 
+        public bool IsActive { get; set; } = true;
+
         public bool IsDefault { get; set; }
     }
 }

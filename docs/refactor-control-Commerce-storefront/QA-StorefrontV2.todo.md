@@ -528,5 +528,5 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [ ] Product detail preview updates price/SKU/stock after selection.
 - [ ] Product detail preview blocks invalid selection.
 - [ ] Product detail add-to-cart sends the same selected attributes used by preview.
-- [ ] Inactive variants are not selectable.
+- [x] Inactive variants are not selectable. 2026-07-16 Phase 2: Storefront product detail filters inactive variants and cart rejects inactive selected variants; focused tests passed.
 - [ ] Product detail remains usable before JavaScript loads.

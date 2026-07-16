@@ -290,6 +290,7 @@ namespace BlazorShop.Application.Services
         {
             var mapped = _mapper.Map<GetProduct>(product);
             mapped.Variants = mapped.Variants
+                .Where(variant => variant.IsActive)
                 .Select(variant =>
                 {
                     variant.EffectivePrice = variant.Price ?? product.Price;
