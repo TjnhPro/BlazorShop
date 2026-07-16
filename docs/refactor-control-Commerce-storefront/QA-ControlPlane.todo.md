@@ -395,6 +395,11 @@ Status legend:
 - [x] Browser QA after layout/asset changes verifies Dashboard, Stores, Products, Orders, and Payment/Currency admin pages have no asset 404s or unexpected console errors. 2026-07-15 Layout Asset Phase 8: Playwright headed run logged in after waiting for WASM interactivity, then verified Dashboard, Stores, Products, Orders, Payment Methods, and Currencies; asset/document/script/style/image/font failures and console/page errors were 0.
 - [x] Browser network capture after asset/layout changes confirms ControlPlane Web still makes no direct calls to CommerceNode APIs. 2026-07-15 Layout Asset Phase 8: captured route run used ControlPlane Web plus ControlPlane API only; no `localhost:5180`, `api/commerce/*`, or `api/internal/*` browser calls were observed.
 
+## Cart Core Boundary
+
+- [x] Control Plane is not part of Storefront cart runtime in Phase 0. 2026-07-16: cart baseline changed docs/tests only; `Cart Core.todo.md` keeps Storefront cart runtime under Commerce Node Storefront API plus Storefront V2 local `/api/cart`.
+- [x] ControlPlane Web must not call CommerceNode cart APIs directly. 2026-07-16: existing architecture boundary tests and browser network QA remain the guard; no ControlPlane Web cart code was added.
+
 ## Regression Automation Suggestions
 
 - [~] Backlog: add API integration tests for auth success/failure/session.

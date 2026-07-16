@@ -291,6 +291,21 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Storefront catalog/product APIs accept optional `currencyCode` query metadata and keep generator-safe OpenAPI contracts. 2026-07-15: `CommerceNodeStorefrontOpenApiContractTests` passed 23/23 after snapshot refresh.
 - [x] Storefront product display conversion uses server-side working-currency resolution and money conversion services, not browser-side conversion math. 2026-07-15: conversion is resolved inside `StorefrontScopedCatalogController` through `IStorefrontWorkingCurrencyResolver` and `IMoneyConversionService`.
 
+## Cart Core
+
+Plan: `Cart Core.todo.md`.
+
+- [x] Phase 0 baseline confirms cart runtime persistence is owned by `CommerceNodeDbContext` through `CartSessions` and `CartLines`. 2026-07-16: source review and existing session service tests cover token/session writes in Commerce Node only.
+- [x] Public Storefront cart routes stay under `api/storefront/stores/{storeKey}/cart` and do not add `api/internal/*`. 2026-07-16: `CartCorePhase0InventoryTests` guards scoped route markers.
+- [x] Public Storefront cart request contracts do not expose customer id, app user id, store id, browser-supplied price, discount, tax, or order status fields. 2026-07-16: `CartCorePhase0InventoryTests.CommerceNode_PublicCartRequestContractsDoNotExposeServerOwnedFields` added.
+- [x] Cart token lookup remains store-scoped and token hashes are stored instead of plaintext tokens. 2026-07-16: existing `StorefrontCartSessionServiceTests` cover hash-only storage and wrong-store token rejection.
+- [x] Cart add/update keeps server-side product, variant, selected-attribute, quantity, availability, stock, and price snapshot validation. 2026-07-16: existing `StorefrontCartServiceTests` remain in the Phase 0 focused verification gate.
+- [x] Storefront OpenAPI keeps generator-safe cart operation metadata, `X-Cart-Token`, required request body, and quantity minimum metadata. 2026-07-16: existing `CommerceNodeStorefrontOpenApiContractTests` remain in the Phase 0 focused verification gate.
+- [ ] Cart projection includes display fields, totals, warnings, checkout eligibility, and badge summary.
+- [ ] Recalculate command refreshes stale snapshots through POST and keeps validate non-mutating.
+- [ ] Authenticated cart merge derives customer identity from trusted auth context only.
+- [ ] Cart quantity constraints and cart limits are enforced consistently.
+
 ## Store Resolution Hardening
 
 - [x] CommerceNode Nginx runtime config has an explicit default/catch-all server returning 403 for unmatched hosts. 2026-07-15: `NginxRuntimeConfigTests` passed and `00-default-deny.conf` contains `default_server` plus `return 403`.

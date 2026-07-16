@@ -314,6 +314,20 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Visible browser QA confirms payment return/cancel pages have no console errors. 2026-07-15: Playwright headed run visited `/payment-success?paymentAttemptId=00000000-0000-0000-0000-000000000000` and `/payment-cancel?paymentAttemptId=00000000-0000-0000-0000-000000000000`; console errors/page errors were 0.
 - [x] Browser QA verifies no readable raw cart price payload remains after server-cart migration. 2026-07-15: add-to-cart wrote HttpOnly `bs-cart-token`, `document.cookie` was empty, no `my-cart` cookie existed, and no price hints were readable in browser cookies.
 
+## Cart Core
+
+Plan: `Cart Core.todo.md`.
+
+- [x] Phase 0 baseline confirms Storefront V2 browser cart mutations stay behind local `/api/cart` endpoints with antiforgery validation. 2026-07-16: `CartCorePhase0InventoryTests.StorefrontV2_LocalCartEndpointsKeepBrowserPayloadCustomerSafe` added.
+- [x] Browser add-line/update payloads do not assign customer id, app user id, store id, unit price, line total, discount, tax, or status. 2026-07-16: static guardrail added for local route construction.
+- [x] Storefront V2 persists `bs-cart-token` as HttpOnly, SameSite Lax, path `/`, and Secure outside development. 2026-07-16: `CartCorePhase0InventoryTests.StorefrontV2_CartTokenCookieIsHttpOnlyAndLegacyCartCookieIsDeletedAfterImport` added.
+- [x] Legacy readable `my-cart` import posts product, variant, quantity, and selected attributes only, then deletes the legacy cookie after import. 2026-07-16: Phase 0 inventory test guards token service import behavior.
+- [x] Storefront V2 local cart API still uses the scoped Commerce Node Storefront API client with `X-Cart-Token`, not direct browser calls to Commerce Node. 2026-07-16: Phase 0 source review confirmed local endpoint/client boundary.
+- [ ] Cart page consumes server cart projection without product detail N+1 fetches.
+- [ ] Cart badge uses server summary count.
+- [ ] Invalid/unavailable cart line blocks checkout from projection state.
+- [ ] Login merge keeps guest cart lines without browser-supplied identity.
+
 ## Store Resolution And Public URL Hardening
 
 - [x] Storefront V2 resolves current store before downstream page/catalog work when `StoreResolution:RequireCurrentStore=true`. 2026-07-15: `StorefrontCurrentStoreMiddlewareTests` and `StorefrontCurrentStoreProviderTests` passed. Real QA: `/` called CommerceNode current-store before rendering and blocked maintenance store with HTTP 503.
