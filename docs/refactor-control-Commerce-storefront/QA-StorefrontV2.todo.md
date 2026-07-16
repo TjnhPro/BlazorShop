@@ -512,5 +512,6 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Storefront public schema guardrails still pass after product identity fields. 2026-07-16 Phase 5: `CommerceNodeStorefrontOpenApiContractTests` passed 23/23.
 - [x] Storefront cart rejects invalid variant/selected-attribute combinations and keeps custom attributes normalized. 2026-07-16 Phase 6: focused `StorefrontCartServiceTests` run passed.
 - [x] Storefront checkout snapshots selected attributes into order lines. 2026-07-16 Phase 6: focused `StorefrontCheckoutServiceTests` run passed.
+- [x] Storefront rendering/SEO/sitemap/cache alignment remains stable after catalog structure phases. 2026-07-16 Phase 8: Storefront V2 build passed; `StorefrontV2ApiClientTests|StorefrontStructuredDataComposerTests` passed 16/16; `StorefrontSitemapServiceTests` passed 1/1; `StorefrontV2HostSmokeTests` passed 34/34; `StorefrontCartServiceTests|StorefrontCheckoutServiceTests` passed 26/26.
 - [ ] Visible browser QA confirms `/category/{slug}` displays category description from CommerceNode data.
 - [ ] Visible browser QA confirms `/category/{slug}` shows full breadcrumb hierarchy and direct product count.

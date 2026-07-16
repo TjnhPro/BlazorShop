@@ -399,41 +399,41 @@ Goal: make Storefront V2 consume the new catalog fields without changing public 
 
 Implementation checklist:
 
-- [ ] Category page:
-  - [ ] render description where approved.
-  - [ ] render breadcrumb from category hierarchy.
-  - [ ] use count/list behavior from Phase 2.
-- [ ] Product page:
-  - [ ] hide unavailable products with correct 404/gone behavior from SEO resolver policy.
-  - [ ] include safe identity fields in structured data only where useful.
-  - [ ] keep product canonical path based on SEO Routing Slug Core.
-- [ ] Navigation/menu:
-  - [ ] continue using published categories only.
-  - [ ] invalidate menu/cache when category publish/order/slug changes.
-- [ ] Sitemap:
-  - [ ] include only current-store available products and published categories.
-  - [ ] exclude scheduled future products until available.
-  - [ ] exclude expired/archived products.
-- [ ] Cart/checkout:
-  - [ ] reject products no longer public-available.
-- [ ] Add Storefront tests for category page.
-- [ ] Add Storefront tests for product page.
-- [ ] Add Storefront tests for sitemap.
-- [ ] Add Storefront tests for unavailable product detail.
-- [ ] Add Storefront tests for cart/checkout validation.
+- [x] Category page:
+  - [x] render description where approved.
+  - [x] render breadcrumb from category hierarchy.
+  - [x] use count/list behavior from Phase 2.
+- [x] Product page:
+  - [x] hide unavailable products with correct 404/gone behavior from SEO resolver policy.
+  - [x] include safe identity fields in structured data only where useful.
+  - [x] keep product canonical path based on SEO Routing Slug Core.
+- [x] Navigation/menu:
+  - [x] continue using published categories only.
+  - [x] invalidate menu/cache when category publish/order/slug changes.
+- [x] Sitemap:
+  - [x] include only current-store available products and published categories.
+  - [x] exclude scheduled future products until available.
+  - [x] exclude expired/archived products.
+- [x] Cart/checkout:
+  - [x] reject products no longer public-available.
+- [x] Add Storefront tests for category page.
+- [x] Add Storefront tests for product page.
+- [x] Add Storefront tests for sitemap.
+- [x] Add Storefront tests for unavailable product detail.
+- [x] Add Storefront tests for cart/checkout validation.
 
 Verification checklist:
 
-- [ ] Storefront V2 build passes.
-- [ ] Storefront host smoke tests pass.
-- [ ] Sitemap/robots tests pass.
-- [ ] No immutable cache headers are applied to dynamic routes.
+- [x] Storefront V2 build passes.
+- [x] Storefront host smoke tests pass.
+- [x] Sitemap/robots tests pass.
+- [x] No immutable cache headers are applied to dynamic routes.
 
 Exit criteria:
 
-- [ ] Storefront public behavior matches admin publication state.
-- [ ] SEO canonical/slug systems remain unchanged.
-- [ ] Dynamic routes are not given immutable cache headers.
+- [x] Storefront public behavior matches admin publication state.
+- [x] SEO canonical/slug systems remain unchanged.
+- [x] Dynamic routes are not given immutable cache headers.
 
 Suggested commit:
 
@@ -607,7 +607,7 @@ test(catalog): complete catalog structure core qa
 - [x] Phase 6 - variant MVP hardening. 2026-07-16: added ProductVariantService guard tests and re-ran cart/checkout variant tests.
 - [ ] Phase 3 - product-category mapping only if multi-category/per-category order is approved for implementation.
 - [x] Phase 7 - Control Plane/admin integration. 2026-07-16: verified existing gateway/UI integration with Control Plane API/Web builds and storeKey boundary tests.
-- [ ] Phase 8 - Storefront rendering/SEO/sitemap/cache alignment.
+- [x] Phase 8 - Storefront rendering/SEO/sitemap/cache alignment. 2026-07-16: verified with Storefront V2 build, host smoke, sitemap, API client, structured data, cart, and checkout tests.
 - [ ] Phase 9 - advanced product type gates.
 - [ ] Phase 10 - QA/release gate.
 
