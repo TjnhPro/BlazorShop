@@ -208,48 +208,48 @@ Goal: add scheduled/expired product visibility without replacing current publica
 
 Implementation checklist:
 
-- [ ] Add nullable `Product.AvailableStartUtc`.
-- [ ] Add nullable `Product.AvailableEndUtc`.
-- [ ] Add validation:
-  - [ ] end must be after start when both are set.
-  - [ ] archived product cannot be public-visible.
-- [ ] Add derived admin status:
-  - [ ] `draft` when `IsPublished=false` and not archived.
-  - [ ] `scheduled` when start is in the future.
-  - [ ] `published` when public-visible now.
-  - [ ] `expired` when end is in the past.
-  - [ ] `archived` when `ArchivedAt != null`.
-- [ ] Apply availability to:
-  - [ ] storefront product list/search.
-  - [ ] product detail by id/slug.
-  - [ ] category product lists/counts.
-  - [ ] sitemap.
-  - [ ] cart line validation.
-  - [ ] checkout submit validation.
-  - [ ] recommendations.
-- [ ] Keep `PublishedOn` semantics compatible for existing DTOs and SEO redirect logic.
-- [ ] Update product import optional fields:
-  - [ ] `available_start_utc`.
-  - [ ] `available_end_utc`.
-- [ ] Add tests for scheduled products.
-- [ ] Add tests for expired products.
-- [ ] Add tests for unpublished products.
-- [ ] Add tests for archived products.
-- [ ] Add tests for currently available products.
+- [x] Add nullable `Product.AvailableStartUtc`.
+- [x] Add nullable `Product.AvailableEndUtc`.
+- [x] Add validation:
+  - [x] end must be after start when both are set.
+  - [x] archived product cannot be public-visible.
+- [x] Add derived admin status:
+  - [x] `draft` when `IsPublished=false` and not archived.
+  - [x] `scheduled` when start is in the future.
+  - [x] `published` when public-visible now.
+  - [x] `expired` when end is in the past.
+  - [~] `archived` when `ArchivedAt != null`. Product DTOs do not currently expose `ArchivedAt` to Control Plane Web; public filters still exclude archived products.
+- [x] Apply availability to:
+  - [x] storefront product list/search.
+  - [x] product detail by id/slug.
+  - [x] category product lists/counts.
+  - [x] sitemap.
+  - [x] cart line validation.
+  - [x] checkout submit validation.
+  - [x] recommendations.
+- [x] Keep `PublishedOn` semantics compatible for existing DTOs and SEO redirect logic.
+- [x] Update product import optional fields:
+  - [x] `available_start_utc`.
+  - [x] `available_end_utc`.
+- [x] Add tests for scheduled products.
+- [x] Add tests for expired products.
+- [x] Add tests for unpublished products.
+- [x] Add tests for archived products.
+- [x] Add tests for currently available products.
 
 Verification checklist:
 
-- [ ] Commerce Node API builds.
-- [ ] Storefront V2 builds.
-- [ ] Cart/checkout tests pass.
-- [ ] Sitemap tests pass.
-- [ ] OpenAPI contract tests pass if DTOs changed.
+- [x] Commerce Node API builds.
+- [x] Storefront V2 builds.
+- [x] Cart/checkout tests pass.
+- [x] Sitemap tests pass.
+- [x] OpenAPI contract tests pass if DTOs changed.
 
 Exit criteria:
 
-- [ ] Scheduled products are hidden publicly until start time.
-- [ ] Expired products disappear from list/detail/cart/checkout/sitemap.
-- [ ] Admin can still view/edit all non-archived and archived products according to existing manager rules.
+- [x] Scheduled products are hidden publicly until start time.
+- [x] Expired products disappear from list/detail/cart/checkout/sitemap.
+- [x] Admin can still view/edit all non-archived and archived products according to existing manager rules.
 
 Suggested commit:
 
@@ -539,12 +539,12 @@ test(catalog): complete catalog structure core qa
 - [x] Category create/update stores description. 2026-07-16: service normalization/mapping tests and CommerceNode migration added.
 - [ ] Category publish toggle hides/shows category in public tree.
 - [x] Category breadcrumb is store-scoped and ordered root to leaf. 2026-07-16: application service breadcrumb test passed.
-- [x] Category direct product count excludes hidden/unavailable products. 2026-07-16: direct count uses public product count repository; availability waits for Phase 4.
-- [x] Category descendant product count excludes hidden/unavailable products. 2026-07-16: descendant count/query tests exclude draft, hidden-category, and other-store products; availability waits for Phase 4.
+- [x] Category direct product count excludes hidden/unavailable products. 2026-07-16: direct count uses public product count repository; Phase 4 availability filters now exclude scheduled/expired/archived products.
+- [x] Category descendant product count excludes hidden/unavailable products. 2026-07-16: descendant count/query tests exclude draft, hidden-category, other-store, scheduled, expired, and archived products.
 - [ ] Product category mapping rejects cross-store category/product pairs.
 - [ ] Product primary category syncs to `Product.CategoryId` when mappings are enabled.
-- [ ] Product availability start hides future product from list/detail/sitemap/cart/checkout.
-- [ ] Product availability end hides expired product from list/detail/sitemap/cart/checkout.
+- [x] Product availability start hides future product from list/detail/sitemap/cart/checkout. 2026-07-16: repository public catalog/detail/sitemap tests and cart availability test passed; checkout uses the same server-side product availability predicate.
+- [x] Product availability end hides expired product from list/detail/sitemap/cart/checkout. 2026-07-16: repository public catalog/detail/sitemap tests passed for expired products and cart/checkout validation paths include end-window checks.
 - [ ] Product identity fields validate max length and non-negative dimensions.
 - [ ] Unsupported product type is rejected.
 - [ ] Variant-required product cannot be checked out without valid variant selection.
@@ -552,8 +552,8 @@ test(catalog): complete catalog structure core qa
 ### Control Plane
 
 - [~] Category manager shows description, publish state, display order, parent, and product count. 2026-07-16 Phase 1: description/display order/parent are shown; publish remains in SEO drawer; product count waits for Phase 2.
-- [ ] Product manager shows derived publication status.
-- [ ] Product editor can set availability window and identity fields.
+- [x] Product manager shows derived publication status. 2026-07-16 Phase 4: Control Plane product list/drawer now derive Draft/Scheduled/Published/Expired from publish flag and availability window.
+- [~] Product editor can set availability window and identity fields. 2026-07-16 Phase 4: availability start/end UTC can be edited in Basic info; identity fields remain Phase 5.
 - [ ] Product category mapping UI marks primary category if mappings are enabled.
 - [ ] Control Plane Web calls only Control Plane API.
 - [ ] Cross-store product/category edit returns safe Not Found.
@@ -564,10 +564,10 @@ test(catalog): complete catalog structure core qa
 - [x] Category page renders description and breadcrumb. 2026-07-16 Phase 2: category page consumes API breadcrumbs; Phase 1 rendered description.
 - [x] Category product list follows approved include-subcategories rule. 2026-07-16: category page remains direct-only; search category filter sends explicit descendant flag.
 - [x] Product count matches visible products. 2026-07-16: category page displays direct product count; descendant count is available in the API contract.
-- [ ] Future scheduled product is not accessible publicly.
-- [ ] Expired product is not accessible publicly.
-- [ ] Product sitemap excludes hidden/unavailable products.
-- [ ] Cart/checkout reject unavailable product.
+- [x] Future scheduled product is not accessible publicly. 2026-07-16: `PublishedCatalogQueries_ExcludeScheduledAndExpiredProducts` asserts scheduled product is absent from public page, detail, and sitemap.
+- [x] Expired product is not accessible publicly. 2026-07-16: `PublishedCatalogQueries_ExcludeScheduledAndExpiredProducts` asserts expired product is absent from public page, detail, and sitemap.
+- [x] Product sitemap excludes hidden/unavailable products. 2026-07-16: sitemap repository test excludes scheduled, expired, and archived products.
+- [x] Cart/checkout reject unavailable product. 2026-07-16: cart service test rejects scheduled product; checkout/payment attempt validation uses the same product availability window predicate.
 - [ ] Product structured data includes only safe identity fields.
 
 ## Deferred Scope Checklist
@@ -588,7 +588,7 @@ test(catalog): complete catalog structure core qa
 ## Risk Register
 
 - [ ] Mapping table must not break current single-category behavior.
-- [ ] Availability filter must not be missed in cart/checkout.
+- [x] Availability filter must not be missed in cart/checkout. 2026-07-16: `StorefrontCartService` and `PaymentAttemptService` both enforce start/end windows.
 - [ ] Product status enum migration must not cause unnecessary churn.
 - [ ] Advanced product type constants must not imply unsupported behavior.
 - [ ] Category counts must not become stale.
@@ -602,7 +602,7 @@ test(catalog): complete catalog structure core qa
 - [ ] Phase 0 - baseline and guardrails.
 - [x] Phase 1 - category content/admin publish surface. 2026-07-16: committed after focused tests.
 - [x] Phase 2 - category breadcrumb/count/descendant product behavior. 2026-07-16: implemented and verified with focused catalog/client/OpenAPI tests.
-- [ ] Phase 4 - product availability window.
+- [x] Phase 4 - product availability window. 2026-07-16: implemented and verified with focused product service, repository, cart, import, Control Plane, DbContext model, and Storefront OpenAPI contract tests.
 - [ ] Phase 5 - product identity fields.
 - [ ] Phase 6 - variant MVP hardening.
 - [ ] Phase 3 - product-category mapping only if multi-category/per-category order is approved for implementation.
@@ -614,7 +614,7 @@ test(catalog): complete catalog structure core qa
 ## Definition Of Done
 
 - [ ] Category content, tree, breadcrumb, publish state, display order, store mapping, SEO/slug, image, and product counts are verified.
-- [ ] Product publication has clear admin state and public availability rules.
+- [x] Product publication has clear admin state and public availability rules. 2026-07-16 Phase 4: Control Plane derives Draft/Scheduled/Published/Expired; public catalog/detail/sitemap/cart/checkout/recommendation filters use availability windows.
 - [ ] Product identity fields exist as optional validated data.
 - [ ] Current variant/product-with-attributes behavior is tested across admin, Storefront, cart, and checkout.
 - [ ] Product-category mapping is either implemented compatibly or explicitly deferred with entry criteria.

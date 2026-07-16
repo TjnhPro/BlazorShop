@@ -36,6 +36,10 @@ namespace BlazorShop.Domain.Contracts
 
         public DateTime? PublishedOn { get; init; }
 
+        public DateTime? AvailableStartUtc { get; init; }
+
+        public DateTime? AvailableEndUtc { get; init; }
+
         public Guid? CategoryId { get; init; }
 
         public string? CategoryName { get; init; }

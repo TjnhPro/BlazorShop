@@ -148,6 +148,35 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal(2, count);
         }
 
+        [Fact]
+        public async Task PublishedCatalogQueries_ExcludeScheduledAndExpiredProducts()
+        {
+            var storeA = Guid.NewGuid();
+            var storeB = Guid.NewGuid();
+            await using var context = CreateContext();
+            var catalog = await SeedCategoryHierarchyAsync(context, storeA, storeB);
+            var repository = CreateRepository(context, storeA);
+
+            var page = await repository.GetPublishedCatalogPageAsync(new ProductCatalogQuery
+            {
+                CategoryId = catalog.RootCategoryId,
+                IncludeSubcategories = true,
+                PageSize = 10,
+            });
+            var sitemap = await repository.GetPublishedProductSitemapEntriesAsync();
+            var scheduledDetail = await repository.GetPublishedProductDetailsByIdAsync(catalog.ScheduledProductId);
+            var expiredDetail = await repository.GetPublishedProductBySlugAsync("expired-product");
+            var archivedDetail = await repository.GetPublishedProductBySlugAsync("archived-product");
+
+            Assert.Equal(["Root Product", "Child Product"], page.Items.Select(product => product.Name ?? string.Empty).ToArray());
+            Assert.DoesNotContain(sitemap, product => product.Slug == "scheduled-product");
+            Assert.DoesNotContain(sitemap, product => product.Slug == "expired-product");
+            Assert.DoesNotContain(sitemap, product => product.Slug == "archived-product");
+            Assert.Null(scheduledDetail);
+            Assert.Null(expiredDetail);
+            Assert.Null(archivedDetail);
+        }
+
         private static CommerceNodeProductReadRepository CreateRepository(CommerceNodeDbContext context, Guid storeId)
         {
             return new CommerceNodeProductReadRepository(context, new SlugService(), new FixedStoreContext(storeId));
@@ -250,13 +279,25 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var hiddenProduct = CreateProduct(storeA, hiddenCategory.Id, "Hidden Product", "hidden-product");
             var draftProduct = CreateProduct(storeA, childCategory.Id, "Draft Product", "draft-product");
             draftProduct.IsPublished = false;
+            var scheduledProduct = CreateProduct(storeA, childCategory.Id, "Scheduled Product", "scheduled-product");
+            scheduledProduct.AvailableStartUtc = DateTime.UtcNow.AddDays(1);
+            var expiredProduct = CreateProduct(storeA, childCategory.Id, "Expired Product", "expired-product");
+            expiredProduct.AvailableEndUtc = DateTime.UtcNow.AddDays(-1);
+            var archivedProduct = CreateProduct(storeA, childCategory.Id, "Archived Product", "archived-product");
+            archivedProduct.ArchivedAt = DateTime.UtcNow.AddDays(-1);
             var storeBChildProduct = CreateProduct(storeB, storeBChildCategory.Id, "Store B Child Product", "store-b-child-product");
 
             context.Categories.AddRange(rootCategory, childCategory, hiddenCategory, storeBRootCategory, storeBChildCategory);
-            context.Products.AddRange(rootProduct, childProduct, hiddenProduct, draftProduct, storeBChildProduct);
+            context.Products.AddRange(rootProduct, childProduct, hiddenProduct, draftProduct, scheduledProduct, expiredProduct, archivedProduct, storeBChildProduct);
             await context.SaveChangesAsync();
 
-            return new CategoryHierarchySeed(rootCategory.Id, childCategory.Id, hiddenCategory.Id, storeBChildCategory.Id);
+            return new CategoryHierarchySeed(
+                rootCategory.Id,
+                childCategory.Id,
+                hiddenCategory.Id,
+                storeBChildCategory.Id,
+                scheduledProduct.Id,
+                expiredProduct.Id);
         }
 
         private static Product CreateProduct(Guid storeId, Guid categoryId, string name, string slug)
@@ -283,7 +324,9 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Guid RootCategoryId,
             Guid ChildCategoryId,
             Guid HiddenCategoryId,
-            Guid StoreBChildCategoryId);
+            Guid StoreBChildCategoryId,
+            Guid ScheduledProductId,
+            Guid ExpiredProductId);
 
         private sealed class FixedStoreContext : ICommerceStoreContext
         {

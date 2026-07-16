@@ -128,7 +128,7 @@
                                         <span class="ml-1 text-xs text-ink-400 line-through">@product.ComparePrice.Value.ToString("0.00")</span>
                                     }
                                 </td>
-                                <td class="px-4 py-3"><StatusBadge Text="@(product.IsPublished ? "Published" : "Draft")" Tone="@(product.IsPublished ? "success" : "neutral")" /></td>
+                                <td class="px-4 py-3"><StatusBadge Text="@PublicationStatusLabel(product)" Tone="@PublicationStatusTone(product)" /></td>
                                 <td class="px-4 py-3 text-ink-500">@product.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd")</td>
                             </tr>
                         }
@@ -161,7 +161,7 @@
             <section class="rounded-md border border-ink-200 p-4">
                 <div class="mb-3 flex items-center justify-between">
                     <h2 class="text-sm font-semibold text-ink-900">SEO</h2>
-                    <StatusBadge Text="@(seoForm.IsPublished ? "Published" : "Draft")" Tone="@(seoForm.IsPublished ? "success" : "neutral")" />
+                    <StatusBadge Text="@PublicationStatusLabel(selectedProduct)" Tone="@PublicationStatusTone(selectedProduct)" />
                 </div>
                 <div class="grid gap-3 text-sm md:grid-cols-2">
                     <label class="space-y-1 md:col-span-2">
@@ -271,6 +271,14 @@
                     <label class="space-y-1">
                         <span class="font-medium text-ink-700">Display order</span>
                         <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" @bind="basicForm.DisplayOrder" />
+                    </label>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Available start UTC</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="datetime-local" @bind="basicForm.AvailableStartUtc" />
+                    </label>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Available end UTC</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="datetime-local" @bind="basicForm.AvailableEndUtc" />
                     </label>
                 </div>
                 <div class="mt-3 rounded-md border border-ink-200 bg-ink-50 p-3 text-xs text-ink-600">
@@ -759,6 +767,8 @@
                     CategoryId = Guid.TryParse(basicCategoryId, out var parsedCategoryId) ? parsedCategoryId : null,
                     IsPublished = selectedProduct.IsPublished,
                     PublishedOn = selectedProduct.PublishedOn,
+                    AvailableStartUtc = basicForm.AvailableStartUtc,
+                    AvailableEndUtc = basicForm.AvailableEndUtc,
                 });
 
             if (!result.Success)
@@ -1032,6 +1042,58 @@
         return FirstNonEmpty(variant.DisplayName, string.Join(" / ", variant.Attributes.Select(attribute => $"{attribute.Name}: {attribute.Value}")), variant.SizeValue, variant.Color, "Variant") ?? "Variant";
     }
 
+    private static string PublicationStatusLabel(GetCatalogProduct product)
+    {
+        return PublicationStatus(product.IsPublished, product.AvailableStartUtc, product.AvailableEndUtc);
+    }
+
+    private static string PublicationStatusLabel(GetProduct product)
+    {
+        return PublicationStatus(product.IsPublished, product.AvailableStartUtc, product.AvailableEndUtc);
+    }
+
+    private static string PublicationStatusTone(GetCatalogProduct product)
+    {
+        return PublicationStatusTone(PublicationStatusLabel(product));
+    }
+
+    private static string PublicationStatusTone(GetProduct product)
+    {
+        return PublicationStatusTone(PublicationStatusLabel(product));
+    }
+
+    private static string PublicationStatus(bool isPublished, DateTime? availableStartUtc, DateTime? availableEndUtc)
+    {
+        if (!isPublished)
+        {
+            return "Draft";
+        }
+
+        var now = DateTime.UtcNow;
+        if (availableStartUtc is not null && availableStartUtc.Value > now)
+        {
+            return "Scheduled";
+        }
+
+        if (availableEndUtc is not null && availableEndUtc.Value <= now)
+        {
+            return "Expired";
+        }
+
+        return "Published";
+    }
+
+    private static string PublicationStatusTone(string status)
+    {
+        return status switch
+        {
+            "Published" => "success",
+            "Scheduled" => "warning",
+            "Expired" => "danger",
+            _ => "neutral",
+        };
+    }
+
     private static string MediaTone(string? status)
     {
         return status?.ToLowerInvariant() switch
@@ -1067,6 +1129,10 @@
 
         public int DisplayOrder { get; set; }
 
+        public DateTime? AvailableStartUtc { get; set; }
+
+        public DateTime? AvailableEndUtc { get; set; }
+
         public static ProductBasicForm FromProduct(GetProduct product)
         {
             return new ProductBasicForm
@@ -1077,6 +1143,8 @@
                 Price = product.Price,
                 ComparePrice = product.ComparePrice,
                 DisplayOrder = product.DisplayOrder,
+                AvailableStartUtc = product.AvailableStartUtc,
+                AvailableEndUtc = product.AvailableEndUtc,
             };
         }
     }

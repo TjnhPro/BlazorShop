@@ -40,6 +40,10 @@ namespace BlazorShop.Web.SharedV2.Models.Product
 
         public int DisplayOrder { get; set; }
 
+        public DateTime? AvailableStartUtc { get; set; }
+
+        public DateTime? AvailableEndUtc { get; set; }
+
         [Required(ErrorMessage = "The Category field is required.")]
         public Guid? CategoryId { get; set; }
     }

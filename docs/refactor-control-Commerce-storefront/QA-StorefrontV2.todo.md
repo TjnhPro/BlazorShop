@@ -505,5 +505,8 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Category page uses Storefront API breadcrumbs instead of rebuilding only Home/current locally. 2026-07-16: `CategoryPage.razor` consumes `GetCategoryPage.Breadcrumbs`; application service breadcrumb test passed.
 - [x] Category page product count uses direct visible product count from CommerceNode response. 2026-07-16: `DirectProductCount` drives the item chip; focused Storefront/API tests passed.
 - [x] Search category filter preserves descendant behavior by sending `includeSubcategories=true`. 2026-07-16: `StorefrontV2ApiClientTests.GetPublishedCatalogPageAsync_WhenIncludeSubcategoriesProvided_AddsQueryFlag` passed.
+- [x] Future scheduled products are hidden from Storefront catalog/detail/sitemap responses. 2026-07-16: CommerceNode public repository tests passed; Storefront V2 consumes only scoped public API responses.
+- [x] Expired products are hidden from Storefront catalog/detail/sitemap responses. 2026-07-16: CommerceNode public repository tests passed; Storefront V2 consumes only scoped public API responses.
+- [x] Storefront cart rejects unavailable products before mutation. 2026-07-16: `StorefrontCartServiceTests.AddLineAsync_RejectsScheduledProduct` passed.
 - [ ] Visible browser QA confirms `/category/{slug}` displays category description from CommerceNode data.
 - [ ] Visible browser QA confirms `/category/{slug}` shows full breadcrumb hierarchy and direct product count.

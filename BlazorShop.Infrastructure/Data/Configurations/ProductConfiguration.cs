@@ -83,6 +83,14 @@ namespace BlazorShop.Infrastructure.Data.Configurations
 
             builder.Property(product => product.IsPublished)
                 .HasDefaultValue(true);
+
+            builder.Property(product => product.AvailableStartUtc)
+                .HasColumnType("timestamp with time zone");
+
+            builder.Property(product => product.AvailableEndUtc)
+                .HasColumnType("timestamp with time zone");
+
+            builder.HasIndex(product => new { product.StoreId, product.IsPublished, product.ArchivedAt, product.AvailableStartUtc, product.AvailableEndUtc });
         }
     }
 }

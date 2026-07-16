@@ -64,6 +64,10 @@
 
         public DateTime? PublishedOn { get; set; } = DateTime.UtcNow;
 
+        public DateTime? AvailableStartUtc { get; set; }
+
+        public DateTime? AvailableEndUtc { get; set; }
+
         public Guid? StoreId { get; set; }
 
         public string ProductType { get; set; } = ProductTypes.Simple;

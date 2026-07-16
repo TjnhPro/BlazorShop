@@ -821,4 +821,8 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Storefront product query has explicit `includeSubcategories` behavior for both category slug and category id filters. 2026-07-16: `CommerceNodeProductStoreScopeTests` covered direct-only default plus descendant slug/id queries.
 - [x] Category product counts exclude draft products, unpublished categories, and products from another store. 2026-07-16: `CountPublishedProductsByCategoryIdsAsync_ExcludesHiddenCategoriesAndOtherStores` passed.
 - [x] Storefront Swagger snapshot includes `includeSubcategories` query metadata and category breadcrumb/count schemas. 2026-07-16: snapshot refreshed and contract tests passed.
+- [x] Product availability migration adds nullable start/end UTC fields without changing existing published semantics. 2026-07-16: `CommerceNodeProductAvailabilityWindow` migration generated and `CommerceNodeDbContextModelTests` passed.
+- [x] Public catalog/detail/sitemap/count queries exclude scheduled, expired, archived, draft, hidden-category, and other-store products. 2026-07-16: `CommerceNodeProductStoreScopeTests` passed in focused Phase 4 run.
+- [x] Cart and checkout server-side validation enforce product availability windows. 2026-07-16: `StorefrontCartServiceTests.AddLineAsync_RejectsScheduledProduct` passed; checkout/payment attempt path uses matching start/end-window predicate.
+- [x] Product import accepts optional `available_start_utc` and `available_end_utc`, validates ordering, and keeps old CSV headers compatible. 2026-07-16: `ProductImportCsvParserTests` and ControlPlane template test passed.
 - [ ] Live API smoke creates a category with description, updates it, and reads it back through Commerce admin API.

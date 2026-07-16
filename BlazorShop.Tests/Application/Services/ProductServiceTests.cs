@@ -233,6 +233,31 @@
         }
 
         [Fact]
+        public async Task AddAsync_WhenAvailabilityEndIsBeforeStart_ShouldReturnFailureResponse()
+        {
+            var product = new CreateProduct
+            {
+                Name = "Scheduled product",
+                AvailableStartUtc = new DateTime(2026, 7, 20, 0, 0, 0, DateTimeKind.Utc),
+                AvailableEndUtc = new DateTime(2026, 7, 19, 0, 0, 0, DateTimeKind.Utc),
+            };
+            var mappedProduct = new Product
+            {
+                Name = product.Name,
+                AvailableStartUtc = product.AvailableStartUtc,
+                AvailableEndUtc = product.AvailableEndUtc,
+            };
+            this._mockMapper.Setup(mapper => mapper.Map<Product>(product))
+                .Returns(mappedProduct);
+
+            var result = await this._productService.AddAsync(product);
+
+            Assert.False(result.Success);
+            Assert.Equal("Product availability end must be after availability start.", result.Message);
+            this._mockProductRepository.Verify(repo => repo.AddAsync(It.IsAny<Product>()), Times.Never);
+        }
+
+        [Fact]
         public async Task UpdateAsync_WhenProductIsUpdated_ShouldReturnSuccessResponse()
         {
             // Arrange

@@ -46,6 +46,10 @@ namespace BlazorShop.Application.DTOs.Product
 
         public DateTime? PublishedOn { get; set; }
 
+        public DateTime? AvailableStartUtc { get; set; }
+
+        public DateTime? AvailableEndUtc { get; set; }
+
         public Guid? CategoryId { get; set; }
 
         public string? CategoryName { get; set; }

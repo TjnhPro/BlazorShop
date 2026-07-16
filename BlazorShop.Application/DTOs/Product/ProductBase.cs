@@ -38,6 +38,10 @@
 
         public DateTime? PublishedOn { get; set; } = DateTime.UtcNow;
 
+        public DateTime? AvailableStartUtc { get; set; }
+
+        public DateTime? AvailableEndUtc { get; set; }
+
         public string ProductType { get; set; } = ProductTypes.Simple;
 
         public Guid? VariationTemplateId { get; set; }

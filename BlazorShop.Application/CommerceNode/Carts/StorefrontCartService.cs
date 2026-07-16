@@ -451,10 +451,13 @@ namespace BlazorShop.Application.CommerceNode.Carts
 
         private static bool IsStorefrontAvailable(Product product, Guid storeId)
         {
+            var utcNow = DateTime.UtcNow;
             return product.StoreId == storeId
                 && product.ArchivedAt is null
                 && product.IsPublished
                 && product.PublishedOn is not null
+                && (product.AvailableStartUtc is null || product.AvailableStartUtc <= utcNow)
+                && (product.AvailableEndUtc is null || product.AvailableEndUtc > utcNow)
                 && !string.IsNullOrWhiteSpace(product.Slug)
                 && product.Category is not null
                 && product.Category.StoreId == product.StoreId

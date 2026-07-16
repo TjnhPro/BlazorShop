@@ -208,6 +208,31 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public async Task AddLineAsync_RejectsScheduledProduct()
+        {
+            await using var context = CreateContext();
+            var productRepository = new Mock<IProductReadRepository>();
+            var service = CreateService(context, productRepository);
+            var storeId = Guid.NewGuid();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            product.AvailableStartUtc = DateTime.UtcNow.AddDays(1);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cart = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+
+            var result = await service.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.NotFound, result.ResponseType);
+            Assert.Equal(0, await context.CartLines.CountAsync());
+        }
+
+        [Fact]
         public async Task AddLineAsync_RejectsWrongStoreProduct()
         {
             await using var context = CreateContext();

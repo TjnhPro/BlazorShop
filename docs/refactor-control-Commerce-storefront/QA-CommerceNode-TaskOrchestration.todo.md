@@ -86,6 +86,10 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Media Core Phase 0 confirms product media import still uses existing `commerce_task` type `product.media.import` and the existing CommerceTaskWorker. 2026-07-15: baseline recorded in `Media Core.md`; no new worker or task type was introduced.
 - [~] Media Core Phase 4 re-verifies product media import/retry/delete/primary behavior after shared media policy/storage provider adoption. 2026-07-15: service tests covered delete/primary fallback/clear and cache invalidation; import/retry task worker live QA remains pending because Phase 4 did not change task type or worker model.
 
+### Product Catalog Import Task
+
+- [x] Catalog Structure Core Phase 4 keeps product import on existing task orchestration and accepts optional availability window columns. 2026-07-16: `ProductImportCsvParserTests` passed for optional `available_start_utc`/`available_end_utc`; no new task type or worker was introduced.
+
 ### Cancel
 
 - [x] Enqueue `commerce.test.wait` with payload `{"delayMs":30000}`.

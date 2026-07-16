@@ -105,6 +105,12 @@
                 return validation;
             }
 
+            validation = ValidateProductAvailability(mappedData);
+            if (!validation.Success)
+            {
+                return validation;
+            }
+
             if (!string.IsNullOrWhiteSpace(mappedData.Sku)
                 && await _productReadRepository.ProductSkuExistsAsync(mappedData.Sku, mappedData.StoreId))
             {
@@ -149,6 +155,12 @@
             }
 
             validation = await ValidateProductCategoryAsync(existingProduct);
+            if (!validation.Success)
+            {
+                return validation;
+            }
+
+            validation = ValidateProductAvailability(existingProduct);
             if (!validation.Success)
             {
                 return validation;
@@ -219,7 +231,32 @@
             product.PublishedOn = product.IsPublished
                 ? product.PublishedOn ?? DateTime.UtcNow
                 : null;
+            product.AvailableStartUtc = NormalizeDateTimeUtc(product.AvailableStartUtc);
+            product.AvailableEndUtc = NormalizeDateTimeUtc(product.AvailableEndUtc);
             product.UpdatedAt = DateTime.UtcNow;
+        }
+
+        private static DateTime? NormalizeDateTimeUtc(DateTime? value)
+        {
+            return value switch
+            {
+                null => null,
+                { Kind: DateTimeKind.Utc } utc => utc,
+                { Kind: DateTimeKind.Local } local => local.ToUniversalTime(),
+                var unspecified => DateTime.SpecifyKind(unspecified.Value, DateTimeKind.Utc),
+            };
+        }
+
+        private static ServiceResponse ValidateProductAvailability(Product product)
+        {
+            if (product.AvailableStartUtc.HasValue
+                && product.AvailableEndUtc.HasValue
+                && product.AvailableEndUtc.Value <= product.AvailableStartUtc.Value)
+            {
+                return new ServiceResponse(false, "Product availability end must be after availability start.");
+            }
+
+            return new ServiceResponse(true, string.Empty);
         }
 
         private async Task<ServiceResponse> ValidateProductTypeAsync(Product product)

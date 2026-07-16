@@ -467,4 +467,7 @@ Status legend:
 
 - [x] Category manager has a description editor and preserves parent/display/image fields. 2026-07-16: Control Plane categories page was updated and focused build/test compilation passed through Storefront OpenAPI run.
 - [x] ControlPlane Web still uses ControlPlane API category client/gateway, not direct CommerceNode calls. 2026-07-16: category page changes reused existing `CatalogClient.CreateCategoryAsync`/`UpdateCategoryAsync`.
+- [x] Product manager shows derived publication status for draft, scheduled, published, and expired products. 2026-07-16 Phase 4: `CommerceProducts.razor` derives status from publish flag and availability window; focused Razor build/test run passed.
+- [x] Product editor can set availability start/end UTC through Control Plane Web without direct CommerceNode calls. 2026-07-16 Phase 4: Basic info form sends `AvailableStartUtc`/`AvailableEndUtc` through existing `CatalogClient.UpdateProductAsync`; focused build/test run passed.
+- [x] Product import template exposes availability columns. 2026-07-16: `ControlPlaneCommerceCatalogControllerTests.DownloadProductImportTemplate_ReturnsCanonicalParserHeader` passed.
 - [ ] Visible browser QA creates/updates a category description through Control Plane and confirms it reloads in the drawer.

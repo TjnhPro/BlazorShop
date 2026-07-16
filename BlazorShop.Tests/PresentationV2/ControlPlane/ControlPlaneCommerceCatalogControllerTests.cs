@@ -25,7 +25,7 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
             Assert.Equal("text/csv", result.ContentType);
             Assert.Equal("product-import-template.csv", result.FileDownloadName);
             Assert.Equal(
-                "sku,name,slug,category_slug,product_type,variation_template_slug,price,compare_price,quantity,is_published,short_description,description,image_urls" + Environment.NewLine,
+                "sku,name,slug,category_slug,product_type,variation_template_slug,price,compare_price,quantity,is_published,available_start_utc,available_end_utc,short_description,description,image_urls" + Environment.NewLine,
                 content);
             Assert.DoesNotContain("title", content, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("full_description", content, StringComparison.OrdinalIgnoreCase);

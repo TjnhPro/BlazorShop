@@ -27,6 +27,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
             try
             {
                 this.logger.LogInformation($"Fetching {count} related products for product {productId} in category {categoryId}");
+                var utcNow = DateTime.UtcNow;
 
                 var products = await this.context.Products
                     .AsNoTracking()
@@ -38,9 +39,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                         && product.Quantity > 0
                         && product.IsPublished
                         && product.PublishedOn != null
+                        && (product.AvailableStartUtc == null || product.AvailableStartUtc <= utcNow)
+                        && (product.AvailableEndUtc == null || product.AvailableEndUtc > utcNow)
+                        && product.ArchivedAt == null
                         && product.Slug != null
                         && product.Slug != string.Empty
                         && product.Category != null
+                        && product.Category.ArchivedAt == null
                         && product.Category.IsPublished)
                     .OrderByDescending(product => product.CreatedOn)
                     .Take(count)
@@ -61,6 +66,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
             try
             {
                 this.logger.LogInformation($"Fetching frequently bought together products for product {productId}");
+                var utcNow = DateTime.UtcNow;
 
                 var relatedProductIds = await this.context.OrderLines
                     .AsNoTracking()
@@ -84,9 +90,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                             candidate.Id == productId
                             && candidate.IsPublished
                             && candidate.PublishedOn != null
+                            && (candidate.AvailableStartUtc == null || candidate.AvailableStartUtc <= utcNow)
+                            && (candidate.AvailableEndUtc == null || candidate.AvailableEndUtc > utcNow)
+                            && candidate.ArchivedAt == null
                             && candidate.Slug != null
                             && candidate.Slug != string.Empty
                             && candidate.Category != null
+                            && candidate.Category.ArchivedAt == null
                             && candidate.Category.IsPublished);
 
                     if (product is null)
@@ -109,9 +119,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                         && product.Quantity > 0
                         && product.IsPublished
                         && product.PublishedOn != null
+                        && (product.AvailableStartUtc == null || product.AvailableStartUtc <= utcNow)
+                        && (product.AvailableEndUtc == null || product.AvailableEndUtc > utcNow)
+                        && product.ArchivedAt == null
                         && product.Slug != null
                         && product.Slug != string.Empty
                         && product.Category != null
+                        && product.Category.ArchivedAt == null
                         && product.Category.IsPublished)
                     .ToListAsync();
 
@@ -139,6 +153,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 }
 
                 this.logger.LogInformation($"Fetching {count} recently viewed products");
+                var utcNow = DateTime.UtcNow;
 
                 var products = await this.context.Products
                     .AsNoTracking()
@@ -149,9 +164,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                         && product.Quantity > 0
                         && product.IsPublished
                         && product.PublishedOn != null
+                        && (product.AvailableStartUtc == null || product.AvailableStartUtc <= utcNow)
+                        && (product.AvailableEndUtc == null || product.AvailableEndUtc > utcNow)
+                        && product.ArchivedAt == null
                         && product.Slug != null
                         && product.Slug != string.Empty
                         && product.Category != null
+                        && product.Category.ArchivedAt == null
                         && product.Category.IsPublished)
                     .OrderByDescending(product => product.CreatedOn)
                     .Take(count)

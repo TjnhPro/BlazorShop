@@ -244,10 +244,17 @@ namespace BlazorShop.CommerceNode.API.Tasks
             var comparePrice = ResolveNullableDecimal(values, "compare_price", existing?.ComparePrice, errors);
             var quantity = ResolveInt(values, "quantity", existing?.Quantity, isCreate, errors);
             var isPublished = ResolveBool(values, "is_published", existing?.IsPublished, isCreate, errors);
+            var availableStartUtc = ResolveNullableDateTimeUtc(values, "available_start_utc", existing?.AvailableStartUtc, errors);
+            var availableEndUtc = ResolveNullableDateTimeUtc(values, "available_end_utc", existing?.AvailableEndUtc, errors);
             var categoryId = await ResolveCategoryIdAsync(storeId, values, existing?.CategoryId, isCreate, errors, cancellationToken);
             var variationTemplateId = await ResolveVariationTemplateIdAsync(storeId, values, existing?.VariationTemplateId, productType, isCreate, errors, cancellationToken);
             var imageUrls = ResolveImageUrls(values, errors);
             var slug = await ResolveSlugAsync(storeId, values, name, existing?.Slug, existing?.Id, isCreate, errors, cancellationToken);
+
+            if (availableStartUtc.HasValue && availableEndUtc.HasValue && availableEndUtc.Value <= availableStartUtc.Value)
+            {
+                errors.Add(new ProductImportError("available_end_utc", "available_end_utc must be after available_start_utc."));
+            }
 
             if (errors.Count > 0 || name is null || description is null || productType is null || !price.HasValue || !quantity.HasValue || !isPublished.HasValue)
             {
@@ -267,6 +274,8 @@ namespace BlazorShop.CommerceNode.API.Tasks
                 comparePrice,
                 quantity.Value,
                 isPublished.Value,
+                availableStartUtc,
+                availableEndUtc,
                 imageUrls);
         }
 
@@ -398,6 +407,8 @@ namespace BlazorShop.CommerceNode.API.Tasks
             product.Quantity = values.Quantity;
             product.IsPublished = values.IsPublished;
             product.PublishedOn = values.IsPublished ? product.PublishedOn ?? now : null;
+            product.AvailableStartUtc = values.AvailableStartUtc;
+            product.AvailableEndUtc = values.AvailableEndUtc;
             product.UpdatedAt = now;
             if (isCreate)
             {
@@ -530,6 +541,36 @@ namespace BlazorShop.CommerceNode.API.Tasks
             return current;
         }
 
+        private static DateTime? ResolveNullableDateTimeUtc(
+            IReadOnlyDictionary<string, string?> values,
+            string column,
+            DateTime? current,
+            List<ProductImportError> errors)
+        {
+            var raw = Get(values, column);
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                return current;
+            }
+
+            if (IsClear(raw))
+            {
+                return null;
+            }
+
+            if (!DateTimeOffset.TryParse(
+                    raw,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                    out var value))
+            {
+                errors.Add(new ProductImportError(column, $"{column} is invalid."));
+                return current;
+            }
+
+            return value.UtcDateTime;
+        }
+
         private static IReadOnlyList<string> ResolveImageUrls(IReadOnlyDictionary<string, string?> values, List<ProductImportError> errors)
         {
             var raw = Get(values, "image_urls");
@@ -617,6 +658,8 @@ namespace BlazorShop.CommerceNode.API.Tasks
             decimal? ComparePrice,
             int Quantity,
             bool IsPublished,
+            DateTime? AvailableStartUtc,
+            DateTime? AvailableEndUtc,
             IReadOnlyList<string> ImageUrls);
 
         private sealed record RowResult(int Created, int Updated, int Failed, int Skipped, int MediaQueued)

@@ -47,6 +47,8 @@ namespace BlazorShop.Infrastructure.Repositories
                     SeoContent = product.SeoContent,
                     IsPublished = product.IsPublished,
                     PublishedOn = product.PublishedOn,
+                    AvailableStartUtc = product.AvailableStartUtc,
+                    AvailableEndUtc = product.AvailableEndUtc,
                     CategoryId = product.CategoryId,
                 })
                 .ToListAsync();
@@ -92,16 +94,7 @@ namespace BlazorShop.Infrastructure.Repositories
             var pageSize = query.GetNormalizedPageSize();
 
             IQueryable<Product> products = BuildCatalogQuery(
-                _context.Products
-                    .AsNoTracking()
-                    .Where(product => product.IsPublished
-                        && product.ArchivedAt == null
-                        && product.PublishedOn != null
-                        && product.Slug != null
-                        && product.Slug != string.Empty
-                        && product.Category != null
-                        && product.Category.ArchivedAt == null
-                        && product.Category.IsPublished),
+                ApplyPublicVisibility(_context.Products.AsNoTracking(), DateTime.UtcNow),
                 query);
 
             var totalCount = await products.CountAsync();
@@ -122,16 +115,7 @@ namespace BlazorShop.Infrastructure.Repositories
 
         public async Task<IReadOnlyList<PublishedProductSitemapEntryReadModel>> GetPublishedProductSitemapEntriesAsync()
         {
-            return await _context.Products
-                .AsNoTracking()
-                .Where(product => product.IsPublished
-                    && product.ArchivedAt == null
-                    && product.PublishedOn != null
-                    && product.Slug != null
-                    && product.Slug != string.Empty
-                    && product.Category != null
-                    && product.Category.ArchivedAt == null
-                    && product.Category.IsPublished)
+            return await ApplyPublicVisibility(_context.Products.AsNoTracking(), DateTime.UtcNow)
                 .OrderBy(product => product.UpdatedAt)
                 .ThenBy(product => product.Id)
                 .Select(product => new PublishedProductSitemapEntryReadModel
@@ -158,49 +142,30 @@ namespace BlazorShop.Infrastructure.Repositories
 
         public async Task<Product?> GetPublishedProductDetailsByIdAsync(Guid id)
         {
-            return await _context.Products
+            return await ApplyPublicVisibility(
+                _context.Products
                 .AsNoTracking()
                 .Include(product => product.Category)
-                .Include(product => product.Variants)
-                .FirstOrDefaultAsync(product => product.Id == id
-                    && product.ArchivedAt == null
-                    && product.IsPublished
-                    && product.PublishedOn != null
-                    && product.Slug != null
-                    && product.Slug != string.Empty
-                    && product.Category != null
-                    && product.Category.ArchivedAt == null
-                    && product.Category.IsPublished);
+                .Include(product => product.Variants),
+                DateTime.UtcNow)
+                .FirstOrDefaultAsync(product => product.Id == id);
         }
 
         public async Task<Product?> GetPublishedProductBySlugAsync(string slug)
         {
-            return await _context.Products
+            return await ApplyPublicVisibility(
+                _context.Products
                 .AsNoTracking()
                 .Include(product => product.Category)
-                .Include(product => product.Variants)
-                .FirstOrDefaultAsync(product => product.IsPublished
-                    && product.ArchivedAt == null
-                    && product.PublishedOn != null
-                    && product.Slug == slug
-                    && product.Category != null
-                    && product.Category.ArchivedAt == null
-                    && product.Category.IsPublished);
+                .Include(product => product.Variants),
+                DateTime.UtcNow)
+                .FirstOrDefaultAsync(product => product.Slug == slug);
         }
 
         public async Task<IReadOnlyList<CatalogProductReadModel>> GetPublishedProductsByCategoryAsync(Guid categoryId)
         {
-            return await _context.Products
-                .AsNoTracking()
-                .Where(product => product.CategoryId == categoryId
-                    && product.ArchivedAt == null
-                    && product.IsPublished
-                    && product.PublishedOn != null
-                    && product.Slug != null
-                    && product.Slug != string.Empty
-                    && product.Category != null
-                    && product.Category.ArchivedAt == null
-                    && product.Category.IsPublished)
+            return await ApplyPublicVisibility(_context.Products.AsNoTracking(), DateTime.UtcNow)
+                .Where(product => product.CategoryId == categoryId)
                 .OrderBy(product => product.DisplayOrder)
                 .ThenByDescending(product => product.CreatedOn)
                 .ThenBy(product => product.Id)
@@ -219,18 +184,10 @@ namespace BlazorShop.Infrastructure.Repositories
                 return 0;
             }
 
-            return await _context.Products
-                .AsNoTracking()
+            return await ApplyPublicVisibility(_context.Products.AsNoTracking(), DateTime.UtcNow)
                 .Where(product => product.CategoryId.HasValue
                     && ids.Contains(product.CategoryId.Value)
-                    && product.ArchivedAt == null
-                    && product.IsPublished
-                    && product.PublishedOn != null
-                    && product.Slug != null
-                    && product.Slug != string.Empty
-                    && product.Category != null
-                    && product.Category.ArchivedAt == null
-                    && product.Category.IsPublished)
+                    && product.Category != null)
                 .CountAsync();
         }
 
@@ -335,6 +292,20 @@ namespace BlazorShop.Infrastructure.Repositories
             };
         }
 
+        private static IQueryable<Product> ApplyPublicVisibility(IQueryable<Product> products, DateTime utcNow)
+        {
+            return products.Where(product => product.IsPublished
+                && product.ArchivedAt == null
+                && product.PublishedOn != null
+                && (product.AvailableStartUtc == null || product.AvailableStartUtc <= utcNow)
+                && (product.AvailableEndUtc == null || product.AvailableEndUtc > utcNow)
+                && product.Slug != null
+                && product.Slug != string.Empty
+                && product.Category != null
+                && product.Category.ArchivedAt == null
+                && product.Category.IsPublished);
+        }
+
         private static System.Linq.Expressions.Expression<Func<Product, CatalogProductReadModel>> MapCatalogProduct()
         {
             return product => new CatalogProductReadModel
@@ -352,6 +323,10 @@ namespace BlazorShop.Infrastructure.Repositories
                 UpdatedAt = product.UpdatedAt,
                 DisplayOrder = product.DisplayOrder,
                 InStock = product.Quantity > 0 || product.Variants.Any(variant => variant.Stock > 0),
+                IsPublished = product.IsPublished,
+                PublishedOn = product.PublishedOn,
+                AvailableStartUtc = product.AvailableStartUtc,
+                AvailableEndUtc = product.AvailableEndUtc,
                 CategoryId = product.CategoryId,
                 CategoryName = product.Category != null ? product.Category.Name : null,
                 CategorySlug = product.Category != null && product.Category.IsPublished ? product.Category.Slug : null,
