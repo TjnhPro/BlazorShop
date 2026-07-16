@@ -106,33 +106,33 @@ Goal: add pragmatic abuse controls for public mutation endpoints.
 
 Implementation checklist:
 
-- [ ] Add Commerce Node rate limiter registration in `BlazorShop.CommerceNode.API/Program.cs`.
-- [ ] Add local Storefront V2 rate limiter registration for `/api/cart/*` if Commerce Node-only limiting does not cover local mutation pressure.
-- [ ] Define named policies:
-  - [ ] `storefront-auth-strict`
-  - [ ] `storefront-cart`
-  - [ ] `storefront-checkout`
-  - [ ] `storefront-newsletter`
-  - [ ] `storefront-currency`
-- [ ] Use IP + route + store key partitioning for anonymous endpoints.
-- [ ] Use user id + store key partitioning for authenticated endpoints.
-- [ ] Add `Retry-After` where supported.
-- [ ] Return consistent error response shape using existing Commerce Node API helpers.
-- [ ] Add noindex/no-store headers to mutation endpoints where responses could be crawled or cached.
-- [ ] Confirm robots/indexing policy blocks API/mutation discovery, without relying on robots as security.
-- [ ] Add tests for rate-limited endpoints and response metadata.
+- [x] Add Commerce Node rate limiter registration in `BlazorShop.CommerceNode.API/Program.cs`.
+- [x] Add local Storefront V2 rate limiter registration for `/api/cart/*` if Commerce Node-only limiting does not cover local mutation pressure.
+- [x] Define named policies:
+  - [x] `storefront-auth-strict`
+  - [x] `storefront-cart`
+  - [x] `storefront-checkout`
+  - [x] `storefront-newsletter`
+  - [x] `storefront-currency`
+- [x] Use IP + route + store key partitioning for anonymous endpoints.
+- [x] Use user id + store key partitioning for authenticated endpoints.
+- [x] Add `Retry-After` where supported.
+- [x] Return consistent error response shape using existing Commerce Node API helpers.
+- [x] Add noindex/no-store headers to mutation endpoints where responses could be crawled or cached.
+- [x] Confirm robots/indexing policy blocks API/mutation discovery, without relying on robots as security.
+- [x] Add tests for rate-limited endpoints and response metadata.
 
 Constraints:
 
-- [ ] Keep defaults permissive enough for local development.
-- [ ] Make limits configurable.
-- [ ] Do not use CAPTCHA as the only rate-limit mechanism.
-- [ ] Do not rate-limit static assets, sitemap, robots, or public catalog reads in this phase.
+- [x] Keep defaults permissive enough for local development.
+- [x] Make limits configurable.
+- [x] Do not use CAPTCHA as the only rate-limit mechanism.
+- [x] Do not rate-limit static assets, sitemap, robots, or public catalog reads in this phase.
 
 Exit criteria:
 
-- [ ] Public mutation endpoints have named, testable rate-limit policies.
-- [ ] Abuse responses are predictable and contract-safe.
+- [x] Public mutation endpoints have named, testable rate-limit policies.
+- [x] Abuse responses are predictable and contract-safe.
 
 ## Phase 3 - Storefront Consent Core
 

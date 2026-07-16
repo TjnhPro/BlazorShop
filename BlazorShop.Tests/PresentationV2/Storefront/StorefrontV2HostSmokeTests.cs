@@ -544,6 +544,56 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task CartApi_PostLine_WhenRateLimitExceeded_ReturnsTypedTooManyRequests()
+        {
+            var productId = Guid.Parse("12121212-1212-1212-1212-121212121212");
+            var handler = new CartApiHandler(productId);
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<StorefrontApiClient>();
+                    services.AddScoped(_ => new StorefrontApiClient(
+                        new HttpClient(handler)
+                        {
+                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
+                        },
+                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                },
+                allowAutoRedirect: false,
+                configureHost: builder =>
+                {
+                    builder.UseSetting("Storefront:RateLimiting:Cart:PermitLimit", "1");
+                    builder.UseSetting("Storefront:RateLimiting:Cart:WindowSeconds", "60");
+                    builder.UseSetting("Storefront:RateLimiting:Cart:QueueLimit", "0");
+                });
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.SignIn);
+            using var firstRequest = CreateJsonRequest(
+                HttpMethod.Post,
+                "/api/cart/lines",
+                new { ProductId = productId, Quantity = 1 },
+                token,
+                cookieHeader);
+            using var firstResponse = await client.SendAsync(firstRequest);
+
+            using var secondRequest = CreateJsonRequest(
+                HttpMethod.Post,
+                "/api/cart/lines",
+                new { ProductId = productId, Quantity = 1 },
+                token,
+                cookieHeader);
+            using var secondResponse = await client.SendAsync(secondRequest);
+            var content = await secondResponse.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, firstResponse.StatusCode);
+            Assert.Equal(HttpStatusCode.TooManyRequests, secondResponse.StatusCode);
+            Assert.Contains("Too many cart requests", content, StringComparison.Ordinal);
+            Assert.Contains("no-store", secondResponse.Headers.CacheControl?.ToString() ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(secondResponse.Headers.GetValues("X-Robots-Tag"), value => value.Contains("noindex, nofollow", StringComparison.OrdinalIgnoreCase));
+            Assert.True(secondResponse.Headers.RetryAfter?.Delta?.TotalSeconds >= 1);
+        }
+
+        [Fact]
         public async Task CartApi_Get_ImportsLegacyCookieAndDeletesReadableCartPayload()
         {
             var productId = Guid.Parse("22222222-2222-2222-2222-222222222222");
@@ -650,10 +700,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains($"href=\"{StorefrontRoutes.Checkout}\"", content, StringComparison.Ordinal);
         }
 
-        private HttpClient CreateClient(Action<IServiceCollection> configureServices, bool allowAutoRedirect = true)
+        private HttpClient CreateClient(
+            Action<IServiceCollection> configureServices,
+            bool allowAutoRedirect = true,
+            Action<IWebHostBuilder>? configureHost = null)
         {
             var configuredFactory = _factory.WithWebHostBuilder(builder =>
             {
+                configureHost?.Invoke(builder);
                 builder.ConfigureServices(services =>
                 {
                     services.RemoveAll<IStorefrontCurrentStoreProvider>();

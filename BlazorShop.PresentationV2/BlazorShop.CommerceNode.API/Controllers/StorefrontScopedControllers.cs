@@ -28,6 +28,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.RateLimiting;
     using Microsoft.Extensions.Options;
 
     [ApiController]
@@ -46,6 +47,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpPost("register")]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.AuthStrict)]
         public async Task<IActionResult> Register([FromBody] StorefrontRegisterRequest user)
         {
             var result = await this.authenticationService.CreateUser(user.ToApplicationRequest());
@@ -56,6 +58,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpPost("login")]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.AuthStrict)]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> Login([FromBody] StorefrontLoginRequest user)
         {
@@ -89,6 +92,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpPost("refresh-token")]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.AuthStrict)]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> RefreshToken()
         {
@@ -132,6 +136,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpPost("logout")]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.AuthStrict)]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> Logout()
         {
@@ -144,6 +149,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         [HttpPost("change-password")]
         [Authorize]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.AuthStrict)]
         public async Task<IActionResult> ChangePassword([FromBody] StorefrontChangePasswordRequest dto)
         {
             var userId = this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -165,6 +171,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         [HttpPost("update-profile")]
         [Authorize]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.AuthStrict)]
         public async Task<IActionResult> UpdateProfile([FromBody] StorefrontUpdateProfileRequest dto)
         {
             var userId = this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -521,6 +528,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         [HttpPost("session")]
         [AllowAnonymous]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Cart)]
         public async Task<IActionResult> CreateSession(
             [FromBody] StorefrontCreateCartSessionRequest request,
             CancellationToken cancellationToken)
@@ -559,6 +567,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         [HttpPost("lines")]
         [AllowAnonymous]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Cart)]
         public async Task<IActionResult> AddLine(
             [FromHeader(Name = CartTokenHeaderName)] string cartToken,
             [FromBody] StorefrontCartLineCreateRequest request,
@@ -580,6 +589,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         [HttpPut("lines/{lineId:guid}")]
         [AllowAnonymous]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Cart)]
         public async Task<IActionResult> UpdateLine(
             Guid lineId,
             [FromHeader(Name = CartTokenHeaderName)] string cartToken,
@@ -602,6 +612,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         [HttpDelete("lines/{lineId:guid}")]
         [AllowAnonymous]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Cart)]
         public async Task<IActionResult> RemoveLine(
             Guid lineId,
             [FromHeader(Name = CartTokenHeaderName)] string cartToken,
@@ -625,6 +636,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         [HttpDelete]
         [AllowAnonymous]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Cart)]
         public async Task<IActionResult> Clear(
             [FromHeader(Name = CartTokenHeaderName)] string cartToken,
             CancellationToken cancellationToken)
@@ -646,6 +658,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         [HttpPost("validate")]
         [AllowAnonymous]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Cart)]
         public async Task<IActionResult> Validate(
             [FromHeader(Name = CartTokenHeaderName)] string cartToken,
             [FromBody] StorefrontCartValidateRequest request,
@@ -672,6 +685,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpPost("save-checkout")]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Cart)]
         public async Task<IActionResult> SaveCheckout([FromBody] IReadOnlyList<StorefrontOrderItemRequest> orderItems)
         {
             var userId = this.GetCurrentCustomerId();
@@ -717,6 +731,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         [HttpPost("preference")]
         [AllowAnonymous]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Currency)]
         public async Task<IActionResult> SetPreference(
             [FromBody] StorefrontCurrencyPreferenceRequest request,
             CancellationToken cancellationToken)
@@ -775,6 +790,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         [HttpPost("preview")]
         [AllowAnonymous]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Checkout)]
         public async Task<IActionResult> Preview(
             [FromHeader(Name = CartTokenHeaderName)] string cartToken,
             [FromBody] StorefrontCheckoutPreviewRequest request,
@@ -798,6 +814,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         [HttpPost("place-order")]
         [AllowAnonymous]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Checkout)]
         public async Task<IActionResult> PlaceOrder(
             [FromBody] StorefrontPlaceOrderRequest request,
             CancellationToken cancellationToken)
@@ -837,6 +854,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpPost("subscribe")]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Newsletter)]
         public async Task<IActionResult> Subscribe([FromBody] StorefrontNewsletterSubscribeRequest request)
         {
             if (request is null || string.IsNullOrWhiteSpace(request.Email))
@@ -867,6 +885,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpPost("confirm")]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Checkout)]
         public async Task<IActionResult> ConfirmOrder([FromBody] IReadOnlyList<StorefrontCartItemRequest> carts)
         {
             var userId = this.GetCurrentCustomerId();
@@ -1134,6 +1153,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpPost("provider-callback/{providerKey}")]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Checkout)]
         public async Task<IActionResult> HandleProviderCallback(
             string providerKey,
             [FromBody] StorefrontPaymentCallbackRequest request,
@@ -1190,6 +1210,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpPost("webhooks/{providerKey}")]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Checkout)]
         public async Task<IActionResult> HandleWebhook(
             string providerKey,
             [FromHeader(Name = "X-Provider-Signature")] string? providerSignature,
@@ -1244,6 +1265,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
         }
 
         [HttpPost("paypal/capture")]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Checkout)]
         public async Task<IActionResult> CapturePayPal([FromBody] StorefrontPayPalCaptureRequest request)
         {
             if (request is null || string.IsNullOrWhiteSpace(request.Token))
