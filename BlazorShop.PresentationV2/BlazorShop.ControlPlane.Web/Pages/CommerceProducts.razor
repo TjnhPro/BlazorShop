@@ -280,6 +280,44 @@
                         <span class="font-medium text-ink-700">Available end UTC</span>
                         <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="datetime-local" @bind="basicForm.AvailableEndUtc" />
                     </label>
+                    <div class="md:col-span-2 pt-2 text-xs font-semibold uppercase text-ink-500">Identity & shipping prep</div>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">GTIN</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" maxlength="32" @bind="basicForm.Gtin" />
+                    </label>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Barcode</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" maxlength="64" @bind="basicForm.Barcode" />
+                    </label>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Manufacturer part number</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" maxlength="128" @bind="basicForm.ManufacturerPartNumber" />
+                    </label>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Condition</span>
+                        <select class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="basicForm.Condition">
+                            <option value="">Not set</option>
+                            <option value="new">New</option>
+                            <option value="used">Used</option>
+                            <option value="refurbished">Refurbished</option>
+                        </select>
+                    </label>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Weight</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="0" step="0.001" @bind="basicForm.Weight" />
+                    </label>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Length</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="0" step="0.001" @bind="basicForm.Length" />
+                    </label>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Width</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="0" step="0.001" @bind="basicForm.Width" />
+                    </label>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Height</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="0" step="0.001" @bind="basicForm.Height" />
+                    </label>
                 </div>
                 <div class="mt-3 rounded-md border border-ink-200 bg-ink-50 p-3 text-xs text-ink-600">
                     Locked: SKU, product type, store id, and variation template are not editable here.
@@ -755,6 +793,14 @@
                     Name = basicForm.Name,
                     Description = FirstNonEmpty(selectedProduct.Description, basicForm.FullDescription, basicForm.ShortDescription, basicForm.Name),
                     Sku = selectedProduct.Sku,
+                    Gtin = basicForm.Gtin,
+                    Barcode = basicForm.Barcode,
+                    ManufacturerPartNumber = basicForm.ManufacturerPartNumber,
+                    Condition = basicForm.Condition,
+                    Weight = basicForm.Weight,
+                    Length = basicForm.Length,
+                    Width = basicForm.Width,
+                    Height = basicForm.Height,
                     ShortDescription = basicForm.ShortDescription,
                     FullDescription = basicForm.FullDescription,
                     Price = basicForm.Price,
@@ -1133,6 +1179,22 @@
 
         public DateTime? AvailableEndUtc { get; set; }
 
+        public string? Gtin { get; set; }
+
+        public string? Barcode { get; set; }
+
+        public string? ManufacturerPartNumber { get; set; }
+
+        public string? Condition { get; set; }
+
+        public decimal? Weight { get; set; }
+
+        public decimal? Length { get; set; }
+
+        public decimal? Width { get; set; }
+
+        public decimal? Height { get; set; }
+
         public static ProductBasicForm FromProduct(GetProduct product)
         {
             return new ProductBasicForm
@@ -1145,6 +1207,14 @@
                 DisplayOrder = product.DisplayOrder,
                 AvailableStartUtc = product.AvailableStartUtc,
                 AvailableEndUtc = product.AvailableEndUtc,
+                Gtin = product.Gtin,
+                Barcode = product.Barcode,
+                ManufacturerPartNumber = product.ManufacturerPartNumber,
+                Condition = product.Condition,
+                Weight = product.Weight,
+                Length = product.Length,
+                Width = product.Width,
+                Height = product.Height,
             };
         }
     }

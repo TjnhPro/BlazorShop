@@ -159,6 +159,10 @@ namespace BlazorShop.Storefront.Services
 
             AddString(productNode, "image", ResolveAssetUrl(product.Image, context));
             AddString(productNode, "category", product.Category?.Name);
+            AddString(productNode, "sku", product.Sku);
+            AddString(productNode, "gtin", product.Gtin);
+            AddString(productNode, "mpn", product.ManufacturerPartNumber);
+            AddString(productNode, "itemCondition", MapItemCondition(product.Condition));
 
             var breadcrumbItems = new List<(string Url, string Name)>
             {
@@ -332,6 +336,17 @@ namespace BlazorShop.Storefront.Services
             {
                 node[propertyName] = value;
             }
+        }
+
+        private static string? MapItemCondition(string? condition)
+        {
+            return condition?.Trim().ToLowerInvariant() switch
+            {
+                "new" => "https://schema.org/NewCondition",
+                "used" => "https://schema.org/UsedCondition",
+                "refurbished" => "https://schema.org/RefurbishedCondition",
+                _ => null,
+            };
         }
 
         private static string CreateNodeId(string absoluteUrl, string fragment)

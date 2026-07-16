@@ -111,6 +111,12 @@
                 return validation;
             }
 
+            validation = ValidateProductIdentity(mappedData);
+            if (!validation.Success)
+            {
+                return validation;
+            }
+
             if (!string.IsNullOrWhiteSpace(mappedData.Sku)
                 && await _productReadRepository.ProductSkuExistsAsync(mappedData.Sku, mappedData.StoreId))
             {
@@ -166,6 +172,12 @@
                 return validation;
             }
 
+            validation = ValidateProductIdentity(existingProduct);
+            if (!validation.Success)
+            {
+                return validation;
+            }
+
             if (!string.IsNullOrWhiteSpace(existingProduct.Sku)
                 && await _productReadRepository.ProductSkuExistsAsync(existingProduct.Sku, existingProduct.StoreId, existingProduct.Id))
             {
@@ -215,6 +227,10 @@
         private static void NormalizeProduct(Product product)
         {
             product.Sku = string.IsNullOrWhiteSpace(product.Sku) ? null : product.Sku.Trim();
+            product.Gtin = string.IsNullOrWhiteSpace(product.Gtin) ? null : product.Gtin.Trim();
+            product.Barcode = string.IsNullOrWhiteSpace(product.Barcode) ? null : product.Barcode.Trim();
+            product.ManufacturerPartNumber = string.IsNullOrWhiteSpace(product.ManufacturerPartNumber) ? null : product.ManufacturerPartNumber.Trim();
+            product.Condition = string.IsNullOrWhiteSpace(product.Condition) ? null : product.Condition.Trim().ToLowerInvariant();
             product.Name = product.Name?.Trim();
             product.Description = product.Description?.Trim();
             product.ShortDescription = string.IsNullOrWhiteSpace(product.ShortDescription) ? null : product.ShortDescription.Trim();
@@ -254,6 +270,47 @@
                 && product.AvailableEndUtc.Value <= product.AvailableStartUtc.Value)
             {
                 return new ServiceResponse(false, "Product availability end must be after availability start.");
+            }
+
+            return new ServiceResponse(true, string.Empty);
+        }
+
+        private static ServiceResponse ValidateProductIdentity(Product product)
+        {
+            if (product.Gtin?.Length > ProductIdentityConstraints.GtinMaxLength)
+            {
+                return new ServiceResponse(false, $"GTIN must be {ProductIdentityConstraints.GtinMaxLength} characters or fewer.");
+            }
+
+            if (product.Barcode?.Length > ProductIdentityConstraints.BarcodeMaxLength)
+            {
+                return new ServiceResponse(false, $"Barcode must be {ProductIdentityConstraints.BarcodeMaxLength} characters or fewer.");
+            }
+
+            if (product.ManufacturerPartNumber?.Length > ProductIdentityConstraints.ManufacturerPartNumberMaxLength)
+            {
+                return new ServiceResponse(false, $"Manufacturer part number must be {ProductIdentityConstraints.ManufacturerPartNumberMaxLength} characters or fewer.");
+            }
+
+            if (product.Condition?.Length > ProductIdentityConstraints.ConditionMaxLength)
+            {
+                return new ServiceResponse(false, $"Product condition must be {ProductIdentityConstraints.ConditionMaxLength} characters or fewer.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(product.Condition)
+                && !ProductIdentityConstraints.Conditions.Contains(product.Condition, StringComparer.OrdinalIgnoreCase))
+            {
+                return new ServiceResponse(false, "Product condition is invalid.");
+            }
+
+            if (product.Weight is < 0)
+            {
+                return new ServiceResponse(false, "Product weight cannot be negative.");
+            }
+
+            if (product.Length is < 0 || product.Width is < 0 || product.Height is < 0)
+            {
+                return new ServiceResponse(false, "Product dimensions cannot be negative.");
             }
 
             return new ServiceResponse(true, string.Empty);

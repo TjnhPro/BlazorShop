@@ -15,6 +15,30 @@
         [MaxLength(64)]
         public string? Sku { get; set; }
 
+        [MaxLength(ProductIdentityConstraints.GtinMaxLength)]
+        public string? Gtin { get; set; }
+
+        [MaxLength(ProductIdentityConstraints.BarcodeMaxLength)]
+        public string? Barcode { get; set; }
+
+        [MaxLength(ProductIdentityConstraints.ManufacturerPartNumberMaxLength)]
+        public string? ManufacturerPartNumber { get; set; }
+
+        [MaxLength(ProductIdentityConstraints.ConditionMaxLength)]
+        public string? Condition { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public decimal? Weight { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public decimal? Length { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public decimal? Width { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public decimal? Height { get; set; }
+
         public string? ShortDescription { get; set; }
 
         public string? FullDescription { get; set; }

@@ -263,43 +263,43 @@ Goal: add commerce identity fields needed for feeds, integration, shipping prep,
 
 Implementation checklist:
 
-- [ ] Add nullable `Product.Gtin`.
-- [ ] Add nullable `Product.Barcode`.
-- [ ] Add nullable `Product.ManufacturerPartNumber`.
-- [ ] Add nullable `Product.Condition`.
-- [ ] Add nullable `Product.Weight`.
-- [ ] Add nullable `Product.Length`.
-- [ ] Add nullable `Product.Width`.
-- [ ] Add nullable `Product.Height`.
-- [ ] Add validation:
-  - [ ] max lengths.
-  - [ ] non-negative dimensions/weight.
-  - [ ] condition allowlist only if condition is exposed.
-- [ ] Update Product DTOs:
-  - [ ] admin create/update/detail includes new fields.
-  - [ ] public storefront only receives useful and safe fields.
-- [ ] Update product import with optional columns.
-- [ ] Update SEO/structured data hooks only where current composer supports product identifiers safely.
-- [ ] Do not add Manufacturer entity in this phase.
-- [ ] Add tests for validation.
-- [ ] Add tests for persistence.
-- [ ] Add tests for import.
-- [ ] Add tests for public-safe projection.
-- [ ] Add tests for structured data if changed.
+- [x] Add nullable `Product.Gtin`.
+- [x] Add nullable `Product.Barcode`.
+- [x] Add nullable `Product.ManufacturerPartNumber`.
+- [x] Add nullable `Product.Condition`.
+- [x] Add nullable `Product.Weight`.
+- [x] Add nullable `Product.Length`.
+- [x] Add nullable `Product.Width`.
+- [x] Add nullable `Product.Height`.
+- [x] Add validation:
+  - [x] max lengths.
+  - [x] non-negative dimensions/weight.
+  - [x] condition allowlist only if condition is exposed.
+- [x] Update Product DTOs:
+  - [x] admin create/update/detail includes new fields.
+  - [x] public storefront only receives useful and safe fields.
+- [x] Update product import with optional columns.
+- [x] Update SEO/structured data hooks only where current composer supports product identifiers safely.
+- [x] Do not add Manufacturer entity in this phase.
+- [x] Add tests for validation.
+- [x] Add tests for persistence.
+- [x] Add tests for import.
+- [x] Add tests for public-safe projection.
+- [x] Add tests for structured data if changed.
 
 Verification checklist:
 
-- [ ] Commerce Node migration model snapshot is valid.
-- [ ] Admin contract tests pass.
-- [ ] Storefront public schema guardrails pass.
-- [ ] Product import tests pass if import changed.
+- [x] Commerce Node migration model snapshot is valid.
+- [x] Admin contract tests pass.
+- [x] Storefront public schema guardrails pass.
+- [x] Product import tests pass if import changed.
 
 Exit criteria:
 
-- [ ] Existing product create/update requests still work because fields are optional.
-- [ ] Admin can store identity/dimension data.
-- [ ] Storefront public schema does not leak unsupported/internal fields.
-- [ ] Shipping does not start using dimensions until shipping rules explicitly consume them.
+- [x] Existing product create/update requests still work because fields are optional.
+- [x] Admin can store identity/dimension data.
+- [x] Storefront public schema does not leak unsupported/internal fields.
+- [x] Shipping does not start using dimensions until shipping rules explicitly consume them.
 
 Suggested commit:
 
@@ -545,7 +545,7 @@ test(catalog): complete catalog structure core qa
 - [ ] Product primary category syncs to `Product.CategoryId` when mappings are enabled.
 - [x] Product availability start hides future product from list/detail/sitemap/cart/checkout. 2026-07-16: repository public catalog/detail/sitemap tests and cart availability test passed; checkout uses the same server-side product availability predicate.
 - [x] Product availability end hides expired product from list/detail/sitemap/cart/checkout. 2026-07-16: repository public catalog/detail/sitemap tests passed for expired products and cart/checkout validation paths include end-window checks.
-- [ ] Product identity fields validate max length and non-negative dimensions.
+- [x] Product identity fields validate max length and non-negative dimensions. 2026-07-16 Phase 5: ProductService validation tests cover invalid condition, negative dimensions, and normalized persistence.
 - [ ] Unsupported product type is rejected.
 - [ ] Variant-required product cannot be checked out without valid variant selection.
 
@@ -553,7 +553,7 @@ test(catalog): complete catalog structure core qa
 
 - [~] Category manager shows description, publish state, display order, parent, and product count. 2026-07-16 Phase 1: description/display order/parent are shown; publish remains in SEO drawer; product count waits for Phase 2.
 - [x] Product manager shows derived publication status. 2026-07-16 Phase 4: Control Plane product list/drawer now derive Draft/Scheduled/Published/Expired from publish flag and availability window.
-- [~] Product editor can set availability window and identity fields. 2026-07-16 Phase 4: availability start/end UTC can be edited in Basic info; identity fields remain Phase 5.
+- [x] Product editor can set availability window and identity fields. 2026-07-16 Phase 5: Basic info form now includes GTIN, barcode, MPN, condition, weight, length, width, and height.
 - [ ] Product category mapping UI marks primary category if mappings are enabled.
 - [ ] Control Plane Web calls only Control Plane API.
 - [ ] Cross-store product/category edit returns safe Not Found.
@@ -568,7 +568,7 @@ test(catalog): complete catalog structure core qa
 - [x] Expired product is not accessible publicly. 2026-07-16: `PublishedCatalogQueries_ExcludeScheduledAndExpiredProducts` asserts expired product is absent from public page, detail, and sitemap.
 - [x] Product sitemap excludes hidden/unavailable products. 2026-07-16: sitemap repository test excludes scheduled, expired, and archived products.
 - [x] Cart/checkout reject unavailable product. 2026-07-16: cart service test rejects scheduled product; checkout/payment attempt validation uses the same product availability window predicate.
-- [ ] Product structured data includes only safe identity fields.
+- [x] Product structured data includes only safe identity fields. 2026-07-16 Phase 5: structured data adds SKU/GTIN/MPN/itemCondition and omits dimensions.
 
 ## Deferred Scope Checklist
 
@@ -603,7 +603,7 @@ test(catalog): complete catalog structure core qa
 - [x] Phase 1 - category content/admin publish surface. 2026-07-16: committed after focused tests.
 - [x] Phase 2 - category breadcrumb/count/descendant product behavior. 2026-07-16: implemented and verified with focused catalog/client/OpenAPI tests.
 - [x] Phase 4 - product availability window. 2026-07-16: implemented and verified with focused product service, repository, cart, import, Control Plane, DbContext model, and Storefront OpenAPI contract tests.
-- [ ] Phase 5 - product identity fields.
+- [x] Phase 5 - product identity fields. 2026-07-16: implemented with migration, validation, admin edit, import columns, and structured data tests.
 - [ ] Phase 6 - variant MVP hardening.
 - [ ] Phase 3 - product-category mapping only if multi-category/per-category order is approved for implementation.
 - [ ] Phase 7 - Control Plane/admin integration.
@@ -615,7 +615,7 @@ test(catalog): complete catalog structure core qa
 
 - [ ] Category content, tree, breadcrumb, publish state, display order, store mapping, SEO/slug, image, and product counts are verified.
 - [x] Product publication has clear admin state and public availability rules. 2026-07-16 Phase 4: Control Plane derives Draft/Scheduled/Published/Expired; public catalog/detail/sitemap/cart/checkout/recommendation filters use availability windows.
-- [ ] Product identity fields exist as optional validated data.
+- [x] Product identity fields exist as optional validated data.
 - [ ] Current variant/product-with-attributes behavior is tested across admin, Storefront, cart, and checkout.
 - [ ] Product-category mapping is either implemented compatibly or explicitly deferred with entry criteria.
 - [ ] Advanced product types remain blocked until their runtime behavior is designed and approved.

@@ -258,6 +258,82 @@
         }
 
         [Fact]
+        public async Task AddAsync_WhenConditionIsInvalid_ShouldReturnFailureResponse()
+        {
+            var product = new CreateProduct { Name = "Product", Condition = "damaged" };
+            var mappedProduct = new Product { Name = product.Name, Condition = product.Condition };
+            this._mockMapper.Setup(mapper => mapper.Map<Product>(product))
+                .Returns(mappedProduct);
+
+            var result = await this._productService.AddAsync(product);
+
+            Assert.False(result.Success);
+            Assert.Equal("Product condition is invalid.", result.Message);
+            this._mockProductRepository.Verify(repo => repo.AddAsync(It.IsAny<Product>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task AddAsync_WhenDimensionIsNegative_ShouldReturnFailureResponse()
+        {
+            var product = new CreateProduct { Name = "Product", Width = -1m };
+            var mappedProduct = new Product { Name = product.Name, Width = product.Width };
+            this._mockMapper.Setup(mapper => mapper.Map<Product>(product))
+                .Returns(mappedProduct);
+
+            var result = await this._productService.AddAsync(product);
+
+            Assert.False(result.Success);
+            Assert.Equal("Product dimensions cannot be negative.", result.Message);
+            this._mockProductRepository.Verify(repo => repo.AddAsync(It.IsAny<Product>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task AddAsync_WhenIdentityFieldsAreValid_NormalizesAndPersistsThem()
+        {
+            var product = new CreateProduct
+            {
+                Name = "Product",
+                Gtin = " 0123456789012 ",
+                Barcode = " BAR-1 ",
+                ManufacturerPartNumber = " MPN-1 ",
+                Condition = " NEW ",
+                Weight = 1.25m,
+                Length = 2.5m,
+                Width = 3.5m,
+                Height = 4.5m,
+            };
+            var mappedProduct = new Product
+            {
+                Name = product.Name,
+                Gtin = product.Gtin,
+                Barcode = product.Barcode,
+                ManufacturerPartNumber = product.ManufacturerPartNumber,
+                Condition = product.Condition,
+                Weight = product.Weight,
+                Length = product.Length,
+                Width = product.Width,
+                Height = product.Height,
+            };
+            this._mockMapper.Setup(mapper => mapper.Map<Product>(product))
+                .Returns(mappedProduct);
+            this._mockProductRepository.Setup(repo => repo.AddAsync(mappedProduct))
+                .ReturnsAsync(1);
+
+            var result = await this._productService.AddAsync(product);
+
+            Assert.True(result.Success);
+            Assert.Equal("0123456789012", mappedProduct.Gtin);
+            Assert.Equal("BAR-1", mappedProduct.Barcode);
+            Assert.Equal("MPN-1", mappedProduct.ManufacturerPartNumber);
+            Assert.Equal("new", mappedProduct.Condition);
+            Assert.Equal(1.25m, mappedProduct.Weight);
+            Assert.Equal(2.5m, mappedProduct.Length);
+            Assert.Equal(3.5m, mappedProduct.Width);
+            Assert.Equal(4.5m, mappedProduct.Height);
+            this._mockProductRepository.Verify(repo => repo.AddAsync(mappedProduct), Times.Once);
+        }
+
+        [Fact]
         public async Task UpdateAsync_WhenProductIsUpdated_ShouldReturnSuccessResponse()
         {
             // Arrange

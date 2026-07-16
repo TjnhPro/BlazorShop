@@ -470,4 +470,6 @@ Status legend:
 - [x] Product manager shows derived publication status for draft, scheduled, published, and expired products. 2026-07-16 Phase 4: `CommerceProducts.razor` derives status from publish flag and availability window; focused Razor build/test run passed.
 - [x] Product editor can set availability start/end UTC through Control Plane Web without direct CommerceNode calls. 2026-07-16 Phase 4: Basic info form sends `AvailableStartUtc`/`AvailableEndUtc` through existing `CatalogClient.UpdateProductAsync`; focused build/test run passed.
 - [x] Product import template exposes availability columns. 2026-07-16: `ControlPlaneCommerceCatalogControllerTests.DownloadProductImportTemplate_ReturnsCanonicalParserHeader` passed.
+- [x] Product editor can set GTIN, barcode, manufacturer part number, condition, weight, length, width, and height through Control Plane Web. 2026-07-16 Phase 5: Basic info form sends fields through existing `CatalogClient.UpdateProductAsync`; focused build/test run passed.
+- [x] Product import template exposes optional identity/dimension columns. 2026-07-16 Phase 5: ControlPlane template test passed with `gtin`, `barcode`, `manufacturer_part_number`, `condition`, `weight`, `length`, `width`, and `height`.
 - [ ] Visible browser QA creates/updates a category description through Control Plane and confirms it reloads in the drawer.

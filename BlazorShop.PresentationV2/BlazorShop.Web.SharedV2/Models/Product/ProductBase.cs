@@ -13,6 +13,30 @@ namespace BlazorShop.Web.SharedV2.Models.Product
         [MaxLength(64)]
         public string? Sku { get; set; }
 
+        [MaxLength(32)]
+        public string? Gtin { get; set; }
+
+        [MaxLength(64)]
+        public string? Barcode { get; set; }
+
+        [MaxLength(128)]
+        public string? ManufacturerPartNumber { get; set; }
+
+        [MaxLength(32)]
+        public string? Condition { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public decimal? Weight { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public decimal? Length { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public decimal? Width { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public decimal? Height { get; set; }
+
         public string? ShortDescription { get; set; }
 
         public string? FullDescription { get; set; }

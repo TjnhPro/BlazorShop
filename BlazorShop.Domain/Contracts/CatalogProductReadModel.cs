@@ -12,6 +12,22 @@ namespace BlazorShop.Domain.Contracts
 
         public string? Sku { get; init; }
 
+        public string? Gtin { get; init; }
+
+        public string? Barcode { get; init; }
+
+        public string? ManufacturerPartNumber { get; init; }
+
+        public string? Condition { get; init; }
+
+        public decimal? Weight { get; init; }
+
+        public decimal? Length { get; init; }
+
+        public decimal? Width { get; init; }
+
+        public decimal? Height { get; init; }
+
         public string? ShortDescription { get; init; }
 
         public decimal Price { get; init; }

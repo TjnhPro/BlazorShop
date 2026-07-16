@@ -5,6 +5,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     using System.Text.Json.Nodes;
 
     using BlazorShop.Application.DTOs.Seo;
+    using BlazorShop.Web.SharedV2.Models.Product;
 
     using Xunit;
 
@@ -46,6 +47,33 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var organization = GetNode(result, "Organization");
 
             Assert.False(organization.ContainsKey("address"));
+        }
+
+        [Fact]
+        public async Task ComposeProductPageAsync_AddsSafeProductIdentifiers()
+        {
+            var composer = CreateComposer(CreateStore());
+
+            var result = await composer.ComposeProductPageAsync(new GetProduct
+            {
+                Name = "Structured Product",
+                Slug = "structured-product",
+                Description = "Structured product description",
+                Price = 19.99m,
+                Sku = "SKU-1",
+                Gtin = "0123456789012",
+                ManufacturerPartNumber = "MPN-1",
+                Condition = "refurbished",
+            });
+
+            var product = GetNode(result, "Product");
+
+            Assert.Equal("SKU-1", product["sku"]?.GetValue<string>());
+            Assert.Equal("0123456789012", product["gtin"]?.GetValue<string>());
+            Assert.Equal("MPN-1", product["mpn"]?.GetValue<string>());
+            Assert.Equal("https://schema.org/RefurbishedCondition", product["itemCondition"]?.GetValue<string>());
+            Assert.False(product.ContainsKey("weight"));
+            Assert.False(product.ContainsKey("height"));
         }
 
         private static IStorefrontStructuredDataComposer CreateComposer(

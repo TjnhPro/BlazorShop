@@ -239,6 +239,14 @@ namespace BlazorShop.CommerceNode.API.Tasks
             var name = ResolveText(values, "name", existing?.Name, isCreate, errors, requiredOnCreate: true);
             var description = ResolveText(values, "description", existing?.Description, isCreate, errors, requiredOnCreate: true);
             var shortDescription = ResolveNullableText(values, "short_description", existing?.ShortDescription, isCreate);
+            var gtin = ResolveNullableText(values, "gtin", existing?.Gtin, isCreate);
+            var barcode = ResolveNullableText(values, "barcode", existing?.Barcode, isCreate);
+            var manufacturerPartNumber = ResolveNullableText(values, "manufacturer_part_number", existing?.ManufacturerPartNumber, isCreate);
+            var condition = ResolveNullableText(values, "condition", existing?.Condition, isCreate)?.ToLowerInvariant();
+            var weight = ResolveNullableDecimal(values, "weight", existing?.Weight, errors);
+            var length = ResolveNullableDecimal(values, "length", existing?.Length, errors);
+            var width = ResolveNullableDecimal(values, "width", existing?.Width, errors);
+            var height = ResolveNullableDecimal(values, "height", existing?.Height, errors);
             var productType = ResolveProductType(values, existing?.ProductType, isCreate, errors);
             var price = ResolveDecimal(values, "price", existing?.Price, isCreate, errors, requiredOnCreate: true, mustBePositive: true);
             var comparePrice = ResolveNullableDecimal(values, "compare_price", existing?.ComparePrice, errors);
@@ -256,6 +264,8 @@ namespace BlazorShop.CommerceNode.API.Tasks
                 errors.Add(new ProductImportError("available_end_utc", "available_end_utc must be after available_start_utc."));
             }
 
+            ValidateIdentityFields(gtin, barcode, manufacturerPartNumber, condition, errors);
+
             if (errors.Count > 0 || name is null || description is null || productType is null || !price.HasValue || !quantity.HasValue || !isPublished.HasValue)
             {
                 return null;
@@ -272,6 +282,14 @@ namespace BlazorShop.CommerceNode.API.Tasks
                 variationTemplateId,
                 price.Value,
                 comparePrice,
+                gtin,
+                barcode,
+                manufacturerPartNumber,
+                condition,
+                weight,
+                length,
+                width,
+                height,
                 quantity.Value,
                 isPublished.Value,
                 availableStartUtc,
@@ -404,6 +422,14 @@ namespace BlazorShop.CommerceNode.API.Tasks
                 : null;
             product.Price = values.Price;
             product.ComparePrice = values.ComparePrice;
+            product.Gtin = values.Gtin;
+            product.Barcode = values.Barcode;
+            product.ManufacturerPartNumber = values.ManufacturerPartNumber;
+            product.Condition = values.Condition;
+            product.Weight = values.Weight;
+            product.Length = values.Length;
+            product.Width = values.Width;
+            product.Height = values.Height;
             product.Quantity = values.Quantity;
             product.IsPublished = values.IsPublished;
             product.PublishedOn = values.IsPublished ? product.PublishedOn ?? now : null;
@@ -499,6 +525,33 @@ namespace BlazorShop.CommerceNode.API.Tasks
             }
 
             return value;
+        }
+
+        private static void ValidateIdentityFields(
+            string? gtin,
+            string? barcode,
+            string? manufacturerPartNumber,
+            string? condition,
+            List<ProductImportError> errors)
+        {
+            AddLengthError(gtin, "gtin", ProductIdentityConstraints.GtinMaxLength, errors);
+            AddLengthError(barcode, "barcode", ProductIdentityConstraints.BarcodeMaxLength, errors);
+            AddLengthError(manufacturerPartNumber, "manufacturer_part_number", ProductIdentityConstraints.ManufacturerPartNumberMaxLength, errors);
+            AddLengthError(condition, "condition", ProductIdentityConstraints.ConditionMaxLength, errors);
+
+            if (!string.IsNullOrWhiteSpace(condition)
+                && !ProductIdentityConstraints.Conditions.Contains(condition, StringComparer.OrdinalIgnoreCase))
+            {
+                errors.Add(new ProductImportError("condition", "condition is invalid."));
+            }
+        }
+
+        private static void AddLengthError(string? value, string column, int maxLength, List<ProductImportError> errors)
+        {
+            if (value?.Length > maxLength)
+            {
+                errors.Add(new ProductImportError(column, $"{column} must be {maxLength} characters or fewer."));
+            }
         }
 
         private static int? ResolveInt(IReadOnlyDictionary<string, string?> values, string column, int? current, bool isCreate, List<ProductImportError> errors)
@@ -656,6 +709,14 @@ namespace BlazorShop.CommerceNode.API.Tasks
             Guid? VariationTemplateId,
             decimal Price,
             decimal? ComparePrice,
+            string? Gtin,
+            string? Barcode,
+            string? ManufacturerPartNumber,
+            string? Condition,
+            decimal? Weight,
+            decimal? Length,
+            decimal? Width,
+            decimal? Height,
             int Quantity,
             bool IsPublished,
             DateTime? AvailableStartUtc,

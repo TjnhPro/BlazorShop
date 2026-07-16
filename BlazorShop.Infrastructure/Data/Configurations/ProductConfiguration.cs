@@ -28,6 +28,30 @@ namespace BlazorShop.Infrastructure.Data.Configurations
             builder.Property(product => product.Sku)
                 .HasMaxLength(64);
 
+            builder.Property(product => product.Gtin)
+                .HasMaxLength(ProductIdentityConstraints.GtinMaxLength);
+
+            builder.Property(product => product.Barcode)
+                .HasMaxLength(ProductIdentityConstraints.BarcodeMaxLength);
+
+            builder.Property(product => product.ManufacturerPartNumber)
+                .HasMaxLength(ProductIdentityConstraints.ManufacturerPartNumberMaxLength);
+
+            builder.Property(product => product.Condition)
+                .HasMaxLength(ProductIdentityConstraints.ConditionMaxLength);
+
+            builder.Property(product => product.Weight)
+                .HasColumnType("decimal(18,3)");
+
+            builder.Property(product => product.Length)
+                .HasColumnType("decimal(18,3)");
+
+            builder.Property(product => product.Width)
+                .HasColumnType("decimal(18,3)");
+
+            builder.Property(product => product.Height)
+                .HasColumnType("decimal(18,3)");
+
             builder.Property(product => product.ProductType)
                 .HasMaxLength(64)
                 .HasDefaultValue(ProductTypes.Simple);

@@ -89,6 +89,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 ### Product Catalog Import Task
 
 - [x] Catalog Structure Core Phase 4 keeps product import on existing task orchestration and accepts optional availability window columns. 2026-07-16: `ProductImportCsvParserTests` passed for optional `available_start_utc`/`available_end_utc`; no new task type or worker was introduced.
+- [x] Catalog Structure Core Phase 5 keeps identity/dimension import on the existing product catalog import task. 2026-07-16: optional identity/dimension columns are parsed by the existing import pipeline; no new task type or worker was introduced.
 
 ### Cancel
 

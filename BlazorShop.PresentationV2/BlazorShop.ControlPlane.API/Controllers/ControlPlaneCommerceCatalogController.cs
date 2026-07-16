@@ -41,7 +41,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             this.catalogService = catalogService;
         }
 
-        private const string ProductImportTemplateHeader = "sku,name,slug,category_slug,product_type,variation_template_slug,price,compare_price,quantity,is_published,available_start_utc,available_end_utc,short_description,description,image_urls";
+        private const string ProductImportTemplateHeader = "sku,name,slug,category_slug,product_type,variation_template_slug,price,compare_price,quantity,is_published,available_start_utc,available_end_utc,gtin,barcode,manufacturer_part_number,condition,weight,length,width,height,short_description,description,image_urls";
 
         [HttpGet("products")]
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/products")]

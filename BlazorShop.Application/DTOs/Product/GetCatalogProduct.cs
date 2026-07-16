@@ -17,6 +17,22 @@ namespace BlazorShop.Application.DTOs.Product
 
         public string? Sku { get; set; }
 
+        public string? Gtin { get; set; }
+
+        public string? Barcode { get; set; }
+
+        public string? ManufacturerPartNumber { get; set; }
+
+        public string? Condition { get; set; }
+
+        public decimal? Weight { get; set; }
+
+        public decimal? Length { get; set; }
+
+        public decimal? Width { get; set; }
+
+        public decimal? Height { get; set; }
+
         public string? ShortDescription { get; set; }
 
         [Required]

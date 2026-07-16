@@ -508,5 +508,7 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Future scheduled products are hidden from Storefront catalog/detail/sitemap responses. 2026-07-16: CommerceNode public repository tests passed; Storefront V2 consumes only scoped public API responses.
 - [x] Expired products are hidden from Storefront catalog/detail/sitemap responses. 2026-07-16: CommerceNode public repository tests passed; Storefront V2 consumes only scoped public API responses.
 - [x] Storefront cart rejects unavailable products before mutation. 2026-07-16: `StorefrontCartServiceTests.AddLineAsync_RejectsScheduledProduct` passed.
+- [x] Product structured data exposes safe identity fields only. 2026-07-16 Phase 5: `StorefrontStructuredDataComposerTests.ComposeProductPageAsync_AddsSafeProductIdentifiers` passed for SKU/GTIN/MPN/itemCondition and asserts dimensions are omitted.
+- [x] Storefront public schema guardrails still pass after product identity fields. 2026-07-16 Phase 5: `CommerceNodeStorefrontOpenApiContractTests` passed 23/23.
 - [ ] Visible browser QA confirms `/category/{slug}` displays category description from CommerceNode data.
 - [ ] Visible browser QA confirms `/category/{slug}` shows full breadcrumb hierarchy and direct product count.

@@ -825,4 +825,7 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Public catalog/detail/sitemap/count queries exclude scheduled, expired, archived, draft, hidden-category, and other-store products. 2026-07-16: `CommerceNodeProductStoreScopeTests` passed in focused Phase 4 run.
 - [x] Cart and checkout server-side validation enforce product availability windows. 2026-07-16: `StorefrontCartServiceTests.AddLineAsync_RejectsScheduledProduct` passed; checkout/payment attempt path uses matching start/end-window predicate.
 - [x] Product import accepts optional `available_start_utc` and `available_end_utc`, validates ordering, and keeps old CSV headers compatible. 2026-07-16: `ProductImportCsvParserTests` and ControlPlane template test passed.
+- [x] Product identity migration adds nullable GTIN/barcode/MPN/condition/weight/dimensions fields. 2026-07-16 Phase 5: `CommerceNodeProductIdentityFields` migration generated and `CommerceNodeDbContextModelTests` passed.
+- [x] Product identity validation rejects invalid condition and negative dimensions while preserving optional create/update compatibility. 2026-07-16 Phase 5: `ProductServiceTests` focused run passed.
+- [x] Product import accepts optional identity/dimension columns and keeps previous CSV shape compatible. 2026-07-16 Phase 5: `ProductImportCsvParserTests` and ControlPlane template test passed.
 - [ ] Live API smoke creates a category with description, updates it, and reads it back through Commerce admin API.
