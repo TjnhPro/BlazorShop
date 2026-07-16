@@ -54,7 +54,7 @@ Boundary checklist:
 
 - [x] Keep runtime catalog/search data in `CommerceNodeDbContext`. Phase 0 source review confirmed active Storefront catalog uses `CommerceNodeProductReadRepository` and current store context.
 - [x] Keep canonical Storefront listing/search under `api/storefront/stores/{storeKey}/catalog/products`. Phase 0 source review confirmed `StorefrontScopedCatalogController.GetProducts`.
-- [ ] Add any new Storefront read endpoints under `api/storefront/stores/{storeKey}/catalog/*`.
+- [x] Add any new Storefront read endpoints under `api/storefront/stores/{storeKey}/catalog/*`.
 - [x] Keep Storefront V2 calling Commerce Node Storefront APIs through configured store key route scope. Phase 0 source review confirmed `StorefrontApiClient` route construction.
 - [x] Keep Storefront V2 current-store guard before catalog/search reads. Phase 0 source review confirmed existing Storefront V2 current-store middleware remains unchanged.
 - [x] Do not add `api/internal/*`, legacy `api/public/*`, legacy `api/admin/*`, or legacy controller routes. Phase 0 makes no route changes.
@@ -362,46 +362,47 @@ Goal: wire improved search/listing APIs into Storefront UI without a large redes
 
 Implementation checklist:
 
-- [ ] Update `CatalogFilterPanel` or listing toolbar to consume supported page sizes.
-- [ ] Update Storefront pages to preserve query state across:
-  - [ ] page changes.
-  - [ ] page-size changes.
-  - [ ] sort changes.
-  - [ ] category changes.
-  - [ ] search term changes.
-  - [ ] price filter changes.
-  - [ ] stock filter changes.
-- [ ] Optionally add suggestion behavior to header/search input only if current layout can support it cleanly.
-- [ ] If suggestion UI is implemented:
-  - [ ] minimum characters before request.
-  - [ ] debounce before request.
-  - [ ] arrow up/down selection support.
-  - [ ] Enter selection support.
-  - [ ] mobile stacked list behavior.
-  - [ ] no text overlap.
-- [ ] Keep `ProductGrid` grid-only.
-- [ ] Keep SearchPage noindex.
-- [ ] Keep suggestion API out of SEO discovery.
-- [ ] Keep desktop and mobile layout stable.
+- [x] Update `CatalogFilterPanel` or listing toolbar to consume supported page sizes.
+- [x] Update Storefront pages to preserve query state across:
+  - [x] page changes.
+  - [x] page-size changes.
+  - [x] sort changes.
+  - [x] category changes.
+  - [x] search term changes.
+  - [x] price filter changes.
+  - [x] stock filter changes.
+- [n/a] Optionally add suggestion behavior to header/search input only if current layout can support it cleanly. Deferred: Phase 4 provides API/client contract; no current header typeahead component exists and adding one would be a separate UX phase.
+- [n/a] If suggestion UI is implemented:
+  - [n/a] minimum characters before request.
+  - [n/a] debounce before request.
+  - [n/a] arrow up/down selection support.
+  - [n/a] Enter selection support.
+  - [n/a] mobile stacked list behavior.
+  - [n/a] no text overlap.
+- [x] Keep `ProductGrid` grid-only.
+- [x] Keep SearchPage noindex.
+- [x] Keep suggestion API out of SEO discovery.
+- [x] Keep desktop and mobile layout stable.
 
 Verification checklist:
 
-- [ ] Storefront V2 build passes.
-- [ ] Storefront static markup tests pass.
-- [ ] Storefront host smoke tests pass.
+- [x] Storefront V2 build passes.
+- [x] Storefront static markup tests pass.
+- [x] Storefront route query-state tests pass.
+- [x] Storefront host smoke tests pass.
 - [ ] Browser QA verifies search results.
 - [ ] Browser QA verifies category pagination.
 - [ ] Browser QA verifies page-size selector.
 - [ ] Browser QA verifies empty result state.
-- [ ] Browser QA verifies suggestion keyboard/mobile behavior if UI is implemented.
+- [n/a] Browser QA verifies suggestion keyboard/mobile behavior if UI is implemented.
 - [ ] Browser QA finds no unexpected console errors.
 
 Exit criteria:
 
-- [ ] Storefront listing UX works on desktop and mobile.
-- [ ] Search/category pages preserve filters across navigation.
-- [ ] No layout/text-overlap regression in listing toolbar.
-- [ ] Search route remains noindex.
+- [x] Storefront listing UX works on desktop and mobile at static/build level; visible browser QA remains in Phase 6.
+- [x] Search/category pages preserve filters across navigation.
+- [x] No layout/text-overlap regression in listing toolbar at static/build level.
+- [x] Search route remains noindex.
 
 Suggested commit:
 
