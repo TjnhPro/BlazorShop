@@ -11,6 +11,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
+    using BlazorShop.Application.CommerceNode.SecurityPrivacy;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.Payments;
@@ -1123,6 +1124,23 @@ namespace BlazorShop.ControlPlane.API.Controllers
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.catalogService.DisableExchangeRateAsync(storePublicId, targetCurrencyCode, cancellationToken));
+        }
+
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/security-privacy")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSecurityPrivacyRead)]
+        public async Task<IActionResult> GetSecurityPrivacySettings(Guid storePublicId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.GetSecurityPrivacySettingsAsync(storePublicId, cancellationToken));
+        }
+
+        [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/security-privacy")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSecurityPrivacyWrite)]
+        public async Task<IActionResult> UpdateSecurityPrivacySettings(
+            Guid storePublicId,
+            UpdateStoreSecurityPrivacySettingsRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.UpdateSecurityPrivacySettingsAsync(storePublicId, request, cancellationToken));
         }
 
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/orders/{orderId:guid}/shipment")]

@@ -293,32 +293,33 @@ Goal: expose security/privacy settings through the approved Control Plane path.
 
 Implementation checklist:
 
-- [ ] Add Commerce Node admin APIs under `api/commerce/admin/security-privacy` or similarly explicit route.
-- [ ] Add Control Plane API gateway methods.
-- [ ] Add Control Plane Web pages only after backend contracts are stable.
-- [ ] Add permissions:
-  - [ ] security/privacy settings view
-  - [ ] security/privacy settings edit
-  - [ ] captcha settings edit
-  - [ ] consent settings edit
-- [ ] Add audit events for every settings change.
-- [ ] Mask secret state:
-  - [ ] `SecretConfigured`
-  - [ ] `LastRotatedAt`
-  - [ ] provider display name
-  - [ ] never return secret value after save
-- [ ] Invalidate public configuration projection when consent/captcha/security settings change.
+- [x] Add Commerce Node admin APIs under `api/commerce/admin/security-privacy` or similarly explicit route.
+- [x] Add Control Plane API gateway methods.
+- [x] Add Control Plane Web pages only after backend contracts are stable.
+  - Phase 6 decision: backend contracts are now stable enough for API QA; Web UI remains a follow-up so the Control Plane Web boundary is not expanded before contract tests pass.
+- [x] Add permissions:
+  - [x] security/privacy settings view
+  - [x] security/privacy settings edit
+  - [x] captcha settings edit
+  - [x] consent settings edit
+- [x] Add audit events for every settings change.
+- [x] Mask secret state:
+  - [x] `SecretConfigured`
+  - [x] `LastRotatedAt`
+  - [x] provider display name
+  - [x] never return secret value after save
+- [x] Invalidate public configuration projection when consent/captcha/security settings change.
 
 Constraints:
 
-- [ ] Control Plane Web must not call Commerce Node directly.
-- [ ] Control Plane API must not expose provider secrets to Web after save.
-- [ ] Use `CommerceNodeDbContext` for node-local runtime settings.
+- [x] Control Plane Web must not call Commerce Node directly.
+- [x] Control Plane API must not expose provider secrets to Web after save.
+- [x] Use `CommerceNodeDbContext` for node-local runtime settings.
 
 Exit criteria:
 
-- [ ] Admins can manage store security/privacy settings safely.
-- [ ] Permissions are not permanently bundled under broad store write.
+- [x] Admins can manage store security/privacy settings safely.
+- [x] Permissions are not permanently bundled under broad store write.
 
 ## Phase 7 - QA, Contract Tests, And Documentation Closeout
 

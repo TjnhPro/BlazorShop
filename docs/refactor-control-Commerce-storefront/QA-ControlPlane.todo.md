@@ -99,6 +99,8 @@ Status legend:
 - [n/a] User without `audit.read` cannot view audit logs. No API-backed audit read endpoint yet.
 - [x] Commerce configuration permission policies are granular and do not reuse broad `stores.write`. 2026-07-15: `ControlPlaneAuthorizationTests` verified settings/features/providers read/write policies map to `commerce.settings.*`, `commerce.features.*`, and `commerce.providers.*`.
 - [x] Control Plane seed permissions include commerce settings/features/providers for future configuration APIs. 2026-07-15: migration `ControlPlaneConfigurationFeaturePermissions` adds permission ids 15-20; `platform_owner` and `node_operator` get read/write, `auditor` gets read-only.
+- [x] Security/privacy settings use dedicated permissions rather than broad store write. 2026-07-16: Phase 6 added `commerce.security_privacy.read`, `commerce.security_privacy.write`, `commerce.captcha_settings.edit`, and `commerce.consent_settings.edit`; focused `ControlPlaneAuthorizationTests` and `SecurityPrivacyPhase6AdminManagementTests` passed.
+- [x] Control Plane API gateways security/privacy management through Control Plane only. 2026-07-16: added `api/controlplane/commerce/stores/{storePublicId}/security-privacy` GET/PUT forwarding to CommerceNode `api/commerce/admin/security-privacy` with node credentials server-side.
 
 ### User Management
 

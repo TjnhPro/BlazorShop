@@ -177,6 +177,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IStorefrontCartService, StorefrontCartService>();
             services.AddScoped<IStorefrontCheckoutService, StorefrontCheckoutService>();
             services.AddScoped<IStorefrontConsentService, StorefrontConsentService>();
+            services.AddScoped<IStoreSecurityPrivacySettingsService, StoreSecurityPrivacySettingsService>();
             services.AddSingleton<ICaptchaVerifier, NoopCaptchaVerifier>();
             services.AddScoped<IProductSeoService, ProductSeoService>();
             services.AddScoped<ICategorySeoService, CategorySeoService>();

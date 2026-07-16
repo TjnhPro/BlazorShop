@@ -45,7 +45,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("CaptchaVerificationRequest", verifier, StringComparison.Ordinal);
             Assert.Contains("CaptchaVerificationResult.Passed", noop, StringComparison.Ordinal);
             Assert.Contains("ValidateCaptchaAsync", controller, StringComparison.Ordinal);
-            Assert.Contains("!this.IsCaptchaEnabled(target)", controller, StringComparison.Ordinal);
+            Assert.Contains("securityPrivacySettingsService.ResolveCurrentAsync", controller, StringComparison.Ordinal);
+            Assert.Contains("!IsCaptchaEnabled(runtimeSettings.Captcha, target)", controller, StringComparison.Ordinal);
             Assert.Contains("return result.Success", controller, StringComparison.Ordinal);
             Assert.Contains("captcha.required", controller, StringComparison.Ordinal);
             Assert.Contains("captcha.failed", controller, StringComparison.Ordinal);

@@ -193,6 +193,13 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] Store feature state service lists only allowlisted feature keys and does not write default rows on read. 2026-07-15: `StoreFeatureStateServiceTests.GetAsync_ReturnsAllowlistedDefaultsWithoutPersistingRows` passed.
 - [x] Store feature state update validates feature keys, persists overrides, and invalidates public configuration cache. 2026-07-15: `StoreFeatureStateServiceTests` covered unknown-key rejection, checkout disable snapshot, and `store-public-config:{storeKey}` invalidation.
 - [x] Storefront public configuration uses store feature state for public flags. 2026-07-15: `StorefrontScopedConfigurationController` now resolves `IStoreFeatureStateService`; CommerceNode API build and Storefront OpenAPI contract tests passed.
+
+### Security Privacy Settings
+
+- [x] Commerce Admin security/privacy settings are store-scoped under `api/commerce/admin/security-privacy` and require `storeKey` query. 2026-07-16: Phase 6 added `StoreSecurityPrivacySettings` in `CommerceNodeDbContext` and focused `SecurityPrivacyPhase6AdminManagementTests` passed.
+- [x] Captcha secret reference is stored server-side only and response DTO exposes only `SecretConfigured`, `LastRotatedAt`, and provider display name. 2026-07-16: guarded by `SecurityPrivacyPhase6AdminManagementTests`.
+- [x] Security/privacy updates invalidate Storefront public configuration cache and Storefront runtime resolves consent/captcha from the store-scoped service. 2026-07-16: service invalidates `IStorefrontPublicConfigurationCache`; focused tests passed.
+- [x] Commerce Admin Swagger metadata covers security/privacy settings operation ids, summaries, request body required flag, and response schemas. 2026-07-16: `CommerceSecurityPrivacy_*` operation metadata added and focused admin OpenAPI metadata tests passed.
 - [x] Checkout server behavior enforces the `checkout` feature state, not only UI hiding. 2026-07-15: `StorefrontCheckoutServiceTests.CheckoutAsync_WhenCheckoutFeatureDisabled_RejectsPreviewAndPlaceOrder` passed.
 - [x] Store payment methods support safe public metadata without exposing provider settings JSON. 2026-07-15: migration `CommerceNodePaymentProviderAvailability` adds icon, short display text, supported currency/country code JSON, and order total limit fields; `CommerceNodePaymentMethodSecretBoundaryTests.GetPaymentMethodsAsync_ReturnsSafePublicMetadata` passed.
 - [x] Checkout preview enforces payment method country availability. 2026-07-15: `StorefrontCheckoutServiceTests.PreviewAsync_WhenPaymentMethodUnavailableForCountry_ReturnsValidationIssue` passed.

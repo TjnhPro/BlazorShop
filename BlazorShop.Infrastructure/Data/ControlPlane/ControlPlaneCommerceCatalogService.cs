@@ -13,6 +13,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
+    using BlazorShop.Application.CommerceNode.SecurityPrivacy;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.CommerceNode.Tasks;
     using BlazorShop.Application.DTOs.Admin.Inventory;
@@ -1295,6 +1296,31 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 HttpMethod.Post,
                 $"api/commerce/admin/currencies/exchange-rates/{Uri.EscapeDataString(targetCurrencyCode)}/disable",
                 null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<StoreSecurityPrivacySettingsDto>> GetSecurityPrivacySettingsAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<StoreSecurityPrivacySettingsDto>(
+                storePublicId,
+                HttpMethod.Get,
+                "api/commerce/admin/security-privacy",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<StoreSecurityPrivacySettingsDto>> UpdateSecurityPrivacySettingsAsync(
+            Guid storePublicId,
+            UpdateStoreSecurityPrivacySettingsRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<StoreSecurityPrivacySettingsDto>(
+                storePublicId,
+                HttpMethod.Put,
+                "api/commerce/admin/security-privacy",
+                request,
                 cancellationToken);
         }
 

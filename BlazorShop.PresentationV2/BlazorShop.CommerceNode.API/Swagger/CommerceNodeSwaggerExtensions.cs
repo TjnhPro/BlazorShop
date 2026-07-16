@@ -6,6 +6,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Navigation;
+    using BlazorShop.Application.CommerceNode.SecurityPrivacy;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.Tasks;
@@ -75,6 +76,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
                 options.OperationFilter<CommerceAdminStoreKeyOperationFilter>();
                 options.OperationFilter<CommerceStoreAdminOperationMetadataFilter>();
                 options.OperationFilter<CommerceCurrencyAdminOperationMetadataFilter>();
+                options.OperationFilter<CommerceSecurityPrivacyAdminOperationMetadataFilter>();
                 options.OperationFilter<CommerceCategoryMediaAdminOperationMetadataFilter>();
                 options.OperationFilter<CommerceNavigationAdminOperationMetadataFilter>();
                 options.OperationFilter<CommerceSeoSlugAdminOperationMetadataFilter>();
@@ -485,7 +487,77 @@ namespace BlazorShop.CommerceNode.API.Swagger
                 };
             }
 
-            private sealed record CommerceCurrencyOperationMetadata(
+        private sealed record CommerceCurrencyOperationMetadata(
+                string OperationId,
+                string Summary,
+                Type ResponseType,
+                int[] ErrorStatusCodes);
+        }
+
+        private sealed class CommerceSecurityPrivacyAdminOperationMetadataFilter : IOperationFilter
+        {
+            private static readonly IReadOnlyDictionary<string, CommerceSecurityPrivacyOperationMetadata> Metadata =
+                new Dictionary<string, CommerceSecurityPrivacyOperationMetadata>(StringComparer.Ordinal)
+                {
+                    ["Get"] = new(
+                        "CommerceSecurityPrivacy_Get",
+                        "Get store security and privacy settings.",
+                        typeof(CommerceNodeApiResponse<StoreSecurityPrivacySettingsDto>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    ["Update"] = new(
+                        "CommerceSecurityPrivacy_Update",
+                        "Update store security and privacy settings.",
+                        typeof(CommerceNodeApiResponse<StoreSecurityPrivacySettingsDto>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                };
+
+            public void Apply(OpenApiOperation operation, OperationFilterContext context)
+            {
+                var relativePath = NormalizePath(context.ApiDescription.RelativePath);
+                if (!relativePath.StartsWith("api/commerce/admin/security-privacy", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                if (context.ApiDescription.ActionDescriptor is not ControllerActionDescriptor actionDescriptor
+                    || !string.Equals(actionDescriptor.ControllerName, "CommerceSecurityPrivacy", StringComparison.Ordinal)
+                    || !Metadata.TryGetValue(actionDescriptor.ActionName, out var metadata))
+                {
+                    return;
+                }
+
+                operation.OperationId = metadata.OperationId;
+                operation.Summary = metadata.Summary;
+
+                if (operation.RequestBody is OpenApiRequestBody requestBody)
+                {
+                    requestBody.Required = true;
+                }
+
+                operation.Responses ??= new OpenApiResponses();
+                operation.Responses["200"] = CreateJsonResponse(context, metadata.ResponseType, "Success.");
+                foreach (var statusCode in metadata.ErrorStatusCodes)
+                {
+                    operation.Responses[statusCode.ToString()] = CreateJsonResponse(context, metadata.ResponseType, "Error.");
+                }
+            }
+
+            private static OpenApiResponse CreateJsonResponse(OperationFilterContext context, Type responseType, string description)
+            {
+                return new OpenApiResponse
+                {
+                    Description = description,
+                    Content = new Dictionary<string, OpenApiMediaType>
+                    {
+                        ["application/json"] = new()
+                        {
+                            Schema = context.SchemaGenerator.GenerateSchema(responseType, context.SchemaRepository),
+                        },
+                    },
+                };
+            }
+
+            private sealed record CommerceSecurityPrivacyOperationMetadata(
                 string OperationId,
                 string Summary,
                 Type ResponseType,

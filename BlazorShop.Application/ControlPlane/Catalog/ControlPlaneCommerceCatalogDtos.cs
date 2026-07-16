@@ -10,6 +10,7 @@ namespace BlazorShop.Application.ControlPlane.Catalog
     using BlazorShop.Application.DTOs.Admin.Orders;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
+    using BlazorShop.Application.CommerceNode.SecurityPrivacy;
     using BlazorShop.Application.CommerceNode.Tasks;
     using BlazorShop.Application.DTOs.Category;
     using BlazorShop.Application.DTOs.Payment;
@@ -510,6 +511,15 @@ namespace BlazorShop.Application.ControlPlane.Catalog
         Task<ControlPlaneCommerceCatalogResult<StoreCurrencyExchangeRateDto>> DisableExchangeRateAsync(
             Guid storePublicId,
             string targetCurrencyCode,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StoreSecurityPrivacySettingsDto>> GetSecurityPrivacySettingsAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StoreSecurityPrivacySettingsDto>> UpdateSecurityPrivacySettingsAsync(
+            Guid storePublicId,
+            UpdateStoreSecurityPrivacySettingsRequest request,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneCommerceCatalogResult<GetShipment>> GetShipmentAsync(
