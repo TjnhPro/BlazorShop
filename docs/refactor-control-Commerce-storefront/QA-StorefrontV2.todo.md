@@ -323,10 +323,10 @@ Plan: `Cart Core.todo.md`.
 - [x] Storefront V2 persists `bs-cart-token` as HttpOnly, SameSite Lax, path `/`, and Secure outside development. 2026-07-16: `CartCorePhase0InventoryTests.StorefrontV2_CartTokenCookieIsHttpOnlyAndLegacyCartCookieIsDeletedAfterImport` added.
 - [x] Legacy readable `my-cart` import posts product, variant, quantity, and selected attributes only, then deletes the legacy cookie after import. 2026-07-16: Phase 0 inventory test guards token service import behavior.
 - [x] Storefront V2 local cart API still uses the scoped Commerce Node Storefront API client with `X-Cart-Token`, not direct browser calls to Commerce Node. 2026-07-16: Phase 0 source review confirmed local endpoint/client boundary.
-- [ ] Cart page consumes server cart projection without product detail N+1 fetches.
+- [x] Cart page consumes server cart projection without product detail N+1 fetches. 2026-07-16 Phase 5: `CartPage.razor.cs` no longer calls `GetProductByIdAsync`; static guard and Storefront host smoke tests passed.
 - [x] Cart badge uses server summary count. 2026-07-16 Phase 1: local `/api/cart` response now prefers server `SummaryCount` with old sum fallback; Storefront V2 host tests passed.
 - [x] Storefront V2 has a typed API client command for Storefront cart recalculation. 2026-07-16 Phase 2: `StorefrontV2ApiClientTests.RecalculateCartAsync_PostsStoreScopedCartCommand` passed and guards route, `X-Cart-Token`, and `expectedVersion` body.
-- [ ] Invalid/unavailable cart line blocks checkout from projection state.
+- [x] Invalid/unavailable cart line blocks checkout from projection state. 2026-07-16 Phase 5: cart page uses `CheckoutAllowed` and line warnings from projection; host smoke tests passed.
 - [x] Login merge keeps guest cart lines without browser-supplied identity. 2026-07-16 Phase 3: sign-in flow calls `StorefrontCartTokenService.MergeCurrentCustomerAsync` with the access token from login, and Storefront API client test verifies Bearer + `X-Cart-Token` without request body.
 
 ## Store Resolution And Public URL Hardening

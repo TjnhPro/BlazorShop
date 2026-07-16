@@ -851,7 +851,13 @@ static StorefrontLocalCartResponse ToLocalCartResponse(StorefrontCartResponse? c
     return new StorefrontLocalCartResponse(
         Count: count,
         Version: cart?.Version ?? 0,
-        Lines: lines);
+        Lines: lines,
+        CurrencyCode: cart?.CurrencyCode ?? "USD",
+        Subtotal: cart?.Subtotal ?? lines.Sum(line => line.LineTotal ?? line.UnitPriceSnapshot.GetValueOrDefault() * Math.Max(0, line.Quantity)),
+        GrandTotal: cart?.GrandTotal ?? lines.Sum(line => line.LineTotal ?? line.UnitPriceSnapshot.GetValueOrDefault() * Math.Max(0, line.Quantity)),
+        CheckoutAllowed: cart?.CheckoutAllowed ?? true,
+        Warnings: cart?.Warnings ?? [],
+        Adjustments: cart?.Adjustments ?? []);
 }
 
 public sealed class StorefrontLocalCartLineRequest
@@ -916,7 +922,13 @@ public sealed class StorefrontCurrencyPreferenceForm
 public sealed record StorefrontLocalCartResponse(
     int Count,
     int Version,
-    IReadOnlyList<StorefrontCartLineResponse> Lines);
+    IReadOnlyList<StorefrontCartLineResponse> Lines,
+    string CurrencyCode,
+    decimal Subtotal,
+    decimal GrandTotal,
+    bool CheckoutAllowed,
+    IReadOnlyList<StorefrontCartWarningResponse> Warnings,
+    IReadOnlyList<StorefrontCartAdjustmentResponse> Adjustments);
 
 public sealed record StorefrontLocalCartErrorResponse(string Message);
 

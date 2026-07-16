@@ -1,5 +1,4 @@
 @page "/my-cart"
-@inject StorefrontApiClient ApiClient
 @inject StorefrontCartTokenService CartTokenService
 @inject IStorefrontClientAppUrlResolver ClientAppUrlResolver
 
@@ -76,12 +75,12 @@
 
                                     @if (!string.IsNullOrWhiteSpace(line.VariantLabel))
                                     {
-                                        <p class="mt-1 text-sm font-medium uppercase tracking-[0.16em] text-neutral-500">@line.VariantLabel</p>
+                                        <p class="mt-1 text-sm font-medium text-neutral-500">@line.VariantLabel</p>
                                     }
 
-                                    @if (line.IsUnavailable)
+                                    @foreach (var warning in line.Warnings)
                                     {
-                                        <p class="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-900">This item could not be refreshed from the catalog. Review it before you continue.</p>
+                                        <p class="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-900">@warning</p>
                                     }
 
                                     <div class="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-end">
@@ -94,8 +93,9 @@
                                             <label class="block">
                                                 <span class="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">Quantity</span>
                                                 <input type="number"
-                                                       min="1"
-                                                       step="1"
+                                                       min="@line.QuantityMinimum"
+                                                       max="@line.QuantityMaximum"
+                                                       step="@line.QuantityStep"
                                                        value="@line.Quantity"
                                                        data-storefront-cart-quantity
                                                        data-line-id="@line.LineId"
@@ -159,7 +159,14 @@
                 <div class="mt-6 space-y-3">
                     @if (Lines.Count > 0)
                     {
-                        <a href="@CheckoutUrl" class="inline-flex w-full items-center justify-center rounded bg-amber-500 px-4 py-3 font-semibold text-white hover:bg-amber-600">Continue to Checkout</a>
+                        @if (CheckoutAllowed)
+                        {
+                            <a href="@CheckoutUrl" class="inline-flex w-full items-center justify-center rounded bg-amber-500 px-4 py-3 font-semibold text-white hover:bg-amber-600">Continue to Checkout</a>
+                        }
+                        else
+                        {
+                            <button type="button" disabled class="inline-flex w-full cursor-not-allowed items-center justify-center rounded bg-neutral-300 px-4 py-3 font-semibold text-neutral-600">Continue to Checkout</button>
+                        }
                         <p class="text-sm leading-6 text-neutral-600">Checkout continues through an authenticated handoff so payment and order history stay attached to your profile.</p>
 
                         <button type="button" data-storefront-cart-clear class="inline-flex w-full items-center justify-center rounded bg-white px-4 py-3 font-semibold text-neutral-900 ring-1 ring-black/10 hover:bg-neutral-100">Clear Cart</button>

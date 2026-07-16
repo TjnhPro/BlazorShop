@@ -338,45 +338,45 @@ Goal: move Storefront V2 from product-by-product lookup to the cart projection c
 
 Implementation checklist:
 
-- [ ] Update Storefront V2 local `/api/cart` endpoints to return the enriched projection.
-- [ ] Update local cart response/client models.
-- [ ] Update `CartPage.razor` to render projection fields directly:
-  - [ ] image.
-  - [ ] product URL.
-  - [ ] display name.
-  - [ ] selected attributes.
-  - [ ] unit price.
-  - [ ] line subtotal/total.
-  - [ ] quantity constraints.
-  - [ ] line warnings.
-  - [ ] cart warnings.
-  - [ ] subtotal/grand total.
-  - [ ] checkout allowed state.
-- [ ] Remove product detail N+1 dependency from cart page rendering.
-- [ ] Update mini-cart badge to use `summaryCount`.
-- [ ] Keep add/update/remove/clear flows through Storefront V2 local endpoints.
-- [ ] Disable checkout button when `checkoutAllowed` is false.
-- [ ] Show customer-safe warning text for invalid/unavailable cart lines.
-- [ ] Keep cart page noindex/private behavior.
-- [ ] Keep browser request payload free of price/customer identity.
-- [ ] Keep text/layout stable on mobile and desktop.
+- [x] Update Storefront V2 local `/api/cart` endpoints to return the enriched projection. 2026-07-16 Phase 5: local cart response now includes currency, subtotal, grand total, checkout flag, warnings, and adjustments.
+- [x] Update local cart response/client models. 2026-07-16 Phase 5: `StorefrontLocalCartResponse` carries projection totals and warnings.
+- [x] Update `CartPage.razor` to render projection fields directly:
+  - [x] image.
+  - [x] product URL.
+  - [x] display name.
+  - [x] selected attributes.
+  - [x] unit price.
+  - [x] line subtotal/total.
+  - [x] quantity constraints.
+  - [x] line warnings.
+  - [x] cart warnings.
+  - [x] subtotal/grand total.
+  - [x] checkout allowed state.
+- [x] Remove product detail N+1 dependency from cart page rendering. 2026-07-16 Phase 5: `CartPage.razor.cs` no longer calls `GetProductByIdAsync`.
+- [x] Update mini-cart badge to use `summaryCount`. 2026-07-16 Phase 5: existing local response count remains summary-count first.
+- [x] Keep add/update/remove/clear flows through Storefront V2 local endpoints. 2026-07-16 Phase 5: no browser mutation route changes.
+- [x] Disable checkout button when `checkoutAllowed` is false. 2026-07-16 Phase 5: cart page renders disabled checkout button when projection blocks checkout.
+- [x] Show customer-safe warning text for invalid/unavailable cart lines. 2026-07-16 Phase 5: cart and line warnings render from Storefront projection.
+- [x] Keep cart page noindex/private behavior. 2026-07-16 Phase 5: `HeadContent` and private headers unchanged.
+- [x] Keep browser request payload free of price/customer identity. 2026-07-16 Phase 5: local mutation routes unchanged and static guard remains green.
+- [x] Keep text/layout stable on mobile and desktop. 2026-07-16 Phase 5: markup keeps existing responsive structure and uses bounded quantity controls.
 
 Verification checklist:
 
-- [ ] Storefront V2 build passes.
-- [ ] Storefront API client/local cart tests pass.
-- [ ] Cart page renders without product N+1 dependency.
-- [ ] Cart badge count matches server projection.
-- [ ] Invalid/unavailable cart lines show warnings.
-- [ ] Invalid cart blocks checkout clearly.
-- [ ] Existing add/update/remove/clear browser flows still work.
-- [ ] Storefront host smoke tests pass.
+- [x] Storefront V2 build passes. 2026-07-16 Phase 5: Storefront host smoke build/test passed.
+- [x] Storefront API client/local cart tests pass. 2026-07-16 Phase 5: focused client/static run passed 23/23.
+- [x] Cart page renders without product N+1 dependency. 2026-07-16 Phase 5: static guard asserts no `GetProductByIdAsync`/`LoadProductsAsync`.
+- [x] Cart badge count matches server projection. 2026-07-16 Phase 5: local response keeps `SummaryCount` first.
+- [x] Invalid/unavailable cart lines show warnings. 2026-07-16 Phase 5: cart page renders line warning messages.
+- [x] Invalid cart blocks checkout clearly. 2026-07-16 Phase 5: `CheckoutAllowed` controls disabled checkout state.
+- [x] Existing add/update/remove/clear browser flows still work. 2026-07-16 Phase 5: Storefront host smoke tests passed 34/34.
+- [x] Storefront host smoke tests pass. 2026-07-16 Phase 5: `StorefrontV2HostSmokeTests` passed 34/34.
 
 Exit criteria:
 
-- [ ] Cart page consumes the server projection as source of truth.
-- [ ] Storefront cart UI remains noindex and customer-safe.
-- [ ] Existing Storefront cart interactions still work.
+- [x] Cart page consumes the server projection as source of truth. 2026-07-16 Phase 5: cart page builds view model from `StorefrontCartLineResponse` projection.
+- [x] Storefront cart UI remains noindex and customer-safe. 2026-07-16 Phase 5: noindex/private behavior and local mutation boundary retained.
+- [x] Existing Storefront cart interactions still work. 2026-07-16 Phase 5: focused Storefront tests passed.
 
 Suggested commit:
 
@@ -491,7 +491,7 @@ test(cart-core): complete release gate
 - [ ] Add-line rejects invalid selected attributes.
 - [x] Add-line rejects invalid quantity. 2026-07-16 Phase 4: min/default max/product quantity tests passed.
 - [x] Add/update rejects managed stock shortage. 2026-07-16 Phase 4: existing sellability/cart tests remain green.
-- [ ] Cart projection includes line display fields and totals.
+- [x] Cart projection includes line display fields and totals. 2026-07-16 Phase 5: Storefront V2 cart page consumes display fields, line totals, and warnings directly from the projection.
 - [x] Validate is non-mutating. 2026-07-16 Phase 2: application service test guards snapshot/version unchanged.
 - [x] Recalculate updates stale snapshots. 2026-07-16 Phase 2: application/session tests guard stale price and snapshot currency updates.
 - [x] Recalculate returns 409 for stale expected version. 2026-07-16 Phase 2: application service test guards stale expected version conflict.
@@ -504,12 +504,12 @@ test(cart-core): complete release gate
 - [ ] Local `/api/cart` uses HttpOnly `bs-cart-token`.
 - [ ] Local `/api/cart` imports legacy `my-cart` cookie and deletes it after import.
 - [ ] Browser add-line request does not send price/customer identity.
-- [ ] Cart page renders projection without product N+1 calls.
-- [ ] Cart page shows image, URL, selected attributes, unit price, line total, and warnings.
-- [ ] Cart page shows subtotal/grand total from projection.
+- [x] Cart page renders projection without product N+1 calls. 2026-07-16 Phase 5: static guard verifies no cart page product detail fetch.
+- [x] Cart page shows image, URL, selected attributes, unit price, line total, and warnings. 2026-07-16 Phase 5: projection-backed cart page renders these fields.
+- [x] Cart page shows subtotal/grand total from projection. 2026-07-16 Phase 5: local cart response exposes projection totals.
 - [ ] Cart badge uses server summary count.
 - [ ] Add/update/remove/clear flows still work.
-- [ ] Invalid/unavailable cart line blocks checkout.
+- [x] Invalid/unavailable cart line blocks checkout. 2026-07-16 Phase 5: `CheckoutAllowed` disables checkout and line warnings remain visible.
 - [ ] Cart page remains noindex/private.
 - [ ] Login merge keeps guest cart lines.
 - [ ] Browser QA finds no unexpected console errors.
@@ -541,7 +541,7 @@ test(cart-core): complete release gate
 - [ ] Cart token is persisted in plaintext.
 - [x] Recalculate mutates state from a GET route. 2026-07-16 Phase 2: risk mitigated by POST-only `/cart/recalculate` OpenAPI contract assertion.
 - [ ] Checkout uses stale price snapshots after product price changes.
-- [ ] Storefront hides an unavailable item but still allows checkout.
+- [x] Storefront hides an unavailable item but still allows checkout. 2026-07-16 Phase 5: risk mitigated by projection warnings plus `CheckoutAllowed` disabled state.
 - [ ] Product deleted/unpublished after add-to-cart causes null reference or checkout crash.
 - [ ] Variant selection becomes invalid but checkout still places an order.
 - [x] Quantity update bypasses min/max/step or stock checks. 2026-07-16 Phase 4: risk mitigated by update max/default cap and existing selection resolver checks.
@@ -557,7 +557,7 @@ test(cart-core): complete release gate
 - [x] Phase 2 - recalculate command. 2026-07-16: POST command, OpenAPI metadata/snapshot, Storefront V2 typed client, and focused tests completed.
 - [x] Phase 3 - authenticated cart attach and merge. 2026-07-16: trusted-identity merge endpoint, Storefront login hook, OpenAPI security metadata, and focused tests completed.
 - [x] Phase 4 - quantity constraints and item limits. 2026-07-16: cart options, max lines, max quantity, projection caps, OpenAPI assertions, and focused tests completed.
-- [ ] Phase 5 - Storefront V2 cart UI consumption.
+- [x] Phase 5 - Storefront V2 cart UI consumption. 2026-07-16: local cart response, cart page projection rendering, checkout disabled state, QA docs, and focused tests completed.
 - [ ] Phase 6 - expiration, cleanup, QA, and contract finish.
 
 ## Definition Of Done

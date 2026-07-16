@@ -2,7 +2,6 @@ namespace BlazorShop.Storefront.Pages
 {
     using BlazorShop.Storefront.Services;
     using BlazorShop.Storefront.Services.Contracts;
-    using BlazorShop.Web.SharedV2.Models.Product;
 
     using Microsoft.AspNetCore.Components;
 
@@ -11,6 +10,7 @@ namespace BlazorShop.Storefront.Pages
         private readonly List<CartAlert> _alerts = [];
         private IReadOnlyList<CartLine> _lines = [];
         private StorefrontDisplayContext _displayContext = StorefrontDisplayContext.Fallback;
+        private StorefrontCartResponse? _cart;
 
         [CascadingParameter]
         private HttpContext? HttpContext { get; set; }
@@ -19,17 +19,19 @@ namespace BlazorShop.Storefront.Pages
 
         private IReadOnlyList<CartLine> Lines => _lines;
 
-        private int ItemCount => _lines.Sum(line => line.Quantity);
+        private int ItemCount => _cart?.SummaryCount > 0 ? _cart.SummaryCount : _lines.Sum(line => line.Quantity);
 
-        private string GrandTotalDisplay => FormatPrice(_lines.Sum(line => line.LineTotal), GrandTotalCurrencyCode);
+        private string GrandTotalDisplay => FormatPrice(_cart?.GrandTotal ?? _lines.Sum(line => line.LineTotal), GrandTotalCurrencyCode);
 
-        private string GrandTotalCurrencyCode => _lines
+        private string GrandTotalCurrencyCode => NormalizeCurrencyCode(_cart?.CurrencyCode) ?? _lines
             .Select(line => line.CurrencyCode)
             .Distinct(StringComparer.Ordinal)
             .SingleOrDefault()
             ?? _displayContext.CurrencyCode;
 
         private string CheckoutUrl => StorefrontRoutes.Checkout;
+
+        private bool CheckoutAllowed => _cart?.CheckoutAllowed ?? _lines.All(line => !line.IsUnavailable);
 
         [Inject]
         private IStorefrontDisplayContextProvider DisplayContextProvider { get; set; } = default!;
@@ -47,102 +49,44 @@ namespace BlazorShop.Storefront.Pages
             if (!cartResolution.Success)
             {
                 _alerts.Add(new CartAlert("error", cartResolution.Message));
+                _cart = null;
                 _lines = [];
                 return;
             }
 
-            var cartItems = cartResolution.Cart?.Lines ?? [];
-            var productsById = await LoadProductsAsync(cartItems);
-            _lines = BuildLines(cartItems, productsById);
-        }
-
-        private async Task<Dictionary<Guid, GetProduct>> LoadProductsAsync(IEnumerable<StorefrontCartLineResponse> cartItems)
-        {
-            var productIds = cartItems
-                .Select(item => item.ProductId)
-                .Where(productId => productId != Guid.Empty)
-                .Distinct()
-                .ToArray();
-
-            if (productIds.Length == 0)
+            _cart = cartResolution.Cart;
+            foreach (var warning in _cart?.Warnings ?? [])
             {
-                return [];
+                _alerts.Add(new CartAlert("warning", warning.Message));
             }
 
-            var results = await Task.WhenAll(productIds.Select(id => ApiClient.GetProductByIdAsync(id)));
-            var productsById = new Dictionary<Guid, GetProduct>();
-
-            for (var index = 0; index < productIds.Length; index++)
-            {
-                var result = results[index];
-                if (result.IsSuccess && result.Value is not null)
-                {
-                    productsById[productIds[index]] = result.Value;
-                }
-            }
-
-            return productsById;
+            _lines = BuildLines(_cart?.Lines ?? []);
         }
 
-        private IReadOnlyList<CartLine> BuildLines(IEnumerable<StorefrontCartLineResponse> cartItems, IReadOnlyDictionary<Guid, GetProduct> productsById)
+        private IReadOnlyList<CartLine> BuildLines(IEnumerable<StorefrontCartLineResponse> cartItems)
         {
             var lines = new List<CartLine>();
-            var unavailableItems = 0;
 
             foreach (var cartItem in cartItems)
             {
                 var quantity = Math.Max(1, cartItem.Quantity);
-
-                if (productsById.TryGetValue(cartItem.ProductId, out var product))
-                {
-                    var selectedVariantId = cartItem.ProductVariantId;
-                    var selectedVariant = selectedVariantId is null
-                        ? null
-                        : product.Variants.FirstOrDefault(variant => variant.Id == selectedVariantId.Value);
-                    var variantLabel = selectedVariant is null
-                        ? null
-                        : GetVariantLabel(selectedVariant);
-                    var unitPrice = cartItem.UnitPriceSnapshot
-                        ?? (selectedVariant?.EffectivePrice > 0 ? selectedVariant.EffectivePrice : selectedVariant?.Price)
-                        ?? product.Price;
-                    var currencyCode = NormalizeCurrencyCode(cartItem.CurrencyCodeSnapshot) ?? _displayContext.CurrencyCode;
-                    lines.Add(new CartLine(
-                        LineId: cartItem.LineId,
-                        ProductId: cartItem.ProductId,
-                        ProductVariantId: selectedVariantId,
-                        DisplayName: string.IsNullOrWhiteSpace(product.Name) ? "Product" : product.Name,
-                        ProductUrl: string.IsNullOrWhiteSpace(product.Slug) ? null : StorefrontRoutes.Product(product.Slug),
-                        ImageUrl: product.Image,
-                        Quantity: quantity,
-                        UnitPrice: unitPrice,
-                        CurrencyCode: currencyCode,
-                        VariantLabel: variantLabel,
-                        IsUnavailable: false));
-                    continue;
-                }
-
-                unavailableItems++;
                 lines.Add(new CartLine(
                     LineId: cartItem.LineId,
                     ProductId: cartItem.ProductId,
                     ProductVariantId: cartItem.ProductVariantId,
-                    DisplayName: "Unavailable item",
-                    ProductUrl: null,
-                    ImageUrl: null,
+                    DisplayName: string.IsNullOrWhiteSpace(cartItem.DisplayName) ? "Cart item" : cartItem.DisplayName,
+                    ProductUrl: ResolveProductUrl(cartItem),
+                    ImageUrl: cartItem.ImageUrl,
                     Quantity: quantity,
-                    UnitPrice: cartItem.UnitPriceSnapshot ?? 0m,
-                    CurrencyCode: NormalizeCurrencyCode(cartItem.CurrencyCodeSnapshot) ?? _displayContext.CurrencyCode,
-                    VariantLabel: null,
-                    IsUnavailable: true));
-            }
-
-            if (unavailableItems > 0)
-            {
-                _alerts.Add(new CartAlert(
-                    "warning",
-                    unavailableItems == 1
-                        ? "One cart item could not be refreshed from the catalog and is shown as unavailable."
-                        : $"{unavailableItems} cart items could not be refreshed from the catalog and are shown as unavailable."));
+                    UnitPrice: cartItem.UnitPrice ?? cartItem.UnitPriceSnapshot ?? 0m,
+                    LineTotal: cartItem.LineTotal ?? cartItem.LineSubtotal ?? ((cartItem.UnitPrice ?? cartItem.UnitPriceSnapshot ?? 0m) * quantity),
+                    CurrencyCode: NormalizeCurrencyCode(cartItem.CurrencyCodeSnapshot) ?? NormalizeCurrencyCode(_cart?.CurrencyCode) ?? _displayContext.CurrencyCode,
+                    VariantLabel: ResolveSelectedAttributes(cartItem.SelectedAttributes),
+                    QuantityMinimum: Math.Max(1, cartItem.QuantityMinimum),
+                    QuantityMaximum: cartItem.QuantityMaximum,
+                    QuantityStep: Math.Max(1, cartItem.QuantityStep),
+                    Warnings: (cartItem.Warnings ?? []).Select(warning => warning.Message).Where(message => !string.IsNullOrWhiteSpace(message)).ToArray(),
+                    IsUnavailable: !cartItem.Purchasable || (cartItem.Warnings?.Count ?? 0) > 0));
             }
 
             return lines;
@@ -161,11 +105,15 @@ namespace BlazorShop.Storefront.Pages
             string? ImageUrl,
             int Quantity,
             decimal UnitPrice,
+            decimal LineTotal,
             string CurrencyCode,
             string? VariantLabel,
+            int QuantityMinimum,
+            int? QuantityMaximum,
+            int QuantityStep,
+            IReadOnlyList<string> Warnings,
             bool IsUnavailable)
         {
-            public decimal LineTotal => UnitPrice * Quantity;
         }
 
         private static string? NormalizeCurrencyCode(string? currencyCode)
@@ -176,17 +124,24 @@ namespace BlazorShop.Storefront.Pages
                 : null;
         }
 
-        private static string? GetVariantLabel(GetProductVariant variant)
+        private static string? ResolveProductUrl(StorefrontCartLineResponse cartItem)
         {
-            if (!string.IsNullOrWhiteSpace(variant.DisplayName))
+            if (!string.IsNullOrWhiteSpace(cartItem.ProductSlug))
             {
-                return variant.DisplayName;
+                return StorefrontRoutes.Product(cartItem.ProductSlug);
             }
 
-            var attributeText = string.Join(" / ", variant.Attributes.Select(attribute => $"{attribute.Name}: {attribute.Value}"));
-            return string.IsNullOrWhiteSpace(attributeText)
-                ? variant.SizeValue
-                : attributeText;
+            return string.IsNullOrWhiteSpace(cartItem.ProductUrl) ? null : cartItem.ProductUrl;
+        }
+
+        private static string? ResolveSelectedAttributes(IReadOnlyList<StorefrontCartSelectedAttributeResponse>? attributes)
+        {
+            var attributeText = string.Join(
+                " / ",
+                (attributes ?? [])
+                    .Where(attribute => !string.IsNullOrWhiteSpace(attribute.Name) || !string.IsNullOrWhiteSpace(attribute.Value))
+                    .Select(attribute => $"{attribute.Name}: {attribute.Value}"));
+            return string.IsNullOrWhiteSpace(attributeText) ? null : attributeText;
         }
     }
 }
