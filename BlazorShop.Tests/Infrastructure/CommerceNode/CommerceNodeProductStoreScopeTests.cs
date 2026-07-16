@@ -177,6 +177,68 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Null(archivedDetail);
         }
 
+        [Theory]
+        [InlineData("name marker", "Search Name Marker Product")]
+        [InlineData("sku-marker", "SKU Search Product")]
+        [InlineData("shortmarker", "Short Description Search Product")]
+        [InlineData("descriptionmarker", "Description Search Product")]
+        public async Task GetPublishedCatalogPageAsync_SearchesPublicProductFields(string searchTerm, string expectedName)
+        {
+            var storeA = Guid.NewGuid();
+            var storeB = Guid.NewGuid();
+            await using var context = CreateContext();
+            var catalog = await SeedCategoryHierarchyAsync(context, storeA, storeB);
+            await SeedSearchProductsAsync(context, storeA, catalog.RootCategoryId);
+            var repository = CreateRepository(context, storeA);
+
+            var result = await repository.GetPublishedCatalogPageAsync(new ProductCatalogQuery
+            {
+                SearchTerm = $"  {searchTerm}  ",
+                PageSize = 10,
+            });
+
+            Assert.Contains(result.Items, product => string.Equals(product.Name, expectedName, StringComparison.Ordinal));
+            Assert.DoesNotContain(result.Items, product => string.Equals(product.Name, "Wrong Store Search Product", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public async Task GetPublishedCatalogPageAsync_TooShortSearchTermReturnsEmptyPage()
+        {
+            var storeA = Guid.NewGuid();
+            var storeB = Guid.NewGuid();
+            await using var context = CreateContext();
+            await SeedCategoryHierarchyAsync(context, storeA, storeB);
+            var repository = CreateRepository(context, storeA);
+
+            var result = await repository.GetPublishedCatalogPageAsync(new ProductCatalogQuery
+            {
+                SearchTerm = "r",
+                PageSize = 10,
+            });
+
+            Assert.Empty(result.Items);
+            Assert.Equal(0, result.TotalCount);
+        }
+
+        [Fact]
+        public async Task GetPublishedCatalogPageAsync_EmptySearchTermStillBrowsesCurrentScope()
+        {
+            var storeA = Guid.NewGuid();
+            var storeB = Guid.NewGuid();
+            await using var context = CreateContext();
+            await SeedCategoryHierarchyAsync(context, storeA, storeB);
+            var repository = CreateRepository(context, storeA);
+
+            var result = await repository.GetPublishedCatalogPageAsync(new ProductCatalogQuery
+            {
+                SearchTerm = "   ",
+                PageSize = 10,
+            });
+
+            Assert.NotEmpty(result.Items);
+            Assert.All(result.Items, product => Assert.NotEqual("Store B Child Product", product.Name));
+        }
+
         private static CommerceNodeProductReadRepository CreateRepository(CommerceNodeDbContext context, Guid storeId)
         {
             return new CommerceNodeProductReadRepository(context, new SlugService(), new FixedStoreContext(storeId));
@@ -299,6 +361,29 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 storeBChildCategory.Id,
                 scheduledProduct.Id,
                 expiredProduct.Id);
+        }
+
+        private static async Task SeedSearchProductsAsync(CommerceNodeDbContext context, Guid storeId, Guid categoryId)
+        {
+            var nameSearchProduct = CreateProduct(storeId, categoryId, "Search Name Marker Product", "search-name-marker-product");
+            var skuSearchProduct = CreateProduct(storeId, categoryId, "SKU Search Product", "sku-search-product");
+            skuSearchProduct.Sku = "sku-marker-2026";
+            skuSearchProduct.Description = "plain copy";
+            var shortDescriptionProduct = CreateProduct(storeId, categoryId, "Short Description Search Product", "short-description-search-product");
+            shortDescriptionProduct.ShortDescription = "shortmarker copy";
+            shortDescriptionProduct.Description = "plain copy";
+            var descriptionProduct = CreateProduct(storeId, categoryId, "Description Search Product", "description-search-product");
+            descriptionProduct.Description = "descriptionmarker copy";
+            var wrongStoreProduct = CreateProduct(Guid.NewGuid(), categoryId, "Wrong Store Search Product", "wrong-store-search-product");
+            wrongStoreProduct.Sku = "sku-marker-2026";
+
+            context.Products.AddRange(
+                nameSearchProduct,
+                skuSearchProduct,
+                shortDescriptionProduct,
+                descriptionProduct,
+                wrongStoreProduct);
+            await context.SaveChangesAsync();
         }
 
         private static Product CreateProduct(Guid storeId, Guid categoryId, string name, string slug)

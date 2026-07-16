@@ -265,13 +265,13 @@ namespace BlazorShop.Application.Services
         private static string BuildCatalogPageCacheKey(Guid storeId, ProductCatalogQuery query)
         {
             var builder = new StringBuilder();
-            builder.Append(CultureInfo.InvariantCulture, $"store:{storeId:D}:catalog:products:v1");
+            builder.Append(CultureInfo.InvariantCulture, $"store:{storeId:D}:catalog:products:v2");
             builder.Append(CultureInfo.InvariantCulture, $":page:{Math.Max(1, query.PageNumber)}");
             builder.Append(CultureInfo.InvariantCulture, $":size:{Math.Max(1, query.PageSize)}");
             builder.Append(CultureInfo.InvariantCulture, $":sort:{query.SortBy}");
             builder.Append(CultureInfo.InvariantCulture, $":category-id:{query.CategoryId?.ToString("D") ?? "none"}");
             builder.Append(CultureInfo.InvariantCulture, $":category-slug:{NormalizeCachePart(query.GetNormalizedCategorySlug())}");
-            builder.Append(CultureInfo.InvariantCulture, $":search:{NormalizeCachePart(query.GetNormalizedSearchTerm())}");
+            builder.Append(CultureInfo.InvariantCulture, $":search:{NormalizeCachePart(CatalogSearchPolicy.NormalizeSearchTerm(query.SearchTerm))}");
             builder.Append(CultureInfo.InvariantCulture, $":min:{query.MinPrice?.ToString(CultureInfo.InvariantCulture) ?? "none"}");
             builder.Append(CultureInfo.InvariantCulture, $":max:{query.MaxPrice?.ToString(CultureInfo.InvariantCulture) ?? "none"}");
             builder.Append(CultureInfo.InvariantCulture, $":stock:{query.InStock?.ToString() ?? "none"}");

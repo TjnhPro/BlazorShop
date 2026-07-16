@@ -37,7 +37,7 @@ namespace BlazorShop.Tests.Domain.Contracts
         {
             var query = new ProductCatalogQuery
             {
-                SearchTerm = "  running shoes  ",
+                SearchTerm = "  running \t  shoes  ",
                 CategorySlug = "  apparel  ",
             };
 

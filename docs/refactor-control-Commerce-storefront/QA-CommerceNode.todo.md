@@ -79,8 +79,9 @@ Baseline recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFoundationS
 - [x] Phase 0 baseline confirms category slug scope can include descendant categories and invalid category slugs return an empty page. 2026-07-16: `CommerceNodeProductStoreScopeTests` covers descendant category scope; invalid-slug empty-page behavior remains part of focused repository verification.
 - [x] Phase 0 baseline confirms Storefront OpenAPI has `StorefrontCatalog_QueryProducts` with typed paged response, `pageSize` bounds, and named string `sortBy` metadata. 2026-07-16: `CommerceNodeStorefrontOpenApiContractTests` remains the contract guard.
 - [x] Phase 0 makes no schema, route, or endpoint changes. 2026-07-16: docs/test-only baseline commit.
-- [ ] Public search uses normalized term policy with minimum length `2`.
-- [ ] Public search covers product name, SKU, short description, and description.
+- [x] Public search uses normalized term policy with minimum length `2`. 2026-07-16 Phase 1: `CatalogSearchPolicy` and `CommerceNodeProductStoreScopeTests.GetPublishedCatalogPageAsync_TooShortSearchTermReturnsEmptyPage` passed.
+- [x] Public search covers product name, SKU, short description, and description. 2026-07-16 Phase 1: `CommerceNodeProductStoreScopeTests.GetPublishedCatalogPageAsync_SearchesPublicProductFields` passed for all four public fields.
+- [x] Public search has a PostgreSQL FTS expression index over name, short description, description, and SKU. 2026-07-16 Phase 1: migration `CommerceNodeCatalogSearchPublicFields` adds a CommerceNode-only GIN index.
 - [ ] Product filter metadata endpoint returns only supported facets.
 - [ ] Search suggestions endpoint is store-scoped and returns safe display fields only.
 

@@ -134,48 +134,48 @@ Goal: define stable public search normalization/minimum behavior and broaden cur
 
 Implementation checklist:
 
-- [ ] Add catalog search options/constants in application/catalog area:
-  - [ ] minimum term length `2`.
-  - [ ] suggestion default limit `6`.
-  - [ ] suggestion max limit `10`.
-  - [ ] supported Storefront page sizes `12`, `24`, `48`.
-- [ ] Add shared search normalization helper:
-  - [ ] trim.
-  - [ ] collapse repeated whitespace.
-  - [ ] return null when empty.
-  - [ ] preserve Unicode text.
-- [ ] Update `CommerceNodeProductReadRepository` published catalog query:
-  - [ ] keep current store filter.
-  - [ ] keep published/non-archived visibility filters.
-  - [ ] keep category and descendant category filters.
-  - [ ] apply minimum length policy for non-empty search terms.
-  - [ ] search `Name`.
-  - [ ] search `ShortDescription`.
-  - [ ] search `Description`.
-  - [ ] search `Sku`.
-  - [ ] keep rank ordering for valid search.
-  - [ ] preserve existing sort behavior when search term is empty.
-- [ ] Add Commerce Node migration/index only if current query plan requires it:
-  - [ ] PostgreSQL FTS expression index over public search fields, if needed.
-  - [ ] `CommerceNodeDbContext` migration only.
-- [ ] Update catalog cache key version if search semantics change.
+- [x] Add catalog search options/constants in application/catalog area:
+  - [x] minimum term length `2`.
+  - [x] suggestion default limit `6`.
+  - [x] suggestion max limit `10`.
+  - [x] supported Storefront page sizes `12`, `24`, `48`.
+- [x] Add shared search normalization helper:
+  - [x] trim.
+  - [x] collapse repeated whitespace.
+  - [x] return null when empty.
+  - [x] preserve Unicode text.
+- [x] Update `CommerceNodeProductReadRepository` published catalog query:
+  - [x] keep current store filter.
+  - [x] keep published/non-archived visibility filters.
+  - [x] keep category and descendant category filters.
+  - [x] apply minimum length policy for non-empty search terms.
+  - [x] search `Name`.
+  - [x] search `ShortDescription`.
+  - [x] search `Description`.
+  - [x] search `Sku`.
+  - [x] keep rank ordering for valid search.
+  - [x] preserve existing sort behavior when search term is empty.
+- [x] Add Commerce Node migration/index only if current query plan requires it:
+  - [x] PostgreSQL FTS expression index over public search fields, if needed.
+  - [x] `CommerceNodeDbContext` migration only.
+- [x] Update catalog cache key version if search semantics change.
 
 Verification checklist:
 
-- [ ] Search by name still works.
-- [ ] Search by SKU works.
-- [ ] Search by short description works.
-- [ ] Search by description works.
-- [ ] One-character non-empty search avoids expensive broad query and returns empty result/clear policy result.
-- [ ] Empty search still browses products.
-- [ ] Store scope still blocks cross-store products.
-- [ ] Category scope still includes descendants.
+- [x] Search by name still works.
+- [x] Search by SKU works.
+- [x] Search by short description works.
+- [x] Search by description works.
+- [x] One-character non-empty search avoids expensive broad query and returns empty result/clear policy result.
+- [x] Empty search still browses products.
+- [x] Store scope still blocks cross-store products.
+- [x] Category scope still includes descendants.
 
 Exit criteria:
 
-- [ ] Public search behavior is normalized and deterministic.
-- [ ] Search does not become broader or slower for accidental short queries.
-- [ ] No unsupported field such as brand/rating/spec is searched.
+- [x] Public search behavior is normalized and deterministic.
+- [x] Search does not become broader or slower for accidental short queries.
+- [x] No unsupported field such as brand/rating/spec is searched.
 
 Suggested commit:
 

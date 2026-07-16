@@ -34,12 +34,44 @@ namespace BlazorShop.Domain.Contracts
 
         public int GetNormalizedPageSize() => Math.Clamp(this.PageSize, 1, MaxPageSize);
 
-        public string? GetNormalizedSearchTerm() => string.IsNullOrWhiteSpace(this.SearchTerm)
-            ? null
-            : this.SearchTerm.Trim();
+        public string? GetNormalizedSearchTerm() => NormalizeSearchTerm(this.SearchTerm);
 
         public string? GetNormalizedCategorySlug() => string.IsNullOrWhiteSpace(this.CategorySlug)
             ? null
             : this.CategorySlug.Trim();
+
+        public static string? NormalizeSearchTerm(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            var builder = new System.Text.StringBuilder(value.Length);
+            var previousWasWhiteSpace = true;
+            foreach (var character in value)
+            {
+                if (char.IsWhiteSpace(character))
+                {
+                    if (!previousWasWhiteSpace)
+                    {
+                        builder.Append(' ');
+                        previousWasWhiteSpace = true;
+                    }
+
+                    continue;
+                }
+
+                builder.Append(character);
+                previousWasWhiteSpace = false;
+            }
+
+            if (previousWasWhiteSpace && builder.Length > 0)
+            {
+                builder.Length--;
+            }
+
+            return builder.Length == 0 ? null : builder.ToString();
+        }
     }
 }

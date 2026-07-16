@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
 {
     using System.Linq.Expressions;
 
+    using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Domain.Contracts;
@@ -188,7 +189,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                     .Where(product => product.StoreId == storeId),
                 DateTime.UtcNow);
 
-            products = BuildPublishedCatalogQuery(products, query, categoryIds);
+            products = BuildPublishedCatalogQuery(
+                products,
+                query,
+                categoryIds,
+                string.Equals(this.context.Database.ProviderName, "Npgsql.EntityFrameworkCore.PostgreSQL", StringComparison.Ordinal));
 
             var totalCount = await products.CountAsync();
             var cappedTotalCount = Math.Min(totalCount, pageSize * StorefrontMaxPageCount);
@@ -436,9 +441,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
         private static IQueryable<Product> BuildPublishedCatalogQuery(
             IQueryable<Product> products,
             ProductCatalogQuery query,
-            IReadOnlyCollection<Guid>? categoryIds)
+            IReadOnlyCollection<Guid>? categoryIds,
+            bool usePostgresFullTextSearch)
         {
-            var searchTerm = query.GetNormalizedSearchTerm();
+            var searchTerm = CatalogSearchPolicy.NormalizeSearchTerm(query.SearchTerm);
 
             if (categoryIds is { Count: > 0 })
             {
@@ -473,14 +479,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                return products
-                    .Where(product => EF.Functions
-                        .ToTsVector(SearchConfig, product.Name ?? string.Empty)
-                        .Matches(EF.Functions.PlainToTsQuery(SearchConfig, searchTerm)))
-                    .OrderByDescending(product => EF.Functions
-                        .ToTsVector(SearchConfig, product.Name ?? string.Empty)
-                        .Rank(EF.Functions.PlainToTsQuery(SearchConfig, searchTerm)))
-                    .ThenBy(product => product.Id);
+                if (CatalogSearchPolicy.IsSearchTermTooShort(searchTerm))
+                {
+                    return products.Where(_ => false);
+                }
+
+                return usePostgresFullTextSearch
+                    ? ApplyPostgresPublicSearch(products, searchTerm)
+                    : ApplyPortablePublicSearch(products, searchTerm);
             }
 
             return query.SortBy switch
@@ -494,6 +500,41 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
                 ProductCatalogSortBy.Updated => products.OrderByDescending(product => product.UpdatedAt).ThenBy(product => product.Id),
                 _ => products.OrderByDescending(product => product.CreatedOn).ThenBy(product => product.Id),
             };
+        }
+
+        private static IQueryable<Product> ApplyPostgresPublicSearch(IQueryable<Product> products, string searchTerm)
+        {
+            return products
+                .Where(product => EF.Functions
+                    .ToTsVector(
+                        SearchConfig,
+                        (product.Name ?? string.Empty) + " "
+                        + (product.ShortDescription ?? string.Empty) + " "
+                        + (product.Description ?? string.Empty) + " "
+                        + (product.Sku ?? string.Empty))
+                    .Matches(EF.Functions.PlainToTsQuery(SearchConfig, searchTerm)))
+                .OrderByDescending(product => EF.Functions
+                    .ToTsVector(
+                        SearchConfig,
+                        (product.Name ?? string.Empty) + " "
+                        + (product.ShortDescription ?? string.Empty) + " "
+                        + (product.Description ?? string.Empty) + " "
+                        + (product.Sku ?? string.Empty))
+                    .Rank(EF.Functions.PlainToTsQuery(SearchConfig, searchTerm)))
+                .ThenBy(product => product.Id);
+        }
+
+        private static IQueryable<Product> ApplyPortablePublicSearch(IQueryable<Product> products, string searchTerm)
+        {
+            var normalizedSearchTerm = searchTerm.ToLower();
+            return products
+                .Where(product =>
+                    (product.Sku != null && product.Sku.ToLower().Contains(normalizedSearchTerm)) ||
+                    (product.Name != null && product.Name.ToLower().Contains(normalizedSearchTerm)) ||
+                    (product.ShortDescription != null && product.ShortDescription.ToLower().Contains(normalizedSearchTerm)) ||
+                    (product.Description != null && product.Description.ToLower().Contains(normalizedSearchTerm)))
+                .OrderBy(product => product.Name)
+                .ThenBy(product => product.Id);
         }
 
         private async Task<IReadOnlyCollection<Guid>?> GetPublishedCategoryIdsForQueryAsync(Guid storeId, ProductCatalogQuery query)
