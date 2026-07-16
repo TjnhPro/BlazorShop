@@ -228,6 +228,29 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal(true, isActive.GetDefaultValue());
         }
 
+        [Fact]
+        public void ProductPurchaseFields_HaveSafeDefaultsAndMaxLengths()
+        {
+            using var context = CreateContext();
+            var modelEntity = context.Model.FindEntityType(typeof(Product));
+
+            Assert.NotNull(modelEntity);
+
+            Assert.Equal(1, modelEntity!.FindProperty(nameof(Product.MinOrderQuantity))!.GetDefaultValue());
+            Assert.Equal(1, modelEntity.FindProperty(nameof(Product.QuantityStep))!.GetDefaultValue());
+            Assert.Equal(false, modelEntity.FindProperty(nameof(Product.PurchasingDisabled))!.GetDefaultValue());
+            Assert.Equal(true, modelEntity.FindProperty(nameof(Product.ManageStock))!.GetDefaultValue());
+            Assert.Equal(false, modelEntity.FindProperty(nameof(Product.HideWhenOutOfStock))!.GetDefaultValue());
+            Assert.Equal(true, modelEntity.FindProperty(nameof(Product.ShippingRequired))!.GetDefaultValue());
+            Assert.Equal(false, modelEntity.FindProperty(nameof(Product.FreeShipping))!.GetDefaultValue());
+            Assert.Equal(
+                ProductPurchaseConstraints.PurchasingDisabledReasonMaxLength,
+                modelEntity.FindProperty(nameof(Product.PurchasingDisabledReason))!.GetMaxLength());
+            Assert.Equal(
+                ProductPurchaseConstraints.DeliveryEstimateTextMaxLength,
+                modelEntity.FindProperty(nameof(Product.DeliveryEstimateText))!.GetMaxLength());
+        }
+
         private static CommerceNodeDbContext CreateContext()
         {
             var options = new DbContextOptionsBuilder<CommerceNodeDbContext>()

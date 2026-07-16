@@ -48,6 +48,26 @@ namespace BlazorShop.Domain.Contracts
 
         public bool InStock { get; init; }
 
+        public int MinOrderQuantity { get; init; } = 1;
+
+        public int? MaxOrderQuantity { get; init; }
+
+        public int QuantityStep { get; init; } = 1;
+
+        public bool PurchasingDisabled { get; init; }
+
+        public string? PurchasingDisabledReason { get; init; }
+
+        public bool ManageStock { get; init; } = true;
+
+        public bool HideWhenOutOfStock { get; init; }
+
+        public bool ShippingRequired { get; init; } = true;
+
+        public bool FreeShipping { get; init; }
+
+        public string? DeliveryEstimateText { get; init; }
+
         public bool IsPublished { get; init; }
 
         public DateTime? PublishedOn { get; init; }

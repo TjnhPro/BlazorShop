@@ -867,3 +867,7 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Storefront cart rejects stock shortage and unavailable variants. 2026-07-16 Phase 0: `StorefrontCartServiceTests` passed.
 - [x] Storefront checkout validates cart lines before order creation. 2026-07-16 Phase 0: `StorefrontCheckoutServiceTests` passed.
 - [x] Storefront OpenAPI preserves `InStock`, `Quantity`, and variant `Stock`. 2026-07-16 Phase 0: `CommerceNodeStorefrontOpenApiContractTests` passed.
+- [x] Product purchase fields are additive and persisted on CommerceNode `Products`. 2026-07-16 Phase 1: `CommerceNodeProductPurchaseFields` migration adds min/max/step, purchase-disabled, manage-stock, hide-when-out-of-stock, shipping, free-shipping, and delivery estimate fields only.
+- [x] Product purchase fields have safe defaults and length limits. 2026-07-16 Phase 1: `CommerceNodeDbContextModelTests.ProductPurchaseFields_HaveSafeDefaultsAndMaxLengths` passed.
+- [x] Product service rejects invalid min/max/step and overlong purchase-disabled reason. 2026-07-16 Phase 1: focused `ProductServiceTests` passed inside 52/52 run.
+- [x] Phase 1 does not add stock ledger, reservation, backorder, warehouse, or shipping charge tables. 2026-07-16: migration inspection confirmed only additive `Products` columns.

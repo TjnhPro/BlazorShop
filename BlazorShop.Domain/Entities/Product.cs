@@ -56,6 +56,28 @@
 
         public int Quantity { get; set; }
 
+        public int MinOrderQuantity { get; set; } = 1;
+
+        public int? MaxOrderQuantity { get; set; }
+
+        public int QuantityStep { get; set; } = 1;
+
+        public bool PurchasingDisabled { get; set; }
+
+        [MaxLength(ProductPurchaseConstraints.PurchasingDisabledReasonMaxLength)]
+        public string? PurchasingDisabledReason { get; set; }
+
+        public bool ManageStock { get; set; } = true;
+
+        public bool HideWhenOutOfStock { get; set; }
+
+        public bool ShippingRequired { get; set; } = true;
+
+        public bool FreeShipping { get; set; }
+
+        [MaxLength(ProductPurchaseConstraints.DeliveryEstimateTextMaxLength)]
+        public string? DeliveryEstimateText { get; set; }
+
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
 
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

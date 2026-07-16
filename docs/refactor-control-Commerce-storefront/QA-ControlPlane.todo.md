@@ -496,4 +496,5 @@ Status legend:
 - [x] Product editor currently preserves existing availability window, quantity, identity, and dimension fields. 2026-07-16 Phase 0: `CommerceProducts.razor` baseline confirmed.
 - [x] Inventory manager continues to update product quantity and variant stock through Control Plane API. 2026-07-16 Phase 0: existing `CatalogClient.UpdateProductStockAsync` and `UpdateVariantStockAsync` path confirmed.
 - [x] ControlPlane Web does not call CommerceNode API directly. 2026-07-16 Phase 0: no ControlPlane Web changes in baseline; existing boundary tests remain applicable.
+- [x] ControlPlane product basic save preserves purchase metadata returned by `GetProduct`. 2026-07-16 Phase 1: `CommerceProducts.razor` forwards selected product min/max/step, purchase-disabled, manage-stock, hide-when-out-of-stock, shipping, free-shipping, and delivery estimate fields through `CatalogClient.UpdateProductAsync`.
 - [ ] Future manager work must expose manage-stock, min/max/step, purchase-disabled reason, hide-when-out-of-stock, and delivery metadata through the Control Plane gateway.

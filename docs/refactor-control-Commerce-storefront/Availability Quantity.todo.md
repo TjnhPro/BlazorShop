@@ -114,55 +114,55 @@ Goal: add practical product-level purchase metadata with safe defaults.
 
 Implementation checklist:
 
-- [ ] Add additive fields to `Product`:
-  - [ ] `MinOrderQuantity`.
-  - [ ] `MaxOrderQuantity`.
-  - [ ] `QuantityStep`.
-  - [ ] `PurchasingDisabled`.
-  - [ ] `PurchasingDisabledReason`.
-  - [ ] `ManageStock`.
-  - [ ] `HideWhenOutOfStock`.
-  - [ ] `ShippingRequired`.
-  - [ ] `FreeShipping`.
-  - [ ] `DeliveryEstimateText`.
-  - [ ] Reuse existing availability window, weight, and dimension fields if already present; otherwise add only the missing fields.
-- [ ] Add EF mapping in `CommerceNodeDbContext`.
-- [ ] Add a Commerce Node migration only.
-- [ ] Backfill safe defaults:
-  - [ ] `MinOrderQuantity = 1`.
-  - [ ] `QuantityStep = 1`.
-  - [ ] `ManageStock = true`.
-  - [ ] `PurchasingDisabled = false`.
-  - [ ] `HideWhenOutOfStock = false`.
-  - [ ] `ShippingRequired = true`.
-  - [ ] `FreeShipping = false`.
-- [ ] Add or update product create/update/get DTOs.
-- [ ] Preserve existing DTO fields:
-  - [ ] `Quantity`.
-  - [ ] `IsPublished`.
-  - [ ] `PublishedOn`.
-  - [ ] `InStock`.
-- [ ] Add validation:
-  - [ ] `MinOrderQuantity >= 1`.
-  - [ ] `QuantityStep >= 1`.
-  - [ ] `MaxOrderQuantity` is null or `>= MinOrderQuantity`.
-  - [ ] `AvailableEndUtc` is after `AvailableStartUtc` when both are set.
-  - [ ] dimensions are null or `>= 0`.
-  - [ ] `PurchasingDisabledReason` max length is enforced.
-- [ ] Update Product Import only if product create/update contracts require the new fields for admin workflows.
+- [x] Add additive fields to `Product`:
+  - [x] `MinOrderQuantity`.
+  - [x] `MaxOrderQuantity`.
+  - [x] `QuantityStep`.
+  - [x] `PurchasingDisabled`.
+  - [x] `PurchasingDisabledReason`.
+  - [x] `ManageStock`.
+  - [x] `HideWhenOutOfStock`.
+  - [x] `ShippingRequired`.
+  - [x] `FreeShipping`.
+  - [x] `DeliveryEstimateText`.
+  - [x] Reuse existing availability window, weight, and dimension fields if already present; otherwise add only the missing fields.
+- [x] Add EF mapping in `CommerceNodeDbContext`.
+- [x] Add a Commerce Node migration only.
+- [x] Backfill safe defaults:
+  - [x] `MinOrderQuantity = 1`.
+  - [x] `QuantityStep = 1`.
+  - [x] `ManageStock = true`.
+  - [x] `PurchasingDisabled = false`.
+  - [x] `HideWhenOutOfStock = false`.
+  - [x] `ShippingRequired = true`.
+  - [x] `FreeShipping = false`.
+- [x] Add or update product create/update/get DTOs.
+- [x] Preserve existing DTO fields:
+  - [x] `Quantity`.
+  - [x] `IsPublished`.
+  - [x] `PublishedOn`.
+  - [x] `InStock`.
+- [x] Add validation:
+  - [x] `MinOrderQuantity >= 1`.
+  - [x] `QuantityStep >= 1`.
+  - [x] `MaxOrderQuantity` is null or `>= MinOrderQuantity`.
+  - [x] `AvailableEndUtc` is after `AvailableStartUtc` when both are set.
+  - [x] dimensions are null or `>= 0`.
+  - [x] `PurchasingDisabledReason` max length is enforced.
+- [x] Update Product Import only if product create/update contracts require the new fields for admin workflows. No parser change in Phase 1; new fields are optional create/update DTO metadata and import behavior remains compatible.
 
 Verification checklist:
 
-- [ ] Existing products behave the same after migration.
-- [ ] EF model tests confirm defaults and max lengths.
-- [ ] Product service validation tests pass.
-- [ ] Product import compatibility tests pass if parser changes.
-- [ ] No stock ledger, reservation, backorder, warehouse, or shipping charge table is added.
+- [x] Existing products behave the same after migration. Defaults preserve current catalog visibility and stock behavior.
+- [x] EF model tests confirm defaults and max lengths. 2026-07-16: `CommerceNodeDbContextModelTests.ProductPurchaseFields_HaveSafeDefaultsAndMaxLengths` passed.
+- [x] Product service validation tests pass. 2026-07-16: focused `ProductServiceTests|CommerceNodeDbContextModelTests` run passed 52/52.
+- [x] Product import compatibility tests pass if parser changes. No parser change in Phase 1.
+- [x] No stock ledger, reservation, backorder, warehouse, or shipping charge table is added.
 
 Exit criteria:
 
-- [ ] Product purchase metadata is persisted safely.
-- [ ] Existing public catalog behavior is not changed by defaults.
+- [x] Product purchase metadata is persisted safely.
+- [x] Existing public catalog behavior is not changed by defaults.
 
 Suggested commit:
 

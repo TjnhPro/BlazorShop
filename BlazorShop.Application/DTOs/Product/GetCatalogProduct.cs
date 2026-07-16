@@ -58,6 +58,26 @@ namespace BlazorShop.Application.DTOs.Product
 
         public bool InStock { get; set; }
 
+        public int MinOrderQuantity { get; set; } = 1;
+
+        public int? MaxOrderQuantity { get; set; }
+
+        public int QuantityStep { get; set; } = 1;
+
+        public bool PurchasingDisabled { get; set; }
+
+        public string? PurchasingDisabledReason { get; set; }
+
+        public bool ManageStock { get; set; } = true;
+
+        public bool HideWhenOutOfStock { get; set; }
+
+        public bool ShippingRequired { get; set; } = true;
+
+        public bool FreeShipping { get; set; }
+
+        public string? DeliveryEstimateText { get; set; }
+
         public bool IsPublished { get; set; }
 
         public DateTime? PublishedOn { get; set; }

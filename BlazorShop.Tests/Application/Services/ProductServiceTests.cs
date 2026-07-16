@@ -6,6 +6,7 @@
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs.Product;
     using BlazorShop.Application.Services;
+    using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Contracts.CategoryPersistence;
     using BlazorShop.Domain.Entities;
@@ -257,6 +258,63 @@
             this._mockProductRepository.Verify(repo => repo.AddAsync(It.IsAny<Product>()), Times.Never);
         }
 
+        [Theory]
+        [InlineData(0, 1, null, "Minimum order quantity must be at least 1.")]
+        [InlineData(1, 0, null, "Quantity step must be at least 1.")]
+        [InlineData(5, 1, 4, "Maximum order quantity must be greater than or equal to minimum order quantity.")]
+        public async Task AddAsync_WhenPurchaseQuantityRulesAreInvalid_ShouldReturnFailureResponse(
+            int minOrderQuantity,
+            int quantityStep,
+            int? maxOrderQuantity,
+            string expectedMessage)
+        {
+            var product = new CreateProduct
+            {
+                Name = "Product",
+                MinOrderQuantity = minOrderQuantity,
+                QuantityStep = quantityStep,
+                MaxOrderQuantity = maxOrderQuantity,
+            };
+            var mappedProduct = new Product
+            {
+                Name = product.Name,
+                MinOrderQuantity = product.MinOrderQuantity,
+                QuantityStep = product.QuantityStep,
+                MaxOrderQuantity = product.MaxOrderQuantity,
+            };
+            this._mockMapper.Setup(mapper => mapper.Map<Product>(product))
+                .Returns(mappedProduct);
+
+            var result = await this._productService.AddAsync(product);
+
+            Assert.False(result.Success);
+            Assert.Equal(expectedMessage, result.Message);
+            this._mockProductRepository.Verify(repo => repo.AddAsync(It.IsAny<Product>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task AddAsync_WhenPurchasingDisabledReasonIsTooLong_ShouldReturnFailureResponse()
+        {
+            var product = new CreateProduct
+            {
+                Name = "Product",
+                PurchasingDisabledReason = new string('x', ProductPurchaseConstraints.PurchasingDisabledReasonMaxLength + 1),
+            };
+            var mappedProduct = new Product
+            {
+                Name = product.Name,
+                PurchasingDisabledReason = product.PurchasingDisabledReason,
+            };
+            this._mockMapper.Setup(mapper => mapper.Map<Product>(product))
+                .Returns(mappedProduct);
+
+            var result = await this._productService.AddAsync(product);
+
+            Assert.False(result.Success);
+            Assert.Equal($"Purchasing disabled reason must be {ProductPurchaseConstraints.PurchasingDisabledReasonMaxLength} characters or fewer.", result.Message);
+            this._mockProductRepository.Verify(repo => repo.AddAsync(It.IsAny<Product>()), Times.Never);
+        }
+
         [Fact]
         public async Task AddAsync_WhenConditionIsInvalid_ShouldReturnFailureResponse()
         {
@@ -345,6 +403,58 @@
             Assert.Equal(2.5m, mappedProduct.Length);
             Assert.Equal(3.5m, mappedProduct.Width);
             Assert.Equal(4.5m, mappedProduct.Height);
+            this._mockProductRepository.Verify(repo => repo.AddAsync(mappedProduct), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddAsync_WhenPurchaseMetadataIsValid_NormalizesAndPersistsIt()
+        {
+            var product = new CreateProduct
+            {
+                Name = "Product",
+                MinOrderQuantity = 2,
+                MaxOrderQuantity = 10,
+                QuantityStep = 2,
+                PurchasingDisabled = true,
+                PurchasingDisabledReason = " Temporarily paused ",
+                ManageStock = false,
+                HideWhenOutOfStock = true,
+                ShippingRequired = false,
+                FreeShipping = true,
+                DeliveryEstimateText = " Ships next week ",
+            };
+            var mappedProduct = new Product
+            {
+                Name = product.Name,
+                MinOrderQuantity = product.MinOrderQuantity,
+                MaxOrderQuantity = product.MaxOrderQuantity,
+                QuantityStep = product.QuantityStep,
+                PurchasingDisabled = product.PurchasingDisabled,
+                PurchasingDisabledReason = product.PurchasingDisabledReason,
+                ManageStock = product.ManageStock,
+                HideWhenOutOfStock = product.HideWhenOutOfStock,
+                ShippingRequired = product.ShippingRequired,
+                FreeShipping = product.FreeShipping,
+                DeliveryEstimateText = product.DeliveryEstimateText,
+            };
+            this._mockMapper.Setup(mapper => mapper.Map<Product>(product))
+                .Returns(mappedProduct);
+            this._mockProductRepository.Setup(repo => repo.AddAsync(mappedProduct))
+                .ReturnsAsync(1);
+
+            var result = await this._productService.AddAsync(product);
+
+            Assert.True(result.Success);
+            Assert.Equal(2, mappedProduct.MinOrderQuantity);
+            Assert.Equal(10, mappedProduct.MaxOrderQuantity);
+            Assert.Equal(2, mappedProduct.QuantityStep);
+            Assert.True(mappedProduct.PurchasingDisabled);
+            Assert.Equal("Temporarily paused", mappedProduct.PurchasingDisabledReason);
+            Assert.False(mappedProduct.ManageStock);
+            Assert.True(mappedProduct.HideWhenOutOfStock);
+            Assert.False(mappedProduct.ShippingRequired);
+            Assert.True(mappedProduct.FreeShipping);
+            Assert.Equal("Ships next week", mappedProduct.DeliveryEstimateText);
             this._mockProductRepository.Verify(repo => repo.AddAsync(mappedProduct), Times.Once);
         }
 

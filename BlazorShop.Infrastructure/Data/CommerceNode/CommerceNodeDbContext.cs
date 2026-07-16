@@ -145,6 +145,17 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             modelBuilder.Entity<Product>(entity =>
             {
                 entity.Property(product => product.StoreId).IsRequired();
+                entity.Property(product => product.MinOrderQuantity).HasDefaultValue(1);
+                entity.Property(product => product.QuantityStep).HasDefaultValue(1);
+                entity.Property(product => product.PurchasingDisabled).HasDefaultValue(false);
+                entity.Property(product => product.PurchasingDisabledReason)
+                    .HasMaxLength(BlazorShop.Domain.Constants.ProductPurchaseConstraints.PurchasingDisabledReasonMaxLength);
+                entity.Property(product => product.ManageStock).HasDefaultValue(true);
+                entity.Property(product => product.HideWhenOutOfStock).HasDefaultValue(false);
+                entity.Property(product => product.ShippingRequired).HasDefaultValue(true);
+                entity.Property(product => product.FreeShipping).HasDefaultValue(false);
+                entity.Property(product => product.DeliveryEstimateText)
+                    .HasMaxLength(BlazorShop.Domain.Constants.ProductPurchaseConstraints.DeliveryEstimateTextMaxLength);
                 entity.HasOne<CommerceStore>()
                     .WithMany()
                     .HasForeignKey(product => product.StoreId)

@@ -238,6 +238,12 @@
                 ? product.Description
                 : product.FullDescription.Trim();
             product.Image = product.Image?.Trim();
+            product.PurchasingDisabledReason = string.IsNullOrWhiteSpace(product.PurchasingDisabledReason)
+                ? null
+                : product.PurchasingDisabledReason.Trim();
+            product.DeliveryEstimateText = string.IsNullOrWhiteSpace(product.DeliveryEstimateText)
+                ? null
+                : product.DeliveryEstimateText.Trim();
             product.ProductType = NormalizeProductType(product.ProductType);
             if (!string.Equals(product.ProductType, ProductTypes.CustomVariations, StringComparison.OrdinalIgnoreCase))
             {
@@ -270,6 +276,31 @@
                 && product.AvailableEndUtc.Value <= product.AvailableStartUtc.Value)
             {
                 return new ServiceResponse(false, "Product availability end must be after availability start.");
+            }
+
+            if (product.MinOrderQuantity < 1)
+            {
+                return new ServiceResponse(false, "Minimum order quantity must be at least 1.");
+            }
+
+            if (product.QuantityStep < 1)
+            {
+                return new ServiceResponse(false, "Quantity step must be at least 1.");
+            }
+
+            if (product.MaxOrderQuantity.HasValue && product.MaxOrderQuantity.Value < product.MinOrderQuantity)
+            {
+                return new ServiceResponse(false, "Maximum order quantity must be greater than or equal to minimum order quantity.");
+            }
+
+            if (product.PurchasingDisabledReason?.Length > ProductPurchaseConstraints.PurchasingDisabledReasonMaxLength)
+            {
+                return new ServiceResponse(false, $"Purchasing disabled reason must be {ProductPurchaseConstraints.PurchasingDisabledReasonMaxLength} characters or fewer.");
+            }
+
+            if (product.DeliveryEstimateText?.Length > ProductPurchaseConstraints.DeliveryEstimateTextMaxLength)
+            {
+                return new ServiceResponse(false, $"Delivery estimate text must be {ProductPurchaseConstraints.DeliveryEstimateTextMaxLength} characters or fewer.");
             }
 
             return new ServiceResponse(true, string.Empty);

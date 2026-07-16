@@ -544,4 +544,5 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Product detail quantity input currently defaults to 1 with minimum 1. 2026-07-16 Phase 0: `ProductPage.razor` baseline confirmed.
 - [x] Product detail uses product quantity and variant stock markers for existing add-to-cart behavior. 2026-07-16 Phase 0: `ProductPage.razor` baseline confirmed.
 - [x] Storefront V2 cart endpoint rejects quantity below 1. 2026-07-16 Phase 0: local endpoint source and `StorefrontCartServiceTests` baseline confirmed.
+- [x] Phase 1 does not change Storefront V2 sellability or rendering behavior. 2026-07-16: purchase fields are persisted/contracted but no Storefront V2 UI or cart resolver behavior was changed.
 - [ ] Storefront V2 host smoke remains green before sellability UI changes.
