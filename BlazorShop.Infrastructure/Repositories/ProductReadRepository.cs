@@ -113,6 +113,32 @@ namespace BlazorShop.Infrastructure.Repositories
             };
         }
 
+        public async Task<ProductFilterMetadataReadModel> GetPublishedProductFilterMetadataAsync(ProductCatalogQuery query)
+        {
+            IQueryable<Product> products = BuildCatalogQuery(
+                ApplyPublicVisibility(_context.Products.AsNoTracking(), DateTime.UtcNow),
+                new ProductCatalogQuery
+                {
+                    CategoryId = query.CategoryId,
+                    CategorySlug = query.CategorySlug,
+                    IncludeSubcategories = query.IncludeSubcategories,
+                    SearchTerm = query.SearchTerm,
+                });
+
+            var priceRange = await products
+                .GroupBy(_ => 1)
+                .Select(group => new
+                {
+                    MinPrice = group.Min(product => product.Price),
+                    MaxPrice = group.Max(product => product.Price),
+                })
+                .FirstOrDefaultAsync();
+
+            return priceRange is null
+                ? new ProductFilterMetadataReadModel(null, null)
+                : new ProductFilterMetadataReadModel(priceRange.MinPrice, priceRange.MaxPrice);
+        }
+
         public async Task<IReadOnlyList<PublishedProductSitemapEntryReadModel>> GetPublishedProductSitemapEntriesAsync()
         {
             return await ApplyPublicVisibility(_context.Products.AsNoTracking(), DateTime.UtcNow)

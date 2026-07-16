@@ -51,6 +51,7 @@ namespace BlazorShop.Storefront.Services
         private const string StorefrontCatalogSitemapRoute = StorefrontCatalogBaseRoute + "/sitemap";
         private const string StorefrontCategoriesRoute = StorefrontCatalogBaseRoute + "/categories";
         private const string StorefrontCategoryTreeRoute = StorefrontCategoriesRoute + "/tree";
+        private const string StorefrontProductFilterMetadataRoute = StorefrontCatalogBaseRoute + "/product-filter-metadata";
         private const string StorefrontProductsRoute = StorefrontCatalogBaseRoute + "/products";
         private const string SeoSettingsRoute = StorefrontSeoBaseRoute + "/settings";
         private const string LegacyCatalogBaseRoute = "/api/public/catalog";
@@ -141,6 +142,19 @@ namespace BlazorShop.Storefront.Services
                 AppendCurrencyQuery($"{StorefrontCategoriesRoute}/slug/{Uri.EscapeDataString(slug)}", currencyCode),
                 $"{LegacyCategoriesRoute}/slug/{Uri.EscapeDataString(slug)}",
                 cancellationToken,
+                CatalogRequestTimeout);
+        }
+
+        public Task<StorefrontApiResult<StorefrontProductFilterMetadataResponse>> GetProductFilterMetadataAsync(
+            string? categorySlug = null,
+            string? searchTerm = null,
+            string? currencyCode = null,
+            CancellationToken cancellationToken = default)
+        {
+            return GetAsync<StorefrontProductFilterMetadataResponse>(
+                BuildProductFilterMetadataRoute(categorySlug, searchTerm, currencyCode),
+                cancellationToken,
+                fallbackValue: null,
                 CatalogRequestTimeout);
         }
 
@@ -645,6 +659,31 @@ namespace BlazorShop.Storefront.Services
             return $"{productsRoute}?{string.Join("&", parameters)}";
         }
 
+        private static string BuildProductFilterMetadataRoute(string? categorySlug, string? searchTerm, string? currencyCode)
+        {
+            var parameters = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(categorySlug))
+            {
+                parameters.Add($"categorySlug={Uri.EscapeDataString(categorySlug.Trim())}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                parameters.Add($"searchTerm={Uri.EscapeDataString(searchTerm.Trim())}");
+            }
+
+            var normalizedCurrencyCode = NormalizeCurrencyCode(currencyCode);
+            if (normalizedCurrencyCode is not null)
+            {
+                parameters.Add($"currencyCode={Uri.EscapeDataString(normalizedCurrencyCode)}");
+            }
+
+            return parameters.Count == 0
+                ? StorefrontProductFilterMetadataRoute
+                : $"{StorefrontProductFilterMetadataRoute}?{string.Join("&", parameters)}";
+        }
+
         private static string AppendCurrencyQuery(string route, string? currencyCode)
         {
             var normalizedCurrencyCode = NormalizeCurrencyCode(currencyCode);
@@ -823,6 +862,40 @@ namespace BlazorShop.Storefront.Services
             return new(false, string.IsNullOrWhiteSpace(message) ? "The request could not be completed." : message, default);
         }
     }
+
+    public sealed record StorefrontProductFilterMetadataResponse(
+        IReadOnlyList<int> PageSizes,
+        IReadOnlyList<StorefrontProductSortOptionResponse> SortOptions,
+        IReadOnlyList<StorefrontFilterFacetResponse> Facets,
+        StorefrontPriceFacetResponse PriceRange,
+        int MinimumSearchTermLength);
+
+    public sealed record StorefrontFilterFacetResponse(
+        string Key,
+        string Label,
+        string Type,
+        int DisplayOrder,
+        int? MaxChoices,
+        int MinimumHitCount,
+        IReadOnlyList<StorefrontFilterChoiceResponse> Choices);
+
+    public sealed record StorefrontFilterChoiceResponse(
+        string Value,
+        string Label,
+        int DisplayOrder,
+        int? HitCount,
+        bool Selected);
+
+    public sealed record StorefrontPriceFacetResponse(
+        decimal? MinPrice,
+        decimal? MaxPrice,
+        string? CurrencyCode,
+        int DisplayOrder);
+
+    public sealed record StorefrontProductSortOptionResponse(
+        string Value,
+        string Label,
+        int DisplayOrder);
 
     public sealed record StorefrontCurrentStore(
         Guid PublicId,

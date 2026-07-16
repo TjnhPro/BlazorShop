@@ -216,6 +216,53 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
             };
         }
 
+        public async Task<ProductFilterMetadataReadModel> GetPublishedProductFilterMetadataAsync(ProductCatalogQuery query)
+        {
+            var storeResult = await this.storeContext.GetCurrentStoreIdAsync();
+            if (!storeResult.Success)
+            {
+                return new ProductFilterMetadataReadModel(null, null);
+            }
+
+            var storeId = storeResult.Payload;
+            var categoryIds = await this.GetPublishedCategoryIdsForQueryAsync(storeId, query);
+            if (categoryIds is not null && categoryIds.Count == 0)
+            {
+                return new ProductFilterMetadataReadModel(null, null);
+            }
+
+            IQueryable<Product> products = ApplyPublicVisibility(
+                this.context.Products
+                    .AsNoTracking()
+                    .Where(product => product.StoreId == storeId),
+                DateTime.UtcNow);
+
+            products = BuildPublishedCatalogQuery(
+                products,
+                new ProductCatalogQuery
+                {
+                    CategoryId = query.CategoryId,
+                    CategorySlug = query.CategorySlug,
+                    IncludeSubcategories = query.IncludeSubcategories,
+                    SearchTerm = query.SearchTerm,
+                },
+                categoryIds,
+                string.Equals(this.context.Database.ProviderName, "Npgsql.EntityFrameworkCore.PostgreSQL", StringComparison.Ordinal));
+
+            var priceRange = await products
+                .GroupBy(_ => 1)
+                .Select(group => new
+                {
+                    MinPrice = group.Min(product => product.Price),
+                    MaxPrice = group.Max(product => product.Price),
+                })
+                .FirstOrDefaultAsync();
+
+            return priceRange is null
+                ? new ProductFilterMetadataReadModel(null, null)
+                : new ProductFilterMetadataReadModel(priceRange.MinPrice, priceRange.MaxPrice);
+        }
+
         public async Task<IReadOnlyList<PublishedProductSitemapEntryReadModel>> GetPublishedProductSitemapEntriesAsync()
         {
             var scopedProducts = await this.GetCurrentStoreProductsAsync();

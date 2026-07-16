@@ -160,6 +160,11 @@ namespace BlazorShop.Application.Services
             return page;
         }
 
+        public async Task<ProductFilterMetadataReadModel> GetPublishedProductFilterMetadataAsync(ProductCatalogQuery query)
+        {
+            return await _productReadRepository.GetPublishedProductFilterMetadataAsync(query);
+        }
+
         public async Task<GetProduct?> GetPublishedProductByIdAsync(Guid id)
         {
             if (id == Guid.Empty)

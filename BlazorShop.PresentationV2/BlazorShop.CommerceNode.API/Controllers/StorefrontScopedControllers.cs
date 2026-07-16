@@ -1,5 +1,6 @@
 namespace BlazorShop.CommerceNode.API.Controllers
 {
+    using System.ComponentModel.DataAnnotations;
     using System.Security.Claims;
 
     using BlazorShop.Application.CommerceNode.Captcha;
@@ -8,6 +9,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using ApplicationStorefrontPlaceOrderResult = BlazorShop.Application.CommerceNode.Checkout.StorefrontPlaceOrderResult;
     using IStorefrontCheckoutService = BlazorShop.Application.CommerceNode.Checkout.IStorefrontCheckoutService;
 
+    using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Consent;
     using BlazorShop.Application.CommerceNode.Currencies;
@@ -19,6 +21,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
+    using BlazorShop.Application.DTOs.Category;
     using BlazorShop.Application.DTOs.Discovery;
     using BlazorShop.Application.DTOs.Seo;
     using BlazorShop.Application.DTOs.UserIdentity;
@@ -29,6 +32,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using BlazorShop.CommerceNode.API.Configuration;
     using BlazorShop.CommerceNode.API.Contracts.Storefront;
     using BlazorShop.CommerceNode.API.Responses;
+    using BlazorShop.Domain.Contracts;
 
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
@@ -406,6 +410,48 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 "Published category products loaded.");
         }
 
+        [HttpGet("product-filter-metadata")]
+        public async Task<IActionResult> GetProductFilterMetadata(
+            [FromQuery(Name = "categorySlug")]
+            [MaxLength(256)]
+            string? categorySlug,
+            [FromQuery(Name = "searchTerm")]
+            [MaxLength(256)]
+            string? searchTerm,
+            [FromQuery(Name = "currencyCode")]
+            [StringLength(3, MinimumLength = 3)]
+            string? currencyCode,
+            CancellationToken cancellationToken)
+        {
+            var query = new StorefrontProductFilterMetadataQuery
+            {
+                CategorySlug = categorySlug,
+                SearchTerm = searchTerm,
+                CurrencyCode = currencyCode,
+            };
+            var categoriesTask = this.publicCatalogService.GetPublishedCategoryTreeAsync();
+            var metadataTask = this.publicCatalogService.GetPublishedProductFilterMetadataAsync(new ProductCatalogQuery
+            {
+                CategorySlug = query.CategorySlug,
+                IncludeSubcategories = !string.IsNullOrWhiteSpace(query.CategorySlug),
+                SearchTerm = query.SearchTerm,
+            });
+            var displayCurrencyTask = this.ResolveDisplayCurrencyAsync(query.CurrencyCode, cancellationToken);
+
+            var categories = await categoriesTask;
+            var metadata = await metadataTask;
+            var displayCurrency = await displayCurrencyTask;
+
+            var response = new StorefrontProductFilterMetadataResponse(
+                CatalogSearchPolicy.StorefrontPageSizes,
+                BuildSortOptions(),
+                BuildFilterFacets(categories, query.CategorySlug),
+                await this.BuildPriceFacetAsync(metadata, displayCurrency, query.CurrencyCode, cancellationToken),
+                CatalogSearchPolicy.MinimumSearchTermLength);
+
+            return this.Success(response, "Product filter metadata loaded.");
+        }
+
         [HttpGet("products")]
         public async Task<IActionResult> GetProducts(
             [FromQuery] StorefrontProductCatalogQuery query,
@@ -476,6 +522,130 @@ namespace BlazorShop.CommerceNode.API.Controllers
         {
             var sitemap = await this.publicCatalogService.GetPublishedSitemapAsync();
             return this.Success<GetPublicCatalogSitemap>(sitemap, "Published catalog sitemap loaded.");
+        }
+
+        private static IReadOnlyList<StorefrontProductSortOptionResponse> BuildSortOptions()
+        {
+            return
+            [
+                new StorefrontProductSortOptionResponse(StorefrontProductCatalogSortValues.DisplayOrder, "Featured", 10),
+                new StorefrontProductSortOptionResponse(StorefrontProductCatalogSortValues.Updated, "Recently updated", 20),
+                new StorefrontProductSortOptionResponse(StorefrontProductCatalogSortValues.PriceLowToHigh, "Price low", 30),
+                new StorefrontProductSortOptionResponse(StorefrontProductCatalogSortValues.PriceHighToLow, "Price high", 40),
+                new StorefrontProductSortOptionResponse(StorefrontProductCatalogSortValues.Newest, "Newest", 50),
+                new StorefrontProductSortOptionResponse(StorefrontProductCatalogSortValues.Oldest, "Oldest", 60),
+                new StorefrontProductSortOptionResponse(StorefrontProductCatalogSortValues.NameAscending, "Name A-Z", 70),
+                new StorefrontProductSortOptionResponse(StorefrontProductCatalogSortValues.NameDescending, "Name Z-A", 80),
+            ];
+        }
+
+        private static IReadOnlyList<StorefrontFilterFacetResponse> BuildFilterFacets(
+            IReadOnlyList<GetCategoryTreeNode> categories,
+            string? selectedCategorySlug)
+        {
+            return
+            [
+                new StorefrontFilterFacetResponse(
+                    "category",
+                    "Category",
+                    "choice",
+                    10,
+                    MaxChoices: 50,
+                    MinimumHitCount: 0,
+                    FlattenCategoryChoices(categories, selectedCategorySlug)),
+                new StorefrontFilterFacetResponse(
+                    "availability",
+                    "Availability",
+                    "choice",
+                    20,
+                    MaxChoices: 2,
+                    MinimumHitCount: 0,
+                    [
+                        new StorefrontFilterChoiceResponse("inStock", "In stock", 10, HitCount: null, Selected: false),
+                        new StorefrontFilterChoiceResponse("outOfStock", "Out of stock", 20, HitCount: null, Selected: false),
+                    ]),
+                new StorefrontFilterFacetResponse(
+                    "newArrival",
+                    "New arrival",
+                    "choice",
+                    40,
+                    MaxChoices: 1,
+                    MinimumHitCount: 0,
+                    [
+                        new StorefrontFilterChoiceResponse("last30Days", "Last 30 days", 10, HitCount: null, Selected: false),
+                    ]),
+            ];
+        }
+
+        private static IReadOnlyList<StorefrontFilterChoiceResponse> FlattenCategoryChoices(
+            IReadOnlyList<GetCategoryTreeNode> categories,
+            string? selectedCategorySlug)
+        {
+            var choices = new List<StorefrontFilterChoiceResponse>();
+            foreach (var category in categories)
+            {
+                AppendCategoryChoice(choices, category, selectedCategorySlug, depth: 0);
+            }
+
+            return choices;
+        }
+
+        private static void AppendCategoryChoice(
+            List<StorefrontFilterChoiceResponse> choices,
+            GetCategoryTreeNode category,
+            string? selectedCategorySlug,
+            int depth)
+        {
+            if (!string.IsNullOrWhiteSpace(category.Slug))
+            {
+                var prefix = depth <= 0 ? string.Empty : $"{new string('-', depth * 2)} ";
+                choices.Add(new StorefrontFilterChoiceResponse(
+                    category.Slug,
+                    $"{prefix}{category.Name}",
+                    category.DisplayOrder,
+                    HitCount: null,
+                    Selected: string.Equals(category.Slug, selectedCategorySlug?.Trim(), StringComparison.OrdinalIgnoreCase)));
+            }
+
+            foreach (var child in category.Children)
+            {
+                AppendCategoryChoice(choices, child, selectedCategorySlug, depth + 1);
+            }
+        }
+
+        private async Task<StorefrontPriceFacetResponse> BuildPriceFacetAsync(
+            ProductFilterMetadataReadModel metadata,
+            StorefrontDisplayCurrency? displayCurrency,
+            string? requestedCurrencyCode,
+            CancellationToken cancellationToken)
+        {
+            var minPrice = metadata.MinPrice;
+            var maxPrice = metadata.MaxPrice;
+            var currencyCode = NormalizeCurrencyCode(requestedCurrencyCode);
+
+            if (displayCurrency is not null)
+            {
+                currencyCode = displayCurrency.CurrencyCode;
+                if (minPrice.HasValue)
+                {
+                    minPrice = (await this.ResolveDisplayMoneyAsync(minPrice.Value, comparePrice: null, displayCurrency, cancellationToken)).Price;
+                }
+
+                if (maxPrice.HasValue)
+                {
+                    maxPrice = (await this.ResolveDisplayMoneyAsync(maxPrice.Value, comparePrice: null, displayCurrency, cancellationToken)).Price;
+                }
+            }
+
+            return new StorefrontPriceFacetResponse(minPrice, maxPrice, currencyCode, DisplayOrder: 30);
+        }
+
+        private static string? NormalizeCurrencyCode(string? currencyCode)
+        {
+            var normalized = currencyCode?.Trim().ToUpperInvariant();
+            return normalized is { Length: 3 } && normalized.All(char.IsLetter)
+                ? normalized
+                : null;
         }
 
         private async Task<StorefrontDisplayCurrency?> ResolveDisplayCurrencyAsync(

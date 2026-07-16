@@ -117,6 +117,56 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         public string? CurrencyCode { get; init; }
     }
 
+    public sealed class StorefrontProductFilterMetadataQuery
+    {
+        [MaxLength(256)]
+        public string? CategorySlug { get; init; }
+
+        [MaxLength(256)]
+        public string? SearchTerm { get; init; }
+
+        [StringLength(3, MinimumLength = 3)]
+        public string? CurrencyCode { get; init; }
+    }
+
+    public sealed record StorefrontProductFilterMetadataResponse(
+        [property: Required]
+        IReadOnlyList<int> PageSizes,
+        [property: Required]
+        IReadOnlyList<StorefrontProductSortOptionResponse> SortOptions,
+        [property: Required]
+        IReadOnlyList<StorefrontFilterFacetResponse> Facets,
+        StorefrontPriceFacetResponse PriceRange,
+        int MinimumSearchTermLength);
+
+    public sealed record StorefrontFilterFacetResponse(
+        string Key,
+        string Label,
+        string Type,
+        int DisplayOrder,
+        int? MaxChoices,
+        int MinimumHitCount,
+        [property: Required]
+        IReadOnlyList<StorefrontFilterChoiceResponse> Choices);
+
+    public sealed record StorefrontFilterChoiceResponse(
+        string Value,
+        string Label,
+        int DisplayOrder,
+        int? HitCount,
+        bool Selected);
+
+    public sealed record StorefrontPriceFacetResponse(
+        decimal? MinPrice,
+        decimal? MaxPrice,
+        string? CurrencyCode,
+        int DisplayOrder);
+
+    public sealed record StorefrontProductSortOptionResponse(
+        string Value,
+        string Label,
+        int DisplayOrder);
+
     public static class StorefrontProductCatalogSortValues
     {
         public const string Newest = "newest";

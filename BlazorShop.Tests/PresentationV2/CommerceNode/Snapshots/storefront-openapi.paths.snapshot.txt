@@ -18,6 +18,7 @@ GET /api/storefront/stores/{storeKey}/catalog/categories/slug/{slug}
 GET /api/storefront/stores/{storeKey}/catalog/categories/tree
 GET /api/storefront/stores/{storeKey}/catalog/categories/{categoryId}/products
 GET /api/storefront/stores/{storeKey}/catalog/categories/{id}
+GET /api/storefront/stores/{storeKey}/catalog/product-filter-metadata
 GET /api/storefront/stores/{storeKey}/catalog/products
 GET /api/storefront/stores/{storeKey}/catalog/products/slug/{slug}
 GET /api/storefront/stores/{storeKey}/catalog/products/{id}

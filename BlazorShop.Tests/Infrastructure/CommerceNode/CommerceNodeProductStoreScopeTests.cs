@@ -239,6 +239,32 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.All(result.Items, product => Assert.NotEqual("Store B Child Product", product.Name));
         }
 
+        [Fact]
+        public async Task GetPublishedProductFilterMetadataAsync_ReturnsScopedPriceRange()
+        {
+            var storeA = Guid.NewGuid();
+            var storeB = Guid.NewGuid();
+            await using var context = CreateContext();
+            var catalog = await SeedCategoryHierarchyAsync(context, storeA, storeB);
+            await SeedSearchProductsAsync(context, storeA, catalog.RootCategoryId);
+            var lowPriceProduct = context.Products.Single(product => product.Name == "SKU Search Product");
+            lowPriceProduct.Price = 7m;
+            var highPriceProduct = context.Products.Single(product => product.Name == "Description Search Product");
+            highPriceProduct.Price = 31m;
+            await context.SaveChangesAsync();
+            var repository = CreateRepository(context, storeA);
+
+            var metadata = await repository.GetPublishedProductFilterMetadataAsync(new ProductCatalogQuery
+            {
+                CategorySlug = "root",
+                IncludeSubcategories = true,
+                SearchTerm = "search",
+            });
+
+            Assert.Equal(7m, metadata.MinPrice);
+            Assert.Equal(31m, metadata.MaxPrice);
+        }
+
         private static CommerceNodeProductReadRepository CreateRepository(CommerceNodeDbContext context, Guid storeId)
         {
             return new CommerceNodeProductReadRepository(context, new SlugService(), new FixedStoreContext(storeId));

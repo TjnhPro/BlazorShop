@@ -82,7 +82,9 @@ Baseline recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFoundationS
 - [x] Public search uses normalized term policy with minimum length `2`. 2026-07-16 Phase 1: `CatalogSearchPolicy` and `CommerceNodeProductStoreScopeTests.GetPublishedCatalogPageAsync_TooShortSearchTermReturnsEmptyPage` passed.
 - [x] Public search covers product name, SKU, short description, and description. 2026-07-16 Phase 1: `CommerceNodeProductStoreScopeTests.GetPublishedCatalogPageAsync_SearchesPublicProductFields` passed for all four public fields.
 - [x] Public search has a PostgreSQL FTS expression index over name, short description, description, and SKU. 2026-07-16 Phase 1: migration `CommerceNodeCatalogSearchPublicFields` adds a CommerceNode-only GIN index.
-- [ ] Product filter metadata endpoint returns only supported facets.
+- [x] Product filter metadata endpoint returns only supported facets. 2026-07-16 Phase 3: `GET /api/storefront/stores/{storeKey}/catalog/product-filter-metadata` returns category, availability, new-arrival, price range, page sizes, and named sort options; no brand/rating/delivery/spec facets were added.
+- [x] Product filter metadata endpoint is generator-safe in Storefront OpenAPI. 2026-07-16 Phase 3: `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_ProductFilterMetadataHasGeneratorSafeContract` passed and snapshots were refreshed.
+- [x] Product filter metadata price range is store/category/search scoped. 2026-07-16 Phase 3: `CommerceNodeProductStoreScopeTests.GetPublishedProductFilterMetadataAsync_ReturnsScopedPriceRange` passed.
 - [ ] Search suggestions endpoint is store-scoped and returns safe display fields only.
 
 ## Storefront API Contract Final Hardening

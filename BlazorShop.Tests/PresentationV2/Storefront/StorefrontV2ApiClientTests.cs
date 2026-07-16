@@ -157,6 +157,62 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task GetProductFilterMetadataAsync_ReadsFilterMetadataContract()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal("/api/storefront/stores/default/catalog/product-filter-metadata", request.RequestUri?.AbsolutePath);
+                Assert.Contains("categorySlug=shoes", request.RequestUri?.Query, StringComparison.Ordinal);
+                Assert.Contains("searchTerm=runner", request.RequestUri?.Query, StringComparison.Ordinal);
+                Assert.Contains("currencyCode=EUR", request.RequestUri?.Query, StringComparison.Ordinal);
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    """
+                    {
+                      "success": true,
+                      "message": "ok",
+                      "data": {
+                        "pageSizes": [12, 24, 48],
+                        "sortOptions": [
+                          { "value": "displayOrder", "label": "Featured", "displayOrder": 10 }
+                        ],
+                        "facets": [
+                          {
+                            "key": "category",
+                            "label": "Category",
+                            "type": "choice",
+                            "displayOrder": 10,
+                            "maxChoices": 50,
+                            "minimumHitCount": 0,
+                            "choices": [
+                              { "value": "shoes", "label": "Shoes", "displayOrder": 1, "hitCount": null, "selected": true }
+                            ]
+                          }
+                        ],
+                        "priceRange": { "minPrice": 10.50, "maxPrice": 25.00, "currencyCode": "EUR", "displayOrder": 30 },
+                        "minimumSearchTermLength": 2
+                      }
+                    }
+                    """);
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var result = await apiClient.GetProductFilterMetadataAsync("shoes", "runner", "eur");
+
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Equal([12, 24, 48], result.Value!.PageSizes);
+            Assert.Equal("displayOrder", result.Value.SortOptions[0].Value);
+            Assert.Equal("category", result.Value.Facets[0].Key);
+            Assert.True(result.Value.Facets[0].Choices[0].Selected);
+            Assert.Equal(10.50m, result.Value.PriceRange.MinPrice);
+            Assert.Equal("EUR", result.Value.PriceRange.CurrencyCode);
+            Assert.Equal(2, result.Value.MinimumSearchTermLength);
+        }
+
+        [Fact]
         public async Task GetPublishedProductBySlugAsync_ReadsDeliveryMetadata()
         {
             var handler = new RecordingHandler(request =>

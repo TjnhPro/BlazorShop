@@ -239,52 +239,52 @@ Goal: provide a stable backend filter contract without pretending unsupported fa
 
 Implementation checklist:
 
-- [ ] Add Storefront response DTOs:
-  - [ ] `StorefrontProductFilterMetadataResponse`.
-  - [ ] `StorefrontFilterFacetResponse`.
-  - [ ] `StorefrontFilterChoiceResponse`.
-  - [ ] `StorefrontPriceFacetResponse`.
-  - [ ] `StorefrontProductSortOptionResponse`.
-- [ ] Add Storefront catalog endpoint:
-  - [ ] `GET /api/storefront/stores/{storeKey}/catalog/product-filter-metadata`.
-- [ ] Add query support:
-  - [ ] `categorySlug`.
-  - [ ] `searchTerm`.
-  - [ ] `currencyCode`.
-- [ ] Populate metadata:
-  - [ ] page sizes `12`, `24`, `48`.
-  - [ ] sort options from existing named sort values.
-  - [ ] category choices from published category tree.
-  - [ ] price min/max from published current-store products in scope.
-  - [ ] availability choices based on current `InStock` filter.
-  - [ ] new-arrival choice using `CreatedAfterUtc` policy.
-  - [ ] `DisplayOrder`.
-  - [ ] `MaxChoices`.
-  - [ ] `MinimumHitCount`.
-- [ ] Keep hit counts nullable unless cheap and tested.
-- [ ] Do not return brand/rating/delivery/specification facets.
-- [ ] Add `StorefrontApiClient.GetProductFilterMetadataAsync`.
-- [ ] Update OpenAPI metadata:
-  - [ ] stable operationId.
-  - [ ] summary.
-  - [ ] response schema.
-  - [ ] error responses.
-  - [ ] validation metadata.
+- [x] Add Storefront response DTOs:
+  - [x] `StorefrontProductFilterMetadataResponse`.
+  - [x] `StorefrontFilterFacetResponse`.
+  - [x] `StorefrontFilterChoiceResponse`.
+  - [x] `StorefrontPriceFacetResponse`.
+  - [x] `StorefrontProductSortOptionResponse`.
+- [x] Add Storefront catalog endpoint:
+  - [x] `GET /api/storefront/stores/{storeKey}/catalog/product-filter-metadata`.
+- [x] Add query support:
+  - [x] `categorySlug`.
+  - [x] `searchTerm`.
+  - [x] `currencyCode`.
+- [x] Populate metadata:
+  - [x] page sizes `12`, `24`, `48`.
+  - [x] sort options from existing named sort values.
+  - [x] category choices from published category tree.
+  - [x] price min/max from published current-store products in scope.
+  - [x] availability choices based on current `InStock` filter.
+  - [x] new-arrival choice using `CreatedAfterUtc` policy.
+  - [x] `DisplayOrder`.
+  - [x] `MaxChoices`.
+  - [x] `MinimumHitCount`.
+- [x] Keep hit counts nullable unless cheap and tested.
+- [x] Do not return brand/rating/delivery/specification facets.
+- [x] Add `StorefrontApiClient.GetProductFilterMetadataAsync`.
+- [x] Update OpenAPI metadata:
+  - [x] stable operationId.
+  - [x] summary.
+  - [x] response schema.
+  - [x] error responses.
+  - [x] validation metadata.
 
 Verification checklist:
 
-- [ ] Storefront API contract tests pass.
-- [ ] OpenAPI snapshot updated.
-- [ ] Generator-safe schema tests pass.
-- [ ] Filter metadata service/repository tests pass.
-- [ ] Metadata is store-scoped.
-- [ ] Metadata omits unsupported facets.
+- [x] Storefront API contract tests pass.
+- [x] OpenAPI snapshot updated.
+- [x] Generator-safe schema tests pass.
+- [x] Filter metadata service/repository tests pass.
+- [x] Metadata is store-scoped.
+- [x] Metadata omits unsupported facets.
 
 Exit criteria:
 
-- [ ] Storefront can render filter choices from API metadata.
-- [ ] Public contract is explicit enough for generated clients and AI agents.
-- [ ] No empty placeholder facets are returned.
+- [x] Storefront can render filter choices from API metadata.
+- [x] Public contract is explicit enough for generated clients and AI agents.
+- [x] No empty placeholder facets are returned.
 
 Suggested commit:
 

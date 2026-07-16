@@ -15,6 +15,8 @@ namespace BlazorShop.Application.Services.Contracts
 
         Task<PagedResult<GetCatalogProduct>> GetPublishedCatalogPageAsync(ProductCatalogQuery query);
 
+        Task<ProductFilterMetadataReadModel> GetPublishedProductFilterMetadataAsync(ProductCatalogQuery query);
+
         Task<GetProduct?> GetPublishedProductByIdAsync(Guid id);
 
         Task<GetProduct?> GetPublishedProductBySlugAsync(string slug);

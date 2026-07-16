@@ -59,6 +59,10 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             ("StorefrontCartValidationResponse", "issues"),
             ("StorefrontOrderResponse", "lines"),
             ("StorefrontOrderLineResponse", "variantAttributes"),
+            ("StorefrontProductFilterMetadataResponse", "pageSizes"),
+            ("StorefrontProductFilterMetadataResponse", "sortOptions"),
+            ("StorefrontProductFilterMetadataResponse", "facets"),
+            ("StorefrontFilterFacetResponse", "choices"),
             ("GetPublicCatalogSitemap", "categories"),
             ("GetPublicCatalogSitemap", "products"),
             ("GetPublicCatalogSitemap", "pages"),
@@ -342,6 +346,43 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         }
 
         [Fact]
+        public async Task StorefrontSwagger_ProductFilterMetadataHasGeneratorSafeContract()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var operation = GetOperation(swagger, "StorefrontCatalog_GetProductFilterMetadata");
+
+            Assert.False(string.IsNullOrWhiteSpace(operation["summary"]?.GetValue<string>()));
+            Assert.True(operation["responses"]?.AsObject().Count > 1);
+            Assert.Null(operation["requestBody"]);
+            Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(operation));
+
+            var parameters = operation["parameters"]?.AsArray()
+                ?? throw new InvalidOperationException("Filter metadata operation does not contain parameters.");
+            Assert.Contains(parameters, parameter =>
+                string.Equals(parameter?["name"]?.GetValue<string>(), "categorySlug", StringComparison.Ordinal));
+            Assert.Contains(parameters, parameter =>
+                string.Equals(parameter?["name"]?.GetValue<string>(), "searchTerm", StringComparison.Ordinal));
+            Assert.Contains(parameters, parameter =>
+                string.Equals(parameter?["name"]?.GetValue<string>(), "currencyCode", StringComparison.Ordinal));
+
+            Assert.True(schemas.ContainsKey("StorefrontProductFilterMetadataResponse"));
+            Assert.True(schemas.ContainsKey("StorefrontFilterFacetResponse"));
+            Assert.True(schemas.ContainsKey("StorefrontFilterChoiceResponse"));
+            Assert.True(schemas.ContainsKey("StorefrontPriceFacetResponse"));
+            Assert.True(schemas.ContainsKey("StorefrontProductSortOptionResponse"));
+
+            var metadataSchema = schemas["StorefrontProductFilterMetadataResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontProductFilterMetadataResponse schema was not found.");
+            var properties = GetPropertyNames(metadataSchema).ToArray();
+            Assert.Contains("pageSizes", properties);
+            Assert.Contains("sortOptions", properties);
+            Assert.Contains("facets", properties);
+            Assert.Contains("priceRange", properties);
+            Assert.Contains("minimumSearchTermLength", properties);
+        }
+
+        [Fact]
         public async Task StorefrontSwagger_ProductSellabilityProjectionHasGeneratorSafeContract()
         {
             var swagger = await this.GetStorefrontSwaggerAsync();
@@ -581,6 +622,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
 
             Assert.Contains("export class StorefrontApiClient", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCatalog_QueryProducts", client, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCatalog_GetProductFilterMetadata", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCart_CreateSession", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCart_AddLine", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontPayments_CapturePayPal", client, StringComparison.Ordinal);
