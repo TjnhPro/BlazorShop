@@ -597,53 +597,61 @@ Goal: keep final order placement safe across COD and hosted payment flows.
 
 Implementation checklist:
 
-- [ ] Require matching checkout session ID.
-- [ ] Require matching checkout version.
-- [ ] Require matching cart version.
-- [ ] Require idempotency key.
-- [ ] Re-run final validation:
-  - [ ] checkout not expired.
-  - [ ] checkout not cancelled.
-  - [ ] checkout not completed.
-  - [ ] cart active.
-  - [ ] selected address state valid.
-  - [ ] selected payment state valid.
-  - [ ] selected shipping state valid.
-  - [ ] cart lines valid.
-  - [ ] payment method still available.
-  - [ ] shipping option still available.
-  - [ ] total unchanged or explicitly recalculated.
-- [ ] Preserve existing idempotency behavior.
-- [ ] Return same result for pending hosted payment attempt with same idempotency key.
-- [ ] COD/captured flow:
-  - [ ] create order.
-  - [ ] create/capture payment attempt.
-  - [ ] deduct stock.
-  - [ ] mark cart ordered.
-  - [ ] mark checkout completed.
-  - [ ] return order reference.
-- [ ] Hosted payment redirect flow:
-  - [ ] create payment attempt.
-  - [ ] mark checkout `order_pending`.
-  - [ ] keep cart active until provider confirmation.
-  - [ ] return redirect action.
-  - [ ] do not clear cart token until provider confirms captured/completed order.
-- [ ] Ensure provider callback captured flow marks checkout completed.
-- [ ] Ensure provider callback captured flow marks cart ordered.
+- [x] Require matching checkout session ID.
+- [x] Require matching checkout version.
+- [x] Require matching cart version.
+- [x] Require idempotency key.
+- [x] Re-run final validation:
+  - [x] checkout not expired.
+  - [x] checkout not cancelled.
+  - [x] checkout not completed.
+  - [x] cart active.
+  - [x] selected address state valid.
+  - [x] selected payment state valid.
+  - [x] selected shipping state valid.
+  - [x] cart lines valid.
+  - [x] payment method still available.
+  - [x] shipping option still available.
+  - [x] total unchanged or explicitly recalculated.
+- [x] Preserve existing idempotency behavior.
+- [x] Return same result for pending hosted payment attempt with same idempotency key.
+- [x] COD/captured flow:
+  - [x] create order.
+  - [x] create/capture payment attempt.
+  - [x] deduct stock.
+  - [x] mark cart ordered.
+  - [x] mark checkout completed.
+  - [x] return order reference.
+- [x] Hosted payment redirect flow:
+  - [x] create payment attempt.
+  - [x] mark checkout `order_pending`.
+  - [x] keep cart active until provider confirmation.
+  - [x] return redirect action.
+  - [x] do not clear cart token until provider confirms captured/completed order.
+- [x] Ensure provider callback captured flow marks checkout completed.
+- [x] Ensure provider callback captured flow marks cart ordered.
 
 Verification checklist:
 
-- [ ] Double submit returns same result.
-- [ ] Redirect payment can be resumed/retried after cancel.
-- [ ] Cart token cleanup does not break hosted payment completion.
-- [ ] Order creation remains transactional for COD.
-- [ ] Provider callback does not create duplicate order.
-- [ ] Disabled payment method after review is rejected.
+- [x] Double submit returns same result.
+- [x] Redirect payment can be resumed/retried after cancel.
+- [x] Cart token cleanup does not break hosted payment completion.
+- [x] Order creation remains transactional for COD.
+- [x] Provider callback does not create duplicate order.
+- [x] Disabled payment method after review is rejected.
 
 Exit criteria:
 
-- [ ] Place-order command is idempotent and state-safe.
-- [ ] Completion behavior differs correctly for COD/captured vs hosted pending.
+- [x] Place-order command is idempotent and state-safe.
+- [x] Completion behavior differs correctly for COD/captured vs hosted pending.
+
+Phase 7 evidence:
+
+- 2026-07-17: `StorefrontPlaceOrderRequest` now requires `expectedCheckoutVersion` in addition to `expectedCartVersion` and idempotency key.
+- 2026-07-17: Place-order rejects stale checkout version, stale cart version, inactive cart, expired session, validation issues, missing shipping address, unavailable shipping option, and unavailable payment method.
+- 2026-07-17: Preview-created checkout sessions now snapshot the MVP free shipping option so final validation has explicit selected shipping state.
+- 2026-07-17: COD and hosted Stripe idempotency/completion behavior remains covered by existing focused tests.
+- 2026-07-17: Focused `StorefrontCheckoutServiceTests` run passed 38/38; focused `CommerceNodeStorefrontOpenApiContractTests` run passed 29/29 after OpenAPI snapshot refresh.
 
 Suggested commit:
 
@@ -832,7 +840,7 @@ test(checkout-core): complete release gate
 - [x] Phase 4 - shipping method stub and hook.
 - [x] Phase 5 - payment method step.
 - [x] Phase 6 - review projection and terms hook.
-- [ ] Phase 7 - place order hardening and completion rules.
+- [x] Phase 7 - place order hardening and completion rules.
 - [ ] Phase 8 - Storefront V2 integration.
 - [ ] Phase 9 - QA and contract coverage.
 

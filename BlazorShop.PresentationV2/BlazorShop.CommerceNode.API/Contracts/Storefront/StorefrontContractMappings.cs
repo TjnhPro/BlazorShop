@@ -465,6 +465,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
             return new BlazorShop.Application.CommerceNode.Checkout.StorefrontPlaceOrderRequest(
                 storeId,
                 request.CheckoutSessionId,
+                request.ExpectedCheckoutVersion,
                 request.ExpectedCartVersion,
                 request.IdempotencyKey);
         }

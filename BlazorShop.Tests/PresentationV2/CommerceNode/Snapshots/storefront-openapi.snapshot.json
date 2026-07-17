@@ -9398,6 +9398,12 @@
             "type": "string",
             "format": "uuid"
           },
+          "expectedCheckoutVersion": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
           "expectedCartVersion": {
             "maximum": 2147483647,
             "minimum": 1,

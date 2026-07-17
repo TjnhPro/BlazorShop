@@ -140,6 +140,7 @@ namespace BlazorShop.Application.CommerceNode.Checkout
     public sealed record StorefrontPlaceOrderRequest(
         Guid StoreId,
         Guid CheckoutSessionId,
+        int ExpectedCheckoutVersion,
         int ExpectedCartVersion,
         string IdempotencyKey);
 

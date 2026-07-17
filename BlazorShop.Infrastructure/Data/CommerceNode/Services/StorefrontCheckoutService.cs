@@ -596,6 +596,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var isValid = issues.Count == 0;
+            var selectedShippingOption = shippingAddress is null
+                ? null
+                : new StorefrontCheckoutShippingOption(
+                    FreeStandardShippingOptionKey,
+                    "Free standard",
+                    "Standard shipping for MVP stores.",
+                    0m,
+                    currencyCode,
+                    "Standard delivery",
+                    Selected: true);
             var now = DateTimeOffset.UtcNow;
             var session = new CheckoutSession
             {
@@ -615,6 +625,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 CustomerEmail = NormalizeNullable(request.CustomerEmail) ?? string.Empty,
                 CustomerName = NormalizeNullable(request.CustomerName) ?? string.Empty,
                 CustomerPhone = NormalizeNullable(shippingAddress?.Phone),
+                BillingAddressSnapshotJson = shippingAddress is null ? null : JsonSerializer.Serialize(shippingAddress, JsonOptions),
+                ShippingAddressSource = request.ShippingAddressId.HasValue ? "saved" : "direct",
                 ShippingFullName = NormalizeNullable(shippingAddress?.FullName) ?? string.Empty,
                 ShippingEmail = NormalizeNullable(shippingAddress?.Email) ?? string.Empty,
                 ShippingPhone = NormalizeNullable(shippingAddress?.Phone),
@@ -624,6 +636,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 ShippingState = NormalizeNullable(shippingAddress?.State),
                 ShippingPostalCode = NormalizeNullable(shippingAddress?.PostalCode) ?? string.Empty,
                 ShippingCountryCode = NormalizeNullable(shippingAddress?.CountryCode)?.ToUpperInvariant() ?? string.Empty,
+                SelectedShippingOptionJson = selectedShippingOption is null ? null : JsonSerializer.Serialize(selectedShippingOption, JsonOptions),
                 PaymentMethodKey = paymentMethodKey,
                 Subtotal = subtotal,
                 ShippingTotal = 0m,
@@ -695,6 +708,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.ValidationError, "Checkout session is required.");
             }
 
+            if (request.ExpectedCheckoutVersion < 1)
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.ValidationError, "Checkout version is required.");
+            }
+
             if (request.ExpectedCartVersion < 1)
             {
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.ValidationError, "Cart version is required.");
@@ -759,6 +777,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Checkout session is not ready for order placement.");
             }
 
+            if (session.CheckoutVersion != request.ExpectedCheckoutVersion)
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Checkout version is stale.");
+            }
+
             if (session.ExpiresAtUtc <= DateTimeOffset.UtcNow)
             {
                 MarkExpired(session, DateTimeOffset.UtcNow);
@@ -785,6 +808,25 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             if (cart.Lines.Count == 0)
             {
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.ValidationError, "Cart is empty.");
+            }
+
+            var selectedShippingOption = ParseSelectedShippingOption(session.SelectedShippingOptionJson);
+            var shippingAddress = CreateShippingAddress(session);
+            if (shippingAddress is null)
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Shipping address is not ready for order placement.");
+            }
+
+            if (selectedShippingOption is null
+                || !ResolveShippingOptions(session, selectedShippingOption.Key)
+                    .Any(option => string.Equals(option.Key, selectedShippingOption.Key, StringComparison.OrdinalIgnoreCase)))
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Shipping option is not available.");
+            }
+
+            if (ParseValidationIssues(session.ValidationIssuesJson).Count > 0)
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Checkout review has validation issues.");
             }
 
             var paymentMethodKey = NormalizeKey(session.PaymentMethodKey);

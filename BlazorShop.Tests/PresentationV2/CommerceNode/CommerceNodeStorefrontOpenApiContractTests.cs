@@ -1049,8 +1049,11 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             var requestSchema = ResolveRequestBodySchema(operation, schemas);
             var requestProperties = GetPropertyNames(requestSchema);
             Assert.Contains("checkoutSessionId", requestProperties);
+            Assert.Contains("expectedCheckoutVersion", requestProperties);
             Assert.Contains("expectedCartVersion", requestProperties);
             Assert.Contains("idempotencyKey", requestProperties);
+            Assert.Equal(1, requestSchema["properties"]?["expectedCheckoutVersion"]?["minimum"]?.GetValue<int>());
+            Assert.Equal(1, requestSchema["properties"]?["expectedCartVersion"]?["minimum"]?.GetValue<int>());
             Assert.DoesNotContain("carts", requestProperties, StringComparer.OrdinalIgnoreCase);
 
             Assert.True(schemas.ContainsKey("StorefrontPlaceOrderResponse"));

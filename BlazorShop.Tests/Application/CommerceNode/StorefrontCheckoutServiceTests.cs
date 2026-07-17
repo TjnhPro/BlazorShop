@@ -684,6 +684,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var placeOrder = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
                 storeId,
                 start.Payload.CheckoutSessionId,
+                review.Payload!.CheckoutVersion,
                 add.Payload!.Version,
                 "missing-payment-review"));
 
@@ -959,6 +960,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
                 storeId,
                 preview.Payload!.CheckoutSessionId,
+                preview.Payload.CheckoutVersion,
                 preview.Payload.CartVersion,
                 "converted-currency-order"));
 
@@ -1021,6 +1023,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
                 storeId,
                 preview.Payload!.CheckoutSessionId,
+                preview.Payload.CheckoutVersion,
                 preview.Payload.CartVersion,
                 "payment-unavailable-total"));
 
@@ -1055,11 +1058,13 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var first = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
                 storeId,
                 preview.Payload!.CheckoutSessionId,
+                preview.Payload.CheckoutVersion,
                 preview.Payload.CartVersion,
                 "checkout-retry-key"));
             var second = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
                 storeId,
                 preview.Payload.CheckoutSessionId,
+                preview.Payload.CheckoutVersion,
                 preview.Payload.CartVersion,
                 "checkout-retry-key"));
 
@@ -1124,6 +1129,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
                 storeId,
                 preview.Payload!.CheckoutSessionId,
+                preview.Payload.CheckoutVersion,
                 preview.Payload.CartVersion,
                 "address-snapshot-order"));
 
@@ -1204,6 +1210,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var placeOrder = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
                 storeId,
                 preview.Payload!.CheckoutSessionId,
+                preview.Payload.CheckoutVersion,
                 add.Payload.Version,
                 "saved-address-order"));
 
@@ -1277,11 +1284,48 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
                 storeId,
                 preview.Payload!.CheckoutSessionId,
+                preview.Payload.CheckoutVersion,
                 preview.Payload.CartVersion,
                 "stale-cart-version"));
 
             Assert.False(result.Success);
             Assert.Equal(ServiceResponseType.Conflict, result.ResponseType);
+            Assert.Empty(context.Orders);
+            Assert.Equal(CartSessionStates.Active, context.CartSessions.Single().State);
+        }
+
+        [Fact]
+        public async Task PlaceOrderAsync_RejectsStaleCheckoutVersion()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 12m, stock: 10);
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1));
+            var service = CreateCheckoutService(context, cartService);
+            var preview = await service.PreviewAsync(CreateRequest(storeId, cart.Payload.Token!, add.Payload!.Version));
+
+            var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                preview.Payload!.CheckoutSessionId,
+                preview.Payload.CheckoutVersion + 1,
+                preview.Payload.CartVersion,
+                "stale-checkout-version"));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.Conflict, result.ResponseType);
+            Assert.Equal("Checkout version is stale.", result.Message);
             Assert.Empty(context.Orders);
             Assert.Equal(CartSessionStates.Active, context.CartSessions.Single().State);
         }
@@ -1314,6 +1358,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
                 storeId,
                 preview.Payload!.CheckoutSessionId,
+                preview.Payload.CheckoutVersion,
                 preview.Payload.CartVersion,
                 "expired-checkout"));
 
@@ -1352,6 +1397,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
                 storeId,
                 preview.Payload!.CheckoutSessionId,
+                preview.Payload.CheckoutVersion,
                 preview.Payload.CartVersion,
                 "unpublished-after-preview"));
 
@@ -1416,6 +1462,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
                 storeId,
                 preview.Payload!.CheckoutSessionId,
+                preview.Payload.CheckoutVersion,
                 preview.Payload.CartVersion,
                 "unmanaged-stock-order"));
 
@@ -1454,6 +1501,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
                 storeId,
                 preview.Payload!.CheckoutSessionId,
+                preview.Payload.CheckoutVersion,
                 preview.Payload.CartVersion,
                 "snapshot-line-data"));
 
@@ -1504,11 +1552,13 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var first = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
                 storeId,
                 preview.Payload!.CheckoutSessionId,
+                preview.Payload.CheckoutVersion,
                 preview.Payload.CartVersion,
                 "stripe-session-key"));
             var second = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
                 storeId,
                 preview.Payload.CheckoutSessionId,
+                preview.Payload.CheckoutVersion,
                 preview.Payload.CartVersion,
                 "stripe-session-key"));
 
@@ -1557,6 +1607,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
                 storeId,
                 preview.Payload!.CheckoutSessionId,
+                preview.Payload.CheckoutVersion,
                 preview.Payload.CartVersion,
                 "stripe-missing-config"));
 
@@ -1579,6 +1630,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var placeOrder = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
                 storeId,
                 Guid.NewGuid(),
+                ExpectedCheckoutVersion: 1,
                 ExpectedCartVersion: 1,
                 IdempotencyKey: "disabled-checkout"));
 

@@ -542,6 +542,9 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         public Guid CheckoutSessionId { get; set; }
 
         [Range(1, int.MaxValue)]
+        public int ExpectedCheckoutVersion { get; set; }
+
+        [Range(1, int.MaxValue)]
         public int ExpectedCartVersion { get; set; }
 
         [Required]
