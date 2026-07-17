@@ -32,6 +32,9 @@ GET /api/storefront/stores/{storeKey}/catalog/search-suggestions
 GET /api/storefront/stores/{storeKey}/catalog/sitemap
 POST /api/storefront/stores/{storeKey}/checkout/place-order
 POST /api/storefront/stores/{storeKey}/checkout/preview
+POST /api/storefront/stores/{storeKey}/checkout/start
+GET /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}
+POST /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/cancel
 GET /api/storefront/stores/{storeKey}/configuration
 POST /api/storefront/stores/{storeKey}/consent
 GET /api/storefront/stores/{storeKey}/consent/current

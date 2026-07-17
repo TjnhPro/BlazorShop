@@ -18,7 +18,15 @@ namespace BlazorShop.Domain.Entities.CommerceNode
 
         public string State { get; set; } = CheckoutSessionStates.Draft;
 
+        public int CheckoutVersion { get; set; } = 1;
+
+        public string CurrentStep { get; set; } = CheckoutSteps.Entry;
+
+        public string CompletedStepsJson { get; set; } = "[]";
+
         public int CartVersion { get; set; }
+
+        public int LastValidatedCartVersion { get; set; }
 
         public string CustomerEmail { get; set; } = string.Empty;
 

@@ -541,6 +541,7 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Cart cookie is cleared after checkout success. 2026-07-13: browser `document.cookie` returned empty after successful checkout.
 - [x] Hosted payment redirect keeps cart cookies so checkout/payment context remains recoverable until provider confirmation. 2026-07-17 Checkout Core Phase 0: `Checkout_PostRedirectsToProviderNextAction` asserts `bs-cart-token` and legacy cart cookies are not deleted.
 - [x] Completed order checkout clears cart cookies. 2026-07-17 Checkout Core Phase 0: `Checkout_PostCompletedOrderClearsCartCookies` asserts `bs-cart-token` and legacy cart cookies are expired after order reference result.
+- [x] Checkout Core Phase 1 does not require Storefront V2 UI adoption yet. 2026-07-17: stateful start/load/cancel endpoints were added to CommerceNode with OpenAPI snapshots; Storefront V2 integration remains a later Checkout Core phase.
 - [ ] Browser network shows no legacy API/Web requests.
 - [ ] Checkout page is noindex/private and absent from sitemap.
 

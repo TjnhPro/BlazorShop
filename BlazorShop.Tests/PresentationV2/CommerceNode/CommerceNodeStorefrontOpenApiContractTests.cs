@@ -71,6 +71,12 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             ("StorefrontProductSelectionPreviewResponse", "selectedAttributes"),
             ("StorefrontCartResponse", "lines"),
             ("StorefrontCartValidationResponse", "issues"),
+            ("StorefrontCheckoutPreviewResponse", "completedSteps"),
+            ("StorefrontCheckoutPreviewResponse", "lines"),
+            ("StorefrontCheckoutPreviewResponse", "issues"),
+            ("StorefrontCheckoutSessionResponse", "completedSteps"),
+            ("StorefrontCheckoutSessionResponse", "lines"),
+            ("StorefrontCheckoutSessionResponse", "issues"),
             ("StorefrontOrderResponse", "lines"),
             ("StorefrontOrderLineResponse", "variantAttributes"),
             ("StorefrontProductFilterMetadataResponse", "pageSizes"),
@@ -749,6 +755,9 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("StorefrontCart_AddLine", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCart_Recalculate", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCart_MergeCurrentCustomer", client, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCheckout_Start", client, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCheckout_Load", client, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCheckout_Cancel", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontPayments_CapturePayPal", client, StringComparison.Ordinal);
             Assert.DoesNotContain("any /* missing operationId */", client, StringComparison.Ordinal);
             Assert.DoesNotContain("Promise<any>", client, StringComparison.Ordinal);
@@ -844,6 +853,58 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         }
 
         [Fact]
+        public async Task StorefrontSwagger_CheckoutSessionEndpointsHaveGeneratorSafeContracts()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var operations = GetOperations(swagger)
+                .ToDictionary(
+                    operation => operation.Value["operationId"]?.GetValue<string>() ?? string.Empty,
+                    operation => operation.Value,
+                    StringComparer.Ordinal);
+
+            var expectedOperationIds = new[]
+            {
+                "StorefrontCheckout_Start",
+                "StorefrontCheckout_Load",
+                "StorefrontCheckout_Cancel",
+            };
+
+            foreach (var operationId in expectedOperationIds)
+            {
+                Assert.True(operations.TryGetValue(operationId, out var operation), $"{operationId} was not found.");
+                Assert.False(string.IsNullOrWhiteSpace(operation!["summary"]?.GetValue<string>()));
+                Assert.True(operation["responses"]?.AsObject().Count > 1, $"{operationId} must declare success and error responses.");
+                Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(operation));
+
+                var parameters = operation["parameters"]?.AsArray()
+                    ?? throw new InvalidOperationException($"{operationId} does not contain parameters.");
+                Assert.Contains(parameters, parameter =>
+                    string.Equals(parameter?["name"]?.GetValue<string>(), "X-Cart-Token", StringComparison.Ordinal));
+            }
+
+            AssertRequiredRequestBody(operations["StorefrontCheckout_Start"]);
+            Assert.Null(operations["StorefrontCheckout_Load"]["requestBody"]);
+            Assert.Null(operations["StorefrontCheckout_Cancel"]["requestBody"]);
+            Assert.True(schemas.ContainsKey("StorefrontCheckoutStartRequest"));
+            Assert.True(schemas.ContainsKey("StorefrontCheckoutSessionResponse"));
+
+            var responseSchema = schemas["StorefrontCheckoutSessionResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCheckoutSessionResponse schema was not found.");
+            var responseProperties = GetPropertyNames(responseSchema).ToArray();
+            Assert.Contains("checkoutSessionId", responseProperties);
+            Assert.Contains("checkoutVersion", responseProperties);
+            Assert.Contains("cartVersion", responseProperties);
+            Assert.Contains("lastValidatedCartVersion", responseProperties);
+            Assert.Contains("currentStep", responseProperties);
+            Assert.Contains("completedSteps", responseProperties);
+            Assert.Contains("isActive", responseProperties);
+            Assert.Contains("issues", responseProperties);
+            Assert.DoesNotContain("storeId", responseProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("customerId", responseProperties, StringComparer.OrdinalIgnoreCase);
+        }
+
+        [Fact]
         public async Task StorefrontSwagger_CheckoutPreviewHasGeneratorSafeContract()
         {
             var swagger = await this.GetStorefrontSwaggerAsync();
@@ -866,6 +927,14 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
 
             Assert.True(schemas.ContainsKey("StorefrontCheckoutPreviewResponse"));
             Assert.True(schemas.ContainsKey("StorefrontCheckoutValidationIssueResponse"));
+
+            var responseSchema = schemas["StorefrontCheckoutPreviewResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCheckoutPreviewResponse schema was not found.");
+            var responseProperties = GetPropertyNames(responseSchema).ToArray();
+            Assert.Contains("checkoutVersion", responseProperties);
+            Assert.Contains("lastValidatedCartVersion", responseProperties);
+            Assert.Contains("currentStep", responseProperties);
+            Assert.Contains("completedSteps", responseProperties);
 
             var parameters = operation["parameters"]?.AsArray()
                 ?? throw new InvalidOperationException("Checkout preview operation does not contain parameters.");

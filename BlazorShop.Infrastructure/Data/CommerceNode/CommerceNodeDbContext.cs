@@ -411,7 +411,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.Property(session => session.CustomerId).HasColumnName("customer_id");
                 entity.Property(session => session.OrderId).HasColumnName("order_id");
                 entity.Property(session => session.State).HasColumnName("state").HasMaxLength(32).IsRequired();
+                entity.Property(session => session.CheckoutVersion).HasColumnName("checkout_version").HasDefaultValue(1);
+                entity.Property(session => session.CurrentStep).HasColumnName("current_step").HasMaxLength(64).HasDefaultValue("entry").IsRequired();
+                entity.Property(session => session.CompletedStepsJson).HasColumnName("completed_steps_json").HasColumnType("jsonb").HasDefaultValueSql("'[]'::jsonb").IsRequired();
                 entity.Property(session => session.CartVersion).HasColumnName("cart_version");
+                entity.Property(session => session.LastValidatedCartVersion).HasColumnName("last_validated_cart_version");
                 entity.Property(session => session.CustomerEmail).HasColumnName("customer_email").HasMaxLength(256).IsRequired();
                 entity.Property(session => session.CustomerName).HasColumnName("customer_name").HasMaxLength(256).IsRequired();
                 entity.Property(session => session.CustomerPhone).HasColumnName("customer_phone").HasMaxLength(64);

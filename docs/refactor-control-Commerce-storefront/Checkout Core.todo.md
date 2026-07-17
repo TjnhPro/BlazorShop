@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Checkout Core.md`
 
-Status: In progress. Phase 0 completed.
+Status: In progress. Phase 0-1 completed.
 
 Scope: evolve the current V2 checkout from one-shot preview/place-order into a practical stateful checkout core without introducing a full shipping, tax, discount, or workflow engine.
 
@@ -13,12 +13,12 @@ Scope: evolve the current V2 checkout from one-shot preview/place-order into a p
 Approved:
 
 - [x] Checkout session belongs to current store and current cart.
-- [ ] Checkout state version.
+- [x] Checkout state version.
 - [ ] Step guards for address, payment, review, and place order.
 - [ ] Detect cart changes after address/payment selection.
 - [ ] Reset downstream state when upstream state changes.
-- [ ] Checkout expiration.
-- [ ] Resume checkout.
+- [x] Checkout expiration.
+- [x] Resume checkout.
 - [ ] Idempotent place-order command.
 - [ ] Entry validation:
   - [ ] cart exists.
@@ -91,9 +91,9 @@ Storefront V2 UX:
 
 Missing:
 
-- [ ] No checkout state version separate from cart version.
-- [ ] No explicit current step or completed steps.
-- [ ] No resume checkout endpoint.
+- [x] Checkout state version separate from cart version exists.
+- [x] Current step and completed steps exist.
+- [x] Resume checkout endpoint exists.
 - [ ] Preview creates a new checkout session each time instead of updating/resuming an active session.
 - [ ] No downstream reset model when address, payment, or cart changes.
 - [ ] No billing step.
@@ -112,8 +112,8 @@ Missing:
 
 ## Core Decisions
 
-- [ ] Keep `CheckoutSession` as the checkout aggregate.
-- [ ] Add state/version fields additively.
+- [x] Keep `CheckoutSession` as the checkout aggregate.
+- [x] Add state/version fields additively.
 - [ ] Keep the first UI integration as one page.
 - [ ] Treat shipping method as a stub/hook in this phase.
 - [ ] Reuse existing `StorePaymentMethod` for payment method step.
@@ -141,8 +141,8 @@ Storefront V2 browser
 
 Boundary rules:
 
-- [ ] Store scope comes from `{storeKey}`.
-- [ ] Cart identity comes from current cart token.
+- [x] Store scope comes from `{storeKey}`.
+- [x] Cart identity comes from current cart token.
 - [ ] Customer identity comes from storefront auth context only when required.
 - [ ] Browser requests do not send store ID.
 - [ ] Browser requests do not send customer ID.
@@ -156,19 +156,19 @@ Boundary rules:
 
 Keep existing `CheckoutSession.State`:
 
-- [ ] `draft`.
-- [ ] `ready`.
-- [ ] `order_pending`.
-- [ ] `completed`.
-- [ ] `expired`.
-- [ ] `cancelled`.
+- [x] `draft`.
+- [x] `ready`.
+- [x] `order_pending`.
+- [x] `completed`.
+- [x] `expired`.
+- [x] `cancelled`.
 
 Add lightweight progress fields:
 
-- [ ] `CheckoutVersion`.
-- [ ] `CurrentStep`.
-- [ ] `CompletedStepsJson`.
-- [ ] `LastValidatedCartVersion`.
+- [x] `CheckoutVersion`.
+- [x] `CurrentStep`.
+- [x] `CompletedStepsJson`.
+- [x] `LastValidatedCartVersion`.
 - [ ] `BillingAddressSnapshotJson` or explicit billing columns only when billing is implemented.
 - [ ] `ShippingAddressSource`.
 - [ ] `SelectedShippingOptionJson`.
@@ -178,14 +178,14 @@ Add lightweight progress fields:
 
 Initial step names:
 
-- [ ] `entry`.
+- [x] `entry`.
 - [ ] `billing_address`.
 - [ ] `shipping_address`.
 - [ ] `shipping_method`.
 - [ ] `payment_method`.
-- [ ] `review`.
-- [ ] `place_order`.
-- [ ] `complete`.
+- [x] `review`.
+- [x] `place_order`.
+- [x] `complete`.
 
 Downstream reset rules:
 
@@ -199,22 +199,22 @@ Downstream reset rules:
 
 Keep current endpoints:
 
-- [ ] `POST /api/storefront/stores/{storeKey}/checkout/preview`.
-- [ ] `POST /api/storefront/stores/{storeKey}/checkout/place-order`.
+- [x] `POST /api/storefront/stores/{storeKey}/checkout/preview`.
+- [x] `POST /api/storefront/stores/{storeKey}/checkout/place-order`.
 
 Add stateful endpoints:
 
-- [ ] `POST /api/storefront/stores/{storeKey}/checkout/start`.
-- [ ] `GET /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}`.
+- [x] `POST /api/storefront/stores/{storeKey}/checkout/start`.
+- [x] `GET /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}`.
 - [ ] `POST /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/addresses`.
 - [ ] `POST /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/shipping-method`.
 - [ ] `POST /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/payment-method`.
 - [ ] `POST /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/review`.
-- [ ] `POST /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/cancel`.
+- [x] `POST /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/cancel`.
 
 Compatibility:
 
-- [ ] Existing `preview` remains compatible and can wrap start/update/review.
+- [x] Existing `preview` remains compatible and can wrap start/update/review.
 - [ ] Existing `place-order` remains final command.
 - [ ] Storefront V2 can migrate endpoint usage gradually.
 
@@ -271,40 +271,48 @@ Goal: make checkout session state explicit and resumable.
 
 Implementation checklist:
 
-- [ ] Add additive fields to `CheckoutSession`:
-  - [ ] `CheckoutVersion`.
-  - [ ] `CurrentStep`.
-  - [ ] `CompletedStepsJson`.
-  - [ ] `LastValidatedCartVersion`.
-- [ ] Add EF Core migration for `CommerceNodeDbContext`.
-- [ ] Add default values for existing rows:
-  - [ ] `CheckoutVersion = 1`.
-  - [ ] `CurrentStep = state-derived value`.
-  - [ ] `CompletedStepsJson = []`.
-  - [ ] `LastValidatedCartVersion = CartVersion`.
-- [ ] Add service method to start checkout.
-- [ ] Add service method to load checkout.
-- [ ] Add service method to expire checkout.
-- [ ] Add service method to cancel checkout.
-- [ ] Add service helper to touch/increment checkout version.
-- [ ] Add resume endpoint returning checkout projection.
-- [ ] Make active checkout lookup store-scoped and cart-scoped.
-- [ ] Keep old `preview` behavior functional.
-- [ ] Add contract metadata and tests for resume/start endpoints.
+- [x] Add additive fields to `CheckoutSession`:
+  - [x] `CheckoutVersion`.
+  - [x] `CurrentStep`.
+  - [x] `CompletedStepsJson`.
+  - [x] `LastValidatedCartVersion`.
+- [x] Add EF Core migration for `CommerceNodeDbContext`.
+- [x] Add default values for existing rows:
+  - [x] `CheckoutVersion = 1`.
+  - [x] `CurrentStep = state-derived value`.
+  - [x] `CompletedStepsJson = []`.
+  - [x] `LastValidatedCartVersion = CartVersion`.
+- [x] Add service method to start checkout.
+- [x] Add service method to load checkout.
+- [x] Add service method to expire checkout.
+- [x] Add service method to cancel checkout.
+- [x] Add service helper to touch/increment checkout version.
+- [x] Add resume endpoint returning checkout projection.
+- [x] Make active checkout lookup store-scoped and cart-scoped.
+- [x] Keep old `preview` behavior functional.
+- [x] Add contract metadata and tests for resume/start endpoints.
 
 Verification checklist:
 
-- [ ] Checkout can be resumed by session public ID for same store/cart context.
-- [ ] Checkout cannot resume across stores.
-- [ ] Expired sessions cannot be resumed as active.
-- [ ] Cancelled/completed sessions cannot be resumed as active.
-- [ ] Checkout version increments when step data changes.
-- [ ] Existing preview/place-order clients still work.
+- [x] Checkout can be resumed by session public ID for same store/cart context.
+- [x] Checkout cannot resume across stores.
+- [x] Expired sessions cannot be resumed as active.
+- [x] Cancelled/completed sessions cannot be resumed as active.
+- [x] Checkout version increments when step data changes.
+- [x] Existing preview/place-order clients still work.
 
 Exit criteria:
 
-- [ ] Checkout state is resumable without forcing UI rewrite.
-- [ ] Migration is additive and CommerceNode-only.
+- [x] Checkout state is resumable without forcing UI rewrite.
+- [x] Migration is additive and CommerceNode-only.
+
+Phase 1 evidence:
+
+- 2026-07-17: Added `CheckoutVersion`, `CurrentStep`, `CompletedStepsJson`, and `LastValidatedCartVersion` to `CheckoutSession` with CommerceNode-only migration `CommerceNodeCheckoutSessionResume`.
+- 2026-07-17: Migration backfills existing rows with `CheckoutVersion = 1`, `CompletedStepsJson = []`, state-derived `CurrentStep`, and `LastValidatedCartVersion = CartVersion`.
+- 2026-07-17: Added `StartAsync`, `LoadAsync`, `CancelAsync`, and `ExpireAsync` to `StorefrontCheckoutService`; active resume lookup is scoped by current store and current cart token.
+- 2026-07-17: Added Storefront API endpoints `POST /checkout/start`, `GET /checkout/{checkoutSessionId}`, and `POST /checkout/{checkoutSessionId}/cancel` with explicit response DTOs and OpenAPI metadata.
+- 2026-07-17: Focused `StorefrontCheckoutServiceTests|CommerceNodeStorefrontOpenApiContractTests` run passed 53/53 after OpenAPI snapshot refresh.
 
 Suggested commit:
 
@@ -708,11 +716,11 @@ test(checkout-core): complete release gate
 
 ### Commerce Node
 
-- [ ] Checkout session state/version fields are additive and CommerceNode-only.
+- [x] Checkout session state/version fields are additive and CommerceNode-only.
 - [ ] Checkout start rejects missing, inactive, empty, or invalid cart.
-- [ ] Checkout resume is store-scoped and cart-scoped.
-- [ ] Expired/cancelled/completed checkout cannot resume as active.
-- [ ] Checkout version increments on step updates.
+- [x] Checkout resume is store-scoped and cart-scoped.
+- [x] Expired/cancelled/completed checkout cannot resume as active.
+- [x] Checkout version increments on step updates.
 - [ ] Cart version changes reset downstream checkout state.
 - [ ] Address changes reset shipping/payment/review/terms as applicable.
 - [ ] Shipping method stub returns deterministic `shipping_not_required` or `free_standard`.
@@ -722,7 +730,7 @@ test(checkout-core): complete release gate
 - [ ] Duplicate idempotency returns same order/payment attempt result.
 - [ ] Hosted payment pending does not mark cart ordered or clear checkout context prematurely.
 - [ ] Provider captured callback creates one order and closes cart.
-- [ ] Storefront OpenAPI validates and snapshots pass.
+- [x] Storefront OpenAPI validates and snapshots pass.
 
 ### Storefront V2
 
@@ -761,24 +769,24 @@ test(checkout-core): complete release gate
 
 ## Migration And Compatibility
 
-- [ ] Migration is additive for checkout session fields only.
-- [ ] Existing checkout session columns are not removed.
-- [ ] Existing checkout session columns are not renamed.
-- [ ] `preview` contract is not broken in early phases.
-- [ ] `place-order` contract is not broken in early phases.
-- [ ] New stateful endpoints can be adopted gradually by Storefront V2.
+- [x] Migration is additive for checkout session fields only.
+- [x] Existing checkout session columns are not removed.
+- [x] Existing checkout session columns are not renamed.
+- [x] `preview` contract is not broken in early phases.
+- [x] `place-order` contract is not broken in early phases.
+- [x] New stateful endpoints can be adopted gradually by Storefront V2.
 - [ ] Existing orders remain valid.
 - [ ] Existing payment attempts remain valid.
 - [ ] Existing checkout session rows default safely:
-  - [ ] `CheckoutVersion = 1`.
-  - [ ] `CurrentStep = state-derived value`.
-  - [ ] `CompletedStepsJson = []`.
-  - [ ] `LastValidatedCartVersion = CartVersion`.
+  - [x] `CheckoutVersion = 1`.
+  - [x] `CurrentStep = state-derived value`.
+  - [x] `CompletedStepsJson = []`.
+  - [x] `LastValidatedCartVersion = CartVersion`.
 
 ## Recommended Implementation Order
 
 - [x] Phase 0 - baseline guardrails.
-- [ ] Phase 1 - checkout session version and resume.
+- [x] Phase 1 - checkout session version and resume.
 - [ ] Phase 2 - entry validation and cart change detection.
 - [ ] Phase 3 - address steps.
 - [ ] Phase 4 - shipping method stub and hook.

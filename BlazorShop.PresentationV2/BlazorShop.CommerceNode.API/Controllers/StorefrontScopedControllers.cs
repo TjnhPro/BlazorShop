@@ -7,6 +7,9 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using BlazorShop.Application.CommerceNode.Captcha;
     using ApplicationStorefrontCheckoutResult = BlazorShop.Application.DTOs.Payment.StorefrontCheckoutResult;
     using ApplicationStorefrontCheckoutPreviewResult = BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutPreviewResult;
+    using ApplicationStorefrontCheckoutSessionRequest = BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutSessionRequest;
+    using ApplicationStorefrontCheckoutSessionResult = BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutSessionResult;
+    using ApplicationStorefrontCheckoutStartRequest = BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutStartRequest;
     using ApplicationStorefrontPlaceOrderResult = BlazorShop.Application.CommerceNode.Checkout.StorefrontPlaceOrderResult;
     using IStorefrontCheckoutService = BlazorShop.Application.CommerceNode.Checkout.IStorefrontCheckoutService;
 
@@ -1390,6 +1393,78 @@ namespace BlazorShop.CommerceNode.API.Controllers
         {
             this.checkoutService = checkoutService;
             this.storeContext = storeContext;
+        }
+
+        [HttpPost("start")]
+        [AllowAnonymous]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Checkout)]
+        public async Task<IActionResult> Start(
+            [FromHeader(Name = CartTokenHeaderName)] string cartToken,
+            [FromBody] StorefrontCheckoutStartRequest request,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.checkoutService.StartAsync(
+                new ApplicationStorefrontCheckoutStartRequest(storeId.Value, cartToken),
+                cancellationToken);
+            return this.FromServiceResponse(
+                result,
+                payload => payload is ApplicationStorefrontCheckoutSessionResult session
+                    ? session.ToStorefrontContract()
+                    : null);
+        }
+
+        [HttpGet("{checkoutSessionId:guid}")]
+        [AllowAnonymous]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Checkout)]
+        public async Task<IActionResult> Load(
+            Guid checkoutSessionId,
+            [FromHeader(Name = CartTokenHeaderName)] string cartToken,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.checkoutService.LoadAsync(
+                new ApplicationStorefrontCheckoutSessionRequest(storeId.Value, checkoutSessionId, cartToken),
+                cancellationToken);
+            return this.FromServiceResponse(
+                result,
+                payload => payload is ApplicationStorefrontCheckoutSessionResult session
+                    ? session.ToStorefrontContract()
+                    : null);
+        }
+
+        [HttpPost("{checkoutSessionId:guid}/cancel")]
+        [AllowAnonymous]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Checkout)]
+        public async Task<IActionResult> Cancel(
+            Guid checkoutSessionId,
+            [FromHeader(Name = CartTokenHeaderName)] string cartToken,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.checkoutService.CancelAsync(
+                new ApplicationStorefrontCheckoutSessionRequest(storeId.Value, checkoutSessionId, cartToken),
+                cancellationToken);
+            return this.FromServiceResponse(
+                result,
+                payload => payload is ApplicationStorefrontCheckoutSessionResult session
+                    ? session.ToStorefrontContract()
+                    : null);
         }
 
         [HttpPost("preview")]

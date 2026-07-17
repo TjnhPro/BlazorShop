@@ -59,6 +59,125 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.addressValidationService = addressValidationService ?? new AddressValidationService();
         }
 
+        public async Task<ServiceResponse<StorefrontCheckoutSessionResult>> StartAsync(
+            StorefrontCheckoutStartRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var cartResult = await this.ResolveStartCartAsync(request.StoreId, request.CartToken, cancellationToken);
+            if (!cartResult.Success || cartResult.Payload is null)
+            {
+                return Failed<StorefrontCheckoutSessionResult>(
+                    cartResult.ResponseType,
+                    cartResult.Message ?? "Cart could not be resolved.");
+            }
+
+            var cart = cartResult.Payload;
+            var now = DateTimeOffset.UtcNow;
+            var activeSession = await this.context.CheckoutSessions
+                .FirstOrDefaultAsync(
+                    session => session.StoreId == request.StoreId
+                        && session.CartSessionId == cart.Id
+                        && (session.State == CheckoutSessionStates.Draft
+                            || session.State == CheckoutSessionStates.Ready
+                            || session.State == CheckoutSessionStates.OrderPending),
+                    cancellationToken);
+
+            if (activeSession is not null)
+            {
+                if (activeSession.ExpiresAtUtc <= now)
+                {
+                    MarkExpired(activeSession, now);
+                    await this.context.SaveChangesAsync(cancellationToken);
+                    return Failed<StorefrontCheckoutSessionResult>(ServiceResponseType.Conflict, "Checkout session has expired.");
+                }
+
+                return Succeeded("Checkout session resumed.", ToSessionResult(activeSession, cart));
+            }
+
+            var session = new CheckoutSession
+            {
+                Id = Guid.NewGuid(),
+                PublicId = Guid.NewGuid(),
+                StoreId = request.StoreId,
+                CartSessionId = cart.Id,
+                State = CheckoutSessionStates.Draft,
+                CheckoutVersion = 1,
+                CurrentStep = CheckoutSteps.Entry,
+                CompletedStepsJson = "[]",
+                CartVersion = cart.Version,
+                LastValidatedCartVersion = cart.Version,
+                CustomerEmail = string.Empty,
+                CustomerName = string.Empty,
+                ShippingFullName = string.Empty,
+                ShippingEmail = string.Empty,
+                ShippingAddress1 = string.Empty,
+                ShippingCity = string.Empty,
+                ShippingPostalCode = string.Empty,
+                ShippingCountryCode = string.Empty,
+                PaymentMethodKey = string.Empty,
+                Subtotal = cart.Subtotal,
+                ShippingTotal = cart.ShippingEstimate,
+                TaxTotal = cart.TaxEstimate,
+                DiscountTotal = cart.DiscountTotal,
+                GrandTotal = cart.GrandTotal,
+                CurrencyCode = NormalizeCurrency(cart.CurrencyCode) ?? DefaultCurrencyCode,
+                NextAction = CheckoutSteps.ShippingAddress,
+                ExpiresAtUtc = now.AddHours(1),
+                CreatedAtUtc = now,
+                UpdatedAtUtc = now,
+            };
+
+            this.context.CheckoutSessions.Add(session);
+            await this.context.SaveChangesAsync(cancellationToken);
+
+            return Succeeded("Checkout session started.", ToSessionResult(session, cart));
+        }
+
+        public async Task<ServiceResponse<StorefrontCheckoutSessionResult>> LoadAsync(
+            StorefrontCheckoutSessionRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var resolution = await this.ResolveActiveSessionAsync(request, cancellationToken);
+            if (!resolution.Success)
+            {
+                return Failed<StorefrontCheckoutSessionResult>(resolution.ResponseType, resolution.Message);
+            }
+
+            return Succeeded("Checkout session loaded.", ToSessionResult(resolution.Session!, resolution.Cart!));
+        }
+
+        public async Task<ServiceResponse<StorefrontCheckoutSessionResult>> CancelAsync(
+            StorefrontCheckoutSessionRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var resolution = await this.ResolveActiveSessionAsync(request, cancellationToken);
+            if (!resolution.Success)
+            {
+                return Failed<StorefrontCheckoutSessionResult>(resolution.ResponseType, resolution.Message);
+            }
+
+            Touch(resolution.Session!, CheckoutSessionStates.Cancelled, CheckoutSteps.Entry, DateTimeOffset.UtcNow);
+            await this.context.SaveChangesAsync(cancellationToken);
+
+            return Succeeded("Checkout session cancelled.", ToSessionResult(resolution.Session!, resolution.Cart!));
+        }
+
+        public async Task<ServiceResponse<StorefrontCheckoutSessionResult>> ExpireAsync(
+            StorefrontCheckoutSessionRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var resolution = await this.ResolveSessionForCartAsync(request, cancellationToken);
+            if (!resolution.Success)
+            {
+                return Failed<StorefrontCheckoutSessionResult>(resolution.ResponseType, resolution.Message);
+            }
+
+            MarkExpired(resolution.Session!, DateTimeOffset.UtcNow);
+            await this.context.SaveChangesAsync(cancellationToken);
+
+            return Succeeded("Checkout session expired.", ToSessionResult(resolution.Session!, resolution.Cart!));
+        }
+
         public async Task<ServiceResponse<StorefrontCheckoutPreviewResult>> PreviewAsync(
             StorefrontCheckoutPreviewRequest request,
             CancellationToken cancellationToken = default)
@@ -197,7 +316,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 CartSessionId = cart.Id,
                 CustomerId = customer?.Id,
                 State = isValid ? CheckoutSessionStates.Ready : CheckoutSessionStates.Draft,
+                CheckoutVersion = 1,
+                CurrentStep = isValid ? CheckoutSteps.Review : CheckoutSteps.ShippingAddress,
+                CompletedStepsJson = isValid
+                    ? JsonSerializer.Serialize(new[] { CheckoutSteps.Entry, CheckoutSteps.ShippingAddress, CheckoutSteps.PaymentMethod }, JsonOptions)
+                    : "[]",
                 CartVersion = cart.Version,
+                LastValidatedCartVersion = cart.Version,
                 CustomerEmail = NormalizeNullable(request.CustomerEmail) ?? string.Empty,
                 CustomerName = NormalizeNullable(request.CustomerName) ?? string.Empty,
                 CustomerPhone = NormalizeNullable(shippingAddress?.Phone),
@@ -240,8 +365,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 new StorefrontCheckoutPreviewResult(
                     session.PublicId,
                     cart.PublicId,
+                    session.CheckoutVersion,
                     cart.Version,
+                    session.LastValidatedCartVersion,
                     session.State,
+                    session.CurrentStep,
+                    ParseCompletedSteps(session.CompletedStepsJson),
                     isValid,
                     session.NextAction,
                     session.CustomerEmail,
@@ -343,8 +472,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             if (session.ExpiresAtUtc <= DateTimeOffset.UtcNow)
             {
-                session.State = CheckoutSessionStates.Expired;
-                session.UpdatedAtUtc = DateTimeOffset.UtcNow;
+                MarkExpired(session, DateTimeOffset.UtcNow);
                 await this.context.SaveChangesAsync(cancellationToken);
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Checkout session has expired.");
             }
@@ -560,7 +688,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             cart.LastActivityAtUtc = now;
             cart.UpdatedAtUtc = now;
 
-            session.State = CheckoutSessionStates.Completed;
+            Touch(session, CheckoutSessionStates.Completed, CheckoutSteps.Complete, now);
             session.OrderId = order.Id;
             session.IdempotencyKey = idempotencyKey;
             session.NextAction = "complete";
@@ -573,7 +701,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             session.ExchangeRateSource = rateSnapshot.ExchangeRateSource;
             session.ExchangeRateEffectiveAtUtc = rateSnapshot.ExchangeRateEffectiveAtUtc;
             session.ExchangeRateExpiresAtUtc = rateSnapshot.ExchangeRateExpiresAtUtc;
-            session.UpdatedAtUtc = now;
 
             paymentAttempt.OrderId = order.Id;
             paymentAttempt.State = PaymentAttemptStates.Captured;
@@ -726,7 +853,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             paymentAttempt.MetadataJson = providerSession.MetadataJson;
             paymentAttempt.UpdatedAtUtc = DateTimeOffset.UtcNow;
 
-            session.State = CheckoutSessionStates.OrderPending;
+            Touch(session, CheckoutSessionStates.OrderPending, CheckoutSteps.PlaceOrder, DateTimeOffset.UtcNow);
             session.IdempotencyKey = idempotencyKey;
             session.NextAction = "paymentRedirect";
             session.BaseCurrencyCode = rateSnapshot.BaseCurrencyCode;
@@ -737,12 +864,199 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             session.ExchangeRateSource = rateSnapshot.ExchangeRateSource;
             session.ExchangeRateEffectiveAtUtc = rateSnapshot.ExchangeRateEffectiveAtUtc;
             session.ExchangeRateExpiresAtUtc = rateSnapshot.ExchangeRateExpiresAtUtc;
-            session.UpdatedAtUtc = DateTimeOffset.UtcNow;
             cart.LastActivityAtUtc = DateTimeOffset.UtcNow;
             cart.UpdatedAtUtc = DateTimeOffset.UtcNow;
 
             await this.context.SaveChangesAsync(cancellationToken);
             return Succeeded("Payment session created.", ToOnlinePlaceOrderResult(session, paymentAttempt, idempotencyKey));
+        }
+
+        private async Task<ServiceResponse<StorefrontCartSessionDto>> ResolveStartCartAsync(
+            Guid storeId,
+            string cartToken,
+            CancellationToken cancellationToken)
+        {
+            if (storeId == Guid.Empty)
+            {
+                return Failed<StorefrontCartSessionDto>(ServiceResponseType.ValidationError, "Store is required.");
+            }
+
+            if (!await this.featureStateService.IsEnabledAsync(storeId, StoreFeatureKeys.Checkout, cancellationToken))
+            {
+                return Failed<StorefrontCartSessionDto>(ServiceResponseType.Conflict, "Checkout is disabled for this store.");
+            }
+
+            if (string.IsNullOrWhiteSpace(cartToken))
+            {
+                return Failed<StorefrontCartSessionDto>(ServiceResponseType.ValidationError, "Cart token is required.");
+            }
+
+            var cartResult = await this.cartService.GetAsync(storeId, cartToken, cancellationToken);
+            if (!cartResult.Success || cartResult.Payload is null)
+            {
+                return Failed<StorefrontCartSessionDto>(
+                    cartResult.ResponseType,
+                    cartResult.Message ?? "Cart could not be resolved.");
+            }
+
+            return Succeeded("Cart resolved.", cartResult.Payload);
+        }
+
+        private async Task<CheckoutSessionResolution> ResolveActiveSessionAsync(
+            StorefrontCheckoutSessionRequest request,
+            CancellationToken cancellationToken)
+        {
+            var resolution = await this.ResolveSessionForCartAsync(request, cancellationToken);
+            if (!resolution.Success)
+            {
+                return resolution;
+            }
+
+            var session = resolution.Session!;
+            var now = DateTimeOffset.UtcNow;
+            if (session.ExpiresAtUtc <= now)
+            {
+                MarkExpired(session, now);
+                await this.context.SaveChangesAsync(cancellationToken);
+                return CheckoutSessionResolution.Failed(ServiceResponseType.Conflict, "Checkout session has expired.");
+            }
+
+            if (!IsActiveCheckoutState(session.State))
+            {
+                return CheckoutSessionResolution.Failed(ServiceResponseType.Conflict, "Checkout session is not active.");
+            }
+
+            return resolution;
+        }
+
+        private async Task<CheckoutSessionResolution> ResolveSessionForCartAsync(
+            StorefrontCheckoutSessionRequest request,
+            CancellationToken cancellationToken)
+        {
+            if (request.CheckoutSessionId == Guid.Empty)
+            {
+                return CheckoutSessionResolution.Failed(ServiceResponseType.ValidationError, "Checkout session is required.");
+            }
+
+            var cartResult = await this.ResolveStartCartAsync(request.StoreId, request.CartToken, cancellationToken);
+            if (!cartResult.Success || cartResult.Payload is null)
+            {
+                return CheckoutSessionResolution.Failed(
+                    cartResult.ResponseType,
+                    cartResult.Message ?? "Cart could not be resolved.");
+            }
+
+            var cart = cartResult.Payload;
+            var session = await this.context.CheckoutSessions
+                .FirstOrDefaultAsync(
+                    checkout => checkout.StoreId == request.StoreId
+                        && checkout.CartSessionId == cart.Id
+                        && checkout.PublicId == request.CheckoutSessionId,
+                    cancellationToken);
+            if (session is null)
+            {
+                return CheckoutSessionResolution.Failed(ServiceResponseType.NotFound, "Checkout session was not found.");
+            }
+
+            return CheckoutSessionResolution.Succeeded(session, cart);
+        }
+
+        private static StorefrontCheckoutSessionResult ToSessionResult(
+            CheckoutSession session,
+            StorefrontCartSessionDto cart)
+        {
+            return new StorefrontCheckoutSessionResult(
+                session.PublicId,
+                cart.PublicId,
+                session.CheckoutVersion,
+                cart.Version,
+                session.LastValidatedCartVersion,
+                session.State,
+                session.CurrentStep,
+                ParseCompletedSteps(session.CompletedStepsJson),
+                IsActiveCheckoutState(session.State) && session.ExpiresAtUtc > DateTimeOffset.UtcNow,
+                session.NextAction,
+                session.CustomerEmail,
+                session.CustomerName,
+                session.PaymentMethodKey,
+                session.Subtotal,
+                session.ShippingTotal,
+                session.TaxTotal,
+                session.DiscountTotal,
+                session.GrandTotal,
+                NormalizeCurrency(session.CurrencyCode) ?? NormalizeCurrency(cart.CurrencyCode) ?? DefaultCurrencyCode,
+                session.ExpiresAtUtc,
+                cart.Lines.Select(line => new StorefrontCheckoutLineSummary(
+                    line.Id,
+                    line.ProductId,
+                    line.ProductVariantId,
+                    Math.Max(0, line.Quantity),
+                    line.UnitPrice ?? line.UnitPriceSnapshot ?? 0m,
+                    line.LineTotal ?? line.LineSubtotal ?? 0m,
+                    NormalizeCurrency(line.CurrencyCodeSnapshot) ?? NormalizeCurrency(cart.CurrencyCode) ?? DefaultCurrencyCode)).ToArray(),
+                ParseValidationIssues(session.ValidationIssuesJson));
+        }
+
+        private static void Touch(
+            CheckoutSession session,
+            string state,
+            string currentStep,
+            DateTimeOffset now)
+        {
+            session.State = state;
+            session.CurrentStep = currentStep;
+            session.CheckoutVersion = Math.Max(1, session.CheckoutVersion) + 1;
+            session.UpdatedAtUtc = now;
+        }
+
+        private static void MarkExpired(CheckoutSession session, DateTimeOffset now)
+        {
+            Touch(session, CheckoutSessionStates.Expired, CheckoutSteps.Entry, now);
+            session.NextAction = "expired";
+        }
+
+        private static bool IsActiveCheckoutState(string state)
+        {
+            return string.Equals(state, CheckoutSessionStates.Draft, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(state, CheckoutSessionStates.Ready, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(state, CheckoutSessionStates.OrderPending, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static IReadOnlyList<string> ParseCompletedSteps(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return [];
+            }
+
+            try
+            {
+                return JsonSerializer.Deserialize<IReadOnlyList<string>>(json, JsonOptions)
+                    ?.Where(step => CheckoutSteps.All.Contains(step))
+                    .Distinct(StringComparer.Ordinal)
+                    .ToArray() ?? [];
+            }
+            catch (JsonException)
+            {
+                return [];
+            }
+        }
+
+        private static IReadOnlyList<StorefrontCheckoutValidationIssue> ParseValidationIssues(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return [];
+            }
+
+            try
+            {
+                return JsonSerializer.Deserialize<IReadOnlyList<StorefrontCheckoutValidationIssue>>(json, JsonOptions) ?? [];
+            }
+            catch (JsonException)
+            {
+                return [];
+            }
         }
 
         private async Task<bool> IsPaymentMethodAvailableAsync(
@@ -1425,6 +1739,26 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             public static ShippingAddressResolution Failed(StorefrontCheckoutValidationIssue issue)
             {
                 return new ShippingAddressResolution(null, [issue]);
+            }
+        }
+
+        private sealed record CheckoutSessionResolution(
+            bool Success,
+            ServiceResponseType ResponseType,
+            string Message,
+            CheckoutSession? Session,
+            StorefrontCartSessionDto? Cart)
+        {
+            public static CheckoutSessionResolution Succeeded(
+                CheckoutSession session,
+                StorefrontCartSessionDto cart)
+            {
+                return new CheckoutSessionResolution(true, ServiceResponseType.Success, "Checkout session resolved.", session, cart);
+            }
+
+            public static CheckoutSessionResolution Failed(ServiceResponseType responseType, string message)
+            {
+                return new CheckoutSessionResolution(false, responseType, message, null, null);
             }
         }
     }

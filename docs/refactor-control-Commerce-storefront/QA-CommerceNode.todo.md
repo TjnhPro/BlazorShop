@@ -967,3 +967,9 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Phase 0 baseline confirms existing checkout service behavior before stateful checkout changes. 2026-07-17: focused `StorefrontCheckoutServiceTests` plus Storefront checkout host smoke cases passed 22/22.
 - [x] Hosted payment redirect is not treated as a completed order. 2026-07-17 Phase 0: `StorefrontCheckoutServiceTests.PlaceOrderAsync_StripeCreatesRedirectAttemptWithoutOrder` proves no order is created, checkout is `order_pending`, and cart remains active.
 - [x] Expired checkout session blocks place-order and marks checkout expired. 2026-07-17 Phase 0: `PlaceOrderAsync_WhenCheckoutSessionExpired_BlocksOrderAndMarksExpired` passed.
+- [x] Checkout session state/version fields are additive and CommerceNode-only. 2026-07-17 Phase 1: migration `CommerceNodeCheckoutSessionResume` adds only checkout session progress columns and backfills existing rows from current state/cart version.
+- [x] Checkout start can create and resume the active session for the same store/cart context. 2026-07-17 Phase 1: `StartAsync_CreatesAndResumesCheckoutSession_ForSameStoreAndCart` passed.
+- [x] Checkout resume is store-scoped and cart-scoped. 2026-07-17 Phase 1: `LoadAsync_IsStoreAndCartScoped` passed for wrong cart token and wrong store context.
+- [x] Expired checkout cannot resume as active. 2026-07-17 Phase 1: `LoadAsync_WhenExpired_MarksSessionExpiredAndRejectsResume` passed.
+- [x] Cancelled checkout cannot resume as active and increments checkout version. 2026-07-17 Phase 1: `CancelAsync_MarksSessionCancelledAndIncrementsVersion` passed.
+- [x] Storefront checkout start/load/cancel OpenAPI contracts are generator-safe. 2026-07-17 Phase 1: `CommerceNodeStorefrontOpenApiContractTests` passed with refreshed Storefront swagger snapshots.

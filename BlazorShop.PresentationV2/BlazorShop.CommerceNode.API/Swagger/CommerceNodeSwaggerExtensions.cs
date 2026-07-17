@@ -958,6 +958,21 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "Set a Storefront currency preference.",
                         typeof(CommerceNodeApiResponse<StorefrontCurrencyPreferenceResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedCheckout", "Start")] = new(
+                        "StorefrontCheckout_Start",
+                        "Start or resume a Storefront checkout session.",
+                        typeof(CommerceNodeApiResponse<StorefrontCheckoutSessionResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedCheckout", "Load")] = new(
+                        "StorefrontCheckout_Load",
+                        "Load a Storefront checkout session.",
+                        typeof(CommerceNodeApiResponse<StorefrontCheckoutSessionResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedCheckout", "Cancel")] = new(
+                        "StorefrontCheckout_Cancel",
+                        "Cancel a Storefront checkout session.",
+                        typeof(CommerceNodeApiResponse<StorefrontCheckoutSessionResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedCheckout", "Preview")] = new(
                         "StorefrontCheckout_Preview",
                         "Preview and validate a Storefront checkout session.",
@@ -1326,6 +1341,8 @@ namespace BlazorShop.CommerceNode.API.Swagger
                     [typeof(StorefrontProductSelectionPreviewResponse)] = ["validationMessages", "selectedAttributes"],
                     [typeof(StorefrontCartResponse)] = ["lines"],
                     [typeof(StorefrontCartValidationResponse)] = ["issues"],
+                    [typeof(StorefrontCheckoutPreviewResponse)] = ["completedSteps", "lines", "issues"],
+                    [typeof(StorefrontCheckoutSessionResponse)] = ["completedSteps", "lines", "issues"],
                     [typeof(StorefrontOrderResponse)] = ["lines"],
                     [typeof(StorefrontOrderLineResponse)] = ["variantAttributes"],
                     [typeof(StorefrontAddressFieldConfigurationResponse)] = ["stateProvinceRequiredCountryCodes"],

@@ -25,6 +25,113 @@ namespace BlazorShop.Tests.Application.CommerceNode
     public sealed class StorefrontCheckoutServiceTests
     {
         [Fact]
+        public async Task StartAsync_CreatesAndResumesCheckoutSession_ForSameStoreAndCart()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var productRepository = new Mock<IProductReadRepository>();
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var service = CreateCheckoutService(context, cartService);
+
+            var first = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload!.Token!));
+            var second = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload.Token!));
+
+            Assert.True(first.Success);
+            Assert.True(second.Success);
+            Assert.Equal(first.Payload!.CheckoutSessionId, second.Payload!.CheckoutSessionId);
+            Assert.Equal(1, first.Payload.CheckoutVersion);
+            Assert.Equal(CheckoutSessionStates.Draft, first.Payload.State);
+            Assert.Equal(CheckoutSteps.Entry, first.Payload.CurrentStep);
+            Assert.Empty(first.Payload.CompletedSteps);
+            Assert.Equal(first.Payload.CartVersion, first.Payload.LastValidatedCartVersion);
+            Assert.Single(context.CheckoutSessions);
+        }
+
+        [Fact]
+        public async Task LoadAsync_IsStoreAndCartScoped()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var otherStoreId = Guid.NewGuid();
+            var productRepository = new Mock<IProductReadRepository>();
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var otherCart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var foreignCart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(otherStoreId));
+            var service = CreateCheckoutService(context, cartService);
+            var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload!.Token!));
+
+            var sameStoreWrongCart = await service.LoadAsync(new StorefrontCheckoutSessionRequest(
+                storeId,
+                start.Payload!.CheckoutSessionId,
+                otherCart.Payload!.Token!));
+            var wrongStore = await service.LoadAsync(new StorefrontCheckoutSessionRequest(
+                otherStoreId,
+                start.Payload.CheckoutSessionId,
+                foreignCart.Payload!.Token!));
+
+            Assert.False(sameStoreWrongCart.Success);
+            Assert.Equal(ServiceResponseType.NotFound, sameStoreWrongCart.ResponseType);
+            Assert.False(wrongStore.Success);
+            Assert.Equal(ServiceResponseType.NotFound, wrongStore.ResponseType);
+        }
+
+        [Fact]
+        public async Task LoadAsync_WhenExpired_MarksSessionExpiredAndRejectsResume()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var productRepository = new Mock<IProductReadRepository>();
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var service = CreateCheckoutService(context, cartService);
+            var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload!.Token!));
+            var session = context.CheckoutSessions.Single();
+            session.ExpiresAtUtc = DateTimeOffset.UtcNow.AddMinutes(-1);
+            await context.SaveChangesAsync();
+
+            var result = await service.LoadAsync(new StorefrontCheckoutSessionRequest(
+                storeId,
+                start.Payload!.CheckoutSessionId,
+                cart.Payload.Token!));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.Conflict, result.ResponseType);
+            Assert.Equal(CheckoutSessionStates.Expired, session.State);
+            Assert.Equal(2, session.CheckoutVersion);
+            Assert.Equal(CheckoutSteps.Entry, session.CurrentStep);
+        }
+
+        [Fact]
+        public async Task CancelAsync_MarksSessionCancelledAndIncrementsVersion()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var productRepository = new Mock<IProductReadRepository>();
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var service = CreateCheckoutService(context, cartService);
+            var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload!.Token!));
+
+            var cancel = await service.CancelAsync(new StorefrontCheckoutSessionRequest(
+                storeId,
+                start.Payload!.CheckoutSessionId,
+                cart.Payload.Token!));
+            var load = await service.LoadAsync(new StorefrontCheckoutSessionRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                cart.Payload.Token!));
+
+            Assert.True(cancel.Success);
+            Assert.Equal(CheckoutSessionStates.Cancelled, cancel.Payload!.State);
+            Assert.False(cancel.Payload.IsActive);
+            Assert.Equal(2, cancel.Payload.CheckoutVersion);
+            Assert.False(load.Success);
+            Assert.Equal(ServiceResponseType.Conflict, load.ResponseType);
+        }
+
+        [Fact]
         public async Task PreviewAsync_RejectsStaleCartVersion_AndDoesNotCreateSession()
         {
             using var context = CreateContext();
@@ -190,6 +297,11 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Equal(40m, result.Payload!.Subtotal);
             Assert.Equal(0m, result.Payload.ShippingTotal);
             Assert.Equal(40m, result.Payload.GrandTotal);
+            Assert.Equal(1, result.Payload.CheckoutVersion);
+            Assert.Equal(result.Payload.CartVersion, result.Payload.LastValidatedCartVersion);
+            Assert.Equal(CheckoutSteps.Review, result.Payload.CurrentStep);
+            Assert.Contains(CheckoutSteps.ShippingAddress, result.Payload.CompletedSteps);
+            Assert.Contains(CheckoutSteps.PaymentMethod, result.Payload.CompletedSteps);
             var session = Assert.Single(context.CheckoutSessions);
             Assert.Equal(0m, session.ShippingTotal);
             Assert.Equal(session.Subtotal, session.GrandTotal);

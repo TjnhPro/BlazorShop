@@ -29,9 +29,46 @@ namespace BlazorShop.Application.CommerceNode.Checkout
     public sealed record StorefrontCheckoutPreviewResult(
         Guid CheckoutSessionId,
         Guid CartId,
+        int CheckoutVersion,
         int CartVersion,
+        int LastValidatedCartVersion,
         string State,
+        string CurrentStep,
+        IReadOnlyList<string> CompletedSteps,
         bool IsValid,
+        string NextAction,
+        string CustomerEmail,
+        string CustomerName,
+        string PaymentMethodKey,
+        decimal Subtotal,
+        decimal ShippingTotal,
+        decimal TaxTotal,
+        decimal DiscountTotal,
+        decimal GrandTotal,
+        string CurrencyCode,
+        DateTimeOffset ExpiresAtUtc,
+        IReadOnlyList<StorefrontCheckoutLineSummary> Lines,
+        IReadOnlyList<StorefrontCheckoutValidationIssue> Issues);
+
+    public sealed record StorefrontCheckoutStartRequest(
+        Guid StoreId,
+        string CartToken);
+
+    public sealed record StorefrontCheckoutSessionRequest(
+        Guid StoreId,
+        Guid CheckoutSessionId,
+        string CartToken);
+
+    public sealed record StorefrontCheckoutSessionResult(
+        Guid CheckoutSessionId,
+        Guid CartId,
+        int CheckoutVersion,
+        int CartVersion,
+        int LastValidatedCartVersion,
+        string State,
+        string CurrentStep,
+        IReadOnlyList<string> CompletedSteps,
+        bool IsActive,
         string NextAction,
         string CustomerEmail,
         string CustomerName,
@@ -85,6 +122,22 @@ namespace BlazorShop.Application.CommerceNode.Checkout
 
     public interface IStorefrontCheckoutService
     {
+        Task<ServiceResponse<StorefrontCheckoutSessionResult>> StartAsync(
+            StorefrontCheckoutStartRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<StorefrontCheckoutSessionResult>> LoadAsync(
+            StorefrontCheckoutSessionRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<StorefrontCheckoutSessionResult>> CancelAsync(
+            StorefrontCheckoutSessionRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<StorefrontCheckoutSessionResult>> ExpireAsync(
+            StorefrontCheckoutSessionRequest request,
+            CancellationToken cancellationToken = default);
+
         Task<ServiceResponse<StorefrontCheckoutPreviewResult>> PreviewAsync(
             StorefrontCheckoutPreviewRequest request,
             CancellationToken cancellationToken = default);

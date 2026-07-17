@@ -231,9 +231,52 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
             return new StorefrontCheckoutPreviewResponse(
                 result.CheckoutSessionId,
                 result.CartId,
+                result.CheckoutVersion,
                 result.CartVersion,
+                result.LastValidatedCartVersion,
                 result.State,
+                result.CurrentStep,
+                result.CompletedSteps,
                 result.IsValid,
+                result.NextAction,
+                result.CustomerEmail,
+                result.CustomerName,
+                result.PaymentMethodKey,
+                result.Subtotal,
+                result.ShippingTotal,
+                result.TaxTotal,
+                result.DiscountTotal,
+                result.GrandTotal,
+                result.CurrencyCode,
+                result.ExpiresAtUtc,
+                result.Lines.Select(line => new StorefrontCheckoutLineSummaryResponse(
+                    line.LineId,
+                    line.ProductId,
+                    line.ProductVariantId,
+                    line.Quantity,
+                    line.UnitPrice,
+                    line.LineTotal,
+                    line.CurrencyCode)).ToArray(),
+                result.Issues.Select(issue => new StorefrontCheckoutValidationIssueResponse(
+                    issue.Code,
+                    issue.Message,
+                    issue.Field,
+                    issue.LineId,
+                    issue.ProductId)).ToArray());
+        }
+
+        public static StorefrontCheckoutSessionResponse ToStorefrontContract(this StorefrontCheckoutSessionResult result)
+        {
+            return new StorefrontCheckoutSessionResponse(
+                result.CheckoutSessionId,
+                result.CartId,
+                result.CheckoutVersion,
+                result.CartVersion,
+                result.LastValidatedCartVersion,
+                result.State,
+                result.CurrentStep,
+                result.CompletedSteps,
+                result.IsActive,
                 result.NextAction,
                 result.CustomerEmail,
                 result.CustomerName,

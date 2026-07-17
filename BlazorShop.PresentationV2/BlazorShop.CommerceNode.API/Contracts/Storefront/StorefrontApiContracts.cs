@@ -396,9 +396,41 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
     public sealed record StorefrontCheckoutPreviewResponse(
         Guid CheckoutSessionId,
         Guid CartId,
+        int CheckoutVersion,
         int CartVersion,
+        int LastValidatedCartVersion,
         string State,
+        string CurrentStep,
+        IReadOnlyList<string> CompletedSteps,
         bool IsValid,
+        string NextAction,
+        string CustomerEmail,
+        string CustomerName,
+        string PaymentMethodKey,
+        decimal Subtotal,
+        decimal ShippingTotal,
+        decimal TaxTotal,
+        decimal DiscountTotal,
+        decimal GrandTotal,
+        string CurrencyCode,
+        DateTimeOffset ExpiresAtUtc,
+        IReadOnlyList<StorefrontCheckoutLineSummaryResponse> Lines,
+        IReadOnlyList<StorefrontCheckoutValidationIssueResponse> Issues);
+
+    public sealed class StorefrontCheckoutStartRequest
+    {
+    }
+
+    public sealed record StorefrontCheckoutSessionResponse(
+        Guid CheckoutSessionId,
+        Guid CartId,
+        int CheckoutVersion,
+        int CartVersion,
+        int LastValidatedCartVersion,
+        string State,
+        string CurrentStep,
+        IReadOnlyList<string> CompletedSteps,
+        bool IsActive,
         string NextAction,
         string CustomerEmail,
         string CustomerName,
