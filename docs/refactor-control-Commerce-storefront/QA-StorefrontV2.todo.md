@@ -160,6 +160,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Storefront API client can read search suggestions from scoped CommerceNode route. 2026-07-16 Phase 4: `StorefrontV2ApiClientTests.GetSearchSuggestionsAsync_ReadsSuggestionContract` passed and asserted URL/display fields.
 - [x] Search and category route helpers preserve page, page-size, sort, category/search term, price, and stock query state. 2026-07-16 Phase 5: `StorefrontRoutesTests` added and focused Storefront route/static tests passed.
 - [x] Catalog Product Search automated release gate passed. 2026-07-16 Phase 6: CommerceNode API and Storefront V2 builds passed; focused OpenAPI/repository/cache/client/static/host tests passed. Visible browser desktop/mobile pagination QA remains pending below.
+- [x] Storefront local runtime search smoke loads through CommerceNode scoped catalog API. 2026-07-17: `run-v2-local.ps1 -StopExisting` started CommerceNode API, ControlPlane API/Web, and Storefront V2; Playwright visible browser loaded `/search?pageSize=12`, rendered the page-size selector and 3 product cards, and console logs contained no errors.
 - [ ] Browser QA verifies search/category pagination and page-size selector on desktop.
 - [ ] Browser QA verifies search/category pagination and page-size selector on mobile.
 
@@ -565,6 +566,7 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Shipping Core Phase 8 Storefront order response exposes safe tracking events without admin shipment settings/origin data. 2026-07-17: Storefront OpenAPI snapshot refreshed and contract tests passed.
 - [x] Shipping Core Phase 8 current-user order query reads tracking events from the CommerceNode store-scoped read model. 2026-07-17: focused order query service test passed.
 - [x] Shipping Core Phase 9 automated release gate passed. 2026-07-17: CommerceNode API build passed; focused provider/settings/checkout/shipment/model/OpenAPI/gateway/product tests passed 174/174.
+- [x] Storefront local runtime cart and checkout empty states load without API or console failures. 2026-07-17: Playwright visible browser loaded `/my-cart` and `/checkout`; checkout showed the expected empty-cart guard and no console errors.
 - [ ] Shipping Core visible checkout QA confirms physical checkout can select a valid shipping option.
 - [ ] Shipping Core visible checkout QA confirms non-shipping cart does not block on shipping method after calculation cutover.
 - [ ] Shipping Core visible checkout QA confirms country-unavailable state shows a recoverable checkout message.

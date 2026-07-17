@@ -1134,6 +1134,7 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] New checkout payment flow does not depend on legacy `IPayPalPaymentService`. 2026-07-17 Phase 7: `StorefrontCheckoutService_DoesNotDependOnLegacyPayPalCaptureService` passed.
 - [x] Storefront OpenAPI snapshot was refreshed for the PayPal compatibility metadata change. 2026-07-17 Phase 7: focused payment/OpenAPI/checkout run passed 72/72.
 - [x] Payment Core automated release gate passed. 2026-07-17 Phase 8: focused provider registry/operation, payment attempt, webhook signature/hardening, Stripe provider, payment method, checkout, Storefront OpenAPI/payment contracts, Storefront V2 client/host smoke, and ControlPlane boundary/static run passed 185/185.
+- [x] Local runtime Storefront API payment/currency smoke passed. 2026-07-17: `run-v2-local.ps1 -StopExisting` started CommerceNode API on `http://localhost:5180`; API smoke verified `/swagger/commerce-admin/swagger.json`, `/swagger/storefront/swagger.json`, `/api/storefront/stores/default/store/current`, `/configuration`, `/payments/methods`, `POST /currency/preference`, and missing-store 404 behavior.
 
 ## Transactional Message Core
 

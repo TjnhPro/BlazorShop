@@ -237,6 +237,7 @@ Notes:
 - Container ownership guard verified with task `aaa8e49e-d58c-4d2f-8a97-29e183e263bd`; unmanaged container survived until explicit QA cleanup.
 - Runtime deploy fixes found during QA: missing Storefront container env values, host-to-Docker health probe mismatch, Storefront health path mismatch, and UTF-8 BOM in generated Nginx config.
 - Rollback failure cases and ControlPlane proxy tests were not executed in this run.
+- 2026-07-17 local runner smoke: `run-v2-local.ps1 -StopExisting` started CommerceNode API, ControlPlane API/Web, and Storefront V2; CommerceNode health returned 200 and ControlPlane Actions page loaded without console errors. Task enqueue/cancel/retry and rollback scenarios were not executed in this smoke.
 
 ## Build Verification
 
