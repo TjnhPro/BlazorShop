@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Transactional Message Core.md`
 
-Status: Phase 1 complete. Phase 2 not started.
+Status: Phase 2 complete. Phase 3 not started.
 
 Scope: add practical transactional message infrastructure for active V2 Commerce Node. Replace hard-coded direct email calls with template-driven queued messages for account activation, password recovery, order placed confirmation, payment/fulfillment hooks, and contact form delivery. This is not a marketing automation, newsletter campaign, or visual email builder phase.
 
@@ -437,26 +437,26 @@ Goal: make templates render safely and predictably.
 
 Implementation checklist:
 
-- [ ] Add `IMessageTokenRenderer`.
-- [ ] Implement allowlisted token replacement.
-- [ ] Add HTML encoding by default.
-- [ ] Add missing-token detection.
-- [ ] Add preview DTOs for admin preview.
-- [ ] Add normal token replacement tests.
-- [ ] Add HTML encoding tests.
-- [ ] Add unknown token behavior tests.
-- [ ] Add missing required token warning tests.
-- [ ] Add no arbitrary expression/code execution tests.
+- [x] Add `IMessageTokenRenderer`. 2026-07-17 Phase 2.
+- [x] Implement allowlisted token replacement. 2026-07-17 Phase 2: only dictionary-provided token names are replaced.
+- [x] Add HTML encoding by default. 2026-07-17 Phase 2.
+- [x] Add missing-token detection. 2026-07-17 Phase 2.
+- [x] Add preview DTOs for admin preview. 2026-07-17 Phase 2: render request/result/warning DTOs added for Phase 7 preview endpoint.
+- [x] Add normal token replacement tests. 2026-07-17 Phase 2.
+- [x] Add HTML encoding tests. 2026-07-17 Phase 2.
+- [x] Add unknown token behavior tests. 2026-07-17 Phase 2.
+- [x] Add missing required token warning tests. 2026-07-17 Phase 2.
+- [x] Add no arbitrary expression/code execution tests. 2026-07-17 Phase 2.
 
 Verification checklist:
 
-- [ ] Templates render deterministically.
-- [ ] Unsafe user input is encoded.
-- [ ] Preview can render sample models without sending email.
+- [x] Templates render deterministically. 2026-07-17 Phase 2.
+- [x] Unsafe user input is encoded. 2026-07-17 Phase 2.
+- [x] Preview can render sample models without sending email. 2026-07-17 Phase 2: renderer has no SMTP/queue dependency.
 
 Exit criteria:
 
-- [ ] Template rendering is safe enough for account/order/contact messages.
+- [x] Template rendering is safe enough for account/order/contact messages. 2026-07-17 Phase 2.
 
 Suggested commit:
 
@@ -827,7 +827,7 @@ test(transactional-message): verify message core
 
 - [x] Phase 0 - baseline guardrails. 2026-07-17: focused transactional baseline/auth/settings tests passed.
 - [x] Phase 1 - message data model and seeds. 2026-07-17: CommerceNode API build passed and focused model/resolver tests passed 34/34.
-- [ ] Phase 2 - token rendering and preview.
+- [x] Phase 2 - token rendering and preview. 2026-07-17: CommerceNode API build passed; focused renderer/model/resolver tests passed 43/43.
 - [ ] Phase 3 - queue and delivery handler.
 - [ ] Phase 4 - account messages.
 - [ ] Phase 5 - order and payment/fulfillment hooks.

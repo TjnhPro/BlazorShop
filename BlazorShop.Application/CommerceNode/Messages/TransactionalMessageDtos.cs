@@ -51,4 +51,21 @@ namespace BlazorShop.Application.CommerceNode.Messages
         Guid? QueuedMessagePublicId = null,
         string? ErrorCode = null,
         string? Message = null);
+
+    public sealed record MessageTokenRenderRequest(
+        string Template,
+        IReadOnlyDictionary<string, string?> Tokens,
+        IReadOnlySet<string>? SafeHtmlTokens = null,
+        IReadOnlySet<string>? RequiredTokens = null);
+
+    public sealed record MessageTokenRenderResult(
+        string Rendered,
+        IReadOnlyList<MessageTokenRenderWarning> Warnings,
+        IReadOnlyList<string> UnknownTokens,
+        IReadOnlyList<string> MissingRequiredTokens);
+
+    public sealed record MessageTokenRenderWarning(
+        string Code,
+        string TokenName,
+        string Message);
 }
