@@ -548,6 +548,11 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Payment Core Phase 0 confirms Storefront V2 payment success/cancel pages still poll scoped payment-attempt status. 2026-07-17: focused baseline covered captured, pending, and failed payment return states.
 - [x] Payment Core Phase 0 confirms hosted payment redirect context remains recoverable before provider-core changes. 2026-07-17: focused payment baseline included checkout hosted redirect and payment return-page smoke tests.
 - [x] Payment Core Phase 8 Storefront V2 release gate remains green without runtime UI changes. 2026-07-17: `StorefrontV2ApiClientTests|StorefrontV2HostSmokeTests` passed inside the 185/185 focused provider-core release gate.
+- [x] Shipping Core Phase 0 confirms Storefront checkout currently receives one `free_standard` zero-rate option and `ShippingRequired=true` from CommerceNode. 2026-07-17: focused CommerceNode checkout baseline tests recorded the current API-facing behavior before Storefront UI changes.
+- [ ] Shipping Core visible checkout QA confirms physical checkout can select a valid shipping option.
+- [ ] Shipping Core visible checkout QA confirms non-shipping cart does not block on shipping method after calculation cutover.
+- [ ] Shipping Core visible checkout QA confirms country-unavailable state shows a recoverable checkout message.
+- [ ] Shipping Core visible checkout QA confirms shipping total updates checkout review total.
 - [ ] Browser network shows no legacy API/Web requests.
 - [ ] Checkout page is noindex/private and absent from sitemap.
 

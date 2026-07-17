@@ -38,6 +38,18 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public void CommerceNodeOrderTrackingService_DoesNotSendEmailSynchronously()
+        {
+            var constructorParameterTypes = typeof(CommerceNodeOrderTrackingService)
+                .GetConstructors()
+                .SelectMany(constructor => constructor.GetParameters())
+                .Select(parameter => parameter.ParameterType)
+                .ToArray();
+
+            Assert.DoesNotContain(typeof(IEmailService), constructorParameterTypes);
+        }
+
+        [Fact]
         public async Task StartAsync_CreatesAndResumesCheckoutSession_ForSameStoreAndCart()
         {
             using var context = CreateContext();
@@ -396,6 +408,70 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Equal(0m, result.Payload.ShippingTotal);
             Assert.Equal(result.Payload.Subtotal, result.Payload.GrandTotal);
             Assert.Contains("free_standard", context.CheckoutSessions.Single().SelectedShippingOptionJson, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task StartAsync_CurrentShippingBaselineAlwaysRequiresShippingAndOffersFreeStandard()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            product.ShippingRequired = false;
+            product.FreeShipping = true;
+            product.DeliveryEstimateText = "Digital delivery";
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
+            var service = CreateCheckoutService(context, cartService);
+
+            var result = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload.Token!));
+
+            Assert.True(result.Success, result.Message);
+            Assert.True(result.Payload!.ShippingRequired);
+            var option = Assert.Single(result.Payload.ShippingOptions);
+            Assert.Equal("free_standard", option.Key);
+            Assert.Equal("USD", option.CurrencyCode);
+            Assert.Equal(0m, option.Price);
+            Assert.Null(result.Payload.SelectedShippingOption);
+        }
+
+        [Fact]
+        public async Task SelectShippingMethodAsync_RejectsUnknownShippingOption()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
+            var service = CreateCheckoutService(context, cartService);
+            var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload.Token!));
+            await service.UpdateAddressesAsync(new StorefrontCheckoutAddressStepRequest(
+                storeId,
+                start.Payload!.CheckoutSessionId,
+                cart.Payload.Token!,
+                BillingAddress: CreateAddress(),
+                ShippingAddress: CreateAddress(),
+                UseBillingAddressAsShippingAddress: true));
+
+            var result = await service.SelectShippingMethodAsync(new StorefrontCheckoutShippingMethodRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                cart.Payload.Token!,
+                "unknown_provider"));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.ValidationError, result.ResponseType);
+            Assert.Equal("Shipping option is not available.", result.Message);
+            Assert.Null(context.CheckoutSessions.Single().SelectedShippingOptionJson);
         }
 
         [Fact]

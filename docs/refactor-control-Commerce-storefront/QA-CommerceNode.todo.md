@@ -1017,6 +1017,21 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Checkout shipping method step requires shipping address first. 2026-07-17 Phase 4: `SelectShippingMethodAsync_BlocksWhenShippingAddressMissing` passed.
 - [x] Checkout shipping method OpenAPI is generator-safe and exposes server-owned shipping option response metadata. 2026-07-17 Phase 4: `CommerceNodeStorefrontOpenApiContractTests` passed 29/29 after snapshot refresh.
 
+## Shipping Core
+
+- [x] Phase 0 baseline records current shipping metadata, checkout selected-option snapshot, order shipment fields, and active V2 service ownership before provider changes. 2026-07-17: source review recorded in `Shipping Core.todo.md`.
+- [x] Current checkout shipping options are a single deterministic `free_standard` zero-rate option. 2026-07-17 Phase 0: `StartAsync_CurrentShippingBaselineAlwaysRequiresShippingAndOffersFreeStandard` and `SelectShippingMethodAsync_SelectsFreeStandardAndResetsPayment` passed.
+- [x] Current checkout result still reports `ShippingRequired=true` even for a non-shipping product. 2026-07-17 Phase 0: baseline test records this known gap before Phase 3 calculation cutover.
+- [x] Unknown shipping option selection is rejected and does not write `SelectedShippingOptionJson`. 2026-07-17 Phase 0: `SelectShippingMethodAsync_RejectsUnknownShippingOption` passed.
+- [x] Active CommerceNode tracking service does not send tracking email synchronously. 2026-07-17 Phase 0: `CommerceNodeOrderTrackingService_DoesNotSendEmailSynchronously` passed.
+- [ ] Shipping provider registry returns free standard and optional flat rate.
+- [ ] Shipping calculator computes `ShippingRequired` from cart lines.
+- [ ] Physical carts require a valid shipping address and option.
+- [ ] Non-shipping carts can continue without a physical shipping method.
+- [ ] Country restriction and free-shipping threshold behavior are covered by focused tests.
+- [ ] Shipping totals are included in checkout, order, and payment amounts.
+- [ ] Storefront and Commerce Admin OpenAPI remain generator-safe after Shipping Core API additions.
+
 ## Payment Core
 
 - [x] Payment attempt creation writes a support-readable audit row without raw provider payload. 2026-07-17 Phase 5: `PaymentAttemptServiceTests.CreateAsync_DuplicateIdempotencyKey_ReturnsSameAttempt` passed and asserted a single `payment_attempt.created` audit row.
