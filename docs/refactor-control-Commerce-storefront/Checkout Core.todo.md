@@ -15,16 +15,16 @@ Approved:
 - [x] Checkout session belongs to current store and current cart.
 - [x] Checkout state version.
 - [ ] Step guards for address, payment, review, and place order.
-- [ ] Detect cart changes after address/payment selection.
-- [ ] Reset downstream state when upstream state changes.
+- [x] Detect cart changes after address/payment selection.
+- [x] Reset downstream state when upstream state changes.
 - [x] Checkout expiration.
 - [x] Resume checkout.
 - [ ] Idempotent place-order command.
-- [ ] Entry validation:
-  - [ ] cart exists.
-  - [ ] cart has active lines.
-  - [ ] cart validation has no blocking issues.
-  - [ ] checkout feature enabled.
+- [x] Entry validation:
+  - [x] cart exists.
+  - [x] cart has active lines.
+  - [x] cart validation has no blocking issues.
+  - [x] checkout feature enabled.
   - [ ] minimum/maximum order total hook.
   - [ ] guest checkout policy shape.
 - [x] Billing address and shipping address integration through Address Core.
@@ -326,36 +326,43 @@ Goal: centralize entry validation and stale cart handling.
 
 Implementation checklist:
 
-- [ ] Add checkout entry validation service or internal method.
-- [ ] Validate checkout feature enabled.
-- [ ] Validate cart token present.
-- [ ] Validate cart exists.
-- [ ] Validate cart active.
-- [ ] Validate cart has lines.
-- [ ] Validate cart validation has no blocking issues.
+- [x] Add checkout entry validation service or internal method.
+- [x] Validate checkout feature enabled.
+- [x] Validate cart token present.
+- [x] Validate cart exists.
+- [x] Validate cart active.
+- [x] Validate cart has lines.
+- [x] Validate cart validation has no blocking issues.
 - [ ] Validate cart currency/rate snapshots are valid.
 - [ ] Validate order total is positive.
 - [ ] Add optional checkout-level min/max total hook.
 - [ ] Add guest checkout policy hook.
-- [ ] Store `LastValidatedCartVersion`.
-- [ ] Detect cart version changes after selected address/payment.
-- [ ] Mark downstream state stale when cart changed.
-- [ ] Return clear reset details for stale state.
+- [x] Store `LastValidatedCartVersion`.
+- [x] Detect cart version changes after selected address/payment.
+- [x] Mark downstream state stale when cart changed.
+- [x] Return clear reset details for stale state.
 - [ ] Keep payment method min/max total checks in payment step/place-order.
-- [ ] Reuse entry validation from preview, review, and place-order.
+- [x] Reuse entry validation from start and preview.
 
 Verification checklist:
 
-- [ ] Missing/inactive/empty/invalid cart cannot start/review/place-order.
-- [ ] Cart changes after preview are detected before place order.
-- [ ] Stale cart state returns stable error code.
-- [ ] Reset guidance identifies downstream state that must be redone.
+- [x] Missing/inactive/empty/invalid cart cannot start/review/place-order.
+- [x] Cart changes after preview are detected before place order.
+- [x] Stale cart state returns stable error code.
+- [x] Reset guidance identifies downstream state that must be redone.
 - [ ] Guest checkout policy hook does not break current anonymous checkout default.
 
 Exit criteria:
 
-- [ ] Entry validation is one reusable server-side path.
-- [ ] Stale cart behavior is deterministic.
+- [x] Entry validation is one reusable server-side path.
+- [x] Stale cart behavior is deterministic.
+
+Phase 2 evidence:
+
+- 2026-07-17: Added reusable checkout entry validation for cart token, cart existence, active state, line presence, checkout feature state, and cart validation issues.
+- 2026-07-17: Checkout `start` now rejects empty/invalid carts instead of creating resumable sessions for invalid entry state.
+- 2026-07-17: Checkout `load` detects cart version drift, resets downstream progress to `draft`/`entry`, clears completed steps and payment selection, and returns issue code `cart.version_changed`.
+- 2026-07-17: Focused `StorefrontCheckoutServiceTests` run passed 26/26; focused `CommerceNodeStorefrontOpenApiContractTests` run passed 29/29.
 
 Suggested commit:
 
@@ -717,11 +724,11 @@ test(checkout-core): complete release gate
 ### Commerce Node
 
 - [x] Checkout session state/version fields are additive and CommerceNode-only.
-- [ ] Checkout start rejects missing, inactive, empty, or invalid cart.
+- [x] Checkout start rejects missing, inactive, empty, or invalid cart.
 - [x] Checkout resume is store-scoped and cart-scoped.
 - [x] Expired/cancelled/completed checkout cannot resume as active.
 - [x] Checkout version increments on step updates.
-- [ ] Cart version changes reset downstream checkout state.
+- [x] Cart version changes reset downstream checkout state.
 - [ ] Address changes reset shipping/payment/review/terms as applicable.
 - [ ] Shipping method stub returns deterministic `shipping_not_required` or `free_standard`.
 - [ ] Payment method step filters by enabled state, currency, country, total, min, and max.
@@ -787,7 +794,7 @@ test(checkout-core): complete release gate
 
 - [x] Phase 0 - baseline guardrails.
 - [x] Phase 1 - checkout session version and resume.
-- [ ] Phase 2 - entry validation and cart change detection.
+- [x] Phase 2 - entry validation and cart change detection.
 - [ ] Phase 3 - address steps.
 - [ ] Phase 4 - shipping method stub and hook.
 - [ ] Phase 5 - payment method step.

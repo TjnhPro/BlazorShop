@@ -973,3 +973,7 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Expired checkout cannot resume as active. 2026-07-17 Phase 1: `LoadAsync_WhenExpired_MarksSessionExpiredAndRejectsResume` passed.
 - [x] Cancelled checkout cannot resume as active and increments checkout version. 2026-07-17 Phase 1: `CancelAsync_MarksSessionCancelledAndIncrementsVersion` passed.
 - [x] Storefront checkout start/load/cancel OpenAPI contracts are generator-safe. 2026-07-17 Phase 1: `CommerceNodeStorefrontOpenApiContractTests` passed with refreshed Storefront swagger snapshots.
+- [x] Checkout start rejects empty carts before creating a session. 2026-07-17 Phase 2: `StartAsync_RejectsEmptyCart` passed.
+- [x] Checkout entry validation is centralized for start and preview. 2026-07-17 Phase 2: focused checkout service run passed 26/26 after replacing duplicated preview cart checks with shared entry validation.
+- [x] Cart version changes reset downstream checkout state. 2026-07-17 Phase 2: `LoadAsync_WhenCartVersionChanged_ResetsDownstreamCheckoutState` passed and asserts issue code `cart.version_changed`.
+- [x] Storefront OpenAPI remains stable after entry validation/cart drift changes. 2026-07-17 Phase 2: `CommerceNodeStorefrontOpenApiContractTests` passed 29/29 with unchanged snapshots.

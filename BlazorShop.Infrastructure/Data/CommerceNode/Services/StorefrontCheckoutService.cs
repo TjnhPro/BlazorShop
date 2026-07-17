@@ -72,6 +72,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var cart = cartResult.Payload;
+            var entryValidation = await this.ValidateCheckoutEntryAsync(request.StoreId, request.CartToken, cart, cancellationToken);
+            if (entryValidation.Issues.Count > 0)
+            {
+                return Failed<StorefrontCheckoutSessionResult>(
+                    ResolveEntryValidationResponseType(entryValidation.Issues),
+                    entryValidation.Issues[0].Message);
+            }
+
             var now = DateTimeOffset.UtcNow;
             var activeSession = await this.context.CheckoutSessions
                 .FirstOrDefaultAsync(
@@ -213,34 +221,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var shippingAddress = shippingResolution.Address;
             var issues = shippingResolution.Issues.ToList();
             issues.AddRange(this.ValidateCheckoutFields(request, shippingAddress));
-            if (!string.Equals(cart.State, CartSessionStates.Active, StringComparison.OrdinalIgnoreCase))
-            {
-                issues.Add(new StorefrontCheckoutValidationIssue("cart.inactive", "Cart is not active.", "cart"));
-            }
-
-            if (cart.Lines.Count == 0)
-            {
-                issues.Add(new StorefrontCheckoutValidationIssue("cart.empty", "Cart is empty.", "cart"));
-            }
-
-            var cartValidation = await this.cartService.ValidateAsync(request.StoreId, request.CartToken, cancellationToken);
-            if (!cartValidation.Success || cartValidation.Payload is null)
-            {
-                issues.Add(new StorefrontCheckoutValidationIssue(
-                    "cart.validation_failed",
-                    cartValidation.Message ?? "Cart could not be validated.",
-                    "cart"));
-            }
-            else
-            {
-                issues.AddRange(cartValidation.Payload.Issues.Select(issue =>
-                    new StorefrontCheckoutValidationIssue(
-                        issue.Code,
-                        issue.Message,
-                        Field: "cart.lines",
-                        LineId: issue.LineId,
-                        ProductId: issue.ProductId)));
-            }
+            var entryValidation = await this.ValidateCheckoutEntryAsync(request.StoreId, request.CartToken, cart, cancellationToken);
+            issues.AddRange(entryValidation.Issues);
 
             var paymentMethodKey = NormalizeKey(request.PaymentMethodKey);
             StorefrontCustomerProfile? customer = null;
@@ -266,8 +248,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 }
             }
 
-            var currencyCode = cartValidation.Success && cartValidation.Payload is not null
-                ? cartValidation.Payload.CurrencyCode
+            var currencyCode = entryValidation.CartValidation is not null
+                ? entryValidation.CartValidation.CurrencyCode
                 : await this.storeCurrencyResolver.ResolveDefaultCurrencyCodeAsync(request.StoreId, cancellationToken);
             var lines = cart.Lines.Select(line =>
             {
@@ -902,6 +884,74 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Succeeded("Cart resolved.", cartResult.Payload);
         }
 
+        private async Task<CheckoutEntryValidation> ValidateCheckoutEntryAsync(
+            Guid storeId,
+            string cartToken,
+            StorefrontCartSessionDto cart,
+            CancellationToken cancellationToken)
+        {
+            var issues = new List<StorefrontCheckoutValidationIssue>();
+            if (!string.Equals(cart.State, CartSessionStates.Active, StringComparison.OrdinalIgnoreCase))
+            {
+                issues.Add(new StorefrontCheckoutValidationIssue("cart.inactive", "Cart is not active.", "cart"));
+            }
+
+            if (cart.Lines.Count == 0)
+            {
+                issues.Add(new StorefrontCheckoutValidationIssue("cart.empty", "Cart is empty.", "cart"));
+            }
+
+            var cartValidation = await this.cartService.ValidateAsync(storeId, cartToken, cancellationToken);
+            if (!cartValidation.Success || cartValidation.Payload is null)
+            {
+                issues.Add(new StorefrontCheckoutValidationIssue(
+                    "cart.validation_failed",
+                    cartValidation.Message ?? "Cart could not be validated.",
+                    "cart"));
+            }
+            else
+            {
+                issues.AddRange(cartValidation.Payload.Issues.Select(issue =>
+                    new StorefrontCheckoutValidationIssue(
+                        issue.Code,
+                        issue.Message,
+                        Field: "cart.lines",
+                        LineId: issue.LineId,
+                        ProductId: issue.ProductId)));
+            }
+
+            return new CheckoutEntryValidation(issues, cartValidation.Payload);
+        }
+
+        private async Task MarkCartChangedIfNeededAsync(
+            CheckoutSession session,
+            StorefrontCartSessionDto cart,
+            CancellationToken cancellationToken)
+        {
+            if (session.CartVersion == cart.Version
+                && session.LastValidatedCartVersion == cart.Version)
+            {
+                return;
+            }
+
+            session.CartVersion = cart.Version;
+            session.LastValidatedCartVersion = cart.Version;
+            session.CompletedStepsJson = "[]";
+            session.PaymentMethodKey = string.Empty;
+            session.ValidationIssuesJson = JsonSerializer.Serialize(
+                new[]
+                {
+                    new StorefrontCheckoutValidationIssue(
+                        "cart.version_changed",
+                        "Cart changed after checkout started. Review checkout details again.",
+                        "cart"),
+                },
+                JsonOptions);
+            session.NextAction = "review";
+            Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.Entry, DateTimeOffset.UtcNow);
+            await this.context.SaveChangesAsync(cancellationToken);
+        }
+
         private async Task<CheckoutSessionResolution> ResolveActiveSessionAsync(
             StorefrontCheckoutSessionRequest request,
             CancellationToken cancellationToken)
@@ -925,6 +975,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             {
                 return CheckoutSessionResolution.Failed(ServiceResponseType.Conflict, "Checkout session is not active.");
             }
+
+            await this.MarkCartChangedIfNeededAsync(session, resolution.Cart!, cancellationToken);
 
             return resolution;
         }
@@ -1020,6 +1072,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return string.Equals(state, CheckoutSessionStates.Draft, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(state, CheckoutSessionStates.Ready, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(state, CheckoutSessionStates.OrderPending, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static ServiceResponseType ResolveEntryValidationResponseType(
+            IReadOnlyList<StorefrontCheckoutValidationIssue> issues)
+        {
+            return issues.Any(issue => issue.Code is "cart.inactive" or "cart.validation_failed")
+                ? ServiceResponseType.Conflict
+                : ServiceResponseType.ValidationError;
         }
 
         private static IReadOnlyList<string> ParseCompletedSteps(string? json)
@@ -1761,5 +1821,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return new CheckoutSessionResolution(false, responseType, message, null, null);
             }
         }
+
+        private sealed record CheckoutEntryValidation(
+            IReadOnlyList<StorefrontCheckoutValidationIssue> Issues,
+            StorefrontCartValidationResult? CartValidation);
     }
 }

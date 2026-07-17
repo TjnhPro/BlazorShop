@@ -30,8 +30,17 @@ namespace BlazorShop.Tests.Application.CommerceNode
             using var context = CreateContext();
             var storeId = Guid.NewGuid();
             var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 15m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
             var cartService = CreateCartService(context, productRepository);
             var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1));
             var service = CreateCheckoutService(context, cartService);
 
             var first = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload!.Token!));
@@ -49,16 +58,45 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public async Task StartAsync_RejectsEmptyCart()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var productRepository = new Mock<IProductReadRepository>();
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var service = CreateCheckoutService(context, cartService);
+
+            var result = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload!.Token!));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.ValidationError, result.ResponseType);
+            Assert.Equal("Cart is empty.", result.Message);
+            Assert.Empty(context.CheckoutSessions);
+        }
+
+        [Fact]
         public async Task LoadAsync_IsStoreAndCartScoped()
         {
             using var context = CreateContext();
             var storeId = Guid.NewGuid();
             var otherStoreId = Guid.NewGuid();
             var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            var foreignProduct = CreatePublishedProduct(otherStoreId, price: 20m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(foreignProduct.Id))
+                .ReturnsAsync(foreignProduct);
             var cartService = CreateCartService(context, productRepository);
             var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
             var otherCart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
             var foreignCart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(otherStoreId));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, otherCart.Payload!.Token!, product.Id));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(otherStoreId, foreignCart.Payload!.Token!, foreignProduct.Id));
             var service = CreateCheckoutService(context, cartService);
             var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload!.Token!));
 
@@ -83,8 +121,13 @@ namespace BlazorShop.Tests.Application.CommerceNode
             using var context = CreateContext();
             var storeId = Guid.NewGuid();
             var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
             var cartService = CreateCartService(context, productRepository);
             var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
             var service = CreateCheckoutService(context, cartService);
             var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload!.Token!));
             var session = context.CheckoutSessions.Single();
@@ -109,8 +152,13 @@ namespace BlazorShop.Tests.Application.CommerceNode
             using var context = CreateContext();
             var storeId = Guid.NewGuid();
             var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
             var cartService = CreateCartService(context, productRepository);
             var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
             var service = CreateCheckoutService(context, cartService);
             var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload!.Token!));
 
@@ -129,6 +177,41 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Equal(2, cancel.Payload.CheckoutVersion);
             Assert.False(load.Success);
             Assert.Equal(ServiceResponseType.Conflict, load.ResponseType);
+        }
+
+        [Fact]
+        public async Task LoadAsync_WhenCartVersionChanged_ResetsDownstreamCheckoutState()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
+            var service = CreateCheckoutService(context, cartService);
+            var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload.Token!));
+
+            await cartService.UpdateLineAsync(new StorefrontCartUpdateLineRequest(
+                storeId,
+                cart.Payload.Token!,
+                add.Payload!.Lines.Single().Id,
+                Quantity: 2));
+            var result = await service.LoadAsync(new StorefrontCheckoutSessionRequest(
+                storeId,
+                start.Payload!.CheckoutSessionId,
+                cart.Payload.Token!));
+
+            Assert.True(result.Success);
+            Assert.Equal(CheckoutSessionStates.Draft, result.Payload!.State);
+            Assert.Equal(CheckoutSteps.Entry, result.Payload.CurrentStep);
+            Assert.Empty(result.Payload.CompletedSteps);
+            Assert.Equal(2, result.Payload.CheckoutVersion);
+            Assert.Contains(result.Payload.Issues, issue => issue.Code == "cart.version_changed");
+            Assert.Equal(result.Payload.CartVersion, result.Payload.LastValidatedCartVersion);
         }
 
         [Fact]
