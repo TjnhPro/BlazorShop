@@ -7,6 +7,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.Options;
     using BlazorShop.Domain.Constants;
+    using BlazorShop.Domain.Entities.CommerceNode;
     using BlazorShop.Infrastructure.Services;
 
     using Microsoft.Extensions.Configuration;
@@ -36,6 +37,29 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         }
 
         public string ProviderKey => PaymentMethodKeys.Stripe;
+
+        public async Task<ServiceResponse<PaymentProviderOperationResult>> CreatePaymentSessionAsync(
+            CreatePaymentProviderSessionRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var result = await this.CreateHostedSessionAsync(request, cancellationToken);
+            if (!result.Success || result.Payload is null)
+            {
+                return PaymentProviderOperationResult.Failed(
+                    result.ResponseType is ServiceResponseType.Success ? ServiceResponseType.Conflict : result.ResponseType,
+                    result.Message ?? "Stripe checkout session could not be created.",
+                    "provider_session_failed");
+            }
+
+            return PaymentProviderOperationResult.Succeeded(
+                result.Message ?? "Stripe checkout session created.",
+                PaymentProviderActionTypes.Redirect,
+                result.Payload.NextActionUrl,
+                result.Payload.ProviderSessionId,
+                result.Payload.ProviderReference,
+                result.Payload.MetadataJson,
+                PaymentAttemptStates.RequiresAction);
+        }
 
         public async Task<ServiceResponse<PaymentProviderSessionResult>> CreateHostedSessionAsync(
             CreatePaymentProviderSessionRequest request,

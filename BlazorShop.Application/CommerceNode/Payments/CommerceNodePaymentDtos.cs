@@ -97,6 +97,96 @@ namespace BlazorShop.Application.CommerceNode.Payments
         string NextActionUrl,
         string? MetadataJson);
 
+    public static class PaymentProviderActionTypes
+    {
+        public const string None = "none";
+        public const string Redirect = "redirect";
+        public const string ClientSecret = "client_secret";
+        public const string OfflineInstructions = "offline_instructions";
+    }
+
+    public sealed record PaymentProviderOperationRequest(
+        Guid StoreId,
+        Guid CheckoutSessionId,
+        Guid PaymentAttemptId,
+        string PaymentMethodKey,
+        string ProviderKey,
+        decimal Amount,
+        string CurrencyCode,
+        string IdempotencyKey,
+        IReadOnlyList<PaymentProviderSessionLine>? Lines = null,
+        string? ProviderReference = null,
+        string? ProviderSessionId = null,
+        string? PayloadJson = null,
+        string? ProviderSignature = null);
+
+    public sealed record PaymentProviderOperationResult(
+        string ActionType,
+        string? ActionUrl,
+        string? ProviderSessionId,
+        string? ProviderReference,
+        string? SafeFailureCode,
+        string? SafeFailureMessage,
+        string? MetadataJson,
+        string? RecommendedState,
+        string? IgnoredReason)
+    {
+        public static ServiceResponse<PaymentProviderOperationResult> Succeeded(
+            string message,
+            string actionType = PaymentProviderActionTypes.None,
+            string? actionUrl = null,
+            string? providerSessionId = null,
+            string? providerReference = null,
+            string? metadataJson = null,
+            string? recommendedState = null,
+            string? ignoredReason = null)
+        {
+            return new ServiceResponse<PaymentProviderOperationResult>(true, message)
+            {
+                Payload = new PaymentProviderOperationResult(
+                    actionType,
+                    actionUrl,
+                    providerSessionId,
+                    providerReference,
+                    SafeFailureCode: null,
+                    SafeFailureMessage: null,
+                    metadataJson,
+                    recommendedState,
+                    ignoredReason),
+                ResponseType = ServiceResponseType.Success,
+            };
+        }
+
+        public static ServiceResponse<PaymentProviderOperationResult> Failed(
+            ServiceResponseType responseType,
+            string message,
+            string safeFailureCode)
+        {
+            return new ServiceResponse<PaymentProviderOperationResult>(false, message)
+            {
+                Payload = new PaymentProviderOperationResult(
+                    PaymentProviderActionTypes.None,
+                    ActionUrl: null,
+                    ProviderSessionId: null,
+                    ProviderReference: null,
+                    safeFailureCode,
+                    message,
+                    MetadataJson: null,
+                    RecommendedState: null,
+                    IgnoredReason: null),
+                ResponseType = responseType,
+            };
+        }
+
+        public static ServiceResponse<PaymentProviderOperationResult> Unsupported(string operationName)
+        {
+            return Failed(
+                ServiceResponseType.ValidationError,
+                $"Payment operation '{operationName}' is not supported.",
+                "payment.operation_not_supported");
+        }
+    }
+
     public static class PaymentProviderMethodTypes
     {
         public const string Offline = "offline";
@@ -166,9 +256,72 @@ namespace BlazorShop.Application.CommerceNode.Payments
     {
         string ProviderKey { get; }
 
+        Task<ServiceResponse<PaymentProviderOperationResult>> ValidateInputAsync(
+            PaymentProviderOperationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(PaymentProviderOperationResult.Succeeded("Payment input accepted."));
+        }
+
+        Task<ServiceResponse<PaymentProviderOperationResult>> CreatePaymentSessionAsync(
+            CreatePaymentProviderSessionRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(PaymentProviderOperationResult.Unsupported("create_payment_session"));
+        }
+
         Task<ServiceResponse<PaymentProviderSessionResult>> CreateHostedSessionAsync(
             CreatePaymentProviderSessionRequest request,
             CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<PaymentProviderOperationResult>> HandleReturnAsync(
+            PaymentProviderOperationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(PaymentProviderOperationResult.Unsupported("handle_return"));
+        }
+
+        Task<ServiceResponse<PaymentProviderOperationResult>> HandleCancelAsync(
+            PaymentProviderOperationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(PaymentProviderOperationResult.Unsupported("handle_cancel"));
+        }
+
+        Task<ServiceResponse<PaymentProviderOperationResult>> HandleWebhookAsync(
+            PaymentProviderOperationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(PaymentProviderOperationResult.Unsupported("handle_webhook"));
+        }
+
+        Task<ServiceResponse<PaymentProviderOperationResult>> AuthorizeAsync(
+            PaymentProviderOperationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(PaymentProviderOperationResult.Unsupported("authorize"));
+        }
+
+        Task<ServiceResponse<PaymentProviderOperationResult>> CaptureAsync(
+            PaymentProviderOperationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(PaymentProviderOperationResult.Unsupported("capture"));
+        }
+
+        Task<ServiceResponse<PaymentProviderOperationResult>> VoidAsync(
+            PaymentProviderOperationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(PaymentProviderOperationResult.Unsupported("void"));
+        }
+
+        Task<ServiceResponse<PaymentProviderOperationResult>> RefundAsync(
+            PaymentProviderOperationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(PaymentProviderOperationResult.Unsupported("refund"));
+        }
     }
 
     public interface IStorefrontPaymentProviderResolver

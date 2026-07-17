@@ -40,6 +40,22 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         }
 
         [Fact]
+        public async Task CreatePaymentSessionAsync_MapsHostedSessionToRedirectOperation()
+        {
+            var checkout = new FakeStripeCheckoutSessionService();
+            var provider = CreateProvider(checkout, stripeSecret: "sk_test_123", clientBaseUrl: "https://shop.example.com");
+
+            var result = await provider.CreatePaymentSessionAsync(CreateRequest());
+
+            Assert.True(result.Success, result.Message);
+            Assert.Equal("redirect", result.Payload!.ActionType);
+            Assert.Equal("https://checkout.stripe.test/session", result.Payload.ActionUrl);
+            Assert.Equal("cs_test_123", result.Payload.ProviderSessionId);
+            Assert.Equal("pi_test_123", result.Payload.ProviderReference);
+            Assert.Equal("requires_action", result.Payload.RecommendedState);
+        }
+
+        [Fact]
         public async Task CreateHostedSessionAsync_UsesCurrencyDecimalDigitsForMinorUnits()
         {
             var checkout = new FakeStripeCheckoutSessionService();

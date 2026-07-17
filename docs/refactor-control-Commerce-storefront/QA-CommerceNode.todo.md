@@ -284,6 +284,9 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Payment Core Phase 0 confirms known later-phase risks are not silently fixed or ignored. 2026-07-17: callback/webhook still trust body `State` and signature is not verified; retained as Phase 4 hardening scope.
 - [x] Provider capability registry returns COD offline, Stripe redirect, and PayPal disabled/skeleton without adding a provider table. 2026-07-17 Payment Core Phase 1: `PaymentProviderCapabilityRegistryTests` passed.
 - [x] Storefront payment method endpoint remains backward compatible and ordered by store display order after capability metadata is added. 2026-07-17 Phase 1: `CommerceNodePaymentMethodSecretBoundaryTests` passed 5/5.
+- [x] Provider operation contract returns typed unsupported results for unimplemented operations. 2026-07-17 Payment Core Phase 2: `PaymentProviderOperationContractTests` passed.
+- [x] Stripe provider operation maps hosted checkout session to redirect result without moving SDK logic out of Infrastructure. 2026-07-17 Phase 2: `StripeStorefrontPaymentProviderTests` passed.
+- [x] COD provider operation returns synchronous captured recommendation while hosted session remains unsupported. 2026-07-17 Phase 2: `PaymentProviderOperationContractTests` passed.
 
 ## Currency
 

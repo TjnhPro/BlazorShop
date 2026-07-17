@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Payment Core.md`
 
-Status: In progress. Phase 0-1 completed.
+Status: In progress. Phase 0-2 completed.
 
 Scope: turn the existing checkout payment foundation into a practical provider core for active V2. The goal is enough payment behavior for real store usage without moving PayPal/Stripe SDK logic into Domain/Application and without building a full payment platform.
 
@@ -34,13 +34,13 @@ Approved:
   - [ ] safe failure code/message.
   - [ ] timestamps.
   - [ ] idempotency key.
-- [ ] Provider operation abstraction:
-  - [ ] create payment session/request.
-  - [ ] validate provider-specific input shape.
-  - [ ] redirect/client action response.
-  - [ ] handle return/cancel.
-  - [ ] handle webhook/IPN.
-  - [ ] authorize/capture/void/refund hooks as optional unsupported operations.
+- [x] Provider operation abstraction:
+  - [x] create payment session/request.
+  - [x] validate provider-specific input shape.
+  - [x] redirect/client action response.
+  - [x] handle return/cancel.
+  - [x] handle webhook/IPN.
+  - [x] authorize/capture/void/refund hooks as optional unsupported operations.
 - [ ] Payment state rules:
   - [ ] order placement does not imply payment completed.
   - [ ] provider account/email is never treated as store customer identity.
@@ -161,7 +161,7 @@ Boundary rules:
 
 - [x] `StorePaymentMethod` owns store activation, public metadata, availability filters, settings JSON/secret references.
 - [x] `PaymentProviderDefinition` owns system name, method type, capabilities, and installed/global active state.
-- [ ] `IPaymentProvider` owns metadata, input validation, session/request creation, return/cancel, webhook, and optional authorize/capture/void/refund hooks.
+- [x] `IPaymentProvider` owns metadata, input validation, session/request creation, return/cancel, webhook, and optional authorize/capture/void/refund hooks.
 - [ ] `PaymentAttempt` owns attempt state, amount/currency, provider reference/session, and idempotency.
 - [ ] `PaymentProviderEvent` owns verified/raw event ledger, duplicate detection, processed/ignored state.
 - [ ] Checkout selects store payment method, asks provider capability for flow type, creates attempt, and completes order only after internal captured/offline success state.
@@ -287,42 +287,52 @@ Goal: define core operations while keeping provider-specific SDK logic outside c
 
 Implementation checklist:
 
-- [ ] Introduce operation-oriented provider interface:
-  - [ ] `ValidateInputAsync`.
-  - [ ] `CreatePaymentSessionAsync`.
-  - [ ] `HandleReturnAsync`.
-  - [ ] `HandleCancelAsync`.
-  - [ ] `HandleWebhookAsync`.
-  - [ ] `AuthorizeAsync`.
-  - [ ] `CaptureAsync`.
-  - [ ] `VoidAsync`.
-  - [ ] `RefundAsync`.
-- [ ] Unsupported operations return typed unsupported result instead of throwing by default.
-- [ ] Define result model for provider action type:
-  - [ ] `none`.
-  - [ ] `redirect`.
-  - [ ] `client_secret`.
-  - [ ] `offline_instructions`.
-- [ ] Define result model fields for provider session/reference values.
-- [ ] Define result model fields for safe failure code/message.
-- [ ] Define result model fields for provider event transition recommendation.
-- [ ] Define ignored/no-op reason for out-of-order events.
-- [ ] Adapt current `StripeStorefrontPaymentProvider` to new contract.
-- [ ] Add COD provider adapter or bridge current COD handler behind provider contract.
-- [ ] Keep old `IPaymentHandler` only as compatibility until checkout cutover is complete.
+- [x] Introduce operation-oriented provider interface:
+  - [x] `ValidateInputAsync`.
+  - [x] `CreatePaymentSessionAsync`.
+  - [x] `HandleReturnAsync`.
+  - [x] `HandleCancelAsync`.
+  - [x] `HandleWebhookAsync`.
+  - [x] `AuthorizeAsync`.
+  - [x] `CaptureAsync`.
+  - [x] `VoidAsync`.
+  - [x] `RefundAsync`.
+- [x] Unsupported operations return typed unsupported result instead of throwing by default.
+- [x] Define result model for provider action type:
+  - [x] `none`.
+  - [x] `redirect`.
+  - [x] `client_secret`.
+  - [x] `offline_instructions`.
+- [x] Define result model fields for provider session/reference values.
+- [x] Define result model fields for safe failure code/message.
+- [x] Define result model fields for provider event transition recommendation.
+- [x] Define ignored/no-op reason for out-of-order events.
+- [x] Adapt current `StripeStorefrontPaymentProvider` to new contract.
+- [x] Add COD provider adapter or bridge current COD handler behind provider contract.
+- [x] Keep old `IPaymentHandler` only as compatibility until checkout cutover is complete.
 
 Verification checklist:
 
-- [ ] Unsupported operation returns `payment.operation_not_supported`.
-- [ ] Stripe create session still returns redirect next action.
-- [ ] COD operation completes synchronously without hosted session.
-- [ ] Provider failures store safe failure details, not raw exception details.
-- [ ] Stripe SDK remains in Infrastructure.
+- [x] Unsupported operation returns `payment.operation_not_supported`.
+- [x] Stripe create session still returns redirect next action.
+- [x] COD operation completes synchronously without hosted session.
+- [x] Provider failures store safe failure details, not raw exception details.
+- [x] Stripe SDK remains in Infrastructure.
 
 Exit criteria:
 
-- [ ] New provider can be added through registry/adapter without editing checkout branching.
-- [ ] Core contracts remain provider SDK-free.
+- [x] New provider can be added through registry/adapter without editing checkout branching.
+- [x] Core contracts remain provider SDK-free.
+
+Phase 2 evidence:
+
+- 2026-07-17: Added `PaymentProviderOperationRequest`, `PaymentProviderOperationResult`, and `PaymentProviderActionTypes` to Application payment contracts.
+- 2026-07-17: Extended `IStorefrontPaymentProvider` with operation methods and default typed unsupported results for return/cancel/webhook/authorize/capture/void/refund.
+- 2026-07-17: `StripeStorefrontPaymentProvider.CreatePaymentSessionAsync` maps the current hosted session into a redirect operation result without moving Stripe SDK usage out of Infrastructure.
+- 2026-07-17: Added `CodStorefrontPaymentProvider` and registered it beside Stripe; COD operation returns a synchronous captured recommendation and hosted-session remains unsupported.
+- 2026-07-17: Added `PaymentProviderOperationContractTests` and updated Stripe provider tests.
+- 2026-07-17: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~PaymentProviderOperationContractTests|FullyQualifiedName~StripeStorefrontPaymentProviderTests|FullyQualifiedName~PaymentProviderCapabilityRegistryTests"` passed 9/9.
+- 2026-07-17: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontCheckoutServiceTests|FullyQualifiedName~CommerceNodeStorefrontOpenApiContractTests|FullyQualifiedName~CommerceNodeStorefrontPaymentContractTests"` passed 70/70.
 
 Suggested commit:
 
