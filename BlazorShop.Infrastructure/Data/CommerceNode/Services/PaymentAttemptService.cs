@@ -196,34 +196,62 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var oldState = attempt.State;
-            if (string.Equals(newState, PaymentAttemptStates.Captured, StringComparison.OrdinalIgnoreCase)
-                && !attempt.OrderId.HasValue)
+            await using var transaction = string.Equals(newState, PaymentAttemptStates.Captured, StringComparison.OrdinalIgnoreCase)
+                && !attempt.OrderId.HasValue
+                && this.context.Database.IsRelational()
+                    ? await this.context.Database.BeginTransactionAsync(cancellationToken)
+                    : null;
+
+            try
             {
-                var orderResult = await this.CreateCapturedOrderAsync(attempt, request.MetadataJson, cancellationToken);
-                if (!orderResult.Success)
+                if (string.Equals(newState, PaymentAttemptStates.Captured, StringComparison.OrdinalIgnoreCase)
+                    && !attempt.OrderId.HasValue)
                 {
-                    return Failed<PaymentAttemptDto>(orderResult.ResponseType, orderResult.Message);
+                    var orderResult = await this.CreateCapturedOrderAsync(attempt, request.MetadataJson, cancellationToken);
+                    if (!orderResult.Success)
+                    {
+                        if (transaction is not null)
+                        {
+                            await transaction.RollbackAsync(cancellationToken);
+                        }
+
+                        return Failed<PaymentAttemptDto>(orderResult.ResponseType, orderResult.Message);
+                    }
+                }
+
+                attempt.State = newState;
+                attempt.ProviderReference = NormalizeNullable(request.ProviderReference) ?? attempt.ProviderReference;
+                attempt.ProviderSessionId = NormalizeNullable(request.ProviderSessionId) ?? attempt.ProviderSessionId;
+                attempt.NextActionType = NormalizeNullable(request.NextActionType);
+                attempt.NextActionUrl = NormalizeNullable(request.NextActionUrl);
+                attempt.FailureCode = NormalizeNullable(request.FailureCode);
+                attempt.FailureMessage = NormalizeNullable(request.FailureMessage);
+                attempt.MetadataJson = NormalizeNullable(request.MetadataJson) ?? attempt.MetadataJson;
+                attempt.UpdatedAtUtc = DateTimeOffset.UtcNow;
+                this.AppendPaymentAudit(
+                    attempt,
+                    oldState,
+                    newState,
+                    $"payment_attempt.{newState}",
+                    $"Payment attempt changed from {oldState} to {newState}.",
+                    request.MetadataJson);
+
+                await this.context.SaveChangesAsync(cancellationToken);
+                if (transaction is not null)
+                {
+                    await transaction.CommitAsync(cancellationToken);
                 }
             }
+            catch
+            {
+                if (transaction is not null)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                }
 
-            attempt.State = newState;
-            attempt.ProviderReference = NormalizeNullable(request.ProviderReference) ?? attempt.ProviderReference;
-            attempt.ProviderSessionId = NormalizeNullable(request.ProviderSessionId) ?? attempt.ProviderSessionId;
-            attempt.NextActionType = NormalizeNullable(request.NextActionType);
-            attempt.NextActionUrl = NormalizeNullable(request.NextActionUrl);
-            attempt.FailureCode = NormalizeNullable(request.FailureCode);
-            attempt.FailureMessage = NormalizeNullable(request.FailureMessage);
-            attempt.MetadataJson = NormalizeNullable(request.MetadataJson) ?? attempt.MetadataJson;
-            attempt.UpdatedAtUtc = DateTimeOffset.UtcNow;
-            this.AppendPaymentAudit(
-                attempt,
-                oldState,
-                newState,
-                $"payment_attempt.{newState}",
-                $"Payment attempt changed from {oldState} to {newState}.",
-                request.MetadataJson);
+                throw;
+            }
 
-            await this.context.SaveChangesAsync(cancellationToken);
             return Succeeded("Payment attempt updated.", ToDto(attempt));
         }
 

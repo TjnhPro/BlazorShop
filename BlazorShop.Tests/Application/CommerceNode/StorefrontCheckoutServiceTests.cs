@@ -1665,6 +1665,8 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 audit.PaymentAttemptId == attempt.Id
                 && audit.EventType == "payment_attempt.captured"
                 && audit.NewState == PaymentAttemptStates.Captured);
+            Assert.Single(context.OrderHistoryEntries.Where(item => item.EventType == "order.created"));
+            Assert.Single(context.CommerceTasks.Where(item => item.TaskType == OrderPlacementTaskTypes.OrderCreated));
             Assert.Equal(8, context.Products.Single(item => item.Id == product.Id).Quantity);
         }
 
@@ -2057,6 +2059,57 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.True(result.Success, result.Message);
             Assert.Single(context.Orders);
             Assert.Equal(0, context.Products.Single(item => item.Id == product.Id).Quantity);
+            Assert.Single(context.CommerceTasks.Where(item => item.TaskType == OrderPlacementTaskTypes.OrderCreated));
+        }
+
+        [Fact]
+        public async Task PlaceOrderAsync_WhenStockHookFails_DoesNotPersistPlacementSideEffects()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 15m, stock: 10);
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 2));
+            var placementService = new OrderPlacementService(
+                context,
+                new MoneyRoundingService(new CurrencyMetadataService()),
+                new ProductSellabilityResolver(),
+                new FailingOrderStockAdjustmentHook());
+            var service = CreateCheckoutService(
+                context,
+                cartService,
+                checkoutEnabled: true,
+                shippingCalculator: null,
+                moneyConversionService: null,
+                orderPlacementService: placementService);
+            var preview = await service.PreviewAsync(CreateRequest(storeId, cart.Payload.Token!, add.Payload!.Version));
+
+            var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                preview.Payload!.CheckoutSessionId,
+                preview.Payload.CheckoutVersion,
+                preview.Payload.CartVersion,
+                "stock-hook-fails"));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.Conflict, result.ResponseType);
+            Assert.Empty(context.Orders);
+            Assert.Empty(context.PaymentAttempts);
+            Assert.Empty(context.OrderHistoryEntries);
+            Assert.Empty(context.CommerceTasks);
+            Assert.Equal(CartSessionStates.Active, context.CartSessions.Single().State);
+            Assert.Equal(10, context.Products.Single(item => item.Id == product.Id).Quantity);
         }
 
         [Fact]
@@ -2283,7 +2336,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             IStorefrontCartService cartService,
             params IStorefrontPaymentProvider[] providers)
         {
-            return CreateCheckoutService(context, cartService, checkoutEnabled: true, shippingCalculator: null, moneyConversionService: null, providers);
+            return CreateCheckoutService(context, cartService, checkoutEnabled: true, shippingCalculator: null, moneyConversionService: null, providers: providers);
         }
 
         private static StorefrontCheckoutService CreateCheckoutService(
@@ -2292,7 +2345,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             bool checkoutEnabled,
             params IStorefrontPaymentProvider[] providers)
         {
-            return CreateCheckoutService(context, cartService, checkoutEnabled, shippingCalculator: null, moneyConversionService: null, providers);
+            return CreateCheckoutService(context, cartService, checkoutEnabled, shippingCalculator: null, moneyConversionService: null, providers: providers);
         }
 
         private static StorefrontCheckoutService CreateCheckoutService(
@@ -2301,7 +2354,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             IShippingCalculator shippingCalculator,
             params IStorefrontPaymentProvider[] providers)
         {
-            return CreateCheckoutService(context, cartService, checkoutEnabled: true, shippingCalculator, moneyConversionService: null, providers);
+            return CreateCheckoutService(context, cartService, checkoutEnabled: true, shippingCalculator, moneyConversionService: null, providers: providers);
         }
 
         private static StorefrontCheckoutService CreateCheckoutService(
@@ -2311,7 +2364,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             IMoneyConversionService moneyConversionService,
             params IStorefrontPaymentProvider[] providers)
         {
-            return CreateCheckoutService(context, cartService, checkoutEnabled: true, shippingCalculator, moneyConversionService, providers);
+            return CreateCheckoutService(context, cartService, checkoutEnabled: true, shippingCalculator, moneyConversionService, providers: providers);
         }
 
         private static StorefrontCheckoutService CreateCheckoutService(
@@ -2320,6 +2373,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             bool checkoutEnabled,
             IShippingCalculator? shippingCalculator,
             IMoneyConversionService? moneyConversionService,
+            IOrderPlacementService? orderPlacementService = null,
             params IStorefrontPaymentProvider[] providers)
         {
             IStorefrontPaymentProvider[] providerList = providers.Length == 0
@@ -2336,7 +2390,8 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 new StubStoreFeatureStateService(checkoutEnabled),
                 new PaymentProviderCapabilityRegistry(providerList),
                 new StorefrontPaymentProviderResolver(providerList),
-                shippingCalculator: shippingCalculator);
+                shippingCalculator: shippingCalculator,
+                orderPlacementService: orderPlacementService);
         }
 
         private static StorefrontCartService CreateCartService(
@@ -2598,6 +2653,18 @@ namespace BlazorShop.Tests.Application.CommerceNode
                         Payload = result,
                         ResponseType = ServiceResponseType.Success,
                     });
+            }
+        }
+
+        private sealed class FailingOrderStockAdjustmentHook : IOrderStockAdjustmentHook
+        {
+            public Task<OrderStockAdjustmentResult> ApplyAsync(
+                OrderStockAdjustmentRequest request,
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(OrderStockAdjustmentResult.Failed(
+                    ServiceResponseType.Conflict,
+                    "Injected stock adjustment failure."));
             }
         }
 

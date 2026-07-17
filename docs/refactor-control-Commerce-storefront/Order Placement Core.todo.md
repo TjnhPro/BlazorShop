@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Order Placement Core.md`
 
-Status: Phase 5 complete. Phase 6 not started.
+Status: Phase 6 complete. Phase 7 not started.
 
 Scope: turn the existing Commerce Node order placement flow from a working checkout MVP into a practical order core. The goal is stable historical order snapshots, safe placement guarantees, and enough order state history for real store operations without adding a full OMS, tax engine, discount engine, stock reservation ledger, invoice/accounting system, or fulfillment platform.
 
@@ -32,17 +32,17 @@ Approved:
   - [x] add centralized transition helper for order lifecycle changes. 2026-07-17 Phase 5: `OrderLifecycleTransitionHelper`.
   - [x] add order note/history rows for status changes and system events. 2026-07-17 Phase 5: `OrderHistoryEntry` plus CommerceNode migration.
   - [x] keep admin note as a separate editable note. 2026-07-17 Phase 5: admin note remains editable on `Order`; timeline receives an append-only event only.
-- [ ] Placement guarantees:
-  - [ ] transactional order creation for synchronous placement paths.
-  - [ ] preserve checkout/payment idempotency.
-  - [ ] revalidate cart, products, variants, quantities, payment method, shipping option, currency, and totals at placement.
-  - [ ] prevent duplicate order on retry.
-  - [ ] create or link `PaymentAttempt`.
-  - [ ] keep existing stock deduction behavior.
-  - [ ] expose stock reservation hook only.
-  - [ ] close cart only after completed/captured order.
-  - [ ] publish order-created event through a lightweight Commerce Node outbox/task hook.
-  - [ ] queue notifications outside the main transaction.
+- [x] Placement guarantees:
+  - [x] transactional order creation for synchronous placement paths. 2026-07-17 Phase 6: COD path keeps relational transaction.
+  - [x] preserve checkout/payment idempotency. 2026-07-17 Phase 6.
+  - [x] revalidate cart, products, variants, quantities, payment method, shipping option, currency, and totals at placement. 2026-07-17 Phase 6: existing checkout revalidation preserved.
+  - [x] prevent duplicate order on retry. 2026-07-17 Phase 6.
+  - [x] create or link `PaymentAttempt`. 2026-07-17 Phase 6.
+  - [x] keep existing stock deduction behavior. 2026-07-17 Phase 6: moved into default stock adjustment hook.
+  - [x] expose stock reservation hook only. 2026-07-17 Phase 6: `IOrderStockAdjustmentHook`.
+  - [x] close cart only after completed/captured order. 2026-07-17 Phase 6.
+  - [x] publish order-created event through a lightweight Commerce Node outbox/task hook. 2026-07-17 Phase 6: `commerce_task` row with task type `order.created`.
+  - [x] queue notifications outside the main transaction. 2026-07-17 Phase 6: only a durable task row is written during placement.
 - [ ] API/contract hardening:
   - [ ] additive Storefront order response fields.
   - [ ] additive Commerce Admin order fields.
@@ -528,42 +528,42 @@ Goal: make order creation, cart closure, payment link, stock deduction, history,
 
 Implementation checklist:
 
-- [ ] Ensure COD/offline placement uses explicit relational transaction.
-- [ ] Wrap online captured order creation in explicit relational transaction.
-- [ ] Inside transaction create order and lines.
-- [ ] Inside transaction link payment attempt.
-- [ ] Inside transaction deduct stock or call reservation hook.
-- [ ] Inside transaction close cart.
-- [ ] Inside transaction complete checkout.
-- [ ] Inside transaction append order history.
-- [ ] Inside transaction create outbox/task row for order-created notification/event.
-- [ ] After commit return response.
-- [ ] Let background worker/task process notification/event.
-- [ ] Add `IStockReservationHook` or `IOrderStockAdjustmentHook`.
-- [ ] Default stock hook matches current stock deduction behavior.
-- [ ] Add idempotency guard for event enqueue based on order id/event type.
+- [x] Ensure COD/offline placement uses explicit relational transaction. 2026-07-17 Phase 6.
+- [x] Wrap online captured order creation in explicit relational transaction. 2026-07-17 Phase 6.
+- [x] Inside transaction create order and lines. 2026-07-17 Phase 6.
+- [x] Inside transaction link payment attempt. 2026-07-17 Phase 6.
+- [x] Inside transaction deduct stock or call reservation hook. 2026-07-17 Phase 6.
+- [x] Inside transaction close cart. 2026-07-17 Phase 6.
+- [x] Inside transaction complete checkout. 2026-07-17 Phase 6.
+- [x] Inside transaction append order history. 2026-07-17 Phase 6.
+- [x] Inside transaction create outbox/task row for order-created notification/event. 2026-07-17 Phase 6.
+- [x] After commit return response. 2026-07-17 Phase 6.
+- [x] Let background worker/task process notification/event. 2026-07-17 Phase 6: existing CommerceTask worker remains owner of dispatch.
+- [x] Add `IStockReservationHook` or `IOrderStockAdjustmentHook`. 2026-07-17 Phase 6.
+- [x] Default stock hook matches current stock deduction behavior. 2026-07-17 Phase 6.
+- [x] Add idempotency guard for event enqueue based on order id/event type. 2026-07-17 Phase 6.
 
 Rules:
 
-- [ ] No email/provider notification is sent inside main transaction.
-- [ ] Durable outbox/task row is written inside transaction.
-- [ ] External dispatch happens later.
-- [ ] Retried idempotency key returns original order/payment result.
+- [x] No email/provider notification is sent inside main transaction. 2026-07-17 Phase 6.
+- [x] Durable outbox/task row is written inside transaction. 2026-07-17 Phase 6.
+- [x] External dispatch happens later. 2026-07-17 Phase 6.
+- [x] Retried idempotency key returns original order/payment result. 2026-07-17 Phase 6.
 
 Verification checklist:
 
-- [ ] Duplicate place-order creates one order.
-- [ ] Duplicate place-order creates one payment attempt.
-- [ ] Duplicate place-order creates one order-created history entry.
-- [ ] Duplicate place-order creates one outbox/task row.
-- [ ] Simulated exception before commit rolls back order/cart/stock/history/outbox changes.
-- [ ] Captured online payment replay does not create duplicate order/history/outbox rows.
-- [ ] Unmanaged-stock products still do not deduct below zero.
+- [x] Duplicate place-order creates one order. 2026-07-17 Phase 6.
+- [x] Duplicate place-order creates one payment attempt. 2026-07-17 Phase 6.
+- [x] Duplicate place-order creates one order-created history entry. 2026-07-17 Phase 6.
+- [x] Duplicate place-order creates one outbox/task row. 2026-07-17 Phase 6.
+- [x] Simulated exception before commit rolls back order/cart/stock/history/outbox changes. 2026-07-17 Phase 6: failing stock hook leaves no placement side effects.
+- [x] Captured online payment replay does not create duplicate order/history/outbox rows. 2026-07-17 Phase 6.
+- [x] Unmanaged-stock products still do not deduct below zero. 2026-07-17 Phase 6.
 
 Exit criteria:
 
-- [ ] Placement has clear transactional boundaries.
-- [ ] Placement side effects are replay-safe.
+- [x] Placement has clear transactional boundaries. 2026-07-17 Phase 6.
+- [x] Placement side effects are replay-safe. 2026-07-17 Phase 6.
 
 Suggested commit:
 
@@ -679,8 +679,8 @@ test(order-placement): verify order placement core
 - [x] Order status transition helper enforces complete/cancel rules. 2026-07-17 Phase 5.
 - [x] Order history appends for create/payment/shipping/complete/cancel. 2026-07-17 Phase 5.
 - [x] Shipping status writes normalized constants. 2026-07-17 Phase 5.
-- [ ] Placement transaction rolls back on injected failure.
-- [ ] Order-created event/outbox/task is idempotent.
+- [x] Placement transaction rolls back on injected failure. 2026-07-17 Phase 6.
+- [x] Order-created event/outbox/task is idempotent. 2026-07-17 Phase 6.
 - [ ] Public Storefront schemas do not expose token hash, admin note, raw payment metadata, or domain entities.
 - [ ] Commerce Admin schemas expose safe snapshot/history fields.
 
@@ -746,8 +746,8 @@ test(order-placement): verify order placement core
   - [x] cancel rules. 2026-07-17 Phase 5.
   - [x] shipping transition rules. 2026-07-17 Phase 5.
   - [x] history appended. 2026-07-17 Phase 5.
-- [ ] Transaction rollback tests:
-  - [ ] injected placement failure rolls back order/cart/stock/history/outbox.
+ - [x] Transaction rollback tests: 2026-07-17 Phase 6.
+  - [x] injected placement failure rolls back order/cart/stock/history/outbox. 2026-07-17 Phase 6.
 - [ ] API contract tests:
   - [ ] operation IDs.
   - [ ] schemas.
@@ -798,7 +798,7 @@ test(order-placement): verify order placement core
 - [x] Phase 3 - fill permanent order snapshots. 2026-07-17: committed after snapshot mutation and checkout/payment focused tests passed.
 - [x] Phase 4 - guest completion access token. 2026-07-17: committed after guest lookup/OpenAPI/model focused tests passed.
 - [x] Phase 5 - order status transition and history. 2026-07-17: committed after CommerceNode API build and focused 95/95 test run.
-- [ ] Phase 6 - placement transaction and event hook.
+- [x] Phase 6 - placement transaction and event hook. 2026-07-17: committed after CommerceNode API build and focused 88/88 test run.
 - [ ] Phase 7 - API projection and Storefront/Admin integration.
 - [ ] Phase 8 - QA, migration safety, and documentation.
 
@@ -814,7 +814,7 @@ test(order-placement): verify order placement core
 - [ ] New orders snapshot line item details.
 - [ ] Guest completion is protected by a token that is not the order reference.
 - [x] Order status changes append order-local history. 2026-07-17 Phase 5.
-- [ ] Placement side effects are transactional and replay-safe.
+- [x] Placement side effects are transactional and replay-safe. 2026-07-17 Phase 6.
 - [ ] Public DTOs expose safe additive fields only.
 - [ ] Admin DTOs expose safe additive fields only.
 - [ ] Existing checkout/payment/storefront flows remain green.

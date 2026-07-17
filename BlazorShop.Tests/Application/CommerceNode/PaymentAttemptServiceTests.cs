@@ -215,6 +215,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 ["order.created", "payment.captured"],
                 context.OrderHistoryEntries.Select(item => item.EventType).OrderBy(item => item).ToArray());
             Assert.All(context.OrderHistoryEntries, item => Assert.True(item.VisibleToCustomer));
+            Assert.Single(context.CommerceTasks.Where(item => item.TaskType == OrderPlacementTaskTypes.OrderCreated));
         }
 
         [Fact]

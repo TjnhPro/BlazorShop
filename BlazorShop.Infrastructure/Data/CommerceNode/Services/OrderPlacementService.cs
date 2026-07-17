@@ -23,15 +23,18 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly CommerceNodeDbContext context;
         private readonly IMoneyRoundingService moneyRoundingService;
         private readonly IProductSellabilityResolver sellabilityResolver;
+        private readonly IOrderStockAdjustmentHook stockAdjustmentHook;
 
         public OrderPlacementService(
             CommerceNodeDbContext context,
             IMoneyRoundingService? moneyRoundingService = null,
-            IProductSellabilityResolver? sellabilityResolver = null)
+            IProductSellabilityResolver? sellabilityResolver = null,
+            IOrderStockAdjustmentHook? stockAdjustmentHook = null)
         {
             this.context = context;
             this.moneyRoundingService = moneyRoundingService ?? new MoneyRoundingService(new CurrencyMetadataService());
             this.sellabilityResolver = sellabilityResolver ?? new ProductSellabilityResolver();
+            this.stockAdjustmentHook = stockAdjustmentHook ?? new DefaultOrderStockAdjustmentHook();
         }
 
         public async Task<OrderPlacementResult> PlaceAsync(
@@ -85,13 +88,18 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 order.GuestAccessTokenExpiresAtUtc = now.AddDays(30);
             }
 
-            this.context.Orders.Add(order);
-
-            foreach (var line in lines.Lines)
+            var stockAdjustment = await this.stockAdjustmentHook.ApplyAsync(
+                new OrderStockAdjustmentRequest(
+                    request.StoreId,
+                    order,
+                    lines.Lines.Select(line => new OrderStockAdjustmentLine(line.CartLine, line.Product, line.Variant)).ToArray()),
+                cancellationToken);
+            if (!stockAdjustment.Success)
             {
-                DeductTrackedStock(line);
+                return OrderPlacementResult.Failed(stockAdjustment.ResponseType, stockAdjustment.Message);
             }
 
+            this.context.Orders.Add(order);
             CompleteCheckout(request.CheckoutSession, cart, order, now);
             if (request.PaymentAttempt is not null)
             {
@@ -104,6 +112,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             {
                 OrderLifecycleTransitionHelper.RecordPaymentCaptured(this.context, order, request.Snapshot.PaymentStatus);
             }
+
+            await OrderPlacementTaskOutbox.AddOrderCreatedTaskAsync(this.context, order, cancellationToken);
 
             return OrderPlacementResult.Succeeded(order, guestAccessToken);
         }
@@ -326,27 +336,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             {
                 return null;
             }
-        }
-
-        private static void DeductTrackedStock(OrderLineSnapshot line)
-        {
-            if (!string.IsNullOrWhiteSpace(line.CartLine.FulfillmentProviderKey))
-            {
-                return;
-            }
-
-            if (!line.Product.ManageStock)
-            {
-                return;
-            }
-
-            if (line.Variant is not null)
-            {
-                line.Variant.Stock -= line.CartLine.Quantity;
-                return;
-            }
-
-            line.Product.Quantity -= line.CartLine.Quantity;
         }
 
         private static ServiceResponseType ResolveOrderLineFailureResponseType(IReadOnlyList<string> reasons)

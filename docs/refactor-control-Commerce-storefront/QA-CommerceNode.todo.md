@@ -1082,6 +1082,12 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Shipment upsert and tracking/status updates append order-local history and normalize stored shipping status to `shipped`/`delivered`. 2026-07-17 Phase 5: `CommerceNodeAdminShipmentServiceTests` covered shipment upsert and delivered update.
 - [x] Admin complete/cancel transitions append order-local history while keeping `AdminAuditLog` writes. 2026-07-17 Phase 5: focused admin order transition tests passed.
 - [x] Order Placement Phase 5 focused release gate passed. 2026-07-17: CommerceNode API build passed and focused model/checkout/payment/shipment/admin transition run passed 95/95.
+- [x] Order placement writes a durable `order.created` CommerceTask row in the same placement unit of work. 2026-07-17 Phase 6: COD and online capture tests assert one `order.created` task.
+- [x] Duplicate COD place-order returns the original result without duplicate order/payment/history/task rows. 2026-07-17 Phase 6: `PlaceOrderAsync_DuplicateIdempotencyKey_ReturnsSameOrder` passed.
+- [x] Captured online payment replay does not duplicate order-local history or outbox task rows. 2026-07-17 Phase 6: `PaymentAttemptServiceTests.TransitionAsync_CapturedOnlineAttemptCreatesOrderExactlyOnce` passed.
+- [x] Stock adjustment is behind `IOrderStockAdjustmentHook` and default behavior preserves unmanaged-stock products. 2026-07-17 Phase 6: unmanaged stock checkout remains at quantity `0` after order.
+- [x] Injected stock hook failure leaves no order/payment/history/task side effects and keeps cart active. 2026-07-17 Phase 6: `PlaceOrderAsync_WhenStockHookFails_DoesNotPersistPlacementSideEffects` passed.
+- [x] Order Placement Phase 6 focused release gate passed. 2026-07-17: CommerceNode API build passed and focused checkout/payment/model run passed 88/88.
 
 ## Payment Core
 
