@@ -90,9 +90,6 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             ("StorefrontCheckoutReviewResponse", "completedSteps"),
             ("StorefrontCheckoutReviewResponse", "lines"),
             ("StorefrontCheckoutReviewResponse", "issues"),
-            ("StorefrontOrderResponse", "trackingEvents"),
-            ("StorefrontOrderResponse", "historyEntries"),
-            ("StorefrontOrderResponse", "lines"),
             ("StorefrontCustomerOrderDetailResponse", "trackingEvents"),
             ("StorefrontCustomerOrderDetailResponse", "historyEntries"),
             ("StorefrontCustomerOrderDetailResponse", "lines"),
@@ -959,6 +956,30 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             var shippingMethod = schemas["StorefrontCustomerOrderShippingMethodResponse"]?.AsObject()
                 ?? throw new InvalidOperationException("StorefrontCustomerOrderShippingMethodResponse schema was not found.");
             Assert.DoesNotContain("providerSystemName", GetPropertyNames(shippingMethod), StringComparer.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_GuestOrderLookupRequiresTokenAndReturnsSafeDetailContract()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var operation = GetOperation(swagger, "StorefrontOrders_GetGuestOrder");
+
+            AssertRequiredRequestBody(operation);
+            Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(operation));
+
+            var requestSchema = ResolveRequestBodySchema(operation, schemas);
+            var required = GetRequiredProperties(requestSchema).ToArray();
+            Assert.Contains("reference", required);
+            Assert.Contains("token", required);
+            Assert.DoesNotContain("userId", GetPropertyNames(requestSchema), StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("customerId", GetPropertyNames(requestSchema), StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("storeId", GetPropertyNames(requestSchema), StringComparer.OrdinalIgnoreCase);
+
+            var responseJson = operation["responses"]?["200"]?["content"]?["application/json"]?["schema"]?.ToJsonString()
+                ?? throw new InvalidOperationException("Guest order response schema was not found.");
+            Assert.Contains("StorefrontCustomerOrderDetailResponse", responseJson, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontOrderResponse", responseJson, StringComparison.Ordinal);
         }
 
         [Fact]

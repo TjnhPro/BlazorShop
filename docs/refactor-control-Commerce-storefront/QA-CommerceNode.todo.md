@@ -1113,6 +1113,8 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Legacy current-user order fallback is limited to compatible old orders. 2026-07-17 Phase 4: fallback requires no `CustomerId`, matching `UserId`, and compatible email when present; service tests passed.
 - [x] Customer order detail/receipt enforce owner and store scope by reference. 2026-07-17 Phase 4: `GetAsync_EnforcesCurrentCustomerOwnerCheck` and receipt tests passed.
 - [x] Customer order self-service OpenAPI is generator-safe and Bearer-protected. 2026-07-17 Phase 4: `StorefrontSwagger_CustomerOrderSelfServiceHasSafeContracts` passed, snapshots refreshed, and unauthenticated detail/receipt return typed 401 errors.
+- [x] Guest completion lookup requires reference plus access token and compares only token hash. 2026-07-17 Phase 5: `StorefrontGuestOrderServiceTests.GetAsync_WithoutToken_ReturnsValidationError` passed; existing checkout guest lookup tests cover correct token, wrong token, and wrong store.
+- [x] Guest completion response uses safe order detail contract. 2026-07-17 Phase 5: `StorefrontOrders_GetGuestOrder` now returns `StorefrontCustomerOrderDetailResponse`, and `StorefrontSwagger_GuestOrderLookupRequiresTokenAndReturnsSafeDetailContract` passed.
 
 ## Payment Core
 

@@ -1975,7 +1975,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             CancellationToken cancellationToken)
         {
             var result = await this.guestOrderService.GetAsync(request.ToApplicationRequest(), cancellationToken);
-            return this.FromServiceResponse(result, order => order!.ToStorefrontContract());
+            return this.FromServiceResponse(result, order => order!.ToCustomerOrderDetailContract(receiptMode: true));
         }
 
         private string? GetCurrentCustomerId()

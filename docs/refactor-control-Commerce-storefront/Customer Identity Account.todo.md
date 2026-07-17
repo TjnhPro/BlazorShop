@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Customer Identity Account.md`
 
-Status: Phase 4 complete. Phase 5 not started.
+Status: Phase 5 complete. Phase 6 not started.
 
 Scope: move storefront customer identity and account self-service from MVP auth/cart behavior to a practical customer account core. Keep existing V2 boundaries, reuse server-side cart, address, checkout, and order placement foundations, and avoid building a full CRM/customer-group platform.
 
@@ -523,25 +523,25 @@ Goal: allow guest order completion/detail access without exposing predictable id
 
 Implementation checklist:
 
-- [ ] Depend on Order Placement Core guest access token fields.
-- [ ] Add guest completion lookup by `orderReference + token`.
-- [ ] Compare token by hash.
-- [ ] Return only completion-safe order detail.
-- [ ] Do not expose account-only address book/profile data.
-- [ ] Apply expiration/rotation if Order Placement Core defines it.
-- [ ] Otherwise document token lifetime as order access lifetime until privacy phase revisits it.
+- [x] Depend on Order Placement Core guest access token fields. 2026-07-17 Phase 5: uses `Order.GuestAccessTokenHash` and `GuestAccessTokenExpiresAtUtc`.
+- [x] Add guest completion lookup by `orderReference + token`. 2026-07-17 Phase 5: existing `POST /orders/guest-lookup` retained.
+- [x] Compare token by hash. 2026-07-17 Phase 5: `StorefrontGuestOrderService` hashes incoming token before query.
+- [x] Return only completion-safe order detail. 2026-07-17 Phase 5: guest route now returns `StorefrontCustomerOrderDetailResponse` instead of legacy `StorefrontOrderResponse`.
+- [x] Do not expose account-only address book/profile data. 2026-07-17 Phase 5: request accepts only reference/token; response is order snapshot detail only.
+- [x] Apply expiration/rotation if Order Placement Core defines it. 2026-07-17 Phase 5: query enforces `GuestAccessTokenExpiresAtUtc` when present.
+- [x] Otherwise document token lifetime as order access lifetime until privacy phase revisits it. 2026-07-17 Phase 5: current Order Placement Core token expiry is 30 days.
 
 Verification checklist:
 
-- [ ] Guest cannot fetch order by reference alone.
-- [ ] Wrong token returns not found or forbidden without leaking order existence.
-- [ ] Correct token succeeds.
-- [ ] Authenticated customer order detail does not require guest token.
-- [ ] Store scope is enforced.
+- [x] Guest cannot fetch order by reference alone. 2026-07-17 Phase 5: request schema requires token and service returns validation error for blank token.
+- [x] Wrong token returns not found or forbidden without leaking order existence. 2026-07-17 Phase 5: existing checkout/guest lookup test covers wrong token NotFound.
+- [x] Correct token succeeds. 2026-07-17 Phase 5: existing checkout/guest lookup test covers success.
+- [x] Authenticated customer order detail does not require guest token. 2026-07-17 Phase 5: Phase 4 protected detail route remains Bearer-based by reference only.
+- [x] Store scope is enforced. 2026-07-17 Phase 5: existing checkout/guest lookup test covers wrong store NotFound.
 
 Exit criteria:
 
-- [ ] Guest order completion uses non-predictable access token.
+- [x] Guest order completion uses non-predictable access token. 2026-07-17 Phase 5.
 
 Suggested commit:
 
@@ -774,7 +774,7 @@ test(customer-account): verify account core
 - [x] Phase 2 - registration policy and password recovery. 2026-07-17: CommerceNode API build passed, focused auth/OpenAPI/captcha tests passed 88/88, and Storefront OpenAPI snapshots were refreshed.
 - [x] Phase 3 - account profile API and Storefront pages. 2026-07-17: CommerceNode API build passed, Storefront V2 build passed, Storefront host/client subset passed 66/66, CommerceNode profile/OpenAPI subset passed 44/44, and customer service tests passed 10/10.
 - [x] Phase 4 - customer order self-service API. 2026-07-17: CommerceNode API build passed; focused customer-order/OpenAPI/auth run passed 43/43 and Storefront OpenAPI snapshots were refreshed.
-- [ ] Phase 5 - guest completion lookup.
+- [x] Phase 5 - guest completion lookup. 2026-07-17: CommerceNode API build passed; focused guest lookup/OpenAPI run passed 34/34 and Storefront OpenAPI snapshots were refreshed.
 - [ ] Phase 6 - Storefront account UI integration.
 - [ ] Phase 7 - contract, QA, and hardening.
 
