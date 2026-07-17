@@ -1,7 +1,9 @@
 namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 {
     using BlazorShop.Application.CommerceNode.Stores;
+    using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Contracts.Payment;
+    using BlazorShop.Domain.Entities.Payment;
 
     using Microsoft.EntityFrameworkCore;
 
@@ -36,6 +38,25 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             order.TrackingNumber = trackingNumber;
             order.TrackingUrl = trackingUrl;
             order.LastTrackingUpdate = DateTime.UtcNow;
+
+            var shipment = await this.context.Shipments
+                .AsNoTracking()
+                .FirstOrDefaultAsync(item => item.OrderId == order.Id && item.StoreId == storeId);
+            if (shipment is not null)
+            {
+                this.context.ShipmentTrackingEvents.Add(new ShipmentTrackingEvent
+                {
+                    ShipmentId = shipment.Id,
+                    StoreId = storeId.Value,
+                    OrderId = order.Id,
+                    Status = "tracking_updated",
+                    Message = "Order tracking updated.",
+                    OccurredAtUtc = order.LastTrackingUpdate.Value,
+                    Source = "manual_admin",
+                    CreatedAt = order.LastTrackingUpdate.Value,
+                });
+            }
+
             await this.context.SaveChangesAsync();
 
             return true;
@@ -63,6 +84,30 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             order.ShippedOn = shippedOn.HasValue ? EnsureUtc(shippedOn.Value) : order.ShippedOn;
             order.DeliveredOn = deliveredOn.HasValue ? EnsureUtc(deliveredOn.Value) : order.DeliveredOn;
             order.LastTrackingUpdate = DateTime.UtcNow;
+
+            if (string.Equals(shippingStatus, ShippingStatuses.Delivered, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(shippingStatus, "Delivered", StringComparison.OrdinalIgnoreCase))
+            {
+                var shipment = await this.context.Shipments
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(item => item.OrderId == order.Id && item.StoreId == storeId);
+                if (shipment is not null)
+                {
+                    var occurredAt = order.DeliveredOn ?? order.LastTrackingUpdate.Value;
+                    this.context.ShipmentTrackingEvents.Add(new ShipmentTrackingEvent
+                    {
+                        ShipmentId = shipment.Id,
+                        StoreId = storeId.Value,
+                        OrderId = order.Id,
+                        Status = "delivered",
+                        Message = "Shipment delivered.",
+                        OccurredAtUtc = occurredAt,
+                        Source = "manual_admin",
+                        CreatedAt = order.LastTrackingUpdate.Value,
+                    });
+                }
+            }
+
             await this.context.SaveChangesAsync();
 
             return true;

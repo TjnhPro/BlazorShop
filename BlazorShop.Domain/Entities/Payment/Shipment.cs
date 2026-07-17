@@ -25,5 +25,9 @@ namespace BlazorShop.Domain.Entities.Payment
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public Order? Order { get; set; }
+
+        public ICollection<ShipmentItem> Items { get; set; } = new List<ShipmentItem>();
+
+        public ICollection<ShipmentTrackingEvent> TrackingEvents { get; set; } = new List<ShipmentTrackingEvent>();
     }
 }

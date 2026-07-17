@@ -52,6 +52,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             var shipment = await this.context.Shipments
                 .AsNoTracking()
+                .Include(item => item.Items)
+                .Include(item => item.TrackingEvents)
                 .FirstOrDefaultAsync(item => item.OrderId == orderId && item.StoreId == storeId);
 
             return shipment is null
@@ -81,6 +83,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var order = await this.context.Orders
+                .Include(item => item.Lines)
                 .FirstOrDefaultAsync(item => item.Id == orderId && item.StoreId == storeId);
 
             if (order is null)
@@ -88,10 +91,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failure("Order not found.", ServiceResponseType.NotFound);
             }
 
+            validationMessage = ValidateShipmentItems(request.Items, order.Lines);
+            if (!string.IsNullOrWhiteSpace(validationMessage))
+            {
+                return Failure(validationMessage, ServiceResponseType.ValidationError);
+            }
+
             var now = DateTime.UtcNow;
             var shipDate = EnsureUtc(request.ShipDate);
             var shipment = await this.context.Shipments
+                .Include(item => item.Items)
                 .FirstOrDefaultAsync(item => item.OrderId == orderId && item.StoreId == storeId);
+
+            var isNewShipment = shipment is null;
+            var trackingChanged = false;
 
             if (shipment is null)
             {
@@ -103,6 +116,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 };
                 this.context.Shipments.Add(shipment);
             }
+            else
+            {
+                trackingChanged = !string.Equals(shipment.CarrierName, request.CarrierName.Trim(), StringComparison.Ordinal)
+                    || !string.Equals(shipment.CarrierService, NormalizeOptional(request.CarrierService), StringComparison.Ordinal)
+                    || !string.Equals(shipment.TrackingNumber, request.TrackingNumber.Trim(), StringComparison.Ordinal)
+                    || !string.Equals(shipment.TrackingUrl, NormalizeOptional(request.TrackingUrl), StringComparison.Ordinal)
+                    || shipment.ShipDate != shipDate;
+            }
 
             shipment.ShipDate = shipDate;
             shipment.CarrierName = request.CarrierName.Trim();
@@ -112,6 +133,52 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             shipment.Note = NormalizeOptional(request.Note);
             shipment.UpdatedAt = now;
 
+            if (request.Items is not null)
+            {
+                shipment.Items.Clear();
+                foreach (var item in request.Items)
+                {
+                    shipment.Items.Add(new ShipmentItem
+                    {
+                        ShipmentId = shipment.Id,
+                        OrderLineId = item.OrderLineId,
+                        ProductId = item.ProductId,
+                        Quantity = item.Quantity,
+                        CreatedAt = now,
+                        UpdatedAt = now,
+                    });
+                }
+            }
+
+            if (isNewShipment)
+            {
+                this.context.ShipmentTrackingEvents.Add(new ShipmentTrackingEvent
+                {
+                    ShipmentId = shipment.Id,
+                    StoreId = storeId.Value,
+                    OrderId = order.Id,
+                    Status = "shipped",
+                    Message = "Shipment created.",
+                    OccurredAtUtc = shipDate,
+                    Source = "manual_admin",
+                    CreatedAt = now,
+                });
+            }
+            else if (trackingChanged)
+            {
+                this.context.ShipmentTrackingEvents.Add(new ShipmentTrackingEvent
+                {
+                    ShipmentId = shipment.Id,
+                    StoreId = storeId.Value,
+                    OrderId = order.Id,
+                    Status = "tracking_updated",
+                    Message = "Shipment tracking updated.",
+                    OccurredAtUtc = now,
+                    Source = "manual_admin",
+                    CreatedAt = now,
+                });
+            }
+
             order.ShippingStatus = "Shipped";
             order.ShippedOn = shipDate;
             order.ShippingCarrier = shipment.CarrierName;
@@ -120,6 +187,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             order.LastTrackingUpdate = now;
 
             await this.context.SaveChangesAsync();
+            var trackingEventCount = await this.context.ShipmentTrackingEvents
+                .AsNoTracking()
+                .CountAsync(item => item.ShipmentId == shipment.Id);
+
             await this.LogAsync("Order.ShipmentUpserted", order.Id, "Order shipment upserted.", new
             {
                 shipment.Id,
@@ -129,9 +200,17 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 shipment.TrackingUrl,
                 shipment.ShipDate,
                 HasNote = !string.IsNullOrWhiteSpace(shipment.Note),
+                ItemCount = shipment.Items.Count,
+                TrackingEventCount = trackingEventCount,
             });
 
-            return Success(MapShipment(shipment), "Shipment saved successfully.");
+            var savedShipment = await this.context.Shipments
+                .AsNoTracking()
+                .Include(item => item.Items)
+                .Include(item => item.TrackingEvents)
+                .FirstAsync(item => item.Id == shipment.Id);
+
+            return Success(MapShipment(savedShipment), "Shipment saved successfully.");
         }
 
         private async Task<Guid?> ResolveCurrentStoreIdAsync()
@@ -197,6 +276,60 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return null;
         }
 
+        private static string? ValidateShipmentItems(
+            IReadOnlyList<UpsertShipmentItemRequest>? requestItems,
+            IEnumerable<OrderLine> orderLines)
+        {
+            if (requestItems is null || requestItems.Count == 0)
+            {
+                return null;
+            }
+
+            var orderLineLookup = orderLines.ToDictionary(item => item.Id);
+            var totalsByLine = new Dictionary<Guid, int>();
+
+            foreach (var item in requestItems)
+            {
+                if (item.OrderLineId == Guid.Empty)
+                {
+                    return "Shipment item order line id is required.";
+                }
+
+                if (item.ProductId == Guid.Empty)
+                {
+                    return "Shipment item product id is required.";
+                }
+
+                if (item.Quantity <= 0)
+                {
+                    return "Shipment item quantity must be greater than zero.";
+                }
+
+                if (!orderLineLookup.TryGetValue(item.OrderLineId, out var orderLine))
+                {
+                    return "Shipment item order line does not belong to this order.";
+                }
+
+                if (orderLine.ProductId != item.ProductId)
+                {
+                    return "Shipment item product id must match the order line.";
+                }
+
+                if (totalsByLine.ContainsKey(item.OrderLineId))
+                {
+                    return "Shipment item order line can only appear once.";
+                }
+
+                totalsByLine[item.OrderLineId] = item.Quantity;
+                if (item.Quantity > orderLine.Quantity)
+                {
+                    return "Shipment item quantity cannot exceed ordered quantity.";
+                }
+            }
+
+            return null;
+        }
+
         private static GetShipment MapShipment(Shipment shipment)
         {
             return new GetShipment
@@ -212,6 +345,28 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 Note = shipment.Note,
                 CreatedAt = shipment.CreatedAt,
                 UpdatedAt = shipment.UpdatedAt,
+                Items = shipment.Items
+                    .OrderBy(item => item.CreatedAt)
+                    .Select(item => new GetShipmentItem
+                    {
+                        Id = item.Id,
+                        OrderLineId = item.OrderLineId,
+                        ProductId = item.ProductId,
+                        Quantity = item.Quantity,
+                    })
+                    .ToList(),
+                TrackingEvents = shipment.TrackingEvents
+                    .OrderBy(item => item.OccurredAtUtc)
+                    .Select(item => new GetShipmentTrackingEvent
+                    {
+                        Id = item.Id,
+                        Status = item.Status,
+                        Message = item.Message,
+                        OccurredAtUtc = item.OccurredAtUtc,
+                        Location = item.Location,
+                        Source = item.Source,
+                    })
+                    .ToList(),
             };
         }
 

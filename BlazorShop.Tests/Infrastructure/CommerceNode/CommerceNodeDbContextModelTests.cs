@@ -349,6 +349,41 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal(128, modelEntity.FindProperty(nameof(Order.ShippingDeliveryEstimateText))!.GetMaxLength());
         }
 
+        [Fact]
+        public void ShipmentItemsAndTrackingEvents_HaveSafeRelationshipsAndLengths()
+        {
+            using var context = CreateContext();
+            var shipmentItemEntity = context.Model.FindEntityType(typeof(ShipmentItem));
+            var trackingEventEntity = context.Model.FindEntityType(typeof(ShipmentTrackingEvent));
+
+            Assert.NotNull(shipmentItemEntity);
+            Assert.NotNull(trackingEventEntity);
+            Assert.Equal("ShipmentItems", shipmentItemEntity!.GetTableName());
+            Assert.Equal("ShipmentTrackingEvents", trackingEventEntity!.GetTableName());
+
+            var shipmentLineIndex = shipmentItemEntity.GetIndexes()
+                .SingleOrDefault(index => index.Properties.Select(property => property.Name).SequenceEqual(["ShipmentId", "OrderLineId"]));
+            var orderLineForeignKey = shipmentItemEntity.GetForeignKeys()
+                .SingleOrDefault(key => key.PrincipalEntityType.ClrType == typeof(OrderLine));
+            var shipmentItemForeignKey = shipmentItemEntity.GetForeignKeys()
+                .SingleOrDefault(key => key.PrincipalEntityType.ClrType == typeof(Shipment));
+            var shipmentEventForeignKey = trackingEventEntity.GetForeignKeys()
+                .SingleOrDefault(key => key.PrincipalEntityType.ClrType == typeof(Shipment));
+
+            Assert.NotNull(shipmentLineIndex);
+            Assert.True(shipmentLineIndex!.IsUnique);
+            Assert.NotNull(orderLineForeignKey);
+            Assert.Equal(DeleteBehavior.Restrict, orderLineForeignKey!.DeleteBehavior);
+            Assert.NotNull(shipmentItemForeignKey);
+            Assert.Equal(DeleteBehavior.Cascade, shipmentItemForeignKey!.DeleteBehavior);
+            Assert.NotNull(shipmentEventForeignKey);
+            Assert.Equal(DeleteBehavior.Cascade, shipmentEventForeignKey!.DeleteBehavior);
+            Assert.Equal(64, trackingEventEntity.FindProperty(nameof(ShipmentTrackingEvent.Status))!.GetMaxLength());
+            Assert.Equal(500, trackingEventEntity.FindProperty(nameof(ShipmentTrackingEvent.Message))!.GetMaxLength());
+            Assert.Equal(160, trackingEventEntity.FindProperty(nameof(ShipmentTrackingEvent.Location))!.GetMaxLength());
+            Assert.Equal(64, trackingEventEntity.FindProperty(nameof(ShipmentTrackingEvent.Source))!.GetMaxLength());
+        }
+
         private static CommerceNodeDbContext CreateContext()
         {
             var options = new DbContextOptionsBuilder<CommerceNodeDbContext>()

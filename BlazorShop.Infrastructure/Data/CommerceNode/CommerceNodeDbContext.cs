@@ -47,6 +47,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
         public DbSet<Shipment> Shipments => Set<Shipment>();
 
+        public DbSet<ShipmentItem> ShipmentItems => Set<ShipmentItem>();
+
+        public DbSet<ShipmentTrackingEvent> ShipmentTrackingEvents => Set<ShipmentTrackingEvent>();
+
         public DbSet<SeoRedirect> SeoRedirects => Set<SeoRedirect>();
 
         public DbSet<SeoSettings> SeoSettings => Set<SeoSettings>();
@@ -1448,6 +1452,74 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                     .WithMany()
                     .HasForeignKey(shipment => shipment.OrderId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(shipment => shipment.Items)
+                    .WithOne(item => item.Shipment)
+                    .HasForeignKey(item => item.ShipmentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(shipment => shipment.TrackingEvents)
+                    .WithOne(trackingEvent => trackingEvent.Shipment)
+                    .HasForeignKey(trackingEvent => trackingEvent.ShipmentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<ShipmentItem>(entity =>
+            {
+                entity.ToTable("ShipmentItems");
+                entity.HasKey(item => item.Id);
+
+                entity.Property(item => item.Quantity)
+                    .IsRequired();
+
+                entity.Property(item => item.CreatedAt)
+                    .HasColumnType("timestamp with time zone")
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.Property(item => item.UpdatedAt)
+                    .HasColumnType("timestamp with time zone")
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasIndex(item => item.ShipmentId);
+                entity.HasIndex(item => item.OrderLineId);
+                entity.HasIndex(item => new { item.ShipmentId, item.OrderLineId })
+                    .IsUnique();
+
+                entity.HasOne(item => item.OrderLine)
+                    .WithMany()
+                    .HasForeignKey(item => item.OrderLineId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ShipmentTrackingEvent>(entity =>
+            {
+                entity.ToTable("ShipmentTrackingEvents");
+                entity.HasKey(trackingEvent => trackingEvent.Id);
+
+                entity.Property(trackingEvent => trackingEvent.Status)
+                    .HasMaxLength(64)
+                    .IsRequired();
+
+                entity.Property(trackingEvent => trackingEvent.Message)
+                    .HasMaxLength(500)
+                    .IsRequired();
+
+                entity.Property(trackingEvent => trackingEvent.Location)
+                    .HasMaxLength(160);
+
+                entity.Property(trackingEvent => trackingEvent.Source)
+                    .HasMaxLength(64)
+                    .IsRequired();
+
+                entity.Property(trackingEvent => trackingEvent.OccurredAtUtc)
+                    .HasColumnType("timestamp with time zone");
+
+                entity.Property(trackingEvent => trackingEvent.CreatedAt)
+                    .HasColumnType("timestamp with time zone")
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasIndex(trackingEvent => new { trackingEvent.StoreId, trackingEvent.OrderId, trackingEvent.OccurredAtUtc });
+                entity.HasIndex(trackingEvent => new { trackingEvent.ShipmentId, trackingEvent.OccurredAtUtc });
             });
 
             modelBuilder.Entity<PaymentMethod>(entity =>

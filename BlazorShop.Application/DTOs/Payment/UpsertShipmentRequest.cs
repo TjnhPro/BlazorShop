@@ -13,5 +13,16 @@ namespace BlazorShop.Application.DTOs.Payment
         public string? TrackingUrl { get; set; }
 
         public string? Note { get; set; }
+
+        public IReadOnlyList<UpsertShipmentItemRequest>? Items { get; set; }
+    }
+
+    public sealed class UpsertShipmentItemRequest
+    {
+        public Guid OrderLineId { get; set; }
+
+        public Guid ProductId { get; set; }
+
+        public int Quantity { get; set; }
     }
 }

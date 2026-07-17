@@ -622,6 +622,12 @@ Plan: `Cart Core.todo.md`.
 - [ ] Existing `PUT /api/commerce/admin/orders/{orderId}/tracking` still works after shipment migration.
 - [ ] Existing `PUT /api/commerce/admin/orders/{orderId}/shipping-status` still works after shipment migration.
 - [ ] Storefront order detail still reads shipping info from existing order fields.
+- [x] Shipment upsert without `Items` remains backward compatible. 2026-07-17 Phase 7: `CommerceNodeAdminShipmentServiceTests.UpsertShipmentAsync_WithoutItems_CreatesBackwardCompatibleFullOrderShipment` passed.
+- [x] Shipment item quantity cannot exceed ordered quantity. 2026-07-17 Phase 7: `CommerceNodeAdminShipmentServiceTests.UpsertShipmentAsync_WithItems_RejectsQuantityGreaterThanOrderedQuantity` passed.
+- [x] Shipment item rows and created tracking event persist for itemized shipment. 2026-07-17 Phase 7: `CommerceNodeAdminShipmentServiceTests.UpsertShipmentAsync_WithItems_PersistsItemsAndTrackingEvent` passed.
+- [x] Shipment tracking changes append `tracking_updated` event without creating duplicate shipment. 2026-07-17 Phase 7: focused service test passed.
+- [x] Delivered shipping status appends `delivered` tracking event without synchronous email. 2026-07-17 Phase 7: focused service test passed.
+- [x] Shipment item/tracking event EF model uses safe relationships and lengths. 2026-07-17 Phase 7: `CommerceNodeDbContextModelTests.ShipmentItemsAndTrackingEvents_HaveSafeRelationshipsAndLengths` passed.
 - [x] No Storefront shipment endpoint is exposed under removed `api/internal/*`.
 
 ### Settings, Audit, Metrics

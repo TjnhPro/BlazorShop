@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Shipping Core.md`
 
-Status: Phase 6 complete. Phase 7 not started.
+Status: Phase 7 complete. Phase 8 not started.
 
 Scope: turn the current checkout shipping stub into a practical Shipping Core for active V2. The goal is enough shipping calculation, option selection, and shipment tracking for real store usage without building a carrier marketplace, warehouse engine, tax engine, label engine, or fulfillment orchestration platform.
 
@@ -40,19 +40,19 @@ Approved:
   - [x] update `ShippingTotal` and `GrandTotal` from selected option. 2026-07-17 Phase 3.
   - [x] snapshot selected shipping option in `CheckoutSession.SelectedShippingOptionJson`. 2026-07-17 Phase 3 keeps selected option JSON and selected flag.
   - [x] block checkout when shipping is required but no valid address/option exists. 2026-07-17 Phase 3: select/review/place-order guards use calculator result.
-- [ ] Shipment record improvement:
-  - [ ] keep one shipment per order for this phase.
-  - [ ] add shipment item/quantity model only if needed for partial shipment preparation.
-  - [ ] carrier.
-  - [ ] tracking number/URL.
-  - [ ] shipped/delivered timestamps.
-  - [ ] customer-visible tracking events hook.
-  - [ ] notification hook.
+- [x] Shipment record improvement:
+  - [x] keep one shipment per order for this phase. 2026-07-17 Phase 7: unique `(StoreId, OrderId)` shipment model remains.
+  - [x] add shipment item/quantity model only if needed for partial shipment preparation. 2026-07-17 Phase 7: additive `ShipmentItem` model added without changing default full-order behavior.
+  - [x] carrier. 2026-07-17 Phase 7: existing shipment carrier fields preserved.
+  - [x] tracking number/URL. 2026-07-17 Phase 7: existing shipment tracking fields preserved and tracking changes append manual events.
+  - [x] shipped/delivered timestamps. 2026-07-17 Phase 7: shipped timestamp remains on shipment/order; delivered status updates append delivered tracking event.
+  - [x] customer-visible tracking events hook. 2026-07-17 Phase 7: `ShipmentTrackingEvent` stores status, message, occurred-at, location, and source.
+  - [x] notification hook. 2026-07-17 Phase 7: manual shipment/tracking/delivered event rows provide the non-blocking hook shape; email/worker implementation remains deferred.
 - [ ] API/contract hardening:
   - [x] explicit DTOs for product surcharge field. 2026-07-17 Phase 4: product create/update/catalog DTOs expose nullable `ShippingSurcharge`.
   - [x] stable operation IDs for shipping settings admin endpoints. 2026-07-17 Phase 2: `CommerceShippingSettings_Get` and `CommerceShippingSettings_Update`.
   - [x] validation metadata for shipping settings admin contracts. 2026-07-17 Phase 2: admin service validates country code, money, origin, and surcharge policy inputs.
-  - [ ] safe public tracking projection.
+  - [ ] safe public tracking projection. Phase 8 will decide Storefront exposure of Phase 7 tracking events.
 
 Deferred:
 
@@ -427,41 +427,41 @@ Goal: prepare fulfillment tracking without implementing a full fulfillment engin
 
 Implementation checklist:
 
-- [ ] Keep current one-shipment-per-order model unless partial shipment becomes necessary.
-- [ ] If adding items, add `ShipmentItem`.
-- [ ] `ShipmentItem` includes:
-  - [ ] `ShipmentId`.
-  - [ ] `OrderLineId`.
-  - [ ] `ProductId`.
-  - [ ] `Quantity`.
-  - [ ] created/updated timestamps.
-- [ ] Validate shipment item quantities do not exceed ordered quantities.
-- [ ] If no items are provided, treat shipment as full-order shipment for backward compatibility.
-- [ ] Add DTO/contract for customer-visible tracking events:
-  - [ ] status.
-  - [ ] message.
-  - [ ] occurred at.
-  - [ ] optional location.
-  - [ ] source.
-- [ ] Initial tracking implementation can return empty events or manual events.
-- [ ] Do not add carrier polling job.
-- [ ] Add notification hook/task payload for:
-  - [ ] shipment created.
-  - [ ] tracking updated.
-  - [ ] delivered.
-- [ ] Do not send email synchronously from admin service.
-- [ ] Do not copy legacy `OrderTrackingService` email side effects.
+- [x] Keep current one-shipment-per-order model unless partial shipment becomes necessary. 2026-07-17 Phase 7: no split-shipment workflow added.
+- [x] If adding items, add `ShipmentItem`. 2026-07-17 Phase 7: additive entity and migration added.
+- [x] `ShipmentItem` includes:
+  - [x] `ShipmentId`. 2026-07-17 Phase 7.
+  - [x] `OrderLineId`. 2026-07-17 Phase 7.
+  - [x] `ProductId`. 2026-07-17 Phase 7.
+  - [x] `Quantity`. 2026-07-17 Phase 7.
+  - [x] created/updated timestamps. 2026-07-17 Phase 7.
+- [x] Validate shipment item quantities do not exceed ordered quantities. 2026-07-17 Phase 7: admin shipment service validates line ownership, product match, positive quantity, duplicate lines, and ordered quantity ceiling.
+- [x] If no items are provided, treat shipment as full-order shipment for backward compatibility. 2026-07-17 Phase 7: null `Items` preserves legacy upsert behavior.
+- [x] Add DTO/contract for customer-visible tracking events:
+  - [x] status. 2026-07-17 Phase 7.
+  - [x] message. 2026-07-17 Phase 7.
+  - [x] occurred at. 2026-07-17 Phase 7.
+  - [x] optional location. 2026-07-17 Phase 7.
+  - [x] source. 2026-07-17 Phase 7.
+- [x] Initial tracking implementation can return empty events or manual events. 2026-07-17 Phase 7: admin upsert/status flows append manual events; missing events project as empty lists.
+- [x] Do not add carrier polling job. 2026-07-17 Phase 7: no polling job or external carrier integration added.
+- [x] Add notification hook/task payload for:
+  - [x] shipment created. 2026-07-17 Phase 7: `shipped` tracking event row.
+  - [x] tracking updated. 2026-07-17 Phase 7: `tracking_updated` tracking event row.
+  - [x] delivered. 2026-07-17 Phase 7: `delivered` tracking event row from shipping-status flow.
+- [x] Do not send email synchronously from admin service. 2026-07-17 Phase 7: only data events/audit logs are written.
+- [x] Do not copy legacy `OrderTrackingService` email side effects. 2026-07-17 Phase 7: active CommerceNode tracking service remains email-free.
 
 Verification checklist:
 
-- [ ] Existing shipment upsert still works without items.
-- [ ] Shipment items validate quantities when supplied.
-- [ ] Tracking events endpoint/projection returns empty safe list when none exist.
-- [ ] Notification hook/task is queued or invoked without blocking shipment save.
+- [x] Existing shipment upsert still works without items. 2026-07-17 Phase 7: `CommerceNodeAdminShipmentServiceTests.UpsertShipmentAsync_WithoutItems_CreatesBackwardCompatibleFullOrderShipment` passed.
+- [x] Shipment items validate quantities when supplied. 2026-07-17 Phase 7: `CommerceNodeAdminShipmentServiceTests.UpsertShipmentAsync_WithItems_RejectsQuantityGreaterThanOrderedQuantity` passed.
+- [x] Tracking events endpoint/projection returns empty safe list when none exist. 2026-07-17 Phase 7: DTO defaults empty lists and admin projection loads events safely.
+- [x] Notification hook/task is queued or invoked without blocking shipment save. 2026-07-17 Phase 7: shipment/tracking/delivered event rows are written in-band without synchronous email.
 
 Exit criteria:
 
-- [ ] Shipment model can evolve toward partial fulfillment without breaking current admin upsert.
+- [x] Shipment model can evolve toward partial fulfillment without breaking current admin upsert. 2026-07-17 Phase 7: focused tests pass for no-item and itemized upserts.
 
 Suggested commit:
 
@@ -704,7 +704,7 @@ test(shipping-core): verify shipping core
 - [x] Phase 4 - product shipping surcharge hook. 2026-07-17.
 - [x] Phase 5 - currency conversion and tax hook. 2026-07-17.
 - [x] Phase 6 - order placement and shipping snapshot. 2026-07-17.
-- [ ] Phase 7 - shipment record items and tracking events hook.
+- [x] Phase 7 - shipment record items and tracking events hook. 2026-07-17: implemented and verified with CommerceNode API build plus 111 focused tests.
 - [ ] Phase 8 - admin and Storefront projection.
 - [ ] Phase 9 - QA, migration, and documentation.
 
@@ -722,7 +722,7 @@ test(shipping-core): verify shipping core
 - [x] Shipping totals are included in order total. 2026-07-17 Phase 6.
 - [x] Shipping totals are included in payment amount. 2026-07-17 Phase 6.
 - [ ] Currency conversion works or fails with clear conflict when missing.
-- [ ] Shipment admin upsert remains compatible.
+- [x] Shipment admin upsert remains compatible. 2026-07-17 Phase 7.
 - [ ] Public Storefront contracts do not leak admin-only shipping settings.
 - [ ] Active V2 API contract tests pass.
 - [ ] Focused shipping tests pass.
