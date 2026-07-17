@@ -973,6 +973,11 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "Cancel a Storefront checkout session.",
                         typeof(CommerceNodeApiResponse<StorefrontCheckoutSessionResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedCheckout", "UpdateAddresses")] = new(
+                        "StorefrontCheckout_UpdateAddresses",
+                        "Update checkout billing and shipping addresses.",
+                        typeof(CommerceNodeApiResponse<StorefrontCheckoutSessionResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedCheckout", "Preview")] = new(
                         "StorefrontCheckout_Preview",
                         "Preview and validate a Storefront checkout session.",

@@ -419,6 +419,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.Property(session => session.CustomerEmail).HasColumnName("customer_email").HasMaxLength(256).IsRequired();
                 entity.Property(session => session.CustomerName).HasColumnName("customer_name").HasMaxLength(256).IsRequired();
                 entity.Property(session => session.CustomerPhone).HasColumnName("customer_phone").HasMaxLength(64);
+                entity.Property(session => session.BillingAddressSnapshotJson).HasColumnName("billing_address_snapshot_json").HasColumnType("jsonb");
+                entity.Property(session => session.ShippingAddressSource).HasColumnName("shipping_address_source").HasMaxLength(64).HasDefaultValue("direct").IsRequired();
                 entity.Property(session => session.ShippingFullName).HasColumnName("shipping_full_name").HasMaxLength(256).IsRequired();
                 entity.Property(session => session.ShippingEmail).HasColumnName("shipping_email").HasMaxLength(256).IsRequired();
                 entity.Property(session => session.ShippingPhone).HasColumnName("shipping_phone").HasMaxLength(64);

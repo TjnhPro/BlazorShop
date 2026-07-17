@@ -758,6 +758,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("StorefrontCheckout_Start", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCheckout_Load", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCheckout_Cancel", client, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCheckout_UpdateAddresses", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontPayments_CapturePayPal", client, StringComparison.Ordinal);
             Assert.DoesNotContain("any /* missing operationId */", client, StringComparison.Ordinal);
             Assert.DoesNotContain("Promise<any>", client, StringComparison.Ordinal);
@@ -868,6 +869,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 "StorefrontCheckout_Start",
                 "StorefrontCheckout_Load",
                 "StorefrontCheckout_Cancel",
+                "StorefrontCheckout_UpdateAddresses",
             };
 
             foreach (var operationId in expectedOperationIds)
@@ -884,10 +886,23 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             }
 
             AssertRequiredRequestBody(operations["StorefrontCheckout_Start"]);
+            AssertRequiredRequestBody(operations["StorefrontCheckout_UpdateAddresses"]);
             Assert.Null(operations["StorefrontCheckout_Load"]["requestBody"]);
             Assert.Null(operations["StorefrontCheckout_Cancel"]["requestBody"]);
             Assert.True(schemas.ContainsKey("StorefrontCheckoutStartRequest"));
+            Assert.True(schemas.ContainsKey("StorefrontCheckoutAddressStepRequest"));
             Assert.True(schemas.ContainsKey("StorefrontCheckoutSessionResponse"));
+
+            var addressRequestSchema = schemas["StorefrontCheckoutAddressStepRequest"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCheckoutAddressStepRequest schema was not found.");
+            var addressRequestProperties = GetPropertyNames(addressRequestSchema).ToArray();
+            Assert.Contains("billingAddress", addressRequestProperties);
+            Assert.Contains("shippingAddress", addressRequestProperties);
+            Assert.Contains("billingAddressId", addressRequestProperties);
+            Assert.Contains("shippingAddressId", addressRequestProperties);
+            Assert.Contains("useBillingAddressAsShippingAddress", addressRequestProperties);
+            Assert.DoesNotContain("storeId", addressRequestProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("customerId", addressRequestProperties, StringComparer.OrdinalIgnoreCase);
 
             var responseSchema = schemas["StorefrontCheckoutSessionResponse"]?.AsObject()
                 ?? throw new InvalidOperationException("StorefrontCheckoutSessionResponse schema was not found.");

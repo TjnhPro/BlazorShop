@@ -215,6 +215,135 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public async Task UpdateAddressesAsync_WithDirectAddresses_SnapshotsAndResetsPaymentStep()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
+            var service = CreateCheckoutService(context, cartService);
+            var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload.Token!));
+            var address = CreateAddress();
+
+            var result = await service.UpdateAddressesAsync(new StorefrontCheckoutAddressStepRequest(
+                storeId,
+                start.Payload!.CheckoutSessionId,
+                cart.Payload.Token!,
+                BillingAddress: address,
+                ShippingAddress: address,
+                UseBillingAddressAsShippingAddress: true));
+
+            Assert.True(result.Success, result.Message);
+            Assert.Equal(2, result.Payload!.CheckoutVersion);
+            Assert.Equal(CheckoutSteps.PaymentMethod, result.Payload.CurrentStep);
+            Assert.Contains(CheckoutSteps.BillingAddress, result.Payload.CompletedSteps);
+            Assert.Contains(CheckoutSteps.ShippingAddress, result.Payload.CompletedSteps);
+            var session = context.CheckoutSessions.Single();
+            Assert.NotNull(session.BillingAddressSnapshotJson);
+            Assert.Equal("billing", session.ShippingAddressSource);
+            Assert.Equal("100 Main St", session.ShippingAddress1);
+            Assert.Equal(string.Empty, session.PaymentMethodKey);
+        }
+
+        [Fact]
+        public async Task UpdateAddressesAsync_RejectsSavedAddressSelection_WhenCustomerIsAnonymous()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
+            var service = CreateCheckoutService(context, cartService);
+            var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload.Token!));
+
+            var result = await service.UpdateAddressesAsync(new StorefrontCheckoutAddressStepRequest(
+                storeId,
+                start.Payload!.CheckoutSessionId,
+                cart.Payload.Token!,
+                BillingAddress: null,
+                ShippingAddress: null,
+                BillingAddressId: Guid.NewGuid(),
+                ShippingAddressId: Guid.NewGuid()));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.ValidationError, result.ResponseType);
+            Assert.Null(context.CheckoutSessions.Single().BillingAddressSnapshotJson);
+        }
+
+        [Fact]
+        public async Task UpdateAddressesAsync_UsesSavedAddress_WhenCustomerOwnsIt()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var appUserId = "customer-app-user";
+            var savedAddressId = Guid.NewGuid();
+            var customer = new CommerceCustomer
+            {
+                Id = Guid.NewGuid(),
+                StoreId = storeId,
+                AppUserId = appUserId,
+                Email = "saved@example.test",
+                NormalizedEmail = "SAVED@EXAMPLE.TEST",
+                FullName = "Saved Customer",
+            };
+            context.CommerceCustomers.Add(customer);
+            context.CommerceCustomerAddresses.Add(new CommerceCustomerAddress
+            {
+                Id = Guid.NewGuid(),
+                PublicId = savedAddressId,
+                StoreId = storeId,
+                CustomerId = customer.Id,
+                Customer = customer,
+                FirstName = "Saved",
+                LastName = "Customer",
+                Address1 = "200 Saved St",
+                City = "New York",
+                PostalCode = "10002",
+                CountryCode = "US",
+                StateProvinceCode = "NY",
+                Email = "saved@example.test",
+            });
+            await context.SaveChangesAsync();
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
+            var service = CreateCheckoutService(context, cartService);
+            var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload.Token!));
+
+            var result = await service.UpdateAddressesAsync(new StorefrontCheckoutAddressStepRequest(
+                storeId,
+                start.Payload!.CheckoutSessionId,
+                cart.Payload.Token!,
+                BillingAddress: null,
+                ShippingAddress: null,
+                BillingAddressId: savedAddressId,
+                ShippingAddressId: savedAddressId,
+                CustomerAppUserId: appUserId));
+
+            Assert.True(result.Success, result.Message);
+            var session = context.CheckoutSessions.Single();
+            Assert.Equal("saved", session.ShippingAddressSource);
+            Assert.Equal("200 Saved St", session.ShippingAddress1);
+            Assert.Contains("200 Saved St", session.BillingAddressSnapshotJson, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public async Task PreviewAsync_RejectsStaleCartVersion_AndDoesNotCreateSession()
         {
             using var context = CreateContext();
@@ -1123,6 +1252,24 @@ namespace BlazorShop.Tests.Application.CommerceNode
                     "NY",
                     postalCode,
                     countryCode));
+        }
+
+        private static StorefrontCheckoutShippingAddressDto CreateAddress(
+            string email = "customer@example.test",
+            string address1 = "100 Main St",
+            string postalCode = "10001",
+            string countryCode = "US")
+        {
+            return new StorefrontCheckoutShippingAddressDto(
+                "Customer One",
+                email,
+                "5550100",
+                address1,
+                null,
+                "New York",
+                "NY",
+                postalCode,
+                countryCode);
         }
 
         private static Product CreatePublishedProduct(Guid storeId, decimal price, int stock)

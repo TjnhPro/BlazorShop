@@ -304,6 +304,25 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                     issue.ProductId)).ToArray());
         }
 
+        public static BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutAddressStepRequest ToApplicationRequest(
+            this Contracts.Storefront.StorefrontCheckoutAddressStepRequest request,
+            Guid storeId,
+            Guid checkoutSessionId,
+            string cartToken,
+            string? customerAppUserId = null)
+        {
+            return new BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutAddressStepRequest(
+                storeId,
+                checkoutSessionId,
+                cartToken,
+                request.BillingAddress?.ToPreviewShippingAddress(),
+                request.ShippingAddress?.ToPreviewShippingAddress(),
+                request.BillingAddressId,
+                request.ShippingAddressId,
+                request.UseBillingAddressAsShippingAddress,
+                customerAppUserId);
+        }
+
         public static BlazorShop.Application.CommerceNode.Checkout.StorefrontPlaceOrderRequest ToApplicationRequest(
             this Contracts.Storefront.StorefrontPlaceOrderRequest request,
             Guid storeId)

@@ -1467,6 +1467,31 @@ namespace BlazorShop.CommerceNode.API.Controllers
                     : null);
         }
 
+        [HttpPost("{checkoutSessionId:guid}/addresses")]
+        [AllowAnonymous]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Checkout)]
+        public async Task<IActionResult> UpdateAddresses(
+            Guid checkoutSessionId,
+            [FromHeader(Name = CartTokenHeaderName)] string cartToken,
+            [FromBody] StorefrontCheckoutAddressStepRequest request,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.checkoutService.UpdateAddressesAsync(
+                request.ToApplicationRequest(storeId.Value, checkoutSessionId, cartToken, this.GetCurrentCustomerId()),
+                cancellationToken);
+            return this.FromServiceResponse(
+                result,
+                payload => payload is ApplicationStorefrontCheckoutSessionResult session
+                    ? session.ToStorefrontContract()
+                    : null);
+        }
+
         [HttpPost("preview")]
         [AllowAnonymous]
         [EnableRateLimiting(StorefrontRateLimitPolicyNames.Checkout)]

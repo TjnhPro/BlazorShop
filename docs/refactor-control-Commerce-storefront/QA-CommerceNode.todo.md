@@ -977,3 +977,7 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Checkout entry validation is centralized for start and preview. 2026-07-17 Phase 2: focused checkout service run passed 26/26 after replacing duplicated preview cart checks with shared entry validation.
 - [x] Cart version changes reset downstream checkout state. 2026-07-17 Phase 2: `LoadAsync_WhenCartVersionChanged_ResetsDownstreamCheckoutState` passed and asserts issue code `cart.version_changed`.
 - [x] Storefront OpenAPI remains stable after entry validation/cart drift changes. 2026-07-17 Phase 2: `CommerceNodeStorefrontOpenApiContractTests` passed 29/29 with unchanged snapshots.
+- [x] Checkout address step supports direct guest billing/shipping address snapshot. 2026-07-17 Phase 3: `UpdateAddressesAsync_WithDirectAddresses_SnapshotsAndResetsPaymentStep` passed.
+- [x] Checkout address step rejects anonymous saved-address selection. 2026-07-17 Phase 3: `UpdateAddressesAsync_RejectsSavedAddressSelection_WhenCustomerIsAnonymous` passed.
+- [x] Checkout address step enforces saved address ownership by store/customer. 2026-07-17 Phase 3: `UpdateAddressesAsync_UsesSavedAddress_WhenCustomerOwnsIt` passed.
+- [x] Checkout address step OpenAPI is generator-safe and avoids server-owned request fields. 2026-07-17 Phase 3: `CommerceNodeStorefrontOpenApiContractTests` passed 29/29 after snapshot refresh.

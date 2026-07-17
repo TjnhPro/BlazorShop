@@ -421,6 +421,19 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
     {
     }
 
+    public sealed class StorefrontCheckoutAddressStepRequest
+    {
+        public Guid? BillingAddressId { get; set; }
+
+        public Guid? ShippingAddressId { get; set; }
+
+        public bool UseBillingAddressAsShippingAddress { get; set; }
+
+        public StorefrontCheckoutShippingAddress? BillingAddress { get; set; }
+
+        public StorefrontCheckoutShippingAddress? ShippingAddress { get; set; }
+    }
+
     public sealed record StorefrontCheckoutSessionResponse(
         Guid CheckoutSessionId,
         Guid CartId,

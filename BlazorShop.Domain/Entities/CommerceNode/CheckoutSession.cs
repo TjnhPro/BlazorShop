@@ -34,6 +34,10 @@ namespace BlazorShop.Domain.Entities.CommerceNode
 
         public string? CustomerPhone { get; set; }
 
+        public string? BillingAddressSnapshotJson { get; set; }
+
+        public string ShippingAddressSource { get; set; } = "direct";
+
         public string ShippingFullName { get; set; } = string.Empty;
 
         public string ShippingEmail { get; set; } = string.Empty;

@@ -59,6 +59,17 @@ namespace BlazorShop.Application.CommerceNode.Checkout
         Guid CheckoutSessionId,
         string CartToken);
 
+    public sealed record StorefrontCheckoutAddressStepRequest(
+        Guid StoreId,
+        Guid CheckoutSessionId,
+        string CartToken,
+        StorefrontCheckoutShippingAddressDto? BillingAddress,
+        StorefrontCheckoutShippingAddressDto? ShippingAddress,
+        Guid? BillingAddressId = null,
+        Guid? ShippingAddressId = null,
+        bool UseBillingAddressAsShippingAddress = false,
+        string? CustomerAppUserId = null);
+
     public sealed record StorefrontCheckoutSessionResult(
         Guid CheckoutSessionId,
         Guid CartId,
@@ -136,6 +147,10 @@ namespace BlazorShop.Application.CommerceNode.Checkout
 
         Task<ServiceResponse<StorefrontCheckoutSessionResult>> ExpireAsync(
             StorefrontCheckoutSessionRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<StorefrontCheckoutSessionResult>> UpdateAddressesAsync(
+            StorefrontCheckoutAddressStepRequest request,
             CancellationToken cancellationToken = default);
 
         Task<ServiceResponse<StorefrontCheckoutPreviewResult>> PreviewAsync(

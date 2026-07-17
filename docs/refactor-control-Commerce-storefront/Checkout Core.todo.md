@@ -15,6 +15,7 @@ Approved:
 - [x] Checkout session belongs to current store and current cart.
 - [x] Checkout state version.
 - [ ] Step guards for address, payment, review, and place order.
+- [x] Address step guard.
 - [x] Detect cart changes after address/payment selection.
 - [x] Reset downstream state when upstream state changes.
 - [x] Checkout expiration.
@@ -96,7 +97,7 @@ Missing:
 - [x] Resume checkout endpoint exists.
 - [ ] Preview creates a new checkout session each time instead of updating/resuming an active session.
 - [ ] No downstream reset model when address, payment, or cart changes.
-- [ ] No billing step.
+- [x] Billing address step command exists.
 - [ ] No saved address selection yet; depends on Address Core.
 - [ ] No shipping-required detection.
 - [ ] No shipping method/provider/options model.
@@ -206,7 +207,7 @@ Add stateful endpoints:
 
 - [x] `POST /api/storefront/stores/{storeKey}/checkout/start`.
 - [x] `GET /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}`.
-- [ ] `POST /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/addresses`.
+- [x] `POST /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/addresses`.
 - [ ] `POST /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/shipping-method`.
 - [ ] `POST /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/payment-method`.
 - [ ] `POST /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/review`.
@@ -381,33 +382,41 @@ Dependencies:
 
 Implementation checklist:
 
-- [ ] Add request DTO for billing address update.
-- [ ] Add request DTO for shipping address update.
-- [ ] Support direct billing/shipping address entry.
-- [ ] Support saved address IDs for authenticated customer when Address Core is available.
-- [ ] Support `useBillingAsShipping`.
-- [ ] Validate billing fields with Address Core validation service.
-- [ ] Validate shipping fields with Address Core validation service.
-- [ ] Snapshot resolved billing data into checkout session when billing is implemented.
-- [ ] Snapshot resolved shipping data into checkout session.
+- [x] Add request DTO for billing address update.
+- [x] Add request DTO for shipping address update.
+- [x] Support direct billing/shipping address entry.
+- [x] Support saved address IDs for authenticated customer when Address Core is available.
+- [x] Support `useBillingAsShipping`.
+- [x] Validate billing fields with Address Core validation service.
+- [x] Validate shipping fields with Address Core validation service.
+- [x] Snapshot resolved billing data into checkout session when billing is implemented.
+- [x] Snapshot resolved shipping data into checkout session.
 - [ ] If cart does not require shipping, skip shipping address step.
 - [ ] If cart does not require shipping, skip shipping method step.
-- [ ] Reset shipping method, payment method availability, review, and terms acknowledgement when shipping address changes.
-- [ ] Enforce saved address ownership by store/customer.
+- [x] Reset shipping method, payment method availability, review, and terms acknowledgement when shipping address changes.
+- [x] Enforce saved address ownership by store/customer.
 
 Verification checklist:
 
-- [ ] Guest checkout can still submit direct shipping address.
-- [ ] Authenticated customer can use saved address when available.
-- [ ] Address ownership is enforced.
-- [ ] Deleted/invalid address IDs are rejected.
-- [ ] Order history remains snapshot-safe.
-- [ ] Direct address path remains backward compatible.
+- [x] Guest checkout can still submit direct shipping address.
+- [x] Authenticated customer can use saved address when available.
+- [x] Address ownership is enforced.
+- [x] Deleted/invalid address IDs are rejected.
+- [x] Order history remains snapshot-safe.
+- [x] Direct address path remains backward compatible.
 
 Exit criteria:
 
-- [ ] Address steps are explicit server contracts.
-- [ ] Checkout does not trust browser ownership fields.
+- [x] Address steps are explicit server contracts.
+- [x] Checkout does not trust browser ownership fields.
+
+Phase 3 evidence:
+
+- 2026-07-17: Added additive CommerceNode migration `CommerceNodeCheckoutAddressStep` with nullable `billing_address_snapshot_json` and non-null `shipping_address_source`.
+- 2026-07-17: Added `UpdateAddressesAsync` and `POST /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/addresses` with explicit request/response DTOs.
+- 2026-07-17: Direct guest address update snapshots billing/shipping, advances to `payment_method`, and clears payment selection for downstream reset.
+- 2026-07-17: Saved address IDs require authenticated customer ownership and store scope; anonymous saved-address selection is rejected.
+- 2026-07-17: Focused `StorefrontCheckoutServiceTests` run passed 29/29; focused `CommerceNodeStorefrontOpenApiContractTests` run passed 29/29 after OpenAPI snapshot refresh.
 
 Suggested commit:
 
@@ -729,7 +738,7 @@ test(checkout-core): complete release gate
 - [x] Expired/cancelled/completed checkout cannot resume as active.
 - [x] Checkout version increments on step updates.
 - [x] Cart version changes reset downstream checkout state.
-- [ ] Address changes reset shipping/payment/review/terms as applicable.
+- [x] Address changes reset shipping/payment/review/terms as applicable.
 - [ ] Shipping method stub returns deterministic `shipping_not_required` or `free_standard`.
 - [ ] Payment method step filters by enabled state, currency, country, total, min, and max.
 - [ ] Review projection returns server-owned totals and `placeOrderAllowed`.
@@ -749,7 +758,7 @@ test(checkout-core): complete release gate
 - [ ] Payment success shows captured/completed state.
 - [ ] Payment cancel allows return to checkout.
 - [ ] Cart token is cleared only after completed order result.
-- [ ] Browser requests do not send store ID, customer ID, statuses, totals, or server-owned fields.
+- [x] Browser requests do not send store ID, customer ID, statuses, totals, or server-owned fields.
 - [ ] Browser QA has no unexpected console errors after checkout UI changes.
 
 ### Control Plane
@@ -795,7 +804,7 @@ test(checkout-core): complete release gate
 - [x] Phase 0 - baseline guardrails.
 - [x] Phase 1 - checkout session version and resume.
 - [x] Phase 2 - entry validation and cart change detection.
-- [ ] Phase 3 - address steps.
+- [x] Phase 3 - address steps.
 - [ ] Phase 4 - shipping method stub and hook.
 - [ ] Phase 5 - payment method step.
 - [ ] Phase 6 - review projection and terms hook.

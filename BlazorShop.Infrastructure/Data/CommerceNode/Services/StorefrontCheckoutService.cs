@@ -186,6 +186,95 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Succeeded("Checkout session expired.", ToSessionResult(resolution.Session!, resolution.Cart!));
         }
 
+        public async Task<ServiceResponse<StorefrontCheckoutSessionResult>> UpdateAddressesAsync(
+            StorefrontCheckoutAddressStepRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var resolution = await this.ResolveActiveSessionAsync(
+                new StorefrontCheckoutSessionRequest(request.StoreId, request.CheckoutSessionId, request.CartToken),
+                cancellationToken);
+            if (!resolution.Success)
+            {
+                return Failed<StorefrontCheckoutSessionResult>(resolution.ResponseType, resolution.Message);
+            }
+
+            var billingResolution = await this.ResolveCheckoutAddressAsync(
+                request.StoreId,
+                request.BillingAddressId,
+                request.BillingAddress,
+                request.CustomerAppUserId,
+                "billingAddressId",
+                cancellationToken);
+            var billingAddress = billingResolution.Address;
+            var issues = billingResolution.Issues.ToList();
+            if (billingAddress is null)
+            {
+                issues.Add(new StorefrontCheckoutValidationIssue(
+                    "billing.address_required",
+                    "Billing address is required.",
+                    "billingAddress"));
+            }
+
+            var shippingResolution = request.UseBillingAddressAsShippingAddress
+                ? ShippingAddressResolution.Succeeded(billingAddress)
+                : await this.ResolveCheckoutAddressAsync(
+                    request.StoreId,
+                    request.ShippingAddressId,
+                    request.ShippingAddress,
+                    request.CustomerAppUserId,
+                    "shippingAddressId",
+                    cancellationToken);
+            var shippingAddress = shippingResolution.Address;
+            issues.AddRange(shippingResolution.Issues);
+            if (shippingAddress is null)
+            {
+                issues.Add(new StorefrontCheckoutValidationIssue(
+                    "shipping.address_required",
+                    "Shipping address is required.",
+                    "shippingAddress"));
+            }
+
+            if (billingAddress is not null)
+            {
+                issues.AddRange(this.ValidateAddressFields("billing", "billingAddress", billingAddress));
+            }
+
+            if (shippingAddress is not null)
+            {
+                issues.AddRange(this.ValidateAddressFields("shipping", "shippingAddress", shippingAddress));
+            }
+
+            if (issues.Count > 0)
+            {
+                return Failed<StorefrontCheckoutSessionResult>(ServiceResponseType.ValidationError, issues[0].Message);
+            }
+
+            var session = resolution.Session!;
+            session.BillingAddressSnapshotJson = JsonSerializer.Serialize(billingAddress, JsonOptions);
+            session.ShippingAddressSource = request.UseBillingAddressAsShippingAddress
+                ? "billing"
+                : request.ShippingAddressId.HasValue ? "saved" : "direct";
+            session.ShippingFullName = NormalizeNullable(shippingAddress!.FullName) ?? string.Empty;
+            session.ShippingEmail = NormalizeNullable(shippingAddress.Email) ?? string.Empty;
+            session.ShippingPhone = NormalizeNullable(shippingAddress.Phone);
+            session.ShippingAddress1 = NormalizeNullable(shippingAddress.Address1) ?? string.Empty;
+            session.ShippingAddress2 = NormalizeNullable(shippingAddress.Address2);
+            session.ShippingCity = NormalizeNullable(shippingAddress.City) ?? string.Empty;
+            session.ShippingState = NormalizeNullable(shippingAddress.State);
+            session.ShippingPostalCode = NormalizeNullable(shippingAddress.PostalCode) ?? string.Empty;
+            session.ShippingCountryCode = NormalizeNullable(shippingAddress.CountryCode)?.ToUpperInvariant() ?? string.Empty;
+            session.PaymentMethodKey = string.Empty;
+            session.CompletedStepsJson = JsonSerializer.Serialize(
+                new[] { CheckoutSteps.Entry, CheckoutSteps.BillingAddress, CheckoutSteps.ShippingAddress },
+                JsonOptions);
+            session.ValidationIssuesJson = null;
+            session.NextAction = CheckoutSteps.PaymentMethod;
+            Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.PaymentMethod, DateTimeOffset.UtcNow);
+            await this.context.SaveChangesAsync(cancellationToken);
+
+            return Succeeded("Checkout addresses updated.", ToSessionResult(session, resolution.Cart!));
+        }
+
         public async Task<ServiceResponse<StorefrontCheckoutPreviewResult>> PreviewAsync(
             StorefrontCheckoutPreviewRequest request,
             CancellationToken cancellationToken = default)
@@ -1460,6 +1549,104 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 NormalizeNullable(savedAddress.StateProvinceName) ?? NormalizeNullable(savedAddress.StateProvinceCode),
                 savedAddress.PostalCode,
                 savedAddress.CountryCode));
+        }
+
+        private async Task<ShippingAddressResolution> ResolveCheckoutAddressAsync(
+            Guid storeId,
+            Guid? addressId,
+            StorefrontCheckoutShippingAddressDto? directAddress,
+            string? customerAppUserId,
+            string addressIdField,
+            CancellationToken cancellationToken)
+        {
+            if (!addressId.HasValue)
+            {
+                return ShippingAddressResolution.Succeeded(directAddress);
+            }
+
+            var purpose = addressIdField.StartsWith("billing", StringComparison.OrdinalIgnoreCase)
+                ? "billing"
+                : "shipping";
+            if (string.IsNullOrWhiteSpace(customerAppUserId))
+            {
+                return ShippingAddressResolution.Failed(new StorefrontCheckoutValidationIssue(
+                    $"{purpose}.address_auth_required",
+                    $"Sign in before using a saved {purpose} address.",
+                    addressIdField));
+            }
+
+            var savedAddress = await this.context.CommerceCustomerAddresses
+                .AsNoTracking()
+                .Include(address => address.Customer)
+                .FirstOrDefaultAsync(
+                    address =>
+                        address.StoreId == storeId
+                        && address.PublicId == addressId.Value
+                        && address.DeletedAtUtc == null
+                        && address.Customer != null
+                        && address.Customer.StoreId == storeId
+                        && address.Customer.AppUserId == customerAppUserId,
+                    cancellationToken);
+
+            if (savedAddress is null)
+            {
+                return ShippingAddressResolution.Failed(new StorefrontCheckoutValidationIssue(
+                    $"{purpose}.address_not_found",
+                    $"Saved {purpose} address was not found.",
+                    addressIdField));
+            }
+
+            return ShippingAddressResolution.Succeeded(new StorefrontCheckoutShippingAddressDto(
+                JoinName(savedAddress.FirstName, savedAddress.LastName),
+                NormalizeNullable(savedAddress.Email) ?? string.Empty,
+                savedAddress.Phone,
+                savedAddress.Address1,
+                savedAddress.Address2,
+                savedAddress.City,
+                NormalizeNullable(savedAddress.StateProvinceName) ?? NormalizeNullable(savedAddress.StateProvinceCode),
+                savedAddress.PostalCode,
+                savedAddress.CountryCode));
+        }
+
+        private IEnumerable<StorefrontCheckoutValidationIssue> ValidateAddressFields(
+            string issuePrefix,
+            string fieldPrefix,
+            StorefrontCheckoutShippingAddressDto address)
+        {
+            if (NormalizeNullable(address.FullName) is null)
+            {
+                yield return new StorefrontCheckoutValidationIssue($"{issuePrefix}.full_name_required", "Full name is required.", $"{fieldPrefix}.fullName");
+            }
+
+            var validation = this.addressValidationService.ValidateAndNormalize(new CustomerAddressCreateRequest(
+                "checkout",
+                "checkout",
+                null,
+                address.Address1,
+                address.Address2,
+                address.City,
+                address.PostalCode,
+                address.CountryCode,
+                address.State,
+                address.State,
+                address.Phone,
+                address.Email,
+                IsDefaultShipping: false,
+                IsDefaultBilling: false));
+
+            foreach (var issue in validation.Issues)
+            {
+                yield return issue.Code switch
+                {
+                    "email_invalid" => new StorefrontCheckoutValidationIssue($"{issuePrefix}.email_invalid", "Email is invalid.", $"{fieldPrefix}.email"),
+                    "address1_required" => new StorefrontCheckoutValidationIssue($"{issuePrefix}.address1_required", "Address line 1 is required.", $"{fieldPrefix}.address1"),
+                    "city_required" => new StorefrontCheckoutValidationIssue($"{issuePrefix}.city_required", "City is required.", $"{fieldPrefix}.city"),
+                    "postal_code_required" => new StorefrontCheckoutValidationIssue($"{issuePrefix}.postal_required", "Postal code is required.", $"{fieldPrefix}.postalCode"),
+                    "country_invalid" => new StorefrontCheckoutValidationIssue($"{issuePrefix}.country_invalid", "Country code must be a two-letter ISO code.", $"{fieldPrefix}.countryCode"),
+                    "state_province_required" => new StorefrontCheckoutValidationIssue($"{issuePrefix}.state_required", "State or province is required.", $"{fieldPrefix}.state"),
+                    _ => new StorefrontCheckoutValidationIssue($"{issuePrefix}.{issue.Code}", issue.Message, $"{fieldPrefix}.{issue.Field}"),
+                };
+            }
         }
 
         private IEnumerable<StorefrontCheckoutValidationIssue> ValidateCheckoutFields(
