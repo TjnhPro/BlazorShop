@@ -1,0 +1,853 @@
+# Transactional Message Core.todo
+
+Generated: 2026-07-17
+
+Source plan: `Transactional Message Core.md`
+
+Status: Phase 0 complete. Phase 1 not started.
+
+Scope: add practical transactional message infrastructure for active V2 Commerce Node. Replace hard-coded direct email calls with template-driven queued messages for account activation, password recovery, order placed confirmation, payment/fulfillment hooks, and contact form delivery. This is not a marketing automation, newsletter campaign, or visual email builder phase.
+
+## Scope Lock
+
+Approved:
+
+- [ ] Message template core:
+  - [ ] template system name.
+  - [ ] localized subject/body.
+  - [ ] store-specific template override.
+  - [ ] active/inactive state.
+  - [ ] audit timestamps.
+  - [ ] seeded default templates for core transactional messages.
+- [ ] Token/model binding:
+  - [ ] safe token dictionary.
+  - [ ] deterministic token replacement.
+  - [ ] missing-token validation/warnings.
+  - [ ] no arbitrary code execution in templates.
+- [ ] Sender selection:
+  - [ ] keep existing SMTP `EmailSettings` as secret/config source.
+  - [ ] use store/admin from-display fields for safe sender metadata.
+  - [ ] allow template/store sender display override without storing SMTP password in DB.
+- [ ] Queued delivery:
+  - [ ] queued message record.
+  - [ ] retry/failure state.
+  - [ ] attempt count and next attempt timestamp.
+  - [ ] sent/failed timestamps.
+  - [ ] safe error message.
+  - [ ] idempotency/correlation key.
+  - [ ] use existing `CommerceTaskWorker`.
+- [ ] Attachment hook:
+  - [ ] model-level hook for future invoice/files.
+  - [ ] no full attachment storage UI in this phase.
+- [ ] Core transactional messages:
+  - [ ] account activation.
+  - [ ] password recovery.
+  - [ ] order placed confirmation.
+  - [ ] payment status notification hook.
+  - [ ] fulfillment/shipping status notification hook.
+  - [ ] contact form delivery.
+- [ ] API/contract hardening:
+  - [ ] explicit admin DTOs.
+  - [ ] stable OpenAPI operation IDs.
+  - [ ] validation metadata.
+  - [ ] no SMTP secrets in API responses.
+  - [ ] contract tests and snapshots.
+
+Deferred:
+
+- [ ] Marketing campaign engine.
+- [ ] Bulk newsletter campaign sending.
+- [ ] Visual email template designer.
+- [ ] Drag/drop template builder.
+- [ ] Customer notification preference center.
+- [ ] SMS, push, WhatsApp, or multi-channel provider abstraction.
+- [ ] Multi-provider failover.
+- [ ] Advanced Liquid/Razor scripting engine.
+- [ ] Arbitrary template code execution.
+- [ ] Full attachment storage workflow.
+- [ ] Invoice PDF generation.
+- [ ] Full contact page/component implementation.
+- [ ] Legacy `AppDbContext` changes.
+- [ ] Legacy Presentation route changes.
+- [ ] Active V2 `api/internal/*` changes.
+
+## Current Baseline
+
+Existing email sender:
+
+- [ ] `IEmailService` exists with `Task SendEmailAsync(string to, string subject, string body)`.
+- [ ] `EmailService` uses MailKit SMTP directly.
+- [ ] `EmailService` reads `From`.
+- [ ] `EmailService` reads `DisplayName`.
+- [ ] `EmailService` reads `SmtpServer`.
+- [ ] `EmailService` reads `Port`.
+- [ ] `EmailService` reads `UseSsl`.
+- [ ] `EmailService` reads `Username`.
+- [ ] `EmailService` reads `Password`.
+- [ ] `EmailSettingsOptionsValidator` validates production SMTP settings outside Development.
+- [ ] `IEmailService` is registered for Commerce Node infrastructure.
+- [ ] `IEmailService` is registered for Control Plane infrastructure.
+
+Existing notification settings:
+
+- [ ] `AdminSettings` contains `SmtpHost`.
+- [ ] `AdminSettings` contains `SmtpFromEmail`.
+- [ ] `AdminSettings` contains `SmtpFromDisplayName`.
+- [ ] `CommerceNodeAdminSettingsService.UpdateNotificationsAsync` updates only safe SMTP display/config fields.
+- [ ] `NotificationSettingsDto` exposes `SecretsConfigured`.
+- [ ] `NotificationSettingsDto` does not expose SMTP password.
+- [ ] `NotificationSettingsDto` does not expose SMTP username.
+
+Existing hard-coded email calls:
+
+- [ ] `AuthenticationService.SendConfirmationEmail` sends `"Confirm your email"` through `IEmailService` with hard-coded HTML.
+- [ ] `NewsletterService.SubscribeAsync` sends welcome email fire-and-forget after subscriber creation.
+- [ ] `Application.Services.Payment.CartService` sends bank transfer instructions through direct `IEmailService` calls in an older checkout path.
+- [ ] Legacy `Infrastructure.Services.OrderTrackingService` sends tracking emails using `AppDbContext`.
+- [ ] Active V2 `CommerceNodeOrderTrackingService` does not send email.
+- [ ] Current direct calls are not template-driven.
+- [ ] Current direct calls are not queued.
+
+Existing task queue foundation:
+
+- [ ] `CommerceTask` exists in Commerce Node.
+- [ ] `CommerceTask` stores task type.
+- [ ] `CommerceTask` stores status.
+- [ ] `CommerceTask` stores payload JSON.
+- [ ] `CommerceTask` stores idempotency key.
+- [ ] `CommerceTask` stores attempt count/max attempts.
+- [ ] `CommerceTask` stores next attempt timestamp.
+- [ ] `CommerceTask` stores started/completed timestamps.
+- [ ] `CommerceTask` stores error code/message.
+- [ ] `CommerceTask` stores worker metadata.
+- [ ] `CommerceTaskService.EnqueueAsync` queues task rows.
+- [ ] `CommerceTaskWorker` polls pending/waiting tasks.
+- [ ] `CommerceTaskWorker` dispatches registered `ICommerceTaskHandler` implementations.
+- [ ] Existing handlers cover product import, media import, store create/deploy, exchange-rate update, and test tasks.
+- [ ] No separate transactional message worker is needed.
+
+Existing security/privacy hooks:
+
+- [ ] `StoreSecurityPrivacySettings` contains captcha flags for newsletter.
+- [ ] `StoreSecurityPrivacySettings` contains captcha flags for password recovery.
+- [ ] `StoreSecurityPrivacySettings` contains captcha flags for contact.
+- [ ] Storefront newsletter endpoint exists under `api/storefront/stores/{storeKey}/newsletter/subscribe`.
+- [ ] Contact captcha setting exists.
+- [ ] No Storefront contact delivery endpoint/service exists yet.
+
+Existing order/payment hooks:
+
+- [ ] Order Placement Core plans queueing notifications outside the main transaction.
+- [ ] Payment Core has payment attempt/audit foundations.
+- [ ] V2 shipping/tracking updates exist through Commerce Node admin order services.
+- [ ] V2 shipping notification delivery is not implemented.
+
+## Core Decisions
+
+- [ ] D1: Transactional messages are Commerce Node-owned runtime data.
+- [ ] D2: Keep `IEmailService` as SMTP transport adapter.
+- [ ] D3: Store message-specific queue state, but reuse `CommerceTaskWorker`.
+- [ ] D4: Use deterministic allowlisted token replacement only.
+- [ ] D5: Do not store SMTP secrets in DB.
+- [ ] D6: Seed defaults before building any full template editor.
+- [ ] D7: Hooks enqueue messages; they are not workflow engines.
+
+## Boundary Rules
+
+- [ ] Templates, queued messages, and delivery state belong to `CommerceNodeDbContext`.
+- [ ] Admin template APIs stay under `api/commerce/*`.
+- [ ] Admin template APIs are called through Control Plane API.
+- [ ] Storefront message-producing APIs stay under `api/storefront/stores/{storeKey}/*`.
+- [ ] Store scope comes from active Commerce Node store context or `{storeKey}` route.
+- [ ] SMTP credentials are never returned by APIs.
+- [ ] Templates never execute arbitrary code.
+- [ ] Message delivery failures do not roll back order placement.
+- [ ] Message delivery failures do not roll back account registration.
+- [ ] Message delivery failures do not roll back password recovery commands.
+- [ ] Legacy `AppDbContext` is reference only.
+
+## Data Model Checklist
+
+Add `MessageTemplate`:
+
+- [ ] `Id`.
+- [ ] `PublicId`.
+- [ ] `SystemName`.
+- [ ] nullable `StoreId` for global/default template.
+- [ ] nullable `LanguageCode` for default language.
+- [ ] `SubjectTemplate`.
+- [ ] `BodyHtmlTemplate`.
+- [ ] `IsActive`.
+- [ ] `Description`.
+- [ ] `CreatedAtUtc`.
+- [ ] `UpdatedAtUtc`.
+- [ ] Unique `(SystemName, StoreId, LanguageCode)`.
+- [ ] Index `(StoreId, SystemName)`.
+- [ ] Index `(SystemName, IsActive)`.
+- [ ] Store-specific template resolves before global template.
+- [ ] Language-specific template resolves before default language.
+
+Add `QueuedMessage`:
+
+- [ ] `Id`.
+- [ ] `PublicId`.
+- [ ] `StoreId`.
+- [ ] `TemplateSystemName`.
+- [ ] `TemplateId`.
+- [ ] `LanguageCode`.
+- [ ] `ToEmail`.
+- [ ] `ToName`.
+- [ ] `FromEmail`.
+- [ ] `FromName`.
+- [ ] `ReplyToEmail`.
+- [ ] `Subject`.
+- [ ] `BodyHtml`.
+- [ ] `Status`.
+- [ ] `Priority`.
+- [ ] `AttemptCount`.
+- [ ] `MaxAttempts`.
+- [ ] `NextAttemptAtUtc`.
+- [ ] `LastAttemptAtUtc`.
+- [ ] `SentAtUtc`.
+- [ ] `FailedAtUtc`.
+- [ ] `ErrorCode`.
+- [ ] `ErrorMessage`.
+- [ ] `CorrelationId`.
+- [ ] `IdempotencyKey`.
+- [ ] `RelatedEntityType`.
+- [ ] `RelatedEntityId`.
+- [ ] `AttachmentMetadataJson`.
+- [ ] `CreatedAtUtc`.
+- [ ] `UpdatedAtUtc`.
+- [ ] Status `pending`.
+- [ ] Status `sending`.
+- [ ] Status `sent`.
+- [ ] Status `waiting_retry`.
+- [ ] Status `failed`.
+- [ ] Status `cancelled`.
+- [ ] Unique `PublicId`.
+- [ ] Optional unique `IdempotencyKey` when present.
+- [ ] Index `(StoreId, Status, NextAttemptAtUtc)`.
+- [ ] Index `(StoreId, TemplateSystemName, CreatedAtUtc)`.
+- [ ] Index `(StoreId, RelatedEntityType, RelatedEntityId)`.
+- [ ] Index `(CorrelationId)`.
+
+Attachment hook metadata only:
+
+- [ ] file name.
+- [ ] content type.
+- [ ] media asset/public id.
+- [ ] purpose.
+- [ ] Do not persist binary attachments in this phase.
+
+## Template Catalog
+
+Seed required templates:
+
+- [ ] `customer.account_activation`.
+- [ ] `customer.password_recovery`.
+- [ ] `order.placed`.
+- [ ] `order.payment_status_changed`.
+- [ ] `order.fulfillment_status_changed`.
+- [ ] `storefront.contact_form`.
+
+Optional later templates:
+
+- [ ] `newsletter.welcome`.
+- [ ] `payment.bank_transfer_instructions`.
+
+## Token Model Checklist
+
+Common tokens:
+
+- [ ] `Store.Name`.
+- [ ] `Store.Url`.
+- [ ] `Store.SupportEmail`.
+- [ ] `Store.SupportPhone`.
+- [ ] `Customer.Email`.
+- [ ] `Customer.FullName`.
+- [ ] `Customer.FirstName`.
+- [ ] `Customer.LastName`.
+
+Account tokens:
+
+- [ ] `Account.ActivationUrl`.
+- [ ] `Account.PasswordResetUrl`.
+
+Order tokens:
+
+- [ ] `Order.Reference`.
+- [ ] `Order.CreatedAt`.
+- [ ] `Order.Total`.
+- [ ] `Order.Currency`.
+- [ ] `Order.Status`.
+- [ ] `Order.PaymentStatus`.
+- [ ] `Order.ShippingStatus`.
+- [ ] `Order.DetailUrl`.
+- [ ] `Order.ReceiptUrl`.
+
+Shipping tokens:
+
+- [ ] `Shipment.Carrier`.
+- [ ] `Shipment.TrackingNumber`.
+- [ ] `Shipment.TrackingUrl`.
+
+Contact tokens:
+
+- [ ] `Contact.Name`.
+- [ ] `Contact.Email`.
+- [ ] `Contact.Subject`.
+- [ ] `Contact.Message`.
+
+Rules:
+
+- [ ] HTML encode token values by default.
+- [ ] Only code-marked safe tokens can bypass encoding.
+- [ ] Unknown tokens stay visible in preview or create validation warnings.
+- [ ] Production send fails only if required tokens are missing.
+- [ ] Templates cannot access arbitrary object properties by reflection without allowlist.
+- [ ] Sensitive token values such as reset tokens are not logged in message error logs.
+
+## Target API Checklist
+
+Commerce Admin template APIs under `api/commerce/message-templates`:
+
+- [ ] `GET /message-templates?storeKey={storeKey}`.
+- [ ] `GET /message-templates/{publicId}?storeKey={storeKey}`.
+- [ ] `PUT /message-templates/{publicId}?storeKey={storeKey}`.
+- [ ] `POST /message-templates/{publicId}/reset?storeKey={storeKey}`.
+- [ ] `POST /message-templates/preview?storeKey={storeKey}`.
+- [ ] Required `storeKey` query.
+- [ ] No SMTP password/username in requests or responses.
+- [ ] No arbitrary system name changes after creation.
+- [ ] Subject/body length limits.
+- [ ] Language code validation.
+- [ ] Store scope comes from query/store context, not trusted body.
+
+Commerce Admin queue APIs under `api/commerce/queued-messages`:
+
+- [ ] `GET /queued-messages?storeKey={storeKey}&status=&templateSystemName=&skip=&take=`.
+- [ ] `GET /queued-messages/{publicId}?storeKey={storeKey}`.
+- [ ] `POST /queued-messages/{publicId}/retry?storeKey={storeKey}`.
+- [ ] `POST /queued-messages/{publicId}/cancel?storeKey={storeKey}`.
+- [ ] Return subject/status/timestamps/error summary.
+- [ ] Do not return raw password reset token URLs to admin by default after send.
+- [ ] Do not expose SMTP credentials.
+
+Storefront contact API under `api/storefront/stores/{storeKey}/contact`:
+
+- [ ] `POST /contact`.
+- [ ] Request has name.
+- [ ] Request has email.
+- [ ] Request has subject.
+- [ ] Request has message.
+- [ ] Request has captcha token when enabled.
+- [ ] Consent evidence hook deferred until required.
+- [ ] Rate limited and captcha-aware.
+- [ ] Returns generic success on accepted delivery.
+- [ ] Stores no long-term contact inquiry record unless support workflow requires it.
+- [ ] Enqueues `storefront.contact_form` to store support email.
+
+## API Contract Checklist
+
+Every new or changed API must satisfy:
+
+- [ ] Stable `operationId`.
+- [ ] Short summary.
+- [ ] Explicit request/response DTOs.
+- [ ] Standard error response schemas.
+- [ ] Required request body metadata.
+- [ ] Validation metadata for email, subject/body lengths, language code, and paging.
+- [ ] Security metadata for admin endpoints.
+- [ ] Store scope from route/query/server context.
+- [ ] No domain entities in public schemas.
+- [ ] No SMTP username/password in responses.
+- [ ] Side-effecting operations use `POST` or `PUT`, not `GET`.
+- [ ] Contract tests and snapshots updated.
+
+## Phase 0 - Baseline Guardrails
+
+Goal: lock down current direct email behavior before replacing it.
+
+Implementation checklist:
+
+- [x] Inventory all `SendEmailAsync` call sites. 2026-07-17 Phase 0: `TransactionalMessageBaselineTests.DirectEmailCallSiteInventory_MatchesKnownBaseline`.
+- [x] Mark active V2 direct email paths. 2026-07-17 Phase 0: active shared/V2 paths are `AuthenticationService`, `NewsletterService`, and older `Application.Services.Payment.CartService`; active CommerceNode checkout service does not depend on `IEmailService`.
+- [x] Mark legacy/reference direct email paths. 2026-07-17 Phase 0: `Infrastructure.Services.OrderTrackingService` is legacy `AppDbContext`; `EmailService` is the transport adapter.
+- [x] Add tests or documentation for current account activation direct email behavior. 2026-07-17 Phase 0: existing `AuthenticationServiceTests.SendConfirmationEmail_SendsEmail` remains in the focused baseline.
+- [x] Confirm `EmailSettings` validation still works outside Development. 2026-07-17 Phase 0: existing `EmailSettingsOptionsValidatorTests` remains in the focused baseline.
+- [x] Confirm notification settings do not expose SMTP username/password. 2026-07-17 Phase 0: `NotificationSettingsDto_DoesNotExposeSmtpSecrets`.
+- [x] Confirm CommerceTask worker is enabled/configurable in Commerce Node. 2026-07-17 Phase 0: `CommerceNodeRuntime_RegistersCommerceTaskWorker`.
+- [x] Add/update QA checklist entries for Transactional Message Core. 2026-07-17 Phase 0.
+
+Verification checklist:
+
+- [x] Current auth registration/confirmation behavior remains working. 2026-07-17 Phase 0.
+- [x] No legacy direct-email code is extended. 2026-07-17 Phase 0.
+- [x] Direct call site list is captured in implementation notes or tests. 2026-07-17 Phase 0.
+
+Exit criteria:
+
+- [x] Baseline is documented before replacing direct send paths. 2026-07-17 Phase 0.
+- [x] Existing tests pass. 2026-07-17 Phase 0: focused transactional baseline/auth/settings tests passed.
+
+Suggested commit:
+
+```text
+test(transactional-message): lock email baseline
+```
+
+## Phase 1 - Message Data Model And Seeds
+
+Goal: add durable templates and queued message rows without changing send behavior.
+
+Implementation checklist:
+
+- [ ] Add `MessageTemplate` entity.
+- [ ] Add `QueuedMessage` entity.
+- [ ] Add EF configuration in `CommerceNodeDbContext`.
+- [ ] Add Commerce Node migration.
+- [ ] Add status constants/check constraints.
+- [ ] Add indexes.
+- [ ] Seed default global templates for approved system names.
+- [ ] Add template resolver interface.
+- [ ] Add template resolver implementation.
+- [ ] Add queued message repository/service contract.
+
+Verification checklist:
+
+- [ ] Migration applies to `CommerceNodeDbContext`.
+- [ ] Seeded templates are idempotent.
+- [ ] Existing app starts with no SMTP/template runtime behavior change.
+- [ ] No data is added to `AppDbContext`.
+
+Exit criteria:
+
+- [ ] Templates and queued messages can be persisted safely.
+
+Suggested commit:
+
+```text
+feat(transactional-message): add message templates and queue schema
+```
+
+## Phase 2 - Token Rendering And Preview
+
+Goal: make templates render safely and predictably.
+
+Implementation checklist:
+
+- [ ] Add `IMessageTokenRenderer`.
+- [ ] Implement allowlisted token replacement.
+- [ ] Add HTML encoding by default.
+- [ ] Add missing-token detection.
+- [ ] Add preview DTOs for admin preview.
+- [ ] Add normal token replacement tests.
+- [ ] Add HTML encoding tests.
+- [ ] Add unknown token behavior tests.
+- [ ] Add missing required token warning tests.
+- [ ] Add no arbitrary expression/code execution tests.
+
+Verification checklist:
+
+- [ ] Templates render deterministically.
+- [ ] Unsafe user input is encoded.
+- [ ] Preview can render sample models without sending email.
+
+Exit criteria:
+
+- [ ] Template rendering is safe enough for account/order/contact messages.
+
+Suggested commit:
+
+```text
+feat(transactional-message): add safe token renderer
+```
+
+## Phase 3 - Queue And Delivery Handler
+
+Goal: enqueue and send messages asynchronously using existing CommerceTask infrastructure.
+
+Implementation checklist:
+
+- [ ] Add `IMessageQueueService`.
+- [ ] Add `IMessageDeliveryService`.
+- [ ] Add `MessageDeliverTaskHandler` with task type `message.deliver`.
+- [ ] Enqueue creates `QueuedMessage`.
+- [ ] Enqueue creates `CommerceTask`.
+- [ ] Handler loads `QueuedMessage`.
+- [ ] Handler marks message `sending`.
+- [ ] Handler calls `IEmailService`.
+- [ ] Handler marks message `sent` on success.
+- [ ] Handler marks retry/failure state on failure.
+- [ ] Idempotency prevents duplicate queue rows for same command.
+- [ ] Failed delivery does not throw back into order/auth transactions.
+- [ ] Add admin retry service method.
+- [ ] Add admin cancel service method.
+
+Verification checklist:
+
+- [ ] Queued message can be delivered by `CommerceTaskWorker`.
+- [ ] Retryable failure updates task and message state.
+- [ ] Terminal failure updates task and message state.
+- [ ] Manual retry requeues delivery safely.
+- [ ] Duplicate idempotency key does not enqueue duplicate message.
+
+Exit criteria:
+
+- [ ] Transactional messages can be delivered through existing worker infrastructure.
+
+Suggested commit:
+
+```text
+feat(transactional-message): deliver queued messages
+```
+
+## Phase 4 - Account Messages
+
+Goal: move account activation and password recovery onto templates and queue.
+
+Implementation checklist:
+
+- [ ] Replace direct confirmation email send path with `IMessageQueueService`.
+- [ ] Keep fallback direct email only if queue enqueue fails before migration hardening.
+- [ ] Log fallback clearly if retained.
+- [ ] Add password recovery template integration for Customer Identity Account phase.
+- [ ] Redact reset tokens from logs.
+- [ ] Redact activation tokens from logs.
+- [ ] Redact reset/activation token URLs from admin queue detail where appropriate.
+- [ ] Add anti-enumeration behavior for password recovery response.
+
+Verification checklist:
+
+- [ ] Account activation email is queued.
+- [ ] Account activation email is template-rendered.
+- [ ] Password recovery email is queued when endpoint exists.
+- [ ] Registration/auth command succeeds or returns controlled error when email provider is down.
+- [ ] User creation is not left half-complete because SMTP is down.
+
+Exit criteria:
+
+- [ ] Account messages use queued template delivery.
+
+Suggested commit:
+
+```text
+feat(transactional-message): queue account emails
+```
+
+## Phase 5 - Order And Payment/Fulfillment Hooks
+
+Goal: enqueue core commerce transactional notifications after state changes.
+
+Implementation checklist:
+
+- [ ] Add `order.placed` enqueue call after order is created.
+- [ ] Ensure order notification enqueue happens outside main order transaction or through post-commit/outbox-safe point.
+- [ ] Add payment status changed hook after payment/order payment transitions.
+- [ ] Add fulfillment/shipping status changed hook in V2 Commerce Node order tracking/admin shipping updates.
+- [ ] Use order snapshot data for message content.
+- [ ] Do not use live mutable product/customer data for historical message content.
+- [ ] Add idempotency keys based on store/order/message event.
+
+Verification checklist:
+
+- [ ] Order placed confirmation queues once per order.
+- [ ] Retried checkout/place-order does not send duplicate order confirmation.
+- [ ] Payment hooks do not fire duplicate messages for no-op status updates.
+- [ ] Fulfillment hooks do not fire duplicate messages for no-op status updates.
+- [ ] Message delivery failure does not roll back order/payment/shipping state.
+
+Exit criteria:
+
+- [ ] Core commerce events can enqueue transactional messages safely.
+
+Suggested commit:
+
+```text
+feat(transactional-message): add commerce notification hooks
+```
+
+## Phase 6 - Contact Form Delivery Contract
+
+Goal: provide backend delivery support for future Storefront/WASM contact component.
+
+Implementation checklist:
+
+- [ ] Add Storefront contact request DTO.
+- [ ] Add Storefront contact response DTO.
+- [ ] Add `POST api/storefront/stores/{storeKey}/contact`.
+- [ ] Validate name length.
+- [ ] Validate email format.
+- [ ] Validate subject length.
+- [ ] Validate message length.
+- [ ] Apply contact captcha when enabled.
+- [ ] Apply Storefront rate-limit policy.
+- [ ] Resolve recipient from store support email.
+- [ ] Fall back to store company email/admin notification email if support email missing.
+- [ ] Enqueue `storefront.contact_form`.
+- [ ] Return generic accepted/success response.
+
+Verification checklist:
+
+- [ ] Contact delivery can be used by future Storefront component.
+- [ ] Endpoint does not require full content page implementation.
+- [ ] Captcha/rate limiting are available.
+- [ ] Store support recipient is validated.
+
+Exit criteria:
+
+- [ ] Storefront contact delivery contract exists and is spam-aware.
+
+Suggested commit:
+
+```text
+feat(transactional-message): add contact delivery endpoint
+```
+
+## Phase 7 - Admin Management And Observability
+
+Goal: make templates and queued messages manageable without building a full designer.
+
+Implementation checklist:
+
+- [ ] Add Commerce Admin template list endpoint.
+- [ ] Add Commerce Admin template detail endpoint.
+- [ ] Add Commerce Admin template update endpoint.
+- [ ] Add Commerce Admin template reset endpoint.
+- [ ] Add Commerce Admin template preview endpoint.
+- [ ] Add Commerce Admin queued message list endpoint.
+- [ ] Add Commerce Admin queued message detail endpoint.
+- [ ] Add Commerce Admin queued message retry endpoint.
+- [ ] Add Commerce Admin queued message cancel endpoint.
+- [ ] Add OpenAPI metadata.
+- [ ] Add contract tests.
+- [ ] Add minimal Control Plane gateway/client support only if admin UI needs it in this phase.
+- [ ] Add audit log entries for template update/reset.
+- [ ] Add audit log entries for message retry/cancel.
+- [ ] Redact sensitive token values in admin queue detail.
+
+Verification checklist:
+
+- [ ] Admin can inspect templates safely.
+- [ ] Admin can update templates safely.
+- [ ] Admin can see failed queued messages.
+- [ ] Admin can retry/cancel queued messages.
+- [ ] Swagger does not expose secrets.
+- [ ] Control Plane Web still calls Control Plane API, not Commerce Node directly.
+
+Exit criteria:
+
+- [ ] Transactional messages are observable and administrable without secret exposure.
+
+Suggested commit:
+
+```text
+feat(transactional-message): expose message administration
+```
+
+## Phase 8 - QA, Contracts, And Cleanup
+
+Goal: close the phase with reliable tests and no accidental legacy extension.
+
+Implementation checklist:
+
+- [ ] Add/update Commerce Node API contract tests.
+- [ ] Add template resolution service tests.
+- [ ] Add token rendering service tests.
+- [ ] Add queue idempotency tests.
+- [ ] Add delivery success/failure tests.
+- [ ] Add retry/cancel tests.
+- [ ] Add integration test for `message.deliver` task handler.
+- [ ] Add account activation queue test.
+- [ ] Add order placed queue test when Order Placement Core is integrated.
+- [ ] Add contact endpoint test if Phase 6 is implemented.
+- [ ] Update `QA-CommerceNode.todo.md`.
+- [ ] Update `QA-StorefrontV2.todo.md` if contact/account UI paths are touched.
+- [ ] Remove or stop using active V2 direct email calls once queue path is stable.
+
+Verification checklist:
+
+- [ ] Focused tests pass.
+- [ ] OpenAPI validates.
+- [ ] No new V2 feature uses legacy `AppDbContext`.
+- [ ] Direct email calls remain only in legacy/reference paths or consciously deferred compatibility paths.
+
+Exit criteria:
+
+- [ ] Transactional Message Core is contract-protected and queue-backed.
+- [ ] QA checklists contain tested evidence.
+
+Suggested commit:
+
+```text
+test(transactional-message): verify message core
+```
+
+## QA Checklist Seeds
+
+### Commerce Node
+
+- [ ] Message templates are seeded idempotently.
+- [ ] Store template override resolves before global template.
+- [ ] Language override resolves before default language.
+- [ ] Inactive template does not send unless fallback is valid.
+- [ ] Token renderer encodes user input.
+- [ ] Unknown tokens are reported safely.
+- [ ] Required missing tokens produce warnings/errors.
+- [ ] Queue service writes one row per idempotency key.
+- [ ] `message.deliver` task sends pending message.
+- [ ] SMTP failure updates retry/failure state without throwing into source command.
+- [ ] Account activation queues template email.
+- [ ] Password recovery queues template email when endpoint exists.
+- [ ] Order placed queues once per order.
+- [ ] Payment status hook queues once per effective state change.
+- [ ] Fulfillment status hook queues once per effective state change.
+- [ ] Contact endpoint validates input and captcha/rate policy.
+- [ ] Admin APIs expose no SMTP secrets.
+- [ ] OpenAPI contract tests pass.
+
+### Storefront V2
+
+- [ ] Contact form endpoint can be consumed by future component.
+- [ ] Contact submission returns generic accepted/success response.
+- [ ] Contact submission does not expose SMTP or support internals.
+- [ ] Account activation/password recovery pages keep existing UX when queue-backed email is enabled.
+- [ ] Browser network does not expose reset/activation tokens except intended user-facing URLs.
+
+### Control Plane
+
+- [ ] ControlPlane Web does not call CommerceNode message APIs directly.
+- [ ] ControlPlane API gateway uses Commerce Admin message routes with `storeKey`.
+- [ ] Admin template update/reset writes audit.
+- [ ] Admin message retry/cancel writes audit.
+- [ ] No message runtime data is stored in `ControlPlaneDbContext`.
+
+## Failure Modes To Design Against
+
+- [ ] SMTP outage blocks checkout/order placement.
+- [ ] Duplicate order confirmation after checkout retry.
+- [ ] Password reset token leaks in logs/admin UI.
+- [ ] Template executes arbitrary code.
+- [ ] Store A sends Store B template/sender.
+- [ ] SMTP credentials leak through API.
+- [ ] Missing template breaks account activation.
+- [ ] Message queue and CommerceTask state diverge.
+- [ ] Contact endpoint becomes spam target.
+- [ ] Admin edits invalid HTML/tokens.
+
+## Test Map
+
+- [ ] Data model tests:
+  - [ ] migration.
+  - [ ] indexes.
+  - [ ] check constraints.
+  - [ ] seed idempotency.
+- [ ] Template resolution tests:
+  - [ ] store override.
+  - [ ] language override.
+  - [ ] global fallback.
+  - [ ] inactive template.
+- [ ] Token rendering tests:
+  - [ ] encoding.
+  - [ ] unknown tokens.
+  - [ ] required missing tokens.
+  - [ ] safe URL token handling.
+- [ ] Queue service tests:
+  - [ ] create queued row.
+  - [ ] idempotency.
+  - [ ] correlation.
+  - [ ] state transitions.
+- [ ] Delivery handler tests:
+  - [ ] success.
+  - [ ] SMTP failure.
+  - [ ] retryable failure.
+  - [ ] terminal failure.
+- [ ] Account activation tests:
+  - [ ] registration queues activation email.
+  - [ ] email body includes activation link.
+- [ ] Password recovery tests:
+  - [ ] generic response.
+  - [ ] known account queues reset email.
+  - [ ] unknown account does not leak.
+- [ ] Order placed tests:
+  - [ ] order creation enqueues once.
+  - [ ] retry does not duplicate.
+- [ ] Payment/fulfillment hook tests:
+  - [ ] status change queues once.
+  - [ ] no-op does not queue.
+- [ ] Contact form tests:
+  - [ ] validation.
+  - [ ] captcha branch.
+  - [ ] rate-limit metadata.
+  - [ ] generic success.
+- [ ] Admin API tests:
+  - [ ] operation IDs.
+  - [ ] schemas.
+  - [ ] security.
+  - [ ] no secrets.
+
+## Migration And Compatibility
+
+- [ ] Use additive CommerceNode migrations only.
+- [ ] Existing SMTP config remains in `EmailSettings`.
+- [ ] Existing admin notification settings keep exposing `SecretsConfigured` only.
+- [ ] Existing CommerceTask worker remains the only background worker for message delivery.
+- [ ] Existing direct email calls continue until their active V2 path is migrated.
+- [ ] Legacy direct email paths are not extended.
+- [ ] Existing newsletter/contact UI behavior is not changed unless explicitly touched.
+- [ ] Existing order/auth/payment commands do not depend on SMTP availability.
+
+## Dependency Notes
+
+- [ ] Depends on Customer Identity Account for password recovery endpoint and account links.
+- [ ] Depends on Order Placement Core for durable order placed event/notification enqueue point.
+- [ ] Depends on Payment Core for payment state transition hooks.
+- [ ] Depends on Shipping Core / Order Placement Core for fulfillment status/tracking hooks.
+- [ ] Depends on Security Privacy for captcha targets and rate-limit behavior on contact/password recovery.
+- [ ] Aligns with Configuration and Feature State Core for future secret/public config separation.
+
+## Out Of Scope Backlog
+
+- [ ] Marketing campaigns.
+- [ ] Newsletter bulk send.
+- [ ] Customer notification preferences.
+- [ ] Multi-channel messaging.
+- [ ] Multi-SMTP-account secret management UI.
+- [ ] Provider failover.
+- [ ] Email open/click tracking.
+- [ ] Bounce processing.
+- [ ] Full attachment storage.
+- [ ] Invoice PDF generation.
+- [ ] Visual designer.
+- [ ] Rich template scripting.
+- [ ] Full contact page/component implementation.
+
+## Recommended Implementation Order
+
+- [x] Phase 0 - baseline guardrails. 2026-07-17: focused transactional baseline/auth/settings tests passed.
+- [ ] Phase 1 - message data model and seeds.
+- [ ] Phase 2 - token rendering and preview.
+- [ ] Phase 3 - queue and delivery handler.
+- [ ] Phase 4 - account messages.
+- [ ] Phase 5 - order and payment/fulfillment hooks.
+- [ ] Phase 6 - contact form delivery contract.
+- [ ] Phase 7 - admin management and observability.
+- [ ] Phase 8 - QA, contracts, and cleanup.
+
+## Acceptance Criteria
+
+- [ ] Default transactional templates are seeded.
+- [ ] Account activation uses queued template delivery.
+- [ ] Password recovery can queue reset email when endpoint exists.
+- [ ] Order placed confirmation is queued once per order.
+- [ ] Payment notification hook exists without workflow expansion.
+- [ ] Fulfillment notification hook exists without workflow expansion.
+- [ ] Contact form delivery endpoint/contract exists if selected for implementation.
+- [ ] Queued messages have retry/failure/audit state.
+- [ ] Admin can inspect templates without seeing SMTP secrets.
+- [ ] Admin can inspect queued messages without seeing SMTP secrets.
+- [ ] New APIs satisfy V2 API contract standards.
+- [ ] Focused tests and QA checklists are updated.
+- [ ] No active V2 behavior is added to legacy `AppDbContext`.
+- [ ] No active V2 behavior is added to legacy Presentation projects.

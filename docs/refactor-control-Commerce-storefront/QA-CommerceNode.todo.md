@@ -1134,3 +1134,9 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] New checkout payment flow does not depend on legacy `IPayPalPaymentService`. 2026-07-17 Phase 7: `StorefrontCheckoutService_DoesNotDependOnLegacyPayPalCaptureService` passed.
 - [x] Storefront OpenAPI snapshot was refreshed for the PayPal compatibility metadata change. 2026-07-17 Phase 7: focused payment/OpenAPI/checkout run passed 72/72.
 - [x] Payment Core automated release gate passed. 2026-07-17 Phase 8: focused provider registry/operation, payment attempt, webhook signature/hardening, Stripe provider, payment method, checkout, Storefront OpenAPI/payment contracts, Storefront V2 client/host smoke, and ControlPlane boundary/static run passed 185/185.
+
+## Transactional Message Core
+
+- [x] Phase 0 baseline records all current direct `SendEmailAsync` call sites before queue/template replacement. 2026-07-17: `TransactionalMessageBaselineTests.DirectEmailCallSiteInventory_MatchesKnownBaseline` locks Authentication, Newsletter, older Payment Cart, Email transport, and legacy OrderTracking call sites.
+- [x] Notification settings still expose only safe SMTP metadata and `SecretsConfigured`, not username/password. 2026-07-17 Phase 0: `NotificationSettingsDto_DoesNotExposeSmtpSecrets` passed.
+- [x] CommerceNode runtime still uses the existing CommerceTaskWorker foundation for future transactional message delivery. 2026-07-17 Phase 0: static runtime test asserts `AddHostedService<CommerceTaskWorker>`, task worker options, and task handler registration.
