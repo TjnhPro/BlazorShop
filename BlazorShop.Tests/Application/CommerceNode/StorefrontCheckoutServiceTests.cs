@@ -680,6 +680,21 @@ namespace BlazorShop.Tests.Application.CommerceNode
         {
             using var context = CreateContext();
             var storeId = Guid.NewGuid();
+            var storePublicId = Guid.NewGuid();
+            context.CommerceStores.Add(new CommerceStore
+            {
+                Id = storeId,
+                PublicId = storePublicId,
+                StoreKey = "snapshot-store",
+                Name = "Snapshot Store",
+                Status = CommerceStoreStatuses.Active,
+                BaseUrl = "https://snapshot.example.test",
+                CompanyName = "Snapshot LLC",
+                CompanyEmail = "support@snapshot.example.test",
+                CompanyPhone = "+15550100",
+                CompanyAddress = "1 Snapshot Way",
+            });
+            context.SaveChanges();
             SeedPaymentMethod(context, storeId);
             var productRepository = new Mock<IProductReadRepository>();
             var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
@@ -760,6 +775,37 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Equal(ShippingStatuses.NotYetShipped, order.ShippingStatus);
             Assert.Equal(27.25m, attempt.Amount);
             Assert.Equal(7.25m, context.CheckoutSessions.Single().ShippingTotal);
+            Assert.Equal(storePublicId, order.StorePublicId);
+            Assert.Equal("snapshot-store", order.StoreKeySnapshot);
+            Assert.Equal("Snapshot Store", order.StoreNameSnapshot);
+            Assert.Equal("https://snapshot.example.test", order.StoreBaseUrlSnapshot);
+            Assert.Equal("Snapshot LLC", order.StoreCompanyNameSnapshot);
+            Assert.Equal("support@snapshot.example.test", order.StoreCompanyEmailSnapshot);
+            Assert.Equal("+15550100", order.StoreCompanyPhoneSnapshot);
+            Assert.Equal("1 Snapshot Way", order.StoreCompanyAddressSnapshot);
+            Assert.Equal(20m, order.SubtotalAmount);
+            Assert.Equal(7.25m, order.ShippingTotalAmount);
+            Assert.Equal(0m, order.TaxTotalAmount);
+            Assert.Equal(0m, order.DiscountTotalAmount);
+            Assert.Equal(27.25m, order.GrandTotalAmount);
+            Assert.Contains("\"address1\":\"100 Main St\"", order.BillingAddressSnapshotJson);
+            Assert.Contains("\"address1\":\"100 Main St\"", order.ShippingAddressSnapshotJson);
+            Assert.Contains("\"displayName\":\"Ground\"", order.ShippingMethodSnapshotJson);
+
+            var persistedStore = context.CommerceStores.Single(item => item.Id == storeId);
+            persistedStore.Name = "Changed Store";
+            persistedStore.CompanyEmail = "changed@example.test";
+            var checkout = context.CheckoutSessions.Single();
+            checkout.BillingAddressSnapshotJson = checkout.BillingAddressSnapshotJson!.Replace("100 Main St", "Changed Billing", StringComparison.Ordinal);
+            checkout.ShippingAddress1 = "Changed Shipping";
+            context.SaveChanges();
+            context.ChangeTracker.Clear();
+
+            var persistedOrder = context.Orders.AsNoTracking().Single();
+            Assert.Equal("Snapshot Store", persistedOrder.StoreNameSnapshot);
+            Assert.Equal("support@snapshot.example.test", persistedOrder.StoreCompanyEmailSnapshot);
+            Assert.Contains("\"address1\":\"100 Main St\"", persistedOrder.BillingAddressSnapshotJson);
+            Assert.Contains("\"address1\":\"100 Main St\"", persistedOrder.ShippingAddressSnapshotJson);
         }
 
         [Fact]

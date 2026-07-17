@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Order Placement Core.md`
 
-Status: Phase 2 complete. Phase 3 not started.
+Status: Phase 3 complete. Phase 4 not started.
 
 Scope: turn the existing Commerce Node order placement flow from a working checkout MVP into a practical order core. The goal is stable historical order snapshots, safe placement guarantees, and enough order state history for real store operations without adding a full OMS, tax engine, discount engine, stock reservation ledger, invoice/accounting system, or fulfillment platform.
 
@@ -217,7 +217,7 @@ Keep compatible:
 - [x] Existing status fields. 2026-07-17 Phase 1 preserved.
 - [x] `AdminNote`. 2026-07-17 Phase 1 preserved.
 - [x] `TotalAmount` remains the charged/order total. 2026-07-17 Phase 1 preserved.
-- [ ] `GrandTotalAmount` equals `TotalAmount` for new/backfilled rows.
+- [x] `GrandTotalAmount` equals `TotalAmount` for new/backfilled rows. 2026-07-17 Phase 3: new orders set `GrandTotalAmount` from charged total.
 - [ ] Existing rows render safely with null breakdown fields.
 
 Add `OrderHistoryEntry` or order note:
@@ -390,43 +390,43 @@ Goal: copy stable checkout/store/payment/shipping data into order history.
 
 Implementation checklist:
 
-- [ ] Load current `CommerceStore` during placement.
-- [ ] Copy store public id.
-- [ ] Copy store key.
-- [ ] Copy store name.
-- [ ] Copy store base URL.
-- [ ] Copy company/contact fields needed for order documents.
-- [ ] Copy `CheckoutSession.BillingAddressSnapshotJson`.
-- [ ] If billing equals shipping, preserve both by value.
-- [ ] Keep existing shipping columns.
-- [ ] Optionally store normalized shipping JSON for future schema evolution.
-- [ ] Set `SubtotalAmount`.
-- [ ] Set `ShippingTotalAmount`.
-- [ ] Set `TaxTotalAmount`.
-- [ ] Set `DiscountTotalAmount`.
-- [ ] Set `GrandTotalAmount`.
-- [ ] Keep `TotalAmount = GrandTotalAmount`.
-- [ ] Copy base totals where available.
-- [ ] Parse/copy `SelectedShippingOptionJson`.
-- [ ] Fill `ShippingMethodKey`.
-- [ ] Fill `ShippingMethodName`.
-- [ ] Fill `ShippingMethodSnapshotJson`.
-- [ ] Keep `PaymentMethodKey`.
-- [ ] Link `PaymentAttempt.OrderId`.
-- [ ] Do not copy provider secrets.
-- [ ] Do not copy raw webhook payloads.
+- [x] Load current `CommerceStore` during placement. 2026-07-17 Phase 3: optional snapshot load, preserving legacy tests without seeded stores.
+- [x] Copy store public id. 2026-07-17 Phase 3.
+- [x] Copy store key. 2026-07-17 Phase 3.
+- [x] Copy store name. 2026-07-17 Phase 3.
+- [x] Copy store base URL. 2026-07-17 Phase 3.
+- [x] Copy company/contact fields needed for order documents. 2026-07-17 Phase 3.
+- [x] Copy `CheckoutSession.BillingAddressSnapshotJson`. 2026-07-17 Phase 3.
+- [x] If billing equals shipping, preserve both by value. 2026-07-17 Phase 3: billing JSON and normalized shipping JSON are stored independently.
+- [x] Keep existing shipping columns. 2026-07-17 Phase 3.
+- [x] Optionally store normalized shipping JSON for future schema evolution. 2026-07-17 Phase 3.
+- [x] Set `SubtotalAmount`. 2026-07-17 Phase 3.
+- [x] Set `ShippingTotalAmount`. 2026-07-17 Phase 3.
+- [x] Set `TaxTotalAmount`. 2026-07-17 Phase 3.
+- [x] Set `DiscountTotalAmount`. 2026-07-17 Phase 3.
+- [x] Set `GrandTotalAmount`. 2026-07-17 Phase 3.
+- [x] Keep `TotalAmount = GrandTotalAmount`. 2026-07-17 Phase 3.
+- [x] Copy base totals where available. 2026-07-17 Phase 3: base subtotal/grand total copied when checkout/payment snapshots provide them.
+- [x] Parse/copy `SelectedShippingOptionJson`. 2026-07-17 Phase 3.
+- [x] Fill `ShippingMethodKey`. 2026-07-17 Phase 3.
+- [x] Fill `ShippingMethodName`. 2026-07-17 Phase 3.
+- [x] Fill `ShippingMethodSnapshotJson`. 2026-07-17 Phase 3.
+- [x] Keep `PaymentMethodKey`. 2026-07-17 Phase 3.
+- [x] Link `PaymentAttempt.OrderId`. 2026-07-17 Phase 3.
+- [x] Do not copy provider secrets. 2026-07-17 Phase 3.
+- [x] Do not copy raw webhook payloads. 2026-07-17 Phase 3.
 
 Verification checklist:
 
-- [ ] Mutating saved address after order does not change billing/shipping snapshots.
-- [ ] Mutating store name/contact after order does not change order store snapshot.
-- [ ] Checkout selected shipping option is preserved on order.
-- [ ] Totals breakdown equals checkout/order result.
-- [ ] Converted currency order fills working and base totals consistently.
+- [x] Mutating saved address after order does not change billing/shipping snapshots. 2026-07-17 Phase 3: order placement test mutates checkout snapshots after order.
+- [x] Mutating store name/contact after order does not change order store snapshot. 2026-07-17 Phase 3.
+- [x] Checkout selected shipping option is preserved on order. 2026-07-17 Phase 3.
+- [x] Totals breakdown equals checkout/order result. 2026-07-17 Phase 3.
+- [x] Converted currency order fills working and base totals consistently. 2026-07-17 Phase 3: existing converted currency checkout test passed in focused run.
 
 Exit criteria:
 
-- [ ] New orders can render confirmation/history without joining mutable store/address/cart data.
+- [x] New orders can render confirmation/history without joining mutable store/address/cart data. 2026-07-17 Phase 3.
 
 Suggested commit:
 
@@ -795,7 +795,7 @@ test(order-placement): verify order placement core
 - [x] Phase 0 - baseline and safety snapshot. 2026-07-17: current order placement behavior documented and 97 focused baseline tests passed.
 - [x] Phase 1 - add order snapshot schema. 2026-07-17: committed after schema/test verification.
 - [x] Phase 2 - shared order placement builder. 2026-07-17: committed after checkout/payment focused tests passed.
-- [ ] Phase 3 - fill permanent order snapshots.
+- [x] Phase 3 - fill permanent order snapshots. 2026-07-17: committed after snapshot mutation and checkout/payment focused tests passed.
 - [ ] Phase 4 - guest completion access token.
 - [ ] Phase 5 - order status transition and history.
 - [ ] Phase 6 - placement transaction and event hook.

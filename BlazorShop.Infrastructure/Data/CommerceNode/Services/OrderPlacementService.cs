@@ -1,5 +1,7 @@
 namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 {
+    using System.Text.Json;
+
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Checkout;
     using BlazorShop.Application.CommerceNode.Currencies;
@@ -14,6 +16,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
     public sealed class OrderPlacementService : IOrderPlacementService
     {
+        private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+
         private readonly CommerceNodeDbContext context;
         private readonly IMoneyRoundingService moneyRoundingService;
         private readonly IProductSellabilityResolver sellabilityResolver;
@@ -67,8 +71,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return OrderPlacementResult.Failed(lines.ResponseType, lines.Message);
             }
 
+            var store = await this.context.CommerceStores
+                .AsNoTracking()
+                .FirstOrDefaultAsync(candidate => candidate.Id == request.StoreId, cancellationToken);
             var now = DateTimeOffset.UtcNow;
-            var order = CreateOrder(request, lines.Lines, now);
+            var order = CreateOrder(request, lines.Lines, store, now);
             this.context.Orders.Add(order);
 
             foreach (var line in lines.Lines)
@@ -88,15 +95,25 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private Order CreateOrder(
             OrderPlacementRequest request,
             IReadOnlyList<OrderLineSnapshot> lines,
+            CommerceStore? store,
             DateTimeOffset now)
         {
             var snapshot = request.Snapshot;
+            var shippingOption = snapshot.ShippingOption ?? ParseShippingOption(request.CheckoutSession.SelectedShippingOptionJson);
             return new Order
             {
                 Id = Guid.NewGuid(),
                 UserId = string.Empty,
                 CustomerId = request.CheckoutSession.CustomerId,
                 StoreId = request.StoreId,
+                StorePublicId = store?.PublicId,
+                StoreKeySnapshot = store?.StoreKey,
+                StoreNameSnapshot = store?.Name,
+                StoreBaseUrlSnapshot = store?.BaseUrl,
+                StoreCompanyNameSnapshot = store?.CompanyName,
+                StoreCompanyEmailSnapshot = store?.CompanyEmail,
+                StoreCompanyPhoneSnapshot = store?.CompanyPhone,
+                StoreCompanyAddressSnapshot = store?.CompanyAddress,
                 Reference = $"ORD-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..8].ToUpperInvariant()}",
                 OrderStatus = snapshot.OrderStatus,
                 PaymentStatus = snapshot.PaymentStatus,
@@ -105,8 +122,15 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 PaymentMetadataJson = NormalizeNullable(snapshot.PaymentMetadataJson),
                 CurrencyCode = snapshot.CurrencyCode,
                 TotalAmount = snapshot.TotalAmount,
+                SubtotalAmount = request.CheckoutSession.Subtotal,
+                ShippingTotalAmount = request.CheckoutSession.ShippingTotal,
+                TaxTotalAmount = request.CheckoutSession.TaxTotal,
+                DiscountTotalAmount = request.CheckoutSession.DiscountTotal,
+                GrandTotalAmount = snapshot.TotalAmount,
                 BaseCurrencyCode = snapshot.CurrencySnapshot.BaseCurrencyCode,
                 BaseTotalAmount = snapshot.CurrencySnapshot.BaseTotalAmount,
+                BaseSubtotalAmount = request.CheckoutSession.BaseSubtotal,
+                BaseGrandTotalAmount = snapshot.CurrencySnapshot.BaseTotalAmount ?? request.CheckoutSession.BaseGrandTotal,
                 ExchangeRate = snapshot.CurrencySnapshot.ExchangeRate,
                 ExchangeRateProviderKey = snapshot.CurrencySnapshot.ExchangeRateProviderKey,
                 ExchangeRateSource = snapshot.CurrencySnapshot.ExchangeRateSource,
@@ -114,6 +138,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 ExchangeRateExpiresAtUtc = snapshot.CurrencySnapshot.ExchangeRateExpiresAtUtc,
                 CustomerName = request.CheckoutSession.CustomerName,
                 CustomerEmail = request.CheckoutSession.CustomerEmail,
+                BillingAddressSnapshotJson = NormalizeNullable(request.CheckoutSession.BillingAddressSnapshotJson),
+                ShippingAddressSnapshotJson = BuildShippingAddressSnapshotJson(request.CheckoutSession),
                 ShippingFullName = request.CheckoutSession.ShippingFullName,
                 ShippingEmail = request.CheckoutSession.ShippingEmail,
                 ShippingPhone = request.CheckoutSession.ShippingPhone,
@@ -124,13 +150,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 ShippingPostalCode = request.CheckoutSession.ShippingPostalCode,
                 ShippingCountryCode = request.CheckoutSession.ShippingCountryCode,
                 ShippingStatus = snapshot.ShippingStatus,
-                ShippingMethodKey = snapshot.ShippingOption?.Key,
-                ShippingProviderSystemName = snapshot.ShippingOption?.ProviderSystemName,
-                ShippingMethodCode = snapshot.ShippingOption?.MethodCode,
-                ShippingMethodName = snapshot.ShippingOption?.DisplayName,
-                ShippingTotal = snapshot.ShippingOption?.Price ?? 0m,
-                ShippingCurrencyCode = snapshot.ShippingOption?.CurrencyCode ?? snapshot.CurrencyCode,
-                ShippingDeliveryEstimateText = snapshot.ShippingOption?.DeliveryEstimateText,
+                ShippingMethodKey = shippingOption?.Key,
+                ShippingProviderSystemName = shippingOption?.ProviderSystemName,
+                ShippingMethodCode = shippingOption?.MethodCode,
+                ShippingMethodName = shippingOption?.DisplayName,
+                ShippingTotal = shippingOption?.Price ?? request.CheckoutSession.ShippingTotal,
+                ShippingCurrencyCode = shippingOption?.CurrencyCode ?? snapshot.CurrencyCode,
+                ShippingDeliveryEstimateText = shippingOption?.DeliveryEstimateText,
+                ShippingMethodSnapshotJson = shippingOption is null
+                    ? NormalizeNullable(request.CheckoutSession.SelectedShippingOptionJson)
+                    : JsonSerializer.Serialize(shippingOption, JsonOptions),
                 CreatedOn = now.UtcDateTime,
                 UpdatedAt = now.UtcDateTime,
                 Lines = lines.Select(line => new OrderLine
@@ -248,6 +277,39 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             cart.ExpiresAtUtc = now;
             cart.LastActivityAtUtc = now;
             cart.UpdatedAtUtc = now;
+        }
+
+        private static string BuildShippingAddressSnapshotJson(CheckoutSession checkout)
+        {
+            return JsonSerializer.Serialize(
+                new StorefrontCheckoutShippingAddressDto(
+                    checkout.ShippingFullName,
+                    checkout.ShippingEmail,
+                    checkout.ShippingPhone,
+                    checkout.ShippingAddress1,
+                    checkout.ShippingAddress2,
+                    checkout.ShippingCity,
+                    checkout.ShippingState,
+                    checkout.ShippingPostalCode,
+                    checkout.ShippingCountryCode),
+                JsonOptions);
+        }
+
+        private static StorefrontCheckoutShippingOption? ParseShippingOption(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return null;
+            }
+
+            try
+            {
+                return JsonSerializer.Deserialize<StorefrontCheckoutShippingOption>(json, JsonOptions);
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
         }
 
         private static void DeductTrackedStock(OrderLineSnapshot line)

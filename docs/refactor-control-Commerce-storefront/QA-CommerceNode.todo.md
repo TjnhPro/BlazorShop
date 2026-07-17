@@ -1071,6 +1071,9 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] COD checkout and online payment capture use the same order construction service. 2026-07-17 Phase 2: `OrderPlacementService` creates orders/order lines, deducts stock, closes carts/checkouts, and links optional payment attempts.
 - [x] Provider-specific payment logic remains outside order placement. 2026-07-17 Phase 2: checkout/payment services still own provider session/capture/audit behavior.
 - [x] Shared order placement refactor preserves checkout/payment behavior. 2026-07-17 Phase 2: focused `StorefrontCheckoutServiceTests|PaymentAttemptServiceTests` passed 59/59.
+- [x] New orders persist permanent store/contact, billing/shipping address, selected shipping option, and total breakdown snapshots. 2026-07-17 Phase 3: `OrderPlacementService` fills order snapshot columns during placement.
+- [x] Order snapshots are immutable from later mutable store/checkout edits. 2026-07-17 Phase 3: checkout test mutates store name/email and checkout address snapshots after order, then asserts persisted order snapshot values stay unchanged.
+- [x] Converted currency and online capture flows remain compatible after permanent snapshot fill. 2026-07-17 Phase 3: focused `StorefrontCheckoutServiceTests|PaymentAttemptServiceTests` passed 59/59.
 
 ## Payment Core
 
