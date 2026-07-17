@@ -7,6 +7,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using BlazorShop.Application.DTOs.Admin.Audit;
     using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Application.Services.Contracts.Admin;
+    using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities.Payment;
 
@@ -180,12 +181,21 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 });
             }
 
-            order.ShippingStatus = "Shipped";
+            OrderLifecycleTransitionHelper.UpdateShippingStatus(
+                this.context,
+                order,
+                ShippingStatuses.Shipped,
+                source: "manual_admin");
             order.ShippedOn = shipDate;
             order.ShippingCarrier = shipment.CarrierName;
             order.TrackingNumber = shipment.TrackingNumber;
             order.TrackingUrl = shipment.TrackingUrl;
             order.LastTrackingUpdate = now;
+            OrderLifecycleTransitionHelper.RecordTrackingUpdated(
+                this.context,
+                order,
+                oldTrackingNumber: null,
+                source: "manual_admin");
 
             await this.context.SaveChangesAsync();
             var trackingEventCount = await this.context.ShipmentTrackingEvents

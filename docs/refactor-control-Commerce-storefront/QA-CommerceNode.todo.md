@@ -1077,6 +1077,11 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Guest order completion token is returned once and only hash is persisted. 2026-07-17 Phase 4: checkout test asserts raw token length, hash persistence, and no raw token stored.
 - [x] Guest order lookup requires store scope, reference, and token. 2026-07-17 Phase 4: correct token succeeds; wrong token and wrong store return NotFound.
 - [x] Storefront OpenAPI remains generator-safe after guest lookup endpoint. 2026-07-17 Phase 4: Storefront OpenAPI snapshots refreshed and focused model/OpenAPI/checkout/payment tests passed 120/120.
+- [x] Order-local history schema is CommerceNode-owned and additive. 2026-07-17 Phase 5: migration `CommerceNodeOrderHistoryEntries` adds `order_history_entries`; model test verifies table, indexes, lengths, JSON metadata, default customer visibility, and cascade to order.
+- [x] COD and captured online order placement append customer-visible `order.created` and `payment.captured` history events. 2026-07-17 Phase 5: focused `StorefrontCheckoutServiceTests` and `PaymentAttemptServiceTests` passed.
+- [x] Shipment upsert and tracking/status updates append order-local history and normalize stored shipping status to `shipped`/`delivered`. 2026-07-17 Phase 5: `CommerceNodeAdminShipmentServiceTests` covered shipment upsert and delivered update.
+- [x] Admin complete/cancel transitions append order-local history while keeping `AdminAuditLog` writes. 2026-07-17 Phase 5: focused admin order transition tests passed.
+- [x] Order Placement Phase 5 focused release gate passed. 2026-07-17: CommerceNode API build passed and focused model/checkout/payment/shipment/admin transition run passed 95/95.
 
 ## Payment Core
 

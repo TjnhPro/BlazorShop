@@ -23,6 +23,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         [InlineData(typeof(StoreNavigationMenu))]
         [InlineData(typeof(StoreNavigationMenuItem))]
         [InlineData(typeof(StoreShippingSettings))]
+        [InlineData(typeof(OrderHistoryEntry))]
         public void CatalogStoreId_IsRequiredInCommerceNode(Type entityType)
         {
             using var context = CreateContext();
@@ -428,6 +429,32 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal(500, trackingEventEntity.FindProperty(nameof(ShipmentTrackingEvent.Message))!.GetMaxLength());
             Assert.Equal(160, trackingEventEntity.FindProperty(nameof(ShipmentTrackingEvent.Location))!.GetMaxLength());
             Assert.Equal(64, trackingEventEntity.FindProperty(nameof(ShipmentTrackingEvent.Source))!.GetMaxLength());
+        }
+
+        [Fact]
+        public void OrderHistoryEntry_HasAppendOnlyTimelineMapping()
+        {
+            using var context = CreateContext();
+            var modelEntity = context.Model.FindEntityType(typeof(OrderHistoryEntry));
+
+            Assert.NotNull(modelEntity);
+            Assert.Equal("order_history_entries", modelEntity!.GetTableName());
+            Assert.Equal(80, modelEntity.FindProperty(nameof(OrderHistoryEntry.EventType))!.GetMaxLength());
+            Assert.Equal(128, modelEntity.FindProperty(nameof(OrderHistoryEntry.OldValue))!.GetMaxLength());
+            Assert.Equal(128, modelEntity.FindProperty(nameof(OrderHistoryEntry.NewValue))!.GetMaxLength());
+            Assert.Equal(512, modelEntity.FindProperty(nameof(OrderHistoryEntry.Message))!.GetMaxLength());
+            Assert.Equal("jsonb", modelEntity.FindProperty(nameof(OrderHistoryEntry.MetadataJson))!.GetColumnType());
+            Assert.Equal(false, modelEntity.FindProperty(nameof(OrderHistoryEntry.VisibleToCustomer))!.GetDefaultValue());
+            Assert.Equal(64, modelEntity.FindProperty(nameof(OrderHistoryEntry.Source))!.GetMaxLength());
+
+            var orderForeignKey = modelEntity.GetForeignKeys()
+                .SingleOrDefault(key => key.PrincipalEntityType.ClrType == typeof(Order));
+            var timelineIndex = modelEntity.GetIndexes()
+                .SingleOrDefault(index => index.Properties.Select(property => property.Name).SequenceEqual(["StoreId", "OrderId", "CreatedAtUtc"]));
+
+            Assert.NotNull(orderForeignKey);
+            Assert.Equal(DeleteBehavior.Cascade, orderForeignKey!.DeleteBehavior);
+            Assert.NotNull(timelineIndex);
         }
 
         private static CommerceNodeDbContext CreateContext()

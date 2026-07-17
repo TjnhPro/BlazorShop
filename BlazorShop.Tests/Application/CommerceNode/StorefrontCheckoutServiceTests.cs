@@ -780,6 +780,10 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Equal("3-5 days", order.ShippingDeliveryEstimateText);
             Assert.Equal(ShippingStatuses.NotYetShipped, order.ShippingStatus);
             Assert.Equal(27.25m, attempt.Amount);
+            Assert.Equal(
+                ["order.created", "payment.captured"],
+                context.OrderHistoryEntries.Select(item => item.EventType).OrderBy(item => item).ToArray());
+            Assert.All(context.OrderHistoryEntries, item => Assert.True(item.VisibleToCustomer));
             Assert.Equal(7.25m, context.CheckoutSessions.Single().ShippingTotal);
             Assert.Equal(storePublicId, order.StorePublicId);
             Assert.Equal("snapshot-store", order.StoreKeySnapshot);

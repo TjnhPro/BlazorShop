@@ -98,6 +98,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 request.PaymentAttempt.OrderId = order.Id;
             }
 
+            OrderLifecycleTransitionHelper.RecordCreated(this.context, order);
+
+            if (request.PaymentAttempt is not null)
+            {
+                OrderLifecycleTransitionHelper.RecordPaymentCaptured(this.context, order, request.Snapshot.PaymentStatus);
+            }
+
             return OrderPlacementResult.Succeeded(order, guestAccessToken);
         }
 

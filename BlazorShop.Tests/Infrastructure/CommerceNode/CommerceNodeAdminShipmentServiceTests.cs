@@ -34,11 +34,14 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var trackingEvent = Assert.Single(result.Payload.TrackingEvents);
             Assert.Equal("shipped", trackingEvent.Status);
             Assert.Equal("manual_admin", trackingEvent.Source);
-            Assert.Equal("Shipped", order.ShippingStatus);
+            Assert.Equal(ShippingStatuses.Shipped, order.ShippingStatus);
             Assert.Equal("UPS", order.ShippingCarrier);
             Assert.Equal("TRACK-1", order.TrackingNumber);
             Assert.Equal("free_standard", result.Payload.ShippingMethod!.Key);
             Assert.Equal("internal", result.Payload.ShippingMethod.ProviderSystemName);
+            Assert.Equal(
+                ["shipping_status.updated", "tracking.updated"],
+                context.OrderHistoryEntries.Select(item => item.EventType).OrderBy(item => item).ToArray());
         }
 
         [Fact]
@@ -119,6 +122,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal(["shipped", "tracking_updated"], result.Payload!.TrackingEvents.Select(item => item.Status).ToArray());
             Assert.Equal(2, context.ShipmentTrackingEvents.Count());
             Assert.Single(context.Shipments);
+            Assert.Equal(4, context.OrderHistoryEntries.Count());
         }
 
         [Fact]
@@ -140,6 +144,60 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal(
                 ["shipped", "delivered"],
                 context.ShipmentTrackingEvents.OrderBy(item => item.OccurredAtUtc).Select(item => item.Status).ToArray());
+            Assert.Contains(context.OrderHistoryEntries, item =>
+                item.EventType == "shipping_status.updated"
+                && item.NewValue == ShippingStatuses.Delivered
+                && item.VisibleToCustomer);
+        }
+
+        [Fact]
+        public async Task CompleteAsync_WithLegacyShippedStatus_CompletesAndAppendsHistory()
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            SeedStore(context, storeId);
+            var order = SeedOrder(context, storeId, quantity: 1);
+            order.OrderStatus = OrderStatuses.Processing;
+            order.PaymentStatus = PaymentStatuses.Paid;
+            order.ShippingStatus = "Shipped";
+            await context.SaveChangesAsync();
+            var auditService = new CapturingAdminAuditService();
+            var service = CreateOrderService(context, storeId, auditService);
+
+            var result = await service.CompleteAsync(order.Id);
+
+            Assert.True(result.Success, result.Message);
+            Assert.Equal(OrderStatuses.Complete, context.Orders.Single().OrderStatus);
+            Assert.Contains(context.OrderHistoryEntries, item =>
+                item.EventType == "order.completed"
+                && item.OldValue == OrderStatuses.Processing
+                && item.NewValue == OrderStatuses.Complete
+                && item.VisibleToCustomer);
+            Assert.Equal("Order.Completed", Assert.Single(auditService.Logs).Action);
+        }
+
+        [Fact]
+        public async Task CancelAsync_AppendsHistoryAndKeepsAdminAudit()
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            SeedStore(context, storeId);
+            var order = SeedOrder(context, storeId, quantity: 1);
+            order.OrderStatus = OrderStatuses.Processing;
+            await context.SaveChangesAsync();
+            var auditService = new CapturingAdminAuditService();
+            var service = CreateOrderService(context, storeId, auditService);
+
+            var result = await service.CancelAsync(order.Id);
+
+            Assert.True(result.Success, result.Message);
+            Assert.Equal(OrderStatuses.Cancelled, context.Orders.Single().OrderStatus);
+            Assert.Contains(context.OrderHistoryEntries, item =>
+                item.EventType == "order.cancelled"
+                && item.OldValue == OrderStatuses.Processing
+                && item.NewValue == OrderStatuses.Cancelled
+                && item.VisibleToCustomer);
+            Assert.Equal("Order.Cancelled", Assert.Single(auditService.Logs).Action);
         }
 
         [Fact]
@@ -188,6 +246,19 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 context,
                 auditService ?? new CapturingAdminAuditService(),
                 new StubCommerceStoreContext(storeId));
+        }
+
+        private static CommerceNodeAdminOrderService CreateOrderService(
+            CommerceNodeDbContext context,
+            Guid storeId,
+            CapturingAdminAuditService auditService)
+        {
+            var storeContext = new StubCommerceStoreContext(storeId);
+            return new CommerceNodeAdminOrderService(
+                context,
+                new CommerceNodeOrderTrackingService(context, storeContext),
+                auditService,
+                storeContext);
         }
 
         private static void SeedStore(CommerceNodeDbContext context, Guid storeId)

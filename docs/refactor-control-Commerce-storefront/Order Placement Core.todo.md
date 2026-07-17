@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Order Placement Core.md`
 
-Status: Phase 4 complete. Phase 5 not started.
+Status: Phase 5 complete. Phase 6 not started.
 
 Scope: turn the existing Commerce Node order placement flow from a working checkout MVP into a practical order core. The goal is stable historical order snapshots, safe placement guarantees, and enough order state history for real store operations without adding a full OMS, tax engine, discount engine, stock reservation ledger, invoice/accounting system, or fulfillment platform.
 
@@ -27,11 +27,11 @@ Approved:
   - [ ] keep public `Order.Reference`.
   - [ ] created/updated timestamps.
   - [ ] customer-facing guest completion access token stored hashed.
-- [ ] Order statuses:
-  - [ ] keep existing order, payment, and shipping statuses.
-  - [ ] add centralized transition helper for order lifecycle changes.
-  - [ ] add order note/history rows for status changes and system events.
-  - [ ] keep admin note as a separate editable note.
+- [x] Order statuses:
+  - [x] keep existing order, payment, and shipping statuses. 2026-07-17 Phase 5: legacy shipping status casing is accepted and normalized on writes.
+  - [x] add centralized transition helper for order lifecycle changes. 2026-07-17 Phase 5: `OrderLifecycleTransitionHelper`.
+  - [x] add order note/history rows for status changes and system events. 2026-07-17 Phase 5: `OrderHistoryEntry` plus CommerceNode migration.
+  - [x] keep admin note as a separate editable note. 2026-07-17 Phase 5: admin note remains editable on `Order`; timeline receives an append-only event only.
 - [ ] Placement guarantees:
   - [ ] transactional order creation for synchronous placement paths.
   - [ ] preserve checkout/payment idempotency.
@@ -480,41 +480,41 @@ Goal: make order lifecycle changes consistent and auditable.
 
 Implementation checklist:
 
-- [ ] Add `OrderHistoryEntry` entity and mapping.
-- [ ] Add `IOrderStatusTransitionService` or internal helper.
-- [ ] Centralize place-order transition.
-- [ ] Centralize payment captured transition.
-- [ ] Centralize complete transition.
-- [ ] Centralize cancel transition.
-- [ ] Centralize shipping status changes.
-- [ ] Normalize shipping status writes to constants.
-- [ ] Accept legacy casing in filters and complete checks.
-- [ ] Write history entry for order created.
-- [ ] Write history entry for payment attempt linked/captured/failed where order exists.
-- [ ] Write history entry for shipping status changed.
-- [ ] Write history entry for tracking updated.
-- [ ] Write history entry for order completed.
-- [ ] Write history entry for order cancelled.
-- [ ] Write history entry for admin note updated if useful.
-- [ ] Keep existing `AdminAuditLog` writes in admin services.
+- [x] Add `OrderHistoryEntry` entity and mapping. 2026-07-17 Phase 5: migration `CommerceNodeOrderHistoryEntries`.
+- [x] Add `IOrderStatusTransitionService` or internal helper. 2026-07-17 Phase 5: internal `OrderLifecycleTransitionHelper`.
+- [x] Centralize place-order transition. 2026-07-17 Phase 5.
+- [x] Centralize payment captured transition. 2026-07-17 Phase 5.
+- [x] Centralize complete transition. 2026-07-17 Phase 5.
+- [x] Centralize cancel transition. 2026-07-17 Phase 5.
+- [x] Centralize shipping status changes. 2026-07-17 Phase 5.
+- [x] Normalize shipping status writes to constants. 2026-07-17 Phase 5: shipment/tracking writes use canonical snake-case statuses.
+- [x] Accept legacy casing in filters and complete checks. 2026-07-17 Phase 5: `PendingShipment`/`Shipped`/`Delivered` aliases are accepted.
+- [x] Write history entry for order created. 2026-07-17 Phase 5.
+- [x] Write history entry for payment attempt linked/captured/failed where order exists. 2026-07-17 Phase 5: captured payment with order writes `payment.captured`; failed attempts without an order stay in payment-attempt audit.
+- [x] Write history entry for shipping status changed. 2026-07-17 Phase 5.
+- [x] Write history entry for tracking updated. 2026-07-17 Phase 5.
+- [x] Write history entry for order completed. 2026-07-17 Phase 5.
+- [x] Write history entry for order cancelled. 2026-07-17 Phase 5.
+- [x] Write history entry for admin note updated if useful. 2026-07-17 Phase 5.
+- [x] Keep existing `AdminAuditLog` writes in admin services. 2026-07-17 Phase 5: complete/cancel/shipment/admin-note audit calls remain.
 
 Rules:
 
-- [ ] Order history is append-only.
-- [ ] Admin note remains editable and separate from timeline.
-- [ ] Customer-visible flag defaults false except safe public events.
+- [x] Order history is append-only. 2026-07-17 Phase 5: no update/delete service path was added.
+- [x] Admin note remains editable and separate from timeline. 2026-07-17 Phase 5.
+- [x] Customer-visible flag defaults false except safe public events. 2026-07-17 Phase 5: EF default false and helper opts in safe events.
 
 Verification checklist:
 
-- [ ] Complete rules still pass.
-- [ ] Cancel rules still pass.
-- [ ] Shipment upsert writes normalized `shipped`.
-- [ ] History entries append for create, complete, cancel, and shipping update.
-- [ ] Existing admin audit tests still pass.
+- [x] Complete rules still pass. 2026-07-17 Phase 5: focused `CommerceNodeAdminShipmentServiceTests` covered legacy shipped completion.
+- [x] Cancel rules still pass. 2026-07-17 Phase 5.
+- [x] Shipment upsert writes normalized `shipped`. 2026-07-17 Phase 5.
+- [x] History entries append for create, complete, cancel, and shipping update. 2026-07-17 Phase 5.
+- [x] Existing admin audit tests still pass. 2026-07-17 Phase 5.
 
 Exit criteria:
 
-- [ ] Support/admin can explain order state changes from order-local history.
+- [x] Support/admin can explain order state changes from order-local history. 2026-07-17 Phase 5.
 
 Suggested commit:
 
@@ -676,9 +676,9 @@ test(order-placement): verify order placement core
 - [ ] Guest order lookup requires token after secure lookup is enabled.
 - [ ] Wrong guest token fails safely.
 - [ ] Wrong store guest token fails safely.
-- [ ] Order status transition helper enforces complete/cancel rules.
-- [ ] Order history appends for create/payment/shipping/complete/cancel.
-- [ ] Shipping status writes normalized constants.
+- [x] Order status transition helper enforces complete/cancel rules. 2026-07-17 Phase 5.
+- [x] Order history appends for create/payment/shipping/complete/cancel. 2026-07-17 Phase 5.
+- [x] Shipping status writes normalized constants. 2026-07-17 Phase 5.
 - [ ] Placement transaction rolls back on injected failure.
 - [ ] Order-created event/outbox/task is idempotent.
 - [ ] Public Storefront schemas do not expose token hash, admin note, raw payment metadata, or domain entities.
@@ -741,11 +741,11 @@ test(order-placement): verify order placement core
   - [ ] mutating saved address after placement does not change order snapshot projection.
 - [ ] Totals tests:
   - [ ] subtotal + shipping + tax - discount equals grand/total after rounding.
-- [ ] Status transition tests:
-  - [ ] complete rules.
-  - [ ] cancel rules.
-  - [ ] shipping transition rules.
-  - [ ] history appended.
+- [x] Status transition tests: 2026-07-17 Phase 5.
+  - [x] complete rules. 2026-07-17 Phase 5.
+  - [x] cancel rules. 2026-07-17 Phase 5.
+  - [x] shipping transition rules. 2026-07-17 Phase 5.
+  - [x] history appended. 2026-07-17 Phase 5.
 - [ ] Transaction rollback tests:
   - [ ] injected placement failure rolls back order/cart/stock/history/outbox.
 - [ ] API contract tests:
@@ -797,7 +797,7 @@ test(order-placement): verify order placement core
 - [x] Phase 2 - shared order placement builder. 2026-07-17: committed after checkout/payment focused tests passed.
 - [x] Phase 3 - fill permanent order snapshots. 2026-07-17: committed after snapshot mutation and checkout/payment focused tests passed.
 - [x] Phase 4 - guest completion access token. 2026-07-17: committed after guest lookup/OpenAPI/model focused tests passed.
-- [ ] Phase 5 - order status transition and history.
+- [x] Phase 5 - order status transition and history. 2026-07-17: committed after CommerceNode API build and focused 95/95 test run.
 - [ ] Phase 6 - placement transaction and event hook.
 - [ ] Phase 7 - API projection and Storefront/Admin integration.
 - [ ] Phase 8 - QA, migration safety, and documentation.
@@ -813,7 +813,7 @@ test(order-placement): verify order placement core
 - [ ] New orders snapshot currency and payment method.
 - [ ] New orders snapshot line item details.
 - [ ] Guest completion is protected by a token that is not the order reference.
-- [ ] Order status changes append order-local history.
+- [x] Order status changes append order-local history. 2026-07-17 Phase 5.
 - [ ] Placement side effects are transactional and replay-safe.
 - [ ] Public DTOs expose safe additive fields only.
 - [ ] Admin DTOs expose safe additive fields only.

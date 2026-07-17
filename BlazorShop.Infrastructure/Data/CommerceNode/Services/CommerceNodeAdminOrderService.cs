@@ -18,28 +18,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
     public sealed class CommerceNodeAdminOrderService : IAdminOrderService
     {
-        private static readonly HashSet<string> ValidShippingStatuses = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "PendingShipment",
-            "Shipped",
-            "InTransit",
-            "OutForDelivery",
-            "Delivered",
-            ShippingStatuses.NotYetShipped,
-            ShippingStatuses.Shipped,
-            ShippingStatuses.Delivered,
-            ShippingStatuses.ShippingNotRequired,
-        };
-
-        private static readonly HashSet<string> CompleteAllowedShippingStatuses = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "Shipped",
-            "Delivered",
-            ShippingStatuses.Shipped,
-            ShippingStatuses.Delivered,
-            ShippingStatuses.ShippingNotRequired,
-        };
-
         private readonly CommerceNodeDbContext context;
         private readonly IOrderTrackingService trackingService;
         private readonly IAdminAuditService auditService;
@@ -81,8 +59,15 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             if (!string.IsNullOrWhiteSpace(query.ShippingStatus))
             {
-                var shippingStatus = query.ShippingStatus.Trim();
-                orders = orders.Where(order => order.ShippingStatus == shippingStatus);
+                if (ShippingStatusNormalizer.TryNormalize(query.ShippingStatus, out var shippingStatus))
+                {
+                    var aliases = ShippingStatusNormalizer.GetLookupAliases(shippingStatus);
+                    orders = orders.Where(order => aliases.Contains(order.ShippingStatus.ToLower()));
+                }
+                else
+                {
+                    orders = orders.Where(order => false);
+                }
             }
 
             if (query.FromUtc.HasValue)
@@ -153,14 +138,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failure("Order id is required.", ServiceResponseType.ValidationError);
             }
 
-            if (string.IsNullOrWhiteSpace(request.ShippingStatus) || !ValidShippingStatuses.Contains(request.ShippingStatus.Trim()))
+            if (!ShippingStatusNormalizer.TryNormalize(request.ShippingStatus, out var shippingStatus))
             {
                 return Failure("Shipping status is invalid.", ServiceResponseType.ValidationError);
             }
 
             var updated = await this.trackingService.UpdateShippingStatusAsync(
                 id,
-                request.ShippingStatus.Trim(),
+                shippingStatus,
                 request.ShippedOn,
                 request.DeliveredOn);
 
@@ -196,6 +181,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             order.AdminNote = string.IsNullOrWhiteSpace(request.AdminNote) ? null : request.AdminNote.Trim();
+            OrderLifecycleTransitionHelper.RecordAdminNoteUpdated(this.context, order);
             await this.context.SaveChangesAsync();
             await this.LogAsync("Order.AdminNoteUpdated", id, "Order admin note updated.", new { HasNote = !string.IsNullOrWhiteSpace(order.AdminNote) });
 
@@ -226,14 +212,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failure("Only paid orders can be completed.", ServiceResponseType.ValidationError);
             }
 
-            if (!CompleteAllowedShippingStatuses.Contains(order.ShippingStatus))
+            if (!ShippingStatusNormalizer.IsCompleteAllowed(order.ShippingStatus))
             {
                 return Failure("Order must be shipped, delivered, or shipping-not-required before completion.", ServiceResponseType.ValidationError);
             }
 
-            order.OrderStatus = OrderStatuses.Complete;
-            order.CompletedAt = DateTime.UtcNow;
-            order.UpdatedAt = DateTime.UtcNow;
+            OrderLifecycleTransitionHelper.MarkCompleted(this.context, order, DateTime.UtcNow, source: "admin");
             await this.context.SaveChangesAsync();
             await this.LogAsync("Order.Completed", id, "Order marked complete.", new
             {
@@ -269,9 +253,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Success((await this.MapOrdersAsync(new[] { order })).Single(), "Order is already cancelled.");
             }
 
-            order.OrderStatus = OrderStatuses.Cancelled;
-            order.CancelledAt = DateTime.UtcNow;
-            order.UpdatedAt = DateTime.UtcNow;
+            OrderLifecycleTransitionHelper.MarkCancelled(this.context, order, DateTime.UtcNow, source: "admin");
             await this.context.SaveChangesAsync();
             await this.LogAsync("Order.Cancelled", id, "Order cancelled.", new
             {

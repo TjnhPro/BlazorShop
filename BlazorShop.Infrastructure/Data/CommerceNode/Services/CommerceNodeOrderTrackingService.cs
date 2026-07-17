@@ -34,6 +34,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return false;
             }
 
+            var oldTrackingNumber = order.TrackingNumber;
             order.ShippingCarrier = carrier;
             order.TrackingNumber = trackingNumber;
             order.TrackingUrl = trackingUrl;
@@ -57,6 +58,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 });
             }
 
+            OrderLifecycleTransitionHelper.RecordTrackingUpdated(
+                this.context,
+                order,
+                oldTrackingNumber,
+                source: "manual_admin");
             await this.context.SaveChangesAsync();
 
             return true;
@@ -80,13 +86,17 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return false;
             }
 
-            order.ShippingStatus = shippingStatus;
+            var normalizedShippingStatus = ShippingStatusNormalizer.NormalizeOrOriginal(shippingStatus);
+            OrderLifecycleTransitionHelper.UpdateShippingStatus(
+                this.context,
+                order,
+                normalizedShippingStatus,
+                source: "manual_admin");
             order.ShippedOn = shippedOn.HasValue ? EnsureUtc(shippedOn.Value) : order.ShippedOn;
             order.DeliveredOn = deliveredOn.HasValue ? EnsureUtc(deliveredOn.Value) : order.DeliveredOn;
             order.LastTrackingUpdate = DateTime.UtcNow;
 
-            if (string.Equals(shippingStatus, ShippingStatuses.Delivered, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(shippingStatus, "Delivered", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(normalizedShippingStatus, ShippingStatuses.Delivered, StringComparison.Ordinal))
             {
                 var shipment = await this.context.Shipments
                     .AsNoTracking()

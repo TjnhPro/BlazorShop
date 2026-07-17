@@ -211,6 +211,10 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 && audit.OldState == PaymentAttemptStates.RequiresAction
                 && audit.NewState == PaymentAttemptStates.Captured
                 && audit.OrderId == order.Id);
+            Assert.Equal(
+                ["order.created", "payment.captured"],
+                context.OrderHistoryEntries.Select(item => item.EventType).OrderBy(item => item).ToArray());
+            Assert.All(context.OrderHistoryEntries, item => Assert.True(item.VisibleToCustomer));
         }
 
         [Fact]
