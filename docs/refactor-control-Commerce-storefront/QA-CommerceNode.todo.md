@@ -920,3 +920,12 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Storefront cart allows unmanaged-stock product with zero stored quantity. 2026-07-16 Phase 4: `AddLineAsync_AllowsUnmanagedStockProductWithZeroQuantity` passed.
 - [x] Checkout preview blocks non-purchasable cart lines with line/product-aware reason codes. 2026-07-16 Phase 4: `PreviewAsync_ReturnsSellabilityIssue_WhenProductPurchaseIsDisabledAfterAdd` passed.
 - [x] Checkout place-order allows unmanaged-stock products without decrementing quantity below zero. 2026-07-16 Phase 4: `PlaceOrderAsync_AllowsUnmanagedStockProductWithoutDeductingQuantity` passed.
+
+## Address Core
+
+- [x] Phase 0 baseline confirms checkout still accepts direct shipping address and snapshots it into `CheckoutSession` and `Order`. 2026-07-17: `StorefrontCheckoutServiceTests.PlaceOrderAsync_CopiesCheckoutAddressSnapshotAndDoesNotReadMutatedCustomerProfile` passed.
+- [x] Order address snapshot remains independent from later customer profile mutation. 2026-07-17: focused checkout service test mutated `CommerceCustomer` before place-order and asserted order kept the session snapshot.
+- [x] Public checkout/address request contracts do not expose `customerId`, `storeId`, auth-owned IDs, audit fields, or order snapshot fields. 2026-07-17: `AddressCorePhase0InventoryTests` passed.
+- [x] Checkout controller derives store scope from Storefront route/current store context and not from request body. 2026-07-17: `AddressCorePhase0InventoryTests.CommerceNode_CheckoutControllerDerivesStoreScopeFromRoute` passed.
+- [x] Storefront OpenAPI checkout contracts remain generator-safe after Address Core Phase 0 guardrails. 2026-07-17: `CommerceNodeStorefrontOpenApiContractTests` passed inside focused 61/61 run.
+- [x] No CommerceNode schema, migration, `AppDbContext`, or legacy runtime change was introduced in Phase 0. 2026-07-17: Phase 0 changed tests/docs only.

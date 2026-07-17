@@ -346,6 +346,72 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public async Task PlaceOrderAsync_CopiesCheckoutAddressSnapshotAndDoesNotReadMutatedCustomerProfile()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 25m, stock: 10);
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1));
+            var service = CreateCheckoutService(context, cartService);
+            var preview = await service.PreviewAsync(CreateRequest(
+                storeId,
+                cart.Payload.Token!,
+                add.Payload!.Version,
+                customerEmail: "snapshot@example.test",
+                shippingEmail: "ship-to@example.test",
+                postalCode: "75001",
+                countryCode: "fr"));
+
+            Assert.True(preview.Success, preview.Message);
+            var session = Assert.Single(context.CheckoutSessions);
+            Assert.Equal("snapshot@example.test", session.CustomerEmail);
+            Assert.Equal("Customer One", session.ShippingFullName);
+            Assert.Equal("ship-to@example.test", session.ShippingEmail);
+            Assert.Equal("100 Main St", session.ShippingAddress1);
+            Assert.Equal("New York", session.ShippingCity);
+            Assert.Equal("NY", session.ShippingState);
+            Assert.Equal("75001", session.ShippingPostalCode);
+            Assert.Equal("FR", session.ShippingCountryCode);
+
+            var customer = Assert.Single(context.CommerceCustomers);
+            customer.FullName = "Mutated Customer";
+            customer.Email = "mutated@example.test";
+            customer.Phone = "999999";
+            await context.SaveChangesAsync();
+
+            var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                preview.Payload!.CheckoutSessionId,
+                preview.Payload.CartVersion,
+                "address-snapshot-order"));
+
+            Assert.True(result.Success, result.Message);
+            var order = Assert.Single(context.Orders);
+            Assert.Equal("snapshot@example.test", order.CustomerEmail);
+            Assert.Equal("Customer One", order.CustomerName);
+            Assert.Equal("Customer One", order.ShippingFullName);
+            Assert.Equal("ship-to@example.test", order.ShippingEmail);
+            Assert.Equal("5550100", order.ShippingPhone);
+            Assert.Equal("100 Main St", order.ShippingAddress1);
+            Assert.Equal("New York", order.ShippingCity);
+            Assert.Equal("NY", order.ShippingState);
+            Assert.Equal("75001", order.ShippingPostalCode);
+            Assert.Equal("FR", order.ShippingCountryCode);
+        }
+
+        [Fact]
         public async Task PlaceOrderAsync_RejectsStaleCartVersion()
         {
             using var context = CreateContext();

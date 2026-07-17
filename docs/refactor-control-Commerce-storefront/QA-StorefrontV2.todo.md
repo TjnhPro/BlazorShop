@@ -589,3 +589,10 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Storefront V2 client models can deserialize catalog/detail sellability metadata. 2026-07-16 Phase 3: SharedV2 product models include purchasable, purchase block reasons, stock status, available quantity, min/max/step, manage-stock, shipping, and delivery fields; `StorefrontV2ApiClientTests` passed inside focused 41/41 run.
 - [x] Storefront cart and checkout backend flows enforce the same sellability decisions that the API projection exposes. 2026-07-16 Phase 4: focused cart/checkout/selection run passed 56/56.
 - [ ] Storefront V2 host smoke remains green before sellability UI changes.
+
+## Address Core
+
+- [x] Phase 0 baseline confirms Storefront V2 checkout direct-address form remains present before saved-address UI work. 2026-07-17: `StorefrontV2HostSmokeTests` passed inside focused 61/61 run.
+- [x] Storefront V2 local checkout payload sends customer/contact and direct shipping address fields, but does not send `customerId`, `storeId`, auth-owned IDs, or audit fields. 2026-07-17: `AddressCorePhase0InventoryTests.StorefrontV2_CheckoutLocalPayloadDoesNotSendServerOwnedAddressFields` passed.
+- [x] Storefront V2 checkout host/static tests remain green after Address Core Phase 0 guardrails. 2026-07-17: `StorefrontV2HostSmokeTests` passed inside focused 61/61 run.
+- [ ] Visible browser QA for saved address selection remains pending until Address Core UI phases add lookup/address-book behavior.
