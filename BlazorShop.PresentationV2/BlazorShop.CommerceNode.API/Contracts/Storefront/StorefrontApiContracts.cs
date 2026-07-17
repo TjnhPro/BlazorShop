@@ -268,6 +268,35 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         public string CountryCode { get; set; } = string.Empty;
     }
 
+    public sealed record StorefrontAddressCountryResponse(
+        string Code,
+        string Name,
+        bool PostalCodeRequired,
+        bool StateProvinceRequired);
+
+    public sealed record StorefrontAddressStateProvinceResponse(
+        string Code,
+        string Name);
+
+    public sealed record StorefrontAddressFieldConfigurationResponse(
+        bool CompanyEnabled,
+        bool PhoneEnabled,
+        bool PhoneRequired,
+        bool PostalCodeRequired,
+        bool BillingAddressEnabled,
+        bool UseShippingAddressAsBillingDefault,
+        int FirstNameMaxLength,
+        int LastNameMaxLength,
+        int CompanyMaxLength,
+        int AddressLineMaxLength,
+        int CityMaxLength,
+        int PostalCodeMaxLength,
+        int StateProvinceCodeMaxLength,
+        int StateProvinceNameMaxLength,
+        int PhoneMaxLength,
+        int EmailMaxLength,
+        IReadOnlyList<string> StateProvinceRequiredCountryCodes);
+
     public sealed class StorefrontCheckoutPreviewRequest
     {
         [Range(1, int.MaxValue)]

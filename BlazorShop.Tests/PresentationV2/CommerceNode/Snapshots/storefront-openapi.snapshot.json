@@ -6,6 +6,177 @@
     "version": "v1"
   },
   "paths": {
+    "/api/storefront/stores/{storeKey}/address/countries": {
+      "get": {
+        "tags": [
+          "StorefrontScopedAddress"
+        ],
+        "summary": "List Storefront address countries.",
+        "operationId": "StorefrontAddress_ListCountries",
+        "parameters": [
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontAddressCountryResponseIReadOnlyListCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/storefront/stores/{storeKey}/address/countries/{countryCode}/states": {
+      "get": {
+        "tags": [
+          "StorefrontScopedAddress"
+        ],
+        "summary": "List Storefront address states for a country.",
+        "operationId": "StorefrontAddress_ListStates",
+        "parameters": [
+          {
+            "name": "countryCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontAddressStateProvinceResponseIReadOnlyListCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/storefront/stores/{storeKey}/address/configuration": {
+      "get": {
+        "tags": [
+          "StorefrontScopedAddress"
+        ],
+        "summary": "Get Storefront address field configuration.",
+        "operationId": "StorefrontAddress_GetConfiguration",
+        "parameters": [
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontAddressFieldConfigurationResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/storefront/stores/{storeKey}/auth/register": {
       "post": {
         "tags": [
@@ -4465,6 +4636,169 @@
         },
         "additionalProperties": false
       },
+      "StorefrontAddressCountryResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "postalCodeRequired": {
+            "type": "boolean"
+          },
+          "stateProvinceRequired": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontAddressCountryResponseIReadOnlyListCommerceNodeApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontAddressCountryResponse"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontAddressFieldConfigurationResponse": {
+        "required": [
+          "stateProvinceRequiredCountryCodes"
+        ],
+        "type": "object",
+        "properties": {
+          "companyEnabled": {
+            "type": "boolean"
+          },
+          "phoneEnabled": {
+            "type": "boolean"
+          },
+          "phoneRequired": {
+            "type": "boolean"
+          },
+          "postalCodeRequired": {
+            "type": "boolean"
+          },
+          "billingAddressEnabled": {
+            "type": "boolean"
+          },
+          "useShippingAddressAsBillingDefault": {
+            "type": "boolean"
+          },
+          "firstNameMaxLength": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lastNameMaxLength": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "companyMaxLength": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "addressLineMaxLength": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cityMaxLength": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "postalCodeMaxLength": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "stateProvinceCodeMaxLength": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "stateProvinceNameMaxLength": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "phoneMaxLength": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "emailMaxLength": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "stateProvinceRequiredCountryCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontAddressFieldConfigurationResponseCommerceNodeApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/StorefrontAddressFieldConfigurationResponse"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontAddressStateProvinceResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontAddressStateProvinceResponseIReadOnlyListCommerceNodeApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontAddressStateProvinceResponse"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontBrandingResponse": {
         "type": "object",
         "properties": {
@@ -8360,6 +8694,9 @@
     }
   },
   "tags": [
+    {
+      "name": "StorefrontScopedAddress"
+    },
     {
       "name": "StorefrontScopedAuth"
     },

@@ -749,6 +749,21 @@ namespace BlazorShop.CommerceNode.API.Swagger
             private static readonly IReadOnlyDictionary<(string Controller, string Action), StorefrontOperationMetadata> Metadata =
                 new Dictionary<(string Controller, string Action), StorefrontOperationMetadata>
                 {
+                    [("StorefrontScopedAddress", "GetCountries")] = new(
+                        "StorefrontAddress_ListCountries",
+                        "List Storefront address countries.",
+                        typeof(CommerceNodeApiResponse<IReadOnlyList<StorefrontAddressCountryResponse>>),
+                        [StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedAddress", "GetStates")] = new(
+                        "StorefrontAddress_ListStates",
+                        "List Storefront address states for a country.",
+                        typeof(CommerceNodeApiResponse<IReadOnlyList<StorefrontAddressStateProvinceResponse>>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedAddress", "GetConfiguration")] = new(
+                        "StorefrontAddress_GetConfiguration",
+                        "Get Storefront address field configuration.",
+                        typeof(CommerceNodeApiResponse<StorefrontAddressFieldConfigurationResponse>),
+                        [StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedAuth", "Register")] = new(
                         "StorefrontAuth_Register",
                         "Register a Storefront customer.",
@@ -1271,6 +1286,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
                     [typeof(StorefrontCartValidationResponse)] = ["issues"],
                     [typeof(StorefrontOrderResponse)] = ["lines"],
                     [typeof(StorefrontOrderLineResponse)] = ["variantAttributes"],
+                    [typeof(StorefrontAddressFieldConfigurationResponse)] = ["stateProvinceRequiredCountryCodes"],
                     [typeof(GetPublicCatalogSitemap)] = ["categories", "products", "pages"],
                     [typeof(StorefrontVariationTemplateDto)] = ["options"],
                     [typeof(StorefrontVariationOptionDto)] = ["values"],

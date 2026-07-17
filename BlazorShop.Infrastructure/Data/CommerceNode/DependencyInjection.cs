@@ -115,6 +115,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddSingleton<ISlugService, SlugService>();
             services.AddScoped<IValidationService, ValidationService>();
             services.AddScoped<IAddressValidationService, AddressValidationService>();
+            services.AddSingleton<IAddressLookupService, AddressLookupService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IProductVariantService, ProductVariantService>();

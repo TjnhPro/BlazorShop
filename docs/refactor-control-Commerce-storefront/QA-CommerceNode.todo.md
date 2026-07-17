@@ -941,3 +941,8 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Address normalization is deterministic server-side. 2026-07-17 Phase 2: tests assert trim, uppercase country/state code, optional blank-to-null, and preserved name/address casing.
 - [x] Address validation can run independently from checkout/UI code. 2026-07-17 Phase 2: `IAddressValidationService` lives in Application and is registered for CommerceNode runtime.
 - [x] Address validation field max lengths align with Phase 1 persistence mapping. 2026-07-17 Phase 2: service and tests cover phone/address length limits; model tests cover DB max lengths.
+- [x] Storefront address country lookup endpoint returns public-safe metadata. 2026-07-17 Phase 3: `AddressLookupServiceTests` covers deterministic country catalog and `CommerceNodeStorefrontOpenApiContractTests` covers response schemas.
+- [x] Storefront address state/province lookup endpoint returns public-safe metadata. 2026-07-17 Phase 3: tests cover US state/province metadata and empty known-country state lists.
+- [x] Unknown address lookup country returns a deterministic not-found response. 2026-07-17 Phase 3: `AddressLookupServiceTests.GetStatesAsync_WhenCountryIsUnknown_ReturnsNotFound` passed.
+- [x] Storefront address lookup/config endpoints are anonymous and generator-safe. 2026-07-17 Phase 3: OpenAPI metadata and snapshots include address lookup operations with no Bearer requirement.
+- [x] Address field configuration response is explicit and non-secret. 2026-07-17 Phase 3: configuration exposes field enablement/limits and state-required country codes only.

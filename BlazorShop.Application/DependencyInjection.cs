@@ -53,6 +53,7 @@
             services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
             services.AddScoped<IValidationService, ValidationService>();
             services.AddScoped<IAddressValidationService, AddressValidationService>();
+            services.AddSingleton<IAddressLookupService, AddressLookupService>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
 
             services.AddScoped<ICartService, CartService>();

@@ -3,6 +3,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using System.ComponentModel.DataAnnotations;
     using System.Security.Claims;
 
+    using BlazorShop.Application.CommerceNode.Addresses;
     using BlazorShop.Application.CommerceNode.Captcha;
     using ApplicationStorefrontCheckoutResult = BlazorShop.Application.DTOs.Payment.StorefrontCheckoutResult;
     using ApplicationStorefrontCheckoutPreviewResult = BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutPreviewResult;
@@ -38,6 +39,74 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.RateLimiting;
     using Microsoft.Extensions.Options;
+
+    [ApiController]
+    [Route("api/storefront/stores/{storeKey}/address")]
+    public sealed class StorefrontScopedAddressController : StorefrontApiControllerBase
+    {
+        private readonly IAddressLookupService addressLookupService;
+        private readonly ICommerceStoreContext storeContext;
+
+        public StorefrontScopedAddressController(
+            IAddressLookupService addressLookupService,
+            ICommerceStoreContext storeContext)
+        {
+            this.addressLookupService = addressLookupService;
+            this.storeContext = storeContext;
+        }
+
+        [HttpGet("countries")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetCountries(CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var countries = await this.addressLookupService.GetCountriesAsync(cancellationToken);
+            return this.Success(
+                countries.Select(country => country.ToStorefrontContract()).ToArray(),
+                "Address countries resolved.");
+        }
+
+        [HttpGet("countries/{countryCode}/states")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetStates(string countryCode, CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.addressLookupService.GetStatesAsync(countryCode, cancellationToken);
+            return this.FromServiceResponse(
+                result,
+                states => states?.Select(state => state.ToStorefrontContract()).ToArray());
+        }
+
+        [HttpGet("configuration")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetConfiguration(CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var configuration = await this.addressLookupService.GetConfigurationAsync(cancellationToken);
+            return this.Success(configuration.ToStorefrontContract(), "Address field configuration resolved.");
+        }
+
+        private async Task<Guid?> ResolveStoreIdAsync(CancellationToken cancellationToken)
+        {
+            var result = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
+            return result.Success ? result.Payload : null;
+        }
+    }
 
     [ApiController]
     [Route("api/storefront/stores/{storeKey}/auth")]

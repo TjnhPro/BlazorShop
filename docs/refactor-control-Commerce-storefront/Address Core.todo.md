@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Address Core.md`
 
-Status: In progress. Phase 0 completed.
+Status: In progress. Phase 3 completed.
 
 Scope: add practical customer address book, country/state lookup, billing/shipping address support, and checkout address selection to active V2 without replacing the current checkout/order snapshot model.
 
@@ -12,14 +12,14 @@ Scope: add practical customer address book, country/state lookup, billing/shippi
 
 Approved:
 
-- [ ] Customer address book.
+- [x] Customer address book persistence foundation.
 - [ ] Billing address and shipping address support.
 - [ ] Add, edit, delete customer addresses.
 - [ ] Default shipping address.
 - [ ] Default billing address.
-- [ ] Country to state/province lookup.
-- [ ] Basic field required/enabled configuration shape.
-- [ ] Address normalization and validation hook.
+- [x] Country to state/province lookup.
+- [x] Basic field required/enabled configuration shape.
+- [x] Address normalization and validation hook.
 - [ ] Snapshot selected checkout address into checkout session and order.
 - [ ] Keep guest checkout address entry working.
 
@@ -50,24 +50,24 @@ Deferred:
 Missing:
 
 - [ ] No `CommerceCustomerAddress` entity.
-- [ ] No customer address book table.
+- [x] Customer address book table gap closed. 2026-07-17 Phase 1: `commerce_customer_addresses` migration added.
 - [ ] No Storefront API for customer address CRUD/defaults.
 - [ ] No billing address model.
-- [ ] No country/state/province catalog endpoint.
-- [ ] No address field configuration endpoint.
-- [ ] No reusable address validation service.
+- [x] Country/state/province catalog endpoint gap closed. 2026-07-17 Phase 3: resolved by Storefront address lookup endpoints.
+- [x] Address field configuration endpoint gap closed. 2026-07-17 Phase 3: resolved by `GET /address/configuration`.
+- [x] Reusable address validation service gap closed. 2026-07-17 Phase 2: `IAddressValidationService` added.
 - [ ] No safe authenticated address management route in Storefront V2.
 
 ## Core Decisions
 
 - [x] Keep checkout/order snapshots as source of historical truth.
-- [ ] Add address book as Commerce Node customer data in `CommerceNodeDbContext`.
+- [x] Add address book as Commerce Node customer data in `CommerceNodeDbContext`.
 - [ ] Require storefront customer auth for address book CRUD.
 - [ ] Derive customer identity from claims/auth context; never from browser-supplied `customerId`.
 - [ ] Support one default shipping and one default billing address per store/customer.
-- [ ] Start country/state lookup as static or seeded catalog, not full admin country management.
-- [ ] Start field configuration as DTO/config shape, not full settings UI.
-- [ ] Add provider-free `IAddressValidationService` before any external verification provider.
+- [x] Start country/state lookup as static or seeded catalog, not full admin country management.
+- [x] Start field configuration as DTO/config shape, not full settings UI.
+- [x] Add provider-free `IAddressValidationService` before any external verification provider.
 
 ## Target Boundary
 
@@ -270,38 +270,47 @@ Goal: replace free-text country code UX with safe lookup data.
 
 Implementation checklist:
 
-- [ ] Add address lookup application service.
-- [ ] Add country response DTO.
-- [ ] Add state/province response DTO.
-- [ ] Add address field configuration response DTO.
-- [ ] Seed or static-load a small country catalog suitable for current stores.
-- [ ] Include common development/default countries used by local tests.
-- [ ] Add state/province list for countries where state is commonly required.
+- [x] Add address lookup application service.
+- [x] Add country response DTO.
+- [x] Add state/province response DTO.
+- [x] Add address field configuration response DTO.
+- [x] Seed or static-load a small country catalog suitable for current stores.
+- [x] Include common development/default countries used by local tests.
+- [x] Add state/province list for countries where state is commonly required.
 - [ ] Add Storefront API endpoints:
-  - [ ] `GET /api/storefront/stores/{storeKey}/address/countries`.
-  - [ ] `GET /api/storefront/stores/{storeKey}/address/countries/{countryCode}/states`.
-  - [ ] `GET /api/storefront/stores/{storeKey}/address/configuration`.
-- [ ] Keep lookup/config endpoints anonymous.
-- [ ] Add OpenAPI metadata:
-  - [ ] stable operation IDs.
-  - [ ] summaries.
-  - [ ] typed response schemas.
-  - [ ] error response schemas.
-  - [ ] no protected security requirement on lookup endpoints.
-- [ ] Add OpenAPI contract tests and snapshot updates.
+- [x] Add Storefront API endpoints:
+  - [x] `GET /api/storefront/stores/{storeKey}/address/countries`.
+  - [x] `GET /api/storefront/stores/{storeKey}/address/countries/{countryCode}/states`.
+  - [x] `GET /api/storefront/stores/{storeKey}/address/configuration`.
+- [x] Keep lookup/config endpoints anonymous.
+- [x] Add OpenAPI metadata:
+  - [x] stable operation IDs.
+  - [x] summaries.
+  - [x] typed response schemas.
+  - [x] error response schemas.
+  - [x] no protected security requirement on lookup endpoints.
+- [x] Add OpenAPI contract tests and snapshot updates.
 
 Verification checklist:
 
-- [ ] Countries endpoint returns public-safe metadata.
-- [ ] States endpoint returns public-safe metadata.
-- [ ] Unknown country returns typed not-found or empty response consistently.
-- [ ] Lookup endpoints do not expose provider secrets or internal settings.
-- [ ] Storefront OpenAPI contract tests pass.
+- [x] Countries endpoint returns public-safe metadata.
+- [x] States endpoint returns public-safe metadata.
+- [x] Unknown country returns typed not-found or empty response consistently.
+- [x] Lookup endpoints do not expose provider secrets or internal settings.
+- [x] Storefront OpenAPI contract tests pass.
 
 Exit criteria:
 
-- [ ] Checkout UI can fetch country/state metadata from Commerce Node.
-- [ ] Lookup API is generator-safe and anonymous.
+- [x] Checkout UI can fetch country/state metadata from Commerce Node.
+- [x] Lookup API is generator-safe and anonymous.
+
+Phase 3 evidence:
+
+- 2026-07-17: Added `IAddressLookupService` and provider-free static lookup/config implementation for `AU`, `CA`, `DE`, `FR`, `GB`, `US`, and `VN`.
+- 2026-07-17: Added Storefront address lookup contracts and anonymous scoped endpoints under `api/storefront/stores/{storeKey}/address`.
+- 2026-07-17: Added OpenAPI metadata and refreshed Storefront Swagger snapshots for `StorefrontAddress_ListCountries`, `StorefrontAddress_ListStates`, and `StorefrontAddress_GetConfiguration`.
+- 2026-07-17: Added `AddressLookupServiceTests`.
+- 2026-07-17: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~AddressLookupServiceTests|FullyQualifiedName~AddressValidationServiceTests|FullyQualifiedName~CommerceNodeStorefrontOpenApiContractTests"` passed 38/38.
 
 Suggested commit:
 
@@ -592,10 +601,10 @@ test(address-core): complete release gate
 
 ## Recommended Implementation Order
 
-- [ ] Phase 0 - baseline and contract guard.
-- [ ] Phase 1 - address domain model and migration.
-- [ ] Phase 2 - address validation and normalization core.
-- [ ] Phase 3 - country and state/province lookup.
+- [x] Phase 0 - baseline and contract guard.
+- [x] Phase 1 - address domain model and migration.
+- [x] Phase 2 - address validation and normalization core.
+- [x] Phase 3 - country and state/province lookup.
 - [ ] Phase 4 - authenticated address book API.
 - [ ] Phase 5 - checkout address selection.
 - [ ] Phase 6 - Storefront V2 UI integration.

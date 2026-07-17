@@ -2,6 +2,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
 {
     using System.IdentityModel.Tokens.Jwt;
 
+    using BlazorShop.Application.CommerceNode.Addresses;
     using BlazorShop.Application.CommerceNode.Captcha;
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Checkout;
@@ -112,6 +113,42 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 PostalCode = address.PostalCode,
                 CountryCode = address.CountryCode,
             };
+        }
+
+        public static StorefrontAddressCountryResponse ToStorefrontContract(this AddressCountryDto country)
+        {
+            return new StorefrontAddressCountryResponse(
+                country.Code,
+                country.Name,
+                country.PostalCodeRequired,
+                country.StateProvinceRequired);
+        }
+
+        public static StorefrontAddressStateProvinceResponse ToStorefrontContract(this AddressStateProvinceDto state)
+        {
+            return new StorefrontAddressStateProvinceResponse(state.Code, state.Name);
+        }
+
+        public static StorefrontAddressFieldConfigurationResponse ToStorefrontContract(this AddressFieldConfigurationDto configuration)
+        {
+            return new StorefrontAddressFieldConfigurationResponse(
+                configuration.CompanyEnabled,
+                configuration.PhoneEnabled,
+                configuration.PhoneRequired,
+                configuration.PostalCodeRequired,
+                configuration.BillingAddressEnabled,
+                configuration.UseShippingAddressAsBillingDefault,
+                configuration.FirstNameMaxLength,
+                configuration.LastNameMaxLength,
+                configuration.CompanyMaxLength,
+                configuration.AddressLineMaxLength,
+                configuration.CityMaxLength,
+                configuration.PostalCodeMaxLength,
+                configuration.StateProvinceCodeMaxLength,
+                configuration.StateProvinceNameMaxLength,
+                configuration.PhoneMaxLength,
+                configuration.EmailMaxLength,
+                configuration.StateProvinceRequiredCountryCodes);
         }
 
         public static BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutPreviewRequest ToApplicationRequest(

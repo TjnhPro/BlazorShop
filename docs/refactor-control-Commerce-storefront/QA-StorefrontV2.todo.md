@@ -595,4 +595,6 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Phase 0 baseline confirms Storefront V2 checkout direct-address form remains present before saved-address UI work. 2026-07-17: `StorefrontV2HostSmokeTests` passed inside focused 61/61 run.
 - [x] Storefront V2 local checkout payload sends customer/contact and direct shipping address fields, but does not send `customerId`, `storeId`, auth-owned IDs, or audit fields. 2026-07-17: `AddressCorePhase0InventoryTests.StorefrontV2_CheckoutLocalPayloadDoesNotSendServerOwnedAddressFields` passed.
 - [x] Storefront V2 checkout host/static tests remain green after Address Core Phase 0 guardrails. 2026-07-17: `StorefrontV2HostSmokeTests` passed inside focused 61/61 run.
+- [x] CommerceNode Storefront API exposes anonymous country/state/config lookup endpoints for future checkout UI consumption. 2026-07-17 Phase 3: Storefront OpenAPI snapshots include `StorefrontAddress_ListCountries`, `StorefrontAddress_ListStates`, and `StorefrontAddress_GetConfiguration`.
+- [~] Storefront V2 checkout UI still uses direct address entry until Phase 6 adds lookup/address-book consumption.
 - [ ] Visible browser QA for saved address selection remains pending until Address Core UI phases add lookup/address-book behavior.

@@ -1,3 +1,6 @@
+GET /api/storefront/stores/{storeKey}/address/configuration
+GET /api/storefront/stores/{storeKey}/address/countries
+GET /api/storefront/stores/{storeKey}/address/countries/{countryCode}/states
 POST /api/storefront/stores/{storeKey}/auth/change-password
 GET /api/storefront/stores/{storeKey}/auth/confirm-email
 POST /api/storefront/stores/{storeKey}/auth/login
