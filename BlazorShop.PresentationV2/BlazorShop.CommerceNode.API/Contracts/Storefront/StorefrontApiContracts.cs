@@ -297,6 +297,75 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         int EmailMaxLength,
         IReadOnlyList<string> StateProvinceRequiredCountryCodes);
 
+    public sealed class StorefrontCustomerAddressRequest
+    {
+        [Required]
+        [StringLength(120)]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(120)]
+        public string LastName { get; set; } = string.Empty;
+
+        [StringLength(160)]
+        public string? Company { get; set; }
+
+        [Required]
+        [StringLength(240)]
+        public string Address1 { get; set; } = string.Empty;
+
+        [StringLength(240)]
+        public string? Address2 { get; set; }
+
+        [Required]
+        [StringLength(120)]
+        public string City { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(32)]
+        public string PostalCode { get; set; } = string.Empty;
+
+        [Required]
+        [RegularExpression("^[A-Za-z]{2}$")]
+        public string CountryCode { get; set; } = string.Empty;
+
+        [StringLength(64)]
+        public string? StateProvinceCode { get; set; }
+
+        [StringLength(120)]
+        public string? StateProvinceName { get; set; }
+
+        [StringLength(32)]
+        public string? Phone { get; set; }
+
+        [EmailAddress]
+        [StringLength(256)]
+        public string? Email { get; set; }
+
+        public bool IsDefaultShipping { get; set; }
+
+        public bool IsDefaultBilling { get; set; }
+    }
+
+    public sealed record StorefrontCustomerAddressResponse(
+        Guid PublicId,
+        string FirstName,
+        string LastName,
+        string? Company,
+        string Address1,
+        string? Address2,
+        string City,
+        string PostalCode,
+        string CountryCode,
+        string? StateProvinceCode,
+        string? StateProvinceName,
+        string? Phone,
+        string? Email,
+        bool IsDefaultShipping,
+        bool IsDefaultBilling,
+        DateTimeOffset CreatedAtUtc,
+        DateTimeOffset UpdatedAtUtc);
+
     public sealed class StorefrontCheckoutPreviewRequest
     {
         [Range(1, int.MaxValue)]

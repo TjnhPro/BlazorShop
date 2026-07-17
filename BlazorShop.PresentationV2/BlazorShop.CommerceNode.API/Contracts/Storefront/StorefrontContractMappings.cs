@@ -151,6 +151,47 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 configuration.StateProvinceRequiredCountryCodes);
         }
 
+        public static CustomerAddressCreateRequest ToApplicationRequest(this StorefrontCustomerAddressRequest request)
+        {
+            return new CustomerAddressCreateRequest(
+                request.FirstName,
+                request.LastName,
+                request.Company,
+                request.Address1,
+                request.Address2,
+                request.City,
+                request.PostalCode,
+                request.CountryCode,
+                request.StateProvinceCode,
+                request.StateProvinceName,
+                request.Phone,
+                request.Email,
+                request.IsDefaultShipping,
+                request.IsDefaultBilling);
+        }
+
+        public static StorefrontCustomerAddressResponse ToStorefrontContract(this CustomerAddressDto address)
+        {
+            return new StorefrontCustomerAddressResponse(
+                address.PublicId,
+                address.FirstName,
+                address.LastName,
+                address.Company,
+                address.Address1,
+                address.Address2,
+                address.City,
+                address.PostalCode,
+                address.CountryCode,
+                address.StateProvinceCode,
+                address.StateProvinceName,
+                address.Phone,
+                address.Email,
+                address.IsDefaultShipping,
+                address.IsDefaultBilling,
+                address.CreatedAtUtc,
+                address.UpdatedAtUtc);
+        }
+
         public static BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutPreviewRequest ToApplicationRequest(
             this Contracts.Storefront.StorefrontCheckoutPreviewRequest request,
             Guid storeId,

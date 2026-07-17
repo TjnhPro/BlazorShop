@@ -946,3 +946,10 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Unknown address lookup country returns a deterministic not-found response. 2026-07-17 Phase 3: `AddressLookupServiceTests.GetStatesAsync_WhenCountryIsUnknown_ReturnsNotFound` passed.
 - [x] Storefront address lookup/config endpoints are anonymous and generator-safe. 2026-07-17 Phase 3: OpenAPI metadata and snapshots include address lookup operations with no Bearer requirement.
 - [x] Address field configuration response is explicit and non-secret. 2026-07-17 Phase 3: configuration exposes field enablement/limits and state-required country codes only.
+- [x] Address book endpoints require Bearer auth. 2026-07-17 Phase 4: Storefront OpenAPI contract tests assert Bearer security for list/create/update/delete/default operations.
+- [x] Address request DTOs do not expose `customerId`, `storeId`, audit fields, or order snapshot fields. 2026-07-17 Phase 4: `StorefrontSwagger_CustomerAddressBookHasGeneratorSafeContract` passed.
+- [x] Customer cannot read/update/delete another customer's address by public ID. 2026-07-17 Phase 4: `StorefrontCustomerAddressServiceTests.UpdateAsync_WhenAddressBelongsToAnotherCustomer_ReturnsNotFound` passed.
+- [x] Soft-deleted address is excluded from active list and selection. 2026-07-17 Phase 4: `DeleteAsync_SoftDeletesAddressAndListExcludesIt` passed.
+- [x] Default shipping uniqueness is enforced. 2026-07-17 Phase 4: service tests cover clearing previous default shipping.
+- [x] Default billing uniqueness is enforced. 2026-07-17 Phase 4: service tests cover `SetDefaultBillingAsync` clearing previous default billing.
+- [x] Storefront customer address CRUD/default OpenAPI is generator-safe. 2026-07-17 Phase 4: snapshots refreshed and focused contract/service/static guard run passed 38/38.

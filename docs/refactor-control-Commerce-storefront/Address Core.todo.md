@@ -14,9 +14,9 @@ Approved:
 
 - [x] Customer address book persistence foundation.
 - [ ] Billing address and shipping address support.
-- [ ] Add, edit, delete customer addresses.
-- [ ] Default shipping address.
-- [ ] Default billing address.
+- [x] Add, edit, delete customer addresses.
+- [x] Default shipping address.
+- [x] Default billing address.
 - [x] Country to state/province lookup.
 - [x] Basic field required/enabled configuration shape.
 - [x] Address normalization and validation hook.
@@ -49,9 +49,9 @@ Deferred:
 
 Missing:
 
-- [ ] No `CommerceCustomerAddress` entity.
+- [x] `CommerceCustomerAddress` entity gap closed. 2026-07-17 Phase 1: entity added under Commerce Node domain.
 - [x] Customer address book table gap closed. 2026-07-17 Phase 1: `commerce_customer_addresses` migration added.
-- [ ] No Storefront API for customer address CRUD/defaults.
+- [x] Storefront API for customer address CRUD/defaults gap closed. 2026-07-17 Phase 4: protected customer address book endpoints added.
 - [ ] No billing address model.
 - [x] Country/state/province catalog endpoint gap closed. 2026-07-17 Phase 3: resolved by Storefront address lookup endpoints.
 - [x] Address field configuration endpoint gap closed. 2026-07-17 Phase 3: resolved by `GET /address/configuration`.
@@ -62,9 +62,9 @@ Missing:
 
 - [x] Keep checkout/order snapshots as source of historical truth.
 - [x] Add address book as Commerce Node customer data in `CommerceNodeDbContext`.
-- [ ] Require storefront customer auth for address book CRUD.
-- [ ] Derive customer identity from claims/auth context; never from browser-supplied `customerId`.
-- [ ] Support one default shipping and one default billing address per store/customer.
+- [x] Require storefront customer auth for address book CRUD.
+- [x] Derive customer identity from claims/auth context; never from browser-supplied `customerId`.
+- [x] Support one default shipping and one default billing address per store/customer.
 - [x] Start country/state lookup as static or seeded catalog, not full admin country management.
 - [x] Start field configuration as DTO/config shape, not full settings UI.
 - [x] Add provider-free `IAddressValidationService` before any external verification provider.
@@ -85,7 +85,7 @@ Storefront V2 browser
 Boundary rules:
 
 - [x] Store scope comes from `{storeKey}` route resolution.
-- [ ] Customer identity comes from authenticated user claims or trusted auth result.
+- [x] Customer identity comes from authenticated user claims or trusted auth result.
 - [x] Browser requests do not include `customerId`, `storeId`, audit fields, or order-owned address snapshot fields.
 - [ ] Checkout may accept either a direct guest address or an authenticated `addressId`.
 - [x] Checkout always snapshots the resolved address into `CheckoutSession` and `Order`.
@@ -324,38 +324,49 @@ Goal: let customers manage saved addresses safely.
 
 Implementation checklist:
 
-- [ ] Add `IStorefrontCustomerAddressService`.
-- [ ] Implement list current customer addresses.
-- [ ] Implement create address.
-- [ ] Implement update address.
-- [ ] Implement soft delete address.
-- [ ] Implement set default shipping.
-- [ ] Implement set default billing.
-- [ ] Resolve current `CommerceCustomer` by authenticated app user and store.
-- [ ] Create/link `CommerceCustomer` from auth profile where possible when missing.
-- [ ] Enforce ownership by `StoreId + CustomerId + PublicId`.
-- [ ] Enforce one default shipping address per store/customer.
-- [ ] Enforce one default billing address per store/customer.
-- [ ] Soft-deleted addresses cannot be read, modified, defaulted, or selected.
-- [ ] Add Storefront API routes under `api/storefront/stores/{storeKey}/customer/addresses`.
-- [ ] Require `[Authorize]` for all address book endpoints.
-- [ ] Publish Bearer security metadata in OpenAPI.
-- [ ] Add contract tests proving request DTOs do not expose `customerId`, `storeId`, audit fields, or snapshot fields.
+- [x] Add `IStorefrontCustomerAddressService`.
+- [x] Implement list current customer addresses.
+- [x] Implement create address.
+- [x] Implement update address.
+- [x] Implement soft delete address.
+- [x] Implement set default shipping.
+- [x] Implement set default billing.
+- [x] Resolve current `CommerceCustomer` by authenticated app user and store.
+- [x] Create/link `CommerceCustomer` from auth profile where possible when missing.
+- [x] Enforce ownership by `StoreId + CustomerId + PublicId`.
+- [x] Enforce one default shipping address per store/customer.
+- [x] Enforce one default billing address per store/customer.
+- [x] Soft-deleted addresses cannot be read, modified, defaulted, or selected.
+- [x] Add Storefront API routes under `api/storefront/stores/{storeKey}/customer/addresses`.
+- [x] Require `[Authorize]` for all address book endpoints.
+- [x] Publish Bearer security metadata in OpenAPI.
+- [x] Add contract tests proving request DTOs do not expose `customerId`, `storeId`, audit fields, or snapshot fields.
 
 Verification checklist:
 
-- [ ] Authenticated customer can create address.
-- [ ] Authenticated customer can update own address.
-- [ ] Authenticated customer can soft delete own address.
-- [ ] Customer cannot access another customer's address by public ID.
-- [ ] Default flags are deterministic.
-- [ ] Protected endpoints declare Bearer security.
-- [ ] Side-effecting operations are not GET.
+- [x] Authenticated customer can create address.
+- [x] Authenticated customer can update own address.
+- [x] Authenticated customer can soft delete own address.
+- [x] Customer cannot access another customer's address by public ID.
+- [x] Default flags are deterministic.
+- [x] Protected endpoints declare Bearer security.
+- [x] Side-effecting operations are not GET.
 
 Exit criteria:
 
-- [ ] Address book CRUD is secure and store-scoped.
-- [ ] Public contracts are explicit and generator-safe.
+- [x] Address book CRUD is secure and store-scoped.
+- [x] Public contracts are explicit and generator-safe.
+
+Phase 4 evidence:
+
+- 2026-07-17: Added `IStorefrontCustomerAddressService` and `StorefrontCustomerAddressService`.
+- 2026-07-17: Added protected Storefront endpoints under `api/storefront/stores/{storeKey}/customer/addresses` for list/create/update/delete/default-shipping/default-billing.
+- 2026-07-17: Address book service resolves customer by authenticated app user/store, links by auth email when available, and does not accept `customerId` or `storeId` from request body.
+- 2026-07-17: Added public `StorefrontCustomerAddressRequest`/`StorefrontCustomerAddressResponse` contracts and OpenAPI metadata/security.
+- 2026-07-17: Added `StorefrontCustomerAddressServiceTests` for create/defaults, ownership isolation, soft delete, and default updates.
+- 2026-07-17: Added Storefront OpenAPI contract coverage for address book request schema, Bearer security, response schemas, and unsafe-field exclusion.
+- 2026-07-17: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed.
+- 2026-07-17: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontCustomerAddressServiceTests|FullyQualifiedName~CommerceNodeStorefrontOpenApiContractTests|FullyQualifiedName~AddressCorePhase0InventoryTests"` passed 38/38.
 
 Suggested commit:
 
@@ -605,7 +616,7 @@ test(address-core): complete release gate
 - [x] Phase 1 - address domain model and migration.
 - [x] Phase 2 - address validation and normalization core.
 - [x] Phase 3 - country and state/province lookup.
-- [ ] Phase 4 - authenticated address book API.
+- [x] Phase 4 - authenticated address book API.
 - [ ] Phase 5 - checkout address selection.
 - [ ] Phase 6 - Storefront V2 UI integration.
 - [ ] Phase 7 - admin/settings preparation.
@@ -613,15 +624,15 @@ test(address-core): complete release gate
 
 ## Definition Of Done
 
-- [ ] Authenticated customers can maintain a basic address book.
+- [x] Authenticated customers can maintain a basic address book.
 - [ ] Guest checkout can still enter address directly.
 - [ ] Checkout can select a saved shipping address.
 - [ ] Checkout/order continue to snapshot address fields.
 - [ ] Storefront can render country/state choices without hard-coded `US` input.
-- [ ] Address validation is centralized server-side.
-- [ ] Protected address APIs use auth metadata and do not trust browser-supplied ownership.
-- [ ] The implementation stays inside active V2 Commerce Node and Storefront V2 boundaries.
-- [ ] No legacy presentation project or `AppDbContext` is extended.
+- [x] Address validation is centralized server-side.
+- [x] Protected address APIs use auth metadata and do not trust browser-supplied ownership.
+- [x] The implementation stays inside active V2 Commerce Node and Storefront V2 boundaries.
+- [x] No legacy presentation project or `AppDbContext` is extended.
 
 ## Decision Audit Trail
 

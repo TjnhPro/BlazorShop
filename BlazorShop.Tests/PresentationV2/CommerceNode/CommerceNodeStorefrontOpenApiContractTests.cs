@@ -26,6 +26,12 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         [
             "StorefrontAuth_ChangePassword",
             "StorefrontAuth_UpdateProfile",
+            "StorefrontCustomerAddresses_List",
+            "StorefrontCustomerAddresses_Create",
+            "StorefrontCustomerAddresses_Update",
+            "StorefrontCustomerAddresses_Delete",
+            "StorefrontCustomerAddresses_SetDefaultShipping",
+            "StorefrontCustomerAddresses_SetDefaultBilling",
             "StorefrontCart_MergeCurrentCustomer",
             "StorefrontCart_SaveCheckout",
             "StorefrontOrders_Confirm",
@@ -40,6 +46,12 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 ["StorefrontAuth_Logout"] = "RefreshCookie",
                 ["StorefrontAuth_ChangePassword"] = "Bearer",
                 ["StorefrontAuth_UpdateProfile"] = "Bearer",
+                ["StorefrontCustomerAddresses_List"] = "Bearer",
+                ["StorefrontCustomerAddresses_Create"] = "Bearer",
+                ["StorefrontCustomerAddresses_Update"] = "Bearer",
+                ["StorefrontCustomerAddresses_Delete"] = "Bearer",
+                ["StorefrontCustomerAddresses_SetDefaultShipping"] = "Bearer",
+                ["StorefrontCustomerAddresses_SetDefaultBilling"] = "Bearer",
                 ["StorefrontCart_MergeCurrentCustomer"] = "Bearer",
                 ["StorefrontCart_SaveCheckout"] = "Bearer",
                 ["StorefrontOrders_Confirm"] = "Bearer",
@@ -312,6 +324,70 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(operation));
             Assert.True(schemas.ContainsKey("StorefrontPublicConfigurationResponse"));
             Assert.True(schemas.ContainsKey("StorefrontSeoDefaultsResponse"));
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_CustomerAddressBookHasGeneratorSafeContract()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var operations = GetOperations(swagger)
+                .ToDictionary(
+                    operation => operation.Value["operationId"]?.GetValue<string>() ?? string.Empty,
+                    operation => operation.Value,
+                    StringComparer.Ordinal);
+
+            var expectedOperationIds = new[]
+            {
+                "StorefrontCustomerAddresses_List",
+                "StorefrontCustomerAddresses_Create",
+                "StorefrontCustomerAddresses_Update",
+                "StorefrontCustomerAddresses_Delete",
+                "StorefrontCustomerAddresses_SetDefaultShipping",
+                "StorefrontCustomerAddresses_SetDefaultBilling",
+            };
+
+            foreach (var operationId in expectedOperationIds)
+            {
+                Assert.True(operations.TryGetValue(operationId, out var operation), $"{operationId} was not found.");
+                Assert.False(string.IsNullOrWhiteSpace(operation!["summary"]?.GetValue<string>()));
+                Assert.True(operation["responses"]?.AsObject().Count > 1, $"{operationId} must declare success and error responses.");
+                Assert.Contains("Bearer", GetSecuritySchemeNames(operation));
+            }
+
+            AssertRequiredRequestBody(operations["StorefrontCustomerAddresses_Create"]);
+            AssertRequiredRequestBody(operations["StorefrontCustomerAddresses_Update"]);
+            Assert.Null(operations["StorefrontCustomerAddresses_Delete"]["requestBody"]);
+            Assert.Null(operations["StorefrontCustomerAddresses_SetDefaultShipping"]["requestBody"]);
+            Assert.Null(operations["StorefrontCustomerAddresses_SetDefaultBilling"]["requestBody"]);
+
+            var requestSchema = schemas["StorefrontCustomerAddressRequest"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCustomerAddressRequest schema was not found.");
+            var requestProperties = GetPropertyNames(requestSchema).ToArray();
+
+            Assert.Contains("firstName", requestProperties);
+            Assert.Contains("lastName", requestProperties);
+            Assert.Contains("address1", requestProperties);
+            Assert.Contains("city", requestProperties);
+            Assert.Contains("postalCode", requestProperties);
+            Assert.Contains("countryCode", requestProperties);
+            Assert.Contains("email", requestProperties);
+            Assert.DoesNotContain("customerId", requestProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("storeId", requestProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("createdAtUtc", requestProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("updatedAtUtc", requestProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("deletedAtUtc", requestProperties, StringComparer.OrdinalIgnoreCase);
+
+            Assert.Contains("firstName", GetRequiredProperties(requestSchema));
+            Assert.Contains("lastName", GetRequiredProperties(requestSchema));
+            Assert.Contains("address1", GetRequiredProperties(requestSchema));
+            Assert.Contains("city", GetRequiredProperties(requestSchema));
+            Assert.Contains("postalCode", GetRequiredProperties(requestSchema));
+            Assert.Contains("countryCode", GetRequiredProperties(requestSchema));
+            Assert.Equal("email", requestSchema["properties"]?["email"]?["format"]?.GetValue<string>());
+            Assert.Equal(120, requestSchema["properties"]?["firstName"]?["maxLength"]?.GetValue<int>());
+            Assert.Equal(240, requestSchema["properties"]?["address1"]?["maxLength"]?.GetValue<int>());
+            Assert.True(schemas.ContainsKey("StorefrontCustomerAddressResponse"));
         }
 
         [Fact]

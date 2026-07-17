@@ -1,5 +1,7 @@
 namespace BlazorShop.Application.CommerceNode.Addresses
 {
+    using BlazorShop.Application.DTOs;
+
     public sealed record CustomerAddressCreateRequest(
         string FirstName,
         string LastName,
@@ -52,6 +54,12 @@ namespace BlazorShop.Application.CommerceNode.Addresses
         DateTimeOffset CreatedAtUtc,
         DateTimeOffset UpdatedAtUtc);
 
+    public sealed record StorefrontCustomerAddressContext(
+        Guid StoreId,
+        string AppUserId,
+        string? Email,
+        string? FullName);
+
     public sealed record AddressValidationIssue(
         string Code,
         string Message,
@@ -69,5 +77,38 @@ namespace BlazorShop.Application.CommerceNode.Addresses
         AddressValidationResult ValidateAndNormalize(CustomerAddressCreateRequest request);
 
         AddressValidationResult ValidateAndNormalize(CustomerAddressUpdateRequest request);
+    }
+
+    public interface IStorefrontCustomerAddressService
+    {
+        Task<ServiceResponse<IReadOnlyList<CustomerAddressDto>>> ListAsync(
+            StorefrontCustomerAddressContext context,
+            CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<CustomerAddressDto>> CreateAsync(
+            StorefrontCustomerAddressContext context,
+            CustomerAddressCreateRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<CustomerAddressDto>> UpdateAsync(
+            StorefrontCustomerAddressContext context,
+            Guid addressPublicId,
+            CustomerAddressCreateRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse> DeleteAsync(
+            StorefrontCustomerAddressContext context,
+            Guid addressPublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<CustomerAddressDto>> SetDefaultShippingAsync(
+            StorefrontCustomerAddressContext context,
+            Guid addressPublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<CustomerAddressDto>> SetDefaultBillingAsync(
+            StorefrontCustomerAddressContext context,
+            Guid addressPublicId,
+            CancellationToken cancellationToken = default);
     }
 }

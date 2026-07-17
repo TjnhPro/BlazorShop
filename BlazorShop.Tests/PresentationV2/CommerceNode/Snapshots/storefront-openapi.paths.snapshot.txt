@@ -37,6 +37,12 @@ POST /api/storefront/stores/{storeKey}/consent
 GET /api/storefront/stores/{storeKey}/consent/current
 POST /api/storefront/stores/{storeKey}/consent/revoke
 POST /api/storefront/stores/{storeKey}/currency/preference
+GET /api/storefront/stores/{storeKey}/customer/addresses
+POST /api/storefront/stores/{storeKey}/customer/addresses
+DELETE /api/storefront/stores/{storeKey}/customer/addresses/{addressId}
+PUT /api/storefront/stores/{storeKey}/customer/addresses/{addressId}
+POST /api/storefront/stores/{storeKey}/customer/addresses/{addressId}/default-billing
+POST /api/storefront/stores/{storeKey}/customer/addresses/{addressId}/default-shipping
 GET /api/storefront/stores/{storeKey}/navigation/{systemName}
 POST /api/storefront/stores/{storeKey}/newsletter/subscribe
 POST /api/storefront/stores/{storeKey}/orders/confirm

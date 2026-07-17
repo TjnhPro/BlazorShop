@@ -109,6 +109,136 @@ namespace BlazorShop.CommerceNode.API.Controllers
     }
 
     [ApiController]
+    [Route("api/storefront/stores/{storeKey}/customer/addresses")]
+    [Authorize]
+    public sealed class StorefrontScopedCustomerAddressesController : StorefrontApiControllerBase
+    {
+        private readonly IStorefrontCustomerAddressService addressService;
+        private readonly ICommerceStoreContext storeContext;
+
+        public StorefrontScopedCustomerAddressesController(
+            IStorefrontCustomerAddressService addressService,
+            ICommerceStoreContext storeContext)
+        {
+            this.addressService = addressService;
+            this.storeContext = storeContext;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> List(CancellationToken cancellationToken)
+        {
+            var context = await this.CreateAddressContextAsync(cancellationToken);
+            if (context.Result is not null)
+            {
+                return context.Result;
+            }
+
+            var result = await this.addressService.ListAsync(context.Context!, cancellationToken);
+            return this.FromServiceResponse(
+                result,
+                addresses => addresses?.Select(address => address.ToStorefrontContract()).ToArray());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] StorefrontCustomerAddressRequest request, CancellationToken cancellationToken)
+        {
+            var context = await this.CreateAddressContextAsync(cancellationToken);
+            if (context.Result is not null)
+            {
+                return context.Result;
+            }
+
+            var result = await this.addressService.CreateAsync(context.Context!, request.ToApplicationRequest(), cancellationToken);
+            return this.FromServiceResponse(result, address => address?.ToStorefrontContract());
+        }
+
+        [HttpPut("{addressId:guid}")]
+        public async Task<IActionResult> Update(Guid addressId, [FromBody] StorefrontCustomerAddressRequest request, CancellationToken cancellationToken)
+        {
+            var context = await this.CreateAddressContextAsync(cancellationToken);
+            if (context.Result is not null)
+            {
+                return context.Result;
+            }
+
+            var result = await this.addressService.UpdateAsync(context.Context!, addressId, request.ToApplicationRequest(), cancellationToken);
+            return this.FromServiceResponse(result, address => address?.ToStorefrontContract());
+        }
+
+        [HttpDelete("{addressId:guid}")]
+        public async Task<IActionResult> Delete(Guid addressId, CancellationToken cancellationToken)
+        {
+            var context = await this.CreateAddressContextAsync(cancellationToken);
+            if (context.Result is not null)
+            {
+                return context.Result;
+            }
+
+            var result = await this.addressService.DeleteAsync(context.Context!, addressId, cancellationToken);
+            if (result.Success)
+            {
+                return this.FromServiceResponse(result);
+            }
+
+            return result.Payload is ServiceResponseType responseType
+                ? this.Failure<object>(responseType, result.Message ?? "Customer address could not be deleted.")
+                : this.FromServiceResponse(result);
+        }
+
+        [HttpPost("{addressId:guid}/default-shipping")]
+        public async Task<IActionResult> SetDefaultShipping(Guid addressId, CancellationToken cancellationToken)
+        {
+            var context = await this.CreateAddressContextAsync(cancellationToken);
+            if (context.Result is not null)
+            {
+                return context.Result;
+            }
+
+            var result = await this.addressService.SetDefaultShippingAsync(context.Context!, addressId, cancellationToken);
+            return this.FromServiceResponse(result, address => address?.ToStorefrontContract());
+        }
+
+        [HttpPost("{addressId:guid}/default-billing")]
+        public async Task<IActionResult> SetDefaultBilling(Guid addressId, CancellationToken cancellationToken)
+        {
+            var context = await this.CreateAddressContextAsync(cancellationToken);
+            if (context.Result is not null)
+            {
+                return context.Result;
+            }
+
+            var result = await this.addressService.SetDefaultBillingAsync(context.Context!, addressId, cancellationToken);
+            return this.FromServiceResponse(result, address => address?.ToStorefrontContract());
+        }
+
+        private async Task<(StorefrontCustomerAddressContext? Context, IActionResult? Result)> CreateAddressContextAsync(
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return (null, this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved."));
+            }
+
+            var userId = this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return (null, this.Error(StatusCodes.Status401Unauthorized, "unauthorized", "Customer identity was not found."));
+            }
+
+            var email = this.User.FindFirst(ClaimTypes.Email)?.Value ?? this.User.FindFirst("email")?.Value;
+            var fullName = this.User.FindFirst(ClaimTypes.Name)?.Value ?? this.User.Identity?.Name;
+            return (new StorefrontCustomerAddressContext(storeId.Value, userId, email, fullName), null);
+        }
+
+        private async Task<Guid?> ResolveStoreIdAsync(CancellationToken cancellationToken)
+        {
+            var result = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
+            return result.Success ? result.Payload : null;
+        }
+    }
+
+    [ApiController]
     [Route("api/storefront/stores/{storeKey}/auth")]
     public sealed class StorefrontScopedAuthController : StorefrontApiControllerBase
     {
