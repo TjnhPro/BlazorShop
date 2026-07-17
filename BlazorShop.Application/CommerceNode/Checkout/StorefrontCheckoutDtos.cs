@@ -91,6 +91,13 @@ namespace BlazorShop.Application.CommerceNode.Checkout
         string CartToken,
         string PaymentMethodKey);
 
+    public sealed record StorefrontCheckoutReviewRequest(
+        Guid StoreId,
+        Guid CheckoutSessionId,
+        string CartToken,
+        bool TermsAccepted,
+        string? TermsVersion);
+
     public sealed record StorefrontCheckoutPaymentMethodOption(
         string Key,
         string DisplayName,
@@ -151,6 +158,38 @@ namespace BlazorShop.Application.CommerceNode.Checkout
         string? NextActionType = null,
         string? NextActionUrl = null);
 
+    public sealed record StorefrontCheckoutReviewResult(
+        Guid CheckoutSessionId,
+        Guid CartId,
+        int CheckoutVersion,
+        int CartVersion,
+        int LastValidatedCartVersion,
+        string State,
+        string CurrentStep,
+        IReadOnlyList<string> CompletedSteps,
+        bool IsActive,
+        string NextAction,
+        string CustomerEmail,
+        string CustomerName,
+        StorefrontCheckoutShippingAddressDto? BillingAddress,
+        StorefrontCheckoutShippingAddressDto? ShippingAddress,
+        StorefrontCheckoutShippingOption? SelectedShippingOption,
+        StorefrontCheckoutPaymentMethodOption? SelectedPaymentMethod,
+        IReadOnlyList<StorefrontCheckoutLineSummary> Lines,
+        decimal Subtotal,
+        decimal ShippingTotal,
+        decimal TaxTotal,
+        decimal DiscountTotal,
+        decimal GrandTotal,
+        string CurrencyCode,
+        bool TermsRequired,
+        bool TermsAccepted,
+        string? TermsVersion,
+        DateTimeOffset? TermsAcceptedAtUtc,
+        bool PlaceOrderAllowed,
+        string NextRequiredStep,
+        IReadOnlyList<StorefrontCheckoutValidationIssue> Issues);
+
     public sealed record StorefrontCheckoutLineSummary(
         Guid LineId,
         Guid ProductId,
@@ -195,6 +234,10 @@ namespace BlazorShop.Application.CommerceNode.Checkout
 
         Task<ServiceResponse<StorefrontCheckoutSessionResult>> SelectPaymentMethodAsync(
             StorefrontCheckoutPaymentMethodRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<StorefrontCheckoutReviewResult>> ReviewAsync(
+            StorefrontCheckoutReviewRequest request,
             CancellationToken cancellationToken = default);
 
         Task<ServiceResponse<StorefrontCheckoutPreviewResult>> PreviewAsync(

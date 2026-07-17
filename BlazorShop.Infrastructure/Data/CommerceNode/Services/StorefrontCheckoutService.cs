@@ -271,6 +271,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             session.ShippingPostalCode = NormalizeNullable(shippingAddress.PostalCode) ?? string.Empty;
             session.ShippingCountryCode = NormalizeNullable(shippingAddress.CountryCode)?.ToUpperInvariant() ?? string.Empty;
             session.PaymentMethodKey = string.Empty;
+            ClearTermsAcknowledgement(session);
             session.CompletedStepsJson = JsonSerializer.Serialize(
                 new[] { CheckoutSteps.Entry, CheckoutSteps.BillingAddress, CheckoutSteps.ShippingAddress },
                 JsonOptions);
@@ -319,6 +320,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 session.Subtotal + option.Price + session.TaxTotal - session.DiscountTotal,
                 session.CurrencyCode);
             session.PaymentMethodKey = string.Empty;
+            ClearTermsAcknowledgement(session);
             session.ValidationIssuesJson = null;
             session.CompletedStepsJson = JsonSerializer.Serialize(
                 new[] { CheckoutSteps.Entry, CheckoutSteps.BillingAddress, CheckoutSteps.ShippingAddress, CheckoutSteps.ShippingMethod },
@@ -359,6 +361,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             session.PaymentMethodKey = selected.Key;
+            ClearTermsAcknowledgement(session);
             session.ValidationIssuesJson = null;
             session.CompletedStepsJson = JsonSerializer.Serialize(
                 new[]
@@ -377,6 +380,117 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Succeeded(
                 "Checkout payment method selected.",
                 await this.ToSessionResultAsync(session, resolution.Cart!, cancellationToken, methods));
+        }
+
+        public async Task<ServiceResponse<StorefrontCheckoutReviewResult>> ReviewAsync(
+            StorefrontCheckoutReviewRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var resolution = await this.ResolveActiveSessionAsync(
+                new StorefrontCheckoutSessionRequest(request.StoreId, request.CheckoutSessionId, request.CartToken),
+                cancellationToken);
+            if (!resolution.Success)
+            {
+                return Failed<StorefrontCheckoutReviewResult>(resolution.ResponseType, resolution.Message);
+            }
+
+            var session = resolution.Session!;
+            var cart = resolution.Cart!;
+            var selectedShippingOption = ParseSelectedShippingOption(session.SelectedShippingOptionJson);
+            var paymentMethods = selectedShippingOption is null
+                ? []
+                : await this.ResolvePaymentMethodOptionsAsync(session, session.PaymentMethodKey, cancellationToken);
+            var selectedPaymentMethod = paymentMethods.FirstOrDefault(method => method.Selected);
+            var billingAddress = ParseBillingAddress(session.BillingAddressSnapshotJson);
+            var shippingAddress = CreateShippingAddress(session);
+            var issues = ParseValidationIssues(session.ValidationIssuesJson).ToList();
+            var entryValidation = await this.ValidateCheckoutEntryAsync(request.StoreId, request.CartToken, cart, cancellationToken);
+            issues.AddRange(entryValidation.Issues);
+
+            if (billingAddress is null)
+            {
+                issues.Add(new StorefrontCheckoutValidationIssue(
+                    "billing.address_required",
+                    "Billing address is required.",
+                    "billingAddress"));
+            }
+
+            if (shippingAddress is null)
+            {
+                issues.Add(new StorefrontCheckoutValidationIssue(
+                    "shipping.address_required",
+                    "Shipping address is required.",
+                    "shippingAddress"));
+            }
+
+            if (selectedShippingOption is null)
+            {
+                issues.Add(new StorefrontCheckoutValidationIssue(
+                    "shipping.method_required",
+                    "Shipping method is required.",
+                    "shippingOptionKey"));
+            }
+
+            if (selectedPaymentMethod is null)
+            {
+                issues.Add(new StorefrontCheckoutValidationIssue(
+                    "payment.method_required",
+                    "Payment method is required.",
+                    "paymentMethodKey"));
+            }
+
+            var termsRequired = false;
+            if (request.TermsAccepted)
+            {
+                session.TermsAccepted = true;
+                session.TermsVersion = NormalizeTermsVersion(request.TermsVersion) ?? "default";
+                session.TermsAcceptedAtUtc = DateTimeOffset.UtcNow;
+            }
+            else if (termsRequired && !session.TermsAccepted)
+            {
+                issues.Add(new StorefrontCheckoutValidationIssue(
+                    "terms.required",
+                    "Terms must be accepted before placing the order.",
+                    "termsAccepted"));
+            }
+
+            var distinctIssues = DeduplicateIssues(issues);
+            var placeOrderAllowed = distinctIssues.Count == 0
+                && selectedShippingOption is not null
+                && selectedPaymentMethod is not null;
+            var nextRequiredStep = placeOrderAllowed
+                ? CheckoutSteps.PlaceOrder
+                : ResolveNextRequiredStep(billingAddress, shippingAddress, selectedShippingOption, selectedPaymentMethod);
+            session.ValidationIssuesJson = distinctIssues.Count == 0 ? null : JsonSerializer.Serialize(distinctIssues, JsonOptions);
+            session.CompletedStepsJson = JsonSerializer.Serialize(
+                placeOrderAllowed
+                    ? [
+                        CheckoutSteps.Entry,
+                        CheckoutSteps.BillingAddress,
+                        CheckoutSteps.ShippingAddress,
+                        CheckoutSteps.ShippingMethod,
+                        CheckoutSteps.PaymentMethod,
+                        CheckoutSteps.Review,
+                    ]
+                    : ParseCompletedSteps(session.CompletedStepsJson),
+                JsonOptions);
+            session.NextAction = nextRequiredStep;
+            Touch(session, placeOrderAllowed ? CheckoutSessionStates.Ready : CheckoutSessionStates.Draft, CheckoutSteps.Review, DateTimeOffset.UtcNow);
+            await this.context.SaveChangesAsync(cancellationToken);
+
+            return Succeeded(
+                placeOrderAllowed ? "Checkout review is ready." : "Checkout review has validation issues.",
+                ToReviewResult(
+                    session,
+                    cart,
+                    billingAddress,
+                    shippingAddress,
+                    selectedShippingOption,
+                    selectedPaymentMethod,
+                    termsRequired,
+                    placeOrderAllowed,
+                    nextRequiredStep,
+                    distinctIssues));
         }
 
         public async Task<ServiceResponse<StorefrontCheckoutPreviewResult>> PreviewAsync(
@@ -1265,6 +1379,145 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     line.LineTotal ?? line.LineSubtotal ?? 0m,
                     NormalizeCurrency(line.CurrencyCodeSnapshot) ?? NormalizeCurrency(cart.CurrencyCode) ?? DefaultCurrencyCode)).ToArray(),
                 ParseValidationIssues(session.ValidationIssuesJson));
+        }
+
+        private static StorefrontCheckoutReviewResult ToReviewResult(
+            CheckoutSession session,
+            StorefrontCartSessionDto cart,
+            StorefrontCheckoutShippingAddressDto? billingAddress,
+            StorefrontCheckoutShippingAddressDto? shippingAddress,
+            StorefrontCheckoutShippingOption? selectedShippingOption,
+            StorefrontCheckoutPaymentMethodOption? selectedPaymentMethod,
+            bool termsRequired,
+            bool placeOrderAllowed,
+            string nextRequiredStep,
+            IReadOnlyList<StorefrontCheckoutValidationIssue> issues)
+        {
+            return new StorefrontCheckoutReviewResult(
+                session.PublicId,
+                cart.PublicId,
+                session.CheckoutVersion,
+                cart.Version,
+                session.LastValidatedCartVersion,
+                session.State,
+                session.CurrentStep,
+                ParseCompletedSteps(session.CompletedStepsJson),
+                IsActiveCheckoutState(session.State) && session.ExpiresAtUtc > DateTimeOffset.UtcNow,
+                session.NextAction,
+                session.CustomerEmail,
+                session.CustomerName,
+                billingAddress,
+                shippingAddress,
+                selectedShippingOption,
+                selectedPaymentMethod,
+                cart.Lines.Select(line => new StorefrontCheckoutLineSummary(
+                    line.Id,
+                    line.ProductId,
+                    line.ProductVariantId,
+                    Math.Max(0, line.Quantity),
+                    line.UnitPrice ?? line.UnitPriceSnapshot ?? 0m,
+                    line.LineTotal ?? line.LineSubtotal ?? 0m,
+                    NormalizeCurrency(line.CurrencyCodeSnapshot) ?? NormalizeCurrency(cart.CurrencyCode) ?? DefaultCurrencyCode)).ToArray(),
+                session.Subtotal,
+                session.ShippingTotal,
+                session.TaxTotal,
+                session.DiscountTotal,
+                session.GrandTotal,
+                NormalizeCurrency(session.CurrencyCode) ?? NormalizeCurrency(cart.CurrencyCode) ?? DefaultCurrencyCode,
+                termsRequired,
+                session.TermsAccepted,
+                session.TermsVersion,
+                session.TermsAcceptedAtUtc,
+                placeOrderAllowed,
+                nextRequiredStep,
+                issues);
+        }
+
+        private static StorefrontCheckoutShippingAddressDto? ParseBillingAddress(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return null;
+            }
+
+            try
+            {
+                return JsonSerializer.Deserialize<StorefrontCheckoutShippingAddressDto>(json, JsonOptions);
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+        }
+
+        private static StorefrontCheckoutShippingAddressDto? CreateShippingAddress(CheckoutSession session)
+        {
+            if (string.IsNullOrWhiteSpace(session.ShippingFullName)
+                || string.IsNullOrWhiteSpace(session.ShippingEmail)
+                || string.IsNullOrWhiteSpace(session.ShippingAddress1)
+                || string.IsNullOrWhiteSpace(session.ShippingCity)
+                || string.IsNullOrWhiteSpace(session.ShippingPostalCode)
+                || string.IsNullOrWhiteSpace(session.ShippingCountryCode))
+            {
+                return null;
+            }
+
+            return new StorefrontCheckoutShippingAddressDto(
+                session.ShippingFullName,
+                session.ShippingEmail,
+                session.ShippingPhone,
+                session.ShippingAddress1,
+                session.ShippingAddress2,
+                session.ShippingCity,
+                session.ShippingState,
+                session.ShippingPostalCode,
+                session.ShippingCountryCode);
+        }
+
+        private static IReadOnlyList<StorefrontCheckoutValidationIssue> DeduplicateIssues(
+            IReadOnlyList<StorefrontCheckoutValidationIssue> issues)
+        {
+            return issues
+                .GroupBy(issue => new { issue.Code, issue.Field, issue.LineId, issue.ProductId })
+                .Select(group => group.First())
+                .ToArray();
+        }
+
+        private static string ResolveNextRequiredStep(
+            StorefrontCheckoutShippingAddressDto? billingAddress,
+            StorefrontCheckoutShippingAddressDto? shippingAddress,
+            StorefrontCheckoutShippingOption? selectedShippingOption,
+            StorefrontCheckoutPaymentMethodOption? selectedPaymentMethod)
+        {
+            if (billingAddress is null)
+            {
+                return CheckoutSteps.BillingAddress;
+            }
+
+            if (shippingAddress is null)
+            {
+                return CheckoutSteps.ShippingAddress;
+            }
+
+            if (selectedShippingOption is null)
+            {
+                return CheckoutSteps.ShippingMethod;
+            }
+
+            return selectedPaymentMethod is null ? CheckoutSteps.PaymentMethod : CheckoutSteps.Review;
+        }
+
+        private static void ClearTermsAcknowledgement(CheckoutSession session)
+        {
+            session.TermsAccepted = false;
+            session.TermsVersion = null;
+            session.TermsAcceptedAtUtc = null;
+        }
+
+        private static string? NormalizeTermsVersion(string? value)
+        {
+            var normalized = NormalizeNullable(value);
+            return normalized is null || normalized.Length <= 64 ? normalized : normalized[..64];
         }
 
         private static void Touch(

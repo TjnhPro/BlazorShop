@@ -538,44 +538,52 @@ Goal: give Storefront V2 a stable review contract before final place order.
 
 Implementation checklist:
 
-- [ ] Add review endpoint.
-- [ ] Review response includes checkout session ID/version/state.
-- [ ] Review response includes cart version.
-- [ ] Review response includes customer/contact summary.
-- [ ] Review response includes billing address when available.
-- [ ] Review response includes shipping address.
-- [ ] Review response includes shipping option.
-- [ ] Review response includes payment method.
-- [ ] Review response includes cart line summaries.
-- [ ] Review response includes subtotal.
-- [ ] Review response includes shipping total.
-- [ ] Review response includes tax total placeholder.
-- [ ] Review response includes discount total placeholder.
-- [ ] Review response includes grand total.
-- [ ] Review response includes currency.
-- [ ] Review response includes validation issues.
-- [ ] Review response includes `placeOrderAllowed`.
-- [ ] Review response includes next required step.
-- [ ] Add terms/legal acknowledgement fields:
-  - [ ] `TermsAccepted`.
-  - [ ] `TermsVersion`.
-  - [ ] `TermsAcceptedAtUtc`.
-- [ ] Make terms required only when configuration says so.
-- [ ] Initial default may keep terms requirement disabled.
-- [ ] Keep all final totals server-calculated.
+- [x] Add review endpoint.
+- [x] Review response includes checkout session ID/version/state.
+- [x] Review response includes cart version.
+- [x] Review response includes customer/contact summary.
+- [x] Review response includes billing address when available.
+- [x] Review response includes shipping address.
+- [x] Review response includes shipping option.
+- [x] Review response includes payment method.
+- [x] Review response includes cart line summaries.
+- [x] Review response includes subtotal.
+- [x] Review response includes shipping total.
+- [x] Review response includes tax total placeholder.
+- [x] Review response includes discount total placeholder.
+- [x] Review response includes grand total.
+- [x] Review response includes currency.
+- [x] Review response includes validation issues.
+- [x] Review response includes `placeOrderAllowed`.
+- [x] Review response includes next required step.
+- [x] Add terms/legal acknowledgement fields:
+  - [x] `TermsAccepted`.
+  - [x] `TermsVersion`.
+  - [x] `TermsAcceptedAtUtc`.
+- [x] Make terms required only when configuration says so.
+- [x] Initial default may keep terms requirement disabled.
+- [x] Keep all final totals server-calculated.
 
 Verification checklist:
 
-- [ ] Review response is enough for Storefront V2 final confirmation.
-- [ ] Review blocks invalid checkout.
-- [ ] Place-order is blocked when review has blocking issues.
-- [ ] Terms hook exists without forcing legal UX until configured.
-- [ ] OpenAPI schema is explicit and generator-safe.
+- [x] Review response is enough for Storefront V2 final confirmation.
+- [x] Review blocks invalid checkout.
+- [x] Place-order is blocked when review has blocking issues.
+- [x] Terms hook exists without forcing legal UX until configured.
+- [x] OpenAPI schema is explicit and generator-safe.
 
 Exit criteria:
 
-- [ ] Storefront can render checkout review from server projection.
-- [ ] Final totals remain server-owned.
+- [x] Storefront can render checkout review from server projection.
+- [x] Final totals remain server-owned.
+
+Phase 6 evidence:
+
+- 2026-07-17: Added `POST /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/review` with explicit request/response DTOs and Storefront OpenAPI metadata.
+- 2026-07-17: Added CommerceNode checkout session terms fields through migration `CommerceNodeCheckoutReviewTerms`.
+- 2026-07-17: Review projection returns session/cart versions, customer/contact summary, billing/shipping snapshots, selected shipping/payment, lines, totals, validation issues, `placeOrderAllowed`, and `nextRequiredStep`.
+- 2026-07-17: Terms hook stores optional acknowledgement while default `termsRequired=false` keeps legal UX disabled until configured.
+- 2026-07-17: Focused `StorefrontCheckoutServiceTests` run passed 37/37; focused `CommerceNodeStorefrontOpenApiContractTests` run passed 29/29 after OpenAPI snapshot refresh.
 
 Suggested commit:
 
@@ -823,7 +831,7 @@ test(checkout-core): complete release gate
 - [x] Phase 3 - address steps.
 - [x] Phase 4 - shipping method stub and hook.
 - [x] Phase 5 - payment method step.
-- [ ] Phase 6 - review projection and terms hook.
+- [x] Phase 6 - review projection and terms hook.
 - [ ] Phase 7 - place order hardening and completion rules.
 - [ ] Phase 8 - Storefront V2 integration.
 - [ ] Phase 9 - QA and contract coverage.

@@ -94,7 +94,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
             var otherCart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
             var foreignCart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(otherStoreId));
-            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
             await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, otherCart.Payload!.Token!, product.Id));
             await cartService.AddLineAsync(new StorefrontCartAddLineRequest(otherStoreId, foreignCart.Payload!.Token!, foreignProduct.Id));
             var service = CreateCheckoutService(context, cartService);
@@ -127,7 +127,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 .ReturnsAsync(product);
             var cartService = CreateCartService(context, productRepository);
             var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
-            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
             var service = CreateCheckoutService(context, cartService);
             var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload!.Token!));
             var session = context.CheckoutSessions.Single();
@@ -582,6 +582,171 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.False(result.Success);
             Assert.Equal(ServiceResponseType.ValidationError, result.ResponseType);
             Assert.Equal(string.Empty, context.CheckoutSessions.Single().PaymentMethodKey);
+        }
+
+        [Fact]
+        public async Task ReviewAsync_AfterPaymentMethodSelection_ReturnsReviewProjectionAndMarksReady()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
+            var service = CreateCheckoutService(context, cartService);
+            var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload.Token!));
+            await service.UpdateAddressesAsync(new StorefrontCheckoutAddressStepRequest(
+                storeId,
+                start.Payload!.CheckoutSessionId,
+                cart.Payload.Token!,
+                BillingAddress: CreateAddress(fullName: "Billing Customer"),
+                ShippingAddress: CreateAddress(fullName: "Shipping Customer"),
+                UseBillingAddressAsShippingAddress: false));
+            await service.SelectShippingMethodAsync(new StorefrontCheckoutShippingMethodRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                cart.Payload.Token!,
+                "free_standard"));
+            await service.SelectPaymentMethodAsync(new StorefrontCheckoutPaymentMethodRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                cart.Payload.Token!,
+                PaymentMethodKeys.Cod));
+
+            var result = await service.ReviewAsync(new StorefrontCheckoutReviewRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                cart.Payload.Token!,
+                TermsAccepted: true,
+                TermsVersion: "terms-v1"));
+
+            Assert.True(result.Success, result.Message);
+            Assert.True(result.Payload!.PlaceOrderAllowed);
+            Assert.Equal(CheckoutSessionStates.Ready, result.Payload.State);
+            Assert.Equal(CheckoutSteps.Review, result.Payload.CurrentStep);
+            Assert.Equal(CheckoutSteps.PlaceOrder, result.Payload.NextRequiredStep);
+            Assert.Contains(CheckoutSteps.Review, result.Payload.CompletedSteps);
+            Assert.Equal("Billing Customer", result.Payload.BillingAddress!.FullName);
+            Assert.Equal("Shipping Customer", result.Payload.ShippingAddress!.FullName);
+            Assert.Equal("free_standard", result.Payload.SelectedShippingOption!.Key);
+            Assert.Equal(PaymentMethodKeys.Cod, result.Payload.SelectedPaymentMethod!.Key);
+            Assert.Single(result.Payload.Lines);
+            Assert.Equal(20m, result.Payload.Subtotal);
+            Assert.Equal(20m, result.Payload.GrandTotal);
+            Assert.Equal("USD", result.Payload.CurrencyCode);
+            Assert.False(result.Payload.TermsRequired);
+            Assert.True(result.Payload.TermsAccepted);
+            Assert.Equal("terms-v1", result.Payload.TermsVersion);
+            Assert.NotNull(result.Payload.TermsAcceptedAtUtc);
+            Assert.Empty(result.Payload.Issues);
+        }
+
+        [Fact]
+        public async Task ReviewAsync_WhenPaymentMethodMissing_BlocksPlaceOrder()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
+            var service = CreateCheckoutService(context, cartService);
+            var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload.Token!));
+            await service.UpdateAddressesAsync(new StorefrontCheckoutAddressStepRequest(
+                storeId,
+                start.Payload!.CheckoutSessionId,
+                cart.Payload.Token!,
+                BillingAddress: CreateAddress(),
+                ShippingAddress: CreateAddress(),
+                UseBillingAddressAsShippingAddress: true));
+            await service.SelectShippingMethodAsync(new StorefrontCheckoutShippingMethodRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                cart.Payload.Token!,
+                "free_standard"));
+
+            var review = await service.ReviewAsync(new StorefrontCheckoutReviewRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                cart.Payload.Token!,
+                TermsAccepted: false,
+                TermsVersion: null));
+            var placeOrder = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                add.Payload!.Version,
+                "missing-payment-review"));
+
+            Assert.True(review.Success, review.Message);
+            Assert.False(review.Payload!.PlaceOrderAllowed);
+            Assert.Equal(CheckoutSessionStates.Draft, review.Payload.State);
+            Assert.Equal(CheckoutSteps.PaymentMethod, review.Payload.NextRequiredStep);
+            Assert.Contains(review.Payload.Issues, issue => issue.Code == "payment.method_required");
+            Assert.False(placeOrder.Success);
+            Assert.Equal(ServiceResponseType.Conflict, placeOrder.ResponseType);
+        }
+
+        [Fact]
+        public async Task SelectPaymentMethodAsync_ClearsTermsAcknowledgement()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
+            var service = CreateCheckoutService(context, cartService);
+            var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload.Token!));
+            await service.UpdateAddressesAsync(new StorefrontCheckoutAddressStepRequest(
+                storeId,
+                start.Payload!.CheckoutSessionId,
+                cart.Payload.Token!,
+                BillingAddress: CreateAddress(),
+                ShippingAddress: CreateAddress(),
+                UseBillingAddressAsShippingAddress: true));
+            await service.SelectShippingMethodAsync(new StorefrontCheckoutShippingMethodRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                cart.Payload.Token!,
+                "free_standard"));
+            await service.SelectPaymentMethodAsync(new StorefrontCheckoutPaymentMethodRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                cart.Payload.Token!,
+                PaymentMethodKeys.Cod));
+            var accepted = await service.ReviewAsync(new StorefrontCheckoutReviewRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                cart.Payload.Token!,
+                TermsAccepted: true,
+                TermsVersion: "terms-v1"));
+            Assert.True(accepted.Payload!.TermsAccepted);
+
+            await service.SelectPaymentMethodAsync(new StorefrontCheckoutPaymentMethodRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                cart.Payload.Token!,
+                PaymentMethodKeys.Cod));
+
+            var session = context.CheckoutSessions.Single();
+            Assert.False(session.TermsAccepted);
+            Assert.Null(session.TermsVersion);
+            Assert.Null(session.TermsAcceptedAtUtc);
         }
 
         [Fact]
@@ -1496,13 +1661,14 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         private static StorefrontCheckoutShippingAddressDto CreateAddress(
+            string fullName = "Customer One",
             string email = "customer@example.test",
             string address1 = "100 Main St",
             string postalCode = "10001",
             string countryCode = "US")
         {
             return new StorefrontCheckoutShippingAddressDto(
-                "Customer One",
+                fullName,
                 email,
                 "5550100",
                 address1,

@@ -988,6 +988,11 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "Select a checkout payment method.",
                         typeof(CommerceNodeApiResponse<StorefrontCheckoutSessionResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedCheckout", "Review")] = new(
+                        "StorefrontCheckout_Review",
+                        "Review a checkout before placing an order.",
+                        typeof(CommerceNodeApiResponse<StorefrontCheckoutReviewResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedCheckout", "Preview")] = new(
                         "StorefrontCheckout_Preview",
                         "Preview and validate a Storefront checkout session.",
@@ -1358,6 +1363,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
                     [typeof(StorefrontCartValidationResponse)] = ["issues"],
                     [typeof(StorefrontCheckoutPreviewResponse)] = ["completedSteps", "lines", "issues"],
                     [typeof(StorefrontCheckoutSessionResponse)] = ["completedSteps", "shippingOptions", "paymentMethods", "lines", "issues"],
+                    [typeof(StorefrontCheckoutReviewResponse)] = ["completedSteps", "lines", "issues"],
                     [typeof(StorefrontOrderResponse)] = ["lines"],
                     [typeof(StorefrontOrderLineResponse)] = ["variantAttributes"],
                     [typeof(StorefrontAddressFieldConfigurationResponse)] = ["stateProvinceRequiredCountryCodes"],

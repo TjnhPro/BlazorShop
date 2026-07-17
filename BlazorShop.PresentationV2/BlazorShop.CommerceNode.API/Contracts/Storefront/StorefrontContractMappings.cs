@@ -226,6 +226,22 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 request.CountryCode);
         }
 
+        public static StorefrontCheckoutShippingAddress ToStorefrontContract(this StorefrontCheckoutShippingAddressDto address)
+        {
+            return new StorefrontCheckoutShippingAddress
+            {
+                FullName = address.FullName,
+                Email = address.Email,
+                Phone = address.Phone,
+                Address1 = address.Address1,
+                Address2 = address.Address2,
+                City = address.City,
+                State = address.State,
+                PostalCode = address.PostalCode,
+                CountryCode = address.CountryCode,
+            };
+        }
+
         public static StorefrontCheckoutPreviewResponse ToStorefrontContract(this StorefrontCheckoutPreviewResult result)
         {
             return new StorefrontCheckoutPreviewResponse(
@@ -309,6 +325,53 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                     issue.ProductId)).ToArray());
         }
 
+        public static StorefrontCheckoutReviewResponse ToStorefrontContract(this StorefrontCheckoutReviewResult result)
+        {
+            return new StorefrontCheckoutReviewResponse(
+                result.CheckoutSessionId,
+                result.CartId,
+                result.CheckoutVersion,
+                result.CartVersion,
+                result.LastValidatedCartVersion,
+                result.State,
+                result.CurrentStep,
+                result.CompletedSteps,
+                result.IsActive,
+                result.NextAction,
+                result.CustomerEmail,
+                result.CustomerName,
+                result.BillingAddress?.ToStorefrontContract(),
+                result.ShippingAddress?.ToStorefrontContract(),
+                result.SelectedShippingOption?.ToStorefrontContract(),
+                result.SelectedPaymentMethod?.ToStorefrontContract(),
+                result.Lines.Select(line => new StorefrontCheckoutLineSummaryResponse(
+                    line.LineId,
+                    line.ProductId,
+                    line.ProductVariantId,
+                    line.Quantity,
+                    line.UnitPrice,
+                    line.LineTotal,
+                    line.CurrencyCode)).ToArray(),
+                result.Subtotal,
+                result.ShippingTotal,
+                result.TaxTotal,
+                result.DiscountTotal,
+                result.GrandTotal,
+                result.CurrencyCode,
+                result.TermsRequired,
+                result.TermsAccepted,
+                result.TermsVersion,
+                result.TermsAcceptedAtUtc,
+                result.PlaceOrderAllowed,
+                result.NextRequiredStep,
+                result.Issues.Select(issue => new StorefrontCheckoutValidationIssueResponse(
+                    issue.Code,
+                    issue.Message,
+                    issue.Field,
+                    issue.LineId,
+                    issue.ProductId)).ToArray());
+        }
+
         public static BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutAddressStepRequest ToApplicationRequest(
             this Contracts.Storefront.StorefrontCheckoutAddressStepRequest request,
             Guid storeId,
@@ -352,6 +415,20 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 checkoutSessionId,
                 cartToken,
                 request.PaymentMethodKey);
+        }
+
+        public static BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutReviewRequest ToApplicationRequest(
+            this Contracts.Storefront.StorefrontCheckoutReviewRequest request,
+            Guid storeId,
+            Guid checkoutSessionId,
+            string cartToken)
+        {
+            return new BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutReviewRequest(
+                storeId,
+                checkoutSessionId,
+                cartToken,
+                request.TermsAccepted,
+                request.TermsVersion);
         }
 
         private static StorefrontCheckoutShippingOptionResponse ToStorefrontContract(

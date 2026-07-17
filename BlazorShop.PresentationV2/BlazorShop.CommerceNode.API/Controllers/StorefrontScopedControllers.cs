@@ -7,6 +7,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using BlazorShop.Application.CommerceNode.Captcha;
     using ApplicationStorefrontCheckoutResult = BlazorShop.Application.DTOs.Payment.StorefrontCheckoutResult;
     using ApplicationStorefrontCheckoutPreviewResult = BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutPreviewResult;
+    using ApplicationStorefrontCheckoutReviewResult = BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutReviewResult;
     using ApplicationStorefrontCheckoutSessionRequest = BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutSessionRequest;
     using ApplicationStorefrontCheckoutSessionResult = BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutSessionResult;
     using ApplicationStorefrontCheckoutStartRequest = BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutStartRequest;
@@ -1539,6 +1540,31 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 result,
                 payload => payload is ApplicationStorefrontCheckoutSessionResult session
                     ? session.ToStorefrontContract()
+                    : null);
+        }
+
+        [HttpPost("{checkoutSessionId:guid}/review")]
+        [AllowAnonymous]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Checkout)]
+        public async Task<IActionResult> Review(
+            Guid checkoutSessionId,
+            [FromHeader(Name = CartTokenHeaderName)] string cartToken,
+            [FromBody] StorefrontCheckoutReviewRequest request,
+            CancellationToken cancellationToken)
+        {
+            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            if (!storeId.HasValue)
+            {
+                return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var result = await this.checkoutService.ReviewAsync(
+                request.ToApplicationRequest(storeId.Value, checkoutSessionId, cartToken),
+                cancellationToken);
+            return this.FromServiceResponse(
+                result,
+                payload => payload is ApplicationStorefrontCheckoutReviewResult review
+                    ? review.ToStorefrontContract()
                     : null);
         }
 

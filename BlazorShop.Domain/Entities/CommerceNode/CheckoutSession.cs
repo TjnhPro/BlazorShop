@@ -90,6 +90,12 @@ namespace BlazorShop.Domain.Entities.CommerceNode
 
         public string? ValidationIssuesJson { get; set; }
 
+        public bool TermsAccepted { get; set; }
+
+        public string? TermsVersion { get; set; }
+
+        public DateTimeOffset? TermsAcceptedAtUtc { get; set; }
+
         public string NextAction { get; set; } = "review";
 
         public string? IdempotencyKey { get; set; }

@@ -457,6 +457,14 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         public string PaymentMethodKey { get; set; } = string.Empty;
     }
 
+    public sealed class StorefrontCheckoutReviewRequest
+    {
+        public bool TermsAccepted { get; set; }
+
+        [MaxLength(64)]
+        public string? TermsVersion { get; set; }
+    }
+
     public sealed record StorefrontCheckoutPaymentMethodOptionResponse(
         string Key,
         string DisplayName,
@@ -494,6 +502,38 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         StorefrontCheckoutPaymentMethodOptionResponse? SelectedPaymentMethod,
         IReadOnlyList<StorefrontCheckoutPaymentMethodOptionResponse> PaymentMethods,
         IReadOnlyList<StorefrontCheckoutLineSummaryResponse> Lines,
+        IReadOnlyList<StorefrontCheckoutValidationIssueResponse> Issues);
+
+    public sealed record StorefrontCheckoutReviewResponse(
+        Guid CheckoutSessionId,
+        Guid CartId,
+        int CheckoutVersion,
+        int CartVersion,
+        int LastValidatedCartVersion,
+        string State,
+        string CurrentStep,
+        IReadOnlyList<string> CompletedSteps,
+        bool IsActive,
+        string NextAction,
+        string CustomerEmail,
+        string CustomerName,
+        StorefrontCheckoutShippingAddress? BillingAddress,
+        StorefrontCheckoutShippingAddress? ShippingAddress,
+        StorefrontCheckoutShippingOptionResponse? SelectedShippingOption,
+        StorefrontCheckoutPaymentMethodOptionResponse? SelectedPaymentMethod,
+        IReadOnlyList<StorefrontCheckoutLineSummaryResponse> Lines,
+        decimal Subtotal,
+        decimal ShippingTotal,
+        decimal TaxTotal,
+        decimal DiscountTotal,
+        decimal GrandTotal,
+        string CurrencyCode,
+        bool TermsRequired,
+        bool TermsAccepted,
+        string? TermsVersion,
+        DateTimeOffset? TermsAcceptedAtUtc,
+        bool PlaceOrderAllowed,
+        string NextRequiredStep,
         IReadOnlyList<StorefrontCheckoutValidationIssueResponse> Issues);
 
     public sealed class StorefrontPlaceOrderRequest

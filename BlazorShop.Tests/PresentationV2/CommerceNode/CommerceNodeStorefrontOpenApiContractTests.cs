@@ -79,6 +79,9 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             ("StorefrontCheckoutSessionResponse", "paymentMethods"),
             ("StorefrontCheckoutSessionResponse", "lines"),
             ("StorefrontCheckoutSessionResponse", "issues"),
+            ("StorefrontCheckoutReviewResponse", "completedSteps"),
+            ("StorefrontCheckoutReviewResponse", "lines"),
+            ("StorefrontCheckoutReviewResponse", "issues"),
             ("StorefrontOrderResponse", "lines"),
             ("StorefrontOrderLineResponse", "variantAttributes"),
             ("StorefrontProductFilterMetadataResponse", "pageSizes"),
@@ -763,6 +766,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("StorefrontCheckout_UpdateAddresses", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCheckout_SelectShippingMethod", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCheckout_SelectPaymentMethod", client, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCheckout_Review", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontPayments_CapturePayPal", client, StringComparison.Ordinal);
             Assert.DoesNotContain("any /* missing operationId */", client, StringComparison.Ordinal);
             Assert.DoesNotContain("Promise<any>", client, StringComparison.Ordinal);
@@ -876,6 +880,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 "StorefrontCheckout_UpdateAddresses",
                 "StorefrontCheckout_SelectShippingMethod",
                 "StorefrontCheckout_SelectPaymentMethod",
+                "StorefrontCheckout_Review",
             };
 
             foreach (var operationId in expectedOperationIds)
@@ -895,6 +900,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             AssertRequiredRequestBody(operations["StorefrontCheckout_UpdateAddresses"]);
             AssertRequiredRequestBody(operations["StorefrontCheckout_SelectShippingMethod"]);
             AssertRequiredRequestBody(operations["StorefrontCheckout_SelectPaymentMethod"]);
+            AssertRequiredRequestBody(operations["StorefrontCheckout_Review"]);
             Assert.Null(operations["StorefrontCheckout_Load"]["requestBody"]);
             Assert.Null(operations["StorefrontCheckout_Cancel"]["requestBody"]);
             Assert.True(schemas.ContainsKey("StorefrontCheckoutStartRequest"));
@@ -904,6 +910,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.True(schemas.ContainsKey("StorefrontCheckoutPaymentMethodRequest"));
             Assert.True(schemas.ContainsKey("StorefrontCheckoutPaymentMethodOptionResponse"));
             Assert.True(schemas.ContainsKey("StorefrontCheckoutSessionResponse"));
+            Assert.True(schemas.ContainsKey("StorefrontCheckoutReviewRequest"));
+            Assert.True(schemas.ContainsKey("StorefrontCheckoutReviewResponse"));
 
             var addressRequestSchema = schemas["StorefrontCheckoutAddressStepRequest"]?.AsObject()
                 ?? throw new InvalidOperationException("StorefrontCheckoutAddressStepRequest schema was not found.");
@@ -931,6 +939,15 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.DoesNotContain("orderStatus", paymentMethodProperties, StringComparer.OrdinalIgnoreCase);
             Assert.DoesNotContain("total", paymentMethodProperties, StringComparer.OrdinalIgnoreCase);
 
+            var reviewRequestSchema = schemas["StorefrontCheckoutReviewRequest"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCheckoutReviewRequest schema was not found.");
+            var reviewRequestProperties = GetPropertyNames(reviewRequestSchema).ToArray();
+            Assert.Contains("termsAccepted", reviewRequestProperties);
+            Assert.Contains("termsVersion", reviewRequestProperties);
+            Assert.DoesNotContain("cartVersion", reviewRequestProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("grandTotal", reviewRequestProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("paymentStatus", reviewRequestProperties, StringComparer.OrdinalIgnoreCase);
+
             var responseSchema = schemas["StorefrontCheckoutSessionResponse"]?.AsObject()
                 ?? throw new InvalidOperationException("StorefrontCheckoutSessionResponse schema was not found.");
             var responseProperties = GetPropertyNames(responseSchema).ToArray();
@@ -949,6 +966,34 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("issues", responseProperties);
             Assert.DoesNotContain("storeId", responseProperties, StringComparer.OrdinalIgnoreCase);
             Assert.DoesNotContain("customerId", responseProperties, StringComparer.OrdinalIgnoreCase);
+
+            var reviewResponseSchema = schemas["StorefrontCheckoutReviewResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCheckoutReviewResponse schema was not found.");
+            var reviewResponseProperties = GetPropertyNames(reviewResponseSchema).ToArray();
+            Assert.Contains("checkoutSessionId", reviewResponseProperties);
+            Assert.Contains("checkoutVersion", reviewResponseProperties);
+            Assert.Contains("cartVersion", reviewResponseProperties);
+            Assert.Contains("customerEmail", reviewResponseProperties);
+            Assert.Contains("billingAddress", reviewResponseProperties);
+            Assert.Contains("shippingAddress", reviewResponseProperties);
+            Assert.Contains("selectedShippingOption", reviewResponseProperties);
+            Assert.Contains("selectedPaymentMethod", reviewResponseProperties);
+            Assert.Contains("lines", reviewResponseProperties);
+            Assert.Contains("subtotal", reviewResponseProperties);
+            Assert.Contains("shippingTotal", reviewResponseProperties);
+            Assert.Contains("taxTotal", reviewResponseProperties);
+            Assert.Contains("discountTotal", reviewResponseProperties);
+            Assert.Contains("grandTotal", reviewResponseProperties);
+            Assert.Contains("currencyCode", reviewResponseProperties);
+            Assert.Contains("termsRequired", reviewResponseProperties);
+            Assert.Contains("termsAccepted", reviewResponseProperties);
+            Assert.Contains("termsVersion", reviewResponseProperties);
+            Assert.Contains("termsAcceptedAtUtc", reviewResponseProperties);
+            Assert.Contains("placeOrderAllowed", reviewResponseProperties);
+            Assert.Contains("nextRequiredStep", reviewResponseProperties);
+            Assert.Contains("issues", reviewResponseProperties);
+            Assert.DoesNotContain("storeId", reviewResponseProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("customerId", reviewResponseProperties, StringComparer.OrdinalIgnoreCase);
         }
 
         [Fact]

@@ -447,6 +447,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.Property(session => session.ExchangeRateEffectiveAtUtc).HasColumnName("exchange_rate_effective_at_utc").HasColumnType("timestamp with time zone");
                 entity.Property(session => session.ExchangeRateExpiresAtUtc).HasColumnName("exchange_rate_expires_at_utc").HasColumnType("timestamp with time zone");
                 entity.Property(session => session.ValidationIssuesJson).HasColumnName("validation_issues_json").HasColumnType("jsonb");
+                entity.Property(session => session.TermsAccepted).HasColumnName("terms_accepted").HasDefaultValue(false);
+                entity.Property(session => session.TermsVersion).HasColumnName("terms_version").HasMaxLength(64);
+                entity.Property(session => session.TermsAcceptedAtUtc).HasColumnName("terms_accepted_at_utc").HasColumnType("timestamp with time zone");
                 entity.Property(session => session.NextAction).HasColumnName("next_action").HasMaxLength(64).IsRequired();
                 entity.Property(session => session.IdempotencyKey).HasColumnName("idempotency_key").HasMaxLength(128);
                 entity.Property(session => session.PlacedAtUtc).HasColumnName("placed_at_utc").HasColumnType("timestamp with time zone");
