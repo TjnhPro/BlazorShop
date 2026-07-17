@@ -1024,8 +1024,10 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Current checkout result still reports `ShippingRequired=true` even for a non-shipping product. 2026-07-17 Phase 0: baseline test records this known gap before Phase 3 calculation cutover.
 - [x] Unknown shipping option selection is rejected and does not write `SelectedShippingOptionJson`. 2026-07-17 Phase 0: `SelectShippingMethodAsync_RejectsUnknownShippingOption` passed.
 - [x] Active CommerceNode tracking service does not send tracking email synchronously. 2026-07-17 Phase 0: `CommerceNodeOrderTrackingService_DoesNotSendEmailSynchronously` passed.
-- [ ] Shipping provider registry returns free standard and optional flat rate.
-- [ ] Shipping calculator computes `ShippingRequired` from cart lines.
+- [x] Shipping provider registry returns free standard and keeps optional flat rate deferred until store settings exist. 2026-07-17 Phase 1: `FreeStandardProvider_ReturnsOption_WhenShippingIsRequired` passed; flat rate remains Phase 2+.
+- [x] Shipping calculator computes `ShippingRequired` from cart lines. 2026-07-17 Phase 1: `Calculator_ReturnsNoShippingRequired_WhenNoPackageLinesNeedShipping` passed.
+- [x] Unknown shipping provider is rejected. 2026-07-17 Phase 1: `Resolver_RejectsUnknownProvider` passed.
+- [x] Provider warning/error payloads are preserved by the calculator. 2026-07-17 Phase 1: `Calculator_PreservesProviderWarningsAndErrors` passed.
 - [ ] Physical carts require a valid shipping address and option.
 - [ ] Non-shipping carts can continue without a physical shipping method.
 - [ ] Country restriction and free-shipping threshold behavior are covered by focused tests.

@@ -17,6 +17,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
     using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.CommerceNode.ProductSelections;
     using BlazorShop.Application.CommerceNode.SecurityPrivacy;
+    using BlazorShop.Application.CommerceNode.Shipping;
     using BlazorShop.Application.CommerceNode.Settings;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.Tasks;
@@ -186,6 +187,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IProductSellabilityResolver, ProductSellabilityResolver>();
             services.AddScoped<IProductSelectionResolver, ProductSelectionResolver>();
             services.AddScoped<IStorefrontCartService, StorefrontCartService>();
+            services.AddScoped<IShippingProvider, InternalFreeStandardShippingProvider>();
+            services.AddScoped<IShippingProviderResolver, ShippingProviderResolver>();
+            services.AddScoped<IShippingCalculator, ShippingCalculator>();
             services.AddScoped<IStorefrontCheckoutService, StorefrontCheckoutService>();
             services.AddScoped<IStorefrontConsentService, StorefrontConsentService>();
             services.AddScoped<IStoreSecurityPrivacySettingsService, StoreSecurityPrivacySettingsService>();

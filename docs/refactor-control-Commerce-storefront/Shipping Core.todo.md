@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Shipping Core.md`
 
-Status: Phase 0 complete. Phase 1 not started.
+Status: Phase 1 complete. Phase 2 not started.
 
 Scope: turn the current checkout shipping stub into a practical Shipping Core for active V2. The goal is enough shipping calculation, option selection, and shipment tracking for real store usage without building a carrier marketplace, warehouse engine, tax engine, label engine, or fulfillment orchestration platform.
 
@@ -12,22 +12,22 @@ Scope: turn the current checkout shipping stub into a practical Shipping Core fo
 
 Approved:
 
-- [ ] Shipping provider contract:
-  - [ ] get shipping options for cart and address.
-  - [ ] provider system name.
-  - [ ] method/service code.
-  - [ ] rate.
-  - [ ] description.
-  - [ ] delivery estimate.
-  - [ ] errors and warnings.
-  - [ ] rule matching result.
+- [x] Shipping provider contract:
+  - [x] get shipping options for cart and address. 2026-07-17 Phase 1: `IShippingProvider.GetOptionsAsync`.
+  - [x] provider system name. 2026-07-17 Phase 1: `ProviderSystemName`.
+  - [x] method/service code. 2026-07-17 Phase 1: `ShippingOptionDto.MethodCode`.
+  - [x] rate. 2026-07-17 Phase 1: `ShippingOptionDto.Rate`.
+  - [x] description. 2026-07-17 Phase 1: `ShippingOptionDto.Description`.
+  - [x] delivery estimate. 2026-07-17 Phase 1: `ShippingOptionDto.DeliveryEstimateText`.
+  - [x] errors and warnings. 2026-07-17 Phase 1: provider and option warnings/errors are explicit.
+  - [x] rule matching result. 2026-07-17 Phase 1: `ShippingOptionDto.RuleMatch`.
 - [ ] First internal providers:
-  - [ ] `free_standard`.
-  - [ ] optional `flat_rate`.
-  - [ ] `shipping_not_required` path when no cart line needs shipping.
+  - [x] `free_standard`. 2026-07-17 Phase 1: `InternalFreeStandardShippingProvider`.
+  - [ ] optional `flat_rate`. Deferred until Phase 2 store shipping settings exist.
+  - [x] `shipping_not_required` path when no cart line needs shipping. 2026-07-17 Phase 1: calculator returns `ShippingRequired=false` and no options.
 - [ ] Core shipping calculation:
   - [ ] store shipping origin address.
-  - [ ] product shipping-required flag.
+  - [x] product shipping-required flag. 2026-07-17 Phase 1: `ShippingPackageLine.ShippingRequired` drives calculator `ShippingRequired`.
   - [ ] product shipping surcharge hook.
   - [ ] free-shipping threshold hook.
   - [ ] country restriction.
@@ -173,52 +173,52 @@ Goal: define shipping provider output without introducing external carriers.
 
 Implementation checklist:
 
-- [ ] Add `ShippingAddressSnapshot` or reuse checkout shipping address DTO where appropriate.
-- [ ] Add `ShippingPackageLine`:
-  - [ ] product ID.
-  - [ ] optional variant ID.
-  - [ ] quantity.
-  - [ ] shipping required flag.
-  - [ ] free shipping flag.
-  - [ ] optional weight/dimensions.
-  - [ ] optional surcharge.
-- [ ] Add `ShippingOptionDto`:
-  - [ ] `Key`.
-  - [ ] `ProviderSystemName`.
-  - [ ] `MethodCode`.
-  - [ ] `DisplayName`.
-  - [ ] `Description`.
-  - [ ] `Rate`.
-  - [ ] `CurrencyCode`.
-  - [ ] `DeliveryEstimateText`.
-  - [ ] `Warnings`.
-  - [ ] `Errors`.
-  - [ ] `RuleMatch`.
-- [ ] Add `ShippingOptionsRequest`:
-  - [ ] store ID.
-  - [ ] cart ID/public ID.
-  - [ ] address.
-  - [ ] currency code.
-  - [ ] subtotal.
-  - [ ] package lines.
-- [ ] Add `IShippingProvider` with `ProviderSystemName` and `GetOptionsAsync`.
-- [ ] Add `IShippingProviderResolver` or registry.
-- [ ] Add `IShippingCalculator` facade used by checkout.
-- [ ] Add `InternalFreeStandardShippingProvider`.
-- [ ] Add `InternalFlatRateShippingProvider` only if store setting exists.
+- [x] Add `ShippingAddressSnapshot` or reuse checkout shipping address DTO where appropriate. 2026-07-17 Phase 1: added explicit shipping snapshot DTO for provider input.
+- [x] Add `ShippingPackageLine`:
+  - [x] product ID.
+  - [x] optional variant ID.
+  - [x] quantity.
+  - [x] shipping required flag.
+  - [x] free shipping flag.
+  - [x] optional weight/dimensions.
+  - [x] optional surcharge.
+- [x] Add `ShippingOptionDto`:
+  - [x] `Key`.
+  - [x] `ProviderSystemName`.
+  - [x] `MethodCode`.
+  - [x] `DisplayName`.
+  - [x] `Description`.
+  - [x] `Rate`.
+  - [x] `CurrencyCode`.
+  - [x] `DeliveryEstimateText`.
+  - [x] `Warnings`.
+  - [x] `Errors`.
+  - [x] `RuleMatch`.
+- [x] Add `ShippingOptionsRequest`:
+  - [x] store ID.
+  - [x] cart ID/public ID.
+  - [x] address.
+  - [x] currency code.
+  - [x] subtotal.
+  - [x] package lines.
+- [x] Add `IShippingProvider` with `ProviderSystemName` and `GetOptionsAsync`. 2026-07-17 Phase 1.
+- [x] Add `IShippingProviderResolver` or registry. 2026-07-17 Phase 1: `ShippingProviderResolver`.
+- [x] Add `IShippingCalculator` facade used by checkout. 2026-07-17 Phase 1: facade is registered; checkout cutover is Phase 3.
+- [x] Add `InternalFreeStandardShippingProvider`. 2026-07-17 Phase 1.
+- [x] Add `InternalFlatRateShippingProvider` only if store setting exists. 2026-07-17 Phase 1: no store setting exists until Phase 2, so flat-rate provider intentionally deferred.
 
 Verification checklist:
 
-- [ ] Free standard provider returns option when shipping is required and country is allowed.
-- [ ] Shipping-not-required result returns clear flag and no paid option.
-- [ ] Unknown provider is rejected by registry.
-- [ ] Provider warnings/errors are preserved.
-- [ ] No external carrier dependencies are added.
+- [x] Free standard provider returns option when shipping is required and country is allowed. 2026-07-17 Phase 1: `FreeStandardProvider_ReturnsOption_WhenShippingIsRequired` passed.
+- [x] Shipping-not-required result returns clear flag and no paid option. 2026-07-17 Phase 1: `Calculator_ReturnsNoShippingRequired_WhenNoPackageLinesNeedShipping` passed.
+- [x] Unknown provider is rejected by registry. 2026-07-17 Phase 1: `Resolver_RejectsUnknownProvider` passed.
+- [x] Provider warnings/errors are preserved. 2026-07-17 Phase 1: `Calculator_PreservesProviderWarningsAndErrors` passed.
+- [x] No external carrier dependencies are added. 2026-07-17 Phase 1: internal provider/registry only.
 
 Exit criteria:
 
-- [ ] Checkout can move from hard-coded `ResolveShippingOptions` to `IShippingCalculator`.
-- [ ] Provider contract is active V2/Application-facing, not legacy.
+- [x] Checkout can move from hard-coded `ResolveShippingOptions` to `IShippingCalculator`. 2026-07-17 Phase 1: calculator facade and DI registration are ready; cutover remains Phase 3.
+- [x] Provider contract is active V2/Application-facing, not legacy. 2026-07-17 Phase 1: contracts live under `BlazorShop.Application/CommerceNode/Shipping`.
 
 Suggested commit:
 
