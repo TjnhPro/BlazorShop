@@ -54,7 +54,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("[Route(\"api/storefront/stores/{storeKey}/checkout\")]", controllers, StringComparison.Ordinal);
             Assert.Contains("ResolveStoreIdAsync(cancellationToken)", checkoutController, StringComparison.Ordinal);
-            Assert.Contains("request.ToApplicationRequest(storeId.Value, cartToken)", checkoutController, StringComparison.Ordinal);
+            Assert.Contains("request.ToApplicationRequest(storeId.Value, cartToken", checkoutController, StringComparison.Ordinal);
             Assert.Contains("storeId.Value,", checkoutController, StringComparison.Ordinal);
             Assert.DoesNotContain("request.StoreId", checkoutController, StringComparison.Ordinal);
             Assert.DoesNotContain("request.CustomerId", checkoutController, StringComparison.Ordinal);

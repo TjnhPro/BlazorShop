@@ -6477,8 +6477,7 @@
         "required": [
           "customerEmail",
           "customerName",
-          "paymentMethodKey",
-          "shippingAddress"
+          "paymentMethodKey"
         ],
         "type": "object",
         "properties": {
@@ -6503,6 +6502,19 @@
             "maxLength": 64,
             "minLength": 1,
             "type": "string"
+          },
+          "shippingAddressId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "billingAddressId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "useShippingAddressAsBillingAddress": {
+            "type": "boolean"
           },
           "shippingAddress": {
             "$ref": "#/components/schemas/StorefrontCheckoutShippingAddress"

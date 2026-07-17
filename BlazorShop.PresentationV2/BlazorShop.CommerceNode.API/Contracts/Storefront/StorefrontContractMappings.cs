@@ -195,7 +195,8 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         public static BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutPreviewRequest ToApplicationRequest(
             this Contracts.Storefront.StorefrontCheckoutPreviewRequest request,
             Guid storeId,
-            string cartToken)
+            string cartToken,
+            string? customerAppUserId = null)
         {
             return new BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutPreviewRequest(
                 storeId,
@@ -204,7 +205,11 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 request.CustomerEmail,
                 request.CustomerName,
                 request.PaymentMethodKey,
-                request.ShippingAddress.ToPreviewShippingAddress());
+                request.ShippingAddress?.ToPreviewShippingAddress(),
+                request.ShippingAddressId,
+                request.BillingAddressId,
+                request.UseShippingAddressAsBillingAddress,
+                customerAppUserId);
         }
 
         public static StorefrontCheckoutShippingAddressDto ToPreviewShippingAddress(this StorefrontCheckoutShippingAddress request)

@@ -3,6 +3,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using System.Net.Mail;
     using System.Text.Json;
 
+    using BlazorShop.Application.CommerceNode.Addresses;
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Checkout;
     using BlazorShop.Application.CommerceNode.Currencies;
@@ -32,6 +33,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly IPaymentHandlerResolver paymentHandlerResolver;
         private readonly IStorefrontPaymentProviderResolver paymentProviderResolver;
         private readonly IProductSellabilityResolver sellabilityResolver;
+        private readonly IAddressValidationService addressValidationService;
 
         public StorefrontCheckoutService(
             CommerceNodeDbContext context,
@@ -42,7 +44,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             IStoreFeatureStateService featureStateService,
             IPaymentHandlerResolver paymentHandlerResolver,
             IStorefrontPaymentProviderResolver paymentProviderResolver,
-            IProductSellabilityResolver? sellabilityResolver = null)
+            IProductSellabilityResolver? sellabilityResolver = null,
+            IAddressValidationService? addressValidationService = null)
         {
             this.context = context;
             this.cartService = cartService;
@@ -53,6 +56,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.paymentHandlerResolver = paymentHandlerResolver;
             this.paymentProviderResolver = paymentProviderResolver;
             this.sellabilityResolver = sellabilityResolver ?? new ProductSellabilityResolver();
+            this.addressValidationService = addressValidationService ?? new AddressValidationService();
         }
 
         public async Task<ServiceResponse<StorefrontCheckoutPreviewResult>> PreviewAsync(
@@ -86,7 +90,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failed(ServiceResponseType.Conflict, "Cart version is stale.");
             }
 
-            var issues = ValidateCheckoutFields(request).ToList();
+            var shippingResolution = await this.ResolveShippingAddressAsync(request, cancellationToken);
+            var shippingAddress = shippingResolution.Address;
+            var issues = shippingResolution.Issues.ToList();
+            issues.AddRange(this.ValidateCheckoutFields(request, shippingAddress));
             if (!string.Equals(cart.State, CartSessionStates.Active, StringComparison.OrdinalIgnoreCase))
             {
                 issues.Add(new StorefrontCheckoutValidationIssue("cart.inactive", "Cart is not active.", "cart"));
@@ -125,7 +132,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                         request.StoreId,
                         request.CustomerEmail,
                         request.CustomerName,
-                        request.ShippingAddress.Phone),
+                        shippingAddress?.Phone),
                     cancellationToken);
                 if (customerResult.Success)
                 {
@@ -170,7 +177,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 request.StoreId,
                 paymentMethodKey,
                 currencyCode,
-                request.ShippingAddress.CountryCode,
+                shippingAddress?.CountryCode ?? string.Empty,
                 subtotal,
                 cancellationToken))
             {
@@ -193,16 +200,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 CartVersion = cart.Version,
                 CustomerEmail = NormalizeNullable(request.CustomerEmail) ?? string.Empty,
                 CustomerName = NormalizeNullable(request.CustomerName) ?? string.Empty,
-                CustomerPhone = NormalizeNullable(request.ShippingAddress.Phone),
-                ShippingFullName = NormalizeNullable(request.ShippingAddress.FullName) ?? string.Empty,
-                ShippingEmail = NormalizeNullable(request.ShippingAddress.Email) ?? string.Empty,
-                ShippingPhone = NormalizeNullable(request.ShippingAddress.Phone),
-                ShippingAddress1 = NormalizeNullable(request.ShippingAddress.Address1) ?? string.Empty,
-                ShippingAddress2 = NormalizeNullable(request.ShippingAddress.Address2),
-                ShippingCity = NormalizeNullable(request.ShippingAddress.City) ?? string.Empty,
-                ShippingState = NormalizeNullable(request.ShippingAddress.State),
-                ShippingPostalCode = NormalizeNullable(request.ShippingAddress.PostalCode) ?? string.Empty,
-                ShippingCountryCode = NormalizeNullable(request.ShippingAddress.CountryCode)?.ToUpperInvariant() ?? string.Empty,
+                CustomerPhone = NormalizeNullable(shippingAddress?.Phone),
+                ShippingFullName = NormalizeNullable(shippingAddress?.FullName) ?? string.Empty,
+                ShippingEmail = NormalizeNullable(shippingAddress?.Email) ?? string.Empty,
+                ShippingPhone = NormalizeNullable(shippingAddress?.Phone),
+                ShippingAddress1 = NormalizeNullable(shippingAddress?.Address1) ?? string.Empty,
+                ShippingAddress2 = NormalizeNullable(shippingAddress?.Address2),
+                ShippingCity = NormalizeNullable(shippingAddress?.City) ?? string.Empty,
+                ShippingState = NormalizeNullable(shippingAddress?.State),
+                ShippingPostalCode = NormalizeNullable(shippingAddress?.PostalCode) ?? string.Empty,
+                ShippingCountryCode = NormalizeNullable(shippingAddress?.CountryCode)?.ToUpperInvariant() ?? string.Empty,
                 PaymentMethodKey = paymentMethodKey,
                 Subtotal = subtotal,
                 ShippingTotal = 0m,
@@ -1031,7 +1038,59 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 : ServiceResponseType.Conflict;
         }
 
-        private static IEnumerable<StorefrontCheckoutValidationIssue> ValidateCheckoutFields(StorefrontCheckoutPreviewRequest request)
+        private async Task<ShippingAddressResolution> ResolveShippingAddressAsync(
+            StorefrontCheckoutPreviewRequest request,
+            CancellationToken cancellationToken)
+        {
+            if (!request.ShippingAddressId.HasValue)
+            {
+                return ShippingAddressResolution.Succeeded(request.ShippingAddress);
+            }
+
+            if (string.IsNullOrWhiteSpace(request.CustomerAppUserId))
+            {
+                return ShippingAddressResolution.Failed(new StorefrontCheckoutValidationIssue(
+                    "shipping.address_auth_required",
+                    "Sign in before using a saved shipping address.",
+                    "shippingAddressId"));
+            }
+
+            var savedAddress = await this.context.CommerceCustomerAddresses
+                .AsNoTracking()
+                .Include(address => address.Customer)
+                .FirstOrDefaultAsync(
+                    address =>
+                        address.StoreId == request.StoreId
+                        && address.PublicId == request.ShippingAddressId.Value
+                        && address.DeletedAtUtc == null
+                        && address.Customer != null
+                        && address.Customer.StoreId == request.StoreId
+                        && address.Customer.AppUserId == request.CustomerAppUserId,
+                    cancellationToken);
+
+            if (savedAddress is null)
+            {
+                return ShippingAddressResolution.Failed(new StorefrontCheckoutValidationIssue(
+                    "shipping.address_not_found",
+                    "Saved shipping address was not found.",
+                    "shippingAddressId"));
+            }
+
+            return ShippingAddressResolution.Succeeded(new StorefrontCheckoutShippingAddressDto(
+                JoinName(savedAddress.FirstName, savedAddress.LastName),
+                NormalizeNullable(savedAddress.Email) ?? NormalizeNullable(request.CustomerEmail) ?? string.Empty,
+                savedAddress.Phone,
+                savedAddress.Address1,
+                savedAddress.Address2,
+                savedAddress.City,
+                NormalizeNullable(savedAddress.StateProvinceName) ?? NormalizeNullable(savedAddress.StateProvinceCode),
+                savedAddress.PostalCode,
+                savedAddress.CountryCode));
+        }
+
+        private IEnumerable<StorefrontCheckoutValidationIssue> ValidateCheckoutFields(
+            StorefrontCheckoutPreviewRequest request,
+            StorefrontCheckoutShippingAddressDto? shipping)
         {
             var customerEmail = NormalizeNullable(request.CustomerEmail);
             if (customerEmail is null || !IsEmail(customerEmail))
@@ -1049,38 +1108,55 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 yield return new StorefrontCheckoutValidationIssue("payment.method_required", "Payment method is required.", "paymentMethodKey");
             }
 
-            var shipping = request.ShippingAddress;
+            if (shipping is null)
+            {
+                yield return new StorefrontCheckoutValidationIssue("shipping.address_required", "Shipping address is required.", "shippingAddress");
+                yield break;
+            }
+
             if (NormalizeNullable(shipping.FullName) is null)
             {
                 yield return new StorefrontCheckoutValidationIssue("shipping.full_name_required", "Shipping full name is required.", "shippingAddress.fullName");
             }
 
-            var shippingEmail = NormalizeNullable(shipping.Email);
-            if (shippingEmail is null || !IsEmail(shippingEmail))
-            {
-                yield return new StorefrontCheckoutValidationIssue("shipping.email_invalid", "Shipping email is invalid.", "shippingAddress.email");
-            }
+            var validation = this.addressValidationService.ValidateAndNormalize(new CustomerAddressCreateRequest(
+                "checkout",
+                "checkout",
+                null,
+                shipping.Address1,
+                shipping.Address2,
+                shipping.City,
+                shipping.PostalCode,
+                shipping.CountryCode,
+                shipping.State,
+                shipping.State,
+                shipping.Phone,
+                shipping.Email,
+                IsDefaultShipping: false,
+                IsDefaultBilling: false));
 
-            if (NormalizeNullable(shipping.Address1) is null)
+            foreach (var issue in validation.Issues)
             {
-                yield return new StorefrontCheckoutValidationIssue("shipping.address1_required", "Shipping address line 1 is required.", "shippingAddress.address1");
+                yield return issue.Code switch
+                {
+                    "email_invalid" => new StorefrontCheckoutValidationIssue("shipping.email_invalid", "Shipping email is invalid.", "shippingAddress.email"),
+                    "address1_required" => new StorefrontCheckoutValidationIssue("shipping.address1_required", "Shipping address line 1 is required.", "shippingAddress.address1"),
+                    "city_required" => new StorefrontCheckoutValidationIssue("shipping.city_required", "Shipping city is required.", "shippingAddress.city"),
+                    "postal_code_required" => new StorefrontCheckoutValidationIssue("shipping.postal_required", "Shipping postal code is required.", "shippingAddress.postalCode"),
+                    "country_invalid" => new StorefrontCheckoutValidationIssue("shipping.country_invalid", "Shipping country code must be a two-letter ISO code.", "shippingAddress.countryCode"),
+                    "state_province_required" => new StorefrontCheckoutValidationIssue("shipping.state_required", "Shipping state or province is required.", "shippingAddress.state"),
+                    _ => new StorefrontCheckoutValidationIssue($"shipping.{issue.Code}", issue.Message, $"shippingAddress.{issue.Field}"),
+                };
             }
+        }
 
-            if (NormalizeNullable(shipping.City) is null)
-            {
-                yield return new StorefrontCheckoutValidationIssue("shipping.city_required", "Shipping city is required.", "shippingAddress.city");
-            }
-
-            if (NormalizeNullable(shipping.PostalCode) is null)
-            {
-                yield return new StorefrontCheckoutValidationIssue("shipping.postal_required", "Shipping postal code is required.", "shippingAddress.postalCode");
-            }
-
-            var countryCode = NormalizeNullable(shipping.CountryCode);
-            if (countryCode is null || countryCode.Length != 2 || !countryCode.All(char.IsLetter))
-            {
-                yield return new StorefrontCheckoutValidationIssue("shipping.country_invalid", "Shipping country code must be a two-letter ISO code.", "shippingAddress.countryCode");
-            }
+        private static string JoinName(string firstName, string lastName)
+        {
+            return string.Join(
+                ' ',
+                new[] { NormalizeNullable(firstName), NormalizeNullable(lastName) }
+                    .Where(value => value is not null)
+                    .Select(value => value!));
         }
 
         private static bool IsEmail(string value)
@@ -1334,6 +1410,21 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     null,
                     null,
                     null);
+            }
+        }
+
+        private sealed record ShippingAddressResolution(
+            StorefrontCheckoutShippingAddressDto? Address,
+            IReadOnlyList<StorefrontCheckoutValidationIssue> Issues)
+        {
+            public static ShippingAddressResolution Succeeded(StorefrontCheckoutShippingAddressDto? address)
+            {
+                return new ShippingAddressResolution(address, []);
+            }
+
+            public static ShippingAddressResolution Failed(StorefrontCheckoutValidationIssue issue)
+            {
+                return new ShippingAddressResolution(null, [issue]);
             }
         }
     }

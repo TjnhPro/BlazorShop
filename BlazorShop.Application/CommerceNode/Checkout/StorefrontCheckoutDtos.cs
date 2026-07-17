@@ -9,7 +9,11 @@ namespace BlazorShop.Application.CommerceNode.Checkout
         string CustomerEmail,
         string CustomerName,
         string PaymentMethodKey,
-        StorefrontCheckoutShippingAddressDto ShippingAddress);
+        StorefrontCheckoutShippingAddressDto? ShippingAddress,
+        Guid? ShippingAddressId = null,
+        Guid? BillingAddressId = null,
+        bool UseShippingAddressAsBillingAddress = true,
+        string? CustomerAppUserId = null);
 
     public sealed record StorefrontCheckoutShippingAddressDto(
         string FullName,

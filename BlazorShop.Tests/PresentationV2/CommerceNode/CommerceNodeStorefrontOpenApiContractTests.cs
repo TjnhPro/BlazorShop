@@ -859,6 +859,9 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             var requestProperties = GetPropertyNames(requestSchema);
             Assert.Contains("expectedCartVersion", requestProperties);
             Assert.Contains("shippingAddress", requestProperties);
+            Assert.Contains("shippingAddressId", requestProperties);
+            Assert.Contains("billingAddressId", requestProperties);
+            Assert.Contains("useShippingAddressAsBillingAddress", requestProperties);
             Assert.DoesNotContain("carts", requestProperties, StringComparer.OrdinalIgnoreCase);
 
             Assert.True(schemas.ContainsKey("StorefrontCheckoutPreviewResponse"));

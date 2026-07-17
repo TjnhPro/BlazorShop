@@ -384,8 +384,13 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         [MaxLength(64)]
         public string PaymentMethodKey { get; set; } = string.Empty;
 
-        [Required]
-        public StorefrontCheckoutShippingAddress ShippingAddress { get; set; } = new();
+        public Guid? ShippingAddressId { get; set; }
+
+        public Guid? BillingAddressId { get; set; }
+
+        public bool UseShippingAddressAsBillingAddress { get; set; } = true;
+
+        public StorefrontCheckoutShippingAddress? ShippingAddress { get; set; } = new();
     }
 
     public sealed record StorefrontCheckoutPreviewResponse(

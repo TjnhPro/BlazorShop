@@ -1407,7 +1407,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             }
 
             var result = await this.checkoutService.PreviewAsync(
-                request.ToApplicationRequest(storeId.Value, cartToken),
+                request.ToApplicationRequest(storeId.Value, cartToken, this.GetCurrentCustomerId()),
                 cancellationToken);
             return this.FromServiceResponse(
                 result,
@@ -1443,6 +1443,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
         {
             var result = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
             return result.Success ? result.Payload : null;
+        }
+
+        private string? GetCurrentCustomerId()
+        {
+            return this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
     }
 

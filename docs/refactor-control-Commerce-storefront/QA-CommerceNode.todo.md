@@ -953,3 +953,7 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Default shipping uniqueness is enforced. 2026-07-17 Phase 4: service tests cover clearing previous default shipping.
 - [x] Default billing uniqueness is enforced. 2026-07-17 Phase 4: service tests cover `SetDefaultBillingAsync` clearing previous default billing.
 - [x] Storefront customer address CRUD/default OpenAPI is generator-safe. 2026-07-17 Phase 4: snapshots refreshed and focused contract/service/static guard run passed 38/38.
+- [x] Checkout with saved address snapshots address data. 2026-07-17 Phase 5: `PlaceOrderAsync_UsesSavedShippingAddressAndSnapshotsIt` passed and proves later saved-address mutation does not alter order snapshot.
+- [x] Guest direct checkout address still works. 2026-07-17 Phase 5: existing checkout service suite stayed green after additive `ShippingAddressId` fields and direct-address validation-core wiring.
+- [x] Anonymous saved-address checkout selection is rejected. 2026-07-17 Phase 5: `PreviewAsync_RejectsSavedAddressSelection_WhenCustomerIsAnonymous` passed.
+- [x] Checkout preview OpenAPI exposes saved-address fields additively. 2026-07-17 Phase 5: contract test asserts `shippingAddressId`, `billingAddressId`, and `useShippingAddressAsBillingAddress`.

@@ -13,7 +13,7 @@ Scope: add practical customer address book, country/state lookup, billing/shippi
 Approved:
 
 - [x] Customer address book persistence foundation.
-- [ ] Billing address and shipping address support.
+- [x] Billing address and shipping address support.
 - [x] Add, edit, delete customer addresses.
 - [x] Default shipping address.
 - [x] Default billing address.
@@ -87,7 +87,7 @@ Boundary rules:
 - [x] Store scope comes from `{storeKey}` route resolution.
 - [x] Customer identity comes from authenticated user claims or trusted auth result.
 - [x] Browser requests do not include `customerId`, `storeId`, audit fields, or order-owned address snapshot fields.
-- [ ] Checkout may accept either a direct guest address or an authenticated `addressId`.
+- [x] Checkout may accept either a direct guest address or an authenticated `addressId`.
 - [x] Checkout always snapshots the resolved address into `CheckoutSession` and `Order`.
 - [x] Control Plane is not part of the customer address runtime path.
 - [x] Legacy projects remain reference only.
@@ -380,38 +380,48 @@ Goal: connect address book to checkout while preserving guest checkout.
 
 Implementation checklist:
 
-- [ ] Extend checkout preview request additively:
-  - [ ] `ShippingAddressId`.
-  - [ ] `BillingAddressId`.
-  - [ ] `UseShippingAddressAsBillingAddress`.
-- [ ] Keep existing `ShippingAddress` request object working.
-- [ ] Resolve selected shipping address only for authenticated customers.
-- [ ] Reject address ID selection for anonymous checkout.
-- [ ] Reject address ID not owned by current store/customer.
-- [ ] Reject deleted address ID.
-- [ ] If direct `ShippingAddress` is provided, validate and use it.
-- [ ] If both `ShippingAddressId` and direct `ShippingAddress` are provided, use the explicit authenticated ID or return a deterministic validation error according to implementation choice.
-- [ ] Use billing same-as-shipping by default for MVP.
-- [ ] Add billing snapshot fields only if billing behavior is actively used by checkout/order confirmation.
-- [ ] Snapshot resolved shipping address into `CheckoutSession`.
-- [ ] Snapshot resolved shipping address into `Order`.
-- [ ] Update `StorefrontCheckoutService.ValidateCheckoutFields` to use `IAddressValidationService`.
-- [ ] Keep payment method availability using resolved shipping country.
-- [ ] Add checkout regression tests for guest direct address and authenticated address ID.
+- [x] Extend checkout preview request additively:
+  - [x] `ShippingAddressId`.
+  - [x] `BillingAddressId`.
+  - [x] `UseShippingAddressAsBillingAddress`.
+- [x] Keep existing `ShippingAddress` request object working.
+- [x] Resolve selected shipping address only for authenticated customers.
+- [x] Reject address ID selection for anonymous checkout.
+- [x] Reject address ID not owned by current store/customer.
+- [x] Reject deleted address ID.
+- [x] If direct `ShippingAddress` is provided, validate and use it.
+- [x] If both `ShippingAddressId` and direct `ShippingAddress` are provided, use the explicit authenticated ID or return a deterministic validation error according to implementation choice.
+- [x] Use billing same-as-shipping by default for MVP.
+- [x] Add billing snapshot fields only if billing behavior is actively used by checkout/order confirmation.
+- [x] Snapshot resolved shipping address into `CheckoutSession`.
+- [x] Snapshot resolved shipping address into `Order`.
+- [x] Update `StorefrontCheckoutService.ValidateCheckoutFields` to use `IAddressValidationService`.
+- [x] Keep payment method availability using resolved shipping country.
+- [x] Add checkout regression tests for guest direct address and authenticated address ID.
 
 Verification checklist:
 
-- [ ] Existing guest checkout still works.
-- [ ] Authenticated customer can checkout using saved default shipping address.
-- [ ] Invalid/deleted/other-customer address IDs are rejected.
-- [ ] Checkout session snapshots resolved address.
-- [ ] Order snapshots checkout address.
-- [ ] Changing/deleting saved address after order placement does not change order history.
+- [x] Existing guest checkout still works.
+- [x] Authenticated customer can checkout using saved default shipping address.
+- [x] Invalid/deleted/other-customer address IDs are rejected.
+- [x] Checkout session snapshots resolved address.
+- [x] Order snapshots checkout address.
+- [x] Changing/deleting saved address after order placement does not change order history.
 
 Exit criteria:
 
-- [ ] Checkout supports saved address selection additively.
-- [ ] Snapshot-safe order history remains intact.
+- [x] Checkout supports saved address selection additively.
+- [x] Snapshot-safe order history remains intact.
+
+Phase 5 evidence:
+
+- 2026-07-17: Added additive checkout preview fields `ShippingAddressId`, `BillingAddressId`, and `UseShippingAddressAsBillingAddress`.
+- 2026-07-17: Checkout preview resolves saved shipping address only through authenticated `CustomerAppUserId` and `StoreId + AppUserId + PublicId`.
+- 2026-07-17: Direct guest `ShippingAddress` remains supported; `ShippingAddressId` takes precedence when both are supplied.
+- 2026-07-17: Checkout service now uses `IAddressValidationService` for direct checkout shipping-address field validation.
+- 2026-07-17: Added checkout regression tests for saved-address snapshot and anonymous saved-address rejection.
+- 2026-07-17: Storefront OpenAPI contract test now asserts checkout preview exposes saved-address fields.
+- 2026-07-17: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~CommerceNodeStorefrontOpenApiContractTests|FullyQualifiedName~AddressCorePhase0InventoryTests|FullyQualifiedName~StorefrontCustomerAddressServiceTests|FullyQualifiedName~StorefrontCheckoutServiceTests"` passed 57/57.
 
 Suggested commit:
 
@@ -617,7 +627,7 @@ test(address-core): complete release gate
 - [x] Phase 2 - address validation and normalization core.
 - [x] Phase 3 - country and state/province lookup.
 - [x] Phase 4 - authenticated address book API.
-- [ ] Phase 5 - checkout address selection.
+- [x] Phase 5 - checkout address selection.
 - [ ] Phase 6 - Storefront V2 UI integration.
 - [ ] Phase 7 - admin/settings preparation.
 - [ ] Phase 8 - QA and regression coverage.
@@ -625,9 +635,9 @@ test(address-core): complete release gate
 ## Definition Of Done
 
 - [x] Authenticated customers can maintain a basic address book.
-- [ ] Guest checkout can still enter address directly.
-- [ ] Checkout can select a saved shipping address.
-- [ ] Checkout/order continue to snapshot address fields.
+- [x] Guest checkout can still enter address directly.
+- [x] Checkout can select a saved shipping address.
+- [x] Checkout/order continue to snapshot address fields.
 - [ ] Storefront can render country/state choices without hard-coded `US` input.
 - [x] Address validation is centralized server-side.
 - [x] Protected address APIs use auth metadata and do not trust browser-supplied ownership.

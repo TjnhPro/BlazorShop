@@ -412,6 +412,115 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public async Task PlaceOrderAsync_UsesSavedShippingAddressAndSnapshotsIt()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 25m, stock: 10);
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1));
+            var customer = new CommerceCustomer
+            {
+                Id = Guid.NewGuid(),
+                StoreId = storeId,
+                AppUserId = "customer-user-1",
+                Email = "customer@example.test",
+                NormalizedEmail = "CUSTOMER@EXAMPLE.TEST",
+                FullName = "Customer One",
+            };
+            var address = new CommerceCustomerAddress
+            {
+                Id = Guid.NewGuid(),
+                PublicId = Guid.NewGuid(),
+                StoreId = storeId,
+                CustomerId = customer.Id,
+                FirstName = "Saved",
+                LastName = "Customer",
+                Address1 = "500 Saved Street",
+                City = "Boston",
+                PostalCode = "02108",
+                CountryCode = "US",
+                StateProvinceCode = "MA",
+                Email = "saved@example.test",
+                Phone = "5551111",
+                IsDefaultShipping = true,
+            };
+            context.CommerceCustomers.Add(customer);
+            context.CommerceCustomerAddresses.Add(address);
+            context.SaveChanges();
+            var service = CreateCheckoutService(context, cartService);
+            var previewRequest = CreateRequest(storeId, cart.Payload.Token!, add.Payload!.Version) with
+            {
+                ShippingAddress = null,
+                ShippingAddressId = address.PublicId,
+                CustomerAppUserId = customer.AppUserId,
+            };
+
+            var preview = await service.PreviewAsync(previewRequest);
+            var session = Assert.Single(context.CheckoutSessions);
+            address.Address1 = "Mutated Saved Street";
+            await context.SaveChangesAsync();
+            var placeOrder = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                preview.Payload!.CheckoutSessionId,
+                add.Payload.Version,
+                "saved-address-order"));
+
+            Assert.True(preview.Success, preview.Message);
+            Assert.True(preview.Payload!.IsValid);
+            Assert.Equal("Saved Customer", session.ShippingFullName);
+            Assert.Equal("saved@example.test", session.ShippingEmail);
+            Assert.Equal("500 Saved Street", session.ShippingAddress1);
+            Assert.True(placeOrder.Success, placeOrder.Message);
+            var order = Assert.Single(context.Orders);
+            Assert.Equal("Saved Customer", order.ShippingFullName);
+            Assert.Equal("500 Saved Street", order.ShippingAddress1);
+            Assert.Equal("Boston", order.ShippingCity);
+        }
+
+        [Fact]
+        public async Task PreviewAsync_RejectsSavedAddressSelection_WhenCustomerIsAnonymous()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1));
+            var service = CreateCheckoutService(context, cartService);
+
+            var result = await service.PreviewAsync(CreateRequest(storeId, cart.Payload.Token!, add.Payload!.Version) with
+            {
+                ShippingAddress = null,
+                ShippingAddressId = Guid.NewGuid(),
+            });
+
+            Assert.True(result.Success, result.Message);
+            Assert.False(result.Payload!.IsValid);
+            Assert.Contains(result.Payload.Issues, issue => issue.Code == "shipping.address_auth_required");
+        }
+
+        [Fact]
         public async Task PlaceOrderAsync_RejectsStaleCartVersion()
         {
             using var context = CreateContext();
