@@ -97,6 +97,42 @@ namespace BlazorShop.Application.CommerceNode.Payments
         string NextActionUrl,
         string? MetadataJson);
 
+    public static class PaymentProviderMethodTypes
+    {
+        public const string Offline = "offline";
+        public const string Redirect = "redirect";
+        public const string Immediate = "immediate";
+    }
+
+    public sealed record PaymentProviderCapabilityDto(
+        string SystemName,
+        bool Installed,
+        bool Active,
+        string DisplayName,
+        string? Description,
+        string? IconUrl,
+        int DefaultDisplayOrder,
+        IReadOnlyList<Guid> SupportedStoreIds,
+        IReadOnlyList<string> SupportedCurrencyCodes,
+        IReadOnlyList<string> SupportedCountryCodes,
+        decimal? MinOrderTotal,
+        decimal? MaxOrderTotal,
+        string MethodType,
+        bool RecurringCapable,
+        bool SupportsAuthorize,
+        bool SupportsCapture,
+        bool SupportsVoid,
+        bool SupportsRefund,
+        bool SupportsPartialRefund,
+        bool RequiresWebhookSignature);
+
+    public interface IPaymentProviderCapabilityRegistry
+    {
+        IReadOnlyList<PaymentProviderCapabilityDto> List();
+
+        ServiceResponse<PaymentProviderCapabilityDto> Get(string systemName);
+    }
+
     public sealed record RecordPaymentProviderEventRequest(
         Guid StoreId,
         Guid? PaymentAttemptId,

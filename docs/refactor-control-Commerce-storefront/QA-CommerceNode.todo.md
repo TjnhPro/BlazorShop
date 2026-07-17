@@ -282,6 +282,8 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Current Storefront payment operations are contract-protected before provider-core changes. 2026-07-17: operation IDs recorded as `StorefrontPayments_GetPaymentMethods`, `StorefrontPayments_GetAttempt`, `StorefrontPayments_HandleProviderCallback`, `StorefrontPayments_HandleWebhook`, and `StorefrontPayments_CapturePayPal`.
 - [x] Payment focused baseline passes before provider-core refactor. 2026-07-17: focused run covering payment attempts, secret boundary, Stripe adapter, PayPal contract, OpenAPI, checkout payment flow, and payment return pages passed 86/86.
 - [x] Payment Core Phase 0 confirms known later-phase risks are not silently fixed or ignored. 2026-07-17: callback/webhook still trust body `State` and signature is not verified; retained as Phase 4 hardening scope.
+- [x] Provider capability registry returns COD offline, Stripe redirect, and PayPal disabled/skeleton without adding a provider table. 2026-07-17 Payment Core Phase 1: `PaymentProviderCapabilityRegistryTests` passed.
+- [x] Storefront payment method endpoint remains backward compatible and ordered by store display order after capability metadata is added. 2026-07-17 Phase 1: `CommerceNodePaymentMethodSecretBoundaryTests` passed 5/5.
 
 ## Currency
 

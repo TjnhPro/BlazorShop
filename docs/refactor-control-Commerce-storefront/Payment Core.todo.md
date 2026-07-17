@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Payment Core.md`
 
-Status: In progress. Phase 0 completed.
+Status: In progress. Phase 0-1 completed.
 
 Scope: turn the existing checkout payment foundation into a practical provider core for active V2. The goal is enough payment behavior for real store usage without moving PayPal/Stripe SDK logic into Domain/Application and without building a full payment platform.
 
@@ -12,18 +12,18 @@ Scope: turn the existing checkout payment foundation into a practical provider c
 
 Approved:
 
-- [ ] Provider discovery contract:
-  - [ ] provider system name.
-  - [ ] active/inactive state.
-  - [ ] display name.
-  - [ ] icon.
-  - [ ] display order.
-  - [ ] supported stores.
-  - [ ] supported currencies.
-  - [ ] supported countries.
-  - [ ] simple availability rule fields.
-  - [ ] payment method type: `offline`, `redirect`, `immediate`.
-  - [ ] `recurring_capable` flag.
+- [x] Provider discovery contract:
+  - [x] provider system name.
+  - [x] active/inactive state.
+  - [x] display name.
+  - [x] icon.
+  - [x] display order.
+  - [x] supported stores.
+  - [x] supported currencies.
+  - [x] supported countries.
+  - [x] simple availability rule fields.
+  - [x] payment method type: `offline`, `redirect`, `immediate`.
+  - [x] `recurring_capable` flag.
 - [ ] Payment attempt hardening:
   - [ ] keep existing payment attempt ID/public ID.
   - [ ] keep order ID optional until capture/completion.
@@ -123,10 +123,10 @@ Current API surface:
 
 ## Core Decisions
 
-- [ ] Keep `StorePaymentMethod` as the store-level activation/config row.
-- [ ] Add provider capability metadata additively.
-- [ ] Keep provider SDK code in Infrastructure.
-- [ ] Use explicit method type/capability instead of hard-coded provider names.
+- [x] Keep `StorePaymentMethod` as the store-level activation/config row.
+- [x] Add provider capability metadata additively.
+- [x] Keep provider SDK code in Infrastructure.
+- [x] Use explicit method type/capability instead of hard-coded provider names.
 - [ ] Treat webhook payload as untrusted until provider handler verifies it.
 - [ ] Keep refund/void/authorize as hooks in this phase, not full flows.
 - [ ] Preserve existing public endpoints while hardening provider handling behind them.
@@ -150,17 +150,17 @@ CommerceNode.API
 
 Boundary rules:
 
-- [ ] Payment core runtime data belongs to `CommerceNodeDbContext`.
-- [ ] Control Plane Web never calls Commerce Node directly.
-- [ ] Storefront V2 calls scoped Storefront payment APIs only.
-- [ ] No new `api/internal/*` payment behavior.
-- [ ] No legacy `api/admin/*` or `api/public/*` payment behavior.
-- [ ] No legacy `AppDbContext` payment migration.
+- [x] Payment core runtime data belongs to `CommerceNodeDbContext`.
+- [x] Control Plane Web never calls Commerce Node directly.
+- [x] Storefront V2 calls scoped Storefront payment APIs only.
+- [x] No new `api/internal/*` payment behavior.
+- [x] No legacy `api/admin/*` or `api/public/*` payment behavior.
+- [x] No legacy `AppDbContext` payment migration.
 
 ## Target Architecture
 
-- [ ] `StorePaymentMethod` owns store activation, public metadata, availability filters, settings JSON/secret references.
-- [ ] `PaymentProviderDefinition` owns system name, method type, capabilities, and installed/global active state.
+- [x] `StorePaymentMethod` owns store activation, public metadata, availability filters, settings JSON/secret references.
+- [x] `PaymentProviderDefinition` owns system name, method type, capabilities, and installed/global active state.
 - [ ] `IPaymentProvider` owns metadata, input validation, session/request creation, return/cancel, webhook, and optional authorize/capture/void/refund hooks.
 - [ ] `PaymentAttempt` owns attempt state, amount/currency, provider reference/session, and idempotency.
 - [ ] `PaymentProviderEvent` owns verified/raw event ledger, duplicate detection, processed/ignored state.
@@ -225,46 +225,55 @@ Goal: describe provider behavior without hard-coding provider names in checkout.
 
 Implementation checklist:
 
-- [ ] Add provider definition/capability model in Application or Domain constants:
-  - [ ] `SystemName`.
-  - [ ] `DisplayName`.
-  - [ ] `Description`.
-  - [ ] `IconUrl`.
-  - [ ] `DefaultDisplayOrder`.
-  - [ ] `MethodType`: `offline`, `redirect`, `immediate`.
-  - [ ] `RecurringCapable`.
-  - [ ] `SupportsAuthorize`.
-  - [ ] `SupportsCapture`.
-  - [ ] `SupportsVoid`.
-  - [ ] `SupportsRefund`.
-  - [ ] `SupportsPartialRefund`.
-  - [ ] `RequiresWebhookSignature`.
-- [ ] Keep `StorePaymentMethod` as the store-specific row.
-- [ ] Add store method fields only if needed and additive:
-  - [ ] `PaymentMethodType`.
-  - [ ] `AvailabilityRuleJson`, or defer if currency/country/min/max is enough.
-- [ ] Prefer code/provider registry for installed capabilities before adding database table.
-- [ ] Add `IPaymentProviderRegistry` or equivalent resolver.
-- [ ] Make COD definition explicit as offline.
-- [ ] Make Stripe definition explicit as redirect.
-- [ ] Make PayPal definition explicit as disabled/skeleton unless a real adapter exists.
-- [ ] Add non-secret provider capability metadata to admin payment method DTO if needed.
-- [ ] Add safe method type/next-action expectation to Storefront payment method response only if needed by UI.
+- [x] Add provider definition/capability model in Application or Domain constants:
+  - [x] `SystemName`.
+  - [x] `DisplayName`.
+  - [x] `Description`.
+  - [x] `IconUrl`.
+  - [x] `DefaultDisplayOrder`.
+  - [x] `MethodType`: `offline`, `redirect`, `immediate`.
+  - [x] `RecurringCapable`.
+  - [x] `SupportsAuthorize`.
+  - [x] `SupportsCapture`.
+  - [x] `SupportsVoid`.
+  - [x] `SupportsRefund`.
+  - [x] `SupportsPartialRefund`.
+  - [x] `RequiresWebhookSignature`.
+- [x] Keep `StorePaymentMethod` as the store-specific row.
+- [n/a] Add store method fields only if needed and additive:
+  - [n/a] `PaymentMethodType`.
+  - [n/a] `AvailabilityRuleJson`, or defer if currency/country/min/max is enough.
+- [x] Prefer code/provider registry for installed capabilities before adding database table.
+- [x] Add `IPaymentProviderRegistry` or equivalent resolver.
+- [x] Make COD definition explicit as offline.
+- [x] Make Stripe definition explicit as redirect.
+- [x] Make PayPal definition explicit as disabled/skeleton unless a real adapter exists.
+- [n/a] Add non-secret provider capability metadata to admin payment method DTO if needed.
+- [n/a] Add safe method type/next-action expectation to Storefront payment method response only if needed by UI.
 
 Verification checklist:
 
-- [ ] Provider registry returns COD as offline.
-- [ ] Provider registry returns Stripe as redirect.
-- [ ] Provider registry returns PayPal as disabled/skeleton when no adapter exists.
-- [ ] Unknown provider is rejected with clear validation.
-- [ ] Store payment methods still order by `DisplayOrder`.
-- [ ] Public DTOs expose no `SettingsJson` or secret values.
-- [ ] Existing payment methods endpoint remains backward compatible.
+- [x] Provider registry returns COD as offline.
+- [x] Provider registry returns Stripe as redirect.
+- [x] Provider registry returns PayPal as disabled/skeleton when no adapter exists.
+- [x] Unknown provider is rejected with clear validation.
+- [x] Store payment methods still order by `DisplayOrder`.
+- [x] Public DTOs expose no `SettingsJson` or secret values.
+- [x] Existing payment methods endpoint remains backward compatible.
 
 Exit criteria:
 
-- [ ] Checkout can ask provider capability by key.
-- [ ] Capability metadata is safe for public/admin projections.
+- [x] Checkout can ask provider capability by key.
+- [x] Capability metadata is safe for public/admin projections.
+
+Phase 1 evidence:
+
+- 2026-07-17: Added `PaymentProviderCapabilityDto`, `PaymentProviderMethodTypes`, and `IPaymentProviderCapabilityRegistry` in the Application payment contract.
+- 2026-07-17: Added infrastructure `PaymentProviderCapabilityRegistry` using registered `IStorefrontPaymentProvider` adapters; COD is explicit offline, Stripe is redirect and installed when adapter exists, PayPal is disabled skeleton.
+- 2026-07-17: No database table or `StorePaymentMethod` field was added; store-level activation remains in `StorePaymentMethod`.
+- 2026-07-17: Added `PaymentProviderCapabilityRegistryTests` and display-order guard in `CommerceNodePaymentMethodSecretBoundaryTests`.
+- 2026-07-17: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~PaymentProviderCapabilityRegistryTests|FullyQualifiedName~CommerceNodePaymentMethodSecretBoundaryTests"` passed 7/7.
+- 2026-07-17: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontCheckoutServiceTests|FullyQualifiedName~CommerceNodeStorefrontOpenApiContractTests|FullyQualifiedName~StripeStorefrontPaymentProviderTests"` passed 70/70.
 
 Suggested commit:
 

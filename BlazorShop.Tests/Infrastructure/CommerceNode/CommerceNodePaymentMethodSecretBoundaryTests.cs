@@ -67,6 +67,44 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         }
 
         [Fact]
+        public async Task GetPaymentMethodsAsync_OrdersEnabledMethodsByDisplayOrder()
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            context.CommerceStores.Add(new CommerceStore
+            {
+                Id = storeId,
+                StoreKey = "default",
+                Name = "Default",
+            });
+            context.StorePaymentMethods.AddRange(
+                new StorePaymentMethod
+                {
+                    Id = Guid.NewGuid(),
+                    StoreId = storeId,
+                    PaymentMethodKey = PaymentMethodKeys.Cod,
+                    Enabled = true,
+                    DisplayName = "Cash",
+                    DisplayOrder = 20,
+                },
+                new StorePaymentMethod
+                {
+                    Id = Guid.NewGuid(),
+                    StoreId = storeId,
+                    PaymentMethodKey = PaymentMethodKeys.Stripe,
+                    Enabled = true,
+                    DisplayName = "Cards",
+                    DisplayOrder = 10,
+                });
+            await context.SaveChangesAsync();
+            var service = CreateService(context, storeId);
+
+            var methods = (await service.GetPaymentMethodsAsync()).ToArray();
+
+            Assert.Equal([PaymentMethodKeys.Stripe, PaymentMethodKeys.Cod], methods.Select(method => method.Key).ToArray());
+        }
+
+        [Fact]
         public async Task UpdateAsync_WhenSettingsJsonIsNull_PreservesExistingSettings()
         {
             var storeId = Guid.NewGuid();
