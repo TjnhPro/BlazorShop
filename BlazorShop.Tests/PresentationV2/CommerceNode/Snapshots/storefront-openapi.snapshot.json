@@ -9380,6 +9380,16 @@
             "type": "string",
             "nullable": true
           },
+          "providerReference": {
+            "maxLength": 256,
+            "type": "string",
+            "nullable": true
+          },
+          "providerSessionId": {
+            "maxLength": 256,
+            "type": "string",
+            "nullable": true
+          },
           "payloadJson": {
             "minLength": 1,
             "type": "string"

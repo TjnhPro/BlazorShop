@@ -1080,6 +1080,9 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.True(schemas.ContainsKey("StorefrontPaymentCallbackRequest"));
             Assert.True(schemas.ContainsKey("StorefrontPaymentWebhookRequest"));
             Assert.True(schemas.ContainsKey("StorefrontPaymentWebhookAcceptedResponse"));
+            var webhookRequestProperties = GetPropertyNames(schemas["StorefrontPaymentWebhookRequest"]!.AsObject());
+            Assert.Contains("providerReference", webhookRequestProperties);
+            Assert.Contains("providerSessionId", webhookRequestProperties);
 
             var parameters = webhook["parameters"]?.AsArray()
                 ?? throw new InvalidOperationException("Webhook operation does not contain parameters.");

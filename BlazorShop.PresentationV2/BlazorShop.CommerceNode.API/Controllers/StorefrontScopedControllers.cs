@@ -2004,18 +2004,24 @@ namespace BlazorShop.CommerceNode.API.Controllers
         private readonly ClientAppOptions clientAppOptions;
         private readonly ICommerceStoreContext storeContext;
         private readonly IPaymentAttemptService paymentAttemptService;
+        private readonly IPaymentWebhookSignatureVerifier paymentWebhookSignatureVerifier;
+        private readonly IStorefrontPaymentProviderResolver paymentProviderResolver;
         private readonly IPaymentMethodService paymentMethodService;
         private readonly IPayPalPaymentService payPalPaymentService;
 
         public StorefrontScopedPaymentsController(
             ICommerceStoreContext storeContext,
             IPaymentAttemptService paymentAttemptService,
+            IPaymentWebhookSignatureVerifier paymentWebhookSignatureVerifier,
+            IStorefrontPaymentProviderResolver paymentProviderResolver,
             IPaymentMethodService paymentMethodService,
             IPayPalPaymentService payPalPaymentService,
             IOptions<ClientAppOptions> clientAppOptions)
         {
             this.storeContext = storeContext;
             this.paymentAttemptService = paymentAttemptService;
+            this.paymentWebhookSignatureVerifier = paymentWebhookSignatureVerifier;
+            this.paymentProviderResolver = paymentProviderResolver;
             this.paymentMethodService = paymentMethodService;
             this.payPalPaymentService = payPalPaymentService;
             this.clientAppOptions = clientAppOptions.Value;
@@ -2073,6 +2079,8 @@ namespace BlazorShop.CommerceNode.API.Controllers
                     request.ProviderEventId,
                     request.EventType,
                     request.PayloadJson,
+                    request.ProviderReference,
+                    request.ProviderSessionId,
                     ProcessedAtUtc: DateTimeOffset.UtcNow),
                 cancellationToken);
             if (!eventResult.Success || eventResult.Payload is null)
@@ -2080,23 +2088,14 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 return this.FromServiceResponse(eventResult);
             }
 
-            if (request.PaymentAttemptId.HasValue && !string.IsNullOrWhiteSpace(request.State))
+            var operationResult = await this.ApplyProviderCallbackOperationAsync(
+                storeId.Value,
+                providerKey,
+                request,
+                cancellationToken);
+            if (operationResult is not null)
             {
-                var transition = await this.paymentAttemptService.TransitionAsync(
-                    new TransitionPaymentAttemptRequest(
-                        storeId.Value,
-                        request.PaymentAttemptId.Value,
-                        request.State,
-                        request.ProviderReference,
-                        request.ProviderSessionId,
-                        FailureCode: request.FailureCode,
-                        FailureMessage: request.FailureMessage,
-                        MetadataJson: request.PayloadJson),
-                    cancellationToken);
-                if (!transition.Success)
-                {
-                    return this.FromServiceResponse(transition);
-                }
+                return operationResult;
             }
 
             return this.Success(
@@ -2117,11 +2116,20 @@ namespace BlazorShop.CommerceNode.API.Controllers
             [FromBody] StorefrontPaymentWebhookRequest request,
             CancellationToken cancellationToken)
         {
-            _ = providerSignature;
             var storeId = await this.ResolveStoreIdAsync(cancellationToken);
             if (!storeId.HasValue)
             {
                 return this.Error(StatusCodes.Status404NotFound, "store.not_found", "Storefront store could not be resolved.");
+            }
+
+            var signatureResult = await this.paymentWebhookSignatureVerifier.VerifyAsync(
+                providerKey,
+                request.PayloadJson,
+                providerSignature,
+                cancellationToken);
+            if (!signatureResult.Success)
+            {
+                return this.FromServiceResponse(signatureResult);
             }
 
             var eventResult = await this.paymentAttemptService.RecordProviderEventAsync(
@@ -2132,6 +2140,8 @@ namespace BlazorShop.CommerceNode.API.Controllers
                     request.EventId,
                     request.EventType,
                     request.PayloadJson,
+                    request.ProviderReference,
+                    request.ProviderSessionId,
                     ProcessedAtUtc: DateTimeOffset.UtcNow),
                 cancellationToken);
             if (!eventResult.Success || eventResult.Payload is null)
@@ -2139,19 +2149,15 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 return this.FromServiceResponse(eventResult);
             }
 
-            if (request.PaymentAttemptId.HasValue && !string.IsNullOrWhiteSpace(request.State))
+            var operationResult = await this.ApplyProviderWebhookOperationAsync(
+                storeId.Value,
+                providerKey,
+                providerSignature,
+                request,
+                cancellationToken);
+            if (operationResult is not null)
             {
-                var transition = await this.paymentAttemptService.TransitionAsync(
-                    new TransitionPaymentAttemptRequest(
-                        storeId.Value,
-                        request.PaymentAttemptId.Value,
-                        request.State,
-                        MetadataJson: request.PayloadJson),
-                    cancellationToken);
-                if (!transition.Success)
-                {
-                    return this.FromServiceResponse(transition);
-                }
+                return operationResult;
             }
 
             return this.Success(
@@ -2162,6 +2168,115 @@ namespace BlazorShop.CommerceNode.API.Controllers
                     eventResult.Payload.PayloadHash,
                     eventResult.Payload.CreatedAtUtc),
                 "Payment webhook accepted.");
+        }
+
+        private async Task<IActionResult?> ApplyProviderCallbackOperationAsync(
+            Guid storeId,
+            string providerKey,
+            StorefrontPaymentCallbackRequest request,
+            CancellationToken cancellationToken)
+        {
+            ServiceResponse<PaymentProviderOperationResult>? providerResult = null;
+            try
+            {
+                var provider = this.paymentProviderResolver.Resolve(providerKey);
+                var operationRequest = new PaymentProviderOperationRequest(
+                    storeId,
+                    CheckoutSessionId: Guid.Empty,
+                    request.PaymentAttemptId ?? Guid.Empty,
+                    PaymentMethodKey: providerKey,
+                    ProviderKey: providerKey,
+                    Amount: 0m,
+                    CurrencyCode: "USD",
+                    IdempotencyKey: request.ProviderEventId ?? Guid.NewGuid().ToString("N"),
+                    ProviderReference: request.ProviderReference,
+                    ProviderSessionId: request.ProviderSessionId,
+                    PayloadJson: request.PayloadJson);
+
+                providerResult = request.EventType.Contains("cancel", StringComparison.OrdinalIgnoreCase)
+                    ? await provider.HandleCancelAsync(operationRequest, cancellationToken)
+                    : await provider.HandleReturnAsync(operationRequest, cancellationToken);
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+
+            return await this.ApplyProviderOperationTransitionAsync(storeId, request.PaymentAttemptId, request.PayloadJson, providerResult, cancellationToken);
+        }
+
+        private async Task<IActionResult?> ApplyProviderWebhookOperationAsync(
+            Guid storeId,
+            string providerKey,
+            string? providerSignature,
+            StorefrontPaymentWebhookRequest request,
+            CancellationToken cancellationToken)
+        {
+            ServiceResponse<PaymentProviderOperationResult>? providerResult = null;
+            try
+            {
+                var provider = this.paymentProviderResolver.Resolve(providerKey);
+                providerResult = await provider.HandleWebhookAsync(
+                    new PaymentProviderOperationRequest(
+                        storeId,
+                        CheckoutSessionId: Guid.Empty,
+                        request.PaymentAttemptId ?? Guid.Empty,
+                        PaymentMethodKey: providerKey,
+                        ProviderKey: providerKey,
+                        Amount: 0m,
+                        CurrencyCode: "USD",
+                        IdempotencyKey: request.EventId ?? Guid.NewGuid().ToString("N"),
+                        ProviderReference: request.ProviderReference,
+                        ProviderSessionId: request.ProviderSessionId,
+                        PayloadJson: request.PayloadJson,
+                        ProviderSignature: providerSignature),
+                    cancellationToken);
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+
+            return await this.ApplyProviderOperationTransitionAsync(storeId, request.PaymentAttemptId, request.PayloadJson, providerResult, cancellationToken);
+        }
+
+        private async Task<IActionResult?> ApplyProviderOperationTransitionAsync(
+            Guid storeId,
+            Guid? paymentAttemptId,
+            string payloadJson,
+            ServiceResponse<PaymentProviderOperationResult>? providerResult,
+            CancellationToken cancellationToken)
+        {
+            if (providerResult is null)
+            {
+                return null;
+            }
+
+            if (!providerResult.Success)
+            {
+                return string.Equals(providerResult.Payload?.SafeFailureCode, "payment.operation_not_supported", StringComparison.OrdinalIgnoreCase)
+                    ? null
+                    : this.FromServiceResponse(providerResult);
+            }
+
+            if (!paymentAttemptId.HasValue || string.IsNullOrWhiteSpace(providerResult.Payload?.RecommendedState))
+            {
+                return null;
+            }
+
+            var transition = await this.paymentAttemptService.TransitionAsync(
+                new TransitionPaymentAttemptRequest(
+                    storeId,
+                    paymentAttemptId.Value,
+                    providerResult.Payload.RecommendedState!,
+                    providerResult.Payload.ProviderReference,
+                    providerResult.Payload.ProviderSessionId,
+                    FailureCode: providerResult.Payload.SafeFailureCode,
+                    FailureMessage: providerResult.Payload.SafeFailureMessage,
+                    MetadataJson: providerResult.Payload.MetadataJson ?? payloadJson),
+                cancellationToken);
+
+            return transition.Success ? null : this.FromServiceResponse(transition);
         }
 
         [HttpPost("paypal/capture")]

@@ -290,6 +290,10 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Checkout routes payment by provider capability instead of hard-coded Stripe branching. 2026-07-17 Payment Core Phase 3: `StorefrontCheckoutServiceTests` passed 39/39.
 - [x] Inactive provider capability is rejected before order/payment attempt creation. 2026-07-17 Phase 3: PayPal skeleton checkout guardrail added in `StorefrontCheckoutServiceTests`.
 - [x] COD and Stripe checkout response shapes stay compatible after provider-operation cutover. 2026-07-17 Phase 3: COD focused checkout tests and Stripe redirect/idempotency tests passed.
+- [x] Signature-required Storefront payment webhooks reject missing or invalid signatures before recording events. 2026-07-17 Payment Core Phase 4: `PaymentWebhookSignatureVerifierTests` and controller hardening tests passed.
+- [x] Public callback/webhook body `State` cannot force arbitrary payment transitions. 2026-07-17 Phase 4: `StorefrontScopedPaymentWebhookHardeningTests` covers body-state rejection and provider-confirmed transitions.
+- [x] Payment provider events can link to attempts by provider session/reference when public attempt ID is absent. 2026-07-17 Phase 4: `PaymentAttemptServiceTests.RecordProviderEventAsync_ResolvesAttemptByProviderSessionId` passed and Storefront webhook request schema exposes provider reference/session fields.
+- [x] Storefront payment OpenAPI snapshot is refreshed after webhook hardening. 2026-07-17 Phase 4: focused OpenAPI/payment hardening suite passed 48/48.
 
 ## Currency
 

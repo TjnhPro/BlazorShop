@@ -210,6 +210,46 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Equal(first.Payload.PayloadHash, second.Payload.PayloadHash);
         }
 
+        [Fact]
+        public async Task RecordProviderEventAsync_ResolvesAttemptByProviderSessionId()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var attempt = new PaymentAttempt
+            {
+                Id = Guid.NewGuid(),
+                PublicId = Guid.NewGuid(),
+                StoreId = storeId,
+                CheckoutSessionId = Guid.NewGuid(),
+                PaymentMethodKey = PaymentMethodKeys.Stripe,
+                ProviderKey = PaymentMethodKeys.Stripe,
+                State = PaymentAttemptStates.RequiresAction,
+                Amount = 42m,
+                CurrencyCode = "USD",
+                IdempotencyKey = "stripe-session-event",
+                ProviderSessionId = "cs_test_123",
+                ExpiresAtUtc = DateTimeOffset.UtcNow.AddMinutes(30),
+                CreatedAtUtc = DateTimeOffset.UtcNow,
+                UpdatedAtUtc = DateTimeOffset.UtcNow,
+            };
+            context.PaymentAttempts.Add(attempt);
+            await context.SaveChangesAsync();
+            var service = new PaymentAttemptService(context);
+
+            var result = await service.RecordProviderEventAsync(new RecordPaymentProviderEventRequest(
+                storeId,
+                PaymentAttemptId: null,
+                ProviderKey: PaymentMethodKeys.Stripe,
+                EventId: "evt_session",
+                EventType: "checkout.session.completed",
+                PayloadJson: "{\"id\":\"evt_session\"}",
+                ProviderSessionId: "cs_test_123"));
+
+            Assert.True(result.Success, result.Message);
+            Assert.Equal(attempt.Id, result.Payload!.PaymentAttemptId);
+            Assert.Equal(attempt.Id, context.PaymentProviderEvents.Single().PaymentAttemptId);
+        }
+
         private static CreatePaymentAttemptRequest CreateAttemptRequest(string idempotencyKey)
         {
             return new CreatePaymentAttemptRequest(

@@ -354,6 +354,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             var providerKey = NormalizeKey(request.ProviderKey)!;
             var eventId = NormalizeNullable(request.EventId);
+            var providerReference = NormalizeNullable(request.ProviderReference);
+            var providerSessionId = NormalizeNullable(request.ProviderSessionId);
             Guid? paymentAttemptInternalId = null;
             if (request.PaymentAttemptId.HasValue)
             {
@@ -369,6 +371,18 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 }
 
                 paymentAttemptInternalId = attempt.Id;
+            }
+            else if (providerSessionId is not null || providerReference is not null)
+            {
+                var attempt = await this.context.PaymentAttempts
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(
+                        candidate => candidate.StoreId == request.StoreId
+                            && candidate.ProviderKey == providerKey
+                            && ((providerSessionId != null && candidate.ProviderSessionId == providerSessionId)
+                                || (providerReference != null && candidate.ProviderReference == providerReference)),
+                        cancellationToken);
+                paymentAttemptInternalId = attempt?.Id;
             }
 
             if (eventId is not null)

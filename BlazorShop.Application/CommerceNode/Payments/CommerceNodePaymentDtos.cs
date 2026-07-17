@@ -223,6 +223,15 @@ namespace BlazorShop.Application.CommerceNode.Payments
         ServiceResponse<PaymentProviderCapabilityDto> Get(string systemName);
     }
 
+    public interface IPaymentWebhookSignatureVerifier
+    {
+        Task<ServiceResponse<object?>> VerifyAsync(
+            string providerKey,
+            string payloadJson,
+            string? providerSignature,
+            CancellationToken cancellationToken = default);
+    }
+
     public sealed record RecordPaymentProviderEventRequest(
         Guid StoreId,
         Guid? PaymentAttemptId,
@@ -230,6 +239,8 @@ namespace BlazorShop.Application.CommerceNode.Payments
         string? EventId,
         string EventType,
         string PayloadJson,
+        string? ProviderReference = null,
+        string? ProviderSessionId = null,
         DateTimeOffset? ProcessedAtUtc = null);
 
     public interface IPaymentAttemptService

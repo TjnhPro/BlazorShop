@@ -632,6 +632,12 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         [MaxLength(32)]
         public string? State { get; set; }
 
+        [MaxLength(256)]
+        public string? ProviderReference { get; set; }
+
+        [MaxLength(256)]
+        public string? ProviderSessionId { get; set; }
+
         [Required]
         public string PayloadJson { get; set; } = "{}";
     }

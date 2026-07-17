@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Payment Core.md`
 
-Status: In progress. Phase 0-3 completed.
+Status: In progress. Phase 0-4 completed.
 
 Scope: turn the existing checkout payment foundation into a practical provider core for active V2. The goal is enough payment behavior for real store usage without moving PayPal/Stripe SDK logic into Domain/Application and without building a full payment platform.
 
@@ -127,7 +127,7 @@ Current API surface:
 - [x] Add provider capability metadata additively.
 - [x] Keep provider SDK code in Infrastructure.
 - [x] Use explicit method type/capability instead of hard-coded provider names.
-- [ ] Treat webhook payload as untrusted until provider handler verifies it.
+- [x] Treat webhook payload as untrusted until provider handler verifies it.
 - [ ] Keep refund/void/authorize as hooks in this phase, not full flows.
 - [ ] Preserve existing public endpoints while hardening provider handling behind them.
 - [ ] Do not identify customers by provider email/account.
@@ -400,41 +400,51 @@ Goal: make provider callbacks secure and replay-safe enough for real usage.
 
 Implementation checklist:
 
-- [ ] Keep `POST /payments/webhooks/{providerKey}`.
-- [ ] Keep `POST /payments/provider-callback/{providerKey}` for browser returns.
-- [ ] Stop trusting requested `State` from public request body.
-- [ ] Provider handler parses verified payload and returns internal transition command.
-- [ ] Add `IPaymentWebhookSignatureVerifier` or provider-level verification method.
-- [ ] Reject missing signature for providers requiring signatures.
-- [ ] Reject invalid signature for providers requiring signatures.
-- [ ] Keep raw payload hash for dedupe/audit.
-- [ ] Never log raw provider secrets.
-- [ ] Resolve payment attempt by public payment attempt ID when present and valid.
-- [ ] Resolve payment attempt by provider session ID.
-- [ ] Resolve payment attempt by provider reference/payment intent/order ID.
-- [ ] Resolve payment attempt by metadata embedded at provider session creation.
-- [ ] Ensure provider account/email does not resolve or create customer identity.
-- [ ] Add processed status fields if needed:
-  - [ ] `ProcessingStatus`: `recorded`, `processed`, `ignored`, `failed`.
-  - [ ] `IgnoreReason`.
-  - [ ] `FailureReason`.
-- [ ] Duplicate event returns accepted/deduped without reprocessing.
-- [ ] Out-of-order event records and no-ops when transition is not currently valid.
+- [x] Keep `POST /payments/webhooks/{providerKey}`.
+- [x] Keep `POST /payments/provider-callback/{providerKey}` for browser returns.
+- [x] Stop trusting requested `State` from public request body.
+- [x] Provider handler parses verified payload and returns internal transition command.
+- [x] Add `IPaymentWebhookSignatureVerifier` or provider-level verification method.
+- [x] Reject missing signature for providers requiring signatures.
+- [x] Reject invalid signature for providers requiring signatures.
+- [x] Keep raw payload hash for dedupe/audit.
+- [x] Never log raw provider secrets.
+- [x] Resolve payment attempt by public payment attempt ID when present and valid.
+- [x] Resolve payment attempt by provider session ID.
+- [x] Resolve payment attempt by provider reference/payment intent/order ID.
+- [n/a] Resolve payment attempt by metadata embedded at provider session creation. Provider-specific metadata parsing is behind `IStorefrontPaymentProvider.HandleWebhookAsync`; no generic metadata parser is added until a real provider payload contract is implemented.
+- [x] Ensure provider account/email does not resolve or create customer identity.
+- [n/a] Add processed status fields if needed:
+  - [n/a] `ProcessingStatus`: `recorded`, `processed`, `ignored`, `failed`.
+  - [n/a] `IgnoreReason`.
+  - [n/a] `FailureReason`.
+- [x] Duplicate event returns accepted/deduped without reprocessing.
+- [x] Out-of-order event records and no-ops when transition is not currently valid.
 
 Verification checklist:
 
-- [ ] Missing signature is rejected for signature-required provider.
-- [ ] Invalid signature is rejected.
-- [ ] Duplicate webhook does not create duplicate order.
-- [ ] Webhook without attempt ID resolves by provider session/reference.
-- [ ] Out-of-order event is recorded and ignored safely.
-- [ ] Callback cancel marks attempt cancelled only when provider handler confirms cancellation.
-- [ ] Public webhook cannot force arbitrary payment state.
+- [x] Missing signature is rejected for signature-required provider.
+- [x] Invalid signature is rejected.
+- [x] Duplicate webhook does not create duplicate order.
+- [x] Webhook without attempt ID resolves by provider session/reference.
+- [x] Out-of-order event is recorded and ignored safely.
+- [x] Callback cancel marks attempt cancelled only when provider handler confirms cancellation.
+- [x] Public webhook cannot force arbitrary payment state.
 
 Exit criteria:
 
-- [ ] Replay and out-of-order events are safe.
-- [ ] OpenAPI metadata is valid and updated.
+- [x] Replay and out-of-order events are safe.
+- [x] OpenAPI metadata is valid and updated.
+
+Phase 4 evidence:
+
+- 2026-07-17: Added `IPaymentWebhookSignatureVerifier` and infrastructure HMAC SHA-256 verifier using provider capability metadata; Stripe requires signatures and COD does not.
+- 2026-07-17: `StorefrontScopedPaymentsController` no longer transitions attempts from public `State` fields in callback/webhook bodies.
+- 2026-07-17: Callback/webhook events are recorded first; provider operation hooks may recommend a transition, and unsupported provider hooks are treated as record-only.
+- 2026-07-17: `RecordPaymentProviderEventRequest` and Storefront webhook contracts now carry `providerReference` and `providerSessionId`; `PaymentAttemptService` links events to attempts by public attempt ID, provider session ID, or provider reference.
+- 2026-07-17: Added focused hardening tests for missing/invalid/valid signatures, provider-confirmed webhook transition, callback cancel confirmation, and body-state rejection.
+- 2026-07-17: Storefront OpenAPI snapshot refreshed for webhook provider reference/session fields.
+- 2026-07-17: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~CommerceNodeStorefrontOpenApiContractTests|FullyQualifiedName~CommerceNodeStorefrontPaymentContractTests|FullyQualifiedName~PaymentAttemptServiceTests|FullyQualifiedName~PaymentWebhookSignatureVerifierTests|FullyQualifiedName~StorefrontScopedPaymentWebhookHardeningTests"` passed 48/48.
 
 Suggested commit:
 
