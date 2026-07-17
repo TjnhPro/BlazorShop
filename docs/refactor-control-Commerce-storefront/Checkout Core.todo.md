@@ -483,40 +483,48 @@ Goal: make payment selection explicit and reusable by review/place-order.
 
 Implementation checklist:
 
-- [ ] Add available payment methods projection for checkout session.
-- [ ] Reuse `StorePaymentMethod` filtering:
-  - [ ] enabled.
-  - [ ] display order.
-  - [ ] currency.
-  - [ ] country.
-  - [ ] cart total.
-  - [ ] min/max order total.
-- [ ] Add selected payment method command.
-- [ ] Store selected method in checkout session.
-- [ ] Return payment display metadata:
-  - [ ] display name.
-  - [ ] description.
-  - [ ] icon.
-  - [ ] provider key.
-  - [ ] next action kind.
+- [x] Add available payment methods projection for checkout session.
+- [x] Reuse `StorePaymentMethod` filtering:
+  - [x] enabled.
+  - [x] display order.
+  - [x] currency.
+  - [x] country.
+  - [x] cart total.
+  - [x] min/max order total.
+- [x] Add selected payment method command.
+- [x] Store selected method in checkout session.
+- [x] Return payment display metadata:
+  - [x] display name.
+  - [x] description.
+  - [x] icon.
+  - [x] provider key.
+  - [x] next action kind.
   - [ ] optional input schema placeholder.
-- [ ] Do not return provider secrets or private settings.
-- [ ] Do not auto-skip step by default.
-- [ ] Reset review and terms acknowledgement when payment method changes.
-- [ ] Recalculate payment availability server-side before place-order.
+- [x] Do not return provider secrets or private settings.
+- [x] Do not auto-skip step by default.
+- [~] Reset review and terms acknowledgement when payment method changes. 2026-07-17: payment method changes clear the selected payment/review path by moving the session back through `payment_method`/`review`; terms acknowledgement fields are introduced in Phase 6 and will be reset there.
+- [x] Recalculate payment availability server-side before place-order.
 
 Verification checklist:
 
 - [ ] Checkout review uses selected payment method from session.
-- [ ] Place-order uses selected payment method from session.
-- [ ] Disabled/unsupported payment method is rejected.
-- [ ] Currency/country/min/max filters apply.
-- [ ] Public response contains no provider secrets.
+- [x] Place-order uses selected payment method from session.
+- [x] Disabled/unsupported payment method is rejected.
+- [x] Currency/country/min/max filters apply.
+- [x] Public response contains no provider secrets.
 
 Exit criteria:
 
-- [ ] Payment step is explicit and server-owned.
-- [ ] Existing payment method model remains the source of truth.
+- [x] Payment step is explicit and server-owned.
+- [x] Existing payment method model remains the source of truth.
+
+Phase 5 evidence:
+
+- 2026-07-17: Added `POST /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/payment-method` with explicit request/response DTOs and Storefront OpenAPI metadata.
+- 2026-07-17: Checkout session response now includes `selectedPaymentMethod` and `paymentMethods` without provider settings/secrets.
+- 2026-07-17: Payment method projection filters enabled methods by display order, currency, country, cart total, and min/max order total.
+- 2026-07-17: Focused `StorefrontCheckoutServiceTests` run passed 34/34.
+- 2026-07-17: Focused `CommerceNodeStorefrontOpenApiContractTests` run passed 29/29 after OpenAPI snapshot refresh.
 
 Suggested commit:
 
@@ -814,7 +822,7 @@ test(checkout-core): complete release gate
 - [x] Phase 2 - entry validation and cart change detection.
 - [x] Phase 3 - address steps.
 - [x] Phase 4 - shipping method stub and hook.
-- [ ] Phase 5 - payment method step.
+- [x] Phase 5 - payment method step.
 - [ ] Phase 6 - review projection and terms hook.
 - [ ] Phase 7 - place order hardening and completion rules.
 - [ ] Phase 8 - Storefront V2 integration.

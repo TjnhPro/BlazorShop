@@ -2978,6 +2978,113 @@
         }
       }
     },
+    "/api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/payment-method": {
+      "post": {
+        "tags": [
+          "StorefrontScopedCheckout"
+        ],
+        "summary": "Select a checkout payment method.",
+        "operationId": "StorefrontCheckout_SelectPaymentMethod",
+        "parameters": [
+          {
+            "name": "checkoutSessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Cart-Token",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCheckoutPaymentMethodRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCheckoutPaymentMethodRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCheckoutPaymentMethodRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontCheckoutSessionResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/storefront/stores/{storeKey}/checkout/preview": {
       "post": {
         "tags": [
@@ -6984,6 +7091,57 @@
         },
         "additionalProperties": false
       },
+      "StorefrontCheckoutPaymentMethodOptionResponse": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "shortDisplayText": {
+            "type": "string",
+            "nullable": true
+          },
+          "iconUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "providerKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "nextActionKind": {
+            "type": "string",
+            "nullable": true
+          },
+          "selected": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCheckoutPaymentMethodRequest": {
+        "required": [
+          "paymentMethodKey"
+        ],
+        "type": "object",
+        "properties": {
+          "paymentMethodKey": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontCheckoutPreviewRequest": {
         "required": [
           "customerEmail",
@@ -7204,6 +7362,7 @@
           "completedSteps",
           "issues",
           "lines",
+          "paymentMethods",
           "shippingOptions"
         ],
         "type": "object",
@@ -7299,6 +7458,15 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/StorefrontCheckoutShippingOptionResponse"
+            }
+          },
+          "selectedPaymentMethod": {
+            "$ref": "#/components/schemas/StorefrontCheckoutPaymentMethodOptionResponse"
+          },
+          "paymentMethods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontCheckoutPaymentMethodOptionResponse"
             }
           },
           "lines": {

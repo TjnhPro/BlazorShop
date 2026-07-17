@@ -291,6 +291,8 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 result.ShippingRequired,
                 result.SelectedShippingOption?.ToStorefrontContract(),
                 result.ShippingOptions.Select(option => option.ToStorefrontContract()).ToArray(),
+                result.SelectedPaymentMethod?.ToStorefrontContract(),
+                result.PaymentMethods.Select(method => method.ToStorefrontContract()).ToArray(),
                 result.Lines.Select(line => new StorefrontCheckoutLineSummaryResponse(
                     line.LineId,
                     line.ProductId,
@@ -339,6 +341,19 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 request.ShippingOptionKey);
         }
 
+        public static BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutPaymentMethodRequest ToApplicationRequest(
+            this Contracts.Storefront.StorefrontCheckoutPaymentMethodRequest request,
+            Guid storeId,
+            Guid checkoutSessionId,
+            string cartToken)
+        {
+            return new BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutPaymentMethodRequest(
+                storeId,
+                checkoutSessionId,
+                cartToken,
+                request.PaymentMethodKey);
+        }
+
         private static StorefrontCheckoutShippingOptionResponse ToStorefrontContract(
             this StorefrontCheckoutShippingOption option)
         {
@@ -349,6 +364,20 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 option.Price,
                 option.CurrencyCode,
                 option.DeliveryEstimateText,
+                option.Selected);
+        }
+
+        private static StorefrontCheckoutPaymentMethodOptionResponse ToStorefrontContract(
+            this StorefrontCheckoutPaymentMethodOption option)
+        {
+            return new StorefrontCheckoutPaymentMethodOptionResponse(
+                option.Key,
+                option.DisplayName,
+                option.Description,
+                option.ShortDisplayText,
+                option.IconUrl,
+                option.ProviderKey,
+                option.NextActionKind,
                 option.Selected);
         }
 

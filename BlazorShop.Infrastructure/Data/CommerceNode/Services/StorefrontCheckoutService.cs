@@ -100,7 +100,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     return Failed<StorefrontCheckoutSessionResult>(ServiceResponseType.Conflict, "Checkout session has expired.");
                 }
 
-                return Succeeded("Checkout session resumed.", ToSessionResult(activeSession, cart));
+                return Succeeded("Checkout session resumed.", await this.ToSessionResultAsync(activeSession, cart, cancellationToken));
             }
 
             var session = new CheckoutSession
@@ -139,7 +139,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.context.CheckoutSessions.Add(session);
             await this.context.SaveChangesAsync(cancellationToken);
 
-            return Succeeded("Checkout session started.", ToSessionResult(session, cart));
+            return Succeeded("Checkout session started.", await this.ToSessionResultAsync(session, cart, cancellationToken));
         }
 
         public async Task<ServiceResponse<StorefrontCheckoutSessionResult>> LoadAsync(
@@ -152,7 +152,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failed<StorefrontCheckoutSessionResult>(resolution.ResponseType, resolution.Message);
             }
 
-            return Succeeded("Checkout session loaded.", ToSessionResult(resolution.Session!, resolution.Cart!));
+            return Succeeded(
+                "Checkout session loaded.",
+                await this.ToSessionResultAsync(resolution.Session!, resolution.Cart!, cancellationToken));
         }
 
         public async Task<ServiceResponse<StorefrontCheckoutSessionResult>> CancelAsync(
@@ -168,7 +170,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             Touch(resolution.Session!, CheckoutSessionStates.Cancelled, CheckoutSteps.Entry, DateTimeOffset.UtcNow);
             await this.context.SaveChangesAsync(cancellationToken);
 
-            return Succeeded("Checkout session cancelled.", ToSessionResult(resolution.Session!, resolution.Cart!));
+            return Succeeded(
+                "Checkout session cancelled.",
+                await this.ToSessionResultAsync(resolution.Session!, resolution.Cart!, cancellationToken));
         }
 
         public async Task<ServiceResponse<StorefrontCheckoutSessionResult>> ExpireAsync(
@@ -184,7 +188,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             MarkExpired(resolution.Session!, DateTimeOffset.UtcNow);
             await this.context.SaveChangesAsync(cancellationToken);
 
-            return Succeeded("Checkout session expired.", ToSessionResult(resolution.Session!, resolution.Cart!));
+            return Succeeded(
+                "Checkout session expired.",
+                await this.ToSessionResultAsync(resolution.Session!, resolution.Cart!, cancellationToken));
         }
 
         public async Task<ServiceResponse<StorefrontCheckoutSessionResult>> UpdateAddressesAsync(
@@ -274,7 +280,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.ShippingMethod, DateTimeOffset.UtcNow);
             await this.context.SaveChangesAsync(cancellationToken);
 
-            return Succeeded("Checkout addresses updated.", ToSessionResult(session, resolution.Cart!));
+            return Succeeded(
+                "Checkout addresses updated.",
+                await this.ToSessionResultAsync(session, resolution.Cart!, cancellationToken));
         }
 
         public async Task<ServiceResponse<StorefrontCheckoutSessionResult>> SelectShippingMethodAsync(
@@ -319,7 +327,56 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.PaymentMethod, DateTimeOffset.UtcNow);
             await this.context.SaveChangesAsync(cancellationToken);
 
-            return Succeeded("Checkout shipping method selected.", ToSessionResult(session, resolution.Cart!));
+            return Succeeded(
+                "Checkout shipping method selected.",
+                await this.ToSessionResultAsync(session, resolution.Cart!, cancellationToken));
+        }
+
+        public async Task<ServiceResponse<StorefrontCheckoutSessionResult>> SelectPaymentMethodAsync(
+            StorefrontCheckoutPaymentMethodRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var resolution = await this.ResolveActiveSessionAsync(
+                new StorefrontCheckoutSessionRequest(request.StoreId, request.CheckoutSessionId, request.CartToken),
+                cancellationToken);
+            if (!resolution.Success)
+            {
+                return Failed<StorefrontCheckoutSessionResult>(resolution.ResponseType, resolution.Message);
+            }
+
+            var session = resolution.Session!;
+            if (ParseSelectedShippingOption(session.SelectedShippingOptionJson) is null)
+            {
+                return Failed<StorefrontCheckoutSessionResult>(ServiceResponseType.Conflict, "Shipping method must be selected first.");
+            }
+
+            var paymentMethodKey = NormalizeKey(request.PaymentMethodKey);
+            var methods = await this.ResolvePaymentMethodOptionsAsync(session, paymentMethodKey, cancellationToken);
+            var selected = methods.FirstOrDefault(method => string.Equals(method.Key, paymentMethodKey, StringComparison.OrdinalIgnoreCase));
+            if (selected is null)
+            {
+                return Failed<StorefrontCheckoutSessionResult>(ServiceResponseType.ValidationError, "Payment method is not available.");
+            }
+
+            session.PaymentMethodKey = selected.Key;
+            session.ValidationIssuesJson = null;
+            session.CompletedStepsJson = JsonSerializer.Serialize(
+                new[]
+                {
+                    CheckoutSteps.Entry,
+                    CheckoutSteps.BillingAddress,
+                    CheckoutSteps.ShippingAddress,
+                    CheckoutSteps.ShippingMethod,
+                    CheckoutSteps.PaymentMethod,
+                },
+                JsonOptions);
+            session.NextAction = CheckoutSteps.Review;
+            Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.Review, DateTimeOffset.UtcNow);
+            await this.context.SaveChangesAsync(cancellationToken);
+
+            return Succeeded(
+                "Checkout payment method selected.",
+                await this.ToSessionResultAsync(session, resolution.Cart!, cancellationToken, methods));
         }
 
         public async Task<ServiceResponse<StorefrontCheckoutPreviewResult>> PreviewAsync(
@@ -1149,10 +1206,30 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return CheckoutSessionResolution.Succeeded(session, cart);
         }
 
+        private async Task<StorefrontCheckoutSessionResult> ToSessionResultAsync(
+            CheckoutSession session,
+            StorefrontCartSessionDto cart,
+            CancellationToken cancellationToken,
+            IReadOnlyList<StorefrontCheckoutPaymentMethodOption>? paymentMethods = null)
+        {
+            var selectedShippingOption = ParseSelectedShippingOption(session.SelectedShippingOptionJson);
+            var resolvedPaymentMethods = paymentMethods
+                ?? (selectedShippingOption is null
+                    ? []
+                    : await this.ResolvePaymentMethodOptionsAsync(session, session.PaymentMethodKey, cancellationToken));
+
+            return ToSessionResult(session, cart, selectedShippingOption, resolvedPaymentMethods);
+        }
+
         private static StorefrontCheckoutSessionResult ToSessionResult(
             CheckoutSession session,
-            StorefrontCartSessionDto cart)
+            StorefrontCartSessionDto cart,
+            StorefrontCheckoutShippingOption? selectedShippingOption,
+            IReadOnlyList<StorefrontCheckoutPaymentMethodOption> paymentMethods)
         {
+            var selectedPaymentMethod = paymentMethods.FirstOrDefault(method => method.Selected)
+                ?? CreateSelectedPaymentMethod(session.PaymentMethodKey);
+
             return new StorefrontCheckoutSessionResult(
                 session.PublicId,
                 cart.PublicId,
@@ -1175,8 +1252,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 NormalizeCurrency(session.CurrencyCode) ?? NormalizeCurrency(cart.CurrencyCode) ?? DefaultCurrencyCode,
                 session.ExpiresAtUtc,
                 ShippingRequired: true,
-                ParseSelectedShippingOption(session.SelectedShippingOptionJson),
-                ResolveShippingOptions(session, ParseSelectedShippingOption(session.SelectedShippingOptionJson)?.Key),
+                selectedShippingOption,
+                ResolveShippingOptions(session, selectedShippingOption?.Key),
+                selectedPaymentMethod,
+                paymentMethods,
                 cart.Lines.Select(line => new StorefrontCheckoutLineSummary(
                     line.Id,
                     line.ProductId,
@@ -1238,6 +1317,71 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     "Standard delivery",
                     selected),
             ];
+        }
+
+        private async Task<IReadOnlyList<StorefrontCheckoutPaymentMethodOption>> ResolvePaymentMethodOptionsAsync(
+            CheckoutSession session,
+            string selectedKey,
+            CancellationToken cancellationToken)
+        {
+            var currencyCode = NormalizeCurrency(session.CurrencyCode) ?? DefaultCurrencyCode;
+            var countryCode = NormalizeCountry(session.ShippingCountryCode);
+            var orderTotal = session.GrandTotal;
+            var methods = await this.context.StorePaymentMethods
+                .AsNoTracking()
+                .Where(method => method.StoreId == session.StoreId && method.Enabled)
+                .OrderBy(method => method.DisplayOrder)
+                .ThenBy(method => method.DisplayName)
+                .ToArrayAsync(cancellationToken);
+
+            return methods
+                .Where(method =>
+                    SupportsValue(ParseCodes(method.SupportedCurrencyCodesJson), currencyCode)
+                    && SupportsValue(ParseCodes(method.SupportedCountryCodesJson), countryCode)
+                    && (!method.MinOrderTotal.HasValue || orderTotal >= method.MinOrderTotal.Value)
+                    && (!method.MaxOrderTotal.HasValue || orderTotal <= method.MaxOrderTotal.Value))
+                .Select(method => new StorefrontCheckoutPaymentMethodOption(
+                    NormalizeKey(method.PaymentMethodKey),
+                    method.DisplayName,
+                    method.Description,
+                    method.ShortDisplayText,
+                    method.IconUrl,
+                    NormalizeKey(method.PaymentMethodKey),
+                    ResolvePaymentNextActionKind(method.PaymentMethodKey),
+                    string.Equals(method.PaymentMethodKey, selectedKey, StringComparison.OrdinalIgnoreCase)))
+                .ToArray();
+        }
+
+        private static StorefrontCheckoutPaymentMethodOption? CreateSelectedPaymentMethod(string? paymentMethodKey)
+        {
+            var key = NormalizeKey(paymentMethodKey);
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                return null;
+            }
+
+            return new StorefrontCheckoutPaymentMethodOption(
+                key,
+                key,
+                null,
+                null,
+                null,
+                key,
+                ResolvePaymentNextActionKind(key),
+                Selected: true);
+        }
+
+        private static bool SupportsValue(IReadOnlyList<string> supportedValues, string? value)
+        {
+            return supportedValues.Count == 0
+                || (value is not null && supportedValues.Contains(value, StringComparer.OrdinalIgnoreCase));
+        }
+
+        private static string ResolvePaymentNextActionKind(string paymentMethodKey)
+        {
+            return string.Equals(paymentMethodKey, PaymentMethodKeys.Stripe, StringComparison.OrdinalIgnoreCase)
+                ? "redirect"
+                : "none";
         }
 
         private static StorefrontCheckoutShippingOption? ParseSelectedShippingOption(string? json)

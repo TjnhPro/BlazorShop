@@ -450,6 +450,23 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         string? DeliveryEstimateText,
         bool Selected);
 
+    public sealed class StorefrontCheckoutPaymentMethodRequest
+    {
+        [Required]
+        [MaxLength(64)]
+        public string PaymentMethodKey { get; set; } = string.Empty;
+    }
+
+    public sealed record StorefrontCheckoutPaymentMethodOptionResponse(
+        string Key,
+        string DisplayName,
+        string? Description,
+        string? ShortDisplayText,
+        string? IconUrl,
+        string ProviderKey,
+        string NextActionKind,
+        bool Selected);
+
     public sealed record StorefrontCheckoutSessionResponse(
         Guid CheckoutSessionId,
         Guid CartId,
@@ -474,6 +491,8 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         bool ShippingRequired,
         StorefrontCheckoutShippingOptionResponse? SelectedShippingOption,
         IReadOnlyList<StorefrontCheckoutShippingOptionResponse> ShippingOptions,
+        StorefrontCheckoutPaymentMethodOptionResponse? SelectedPaymentMethod,
+        IReadOnlyList<StorefrontCheckoutPaymentMethodOptionResponse> PaymentMethods,
         IReadOnlyList<StorefrontCheckoutLineSummaryResponse> Lines,
         IReadOnlyList<StorefrontCheckoutValidationIssueResponse> Issues);
 

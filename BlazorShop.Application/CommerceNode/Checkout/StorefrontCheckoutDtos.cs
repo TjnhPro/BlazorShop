@@ -85,6 +85,22 @@ namespace BlazorShop.Application.CommerceNode.Checkout
         string? DeliveryEstimateText,
         bool Selected);
 
+    public sealed record StorefrontCheckoutPaymentMethodRequest(
+        Guid StoreId,
+        Guid CheckoutSessionId,
+        string CartToken,
+        string PaymentMethodKey);
+
+    public sealed record StorefrontCheckoutPaymentMethodOption(
+        string Key,
+        string DisplayName,
+        string? Description,
+        string? ShortDisplayText,
+        string? IconUrl,
+        string ProviderKey,
+        string NextActionKind,
+        bool Selected);
+
     public sealed record StorefrontCheckoutSessionResult(
         Guid CheckoutSessionId,
         Guid CartId,
@@ -109,6 +125,8 @@ namespace BlazorShop.Application.CommerceNode.Checkout
         bool ShippingRequired,
         StorefrontCheckoutShippingOption? SelectedShippingOption,
         IReadOnlyList<StorefrontCheckoutShippingOption> ShippingOptions,
+        StorefrontCheckoutPaymentMethodOption? SelectedPaymentMethod,
+        IReadOnlyList<StorefrontCheckoutPaymentMethodOption> PaymentMethods,
         IReadOnlyList<StorefrontCheckoutLineSummary> Lines,
         IReadOnlyList<StorefrontCheckoutValidationIssue> Issues);
 
@@ -173,6 +191,10 @@ namespace BlazorShop.Application.CommerceNode.Checkout
 
         Task<ServiceResponse<StorefrontCheckoutSessionResult>> SelectShippingMethodAsync(
             StorefrontCheckoutShippingMethodRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<StorefrontCheckoutSessionResult>> SelectPaymentMethodAsync(
+            StorefrontCheckoutPaymentMethodRequest request,
             CancellationToken cancellationToken = default);
 
         Task<ServiceResponse<StorefrontCheckoutPreviewResult>> PreviewAsync(

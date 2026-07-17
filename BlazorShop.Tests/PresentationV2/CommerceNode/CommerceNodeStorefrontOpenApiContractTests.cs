@@ -76,6 +76,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             ("StorefrontCheckoutPreviewResponse", "issues"),
             ("StorefrontCheckoutSessionResponse", "completedSteps"),
             ("StorefrontCheckoutSessionResponse", "shippingOptions"),
+            ("StorefrontCheckoutSessionResponse", "paymentMethods"),
             ("StorefrontCheckoutSessionResponse", "lines"),
             ("StorefrontCheckoutSessionResponse", "issues"),
             ("StorefrontOrderResponse", "lines"),
@@ -761,6 +762,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("StorefrontCheckout_Cancel", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCheckout_UpdateAddresses", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCheckout_SelectShippingMethod", client, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCheckout_SelectPaymentMethod", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontPayments_CapturePayPal", client, StringComparison.Ordinal);
             Assert.DoesNotContain("any /* missing operationId */", client, StringComparison.Ordinal);
             Assert.DoesNotContain("Promise<any>", client, StringComparison.Ordinal);
@@ -873,6 +875,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 "StorefrontCheckout_Cancel",
                 "StorefrontCheckout_UpdateAddresses",
                 "StorefrontCheckout_SelectShippingMethod",
+                "StorefrontCheckout_SelectPaymentMethod",
             };
 
             foreach (var operationId in expectedOperationIds)
@@ -891,12 +894,15 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             AssertRequiredRequestBody(operations["StorefrontCheckout_Start"]);
             AssertRequiredRequestBody(operations["StorefrontCheckout_UpdateAddresses"]);
             AssertRequiredRequestBody(operations["StorefrontCheckout_SelectShippingMethod"]);
+            AssertRequiredRequestBody(operations["StorefrontCheckout_SelectPaymentMethod"]);
             Assert.Null(operations["StorefrontCheckout_Load"]["requestBody"]);
             Assert.Null(operations["StorefrontCheckout_Cancel"]["requestBody"]);
             Assert.True(schemas.ContainsKey("StorefrontCheckoutStartRequest"));
             Assert.True(schemas.ContainsKey("StorefrontCheckoutAddressStepRequest"));
             Assert.True(schemas.ContainsKey("StorefrontCheckoutShippingMethodRequest"));
             Assert.True(schemas.ContainsKey("StorefrontCheckoutShippingOptionResponse"));
+            Assert.True(schemas.ContainsKey("StorefrontCheckoutPaymentMethodRequest"));
+            Assert.True(schemas.ContainsKey("StorefrontCheckoutPaymentMethodOptionResponse"));
             Assert.True(schemas.ContainsKey("StorefrontCheckoutSessionResponse"));
 
             var addressRequestSchema = schemas["StorefrontCheckoutAddressStepRequest"]?.AsObject()
@@ -917,6 +923,14 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.DoesNotContain("price", shippingMethodProperties, StringComparer.OrdinalIgnoreCase);
             Assert.DoesNotContain("total", shippingMethodProperties, StringComparer.OrdinalIgnoreCase);
 
+            var paymentMethodRequestSchema = schemas["StorefrontCheckoutPaymentMethodRequest"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCheckoutPaymentMethodRequest schema was not found.");
+            var paymentMethodProperties = GetPropertyNames(paymentMethodRequestSchema).ToArray();
+            Assert.Contains("paymentMethodKey", paymentMethodProperties);
+            Assert.DoesNotContain("paymentStatus", paymentMethodProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("orderStatus", paymentMethodProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("total", paymentMethodProperties, StringComparer.OrdinalIgnoreCase);
+
             var responseSchema = schemas["StorefrontCheckoutSessionResponse"]?.AsObject()
                 ?? throw new InvalidOperationException("StorefrontCheckoutSessionResponse schema was not found.");
             var responseProperties = GetPropertyNames(responseSchema).ToArray();
@@ -929,6 +943,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("shippingRequired", responseProperties);
             Assert.Contains("selectedShippingOption", responseProperties);
             Assert.Contains("shippingOptions", responseProperties);
+            Assert.Contains("selectedPaymentMethod", responseProperties);
+            Assert.Contains("paymentMethods", responseProperties);
             Assert.Contains("isActive", responseProperties);
             Assert.Contains("issues", responseProperties);
             Assert.DoesNotContain("storeId", responseProperties, StringComparer.OrdinalIgnoreCase);
