@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 {
     using System.Security.Cryptography;
     using System.Text;
+    using System.Text.Json;
 
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.DTOs;
@@ -126,6 +127,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             };
 
             this.context.PaymentAttempts.Add(attempt);
+            this.AppendPaymentAudit(
+                attempt,
+                oldState: null,
+                attempt.State,
+                "payment_attempt.created",
+                "Payment attempt created.",
+                request.MetadataJson);
             try
             {
                 await this.context.SaveChangesAsync(cancellationToken);
@@ -184,6 +192,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failed<PaymentAttemptDto>(ServiceResponseType.Conflict, "Payment attempt state transition is not allowed.");
             }
 
+            var oldState = attempt.State;
             if (string.Equals(newState, PaymentAttemptStates.Captured, StringComparison.OrdinalIgnoreCase)
                 && !attempt.OrderId.HasValue)
             {
@@ -203,6 +212,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             attempt.FailureMessage = NormalizeNullable(request.FailureMessage);
             attempt.MetadataJson = NormalizeNullable(request.MetadataJson) ?? attempt.MetadataJson;
             attempt.UpdatedAtUtc = DateTimeOffset.UtcNow;
+            this.AppendPaymentAudit(
+                attempt,
+                oldState,
+                newState,
+                $"payment_attempt.{newState}",
+                $"Payment attempt changed from {oldState} to {newState}.",
+                request.MetadataJson);
 
             await this.context.SaveChangesAsync(cancellationToken);
             return Succeeded("Payment attempt updated.", ToDto(attempt));
@@ -547,6 +563,42 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         {
             var hash = SHA256.HashData(Encoding.UTF8.GetBytes(value));
             return Convert.ToHexString(hash).ToLowerInvariant();
+        }
+
+        private void AppendPaymentAudit(
+            PaymentAttempt attempt,
+            string? oldState,
+            string newState,
+            string eventType,
+            string message,
+            string? providerMetadataJson)
+        {
+            var normalizedMessage = NormalizeNullable(message) ?? "Payment attempt updated.";
+            this.context.PaymentAttemptAuditLogs.Add(new PaymentAttemptAuditLog
+            {
+                Id = Guid.NewGuid(),
+                StoreId = attempt.StoreId,
+                OrderId = attempt.OrderId,
+                PaymentAttemptId = attempt.Id,
+                ProviderKey = attempt.ProviderKey,
+                EventType = NormalizeRequired(eventType) ?? "payment_attempt.updated",
+                OldState = NormalizeKey(oldState),
+                NewState = NormalizeKey(newState) ?? PaymentAttemptStates.Created,
+                Message = normalizedMessage.Length > 512 ? normalizedMessage[..512] : normalizedMessage,
+                MetadataJson = BuildAuditMetadataJson(attempt, providerMetadataJson),
+                CreatedAtUtc = DateTimeOffset.UtcNow,
+            });
+        }
+
+        private static string BuildAuditMetadataJson(PaymentAttempt attempt, string? providerMetadataJson)
+        {
+            return JsonSerializer.Serialize(new
+            {
+                providerReference = NormalizeNullable(attempt.ProviderReference),
+                providerSessionId = NormalizeNullable(attempt.ProviderSessionId),
+                failureCode = NormalizeNullable(attempt.FailureCode),
+                hasProviderMetadata = !string.IsNullOrWhiteSpace(providerMetadataJson),
+            });
         }
 
         private static bool IsStorefrontAvailable(Product product, Guid storeId)

@@ -1034,6 +1034,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             this.context.Orders.Add(order);
             this.context.PaymentAttempts.Add(paymentAttempt);
+            this.AppendPaymentAudit(
+                paymentAttempt,
+                oldState: null,
+                PaymentAttemptStates.Created,
+                "payment_attempt.created",
+                "Payment attempt created.",
+                operation.MetadataJson);
             foreach (var line in lines)
             {
                 DeductTrackedStock(line);
@@ -1067,6 +1074,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             paymentAttempt.NextActionUrl = operation.ActionUrl;
             paymentAttempt.MetadataJson = operation.MetadataJson;
             paymentAttempt.UpdatedAtUtc = now;
+            this.AppendPaymentAudit(
+                paymentAttempt,
+                PaymentAttemptStates.Created,
+                PaymentAttemptStates.Captured,
+                "payment_attempt.captured",
+                "Payment attempt captured during checkout.",
+                operation.MetadataJson);
 
             try
             {
@@ -1143,6 +1157,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             };
 
             this.context.PaymentAttempts.Add(paymentAttempt);
+            this.AppendPaymentAudit(
+                paymentAttempt,
+                oldState: null,
+                PaymentAttemptStates.Created,
+                "payment_attempt.created",
+                "Payment attempt created.",
+                providerMetadataJson: null);
             try
             {
                 await this.context.SaveChangesAsync(cancellationToken);
@@ -1200,6 +1221,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     ?? providerResult.Message
                     ?? "Payment provider session could not be created.";
                 paymentAttempt.UpdatedAtUtc = DateTimeOffset.UtcNow;
+                this.AppendPaymentAudit(
+                    paymentAttempt,
+                    PaymentAttemptStates.Created,
+                    PaymentAttemptStates.Failed,
+                    "payment_attempt.failed",
+                    paymentAttempt.FailureMessage,
+                    providerResult.Payload?.MetadataJson);
                 await this.context.SaveChangesAsync(cancellationToken);
                 return Failed<StorefrontPlaceOrderResult>(
                     providerResult.ResponseType is ServiceResponseType.Success ? ServiceResponseType.Conflict : providerResult.ResponseType,
@@ -1214,6 +1242,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             paymentAttempt.NextActionUrl = providerSession.ActionUrl;
             paymentAttempt.MetadataJson = providerSession.MetadataJson;
             paymentAttempt.UpdatedAtUtc = DateTimeOffset.UtcNow;
+            this.AppendPaymentAudit(
+                paymentAttempt,
+                PaymentAttemptStates.Created,
+                paymentAttempt.State,
+                $"payment_attempt.{paymentAttempt.State}",
+                "Payment attempt requires provider action.",
+                providerSession.MetadataJson);
 
             Touch(session, CheckoutSessionStates.OrderPending, CheckoutSteps.PlaceOrder, DateTimeOffset.UtcNow);
             session.IdempotencyKey = idempotencyKey;
@@ -1701,6 +1736,44 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         {
             return supportedValues.Count == 0
                 || (value is not null && supportedValues.Contains(value, StringComparer.OrdinalIgnoreCase));
+        }
+
+        private void AppendPaymentAudit(
+            PaymentAttempt attempt,
+            string? oldState,
+            string newState,
+            string eventType,
+            string message,
+            string? providerMetadataJson)
+        {
+            var normalizedMessage = NormalizeNullable(message) ?? "Payment attempt updated.";
+            this.context.PaymentAttemptAuditLogs.Add(new PaymentAttemptAuditLog
+            {
+                Id = Guid.NewGuid(),
+                StoreId = attempt.StoreId,
+                OrderId = attempt.OrderId,
+                PaymentAttemptId = attempt.Id,
+                ProviderKey = attempt.ProviderKey,
+                EventType = NormalizeNullable(eventType) is { Length: <= 128 } normalizedEventType
+                    ? normalizedEventType
+                    : "payment_attempt.updated",
+                OldState = NormalizeKey(oldState),
+                NewState = NormalizeKey(newState) ?? PaymentAttemptStates.Created,
+                Message = normalizedMessage.Length > 512 ? normalizedMessage[..512] : normalizedMessage,
+                MetadataJson = BuildPaymentAuditMetadataJson(attempt, providerMetadataJson),
+                CreatedAtUtc = DateTimeOffset.UtcNow,
+            });
+        }
+
+        private static string BuildPaymentAuditMetadataJson(PaymentAttempt attempt, string? providerMetadataJson)
+        {
+            return JsonSerializer.Serialize(new
+            {
+                providerReference = NormalizeNullable(attempt.ProviderReference),
+                providerSessionId = NormalizeNullable(attempt.ProviderSessionId),
+                failureCode = NormalizeNullable(attempt.FailureCode),
+                hasProviderMetadata = !string.IsNullOrWhiteSpace(providerMetadataJson),
+            }, JsonOptions);
         }
 
         private string ResolvePaymentNextActionKind(string paymentMethodKey)

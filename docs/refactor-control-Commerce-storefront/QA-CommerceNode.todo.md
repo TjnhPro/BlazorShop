@@ -1016,3 +1016,12 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Checkout shipping method step stores deterministic `free_standard` option without trusting browser price/total fields. 2026-07-17 Phase 4: `SelectShippingMethodAsync_SelectsFreeStandardAndResetsPayment` passed.
 - [x] Checkout shipping method step requires shipping address first. 2026-07-17 Phase 4: `SelectShippingMethodAsync_BlocksWhenShippingAddressMissing` passed.
 - [x] Checkout shipping method OpenAPI is generator-safe and exposes server-owned shipping option response metadata. 2026-07-17 Phase 4: `CommerceNodeStorefrontOpenApiContractTests` passed 29/29 after snapshot refresh.
+
+## Payment Core
+
+- [x] Payment attempt creation writes a support-readable audit row without raw provider payload. 2026-07-17 Phase 5: `PaymentAttemptServiceTests.CreateAsync_DuplicateIdempotencyKey_ReturnsSameAttempt` passed and asserted a single `payment_attempt.created` audit row.
+- [x] Payment attempt state transitions append old/new state audit metadata. 2026-07-17 Phase 5: focused `PaymentAttemptServiceTests` covered failed and captured transitions.
+- [x] Checkout COD and hosted provider flows write payment audit rows. 2026-07-17 Phase 5: `StorefrontCheckoutServiceTests` asserted captured, failed, and `requires_action` audit rows during place-order flows.
+- [x] Payment audit metadata is sanitized and does not store raw provider secrets. 2026-07-17 Phase 5: failed transition test stored raw provider metadata on the attempt but asserted audit metadata excludes `sk_test_raw`.
+- [x] Terminal payment state still cannot be overwritten by late events. 2026-07-17 Phase 5: `PaymentAttemptServiceTests.TransitionAsync_AllowsForwardState_AndRejectsTerminalTransition` passed.
+- [x] Payment attempt audit schema is CommerceNode-owned. 2026-07-17 Phase 5: migration `CommerceNodePaymentAttemptAuditTrail` adds only `payment_attempt_audit_logs`; focused model/OpenAPI/payment contract run passed 53/53.

@@ -1077,6 +1077,10 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Equal(PaymentAttemptStates.Captured, attempt.State);
             Assert.Equal(first.Payload.OrderId, attempt.OrderId);
             Assert.Equal(CartSessionStates.Ordered, context.CartSessions.Single().State);
+            Assert.Contains(context.PaymentAttemptAuditLogs, audit =>
+                audit.PaymentAttemptId == attempt.Id
+                && audit.EventType == "payment_attempt.captured"
+                && audit.NewState == PaymentAttemptStates.Captured);
             Assert.Equal(8, context.Products.Single(item => item.Id == product.Id).Quantity);
         }
 
@@ -1573,6 +1577,10 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var attempt = Assert.Single(context.PaymentAttempts);
             Assert.Equal(PaymentAttemptStates.RequiresAction, attempt.State);
             Assert.Equal("cs_test_123", attempt.ProviderSessionId);
+            Assert.Contains(context.PaymentAttemptAuditLogs, audit =>
+                audit.PaymentAttemptId == attempt.Id
+                && audit.EventType == "payment_attempt.requires_action"
+                && audit.NewState == PaymentAttemptStates.RequiresAction);
             Assert.Equal(CheckoutSessionStates.OrderPending, context.CheckoutSessions.Single().State);
             Assert.Equal(CartSessionStates.Active, context.CartSessions.Single().State);
         }
@@ -1614,7 +1622,12 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.False(result.Success);
             Assert.Equal(ServiceResponseType.Conflict, result.ResponseType);
             Assert.Empty(context.Orders);
-            Assert.Equal(PaymentAttemptStates.Failed, context.PaymentAttempts.Single().State);
+            var attempt = context.PaymentAttempts.Single();
+            Assert.Equal(PaymentAttemptStates.Failed, attempt.State);
+            Assert.Contains(context.PaymentAttemptAuditLogs, audit =>
+                audit.PaymentAttemptId == attempt.Id
+                && audit.EventType == "payment_attempt.failed"
+                && audit.NewState == PaymentAttemptStates.Failed);
         }
 
         [Fact]

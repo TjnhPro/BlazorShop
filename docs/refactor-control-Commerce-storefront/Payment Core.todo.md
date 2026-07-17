@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Payment Core.md`
 
-Status: In progress. Phase 0-4 completed.
+Status: In progress. Phase 0-5 completed.
 
 Scope: turn the existing checkout payment foundation into a practical provider core for active V2. The goal is enough payment behavior for real store usage without moving PayPal/Stripe SDK logic into Domain/Application and without building a full payment platform.
 
@@ -48,7 +48,7 @@ Approved:
   - [ ] webhook signature verification hook.
   - [ ] webhook idempotency.
   - [ ] out-of-order event handling.
-  - [ ] order note/audit trail for payment transitions.
+  - [x] order note/audit trail for payment transitions.
 - [ ] Safe public/admin projections:
   - [ ] Storefront receives public method metadata only.
   - [ ] Admin can manage provider activation/settings without exposing secrets back in DTOs.
@@ -118,7 +118,7 @@ Current API surface:
 - [ ] Public webhook/callback request can carry requested state.
 - [ ] Callback/webhook mostly uses public payment attempt ID instead of provider session/reference.
 - [ ] Out-of-order events return conflict instead of recording safe ignored state.
-- [ ] Payment transitions are not clearly attached to order notes/audit trail.
+- [x] Payment transitions are attached to a secret-safe payment attempt audit trail.
 - [ ] PayPal capture remains a special endpoint.
 
 ## Core Decisions
@@ -458,42 +458,42 @@ Goal: make payment state changes explainable to admins and support.
 
 Implementation checklist:
 
-- [ ] Reuse existing order audit/note model if one exists and fits.
-- [ ] Add lightweight payment/order note entity only if needed.
-- [ ] Minimum note fields:
-  - [ ] `StoreId`.
-  - [ ] nullable `OrderId`.
-  - [ ] `PaymentAttemptId`.
-  - [ ] `ProviderKey`.
-  - [ ] `EventType`.
-  - [ ] `OldState`.
-  - [ ] `NewState`.
-  - [ ] `Message`.
-  - [ ] `CreatedAtUtc`.
-  - [ ] safe/sanitized `MetadataJson`.
-- [ ] Append note/audit on attempt created.
-- [ ] Append note/audit on requires action.
-- [ ] Append note/audit on authorized.
-- [ ] Append note/audit on captured.
-- [ ] Append note/audit on failed.
-- [ ] Append note/audit on cancelled.
-- [ ] Append note/audit on expired.
-- [ ] Add refund hook accepted/rejected audit later only if hook is used.
-- [ ] Store raw provider error code separately only if needed and sanitized.
-- [ ] Public response uses stable safe code/message.
+- [x] Reuse existing order audit/note model if one exists and fits. Existing admin audit log is for admin actions, so runtime payment state uses its own audit table.
+- [x] Add lightweight payment/order note entity only if needed.
+- [x] Minimum note fields:
+  - [x] `StoreId`.
+  - [x] nullable `OrderId`.
+  - [x] `PaymentAttemptId`.
+  - [x] `ProviderKey`.
+  - [x] `EventType`.
+  - [x] `OldState`.
+  - [x] `NewState`.
+  - [x] `Message`.
+  - [x] `CreatedAtUtc`.
+  - [x] safe/sanitized `MetadataJson`.
+- [x] Append note/audit on attempt created.
+- [x] Append note/audit on requires action.
+- [x] Append note/audit on authorized.
+- [x] Append note/audit on captured.
+- [x] Append note/audit on failed.
+- [x] Append note/audit on cancelled.
+- [x] Append note/audit on expired.
+- [n/a] Add refund hook accepted/rejected audit later only if hook is used.
+- [x] Store raw provider error code separately only if needed and sanitized.
+- [x] Public response uses stable safe code/message.
 
 Verification checklist:
 
-- [ ] Captured transition appends audit/note.
-- [ ] Failed transition stores safe failure code/message.
-- [ ] No secret values are written to audit metadata.
-- [ ] Terminal state cannot be overwritten by late event.
-- [ ] Admin/support can understand payment history without raw provider payload.
+- [x] Captured transition appends audit/note.
+- [x] Failed transition stores safe failure code/message.
+- [x] No secret values are written to audit metadata.
+- [x] Terminal state cannot be overwritten by late event.
+- [x] Admin/support can understand payment history without raw provider payload.
 
 Exit criteria:
 
-- [ ] Payment transitions are explainable and secret-safe.
-- [ ] Public responses remain safe.
+- [x] Payment transitions are explainable and secret-safe.
+- [x] Public responses remain safe.
 
 Suggested commit:
 
@@ -660,9 +660,9 @@ test(payment-core): verify provider core
 - [ ] Duplicate webhook does not create duplicate order.
 - [ ] Webhook can resolve attempt by provider session/reference.
 - [ ] Out-of-order provider event is recorded and ignored safely.
-- [ ] Captured online payment creates one order exactly once.
-- [ ] Terminal payment state cannot be overwritten by late event.
-- [ ] Payment audit/note metadata contains no secrets.
+- [x] Captured online payment creates one order exactly once.
+- [x] Terminal payment state cannot be overwritten by late event.
+- [x] Payment audit/note metadata contains no secrets.
 - [ ] Public payment method response does not expose `SettingsJson` or secrets.
 - [ ] Admin payment method update preserves settings when omitted.
 - [ ] Admin clear settings requires explicit flag.
@@ -776,7 +776,7 @@ test(payment-core): verify provider core
 - [ ] Phase 2 - provider operation contract.
 - [ ] Phase 3 - checkout cutover from provider name to capability.
 - [ ] Phase 4 - webhook and callback hardening.
-- [ ] Phase 5 - payment attempt state, order notes, and audit trail.
+- [x] Phase 5 - payment attempt state, order notes, and audit trail.
 - [ ] Phase 6 - admin and public projection cleanup.
 - [ ] Phase 7 - PayPal compatibility and provider route cleanup.
 - [ ] Phase 8 - contract, QA, and documentation.
@@ -790,7 +790,7 @@ test(payment-core): verify provider core
 - [ ] Public APIs never expose provider secrets or raw settings.
 - [ ] Webhook events are signature-aware, idempotent, and cannot force arbitrary state.
 - [ ] Duplicate and out-of-order provider events are safe.
-- [ ] Captured online payment creates one order exactly once.
+- [x] Captured online payment creates one order exactly once.
 - [ ] Admin provider settings remain secret-safe and audited.
 - [ ] Active V2 API contract tests and focused payment tests pass.
 - [ ] No legacy payment route or legacy database is extended.

@@ -29,6 +29,9 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Equal(first.Payload!.Id, second.Payload!.Id);
             Assert.Equal(42m, second.Payload.Amount);
             Assert.Single(context.PaymentAttempts);
+            var audit = Assert.Single(context.PaymentAttemptAuditLogs);
+            Assert.Equal("payment_attempt.created", audit.EventType);
+            Assert.Equal(PaymentAttemptStates.Created, audit.NewState);
         }
 
         [Fact]
@@ -70,6 +73,10 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.False(rejected.Success);
             Assert.Equal(ServiceResponseType.Conflict, rejected.ResponseType);
             Assert.Equal(PaymentAttemptStates.Failed, context.PaymentAttempts.Single().State);
+            Assert.Contains(context.PaymentAttemptAuditLogs, audit =>
+                audit.EventType == "payment_attempt.failed"
+                && audit.OldState == PaymentAttemptStates.Created
+                && audit.NewState == PaymentAttemptStates.Failed);
         }
 
         [Fact]
@@ -85,13 +92,16 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 PaymentAttemptStates.Failed,
                 FailureCode: "provider_declined",
                 FailureMessage: "Payment was declined.",
-                MetadataJson: "{\"safe\":true}"));
+                MetadataJson: "{\"secret\":\"sk_test_raw\",\"safe\":true}"));
 
             Assert.True(failed.Success);
             Assert.Equal(PaymentAttemptStates.Failed, failed.Payload!.State);
             Assert.Equal("provider_declined", failed.Payload.FailureCode);
             Assert.Equal("Payment was declined.", failed.Payload.FailureMessage);
-            Assert.Equal("{\"safe\":true}", context.PaymentAttempts.Single().MetadataJson);
+            Assert.Equal("{\"secret\":\"sk_test_raw\",\"safe\":true}", context.PaymentAttempts.Single().MetadataJson);
+            var audit = context.PaymentAttemptAuditLogs.Single(item => item.EventType == "payment_attempt.failed");
+            Assert.Contains("provider_declined", audit.MetadataJson);
+            Assert.DoesNotContain("sk_test_raw", audit.MetadataJson);
         }
 
         [Fact]
@@ -183,6 +193,11 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Equal(context.Orders.Single().Id, first.Payload.OrderId);
             Assert.Equal(CartSessionStates.Ordered, context.CartSessions.Single().State);
             Assert.Equal(3, context.Products.Single(item => item.Id == product.Id).Quantity);
+            Assert.Contains(context.PaymentAttemptAuditLogs, audit =>
+                audit.EventType == "payment_attempt.captured"
+                && audit.OldState == PaymentAttemptStates.RequiresAction
+                && audit.NewState == PaymentAttemptStates.Captured
+                && audit.OrderId == context.Orders.Single().Id);
         }
 
         [Fact]
