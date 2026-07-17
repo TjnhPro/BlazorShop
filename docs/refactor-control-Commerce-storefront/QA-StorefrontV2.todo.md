@@ -104,11 +104,11 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Reset password succeeds with valid token and password. 2026-07-17 Phase 1: local POST calls scoped reset client and redirects to sign-in password-reset state.
 - [x] Reset password fails generically with invalid/expired token. 2026-07-17 Phase 1: failed provider response redirects with generic reset-link error.
 - [x] WASM same-origin client has no Commerce Node base URL, node key, node secret, refresh token, or access token configuration. 2026-07-17 Phase 2: WASM registers `HttpClient` with `builder.HostEnvironment.BaseAddress`; `StorefrontWasmRuntimeFoundationTests` rejects absolute/protocol-relative routes.
-- [ ] Cart WASM loads existing cart.
-- [ ] Cart WASM updates quantity.
-- [ ] Cart WASM removes a line.
-- [ ] Cart WASM clears cart.
-- [ ] Cart badge updates after cart mutation.
+- [x] Cart WASM loads existing cart. 2026-07-17 Phase 3: `/my-cart` prerenders `StorefrontCartView` from server snapshot and the component refreshes via `GET /api/cart`; focused cart suite passed 25/25.
+- [x] Cart WASM updates quantity. 2026-07-17 Phase 3: `StorefrontCartView` calls same-origin `PUT /api/cart/lines/{lineId}` with CSRF-backed local API client; focused cart suite passed.
+- [x] Cart WASM removes a line. 2026-07-17 Phase 3: `StorefrontCartView` calls same-origin `DELETE /api/cart/lines/{lineId}`; focused cart suite passed.
+- [x] Cart WASM clears cart. 2026-07-17 Phase 3: `StorefrontCartView` calls same-origin `DELETE /api/cart`; focused cart suite passed.
+- [x] Cart badge updates after cart mutation. 2026-07-17 Phase 3: WASM interop updates `[data-storefront-cart-badge]` and dispatches `blazorshop:cart-changed`; static guard and focused cart suite passed.
 - [ ] Account profile WASM reads and updates current customer only.
 - [ ] Account addresses WASM create/update/delete current customer's addresses only.
 - [ ] Account order list/detail only shows current customer's orders.

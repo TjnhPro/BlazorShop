@@ -88,6 +88,38 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("accessToken", program, StringComparison.OrdinalIgnoreCase);
         }
 
+        [Fact]
+        public void CartPage_HostsInteractiveWasmCartViewWithServerSnapshot()
+        {
+            var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CartPage.razor");
+
+            Assert.Contains("<StorefrontCartView", page, StringComparison.Ordinal);
+            Assert.Contains("InitialCart=\"_cart\"", page, StringComparison.Ordinal);
+            Assert.Contains("InitialAlerts=\"_alerts\"", page, StringComparison.Ordinal);
+            Assert.Contains("@rendermode=\"InteractiveWebAssembly\"", page, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void CartWasmComponent_UsesSameOriginLocalCartEndpoints()
+        {
+            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Cart/StorefrontCartView.razor");
+
+            Assert.Contains("GetAsync<StorefrontBrowserCart>(\"/api/cart\")", component, StringComparison.Ordinal);
+            Assert.Contains("PutJsonAsync<StorefrontBrowserCartQuantityRequest, StorefrontBrowserCart>", component, StringComparison.Ordinal);
+            Assert.Contains("DeleteAsync<StorefrontBrowserCart>($\"/api/cart/lines/{line.LineId:D}\")", component, StringComparison.Ordinal);
+            Assert.Contains("DeleteAsync<StorefrontBrowserCart>(\"/api/cart\")", component, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-cart-quantity", component, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-cart-remove", component, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-cart-clear", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("api/storefront/stores", component, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("CommerceNode", component, StringComparison.OrdinalIgnoreCase);
+
+            var interop = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/wwwroot/js/storefrontWasmInterop.js");
+            Assert.Contains("publishCartChanged", component, StringComparison.Ordinal);
+            Assert.Contains("[data-storefront-cart-badge]", interop, StringComparison.Ordinal);
+            Assert.Contains("blazorshop:cart-changed", interop, StringComparison.Ordinal);
+        }
+
         private static string RepositoryRoot()
         {
             var current = AppContext.BaseDirectory;
@@ -102,6 +134,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             }
 
             throw new DirectoryNotFoundException("Could not find repository root.");
+        }
+
+        private static string ReadRepositoryFile(string relativePath)
+        {
+            return File.ReadAllText(Path.Combine(
+                RepositoryRoot(),
+                relativePath.Replace('/', Path.DirectorySeparatorChar)));
         }
 
         private sealed record CartSummary(int Count);

@@ -797,6 +797,35 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("cart", content, StringComparison.OrdinalIgnoreCase);
         }
 
+        [Fact]
+        public async Task CartPage_PrendersInteractiveCartSnapshot()
+        {
+            var productId = Guid.Parse("31313131-3131-3131-3131-313131313131");
+            var handler = new CartApiHandler(productId, initialQuantity: 2);
+            using var client = CreateClient(services =>
+            {
+                services.RemoveAll<StorefrontApiClient>();
+                services.AddScoped(_ => new StorefrontApiClient(
+                    new HttpClient(handler)
+                    {
+                        BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
+                    },
+                    Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+            });
+
+            using var request = new HttpRequestMessage(HttpMethod.Get, StorefrontRoutes.Cart);
+            request.Headers.Add("Cookie", "bs-cart-token=server-token");
+            using var response = await client.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("WASM Cart Product", content, StringComparison.Ordinal);
+            Assert.Contains("2 items in cart", content, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-cart-quantity", content, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-cart-remove", content, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-cart-clear", content, StringComparison.Ordinal);
+        }
+
         [Theory]
         [InlineData("POST", "/api/cart/lines")]
         [InlineData("PUT", "/api/cart/lines/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")]
@@ -1944,9 +1973,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             private readonly Guid productId;
             private int quantity;
 
-            public CartApiHandler(Guid productId)
+            public CartApiHandler(Guid productId, int initialQuantity = 0)
             {
                 this.productId = productId;
+                this.quantity = initialQuantity;
             }
 
             public string LastAddLineBody { get; private set; } = string.Empty;
@@ -2022,10 +2052,29 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                                     artworkVersion = (int?)null,
                                     fulfillmentProviderKey = (string?)null,
                                     quantity = this.quantity,
+                                    displayName = "WASM Cart Product",
+                                    productSlug = "wasm-cart-product",
+                                    imageUrl = "/media/products/wasm-cart-product.png",
+                                    purchasable = true,
+                                    quantityMinimum = 1,
+                                    quantityMaximum = 9,
+                                    quantityStep = 1,
                                     unitPriceSnapshot = 129.95m,
+                                    unitPrice = 129.95m,
+                                    lineTotal = 129.95m * this.quantity,
+                                    lineSubtotal = 129.95m * this.quantity,
                                     currencyCodeSnapshot = "EUR",
+                                    selectedAttributes = Array.Empty<object>(),
+                                    warnings = Array.Empty<object>(),
                                 },
                             },
+                        summaryCount = this.quantity,
+                        currencyCode = "EUR",
+                        subtotal = 129.95m * this.quantity,
+                        grandTotal = 129.95m * this.quantity,
+                        checkoutAllowed = true,
+                        warnings = Array.Empty<object>(),
+                        adjustments = Array.Empty<object>(),
                     },
                 };
             }

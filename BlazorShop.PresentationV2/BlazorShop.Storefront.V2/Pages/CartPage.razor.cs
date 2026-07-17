@@ -1,5 +1,6 @@
 namespace BlazorShop.Storefront.Pages
 {
+    using BlazorShop.Storefront.Components.Browser;
     using BlazorShop.Storefront.Services;
     using BlazorShop.Storefront.Services.Contracts;
 
@@ -7,31 +8,15 @@ namespace BlazorShop.Storefront.Pages
 
     public partial class CartPage
     {
-        private readonly List<CartAlert> _alerts = [];
-        private IReadOnlyList<CartLine> _lines = [];
+        private readonly List<StorefrontBrowserCartAlert> _alerts = [];
         private StorefrontDisplayContext _displayContext = StorefrontDisplayContext.Fallback;
-        private StorefrontCartResponse? _cart;
+        private StorefrontBrowserCart? _cart;
 
         [CascadingParameter]
         private HttpContext? HttpContext { get; set; }
 
-        private IReadOnlyList<CartAlert> Alerts => _alerts;
-
-        private IReadOnlyList<CartLine> Lines => _lines;
-
-        private int ItemCount => _cart?.SummaryCount > 0 ? _cart.SummaryCount : _lines.Sum(line => line.Quantity);
-
-        private string GrandTotalDisplay => FormatPrice(_cart?.GrandTotal ?? _lines.Sum(line => line.LineTotal), GrandTotalCurrencyCode);
-
-        private string GrandTotalCurrencyCode => NormalizeCurrencyCode(_cart?.CurrencyCode) ?? _lines
-            .Select(line => line.CurrencyCode)
-            .Distinct(StringComparer.Ordinal)
-            .SingleOrDefault()
-            ?? _displayContext.CurrencyCode;
-
-        private string CheckoutUrl => StorefrontRoutes.Checkout;
-
-        private bool CheckoutAllowed => _cart?.CheckoutAllowed ?? _lines.All(line => !line.IsUnavailable);
+        [Inject]
+        private StorefrontCartTokenService CartTokenService { get; set; } = default!;
 
         [Inject]
         private IStorefrontDisplayContextProvider DisplayContextProvider { get; set; } = default!;
@@ -48,29 +33,64 @@ namespace BlazorShop.Storefront.Pages
             var cartResolution = await CartTokenService.ResolveAsync(HttpContext);
             if (!cartResolution.Success)
             {
-                _alerts.Add(new CartAlert("error", cartResolution.Message));
+                _alerts.Add(new StorefrontBrowserCartAlert("error", cartResolution.Message));
                 _cart = null;
-                _lines = [];
                 return;
             }
 
-            _cart = cartResolution.Cart;
+            _cart = BuildCart(cartResolution.Cart);
             foreach (var warning in _cart?.Warnings ?? [])
             {
-                _alerts.Add(new CartAlert("warning", warning.Message));
+                _alerts.Add(new StorefrontBrowserCartAlert("warning", warning.Message));
             }
-
-            _lines = BuildLines(_cart?.Lines ?? []);
         }
 
-        private IReadOnlyList<CartLine> BuildLines(IEnumerable<StorefrontCartLineResponse> cartItems)
+        private StorefrontBrowserCart BuildCart(StorefrontCartResponse? cart)
         {
-            var lines = new List<CartLine>();
+            var lines = BuildLines(cart?.Lines ?? [], cart?.CurrencyCode);
+            var count = cart is not null && cart.SummaryCount > 0
+                ? cart.SummaryCount
+                : lines.Sum(line => Math.Max(0, line.Quantity));
+            var currencyCode = NormalizeCurrencyCode(cart?.CurrencyCode) ?? lines
+                .Select(line => line.CurrencyCode)
+                .Distinct(StringComparer.Ordinal)
+                .SingleOrDefault()
+                ?? _displayContext.CurrencyCode;
+            var subtotal = cart?.Subtotal ?? lines.Sum(line => line.LineTotal);
+            var grandTotal = cart?.GrandTotal ?? lines.Sum(line => line.LineTotal);
+
+            return new StorefrontBrowserCart(
+                count,
+                cart?.Version ?? 0,
+                lines,
+                currencyCode,
+                subtotal,
+                FormatPrice(subtotal, currencyCode),
+                grandTotal,
+                FormatPrice(grandTotal, currencyCode),
+                cart?.CheckoutAllowed ?? lines.All(line => !line.IsUnavailable),
+                (cart?.Warnings ?? [])
+                    .Select(warning => new StorefrontBrowserCartWarning(warning.Message))
+                    .ToArray(),
+                (cart?.Adjustments ?? [])
+                    .Select(adjustment => new StorefrontBrowserCartAdjustment(
+                        adjustment.Label,
+                        adjustment.Amount,
+                        FormatPrice(adjustment.Amount, currencyCode)))
+                    .ToArray());
+        }
+
+        private IReadOnlyList<StorefrontBrowserCartLine> BuildLines(IEnumerable<StorefrontCartLineResponse> cartItems, string? cartCurrencyCode)
+        {
+            var lines = new List<StorefrontBrowserCartLine>();
 
             foreach (var cartItem in cartItems)
             {
                 var quantity = Math.Max(1, cartItem.Quantity);
-                lines.Add(new CartLine(
+                var currencyCode = NormalizeCurrencyCode(cartItem.CurrencyCodeSnapshot) ?? NormalizeCurrencyCode(cartCurrencyCode) ?? _displayContext.CurrencyCode;
+                var unitPrice = cartItem.UnitPrice ?? cartItem.UnitPriceSnapshot ?? 0m;
+                var lineTotal = cartItem.LineTotal ?? cartItem.LineSubtotal ?? (unitPrice * quantity);
+                lines.Add(new StorefrontBrowserCartLine(
                     LineId: cartItem.LineId,
                     ProductId: cartItem.ProductId,
                     ProductVariantId: cartItem.ProductVariantId,
@@ -78,14 +98,20 @@ namespace BlazorShop.Storefront.Pages
                     ProductUrl: ResolveProductUrl(cartItem),
                     ImageUrl: cartItem.ImageUrl,
                     Quantity: quantity,
-                    UnitPrice: cartItem.UnitPrice ?? cartItem.UnitPriceSnapshot ?? 0m,
-                    LineTotal: cartItem.LineTotal ?? cartItem.LineSubtotal ?? ((cartItem.UnitPrice ?? cartItem.UnitPriceSnapshot ?? 0m) * quantity),
-                    CurrencyCode: NormalizeCurrencyCode(cartItem.CurrencyCodeSnapshot) ?? NormalizeCurrencyCode(_cart?.CurrencyCode) ?? _displayContext.CurrencyCode,
+                    UnitPrice: unitPrice,
+                    UnitPriceDisplay: FormatPrice(unitPrice, currencyCode),
+                    LineTotal: lineTotal,
+                    LineTotalDisplay: FormatPrice(lineTotal, currencyCode),
+                    CurrencyCode: currencyCode,
                     VariantLabel: ResolveSelectedAttributes(cartItem.SelectedAttributes),
                     QuantityMinimum: Math.Max(1, cartItem.QuantityMinimum),
                     QuantityMaximum: cartItem.QuantityMaximum,
                     QuantityStep: Math.Max(1, cartItem.QuantityStep),
-                    Warnings: (cartItem.Warnings ?? []).Select(warning => warning.Message).Where(message => !string.IsNullOrWhiteSpace(message)).ToArray(),
+                    Warnings: (cartItem.Warnings ?? [])
+                        .Select(warning => warning.Message)
+                        .Where(message => !string.IsNullOrWhiteSpace(message))
+                        .Select(message => new StorefrontBrowserCartWarning(message))
+                        .ToArray(),
                     IsUnavailable: !cartItem.Purchasable || (cartItem.Warnings?.Count ?? 0) > 0));
             }
 
@@ -93,28 +119,6 @@ namespace BlazorShop.Storefront.Pages
         }
 
         private string FormatPrice(decimal amount, string currencyCode) => PriceFormatter.Format(amount, _displayContext with { CurrencyCode = currencyCode });
-
-        private sealed record CartAlert(string Level, string Message);
-
-        private sealed record CartLine(
-            Guid LineId,
-            Guid ProductId,
-            Guid? ProductVariantId,
-            string DisplayName,
-            string? ProductUrl,
-            string? ImageUrl,
-            int Quantity,
-            decimal UnitPrice,
-            decimal LineTotal,
-            string CurrencyCode,
-            string? VariantLabel,
-            int QuantityMinimum,
-            int? QuantityMaximum,
-            int QuantityStep,
-            IReadOnlyList<string> Warnings,
-            bool IsUnavailable)
-        {
-        }
 
         private static string? NormalizeCurrencyCode(string? currencyCode)
         {

@@ -9,6 +9,7 @@ using BlazorShop.Application.Services.Contracts;
 using BlazorShop.Storefront.Configuration;
 using BlazorShop.Storefront.Options;
 using BlazorShop.Storefront;
+using BlazorShop.Storefront.Components.Browser;
 using BlazorShop.Storefront.Services;
 using BlazorShop.Storefront.Services.Contracts;
 using BlazorShop.Storefront.WASM;
@@ -518,13 +519,16 @@ app.MapPost(StorefrontRoutes.Checkout, async (
 });
 app.MapGet("/api/cart", async (
     StorefrontCartTokenService cartTokenService,
+    IStorefrontDisplayContextProvider displayContextProvider,
+    IStorefrontPriceFormatter priceFormatter,
     HttpContext httpContext,
     CancellationToken cancellationToken) =>
 {
     var result = await cartTokenService.ResolveAsync(httpContext, cancellationToken: cancellationToken);
+    var displayContext = await displayContextProvider.GetAsync(cancellationToken);
     return result.Success
-        ? Results.Ok(ToLocalCartResponse(result.Cart))
-        : Results.Ok(ToLocalCartResponse(null));
+        ? Results.Ok(ToLocalCartResponse(result.Cart, displayContext, priceFormatter))
+        : Results.Ok(ToLocalCartResponse(null, displayContext, priceFormatter));
 });
 app.MapPost("/api/product-selection-preview", async (
     StorefrontLocalProductSelectionPreviewRequest request,
@@ -584,6 +588,8 @@ app.MapPost("/api/product-selection-preview", async (
 app.MapPost("/api/cart/lines", async (
     StorefrontLocalCartLineRequest request,
     StorefrontCartTokenService cartTokenService,
+    IStorefrontDisplayContextProvider displayContextProvider,
+    IStorefrontPriceFormatter priceFormatter,
     IAntiforgery antiforgery,
     HttpContext httpContext,
     CancellationToken cancellationToken) =>
@@ -611,12 +617,14 @@ app.MapPost("/api/cart/lines", async (
         },
         cancellationToken);
 
-    return ToLocalCartMutationResult(result);
+    return await ToLocalCartMutationResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
 }).RequireRateLimiting(StorefrontLocalCartRateLimitPolicyName);
 app.MapPut("/api/cart/lines/{lineId:guid}", async (
     Guid lineId,
     StorefrontLocalCartQuantityRequest request,
     StorefrontCartTokenService cartTokenService,
+    IStorefrontDisplayContextProvider displayContextProvider,
+    IStorefrontPriceFormatter priceFormatter,
     IAntiforgery antiforgery,
     HttpContext httpContext,
     CancellationToken cancellationToken) =>
@@ -633,11 +641,13 @@ app.MapPut("/api/cart/lines/{lineId:guid}", async (
     }
 
     var result = await cartTokenService.UpdateLineAsync(httpContext, lineId, request.Quantity, cancellationToken);
-    return ToLocalCartMutationResult(result);
+    return await ToLocalCartMutationResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
 }).RequireRateLimiting(StorefrontLocalCartRateLimitPolicyName);
 app.MapDelete("/api/cart/lines/{lineId:guid}", async (
     Guid lineId,
     StorefrontCartTokenService cartTokenService,
+    IStorefrontDisplayContextProvider displayContextProvider,
+    IStorefrontPriceFormatter priceFormatter,
     IAntiforgery antiforgery,
     HttpContext httpContext,
     CancellationToken cancellationToken) =>
@@ -649,10 +659,12 @@ app.MapDelete("/api/cart/lines/{lineId:guid}", async (
     }
 
     var result = await cartTokenService.RemoveLineAsync(httpContext, lineId, cancellationToken);
-    return ToLocalCartMutationResult(result);
+    return await ToLocalCartMutationResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
 }).RequireRateLimiting(StorefrontLocalCartRateLimitPolicyName);
 app.MapDelete("/api/cart", async (
     StorefrontCartTokenService cartTokenService,
+    IStorefrontDisplayContextProvider displayContextProvider,
+    IStorefrontPriceFormatter priceFormatter,
     IAntiforgery antiforgery,
     HttpContext httpContext,
     CancellationToken cancellationToken) =>
@@ -664,7 +676,7 @@ app.MapDelete("/api/cart", async (
     }
 
     var result = await cartTokenService.ClearAsync(httpContext, cancellationToken);
-    return ToLocalCartMutationResult(result);
+    return await ToLocalCartMutationResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
 }).RequireRateLimiting(StorefrontLocalCartRateLimitPolicyName);
 app.MapGet("/api/consent/current", async (
     StorefrontApiClient apiClient,
@@ -1078,11 +1090,16 @@ static async Task<(bool Success, string? Message)> ExecuteCustomerAddressCommand
     }
 }
 
-static IResult ToLocalCartMutationResult(StorefrontCartMutationResult result)
+static async Task<IResult> ToLocalCartMutationResultAsync(
+    StorefrontCartMutationResult result,
+    IStorefrontDisplayContextProvider displayContextProvider,
+    IStorefrontPriceFormatter priceFormatter,
+    CancellationToken cancellationToken)
 {
     if (result.Success)
     {
-        return Results.Ok(ToLocalCartResponse(result.Cart));
+        var displayContext = await displayContextProvider.GetAsync(cancellationToken);
+        return Results.Ok(ToLocalCartResponse(result.Cart, displayContext, priceFormatter));
     }
 
     return Results.Json(
@@ -1184,22 +1201,112 @@ static string ResolveConsentVisitorKey(HttpContext httpContext, bool createIfMis
     return visitorKey;
 }
 
-static StorefrontLocalCartResponse ToLocalCartResponse(StorefrontCartResponse? cart)
+static StorefrontBrowserCart ToLocalCartResponse(
+    StorefrontCartResponse? cart,
+    StorefrontDisplayContext displayContext,
+    IStorefrontPriceFormatter priceFormatter)
 {
-    var lines = cart?.Lines ?? [];
+    var lines = ToLocalCartLines(cart?.Lines ?? [], cart?.CurrencyCode, displayContext, priceFormatter);
     var count = cart is not null && cart.SummaryCount > 0
         ? cart.SummaryCount
         : lines.Sum(line => Math.Max(0, line.Quantity));
-    return new StorefrontLocalCartResponse(
-        Count: count,
-        Version: cart?.Version ?? 0,
-        Lines: lines,
-        CurrencyCode: cart?.CurrencyCode ?? "USD",
-        Subtotal: cart?.Subtotal ?? lines.Sum(line => line.LineTotal ?? line.UnitPriceSnapshot.GetValueOrDefault() * Math.Max(0, line.Quantity)),
-        GrandTotal: cart?.GrandTotal ?? lines.Sum(line => line.LineTotal ?? line.UnitPriceSnapshot.GetValueOrDefault() * Math.Max(0, line.Quantity)),
-        CheckoutAllowed: cart?.CheckoutAllowed ?? true,
-        Warnings: cart?.Warnings ?? [],
-        Adjustments: cart?.Adjustments ?? []);
+    var currencyCode = NormalizeCurrencyCode(cart?.CurrencyCode) ?? lines
+        .Select(line => line.CurrencyCode)
+        .Distinct(StringComparer.Ordinal)
+        .SingleOrDefault()
+        ?? displayContext.CurrencyCode;
+    var subtotal = cart?.Subtotal ?? lines.Sum(line => line.LineTotal);
+    var grandTotal = cart?.GrandTotal ?? lines.Sum(line => line.LineTotal);
+
+    return new StorefrontBrowserCart(
+        count,
+        cart?.Version ?? 0,
+        lines,
+        currencyCode,
+        subtotal,
+        FormatLocalCartPrice(subtotal, currencyCode, displayContext, priceFormatter),
+        grandTotal,
+        FormatLocalCartPrice(grandTotal, currencyCode, displayContext, priceFormatter),
+        cart?.CheckoutAllowed ?? lines.All(line => !line.IsUnavailable),
+        (cart?.Warnings ?? [])
+            .Select(warning => new StorefrontBrowserCartWarning(warning.Message))
+            .ToArray(),
+        (cart?.Adjustments ?? [])
+            .Select(adjustment => new StorefrontBrowserCartAdjustment(
+                adjustment.Label,
+                adjustment.Amount,
+                FormatLocalCartPrice(adjustment.Amount, NormalizeCurrencyCode(adjustment.CurrencyCode) ?? currencyCode, displayContext, priceFormatter)))
+            .ToArray());
+}
+
+static IReadOnlyList<StorefrontBrowserCartLine> ToLocalCartLines(
+    IEnumerable<StorefrontCartLineResponse> cartItems,
+    string? cartCurrencyCode,
+    StorefrontDisplayContext displayContext,
+    IStorefrontPriceFormatter priceFormatter)
+{
+    var lines = new List<StorefrontBrowserCartLine>();
+    foreach (var cartItem in cartItems)
+    {
+        var quantity = Math.Max(1, cartItem.Quantity);
+        var currencyCode = NormalizeCurrencyCode(cartItem.CurrencyCodeSnapshot) ?? NormalizeCurrencyCode(cartCurrencyCode) ?? displayContext.CurrencyCode;
+        var unitPrice = cartItem.UnitPrice ?? cartItem.UnitPriceSnapshot ?? 0m;
+        var lineTotal = cartItem.LineTotal ?? cartItem.LineSubtotal ?? (unitPrice * quantity);
+        lines.Add(new StorefrontBrowserCartLine(
+            cartItem.LineId,
+            cartItem.ProductId,
+            cartItem.ProductVariantId,
+            string.IsNullOrWhiteSpace(cartItem.DisplayName) ? "Cart item" : cartItem.DisplayName,
+            ResolveLocalCartProductUrl(cartItem),
+            cartItem.ImageUrl,
+            quantity,
+            unitPrice,
+            FormatLocalCartPrice(unitPrice, currencyCode, displayContext, priceFormatter),
+            lineTotal,
+            FormatLocalCartPrice(lineTotal, currencyCode, displayContext, priceFormatter),
+            currencyCode,
+            ResolveLocalCartSelectedAttributes(cartItem.SelectedAttributes),
+            Math.Max(1, cartItem.QuantityMinimum),
+            cartItem.QuantityMaximum,
+            Math.Max(1, cartItem.QuantityStep),
+            (cartItem.Warnings ?? [])
+                .Select(warning => warning.Message)
+                .Where(message => !string.IsNullOrWhiteSpace(message))
+                .Select(message => new StorefrontBrowserCartWarning(message))
+                .ToArray(),
+            !cartItem.Purchasable || (cartItem.Warnings?.Count ?? 0) > 0));
+    }
+
+    return lines;
+}
+
+static string FormatLocalCartPrice(
+    decimal amount,
+    string currencyCode,
+    StorefrontDisplayContext displayContext,
+    IStorefrontPriceFormatter priceFormatter)
+{
+    return priceFormatter.Format(amount, displayContext with { CurrencyCode = currencyCode });
+}
+
+static string? ResolveLocalCartProductUrl(StorefrontCartLineResponse cartItem)
+{
+    if (!string.IsNullOrWhiteSpace(cartItem.ProductSlug))
+    {
+        return StorefrontRoutes.Product(cartItem.ProductSlug);
+    }
+
+    return string.IsNullOrWhiteSpace(cartItem.ProductUrl) ? null : cartItem.ProductUrl;
+}
+
+static string? ResolveLocalCartSelectedAttributes(IReadOnlyList<StorefrontCartSelectedAttributeResponse>? attributes)
+{
+    var attributeText = string.Join(
+        " / ",
+        (attributes ?? [])
+            .Where(attribute => !string.IsNullOrWhiteSpace(attribute.Name) || !string.IsNullOrWhiteSpace(attribute.Value))
+            .Select(attribute => $"{attribute.Name}: {attribute.Value}"));
+    return string.IsNullOrWhiteSpace(attributeText) ? null : attributeText;
 }
 
 public sealed class StorefrontLocalCartLineRequest
@@ -1260,17 +1367,6 @@ public sealed class StorefrontCurrencyPreferenceForm
 
     public string? ReturnUrl { get; set; }
 }
-
-public sealed record StorefrontLocalCartResponse(
-    int Count,
-    int Version,
-    IReadOnlyList<StorefrontCartLineResponse> Lines,
-    string CurrencyCode,
-    decimal Subtotal,
-    decimal GrandTotal,
-    bool CheckoutAllowed,
-    IReadOnlyList<StorefrontCartWarningResponse> Warnings,
-    IReadOnlyList<StorefrontCartAdjustmentResponse> Adjustments);
 
 public sealed record StorefrontLocalCartErrorResponse(string Message);
 
