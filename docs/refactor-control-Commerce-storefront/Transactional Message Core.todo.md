@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Transactional Message Core.md`
 
-Status: Phase 0 complete. Phase 1 not started.
+Status: Phase 1 complete. Phase 2 not started.
 
 Scope: add practical transactional message infrastructure for active V2 Commerce Node. Replace hard-coded direct email calls with template-driven queued messages for account activation, password recovery, order placed confirmation, payment/fulfillment hooks, and contact form delivery. This is not a marketing automation, newsletter campaign, or visual email builder phase.
 
@@ -403,27 +403,27 @@ Goal: add durable templates and queued message rows without changing send behavi
 
 Implementation checklist:
 
-- [ ] Add `MessageTemplate` entity.
-- [ ] Add `QueuedMessage` entity.
-- [ ] Add EF configuration in `CommerceNodeDbContext`.
-- [ ] Add Commerce Node migration.
-- [ ] Add status constants/check constraints.
-- [ ] Add indexes.
-- [ ] Seed default global templates for approved system names.
-- [ ] Add template resolver interface.
-- [ ] Add template resolver implementation.
-- [ ] Add queued message repository/service contract.
+- [x] Add `MessageTemplate` entity. 2026-07-17 Phase 1.
+- [x] Add `QueuedMessage` entity. 2026-07-17 Phase 1.
+- [x] Add EF configuration in `CommerceNodeDbContext`. 2026-07-17 Phase 1.
+- [x] Add Commerce Node migration. 2026-07-17 Phase 1: `CommerceNodeTransactionalMessages`.
+- [x] Add status constants/check constraints. 2026-07-17 Phase 1: queued message statuses and attempt/priority constraints.
+- [x] Add indexes. 2026-07-17 Phase 1: public id, scoped template lookup, idempotency, retry queue, related entity, and correlation indexes.
+- [x] Seed default global templates for approved system names. 2026-07-17 Phase 1.
+- [x] Add template resolver interface. 2026-07-17 Phase 1: `IMessageTemplateResolver`.
+- [x] Add template resolver implementation. 2026-07-17 Phase 1: `MessageTemplateResolver`.
+- [x] Add queued message repository/service contract. 2026-07-17 Phase 1: `IMessageQueueService` contract added for Phase 3 implementation.
 
 Verification checklist:
 
-- [ ] Migration applies to `CommerceNodeDbContext`.
-- [ ] Seeded templates are idempotent.
-- [ ] Existing app starts with no SMTP/template runtime behavior change.
-- [ ] No data is added to `AppDbContext`.
+- [x] Migration applies to `CommerceNodeDbContext`. 2026-07-17 Phase 1: CommerceNode API build passed after migration.
+- [x] Seeded templates are idempotent. 2026-07-17 Phase 1: EF `HasData` seeds deterministic IDs/system names.
+- [x] Existing app starts with no SMTP/template runtime behavior change. 2026-07-17 Phase 1: no send path changed.
+- [x] No data is added to `AppDbContext`. 2026-07-17 Phase 1.
 
 Exit criteria:
 
-- [ ] Templates and queued messages can be persisted safely.
+- [x] Templates and queued messages can be persisted safely. 2026-07-17 Phase 1.
 
 Suggested commit:
 
@@ -826,7 +826,7 @@ test(transactional-message): verify message core
 ## Recommended Implementation Order
 
 - [x] Phase 0 - baseline guardrails. 2026-07-17: focused transactional baseline/auth/settings tests passed.
-- [ ] Phase 1 - message data model and seeds.
+- [x] Phase 1 - message data model and seeds. 2026-07-17: CommerceNode API build passed and focused model/resolver tests passed 34/34.
 - [ ] Phase 2 - token rendering and preview.
 - [ ] Phase 3 - queue and delivery handler.
 - [ ] Phase 4 - account messages.

@@ -119,6 +119,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
         public DbSet<ProductImportRow> ProductImportRows => Set<ProductImportRow>();
 
+        public DbSet<MessageTemplate> MessageTemplates => Set<MessageTemplate>();
+
+        public DbSet<QueuedMessage> QueuedMessages => Set<QueuedMessage>();
+
         public DbSet<VariationTemplate> VariationTemplates => Set<VariationTemplate>();
 
         public DbSet<VariationTemplateOption> VariationTemplateOptions => Set<VariationTemplateOption>();
@@ -639,6 +643,111 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                     .WithMany()
                     .HasForeignKey(log => log.OrderId)
                     .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<MessageTemplate>(entity =>
+            {
+                entity.ToTable("message_templates");
+                entity.HasKey(template => template.Id);
+                entity.Property(template => template.Id).HasColumnName("id");
+                entity.Property(template => template.PublicId).HasColumnName("public_id");
+                entity.Property(template => template.SystemName).HasColumnName("system_name").HasMaxLength(128).IsRequired();
+                entity.Property(template => template.StoreId).HasColumnName("store_id");
+                entity.Property(template => template.LanguageCode).HasColumnName("language_code").HasMaxLength(16);
+                entity.Property(template => template.SubjectTemplate).HasColumnName("subject_template").HasMaxLength(512).IsRequired();
+                entity.Property(template => template.BodyHtmlTemplate).HasColumnName("body_html_template").HasColumnType("text").IsRequired();
+                entity.Property(template => template.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+                entity.Property(template => template.Description).HasColumnName("description").HasMaxLength(512);
+                entity.Property(template => template.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(template => template.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasOne(template => template.Store)
+                    .WithMany()
+                    .HasForeignKey(template => template.StoreId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(template => template.PublicId).IsUnique();
+                entity.HasIndex(template => new { template.StoreId, template.SystemName });
+                entity.HasIndex(template => new { template.SystemName, template.IsActive });
+                entity.HasIndex(template => new { template.SystemName, template.StoreId, template.LanguageCode })
+                    .IsUnique()
+                    .HasFilter("store_id IS NOT NULL AND language_code IS NOT NULL");
+                entity.HasIndex(template => new { template.SystemName, template.StoreId })
+                    .IsUnique()
+                    .HasFilter("store_id IS NOT NULL AND language_code IS NULL")
+                    .HasDatabaseName("ix_message_templates_unique_store_default_language");
+                entity.HasIndex(template => new { template.SystemName, template.LanguageCode })
+                    .IsUnique()
+                    .HasFilter("store_id IS NULL AND language_code IS NOT NULL")
+                    .HasDatabaseName("ix_message_templates_unique_global_language");
+                entity.HasIndex(template => template.SystemName)
+                    .IsUnique()
+                    .HasFilter("store_id IS NULL AND language_code IS NULL")
+                    .HasDatabaseName("ix_message_templates_unique_global_default_language");
+
+                entity.HasData(CreateDefaultMessageTemplates());
+            });
+
+            modelBuilder.Entity<QueuedMessage>(entity =>
+            {
+                entity.ToTable("queued_messages", table =>
+                {
+                    table.HasCheckConstraint(
+                        "ck_queued_messages_status",
+                        $"status in ({SqlIn(QueuedMessageStatuses.All)})");
+                    table.HasCheckConstraint("ck_queued_messages_attempt_count", "attempt_count >= 0");
+                    table.HasCheckConstraint("ck_queued_messages_max_attempts", "max_attempts >= 1");
+                    table.HasCheckConstraint("ck_queued_messages_priority", "priority >= 0");
+                });
+                entity.HasKey(message => message.Id);
+                entity.Property(message => message.Id).HasColumnName("id");
+                entity.Property(message => message.PublicId).HasColumnName("public_id");
+                entity.Property(message => message.StoreId).HasColumnName("store_id");
+                entity.Property(message => message.TemplateSystemName).HasColumnName("template_system_name").HasMaxLength(128).IsRequired();
+                entity.Property(message => message.TemplateId).HasColumnName("template_id");
+                entity.Property(message => message.LanguageCode).HasColumnName("language_code").HasMaxLength(16);
+                entity.Property(message => message.ToEmail).HasColumnName("to_email").HasMaxLength(256).IsRequired();
+                entity.Property(message => message.ToName).HasColumnName("to_name").HasMaxLength(256);
+                entity.Property(message => message.FromEmail).HasColumnName("from_email").HasMaxLength(256).IsRequired();
+                entity.Property(message => message.FromName).HasColumnName("from_name").HasMaxLength(256);
+                entity.Property(message => message.ReplyToEmail).HasColumnName("reply_to_email").HasMaxLength(256);
+                entity.Property(message => message.Subject).HasColumnName("subject").HasMaxLength(512).IsRequired();
+                entity.Property(message => message.BodyHtml).HasColumnName("body_html").HasColumnType("text").IsRequired();
+                entity.Property(message => message.Status).HasColumnName("status").HasMaxLength(32).HasDefaultValue(QueuedMessageStatuses.Pending).IsRequired();
+                entity.Property(message => message.Priority).HasColumnName("priority").HasDefaultValue(0);
+                entity.Property(message => message.AttemptCount).HasColumnName("attempt_count").HasDefaultValue(0);
+                entity.Property(message => message.MaxAttempts).HasColumnName("max_attempts").HasDefaultValue(3);
+                entity.Property(message => message.NextAttemptAtUtc).HasColumnName("next_attempt_at_utc").HasColumnType("timestamp with time zone");
+                entity.Property(message => message.LastAttemptAtUtc).HasColumnName("last_attempt_at_utc").HasColumnType("timestamp with time zone");
+                entity.Property(message => message.SentAtUtc).HasColumnName("sent_at_utc").HasColumnType("timestamp with time zone");
+                entity.Property(message => message.FailedAtUtc).HasColumnName("failed_at_utc").HasColumnType("timestamp with time zone");
+                entity.Property(message => message.ErrorCode).HasColumnName("error_code").HasMaxLength(128);
+                entity.Property(message => message.ErrorMessage).HasColumnName("error_message").HasMaxLength(1024);
+                entity.Property(message => message.CorrelationId).HasColumnName("correlation_id").HasMaxLength(128);
+                entity.Property(message => message.IdempotencyKey).HasColumnName("idempotency_key").HasMaxLength(256);
+                entity.Property(message => message.RelatedEntityType).HasColumnName("related_entity_type").HasMaxLength(128);
+                entity.Property(message => message.RelatedEntityId).HasColumnName("related_entity_id").HasMaxLength(128);
+                entity.Property(message => message.AttachmentMetadataJson).HasColumnName("attachment_metadata_json").HasColumnType("jsonb");
+                entity.Property(message => message.CreatedAtUtc).HasColumnName("created_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(message => message.UpdatedAtUtc).HasColumnName("updated_at_utc").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasOne(message => message.Store)
+                    .WithMany()
+                    .HasForeignKey(message => message.StoreId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(message => message.Template)
+                    .WithMany(template => template.QueuedMessages)
+                    .HasForeignKey(message => message.TemplateId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasIndex(message => message.PublicId).IsUnique();
+                entity.HasIndex(message => message.IdempotencyKey)
+                    .IsUnique()
+                    .HasFilter("idempotency_key IS NOT NULL");
+                entity.HasIndex(message => new { message.StoreId, message.Status, message.NextAttemptAtUtc });
+                entity.HasIndex(message => new { message.StoreId, message.TemplateSystemName, message.CreatedAtUtc });
+                entity.HasIndex(message => new { message.StoreId, message.RelatedEntityType, message.RelatedEntityId });
+                entity.HasIndex(message => message.CorrelationId);
             });
 
             modelBuilder.Entity<VariationTemplate>(entity =>
@@ -2285,6 +2394,87 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
         private static string SqlIn(IEnumerable<string> values)
         {
             return string.Join(", ", values.Select(value => $"'{value.Replace("'", "''", StringComparison.Ordinal)}'"));
+        }
+
+        private static IReadOnlyList<MessageTemplate> CreateDefaultMessageTemplates()
+        {
+            var createdAt = new DateTimeOffset(2026, 7, 17, 0, 0, 0, TimeSpan.Zero);
+            return
+            [
+                CreateMessageTemplate(
+                    "11111111-1111-1111-1111-000000000001",
+                    "11111111-1111-1111-1111-100000000001",
+                    TransactionalMessageTemplateSystemNames.AccountActivation,
+                    "Confirm your {{Store.Name}} account",
+                    "<p>Hello {{Customer.FullName}},</p><p>Confirm your account: <a href=\"{{Account.ActivationUrl}}\">Confirm email</a></p>",
+                    "Default customer account activation template.",
+                    createdAt),
+                CreateMessageTemplate(
+                    "11111111-1111-1111-1111-000000000002",
+                    "11111111-1111-1111-1111-100000000002",
+                    TransactionalMessageTemplateSystemNames.PasswordRecovery,
+                    "Reset your {{Store.Name}} password",
+                    "<p>Hello {{Customer.FullName}},</p><p>Reset your password: <a href=\"{{Account.PasswordResetUrl}}\">Reset password</a></p>",
+                    "Default customer password recovery template.",
+                    createdAt),
+                CreateMessageTemplate(
+                    "11111111-1111-1111-1111-000000000003",
+                    "11111111-1111-1111-1111-100000000003",
+                    TransactionalMessageTemplateSystemNames.OrderPlaced,
+                    "Order {{Order.Reference}} confirmed",
+                    "<p>Thanks for your order {{Order.Reference}}.</p><p>Total: {{Order.Total}} {{Order.Currency}}</p>",
+                    "Default order placed confirmation template.",
+                    createdAt),
+                CreateMessageTemplate(
+                    "11111111-1111-1111-1111-000000000004",
+                    "11111111-1111-1111-1111-100000000004",
+                    TransactionalMessageTemplateSystemNames.OrderPaymentStatusChanged,
+                    "Payment update for {{Order.Reference}}",
+                    "<p>Your payment status is now {{Order.PaymentStatus}}.</p>",
+                    "Default order payment status notification template.",
+                    createdAt),
+                CreateMessageTemplate(
+                    "11111111-1111-1111-1111-000000000005",
+                    "11111111-1111-1111-1111-100000000005",
+                    TransactionalMessageTemplateSystemNames.OrderFulfillmentStatusChanged,
+                    "Shipping update for {{Order.Reference}}",
+                    "<p>Your shipping status is now {{Order.ShippingStatus}}.</p><p>Tracking: {{Shipment.TrackingNumber}}</p>",
+                    "Default order fulfillment status notification template.",
+                    createdAt),
+                CreateMessageTemplate(
+                    "11111111-1111-1111-1111-000000000006",
+                    "11111111-1111-1111-1111-100000000006",
+                    TransactionalMessageTemplateSystemNames.StorefrontContactForm,
+                    "Contact form: {{Contact.Subject}}",
+                    "<p>From: {{Contact.Name}} ({{Contact.Email}})</p><p>{{Contact.Message}}</p>",
+                    "Default storefront contact form delivery template.",
+                    createdAt),
+            ];
+        }
+
+        private static MessageTemplate CreateMessageTemplate(
+            string id,
+            string publicId,
+            string systemName,
+            string subject,
+            string body,
+            string description,
+            DateTimeOffset createdAt)
+        {
+            return new MessageTemplate
+            {
+                Id = Guid.Parse(id),
+                PublicId = Guid.Parse(publicId),
+                SystemName = systemName,
+                StoreId = null,
+                LanguageCode = null,
+                SubjectTemplate = subject,
+                BodyHtmlTemplate = body,
+                IsActive = true,
+                Description = description,
+                CreatedAtUtc = createdAt,
+                UpdatedAtUtc = createdAt,
+            };
         }
     }
 }

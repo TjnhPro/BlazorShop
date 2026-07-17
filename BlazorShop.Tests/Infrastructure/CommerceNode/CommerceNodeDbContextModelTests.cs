@@ -7,6 +7,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
     using BlazorShop.Infrastructure.Data.CommerceNode;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Infrastructure;
     using Microsoft.EntityFrameworkCore.Metadata;
 
     using Xunit;
@@ -474,6 +475,56 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.NotNull(orderForeignKey);
             Assert.Equal(DeleteBehavior.Cascade, orderForeignKey!.DeleteBehavior);
             Assert.NotNull(timelineIndex);
+        }
+
+        [Fact]
+        public void MessageTemplate_HasTransactionalTemplateMappingAndSeeds()
+        {
+            using var context = CreateContext();
+            var modelEntity = context.Model.FindEntityType(typeof(MessageTemplate));
+
+            Assert.NotNull(modelEntity);
+            Assert.Equal("message_templates", modelEntity!.GetTableName());
+            Assert.Equal(128, modelEntity.FindProperty(nameof(MessageTemplate.SystemName))!.GetMaxLength());
+            Assert.Equal(16, modelEntity.FindProperty(nameof(MessageTemplate.LanguageCode))!.GetMaxLength());
+            Assert.Equal(512, modelEntity.FindProperty(nameof(MessageTemplate.SubjectTemplate))!.GetMaxLength());
+            Assert.Equal("text", modelEntity.FindProperty(nameof(MessageTemplate.BodyHtmlTemplate))!.GetColumnType());
+            Assert.Equal(true, modelEntity.FindProperty(nameof(MessageTemplate.IsActive))!.GetDefaultValue());
+
+            Assert.Contains(modelEntity.GetIndexes(), index => index.IsUnique && index.Properties.Select(property => property.Name).SequenceEqual([nameof(MessageTemplate.PublicId)]));
+            Assert.Contains(modelEntity.GetIndexes(), index => index.Properties.Select(property => property.Name).SequenceEqual([nameof(MessageTemplate.StoreId), nameof(MessageTemplate.SystemName)]));
+
+            var designEntity = context.GetService<IDesignTimeModel>().Model.FindEntityType(typeof(MessageTemplate));
+            var seedSystemNames = designEntity!.GetSeedData()
+                .Select(seed => Assert.IsType<string>(seed[nameof(MessageTemplate.SystemName)]))
+                .OrderBy(systemName => systemName, StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.Equal(TransactionalMessageTemplateSystemNames.Required.OrderBy(name => name, StringComparer.Ordinal), seedSystemNames);
+        }
+
+        [Fact]
+        public void QueuedMessage_HasRetryIndexesAndSecretSafeStorageShape()
+        {
+            using var context = CreateContext();
+            var modelEntity = context.Model.FindEntityType(typeof(QueuedMessage));
+
+            Assert.NotNull(modelEntity);
+            Assert.Equal("queued_messages", modelEntity!.GetTableName());
+            Assert.Equal(128, modelEntity.FindProperty(nameof(QueuedMessage.TemplateSystemName))!.GetMaxLength());
+            Assert.Equal(256, modelEntity.FindProperty(nameof(QueuedMessage.ToEmail))!.GetMaxLength());
+            Assert.Equal(256, modelEntity.FindProperty(nameof(QueuedMessage.FromEmail))!.GetMaxLength());
+            Assert.Equal(512, modelEntity.FindProperty(nameof(QueuedMessage.Subject))!.GetMaxLength());
+            Assert.Equal("text", modelEntity.FindProperty(nameof(QueuedMessage.BodyHtml))!.GetColumnType());
+            Assert.Equal("jsonb", modelEntity.FindProperty(nameof(QueuedMessage.AttachmentMetadataJson))!.GetColumnType());
+            Assert.Equal(QueuedMessageStatuses.Pending, modelEntity.FindProperty(nameof(QueuedMessage.Status))!.GetDefaultValue());
+            Assert.Equal(3, modelEntity.FindProperty(nameof(QueuedMessage.MaxAttempts))!.GetDefaultValue());
+
+            Assert.Contains(modelEntity.GetIndexes(), index => index.IsUnique && index.Properties.Select(property => property.Name).SequenceEqual([nameof(QueuedMessage.PublicId)]));
+            Assert.Contains(modelEntity.GetIndexes(), index => index.IsUnique && index.Properties.Select(property => property.Name).SequenceEqual([nameof(QueuedMessage.IdempotencyKey)]));
+            Assert.Contains(modelEntity.GetIndexes(), index => index.Properties.Select(property => property.Name).SequenceEqual([nameof(QueuedMessage.StoreId), nameof(QueuedMessage.Status), nameof(QueuedMessage.NextAttemptAtUtc)]));
+            Assert.Contains(modelEntity.GetIndexes(), index => index.Properties.Select(property => property.Name).SequenceEqual([nameof(QueuedMessage.StoreId), nameof(QueuedMessage.TemplateSystemName), nameof(QueuedMessage.CreatedAtUtc)]));
+            Assert.Contains(modelEntity.GetIndexes(), index => index.Properties.Select(property => property.Name).SequenceEqual([nameof(QueuedMessage.StoreId), nameof(QueuedMessage.RelatedEntityType), nameof(QueuedMessage.RelatedEntityId)]));
         }
 
         private static CommerceNodeDbContext CreateContext()
