@@ -526,48 +526,54 @@ Goal: finish with focused verification and checklist updates.
 
 Implementation checklist:
 
-- [ ] Add application tests:
-  - [ ] validation/normalization.
-  - [ ] default shipping behavior.
-  - [ ] default billing behavior.
-  - [ ] soft delete behavior.
-  - [ ] ownership isolation.
-  - [ ] checkout address snapshot.
-- [ ] Add API contract tests:
-  - [ ] operation IDs.
-  - [ ] summaries.
-  - [ ] security metadata.
-  - [ ] request body requirements.
-  - [ ] validation metadata.
-  - [ ] no unsafe fields.
-  - [ ] response/error schemas.
-  - [ ] side-effecting operations are not GET.
-  - [ ] snapshots refreshed.
-- [ ] Add Storefront V2 smoke/static tests:
-  - [ ] country lookup.
-  - [ ] guest checkout direct address.
-  - [ ] authenticated checkout with saved address.
-  - [ ] direct-entry fallback.
-- [ ] Update QA checklist files:
-  - [ ] `QA-CommerceNode.todo.md`.
-  - [ ] `QA-StorefrontV2.todo.md`.
-  - [ ] `QA-ControlPlane.todo.md` only for boundary evidence if relevant.
-- [ ] Run focused tests.
+- [x] Add application tests:
+  - [x] validation/normalization.
+  - [x] default shipping behavior.
+  - [x] default billing behavior.
+  - [x] soft delete behavior.
+  - [x] ownership isolation.
+  - [x] checkout address snapshot.
+- [x] Add API contract tests:
+  - [x] operation IDs.
+  - [x] summaries.
+  - [x] security metadata.
+  - [x] request body requirements.
+  - [x] validation metadata.
+  - [x] no unsafe fields.
+  - [x] response/error schemas.
+  - [x] side-effecting operations are not GET.
+  - [x] snapshots refreshed.
+- [x] Add Storefront V2 smoke/static tests:
+  - [x] country lookup.
+  - [x] guest checkout direct address.
+  - [x] authenticated checkout with saved address.
+  - [x] direct-entry fallback.
+- [x] Update QA checklist files:
+  - [x] `QA-CommerceNode.todo.md`.
+  - [x] `QA-StorefrontV2.todo.md`.
+  - [x] `QA-ControlPlane.todo.md` only for boundary evidence if relevant.
+- [x] Run focused tests.
 - [ ] Run visible browser QA if UI changed and runtime is available.
 
 Verification checklist:
 
-- [ ] Address book works for authenticated customer.
-- [ ] Guest checkout still works.
-- [ ] Order history remains snapshot-safe.
-- [ ] OpenAPI remains generator-safe.
-- [ ] Active V2 projects touched by the phase build.
+- [x] Address book works for authenticated customer.
+- [x] Guest checkout still works.
+- [x] Order history remains snapshot-safe.
+- [x] OpenAPI remains generator-safe.
+- [x] Active V2 projects touched by the phase build.
 
 Exit criteria:
 
-- [ ] QA checklist files contain evidence.
-- [ ] No active V2 boundary rule is violated.
-- [ ] Deferred scope remains deferred.
+- [x] QA checklist files contain evidence.
+- [x] No active V2 boundary rule is violated.
+- [x] Deferred scope remains deferred.
+
+Phase 8 evidence:
+
+- 2026-07-17: Address Core release gate passed with `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~AddressValidationServiceTests|FullyQualifiedName~AddressLookupServiceTests|FullyQualifiedName~StorefrontCustomerAddressServiceTests|FullyQualifiedName~StorefrontCheckoutServiceTests|FullyQualifiedName~CommerceNodeStorefrontOpenApiContractTests|FullyQualifiedName~StorefrontV2ApiClientTests|FullyQualifiedName~StorefrontBrandingMarkupTests|FullyQualifiedName~StorefrontV2HostSmokeTests|FullyQualifiedName~AddressCorePhase0InventoryTests|FullyQualifiedName~AddressCorePhase7ConfigurationTests"`: 134/134 passed.
+- 2026-07-17: Storefront V2 and CommerceNode API focused builds passed during Phase 6/7 verification.
+- 2026-07-17: Visible browser QA remains pending for a seeded authenticated saved-address selection fixture; automated host smoke and static/client coverage protect the code path until that fixture is available.
 
 Suggested commit:
 
@@ -630,13 +636,13 @@ test(address-core): complete release gate
 
 ## Migration And Compatibility
 
-- [ ] Database migration is additive only.
-- [ ] Existing shipping columns on `checkout_sessions` are not removed or renamed.
-- [ ] Existing shipping columns on `orders` are not removed or renamed.
-- [ ] Existing checkout clients are not forced to send `ShippingAddressId`.
-- [ ] Existing `ShippingAddress` request object keeps working.
-- [ ] New address IDs exposed through API are public IDs.
-- [ ] Existing order history is untouched.
+- [x] Database migration is additive only.
+- [x] Existing shipping columns on `checkout_sessions` are not removed or renamed.
+- [x] Existing shipping columns on `orders` are not removed or renamed.
+- [x] Existing checkout clients are not forced to send `ShippingAddressId`.
+- [x] Existing `ShippingAddress` request object keeps working.
+- [x] New address IDs exposed through API are public IDs.
+- [x] Existing order history is untouched.
 
 ## Recommended Implementation Order
 
@@ -648,7 +654,7 @@ test(address-core): complete release gate
 - [x] Phase 5 - checkout address selection.
 - [x] Phase 6 - Storefront V2 UI integration.
 - [x] Phase 7 - admin/settings preparation.
-- [ ] Phase 8 - QA and regression coverage.
+- [x] Phase 8 - QA and regression coverage.
 
 ## Definition Of Done
 

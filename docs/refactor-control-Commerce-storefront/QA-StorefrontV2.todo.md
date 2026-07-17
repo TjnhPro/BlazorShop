@@ -602,4 +602,5 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Storefront V2 checkout UI renders API-backed country choices, state choices for the selected/default country, saved-address selector for authenticated customers, and manual-entry fallback. 2026-07-17 Phase 6: `StorefrontBrandingMarkupTests.CheckoutPage_RendersAddressLookupAndSavedAddressSelection` passed.
 - [x] Storefront V2 checkout host smoke remains green after address UI integration. 2026-07-17 Phase 6: `StorefrontV2HostSmokeTests` passed 34/34.
 - [x] Storefront V2 consumes address field configuration through the public Storefront API rather than embedding address requirements in Razor. 2026-07-17 Phase 7: configuration contract/static tests passed.
+- [x] Address Core Storefront release gate passed. 2026-07-17 Phase 8: focused Storefront client/static/host and backend contract release gate passed inside 134/134 run.
 - [ ] Visible browser QA for saved address selection remains pending against a seeded authenticated customer.
