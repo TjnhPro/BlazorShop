@@ -90,6 +90,34 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] `WasmProbe` button increments without a full page reload. 2026-07-13: Playwright MCP clicked the probe button and verified `Count 1`.
 - [x] `storefrontCommerce.js` still initializes cart/toast behavior. 2026-07-13: `/signin` HTML still included `js/storefrontCommerce.js`; no browser console errors beyond Blazor debug hotkey info.
 
+## Storefront Account Recovery And WASM Migration
+
+- [x] Phase 0 baseline inventory confirms current account/cart/checkout routes before migration: `/signin`, `/register`, `/my-cart`, `/checkout`, `/account/profile`, `/account/addresses`, `/account/orders`, and `/account/change-password`. 2026-07-17: source review of Storefront V2 pages and `StorefrontRoutes`.
+- [x] Phase 0 baseline confirms Commerce Node OpenAPI metadata already includes `StorefrontAuth_ForgotPassword` and `StorefrontAuth_ResetPassword`. 2026-07-17: `CommerceNodeStorefrontOpenApiContractTests` asserts both operations and request schemas.
+- [x] Phase 0 baseline confirms Storefront V2 local cart endpoints exist for WASM migration and mutations validate antiforgery. 2026-07-17: source review of `Program.cs` found `GET /api/cart`, `POST /api/cart/lines`, `PUT /api/cart/lines/{lineId}`, `DELETE /api/cart/lines/{lineId}`, and `DELETE /api/cart` with `ValidateLocalCartAntiforgeryAsync` on mutations.
+- [x] Phase 0 baseline confirms WASM is already wired through `AddInteractiveWebAssemblyComponents()` and `AddInteractiveWebAssemblyRenderMode()`, but current real cart/account/checkout interactions still use server forms and/or `storefrontCommerce.js`. 2026-07-17: source review before Phase 1 code changes.
+- [ ] Forgot password page renders from `/forgot-password`.
+- [ ] Sign-in page links to forgot password.
+- [ ] Forgot password accepts valid email format and shows generic success.
+- [ ] Forgot password rejects invalid email format with validation.
+- [ ] Reset password page handles `email` and `token` query values.
+- [ ] Reset password succeeds with valid token and password.
+- [ ] Reset password fails generically with invalid/expired token.
+- [ ] WASM same-origin client has no Commerce Node base URL, node key, node secret, refresh token, or access token configuration.
+- [ ] Cart WASM loads existing cart.
+- [ ] Cart WASM updates quantity.
+- [ ] Cart WASM removes a line.
+- [ ] Cart WASM clears cart.
+- [ ] Cart badge updates after cart mutation.
+- [ ] Account profile WASM reads and updates current customer only.
+- [ ] Account addresses WASM create/update/delete current customer's addresses only.
+- [ ] Account order list/detail only shows current customer's orders.
+- [ ] Checkout WASM blocks empty cart.
+- [ ] Checkout WASM detects stale cart version.
+- [ ] Checkout WASM completes happy-path order placement.
+- [ ] Mutation endpoints require antiforgery token.
+- [ ] No direct Commerce Node URL or credential is present in WASM static output.
+
 ## Runtime Smoke
 
 - [x] Start Commerce Node API with launch profile `http`.
