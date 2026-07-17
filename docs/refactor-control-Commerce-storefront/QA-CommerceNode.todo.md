@@ -1094,6 +1094,12 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Storefront OpenAPI snapshot includes `StorefrontOrderPaymentSummaryResponse` and `StorefrontOrderHistoryEntryResponse`. 2026-07-17 Phase 7: snapshot refreshed and focused Storefront OpenAPI tests passed.
 - [x] Order Placement Phase 7 focused release gate passed. 2026-07-17: CommerceNode API build, ControlPlane Web build, and focused checkout/payment/shipment/OpenAPI/boundary run passed 103/103.
 
+## Customer Identity Account
+
+- [x] Phase 0 baseline records active Storefront auth, cart merge, customer address, guest completion token, and current customer order self-service gap. 2026-07-17: source review recorded in `Customer Identity Account.todo.md`.
+- [x] Current user order query gap is protected before behavior change. 2026-07-17 Phase 0: `CommerceNodeOrderQueryServiceTests.GetOrdersForUserAsync_CurrentlyMissesV2OrdersLinkedOnlyByCustomerId` passed and documents that `Order.CustomerId`-only V2 orders do not appear through the legacy `UserId` query.
+- [x] Existing auth/customer-address/cart merge contract guardrails remain covered. 2026-07-17 Phase 0: focused Storefront auth contract/OpenAPI, cart merge, address ownership, and Storefront auth client tests passed 60/60.
+
 ## Payment Core
 
 - [x] Payment attempt creation writes a support-readable audit row without raw provider payload. 2026-07-17 Phase 5: `PaymentAttemptServiceTests.CreateAsync_DuplicateIdempotencyKey_ReturnsSameAttempt` passed and asserted a single `payment_attempt.created` audit row.
