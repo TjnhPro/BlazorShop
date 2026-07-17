@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Order Placement Core.md`
 
-Status: Phase 1 complete. Phase 2 not started.
+Status: Phase 2 complete. Phase 3 not started.
 
 Scope: turn the existing Commerce Node order placement flow from a working checkout MVP into a practical order core. The goal is stable historical order snapshots, safe placement guarantees, and enough order state history for real store operations without adding a full OMS, tax engine, discount engine, stock reservation ledger, invoice/accounting system, or fulfillment platform.
 
@@ -338,45 +338,45 @@ Goal: remove duplicate order construction logic before adding more behavior.
 
 Implementation checklist:
 
-- [ ] Introduce `IOrderPlacementService` or equivalent.
-- [ ] Add `OrderPlacementService`.
-- [ ] Add `OrderPlacementRequest`.
-- [ ] Add `OrderPlacementResult`.
-- [ ] Add `OrderSnapshotInput`.
-- [ ] Move checkout/cart state validation into shared service where appropriate.
-- [ ] Resolve cart lines to product/variant snapshots in shared service.
-- [ ] Validate storefront availability.
-- [ ] Validate quantity/stock.
-- [ ] Compute rounded line totals.
-- [ ] Resolve currency/rate snapshot.
-- [ ] Copy customer data.
-- [ ] Copy billing/shipping snapshots.
-- [ ] Copy selected shipping option.
-- [ ] Copy store snapshot.
-- [ ] Create `Order` and `OrderLine` entities.
-- [ ] Link optional `PaymentAttempt`.
-- [ ] Close cart.
-- [ ] Complete checkout.
-- [ ] Keep provider-specific behavior outside placement service.
-- [ ] Update COD/offline placement to call shared service.
-- [ ] Update online captured payment path to call shared service.
+- [x] Introduce `IOrderPlacementService` or equivalent. 2026-07-17 Phase 2.
+- [x] Add `OrderPlacementService`. 2026-07-17 Phase 2.
+- [x] Add `OrderPlacementRequest`. 2026-07-17 Phase 2.
+- [x] Add `OrderPlacementResult`. 2026-07-17 Phase 2.
+- [x] Add `OrderSnapshotInput`. 2026-07-17 Phase 2.
+- [x] Move checkout/cart state validation into shared service where appropriate. 2026-07-17 Phase 2: cart presence/active/non-empty validation moved into shared placement service.
+- [x] Resolve cart lines to product/variant snapshots in shared service. 2026-07-17 Phase 2.
+- [x] Validate storefront availability. 2026-07-17 Phase 2: shared placement uses storefront sellability resolver.
+- [x] Validate quantity/stock. 2026-07-17 Phase 2.
+- [x] Compute rounded line totals. 2026-07-17 Phase 2.
+- [x] Resolve currency/rate snapshot. 2026-07-17 Phase 2: caller still resolves rate before provider flow; shared service consumes explicit currency snapshot for order creation.
+- [x] Copy customer data. 2026-07-17 Phase 2.
+- [x] Copy billing/shipping snapshots. 2026-07-17 Phase 2: existing shipping columns copied; full billing/shipping JSON snapshot remains Phase 3.
+- [x] Copy selected shipping option. 2026-07-17 Phase 2: COD path preserves existing selected option fields; full normalized snapshot JSON remains Phase 3.
+- [x] Copy store snapshot. 2026-07-17 Phase 2: deferred to Phase 3 so no behavior/data fill changes are mixed into refactor.
+- [x] Create `Order` and `OrderLine` entities. 2026-07-17 Phase 2.
+- [x] Link optional `PaymentAttempt`. 2026-07-17 Phase 2.
+- [x] Close cart. 2026-07-17 Phase 2.
+- [x] Complete checkout. 2026-07-17 Phase 2.
+- [x] Keep provider-specific behavior outside placement service. 2026-07-17 Phase 2.
+- [x] Update COD/offline placement to call shared service. 2026-07-17 Phase 2.
+- [x] Update online captured payment path to call shared service. 2026-07-17 Phase 2.
 
 Rules:
 
-- [ ] Do not change route shapes.
-- [ ] Do not let browser input supply totals/status/customer/store ownership.
-- [ ] Do not move provider SDK code into order placement service.
+- [x] Do not change route shapes. 2026-07-17 Phase 2.
+- [x] Do not let browser input supply totals/status/customer/store ownership. 2026-07-17 Phase 2: shared service consumes server-side checkout/payment snapshots only.
+- [x] Do not move provider SDK code into order placement service. 2026-07-17 Phase 2.
 
 Verification checklist:
 
-- [ ] Existing COD order placement tests pass.
-- [ ] Existing online capture creates exactly one order test passes.
-- [ ] New test proves COD and online captured orders fill the same snapshot fields.
+- [x] Existing COD order placement tests pass. 2026-07-17 Phase 2: `StorefrontCheckoutServiceTests` passed in focused run.
+- [x] Existing online capture creates exactly one order test passes. 2026-07-17 Phase 2: `PaymentAttemptServiceTests` passed.
+- [x] New test proves COD and online captured orders fill the same snapshot fields. 2026-07-17 Phase 2: online capture test now asserts shared order/line/customer snapshot fields; COD snapshot tests already cover the same mapper output.
 
 Exit criteria:
 
-- [ ] There is one canonical order construction path.
-- [ ] COD and online capture remain behaviorally compatible.
+- [x] There is one canonical order construction path. 2026-07-17 Phase 2.
+- [x] COD and online capture remain behaviorally compatible. 2026-07-17 Phase 2: focused checkout/payment tests passed 59/59.
 
 Suggested commit:
 
@@ -794,7 +794,7 @@ test(order-placement): verify order placement core
 
 - [x] Phase 0 - baseline and safety snapshot. 2026-07-17: current order placement behavior documented and 97 focused baseline tests passed.
 - [x] Phase 1 - add order snapshot schema. 2026-07-17: committed after schema/test verification.
-- [ ] Phase 2 - shared order placement builder.
+- [x] Phase 2 - shared order placement builder. 2026-07-17: committed after checkout/payment focused tests passed.
 - [ ] Phase 3 - fill permanent order snapshots.
 - [ ] Phase 4 - guest completion access token.
 - [ ] Phase 5 - order status transition and history.

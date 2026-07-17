@@ -190,14 +190,27 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Equal(PaymentAttemptStates.Captured, first.Payload!.State);
             Assert.Single(context.Orders);
             Assert.Single(context.OrderLines);
-            Assert.Equal(context.Orders.Single().Id, first.Payload.OrderId);
+            var order = context.Orders.Include(item => item.Lines).Single();
+            var line = Assert.Single(order.Lines);
+            Assert.Equal(order.Id, first.Payload.OrderId);
+            Assert.Equal(OrderStatuses.Processing, order.OrderStatus);
+            Assert.Equal(PaymentStatuses.Paid, order.PaymentStatus);
+            Assert.Equal("Customer One", order.CustomerName);
+            Assert.Equal("customer@example.test", order.CustomerEmail);
+            Assert.Equal(product.Name, line.ProductName);
+            Assert.Equal(product.Sku, line.Sku);
+            Assert.Equal(2, line.Quantity);
+            Assert.Equal(21m, line.UnitPrice);
+            Assert.Equal(42m, line.LineTotal);
+            Assert.Equal("USD", line.CurrencyCode);
+            Assert.Equal(CheckoutSessionStates.Completed, context.CheckoutSessions.Single().State);
             Assert.Equal(CartSessionStates.Ordered, context.CartSessions.Single().State);
             Assert.Equal(3, context.Products.Single(item => item.Id == product.Id).Quantity);
             Assert.Contains(context.PaymentAttemptAuditLogs, audit =>
                 audit.EventType == "payment_attempt.captured"
                 && audit.OldState == PaymentAttemptStates.RequiresAction
                 && audit.NewState == PaymentAttemptStates.Captured
-                && audit.OrderId == context.Orders.Single().Id);
+                && audit.OrderId == order.Id);
         }
 
         [Fact]

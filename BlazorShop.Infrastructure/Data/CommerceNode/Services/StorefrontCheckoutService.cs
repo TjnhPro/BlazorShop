@@ -40,6 +40,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly IAddressValidationService addressValidationService;
         private readonly IShippingCalculator shippingCalculator;
         private readonly IShippingTaxCalculator shippingTaxCalculator;
+        private readonly IOrderPlacementService orderPlacementService;
 
         public StorefrontCheckoutService(
             CommerceNodeDbContext context,
@@ -54,7 +55,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             IProductSellabilityResolver? sellabilityResolver = null,
             IAddressValidationService? addressValidationService = null,
             IShippingCalculator? shippingCalculator = null,
-            IShippingTaxCalculator? shippingTaxCalculator = null)
+            IShippingTaxCalculator? shippingTaxCalculator = null,
+            IOrderPlacementService? orderPlacementService = null)
         {
             this.context = context;
             this.cartService = cartService;
@@ -69,6 +71,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.addressValidationService = addressValidationService ?? new AddressValidationService();
             this.shippingCalculator = shippingCalculator ?? new ShippingCalculator([new InternalFreeStandardShippingProvider()]);
             this.shippingTaxCalculator = shippingTaxCalculator ?? new ZeroShippingTaxCalculator();
+            this.orderPlacementService = orderPlacementService ?? new OrderPlacementService(context, this.moneyRoundingService, this.sellabilityResolver);
         }
 
         public async Task<ServiceResponse<StorefrontCheckoutSessionResult>> StartAsync(
@@ -1146,79 +1149,45 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, paymentAttempt.FailureMessage);
             }
 
-            var order = new Order
-            {
-                Id = Guid.NewGuid(),
-                UserId = string.Empty,
-                CustomerId = session.CustomerId,
-                StoreId = request.StoreId,
-                Reference = $"ORD-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..8].ToUpperInvariant()}",
-                OrderStatus = OrderStatuses.Processing,
-                PaymentStatus = PaymentStatuses.Paid,
-                PaymentMethodKey = paymentMethodKey,
-                PaymentAt = now.UtcDateTime,
-                PaymentMetadataJson = operation.MetadataJson,
-                CurrencyCode = currencyCode,
-                TotalAmount = totalAmount,
-                BaseCurrencyCode = rateSnapshot.BaseCurrencyCode,
-                BaseTotalAmount = rateSnapshot.BaseTotalAmount,
-                ExchangeRate = rateSnapshot.ExchangeRate,
-                ExchangeRateProviderKey = rateSnapshot.ExchangeRateProviderKey,
-                ExchangeRateSource = rateSnapshot.ExchangeRateSource,
-                ExchangeRateEffectiveAtUtc = rateSnapshot.ExchangeRateEffectiveAtUtc,
-                ExchangeRateExpiresAtUtc = rateSnapshot.ExchangeRateExpiresAtUtc,
-                CustomerName = session.CustomerName,
-                CustomerEmail = session.CustomerEmail,
-                ShippingFullName = session.ShippingFullName,
-                ShippingEmail = session.ShippingEmail,
-                ShippingPhone = session.ShippingPhone,
-                ShippingAddress1 = session.ShippingAddress1,
-                ShippingAddress2 = session.ShippingAddress2,
-                ShippingCity = session.ShippingCity,
-                ShippingState = session.ShippingState,
-                ShippingPostalCode = session.ShippingPostalCode,
-                ShippingCountryCode = session.ShippingCountryCode,
-                ShippingStatus = shippingResult.ShippingRequired ? ShippingStatuses.NotYetShipped : ShippingStatuses.ShippingNotRequired,
-                ShippingMethodKey = currentSelectedShippingOption?.Key,
-                ShippingProviderSystemName = currentSelectedShippingOption?.ProviderSystemName,
-                ShippingMethodCode = currentSelectedShippingOption?.MethodCode,
-                ShippingMethodName = currentSelectedShippingOption?.DisplayName,
-                ShippingTotal = shippingTotal,
-                ShippingCurrencyCode = currentSelectedShippingOption?.CurrencyCode ?? currencyCode,
-                ShippingDeliveryEstimateText = currentSelectedShippingOption?.DeliveryEstimateText,
-                CreatedOn = now.UtcDateTime,
-                UpdatedAt = now.UtcDateTime,
-                Lines = lines.Select(line => new OrderLine
-                {
-                    Id = Guid.NewGuid(),
-                    ProductId = line.Product.Id,
-                    ProductName = line.Product.Name,
-                    Sku = line.Variant?.Sku ?? line.Product.Sku,
-                    Image = line.Product.Image,
-                    ProductVariantId = line.Variant?.Id,
-                    VariantAttributesJson = line.CartLine.SelectedAttributesJson ?? line.Variant?.AttributesJson,
-                    PersonalizationHash = line.CartLine.PersonalizationHash,
-                    PersonalizationJson = line.CartLine.PersonalizationJson,
-                    ArtworkAssetId = line.CartLine.ArtworkAssetId,
-                    ArtworkVersion = line.CartLine.ArtworkVersion,
-                    FulfillmentProviderKey = line.CartLine.FulfillmentProviderKey,
-                    Quantity = line.CartLine.Quantity,
-                    UnitPrice = line.UnitPrice,
-                    CurrencyCode = currencyCode,
-                    BaseUnitPrice = line.CartLine.BaseUnitPriceSnapshot,
-                    ConvertedUnitPrice = line.UnitPrice,
-                    LineTotal = this.moneyRoundingService.RoundLineTotal(line.CartLine.Quantity * line.UnitPrice, currencyCode),
-                    BaseLineTotal = line.CartLine.BaseUnitPriceSnapshot.HasValue && rateSnapshot.BaseCurrencyCode is not null
-                        ? this.moneyRoundingService.RoundLineTotal(line.CartLine.Quantity * line.CartLine.BaseUnitPriceSnapshot.Value, rateSnapshot.BaseCurrencyCode)
-                        : null,
-                }).ToList(),
-            };
-
             await using var transaction = this.context.Database.IsRelational()
                 ? await this.context.Database.BeginTransactionAsync(cancellationToken)
                 : null;
 
-            this.context.Orders.Add(order);
+            var placement = await this.orderPlacementService.PlaceAsync(
+                new OrderPlacementRequest(
+                    request.StoreId,
+                    session,
+                    paymentAttempt,
+                    new OrderSnapshotInput(
+                        OrderStatuses.Processing,
+                        PaymentStatuses.Paid,
+                        paymentMethodKey,
+                        now,
+                        operation.MetadataJson,
+                        currencyCode,
+                        totalAmount,
+                        new OrderPlacementCurrencySnapshot(
+                            rateSnapshot.BaseCurrencyCode,
+                            rateSnapshot.BaseTotalAmount,
+                            rateSnapshot.ExchangeRate,
+                            rateSnapshot.ExchangeRateProviderKey,
+                            rateSnapshot.ExchangeRateSource,
+                            rateSnapshot.ExchangeRateEffectiveAtUtc,
+                            rateSnapshot.ExchangeRateExpiresAtUtc),
+                        shippingResult.ShippingRequired ? ShippingStatuses.NotYetShipped : ShippingStatuses.ShippingNotRequired,
+                        currentSelectedShippingOption)),
+                cancellationToken);
+            if (!placement.Success || placement.Order is null)
+            {
+                if (transaction is not null)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                }
+
+                return Failed<StorefrontPlaceOrderResult>(placement.ResponseType, placement.Message);
+            }
+
+            var order = placement.Order;
             this.context.PaymentAttempts.Add(paymentAttempt);
             this.AppendPaymentAudit(
                 paymentAttempt,
@@ -1227,22 +1196,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 "payment_attempt.created",
                 "Payment attempt created.",
                 operation.MetadataJson);
-            foreach (var line in lines)
-            {
-                DeductTrackedStock(line);
-            }
-
-            cart.State = CartSessionStates.Ordered;
-            cart.ConvertedOrderId = order.Id;
-            cart.ExpiresAtUtc = now;
-            cart.LastActivityAtUtc = now;
-            cart.UpdatedAtUtc = now;
-
-            Touch(session, CheckoutSessionStates.Completed, CheckoutSteps.Complete, now);
-            session.OrderId = order.Id;
             session.IdempotencyKey = idempotencyKey;
-            session.NextAction = "complete";
-            session.PlacedAtUtc = now;
             session.BaseCurrencyCode = rateSnapshot.BaseCurrencyCode;
             session.BaseSubtotal = rateSnapshot.BaseTotalAmount;
             session.BaseGrandTotal = rateSnapshot.BaseTotalAmount;
@@ -1252,7 +1206,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             session.ExchangeRateEffectiveAtUtc = rateSnapshot.ExchangeRateEffectiveAtUtc;
             session.ExchangeRateExpiresAtUtc = rateSnapshot.ExchangeRateExpiresAtUtc;
 
-            paymentAttempt.OrderId = order.Id;
             paymentAttempt.State = PaymentAttemptStates.Captured;
             paymentAttempt.ProviderSessionId = operation.ProviderSessionId;
             paymentAttempt.ProviderReference = operation.ProviderReference;
@@ -2620,27 +2573,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 && product.Category.StoreId == product.StoreId
                 && product.Category.ArchivedAt is null
                 && product.Category.IsPublished;
-        }
-
-        private static void DeductTrackedStock(OrderLineSnapshot line)
-        {
-            if (!string.IsNullOrWhiteSpace(line.CartLine.FulfillmentProviderKey))
-            {
-                return;
-            }
-
-            if (!line.Product.ManageStock)
-            {
-                return;
-            }
-
-            if (line.Variant is not null)
-            {
-                line.Variant.Stock -= line.CartLine.Quantity;
-                return;
-            }
-
-            line.Product.Quantity -= line.CartLine.Quantity;
         }
 
         private static ServiceResponseType ResolveOrderLineFailureResponseType(IReadOnlyList<string> reasons)

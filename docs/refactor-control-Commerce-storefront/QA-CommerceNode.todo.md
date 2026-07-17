@@ -1068,6 +1068,9 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Order placement snapshot schema is additive and CommerceNode-owned. 2026-07-17 Phase 1: migration `20260717064548_CommerceNodeOrderPlacementSnapshots` adds nullable order snapshot columns only.
 - [x] Order snapshot response fields are safe projections, not raw metadata. 2026-07-17 Phase 1: Storefront response exposes store/total/address/shipping-method summaries and does not expose guest token hash or raw snapshot JSON.
 - [x] Storefront OpenAPI snapshot remains generator-safe after additive order response fields. 2026-07-17 Phase 1: Storefront OpenAPI snapshot refreshed and focused contract/model/order flow tests passed 120/120.
+- [x] COD checkout and online payment capture use the same order construction service. 2026-07-17 Phase 2: `OrderPlacementService` creates orders/order lines, deducts stock, closes carts/checkouts, and links optional payment attempts.
+- [x] Provider-specific payment logic remains outside order placement. 2026-07-17 Phase 2: checkout/payment services still own provider session/capture/audit behavior.
+- [x] Shared order placement refactor preserves checkout/payment behavior. 2026-07-17 Phase 2: focused `StorefrontCheckoutServiceTests|PaymentAttemptServiceTests` passed 59/59.
 
 ## Payment Core
 
