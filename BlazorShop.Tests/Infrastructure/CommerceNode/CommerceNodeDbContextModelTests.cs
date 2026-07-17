@@ -133,6 +133,54 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         }
 
         [Fact]
+        public void CommerceCustomerAddress_HasStoreCustomerScopeAndDefaultIndexes()
+        {
+            using var context = CreateContext();
+            var modelEntity = context.Model.FindEntityType(typeof(CommerceCustomerAddress));
+
+            Assert.NotNull(modelEntity);
+            Assert.Equal("commerce_customer_addresses", modelEntity!.GetTableName());
+
+            var publicIdIndex = modelEntity.GetIndexes()
+                .SingleOrDefault(index => index.Properties.Select(property => property.Name).SequenceEqual(["PublicId"]));
+            var lookupIndex = modelEntity.GetIndexes()
+                .SingleOrDefault(index => index.Properties.Select(property => property.Name).SequenceEqual(["StoreId", "CustomerId", "DeletedAtUtc"]));
+            var countryIndex = modelEntity.GetIndexes()
+                .SingleOrDefault(index => index.Properties.Select(property => property.Name).SequenceEqual(["StoreId", "CustomerId", "CountryCode"]));
+            var defaultShippingIndex = modelEntity.GetIndexes()
+                .SingleOrDefault(index => index.Properties.Select(property => property.Name).SequenceEqual(["StoreId", "CustomerId", "IsDefaultShipping"]));
+            var defaultBillingIndex = modelEntity.GetIndexes()
+                .SingleOrDefault(index => index.Properties.Select(property => property.Name).SequenceEqual(["StoreId", "CustomerId", "IsDefaultBilling"]));
+            var storeForeignKey = modelEntity.GetForeignKeys()
+                .SingleOrDefault(key => key.PrincipalEntityType.ClrType == typeof(CommerceStore)
+                    && key.Properties.Any(property => property.Name == "StoreId"));
+            var customerForeignKey = modelEntity.GetForeignKeys()
+                .SingleOrDefault(key => key.PrincipalEntityType.ClrType == typeof(CommerceCustomer)
+                    && key.Properties.Any(property => property.Name == "CustomerId"));
+
+            Assert.NotNull(publicIdIndex);
+            Assert.True(publicIdIndex!.IsUnique);
+            Assert.NotNull(lookupIndex);
+            Assert.NotNull(countryIndex);
+            Assert.NotNull(defaultShippingIndex);
+            Assert.True(defaultShippingIndex!.IsUnique);
+            Assert.Contains("is_default_shipping = true", defaultShippingIndex.GetFilter(), StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("deleted_at_utc IS NULL", defaultShippingIndex.GetFilter(), StringComparison.OrdinalIgnoreCase);
+            Assert.NotNull(defaultBillingIndex);
+            Assert.True(defaultBillingIndex!.IsUnique);
+            Assert.Contains("is_default_billing = true", defaultBillingIndex.GetFilter(), StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("deleted_at_utc IS NULL", defaultBillingIndex.GetFilter(), StringComparison.OrdinalIgnoreCase);
+            Assert.NotNull(storeForeignKey);
+            Assert.Equal(DeleteBehavior.Cascade, storeForeignKey!.DeleteBehavior);
+            Assert.NotNull(customerForeignKey);
+            Assert.Equal(DeleteBehavior.Cascade, customerForeignKey!.DeleteBehavior);
+            Assert.Equal(2, modelEntity.FindProperty(nameof(CommerceCustomerAddress.CountryCode))!.GetMaxLength());
+            Assert.Equal(240, modelEntity.FindProperty(nameof(CommerceCustomerAddress.Address1))!.GetMaxLength());
+            Assert.Equal(false, modelEntity.FindProperty(nameof(CommerceCustomerAddress.IsDefaultShipping))!.GetDefaultValue());
+            Assert.Equal(false, modelEntity.FindProperty(nameof(CommerceCustomerAddress.IsDefaultBilling))!.GetDefaultValue());
+        }
+
+        [Fact]
         public void StoreNavigationMenu_HasOneActiveSystemNamePerStore()
         {
             using var context = CreateContext();

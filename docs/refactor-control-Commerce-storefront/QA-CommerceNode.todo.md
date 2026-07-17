@@ -929,3 +929,11 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Checkout controller derives store scope from Storefront route/current store context and not from request body. 2026-07-17: `AddressCorePhase0InventoryTests.CommerceNode_CheckoutControllerDerivesStoreScopeFromRoute` passed.
 - [x] Storefront OpenAPI checkout contracts remain generator-safe after Address Core Phase 0 guardrails. 2026-07-17: `CommerceNodeStorefrontOpenApiContractTests` passed inside focused 61/61 run.
 - [x] No CommerceNode schema, migration, `AppDbContext`, or legacy runtime change was introduced in Phase 0. 2026-07-17: Phase 0 changed tests/docs only.
+- [x] `CommerceCustomerAddress` is stored only in `CommerceNodeDbContext`. 2026-07-17 Phase 1: entity, DbSet, mapping, and migration were added under active CommerceNode paths.
+- [x] Address rows are store-scoped and customer-scoped. 2026-07-17 Phase 1: model test asserts `StoreId`/`CustomerId` indexes and cascade FKs to `CommerceStore`/`CommerceCustomer`.
+- [x] Address public IDs are unique for future API responses. 2026-07-17 Phase 1: `IX_commerce_customer_addresses_public_id` unique index generated.
+- [x] Soft delete column exists for customer addresses. 2026-07-17 Phase 1: migration adds nullable `deleted_at_utc`.
+- [x] Default shipping uniqueness is enforced for active rows. 2026-07-17 Phase 1: filtered unique index `is_default_shipping = true AND deleted_at_utc IS NULL` generated and covered by model test.
+- [x] Default billing uniqueness is enforced for active rows. 2026-07-17 Phase 1: filtered unique index `is_default_billing = true AND deleted_at_utc IS NULL` generated and covered by model test.
+- [x] Existing checkout/order snapshot tables are unchanged by address persistence migration. 2026-07-17 Phase 1: migration inspection confirmed only `commerce_customer_addresses` is created/dropped.
+- [x] Address persistence model and existing checkout service tests pass together. 2026-07-17 Phase 1: focused run passed 38/38.

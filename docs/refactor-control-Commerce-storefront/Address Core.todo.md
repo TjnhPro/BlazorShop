@@ -145,53 +145,61 @@ Goal: add customer address persistence without changing checkout behavior yet.
 
 Implementation checklist:
 
-- [ ] Add `CommerceCustomerAddress` domain entity under Commerce Node entities.
-- [ ] Add fields:
-  - [ ] `Id`.
-  - [ ] `PublicId`.
-  - [ ] `StoreId`.
-  - [ ] `CustomerId`.
-  - [ ] `FirstName`.
-  - [ ] `LastName`.
-  - [ ] `Company`.
-  - [ ] `Address1`.
-  - [ ] `Address2`.
-  - [ ] `City`.
-  - [ ] `PostalCode`.
-  - [ ] `CountryCode`.
-  - [ ] `StateProvinceCode`.
-  - [ ] `StateProvinceName`.
-  - [ ] `Phone`.
-  - [ ] `Email`.
-  - [ ] `IsDefaultShipping`.
-  - [ ] `IsDefaultBilling`.
-  - [ ] `CreatedAtUtc`.
-  - [ ] `UpdatedAtUtc`.
-  - [ ] `DeletedAtUtc`.
-- [ ] Add `DbSet<CommerceCustomerAddress>` to `CommerceNodeDbContext`.
-- [ ] Add EF mapping with explicit table name `commerce_customer_addresses`.
-- [ ] Add public ID uniqueness.
-- [ ] Add `(StoreId, CustomerId, DeletedAtUtc)` lookup index.
-- [ ] Add default shipping uniqueness with filtered index where supported, or document service-level enforcement.
-- [ ] Add default billing uniqueness with filtered index where supported, or document service-level enforcement.
-- [ ] Add `(StoreId, CustomerId, CountryCode)` index.
-- [ ] Add navigation collection from `CommerceCustomer` if it matches local patterns.
-- [ ] Add CommerceNode-only EF migration.
-- [ ] Do not change `checkout_sessions` or `orders` address snapshot columns.
+- [x] Add `CommerceCustomerAddress` domain entity under Commerce Node entities.
+- [x] Add fields:
+  - [x] `Id`.
+  - [x] `PublicId`.
+  - [x] `StoreId`.
+  - [x] `CustomerId`.
+  - [x] `FirstName`.
+  - [x] `LastName`.
+  - [x] `Company`.
+  - [x] `Address1`.
+  - [x] `Address2`.
+  - [x] `City`.
+  - [x] `PostalCode`.
+  - [x] `CountryCode`.
+  - [x] `StateProvinceCode`.
+  - [x] `StateProvinceName`.
+  - [x] `Phone`.
+  - [x] `Email`.
+  - [x] `IsDefaultShipping`.
+  - [x] `IsDefaultBilling`.
+  - [x] `CreatedAtUtc`.
+  - [x] `UpdatedAtUtc`.
+  - [x] `DeletedAtUtc`.
+- [x] Add `DbSet<CommerceCustomerAddress>` to `CommerceNodeDbContext`.
+- [x] Add EF mapping with explicit table name `commerce_customer_addresses`.
+- [x] Add public ID uniqueness.
+- [x] Add `(StoreId, CustomerId, DeletedAtUtc)` lookup index.
+- [x] Add default shipping uniqueness with filtered index where supported, or document service-level enforcement.
+- [x] Add default billing uniqueness with filtered index where supported, or document service-level enforcement.
+- [x] Add `(StoreId, CustomerId, CountryCode)` index.
+- [x] Add navigation collection from `CommerceCustomer` if it matches local patterns.
+- [x] Add CommerceNode-only EF migration.
+- [x] Do not change `checkout_sessions` or `orders` address snapshot columns.
 
 Verification checklist:
 
-- [ ] Migration creates `commerce_customer_addresses`.
-- [ ] Address rows are store-scoped and customer-scoped.
-- [ ] Soft delete column exists.
-- [ ] Historical order/checkout tables are unchanged.
-- [ ] CommerceNode model tests pass.
+- [x] Migration creates `commerce_customer_addresses`.
+- [x] Address rows are store-scoped and customer-scoped.
+- [x] Soft delete column exists.
+- [x] Historical order/checkout tables are unchanged.
+- [x] CommerceNode model tests pass.
 
 Exit criteria:
 
-- [ ] Persistence exists and is additive.
-- [ ] No checkout behavior changed.
-- [ ] No legacy `AppDbContext` migration was generated.
+- [x] Persistence exists and is additive.
+- [x] No checkout behavior changed.
+- [x] No legacy `AppDbContext` migration was generated.
+
+Phase 1 evidence:
+
+- 2026-07-17: Added `CommerceCustomerAddress`, `CommerceCustomer.Addresses`, `CommerceNodeDbContext.CommerceCustomerAddresses`, and EF mapping for `commerce_customer_addresses`.
+- 2026-07-17: Generated CommerceNode-only migration `20260717001452_CommerceNodeCustomerAddresses`.
+- 2026-07-17: Migration inspection confirms it creates only `commerce_customer_addresses` and drops only that table in `Down`.
+- 2026-07-17: Added `CommerceNodeDbContextModelTests.CommerceCustomerAddress_HasStoreCustomerScopeAndDefaultIndexes`.
+- 2026-07-17: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~CommerceNodeDbContextModelTests|FullyQualifiedName~StorefrontCheckoutServiceTests"` passed 38/38.
 
 Suggested commit:
 
