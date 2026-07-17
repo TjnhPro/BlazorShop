@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Payment Core.md`
 
-Status: In progress. Phase 0-7 completed.
+Status: Completed. Phase 0-8 completed.
 
 Scope: turn the existing checkout payment foundation into a practical provider core for active V2. The goal is enough payment behavior for real store usage without moving PayPal/Stripe SDK logic into Domain/Application and without building a full payment platform.
 
@@ -588,56 +588,56 @@ Goal: finish the phase with verifiable behavior and clear API guarantees.
 
 Implementation checklist:
 
-- [ ] Update OpenAPI operation summaries where DTOs change.
-- [ ] Keep stable operation IDs where possible.
-- [ ] Add/refresh explicit request DTO schemas.
-- [ ] Add/refresh explicit response DTO schemas.
-- [ ] Add required body metadata for webhook/callback routes.
-- [ ] Add required header metadata for signature routes.
-- [ ] Add standard error responses:
-  - [ ] invalid signature.
-  - [ ] provider not supported.
-  - [ ] attempt not found.
-  - [ ] duplicate event accepted.
-  - [ ] transition ignored/conflict.
-- [ ] Add/update application tests:
-  - [ ] provider registry.
-  - [ ] operation unsupported result.
-  - [ ] attempt transition rules.
-  - [ ] event dedupe.
-  - [ ] out-of-order event handling.
-  - [ ] captured creates order once.
-- [ ] Add/update infrastructure tests:
-  - [ ] Stripe hosted session adapter.
-  - [ ] settings validation.
-  - [ ] signature verifier behavior with fake provider.
-- [ ] Add/update presentation contract tests:
-  - [ ] Swagger valid.
-  - [ ] response schemas exist.
-  - [ ] request bodies required.
-  - [ ] signature header documented.
-  - [ ] no domain entities in public schemas.
-- [ ] Add/update Storefront smoke/static tests:
-  - [ ] COD checkout completes.
-  - [ ] Stripe redirect attempt stays pending and can be polled.
-  - [ ] payment cancel page shows cancelled/failed state safely.
-- [ ] Update `QA-CommerceNode.todo.md`.
-- [ ] Update `QA-StorefrontV2.todo.md` only if Storefront V2 behavior changes.
-- [ ] Update `QA-ControlPlane.todo.md` only if gateway/admin behavior changes.
+- [x] Update OpenAPI operation summaries where DTOs change.
+- [x] Keep stable operation IDs where possible.
+- [x] Add/refresh explicit request DTO schemas.
+- [x] Add/refresh explicit response DTO schemas.
+- [x] Add required body metadata for webhook/callback routes.
+- [x] Add required header metadata for signature routes.
+- [x] Add standard error responses:
+  - [x] invalid signature.
+  - [x] provider not supported.
+  - [x] attempt not found.
+  - [x] duplicate event accepted.
+  - [x] transition ignored/conflict.
+- [x] Add/update application tests:
+  - [x] provider registry.
+  - [x] operation unsupported result.
+  - [x] attempt transition rules.
+  - [x] event dedupe.
+  - [x] out-of-order event handling.
+  - [x] captured creates order once.
+- [x] Add/update infrastructure tests:
+  - [x] Stripe hosted session adapter.
+  - [x] settings validation.
+  - [x] signature verifier behavior with fake provider.
+- [x] Add/update presentation contract tests:
+  - [x] Swagger valid.
+  - [x] response schemas exist.
+  - [x] request bodies required.
+  - [x] signature header documented.
+  - [x] no domain entities in public schemas.
+- [x] Add/update Storefront smoke/static tests:
+  - [x] COD checkout completes.
+  - [x] Stripe redirect attempt stays pending and can be polled.
+  - [x] payment cancel page shows cancelled/failed state safely.
+- [x] Update `QA-CommerceNode.todo.md`.
+- [n/a] Update `QA-StorefrontV2.todo.md` only if Storefront V2 behavior changes. No Storefront V2 runtime behavior changed in Phase 8; focused Storefront tests still passed.
+- [x] Update `QA-ControlPlane.todo.md` only if gateway/admin behavior changes.
 
 Verification checklist:
 
-- [ ] Focused payment tests pass.
-- [ ] Focused checkout tests pass.
-- [ ] Storefront OpenAPI contract tests pass.
-- [ ] Swagger snapshot updated when contract changes are intentional.
-- [ ] QA checklist records payment core coverage.
+- [x] Focused payment tests pass.
+- [x] Focused checkout tests pass.
+- [x] Storefront OpenAPI contract tests pass.
+- [x] Swagger snapshot updated when contract changes are intentional.
+- [x] QA checklist records payment core coverage.
 
 Exit criteria:
 
-- [ ] Payment provider core is contract-protected.
-- [ ] Public/admin projections are secret-safe.
-- [ ] Deferred payment-platform scope remains deferred.
+- [x] Payment provider core is contract-protected.
+- [x] Public/admin projections are secret-safe.
+- [x] Deferred payment-platform scope remains deferred.
 
 Suggested commit:
 
@@ -649,110 +649,110 @@ test(payment-core): verify provider core
 
 ### Commerce Node
 
-- [ ] Provider registry returns COD offline, Stripe redirect, PayPal disabled/skeleton, and rejects unknown provider.
-- [ ] Checkout routes payment by provider capability, not hard-coded provider key.
-- [ ] COD checkout completes synchronously and marks cart ordered.
-- [ ] Stripe redirect checkout creates pending attempt without order until capture.
-- [ ] Duplicate idempotency returns same order/payment attempt result.
-- [ ] Pending redirect does not clear/close cart as completed.
-- [ ] Missing webhook signature is rejected when provider requires signature.
-- [ ] Invalid webhook signature is rejected.
-- [ ] Duplicate webhook does not create duplicate order.
-- [ ] Webhook can resolve attempt by provider session/reference.
-- [ ] Out-of-order provider event is recorded and ignored safely.
+- [x] Provider registry returns COD offline, Stripe redirect, PayPal disabled/skeleton, and rejects unknown provider.
+- [x] Checkout routes payment by provider capability, not hard-coded provider key.
+- [x] COD checkout completes synchronously and marks cart ordered.
+- [x] Stripe redirect checkout creates pending attempt without order until capture.
+- [x] Duplicate idempotency returns same order/payment attempt result.
+- [x] Pending redirect does not clear/close cart as completed.
+- [x] Missing webhook signature is rejected when provider requires signature.
+- [x] Invalid webhook signature is rejected.
+- [x] Duplicate webhook does not create duplicate order.
+- [x] Webhook can resolve attempt by provider session/reference.
+- [x] Out-of-order provider event is recorded and ignored safely.
 - [x] Captured online payment creates one order exactly once.
 - [x] Terminal payment state cannot be overwritten by late event.
 - [x] Payment audit/note metadata contains no secrets.
 - [x] Public payment method response does not expose `SettingsJson` or secrets.
 - [x] Admin payment method update preserves settings when omitted.
 - [x] Admin clear settings requires explicit flag.
-- [ ] Storefront OpenAPI validates and snapshots pass.
+- [x] Storefront OpenAPI validates and snapshots pass.
 
 ### Storefront V2
 
-- [ ] COD checkout still completes.
-- [ ] Stripe redirect attempt stays pending and can be polled.
-- [ ] Payment success page shows captured/completed state.
-- [ ] Payment cancel page shows cancelled/failed state safely.
-- [ ] Hosted payment pending flow does not lose checkout/cart context prematurely.
-- [ ] Public payment method metadata is enough to render choices.
-- [ ] Browser sees no provider secrets or raw settings in network payloads.
-- [ ] Browser QA has no unexpected console errors after payment UI behavior changes.
+- [x] COD checkout still completes.
+- [x] Stripe redirect attempt stays pending and can be polled.
+- [x] Payment success page shows captured/completed state.
+- [x] Payment cancel page shows cancelled/failed state safely.
+- [x] Hosted payment pending flow does not lose checkout/cart context prematurely.
+- [x] Public payment method metadata is enough to render choices.
+- [x] Browser sees no provider secrets or raw settings in network payloads.
+- [x] Browser QA has no unexpected console errors after payment UI behavior changes.
 
 ### Control Plane
 
-- [ ] ControlPlane Web does not call CommerceNode payment APIs directly.
-- [ ] ControlPlane API gateway uses Commerce admin route with `storeKey` query.
-- [ ] Provider settings permissions are enforced.
-- [ ] Admin provider settings responses do not echo secrets.
-- [ ] No payment core runtime data is stored in `ControlPlaneDbContext`.
+- [x] ControlPlane Web does not call CommerceNode payment APIs directly.
+- [x] ControlPlane API gateway uses Commerce admin route with `storeKey` query.
+- [x] Provider settings permissions are enforced.
+- [x] Admin provider settings responses do not echo secrets.
+- [x] No payment core runtime data is stored in `ControlPlaneDbContext`.
 
 ## Failure Modes To Design Against
 
-- [ ] Webhook can force payment captured.
-- [ ] Duplicate webhook creates duplicate order.
-- [ ] Late failed event overwrites captured attempt.
-- [ ] Provider settings leak to Storefront.
-- [ ] Checkout clears cart while redirect payment pending.
-- [ ] Adding PayPal requires checkout rewrite.
-- [ ] Raw provider error shown to customer.
-- [ ] Admin cannot diagnose payment issue.
-- [ ] Availability rules become too complex.
-- [ ] Legacy payment service accidentally extended.
+- [x] Webhook can force payment captured.
+- [x] Duplicate webhook creates duplicate order.
+- [x] Late failed event overwrites captured attempt.
+- [x] Provider settings leak to Storefront.
+- [x] Checkout clears cart while redirect payment pending.
+- [x] Adding PayPal requires checkout rewrite.
+- [x] Raw provider error shown to customer.
+- [x] Admin cannot diagnose payment issue.
+- [x] Availability rules become too complex.
+- [x] Legacy payment service accidentally extended.
 
 ## Test Map
 
-- [ ] Provider registry tests:
-  - [ ] COD offline.
-  - [ ] Stripe redirect.
-  - [ ] PayPal disabled/skeleton.
-  - [ ] unknown provider rejected.
-- [ ] Checkout routing tests:
-  - [ ] offline complete.
-  - [ ] redirect pending.
-  - [ ] unsupported provider.
-  - [ ] duplicate idempotency.
-- [ ] Attempt state tests:
-  - [ ] allowed transitions.
-  - [ ] terminal rejection.
-  - [ ] captured creates order once.
-  - [ ] safe failure fields.
-- [ ] Webhook security tests:
-  - [ ] missing signature.
-  - [ ] invalid signature.
-  - [ ] valid signature.
-  - [ ] duplicate event.
-  - [ ] out-of-order event.
-- [ ] Attempt resolution tests:
-  - [ ] resolve by public attempt ID.
-  - [ ] resolve by provider session ID.
-  - [ ] resolve by provider reference.
-- [ ] Public projection tests:
-  - [ ] no settings JSON/secrets.
-  - [ ] safe method type.
-  - [ ] schema stable.
-- [ ] Admin projection tests:
-  - [ ] preserve settings.
-  - [ ] clear settings.
-  - [ ] validate provider settings.
-  - [ ] audit safe metadata.
-- [ ] OpenAPI tests:
-  - [ ] required request bodies.
-  - [ ] signature header.
-  - [ ] error responses.
-  - [ ] generator-safe schemas.
+- [x] Provider registry tests:
+  - [x] COD offline.
+  - [x] Stripe redirect.
+  - [x] PayPal disabled/skeleton.
+  - [x] unknown provider rejected.
+- [x] Checkout routing tests:
+  - [x] offline complete.
+  - [x] redirect pending.
+  - [x] unsupported provider.
+  - [x] duplicate idempotency.
+- [x] Attempt state tests:
+  - [x] allowed transitions.
+  - [x] terminal rejection.
+  - [x] captured creates order once.
+  - [x] safe failure fields.
+- [x] Webhook security tests:
+  - [x] missing signature.
+  - [x] invalid signature.
+  - [x] valid signature.
+  - [x] duplicate event.
+  - [x] out-of-order event.
+- [x] Attempt resolution tests:
+  - [x] resolve by public attempt ID.
+  - [x] resolve by provider session ID.
+  - [x] resolve by provider reference.
+- [x] Public projection tests:
+  - [x] no settings JSON/secrets.
+  - [x] safe method type.
+  - [x] schema stable.
+- [x] Admin projection tests:
+  - [x] preserve settings.
+  - [x] clear settings.
+  - [x] validate provider settings.
+  - [x] audit safe metadata.
+- [x] OpenAPI tests:
+  - [x] required request bodies.
+  - [x] signature header.
+  - [x] error responses.
+  - [x] generator-safe schemas.
 
 ## Migration And Compatibility
 
-- [ ] Use additive migrations only.
-- [ ] Keep existing `PaymentAttempt` rows valid.
-- [ ] Keep existing `PaymentProviderEvent` rows valid.
-- [ ] Keep current `PaymentAttemptStates` names unless new state is unavoidable.
-- [ ] Preserve current Storefront response fields.
-- [ ] Add optional fields rather than renaming.
-- [ ] Existing Stripe redirect flow keeps returning `NextAction.Type = redirect`.
-- [ ] COD remains usable without external provider configuration.
-- [ ] Existing Control Plane gateway routes continue to work.
+- [x] Use additive migrations only.
+- [x] Keep existing `PaymentAttempt` rows valid.
+- [x] Keep existing `PaymentProviderEvent` rows valid.
+- [x] Keep current `PaymentAttemptStates` names unless new state is unavoidable.
+- [x] Preserve current Storefront response fields.
+- [x] Add optional fields rather than renaming.
+- [x] Existing Stripe redirect flow keeps returning `NextAction.Type = redirect`.
+- [x] COD remains usable without external provider configuration.
+- [x] Existing Control Plane gateway routes continue to work.
 - [ ] Do not remove `paypal/capture` until Storefront and contract tests prove it is unused or replaced.
 
 ## Later Backlog Not In Scope
@@ -771,29 +771,29 @@ test(payment-core): verify provider core
 
 ## Recommended Implementation Order
 
-- [ ] Phase 0 - baseline contract and safety snapshot.
-- [ ] Phase 1 - provider discovery and capability metadata.
-- [ ] Phase 2 - provider operation contract.
-- [ ] Phase 3 - checkout cutover from provider name to capability.
-- [ ] Phase 4 - webhook and callback hardening.
+- [x] Phase 0 - baseline contract and safety snapshot.
+- [x] Phase 1 - provider discovery and capability metadata.
+- [x] Phase 2 - provider operation contract.
+- [x] Phase 3 - checkout cutover from provider name to capability.
+- [x] Phase 4 - webhook and callback hardening.
 - [x] Phase 5 - payment attempt state, order notes, and audit trail.
 - [x] Phase 6 - admin and public projection cleanup.
 - [x] Phase 7 - PayPal compatibility and provider route cleanup.
-- [ ] Phase 8 - contract, QA, and documentation.
+- [x] Phase 8 - contract, QA, and documentation.
 
 ## Definition Of Done
 
-- [ ] COD checkout still completes synchronously.
-- [ ] Stripe redirect checkout still creates a pending payment attempt without creating an order until captured.
-- [ ] Checkout no longer hard-codes Stripe as the only redirect provider path.
-- [ ] Provider discovery returns safe capability metadata.
-- [ ] Public APIs never expose provider secrets or raw settings.
-- [ ] Webhook events are signature-aware, idempotent, and cannot force arbitrary state.
-- [ ] Duplicate and out-of-order provider events are safe.
+- [x] COD checkout still completes synchronously.
+- [x] Stripe redirect checkout still creates a pending payment attempt without creating an order until captured.
+- [x] Checkout no longer hard-codes Stripe as the only redirect provider path.
+- [x] Provider discovery returns safe capability metadata.
+- [x] Public APIs never expose provider secrets or raw settings.
+- [x] Webhook events are signature-aware, idempotent, and cannot force arbitrary state.
+- [x] Duplicate and out-of-order provider events are safe.
 - [x] Captured online payment creates one order exactly once.
-- [ ] Admin provider settings remain secret-safe and audited.
-- [ ] Active V2 API contract tests and focused payment tests pass.
-- [ ] No legacy payment route or legacy database is extended.
+- [x] Admin provider settings remain secret-safe and audited.
+- [x] Active V2 API contract tests and focused payment tests pass.
+- [x] No legacy payment route or legacy database is extended.
 
 ## Decision Audit Trail
 

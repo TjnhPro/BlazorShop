@@ -462,9 +462,10 @@ Status legend:
 - [x] ControlPlane Web builds after checkout/payment admin UI changes. 2026-07-13: `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` passed.
 - [x] ControlPlane Web request capture confirms payment method admin page calls only ControlPlane API. 2026-07-13: Playwright performance resource capture showed zero direct `localhost:5180`, `api/commerce/*`, or `api/internal/*` calls.
 - [x] Payment Methods page loads store-scoped methods. 2026-07-13: visible browser loaded COD, Stripe, and PayPal rows for the selected store.
-- [ ] Payment Methods page can enable/disable a method.
+- [x] Payment Methods page can enable/disable an active/installed method and blocks enabling inactive provider skeletons. 2026-07-17 Payment Core Phase 6/8: ControlPlane page consumes provider capability metadata; focused service/static/boundary release gate passed inside 185/185 run.
 - [x] Payment Methods page rejects invalid settings JSON via API message. 2026-07-13: COD invalid JSON save showed `Payment settings JSON is invalid.`
 - [x] Payment Methods page does not preload saved provider settings JSON into the form. 2026-07-15: page now shows configured/not configured status and sends replacement JSON only when entered; ControlPlane Web build passed.
+- [x] Payment Methods page shows provider capability status without direct CommerceNode calls. 2026-07-17 Payment Core Phase 6/8: `ControlPlaneArchitectureBoundaryTests|LayoutAssetFoundationTests` passed inside focused release gate.
 - [x] Orders drawer shows order/payment/shipping statuses separately. 2026-07-13: Orders table/drawer showed order `processing`, payment `paid`, shipping `not_yet_shipped`, then `shipped`.
 - [x] Orders drawer Mark Complete calls ControlPlane API and updates order detail. 2026-07-13: visible browser marked `ORD-20260713-6672B965` complete after shipping update; network capture still showed no direct CommerceNode calls.
 - [ ] Orders drawer Cancel calls ControlPlane API and updates order detail.

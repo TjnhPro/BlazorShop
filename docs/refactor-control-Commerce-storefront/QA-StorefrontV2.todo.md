@@ -547,6 +547,7 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Stale checkout form cart version returns a recoverable checkout message before placing an order. 2026-07-17 Checkout Core Phase 9: `StorefrontV2HostSmokeTests.Checkout_PostWithStaleCartVersionRedirectsWithoutPlacingOrder` passed and asserts review/place-order are not called.
 - [x] Payment Core Phase 0 confirms Storefront V2 payment success/cancel pages still poll scoped payment-attempt status. 2026-07-17: focused baseline covered captured, pending, and failed payment return states.
 - [x] Payment Core Phase 0 confirms hosted payment redirect context remains recoverable before provider-core changes. 2026-07-17: focused payment baseline included checkout hosted redirect and payment return-page smoke tests.
+- [x] Payment Core Phase 8 Storefront V2 release gate remains green without runtime UI changes. 2026-07-17: `StorefrontV2ApiClientTests|StorefrontV2HostSmokeTests` passed inside the 185/185 focused provider-core release gate.
 - [ ] Browser network shows no legacy API/Web requests.
 - [ ] Checkout page is noindex/private and absent from sitemap.
 
