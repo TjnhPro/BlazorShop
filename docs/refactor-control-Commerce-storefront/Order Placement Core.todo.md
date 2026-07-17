@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Order Placement Core.md`
 
-Status: Phase 7 complete. Phase 8 not started.
+Status: Phase 8 complete. Order Placement Core complete.
 
 Scope: turn the existing Commerce Node order placement flow from a working checkout MVP into a practical order core. The goal is stable historical order snapshots, safe placement guarantees, and enough order state history for real store operations without adding a full OMS, tax engine, discount engine, stock reservation ledger, invoice/accounting system, or fulfillment platform.
 
@@ -12,21 +12,21 @@ Scope: turn the existing Commerce Node order placement flow from a working check
 
 Approved:
 
-- [ ] Order snapshot hardening:
-  - [ ] store reference and store snapshot.
-  - [ ] customer/guest reference.
-  - [ ] billing address snapshot copied from checkout.
-  - [ ] shipping address snapshot kept and normalized.
-  - [ ] order item snapshot with product, variant, selected attributes, personalization, quantity, unit price, line total, and currency.
-  - [ ] order total breakdown: subtotal, shipping total, tax total, discount total, grand total.
-  - [ ] currency and exchange-rate snapshot.
-  - [ ] payment method reference.
-  - [ ] shipping method/option snapshot.
-- [ ] Order identity:
-  - [ ] keep internal `Order.Id`.
-  - [ ] keep public `Order.Reference`.
-  - [ ] created/updated timestamps.
-  - [ ] customer-facing guest completion access token stored hashed.
+- [x] Order snapshot hardening:
+  - [x] store reference and store snapshot. 2026-07-17 Phase 3.
+  - [x] customer/guest reference. 2026-07-17 Phase 3/4.
+  - [x] billing address snapshot copied from checkout. 2026-07-17 Phase 3.
+  - [x] shipping address snapshot kept and normalized. 2026-07-17 Phase 3.
+  - [x] order item snapshot with product, variant, selected attributes, personalization, quantity, unit price, line total, and currency. 2026-07-17 Phase 2/3.
+  - [x] order total breakdown: subtotal, shipping total, tax total, discount total, grand total. 2026-07-17 Phase 3.
+  - [x] currency and exchange-rate snapshot. 2026-07-17 Phase 3.
+  - [x] payment method reference. 2026-07-17 Phase 3/6.
+  - [x] shipping method/option snapshot. 2026-07-17 Phase 3.
+- [x] Order identity:
+  - [x] keep internal `Order.Id`. 2026-07-17: preserved.
+  - [x] keep public `Order.Reference`. 2026-07-17: preserved.
+  - [x] created/updated timestamps. 2026-07-17: preserved.
+  - [x] customer-facing guest completion access token stored hashed. 2026-07-17 Phase 4.
 - [x] Order statuses:
   - [x] keep existing order, payment, and shipping statuses. 2026-07-17 Phase 5: legacy shipping status casing is accepted and normalized on writes.
   - [x] add centralized transition helper for order lifecycle changes. 2026-07-17 Phase 5: `OrderLifecycleTransitionHelper`.
@@ -43,27 +43,27 @@ Approved:
   - [x] close cart only after completed/captured order. 2026-07-17 Phase 6.
   - [x] publish order-created event through a lightweight Commerce Node outbox/task hook. 2026-07-17 Phase 6: `commerce_task` row with task type `order.created`.
   - [x] queue notifications outside the main transaction. 2026-07-17 Phase 6: only a durable task row is written during placement.
-- [ ] API/contract hardening:
-  - [ ] additive Storefront order response fields.
-  - [ ] additive Commerce Admin order fields.
-  - [ ] stable OpenAPI metadata and contract tests.
-  - [ ] no domain entities in public schemas.
+- [x] API/contract hardening:
+  - [x] additive Storefront order response fields. 2026-07-17 Phase 7.
+  - [x] additive Commerce Admin order fields. 2026-07-17 Phase 7.
+  - [x] stable OpenAPI metadata and contract tests. 2026-07-17 Phase 7.
+  - [x] no domain entities in public schemas. 2026-07-17 Phase 7.
 
 Deferred:
 
-- [ ] Full order management system.
-- [ ] Invoice/accounting ledger.
-- [ ] Returns, RMA, exchanges, or refund workflow.
-- [ ] Full tax calculation engine.
-- [ ] Full discount/promotion engine.
-- [ ] Full stock reservation ledger.
-- [ ] Multi-warehouse fulfillment.
-- [ ] Multi-shipment workflow beyond the current shipment summary.
-- [ ] Customer self-service order portal beyond secure guest completion lookup.
-- [ ] Real notification provider implementation.
-- [ ] Legacy `AppDbContext` changes.
-- [ ] Legacy Presentation route changes.
-- [ ] Active V2 `api/internal/*` changes.
+- [n/a] Full order management system. Deferred by scope lock.
+- [n/a] Invoice/accounting ledger. Deferred by scope lock.
+- [n/a] Returns, RMA, exchanges, or refund workflow. Deferred by scope lock.
+- [n/a] Full tax calculation engine. Deferred by scope lock.
+- [n/a] Full discount/promotion engine. Deferred by scope lock.
+- [n/a] Full stock reservation ledger. Deferred by scope lock.
+- [n/a] Multi-warehouse fulfillment. Deferred by scope lock.
+- [n/a] Multi-shipment workflow beyond the current shipment summary. Deferred by scope lock.
+- [n/a] Customer self-service order portal beyond secure guest completion lookup. Deferred by scope lock.
+- [n/a] Real notification provider implementation. Deferred by scope lock.
+- [n/a] Legacy `AppDbContext` changes. Explicitly out of scope.
+- [n/a] Legacy Presentation route changes. Explicitly out of scope.
+- [n/a] Active V2 `api/internal/*` changes. Explicitly out of scope.
 
 ## Current Baseline
 
@@ -207,7 +207,7 @@ Add to `Order` additively/nullable where needed:
 - [x] `ShippingMethodSnapshotJson`. 2026-07-17 Phase 1.
 - [x] `GuestAccessTokenHash`. 2026-07-17 Phase 1.
 - [x] `GuestAccessTokenExpiresAtUtc`. 2026-07-17 Phase 1.
-- [ ] `CreatedAtUtc` alias only if migrating off `CreatedOn` is approved later.
+- [n/a] `CreatedAtUtc` alias only if migrating off `CreatedOn` is approved later.
 
 Keep compatible:
 
@@ -218,34 +218,34 @@ Keep compatible:
 - [x] `AdminNote`. 2026-07-17 Phase 1 preserved.
 - [x] `TotalAmount` remains the charged/order total. 2026-07-17 Phase 1 preserved.
 - [x] `GrandTotalAmount` equals `TotalAmount` for new/backfilled rows. 2026-07-17 Phase 3: new orders set `GrandTotalAmount` from charged total.
-- [ ] Existing rows render safely with null breakdown fields.
+- [x] Existing rows render safely with null breakdown fields. 2026-07-17 Phase 8: read models keep legacy-field fallback.
 
 Add `OrderHistoryEntry` or order note:
 
-- [ ] Table name `order_history_entries`.
-- [ ] `Id`.
-- [ ] `StoreId`.
-- [ ] `OrderId`.
-- [ ] `EntryType`: `system`, `status`, `payment`, `shipping`, `admin_note`, `notification`.
-- [ ] `OldOrderStatus` / `NewOrderStatus`.
-- [ ] `OldPaymentStatus` / `NewPaymentStatus`.
-- [ ] `OldShippingStatus` / `NewShippingStatus`.
-- [ ] `Message`.
-- [ ] `IsCustomerVisible`.
-- [ ] `MetadataJson`.
-- [ ] `ActorType`: `system`, `admin`, `customer`, `provider`.
-- [ ] `ActorId`.
-- [ ] `CreatedAtUtc`.
-- [ ] Index `(StoreId, OrderId, CreatedAtUtc)`.
-- [ ] Index `(OrderId)`.
-- [ ] Index `(StoreId, EntryType, CreatedAtUtc)`.
+- [x] Table name `order_history_entries`. 2026-07-17 Phase 5.
+- [x] `Id`. 2026-07-17 Phase 5.
+- [x] `StoreId`. 2026-07-17 Phase 5.
+- [x] `OrderId`. 2026-07-17 Phase 5.
+- [x] `EntryType`: implemented as `EventType`. 2026-07-17 Phase 5.
+- [x] `OldOrderStatus` / `NewOrderStatus`: implemented as generic `OldValue` / `NewValue`. 2026-07-17 Phase 5.
+- [x] `OldPaymentStatus` / `NewPaymentStatus`: implemented as generic `OldValue` / `NewValue`. 2026-07-17 Phase 5.
+- [x] `OldShippingStatus` / `NewShippingStatus`: implemented as generic `OldValue` / `NewValue`. 2026-07-17 Phase 5.
+- [x] `Message`. 2026-07-17 Phase 5.
+- [x] `IsCustomerVisible`: implemented as `VisibleToCustomer`. 2026-07-17 Phase 5.
+- [x] `MetadataJson`. 2026-07-17 Phase 5.
+- [x] `ActorType`: implemented as `Source`. 2026-07-17 Phase 5.
+- [n/a] `ActorId`. Deferred until customer/admin identity binding is needed in order history.
+- [x] `CreatedAtUtc`. 2026-07-17 Phase 5.
+- [x] Index `(StoreId, OrderId, CreatedAtUtc)`. 2026-07-17 Phase 5.
+- [n/a] Index `(OrderId)`. Covered by `(StoreId, OrderId, CreatedAtUtc)` for active store-scoped reads.
+- [x] Index `(StoreId, EntryType, CreatedAtUtc)`: implemented as `(StoreId, EventType, CreatedAtUtc)`. 2026-07-17 Phase 5.
 
 Outbox/task direction:
 
-- [ ] Prefer existing `commerce_task` for notification queue if only notification uses are needed.
-- [ ] Add `commerce_outbox_events` only if order/payment/shipping events need general reuse.
-- [ ] If outbox table is added, include `StoreId`, aggregate type/id, event type, payload, idempotency key, occurred/processed timestamps, failure message.
-- [ ] If outbox table is added, enforce unique `(StoreId, EventType, IdempotencyKey)` when idempotency key exists.
+- [x] Prefer existing `commerce_task` for notification queue if only notification uses are needed. 2026-07-17 Phase 6.
+- [n/a] Add `commerce_outbox_events` only if order/payment/shipping events need general reuse. Deferred; `commerce_task` is enough for this phase.
+- [n/a] If outbox table is added, include `StoreId`, aggregate type/id, event type, payload, idempotency key, occurred/processed timestamps, failure message. No outbox table added.
+- [n/a] If outbox table is added, enforce unique `(StoreId, EventType, IdempotencyKey)` when idempotency key exists. No outbox table added.
 
 ## Phase 0 - Baseline And Safety Snapshot
 
@@ -631,29 +631,29 @@ Goal: close the phase with evidence and operational safety notes.
 
 Implementation checklist:
 
-- [ ] Update `QA-CommerceNode.todo.md`.
-- [ ] Update `QA-ControlPlane.todo.md` if gateway/admin fields change.
-- [ ] Update `QA-StorefrontV2.todo.md` if completion UI changes.
-- [ ] Add migration notes for new nullable columns.
-- [ ] Document that existing rows have null snapshot fields.
-- [ ] Document optional backfill path for `GrandTotalAmount = TotalAmount`.
-- [ ] Document that no legacy database changes were made.
-- [ ] Record known deferred items.
+- [x] Update `QA-CommerceNode.todo.md`. 2026-07-17 Phase 8: Order Placement evidence recorded through Phase 7 release gate.
+- [x] Update `QA-ControlPlane.todo.md` if gateway/admin fields change. 2026-07-17 Phase 8: order drawer history evidence recorded.
+- [x] Update `QA-StorefrontV2.todo.md` if completion UI changes. 2026-07-17 Phase 8: no Storefront V2 UI change in this phase; CommerceNode contract/service tests cover completion API compatibility.
+- [x] Add migration notes for new nullable columns. 2026-07-17 Phase 8: see Migration And Compatibility.
+- [x] Document that existing rows have null snapshot fields. 2026-07-17 Phase 8.
+- [x] Document optional backfill path for `GrandTotalAmount = TotalAmount`. 2026-07-17 Phase 8.
+- [x] Document that no legacy database changes were made. 2026-07-17 Phase 8.
+- [x] Record known deferred items. 2026-07-17 Phase 8.
 
 Verification checklist:
 
-- [ ] Commerce Node checkout/payment/order tests pass.
-- [ ] API contract tests pass.
-- [ ] Control Plane boundary/gateway tests pass if touched.
-- [ ] Storefront smoke tests pass if completion route touched.
-- [ ] Focused test output is recorded in implementation summary.
-- [ ] No new V2 behavior depends on legacy `AppDbContext`.
+- [x] Commerce Node checkout/payment/order tests pass. 2026-07-17 Phase 8: focused release gate passed 103/103.
+- [x] API contract tests pass. 2026-07-17 Phase 8: Storefront OpenAPI snapshot refreshed and contract tests passed.
+- [x] Control Plane boundary/gateway tests pass if touched. 2026-07-17 Phase 8: `ControlPlaneArchitectureBoundaryTests` passed.
+- [x] Storefront smoke tests pass if completion route touched. 2026-07-17 Phase 8: route behavior covered by CommerceNode service/contract tests; no Storefront V2 UI edit.
+- [x] Focused test output is recorded in implementation summary. 2026-07-17 Phase 8.
+- [x] No new V2 behavior depends on legacy `AppDbContext`. 2026-07-17 Phase 8.
 
 Exit criteria:
 
-- [ ] QA checklist updated with tested evidence.
-- [ ] Migration safety notes are present.
-- [ ] Focused tests pass.
+- [x] QA checklist updated with tested evidence. 2026-07-17 Phase 8.
+- [x] Migration safety notes are present. 2026-07-17 Phase 8.
+- [x] Focused tests pass. 2026-07-17 Phase 8.
 
 Suggested commit:
 
@@ -665,82 +665,82 @@ test(order-placement): verify order placement core
 
 ### Commerce Node
 
-- [ ] COD placement creates order with store snapshot.
-- [ ] COD placement creates order with billing snapshot.
-- [ ] COD placement creates order with shipping snapshot.
-- [ ] COD placement creates order with totals breakdown.
-- [ ] COD placement creates order with shipping method snapshot.
-- [ ] Online capture creates order with same snapshot fields as COD.
-- [ ] Duplicate idempotency key does not duplicate order.
-- [ ] Duplicate payment webhook/capture does not duplicate order.
-- [ ] Guest order lookup requires token after secure lookup is enabled.
-- [ ] Wrong guest token fails safely.
-- [ ] Wrong store guest token fails safely.
+- [x] COD placement creates order with store snapshot. 2026-07-17 Phase 3.
+- [x] COD placement creates order with billing snapshot. 2026-07-17 Phase 3.
+- [x] COD placement creates order with shipping snapshot. 2026-07-17 Phase 3.
+- [x] COD placement creates order with totals breakdown. 2026-07-17 Phase 3.
+- [x] COD placement creates order with shipping method snapshot. 2026-07-17 Phase 3.
+- [x] Online capture creates order with same snapshot fields as COD. 2026-07-17 Phase 3.
+- [x] Duplicate idempotency key does not duplicate order. 2026-07-17 Phase 6.
+- [x] Duplicate payment webhook/capture does not duplicate order. 2026-07-17 Phase 6.
+- [x] Guest order lookup requires token after secure lookup is enabled. 2026-07-17 Phase 4/7.
+- [x] Wrong guest token fails safely. 2026-07-17 Phase 4/7.
+- [x] Wrong store guest token fails safely. 2026-07-17 Phase 4/7.
 - [x] Order status transition helper enforces complete/cancel rules. 2026-07-17 Phase 5.
 - [x] Order history appends for create/payment/shipping/complete/cancel. 2026-07-17 Phase 5.
 - [x] Shipping status writes normalized constants. 2026-07-17 Phase 5.
 - [x] Placement transaction rolls back on injected failure. 2026-07-17 Phase 6.
 - [x] Order-created event/outbox/task is idempotent. 2026-07-17 Phase 6.
-- [ ] Public Storefront schemas do not expose token hash, admin note, raw payment metadata, or domain entities.
-- [ ] Commerce Admin schemas expose safe snapshot/history fields.
+- [x] Public Storefront schemas do not expose token hash, admin note, raw payment metadata, or domain entities. 2026-07-17 Phase 7.
+- [x] Commerce Admin schemas expose safe snapshot/history fields. 2026-07-17 Phase 7.
 
 ### Storefront V2
 
-- [ ] COD completion still works.
-- [ ] Hosted payment success/cancel pages still work.
-- [ ] Guest completion uses secure lookup token when enabled.
-- [ ] Completion page shows safe totals/status/tracking fields.
-- [ ] Browser request bodies do not send store id/customer id/totals/status/payment state/order ownership.
-- [ ] Browser network shows no provider secrets or raw payment metadata.
+- [x] COD completion still works. 2026-07-17 Phase 8: covered by focused CommerceNode checkout tests; no Storefront V2 UI change.
+- [x] Hosted payment success/cancel pages still work. 2026-07-17 Phase 8: covered by focused payment attempt tests; no Storefront V2 UI change.
+- [x] Guest completion uses secure lookup token when enabled. 2026-07-17 Phase 4/7.
+- [x] Completion page shows safe totals/status/tracking fields. 2026-07-17 Phase 7: public DTO remains additive and safe.
+- [x] Browser request bodies do not send store id/customer id/totals/status/payment state/order ownership. 2026-07-17 Phase 8: no request contract expansion added.
+- [x] Browser network shows no provider secrets or raw payment metadata. 2026-07-17 Phase 8: response contract excludes secrets/raw metadata.
 
 ### Control Plane
 
-- [ ] ControlPlane Web does not call CommerceNode order APIs directly.
-- [ ] ControlPlane API gateway forwards order detail/list/status fields.
-- [ ] Admin order detail shows snapshot/history fields when added.
-- [ ] Admin complete/cancel/status changes still write admin audit.
-- [ ] No order placement runtime data is stored in `ControlPlaneDbContext`.
+- [x] ControlPlane Web does not call CommerceNode order APIs directly. 2026-07-17 Phase 7/8: boundary test passed.
+- [x] ControlPlane API gateway forwards order detail/list/status fields. 2026-07-17 Phase 7: existing gateway DTO flow carries additive fields.
+- [x] Admin order detail shows snapshot/history fields when added. 2026-07-17 Phase 7: order drawer renders history.
+- [x] Admin complete/cancel/status changes still write admin audit. 2026-07-17 Phase 5/8.
+- [x] No order placement runtime data is stored in `ControlPlaneDbContext`. 2026-07-17 Phase 8.
 
 ## Failure Modes To Design Against
 
-- [ ] COD and online capture snapshots drift.
-- [ ] Order reference is used as secret.
-- [ ] Duplicate payment webhook creates duplicate order.
-- [ ] External notification is sent before transaction commits.
-- [ ] Snapshot fields expose private metadata.
-- [ ] Existing orders break after migration.
-- [ ] Store/contact changes alter old order history.
-- [ ] Billing address missing from order documents.
-- [ ] Shipping status casing fragments filters.
-- [ ] Stock deduction runs twice on retry.
-- [ ] Online capture has partial state after failure.
+- [x] COD and online capture snapshots drift. 2026-07-17 Phase 2/3: shared placement service and focused tests.
+- [x] Order reference is used as secret. 2026-07-17 Phase 4: guest token is separate and stored hashed.
+- [x] Duplicate payment webhook creates duplicate order. 2026-07-17 Phase 6: payment capture replay test passed.
+- [x] External notification is sent before transaction commits. 2026-07-17 Phase 6: only durable task row is written during placement.
+- [x] Snapshot fields expose private metadata. 2026-07-17 Phase 7: public response excludes raw JSON, token hash, admin note, and provider metadata.
+- [x] Existing orders break after migration. 2026-07-17 Phase 8: additive nullable columns keep existing rows valid.
+- [x] Store/contact changes alter old order history. 2026-07-17 Phase 3: snapshot mutation test passed.
+- [x] Billing address missing from order documents. 2026-07-17 Phase 3: billing snapshot persisted.
+- [x] Shipping status casing fragments filters. 2026-07-17 Phase 5: status normalization added.
+- [x] Stock deduction runs twice on retry. 2026-07-17 Phase 6: duplicate order/payment replay tests passed.
+- [x] Online capture has partial state after failure. 2026-07-17 Phase 6: placement transaction/hook failure tests passed.
 
 ## Test Map
 
-- [ ] Schema tests:
-  - [ ] EF model/migration compiles.
-  - [ ] Existing order rows valid with null snapshot fields.
-- [ ] COD placement tests:
-  - [ ] billing/store/totals/shipping method snapshots.
-  - [ ] cart ordered.
-  - [ ] stock deducted.
-  - [ ] payment attempt linked.
-- [ ] Online capture tests:
-  - [ ] captured payment creates exactly one order.
-  - [ ] snapshot fields match COD path.
-- [ ] Idempotency tests:
-  - [ ] duplicate idempotency key returns original result.
-  - [ ] duplicate key does not duplicate order/history/outbox.
-- [ ] Guest access tests:
-  - [ ] correct token can read completion.
-  - [ ] wrong token fails safely.
-  - [ ] wrong store fails safely.
-- [ ] Store snapshot tests:
-  - [ ] mutating `CommerceStore` after placement does not change order snapshot projection.
-- [ ] Billing snapshot tests:
-  - [ ] mutating saved address after placement does not change order snapshot projection.
-- [ ] Totals tests:
-  - [ ] subtotal + shipping + tax - discount equals grand/total after rounding.
+- [x] Schema tests:
+  - [x] EF model/migration compiles. 2026-07-17 Phase 1/5/6.
+  - [x] Existing order rows valid with null snapshot fields. 2026-07-17 Phase 8: all new snapshot columns are nullable where required.
+- [x] COD placement tests:
+  - [x] billing/store/totals/shipping method snapshots. 2026-07-17 Phase 3.
+  - [x] cart ordered. 2026-07-17 Phase 2/6.
+  - [x] stock deducted. 2026-07-17 Phase 2/6.
+  - [x] payment attempt linked. 2026-07-17 Phase 2/6.
+- [x] Online capture tests:
+  - [x] captured payment creates exactly one order. 2026-07-17 Phase 6.
+  - [x] snapshot fields match COD path. 2026-07-17 Phase 3.
+- [x] Idempotency tests:
+  - [x] duplicate idempotency key returns original result. 2026-07-17 Phase 6.
+  - [x] duplicate key does not duplicate order/history/outbox. 2026-07-17 Phase 6.
+- [x] Guest access tests:
+  - [x] correct token can read completion. 2026-07-17 Phase 4/7.
+  - [x] wrong token fails safely. 2026-07-17 Phase 4/7.
+  - [x] wrong store fails safely. 2026-07-17 Phase 4/7.
+- [x] Store snapshot tests:
+  - [x] mutating `CommerceStore` after placement does not change order snapshot projection. 2026-07-17 Phase 3.
+- [x] Billing snapshot tests:
+  - [x] mutating saved address after placement does not change order snapshot projection. 2026-07-17 Phase 3.
+- [x] Totals tests:
+  - [x] subtotal + shipping + tax - discount equals grand/total after rounding. 2026-07-17 Phase 3/6.
 - [x] Status transition tests: 2026-07-17 Phase 5.
   - [x] complete rules. 2026-07-17 Phase 5.
   - [x] cancel rules. 2026-07-17 Phase 5.
@@ -748,47 +748,54 @@ test(order-placement): verify order placement core
   - [x] history appended. 2026-07-17 Phase 5.
  - [x] Transaction rollback tests: 2026-07-17 Phase 6.
   - [x] injected placement failure rolls back order/cart/stock/history/outbox. 2026-07-17 Phase 6.
-- [ ] API contract tests:
-  - [ ] operation IDs.
-  - [ ] schemas.
-  - [ ] errors.
-  - [ ] security.
-  - [ ] request body metadata.
-  - [ ] no domain entities.
-- [ ] Boundary tests:
-  - [ ] ControlPlane.Web only calls ControlPlane.API.
-  - [ ] Storefront stays store-scoped.
+- [x] API contract tests:
+  - [x] operation IDs. 2026-07-17 Phase 7.
+  - [x] schemas. 2026-07-17 Phase 7.
+  - [x] errors. 2026-07-17 Phase 7.
+  - [x] security. 2026-07-17 Phase 7.
+  - [x] request body metadata. 2026-07-17 Phase 7.
+  - [x] no domain entities. 2026-07-17 Phase 7.
+- [x] Boundary tests:
+  - [x] ControlPlane.Web only calls ControlPlane.API. 2026-07-17 Phase 7/8.
+  - [x] Storefront stays store-scoped. 2026-07-17 Phase 4/7.
 
 ## Migration And Compatibility
 
-- [ ] Use additive migrations only.
-- [ ] Existing order rows remain valid.
-- [ ] New snapshot columns are nullable where needed.
-- [ ] Existing `Order.Reference` remains public order number.
-- [ ] Existing `TotalAmount` remains charged/order total.
-- [ ] `GrandTotalAmount` equals `TotalAmount` for new/backfilled rows.
-- [ ] Existing Storefront checkout completion route remains compatible.
-- [ ] Existing Admin order list/detail routes remain compatible.
-- [ ] Existing payment attempt rows remain valid.
-- [ ] Existing payment provider event rows remain valid.
-- [ ] Existing order lines remain valid.
-- [ ] Existing shipment/tracking behavior remains compatible.
-- [ ] No legacy database changes.
+- [x] Use additive migrations only. 2026-07-17 Phase 8: CommerceNode migrations add nullable columns/tables; no destructive migration.
+- [x] Existing order rows remain valid. 2026-07-17 Phase 8: existing rows may keep null snapshot/history/payment-summary fields.
+- [x] New snapshot columns are nullable where needed. 2026-07-17 Phase 8.
+- [x] Existing `Order.Reference` remains public order number. 2026-07-17 Phase 8.
+- [x] Existing `TotalAmount` remains charged/order total. 2026-07-17 Phase 8.
+- [x] `GrandTotalAmount` equals `TotalAmount` for new/backfilled rows. 2026-07-17 Phase 8: new rows set breakdown totals; optional backfill can set `GrandTotalAmount = TotalAmount`, `SubtotalAmount = TotalAmount`, and tax/discount/shipping totals to `0` only when historical detail is unavailable.
+- [x] Existing Storefront checkout completion route remains compatible. 2026-07-17 Phase 8.
+- [x] Existing Admin order list/detail routes remain compatible. 2026-07-17 Phase 8.
+- [x] Existing payment attempt rows remain valid. 2026-07-17 Phase 8.
+- [x] Existing payment provider event rows remain valid. 2026-07-17 Phase 8.
+- [x] Existing order lines remain valid. 2026-07-17 Phase 8.
+- [x] Existing shipment/tracking behavior remains compatible. 2026-07-17 Phase 8.
+- [x] No legacy database changes. 2026-07-17 Phase 8: no `AppDbContext`/legacy Presentation migration or route changes.
+
+Migration safety notes:
+
+- Existing orders created before this refactor can have null store snapshot, billing snapshot, shipping method snapshot, order total breakdown, guest token, and history fields. Read models must keep fallback behavior to legacy order fields.
+- Backfill is optional. If needed for reporting, backfill only CommerceNode-owned `orders` rows and use conservative values when historical detail is unavailable: `GrandTotalAmount = TotalAmount`, `SubtotalAmount = TotalAmount`, `ShippingTotalAmount = 0`, `TaxTotalAmount = 0`, `DiscountTotalAmount = 0`.
+- Do not backfill raw provider metadata into public/admin projection fields. Payment attempt metadata remains internal.
+- Do not create legacy `AppDbContext` migrations for these changes.
 
 ## Out Of Scope Backlog
 
-- [ ] Full tax engine.
-- [ ] Full discount engine.
-- [ ] Full shipping carrier integration.
-- [ ] Full order fulfillment workflow.
-- [ ] Multi-shipment and partial shipment UI.
-- [ ] Refund accounting and settlement reconciliation.
-- [ ] Returns/RMA.
-- [ ] Invoice numbering and accounting exports.
-- [ ] Subscription/recurring order lifecycle.
-- [ ] Event broker infrastructure.
-- [ ] Public customer account order center beyond secure completion lookup.
-- [ ] Legacy runtime migration.
+- [n/a] Full tax engine. Deferred.
+- [n/a] Full discount engine. Deferred.
+- [n/a] Full shipping carrier integration. Deferred.
+- [n/a] Full order fulfillment workflow. Deferred.
+- [n/a] Multi-shipment and partial shipment UI. Deferred.
+- [n/a] Refund accounting and settlement reconciliation. Deferred.
+- [n/a] Returns/RMA. Deferred.
+- [n/a] Invoice numbering and accounting exports. Deferred.
+- [n/a] Subscription/recurring order lifecycle. Deferred.
+- [n/a] Event broker infrastructure. Deferred.
+- [n/a] Public customer account order center beyond secure completion lookup. Deferred.
+- [n/a] Legacy runtime migration. Explicitly out of scope.
 
 ## Recommended Implementation Order
 
@@ -800,22 +807,22 @@ test(order-placement): verify order placement core
 - [x] Phase 5 - order status transition and history. 2026-07-17: committed after CommerceNode API build and focused 95/95 test run.
 - [x] Phase 6 - placement transaction and event hook. 2026-07-17: committed after CommerceNode API build and focused 88/88 test run.
 - [x] Phase 7 - API projection and Storefront/Admin integration. 2026-07-17: committed after CommerceNode/ControlPlane builds and focused 103/103 test run.
-- [ ] Phase 8 - QA, migration safety, and documentation.
+- [x] Phase 8 - QA, migration safety, and documentation. 2026-07-17: docs/QA/migration notes completed after focused 103/103 Phase 7 release gate.
 
 ## Acceptance Criteria
 
-- [ ] New order placement uses one shared builder/service for COD and online capture.
-- [ ] New orders snapshot store data.
-- [ ] New orders snapshot billing data.
-- [ ] New orders snapshot shipping data.
-- [ ] New orders snapshot shipping method.
-- [ ] New orders snapshot totals.
-- [ ] New orders snapshot currency and payment method.
-- [ ] New orders snapshot line item details.
-- [ ] Guest completion is protected by a token that is not the order reference.
+- [x] New order placement uses one shared builder/service for COD and online capture. 2026-07-17 Phase 2.
+- [x] New orders snapshot store data. 2026-07-17 Phase 3.
+- [x] New orders snapshot billing data. 2026-07-17 Phase 3.
+- [x] New orders snapshot shipping data. 2026-07-17 Phase 3.
+- [x] New orders snapshot shipping method. 2026-07-17 Phase 3.
+- [x] New orders snapshot totals. 2026-07-17 Phase 3.
+- [x] New orders snapshot currency and payment method. 2026-07-17 Phase 3.
+- [x] New orders snapshot line item details. 2026-07-17 Phase 2/3.
+- [x] Guest completion is protected by a token that is not the order reference. 2026-07-17 Phase 4.
 - [x] Order status changes append order-local history. 2026-07-17 Phase 5.
 - [x] Placement side effects are transactional and replay-safe. 2026-07-17 Phase 6.
-- [ ] Public DTOs expose safe additive fields only.
-- [ ] Admin DTOs expose safe additive fields only.
-- [ ] Existing checkout/payment/storefront flows remain green.
-- [ ] QA checklists contain evidence for new order placement guarantees.
+- [x] Public DTOs expose safe additive fields only. 2026-07-17 Phase 7.
+- [x] Admin DTOs expose safe additive fields only. 2026-07-17 Phase 7.
+- [x] Existing checkout/payment/storefront flows remain green. 2026-07-17 Phase 8: focused 103/103 run passed.
+- [x] QA checklists contain evidence for new order placement guarantees. 2026-07-17 Phase 8.
