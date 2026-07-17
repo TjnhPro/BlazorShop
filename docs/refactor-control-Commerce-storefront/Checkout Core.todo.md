@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Checkout Core.md`
 
-Status: In progress. Phase 0-8 completed.
+Status: Complete. Phase 0-9 completed.
 
 Scope: evolve the current V2 checkout from one-shot preview/place-order into a practical stateful checkout core without introducing a full shipping, tax, discount, or workflow engine.
 
@@ -715,53 +715,61 @@ Goal: finish with regression protection.
 
 Implementation checklist:
 
-- [ ] Update OpenAPI metadata:
-  - [ ] stable operation IDs.
-  - [ ] summaries.
-  - [ ] explicit request DTOs.
-  - [ ] explicit response DTOs.
-  - [ ] required request bodies.
-  - [ ] validation metadata.
-  - [ ] error responses.
-  - [ ] security metadata where auth is required.
-  - [ ] refreshed snapshots.
-- [ ] Add/update application tests:
-  - [ ] start/resume.
-  - [ ] checkout version increments.
-  - [ ] cart change resets downstream state.
-  - [ ] expired session blocks resume/place-order.
-  - [ ] address update resets payment/review.
-  - [ ] payment method selection/filtering.
-  - [ ] review blocks invalid checkout.
-  - [ ] hosted payment pending does not clear cart prematurely.
-  - [ ] duplicate idempotency returns same result.
-- [ ] Add/update Storefront V2 tests:
-  - [ ] one-page checkout still posts.
-  - [ ] stale cart message.
-  - [ ] hosted payment redirect.
-  - [ ] payment success resume/status behavior.
-  - [ ] payment cancel resume behavior.
-- [ ] Update QA checklists:
-  - [ ] `QA-CommerceNode.todo.md`.
-  - [ ] `QA-StorefrontV2.todo.md`.
-  - [ ] `QA-ControlPlane.todo.md` only for boundary evidence if relevant.
-- [ ] Run focused tests.
-- [ ] Run visible browser QA if UI changed and runtime is available.
+- [x] Update OpenAPI metadata:
+  - [x] stable operation IDs.
+  - [x] summaries.
+  - [x] explicit request DTOs.
+  - [x] explicit response DTOs.
+  - [x] required request bodies.
+  - [x] validation metadata.
+  - [x] error responses.
+  - [x] security metadata where auth is required.
+  - [x] refreshed snapshots.
+- [x] Add/update application tests:
+  - [x] start/resume.
+  - [x] checkout version increments.
+  - [x] cart change resets downstream state.
+  - [x] expired session blocks resume/place-order.
+  - [x] address update resets payment/review.
+  - [x] payment method selection/filtering.
+  - [x] review blocks invalid checkout.
+  - [x] hosted payment pending does not clear cart prematurely.
+  - [x] duplicate idempotency returns same result.
+- [x] Add/update Storefront V2 tests:
+  - [x] one-page checkout still posts.
+  - [x] stale cart message.
+  - [x] hosted payment redirect.
+  - [x] payment success resume/status behavior.
+  - [x] payment cancel resume behavior.
+- [x] Update QA checklists:
+  - [x] `QA-CommerceNode.todo.md`.
+  - [x] `QA-StorefrontV2.todo.md`.
+  - [n/a] `QA-ControlPlane.todo.md` only for boundary evidence if relevant.
+- [x] Run focused tests.
+- [~] Run visible browser QA if UI changed and runtime is available. 2026-07-17: automated host smoke release gate passed; visible browser runtime was not started in this phase.
 
 Verification checklist:
 
-- [ ] Contract tests protect new checkout endpoints.
-- [ ] Existing payment tests still pass.
-- [ ] Existing checkout tests still pass.
-- [ ] Storefront checkout remains usable.
-- [ ] Active V2 projects touched by this work build.
-- [ ] No legacy checkout route is added.
+- [x] Contract tests protect new checkout endpoints.
+- [x] Existing payment tests still pass.
+- [x] Existing checkout tests still pass.
+- [x] Storefront checkout remains usable.
+- [x] Active V2 projects touched by this work build.
+- [x] No legacy checkout route is added.
 
 Exit criteria:
 
-- [ ] QA checklist files contain evidence.
-- [ ] OpenAPI remains generator-safe.
-- [ ] Deferred provider engines remain deferred.
+- [x] QA checklist files contain evidence.
+- [x] OpenAPI remains generator-safe.
+- [x] Deferred provider engines remain deferred.
+
+Phase 9 evidence:
+
+- 2026-07-17: Added `StorefrontV2HostSmokeTests.Checkout_PostWithStaleCartVersionRedirectsWithoutPlacingOrder` to protect the recoverable stale-cart path.
+- 2026-07-17: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontCheckoutServiceTests"` passed 38/38.
+- 2026-07-17: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~CommerceNodeStorefrontOpenApiContractTests"` passed 29/29.
+- 2026-07-17: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontV2HostSmokeTests"` passed 36/36.
+- 2026-07-17: `QA-CommerceNode.todo.md` and `QA-StorefrontV2.todo.md` contain checkout-stateful integration evidence.
 
 Suggested commit:
 
@@ -781,48 +789,48 @@ test(checkout-core): complete release gate
 - [x] Cart version changes reset downstream checkout state.
 - [x] Address changes reset shipping/payment/review/terms as applicable.
 - [x] Shipping method stub returns deterministic `shipping_not_required` or `free_standard`.
-- [ ] Payment method step filters by enabled state, currency, country, total, min, and max.
-- [ ] Review projection returns server-owned totals and `placeOrderAllowed`.
-- [ ] Place-order requires checkout session ID, checkout version, cart version, and idempotency key.
-- [ ] Duplicate idempotency returns same order/payment attempt result.
-- [ ] Hosted payment pending does not mark cart ordered or clear checkout context prematurely.
-- [ ] Provider captured callback creates one order and closes cart.
+- [x] Payment method step filters by enabled state, currency, country, total, min, and max.
+- [x] Review projection returns server-owned totals and `placeOrderAllowed`.
+- [x] Place-order requires checkout session ID, checkout version, cart version, and idempotency key.
+- [x] Duplicate idempotency returns same order/payment attempt result.
+- [x] Hosted payment pending does not mark cart ordered or clear checkout context prematurely.
+- [x] Provider captured callback creates one order and closes cart.
 - [x] Storefront OpenAPI validates and snapshots pass.
 
 ### Storefront V2
 
-- [ ] One-page checkout still renders with active cart.
-- [ ] Checkout uses server review projection for totals.
-- [ ] Checkout POST still works for COD.
-- [ ] Stale cart produces actionable message.
-- [ ] Hosted payment redirect preserves resume/payment context.
-- [ ] Payment success shows captured/completed state.
-- [ ] Payment cancel allows return to checkout.
-- [ ] Cart token is cleared only after completed order result.
+- [x] One-page checkout still renders with active cart.
+- [x] Checkout uses server review projection for totals.
+- [x] Checkout POST still works for COD.
+- [x] Stale cart produces actionable message.
+- [x] Hosted payment redirect preserves resume/payment context.
+- [x] Payment success shows captured/completed state.
+- [x] Payment cancel allows return to checkout.
+- [x] Cart token is cleared only after completed order result.
 - [x] Browser requests do not send store ID, customer ID, statuses, totals, or server-owned fields.
-- [ ] Browser QA has no unexpected console errors after checkout UI changes.
+- [~] Browser QA has no unexpected console errors after checkout UI changes. 2026-07-17: automated Storefront host smoke passed; headed browser was not run in this phase.
 
 ### Control Plane
 
-- [ ] Control Plane is not part of Storefront checkout runtime.
-- [ ] ControlPlane Web does not call CommerceNode checkout APIs directly.
-- [ ] No checkout state table is added to `ControlPlaneDbContext`.
-- [ ] Any future checkout settings gateway remains behind ControlPlane API.
+- [x] Control Plane is not part of Storefront checkout runtime.
+- [x] ControlPlane Web does not call CommerceNode checkout APIs directly.
+- [x] No checkout state table is added to `ControlPlaneDbContext`.
+- [x] Any future checkout settings gateway remains behind ControlPlane API.
 
 ## Failure Modes To Design Against
 
-- [ ] Preview creates unlimited active sessions and place-order uses the wrong one.
-- [ ] Checkout session resumes across stores.
-- [ ] Browser sends totals/payment status/order status and backend trusts them.
-- [ ] Cart changes after address/payment selection but checkout still places order.
-- [ ] Shipping/payment selection remains valid after address changes when it should reset.
-- [ ] Hosted payment redirect clears cart token before order exists.
-- [ ] Provider callback creates duplicate order.
-- [ ] Duplicate place-order with same idempotency key creates multiple orders or payment attempts.
-- [ ] Expired checkout session can still place order.
-- [ ] Payment method becomes disabled after review but place-order still uses it.
+- [x] Preview creates unlimited active sessions and place-order uses the wrong one.
+- [x] Checkout session resumes across stores.
+- [x] Browser sends totals/payment status/order status and backend trusts them.
+- [x] Cart changes after address/payment selection but checkout still places order.
+- [x] Shipping/payment selection remains valid after address changes when it should reset.
+- [x] Hosted payment redirect clears cart token before order exists.
+- [x] Provider callback creates duplicate order.
+- [x] Duplicate place-order with same idempotency key creates multiple orders or payment attempts.
+- [x] Expired checkout session can still place order.
+- [x] Payment method becomes disabled after review but place-order still uses it.
 - [ ] Guest checkout policy says disabled but anonymous checkout still succeeds.
-- [ ] OpenAPI omits body/security/error schemas for new commands.
+- [x] OpenAPI omits body/security/error schemas for new commands.
 
 ## Migration And Compatibility
 
@@ -832,9 +840,9 @@ test(checkout-core): complete release gate
 - [x] `preview` contract is not broken in early phases.
 - [x] `place-order` contract is not broken in early phases.
 - [x] New stateful endpoints can be adopted gradually by Storefront V2.
-- [ ] Existing orders remain valid.
-- [ ] Existing payment attempts remain valid.
-- [ ] Existing checkout session rows default safely:
+- [x] Existing orders remain valid.
+- [x] Existing payment attempts remain valid.
+- [x] Existing checkout session rows default safely:
   - [x] `CheckoutVersion = 1`.
   - [x] `CurrentStep = state-derived value`.
   - [x] `CompletedStepsJson = []`.
@@ -850,20 +858,20 @@ test(checkout-core): complete release gate
 - [x] Phase 5 - payment method step.
 - [x] Phase 6 - review projection and terms hook.
 - [x] Phase 7 - place order hardening and completion rules.
-- [ ] Phase 8 - Storefront V2 integration.
-- [ ] Phase 9 - QA and contract coverage.
+- [x] Phase 8 - Storefront V2 integration.
+- [x] Phase 9 - QA and contract coverage.
 
 ## Definition Of Done
 
-- [ ] Checkout can start, resume, validate, review, and place order safely.
-- [ ] Cart changes after checkout selection are detected and reset downstream state.
-- [ ] Address/payment/review steps have explicit server contracts.
-- [ ] Hosted payment pending flow preserves enough context to resume or retry.
-- [ ] Completed order flow closes cart and returns order reference.
-- [ ] Direct guest address checkout remains compatible.
-- [ ] OpenAPI and tests protect the checkout contract.
-- [ ] No legacy checkout route or legacy database is extended.
-- [ ] Deferred shipping/tax/discount/workflow engines remain unimplemented.
+- [x] Checkout can start, resume, validate, review, and place order safely.
+- [x] Cart changes after checkout selection are detected and reset downstream state.
+- [x] Address/payment/review steps have explicit server contracts.
+- [x] Hosted payment pending flow preserves enough context to resume or retry.
+- [x] Completed order flow closes cart and returns order reference.
+- [x] Direct guest address checkout remains compatible.
+- [x] OpenAPI and tests protect the checkout contract.
+- [x] No legacy checkout route or legacy database is extended.
+- [x] Deferred shipping/tax/discount/workflow engines remain unimplemented.
 
 ## Decision Audit Trail
 

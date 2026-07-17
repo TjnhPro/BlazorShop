@@ -688,6 +688,33 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task Checkout_PostWithStaleCartVersionRedirectsWithoutPlacingOrder()
+        {
+            var handler = new CheckoutPaymentRedirectHandler();
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<StorefrontApiClient>();
+                    services.AddScoped(_ => new StorefrontApiClient(
+                        new HttpClient(handler)
+                        {
+                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
+                        },
+                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.Checkout, "bs-cart-token=server-token");
+            using var request = CreateCheckoutPost(token, AppendCookie(cookieHeader, "bs-cart-token=server-token"), cartVersion: 1);
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal($"{StorefrontRoutes.Checkout}?error=Your%20cart%20changed.%20Review%20the%20latest%20cart%20and%20try%20checkout%20again.", response.Headers.Location?.ToString());
+            Assert.Equal(0, handler.ReviewCalls);
+            Assert.Equal(0, handler.PlaceOrderCalls);
+        }
+
+        [Fact]
         public async Task PaymentSuccess_WhenCapturedAttempt_ShowsConfirmedState()
         {
             var handler = new PaymentAttemptStatusHandler("captured");
@@ -840,14 +867,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             return request;
         }
 
-        private static HttpRequestMessage CreateCheckoutPost(string antiforgeryToken, string cookieHeader)
+        private static HttpRequestMessage CreateCheckoutPost(string antiforgeryToken, string cookieHeader, int cartVersion = 2)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, StorefrontRoutes.Checkout)
             {
                 Content = new FormUrlEncodedContent(
                 [
                     new KeyValuePair<string, string>("__RequestVerificationToken", antiforgeryToken),
-                    new KeyValuePair<string, string>("CartVersion", "2"),
+                    new KeyValuePair<string, string>("CartVersion", cartVersion.ToString(System.Globalization.CultureInfo.InvariantCulture)),
                     new KeyValuePair<string, string>("IdempotencyKey", "checkout-online-key"),
                     new KeyValuePair<string, string>("CustomerEmail", "customer@example.test"),
                     new KeyValuePair<string, string>("CustomerName", "Customer One"),
