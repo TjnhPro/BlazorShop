@@ -276,6 +276,13 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Storefront Swagger snapshot is refreshed after cart/checkout/payment API cutover. 2026-07-14: refreshed through Phase 10 first online provider result-shape update; focused checkout/payment/contract/Storefront suite passed 63/63 before Storefront host redirect test, then Storefront host suite passed 27/27.
 - [x] Direct raw Storefront checkout path is retired after Storefront V2 cutover. 2026-07-14: `POST /cart/checkout` removed from active Storefront API contract/client; focused contract/Storefront suite passed 51/51.
 
+## Payment Core
+
+- [x] Phase 0 baseline records active payment provider core files and known hardening gaps before refactor. 2026-07-17: reviewed `StorePaymentMethod`, `PaymentAttempt`, `PaymentProviderEvent`, payment DTOs, `PaymentAttemptService`, `CommerceNodePaymentMethodService`, `StorefrontCheckoutService`, `StorefrontScopedPaymentsController`, Storefront client, and return pages.
+- [x] Current Storefront payment operations are contract-protected before provider-core changes. 2026-07-17: operation IDs recorded as `StorefrontPayments_GetPaymentMethods`, `StorefrontPayments_GetAttempt`, `StorefrontPayments_HandleProviderCallback`, `StorefrontPayments_HandleWebhook`, and `StorefrontPayments_CapturePayPal`.
+- [x] Payment focused baseline passes before provider-core refactor. 2026-07-17: focused run covering payment attempts, secret boundary, Stripe adapter, PayPal contract, OpenAPI, checkout payment flow, and payment return pages passed 86/86.
+- [x] Payment Core Phase 0 confirms known later-phase risks are not silently fixed or ignored. 2026-07-17: callback/webhook still trust body `State` and signature is not verified; retained as Phase 4 hardening scope.
+
 ## Currency
 
 - [x] Phase 0 baseline guardrails document the old client-supplied cart currency and Stripe two-decimal minor-unit assumptions. 2026-07-15: focused cart/checkout/Stripe tests passed before Phase 1 hardening.

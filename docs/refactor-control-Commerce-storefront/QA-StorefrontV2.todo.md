@@ -545,6 +545,8 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Storefront V2 checkout consumes stateful checkout start/address/shipping/payment/review commands while staying a one-page SSR form. 2026-07-17 Checkout Core Phase 8: Storefront API client/page/POST flow updated and Storefront V2 build passed with 0 warnings.
 - [x] Storefront checkout submit uses review `expectedCheckoutVersion` and does not send totals/status fields to CommerceNode. 2026-07-17 Phase 8: `StorefrontV2HostSmokeTests.Checkout_PostRedirectsToProviderNextAction` asserts review call, `expectedCheckoutVersion`, and no `grandTotal` in command payloads.
 - [x] Stale checkout form cart version returns a recoverable checkout message before placing an order. 2026-07-17 Checkout Core Phase 9: `StorefrontV2HostSmokeTests.Checkout_PostWithStaleCartVersionRedirectsWithoutPlacingOrder` passed and asserts review/place-order are not called.
+- [x] Payment Core Phase 0 confirms Storefront V2 payment success/cancel pages still poll scoped payment-attempt status. 2026-07-17: focused baseline covered captured, pending, and failed payment return states.
+- [x] Payment Core Phase 0 confirms hosted payment redirect context remains recoverable before provider-core changes. 2026-07-17: focused payment baseline included checkout hosted redirect and payment return-page smoke tests.
 - [ ] Browser network shows no legacy API/Web requests.
 - [ ] Checkout page is noindex/private and absent from sitemap.
 
