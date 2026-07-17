@@ -141,6 +141,36 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("requestBody.Required = true", source);
         }
 
+        [Fact]
+        public void CommerceTransactionalMessageAdminSwaggerFilter_DefinesStableOperationMetadata()
+        {
+            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwaggerExtensions.cs");
+
+            var operationIds = new[]
+            {
+                "CommerceMessageTemplates_List",
+                "CommerceMessageTemplates_Get",
+                "CommerceMessageTemplates_Update",
+                "CommerceMessageTemplates_Reset",
+                "CommerceMessageTemplates_Preview",
+                "CommerceQueuedMessages_List",
+                "CommerceQueuedMessages_Get",
+                "CommerceQueuedMessages_Retry",
+                "CommerceQueuedMessages_Cancel",
+            };
+
+            foreach (var operationId in operationIds)
+            {
+                Assert.Contains(operationId, source);
+            }
+
+            Assert.Contains("CommerceTransactionalMessageAdminOperationMetadataFilter", source);
+            Assert.Contains("typeof(CommerceNodeApiResponse<MessageTemplateAdminDetail>)", source);
+            Assert.Contains("typeof(CommerceNodeApiResponse<QueuedMessageAdminDetail>)", source);
+            Assert.Contains("typeof(CommerceNodeApiResponse<QueuedMessageAdminListResponse>)", source);
+            Assert.Contains("requestBody.Required = true", source);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath));

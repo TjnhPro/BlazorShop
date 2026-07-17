@@ -5,6 +5,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
 
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
+    using BlazorShop.Application.CommerceNode.Messages;
     using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Application.CommerceNode.SecurityPrivacy;
     using BlazorShop.Application.CommerceNode.Shipping;
@@ -79,6 +80,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
                 options.OperationFilter<CommerceCurrencyAdminOperationMetadataFilter>();
                 options.OperationFilter<CommerceSecurityPrivacyAdminOperationMetadataFilter>();
                 options.OperationFilter<CommerceShippingAdminOperationMetadataFilter>();
+                options.OperationFilter<CommerceTransactionalMessageAdminOperationMetadataFilter>();
                 options.OperationFilter<CommerceCategoryMediaAdminOperationMetadataFilter>();
                 options.OperationFilter<CommerceNavigationAdminOperationMetadataFilter>();
                 options.OperationFilter<CommerceSeoSlugAdminOperationMetadataFilter>();
@@ -810,6 +812,104 @@ namespace BlazorShop.CommerceNode.API.Swagger
             }
 
             private sealed record CommerceSeoSlugOperationMetadata(
+                string OperationId,
+                string Summary,
+                Type ResponseType,
+                int[] ErrorStatusCodes);
+        }
+
+        private sealed class CommerceTransactionalMessageAdminOperationMetadataFilter : IOperationFilter
+        {
+            private static readonly IReadOnlyDictionary<(string Controller, string Action), CommerceTransactionalMessageOperationMetadata> Metadata =
+                new Dictionary<(string Controller, string Action), CommerceTransactionalMessageOperationMetadata>
+                {
+                    [("CommerceMessageTemplates", "List")] = new(
+                        "CommerceMessageTemplates_List",
+                        "List transactional message templates.",
+                        typeof(CommerceNodeApiResponse<IReadOnlyList<MessageTemplateAdminSummary>>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status500InternalServerError]),
+                    [("CommerceMessageTemplates", "Get")] = new(
+                        "CommerceMessageTemplates_Get",
+                        "Get a transactional message template.",
+                        typeof(CommerceNodeApiResponse<MessageTemplateAdminDetail>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    [("CommerceMessageTemplates", "Update")] = new(
+                        "CommerceMessageTemplates_Update",
+                        "Update a store transactional message template override.",
+                        typeof(CommerceNodeApiResponse<MessageTemplateAdminDetail>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("CommerceMessageTemplates", "Reset")] = new(
+                        "CommerceMessageTemplates_Reset",
+                        "Reset a store transactional message template override.",
+                        typeof(CommerceNodeApiResponse<MessageTemplateAdminDetail>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    [("CommerceMessageTemplates", "Preview")] = new(
+                        "CommerceMessageTemplates_Preview",
+                        "Preview a transactional message template.",
+                        typeof(CommerceNodeApiResponse<MessageTemplatePreviewResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    [("CommerceQueuedMessages", "List")] = new(
+                        "CommerceQueuedMessages_List",
+                        "List queued transactional messages.",
+                        typeof(CommerceNodeApiResponse<QueuedMessageAdminListResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status500InternalServerError]),
+                    [("CommerceQueuedMessages", "Get")] = new(
+                        "CommerceQueuedMessages_Get",
+                        "Get a queued transactional message.",
+                        typeof(CommerceNodeApiResponse<QueuedMessageAdminDetail>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    [("CommerceQueuedMessages", "Retry")] = new(
+                        "CommerceQueuedMessages_Retry",
+                        "Retry a queued transactional message.",
+                        typeof(CommerceNodeApiResponse<QueuedMessageAdminDetail>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("CommerceQueuedMessages", "Cancel")] = new(
+                        "CommerceQueuedMessages_Cancel",
+                        "Cancel a queued transactional message.",
+                        typeof(CommerceNodeApiResponse<QueuedMessageAdminDetail>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                };
+
+            public void Apply(OpenApiOperation operation, OperationFilterContext context)
+            {
+                if (context.ApiDescription.ActionDescriptor is not ControllerActionDescriptor actionDescriptor
+                    || !Metadata.TryGetValue((actionDescriptor.ControllerName, actionDescriptor.ActionName), out var metadata))
+                {
+                    return;
+                }
+
+                operation.OperationId = metadata.OperationId;
+                operation.Summary = metadata.Summary;
+
+                if (operation.RequestBody is OpenApiRequestBody requestBody)
+                {
+                    requestBody.Required = true;
+                }
+
+                operation.Responses ??= new OpenApiResponses();
+                operation.Responses["200"] = CreateJsonResponse(context, metadata.ResponseType, "Success.");
+                foreach (var statusCode in metadata.ErrorStatusCodes)
+                {
+                    operation.Responses[statusCode.ToString()] = CreateJsonResponse(context, metadata.ResponseType, "Error.");
+                }
+            }
+
+            private static OpenApiResponse CreateJsonResponse(OperationFilterContext context, Type responseType, string description)
+            {
+                return new OpenApiResponse
+                {
+                    Description = description,
+                    Content = new Dictionary<string, OpenApiMediaType>
+                    {
+                        ["application/json"] = new()
+                        {
+                            Schema = context.SchemaGenerator.GenerateSchema(responseType, context.SchemaRepository),
+                        },
+                    },
+                };
+            }
+
+            private sealed record CommerceTransactionalMessageOperationMetadata(
                 string OperationId,
                 string Summary,
                 Type ResponseType,

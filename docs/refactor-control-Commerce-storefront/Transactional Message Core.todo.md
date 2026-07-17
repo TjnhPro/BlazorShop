@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Transactional Message Core.md`
 
-Status: Phase 6 complete. Phase 7 not started.
+Status: Phase 7 complete. Phase 8 not started.
 
 Scope: add practical transactional message infrastructure for active V2 Commerce Node. Replace hard-coded direct email calls with template-driven queued messages for account activation, password recovery, order placed confirmation, payment/fulfillment hooks, and contact form delivery. This is not a marketing automation, newsletter campaign, or visual email builder phase.
 
@@ -611,34 +611,34 @@ Goal: make templates and queued messages manageable without building a full desi
 
 Implementation checklist:
 
-- [ ] Add Commerce Admin template list endpoint.
-- [ ] Add Commerce Admin template detail endpoint.
-- [ ] Add Commerce Admin template update endpoint.
-- [ ] Add Commerce Admin template reset endpoint.
-- [ ] Add Commerce Admin template preview endpoint.
-- [ ] Add Commerce Admin queued message list endpoint.
-- [ ] Add Commerce Admin queued message detail endpoint.
-- [ ] Add Commerce Admin queued message retry endpoint.
-- [ ] Add Commerce Admin queued message cancel endpoint.
-- [ ] Add OpenAPI metadata.
-- [ ] Add contract tests.
-- [ ] Add minimal Control Plane gateway/client support only if admin UI needs it in this phase.
-- [ ] Add audit log entries for template update/reset.
-- [ ] Add audit log entries for message retry/cancel.
-- [ ] Redact sensitive token values in admin queue detail.
+- [x] Add Commerce Admin template list endpoint. 2026-07-17 Phase 7: `GET api/commerce/admin/message-templates`.
+- [x] Add Commerce Admin template detail endpoint. 2026-07-17 Phase 7: `GET api/commerce/admin/message-templates/{publicId}`.
+- [x] Add Commerce Admin template update endpoint. 2026-07-17 Phase 7: `PUT api/commerce/admin/message-templates/{publicId}` creates/updates store override without mutating global defaults.
+- [x] Add Commerce Admin template reset endpoint. 2026-07-17 Phase 7: `POST api/commerce/admin/message-templates/{publicId}/reset`.
+- [x] Add Commerce Admin template preview endpoint. 2026-07-17 Phase 7: `POST api/commerce/admin/message-templates/preview`.
+- [x] Add Commerce Admin queued message list endpoint. 2026-07-17 Phase 7: `GET api/commerce/admin/queued-messages`.
+- [x] Add Commerce Admin queued message detail endpoint. 2026-07-17 Phase 7: `GET api/commerce/admin/queued-messages/{publicId}`.
+- [x] Add Commerce Admin queued message retry endpoint. 2026-07-17 Phase 7: `POST api/commerce/admin/queued-messages/{publicId}/retry`.
+- [x] Add Commerce Admin queued message cancel endpoint. 2026-07-17 Phase 7: `POST api/commerce/admin/queued-messages/{publicId}/cancel`.
+- [x] Add OpenAPI metadata. 2026-07-17 Phase 7: `CommerceTransactionalMessageAdminOperationMetadataFilter`.
+- [x] Add contract tests. 2026-07-17 Phase 7: static Swagger metadata test plus service contract tests passed.
+- [x] Add minimal Control Plane gateway/client support only if admin UI needs it in this phase. 2026-07-17 Phase 7: no Control Plane UI/gateway added because this phase only exposes backend admin contract.
+- [x] Add audit log entries for template update/reset. 2026-07-17 Phase 7.
+- [x] Add audit log entries for message retry/cancel. 2026-07-17 Phase 7.
+- [x] Redact sensitive token values in admin queue detail. 2026-07-17 Phase 7: queued message admin detail intentionally omits rendered `BodyHtml` and `IdempotencyKey`.
 
 Verification checklist:
 
-- [ ] Admin can inspect templates safely.
-- [ ] Admin can update templates safely.
-- [ ] Admin can see failed queued messages.
-- [ ] Admin can retry/cancel queued messages.
-- [ ] Swagger does not expose secrets.
-- [ ] Control Plane Web still calls Control Plane API, not Commerce Node directly.
+- [x] Admin can inspect templates safely. 2026-07-17 Phase 7.
+- [x] Admin can update templates safely. 2026-07-17 Phase 7: store override behavior covered by `TransactionalMessageAdminServiceTests`.
+- [x] Admin can see failed queued messages. 2026-07-17 Phase 7: queue list/detail DTOs expose status/error summary only.
+- [x] Admin can retry/cancel queued messages. 2026-07-17 Phase 7: retry store-scope test passed; cancel path uses the same service scope and audit pattern.
+- [x] Swagger does not expose secrets. 2026-07-17 Phase 7: no SMTP credentials or rendered body are present in admin queue DTOs.
+- [x] Control Plane Web still calls Control Plane API, not Commerce Node directly. 2026-07-17 Phase 7: no Control Plane Web changes.
 
 Exit criteria:
 
-- [ ] Transactional messages are observable and administrable without secret exposure.
+- [x] Transactional messages are observable and administrable without secret exposure. 2026-07-17 Phase 7: CommerceNode API build passed; focused admin service/Swagger tests passed 11/11.
 
 Suggested commit:
 
@@ -704,7 +704,7 @@ test(transactional-message): verify message core
 - [ ] Payment status hook queues once per effective state change.
 - [ ] Fulfillment status hook queues once per effective state change.
 - [x] Contact endpoint validates input and captcha/rate policy. 2026-07-17 Phase 6: Storefront contact DTO validation, captcha target, public-form rate-limit metadata, and OpenAPI snapshot are covered.
-- [ ] Admin APIs expose no SMTP secrets.
+- [x] Admin APIs expose no SMTP secrets. 2026-07-17 Phase 7: admin DTOs avoid SMTP username/password and rendered message body.
 - [ ] OpenAPI contract tests pass.
 
 ### Storefront V2
@@ -781,11 +781,11 @@ test(transactional-message): verify message core
   - [x] captcha branch. 2026-07-17 Phase 6.
   - [x] rate-limit metadata. 2026-07-17 Phase 6.
   - [x] generic success. 2026-07-17 Phase 6.
-- [ ] Admin API tests:
-  - [ ] operation IDs.
-  - [ ] schemas.
-  - [ ] security.
-  - [ ] no secrets.
+- [x] Admin API tests:
+  - [x] operation IDs. 2026-07-17 Phase 7.
+  - [x] schemas. 2026-07-17 Phase 7.
+  - [x] security. 2026-07-17 Phase 7: Commerce Admin middleware and Swagger filters retain node credential and storeKey requirements.
+  - [x] no secrets. 2026-07-17 Phase 7.
 
 ## Migration And Compatibility
 
@@ -832,7 +832,7 @@ test(transactional-message): verify message core
 - [x] Phase 4 - account messages. 2026-07-17: CommerceNode API build passed; focused auth/dispatcher/queue/delivery/baseline tests passed 63/63.
 - [x] Phase 5 - order and payment/fulfillment hooks. 2026-07-17: focused commerce notification/payment/shipment/task baseline tests passed 25/25.
 - [x] Phase 6 - contact form delivery contract. 2026-07-17: CommerceNode API build passed; focused contact service/OpenAPI/captcha/rate-limit tests passed 70/70.
-- [ ] Phase 7 - admin management and observability.
+- [x] Phase 7 - admin management and observability. 2026-07-17: CommerceNode API build passed; focused admin service/Swagger metadata tests passed 11/11.
 - [ ] Phase 8 - QA, contracts, and cleanup.
 
 ## Acceptance Criteria
@@ -845,8 +845,8 @@ test(transactional-message): verify message core
 - [ ] Fulfillment notification hook exists without workflow expansion.
 - [x] Contact form delivery endpoint/contract exists if selected for implementation. 2026-07-17 Phase 6.
 - [ ] Queued messages have retry/failure/audit state.
-- [ ] Admin can inspect templates without seeing SMTP secrets.
-- [ ] Admin can inspect queued messages without seeing SMTP secrets.
+- [x] Admin can inspect templates without seeing SMTP secrets. 2026-07-17 Phase 7.
+- [x] Admin can inspect queued messages without seeing SMTP secrets. 2026-07-17 Phase 7.
 - [ ] New APIs satisfy V2 API contract standards.
 - [ ] Focused tests and QA checklists are updated.
 - [ ] No active V2 behavior is added to legacy `AppDbContext`.
