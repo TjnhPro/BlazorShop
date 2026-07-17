@@ -1618,6 +1618,45 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public async Task PlaceOrderAsync_WhenProviderCapabilityInactive_RejectsBeforeOrder()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId, PaymentMethodKeys.PayPal);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 40m, stock: 10);
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1));
+            var service = CreateCheckoutService(context, cartService);
+            var preview = await service.PreviewAsync(CreateRequest(
+                storeId,
+                cart.Payload.Token!,
+                add.Payload!.Version,
+                paymentMethodKey: PaymentMethodKeys.PayPal));
+
+            var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                preview.Payload!.CheckoutSessionId,
+                preview.Payload.CheckoutVersion,
+                preview.Payload.CartVersion,
+                "paypal-inactive-provider"));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.Conflict, result.ResponseType);
+            Assert.Empty(context.Orders);
+            Assert.Empty(context.PaymentAttempts);
+        }
+
+        [Fact]
         public async Task CheckoutAsync_WhenCheckoutFeatureDisabled_RejectsPreviewAndPlaceOrder()
         {
             using var context = CreateContext();
@@ -1656,6 +1695,10 @@ namespace BlazorShop.Tests.Application.CommerceNode
             bool checkoutEnabled,
             params IStorefrontPaymentProvider[] providers)
         {
+            IStorefrontPaymentProvider[] providerList = providers.Length == 0
+                ? [new CodStorefrontPaymentProvider()]
+                : providers;
+
             return new StorefrontCheckoutService(
                 context,
                 cartService,
@@ -1663,8 +1706,8 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 new MoneyRoundingService(new CurrencyMetadataService()),
                 new StorefrontCustomerService(context),
                 new StubStoreFeatureStateService(checkoutEnabled),
-                new PaymentHandlerResolver([new CodPaymentHandler()]),
-                new StorefrontPaymentProviderResolver(providers));
+                new PaymentProviderCapabilityRegistry(providerList),
+                new StorefrontPaymentProviderResolver(providerList));
         }
 
         private static StorefrontCartService CreateCartService(
@@ -1842,6 +1885,26 @@ namespace BlazorShop.Tests.Application.CommerceNode
             }
 
             public string ProviderKey { get; }
+
+            public Task<ServiceResponse<PaymentProviderOperationResult>> CreatePaymentSessionAsync(
+                CreatePaymentProviderSessionRequest request,
+                CancellationToken cancellationToken = default)
+            {
+                var result = this.createSession(request);
+                return result is null
+                    ? Task.FromResult(PaymentProviderOperationResult.Failed(
+                        ServiceResponseType.Conflict,
+                        "Provider is not configured.",
+                        "provider_session_failed"))
+                    : Task.FromResult(PaymentProviderOperationResult.Succeeded(
+                        "Session created.",
+                        result.NextActionType,
+                        result.NextActionUrl,
+                        result.ProviderSessionId,
+                        result.ProviderReference,
+                        result.MetadataJson,
+                        PaymentAttemptStates.RequiresAction));
+            }
 
             public Task<ServiceResponse<PaymentProviderSessionResult>> CreateHostedSessionAsync(
                 CreatePaymentProviderSessionRequest request,

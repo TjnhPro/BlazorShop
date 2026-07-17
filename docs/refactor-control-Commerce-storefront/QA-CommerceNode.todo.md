@@ -287,6 +287,9 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 - [x] Provider operation contract returns typed unsupported results for unimplemented operations. 2026-07-17 Payment Core Phase 2: `PaymentProviderOperationContractTests` passed.
 - [x] Stripe provider operation maps hosted checkout session to redirect result without moving SDK logic out of Infrastructure. 2026-07-17 Phase 2: `StripeStorefrontPaymentProviderTests` passed.
 - [x] COD provider operation returns synchronous captured recommendation while hosted session remains unsupported. 2026-07-17 Phase 2: `PaymentProviderOperationContractTests` passed.
+- [x] Checkout routes payment by provider capability instead of hard-coded Stripe branching. 2026-07-17 Payment Core Phase 3: `StorefrontCheckoutServiceTests` passed 39/39.
+- [x] Inactive provider capability is rejected before order/payment attempt creation. 2026-07-17 Phase 3: PayPal skeleton checkout guardrail added in `StorefrontCheckoutServiceTests`.
+- [x] COD and Stripe checkout response shapes stay compatible after provider-operation cutover. 2026-07-17 Phase 3: COD focused checkout tests and Stripe redirect/idempotency tests passed.
 
 ## Currency
 

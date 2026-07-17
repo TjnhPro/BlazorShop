@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Payment Core.md`
 
-Status: In progress. Phase 0-2 completed.
+Status: In progress. Phase 0-3 completed.
 
 Scope: turn the existing checkout payment foundation into a practical provider core for active V2. The goal is enough payment behavior for real store usage without moving PayPal/Stripe SDK logic into Domain/Application and without building a full payment platform.
 
@@ -164,7 +164,7 @@ Boundary rules:
 - [x] `IPaymentProvider` owns metadata, input validation, session/request creation, return/cancel, webhook, and optional authorize/capture/void/refund hooks.
 - [ ] `PaymentAttempt` owns attempt state, amount/currency, provider reference/session, and idempotency.
 - [ ] `PaymentProviderEvent` owns verified/raw event ledger, duplicate detection, processed/ignored state.
-- [ ] Checkout selects store payment method, asks provider capability for flow type, creates attempt, and completes order only after internal captured/offline success state.
+- [x] Checkout selects store payment method, asks provider capability for flow type, creates attempt, and completes order only after internal captured/offline success state.
 
 ## Phase 0 - Baseline Contract And Safety Snapshot
 
@@ -346,38 +346,47 @@ Goal: remove checkout dependency on `isStripe` and route by payment method type.
 
 Implementation checklist:
 
-- [ ] Replace hard-coded `isStripe` branch in `StorefrontCheckoutService`.
-- [ ] Route offline/immediate methods by provider capability.
-- [ ] Route redirect/client-action methods by provider capability.
-- [ ] Offline/immediate flow:
-  - [ ] create attempt.
-  - [ ] process synchronously.
-  - [ ] create order if captured/paid.
-- [ ] Redirect/client-action flow:
-  - [ ] create attempt.
-  - [ ] request provider session.
-  - [ ] set attempt `requires_action`.
-  - [ ] keep checkout `order_pending`.
-- [ ] Keep current COD response shape compatible.
-- [ ] Keep current Stripe redirect response shape compatible.
-- [ ] Do not clear/close cart for pending hosted payment until captured/completed.
-- [ ] Keep `PlaceOrderAsync` semantics as "start payment/order placement", not always "order completed".
-- [ ] Keep `OrderId` null for redirect attempt until provider capture.
-- [ ] Duplicate idempotency key returns existing attempt/order state.
+- [x] Replace hard-coded `isStripe` branch in `StorefrontCheckoutService`.
+- [x] Route offline/immediate methods by provider capability.
+- [x] Route redirect/client-action methods by provider capability.
+- [x] Offline/immediate flow:
+  - [x] create attempt.
+  - [x] process synchronously.
+  - [x] create order if captured/paid.
+- [x] Redirect/client-action flow:
+  - [x] create attempt.
+  - [x] request provider session.
+  - [x] set attempt `requires_action`.
+  - [x] keep checkout `order_pending`.
+- [x] Keep current COD response shape compatible.
+- [x] Keep current Stripe redirect response shape compatible.
+- [x] Do not clear/close cart for pending hosted payment until captured/completed.
+- [x] Keep `PlaceOrderAsync` semantics as "start payment/order placement", not always "order completed".
+- [x] Keep `OrderId` null for redirect attempt until provider capture.
+- [x] Duplicate idempotency key returns existing attempt/order state.
 
 Verification checklist:
 
-- [ ] COD still completes order and marks cart ordered.
-- [ ] Stripe still creates redirect attempt without order.
-- [ ] Unknown unsupported provider fails before order creation.
-- [ ] Duplicate idempotency for redirect returns same attempt.
-- [ ] Pending redirect does not close cart as completed.
-- [ ] Existing Storefront V2 checkout still works.
+- [x] COD still completes order and marks cart ordered.
+- [x] Stripe still creates redirect attempt without order.
+- [x] Unknown unsupported provider fails before order creation.
+- [x] Duplicate idempotency for redirect returns same attempt.
+- [x] Pending redirect does not close cart as completed.
+- [x] Existing Storefront V2 checkout still works.
 
 Exit criteria:
 
-- [ ] Checkout no longer checks provider key `stripe` to choose flow.
-- [ ] Flow selection is capability-driven.
+- [x] Checkout no longer checks provider key `stripe` to choose flow.
+- [x] Flow selection is capability-driven.
+
+Phase 3 evidence:
+
+- 2026-07-17: `StorefrontCheckoutService` now resolves `IPaymentProviderCapabilityRegistry` before order placement and rejects providers that are not installed/active.
+- 2026-07-17: Offline and redirect payment paths now call `IStorefrontPaymentProvider.CreatePaymentSessionAsync`; `IPaymentHandlerResolver` is no longer used by Storefront checkout.
+- 2026-07-17: Payment method `nextActionKind` is resolved from provider method type instead of checking for Stripe.
+- 2026-07-17: Added checkout guardrail for inactive PayPal capability rejecting before order/payment attempt creation.
+- 2026-07-17: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontCheckoutServiceTests"` passed 39/39.
+- 2026-07-17: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontCheckoutServiceTests|FullyQualifiedName~CommerceNodeStorefrontOpenApiContractTests|FullyQualifiedName~CommerceNodeStorefrontPaymentContractTests|FullyQualifiedName~PaymentProviderOperationContractTests|FullyQualifiedName~PaymentProviderCapabilityRegistryTests|FullyQualifiedName~StripeStorefrontPaymentProviderTests"` passed 80/80.
 
 Suggested commit:
 
