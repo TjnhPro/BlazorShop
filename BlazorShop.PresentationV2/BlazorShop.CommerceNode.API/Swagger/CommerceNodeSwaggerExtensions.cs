@@ -1083,9 +1083,11 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedPayments", "CapturePayPal")] = new(
                         "StorefrontPayments_CapturePayPal",
-                        "Capture a PayPal Storefront payment.",
+                        "Deprecated PayPal compatibility capture route.",
                         typeof(CommerceNodeApiResponse<StorefrontPayPalCaptureResponse>),
-                        [StatusCodes.Status400BadRequest, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError],
+                        Description: "Compatibility route retained during PayPal provider migration. New checkout flow must use provider callbacks/webhooks; remove this route after a real PayPal provider adapter supports capture through the provider operation contract.",
+                        Deprecated: true),
                     [("StorefrontScopedRecommendations", "GetRecommendations")] = new(
                         "StorefrontRecommendations_ListProductRecommendations",
                         "List Storefront product recommendations.",
@@ -1135,6 +1137,8 @@ namespace BlazorShop.CommerceNode.API.Swagger
 
                 operation.OperationId = metadata.OperationId;
                 operation.Summary = metadata.Summary;
+                operation.Description = metadata.Description;
+                operation.Deprecated = metadata.Deprecated;
 
                 if (operation.RequestBody is OpenApiRequestBody requestBody)
                 {
@@ -1281,7 +1285,9 @@ namespace BlazorShop.CommerceNode.API.Swagger
             string Summary,
             Type SuccessResponseType,
             IReadOnlyList<int> ErrorStatusCodes,
-            StorefrontSecurityRequirement Security = StorefrontSecurityRequirement.None);
+            StorefrontSecurityRequirement Security = StorefrontSecurityRequirement.None,
+            string? Description = null,
+            bool Deprecated = false);
 
         private enum StorefrontSecurityRequirement
         {

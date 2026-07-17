@@ -400,7 +400,7 @@
         },
         "security": [
           {
-            "RefreshCookie": []
+            "RefreshCookie": [ ]
           }
         ]
       }
@@ -456,7 +456,7 @@
         },
         "security": [
           {
-            "RefreshCookie": []
+            "RefreshCookie": [ ]
           }
         ]
       }
@@ -542,7 +542,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -703,7 +703,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -1527,7 +1527,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -1622,7 +1622,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -3848,7 +3848,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       },
@@ -3952,7 +3952,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -4067,7 +4067,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       },
@@ -4140,7 +4140,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -4225,7 +4225,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -4310,7 +4310,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -4555,7 +4555,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -4611,7 +4611,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -4677,7 +4677,7 @@
         },
         "security": [
           {
-            "Bearer": []
+            "Bearer": [ ]
           }
         ]
       }
@@ -5123,7 +5123,8 @@
         "tags": [
           "StorefrontScopedPayments"
         ],
-        "summary": "Capture a PayPal Storefront payment.",
+        "summary": "Deprecated PayPal compatibility capture route.",
+        "description": "Compatibility route retained during PayPal provider migration. New checkout flow must use provider callbacks/webhooks; remove this route after a real PayPal provider adapter supports capture through the provider operation contract.",
         "operationId": "StorefrontPayments_CapturePayPal",
         "parameters": [
           {
@@ -5196,7 +5197,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/api/storefront/stores/{storeKey}/recommendations/products/{productId}": {

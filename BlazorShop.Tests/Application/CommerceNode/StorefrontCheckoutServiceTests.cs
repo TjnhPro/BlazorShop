@@ -9,6 +9,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
     using BlazorShop.Application.CommerceNode.ProductSelections;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs;
+    using BlazorShop.Application.Services.Contracts.Payment;
     using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities;
@@ -24,6 +25,18 @@ namespace BlazorShop.Tests.Application.CommerceNode
 
     public sealed class StorefrontCheckoutServiceTests
     {
+        [Fact]
+        public void StorefrontCheckoutService_DoesNotDependOnLegacyPayPalCaptureService()
+        {
+            var constructorParameterTypes = typeof(StorefrontCheckoutService)
+                .GetConstructors()
+                .SelectMany(constructor => constructor.GetParameters())
+                .Select(parameter => parameter.ParameterType)
+                .ToArray();
+
+            Assert.DoesNotContain(typeof(IPayPalPaymentService), constructorParameterTypes);
+        }
+
         [Fact]
         public async Task StartAsync_CreatesAndResumesCheckoutSession_ForSameStoreAndCart()
         {

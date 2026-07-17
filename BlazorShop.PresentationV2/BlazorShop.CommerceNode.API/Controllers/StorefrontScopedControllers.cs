@@ -2279,6 +2279,8 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return transition.Success ? null : this.FromServiceResponse(transition);
         }
 
+        // Compatibility route retained while PayPal is migrated to IStorefrontPaymentProvider.
+        // New checkout work must use provider callbacks/webhooks instead of this action.
         [HttpPost("paypal/capture")]
         [EnableRateLimiting(StorefrontRateLimitPolicyNames.Checkout)]
         public async Task<IActionResult> CapturePayPal([FromBody] StorefrontPayPalCaptureRequest request)

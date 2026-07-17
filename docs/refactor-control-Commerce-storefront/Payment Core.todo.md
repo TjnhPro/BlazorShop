@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Payment Core.md`
 
-Status: In progress. Phase 0-6 completed.
+Status: In progress. Phase 0-7 completed.
 
 Scope: turn the existing checkout payment foundation into a practical provider core for active V2. The goal is enough payment behavior for real store usage without moving PayPal/Stripe SDK logic into Domain/Application and without building a full payment platform.
 
@@ -119,7 +119,7 @@ Current API surface:
 - [ ] Callback/webhook mostly uses public payment attempt ID instead of provider session/reference.
 - [ ] Out-of-order events return conflict instead of recording safe ignored state.
 - [x] Payment transitions are attached to a secret-safe payment attempt audit trail.
-- [ ] PayPal capture remains a special endpoint.
+- [x] PayPal capture remains only as an explicit deprecated compatibility endpoint.
 
 ## Core Decisions
 
@@ -556,25 +556,25 @@ Goal: avoid a permanent special PayPal capture path.
 
 Implementation checklist:
 
-- [ ] Keep `POST /payments/paypal/capture` only as compatibility during migration.
-- [ ] Implement PayPal through provider operation contract only when a real PayPal adapter is added.
-- [ ] Mark special route as deprecated in code comments/OpenAPI description if retained.
-- [ ] Add tests proving special route is not used by new checkout flow.
-- [ ] Do not fake successful PayPal capture without verified provider response.
-- [ ] Keep Storefront contract stable while route is retained.
-- [ ] Document removal criteria for compatibility route.
+- [x] Keep `POST /payments/paypal/capture` only as compatibility during migration.
+- [x] Implement PayPal through provider operation contract only when a real PayPal adapter is added.
+- [x] Mark special route as deprecated in code comments/OpenAPI description if retained.
+- [x] Add tests proving special route is not used by new checkout flow.
+- [x] Do not fake successful PayPal capture without verified provider response.
+- [x] Keep Storefront contract stable while route is retained.
+- [x] Document removal criteria for compatibility route.
 
 Verification checklist:
 
-- [ ] New payment flow does not require provider-specific Storefront controller actions.
-- [ ] PayPal can be completed later by adding adapter, not rewriting checkout.
-- [ ] PayPal compatibility route remains POST-only if retained.
-- [ ] OpenAPI clearly describes compatibility/deprecation status if retained.
+- [x] New payment flow does not require provider-specific Storefront controller actions.
+- [x] PayPal can be completed later by adding adapter, not rewriting checkout.
+- [x] PayPal compatibility route remains POST-only if retained.
+- [x] OpenAPI clearly describes compatibility/deprecation status if retained.
 
 Exit criteria:
 
-- [ ] Provider-specific route does not drive new checkout architecture.
-- [ ] PayPal compatibility is explicit and bounded.
+- [x] Provider-specific route does not drive new checkout architecture.
+- [x] PayPal compatibility is explicit and bounded.
 
 Suggested commit:
 
@@ -778,7 +778,7 @@ test(payment-core): verify provider core
 - [ ] Phase 4 - webhook and callback hardening.
 - [x] Phase 5 - payment attempt state, order notes, and audit trail.
 - [x] Phase 6 - admin and public projection cleanup.
-- [ ] Phase 7 - PayPal compatibility and provider route cleanup.
+- [x] Phase 7 - PayPal compatibility and provider route cleanup.
 - [ ] Phase 8 - contract, QA, and documentation.
 
 ## Definition Of Done

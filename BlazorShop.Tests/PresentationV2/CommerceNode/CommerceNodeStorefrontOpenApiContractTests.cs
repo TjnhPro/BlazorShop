@@ -600,7 +600,11 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             var sortBy = GetParameter(catalogParameters, "sortBy");
             Assert.Contains("newest", sortBy["schema"]?["pattern"]?.GetValue<string>(), StringComparison.Ordinal);
 
-            Assert.NotNull(GetOperation(swagger, "StorefrontPayments_CapturePayPal")["requestBody"]);
+            var payPalCapture = GetOperation(swagger, "StorefrontPayments_CapturePayPal");
+            Assert.NotNull(payPalCapture["requestBody"]);
+            Assert.True(payPalCapture["deprecated"]?.GetValue<bool>() == true);
+            Assert.Contains("Compatibility route retained", payPalCapture["description"]?.GetValue<string>(), StringComparison.Ordinal);
+            Assert.Contains("provider operation contract", payPalCapture["description"]?.GetValue<string>(), StringComparison.Ordinal);
         }
 
         [Fact]
