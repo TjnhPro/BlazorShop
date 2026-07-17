@@ -1135,7 +1135,18 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                     order.ShippingCountryCode),
                 order.CompletedAt,
                 order.CancelledAt,
+                order.TrackingEvents.Select(item => item.ToStorefrontContract()).ToArray(),
                 order.Lines.Select(line => line.ToStorefrontContract()).ToArray());
+        }
+
+        public static StorefrontOrderTrackingEventResponse ToStorefrontContract(this GetShipmentTrackingEvent item)
+        {
+            return new StorefrontOrderTrackingEventResponse(
+                item.Status,
+                item.Message,
+                item.OccurredAtUtc,
+                item.Location,
+                item.Source);
         }
 
         public static StorefrontOrderLineResponse ToStorefrontContract(this GetOrderLine line)

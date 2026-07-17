@@ -52,6 +52,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             var shipment = await this.context.Shipments
                 .AsNoTracking()
+                .Include(item => item.Order)
                 .Include(item => item.Items)
                 .Include(item => item.TrackingEvents)
                 .FirstOrDefaultAsync(item => item.OrderId == orderId && item.StoreId == storeId);
@@ -206,6 +207,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             var savedShipment = await this.context.Shipments
                 .AsNoTracking()
+                .Include(item => item.Order)
                 .Include(item => item.Items)
                 .Include(item => item.TrackingEvents)
                 .FirstAsync(item => item.Id == shipment.Id);
@@ -343,6 +345,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 TrackingNumber = shipment.TrackingNumber,
                 TrackingUrl = shipment.TrackingUrl,
                 Note = shipment.Note,
+                ShippingStatus = shipment.Order?.ShippingStatus ?? string.Empty,
+                DeliveredOn = shipment.Order?.DeliveredOn,
+                ShippingMethod = shipment.Order is null
+                    ? null
+                    : new GetShipmentShippingMethod
+                    {
+                        Key = shipment.Order.ShippingMethodKey,
+                        ProviderSystemName = shipment.Order.ShippingProviderSystemName,
+                        MethodCode = shipment.Order.ShippingMethodCode,
+                        MethodName = shipment.Order.ShippingMethodName,
+                        ShippingTotal = shipment.Order.ShippingTotal,
+                        CurrencyCode = shipment.Order.ShippingCurrencyCode,
+                        DeliveryEstimateText = shipment.Order.ShippingDeliveryEstimateText,
+                    },
                 CreatedAt = shipment.CreatedAt,
                 UpdatedAt = shipment.UpdatedAt,
                 Items = shipment.Items

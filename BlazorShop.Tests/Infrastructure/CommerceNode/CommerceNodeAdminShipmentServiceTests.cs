@@ -37,6 +37,8 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal("Shipped", order.ShippingStatus);
             Assert.Equal("UPS", order.ShippingCarrier);
             Assert.Equal("TRACK-1", order.TrackingNumber);
+            Assert.Equal("free_standard", result.Payload.ShippingMethod!.Key);
+            Assert.Equal("internal", result.Payload.ShippingMethod.ProviderSystemName);
         }
 
         [Fact]
@@ -140,6 +142,28 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 context.ShipmentTrackingEvents.OrderBy(item => item.OccurredAtUtc).Select(item => item.Status).ToArray());
         }
 
+        [Fact]
+        public async Task OrderQueryService_ReturnsSafeTrackingEventsForStorefrontOrders()
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            SeedStore(context, storeId);
+            var order = SeedOrder(context, storeId, quantity: 1);
+            var shipmentService = CreateService(context, storeId);
+            await shipmentService.UpsertShipmentAsync(order.Id, CreateRequest());
+            context.ChangeTracker.Clear();
+            var orderQueryService = new CommerceNodeOrderQueryService(context, new StubCommerceStoreContext(storeId));
+
+            var orders = (await orderQueryService.GetOrdersForUserAsync("customer-1")).ToArray();
+
+            var result = Assert.Single(orders);
+            Assert.Equal(order.Id, result.Id);
+            var trackingEvent = Assert.Single(result.TrackingEvents);
+            Assert.Equal("shipped", trackingEvent.Status);
+            Assert.Equal("Shipment created.", trackingEvent.Message);
+            Assert.Equal("manual_admin", trackingEvent.Source);
+        }
+
         private static UpsertShipmentRequest CreateRequest(
             string trackingNumber = "TRACK-1",
             IReadOnlyList<UpsertShipmentItemRequest>? items = null)
@@ -182,9 +206,17 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var order = new Order
             {
                 StoreId = storeId,
+                UserId = "customer-1",
                 Reference = $"ORD-{Guid.NewGuid():N}",
                 CurrencyCode = "USD",
                 TotalAmount = 20m,
+                ShippingMethodKey = "free_standard",
+                ShippingProviderSystemName = "internal",
+                ShippingMethodCode = "standard",
+                ShippingMethodName = "Free standard",
+                ShippingTotal = 0m,
+                ShippingCurrencyCode = "USD",
+                ShippingDeliveryEstimateText = "3-5 business days",
                 ShippingFullName = "Jane Customer",
                 ShippingEmail = "jane@example.test",
                 ShippingAddress1 = "10 Market St",

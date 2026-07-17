@@ -20,6 +20,12 @@ namespace BlazorShop.Application.DTOs.Payment
 
         public string? Note { get; set; }
 
+        public string ShippingStatus { get; set; } = string.Empty;
+
+        public DateTime? DeliveredOn { get; set; }
+
+        public GetShipmentShippingMethod? ShippingMethod { get; set; }
+
         public DateTime CreatedAt { get; set; }
 
         public DateTime UpdatedAt { get; set; }
@@ -27,6 +33,23 @@ namespace BlazorShop.Application.DTOs.Payment
         public IReadOnlyList<GetShipmentItem> Items { get; set; } = [];
 
         public IReadOnlyList<GetShipmentTrackingEvent> TrackingEvents { get; set; } = [];
+    }
+
+    public sealed class GetShipmentShippingMethod
+    {
+        public string? Key { get; set; }
+
+        public string? ProviderSystemName { get; set; }
+
+        public string? MethodCode { get; set; }
+
+        public string? MethodName { get; set; }
+
+        public decimal ShippingTotal { get; set; }
+
+        public string? CurrencyCode { get; set; }
+
+        public string? DeliveryEstimateText { get; set; }
     }
 
     public sealed class GetShipmentItem

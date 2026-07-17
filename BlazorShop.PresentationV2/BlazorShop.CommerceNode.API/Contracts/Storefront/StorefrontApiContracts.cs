@@ -1087,7 +1087,15 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         StorefrontShippingAddressResponse ShippingAddress,
         DateTime? CompletedAt,
         DateTime? CancelledAt,
+        IReadOnlyList<StorefrontOrderTrackingEventResponse> TrackingEvents,
         IReadOnlyList<StorefrontOrderLineResponse> Lines);
+
+    public sealed record StorefrontOrderTrackingEventResponse(
+        string Status,
+        string Message,
+        DateTime OccurredAtUtc,
+        string? Location,
+        string Source);
 
     public sealed record StorefrontShippingAddressResponse(
         string? FullName,

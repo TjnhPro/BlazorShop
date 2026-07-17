@@ -8804,7 +8804,8 @@
       },
       "StorefrontOrderResponse": {
         "required": [
-          "lines"
+          "lines",
+          "trackingEvents"
         ],
         "type": "object",
         "properties": {
@@ -8896,6 +8897,12 @@
             "format": "date-time",
             "nullable": true
           },
+          "trackingEvents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontOrderTrackingEventResponse"
+            }
+          },
           "lines": {
             "type": "array",
             "items": {
@@ -8920,6 +8927,32 @@
             "items": {
               "$ref": "#/components/schemas/StorefrontOrderResponse"
             },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontOrderTrackingEventResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "occurredAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "location": {
+            "type": "string",
+            "nullable": true
+          },
+          "source": {
+            "type": "string",
             "nullable": true
           }
         },

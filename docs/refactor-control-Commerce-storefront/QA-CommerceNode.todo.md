@@ -628,6 +628,9 @@ Plan: `Cart Core.todo.md`.
 - [x] Shipment tracking changes append `tracking_updated` event without creating duplicate shipment. 2026-07-17 Phase 7: focused service test passed.
 - [x] Delivered shipping status appends `delivered` tracking event without synchronous email. 2026-07-17 Phase 7: focused service test passed.
 - [x] Shipment item/tracking event EF model uses safe relationships and lengths. 2026-07-17 Phase 7: `CommerceNodeDbContextModelTests.ShipmentItemsAndTrackingEvents_HaveSafeRelationshipsAndLengths` passed.
+- [x] Admin shipment response includes item list, normalized shipping status, and selected shipping method summary without changing the existing shipment route. 2026-07-17 Phase 8: focused shipment service test passed.
+- [x] Storefront order query uses CommerceNode-owned read model and returns safe tracking events for the current store only. 2026-07-17 Phase 8: `CommerceNodeAdminShipmentServiceTests.OrderQueryService_ReturnsSafeTrackingEventsForStorefrontOrders` passed.
+- [x] Storefront OpenAPI snapshot includes order tracking event response schema and no shipping origin/settings leak. 2026-07-17 Phase 8: `CommerceNodeStorefrontOpenApiContractTests` passed with refreshed snapshot.
 - [x] No Storefront shipment endpoint is exposed under removed `api/internal/*`.
 
 ### Settings, Audit, Metrics
@@ -1054,7 +1057,7 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Orders snapshot selected shipping method key/provider/method/name/rate/currency/delivery estimate at placement. 2026-07-17 Phase 6: `CommerceNodeOrderShippingSnapshot` migration and checkout order tests passed.
 - [x] Non-shipping orders are created with `shipping_not_required` and no selected shipping method snapshot. 2026-07-17 Phase 6: `PlaceOrderAsync_NonShippingOrderSnapshotsShippingNotRequired` passed.
 - [x] Storefront checkout shipping option response exposes provider system name and method code for generator-safe clients. 2026-07-17 Phase 6: Storefront OpenAPI snapshot refreshed and contract tests passed.
-- [ ] Commerce Admin OpenAPI remains generator-safe after all Shipping Core API additions.
+- [x] Commerce Admin OpenAPI remains generator-safe after all Shipping Core API additions. 2026-07-17 Phase 8: `CommerceNodeAdminStoreOpenApiMetadataTests` passed.
 
 ## Payment Core
 

@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Shipping Core.md`
 
-Status: Phase 7 complete. Phase 8 not started.
+Status: Phase 8 complete. Phase 9 not started.
 
 Scope: turn the current checkout shipping stub into a practical Shipping Core for active V2. The goal is enough shipping calculation, option selection, and shipment tracking for real store usage without building a carrier marketplace, warehouse engine, tax engine, label engine, or fulfillment orchestration platform.
 
@@ -52,7 +52,7 @@ Approved:
   - [x] explicit DTOs for product surcharge field. 2026-07-17 Phase 4: product create/update/catalog DTOs expose nullable `ShippingSurcharge`.
   - [x] stable operation IDs for shipping settings admin endpoints. 2026-07-17 Phase 2: `CommerceShippingSettings_Get` and `CommerceShippingSettings_Update`.
   - [x] validation metadata for shipping settings admin contracts. 2026-07-17 Phase 2: admin service validates country code, money, origin, and surcharge policy inputs.
-  - [ ] safe public tracking projection. Phase 8 will decide Storefront exposure of Phase 7 tracking events.
+  - [x] safe public tracking projection. 2026-07-17 Phase 8: Storefront order response exposes only status/message/occurred-at/location/source tracking events.
 
 Deferred:
 
@@ -475,35 +475,35 @@ Goal: expose shipping behavior safely and consistently.
 
 Implementation checklist:
 
-- [ ] Keep existing `api/commerce/admin/orders/{id}/shipment`.
-- [ ] Add/extend admin shipment DTO with shipment items only if implemented.
-- [ ] Add/extend admin shipment DTO with normalized status values.
-- [ ] Add/extend admin shipment DTO with selected shipping method summary from order.
-- [ ] Admin can view shipping settings.
-- [ ] Admin can update internal shipping rules.
-- [ ] ControlPlane gateway follows existing store-scoped catalog/admin pattern.
-- [ ] ControlPlane Web does not call CommerceNode directly.
-- [ ] Storefront checkout session response exposes `ShippingRequired`, `SelectedShippingOption`, and `ShippingOptions`.
-- [ ] Storefront order response exposes shipping status/tracking summary.
-- [ ] Add tracking event list only if Phase 7 adds events.
-- [ ] Do not expose internal origin address publicly unless needed.
-- [ ] Update OpenAPI summaries.
-- [ ] Update request bodies.
-- [ ] Update response schemas.
-- [ ] Update error responses.
-- [ ] Preserve existing operation IDs where possible.
+- [x] Keep existing `api/commerce/admin/orders/{id}/shipment`. 2026-07-17 Phase 8: endpoint route unchanged.
+- [x] Add/extend admin shipment DTO with shipment items only if implemented. 2026-07-17 Phase 8: `GetShipment.Items`.
+- [x] Add/extend admin shipment DTO with normalized status values. 2026-07-17 Phase 8: `GetShipment.ShippingStatus` projects order shipping status.
+- [x] Add/extend admin shipment DTO with selected shipping method summary from order. 2026-07-17 Phase 8: `GetShipment.ShippingMethod`.
+- [x] Admin can view shipping settings. 2026-07-17 Phase 2: Commerce Admin shipping settings endpoint remains active.
+- [x] Admin can update internal shipping rules. 2026-07-17 Phase 2: Commerce Admin shipping settings update remains active.
+- [x] ControlPlane gateway follows existing store-scoped catalog/admin pattern. 2026-07-17 Phase 2: gateway tests cover `storeKey` forwarding.
+- [x] ControlPlane Web does not call CommerceNode directly. 2026-07-17 Phase 8: no ControlPlane Web direct calls added.
+- [x] Storefront checkout session response exposes `ShippingRequired`, `SelectedShippingOption`, and `ShippingOptions`. 2026-07-17 Phase 3/6: checkout service and OpenAPI coverage remain green.
+- [x] Storefront order response exposes shipping status/tracking summary. 2026-07-17 Phase 8: existing summary preserved.
+- [x] Add tracking event list only if Phase 7 adds events. 2026-07-17 Phase 8: `StorefrontOrderResponse.TrackingEvents`.
+- [x] Do not expose internal origin address publicly unless needed. 2026-07-17 Phase 8: no public shipping settings/origin projection added.
+- [x] Update OpenAPI summaries. 2026-07-17 Phase 8: existing operation IDs/summaries preserved and snapshot refreshed for response schema change.
+- [x] Update request bodies. 2026-07-17 Phase 8: no route/request body change required.
+- [x] Update response schemas. 2026-07-17 Phase 8: Storefront order schema includes tracking events; snapshot refreshed.
+- [x] Update error responses. 2026-07-17 Phase 8: no new error path introduced.
+- [x] Preserve existing operation IDs where possible. 2026-07-17 Phase 8: operation IDs unchanged.
 
 Verification checklist:
 
-- [ ] OpenAPI includes shipping method request/response schemas.
-- [ ] Shipping settings admin endpoint is protected by Commerce Admin security.
-- [ ] Storefront schema does not expose admin-only settings.
-- [ ] Control Plane gateway route includes `storeKey` behavior.
+- [x] OpenAPI includes shipping method request/response schemas. 2026-07-17 Phase 8: Storefront OpenAPI contract tests passed with refreshed snapshot.
+- [x] Shipping settings admin endpoint is protected by Commerce Admin security. 2026-07-17 Phase 8: `CommerceNodeAdminStoreOpenApiMetadataTests` passed.
+- [x] Storefront schema does not expose admin-only settings. 2026-07-17 Phase 8: tracking events expose only public-safe fields and no origin/settings fields.
+- [x] Control Plane gateway route includes `storeKey` behavior. 2026-07-17 Phase 2/8: existing gateway test remains the guard.
 
 Exit criteria:
 
-- [ ] Storefront can select shipping options and see safe tracking info.
-- [ ] Admin can configure basic shipping without private data leaks.
+- [x] Storefront can select shipping options and see safe tracking info. 2026-07-17 Phase 8: checkout option schema and order tracking event schema verified.
+- [x] Admin can configure basic shipping without private data leaks. 2026-07-17 Phase 8: admin settings route remains protected; Storefront schema does not expose origin/settings.
 
 Suggested commit:
 
@@ -705,7 +705,7 @@ test(shipping-core): verify shipping core
 - [x] Phase 5 - currency conversion and tax hook. 2026-07-17.
 - [x] Phase 6 - order placement and shipping snapshot. 2026-07-17.
 - [x] Phase 7 - shipment record items and tracking events hook. 2026-07-17: implemented and verified with CommerceNode API build plus 111 focused tests.
-- [ ] Phase 8 - admin and Storefront projection.
+- [x] Phase 8 - admin and Storefront projection. 2026-07-17: CommerceNode API build passed; focused Storefront OpenAPI/admin metadata/shipment/checkout tests passed.
 - [ ] Phase 9 - QA, migration, and documentation.
 
 ## Acceptance Criteria
@@ -723,6 +723,6 @@ test(shipping-core): verify shipping core
 - [x] Shipping totals are included in payment amount. 2026-07-17 Phase 6.
 - [ ] Currency conversion works or fails with clear conflict when missing.
 - [x] Shipment admin upsert remains compatible. 2026-07-17 Phase 7.
-- [ ] Public Storefront contracts do not leak admin-only shipping settings.
-- [ ] Active V2 API contract tests pass.
-- [ ] Focused shipping tests pass.
+- [x] Public Storefront contracts do not leak admin-only shipping settings. 2026-07-17 Phase 8.
+- [x] Active V2 API contract tests pass. 2026-07-17 Phase 8.
+- [x] Focused shipping tests pass. 2026-07-17 Phase 8.

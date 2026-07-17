@@ -555,6 +555,8 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Shipping Core Phase 4 backend checkout returns product surcharge in selected shipping option and review totals. 2026-07-17: `SelectShippingMethodAsync_AppliesPersistedProductShippingSurcharge` passed.
 - [x] Shipping Core Phase 5 backend checkout returns shipping totals in the checkout working currency. 2026-07-17: converted EUR shipping-rate test passed and selected shipping option is projected as EUR.
 - [x] Shipping Core Phase 6 checkout option metadata includes provider system name and method code for future Storefront UI/client generation. 2026-07-17: Storefront OpenAPI snapshot refreshed.
+- [x] Shipping Core Phase 8 Storefront order response exposes safe tracking events without admin shipment settings/origin data. 2026-07-17: Storefront OpenAPI snapshot refreshed and contract tests passed.
+- [x] Shipping Core Phase 8 current-user order query reads tracking events from the CommerceNode store-scoped read model. 2026-07-17: focused order query service test passed.
 - [ ] Shipping Core visible checkout QA confirms physical checkout can select a valid shipping option.
 - [ ] Shipping Core visible checkout QA confirms non-shipping cart does not block on shipping method after calculation cutover.
 - [ ] Shipping Core visible checkout QA confirms country-unavailable state shows a recoverable checkout message.

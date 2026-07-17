@@ -1442,7 +1442,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
                     [typeof(StorefrontCheckoutPreviewResponse)] = ["completedSteps", "lines", "issues"],
                     [typeof(StorefrontCheckoutSessionResponse)] = ["completedSteps", "shippingOptions", "paymentMethods", "lines", "issues"],
                     [typeof(StorefrontCheckoutReviewResponse)] = ["completedSteps", "lines", "issues"],
-                    [typeof(StorefrontOrderResponse)] = ["lines"],
+                    [typeof(StorefrontOrderResponse)] = ["trackingEvents", "lines"],
                     [typeof(StorefrontOrderLineResponse)] = ["variantAttributes"],
                     [typeof(StorefrontAddressFieldConfigurationResponse)] = ["stateProvinceRequiredCountryCodes"],
                     [typeof(GetPublicCatalogSitemap)] = ["categories", "products", "pages"],

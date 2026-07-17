@@ -78,6 +78,8 @@ namespace BlazorShop.Application.DTOs.Payment
 
         public string? AdminNote { get; set; }
 
+        public IReadOnlyList<GetShipmentTrackingEvent> TrackingEvents { get; set; } = [];
+
         public IEnumerable<GetOrderLine> Lines { get; set; } = Array.Empty<GetOrderLine>();
     }
 }
