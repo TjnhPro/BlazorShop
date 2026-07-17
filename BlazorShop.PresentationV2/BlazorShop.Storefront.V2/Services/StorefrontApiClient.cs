@@ -1827,6 +1827,7 @@ namespace BlazorShop.Storefront.Services
         string CurrencyCode,
         string IdempotencyKey,
         DateTime CreatedOn,
+        string? GuestAccessToken,
         StorefrontPaymentNextActionResponse? NextAction);
 
     public sealed record StorefrontPaymentNextActionResponse(

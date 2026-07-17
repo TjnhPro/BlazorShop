@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Order Placement Core.md`
 
-Status: Phase 3 complete. Phase 4 not started.
+Status: Phase 4 complete. Phase 5 not started.
 
 Scope: turn the existing Commerce Node order placement flow from a working checkout MVP into a practical order core. The goal is stable historical order snapshots, safe placement guarantees, and enough order state history for real store operations without adding a full OMS, tax engine, discount engine, stock reservation ledger, invoice/accounting system, or fulfillment platform.
 
@@ -440,33 +440,33 @@ Goal: allow customer-facing guest order completion lookup without treating order
 
 Implementation checklist:
 
-- [ ] Generate secure random guest access token when placing guest order.
-- [ ] Store only SHA256 hash or equivalent one-way hash in `Order.GuestAccessTokenHash`.
-- [ ] Return token once in place-order response or Storefront completion redirect flow.
-- [ ] Add/extend Storefront order lookup endpoint under `api/storefront/stores/{storeKey}/orders/*`.
-- [ ] Support lookup by `reference + token` or `order id + token`.
-- [ ] Authenticated customer lookup may use customer auth context without guest token.
-- [ ] Storefront V2 keeps token server-side or query-safe only if current routing has no safer state store.
-- [ ] Add guest access TTL only if needed for completion/account lookup behavior.
-- [ ] Keep old reference-only redirect path temporarily if needed, but show minimal confirmation data only.
+- [x] Generate secure random guest access token when placing guest order. 2026-07-17 Phase 4: 32-byte random hex token for guest checkout.
+- [x] Store only SHA256 hash or equivalent one-way hash in `Order.GuestAccessTokenHash`. 2026-07-17 Phase 4.
+- [x] Return token once in place-order response or Storefront completion redirect flow. 2026-07-17 Phase 4: immediate place-order response includes raw token; duplicate retries do not recover raw token.
+- [x] Add/extend Storefront order lookup endpoint under `api/storefront/stores/{storeKey}/orders/*`. 2026-07-17 Phase 4: `POST /guest-lookup`.
+- [x] Support lookup by `reference + token` or `order id + token`. 2026-07-17 Phase 4: reference + token supported.
+- [x] Authenticated customer lookup may use customer auth context without guest token. 2026-07-17 Phase 4: existing current-user endpoints remain Bearer-protected.
+- [x] Storefront V2 keeps token server-side or query-safe only if current routing has no safer state store. 2026-07-17 Phase 4: API uses POST body, not query token.
+- [x] Add guest access TTL only if needed for completion/account lookup behavior. 2026-07-17 Phase 4: guest token expiry set to 30 days.
+- [x] Keep old reference-only redirect path temporarily if needed, but show minimal confirmation data only. 2026-07-17 Phase 4: no reference-only detail lookup was added.
 
 Rules:
 
-- [ ] Never expose token hash in DTOs.
-- [ ] Never allow guest detail lookup by reference alone once token is available.
-- [ ] Store-scoped lookup must not cross stores.
-- [ ] Browser JSON must not supply customer ownership fields.
+- [x] Never expose token hash in DTOs. 2026-07-17 Phase 4.
+- [x] Never allow guest detail lookup by reference alone once token is available. 2026-07-17 Phase 4.
+- [x] Store-scoped lookup must not cross stores. 2026-07-17 Phase 4.
+- [x] Browser JSON must not supply customer ownership fields. 2026-07-17 Phase 4.
 
 Verification checklist:
 
-- [ ] Guest retrieves completion with correct token.
-- [ ] Wrong token returns 404 or forbidden with safe message.
-- [ ] Store A token cannot access Store B order.
-- [ ] Authenticated customer cannot request arbitrary customer/order id from browser JSON.
+- [x] Guest retrieves completion with correct token. 2026-07-17 Phase 4.
+- [x] Wrong token returns 404 or forbidden with safe message. 2026-07-17 Phase 4: NotFound.
+- [x] Store A token cannot access Store B order. 2026-07-17 Phase 4.
+- [x] Authenticated customer cannot request arbitrary customer/order id from browser JSON. 2026-07-17 Phase 4.
 
 Exit criteria:
 
-- [ ] Guest completion lookup is safe enough for production use.
+- [x] Guest completion lookup is safe enough for production use. 2026-07-17 Phase 4.
 
 Suggested commit:
 
@@ -796,7 +796,7 @@ test(order-placement): verify order placement core
 - [x] Phase 1 - add order snapshot schema. 2026-07-17: committed after schema/test verification.
 - [x] Phase 2 - shared order placement builder. 2026-07-17: committed after checkout/payment focused tests passed.
 - [x] Phase 3 - fill permanent order snapshots. 2026-07-17: committed after snapshot mutation and checkout/payment focused tests passed.
-- [ ] Phase 4 - guest completion access token.
+- [x] Phase 4 - guest completion access token. 2026-07-17: committed after guest lookup/OpenAPI/model focused tests passed.
 - [ ] Phase 5 - order status transition and history.
 - [ ] Phase 6 - placement transaction and event hook.
 - [ ] Phase 7 - API projection and Storefront/Admin integration.

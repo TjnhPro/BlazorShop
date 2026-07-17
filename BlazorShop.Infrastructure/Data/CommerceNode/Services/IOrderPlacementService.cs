@@ -43,16 +43,17 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         bool Success,
         ServiceResponseType ResponseType,
         string Message,
-        Order? Order)
+        Order? Order,
+        string? GuestAccessToken)
     {
-        public static OrderPlacementResult Succeeded(Order order)
+        public static OrderPlacementResult Succeeded(Order order, string? guestAccessToken = null)
         {
-            return new OrderPlacementResult(true, ServiceResponseType.Success, "Order placed.", order);
+            return new OrderPlacementResult(true, ServiceResponseType.Success, "Order placed.", order, guestAccessToken);
         }
 
         public static OrderPlacementResult Failed(ServiceResponseType responseType, string message)
         {
-            return new OrderPlacementResult(false, responseType, message, null);
+            return new OrderPlacementResult(false, responseType, message, null, null);
         }
     }
 }

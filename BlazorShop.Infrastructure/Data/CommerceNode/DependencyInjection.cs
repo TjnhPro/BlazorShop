@@ -12,6 +12,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
     using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Navigation;
+    using BlazorShop.Application.CommerceNode.Orders;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
@@ -143,6 +144,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<ICartService, CartService>();
             services.AddScoped<IOrderQueryService, CommerceNodeOrderQueryService>();
+            services.AddScoped<IStorefrontGuestOrderService, StorefrontGuestOrderService>();
             services.AddScoped<IAdminInventoryService, CommerceNodeAdminInventoryService>();
             services.AddScoped<IOrderTrackingService, CommerceNodeOrderTrackingService>();
             services.AddScoped<IAdminOrderService, CommerceNodeAdminOrderService>();

@@ -472,6 +472,14 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 request.IdempotencyKey);
         }
 
+        public static BlazorShop.Application.CommerceNode.Orders.StorefrontGuestOrderLookupRequest ToApplicationRequest(
+            this StorefrontGuestOrderLookupRequest request)
+        {
+            return new BlazorShop.Application.CommerceNode.Orders.StorefrontGuestOrderLookupRequest(
+                request.Reference,
+                request.Token);
+        }
+
         public static StorefrontPlaceOrderResponse ToStorefrontContract(this StorefrontPlaceOrderResult result)
         {
             var nextAction = string.IsNullOrWhiteSpace(result.NextActionType)
@@ -490,6 +498,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 result.CurrencyCode,
                 result.IdempotencyKey,
                 result.CreatedOn,
+                result.GuestAccessToken,
                 nextAction);
         }
 

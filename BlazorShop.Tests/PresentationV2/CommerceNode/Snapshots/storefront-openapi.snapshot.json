@@ -4682,6 +4682,87 @@
         ]
       }
     },
+    "/api/storefront/stores/{storeKey}/orders/guest-lookup": {
+      "post": {
+        "tags": [
+          "StorefrontScopedOrders"
+        ],
+        "summary": "Get a guest order by reference and access token.",
+        "operationId": "StorefrontOrders_GetGuestOrder",
+        "parameters": [
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontGuestOrderLookupRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontGuestOrderLookupRequest"
+              }
+            },
+            "application/*\u002Bjson": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontGuestOrderLookupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontOrderResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/storefront/stores/{storeKey}/pages/navigation": {
       "get": {
         "tags": [
@@ -8542,6 +8623,26 @@
         },
         "additionalProperties": false
       },
+      "StorefrontGuestOrderLookupRequest": {
+        "required": [
+          "reference",
+          "token"
+        ],
+        "type": "object",
+        "properties": {
+          "reference": {
+            "maxLength": 64,
+            "minLength": 3,
+            "type": "string"
+          },
+          "token": {
+            "maxLength": 128,
+            "minLength": 32,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontLocaleOptionsResponse": {
         "type": "object",
         "properties": {
@@ -8958,6 +9059,22 @@
             "items": {
               "$ref": "#/components/schemas/StorefrontOrderLineResponse"
             }
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontOrderResponseCommerceNodeApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/StorefrontOrderResponse"
           }
         },
         "additionalProperties": false
@@ -9673,6 +9790,10 @@
           "createdOn": {
             "type": "string",
             "format": "date-time"
+          },
+          "guestAccessToken": {
+            "type": "string",
+            "nullable": true
           },
           "nextAction": {
             "$ref": "#/components/schemas/StorefrontPaymentNextActionResponse"

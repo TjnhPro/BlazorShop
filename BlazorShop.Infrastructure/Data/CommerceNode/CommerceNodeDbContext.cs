@@ -1453,6 +1453,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 .HasIndex(order => new { order.StoreId, order.CustomerEmail, order.CreatedOn });
 
             modelBuilder.Entity<Order>()
+                .HasIndex(order => order.GuestAccessTokenHash)
+                .IsUnique()
+                .HasFilter("guest_access_token_hash IS NOT NULL");
+
+            modelBuilder.Entity<Order>()
                 .HasIndex(order => order.PaymentMethodKey);
 
             modelBuilder.Entity<Order>()

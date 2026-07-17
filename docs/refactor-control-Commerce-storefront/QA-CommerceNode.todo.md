@@ -1074,6 +1074,9 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] New orders persist permanent store/contact, billing/shipping address, selected shipping option, and total breakdown snapshots. 2026-07-17 Phase 3: `OrderPlacementService` fills order snapshot columns during placement.
 - [x] Order snapshots are immutable from later mutable store/checkout edits. 2026-07-17 Phase 3: checkout test mutates store name/email and checkout address snapshots after order, then asserts persisted order snapshot values stay unchanged.
 - [x] Converted currency and online capture flows remain compatible after permanent snapshot fill. 2026-07-17 Phase 3: focused `StorefrontCheckoutServiceTests|PaymentAttemptServiceTests` passed 59/59.
+- [x] Guest order completion token is returned once and only hash is persisted. 2026-07-17 Phase 4: checkout test asserts raw token length, hash persistence, and no raw token stored.
+- [x] Guest order lookup requires store scope, reference, and token. 2026-07-17 Phase 4: correct token succeeds; wrong token and wrong store return NotFound.
+- [x] Storefront OpenAPI remains generator-safe after guest lookup endpoint. 2026-07-17 Phase 4: Storefront OpenAPI snapshots refreshed and focused model/OpenAPI/checkout/payment tests passed 120/120.
 
 ## Payment Core
 

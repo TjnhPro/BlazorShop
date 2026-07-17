@@ -368,9 +368,11 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal("jsonb", modelEntity.FindProperty(nameof(Order.ShippingMethodSnapshotJson))!.GetColumnType());
             Assert.Equal(64, modelEntity.FindProperty(nameof(Order.GuestAccessTokenHash))!.GetMaxLength());
             Assert.Equal("timestamp with time zone", modelEntity.FindProperty(nameof(Order.GuestAccessTokenExpiresAtUtc))!.GetColumnType());
-            Assert.DoesNotContain(
-                modelEntity.GetIndexes(),
-                index => index.Properties.Select(property => property.Name).SequenceEqual(["GuestAccessTokenHash"]));
+            var guestTokenIndex = modelEntity.GetIndexes()
+                .SingleOrDefault(index => index.Properties.Select(property => property.Name).SequenceEqual(["GuestAccessTokenHash"]));
+            Assert.NotNull(guestTokenIndex);
+            Assert.True(guestTokenIndex!.IsUnique);
+            Assert.Contains("guest_access_token_hash IS NOT NULL", guestTokenIndex.GetFilter(), StringComparison.OrdinalIgnoreCase);
 
             foreach (var propertyName in new[]
             {

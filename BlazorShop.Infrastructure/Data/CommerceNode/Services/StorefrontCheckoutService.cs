@@ -1245,7 +1245,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 throw;
             }
 
-            return Succeeded("Order placed successfully.", ToPlaceOrderResult(session, order, paymentAttempt.PublicId, idempotencyKey));
+            return Succeeded("Order placed successfully.", ToPlaceOrderResult(session, order, paymentAttempt.PublicId, idempotencyKey, placement.GuestAccessToken));
         }
 
         private async Task<ServiceResponse<StorefrontPlaceOrderResult>> CreateOnlinePaymentSessionAsync(
@@ -2876,7 +2876,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             CheckoutSession session,
             Order order,
             Guid paymentAttemptId,
-            string idempotencyKey)
+            string idempotencyKey,
+            string? guestAccessToken = null)
         {
             return new StorefrontPlaceOrderResult(
                 session.PublicId,
@@ -2889,7 +2890,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 order.TotalAmount,
                 NormalizeCurrency(order.CurrencyCode) ?? DefaultCurrencyCode,
                 idempotencyKey,
-                order.CreatedOn);
+                order.CreatedOn,
+                guestAccessToken);
         }
 
         private static StorefrontPlaceOrderResult ToOnlinePlaceOrderResult(
@@ -2909,8 +2911,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 NormalizeCurrency(paymentAttempt.CurrencyCode) ?? DefaultCurrencyCode,
                 idempotencyKey,
                 paymentAttempt.CreatedAtUtc.UtcDateTime,
-                paymentAttempt.NextActionType,
-                paymentAttempt.NextActionUrl);
+                GuestAccessToken: null,
+                NextActionType: paymentAttempt.NextActionType,
+                NextActionUrl: paymentAttempt.NextActionUrl);
         }
 
         private static ServiceResponse<StorefrontCheckoutPreviewResult> Succeeded(

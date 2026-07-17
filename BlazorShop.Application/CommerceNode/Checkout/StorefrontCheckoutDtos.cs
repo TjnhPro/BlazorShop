@@ -158,6 +158,7 @@ namespace BlazorShop.Application.CommerceNode.Checkout
         string CurrencyCode,
         string IdempotencyKey,
         DateTime CreatedOn,
+        string? GuestAccessToken = null,
         string? NextActionType = null,
         string? NextActionUrl = null);
 

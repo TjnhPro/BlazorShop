@@ -19,6 +19,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using BlazorShop.Application.CommerceNode.Consent;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Features;
+    using BlazorShop.Application.CommerceNode.Orders;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.ProductSelections;
     using BlazorShop.Application.CommerceNode.SecurityPrivacy;
@@ -1690,13 +1691,16 @@ namespace BlazorShop.CommerceNode.API.Controllers
     {
         private readonly ICartService cartService;
         private readonly IOrderQueryService orderQueryService;
+        private readonly IStorefrontGuestOrderService guestOrderService;
 
         public StorefrontScopedOrdersController(
             ICartService cartService,
-            IOrderQueryService orderQueryService)
+            IOrderQueryService orderQueryService,
+            IStorefrontGuestOrderService guestOrderService)
         {
             this.cartService = cartService;
             this.orderQueryService = orderQueryService;
+            this.guestOrderService = guestOrderService;
         }
 
         [HttpPost("confirm")]
@@ -1752,6 +1756,17 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 : this.Success(
                     orderItems.Select(item => item.ToStorefrontContract()).ToArray(),
                     "Current customer order items loaded.");
+        }
+
+        [AllowAnonymous]
+        [HttpPost("guest-lookup")]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Checkout)]
+        public async Task<IActionResult> GetGuestOrder(
+            [FromBody] Contracts.Storefront.StorefrontGuestOrderLookupRequest request,
+            CancellationToken cancellationToken)
+        {
+            var result = await this.guestOrderService.GetAsync(request.ToApplicationRequest(), cancellationToken);
+            return this.FromServiceResponse(result, order => order!.ToStorefrontContract());
         }
 
         private string? GetCurrentCustomerId()

@@ -566,6 +566,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         string CurrencyCode,
         string IdempotencyKey,
         DateTime CreatedOn,
+        string? GuestAccessToken,
         StorefrontPaymentNextActionResponse? NextAction);
 
     public sealed record StorefrontPaymentAttemptResponse(
@@ -1064,6 +1065,17 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         string PaymentStatus,
         string PaymentMethodKey,
         DateTime CreatedOn);
+
+    public sealed class StorefrontGuestOrderLookupRequest
+    {
+        [Required]
+        [StringLength(64, MinimumLength = 3)]
+        public string Reference { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(128, MinimumLength = 32)]
+        public string Token { get; set; } = string.Empty;
+    }
 
     public sealed record StorefrontOrderResponse(
         Guid Id,

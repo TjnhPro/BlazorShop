@@ -1098,6 +1098,11 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         typeof(CommerceNodeApiResponse<IReadOnlyList<StorefrontOrderItemHistoryResponse>>),
                         [StatusCodes.Status401Unauthorized, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError],
                         Security: StorefrontSecurityRequirement.Bearer),
+                    [("StorefrontScopedOrders", "GetGuestOrder")] = new(
+                        "StorefrontOrders_GetGuestOrder",
+                        "Get a guest order by reference and access token.",
+                        typeof(CommerceNodeApiResponse<StorefrontOrderResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedPages", "GetBySlug")] = new(
                         "StorefrontPages_GetBySlug",
                         "Get a published Storefront page by slug.",

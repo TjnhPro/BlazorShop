@@ -1,5 +1,7 @@
 namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 {
+    using System.Security.Cryptography;
+    using System.Text;
     using System.Text.Json;
 
     using BlazorShop.Application.CommerceNode.Carts;
@@ -76,6 +78,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 .FirstOrDefaultAsync(candidate => candidate.Id == request.StoreId, cancellationToken);
             var now = DateTimeOffset.UtcNow;
             var order = CreateOrder(request, lines.Lines, store, now);
+            var guestAccessToken = request.CheckoutSession.CustomerId.HasValue ? null : GenerateGuestAccessToken();
+            if (guestAccessToken is not null)
+            {
+                order.GuestAccessTokenHash = ComputeSha256(guestAccessToken);
+                order.GuestAccessTokenExpiresAtUtc = now.AddDays(30);
+            }
+
             this.context.Orders.Add(order);
 
             foreach (var line in lines.Lines)
@@ -89,7 +98,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 request.PaymentAttempt.OrderId = order.Id;
             }
 
-            return OrderPlacementResult.Succeeded(order);
+            return OrderPlacementResult.Succeeded(order, guestAccessToken);
         }
 
         private Order CreateOrder(
@@ -353,6 +362,17 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private static string? NormalizeNullable(string? value)
         {
             return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
+
+        private static string GenerateGuestAccessToken()
+        {
+            return Convert.ToHexString(RandomNumberGenerator.GetBytes(32)).ToLowerInvariant();
+        }
+
+        private static string ComputeSha256(string value)
+        {
+            var hash = SHA256.HashData(Encoding.UTF8.GetBytes(value));
+            return Convert.ToHexString(hash).ToLowerInvariant();
         }
 
         private sealed record OrderLineSnapshot(

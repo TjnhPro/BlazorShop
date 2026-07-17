@@ -8,6 +8,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.ProductSelections;
     using BlazorShop.Application.CommerceNode.Shipping;
+    using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.Services.Contracts.Payment;
@@ -762,8 +763,13 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.True(payment.Success, payment.Message);
             Assert.True(review.Success, review.Message);
             Assert.True(result.Success, result.Message);
+            Assert.NotNull(result.Payload!.GuestAccessToken);
+            Assert.Equal(64, result.Payload.GuestAccessToken!.Length);
             var order = Assert.Single(context.Orders);
             var attempt = Assert.Single(context.PaymentAttempts);
+            Assert.NotNull(order.GuestAccessTokenHash);
+            Assert.NotEqual(result.Payload.GuestAccessToken, order.GuestAccessTokenHash);
+            Assert.True(order.GuestAccessTokenExpiresAtUtc > DateTimeOffset.UtcNow);
             Assert.Equal(27.25m, order.TotalAmount);
             Assert.Equal("ground", order.ShippingMethodKey);
             Assert.Equal("test", order.ShippingProviderSystemName);
@@ -806,6 +812,25 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Equal("support@snapshot.example.test", persistedOrder.StoreCompanyEmailSnapshot);
             Assert.Contains("\"address1\":\"100 Main St\"", persistedOrder.BillingAddressSnapshotJson);
             Assert.Contains("\"address1\":\"100 Main St\"", persistedOrder.ShippingAddressSnapshotJson);
+
+            var guestOrderService = new StorefrontGuestOrderService(context, new FixedStoreContext(storeId));
+            var lookup = await guestOrderService.GetAsync(new BlazorShop.Application.CommerceNode.Orders.StorefrontGuestOrderLookupRequest(
+                persistedOrder.Reference,
+                result.Payload.GuestAccessToken));
+            var wrongToken = await guestOrderService.GetAsync(new BlazorShop.Application.CommerceNode.Orders.StorefrontGuestOrderLookupRequest(
+                persistedOrder.Reference,
+                "wrong-token"));
+            var wrongStore = await new StorefrontGuestOrderService(context, new FixedStoreContext(Guid.NewGuid())).GetAsync(
+                new BlazorShop.Application.CommerceNode.Orders.StorefrontGuestOrderLookupRequest(
+                    persistedOrder.Reference,
+                    result.Payload.GuestAccessToken));
+
+            Assert.True(lookup.Success, lookup.Message);
+            Assert.Equal(persistedOrder.Reference, lookup.Payload!.Reference);
+            Assert.False(wrongToken.Success);
+            Assert.Equal(ServiceResponseType.NotFound, wrongToken.ResponseType);
+            Assert.False(wrongStore.Success);
+            Assert.Equal(ServiceResponseType.NotFound, wrongStore.ResponseType);
         }
 
         [Fact]
@@ -2435,6 +2460,54 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 .Options;
 
             return new CommerceNodeDbContext(options);
+        }
+
+        private sealed class FixedStoreContext : ICommerceStoreContext
+        {
+            private readonly Guid storeId;
+
+            public FixedStoreContext(Guid storeId)
+            {
+                this.storeId = storeId;
+            }
+
+            public Task<CommerceStoreOperationResult<CommerceCurrentStore>> GetCurrentStoreAsync(CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(new CommerceStoreOperationResult<CommerceCurrentStore>(
+                    true,
+                    "Store resolved.",
+                    new CommerceCurrentStore(
+                        PublicId: Guid.NewGuid(),
+                        StoreKey: "test-store",
+                        Name: "Test Store",
+                        Status: CommerceStoreStatuses.Active,
+                        BaseUrl: null,
+                        PrimaryDomain: null,
+                        ForceHttps: true,
+                        CdnHost: null,
+                        LogoUrl: null,
+                        CompanyName: null,
+                        CompanyEmail: null,
+                        CompanyPhone: null,
+                        CompanyAddress: null,
+                        FaviconUrl: null,
+                        PngIconUrl: null,
+                        AppleTouchIconUrl: null,
+                        MsTileImageUrl: null,
+                        MsTileColor: null,
+                        DefaultCurrencyCode: "USD",
+                        DefaultCulture: "en-US",
+                        SupportEmail: null,
+                        SupportPhone: null,
+                        MaintenanceModeEnabled: false,
+                        MaintenanceMessage: null,
+                        HtmlBodyId: null)));
+            }
+
+            public Task<CommerceStoreOperationResult<Guid>> GetCurrentStoreIdAsync(CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(new CommerceStoreOperationResult<Guid>(true, "Store resolved.", this.storeId));
+            }
         }
 
         private sealed class StubStoreFeatureStateService : IStoreFeatureStateService
