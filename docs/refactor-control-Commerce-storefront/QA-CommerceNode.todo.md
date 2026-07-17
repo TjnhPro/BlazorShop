@@ -1034,10 +1034,10 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Shipping calculator computes `ShippingRequired` from cart lines. 2026-07-17 Phase 1: `Calculator_ReturnsNoShippingRequired_WhenNoPackageLinesNeedShipping` passed.
 - [x] Unknown shipping provider is rejected. 2026-07-17 Phase 1: `Resolver_RejectsUnknownProvider` passed.
 - [x] Provider warning/error payloads are preserved by the calculator. 2026-07-17 Phase 1: `Calculator_PreservesProviderWarningsAndErrors` passed.
-- [ ] Physical carts require a valid shipping address and option.
-- [ ] Non-shipping carts can continue without a physical shipping method.
+- [x] Physical carts require a valid shipping address and option. 2026-07-17 Phase 3: checkout select/review/place-order guards use calculator output; focused checkout service tests passed.
+- [x] Non-shipping carts can continue without a physical shipping method. 2026-07-17 Phase 3: `SelectPaymentMethodAsync_AllowsNonShippingCartWithoutSelectedShippingMethod` passed.
 - [x] Country restriction and free-shipping threshold behavior are covered by focused tests. 2026-07-17 Phase 2: focused shipping settings/provider tests passed.
-- [ ] Shipping totals are included in checkout, order, and payment amounts.
+- [x] Shipping totals are included in checkout, order, and payment amounts. 2026-07-17 Phase 3: `SelectShippingMethodAsync_UsesCalculatedRateAndUpdatesGrandTotal` covers checkout totals; place-order path now validates selected shipping total before payment/order creation.
 - [ ] Storefront and Commerce Admin OpenAPI remain generator-safe after Shipping Core API additions.
 
 ## Payment Core

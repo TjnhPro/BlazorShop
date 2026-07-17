@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Shipping Core.md`
 
-Status: Phase 2 complete. Phase 3 not started.
+Status: Phase 3 complete. Phase 4 not started.
 
 Scope: turn the current checkout shipping stub into a practical Shipping Core for active V2. The goal is enough shipping calculation, option selection, and shipment tracking for real store usage without building a carrier marketplace, warehouse engine, tax engine, label engine, or fulfillment orchestration platform.
 
@@ -34,12 +34,12 @@ Approved:
   - [ ] highest surcharge vs sum policy. Phase 2 stores validated policy; product surcharge calculation remains Phase 4.
   - [ ] tax calculation hook returning zero for now.
   - [ ] currency conversion/rounding through existing Currency Core services.
-- [ ] Checkout integration:
-  - [ ] replace hard-coded `ResolveShippingOptions`.
-  - [ ] compute `ShippingRequired` from cart lines.
-  - [ ] update `ShippingTotal` and `GrandTotal` from selected option.
-  - [ ] snapshot selected shipping option in `CheckoutSession.SelectedShippingOptionJson`.
-  - [ ] block checkout when shipping is required but no valid address/option exists.
+- [x] Checkout integration:
+  - [x] replace hard-coded `ResolveShippingOptions`. 2026-07-17 Phase 3: `StorefrontCheckoutService` now calls `IShippingCalculator`.
+  - [x] compute `ShippingRequired` from cart lines. 2026-07-17 Phase 3: package lines use persisted product shipping metadata.
+  - [x] update `ShippingTotal` and `GrandTotal` from selected option. 2026-07-17 Phase 3.
+  - [x] snapshot selected shipping option in `CheckoutSession.SelectedShippingOptionJson`. 2026-07-17 Phase 3 keeps selected option JSON and selected flag.
+  - [x] block checkout when shipping is required but no valid address/option exists. 2026-07-17 Phase 3: select/review/place-order guards use calculator result.
 - [ ] Shipment record improvement:
   - [ ] keep one shipment per order for this phase.
   - [ ] add shipment item/quantity model only if needed for partial shipment preparation.
@@ -275,37 +275,37 @@ Goal: replace hard-coded `free_standard` with the calculator.
 
 Implementation checklist:
 
-- [ ] Inject `IShippingCalculator` into `StorefrontCheckoutService`.
-- [ ] Build shipping package lines from current cart lines and product metadata.
-- [ ] Compute `ShippingRequired`.
-- [ ] Compute available options.
-- [ ] Validate selected option.
-- [ ] Preserve provider warnings/errors.
-- [ ] Update `ToSessionResult` to return actual `ShippingRequired`.
-- [ ] Replace `ResolveShippingOptions(session, selectedKey)` with calculator output.
-- [ ] Keep `free_standard` option key compatible.
-- [ ] When no lines require shipping:
-  - [ ] skip address/shipping-method requirement where possible.
-  - [ ] set selected option to `shipping_not_required` or null with explicit flag.
-  - [ ] set shipping total to zero.
-  - [ ] prepare order shipping status `shipping_not_required`.
-- [ ] Selected option rate updates `ShippingTotal`.
-- [ ] Calculate `GrandTotal = Subtotal + ShippingTotal + TaxTotal - DiscountTotal`.
-- [ ] Use `IMoneyRoundingService.RoundOrderTotal`.
+- [x] Inject `IShippingCalculator` into `StorefrontCheckoutService`. 2026-07-17 Phase 3.
+- [x] Build shipping package lines from current cart lines and product metadata. 2026-07-17 Phase 3: reads persisted product shipping fields from `CommerceNodeDbContext`.
+- [x] Compute `ShippingRequired`. 2026-07-17 Phase 3.
+- [x] Compute available options. 2026-07-17 Phase 3.
+- [x] Validate selected option. 2026-07-17 Phase 3.
+- [x] Preserve provider warnings/errors. 2026-07-17 Phase 3: provider errors/warnings are projected to checkout validation issues in preview.
+- [x] Update `ToSessionResult` to return actual `ShippingRequired`. 2026-07-17 Phase 3.
+- [x] Replace `ResolveShippingOptions(session, selectedKey)` with calculator output. 2026-07-17 Phase 3.
+- [x] Keep `free_standard` option key compatible. 2026-07-17 Phase 3: fallback/default calculator still exposes `free_standard`.
+- [x] When no lines require shipping:
+  - [x] skip address/shipping-method requirement where possible. 2026-07-17 Phase 3: payment/review/place-order no longer require selected shipping option when `ShippingRequired=false`.
+  - [x] set selected option to `shipping_not_required` or null with explicit flag. 2026-07-17 Phase 3: selected option remains null and API returns `ShippingRequired=false`.
+  - [x] set shipping total to zero. 2026-07-17 Phase 3.
+  - [x] prepare order shipping status `shipping_not_required`. 2026-07-17 Phase 3: order placement uses `ShippingStatuses.ShippingNotRequired`.
+- [x] Selected option rate updates `ShippingTotal`. 2026-07-17 Phase 3.
+- [x] Calculate `GrandTotal = Subtotal + ShippingTotal + TaxTotal - DiscountTotal`. 2026-07-17 Phase 3.
+- [x] Use `IMoneyRoundingService.RoundOrderTotal`. 2026-07-17 Phase 3.
 
 Verification checklist:
 
-- [ ] Physical cart requires shipping and returns options.
-- [ ] All non-shipping cart skips shipping method and has zero shipping total.
-- [ ] Free shipping threshold produces zero-rate option.
-- [ ] Country restriction blocks shipping option with validation issue.
-- [ ] Address change resets selected shipping and payment method as expected.
-- [ ] Existing `free_standard` selection remains accepted.
+- [x] Physical cart requires shipping and returns options. 2026-07-17 Phase 3: existing free-standard checkout tests plus calculated-rate test passed.
+- [x] All non-shipping cart skips shipping method and has zero shipping total. 2026-07-17 Phase 3: `StartAsync_ComputesShippingRequiredFromPersistedProductMetadata` and `SelectPaymentMethodAsync_AllowsNonShippingCartWithoutSelectedShippingMethod`.
+- [x] Free shipping threshold produces zero-rate option. 2026-07-17 Phase 3: provider behavior remains covered by Phase 2 flat-rate provider test.
+- [x] Country restriction blocks shipping option with validation issue. 2026-07-17 Phase 3: `PreviewAsync_WhenShippingCalculatorReturnsError_AddsValidationIssue`.
+- [x] Address change resets selected shipping and payment method as expected. 2026-07-17 Phase 3: existing reset tests passed after calculator cutover.
+- [x] Existing `free_standard` selection remains accepted. 2026-07-17 Phase 3: existing shipping-method tests passed.
 
 Exit criteria:
 
-- [ ] Checkout no longer hard-codes a single shipping option.
-- [ ] Existing Storefront checkout flow remains compatible.
+- [x] Checkout no longer hard-codes a single shipping option. 2026-07-17 Phase 3.
+- [x] Existing Storefront checkout flow remains compatible. 2026-07-17 Phase 3: focused checkout service suite passed.
 
 Suggested commit:
 

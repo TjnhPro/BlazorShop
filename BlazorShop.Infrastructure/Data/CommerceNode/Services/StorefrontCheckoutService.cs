@@ -11,6 +11,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.ProductSelections;
+    using BlazorShop.Application.CommerceNode.Shipping;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Entities;
@@ -23,6 +24,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     {
         private const string DefaultCurrencyCode = "USD";
         private const string FreeStandardShippingOptionKey = "free_standard";
+        private const string ShippingNotRequiredOptionKey = "shipping_not_required";
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
         private readonly CommerceNodeDbContext context;
@@ -35,6 +37,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly IStorefrontPaymentProviderResolver paymentProviderResolver;
         private readonly IProductSellabilityResolver sellabilityResolver;
         private readonly IAddressValidationService addressValidationService;
+        private readonly IShippingCalculator shippingCalculator;
 
         public StorefrontCheckoutService(
             CommerceNodeDbContext context,
@@ -46,7 +49,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             IPaymentProviderCapabilityRegistry paymentProviderCapabilityRegistry,
             IStorefrontPaymentProviderResolver paymentProviderResolver,
             IProductSellabilityResolver? sellabilityResolver = null,
-            IAddressValidationService? addressValidationService = null)
+            IAddressValidationService? addressValidationService = null,
+            IShippingCalculator? shippingCalculator = null)
         {
             this.context = context;
             this.cartService = cartService;
@@ -58,6 +62,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.paymentProviderResolver = paymentProviderResolver;
             this.sellabilityResolver = sellabilityResolver ?? new ProductSellabilityResolver();
             this.addressValidationService = addressValidationService ?? new AddressValidationService();
+            this.shippingCalculator = shippingCalculator ?? new ShippingCalculator([new InternalFreeStandardShippingProvider()]);
         }
 
         public async Task<ServiceResponse<StorefrontCheckoutSessionResult>> StartAsync(
@@ -277,8 +282,32 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 JsonOptions);
             session.ValidationIssuesJson = null;
             session.SelectedShippingOptionJson = null;
-            session.NextAction = CheckoutSteps.ShippingMethod;
-            Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.ShippingMethod, DateTimeOffset.UtcNow);
+            var shippingOptions = await this.ResolveShippingOptionsAsync(
+                session,
+                resolution.Cart!,
+                selectedKey: null,
+                cancellationToken);
+            session.ShippingTotal = 0m;
+            session.GrandTotal = this.moneyRoundingService.RoundOrderTotal(
+                session.Subtotal + session.TaxTotal - session.DiscountTotal,
+                session.CurrencyCode);
+
+            if (shippingOptions.ShippingRequired)
+            {
+                session.CompletedStepsJson = JsonSerializer.Serialize(
+                    new[] { CheckoutSteps.Entry, CheckoutSteps.BillingAddress, CheckoutSteps.ShippingAddress },
+                    JsonOptions);
+                session.NextAction = CheckoutSteps.ShippingMethod;
+                Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.ShippingMethod, DateTimeOffset.UtcNow);
+            }
+            else
+            {
+                session.CompletedStepsJson = JsonSerializer.Serialize(
+                    new[] { CheckoutSteps.Entry, CheckoutSteps.BillingAddress, CheckoutSteps.ShippingAddress, CheckoutSteps.ShippingMethod },
+                    JsonOptions);
+                session.NextAction = CheckoutSteps.PaymentMethod;
+                Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.PaymentMethod, DateTimeOffset.UtcNow);
+            }
             await this.context.SaveChangesAsync(cancellationToken);
 
             return Succeeded(
@@ -299,15 +328,50 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var session = resolution.Session!;
-            if (string.IsNullOrWhiteSpace(session.ShippingAddress1)
+            var shippingOptions = await this.ResolveShippingOptionsAsync(
+                session,
+                resolution.Cart!,
+                request.ShippingOptionKey,
+                cancellationToken);
+
+            if (shippingOptions.ShippingRequired
+                && (string.IsNullOrWhiteSpace(session.ShippingAddress1)
                 || string.IsNullOrWhiteSpace(session.ShippingCity)
                 || string.IsNullOrWhiteSpace(session.ShippingPostalCode)
-                || string.IsNullOrWhiteSpace(session.ShippingCountryCode))
+                || string.IsNullOrWhiteSpace(session.ShippingCountryCode)))
             {
                 return Failed<StorefrontCheckoutSessionResult>(ServiceResponseType.Conflict, "Shipping address must be selected first.");
             }
 
-            var option = ResolveShippingOptions(session, selectedKey: request.ShippingOptionKey)
+            if (!shippingOptions.ShippingRequired)
+            {
+                if (!string.Equals(request.ShippingOptionKey, ShippingNotRequiredOptionKey, StringComparison.OrdinalIgnoreCase)
+                    && !string.IsNullOrWhiteSpace(request.ShippingOptionKey))
+                {
+                    return Failed<StorefrontCheckoutSessionResult>(ServiceResponseType.ValidationError, "Shipping option is not available.");
+                }
+
+                session.SelectedShippingOptionJson = null;
+                session.ShippingTotal = 0m;
+                session.GrandTotal = this.moneyRoundingService.RoundOrderTotal(
+                    session.Subtotal + session.TaxTotal - session.DiscountTotal,
+                    session.CurrencyCode);
+                session.PaymentMethodKey = string.Empty;
+                ClearTermsAcknowledgement(session);
+                session.ValidationIssuesJson = null;
+                session.CompletedStepsJson = JsonSerializer.Serialize(
+                    new[] { CheckoutSteps.Entry, CheckoutSteps.BillingAddress, CheckoutSteps.ShippingAddress, CheckoutSteps.ShippingMethod },
+                    JsonOptions);
+                session.NextAction = CheckoutSteps.PaymentMethod;
+                Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.PaymentMethod, DateTimeOffset.UtcNow);
+                await this.context.SaveChangesAsync(cancellationToken);
+
+                return Succeeded(
+                    "Checkout shipping method selected.",
+                    await this.ToSessionResultAsync(session, resolution.Cart!, cancellationToken));
+            }
+
+            var option = shippingOptions.Options
                 .FirstOrDefault(candidate => string.Equals(candidate.Key, request.ShippingOptionKey, StringComparison.OrdinalIgnoreCase));
             if (option is null)
             {
@@ -347,7 +411,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var session = resolution.Session!;
-            if (ParseSelectedShippingOption(session.SelectedShippingOptionJson) is null)
+            var shippingOptions = await this.ResolveShippingOptionsAsync(
+                session,
+                resolution.Cart!,
+                ParseSelectedShippingOption(session.SelectedShippingOptionJson)?.Key,
+                cancellationToken);
+            if (shippingOptions.ShippingRequired && shippingOptions.Options.All(option => !option.Selected))
             {
                 return Failed<StorefrontCheckoutSessionResult>(ServiceResponseType.Conflict, "Shipping method must be selected first.");
             }
@@ -397,7 +466,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var session = resolution.Session!;
             var cart = resolution.Cart!;
             var selectedShippingOption = ParseSelectedShippingOption(session.SelectedShippingOptionJson);
-            var paymentMethods = selectedShippingOption is null
+            var shippingOptions = await this.ResolveShippingOptionsAsync(
+                session,
+                cart,
+                selectedShippingOption?.Key,
+                cancellationToken);
+            selectedShippingOption = shippingOptions.Options.FirstOrDefault(option => option.Selected);
+            var paymentMethods = shippingOptions.ShippingRequired && selectedShippingOption is null
                 ? []
                 : await this.ResolvePaymentMethodOptionsAsync(session, session.PaymentMethodKey, cancellationToken);
             var selectedPaymentMethod = paymentMethods.FirstOrDefault(method => method.Selected);
@@ -415,7 +490,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     "billingAddress"));
             }
 
-            if (shippingAddress is null)
+            if (shippingOptions.ShippingRequired && shippingAddress is null)
             {
                 issues.Add(new StorefrontCheckoutValidationIssue(
                     "shipping.address_required",
@@ -423,7 +498,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     "shippingAddress"));
             }
 
-            if (selectedShippingOption is null)
+            if (shippingOptions.ShippingRequired && selectedShippingOption is null)
             {
                 issues.Add(new StorefrontCheckoutValidationIssue(
                     "shipping.method_required",
@@ -456,11 +531,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             var distinctIssues = DeduplicateIssues(issues);
             var placeOrderAllowed = distinctIssues.Count == 0
-                && selectedShippingOption is not null
+                && (!shippingOptions.ShippingRequired || selectedShippingOption is not null)
                 && selectedPaymentMethod is not null;
             var nextRequiredStep = placeOrderAllowed
                 ? CheckoutSteps.PlaceOrder
-                : ResolveNextRequiredStep(billingAddress, shippingAddress, selectedShippingOption, selectedPaymentMethod);
+                : ResolveNextRequiredStep(billingAddress, shippingOptions.ShippingRequired ? shippingAddress : null, selectedShippingOption, selectedPaymentMethod, shippingOptions.ShippingRequired);
             session.ValidationIssuesJson = distinctIssues.Count == 0 ? null : JsonSerializer.Serialize(distinctIssues, JsonOptions);
             session.CompletedStepsJson = JsonSerializer.Serialize(
                 placeOrderAllowed
@@ -484,7 +559,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     session,
                     cart,
                     billingAddress,
-                    shippingAddress,
+                    shippingOptions.ShippingRequired ? shippingAddress : null,
                     selectedShippingOption,
                     selectedPaymentMethod,
                     termsRequired,
@@ -581,6 +656,28 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     "cart.lines"));
             }
 
+            var packageLines = await this.BuildShippingPackageLinesAsync(request.StoreId, cart.Lines, cancellationToken);
+            var shippingResult = await this.CalculateShippingAsync(
+                request.StoreId,
+                cart.Id,
+                cart.PublicId,
+                shippingAddress,
+                currencyCode,
+                subtotal,
+                packageLines,
+                cancellationToken);
+            issues.AddRange(ToShippingIssues(shippingResult));
+            var selectedShippingOption = shippingResult.ShippingRequired
+                ? shippingResult.Options.FirstOrDefault()
+                : null;
+            if (shippingResult.ShippingRequired && selectedShippingOption is null)
+            {
+                issues.Add(new StorefrontCheckoutValidationIssue(
+                    "shipping.option_unavailable",
+                    "Shipping option is not available.",
+                    "shippingOptionKey"));
+            }
+
             if (!await this.IsPaymentMethodAvailableAsync(
                 request.StoreId,
                 paymentMethodKey,
@@ -596,16 +693,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var isValid = issues.Count == 0;
-            var selectedShippingOption = shippingAddress is null
-                ? null
-                : new StorefrontCheckoutShippingOption(
-                    FreeStandardShippingOptionKey,
-                    "Free standard",
-                    "Standard shipping for MVP stores.",
-                    0m,
-                    currencyCode,
-                    "Standard delivery",
-                    Selected: true);
+            selectedShippingOption = isValid && selectedShippingOption is not null
+                ? selectedShippingOption with { Selected = true }
+                : selectedShippingOption;
+            var shippingTotal = selectedShippingOption?.Price ?? 0m;
+            var grandTotal = this.moneyRoundingService.RoundOrderTotal(
+                subtotal + shippingTotal,
+                currencyCode);
             var now = DateTimeOffset.UtcNow;
             var session = new CheckoutSession
             {
@@ -639,14 +733,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 SelectedShippingOptionJson = selectedShippingOption is null ? null : JsonSerializer.Serialize(selectedShippingOption, JsonOptions),
                 PaymentMethodKey = paymentMethodKey,
                 Subtotal = subtotal,
-                ShippingTotal = 0m,
+                ShippingTotal = shippingTotal,
                 TaxTotal = 0m,
                 DiscountTotal = 0m,
-                GrandTotal = subtotal,
+                GrandTotal = grandTotal,
                 CurrencyCode = currencyCode,
                 BaseCurrencyCode = rateSnapshot.BaseCurrencyCode,
                 BaseSubtotal = rateSnapshot.BaseTotalAmount,
-                BaseGrandTotal = rateSnapshot.BaseTotalAmount,
+                BaseGrandTotal = rateSnapshot.BaseTotalAmount + shippingTotal,
                 ExchangeRate = rateSnapshot.ExchangeRate,
                 ExchangeRateProviderKey = rateSnapshot.ExchangeRateProviderKey,
                 ExchangeRateSource = rateSnapshot.ExchangeRateSource,
@@ -812,17 +906,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             var selectedShippingOption = ParseSelectedShippingOption(session.SelectedShippingOptionJson);
             var shippingAddress = CreateShippingAddress(session);
-            if (shippingAddress is null)
-            {
-                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Shipping address is not ready for order placement.");
-            }
-
-            if (selectedShippingOption is null
-                || !ResolveShippingOptions(session, selectedShippingOption.Key)
-                    .Any(option => string.Equals(option.Key, selectedShippingOption.Key, StringComparison.OrdinalIgnoreCase)))
-            {
-                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Shipping option is not available.");
-            }
 
             if (ParseValidationIssues(session.ValidationIssuesJson).Count > 0)
             {
@@ -851,9 +934,39 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var lines = lineResolution.Lines;
-            var totalAmount = this.moneyRoundingService.RoundOrderTotal(
+            var subtotal = this.moneyRoundingService.RoundOrderTotal(
                 lines.Sum(line => this.moneyRoundingService.RoundLineTotal(line.CartLine.Quantity * line.UnitPrice, currencyCode)),
                 currencyCode);
+            var shippingResult = await this.CalculateShippingAsync(
+                request.StoreId,
+                cart.Id,
+                cart.PublicId,
+                shippingAddress,
+                currencyCode,
+                subtotal,
+                await this.BuildShippingPackageLinesAsync(request.StoreId, cart.Lines, cancellationToken),
+                cancellationToken);
+            if (shippingResult.ShippingRequired && shippingAddress is null)
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Shipping address is not ready for order placement.");
+            }
+
+            var currentSelectedShippingOption = shippingResult.Options
+                .FirstOrDefault(option => string.Equals(option.Key, selectedShippingOption?.Key, StringComparison.OrdinalIgnoreCase));
+            if (shippingResult.ShippingRequired && currentSelectedShippingOption is null)
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Shipping option is not available.");
+            }
+
+            var shippingTotal = currentSelectedShippingOption?.Price ?? 0m;
+            var totalAmount = this.moneyRoundingService.RoundOrderTotal(
+                subtotal + shippingTotal + session.TaxTotal - session.DiscountTotal,
+                currencyCode);
+            if (totalAmount != session.GrandTotal || shippingTotal != session.ShippingTotal)
+            {
+                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Shipping option has changed.");
+            }
+
             var rateSnapshot = this.ResolveCurrencyRateSnapshot(lines, currencyCode, totalAmount);
             if (!rateSnapshot.Success)
             {
@@ -999,7 +1112,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 ShippingState = session.ShippingState,
                 ShippingPostalCode = session.ShippingPostalCode,
                 ShippingCountryCode = session.ShippingCountryCode,
-                ShippingStatus = ShippingStatuses.NotYetShipped,
+                ShippingStatus = shippingResult.ShippingRequired ? ShippingStatuses.NotYetShipped : ShippingStatuses.ShippingNotRequired,
                 CreatedOn = now.UtcDateTime,
                 UpdatedAt = now.UtcDateTime,
                 Lines = lines.Select(line => new OrderLine
@@ -1435,18 +1548,26 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             IReadOnlyList<StorefrontCheckoutPaymentMethodOption>? paymentMethods = null)
         {
             var selectedShippingOption = ParseSelectedShippingOption(session.SelectedShippingOptionJson);
+            var shippingOptions = await this.ResolveShippingOptionsAsync(
+                session,
+                cart,
+                selectedShippingOption?.Key,
+                cancellationToken);
+            selectedShippingOption = shippingOptions.Options.FirstOrDefault(option => option.Selected);
             var resolvedPaymentMethods = paymentMethods
-                ?? (selectedShippingOption is null
+                ?? (shippingOptions.ShippingRequired && selectedShippingOption is null
                     ? []
                     : await this.ResolvePaymentMethodOptionsAsync(session, session.PaymentMethodKey, cancellationToken));
 
-            return ToSessionResult(session, cart, selectedShippingOption, resolvedPaymentMethods);
+            return ToSessionResult(session, cart, shippingOptions.ShippingRequired, selectedShippingOption, shippingOptions.Options, resolvedPaymentMethods);
         }
 
         private StorefrontCheckoutSessionResult ToSessionResult(
             CheckoutSession session,
             StorefrontCartSessionDto cart,
+            bool shippingRequired,
             StorefrontCheckoutShippingOption? selectedShippingOption,
+            IReadOnlyList<StorefrontCheckoutShippingOption> shippingOptions,
             IReadOnlyList<StorefrontCheckoutPaymentMethodOption> paymentMethods)
         {
             var selectedPaymentMethod = paymentMethods.FirstOrDefault(method => method.Selected)
@@ -1473,9 +1594,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 session.GrandTotal,
                 NormalizeCurrency(session.CurrencyCode) ?? NormalizeCurrency(cart.CurrencyCode) ?? DefaultCurrencyCode,
                 session.ExpiresAtUtc,
-                ShippingRequired: true,
+                shippingRequired,
                 selectedShippingOption,
-                ResolveShippingOptions(session, selectedShippingOption?.Key),
+                shippingOptions,
                 selectedPaymentMethod,
                 paymentMethods,
                 cart.Lines.Select(line => new StorefrontCheckoutLineSummary(
@@ -1595,19 +1716,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             StorefrontCheckoutShippingAddressDto? billingAddress,
             StorefrontCheckoutShippingAddressDto? shippingAddress,
             StorefrontCheckoutShippingOption? selectedShippingOption,
-            StorefrontCheckoutPaymentMethodOption? selectedPaymentMethod)
+            StorefrontCheckoutPaymentMethodOption? selectedPaymentMethod,
+            bool shippingRequired = true)
         {
             if (billingAddress is null)
             {
                 return CheckoutSteps.BillingAddress;
             }
 
-            if (shippingAddress is null)
+            if (shippingRequired && shippingAddress is null)
             {
                 return CheckoutSteps.ShippingAddress;
             }
 
-            if (selectedShippingOption is null)
+            if (shippingRequired && selectedShippingOption is null)
             {
                 return CheckoutSteps.ShippingMethod;
             }
@@ -1661,23 +1783,203 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 : ServiceResponseType.ValidationError;
         }
 
-        private static IReadOnlyList<StorefrontCheckoutShippingOption> ResolveShippingOptions(
+        private async Task<CheckoutShippingCalculationResult> ResolveShippingOptionsAsync(
             CheckoutSession session,
-            string? selectedKey)
+            StorefrontCartSessionDto cart,
+            string? selectedKey,
+            CancellationToken cancellationToken)
         {
-            var currencyCode = NormalizeCurrency(session.CurrencyCode) ?? DefaultCurrencyCode;
-            var selected = string.Equals(selectedKey, FreeStandardShippingOptionKey, StringComparison.OrdinalIgnoreCase);
-            return
-            [
-                new StorefrontCheckoutShippingOption(
-                    FreeStandardShippingOptionKey,
-                    "Free standard",
-                    "Standard shipping for MVP stores.",
-                    0m,
-                    currencyCode,
-                    "Standard delivery",
-                    selected),
-            ];
+            var currencyCode = NormalizeCurrency(session.CurrencyCode)
+                ?? NormalizeCurrency(cart.CurrencyCode)
+                ?? DefaultCurrencyCode;
+            var subtotal = this.moneyRoundingService.RoundOrderTotal(
+                cart.Lines.Sum(line => line.LineTotal ?? line.LineSubtotal ?? 0m),
+                currencyCode);
+            var packageLines = await this.BuildShippingPackageLinesAsync(session.StoreId, cart.Lines, cancellationToken);
+            var result = await this.CalculateShippingAsync(
+                session.StoreId,
+                cart.Id,
+                cart.PublicId,
+                CreateShippingAddress(session),
+                currencyCode,
+                subtotal,
+                packageLines,
+                cancellationToken);
+
+            return result with
+            {
+                Options = result.Options
+                    .Select(option => option with
+                    {
+                        Selected = string.Equals(option.Key, selectedKey, StringComparison.OrdinalIgnoreCase),
+                    })
+                    .ToArray(),
+            };
+        }
+
+        private async Task<CheckoutShippingCalculationResult> CalculateShippingAsync(
+            Guid storeId,
+            Guid? cartId,
+            Guid? cartPublicId,
+            StorefrontCheckoutShippingAddressDto? address,
+            string currencyCode,
+            decimal subtotal,
+            IReadOnlyList<ShippingPackageLine> packageLines,
+            CancellationToken cancellationToken)
+        {
+            var request = new ShippingOptionsRequest(
+                storeId,
+                cartId,
+                cartPublicId,
+                ToShippingAddressSnapshot(address),
+                NormalizeCurrency(currencyCode) ?? DefaultCurrencyCode,
+                subtotal,
+                packageLines);
+            var result = await this.shippingCalculator.GetOptionsAsync(request, cancellationToken);
+            if (!result.Success || result.Payload is null)
+            {
+                return new CheckoutShippingCalculationResult(
+                    ShippingRequired: packageLines.Any(line => line.Quantity > 0 && line.ShippingRequired),
+                    Options: [],
+                    Warnings: [],
+                    Errors: [result.Message ?? "Shipping options could not be calculated."]);
+            }
+
+            return new CheckoutShippingCalculationResult(
+                result.Payload.ShippingRequired,
+                result.Payload.Options
+                    .Select(option => this.MapShippingOption(option, selectedKey: null))
+                    .ToArray(),
+                result.Payload.Warnings,
+                result.Payload.Errors);
+        }
+
+        private async Task<IReadOnlyList<ShippingPackageLine>> BuildShippingPackageLinesAsync(
+            Guid storeId,
+            IReadOnlyList<StorefrontCartLineDto> cartLines,
+            CancellationToken cancellationToken)
+        {
+            var productIds = cartLines.Select(line => line.ProductId).Distinct().ToArray();
+            var products = await this.LoadProductShippingMetadataAsync(storeId, productIds, cancellationToken);
+
+            return cartLines
+                .Select(line => ToShippingPackageLine(
+                    line.ProductId,
+                    line.ProductVariantId,
+                    line.Quantity,
+                    products.GetValueOrDefault(line.ProductId)))
+                .ToArray();
+        }
+
+        private async Task<IReadOnlyList<ShippingPackageLine>> BuildShippingPackageLinesAsync(
+            Guid storeId,
+            IEnumerable<CartLine> cartLines,
+            CancellationToken cancellationToken)
+        {
+            var materialized = cartLines.ToArray();
+            var productIds = materialized.Select(line => line.ProductId).Distinct().ToArray();
+            var products = await this.LoadProductShippingMetadataAsync(storeId, productIds, cancellationToken);
+
+            return materialized
+                .Select(line => ToShippingPackageLine(
+                    line.ProductId,
+                    line.ProductVariantId,
+                    line.Quantity,
+                    products.GetValueOrDefault(line.ProductId)))
+                .ToArray();
+        }
+
+        private async Task<IReadOnlyDictionary<Guid, ProductShippingMetadata>> LoadProductShippingMetadataAsync(
+            Guid storeId,
+            IReadOnlyList<Guid> productIds,
+            CancellationToken cancellationToken)
+        {
+            return await this.context.Products
+                .AsNoTracking()
+                .Where(product => productIds.Contains(product.Id)
+                    && (product.StoreId == storeId || product.StoreId == null))
+                .Select(product => new
+                {
+                    product.Id,
+                    product.ShippingRequired,
+                    product.FreeShipping,
+                    product.Weight,
+                    product.Length,
+                    product.Width,
+                    product.Height,
+                })
+                .ToDictionaryAsync(
+                    product => product.Id,
+                    product => new ProductShippingMetadata(
+                        product.ShippingRequired,
+                        product.FreeShipping,
+                        product.Weight,
+                        product.Length,
+                        product.Width,
+                        product.Height),
+                    cancellationToken);
+        }
+
+        private static ShippingPackageLine ToShippingPackageLine(
+            Guid productId,
+            Guid? productVariantId,
+            int quantity,
+            ProductShippingMetadata? product)
+        {
+            return new ShippingPackageLine(
+                productId,
+                productVariantId,
+                Math.Max(0, quantity),
+                product?.ShippingRequired ?? true,
+                product?.FreeShipping ?? false,
+                product?.Weight,
+                product?.Length,
+                product?.Width,
+                product?.Height);
+        }
+
+        private StorefrontCheckoutShippingOption MapShippingOption(ShippingOptionDto option, string? selectedKey)
+        {
+            var currencyCode = NormalizeCurrency(option.CurrencyCode) ?? DefaultCurrencyCode;
+            return new StorefrontCheckoutShippingOption(
+                option.Key,
+                option.DisplayName,
+                option.Description,
+                this.moneyRoundingService.RoundOrderTotal(option.Rate, currencyCode),
+                currencyCode,
+                option.DeliveryEstimateText,
+                string.Equals(option.Key, selectedKey, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static ShippingAddressSnapshot? ToShippingAddressSnapshot(StorefrontCheckoutShippingAddressDto? address)
+        {
+            return address is null
+                ? null
+                : new ShippingAddressSnapshot(
+                    address.FullName,
+                    null,
+                    address.Address1,
+                    address.Address2,
+                    address.City,
+                    address.State,
+                    address.PostalCode,
+                    address.CountryCode,
+                    address.Phone,
+                    address.Email);
+        }
+
+        private static IReadOnlyList<StorefrontCheckoutValidationIssue> ToShippingIssues(CheckoutShippingCalculationResult result)
+        {
+            return result.Errors
+                .Select(error => new StorefrontCheckoutValidationIssue(
+                    "shipping.option_unavailable",
+                    error,
+                    "shippingOptionKey"))
+                .Concat(result.Warnings.Select(warning => new StorefrontCheckoutValidationIssue(
+                    "shipping.warning",
+                    warning,
+                    "shippingOptionKey")))
+                .ToArray();
         }
 
         private async Task<IReadOnlyList<StorefrontCheckoutPaymentMethodOption>> ResolvePaymentMethodOptionsAsync(
@@ -2515,6 +2817,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             Product Product,
             ProductVariant? Variant,
             decimal UnitPrice);
+
+        private sealed record ProductShippingMetadata(
+            bool ShippingRequired,
+            bool FreeShipping,
+            decimal? Weight,
+            decimal? Length,
+            decimal? Width,
+            decimal? Height);
+
+        private sealed record CheckoutShippingCalculationResult(
+            bool ShippingRequired,
+            IReadOnlyList<StorefrontCheckoutShippingOption> Options,
+            IReadOnlyList<string> Warnings,
+            IReadOnlyList<string> Errors);
 
         private sealed record OrderLineResolution(
             bool Success,

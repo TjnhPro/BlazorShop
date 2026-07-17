@@ -7,6 +7,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
     using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.ProductSelections;
+    using BlazorShop.Application.CommerceNode.Shipping;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.Services.Contracts.Payment;
@@ -437,6 +438,228 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Equal("USD", option.CurrencyCode);
             Assert.Equal(0m, option.Price);
             Assert.Null(result.Payload.SelectedShippingOption);
+        }
+
+        [Fact]
+        public async Task StartAsync_ComputesShippingRequiredFromPersistedProductMetadata()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            product.ShippingRequired = false;
+            product.FreeShipping = true;
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
+            var service = CreateCheckoutService(context, cartService);
+
+            var result = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload.Token!));
+
+            Assert.True(result.Success, result.Message);
+            Assert.False(result.Payload!.ShippingRequired);
+            Assert.Empty(result.Payload.ShippingOptions);
+            Assert.Null(result.Payload.SelectedShippingOption);
+        }
+
+        [Fact]
+        public async Task SelectShippingMethodAsync_UsesCalculatedRateAndUpdatesGrandTotal()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
+            var shippingCalculator = new FakeShippingCalculator(_ => new ShippingCalculationResult(
+                ShippingRequired: true,
+                Options:
+                [
+                    new ShippingOptionDto(
+                        "ground",
+                        "test",
+                        "ground",
+                        "Ground",
+                        "Ground shipping",
+                        7.25m,
+                        "USD",
+                        "3-5 days",
+                        [],
+                        [],
+                        "test.ground"),
+                ],
+                Warnings: [],
+                Errors: []));
+            var service = CreateCheckoutService(context, cartService, shippingCalculator);
+            var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload.Token!));
+            await service.UpdateAddressesAsync(new StorefrontCheckoutAddressStepRequest(
+                storeId,
+                start.Payload!.CheckoutSessionId,
+                cart.Payload.Token!,
+                BillingAddress: CreateAddress(),
+                ShippingAddress: CreateAddress(),
+                UseBillingAddressAsShippingAddress: true));
+
+            var result = await service.SelectShippingMethodAsync(new StorefrontCheckoutShippingMethodRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                cart.Payload.Token!,
+                "ground"));
+
+            Assert.True(result.Success, result.Message);
+            Assert.Equal(7.25m, result.Payload!.ShippingTotal);
+            Assert.Equal(27.25m, result.Payload.GrandTotal);
+            Assert.Equal("ground", result.Payload.SelectedShippingOption!.Key);
+            Assert.True(result.Payload.SelectedShippingOption.Selected);
+        }
+
+        [Fact]
+        public async Task PlaceOrderAsync_IncludesSelectedShippingTotalInOrderAndPaymentAmount()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
+            var shippingCalculator = new FakeShippingCalculator(_ => new ShippingCalculationResult(
+                ShippingRequired: true,
+                Options:
+                [
+                    new ShippingOptionDto(
+                        "ground",
+                        "test",
+                        "ground",
+                        "Ground",
+                        "Ground shipping",
+                        7.25m,
+                        "USD",
+                        "3-5 days",
+                        [],
+                        [],
+                        "test.ground"),
+                ],
+                Warnings: [],
+                Errors: []));
+            var service = CreateCheckoutService(context, cartService, shippingCalculator);
+            var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload.Token!));
+            var address = await service.UpdateAddressesAsync(new StorefrontCheckoutAddressStepRequest(
+                storeId,
+                start.Payload!.CheckoutSessionId,
+                cart.Payload.Token!,
+                BillingAddress: CreateAddress(),
+                ShippingAddress: CreateAddress(),
+                UseBillingAddressAsShippingAddress: true));
+            var shipping = await service.SelectShippingMethodAsync(new StorefrontCheckoutShippingMethodRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                cart.Payload.Token!,
+                "ground"));
+            var payment = await service.SelectPaymentMethodAsync(new StorefrontCheckoutPaymentMethodRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                cart.Payload.Token!,
+                PaymentMethodKeys.Cod));
+            var review = await service.ReviewAsync(new StorefrontCheckoutReviewRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                cart.Payload.Token!,
+                TermsAccepted: false,
+                TermsVersion: null));
+
+            var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                review.Payload!.CheckoutVersion,
+                payment.Payload!.CartVersion,
+                "ship-total-cod"));
+
+            Assert.True(address.Success, address.Message);
+            Assert.True(shipping.Success, shipping.Message);
+            Assert.True(payment.Success, payment.Message);
+            Assert.True(review.Success, review.Message);
+            Assert.True(result.Success, result.Message);
+            var order = Assert.Single(context.Orders);
+            var attempt = Assert.Single(context.PaymentAttempts);
+            Assert.Equal(27.25m, order.TotalAmount);
+            Assert.Equal(27.25m, attempt.Amount);
+            Assert.Equal(7.25m, context.CheckoutSessions.Single().ShippingTotal);
+        }
+
+        [Fact]
+        public async Task SelectPaymentMethodAsync_AllowsNonShippingCartWithoutSelectedShippingMethod()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            product.ShippingRequired = false;
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
+            var service = CreateCheckoutService(context, cartService);
+            var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload.Token!));
+
+            var result = await service.SelectPaymentMethodAsync(new StorefrontCheckoutPaymentMethodRequest(
+                storeId,
+                start.Payload!.CheckoutSessionId,
+                cart.Payload.Token!,
+                PaymentMethodKeys.Cod));
+
+            Assert.True(result.Success, result.Message);
+            Assert.False(result.Payload!.ShippingRequired);
+            Assert.Null(result.Payload.SelectedShippingOption);
+            Assert.Equal(CheckoutSteps.Review, result.Payload.CurrentStep);
+        }
+
+        [Fact]
+        public async Task PreviewAsync_WhenShippingCalculatorReturnsError_AddsValidationIssue()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
+            var shippingCalculator = new FakeShippingCalculator(_ => new ShippingCalculationResult(
+                ShippingRequired: true,
+                Options: [],
+                Warnings: [],
+                Errors: ["Shipping is not available for the selected country."]));
+            var service = CreateCheckoutService(context, cartService, shippingCalculator);
+
+            var result = await service.PreviewAsync(CreateRequest(storeId, cart.Payload.Token!, add.Payload!.Version));
+
+            Assert.True(result.Success, result.Message);
+            Assert.False(result.Payload!.IsValid);
+            Assert.Contains(result.Payload.Issues, issue => issue.Code == "shipping.option_unavailable");
+            Assert.Equal(0m, result.Payload.ShippingTotal);
         }
 
         [Fact]
@@ -1788,13 +2011,32 @@ namespace BlazorShop.Tests.Application.CommerceNode
             IStorefrontCartService cartService,
             params IStorefrontPaymentProvider[] providers)
         {
-            return CreateCheckoutService(context, cartService, checkoutEnabled: true, providers);
+            return CreateCheckoutService(context, cartService, checkoutEnabled: true, shippingCalculator: null, providers);
         }
 
         private static StorefrontCheckoutService CreateCheckoutService(
             CommerceNodeDbContext context,
             IStorefrontCartService cartService,
             bool checkoutEnabled,
+            params IStorefrontPaymentProvider[] providers)
+        {
+            return CreateCheckoutService(context, cartService, checkoutEnabled, shippingCalculator: null, providers);
+        }
+
+        private static StorefrontCheckoutService CreateCheckoutService(
+            CommerceNodeDbContext context,
+            IStorefrontCartService cartService,
+            IShippingCalculator shippingCalculator,
+            params IStorefrontPaymentProvider[] providers)
+        {
+            return CreateCheckoutService(context, cartService, checkoutEnabled: true, shippingCalculator, providers);
+        }
+
+        private static StorefrontCheckoutService CreateCheckoutService(
+            CommerceNodeDbContext context,
+            IStorefrontCartService cartService,
+            bool checkoutEnabled,
+            IShippingCalculator? shippingCalculator,
             params IStorefrontPaymentProvider[] providers)
         {
             IStorefrontPaymentProvider[] providerList = providers.Length == 0
@@ -1809,7 +2051,8 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 new StorefrontCustomerService(context),
                 new StubStoreFeatureStateService(checkoutEnabled),
                 new PaymentProviderCapabilityRegistry(providerList),
-                new StorefrontPaymentProviderResolver(providerList));
+                new StorefrontPaymentProviderResolver(providerList),
+                shippingCalculator: shippingCalculator);
         }
 
         private static StorefrontCartService CreateCartService(
@@ -2023,6 +2266,27 @@ namespace BlazorShop.Tests.Application.CommerceNode
                         Payload = result,
                         ResponseType = ServiceResponseType.Success,
                     });
+            }
+        }
+
+        private sealed class FakeShippingCalculator : IShippingCalculator
+        {
+            private readonly Func<ShippingOptionsRequest, ShippingCalculationResult> calculate;
+
+            public FakeShippingCalculator(Func<ShippingOptionsRequest, ShippingCalculationResult> calculate)
+            {
+                this.calculate = calculate;
+            }
+
+            public Task<ServiceResponse<ShippingCalculationResult>> GetOptionsAsync(
+                ShippingOptionsRequest request,
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(new ServiceResponse<ShippingCalculationResult>(true, "Shipping calculated.")
+                {
+                    Payload = this.calculate(request),
+                    ResponseType = ServiceResponseType.Success,
+                });
             }
         }
 
