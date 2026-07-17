@@ -631,6 +631,7 @@ Plan: `Cart Core.todo.md`.
 - [x] Admin shipment response includes item list, normalized shipping status, and selected shipping method summary without changing the existing shipment route. 2026-07-17 Phase 8: focused shipment service test passed.
 - [x] Storefront order query uses CommerceNode-owned read model and returns safe tracking events for the current store only. 2026-07-17 Phase 8: `CommerceNodeAdminShipmentServiceTests.OrderQueryService_ReturnsSafeTrackingEventsForStorefrontOrders` passed.
 - [x] Storefront OpenAPI snapshot includes order tracking event response schema and no shipping origin/settings leak. 2026-07-17 Phase 8: `CommerceNodeStorefrontOpenApiContractTests` passed with refreshed snapshot.
+- [x] Shipping Core focused release gate passed. 2026-07-17 Phase 9: CommerceNode API build passed; focused provider/settings/checkout/shipment/model/OpenAPI/gateway/product tests passed 174/174.
 - [x] No Storefront shipment endpoint is exposed under removed `api/internal/*`.
 
 ### Settings, Audit, Metrics

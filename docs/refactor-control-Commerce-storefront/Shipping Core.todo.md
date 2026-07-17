@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Shipping Core.md`
 
-Status: Phase 8 complete. Phase 9 not started.
+Status: Phase 9 complete. Shipping Core complete.
 
 Scope: turn the current checkout shipping stub into a practical Shipping Core for active V2. The goal is enough shipping calculation, option selection, and shipment tracking for real store usage without building a carrier marketplace, warehouse engine, tax engine, label engine, or fulfillment orchestration platform.
 
@@ -517,43 +517,43 @@ Goal: finish with clear verification and no hidden behavior changes.
 
 Implementation checklist:
 
-- [ ] Use additive migrations only.
-- [ ] Keep existing `CheckoutSession.SelectedShippingOptionJson`.
-- [ ] Keep current `Shipment` rows valid.
-- [ ] Preserve `free_standard` option key compatibility.
-- [ ] Backfill new order shipping snapshot fields conservatively as null/zero if added.
-- [ ] Update `QA-CommerceNode.todo.md`.
-- [ ] Update `QA-StorefrontV2.todo.md` if checkout UI/API behavior changes.
-- [ ] Add manual QA notes for physical checkout.
-- [ ] Add manual QA notes for non-shipping checkout.
-- [ ] Add manual QA notes for country unavailable.
-- [ ] Add manual QA notes for admin shipment tracking.
+- [x] Use additive migrations only. 2026-07-17 Phase 9: shipping settings, surcharge, order snapshot, and shipment event changes are additive.
+- [x] Keep existing `CheckoutSession.SelectedShippingOptionJson`. 2026-07-17 Phase 9: focused checkout tests remain green.
+- [x] Keep current `Shipment` rows valid. 2026-07-17 Phase 9: `ShipmentItem` and `ShipmentTrackingEvent` are additive child tables.
+- [x] Preserve `free_standard` option key compatibility. 2026-07-17 Phase 9: provider and checkout tests remain green.
+- [x] Backfill new order shipping snapshot fields conservatively as null/zero if added. 2026-07-17 Phase 9: order snapshot fields are nullable/zero-safe.
+- [x] Update `QA-CommerceNode.todo.md`. 2026-07-17 Phase 9.
+- [x] Update `QA-StorefrontV2.todo.md` if checkout UI/API behavior changes. 2026-07-17 Phase 9.
+- [x] Add manual QA notes for physical checkout. 2026-07-17 Phase 9: visible checkout item remains pending in QA Storefront checklist.
+- [x] Add manual QA notes for non-shipping checkout. 2026-07-17 Phase 9: visible checkout item remains pending in QA Storefront checklist.
+- [x] Add manual QA notes for country unavailable. 2026-07-17 Phase 9: visible checkout item remains pending in QA Storefront checklist.
+- [x] Add manual QA notes for admin shipment tracking. 2026-07-17 Phase 9: QA CommerceNode shipment checklist records admin tracking coverage.
 
 Verification checklist:
 
-- [ ] Application provider registry tests pass.
-- [ ] Application shipping calculator tests pass.
-- [ ] No-shipping cart tests pass.
-- [ ] Free threshold tests pass.
-- [ ] Country restriction tests pass.
-- [ ] Surcharge policy tests pass.
-- [ ] Currency conversion tests pass.
-- [ ] Checkout shipping selection tests pass.
-- [ ] Address change reset tests pass.
-- [ ] Place-order total includes shipping.
-- [ ] Non-shipping order sets `shipping_not_required`.
-- [ ] Admin shipping settings validation tests pass.
-- [ ] Admin shipment upsert/status/store-scoping tests pass.
-- [ ] Storefront OpenAPI contract tests pass.
-- [ ] Commerce Admin OpenAPI contract tests pass.
-- [ ] Public schemas do not expose domain entities or admin-only settings.
-- [ ] Swagger snapshots are intentionally updated.
+- [x] Application provider registry tests pass. 2026-07-17 Phase 9: focused release gate passed.
+- [x] Application shipping calculator tests pass. 2026-07-17 Phase 9: focused release gate passed.
+- [x] No-shipping cart tests pass. 2026-07-17 Phase 9: focused release gate passed.
+- [x] Free threshold tests pass. 2026-07-17 Phase 9: focused release gate passed.
+- [x] Country restriction tests pass. 2026-07-17 Phase 9: focused release gate passed.
+- [x] Surcharge policy tests pass. 2026-07-17 Phase 9: focused release gate passed.
+- [x] Currency conversion tests pass. 2026-07-17 Phase 9: focused release gate passed.
+- [x] Checkout shipping selection tests pass. 2026-07-17 Phase 9: focused release gate passed.
+- [x] Address change reset tests pass. 2026-07-17 Phase 9: focused release gate passed.
+- [x] Place-order total includes shipping. 2026-07-17 Phase 9: focused release gate passed.
+- [x] Non-shipping order sets `shipping_not_required`. 2026-07-17 Phase 9: focused release gate passed.
+- [x] Admin shipping settings validation tests pass. 2026-07-17 Phase 9: focused release gate passed.
+- [x] Admin shipment upsert/status/store-scoping tests pass. 2026-07-17 Phase 9: focused release gate passed.
+- [x] Storefront OpenAPI contract tests pass. 2026-07-17 Phase 9: focused release gate passed.
+- [x] Commerce Admin OpenAPI contract tests pass. 2026-07-17 Phase 9: focused release gate passed.
+- [x] Public schemas do not expose domain entities or admin-only settings. 2026-07-17 Phase 9: Storefront schema exposes safe tracking events only.
+- [x] Swagger snapshots are intentionally updated. 2026-07-17 Phase 9: Storefront OpenAPI snapshot refreshed for tracking events.
 
 Exit criteria:
 
-- [ ] Focused tests pass.
-- [ ] Swagger snapshots are intentionally updated.
-- [ ] QA checklist records Shipping Core coverage.
+- [x] Focused tests pass. 2026-07-17 Phase 9: CommerceNode API build passed; 174 focused tests passed.
+- [x] Swagger snapshots are intentionally updated. 2026-07-17 Phase 9.
+- [x] QA checklist records Shipping Core coverage. 2026-07-17 Phase 9.
 
 Suggested commit:
 
@@ -706,23 +706,23 @@ test(shipping-core): verify shipping core
 - [x] Phase 6 - order placement and shipping snapshot. 2026-07-17.
 - [x] Phase 7 - shipment record items and tracking events hook. 2026-07-17: implemented and verified with CommerceNode API build plus 111 focused tests.
 - [x] Phase 8 - admin and Storefront projection. 2026-07-17: CommerceNode API build passed; focused Storefront OpenAPI/admin metadata/shipment/checkout tests passed.
-- [ ] Phase 9 - QA, migration, and documentation.
+- [x] Phase 9 - QA, migration, and documentation. 2026-07-17: CommerceNode API build passed; 174 focused tests passed.
 
 ## Acceptance Criteria
 
-- [ ] Checkout shipping options come from `IShippingCalculator`, not hard-coded `ResolveShippingOptions`.
-- [ ] `ShippingRequired` reflects cart line product metadata.
-- [ ] Non-shipping carts can complete without a physical shipping method.
+- [x] Checkout shipping options come from `IShippingCalculator`, not hard-coded `ResolveShippingOptions`. 2026-07-17 Phase 9.
+- [x] `ShippingRequired` reflects cart line product metadata. 2026-07-17 Phase 9.
+- [x] Non-shipping carts can complete without a physical shipping method. 2026-07-17 Phase 9.
 - [x] Non-shipping carts create orders with `shipping_not_required`. 2026-07-17 Phase 6.
-- [ ] Physical carts require a valid shipping address and available shipping option.
-- [ ] `free_standard` remains compatible.
-- [ ] Flat/free shipping rules work from store settings.
-- [ ] Country restriction rules work from store settings.
-- [ ] Shipping totals are rounded and included in checkout grand total.
+- [x] Physical carts require a valid shipping address and available shipping option. 2026-07-17 Phase 9.
+- [x] `free_standard` remains compatible. 2026-07-17 Phase 9.
+- [x] Flat/free shipping rules work from store settings. 2026-07-17 Phase 9.
+- [x] Country restriction rules work from store settings. 2026-07-17 Phase 9.
+- [x] Shipping totals are rounded and included in checkout grand total. 2026-07-17 Phase 9.
 - [x] Shipping totals are included in order total. 2026-07-17 Phase 6.
 - [x] Shipping totals are included in payment amount. 2026-07-17 Phase 6.
-- [ ] Currency conversion works or fails with clear conflict when missing.
+- [x] Currency conversion works or fails with clear conflict when missing. 2026-07-17 Phase 9.
 - [x] Shipment admin upsert remains compatible. 2026-07-17 Phase 7.
 - [x] Public Storefront contracts do not leak admin-only shipping settings. 2026-07-17 Phase 8.
 - [x] Active V2 API contract tests pass. 2026-07-17 Phase 8.
-- [x] Focused shipping tests pass. 2026-07-17 Phase 8.
+- [x] Focused shipping tests pass. 2026-07-17 Phase 9: CommerceNode API build passed; 174 focused tests passed.

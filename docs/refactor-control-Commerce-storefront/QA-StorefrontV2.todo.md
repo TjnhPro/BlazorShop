@@ -557,6 +557,7 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Shipping Core Phase 6 checkout option metadata includes provider system name and method code for future Storefront UI/client generation. 2026-07-17: Storefront OpenAPI snapshot refreshed.
 - [x] Shipping Core Phase 8 Storefront order response exposes safe tracking events without admin shipment settings/origin data. 2026-07-17: Storefront OpenAPI snapshot refreshed and contract tests passed.
 - [x] Shipping Core Phase 8 current-user order query reads tracking events from the CommerceNode store-scoped read model. 2026-07-17: focused order query service test passed.
+- [x] Shipping Core Phase 9 automated release gate passed. 2026-07-17: CommerceNode API build passed; focused provider/settings/checkout/shipment/model/OpenAPI/gateway/product tests passed 174/174.
 - [ ] Shipping Core visible checkout QA confirms physical checkout can select a valid shipping option.
 - [ ] Shipping Core visible checkout QA confirms non-shipping cart does not block on shipping method after calculation cutover.
 - [ ] Shipping Core visible checkout QA confirms country-unavailable state shows a recoverable checkout message.
