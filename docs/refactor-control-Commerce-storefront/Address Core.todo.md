@@ -485,27 +485,34 @@ Goal: prepare for store-level address configuration without building a full sett
 
 Implementation checklist:
 
-- [ ] Define address field configuration DTO contract.
-- [ ] Return current defaults from `GET /address/configuration`.
-- [ ] Document future typed settings:
-  - [ ] company enabled.
-  - [ ] phone required.
-  - [ ] state required by country.
-  - [ ] postal code required.
-  - [ ] billing required.
-- [ ] Avoid Control Plane/Admin UI until there is a concrete need.
-- [ ] Ensure API shape can later support store overrides without breaking clients.
+- [x] Define address field configuration DTO contract.
+- [x] Return current defaults from `GET /address/configuration`.
+- [x] Document future typed settings:
+  - [x] company enabled.
+  - [x] phone required.
+  - [x] state required by country.
+  - [x] postal code required.
+  - [x] billing required.
+- [x] Avoid Control Plane/Admin UI until there is a concrete need.
+- [x] Ensure API shape can later support store overrides without breaking clients.
 
 Verification checklist:
 
-- [ ] Configuration response is explicit and generator-safe.
-- [ ] Storefront can consume field metadata.
-- [ ] No unnecessary admin UI or Control Plane runtime path is introduced.
+- [x] Configuration response is explicit and generator-safe.
+- [x] Storefront can consume field metadata.
+- [x] No unnecessary admin UI or Control Plane runtime path is introduced.
 
 Exit criteria:
 
-- [ ] Future settings can be added without breaking API shape.
-- [ ] Current implementation remains simple and store-safe.
+- [x] Future settings can be added without breaking API shape.
+- [x] Current implementation remains simple and store-safe.
+
+Phase 7 evidence:
+
+- 2026-07-17: `StorefrontAddressFieldConfigurationResponse` already exposes the stable future override shape: company enablement, phone enable/required, postal-code required, billing enabled, same-as-shipping default, max lengths, and state-required country codes.
+- 2026-07-17: `GET /api/storefront/stores/{storeKey}/address/configuration` remains anonymous, Storefront-scoped, and backed by address lookup configuration defaults.
+- 2026-07-17: No Control Plane address settings UI or gateway path was introduced; admin settings remain deferred until a concrete operational need exists.
+- 2026-07-17: Added `AddressCorePhase7ConfigurationTests` to guard the configuration contract shape, Storefront route ownership, and no unnecessary Control Plane Web dependency.
 
 Suggested commit:
 
@@ -640,7 +647,7 @@ test(address-core): complete release gate
 - [x] Phase 4 - authenticated address book API.
 - [x] Phase 5 - checkout address selection.
 - [x] Phase 6 - Storefront V2 UI integration.
-- [ ] Phase 7 - admin/settings preparation.
+- [x] Phase 7 - admin/settings preparation.
 - [ ] Phase 8 - QA and regression coverage.
 
 ## Definition Of Done
