@@ -62,6 +62,18 @@ namespace BlazorShop.Application.CommerceNode.Shipping
         IReadOnlyList<string> Warnings,
         IReadOnlyList<string> Errors);
 
+    public sealed record ShippingTaxCalculationRequest(
+        Guid StoreId,
+        ShippingAddressSnapshot? Address,
+        string CurrencyCode,
+        decimal Subtotal,
+        decimal ShippingTotal);
+
+    public sealed record ShippingTaxCalculationResult(
+        decimal TaxTotal,
+        string ReasonCode,
+        string Source);
+
     public interface IShippingProvider
     {
         string ProviderSystemName { get; }
@@ -82,6 +94,13 @@ namespace BlazorShop.Application.CommerceNode.Shipping
     {
         Task<ServiceResponse<ShippingCalculationResult>> GetOptionsAsync(
             ShippingOptionsRequest request,
+            CancellationToken cancellationToken = default);
+    }
+
+    public interface IShippingTaxCalculator
+    {
+        Task<ShippingTaxCalculationResult> CalculateAsync(
+            ShippingTaxCalculationRequest request,
             CancellationToken cancellationToken = default);
     }
 }

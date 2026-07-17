@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Shipping Core.md`
 
-Status: Phase 4 complete. Phase 5 not started.
+Status: Phase 5 complete. Phase 6 not started.
 
 Scope: turn the current checkout shipping stub into a practical Shipping Core for active V2. The goal is enough shipping calculation, option selection, and shipment tracking for real store usage without building a carrier marketplace, warehouse engine, tax engine, label engine, or fulfillment orchestration platform.
 
@@ -32,8 +32,8 @@ Approved:
   - [x] free-shipping threshold hook. 2026-07-17 Phase 2: flat-rate provider waives rate when subtotal reaches `FreeShippingThreshold`.
   - [x] country restriction. 2026-07-17 Phase 2: providers reject destinations outside `EnabledCountryCodes`.
   - [x] highest surcharge vs sum policy. 2026-07-17 Phase 4: internal providers support `sum` and `highest` policies.
-  - [ ] tax calculation hook returning zero for now.
-  - [ ] currency conversion/rounding through existing Currency Core services.
+  - [x] tax calculation hook returning zero for now. 2026-07-17 Phase 5: `IShippingTaxCalculator` with `ZeroShippingTaxCalculator`.
+  - [x] currency conversion/rounding through existing Currency Core services. 2026-07-17 Phase 5: checkout converts base shipping rates through `IMoneyConversionService` and rounds via `IMoneyRoundingService`.
 - [x] Checkout integration:
   - [x] replace hard-coded `ResolveShippingOptions`. 2026-07-17 Phase 3: `StorefrontCheckoutService` now calls `IShippingCalculator`.
   - [x] compute `ShippingRequired` from cart lines. 2026-07-17 Phase 3: package lines use persisted product shipping metadata.
@@ -353,26 +353,26 @@ Goal: keep shipping totals consistent with Currency Core and leave tax as a clea
 
 Implementation checklist:
 
-- [ ] Provider/store rates have a base currency.
-- [ ] If checkout currency differs from base rate currency, use existing `IMoneyConversionService`.
-- [ ] Snapshot converted rate in selected shipping option JSON if needed.
-- [ ] Round shipping and grand total with existing money rounding service.
-- [ ] Add `IShippingTaxCalculator` or total tax hook.
-- [ ] Initial tax implementation returns zero.
-- [ ] Include tax reason/source such as `tax_not_configured`.
-- [ ] Do not add tax-inclusive/exclusive settings unless Tax Core is approved.
+- [x] Provider/store rates have a base currency. 2026-07-17 Phase 5: provider request currency is resolved from cart base-currency snapshots when checkout is converted.
+- [x] If checkout currency differs from base rate currency, use existing `IMoneyConversionService`. 2026-07-17 Phase 5: shipping option rates convert before session projection.
+- [x] Snapshot converted rate in selected shipping option JSON if needed. 2026-07-17 Phase 5: selected option JSON stores the checkout-currency price.
+- [x] Round shipping and grand total with existing money rounding service. 2026-07-17 Phase 5.
+- [x] Add `IShippingTaxCalculator` or total tax hook. 2026-07-17 Phase 5.
+- [x] Initial tax implementation returns zero. 2026-07-17 Phase 5.
+- [x] Include tax reason/source such as `tax_not_configured`. 2026-07-17 Phase 5: zero tax result returns `tax_not_configured` and `shipping_tax.zero`.
+- [x] Do not add tax-inclusive/exclusive settings unless Tax Core is approved. 2026-07-17 Phase 5: no tax settings or tax engine tables added.
 
 Verification checklist:
 
-- [ ] Shipping rate in store default currency converts to working currency.
-- [ ] Missing exchange rate returns clear checkout conflict.
-- [ ] Tax hook returns zero and does not change current totals.
-- [ ] Rounding follows currency settings.
+- [x] Shipping rate in store default currency converts to working currency. 2026-07-17 Phase 5: `SelectShippingMethodAsync_ConvertsBaseShippingRateToCheckoutCurrency`.
+- [x] Missing exchange rate returns clear checkout conflict. 2026-07-17 Phase 5: `SelectShippingMethodAsync_WhenShippingRateConversionMissing_ReturnsConflict`.
+- [x] Tax hook returns zero and does not change current totals. 2026-07-17 Phase 5: `ZeroShippingTaxCalculator_ReturnsExplicitNotConfiguredResult`.
+- [x] Rounding follows currency settings. 2026-07-17 Phase 5: converted shipping rate is rounded through `IMoneyRoundingService`.
 
 Exit criteria:
 
-- [ ] Shipping rates behave correctly in non-default checkout currency.
-- [ ] Tax remains explicit and not hidden inside shipping provider logic.
+- [x] Shipping rates behave correctly in non-default checkout currency. 2026-07-17 Phase 5.
+- [x] Tax remains explicit and not hidden inside shipping provider logic. 2026-07-17 Phase 5.
 
 Suggested commit:
 
@@ -575,8 +575,8 @@ test(shipping-core): verify shipping core
 - [x] Product free-shipping flag excludes line surcharge. 2026-07-17 Phase 4.
 - [x] Sum surcharge policy calculates expected amount. 2026-07-17 Phase 4.
 - [x] Highest surcharge policy calculates expected amount. 2026-07-17 Phase 4.
-- [ ] Shipping totals are rounded through Currency Core.
-- [ ] Missing conversion rate returns clear conflict.
+- [x] Shipping totals are rounded through Currency Core. 2026-07-17 Phase 5.
+- [x] Missing conversion rate returns clear conflict. 2026-07-17 Phase 5.
 - [ ] Order total includes selected shipping total.
 - [ ] Redirect payment amount includes selected shipping total.
 - [ ] Selected shipping option snapshot survives settings changes.
@@ -640,9 +640,9 @@ test(shipping-core): verify shipping core
   - [ ] no-shipping flow.
   - [ ] place-order validation.
 - [ ] Currency tests:
-  - [ ] converted rate.
-  - [ ] missing rate conflict.
-  - [ ] rounding.
+  - [x] converted rate. 2026-07-17 Phase 5.
+  - [x] missing rate conflict. 2026-07-17 Phase 5.
+  - [x] rounding. 2026-07-17 Phase 5.
 - [ ] Order placement tests:
   - [ ] order total includes shipping.
   - [ ] payment attempt includes shipping.
@@ -674,7 +674,7 @@ test(shipping-core): verify shipping core
   - [ ] shipping enabled.
   - [ ] no country restrictions.
   - [ ] free standard available.
-  - [ ] zero tax hook.
+  - [x] zero tax hook. 2026-07-17 Phase 5.
 - [x] Existing products do not require product surcharge. 2026-07-17 Phase 4: nullable additive column defaults to no surcharge.
 - [ ] Free-standard behavior does not require shipping origin.
 - [ ] Storefront clients that expect `ShippingOptions` and `SelectedShippingOption` remain compatible.
@@ -702,7 +702,7 @@ test(shipping-core): verify shipping core
 - [ ] Phase 2 - store shipping settings.
 - [ ] Phase 3 - checkout shipping calculation cutover.
 - [x] Phase 4 - product shipping surcharge hook. 2026-07-17.
-- [ ] Phase 5 - currency conversion and tax hook.
+- [x] Phase 5 - currency conversion and tax hook. 2026-07-17.
 - [ ] Phase 6 - order placement and shipping snapshot.
 - [ ] Phase 7 - shipment record items and tracking events hook.
 - [ ] Phase 8 - admin and Storefront projection.

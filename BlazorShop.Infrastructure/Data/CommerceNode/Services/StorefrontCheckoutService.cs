@@ -31,6 +31,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly IStorefrontCartService cartService;
         private readonly IStoreCurrencyResolver storeCurrencyResolver;
         private readonly IMoneyRoundingService moneyRoundingService;
+        private readonly IMoneyConversionService moneyConversionService;
         private readonly IStorefrontCustomerService customerService;
         private readonly IStoreFeatureStateService featureStateService;
         private readonly IPaymentProviderCapabilityRegistry paymentProviderCapabilityRegistry;
@@ -38,24 +39,28 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly IProductSellabilityResolver sellabilityResolver;
         private readonly IAddressValidationService addressValidationService;
         private readonly IShippingCalculator shippingCalculator;
+        private readonly IShippingTaxCalculator shippingTaxCalculator;
 
         public StorefrontCheckoutService(
             CommerceNodeDbContext context,
             IStorefrontCartService cartService,
             IStoreCurrencyResolver storeCurrencyResolver,
             IMoneyRoundingService moneyRoundingService,
+            IMoneyConversionService moneyConversionService,
             IStorefrontCustomerService customerService,
             IStoreFeatureStateService featureStateService,
             IPaymentProviderCapabilityRegistry paymentProviderCapabilityRegistry,
             IStorefrontPaymentProviderResolver paymentProviderResolver,
             IProductSellabilityResolver? sellabilityResolver = null,
             IAddressValidationService? addressValidationService = null,
-            IShippingCalculator? shippingCalculator = null)
+            IShippingCalculator? shippingCalculator = null,
+            IShippingTaxCalculator? shippingTaxCalculator = null)
         {
             this.context = context;
             this.cartService = cartService;
             this.storeCurrencyResolver = storeCurrencyResolver;
             this.moneyRoundingService = moneyRoundingService;
+            this.moneyConversionService = moneyConversionService;
             this.customerService = customerService;
             this.featureStateService = featureStateService;
             this.paymentProviderCapabilityRegistry = paymentProviderCapabilityRegistry;
@@ -63,6 +68,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.sellabilityResolver = sellabilityResolver ?? new ProductSellabilityResolver();
             this.addressValidationService = addressValidationService ?? new AddressValidationService();
             this.shippingCalculator = shippingCalculator ?? new ShippingCalculator([new InternalFreeStandardShippingProvider()]);
+            this.shippingTaxCalculator = shippingTaxCalculator ?? new ZeroShippingTaxCalculator();
         }
 
         public async Task<ServiceResponse<StorefrontCheckoutSessionResult>> StartAsync(
@@ -287,7 +293,15 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 resolution.Cart!,
                 selectedKey: null,
                 cancellationToken);
+            var taxResult = await this.CalculateShippingTaxAsync(
+                session.StoreId,
+                CreateShippingAddress(session),
+                session.CurrencyCode,
+                session.Subtotal,
+                shippingTotal: 0m,
+                cancellationToken);
             session.ShippingTotal = 0m;
+            session.TaxTotal = taxResult.TaxTotal;
             session.GrandTotal = this.moneyRoundingService.RoundOrderTotal(
                 session.Subtotal + session.TaxTotal - session.DiscountTotal,
                 session.CurrencyCode);
@@ -352,7 +366,15 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 }
 
                 session.SelectedShippingOptionJson = null;
+                var taxResult = await this.CalculateShippingTaxAsync(
+                    session.StoreId,
+                    CreateShippingAddress(session),
+                    session.CurrencyCode,
+                    session.Subtotal,
+                    shippingTotal: 0m,
+                    cancellationToken);
                 session.ShippingTotal = 0m;
+                session.TaxTotal = taxResult.TaxTotal;
                 session.GrandTotal = this.moneyRoundingService.RoundOrderTotal(
                     session.Subtotal + session.TaxTotal - session.DiscountTotal,
                     session.CurrencyCode);
@@ -371,6 +393,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     await this.ToSessionResultAsync(session, resolution.Cart!, cancellationToken));
             }
 
+            if (shippingOptions.Errors.Count > 0)
+            {
+                return Failed<StorefrontCheckoutSessionResult>(
+                    ServiceResponseType.Conflict,
+                    shippingOptions.Errors[0]);
+            }
+
             var option = shippingOptions.Options
                 .FirstOrDefault(candidate => string.Equals(candidate.Key, request.ShippingOptionKey, StringComparison.OrdinalIgnoreCase));
             if (option is null)
@@ -379,7 +408,15 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             session.SelectedShippingOptionJson = JsonSerializer.Serialize(option with { Selected = true }, JsonOptions);
+            var selectedTaxResult = await this.CalculateShippingTaxAsync(
+                session.StoreId,
+                CreateShippingAddress(session),
+                session.CurrencyCode,
+                session.Subtotal,
+                option.Price,
+                cancellationToken);
             session.ShippingTotal = option.Price;
+            session.TaxTotal = selectedTaxResult.TaxTotal;
             session.GrandTotal = this.moneyRoundingService.RoundOrderTotal(
                 session.Subtotal + option.Price + session.TaxTotal - session.DiscountTotal,
                 session.CurrencyCode);
@@ -657,6 +694,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var packageLines = await this.BuildShippingPackageLinesAsync(request.StoreId, cart.Lines, cancellationToken);
+            var shippingRateCurrency = this.ResolveShippingRateCurrency(cart.Lines, currencyCode, subtotal);
             var shippingResult = await this.CalculateShippingAsync(
                 request.StoreId,
                 cart.Id,
@@ -664,6 +702,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 shippingAddress,
                 currencyCode,
                 subtotal,
+                shippingRateCurrency.BaseCurrencyCode,
+                shippingRateCurrency.BaseSubtotal,
                 packageLines,
                 cancellationToken);
             issues.AddRange(ToShippingIssues(shippingResult));
@@ -697,8 +737,15 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 ? selectedShippingOption with { Selected = true }
                 : selectedShippingOption;
             var shippingTotal = selectedShippingOption?.Price ?? 0m;
+            var taxResult = await this.CalculateShippingTaxAsync(
+                request.StoreId,
+                shippingAddress,
+                currencyCode,
+                subtotal,
+                shippingTotal,
+                cancellationToken);
             var grandTotal = this.moneyRoundingService.RoundOrderTotal(
-                subtotal + shippingTotal,
+                subtotal + shippingTotal + taxResult.TaxTotal,
                 currencyCode);
             var now = DateTimeOffset.UtcNow;
             var session = new CheckoutSession
@@ -734,7 +781,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 PaymentMethodKey = paymentMethodKey,
                 Subtotal = subtotal,
                 ShippingTotal = shippingTotal,
-                TaxTotal = 0m,
+                TaxTotal = taxResult.TaxTotal,
                 DiscountTotal = 0m,
                 GrandTotal = grandTotal,
                 CurrencyCode = currencyCode,
@@ -937,6 +984,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var subtotal = this.moneyRoundingService.RoundOrderTotal(
                 lines.Sum(line => this.moneyRoundingService.RoundLineTotal(line.CartLine.Quantity * line.UnitPrice, currencyCode)),
                 currencyCode);
+            var shippingRateCurrency = this.ResolveShippingRateCurrency(cart.Lines, currencyCode, subtotal);
             var shippingResult = await this.CalculateShippingAsync(
                 request.StoreId,
                 cart.Id,
@@ -944,11 +992,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 shippingAddress,
                 currencyCode,
                 subtotal,
+                shippingRateCurrency.BaseCurrencyCode,
+                shippingRateCurrency.BaseSubtotal,
                 await this.BuildShippingPackageLinesAsync(request.StoreId, cart.Lines, cancellationToken),
                 cancellationToken);
             if (shippingResult.ShippingRequired && shippingAddress is null)
             {
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Shipping address is not ready for order placement.");
+            }
+
+            if (shippingResult.Errors.Count > 0)
+            {
+                return Failed<StorefrontPlaceOrderResult>(
+                    ServiceResponseType.Conflict,
+                    shippingResult.Errors[0]);
             }
 
             var currentSelectedShippingOption = shippingResult.Options
@@ -959,10 +1016,19 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var shippingTotal = currentSelectedShippingOption?.Price ?? 0m;
+            var taxResult = await this.CalculateShippingTaxAsync(
+                request.StoreId,
+                shippingAddress,
+                currencyCode,
+                subtotal,
+                shippingTotal,
+                cancellationToken);
             var totalAmount = this.moneyRoundingService.RoundOrderTotal(
-                subtotal + shippingTotal + session.TaxTotal - session.DiscountTotal,
+                subtotal + shippingTotal + taxResult.TaxTotal - session.DiscountTotal,
                 currencyCode);
-            if (totalAmount != session.GrandTotal || shippingTotal != session.ShippingTotal)
+            if (totalAmount != session.GrandTotal
+                || shippingTotal != session.ShippingTotal
+                || taxResult.TaxTotal != session.TaxTotal)
             {
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Shipping option has changed.");
             }
@@ -1795,6 +1861,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var subtotal = this.moneyRoundingService.RoundOrderTotal(
                 cart.Lines.Sum(line => line.LineTotal ?? line.LineSubtotal ?? 0m),
                 currencyCode);
+            var rateCurrency = this.ResolveShippingRateCurrency(cart.Lines, currencyCode, subtotal);
             var packageLines = await this.BuildShippingPackageLinesAsync(session.StoreId, cart.Lines, cancellationToken);
             var result = await this.CalculateShippingAsync(
                 session.StoreId,
@@ -1803,6 +1870,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 CreateShippingAddress(session),
                 currencyCode,
                 subtotal,
+                rateCurrency.BaseCurrencyCode,
+                rateCurrency.BaseSubtotal,
                 packageLines,
                 cancellationToken);
 
@@ -1822,18 +1891,22 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             Guid? cartId,
             Guid? cartPublicId,
             StorefrontCheckoutShippingAddressDto? address,
-            string currencyCode,
-            decimal subtotal,
+            string checkoutCurrencyCode,
+            decimal checkoutSubtotal,
+            string rateCurrencyCode,
+            decimal rateSubtotal,
             IReadOnlyList<ShippingPackageLine> packageLines,
             CancellationToken cancellationToken)
         {
+            var normalizedCheckoutCurrency = NormalizeCurrency(checkoutCurrencyCode) ?? DefaultCurrencyCode;
+            var normalizedRateCurrency = NormalizeCurrency(rateCurrencyCode) ?? normalizedCheckoutCurrency;
             var request = new ShippingOptionsRequest(
                 storeId,
                 cartId,
                 cartPublicId,
                 ToShippingAddressSnapshot(address),
-                NormalizeCurrency(currencyCode) ?? DefaultCurrencyCode,
-                subtotal,
+                normalizedRateCurrency,
+                rateSubtotal,
                 packageLines);
             var result = await this.shippingCalculator.GetOptionsAsync(request, cancellationToken);
             if (!result.Success || result.Payload is null)
@@ -1845,13 +1918,97 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     Errors: [result.Message ?? "Shipping options could not be calculated."]);
             }
 
+            var options = new List<StorefrontCheckoutShippingOption>();
+            var errors = new List<string>(result.Payload.Errors);
+            foreach (var option in result.Payload.Options)
+            {
+                var mapped = await this.MapShippingOptionAsync(
+                    storeId,
+                    option,
+                    normalizedCheckoutCurrency,
+                    normalizedRateCurrency,
+                    cancellationToken);
+                if (!mapped.Success || mapped.Payload is null)
+                {
+                    errors.Add(mapped.Message ?? "Shipping rate currency conversion is not available.");
+                    continue;
+                }
+
+                options.Add(mapped.Payload);
+            }
+
             return new CheckoutShippingCalculationResult(
                 result.Payload.ShippingRequired,
-                result.Payload.Options
-                    .Select(option => this.MapShippingOption(option, selectedKey: null))
-                    .ToArray(),
+                options,
                 result.Payload.Warnings,
-                result.Payload.Errors);
+                errors);
+        }
+
+        private ShippingRateCurrency ResolveShippingRateCurrency(
+            IReadOnlyList<StorefrontCartLineDto> cartLines,
+            string checkoutCurrencyCode,
+            decimal checkoutSubtotal)
+        {
+            var convertedLines = cartLines
+                .Where(line => line.ExchangeRateSnapshot.HasValue
+                    && !string.IsNullOrWhiteSpace(line.BaseCurrencyCodeSnapshot))
+                .ToArray();
+            if (convertedLines.Length == 0)
+            {
+                var currencyCode = NormalizeCurrency(checkoutCurrencyCode) ?? DefaultCurrencyCode;
+                return new ShippingRateCurrency(currencyCode, checkoutSubtotal);
+            }
+
+            var baseCurrencyCode = NormalizeCurrency(convertedLines[0].BaseCurrencyCodeSnapshot) ?? DefaultCurrencyCode;
+            var baseSubtotal = this.moneyRoundingService.RoundOrderTotal(
+                cartLines.Sum(line => (line.BaseUnitPriceSnapshot ?? line.UnitPriceSnapshot ?? 0m) * Math.Max(0, line.Quantity)),
+                baseCurrencyCode);
+            return new ShippingRateCurrency(baseCurrencyCode, baseSubtotal);
+        }
+
+        private ShippingRateCurrency ResolveShippingRateCurrency(
+            IEnumerable<CartLine> cartLines,
+            string checkoutCurrencyCode,
+            decimal checkoutSubtotal)
+        {
+            var materialized = cartLines.ToArray();
+            var convertedLines = materialized
+                .Where(line => line.ExchangeRateSnapshot.HasValue
+                    && !string.IsNullOrWhiteSpace(line.BaseCurrencyCodeSnapshot))
+                .ToArray();
+            if (convertedLines.Length == 0)
+            {
+                var currencyCode = NormalizeCurrency(checkoutCurrencyCode) ?? DefaultCurrencyCode;
+                return new ShippingRateCurrency(currencyCode, checkoutSubtotal);
+            }
+
+            var baseCurrencyCode = NormalizeCurrency(convertedLines[0].BaseCurrencyCodeSnapshot) ?? DefaultCurrencyCode;
+            var baseSubtotal = this.moneyRoundingService.RoundOrderTotal(
+                materialized.Sum(line => (line.BaseUnitPriceSnapshot ?? line.UnitPriceSnapshot ?? 0m) * Math.Max(0, line.Quantity)),
+                baseCurrencyCode);
+            return new ShippingRateCurrency(baseCurrencyCode, baseSubtotal);
+        }
+
+        private async Task<ShippingTaxCalculationResult> CalculateShippingTaxAsync(
+            Guid storeId,
+            StorefrontCheckoutShippingAddressDto? address,
+            string currencyCode,
+            decimal subtotal,
+            decimal shippingTotal,
+            CancellationToken cancellationToken)
+        {
+            var request = new ShippingTaxCalculationRequest(
+                storeId,
+                ToShippingAddressSnapshot(address),
+                NormalizeCurrency(currencyCode) ?? DefaultCurrencyCode,
+                subtotal,
+                shippingTotal);
+
+            var result = await this.shippingTaxCalculator.CalculateAsync(request, cancellationToken);
+            return result with
+            {
+                TaxTotal = this.moneyRoundingService.RoundOrderTotal(result.TaxTotal, request.CurrencyCode),
+            };
         }
 
         private async Task<IReadOnlyList<ShippingPackageLine>> BuildShippingPackageLinesAsync(
@@ -1941,17 +2098,59 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 product?.ShippingSurcharge);
         }
 
-        private StorefrontCheckoutShippingOption MapShippingOption(ShippingOptionDto option, string? selectedKey)
+        private async Task<ServiceResponse<StorefrontCheckoutShippingOption>> MapShippingOptionAsync(
+            Guid storeId,
+            ShippingOptionDto option,
+            string checkoutCurrencyCode,
+            string rateCurrencyCode,
+            CancellationToken cancellationToken)
         {
-            var currencyCode = NormalizeCurrency(option.CurrencyCode) ?? DefaultCurrencyCode;
-            return new StorefrontCheckoutShippingOption(
+            var optionCurrencyCode = NormalizeCurrency(option.CurrencyCode) ?? rateCurrencyCode;
+            var normalizedCheckoutCurrency = NormalizeCurrency(checkoutCurrencyCode) ?? DefaultCurrencyCode;
+            var normalizedRateCurrency = NormalizeCurrency(rateCurrencyCode) ?? normalizedCheckoutCurrency;
+
+            if (!string.Equals(optionCurrencyCode, normalizedRateCurrency, StringComparison.Ordinal)
+                && !string.Equals(optionCurrencyCode, normalizedCheckoutCurrency, StringComparison.Ordinal))
+            {
+                return Failed<StorefrontCheckoutShippingOption>(
+                    ServiceResponseType.Conflict,
+                    "Shipping provider returned an unsupported currency.");
+            }
+
+            var price = this.moneyRoundingService.RoundOrderTotal(option.Rate, optionCurrencyCode);
+            if (option.Rate == 0m)
+            {
+                price = 0m;
+            }
+            else if (!string.Equals(optionCurrencyCode, normalizedCheckoutCurrency, StringComparison.Ordinal))
+            {
+                var conversion = await this.moneyConversionService.ConvertFromBaseAsync(
+                    storeId,
+                    option.Rate,
+                    normalizedCheckoutCurrency,
+                    cancellationToken);
+                if (!conversion.Success || conversion.Payload is null)
+                {
+                    return Failed<StorefrontCheckoutShippingOption>(
+                        conversion.ResponseType,
+                        conversion.Message ?? "Shipping rate currency conversion is not available.");
+                }
+
+                price = this.moneyRoundingService.RoundOrderTotal(
+                    conversion.Payload.ConvertedAmount,
+                    conversion.Payload.TargetCurrencyCode);
+            }
+
+            return Succeeded(
+                "Shipping option mapped.",
+                new StorefrontCheckoutShippingOption(
                 option.Key,
                 option.DisplayName,
                 option.Description,
-                this.moneyRoundingService.RoundOrderTotal(option.Rate, currencyCode),
-                currencyCode,
+                price,
+                normalizedCheckoutCurrency,
                 option.DeliveryEstimateText,
-                string.Equals(option.Key, selectedKey, StringComparison.OrdinalIgnoreCase));
+                Selected: false));
         }
 
         private static ShippingAddressSnapshot? ToShippingAddressSnapshot(StorefrontCheckoutShippingAddressDto? address)
@@ -2835,6 +3034,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             IReadOnlyList<StorefrontCheckoutShippingOption> Options,
             IReadOnlyList<string> Warnings,
             IReadOnlyList<string> Errors);
+
+        private sealed record ShippingRateCurrency(
+            string BaseCurrencyCode,
+            decimal BaseSubtotal);
 
         private sealed record OrderLineResolution(
             bool Success,

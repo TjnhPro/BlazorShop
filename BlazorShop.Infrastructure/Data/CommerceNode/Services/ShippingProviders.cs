@@ -268,4 +268,17 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             };
         }
     }
+
+    public sealed class ZeroShippingTaxCalculator : IShippingTaxCalculator
+    {
+        public Task<ShippingTaxCalculationResult> CalculateAsync(
+            ShippingTaxCalculationRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new ShippingTaxCalculationResult(
+                TaxTotal: 0m,
+                ReasonCode: "tax_not_configured",
+                Source: "shipping_tax.zero"));
+        }
+    }
 }

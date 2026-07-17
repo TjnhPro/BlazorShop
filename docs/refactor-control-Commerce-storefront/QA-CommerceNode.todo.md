@@ -1042,6 +1042,9 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Shipping providers apply product surcharge by `sum` and `highest` policy, exclude free-shipping lines, and waive surcharge at the free-shipping threshold. 2026-07-17 Phase 4: `ShippingProviderRegistryTests` passed.
 - [x] Storefront checkout applies persisted product shipping surcharge to selected option, `ShippingTotal`, and `GrandTotal`. 2026-07-17 Phase 4: `SelectShippingMethodAsync_AppliesPersistedProductShippingSurcharge` passed.
 - [x] Storefront OpenAPI remains generator-safe after Shipping Core surcharge changes. 2026-07-17 Phase 4: `CommerceNodeStorefrontOpenApiContractTests` passed inside focused 141/141 run.
+- [x] Shipping rates convert from cart base currency to checkout working currency before session totals are saved. 2026-07-17 Phase 5: `SelectShippingMethodAsync_ConvertsBaseShippingRateToCheckoutCurrency` passed.
+- [x] Missing shipping-rate exchange rate returns a clear checkout conflict instead of silently using a guessed rate. 2026-07-17 Phase 5: `SelectShippingMethodAsync_WhenShippingRateConversionMissing_ReturnsConflict` passed.
+- [x] Shipping tax hook is explicit and returns zero with reason/source while Tax Core remains out of scope. 2026-07-17 Phase 5: `ZeroShippingTaxCalculator_ReturnsExplicitNotConfiguredResult` passed.
 - [ ] Commerce Admin OpenAPI remains generator-safe after all Shipping Core API additions.
 
 ## Payment Core

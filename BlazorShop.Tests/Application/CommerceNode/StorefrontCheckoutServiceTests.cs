@@ -567,6 +567,115 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public async Task SelectShippingMethodAsync_ConvertsBaseShippingRateToCheckoutCurrency()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 10m, stock: 10);
+            product.ShippingRequired = true;
+            product.FreeShipping = false;
+            product.ShippingSurcharge = 2m;
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(
+                context,
+                productRepository,
+                workingCurrencyCode: "EUR",
+                conversionTargetCurrencyCode: "EUR",
+                conversionRate: 0.9m);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1,
+                CurrencyCode: "eur"));
+            var service = CreateCheckoutService(
+                context,
+                cartService,
+                shippingCalculator: null,
+                moneyConversionService: new FakeMoneyConversionService("EUR", 0.9m));
+            var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload.Token!));
+            await service.UpdateAddressesAsync(new StorefrontCheckoutAddressStepRequest(
+                storeId,
+                start.Payload!.CheckoutSessionId,
+                cart.Payload.Token!,
+                BillingAddress: CreateAddress(),
+                ShippingAddress: CreateAddress(),
+                UseBillingAddressAsShippingAddress: true));
+
+            var result = await service.SelectShippingMethodAsync(new StorefrontCheckoutShippingMethodRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                cart.Payload.Token!,
+                "free_standard"));
+
+            Assert.True(result.Success, result.Message);
+            Assert.Equal("EUR", result.Payload!.CurrencyCode);
+            Assert.Equal(9m, result.Payload.Subtotal);
+            Assert.Equal(1.8m, result.Payload.ShippingTotal);
+            Assert.Equal(10.8m, result.Payload.GrandTotal);
+            Assert.Equal("EUR", result.Payload.SelectedShippingOption!.CurrencyCode);
+            Assert.Equal(1.8m, result.Payload.SelectedShippingOption.Price);
+            Assert.Equal(0m, result.Payload.TaxTotal);
+        }
+
+        [Fact]
+        public async Task SelectShippingMethodAsync_WhenShippingRateConversionMissing_ReturnsConflict()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 10m, stock: 10);
+            product.ShippingRequired = true;
+            product.FreeShipping = false;
+            product.ShippingSurcharge = 2m;
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(
+                context,
+                productRepository,
+                workingCurrencyCode: "EUR",
+                conversionTargetCurrencyCode: "EUR",
+                conversionRate: 0.9m);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1,
+                CurrencyCode: "eur"));
+            var service = CreateCheckoutService(
+                context,
+                cartService,
+                shippingCalculator: null,
+                moneyConversionService: new FakeMoneyConversionService());
+            var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload.Token!));
+            await service.UpdateAddressesAsync(new StorefrontCheckoutAddressStepRequest(
+                storeId,
+                start.Payload!.CheckoutSessionId,
+                cart.Payload.Token!,
+                BillingAddress: CreateAddress(),
+                ShippingAddress: CreateAddress(),
+                UseBillingAddressAsShippingAddress: true));
+
+            var result = await service.SelectShippingMethodAsync(new StorefrontCheckoutShippingMethodRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                cart.Payload.Token!,
+                "free_standard"));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.Conflict, result.ResponseType);
+            Assert.Equal("No active exchange rate is configured.", result.Message);
+        }
+
+        [Fact]
         public async Task PlaceOrderAsync_IncludesSelectedShippingTotalInOrderAndPaymentAmount()
         {
             using var context = CreateContext();
@@ -2055,7 +2164,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             IStorefrontCartService cartService,
             params IStorefrontPaymentProvider[] providers)
         {
-            return CreateCheckoutService(context, cartService, checkoutEnabled: true, shippingCalculator: null, providers);
+            return CreateCheckoutService(context, cartService, checkoutEnabled: true, shippingCalculator: null, moneyConversionService: null, providers);
         }
 
         private static StorefrontCheckoutService CreateCheckoutService(
@@ -2064,7 +2173,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             bool checkoutEnabled,
             params IStorefrontPaymentProvider[] providers)
         {
-            return CreateCheckoutService(context, cartService, checkoutEnabled, shippingCalculator: null, providers);
+            return CreateCheckoutService(context, cartService, checkoutEnabled, shippingCalculator: null, moneyConversionService: null, providers);
         }
 
         private static StorefrontCheckoutService CreateCheckoutService(
@@ -2073,7 +2182,17 @@ namespace BlazorShop.Tests.Application.CommerceNode
             IShippingCalculator shippingCalculator,
             params IStorefrontPaymentProvider[] providers)
         {
-            return CreateCheckoutService(context, cartService, checkoutEnabled: true, shippingCalculator, providers);
+            return CreateCheckoutService(context, cartService, checkoutEnabled: true, shippingCalculator, moneyConversionService: null, providers);
+        }
+
+        private static StorefrontCheckoutService CreateCheckoutService(
+            CommerceNodeDbContext context,
+            IStorefrontCartService cartService,
+            IShippingCalculator? shippingCalculator,
+            IMoneyConversionService moneyConversionService,
+            params IStorefrontPaymentProvider[] providers)
+        {
+            return CreateCheckoutService(context, cartService, checkoutEnabled: true, shippingCalculator, moneyConversionService, providers);
         }
 
         private static StorefrontCheckoutService CreateCheckoutService(
@@ -2081,6 +2200,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             IStorefrontCartService cartService,
             bool checkoutEnabled,
             IShippingCalculator? shippingCalculator,
+            IMoneyConversionService? moneyConversionService,
             params IStorefrontPaymentProvider[] providers)
         {
             IStorefrontPaymentProvider[] providerList = providers.Length == 0
@@ -2092,6 +2212,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 cartService,
                 new FixedStoreCurrencyResolver("USD"),
                 new MoneyRoundingService(new CurrencyMetadataService()),
+                moneyConversionService ?? new FakeMoneyConversionService(),
                 new StorefrontCustomerService(context),
                 new StubStoreFeatureStateService(checkoutEnabled),
                 new PaymentProviderCapabilityRegistry(providerList),

@@ -129,6 +129,23 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal("store.free_shipping_threshold", option.RuleMatch);
         }
 
+        [Fact]
+        public async Task ZeroShippingTaxCalculator_ReturnsExplicitNotConfiguredResult()
+        {
+            var calculator = new ZeroShippingTaxCalculator();
+
+            var result = await calculator.CalculateAsync(new ShippingTaxCalculationRequest(
+                StoreId: Guid.NewGuid(),
+                Address: null,
+                CurrencyCode: "USD",
+                Subtotal: 20m,
+                ShippingTotal: 5m));
+
+            Assert.Equal(0m, result.TaxTotal);
+            Assert.Equal("tax_not_configured", result.ReasonCode);
+            Assert.Equal("shipping_tax.zero", result.Source);
+        }
+
         private static ShippingOptionsRequest CreateRequest(
             bool shippingRequired,
             decimal subtotal = 20m,
