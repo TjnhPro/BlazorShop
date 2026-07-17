@@ -103,7 +103,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Reset password page handles `email` and `token` query values. 2026-07-17 Phase 1: reset page smoke renders hidden token field without displaying token text.
 - [x] Reset password succeeds with valid token and password. 2026-07-17 Phase 1: local POST calls scoped reset client and redirects to sign-in password-reset state.
 - [x] Reset password fails generically with invalid/expired token. 2026-07-17 Phase 1: failed provider response redirects with generic reset-link error.
-- [ ] WASM same-origin client has no Commerce Node base URL, node key, node secret, refresh token, or access token configuration.
+- [x] WASM same-origin client has no Commerce Node base URL, node key, node secret, refresh token, or access token configuration. 2026-07-17 Phase 2: WASM registers `HttpClient` with `builder.HostEnvironment.BaseAddress`; `StorefrontWasmRuntimeFoundationTests` rejects absolute/protocol-relative routes.
 - [ ] Cart WASM loads existing cart.
 - [ ] Cart WASM updates quantity.
 - [ ] Cart WASM removes a line.
@@ -115,8 +115,8 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [ ] Checkout WASM blocks empty cart.
 - [ ] Checkout WASM detects stale cart version.
 - [ ] Checkout WASM completes happy-path order placement.
-- [ ] Mutation endpoints require antiforgery token.
-- [ ] No direct Commerce Node URL or credential is present in WASM static output.
+- [x] Mutation endpoints require antiforgery token. 2026-07-17 Phase 2: `StorefrontLocalApiClient` attaches the meta-projected CSRF header for POST/PUT/DELETE and focused runtime foundation tests passed.
+- [x] No direct Commerce Node URL or credential is present in WASM static output. 2026-07-17 Phase 2: `rg` over WASM source and `bin/Debug/net10.0/wwwroot` found no `CommerceNode`, node key/secret, refresh token, access token, or scoped Commerce Node route strings.
 
 ## Runtime Smoke
 
