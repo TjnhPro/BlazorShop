@@ -395,6 +395,86 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task AccountOrders_WhenAuthenticated_RendersPagedOrders()
+        {
+            var session = new StorefrontSessionInfo(true, false, "Customer One", "customer@example.test", "access-token");
+            using var client = CreateClient(services =>
+            {
+                services.RemoveAll<IStorefrontSessionResolver>();
+                services.RemoveAll<StorefrontApiClient>();
+                services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
+                services.AddScoped(_ => new StorefrontApiClient(
+                    new HttpClient(new AccountSelfServiceHandler())
+                    {
+                        BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
+                    },
+                    Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+            });
+
+            using var response = await client.GetAsync(StorefrontRoutes.AccountOrders);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("Account orders", content, StringComparison.Ordinal);
+            Assert.Contains("ORD-1", content, StringComparison.Ordinal);
+            Assert.Contains("25.00 USD", content, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task AccountAddresses_WhenAuthenticated_RendersAddressBook()
+        {
+            var session = new StorefrontSessionInfo(true, false, "Customer One", "customer@example.test", "access-token");
+            using var client = CreateClient(services =>
+            {
+                services.RemoveAll<IStorefrontSessionResolver>();
+                services.RemoveAll<StorefrontApiClient>();
+                services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
+                services.AddScoped(_ => new StorefrontApiClient(
+                    new HttpClient(new AccountSelfServiceHandler())
+                    {
+                        BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
+                    },
+                    Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+            });
+
+            using var response = await client.GetAsync(StorefrontRoutes.AccountAddresses);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("Account addresses", content, StringComparison.Ordinal);
+            Assert.Contains("Customer One", content, StringComparison.Ordinal);
+            Assert.Contains("Default shipping", content, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task AccountOrderDetail_WhenAuthenticated_RendersSafeOrderDetail()
+        {
+            var session = new StorefrontSessionInfo(true, false, "Customer One", "customer@example.test", "access-token");
+            using var client = CreateClient(services =>
+            {
+                services.RemoveAll<IStorefrontSessionResolver>();
+                services.RemoveAll<StorefrontApiClient>();
+                services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
+                services.AddScoped(_ => new StorefrontApiClient(
+                    new HttpClient(new AccountSelfServiceHandler())
+                    {
+                        BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
+                    },
+                    Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+            });
+
+            using var response = await client.GetAsync("/account/orders/ORD-1");
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("Order ORD-1", content, StringComparison.Ordinal);
+            Assert.Contains("Shipping address", content, StringComparison.Ordinal);
+            Assert.Contains("Test Product", content, StringComparison.Ordinal);
+            Assert.DoesNotContain("customerId", content, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("providerReference", content, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
         public async Task CurrencyPreference_PostSuccess_SetsPreferenceCookieAndRedirectsToSafeReturnUrl()
         {
             using var client = CreateClient(
@@ -1296,6 +1376,175 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                         Encoding.UTF8,
                         "application/json"),
                 });
+            }
+        }
+
+        private sealed class AccountSelfServiceHandler : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                var path = request.RequestUri?.AbsolutePath ?? string.Empty;
+                var response = path switch
+                {
+                    "/api/storefront/stores/demo/orders/current-user" => CreateJsonResponse(
+                        """
+                        {
+                          "success": true,
+                          "message": "Orders loaded.",
+                          "data": {
+                            "items": [
+                              {
+                                "reference": "ORD-1",
+                                "createdOn": "2026-07-17T00:00:00Z",
+                                "orderStatus": "processing",
+                                "paymentStatus": "paid",
+                                "shippingStatus": "not_yet_shipped",
+                                "currencyCode": "USD",
+                                "totalAmount": 25.00,
+                                "itemCount": 2,
+                                "trackingSummary": {
+                                  "shippingCarrier": null,
+                                  "trackingNumber": null,
+                                  "trackingUrl": null,
+                                  "shippedOn": null,
+                                  "deliveredOn": null,
+                                  "lastTrackingEventAtUtc": null
+                                }
+                              }
+                            ],
+                            "pageNumber": 1,
+                            "pageSize": 10,
+                            "totalCount": 1,
+                            "totalPages": 1
+                          }
+                        }
+                        """),
+                    "/api/storefront/stores/demo/customer/addresses" => CreateJsonResponse(
+                        """
+                        {
+                          "success": true,
+                          "message": "Addresses loaded.",
+                          "data": [
+                            {
+                              "publicId": "11111111-1111-1111-1111-111111111111",
+                              "firstName": "Customer",
+                              "lastName": "One",
+                              "company": null,
+                              "address1": "1 Test Street",
+                              "address2": null,
+                              "city": "New York",
+                              "postalCode": "10000",
+                              "countryCode": "US",
+                              "stateProvinceCode": "NY",
+                              "stateProvinceName": "New York",
+                              "phone": "5550100",
+                              "email": "customer@example.test",
+                              "isDefaultShipping": true,
+                              "isDefaultBilling": false,
+                              "createdAtUtc": "2026-07-17T00:00:00Z",
+                              "updatedAtUtc": "2026-07-17T00:00:00Z"
+                            }
+                          ]
+                        }
+                        """),
+                    "/api/storefront/stores/demo/orders/current-user/ORD-1" => CreateJsonResponse(CreateOrderDetailJson(receiptMode: false)),
+                    "/api/storefront/stores/demo/orders/current-user/ORD-1/receipt" => CreateJsonResponse(CreateOrderDetailJson(receiptMode: true)),
+                    _ => new HttpResponseMessage(HttpStatusCode.ServiceUnavailable),
+                };
+
+                return Task.FromResult(response);
+            }
+
+            private static HttpResponseMessage CreateJsonResponse(string json)
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json"),
+                };
+            }
+
+            private static string CreateOrderDetailJson(bool receiptMode)
+            {
+                return $$"""
+                {
+                  "success": true,
+                  "message": "Order loaded.",
+                  "data": {
+                    "reference": "ORD-1",
+                    "status": "processing",
+                    "orderStatus": "processing",
+                    "paymentStatus": "paid",
+                    "paymentMethodKey": "cod",
+                    "paymentAt": null,
+                    "paymentSummary": null,
+                    "storeSnapshot": null,
+                    "currencyCode": "USD",
+                    "totalAmount": 25.00,
+                    "totalBreakdown": {
+                      "subtotal": 20.00,
+                      "shippingTotal": 5.00,
+                      "taxTotal": 0,
+                      "discountTotal": 0,
+                      "grandTotal": 25.00
+                    },
+                    "baseCurrencyCode": "USD",
+                    "baseTotalAmount": 25.00,
+                    "baseTotalBreakdown": null,
+                    "exchangeRate": null,
+                    "exchangeRateProviderKey": null,
+                    "exchangeRateSource": null,
+                    "exchangeRateEffectiveAtUtc": null,
+                    "exchangeRateExpiresAtUtc": null,
+                    "createdOn": "2026-07-17T00:00:00Z",
+                    "shippingStatus": "not_yet_shipped",
+                    "shippingCarrier": null,
+                    "trackingNumber": null,
+                    "trackingUrl": null,
+                    "shippedOn": null,
+                    "deliveredOn": null,
+                    "customerName": "Customer One",
+                    "customerEmail": "customer@example.test",
+                    "billingAddress": null,
+                    "shippingAddressSnapshot": null,
+                    "shippingAddress": {
+                      "fullName": "Customer One",
+                      "email": "customer@example.test",
+                      "phone": null,
+                      "address1": "1 Test Street",
+                      "address2": null,
+                      "city": "New York",
+                      "state": "NY",
+                      "postalCode": "10000",
+                      "countryCode": "US"
+                    },
+                    "shippingMethod": null,
+                    "completedAt": null,
+                    "cancelledAt": null,
+                    "trackingEvents": [],
+                    "historyEntries": [],
+                    "lines": [
+                      {
+                        "productId": "11111111-1111-1111-1111-111111111111",
+                        "productName": "Test Product",
+                        "sku": "SKU-1",
+                        "image": null,
+                        "productVariantId": null,
+                        "variantAttributes": [],
+                        "quantity": 2,
+                        "unitPrice": 10.00,
+                        "lineTotal": 20.00
+                      }
+                    ],
+                    "actions": {
+                      "canRetryPayment": false,
+                      "canReorder": false,
+                      "canRequestReturn": false,
+                      "hasDownloads": false
+                    },
+                    "receiptMode": {{receiptMode.ToString().ToLowerInvariant()}}
+                  }
+                }
+                """;
             }
         }
 

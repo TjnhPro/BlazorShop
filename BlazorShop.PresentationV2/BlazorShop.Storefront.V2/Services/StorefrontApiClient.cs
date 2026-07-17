@@ -42,6 +42,7 @@ namespace BlazorShop.Storefront.Services
         private const string StorefrontAddressConfigurationRoute = StorefrontAddressBaseRoute + "/configuration";
         private const string StorefrontCustomerAddressesRoute = "customer/addresses";
         private const string StorefrontCustomerProfileRoute = "customer/profile";
+        private const string StorefrontCustomerOrdersRoute = "orders/current-user";
         private const string StorefrontStoreCurrentRoute = "store/current";
         private const string StorefrontPaymentMethodsRoute = "payments/methods";
         private const string StorefrontCheckoutStartRoute = "checkout/start";
@@ -484,6 +485,64 @@ namespace BlazorShop.Storefront.Services
                 bearerToken,
                 request: null,
                 "Unable to update this address right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<PagedResult<StorefrontCustomerOrderListItemResponse>>> GetCustomerOrdersAsync(
+            string bearerToken,
+            int pageNumber = 1,
+            int pageSize = 10,
+            CancellationToken cancellationToken = default)
+        {
+            var route = string.Create(
+                CultureInfo.InvariantCulture,
+                $"{StorefrontCustomerOrdersRoute}?pageNumber={Math.Max(1, pageNumber)}&pageSize={Math.Clamp(pageSize <= 0 ? 10 : pageSize, 1, 100)}");
+            return SendAuthorizedAsync<PagedResult<StorefrontCustomerOrderListItemResponse>>(
+                HttpMethod.Get,
+                route,
+                bearerToken,
+                request: null,
+                "Unable to load orders right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCustomerOrderDetailResponse>> GetCustomerOrderAsync(
+            string bearerToken,
+            string orderReference,
+            CancellationToken cancellationToken = default)
+        {
+            var reference = NormalizeOrderReference(orderReference);
+            if (reference is null)
+            {
+                return Task.FromResult(StorefrontSubmitResult<StorefrontCustomerOrderDetailResponse>.Failed("Order reference is required."));
+            }
+
+            return SendAuthorizedAsync<StorefrontCustomerOrderDetailResponse>(
+                HttpMethod.Get,
+                $"{StorefrontCustomerOrdersRoute}/{Uri.EscapeDataString(reference)}",
+                bearerToken,
+                request: null,
+                "Unable to load this order right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCustomerOrderDetailResponse>> GetCustomerOrderReceiptAsync(
+            string bearerToken,
+            string orderReference,
+            CancellationToken cancellationToken = default)
+        {
+            var reference = NormalizeOrderReference(orderReference);
+            if (reference is null)
+            {
+                return Task.FromResult(StorefrontSubmitResult<StorefrontCustomerOrderDetailResponse>.Failed("Order reference is required."));
+            }
+
+            return SendAuthorizedAsync<StorefrontCustomerOrderDetailResponse>(
+                HttpMethod.Get,
+                $"{StorefrontCustomerOrdersRoute}/{Uri.EscapeDataString(reference)}/receipt",
+                bearerToken,
+                request: null,
+                "Unable to load this receipt right now.",
                 cancellationToken);
         }
 
@@ -1081,6 +1140,13 @@ namespace BlazorShop.Storefront.Services
             return normalized is { Length: 2 } && normalized.All(char.IsLetter)
                 ? normalized
                 : null;
+        }
+
+        private static string? NormalizeOrderReference(string? orderReference)
+        {
+            return string.IsNullOrWhiteSpace(orderReference)
+                ? null
+                : orderReference.Trim();
         }
 
         private static async Task<T?> ReadPayloadAsync<T>(HttpResponseMessage response, CancellationToken cancellationToken)
@@ -1993,4 +2059,140 @@ namespace BlazorShop.Storefront.Services
     {
         public string FullName => string.Join(" ", new[] { FirstName, LastName }.Where(part => !string.IsNullOrWhiteSpace(part)));
     }
+
+    public sealed record StorefrontCustomerOrderListItemResponse(
+        string Reference,
+        DateTime CreatedOn,
+        string OrderStatus,
+        string PaymentStatus,
+        string ShippingStatus,
+        string? CurrencyCode,
+        decimal TotalAmount,
+        int ItemCount,
+        StorefrontCustomerOrderTrackingSummaryResponse TrackingSummary);
+
+    public sealed record StorefrontCustomerOrderTrackingSummaryResponse(
+        string? ShippingCarrier,
+        string? TrackingNumber,
+        string? TrackingUrl,
+        DateTime? ShippedOn,
+        DateTime? DeliveredOn,
+        DateTimeOffset? LastTrackingEventAtUtc);
+
+    public sealed record StorefrontCustomerOrderDetailResponse(
+        string Reference,
+        string Status,
+        string OrderStatus,
+        string PaymentStatus,
+        string PaymentMethodKey,
+        DateTime? PaymentAt,
+        StorefrontOrderPaymentSummaryResponse? PaymentSummary,
+        StorefrontOrderStoreSnapshotResponse? StoreSnapshot,
+        string? CurrencyCode,
+        decimal TotalAmount,
+        StorefrontOrderTotalBreakdownResponse? TotalBreakdown,
+        string? BaseCurrencyCode,
+        decimal? BaseTotalAmount,
+        StorefrontOrderTotalBreakdownResponse? BaseTotalBreakdown,
+        decimal? ExchangeRate,
+        string? ExchangeRateProviderKey,
+        string? ExchangeRateSource,
+        DateTimeOffset? ExchangeRateEffectiveAtUtc,
+        DateTimeOffset? ExchangeRateExpiresAtUtc,
+        DateTime CreatedOn,
+        string ShippingStatus,
+        string? ShippingCarrier,
+        string? TrackingNumber,
+        string? TrackingUrl,
+        DateTime? ShippedOn,
+        DateTime? DeliveredOn,
+        string? CustomerName,
+        string? CustomerEmail,
+        StorefrontShippingAddressResponse? BillingAddress,
+        StorefrontShippingAddressResponse? ShippingAddressSnapshot,
+        StorefrontShippingAddressResponse ShippingAddress,
+        StorefrontCustomerOrderShippingMethodResponse? ShippingMethod,
+        DateTime? CompletedAt,
+        DateTime? CancelledAt,
+        IReadOnlyList<StorefrontOrderTrackingEventResponse> TrackingEvents,
+        IReadOnlyList<StorefrontOrderHistoryEntryResponse> HistoryEntries,
+        IReadOnlyList<StorefrontOrderLineResponse> Lines,
+        StorefrontCustomerOrderActionFlagsResponse Actions,
+        bool ReceiptMode);
+
+    public sealed record StorefrontOrderPaymentSummaryResponse(
+        string PaymentStatus,
+        string PaymentMethodKey,
+        string? AttemptState,
+        decimal? Amount,
+        string? CurrencyCode,
+        DateTime? PaymentAt,
+        DateTimeOffset? UpdatedAtUtc);
+
+    public sealed record StorefrontOrderStoreSnapshotResponse(
+        Guid? PublicId,
+        string? StoreKey,
+        string? Name,
+        string? BaseUrl,
+        string? CompanyName,
+        string? CompanyEmail,
+        string? CompanyPhone,
+        string? CompanyAddress);
+
+    public sealed record StorefrontOrderTotalBreakdownResponse(
+        decimal? Subtotal,
+        decimal? ShippingTotal,
+        decimal? TaxTotal,
+        decimal? DiscountTotal,
+        decimal? GrandTotal);
+
+    public sealed record StorefrontCustomerOrderShippingMethodResponse(
+        string? Key,
+        string? MethodCode,
+        string? Name,
+        decimal? Total,
+        string? CurrencyCode,
+        string? DeliveryEstimateText);
+
+    public sealed record StorefrontOrderTrackingEventResponse(
+        string Status,
+        string Message,
+        DateTime OccurredAtUtc,
+        string? Location,
+        string Source);
+
+    public sealed record StorefrontOrderHistoryEntryResponse(
+        string EventType,
+        string? OldValue,
+        string? NewValue,
+        string Message,
+        DateTimeOffset CreatedAtUtc);
+
+    public sealed record StorefrontShippingAddressResponse(
+        string? FullName,
+        string? Email,
+        string? Phone,
+        string? Address1,
+        string? Address2,
+        string? City,
+        string? State,
+        string? PostalCode,
+        string? CountryCode);
+
+    public sealed record StorefrontOrderLineResponse(
+        Guid ProductId,
+        string? ProductName,
+        string? Sku,
+        string? Image,
+        Guid? ProductVariantId,
+        IReadOnlyList<SelectedAttributeDto> VariantAttributes,
+        int Quantity,
+        decimal UnitPrice,
+        decimal LineTotal);
+
+    public sealed record StorefrontCustomerOrderActionFlagsResponse(
+        bool CanRetryPayment,
+        bool CanReorder,
+        bool CanRequestReturn,
+        bool HasDownloads);
 }

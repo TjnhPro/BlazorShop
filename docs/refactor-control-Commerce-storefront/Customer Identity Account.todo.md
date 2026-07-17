@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Customer Identity Account.md`
 
-Status: Phase 5 complete. Phase 6 not started.
+Status: Phase 6 complete. Phase 7 not started.
 
 Scope: move storefront customer identity and account self-service from MVP auth/cart behavior to a practical customer account core. Keep existing V2 boundaries, reuse server-side cart, address, checkout, and order placement foundations, and avoid building a full CRM/customer-group platform.
 
@@ -555,31 +555,31 @@ Goal: expose practical account pages without creating future WASM migration pain
 
 Implementation checklist:
 
-- [ ] Add account navigation entries through Menu Navigation Core when available.
-- [ ] Build Storefront V2 account profile page.
-- [ ] Build Storefront V2 change password page.
-- [ ] Build Storefront V2 addresses page using Address Core.
-- [ ] Build Storefront V2 orders list page.
-- [ ] Build Storefront V2 order detail page.
-- [ ] Build Storefront V2 receipt print view.
-- [ ] Use existing Storefront API client patterns.
-- [ ] Keep components small and data-driven.
-- [ ] Add empty state for no addresses.
-- [ ] Add empty state for no orders.
-- [ ] Add loading/error states for profile requests.
-- [ ] Add loading/error states for order requests.
+- [x] Add account navigation entries through Menu Navigation Core when available. 2026-07-17 Phase 6: account menu links Profile, Orders, Addresses, Password, and Logout.
+- [x] Build Storefront V2 account profile page. 2026-07-17 Phase 6: existing Phase 3 profile page remains integrated in account navigation.
+- [x] Build Storefront V2 change password page. 2026-07-17 Phase 6: existing Phase 3 password page remains integrated in account navigation.
+- [x] Build Storefront V2 addresses page using Address Core. 2026-07-17 Phase 6: read-only address book consumes protected customer address endpoint.
+- [x] Build Storefront V2 orders list page. 2026-07-17 Phase 6.
+- [x] Build Storefront V2 order detail page. 2026-07-17 Phase 6.
+- [x] Build Storefront V2 receipt print view. 2026-07-17 Phase 6: receipt route uses the safe receipt projection endpoint.
+- [x] Use existing Storefront API client patterns. 2026-07-17 Phase 6: `StorefrontApiClient` adds customer order list/detail/receipt methods with bearer token handling.
+- [x] Keep components small and data-driven. 2026-07-17 Phase 6: pages render from Storefront DTO projections only.
+- [x] Add empty state for no addresses. 2026-07-17 Phase 6.
+- [x] Add empty state for no orders. 2026-07-17 Phase 6.
+- [x] Add loading/error states for profile requests. 2026-07-17 Phase 6: profile pages kept existing Phase 3 states.
+- [x] Add loading/error states for order requests. 2026-07-17 Phase 6.
 
 Verification checklist:
 
-- [ ] Account pages render with current layout.
-- [ ] Unauthenticated access redirects to sign-in.
-- [ ] Authenticated customer can navigate between profile, addresses, and orders.
-- [ ] Text and controls fit mobile/desktop viewports.
-- [ ] Storefront page does not call Commerce Node directly with unsafe identity fields.
+- [x] Account pages render with current layout. 2026-07-17 Phase 6: Storefront V2 build passed and host smoke tests rendered account pages.
+- [x] Unauthenticated access redirects to sign-in. 2026-07-17 Phase 6: pages use `StorefrontReturnUrl` sign-in redirects when no access token is present.
+- [x] Authenticated customer can navigate between profile, addresses, and orders. 2026-07-17 Phase 6: account menu and page side-nav expose those routes.
+- [x] Text and controls fit mobile/desktop viewports. 2026-07-17 Phase 6: responsive Tailwind grid/table wrappers used; browser visual QA remains a later manual pass.
+- [x] Storefront page does not call Commerce Node directly with unsafe identity fields. 2026-07-17 Phase 6: pages call local Storefront API client with bearer token and do not send `userId`, `customerId`, or `storeId`.
 
 Exit criteria:
 
-- [ ] Storefront V2 has conservative account self-service UI.
+- [x] Storefront V2 has conservative account self-service UI. 2026-07-17 Phase 6.
 
 Suggested commit:
 
@@ -775,7 +775,7 @@ test(customer-account): verify account core
 - [x] Phase 3 - account profile API and Storefront pages. 2026-07-17: CommerceNode API build passed, Storefront V2 build passed, Storefront host/client subset passed 66/66, CommerceNode profile/OpenAPI subset passed 44/44, and customer service tests passed 10/10.
 - [x] Phase 4 - customer order self-service API. 2026-07-17: CommerceNode API build passed; focused customer-order/OpenAPI/auth run passed 43/43 and Storefront OpenAPI snapshots were refreshed.
 - [x] Phase 5 - guest completion lookup. 2026-07-17: CommerceNode API build passed; focused guest lookup/OpenAPI run passed 34/34 and Storefront OpenAPI snapshots were refreshed.
-- [ ] Phase 6 - Storefront account UI integration.
+- [x] Phase 6 - Storefront account UI integration. 2026-07-17: Storefront V2 build passed; Storefront API client tests passed 22/22; Storefront host smoke tests passed 44/44.
 - [ ] Phase 7 - contract, QA, and hardening.
 
 ## Acceptance Criteria

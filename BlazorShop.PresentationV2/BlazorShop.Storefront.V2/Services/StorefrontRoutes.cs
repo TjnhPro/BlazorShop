@@ -19,6 +19,10 @@ namespace BlazorShop.Storefront.Services
         public const string Account = "/account";
         public const string AccountProfile = "/account/profile";
         public const string AccountChangePassword = "/account/change-password";
+        public const string AccountAddresses = "/account/addresses";
+        public const string AccountOrders = "/account/orders";
+        public const string AccountOrderDetail = "/account/orders/{orderReference}";
+        public const string AccountOrderReceipt = "/account/orders/{orderReference}/receipt";
         public const string CurrencyPreference = "/currency";
         public const string Sitemap = "/sitemap.xml";
         public const string Robots = "/robots.txt";

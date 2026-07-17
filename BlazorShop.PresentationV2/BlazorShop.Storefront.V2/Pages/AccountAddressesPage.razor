@@ -1,0 +1,107 @@
+@page "/account/addresses"
+@inject IStorefrontSessionResolver SessionResolver
+@inject StorefrontApiClient ApiClient
+@inject NavigationManager NavigationManager
+
+<PageTitle>Account addresses</PageTitle>
+
+<HeadContent>
+    <meta name="robots" content="noindex,nofollow" />
+</HeadContent>
+
+<section class="mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8">
+    <div class="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
+        <nav class="rounded border border-neutral-200 bg-white p-4 text-sm">
+            <a class="block rounded px-3 py-2 font-semibold text-neutral-700 hover:bg-neutral-100" href="@StorefrontRoutes.AccountProfile">Profile</a>
+            <a class="mt-2 block rounded px-3 py-2 font-semibold text-neutral-700 hover:bg-neutral-100" href="@StorefrontRoutes.AccountOrders">Orders</a>
+            <a class="mt-2 block rounded bg-neutral-900 px-3 py-2 font-semibold text-white" href="@StorefrontRoutes.AccountAddresses">Addresses</a>
+            <a class="mt-2 block rounded px-3 py-2 font-semibold text-neutral-700 hover:bg-neutral-100" href="@StorefrontRoutes.AccountChangePassword">Password</a>
+        </nav>
+
+        <article class="rounded border border-neutral-200 bg-white">
+            <header class="border-b border-neutral-200 px-6 py-6">
+                <p class="text-sm font-semibold uppercase text-neutral-500">Customer account</p>
+                <h1 class="mt-2 text-3xl font-extrabold text-neutral-900">Addresses</h1>
+            </header>
+
+            <div class="px-6 py-6">
+                @if (_loading)
+                {
+                    <p class="text-sm text-neutral-600">Loading addresses...</p>
+                }
+                else if (!string.IsNullOrWhiteSpace(_error))
+                {
+                    <div class="rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800" role="alert">@_error</div>
+                }
+                else if (_addresses.Count == 0)
+                {
+                    <p class="text-sm text-neutral-700">No saved addresses yet.</p>
+                }
+                else
+                {
+                    <div class="grid gap-4 md:grid-cols-2">
+                        @foreach (var address in _addresses)
+                        {
+                            <section class="rounded border border-neutral-200 p-4">
+                                <div class="flex flex-wrap gap-2 text-xs font-semibold uppercase text-neutral-500">
+                                    @if (address.IsDefaultShipping)
+                                    {
+                                        <span class="rounded bg-emerald-50 px-2 py-1 text-emerald-700">Default shipping</span>
+                                    }
+                                    @if (address.IsDefaultBilling)
+                                    {
+                                        <span class="rounded bg-sky-50 px-2 py-1 text-sky-700">Default billing</span>
+                                    }
+                                </div>
+                                <h2 class="mt-3 text-base font-bold text-neutral-900">@address.FullName</h2>
+                                @if (!string.IsNullOrWhiteSpace(address.Company))
+                                {
+                                    <p class="mt-1 text-sm text-neutral-700">@address.Company</p>
+                                }
+                                <p class="mt-2 text-sm text-neutral-700">@address.Address1</p>
+                                @if (!string.IsNullOrWhiteSpace(address.Address2))
+                                {
+                                    <p class="text-sm text-neutral-700">@address.Address2</p>
+                                }
+                                <p class="text-sm text-neutral-700">@address.City, @address.PostalCode</p>
+                                <p class="text-sm text-neutral-700">@address.CountryCode</p>
+                                @if (!string.IsNullOrWhiteSpace(address.Phone))
+                                {
+                                    <p class="mt-2 text-sm text-neutral-600">@address.Phone</p>
+                                }
+                            </section>
+                        }
+                    </div>
+                }
+            </div>
+        </article>
+    </div>
+</section>
+
+@code {
+    private bool _loading = true;
+    private string? _error;
+    private IReadOnlyList<StorefrontCustomerAddressResponse> _addresses = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var session = await SessionResolver.GetCurrentUserAsync();
+        if (!session.IsAuthenticated || string.IsNullOrWhiteSpace(session.AccessToken))
+        {
+            NavigationManager.NavigateTo(StorefrontReturnUrl.BuildSignInUrl(StorefrontRoutes.AccountAddresses), replace: true);
+            return;
+        }
+
+        var result = await ApiClient.GetCustomerAddressesAsync(session.AccessToken);
+        if (result.Success)
+        {
+            _addresses = result.Data ?? [];
+        }
+        else
+        {
+            _error = result.Message;
+        }
+
+        _loading = false;
+    }
+}

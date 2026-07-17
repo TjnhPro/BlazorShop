@@ -77,6 +77,16 @@ namespace BlazorShop.Storefront.Services
             return BuildAccountUrl(StorefrontRoutes.AccountChangePassword, error, saved);
         }
 
+        public static string BuildAccountOrdersUrl(string? error = null)
+        {
+            return BuildAccountUrl(StorefrontRoutes.AccountOrders, error, saved: false);
+        }
+
+        public static string BuildAccountAddressesUrl(string? error = null)
+        {
+            return BuildAccountUrl(StorefrontRoutes.AccountAddresses, error, saved: false);
+        }
+
         private static string BuildAccountUrl(string route, string? error, bool saved)
         {
             var query = new Dictionary<string, string?>();

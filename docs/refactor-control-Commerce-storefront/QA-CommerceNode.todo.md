@@ -1115,6 +1115,7 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Customer order self-service OpenAPI is generator-safe and Bearer-protected. 2026-07-17 Phase 4: `StorefrontSwagger_CustomerOrderSelfServiceHasSafeContracts` passed, snapshots refreshed, and unauthenticated detail/receipt return typed 401 errors.
 - [x] Guest completion lookup requires reference plus access token and compares only token hash. 2026-07-17 Phase 5: `StorefrontGuestOrderServiceTests.GetAsync_WithoutToken_ReturnsValidationError` passed; existing checkout guest lookup tests cover correct token, wrong token, and wrong store.
 - [x] Guest completion response uses safe order detail contract. 2026-07-17 Phase 5: `StorefrontOrders_GetGuestOrder` now returns `StorefrontCustomerOrderDetailResponse`, and `StorefrontSwagger_GuestOrderLookupRequiresTokenAndReturnsSafeDetailContract` passed.
+- [x] Storefront V2 account UI consumes the protected customer/order contracts without changing CommerceNode runtime behavior. 2026-07-17 Phase 6: Storefront API client tests passed 22/22 and host smoke tests passed 44/44 against safe customer order/address DTOs.
 
 ## Payment Core
 

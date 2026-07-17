@@ -766,6 +766,106 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task CustomerOrdersAsync_SendsBearerAndReadsPagedOrders()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal(HttpMethod.Get, request.Method);
+                Assert.Equal("/api/storefront/stores/default/orders/current-user", request.RequestUri?.AbsolutePath);
+                Assert.Equal("?pageNumber=2&pageSize=5", request.RequestUri?.Query);
+                Assert.Equal("Bearer", request.Headers.Authorization?.Scheme);
+                Assert.Equal("access-token", request.Headers.Authorization?.Parameter);
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    """
+                    {
+                      "success": true,
+                      "message": "ok",
+                      "data": {
+                        "items": [
+                          {
+                            "reference": "ORD-1",
+                            "createdOn": "2026-07-17T00:00:00Z",
+                            "orderStatus": "processing",
+                            "paymentStatus": "paid",
+                            "shippingStatus": "not_yet_shipped",
+                            "currencyCode": "USD",
+                            "totalAmount": 25.00,
+                            "itemCount": 2,
+                            "trackingSummary": {
+                              "shippingCarrier": null,
+                              "trackingNumber": null,
+                              "trackingUrl": null,
+                              "shippedOn": null,
+                              "deliveredOn": null,
+                              "lastTrackingEventAtUtc": null
+                            }
+                          }
+                        ],
+                        "pageNumber": 2,
+                        "pageSize": 5,
+                        "totalCount": 1,
+                        "totalPages": 1
+                      }
+                    }
+                    """);
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var result = await apiClient.GetCustomerOrdersAsync("access-token", pageNumber: 2, pageSize: 5);
+
+            Assert.True(result.Success);
+            Assert.Equal(2, result.Data!.PageNumber);
+            Assert.Equal("ORD-1", Assert.Single(result.Data.Items).Reference);
+        }
+
+        [Fact]
+        public async Task CustomerOrderDetailAsync_SendsBearerAndReadsSafeDetail()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal(HttpMethod.Get, request.Method);
+                Assert.Equal("/api/storefront/stores/default/orders/current-user/ORD-1", request.RequestUri?.AbsolutePath);
+                Assert.Equal("Bearer", request.Headers.Authorization?.Scheme);
+                Assert.Equal("access-token", request.Headers.Authorization?.Parameter);
+
+                return JsonResponse(HttpStatusCode.OK, CreateOrderDetailEnvelope(receiptMode: false));
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var result = await apiClient.GetCustomerOrderAsync("access-token", "ORD-1");
+
+            Assert.True(result.Success);
+            Assert.Equal("ORD-1", result.Data!.Reference);
+            Assert.False(result.Data.ReceiptMode);
+            Assert.Equal(25m, result.Data.TotalAmount);
+        }
+
+        [Fact]
+        public async Task CustomerOrderReceiptAsync_SendsBearerToReceiptRoute()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal(HttpMethod.Get, request.Method);
+                Assert.Equal("/api/storefront/stores/default/orders/current-user/ORD-1/receipt", request.RequestUri?.AbsolutePath);
+                Assert.Equal("Bearer", request.Headers.Authorization?.Scheme);
+                Assert.Equal("access-token", request.Headers.Authorization?.Parameter);
+
+                return JsonResponse(HttpStatusCode.OK, CreateOrderDetailEnvelope(receiptMode: true));
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var result = await apiClient.GetCustomerOrderReceiptAsync("access-token", "ORD-1");
+
+            Assert.True(result.Success);
+            Assert.True(result.Data!.ReceiptMode);
+        }
+
+        [Fact]
         public async Task CustomerProfileAsync_SendsBearerAndUsesSafePayload()
         {
             var profileId = Guid.Parse("22222222-2222-2222-2222-222222222222");
@@ -845,6 +945,98 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             {
                 Content = new StringContent(json, Encoding.UTF8, "application/json"),
             };
+        }
+
+        private static string CreateOrderDetailEnvelope(bool receiptMode)
+        {
+            return $$"""
+            {
+              "success": true,
+              "message": "ok",
+              "data": {
+                "reference": "ORD-1",
+                "status": "processing",
+                "orderStatus": "processing",
+                "paymentStatus": "paid",
+                "paymentMethodKey": "cod",
+                "paymentAt": null,
+                "paymentSummary": {
+                  "paymentStatus": "paid",
+                  "paymentMethodKey": "cod",
+                  "attemptState": "captured",
+                  "amount": 25.00,
+                  "currencyCode": "USD",
+                  "paymentAt": null,
+                  "updatedAtUtc": "2026-07-17T00:00:00Z"
+                },
+                "storeSnapshot": null,
+                "currencyCode": "USD",
+                "totalAmount": 25.00,
+                "totalBreakdown": {
+                  "subtotal": 20.00,
+                  "shippingTotal": 5.00,
+                  "taxTotal": 0,
+                  "discountTotal": 0,
+                  "grandTotal": 25.00
+                },
+                "baseCurrencyCode": "USD",
+                "baseTotalAmount": 25.00,
+                "baseTotalBreakdown": null,
+                "exchangeRate": null,
+                "exchangeRateProviderKey": null,
+                "exchangeRateSource": null,
+                "exchangeRateEffectiveAtUtc": null,
+                "exchangeRateExpiresAtUtc": null,
+                "createdOn": "2026-07-17T00:00:00Z",
+                "shippingStatus": "not_yet_shipped",
+                "shippingCarrier": null,
+                "trackingNumber": null,
+                "trackingUrl": null,
+                "shippedOn": null,
+                "deliveredOn": null,
+                "customerName": "Customer One",
+                "customerEmail": "customer@example.test",
+                "billingAddress": null,
+                "shippingAddressSnapshot": null,
+                "shippingAddress": {
+                  "fullName": "Customer One",
+                  "email": "customer@example.test",
+                  "phone": null,
+                  "address1": "1 Test Street",
+                  "address2": null,
+                  "city": "New York",
+                  "state": "NY",
+                  "postalCode": "10000",
+                  "countryCode": "US"
+                },
+                "shippingMethod": null,
+                "completedAt": null,
+                "cancelledAt": null,
+                "trackingEvents": [],
+                "historyEntries": [],
+                "lines": [
+                  {
+                    "productId": "11111111-1111-1111-1111-111111111111",
+                    "productName": "Test Product",
+                    "sku": "SKU-1",
+                    "image": null,
+                    "productVariantId": null,
+                    "variantAttributes": [],
+                    "quantity": 2,
+                    "unitPrice": 10.00,
+                    "lineTotal": 20.00
+                  }
+                ],
+                "actions": {
+                  "canRetryPayment": false,
+                  "canReorder": false,
+                  "canRequestReturn": false,
+                  "hasDownloads": false
+                },
+                "receiptMode": {{receiptMode.ToString().ToLowerInvariant()}}
+              }
+            }
+            """;
         }
 
         private sealed class RecordingHandler : HttpMessageHandler

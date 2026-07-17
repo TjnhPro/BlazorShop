@@ -1,0 +1,163 @@
+@page "/account/orders/{OrderReference}"
+@page "/account/orders/{OrderReference}/receipt"
+@using System.Globalization
+@inject IStorefrontSessionResolver SessionResolver
+@inject StorefrontApiClient ApiClient
+@inject NavigationManager NavigationManager
+
+<PageTitle>Order detail</PageTitle>
+
+<HeadContent>
+    <meta name="robots" content="noindex,nofollow" />
+</HeadContent>
+
+<section class="mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8">
+    <div class="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
+        <nav class="rounded border border-neutral-200 bg-white p-4 text-sm">
+            <a class="block rounded px-3 py-2 font-semibold text-neutral-700 hover:bg-neutral-100" href="@StorefrontRoutes.AccountProfile">Profile</a>
+            <a class="mt-2 block rounded bg-neutral-900 px-3 py-2 font-semibold text-white" href="@StorefrontRoutes.AccountOrders">Orders</a>
+            <a class="mt-2 block rounded px-3 py-2 font-semibold text-neutral-700 hover:bg-neutral-100" href="@StorefrontRoutes.AccountAddresses">Addresses</a>
+            <a class="mt-2 block rounded px-3 py-2 font-semibold text-neutral-700 hover:bg-neutral-100" href="@StorefrontRoutes.AccountChangePassword">Password</a>
+        </nav>
+
+        <article class="rounded border border-neutral-200 bg-white">
+            <header class="border-b border-neutral-200 px-6 py-6">
+                <p class="text-sm font-semibold uppercase text-neutral-500">Customer account</p>
+                <h1 class="mt-2 text-3xl font-extrabold text-neutral-900">@(_receiptMode ? "Receipt" : "Order") @_order?.Reference</h1>
+            </header>
+
+            <div class="px-6 py-6">
+                @if (_loading)
+                {
+                    <p class="text-sm text-neutral-600">Loading order...</p>
+                }
+                else if (!string.IsNullOrWhiteSpace(_error))
+                {
+                    <div class="rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800" role="alert">@_error</div>
+                }
+                else if (_order is not null)
+                {
+                    <div class="grid gap-5 md:grid-cols-3">
+                        <div>
+                            <p class="text-xs font-semibold uppercase text-neutral-500">Order status</p>
+                            <p class="mt-1 font-semibold text-neutral-900">@_order.OrderStatus</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold uppercase text-neutral-500">Payment</p>
+                            <p class="mt-1 font-semibold text-neutral-900">@_order.PaymentStatus</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold uppercase text-neutral-500">Total</p>
+                            <p class="mt-1 font-semibold text-neutral-900">@FormatMoney(_order.TotalAmount, _order.CurrencyCode)</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 grid gap-5 lg:grid-cols-2">
+                        <section class="rounded border border-neutral-200 p-4">
+                            <h2 class="font-bold text-neutral-900">Shipping address</h2>
+                            <div class="mt-3 text-sm text-neutral-700">
+                                <p class="font-semibold text-neutral-900">@_order.ShippingAddress.FullName</p>
+                                <p>@_order.ShippingAddress.Address1</p>
+                                @if (!string.IsNullOrWhiteSpace(_order.ShippingAddress.Address2))
+                                {
+                                    <p>@_order.ShippingAddress.Address2</p>
+                                }
+                                <p>@_order.ShippingAddress.City, @_order.ShippingAddress.PostalCode</p>
+                                <p>@_order.ShippingAddress.CountryCode</p>
+                            </div>
+                        </section>
+                        <section class="rounded border border-neutral-200 p-4">
+                            <h2 class="font-bold text-neutral-900">Billing address</h2>
+                            @{
+                                var billingAddress = _order.BillingAddress ?? _order.ShippingAddress;
+                            }
+                            <div class="mt-3 text-sm text-neutral-700">
+                                <p class="font-semibold text-neutral-900">@billingAddress.FullName</p>
+                                <p>@billingAddress.Address1</p>
+                                @if (!string.IsNullOrWhiteSpace(billingAddress.Address2))
+                                {
+                                    <p>@billingAddress.Address2</p>
+                                }
+                                <p>@billingAddress.City, @billingAddress.PostalCode</p>
+                                <p>@billingAddress.CountryCode</p>
+                            </div>
+                        </section>
+                    </div>
+
+                    <section class="mt-8">
+                        <h2 class="font-bold text-neutral-900">Items</h2>
+                        <div class="mt-3 divide-y divide-neutral-100 rounded border border-neutral-200">
+                            @foreach (var line in _order.Lines)
+                            {
+                                <div class="grid gap-2 p-4 sm:grid-cols-[minmax(0,1fr)_80px_120px]">
+                                    <div>
+                                        <p class="font-semibold text-neutral-900">@line.ProductName</p>
+                                        @if (!string.IsNullOrWhiteSpace(line.Sku))
+                                        {
+                                            <p class="text-sm text-neutral-500">@line.Sku</p>
+                                        }
+                                    </div>
+                                    <p class="text-sm text-neutral-700">Qty @line.Quantity</p>
+                                    <p class="text-sm font-semibold text-neutral-900">@FormatMoney(line.LineTotal, _order.CurrencyCode)</p>
+                                </div>
+                            }
+                        </div>
+                    </section>
+
+                    <section class="mt-8 max-w-md rounded border border-neutral-200 p-4">
+                        <h2 class="font-bold text-neutral-900">Totals</h2>
+                        <div class="mt-3 space-y-2 text-sm">
+                            <div class="flex justify-between gap-4"><span>Subtotal</span><span>@FormatMoney(_order.TotalBreakdown?.Subtotal ?? 0m, _order.CurrencyCode)</span></div>
+                            <div class="flex justify-between gap-4"><span>Shipping</span><span>@FormatMoney(_order.TotalBreakdown?.ShippingTotal ?? 0m, _order.CurrencyCode)</span></div>
+                            <div class="flex justify-between gap-4"><span>Tax</span><span>@FormatMoney(_order.TotalBreakdown?.TaxTotal ?? 0m, _order.CurrencyCode)</span></div>
+                            <div class="flex justify-between gap-4"><span>Discount</span><span>@FormatMoney(_order.TotalBreakdown?.DiscountTotal ?? 0m, _order.CurrencyCode)</span></div>
+                            <div class="flex justify-between gap-4 border-t border-neutral-200 pt-3 font-bold text-neutral-900"><span>Grand total</span><span>@FormatMoney(_order.TotalBreakdown?.GrandTotal ?? _order.TotalAmount, _order.CurrencyCode)</span></div>
+                        </div>
+                    </section>
+                }
+            </div>
+        </article>
+    </div>
+</section>
+
+@code {
+    [Parameter]
+    public string? OrderReference { get; set; }
+
+    private bool _loading = true;
+    private bool _receiptMode;
+    private string? _error;
+    private StorefrontCustomerOrderDetailResponse? _order;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var reference = OrderReference;
+        var session = await SessionResolver.GetCurrentUserAsync();
+        if (!session.IsAuthenticated || string.IsNullOrWhiteSpace(session.AccessToken))
+        {
+            NavigationManager.NavigateTo(StorefrontReturnUrl.BuildSignInUrl(StorefrontRoutes.AccountOrders), replace: true);
+            return;
+        }
+
+        _receiptMode = NavigationManager.Uri.EndsWith("/receipt", StringComparison.OrdinalIgnoreCase);
+        var result = _receiptMode
+            ? await ApiClient.GetCustomerOrderReceiptAsync(session.AccessToken, reference ?? string.Empty)
+            : await ApiClient.GetCustomerOrderAsync(session.AccessToken, reference ?? string.Empty);
+
+        if (result.Success)
+        {
+            _order = result.Data;
+        }
+        else
+        {
+            _error = result.Message;
+        }
+
+        _loading = false;
+    }
+
+    private static string FormatMoney(decimal amount, string? currencyCode)
+    {
+        return string.Create(CultureInfo.InvariantCulture, $"{amount:0.00} {currencyCode ?? string.Empty}").Trim();
+    }
+}
