@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Customer Identity Account.md`
 
-Status: Phase 3 complete. Phase 4 not started.
+Status: Phase 4 complete. Phase 5 not started.
 
 Scope: move storefront customer identity and account self-service from MVP auth/cart behavior to a practical customer account core. Keep existing V2 boundaries, reuse server-side cart, address, checkout, and order placement foundations, and avoid building a full CRM/customer-group platform.
 
@@ -482,34 +482,34 @@ Goal: replace thin legacy current-user order list with practical store/customer-
 
 Implementation checklist:
 
-- [ ] Add `IStorefrontCustomerOrderService` in application layer.
-- [ ] Implement service in Commerce Node infrastructure.
-- [ ] Resolve current customer by `StoreId + AppUserId`.
-- [ ] Query by `Order.CustomerId` first.
-- [ ] Add legacy `UserId` fallback only for compatible old orders.
-- [ ] Add paged order list DTO.
-- [ ] Add order detail DTO.
-- [ ] Add receipt projection DTO or reuse detail with receipt mode.
-- [ ] Include safe address snapshots.
-- [ ] Include line item snapshots.
-- [ ] Include totals.
-- [ ] Include statuses.
-- [ ] Include tracking summary.
-- [ ] Add owner-check for every order detail lookup.
-- [ ] Keep admin-only notes out of responses.
-- [ ] Keep provider metadata out of responses.
+- [x] Add `IStorefrontCustomerOrderService` in application layer. 2026-07-17 Phase 4.
+- [x] Implement service in Commerce Node infrastructure. 2026-07-17 Phase 4: `StorefrontCustomerOrderService`.
+- [x] Resolve current customer by `StoreId + AppUserId`. 2026-07-17 Phase 4.
+- [x] Query by `Order.CustomerId` first. 2026-07-17 Phase 4.
+- [x] Add legacy `UserId` fallback only for compatible old orders. 2026-07-17 Phase 4: fallback requires no `CustomerId`, matching `UserId`, and compatible email when present.
+- [x] Add paged order list DTO. 2026-07-17 Phase 4: `StorefrontPagedResponse<StorefrontCustomerOrderListItemResponse>`.
+- [x] Add order detail DTO. 2026-07-17 Phase 4: `StorefrontCustomerOrderDetailResponse`.
+- [x] Add receipt projection DTO or reuse detail with receipt mode. 2026-07-17 Phase 4: receipt route reuses detail DTO with `ReceiptMode=true`.
+- [x] Include safe address snapshots. 2026-07-17 Phase 4.
+- [x] Include line item snapshots. 2026-07-17 Phase 4.
+- [x] Include totals. 2026-07-17 Phase 4.
+- [x] Include statuses. 2026-07-17 Phase 4.
+- [x] Include tracking summary. 2026-07-17 Phase 4: list item has `TrackingSummary`; detail includes customer-visible tracking events.
+- [x] Add owner-check for every order detail lookup. 2026-07-17 Phase 4.
+- [x] Keep admin-only notes out of responses. 2026-07-17 Phase 4: service does not map `AdminNote`; contract test rejects `adminNote`.
+- [x] Keep provider metadata out of responses. 2026-07-17 Phase 4: self-service payment/shipping schemas omit provider metadata fields.
 
 Verification checklist:
 
-- [ ] Customer sees only own orders for current store.
-- [ ] Paging metadata is stable.
-- [ ] V2 orders linked by `CustomerId` appear in account history.
-- [ ] Legacy `UserId` orders can still appear when compatible.
-- [ ] Customer cannot access another customer's order by reference.
+- [x] Customer sees only own orders for current store. 2026-07-17 Phase 4: `StorefrontCustomerOrderServiceTests`.
+- [x] Paging metadata is stable. 2026-07-17 Phase 4: list service and OpenAPI tests cover `pageNumber/pageSize`.
+- [x] V2 orders linked by `CustomerId` appear in account history. 2026-07-17 Phase 4: `ListAsync_ReturnsV2OrdersLinkedByCustomerId`.
+- [x] Legacy `UserId` orders can still appear when compatible. 2026-07-17 Phase 4: `ListAsync_IncludesCompatibleLegacyUserIdOrdersOnly`.
+- [x] Customer cannot access another customer's order by reference. 2026-07-17 Phase 4: `GetAsync_EnforcesCurrentCustomerOwnerCheck`.
 
 Exit criteria:
 
-- [ ] Account order history is owned by `CommerceCustomer`, not legacy `UserId` only.
+- [x] Account order history is owned by `CommerceCustomer`, not legacy `UserId` only. 2026-07-17 Phase 4.
 
 Suggested commit:
 
@@ -773,7 +773,7 @@ test(customer-account): verify account core
 - [x] Phase 1 - customer profile model. 2026-07-17: CommerceNode API build passed, focused customer/model subset passed 37/37, and broader customer/address/checkout/model run passed 95/95.
 - [x] Phase 2 - registration policy and password recovery. 2026-07-17: CommerceNode API build passed, focused auth/OpenAPI/captcha tests passed 88/88, and Storefront OpenAPI snapshots were refreshed.
 - [x] Phase 3 - account profile API and Storefront pages. 2026-07-17: CommerceNode API build passed, Storefront V2 build passed, Storefront host/client subset passed 66/66, CommerceNode profile/OpenAPI subset passed 44/44, and customer service tests passed 10/10.
-- [ ] Phase 4 - customer order self-service API.
+- [x] Phase 4 - customer order self-service API. 2026-07-17: CommerceNode API build passed; focused customer-order/OpenAPI/auth run passed 43/43 and Storefront OpenAPI snapshots were refreshed.
 - [ ] Phase 5 - guest completion lookup.
 - [ ] Phase 6 - Storefront account UI integration.
 - [ ] Phase 7 - contract, QA, and hardening.

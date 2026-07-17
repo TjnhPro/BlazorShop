@@ -4952,6 +4952,26 @@
         "operationId": "StorefrontOrders_ListCurrentUserOrders",
         "parameters": [
           {
+            "name": "pageNumber",
+            "in": "query",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
             "name": "storeKey",
             "in": "path",
             "required": true,
@@ -4966,13 +4986,201 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StorefrontOrderResponseIReadOnlyListCommerceNodeApiResponse"
+                  "$ref": "#/components/schemas/StorefrontCustomerOrderListItemResponseStorefrontPagedResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
                 }
               }
             }
           },
           "401": {
             "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/storefront/stores/{storeKey}/orders/current-user/{orderReference}": {
+      "get": {
+        "tags": [
+          "StorefrontScopedOrders"
+        ],
+        "summary": "Get an order for the current customer.",
+        "operationId": "StorefrontOrders_GetCurrentUserOrder",
+        "parameters": [
+          {
+            "name": "orderReference",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontCustomerOrderDetailResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/storefront/stores/{storeKey}/orders/current-user/{orderReference}/receipt": {
+      "get": {
+        "tags": [
+          "StorefrontScopedOrders"
+        ],
+        "summary": "Get a receipt projection for the current customer order.",
+        "operationId": "StorefrontOrders_GetCurrentUserOrderReceipt",
+        "parameters": [
+          {
+            "name": "orderReference",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontCustomerOrderDetailResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
             "content": {
               "application/json": {
                 "schema": {
@@ -8916,6 +9124,364 @@
         },
         "additionalProperties": false
       },
+      "StorefrontCustomerOrderActionFlagsResponse": {
+        "type": "object",
+        "properties": {
+          "canRetryPayment": {
+            "type": "boolean"
+          },
+          "canReorder": {
+            "type": "boolean"
+          },
+          "canRequestReturn": {
+            "type": "boolean"
+          },
+          "hasDownloads": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCustomerOrderDetailResponse": {
+        "required": [
+          "historyEntries",
+          "lines",
+          "trackingEvents"
+        ],
+        "type": "object",
+        "properties": {
+          "reference": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentMethodKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "paymentSummary": {
+            "$ref": "#/components/schemas/StorefrontOrderPaymentSummaryResponse"
+          },
+          "storeSnapshot": {
+            "$ref": "#/components/schemas/StorefrontOrderStoreSnapshotResponse"
+          },
+          "currencyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalBreakdown": {
+            "$ref": "#/components/schemas/StorefrontOrderTotalBreakdownResponse"
+          },
+          "baseCurrencyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "baseTotalAmount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "baseTotalBreakdown": {
+            "$ref": "#/components/schemas/StorefrontOrderTotalBreakdownResponse"
+          },
+          "exchangeRate": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "exchangeRateProviderKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "exchangeRateSource": {
+            "type": "string",
+            "nullable": true
+          },
+          "exchangeRateEffectiveAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "exchangeRateExpiresAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdOn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "shippingStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "shippingCarrier": {
+            "type": "string",
+            "nullable": true
+          },
+          "trackingNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "trackingUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "shippedOn": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deliveredOn": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "customerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "customerEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "billingAddress": {
+            "$ref": "#/components/schemas/StorefrontShippingAddressResponse"
+          },
+          "shippingAddressSnapshot": {
+            "$ref": "#/components/schemas/StorefrontShippingAddressResponse"
+          },
+          "shippingAddress": {
+            "$ref": "#/components/schemas/StorefrontShippingAddressResponse"
+          },
+          "shippingMethod": {
+            "$ref": "#/components/schemas/StorefrontCustomerOrderShippingMethodResponse"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "cancelledAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "trackingEvents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontOrderTrackingEventResponse"
+            }
+          },
+          "historyEntries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontOrderHistoryEntryResponse"
+            }
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontOrderLineResponse"
+            }
+          },
+          "actions": {
+            "$ref": "#/components/schemas/StorefrontCustomerOrderActionFlagsResponse"
+          },
+          "receiptMode": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCustomerOrderDetailResponseCommerceNodeApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/StorefrontCustomerOrderDetailResponse"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCustomerOrderListItemResponse": {
+        "type": "object",
+        "properties": {
+          "reference": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdOn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "orderStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "shippingStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "currencyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "itemCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "trackingSummary": {
+            "$ref": "#/components/schemas/StorefrontCustomerOrderTrackingSummaryResponse"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCustomerOrderListItemResponseStorefrontPagedResponse": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontCustomerOrderListItemResponse"
+            }
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCustomerOrderListItemResponseStorefrontPagedResponseCommerceNodeApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/StorefrontCustomerOrderListItemResponseStorefrontPagedResponse"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCustomerOrderShippingMethodResponse": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "nullable": true
+          },
+          "methodCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "total": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "currencyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "deliveryEstimateText": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCustomerOrderTrackingSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "shippingCarrier": {
+            "type": "string",
+            "nullable": true
+          },
+          "trackingNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "trackingUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "shippedOn": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deliveredOn": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastTrackingEventAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontCustomerProfileResponse": {
         "type": "object",
         "properties": {
@@ -9672,26 +10238,6 @@
           },
           "data": {
             "$ref": "#/components/schemas/StorefrontOrderResponse"
-          }
-        },
-        "additionalProperties": false
-      },
-      "StorefrontOrderResponseIReadOnlyListCommerceNodeApiResponse": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean"
-          },
-          "message": {
-            "type": "string",
-            "nullable": true
-          },
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/StorefrontOrderResponse"
-            },
-            "nullable": true
           }
         },
         "additionalProperties": false

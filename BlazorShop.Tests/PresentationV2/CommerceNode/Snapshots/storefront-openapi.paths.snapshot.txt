@@ -60,6 +60,8 @@ POST /api/storefront/stores/{storeKey}/newsletter/subscribe
 POST /api/storefront/stores/{storeKey}/orders/confirm
 GET /api/storefront/stores/{storeKey}/orders/current-user
 GET /api/storefront/stores/{storeKey}/orders/current-user/items
+GET /api/storefront/stores/{storeKey}/orders/current-user/{orderReference}
+GET /api/storefront/stores/{storeKey}/orders/current-user/{orderReference}/receipt
 POST /api/storefront/stores/{storeKey}/orders/guest-lookup
 GET /api/storefront/stores/{storeKey}/pages/navigation
 GET /api/storefront/stores/{storeKey}/pages/{slug}

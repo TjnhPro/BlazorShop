@@ -38,6 +38,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             "StorefrontCart_SaveCheckout",
             "StorefrontOrders_Confirm",
             "StorefrontOrders_ListCurrentUserOrders",
+            "StorefrontOrders_GetCurrentUserOrder",
+            "StorefrontOrders_GetCurrentUserOrderReceipt",
             "StorefrontOrders_ListCurrentUserOrderItems",
         ];
 
@@ -60,6 +62,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 ["StorefrontCart_SaveCheckout"] = "Bearer",
                 ["StorefrontOrders_Confirm"] = "Bearer",
                 ["StorefrontOrders_ListCurrentUserOrders"] = "Bearer",
+                ["StorefrontOrders_GetCurrentUserOrder"] = "Bearer",
+                ["StorefrontOrders_GetCurrentUserOrderReceipt"] = "Bearer",
                 ["StorefrontOrders_ListCurrentUserOrderItems"] = "Bearer",
             };
 
@@ -89,6 +93,9 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             ("StorefrontOrderResponse", "trackingEvents"),
             ("StorefrontOrderResponse", "historyEntries"),
             ("StorefrontOrderResponse", "lines"),
+            ("StorefrontCustomerOrderDetailResponse", "trackingEvents"),
+            ("StorefrontCustomerOrderDetailResponse", "historyEntries"),
+            ("StorefrontCustomerOrderDetailResponse", "lines"),
             ("StorefrontOrderLineResponse", "variantAttributes"),
             ("StorefrontProductFilterMetadataResponse", "pageSizes"),
             ("StorefrontProductFilterMetadataResponse", "sortOptions"),
@@ -881,8 +888,77 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("StorefrontCheckout_SelectPaymentMethod", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCheckout_Review", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontPayments_CapturePayPal", client, StringComparison.Ordinal);
+            Assert.Contains("StorefrontOrders_ListCurrentUserOrders", client, StringComparison.Ordinal);
+            Assert.Contains("StorefrontOrders_GetCurrentUserOrder", client, StringComparison.Ordinal);
+            Assert.Contains("StorefrontOrders_GetCurrentUserOrderReceipt", client, StringComparison.Ordinal);
             Assert.DoesNotContain("any /* missing operationId */", client, StringComparison.Ordinal);
             Assert.DoesNotContain("Promise<any>", client, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_CustomerOrderSelfServiceHasSafeContracts()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var operations = GetOperations(swagger)
+                .ToDictionary(
+                    operation => operation.Value["operationId"]?.GetValue<string>() ?? string.Empty,
+                    operation => operation.Value,
+                    StringComparer.Ordinal);
+
+            foreach (var operationId in new[]
+            {
+                "StorefrontOrders_ListCurrentUserOrders",
+                "StorefrontOrders_GetCurrentUserOrder",
+                "StorefrontOrders_GetCurrentUserOrderReceipt",
+            })
+            {
+                Assert.True(operations.TryGetValue(operationId, out var operation), $"{operationId} was not found.");
+                Assert.Contains("Bearer", GetSecuritySchemeNames(operation!));
+                Assert.True(operation["responses"]?.AsObject().Count > 1, $"{operationId} must declare success and error responses.");
+            }
+
+            var list = operations["StorefrontOrders_ListCurrentUserOrders"];
+            var parameters = list["parameters"]?.AsArray()
+                ?? throw new InvalidOperationException("Customer order list operation does not contain parameters.");
+            var pageSize = GetParameter(parameters, "pageSize");
+            Assert.Equal(1, pageSize["schema"]?["minimum"]?.GetValue<int>());
+            Assert.Equal(100, pageSize["schema"]?["maximum"]?.GetValue<int>());
+
+            var listItem = schemas["StorefrontCustomerOrderListItemResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCustomerOrderListItemResponse schema was not found.");
+            var listItemProperties = GetPropertyNames(listItem).ToArray();
+            Assert.Contains("reference", listItemProperties);
+            Assert.Contains("itemCount", listItemProperties);
+            Assert.Contains("trackingSummary", listItemProperties);
+            Assert.DoesNotContain("id", listItemProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("userId", listItemProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("customerId", listItemProperties, StringComparer.OrdinalIgnoreCase);
+
+            var detail = schemas["StorefrontCustomerOrderDetailResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCustomerOrderDetailResponse schema was not found.");
+            var detailProperties = GetPropertyNames(detail).ToArray();
+            Assert.Contains("billingAddress", detailProperties);
+            Assert.Contains("shippingAddressSnapshot", detailProperties);
+            Assert.Contains("lines", detailProperties);
+            Assert.Contains("totalBreakdown", detailProperties);
+            Assert.Contains("paymentSummary", detailProperties);
+            Assert.Contains("shippingMethod", detailProperties);
+            Assert.Contains("actions", detailProperties);
+            Assert.DoesNotContain("id", detailProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("userId", detailProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("customerId", detailProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("adminNote", detailProperties, StringComparer.OrdinalIgnoreCase);
+
+            var paymentSummary = schemas["StorefrontOrderPaymentSummaryResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontOrderPaymentSummaryResponse schema was not found.");
+            var paymentSummaryProperties = GetPropertyNames(paymentSummary).ToArray();
+            Assert.DoesNotContain("providerKey", paymentSummaryProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("paymentAttemptPublicId", paymentSummaryProperties, StringComparer.OrdinalIgnoreCase);
+
+            var shippingMethod = schemas["StorefrontCustomerOrderShippingMethodResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCustomerOrderShippingMethodResponse schema was not found.");
+            Assert.DoesNotContain("providerSystemName", GetPropertyNames(shippingMethod), StringComparer.OrdinalIgnoreCase);
         }
 
         [Fact]

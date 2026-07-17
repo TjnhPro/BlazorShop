@@ -146,6 +146,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<ICartService, CartService>();
             services.AddScoped<IOrderQueryService, CommerceNodeOrderQueryService>();
             services.AddScoped<IStorefrontGuestOrderService, StorefrontGuestOrderService>();
+            services.AddScoped<IStorefrontCustomerOrderService, StorefrontCustomerOrderService>();
             services.AddScoped<IAdminInventoryService, CommerceNodeAdminInventoryService>();
             services.AddScoped<IOrderTrackingService, CommerceNodeOrderTrackingService>();
             services.AddScoped<IAdminOrderService, CommerceNodeAdminOrderService>();

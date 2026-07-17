@@ -1116,8 +1116,20 @@ namespace BlazorShop.CommerceNode.API.Swagger
                     [("StorefrontScopedOrders", "GetCurrentUserOrders")] = new(
                         "StorefrontOrders_ListCurrentUserOrders",
                         "List orders for the current customer.",
-                        typeof(CommerceNodeApiResponse<IReadOnlyList<StorefrontOrderResponse>>),
-                        [StatusCodes.Status401Unauthorized, StatusCodes.Status500InternalServerError],
+                        typeof(CommerceNodeApiResponse<StorefrontPagedResponse<StorefrontCustomerOrderListItemResponse>>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError],
+                        Security: StorefrontSecurityRequirement.Bearer),
+                    [("StorefrontScopedOrders", "GetCurrentUserOrder")] = new(
+                        "StorefrontOrders_GetCurrentUserOrder",
+                        "Get an order for the current customer.",
+                        typeof(CommerceNodeApiResponse<StorefrontCustomerOrderDetailResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError],
+                        Security: StorefrontSecurityRequirement.Bearer),
+                    [("StorefrontScopedOrders", "GetCurrentUserOrderReceipt")] = new(
+                        "StorefrontOrders_GetCurrentUserOrderReceipt",
+                        "Get a receipt projection for the current customer order.",
+                        typeof(CommerceNodeApiResponse<StorefrontCustomerOrderDetailResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError],
                         Security: StorefrontSecurityRequirement.Bearer),
                     [("StorefrontScopedOrders", "GetCurrentUserOrderItems")] = new(
                         "StorefrontOrders_ListCurrentUserOrderItems",
@@ -1422,6 +1434,8 @@ namespace BlazorShop.CommerceNode.API.Swagger
                     ["StorefrontCart_SaveCheckout"] = StorefrontSecurityRequirement.Bearer,
                     ["StorefrontOrders_Confirm"] = StorefrontSecurityRequirement.Bearer,
                     ["StorefrontOrders_ListCurrentUserOrders"] = StorefrontSecurityRequirement.Bearer,
+                    ["StorefrontOrders_GetCurrentUserOrder"] = StorefrontSecurityRequirement.Bearer,
+                    ["StorefrontOrders_GetCurrentUserOrderReceipt"] = StorefrontSecurityRequirement.Bearer,
                     ["StorefrontOrders_ListCurrentUserOrderItems"] = StorefrontSecurityRequirement.Bearer,
                 };
 
@@ -1478,6 +1492,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
                     [typeof(StorefrontCheckoutSessionResponse)] = ["completedSteps", "shippingOptions", "paymentMethods", "lines", "issues"],
                     [typeof(StorefrontCheckoutReviewResponse)] = ["completedSteps", "lines", "issues"],
                     [typeof(StorefrontOrderResponse)] = ["trackingEvents", "historyEntries", "lines"],
+                    [typeof(StorefrontCustomerOrderDetailResponse)] = ["trackingEvents", "historyEntries", "lines"],
                     [typeof(StorefrontOrderLineResponse)] = ["variantAttributes"],
                     [typeof(StorefrontAddressFieldConfigurationResponse)] = ["stateProvinceRequiredCountryCodes"],
                     [typeof(GetPublicCatalogSitemap)] = ["categories", "products", "pages"],

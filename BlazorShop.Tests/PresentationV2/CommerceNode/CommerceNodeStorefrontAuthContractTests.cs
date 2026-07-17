@@ -50,6 +50,26 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         }
 
         [Fact]
+        public async Task CurrentUserOrderDetail_WithoutBearerToken_ReturnsTypedUnauthorizedError()
+        {
+            using var client = this.CreateClient();
+
+            using var response = await client.GetAsync("/api/storefront/stores/test-store/orders/current-user/ORD-1");
+
+            await AssertTypedErrorAsync(response, HttpStatusCode.Unauthorized, "auth.unauthenticated");
+        }
+
+        [Fact]
+        public async Task CurrentUserOrderReceipt_WithoutBearerToken_ReturnsTypedUnauthorizedError()
+        {
+            using var client = this.CreateClient();
+
+            using var response = await client.GetAsync("/api/storefront/stores/test-store/orders/current-user/ORD-1/receipt");
+
+            await AssertTypedErrorAsync(response, HttpStatusCode.Unauthorized, "auth.unauthenticated");
+        }
+
+        [Fact]
         public async Task RefreshToken_WithoutRefreshCookie_ReturnsTypedUnauthorizedError()
         {
             using var client = this.CreateClient();

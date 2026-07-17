@@ -1212,6 +1212,92 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 order.Lines.Select(line => line.ToStorefrontContract()).ToArray());
         }
 
+        public static StorefrontCustomerOrderListItemResponse ToCustomerOrderListItemContract(this GetOrder order)
+        {
+            var lines = order.Lines.ToArray();
+            return new StorefrontCustomerOrderListItemResponse(
+                order.Reference,
+                order.CreatedOn,
+                order.OrderStatus,
+                order.PaymentStatus,
+                order.ShippingStatus,
+                order.CurrencyCode,
+                order.TotalAmount,
+                lines.Sum(item => item.Quantity),
+                new StorefrontCustomerOrderTrackingSummaryResponse(
+                    order.ShippingCarrier,
+                    order.TrackingNumber,
+                    order.TrackingUrl,
+                    order.ShippedOn,
+                    order.DeliveredOn,
+                    order.TrackingEvents
+                        .OrderByDescending(item => item.OccurredAtUtc)
+                        .Select(item => (DateTimeOffset?)item.OccurredAtUtc)
+                        .FirstOrDefault()));
+        }
+
+        public static StorefrontCustomerOrderDetailResponse ToCustomerOrderDetailContract(
+            this GetOrder order,
+            bool receiptMode)
+        {
+            return new StorefrontCustomerOrderDetailResponse(
+                order.Reference,
+                order.Status,
+                order.OrderStatus,
+                order.PaymentStatus,
+                order.PaymentMethodKey,
+                order.PaymentAt,
+                order.PaymentSummary?.ToStorefrontContract(),
+                order.StoreSnapshot?.ToStorefrontContract(),
+                order.CurrencyCode,
+                order.TotalAmount,
+                order.TotalBreakdown?.ToStorefrontContract(),
+                order.BaseCurrencyCode,
+                order.BaseTotalAmount,
+                order.BaseTotalBreakdown?.ToStorefrontContract(),
+                order.ExchangeRate,
+                order.ExchangeRateProviderKey,
+                order.ExchangeRateSource,
+                order.ExchangeRateEffectiveAtUtc,
+                order.ExchangeRateExpiresAtUtc,
+                order.CreatedOn,
+                order.ShippingStatus,
+                order.ShippingCarrier,
+                order.TrackingNumber,
+                order.TrackingUrl,
+                order.ShippedOn,
+                order.DeliveredOn,
+                order.CustomerName,
+                order.CustomerEmail,
+                order.BillingAddress?.ToStorefrontContract(),
+                order.ShippingAddressSnapshot?.ToStorefrontContract(),
+                new StorefrontShippingAddressResponse(
+                    order.ShippingFullName,
+                    order.ShippingEmail,
+                    order.ShippingPhone,
+                    order.ShippingAddress1,
+                    order.ShippingAddress2,
+                    order.ShippingCity,
+                    order.ShippingState,
+                    order.ShippingPostalCode,
+                    order.ShippingCountryCode),
+                order.ShippingMethod?.ToCustomerOrderContract(),
+                order.CompletedAt,
+                order.CancelledAt,
+                order.TrackingEvents.Select(item => item.ToStorefrontContract()).ToArray(),
+                order.HistoryEntries
+                    .Where(item => item.VisibleToCustomer)
+                    .Select(item => item.ToStorefrontContract())
+                    .ToArray(),
+                order.Lines.Select(line => line.ToStorefrontContract()).ToArray(),
+                new StorefrontCustomerOrderActionFlagsResponse(
+                    CanRetryPayment: false,
+                    CanReorder: false,
+                    CanRequestReturn: false,
+                    HasDownloads: false),
+                receiptMode);
+        }
+
         public static StorefrontOrderPaymentSummaryResponse ToStorefrontContract(this GetOrderPaymentSummary summary)
         {
             return new StorefrontOrderPaymentSummaryResponse(
@@ -1266,6 +1352,18 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
             return new StorefrontOrderShippingMethodResponse(
                 shippingMethod.Key,
                 shippingMethod.ProviderSystemName,
+                shippingMethod.MethodCode,
+                shippingMethod.Name,
+                shippingMethod.Total,
+                shippingMethod.CurrencyCode,
+                shippingMethod.DeliveryEstimateText);
+        }
+
+        public static StorefrontCustomerOrderShippingMethodResponse ToCustomerOrderContract(
+            this GetOrderShippingMethodSnapshot shippingMethod)
+        {
+            return new StorefrontCustomerOrderShippingMethodResponse(
+                shippingMethod.Key,
                 shippingMethod.MethodCode,
                 shippingMethod.Name,
                 shippingMethod.Total,

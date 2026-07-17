@@ -1109,6 +1109,10 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Storefront customer profile API is Bearer-protected and uses safe request/response DTOs. 2026-07-17 Phase 3: `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_CustomerProfileHasGeneratorSafeContract` passed.
 - [x] Authenticated customer profile persistence uses `StoreId + AppUserId` and does not mutate checkout timestamp. 2026-07-17 Phase 3: `StorefrontCustomerServiceTests` covered get/create and update profile paths.
 - [x] Customer profile update rejects email changes until confirmation flow exists. 2026-07-17 Phase 3: CommerceNode controller returns `profile.email_change_unsupported` for mismatched claim email.
+- [x] Customer order list resolves V2 orders by `CommerceCustomer.CustomerId` before legacy `UserId`. 2026-07-17 Phase 4: `StorefrontCustomerOrderServiceTests.ListAsync_ReturnsV2OrdersLinkedByCustomerId` passed.
+- [x] Legacy current-user order fallback is limited to compatible old orders. 2026-07-17 Phase 4: fallback requires no `CustomerId`, matching `UserId`, and compatible email when present; service tests passed.
+- [x] Customer order detail/receipt enforce owner and store scope by reference. 2026-07-17 Phase 4: `GetAsync_EnforcesCurrentCustomerOwnerCheck` and receipt tests passed.
+- [x] Customer order self-service OpenAPI is generator-safe and Bearer-protected. 2026-07-17 Phase 4: `StorefrontSwagger_CustomerOrderSelfServiceHasSafeContracts` passed, snapshots refreshed, and unauthenticated detail/receipt return typed 401 errors.
 
 ## Payment Core
 

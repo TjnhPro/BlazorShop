@@ -5,6 +5,8 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
     using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
 
+    using Microsoft.AspNetCore.Mvc;
+
     public static class StorefrontContractValidation
     {
         public const int DefaultPageSize = 24;
@@ -1195,6 +1197,91 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         IReadOnlyList<StorefrontOrderTrackingEventResponse> TrackingEvents,
         IReadOnlyList<StorefrontOrderHistoryEntryResponse> HistoryEntries,
         IReadOnlyList<StorefrontOrderLineResponse> Lines);
+
+    public sealed class StorefrontCustomerOrderListQuery
+    {
+        [FromQuery(Name = "pageNumber")]
+        [Range(1, int.MaxValue)]
+        public int PageNumber { get; init; } = 1;
+
+        [FromQuery(Name = "pageSize")]
+        [Range(1, StorefrontContractValidation.MaxPageSize)]
+        public int PageSize { get; init; } = 10;
+    }
+
+    public sealed record StorefrontCustomerOrderListItemResponse(
+        string Reference,
+        DateTime CreatedOn,
+        string OrderStatus,
+        string PaymentStatus,
+        string ShippingStatus,
+        string? CurrencyCode,
+        decimal TotalAmount,
+        int ItemCount,
+        StorefrontCustomerOrderTrackingSummaryResponse TrackingSummary);
+
+    public sealed record StorefrontCustomerOrderTrackingSummaryResponse(
+        string? ShippingCarrier,
+        string? TrackingNumber,
+        string? TrackingUrl,
+        DateTime? ShippedOn,
+        DateTime? DeliveredOn,
+        DateTimeOffset? LastTrackingEventAtUtc);
+
+    public sealed record StorefrontCustomerOrderDetailResponse(
+        string Reference,
+        string Status,
+        string OrderStatus,
+        string PaymentStatus,
+        string PaymentMethodKey,
+        DateTime? PaymentAt,
+        StorefrontOrderPaymentSummaryResponse? PaymentSummary,
+        StorefrontOrderStoreSnapshotResponse? StoreSnapshot,
+        string? CurrencyCode,
+        decimal TotalAmount,
+        StorefrontOrderTotalBreakdownResponse? TotalBreakdown,
+        string? BaseCurrencyCode,
+        decimal? BaseTotalAmount,
+        StorefrontOrderTotalBreakdownResponse? BaseTotalBreakdown,
+        decimal? ExchangeRate,
+        string? ExchangeRateProviderKey,
+        string? ExchangeRateSource,
+        DateTimeOffset? ExchangeRateEffectiveAtUtc,
+        DateTimeOffset? ExchangeRateExpiresAtUtc,
+        DateTime CreatedOn,
+        string ShippingStatus,
+        string? ShippingCarrier,
+        string? TrackingNumber,
+        string? TrackingUrl,
+        DateTime? ShippedOn,
+        DateTime? DeliveredOn,
+        string? CustomerName,
+        string? CustomerEmail,
+        StorefrontShippingAddressResponse? BillingAddress,
+        StorefrontShippingAddressResponse? ShippingAddressSnapshot,
+        StorefrontShippingAddressResponse ShippingAddress,
+        StorefrontCustomerOrderShippingMethodResponse? ShippingMethod,
+        DateTime? CompletedAt,
+        DateTime? CancelledAt,
+        IReadOnlyList<StorefrontOrderTrackingEventResponse> TrackingEvents,
+        IReadOnlyList<StorefrontOrderHistoryEntryResponse> HistoryEntries,
+        IReadOnlyList<StorefrontOrderLineResponse> Lines,
+        StorefrontCustomerOrderActionFlagsResponse Actions,
+        bool ReceiptMode);
+
+    public sealed record StorefrontCustomerOrderShippingMethodResponse(
+        string? Key,
+        string? MethodCode,
+        string? Name,
+        decimal? Total,
+        string? CurrencyCode,
+        string? DeliveryEstimateText);
+
+    public sealed record StorefrontCustomerOrderActionFlagsResponse(
+        bool CanRetryPayment,
+        bool CanReorder,
+        bool CanRequestReturn,
+        bool HasDownloads);
 
     public sealed record StorefrontOrderPaymentSummaryResponse(
         string PaymentStatus,
