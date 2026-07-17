@@ -434,6 +434,22 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         public StorefrontCheckoutShippingAddress? ShippingAddress { get; set; }
     }
 
+    public sealed class StorefrontCheckoutShippingMethodRequest
+    {
+        [Required]
+        [MaxLength(64)]
+        public string ShippingOptionKey { get; set; } = string.Empty;
+    }
+
+    public sealed record StorefrontCheckoutShippingOptionResponse(
+        string Key,
+        string DisplayName,
+        string? Description,
+        decimal Price,
+        string CurrencyCode,
+        string? DeliveryEstimateText,
+        bool Selected);
+
     public sealed record StorefrontCheckoutSessionResponse(
         Guid CheckoutSessionId,
         Guid CartId,
@@ -455,6 +471,9 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         decimal GrandTotal,
         string CurrencyCode,
         DateTimeOffset ExpiresAtUtc,
+        bool ShippingRequired,
+        StorefrontCheckoutShippingOptionResponse? SelectedShippingOption,
+        IReadOnlyList<StorefrontCheckoutShippingOptionResponse> ShippingOptions,
         IReadOnlyList<StorefrontCheckoutLineSummaryResponse> Lines,
         IReadOnlyList<StorefrontCheckoutValidationIssueResponse> Issues);
 

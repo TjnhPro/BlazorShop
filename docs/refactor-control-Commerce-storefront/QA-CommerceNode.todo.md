@@ -981,3 +981,6 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Checkout address step rejects anonymous saved-address selection. 2026-07-17 Phase 3: `UpdateAddressesAsync_RejectsSavedAddressSelection_WhenCustomerIsAnonymous` passed.
 - [x] Checkout address step enforces saved address ownership by store/customer. 2026-07-17 Phase 3: `UpdateAddressesAsync_UsesSavedAddress_WhenCustomerOwnsIt` passed.
 - [x] Checkout address step OpenAPI is generator-safe and avoids server-owned request fields. 2026-07-17 Phase 3: `CommerceNodeStorefrontOpenApiContractTests` passed 29/29 after snapshot refresh.
+- [x] Checkout shipping method step stores deterministic `free_standard` option without trusting browser price/total fields. 2026-07-17 Phase 4: `SelectShippingMethodAsync_SelectsFreeStandardAndResetsPayment` passed.
+- [x] Checkout shipping method step requires shipping address first. 2026-07-17 Phase 4: `SelectShippingMethodAsync_BlocksWhenShippingAddressMissing` passed.
+- [x] Checkout shipping method OpenAPI is generator-safe and exposes server-owned shipping option response metadata. 2026-07-17 Phase 4: `CommerceNodeStorefrontOpenApiContractTests` passed 29/29 after snapshot refresh.

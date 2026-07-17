@@ -56,6 +56,8 @@ namespace BlazorShop.Domain.Entities.CommerceNode
 
         public string ShippingCountryCode { get; set; } = string.Empty;
 
+        public string? SelectedShippingOptionJson { get; set; }
+
         public string PaymentMethodKey { get; set; } = string.Empty;
 
         public decimal Subtotal { get; set; }

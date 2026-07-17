@@ -22,6 +22,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     public sealed class StorefrontCheckoutService : IStorefrontCheckoutService
     {
         private const string DefaultCurrencyCode = "USD";
+        private const string FreeStandardShippingOptionKey = "free_standard";
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
         private readonly CommerceNodeDbContext context;
@@ -268,11 +269,57 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 new[] { CheckoutSteps.Entry, CheckoutSteps.BillingAddress, CheckoutSteps.ShippingAddress },
                 JsonOptions);
             session.ValidationIssuesJson = null;
+            session.SelectedShippingOptionJson = null;
+            session.NextAction = CheckoutSteps.ShippingMethod;
+            Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.ShippingMethod, DateTimeOffset.UtcNow);
+            await this.context.SaveChangesAsync(cancellationToken);
+
+            return Succeeded("Checkout addresses updated.", ToSessionResult(session, resolution.Cart!));
+        }
+
+        public async Task<ServiceResponse<StorefrontCheckoutSessionResult>> SelectShippingMethodAsync(
+            StorefrontCheckoutShippingMethodRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var resolution = await this.ResolveActiveSessionAsync(
+                new StorefrontCheckoutSessionRequest(request.StoreId, request.CheckoutSessionId, request.CartToken),
+                cancellationToken);
+            if (!resolution.Success)
+            {
+                return Failed<StorefrontCheckoutSessionResult>(resolution.ResponseType, resolution.Message);
+            }
+
+            var session = resolution.Session!;
+            if (string.IsNullOrWhiteSpace(session.ShippingAddress1)
+                || string.IsNullOrWhiteSpace(session.ShippingCity)
+                || string.IsNullOrWhiteSpace(session.ShippingPostalCode)
+                || string.IsNullOrWhiteSpace(session.ShippingCountryCode))
+            {
+                return Failed<StorefrontCheckoutSessionResult>(ServiceResponseType.Conflict, "Shipping address must be selected first.");
+            }
+
+            var option = ResolveShippingOptions(session, selectedKey: request.ShippingOptionKey)
+                .FirstOrDefault(candidate => string.Equals(candidate.Key, request.ShippingOptionKey, StringComparison.OrdinalIgnoreCase));
+            if (option is null)
+            {
+                return Failed<StorefrontCheckoutSessionResult>(ServiceResponseType.ValidationError, "Shipping option is not available.");
+            }
+
+            session.SelectedShippingOptionJson = JsonSerializer.Serialize(option with { Selected = true }, JsonOptions);
+            session.ShippingTotal = option.Price;
+            session.GrandTotal = this.moneyRoundingService.RoundOrderTotal(
+                session.Subtotal + option.Price + session.TaxTotal - session.DiscountTotal,
+                session.CurrencyCode);
+            session.PaymentMethodKey = string.Empty;
+            session.ValidationIssuesJson = null;
+            session.CompletedStepsJson = JsonSerializer.Serialize(
+                new[] { CheckoutSteps.Entry, CheckoutSteps.BillingAddress, CheckoutSteps.ShippingAddress, CheckoutSteps.ShippingMethod },
+                JsonOptions);
             session.NextAction = CheckoutSteps.PaymentMethod;
             Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.PaymentMethod, DateTimeOffset.UtcNow);
             await this.context.SaveChangesAsync(cancellationToken);
 
-            return Succeeded("Checkout addresses updated.", ToSessionResult(session, resolution.Cart!));
+            return Succeeded("Checkout shipping method selected.", ToSessionResult(session, resolution.Cart!));
         }
 
         public async Task<ServiceResponse<StorefrontCheckoutPreviewResult>> PreviewAsync(
@@ -1127,6 +1174,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 session.GrandTotal,
                 NormalizeCurrency(session.CurrencyCode) ?? NormalizeCurrency(cart.CurrencyCode) ?? DefaultCurrencyCode,
                 session.ExpiresAtUtc,
+                ShippingRequired: true,
+                ParseSelectedShippingOption(session.SelectedShippingOptionJson),
+                ResolveShippingOptions(session, ParseSelectedShippingOption(session.SelectedShippingOptionJson)?.Key),
                 cart.Lines.Select(line => new StorefrontCheckoutLineSummary(
                     line.Id,
                     line.ProductId,
@@ -1169,6 +1219,42 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return issues.Any(issue => issue.Code is "cart.inactive" or "cart.validation_failed")
                 ? ServiceResponseType.Conflict
                 : ServiceResponseType.ValidationError;
+        }
+
+        private static IReadOnlyList<StorefrontCheckoutShippingOption> ResolveShippingOptions(
+            CheckoutSession session,
+            string? selectedKey)
+        {
+            var currencyCode = NormalizeCurrency(session.CurrencyCode) ?? DefaultCurrencyCode;
+            var selected = string.Equals(selectedKey, FreeStandardShippingOptionKey, StringComparison.OrdinalIgnoreCase);
+            return
+            [
+                new StorefrontCheckoutShippingOption(
+                    FreeStandardShippingOptionKey,
+                    "Free standard",
+                    "Standard shipping for MVP stores.",
+                    0m,
+                    currencyCode,
+                    "Standard delivery",
+                    selected),
+            ];
+        }
+
+        private static StorefrontCheckoutShippingOption? ParseSelectedShippingOption(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return null;
+            }
+
+            try
+            {
+                return JsonSerializer.Deserialize<StorefrontCheckoutShippingOption>(json, JsonOptions);
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
         }
 
         private static IReadOnlyList<string> ParseCompletedSteps(string? json)

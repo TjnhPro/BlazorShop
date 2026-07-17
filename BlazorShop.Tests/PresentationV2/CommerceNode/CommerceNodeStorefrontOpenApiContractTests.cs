@@ -75,6 +75,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             ("StorefrontCheckoutPreviewResponse", "lines"),
             ("StorefrontCheckoutPreviewResponse", "issues"),
             ("StorefrontCheckoutSessionResponse", "completedSteps"),
+            ("StorefrontCheckoutSessionResponse", "shippingOptions"),
             ("StorefrontCheckoutSessionResponse", "lines"),
             ("StorefrontCheckoutSessionResponse", "issues"),
             ("StorefrontOrderResponse", "lines"),
@@ -759,6 +760,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("StorefrontCheckout_Load", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCheckout_Cancel", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCheckout_UpdateAddresses", client, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCheckout_SelectShippingMethod", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontPayments_CapturePayPal", client, StringComparison.Ordinal);
             Assert.DoesNotContain("any /* missing operationId */", client, StringComparison.Ordinal);
             Assert.DoesNotContain("Promise<any>", client, StringComparison.Ordinal);
@@ -870,6 +872,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 "StorefrontCheckout_Load",
                 "StorefrontCheckout_Cancel",
                 "StorefrontCheckout_UpdateAddresses",
+                "StorefrontCheckout_SelectShippingMethod",
             };
 
             foreach (var operationId in expectedOperationIds)
@@ -887,10 +890,13 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
 
             AssertRequiredRequestBody(operations["StorefrontCheckout_Start"]);
             AssertRequiredRequestBody(operations["StorefrontCheckout_UpdateAddresses"]);
+            AssertRequiredRequestBody(operations["StorefrontCheckout_SelectShippingMethod"]);
             Assert.Null(operations["StorefrontCheckout_Load"]["requestBody"]);
             Assert.Null(operations["StorefrontCheckout_Cancel"]["requestBody"]);
             Assert.True(schemas.ContainsKey("StorefrontCheckoutStartRequest"));
             Assert.True(schemas.ContainsKey("StorefrontCheckoutAddressStepRequest"));
+            Assert.True(schemas.ContainsKey("StorefrontCheckoutShippingMethodRequest"));
+            Assert.True(schemas.ContainsKey("StorefrontCheckoutShippingOptionResponse"));
             Assert.True(schemas.ContainsKey("StorefrontCheckoutSessionResponse"));
 
             var addressRequestSchema = schemas["StorefrontCheckoutAddressStepRequest"]?.AsObject()
@@ -904,6 +910,13 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.DoesNotContain("storeId", addressRequestProperties, StringComparer.OrdinalIgnoreCase);
             Assert.DoesNotContain("customerId", addressRequestProperties, StringComparer.OrdinalIgnoreCase);
 
+            var shippingMethodRequestSchema = schemas["StorefrontCheckoutShippingMethodRequest"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCheckoutShippingMethodRequest schema was not found.");
+            var shippingMethodProperties = GetPropertyNames(shippingMethodRequestSchema).ToArray();
+            Assert.Contains("shippingOptionKey", shippingMethodProperties);
+            Assert.DoesNotContain("price", shippingMethodProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("total", shippingMethodProperties, StringComparer.OrdinalIgnoreCase);
+
             var responseSchema = schemas["StorefrontCheckoutSessionResponse"]?.AsObject()
                 ?? throw new InvalidOperationException("StorefrontCheckoutSessionResponse schema was not found.");
             var responseProperties = GetPropertyNames(responseSchema).ToArray();
@@ -913,6 +926,9 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("lastValidatedCartVersion", responseProperties);
             Assert.Contains("currentStep", responseProperties);
             Assert.Contains("completedSteps", responseProperties);
+            Assert.Contains("shippingRequired", responseProperties);
+            Assert.Contains("selectedShippingOption", responseProperties);
+            Assert.Contains("shippingOptions", responseProperties);
             Assert.Contains("isActive", responseProperties);
             Assert.Contains("issues", responseProperties);
             Assert.DoesNotContain("storeId", responseProperties, StringComparer.OrdinalIgnoreCase);

@@ -288,6 +288,9 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 result.GrandTotal,
                 result.CurrencyCode,
                 result.ExpiresAtUtc,
+                result.ShippingRequired,
+                result.SelectedShippingOption?.ToStorefrontContract(),
+                result.ShippingOptions.Select(option => option.ToStorefrontContract()).ToArray(),
                 result.Lines.Select(line => new StorefrontCheckoutLineSummaryResponse(
                     line.LineId,
                     line.ProductId,
@@ -321,6 +324,32 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 request.ShippingAddressId,
                 request.UseBillingAddressAsShippingAddress,
                 customerAppUserId);
+        }
+
+        public static BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutShippingMethodRequest ToApplicationRequest(
+            this Contracts.Storefront.StorefrontCheckoutShippingMethodRequest request,
+            Guid storeId,
+            Guid checkoutSessionId,
+            string cartToken)
+        {
+            return new BlazorShop.Application.CommerceNode.Checkout.StorefrontCheckoutShippingMethodRequest(
+                storeId,
+                checkoutSessionId,
+                cartToken,
+                request.ShippingOptionKey);
+        }
+
+        private static StorefrontCheckoutShippingOptionResponse ToStorefrontContract(
+            this StorefrontCheckoutShippingOption option)
+        {
+            return new StorefrontCheckoutShippingOptionResponse(
+                option.Key,
+                option.DisplayName,
+                option.Description,
+                option.Price,
+                option.CurrencyCode,
+                option.DeliveryEstimateText,
+                option.Selected);
         }
 
         public static BlazorShop.Application.CommerceNode.Checkout.StorefrontPlaceOrderRequest ToApplicationRequest(

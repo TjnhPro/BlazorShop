@@ -70,6 +70,21 @@ namespace BlazorShop.Application.CommerceNode.Checkout
         bool UseBillingAddressAsShippingAddress = false,
         string? CustomerAppUserId = null);
 
+    public sealed record StorefrontCheckoutShippingMethodRequest(
+        Guid StoreId,
+        Guid CheckoutSessionId,
+        string CartToken,
+        string ShippingOptionKey);
+
+    public sealed record StorefrontCheckoutShippingOption(
+        string Key,
+        string DisplayName,
+        string? Description,
+        decimal Price,
+        string CurrencyCode,
+        string? DeliveryEstimateText,
+        bool Selected);
+
     public sealed record StorefrontCheckoutSessionResult(
         Guid CheckoutSessionId,
         Guid CartId,
@@ -91,6 +106,9 @@ namespace BlazorShop.Application.CommerceNode.Checkout
         decimal GrandTotal,
         string CurrencyCode,
         DateTimeOffset ExpiresAtUtc,
+        bool ShippingRequired,
+        StorefrontCheckoutShippingOption? SelectedShippingOption,
+        IReadOnlyList<StorefrontCheckoutShippingOption> ShippingOptions,
         IReadOnlyList<StorefrontCheckoutLineSummary> Lines,
         IReadOnlyList<StorefrontCheckoutValidationIssue> Issues);
 
@@ -151,6 +169,10 @@ namespace BlazorShop.Application.CommerceNode.Checkout
 
         Task<ServiceResponse<StorefrontCheckoutSessionResult>> UpdateAddressesAsync(
             StorefrontCheckoutAddressStepRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<StorefrontCheckoutSessionResult>> SelectShippingMethodAsync(
+            StorefrontCheckoutShippingMethodRequest request,
             CancellationToken cancellationToken = default);
 
         Task<ServiceResponse<StorefrontCheckoutPreviewResult>> PreviewAsync(

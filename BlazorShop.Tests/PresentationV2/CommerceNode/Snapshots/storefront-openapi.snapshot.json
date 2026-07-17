@@ -2871,6 +2871,113 @@
         }
       }
     },
+    "/api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/shipping-method": {
+      "post": {
+        "tags": [
+          "StorefrontScopedCheckout"
+        ],
+        "summary": "Select a checkout shipping method.",
+        "operationId": "StorefrontCheckout_SelectShippingMethod",
+        "parameters": [
+          {
+            "name": "checkoutSessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Cart-Token",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCheckoutShippingMethodRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCheckoutShippingMethodRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCheckoutShippingMethodRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontCheckoutSessionResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/storefront/stores/{storeKey}/checkout/preview": {
       "post": {
         "tags": [
@@ -7096,7 +7203,8 @@
         "required": [
           "completedSteps",
           "issues",
-          "lines"
+          "lines",
+          "shippingOptions"
         ],
         "type": "object",
         "properties": {
@@ -7180,6 +7288,18 @@
           "expiresAtUtc": {
             "type": "string",
             "format": "date-time"
+          },
+          "shippingRequired": {
+            "type": "boolean"
+          },
+          "selectedShippingOption": {
+            "$ref": "#/components/schemas/StorefrontCheckoutShippingOptionResponse"
+          },
+          "shippingOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontCheckoutShippingOptionResponse"
+            }
           },
           "lines": {
             "type": "array",
@@ -7269,6 +7389,53 @@
             "maxLength": 2,
             "minLength": 2,
             "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCheckoutShippingMethodRequest": {
+        "required": [
+          "shippingOptionKey"
+        ],
+        "type": "object",
+        "properties": {
+          "shippingOptionKey": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontCheckoutShippingOptionResponse": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "currencyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "deliveryEstimateText": {
+            "type": "string",
+            "nullable": true
+          },
+          "selected": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false

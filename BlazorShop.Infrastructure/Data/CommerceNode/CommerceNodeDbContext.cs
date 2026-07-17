@@ -430,6 +430,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.Property(session => session.ShippingState).HasColumnName("shipping_state").HasMaxLength(160);
                 entity.Property(session => session.ShippingPostalCode).HasColumnName("shipping_postal_code").HasMaxLength(64).IsRequired();
                 entity.Property(session => session.ShippingCountryCode).HasColumnName("shipping_country_code").HasMaxLength(2).IsRequired();
+                entity.Property(session => session.SelectedShippingOptionJson).HasColumnName("selected_shipping_option_json").HasColumnType("jsonb");
                 entity.Property(session => session.PaymentMethodKey).HasColumnName("payment_method_key").HasMaxLength(64).IsRequired();
                 entity.Property(session => session.Subtotal).HasColumnName("subtotal").HasPrecision(18, 2);
                 entity.Property(session => session.ShippingTotal).HasColumnName("shipping_total").HasPrecision(18, 2);

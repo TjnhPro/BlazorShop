@@ -36,6 +36,7 @@ POST /api/storefront/stores/{storeKey}/checkout/start
 GET /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}
 POST /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/addresses
 POST /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/cancel
+POST /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/shipping-method
 GET /api/storefront/stores/{storeKey}/configuration
 POST /api/storefront/stores/{storeKey}/consent
 GET /api/storefront/stores/{storeKey}/consent/current

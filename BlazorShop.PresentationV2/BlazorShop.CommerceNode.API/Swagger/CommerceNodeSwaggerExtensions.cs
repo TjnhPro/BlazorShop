@@ -978,6 +978,11 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "Update checkout billing and shipping addresses.",
                         typeof(CommerceNodeApiResponse<StorefrontCheckoutSessionResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedCheckout", "SelectShippingMethod")] = new(
+                        "StorefrontCheckout_SelectShippingMethod",
+                        "Select a checkout shipping method.",
+                        typeof(CommerceNodeApiResponse<StorefrontCheckoutSessionResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedCheckout", "Preview")] = new(
                         "StorefrontCheckout_Preview",
                         "Preview and validate a Storefront checkout session.",
@@ -1347,7 +1352,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
                     [typeof(StorefrontCartResponse)] = ["lines"],
                     [typeof(StorefrontCartValidationResponse)] = ["issues"],
                     [typeof(StorefrontCheckoutPreviewResponse)] = ["completedSteps", "lines", "issues"],
-                    [typeof(StorefrontCheckoutSessionResponse)] = ["completedSteps", "lines", "issues"],
+                    [typeof(StorefrontCheckoutSessionResponse)] = ["completedSteps", "shippingOptions", "lines", "issues"],
                     [typeof(StorefrontOrderResponse)] = ["lines"],
                     [typeof(StorefrontOrderLineResponse)] = ["variantAttributes"],
                     [typeof(StorefrontAddressFieldConfigurationResponse)] = ["stateProvinceRequiredCountryCodes"],

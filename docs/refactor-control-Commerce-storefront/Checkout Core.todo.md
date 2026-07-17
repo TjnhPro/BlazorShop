@@ -430,38 +430,46 @@ Goal: prepare checkout for shipping method state without overbuilding provider e
 
 Implementation checklist:
 
-- [ ] Add shipping requirement resolver hook.
-- [ ] Set initial default: cart requires shipping unless product metadata later says all lines are non-shipping.
-- [ ] Do not treat POD/fulfillment-provider lines as non-shipping unless product metadata supports it.
-- [ ] Add basic shipping option DTO:
-  - [ ] key.
-  - [ ] display name.
-  - [ ] description.
-  - [ ] price.
-  - [ ] currency.
-  - [ ] delivery estimate text.
-  - [ ] selected flag.
-- [ ] Add initial option resolver:
+- [x] Add shipping requirement resolver hook.
+- [x] Set initial default: cart requires shipping unless product metadata later says all lines are non-shipping.
+- [x] Do not treat POD/fulfillment-provider lines as non-shipping unless product metadata supports it.
+- [x] Add basic shipping option DTO:
+  - [x] key.
+  - [x] display name.
+  - [x] description.
+  - [x] price.
+  - [x] currency.
+  - [x] delivery estimate text.
+  - [x] selected flag.
+- [x] Add initial option resolver:
   - [ ] `shipping_not_required` when resolver says no shipping.
-  - [ ] `free_standard` with zero price for MVP stores.
-- [ ] Add select shipping option command.
+  - [x] `free_standard` with zero price for MVP stores.
+- [x] Add select shipping option command.
 - [ ] Revalidate selected shipping option before review.
 - [ ] Revalidate selected shipping option before place-order.
-- [ ] Store selected shipping option as JSON or explicit fields.
-- [ ] Keep shipping total deterministic.
+- [x] Store selected shipping option as JSON or explicit fields.
+- [x] Keep shipping total deterministic.
 
 Verification checklist:
 
-- [ ] Checkout can represent shipping method state.
+- [x] Checkout can represent shipping method state.
 - [ ] Shipping-not-required path is explicit.
-- [ ] Free-standard path is deterministic.
-- [ ] Invalid/stale shipping option is rejected.
-- [ ] No full provider/rate engine is introduced.
+- [x] Free-standard path is deterministic.
+- [x] Invalid/stale shipping option is rejected.
+- [x] No full provider/rate engine is introduced.
 
 Exit criteria:
 
-- [ ] Later shipping providers can replace resolver without changing checkout step contract.
-- [ ] Shipping state does not expand scope into carrier/rate management.
+- [x] Later shipping providers can replace resolver without changing checkout step contract.
+- [x] Shipping state does not expand scope into carrier/rate management.
+
+Phase 4 evidence:
+
+- 2026-07-17: Added additive CommerceNode migration `CommerceNodeCheckoutShippingOption` with nullable `selected_shipping_option_json`.
+- 2026-07-17: Added `SelectShippingMethodAsync` and `POST /api/storefront/stores/{storeKey}/checkout/{checkoutSessionId}/shipping-method`.
+- 2026-07-17: Initial resolver returns deterministic `free_standard` zero-price option with server-owned price/currency/display metadata.
+- 2026-07-17: Shipping method selection requires shipping address first, stores selected option JSON, clears payment selection, and advances checkout to `payment_method`.
+- 2026-07-17: Focused `StorefrontCheckoutServiceTests` run passed 31/31; focused `CommerceNodeStorefrontOpenApiContractTests` run passed 29/29 after OpenAPI snapshot refresh.
 
 Suggested commit:
 
@@ -739,7 +747,7 @@ test(checkout-core): complete release gate
 - [x] Checkout version increments on step updates.
 - [x] Cart version changes reset downstream checkout state.
 - [x] Address changes reset shipping/payment/review/terms as applicable.
-- [ ] Shipping method stub returns deterministic `shipping_not_required` or `free_standard`.
+- [x] Shipping method stub returns deterministic `shipping_not_required` or `free_standard`.
 - [ ] Payment method step filters by enabled state, currency, country, total, min, and max.
 - [ ] Review projection returns server-owned totals and `placeOrderAllowed`.
 - [ ] Place-order requires checkout session ID, checkout version, cart version, and idempotency key.
@@ -805,7 +813,7 @@ test(checkout-core): complete release gate
 - [x] Phase 1 - checkout session version and resume.
 - [x] Phase 2 - entry validation and cart change detection.
 - [x] Phase 3 - address steps.
-- [ ] Phase 4 - shipping method stub and hook.
+- [x] Phase 4 - shipping method stub and hook.
 - [ ] Phase 5 - payment method step.
 - [ ] Phase 6 - review projection and terms hook.
 - [ ] Phase 7 - place order hardening and completion rules.
