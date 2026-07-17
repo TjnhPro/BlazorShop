@@ -1060,6 +1060,12 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Storefront checkout shipping option response exposes provider system name and method code for generator-safe clients. 2026-07-17 Phase 6: Storefront OpenAPI snapshot refreshed and contract tests passed.
 - [x] Commerce Admin OpenAPI remains generator-safe after all Shipping Core API additions. 2026-07-17 Phase 8: `CommerceNodeAdminStoreOpenApiMetadataTests` passed.
 
+## Order Placement Core
+
+- [x] Phase 0 baseline records current order entity, order line snapshot, checkout placement path, payment capture path, admin order behavior, Storefront order contract, and CommerceNode EF ownership. 2026-07-17: source review recorded in `Order Placement Core.todo.md`.
+- [x] Order placement baseline tests passed before refactor. 2026-07-17: focused `StorefrontCheckoutServiceTests|PaymentAttemptServiceTests|CommerceNodeAdminShipmentServiceTests|CommerceNodeStorefrontOpenApiContractTests|CommerceNodeStorefrontPaymentContractTests` passed 97/97.
+- [x] No legacy `AppDbContext`, legacy Presentation route, or active `api/internal/*` order-placement code was edited in Phase 0. 2026-07-17: docs-only baseline.
+
 ## Payment Core
 
 - [x] Payment attempt creation writes a support-readable audit row without raw provider payload. 2026-07-17 Phase 5: `PaymentAttemptServiceTests.CreateAsync_DuplicateIdempotencyKey_ReturnsSameAttempt` passed and asserted a single `payment_attempt.created` audit row.
