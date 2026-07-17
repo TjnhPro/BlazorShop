@@ -52,22 +52,34 @@ Capabilities:
 
 - Commerce stores.
 - Commerce store domains.
+- Store lifecycle and store-scoped configuration consumption.
 - Task orchestration.
 - Storefront deployment image configuration.
 - Store deployment records.
 - Docker/Nginx deployment support.
 - Admin settings.
+- Store feature states.
+- Security and privacy settings.
+- Shipping settings.
 - Admin audit.
 - Product categories.
 - Products.
 - Product variants with attribute combinations.
+- Variation templates.
 - Product media import, primary image selection, public media URL generation, and imgproxy-backed rendering.
+- Category media assignment.
+- Media asset library.
 - Inventory.
 - Media upload.
 - Orders and order admin actions.
+- Payment methods.
+- Currency configuration and exchange-rate update tasks.
+- Transactional message templates and queued messages.
 - Metrics.
 - Product/category SEO.
 - SEO settings and redirects.
+- SEO slug lifecycle.
+- Store navigation menus.
 - Store-scoped dynamic storefront pages, including admin CRUD, HTML validation, archive, and sitemap inclusion.
 
 Decision rule:
@@ -90,13 +102,21 @@ api/storefront/stores/{storeKey}/*
 Capabilities:
 
 - Store context and maintenance state.
+- Storefront configuration, contact data, default currency, feature state, and display context.
+- Security/privacy consent state.
 - Storefront auth create/login/refresh/logout/change password/update profile.
+- Customer profile and address book.
 - Public catalog categories/products by id or slug.
+- Product variant selection and availability validation.
 - Public storefront pages by slug.
+- Public navigation menus.
 - Sitemap catalog feed.
-- Cart checkout/save checkout.
-- Order confirmation and current user orders.
-- Payment methods and PayPal capture.
+- Cart lifecycle, cart merge, checkout session, address step, shipping method selection, payment method selection, review, order placement, and save checkout.
+- Order confirmation, current user orders, order details, receipts, and order item lists.
+- Payment methods, provider operations/callbacks/webhooks, and deprecated PayPal compatibility capture.
+- Currency preference and active currency lookup.
+- Shipping address field configuration.
+- Contact metadata.
 - Newsletter subscribe.
 - SEO settings and redirect resolution.
 - Product recommendations.
@@ -112,18 +132,27 @@ Decision rule:
 Project:
 
 - `BlazorShop.Storefront.V2`
+- `BlazorShop.Storefront.Components`
+- `BlazorShop.Storefront.WASM`
 
 Capabilities:
 
 - Public storefront pages.
 - Dynamic informational pages at `/pages/{slug}` loaded from Commerce Node.
 - Product/category route rendering.
+- Search, new releases, today's deals, product variant selection, and local cart UI.
 - Login/register/logout forms in the storefront layout.
 - Storefront auth cookie bridge.
-- Checkout redirect flow.
+- Customer account profile, addresses, order list/detail, and change password pages.
+- Checkout flow with address, shipping, payment, review, and payment result pages.
+- Maintenance page and current-store guard.
+- Currency preference UI.
+- Consent/banner behavior.
+- Navigation menus loaded from Commerce Node.
 - Robots and sitemap documents.
 - SEO composition and structured data.
 - Storefront API client with store key in the scoped route path.
+- Public media proxy routes for `/media/products/*` and `/media/assets/*`.
 
 Decision rule:
 
@@ -149,6 +178,27 @@ Decision rule:
 
 - Put only generic V2 Web helper behavior here.
 - Do not put Control Plane business rules or Storefront business rules here.
+
+## V2 Contract And QA Surface
+
+Projects/files:
+
+- `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger`
+- `BlazorShop.Tests/PresentationV2/CommerceNode`
+- `BlazorShop.Tests/PresentationV2/CommerceNode/Snapshots`
+- `docs/refactor-control-Commerce-storefront/QA-*.todo.md`
+
+Capabilities:
+
+- Separate Commerce Admin and Storefront Swagger documents.
+- Stable Storefront operation IDs, summaries, response schemas, error schemas, required request bodies, validation metadata, and security requirements.
+- Commerce Admin metadata for store, currency, navigation, media, shipping, security/privacy, message, slug, and related admin endpoints.
+- OpenAPI reader validation and generator-safety contract tests.
+- Swagger snapshot coverage for Storefront API breaking-change detection.
+
+Decision rule:
+
+- API contract changes are product changes. Update Swagger metadata, contract tests, snapshots, and QA docs in the same phase.
 
 ## Legacy
 

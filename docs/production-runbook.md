@@ -2,15 +2,18 @@
 
 ## Purpose
 
-Use this runbook together with `docs/production.appsettings.example.json` when promoting BlazorShop to a real production environment.
+Use this runbook together with the architecture docs before promoting BlazorShop to a real production environment.
 
-BlazorShop now has three deployable surfaces with different configuration ownership:
+Important current-state note: this file still contains legacy production deployment guidance for `BlazorShop.Presentation/*` and `compose.production.yml`. Active V2 runtime work lives under `BlazorShop.PresentationV2/*` and follows the boundaries in [docs/architecture](architecture/README.md). Treat the legacy container sections below as historical/container reference unless you intentionally deploy that legacy surface.
 
-- API: auth, email, payments, uploads, JWT, CORS, cookie policy, and internal business APIs
-- Storefront: the SSR public shopping site, public canonical/discovery origin, and storefront-to-account handoff URLs
-- Web: the authenticated account/admin Blazor WebAssembly client
+Active V2 has these deployable surfaces with different configuration ownership:
 
-Use [docs/production.appsettings.example.json](docs/production.appsettings.example.json) as the API example and [docs/storefront.production.appsettings.example.json](docs/storefront.production.appsettings.example.json) as the standalone storefront example.
+- Control Plane API: platform auth, permissions, users, nodes, stores, credentials, actions, health, audit, and gateway calls to Commerce Node.
+- Control Plane Web: authenticated admin/control Blazor WebAssembly UI; calls Control Plane API only.
+- Commerce Node API: node-local ecommerce admin/control APIs, Storefront APIs, task orchestration, media, deployment support, and Commerce Node database migration.
+- Storefront V2: server-side public storefront, public canonical/discovery origin, account/cart/checkout forms, media proxy routes, and storefront-to-Commerce Node Storefront API calls.
+
+Use [docs/production.appsettings.example.json](production.appsettings.example.json) and [docs/storefront.production.appsettings.example.json](storefront.production.appsettings.example.json) as legacy/transition examples. Verify any production config against [Deployment And Local Run](architecture/07-deployment-and-local-run.md), [Runtime Boundaries](architecture/03-runtime-boundaries.md), and [Data Ownership](architecture/04-data-ownership.md) before release.
 
 ## Replace the placeholders
 
@@ -144,9 +147,9 @@ If you deploy with an appsettings override file instead of environment variables
 - Refresh-token cookies remain `HttpOnly` and `Secure`. `SameSite=Strict` is correct for the standard `shop.example.com` / `account.shop.example.com` / `api.shop.example.com` model because those subdomains are cross-origin but still same-site.
 - SMTP delivery failures are now logged with the full exception and bubble back to callers. In strict confirmation mode, that keeps registration fail-closed instead of creating users who never receive a usable confirmation link.
 
-## Web Runtime Config
+## Legacy Web Runtime Config
 
-The WebAssembly client now keeps its checked-in production `wwwroot/appsettings.json` empty. That prevents a published production build from silently falling back to `https://localhost:7094/api/` when it is deployed away from the local dev topology.
+The legacy WebAssembly client keeps its checked-in production `wwwroot/appsettings.json` empty. That prevents a published legacy production build from silently falling back to the old local API URL when it is deployed away from the local dev topology.
 
 - Standard container deployment: leave the file empty and use the built-in same-origin `/api/` proxy from the Web nginx container.
 - Split-origin static deployment: provide a deployment-specific `wwwroot/appsettings.json` with `Api:DirectBaseUrl` pointing at the real API base URL before publishing the client.
@@ -165,11 +168,11 @@ The repository's standard container stack is designed around a public HTTPS edge
 
 Use `Runtime__Security__RefreshTokenCookieSameSite=Strict` for the standard same-site deployment model shown in this repository, including `shop.example.com` and `api.shop.example.com`. Only relax it to `None` if the browser frontend truly lives on a different site and must send the refresh cookie cross-site; if you do that, keep HTTPS and browser credentials enabled end to end.
 
-The provided [BlazorShop.Presentation/BlazorShop.Web/nginx.conf](BlazorShop.Presentation/BlazorShop.Web/nginx.conf) is intentionally HTTP-only for the internal hop and should not be treated as the public TLS endpoint.
+The provided [BlazorShop.Presentation/BlazorShop.Web/nginx.conf](../BlazorShop.Presentation/BlazorShop.Web/nginx.conf) is intentionally HTTP-only for the internal hop and should not be treated as the public TLS endpoint.
 
-## Standard Container Deployment
+## Legacy Standard Container Deployment
 
-If you want a conventional deployment path outside Aspire AppHost, use the repository Dockerfiles together with `compose.production.yml`.
+If you want a conventional deployment path for the legacy container stack outside Aspire AppHost, use the repository Dockerfiles together with `compose.production.yml`. Do not assume this deploys the active V2 Control Plane/Commerce Node/Storefront topology.
 
 Required environment variables before startup:
 
@@ -248,7 +251,7 @@ Review long or data-heavy migrations before release. Startup migration is accept
 
 ## Logging and Failure Visibility
 
-- API startup/runtime logs go to console and to `BlazorShop.Presentation/BlazorShop.API/log/log*.txt` by default.
+- Legacy API startup/runtime logs go to console and to `BlazorShop.Presentation/BlazorShop.API/log/log*.txt` by default.
 - Storefront runtime signals for discovery, redirect, and public catalog failures are emitted as structured log event names such as `public.discovery.sitemap_failure`, `public.redirect.invalid_target_blocked`, and `public.product.service_unavailable`.
 - SMTP failures are logged with the exception details and no longer fail silently in confirmation-required auth paths.
 - If storefront handoff routes start returning `503`, check `ClientApp:BaseUrl` on the storefront host first. That is the explicit failure mode when neither standalone config nor service discovery can resolve the authenticated client origin.
@@ -279,7 +282,7 @@ The production Dockerfiles and compose file pin exact image tags so base-image u
 
 - Review the pinned .NET, nginx, and PostgreSQL tags at least monthly.
 - Review them immediately after vendor security advisories or when CI/container scanning flags a base-image issue.
-- Update the pinned tags in `compose.production.yml`, `BlazorShop.Presentation/BlazorShop.API/Dockerfile`, and `BlazorShop.Presentation/BlazorShop.Web/Dockerfile` in the same change.
+- Update the pinned tags in `compose.production.yml`, `BlazorShop.Presentation/BlazorShop.API/Dockerfile`, and `BlazorShop.Presentation/BlazorShop.Web/Dockerfile` in the same change when maintaining the legacy production container path.
 - Re-run the full release verification after every image bump, even when the application code is unchanged.
 
 Current pinned images in this repository:
@@ -385,9 +388,9 @@ Release-blocker guidance:
 - Treat any failing smoke assertion as a release blocker for the checked environment.
 - If the redirect smoke check is intentionally disabled because no deterministic old slug exists in that environment, that skip is acceptable, but the other smoke checks should still pass before traffic is opened.
 
-## Development Auth Smoke Checks
+## Legacy Development Auth Smoke Checks
 
-The test project also includes a live auth smoke suite tagged with `Category=AuthSmoke`. It is intended for local Development or other disposable environments where open registration is allowed and Identity confirmation is disabled for smoke users.
+The test project also includes a legacy live auth smoke suite tagged with `Category=AuthSmoke`. It is intended for local Development or other disposable legacy environments where open registration is allowed and Identity confirmation is disabled for smoke users.
 
 Run it with:
 
@@ -397,7 +400,7 @@ dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj -c Release --filter "Catego
 
 Required environment variables:
 
-- `BLAZORSHOP_AUTH_SMOKE_API_BASE_URL`: absolute API base URL or authentication base URL, for example `https://localhost:7094/` or `https://localhost:7094/api/authentication/`
+- `BLAZORSHOP_AUTH_SMOKE_API_BASE_URL`: absolute legacy API base URL or authentication base URL, for example the legacy Development API origin or its `/api/authentication/` route.
 - `BLAZORSHOP_AUTH_SMOKE_STOREFRONT_BASE_URL`: absolute storefront base URL, for example `https://localhost:18597/`
 - `BLAZORSHOP_AUTH_SMOKE_CLIENT_APP_BASE_URL`: absolute authenticated client base URL, for example `https://localhost:7258/`
 
@@ -410,9 +413,9 @@ Optional environment variables:
 Local example:
 
 ```powershell
-$env:BLAZORSHOP_AUTH_SMOKE_API_BASE_URL = "https://localhost:7094/"
-$env:BLAZORSHOP_AUTH_SMOKE_STOREFRONT_BASE_URL = "https://localhost:18597/"
-$env:BLAZORSHOP_AUTH_SMOKE_CLIENT_APP_BASE_URL = "https://localhost:7258/"
+$env:BLAZORSHOP_AUTH_SMOKE_API_BASE_URL = "https://legacy-api.example.local/"
+$env:BLAZORSHOP_AUTH_SMOKE_STOREFRONT_BASE_URL = "https://legacy-storefront.example.local/"
+$env:BLAZORSHOP_AUTH_SMOKE_CLIENT_APP_BASE_URL = "https://legacy-web.example.local/"
 $env:BLAZORSHOP_AUTH_SMOKE_ALLOW_INVALID_CERTIFICATE = "true"
 dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj -c Release --filter "Category=AuthSmoke"
 ```
@@ -465,7 +468,7 @@ The GitHub Actions workflow `ci` runs the `build-test` job, which already covers
 
 These settings cannot be enforced from source files alone, so apply them in the GitHub repository settings.
 
-1. Protect the default branch you actually merge into, usually `main`.
+1. Protect the default branch you actually merge into. This repository currently uses `master`.
 2. Require pull requests before merging.
 3. Require at least one approval.
 4. Dismiss stale approvals when new commits are pushed.

@@ -176,6 +176,31 @@ Do not:
 - Call Control Plane.
 - Manage node credentials.
 
+### `BlazorShop.PresentationV2/BlazorShop.Storefront.Components`
+
+Use for:
+
+- Reusable Storefront Razor components that can be shared between Storefront V2 server rendering and its interactive WebAssembly assembly.
+- Presentation-only component behavior that belongs to the public Storefront experience.
+
+Do not:
+
+- Put Commerce Node clients, Control Plane clients, credentials, EF logic, or product business services here.
+- Use this as a general design system for Control Plane.
+
+### `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM`
+
+Use for:
+
+- Storefront V2 interactive WebAssembly components and bootstrapping required by `AddInteractiveWebAssemblyRenderMode`.
+- Browser-side Storefront UI behavior that is intentionally part of the public Storefront runtime.
+
+Do not:
+
+- Call Control Plane.
+- Hold node credentials.
+- Duplicate server-owned Storefront API contract behavior when `Storefront.V2` already owns the server/client integration.
+
 ### `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2`
 
 Important folders:

@@ -20,6 +20,36 @@ This document records the current development deployment model. It is not a prod
 | Commerce Node Nginx | `8088 -> 80` | Reverse proxy/runtime config for deployed storefront containers. |
 | Commerce Node imgproxy | `8089 -> 8080` | Local image resize/format service for product media. |
 
+## Preferred V2 Local Runner
+
+Use the repository script for normal V2 manual QA:
+
+```powershell
+.\scripts\run-v2-local.ps1 -StopExisting
+```
+
+The script reads `scripts/env/v2-local.env`, starts the Control Plane and Commerce Node compose dependencies unless skipped, runs these active V2 projects, waits for health endpoints, and bootstraps the local Control Plane node/store registry:
+
+- `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API`
+- `BlazorShop.PresentationV2/BlazorShop.ControlPlane.API`
+- `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`
+
+Default script URLs:
+
+| Surface | URL |
+| --- | --- |
+| Control Plane API | `http://localhost:5280` |
+| Control Plane Web | `http://localhost:5281` |
+| Commerce Node API | `http://localhost:5180` |
+| Storefront V2 | `http://localhost:18598` |
+
+Stop the local V2 runtime with:
+
+```powershell
+.\scripts\stop-v2-local.ps1
+```
+
 ## Control Plane Local Run
 
 Database:

@@ -1,6 +1,6 @@
 # BlazorShop Architecture Docs
 
-This folder is the architecture entry point for agents working in BlazorShop.
+This folder is the architecture entry point for agents and contributors working in BlazorShop.
 
 Read these documents before planning or implementing new work:
 
@@ -14,14 +14,14 @@ Read these documents before planning or implementing new work:
 8. [Agent Decision Rules](08-agent-decision-rules.md)
 9. [API Contract Standards](09-api-contract-standards.md)
 
-The current documentation backlog is tracked in [BlazorShop.ArchitectureDocumentation.todo.md](BlazorShop.ArchitectureDocumentation.todo.md).
+Historical implementation plans and QA checklists are tracked under [docs/refactor-control-Commerce-storefront](../refactor-control-Commerce-storefront/). This folder is the current architecture source of truth; do not rely on older plan files when they conflict with these pages.
 
 ## Current State
 
 BlazorShop is a single ecommerce product with shared core layers and two presentation generations:
 
 - `BlazorShop.Presentation` is legacy. Do not extend it unless the user explicitly asks for legacy work.
-- `BlazorShop.PresentationV2` is the active direction. New Control Plane, Commerce Node, Storefront V2, and shared Web V2 work belongs here.
+- `BlazorShop.PresentationV2` is the active direction. New Control Plane, Commerce Node, Storefront V2, Storefront component/WASM, and shared Web V2 work belongs here.
 - `BlazorShop.Domain`, `BlazorShop.Application`, and `BlazorShop.Infrastructure` are shared core layers used by active V2 projects.
 - `Smartstore/` is reference source for ecommerce business research only. Do not copy Smartstore implementation code into BlazorShop and do not add runtime references to Smartstore projects.
 
@@ -59,6 +59,9 @@ The short version:
 ## Related Docs
 
 - [Root agent guide](../../AGENTS.md)
+- [Repository README](../../README.md)
+- [Contributing guide](../../CONTRIBUTING.md)
+- [Security policy](../../SECURITY.md)
 - [Domain docs guide](../agents/domain.md)
 - [Historical Control Plane and Commerce Storefront plans](../refactor-control-Commerce-storefront/)
 - [Production runbook](../production-runbook.md)

@@ -41,6 +41,8 @@ Active V2 presentation/runtime:
 - `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web`
 - `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Components`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM`
 - `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2`
 
 Legacy presentation:
@@ -188,6 +190,14 @@ If browser behavior changes, use Playwright. If the user asks to observe the tes
 
 ## Local Runtime Notes
 
+Preferred V2 local runner:
+
+```powershell
+.\scripts\run-v2-local.ps1 -StopExisting
+```
+
+This script reads `scripts/env/v2-local.env`, starts Control Plane and Commerce Node Docker dependencies, runs the active V2 API/Web/Storefront projects, waits for health endpoints, and bootstraps the local Control Plane node/store registry. Stop the local V2 processes with `.\scripts\stop-v2-local.ps1`.
+
 Control Plane database:
 
 ```powershell
@@ -209,6 +219,16 @@ Important local ports:
 - Commerce Node imgproxy: `8089`
 
 See `docs/architecture/07-deployment-and-local-run.md` before changing deployment or runtime behavior.
+
+## Documentation Rules
+
+Root documentation is part of the active architecture surface:
+
+- `README.md` is the human entry point and must describe active V2 first.
+- `AGENTS.md` is the agent entry point and must stay aligned with architecture docs.
+- `CONTRIBUTING.md`, `SECURITY.md`, and `CODE_OF_CONDUCT.md` must not reference legacy repository URLs, retired maintainer emails, or unsupported runtime assumptions.
+- `docs/architecture/*` is the source of truth for boundaries, ownership, local run behavior, API contract standards, and feature placement.
+- When a feature, route, database owner, local script, or API contract rule changes, update the relevant architecture doc and QA checklist in the same phase.
 
 ## Issue Tracker And Domain Docs
 

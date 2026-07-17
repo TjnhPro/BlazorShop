@@ -1,361 +1,166 @@
 # BlazorShop
 
-[![CI](https://github.com/unrealbg/BlazorShop/actions/workflows/ci.yml/badge.svg)](https://github.com/unrealbg/BlazorShop/actions/workflows/ci.yml)
+[![CI](https://github.com/TjnhPro/BlazorShop/actions/workflows/ci.yml/badge.svg)](https://github.com/TjnhPro/BlazorShop/actions/workflows/ci.yml)
 
-BlazorShop is an open-source e-commerce application built on .NET 10 with an ASP.NET Core Web API backend, a server-rendered Blazor Web App public storefront, and an existing Blazor WebAssembly client for admin and legacy interactive flows. It follows a clean, layered architecture and provides a ready-to-extend foundation for real online stores.
+BlazorShop is a .NET 10 ecommerce codebase being migrated from a legacy single API/UI shape into an active V2 architecture with clear runtime boundaries:
 
-## Table of Contents
-- [Introduction](#introduction)
-- [Who Is It For?](#who-is-it-for)
-- [Features](#features)
-- [Technologies Used](#technologies-used)
-- [Requirements](#requirements)
-- [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
-- [API & Docs](#api--docs)
-- [Screenshots](#screenshots)
-- [Contributing](#contributing)
-- [Demo](#demo)
-- [License](#license)
-- [Acknowledgements](#acknowledgements)
+```text
+ControlPlane.Web
+  -> ControlPlane.API
+      -> CommerceNode.API
 
-## Introduction
-BlazorShop delivers a modern shopping experience with a server-rendered public storefront, a secure ASP.NET Core Web API backend, and a separate Blazor WebAssembly client that continues to host admin tooling and legacy interactive storefront flows. It includes product catalog, cart, checkout with multiple payment methods, order tracking, admin tooling, and more.
+Storefront.V2
+  -> CommerceNode.API api/storefront/stores/{storeKey}/*
+```
 
-### Who Is It For?
-- Small/medium businesses looking to bootstrap an online shop on .NET.
-- Developers exploring Blazor WebAssembly, ASP.NET Core, and clean architecture.
+The repository still contains the original `BlazorShop.Presentation` projects for reference and migration comparison. New feature work targets `BlazorShop.PresentationV2` unless a task explicitly says otherwise.
 
-## Features
-- Authentication & Authorization
-  - ASP.NET Core Identity, JWT access tokens + refresh flow
-  - Email confirmation, password change, profile update
-  - Role-based access (Admin/User)
-  - Note: The first registered user becomes Admin; next users get User role.
-- Catalog Management
-  - Categories, products, product variants (size/stock), image upload
-  - Product search/typeahead UI
-- Public SEO Storefront
-  - Server-rendered product and category routes (`/product/{slug}` and `/category/{slug}`)
-  - Published-only public catalog exposure and route-based metadata rendering
-- Cart & Checkout
-  - Persistent cart (cookie), quantity updates, totals
-  - Multiple payment methods: Stripe (card), Cash on Delivery, Bank Transfer
-  - Bank transfer instructions via email with order reference
-- Orders & Tracking
-  - Save checkout history; admin order list
-  - Update shipping status, carrier tracking number and URL
-- Newsletter
-  - Email subscription with welcome email
-- Admin Area
-  - Dashboard, products, categories, variants, orders, users, inventory, SEO, redirects, settings, and audit log
-  - User role editing, lock/unlock, email confirmation, password-change requirement flag, and guarded admin safety checks
-  - Operational store/order/notification settings without exposing SMTP passwords or API secrets
-  - Admin audit trail for sensitive catalog, SEO, redirect, order, user, settings, and inventory operations
-  - Inventory overview with low/out-of-stock filtering and product/variant stock updates
-- Developer Experience
-  - OpenAPI/Swagger, Serilog logging, unit tests, GitHub Actions CI
-  - Modern UI (Tailwind-style classes), toast notifications, Chart.js
+## What Is Active
 
-## Technologies Used
-- .NET 10, ASP.NET Core Web API
-- Blazor Web App (server-rendered public storefront)
-- Blazor WebAssembly (existing admin and legacy interactive client)
-- Entity Framework Core 10 + PostgreSQL
-- ASP.NET Core Identity (email confirmation enabled)
-- AutoMapper, FluentValidation
-- Serilog
-- Stripe integration
-- Swashbuckle (Swagger/OpenAPI)
-- xUnit, Moq (tests)
-- Microsoft Aspire AppHost (local orchestrator)
+| Area | Project | Responsibility |
+| --- | --- | --- |
+| Shared core | `BlazorShop.Domain` | Domain entities and contracts. |
+| Shared core | `BlazorShop.Application` | DTOs, validators, options, application services, Control Plane and Commerce Node contracts. |
+| Shared infrastructure | `BlazorShop.Infrastructure` | EF Core contexts, migrations, repositories, seeders, auth, email, payment, task, and node infrastructure. |
+| Runtime defaults | `BlazorShop.ServiceDefaults` | Common .NET hosting defaults. |
+| Control Plane API | `BlazorShop.PresentationV2/BlazorShop.ControlPlane.API` | Platform auth, users, permissions, nodes, stores, health, actions, audit, and gateway calls to Commerce Node. |
+| Control Plane Web | `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web` | Blazor WebAssembly admin/control UI that calls only Control Plane API. |
+| Commerce Node API | `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API` | Node-local ecommerce admin APIs, Storefront APIs, task orchestration, media, deployment support, and Commerce Node database migration. |
+| Storefront V2 | `BlazorShop.PresentationV2/BlazorShop.Storefront.V2` | Server-side public storefront, SEO documents, account/cart/checkout forms, and scoped Storefront API client. |
+| Storefront components | `BlazorShop.PresentationV2/BlazorShop.Storefront.Components` | Reusable Razor components for the Storefront V2 render modes. |
+| Storefront WASM | `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM` | Interactive WebAssembly assembly used by Storefront V2. |
+| Shared Web V2 | `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2` | Shared browser storage, cookie storage, auth session sync, API helpers, and toast utilities. |
+| Tests | `BlazorShop.Tests` | Unit, integration, contract, snapshot, and selected smoke tests. |
+
+## Feature Surface
+
+Current V2 work covers these major areas:
+
+- Control Plane: login/logout/refresh/me, users, roles and permissions, nodes, node credentials, store registry, store domain registry, node health/probe, actions, audit logs, dashboard, and Commerce Node gateway pages.
+- Commerce Admin: stores, store domains, feature states, settings, security/privacy, shipping settings, currencies, categories, products, variants, variation templates, inventory, media assets, product media import, pages, navigation, SEO settings, redirects, slug lifecycle, orders, payment methods, message templates, queued messages, tasks, metrics, and audit.
+- Storefront API: current store, maintenance, configuration, catalog, category/product slug routes, recommendations, cart, checkout, address/customer profile, auth, orders, payments, currency, contact, newsletter, consent, SEO, pages, and navigation.
+- Storefront V2 UI: home, search, new releases, deals, category, product, pages by slug, sign in, register, account profile, addresses, orders, cart, checkout, payment result pages, maintenance page, sitemap, robots, and public media proxy routes.
+- Contract foundation: Commerce Node publishes separate Swagger documents for Commerce Admin and Storefront, with stable operation IDs, response schemas, standard error schemas, validation metadata, and security metadata guarded by tests and snapshots.
+
+See [docs/architecture/06-feature-map.md](docs/architecture/06-feature-map.md) for the full ownership map.
 
 ## Requirements
-- .NET 10 SDK or later
-- Docker Desktop or another compatible container runtime (recommended for `BlazorShop.AppHost` and `compose.production.yml`)
-- PostgreSQL if you run the API outside the AppHost-provisioned database
-- Modern browser (WebAssembly capable)
-- Optional: API keys and SMTP for payments/emails
-  - Stripe Secret Key
-  - SMTP credentials
 
-## Getting Started
-1) Clone the repository
+- .NET SDK `10.0.107` or compatible `10.0.x` feature roll-forward, as pinned in [global.json](global.json).
+- Docker Desktop or a compatible Docker engine for PostgreSQL, Nginx, and imgproxy local dependencies.
+- PowerShell for the V2 local runner scripts.
+- Node.js 20 if you work on frontend package assets or CI-equivalent frontend restore paths.
 
-   ```bash
-   git clone https://github.com/unrealbg/BlazorShop.git
-   cd BlazorShop
-   ```
+## Run V2 Locally
 
-2) Configure the API (appsettings or user-secrets)
-- File: `BlazorShop.Presentation/BlazorShop.API/appsettings.json`
-- Keys you may need to set/update:
-  - `ConnectionStrings:DefaultConnection`
-  - `Jwt: Key, Issuer, Audience`
-  - `Stripe: SecretKey`
-  - `BankTransfer: Iban, Beneficiary, BankName, AdditionalInfo`
-  - `EmailSettings: From, DisplayName, SmtpServer, Port, UseSsl, Username, Password`
+The preferred local V2 entry point is:
 
-Tip: keep secrets out of source control via `dotnet user-secrets` for the API project.
+```powershell
+.\scripts\run-v2-local.ps1 -StopExisting
+```
 
-3) Database
-- The API applies EF Core migrations automatically on startup.
-- Or apply manually from the solution root:
+The script reads [scripts/env/v2-local.env](scripts/env/v2-local.env), starts Docker dependencies unless skipped, starts the four active V2 services, waits for health endpoints, and bootstraps the local Control Plane registry.
 
-   ```bash
-   dotnet ef database update --project BlazorShop.Infrastructure --startup-project BlazorShop.Presentation/BlazorShop.API
-   ```
+Default local URLs:
 
-4) Run the app (pick one)
-- Using the AppHost (recommended local orchestrator):
+| Surface | URL |
+| --- | --- |
+| Control Plane Web | `http://localhost:5281` |
+| Control Plane API Swagger | `http://localhost:5280/swagger` |
+| Commerce Node API Swagger | `http://localhost:5180/swagger` |
+| Storefront V2 | `http://localhost:18598` |
+| Commerce Node Nginx | `http://localhost:8088` |
+| Commerce Node imgproxy | `http://localhost:8089` |
 
-   ```bash
-   dotnet run --project BlazorShop.AppHost
-   ```
+Stop the local V2 runtime with:
 
-- Run projects separately (two or three terminals, depending on what you need):
+```powershell
+.\scripts\stop-v2-local.ps1
+```
 
-   ```bash
-   dotnet run --project BlazorShop.Presentation/BlazorShop.API
-  dotnet run --project BlazorShop.Presentation/BlazorShop.Storefront
-   dotnet run --project BlazorShop.Presentation/BlazorShop.Web
-   ```
+Manual dependency startup is still available:
 
-Default dev URLs (may vary by environment):
-- API: https://localhost:7094  
-- Storefront: ASP.NET Core Kestrel/AppHost-assigned URL  
-- Web: https://localhost:7258  
-- The Storefront and Web clients call the API at https://localhost:7094/api/ by default unless overridden in configuration.
+```powershell
+docker compose -f compose.controlplane.yml up -d
+docker compose -f compose.commercenode.yml up -d
+```
 
-Runtime notes:
-- Standalone Storefront still serves its own static assets such as `/css/site.css` and `/icon-192.png`.
-- Standalone and AppHost Storefront runs now expose crawl documents at `/sitemap.xml` and `/robots.txt` for the published public route surface.
-- With the API unavailable, static informational Storefront pages such as `/about-us`, `/privacy`, `/faq`, and `/terms` still return `200`, while catalog-backed routes such as `/`, `/new-releases`, `/todays-deals`, `/category/{slug}`, and `/product/{slug}` return `503`.
-- With the API available, Storefront slug routes return `200` for published content and `404` for unknown slugs.
-- AppHost remains the easiest way to verify the full local stack because it runs API + Storefront + Web together.
+## Databases
 
-5) Tests
+| Context | Connection string name | Local port | Owner |
+| --- | --- | --- | --- |
+| `ControlPlaneDbContext` | `ControlPlaneConnection` | `5433` | Platform auth, permissions, nodes, stores, credentials, actions, health, and audit. |
+| `CommerceNodeDbContext` | `CommerceNodeConnection` | `5434` | Ecommerce stores, catalog, variants, media, inventory, cart, checkout, orders, payments, customers, SEO, messages, tasks, and deployment state. |
+| `AppDbContext` | `DefaultConnection` | `5432` | Legacy commerce/storefront schema only. |
 
-   ```bash
-    dotnet test BlazorShop.sln -c Release
-   ```
+V2 API projects can apply their own EF Core migrations on startup when their `MigrateOnStartup` option is enabled. Do not use `AppDbContext` for new V2 work.
 
-## Project Structure
-- **BlazorShop.Domain** – Core entities and contracts
-- **BlazorShop.Application** – DTOs, services, validations
-- **BlazorShop.Infrastructure** – EF Core, repositories, Identity, email, payments, logging
-- **BlazorShop.Presentation/BlazorShop.API** – ASP.NET Core Web API controllers and configuration
-- **BlazorShop.Presentation/BlazorShop.Storefront** – Server-rendered Blazor Web App public storefront
-- **BlazorShop.Presentation/BlazorShop.Web** – Existing Blazor WebAssembly admin and legacy interactive client
-- **BlazorShop.Presentation/BlazorShop.Web.Shared** – Shared models/services used by the Web client
-- **BlazorShop.AppHost** – Local orchestrator (Microsoft Aspire) to run API + Storefront + Web together
-- **BlazorShop.Tests** – Unit tests
+## API And OpenAPI
 
-## API & Docs
-- Swagger UI available when API runs in Development at `/swagger`
-- CORS is configuration-driven; localhost origins work out of the box in Development
-- Production deployment reference: `docs/production-runbook.md`, `docs/production.appsettings.example.json`, `docs/storefront.production.appsettings.example.json`, and `compose.production.yml`
+Active V2 route ownership:
 
-## Screenshots
-Generated from the local seeded development stack. Source files live in
-`docs/screenshots/`, with route and viewport metadata in
-`docs/screenshots/manifest.json`.
+- `api/control-plane/*`: Control Plane API.
+- `api/commerce/*`: Commerce Node admin/control APIs, called by Control Plane API with node credentials. Store-scoped admin endpoints require `storeKey` query.
+- `api/storefront/stores/{storeKey}/*`: Commerce Node Storefront APIs, called by Storefront V2. Store scope comes from the route.
 
-### Public Storefront
-<table>
-  <tr>
-    <td align="center">
-      <img src="docs/screenshots/storefront-home.jpg" width="260" alt="Public storefront home page"/><br>
-      <small>Storefront Home</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/storefront-new-releases.jpg" width="260" alt="Public storefront new releases page"/><br>
-      <small>New Releases</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/storefront-todays-deals.jpg" width="260" alt="Public storefront today's deals page"/><br>
-      <small>Today's Deals</small>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="docs/screenshots/storefront-category-sneakers.jpg" width="260" alt="Public storefront category page"/><br>
-      <small>Category</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/storefront-product-metro-runner.jpg" width="260" alt="Public storefront product detail page"/><br>
-      <small>Product Detail</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/storefront-cart.jpg" width="260" alt="Public storefront cart page"/><br>
-      <small>Cart</small>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="docs/screenshots/storefront-about.jpg" width="260" alt="Public storefront about page"/><br>
-      <small>About</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/storefront-customer-service.jpg" width="260" alt="Public storefront customer service page"/><br>
-      <small>Customer Service</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/storefront-faq.jpg" width="260" alt="Public storefront FAQ page"/><br>
-      <small>FAQ</small>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="docs/screenshots/storefront-account-menu.jpg" width="260" alt="Public storefront account menu"/><br>
-      <small>Account Menu</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/storefront-mobile-menu.jpg" width="150" alt="Public storefront mobile menu"/><br>
-      <small>Mobile Menu</small>
-    </td>
-  </tr>
-</table>
+Commerce Node Swagger documents:
 
-### Account and Access
-<table>
-  <tr>
-    <td align="center">
-      <img src="docs/screenshots/web-workspace-entry.jpg" width="260" alt="Workspace access entry page"/><br>
-      <small>Workspace Access</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/auth-login.jpg" width="260" alt="Sign in page"/><br>
-      <small>Sign In</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/auth-register.jpg" width="260" alt="Register page"/><br>
-      <small>Register</small>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="docs/screenshots/account-dashboard.jpg" width="260" alt="Customer account dashboard"/><br>
-      <small>Account Dashboard</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/account-orders.jpg" width="260" alt="Customer account orders page"/><br>
-      <small>Orders</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/account-notifications.jpg" width="260" alt="Customer account notifications page"/><br>
-      <small>Notifications</small>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="docs/screenshots/account-profile.jpg" width="260" alt="Customer account profile page"/><br>
-      <small>Profile</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/account-settings.jpg" width="260" alt="Customer account settings page"/><br>
-      <small>Settings</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/account-checkout.jpg" width="260" alt="Customer account checkout page"/><br>
-      <small>Checkout</small>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="docs/screenshots/account-mobile-menu.jpg" width="150" alt="Customer account mobile menu"/><br>
-      <small>Mobile Menu</small>
-    </td>
-  </tr>
-</table>
+- `http://localhost:5180/swagger/commerce-admin/swagger.json`
+- `http://localhost:5180/swagger/storefront/swagger.json`
 
-### Admin Operations
-<table>
-  <tr>
-    <td align="center">
-      <img src="docs/screenshots/admin-dashboard.jpg" width="260" alt="Admin operations dashboard"/><br>
-      <small>Dashboard</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/admin-products.jpg" width="260" alt="Admin products page"/><br>
-      <small>Products</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/admin-product-add-modal.jpg" width="260" alt="Admin add product modal"/><br>
-      <small>Add Product Modal</small>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="docs/screenshots/admin-categories.jpg" width="260" alt="Admin categories page"/><br>
-      <small>Categories</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/admin-category-add-modal.jpg" width="260" alt="Admin add category modal"/><br>
-      <small>Add Category Modal</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/admin-inventory.jpg" width="260" alt="Admin inventory page"/><br>
-      <small>Inventory</small>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="docs/screenshots/admin-orders.jpg" width="260" alt="Admin orders page"/><br>
-      <small>Orders</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/admin-users.jpg" width="260" alt="Admin users page"/><br>
-      <small>Users</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/admin-seo.jpg" width="260" alt="Admin SEO page"/><br>
-      <small>SEO</small>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="docs/screenshots/admin-redirects.jpg" width="260" alt="Admin redirects page"/><br>
-      <small>Redirects</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/admin-settings.jpg" width="260" alt="Admin settings page"/><br>
-      <small>Settings</small>
-    </td>
-    <td align="center">
-      <img src="docs/screenshots/admin-audit.jpg" width="260" alt="Admin audit page"/><br>
-      <small>Audit</small>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="docs/screenshots/admin-mobile-menu.jpg" width="150" alt="Admin mobile menu"/><br>
-      <small>Mobile Menu</small>
-    </td>
-  </tr>
-</table>
+Every new or changed active V2 endpoint must follow [docs/architecture/09-api-contract-standards.md](docs/architecture/09-api-contract-standards.md). In short: publish stable operation IDs, summaries, explicit request and response DTOs, error responses, security metadata, validation metadata, required request bodies, and contract tests.
+
+## Tests And QA
+
+Fast project test command:
+
+```powershell
+dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj -c Release
+```
+
+Full solution verification:
+
+```powershell
+dotnet test BlazorShop.sln -c Release
+```
+
+Feature QA checklists live in [docs/refactor-control-Commerce-storefront](docs/refactor-control-Commerce-storefront):
+
+- [QA-ControlPlane.todo.md](docs/refactor-control-Commerce-storefront/QA-ControlPlane.todo.md)
+- [QA-CommerceNode.todo.md](docs/refactor-control-Commerce-storefront/QA-CommerceNode.todo.md)
+- [QA-CommerceNode-TaskOrchestration.todo.md](docs/refactor-control-Commerce-storefront/QA-CommerceNode-TaskOrchestration.todo.md)
+- [QA-StorefrontV2.todo.md](docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md)
+
+When a behavior changes, update the matching checklist and run focused API/browser verification. Browser-facing changes should be checked with Playwright; use a visible browser when manual observation is requested.
+
+## Documentation Map
+
+Start here:
+
+- [AGENTS.md](AGENTS.md): required rules for coding agents and V2 implementation work.
+- [docs/architecture/README.md](docs/architecture/README.md): architecture index.
+- [docs/architecture/01-system-map.md](docs/architecture/01-system-map.md): project map and runtime status.
+- [docs/architecture/03-runtime-boundaries.md](docs/architecture/03-runtime-boundaries.md): allowed and forbidden call paths.
+- [docs/architecture/04-data-ownership.md](docs/architecture/04-data-ownership.md): DbContext ownership.
+- [docs/architecture/06-feature-map.md](docs/architecture/06-feature-map.md): feature ownership.
+- [docs/architecture/07-deployment-and-local-run.md](docs/architecture/07-deployment-and-local-run.md): local run and deployment notes.
+- [docs/architecture/09-api-contract-standards.md](docs/architecture/09-api-contract-standards.md): API contract requirements.
+- [docs/production-runbook.md](docs/production-runbook.md): production notes. Some sections still document the legacy container path; verify against V2 architecture before using it for a release.
+
+## Legacy And Reference Code
+
+- `BlazorShop.Presentation/*` remains for comparison and migration reference.
+- `BlazorShop.AppHost` is legacy-oriented and must not be treated as the active V2 orchestrator.
+- `Smartstore/` is reference source only. Study it for ecommerce concepts and workflows, but do not copy implementation code or add runtime references.
 
 ## Contributing
-1. Fork the repository.
-2. Create a feature branch:
 
-   ```bash
-   git checkout -b feature/your-feature
-   ```
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR. New work should preserve V2 boundaries, update docs/QA when behavior changes, and keep API contracts generator-safe.
 
-3. Commit your changes:
+## Security
 
-   ```bash
-   git commit -m "feat: add your feature"
-   ```
-
-4. Push and open a Pull Request.
-
-## Demo
-Live demo: https://shop.unrealbg.com
+Security reporting and supported-surface guidance are in [SECURITY.md](SECURITY.md). Do not put secrets in committed appsettings, docs, screenshots, logs, or QA artifacts.
 
 ## License
-MIT License. See the LICENSE file for details.
 
-## Acknowledgements
-- https://github.com/unrealbg – Creator and maintainer of BlazorShop.
+MIT License. See [LICENSE.txt](LICENSE.txt).
