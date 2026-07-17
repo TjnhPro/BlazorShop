@@ -1159,3 +1159,4 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Store template update creates a store override instead of mutating global/default templates, and reset removes the override. 2026-07-17 Phase 7: `TransactionalMessageAdminServiceTests` passed.
 - [x] Queued message admin detail is secret-safe and omits rendered body/reset-token content. 2026-07-17 Phase 7: DTO reflection test asserts no `BodyHtml` or `IdempotencyKey` public detail fields.
 - [x] Queued message retry is store-scoped and writes through the delivery service state transition. 2026-07-17 Phase 7: focused admin service tests passed.
+- [x] Transactional Message Core automated release gate passed. 2026-07-17 Phase 8: CommerceNode API build passed and focused transactional baseline/template/token/queue/delivery/account/order/contact/admin/OpenAPI suite passed 76/76.

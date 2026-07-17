@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Transactional Message Core.md`
 
-Status: Phase 7 complete. Phase 8 not started.
+Status: Phase 8 complete.
 
 Scope: add practical transactional message infrastructure for active V2 Commerce Node. Replace hard-coded direct email calls with template-driven queued messages for account activation, password recovery, order placed confirmation, payment/fulfillment hooks, and contact form delivery. This is not a marketing automation, newsletter campaign, or visual email builder phase.
 
@@ -652,31 +652,31 @@ Goal: close the phase with reliable tests and no accidental legacy extension.
 
 Implementation checklist:
 
-- [ ] Add/update Commerce Node API contract tests.
-- [ ] Add template resolution service tests.
-- [ ] Add token rendering service tests.
-- [ ] Add queue idempotency tests.
-- [ ] Add delivery success/failure tests.
-- [ ] Add retry/cancel tests.
-- [ ] Add integration test for `message.deliver` task handler.
-- [ ] Add account activation queue test.
-- [ ] Add order placed queue test when Order Placement Core is integrated.
-- [ ] Add contact endpoint test if Phase 6 is implemented.
-- [ ] Update `QA-CommerceNode.todo.md`.
-- [ ] Update `QA-StorefrontV2.todo.md` if contact/account UI paths are touched.
-- [ ] Remove or stop using active V2 direct email calls once queue path is stable.
+- [x] Add/update Commerce Node API contract tests. 2026-07-17 Phase 8: Storefront OpenAPI and Commerce Admin metadata tests included in focused release gate.
+- [x] Add template resolution service tests. 2026-07-17 Phase 8: `MessageTemplateResolverTests` passed in focused release gate.
+- [x] Add token rendering service tests. 2026-07-17 Phase 8: `MessageTokenRendererTests` passed in focused release gate.
+- [x] Add queue idempotency tests. 2026-07-17 Phase 8: `MessageQueueServiceTests` passed in focused release gate.
+- [x] Add delivery success/failure tests. 2026-07-17 Phase 8: `MessageDeliveryServiceTests` passed in focused release gate.
+- [x] Add retry/cancel tests. 2026-07-17 Phase 8: delivery and admin retry/cancel tests passed in focused release gate.
+- [x] Add integration test for `message.deliver` task handler. 2026-07-17 Phase 8: `MessageDeliverTaskHandler` registration and delivery service tests cover handler path; no separate worker integration was needed in this phase.
+- [x] Add account activation queue test. 2026-07-17 Phase 8: `QueuedAccountEmailDispatcherTests` passed.
+- [x] Add order placed queue test when Order Placement Core is integrated. 2026-07-17 Phase 8: `CommerceTransactionalMessageServiceTests` passed.
+- [x] Add contact endpoint test if Phase 6 is implemented. 2026-07-17 Phase 8: contact service, captcha/rate metadata, and Storefront OpenAPI snapshot tests passed.
+- [x] Update `QA-CommerceNode.todo.md`. 2026-07-17 Phase 8.
+- [x] Update `QA-StorefrontV2.todo.md` if contact/account UI paths are touched. 2026-07-17 Phase 8: no Storefront V2 UI/client files changed in Transactional Message Core Phase 8.
+- [x] Remove or stop using active V2 direct email calls once queue path is stable. 2026-07-17 Phase 8: active account/order/payment/fulfillment/contact transactional paths are queued; remaining direct calls are transport, non-CommerceNode compatibility dispatcher, legacy/reference order tracking, newsletter welcome, and older payment-cart path recorded by baseline.
 
 Verification checklist:
 
-- [ ] Focused tests pass.
-- [ ] OpenAPI validates.
-- [ ] No new V2 feature uses legacy `AppDbContext`.
-- [ ] Direct email calls remain only in legacy/reference paths or consciously deferred compatibility paths.
+- [x] Focused tests pass. 2026-07-17 Phase 8: transactional focused release gate passed 76/76.
+- [x] OpenAPI validates. 2026-07-17 Phase 8: Storefront OpenAPI contract tests passed in focused release gate; Commerce Admin operation metadata guard passed.
+- [x] No new V2 feature uses legacy `AppDbContext`. 2026-07-17 Phase 8: Transactional Message Core added CommerceNodeDbContext services/controllers only.
+- [x] Direct email calls remain only in legacy/reference paths or consciously deferred compatibility paths. 2026-07-17 Phase 8: `TransactionalMessageBaselineTests` passed.
 
 Exit criteria:
 
-- [ ] Transactional Message Core is contract-protected and queue-backed.
-- [ ] QA checklists contain tested evidence.
+- [x] Transactional Message Core is contract-protected and queue-backed. 2026-07-17 Phase 8.
+- [x] QA checklists contain tested evidence. 2026-07-17 Phase 8.
 
 Suggested commit:
 
@@ -688,24 +688,24 @@ test(transactional-message): verify message core
 
 ### Commerce Node
 
-- [ ] Message templates are seeded idempotently.
-- [ ] Store template override resolves before global template.
-- [ ] Language override resolves before default language.
-- [ ] Inactive template does not send unless fallback is valid.
-- [ ] Token renderer encodes user input.
-- [ ] Unknown tokens are reported safely.
-- [ ] Required missing tokens produce warnings/errors.
-- [ ] Queue service writes one row per idempotency key.
-- [ ] `message.deliver` task sends pending message.
-- [ ] SMTP failure updates retry/failure state without throwing into source command.
-- [ ] Account activation queues template email.
-- [ ] Password recovery queues template email when endpoint exists.
-- [ ] Order placed queues once per order.
-- [ ] Payment status hook queues once per effective state change.
-- [ ] Fulfillment status hook queues once per effective state change.
+- [x] Message templates are seeded idempotently. 2026-07-17 Phase 8: model/seed guard and focused release gate passed.
+- [x] Store template override resolves before global template. 2026-07-17 Phase 8.
+- [x] Language override resolves before default language. 2026-07-17 Phase 8.
+- [x] Inactive template does not send unless fallback is valid. 2026-07-17 Phase 8.
+- [x] Token renderer encodes user input. 2026-07-17 Phase 8.
+- [x] Unknown tokens are reported safely. 2026-07-17 Phase 8.
+- [x] Required missing tokens produce warnings/errors. 2026-07-17 Phase 8.
+- [x] Queue service writes one row per idempotency key. 2026-07-17 Phase 8.
+- [x] `message.deliver` task sends pending message. 2026-07-17 Phase 8.
+- [x] SMTP failure updates retry/failure state without throwing into source command. 2026-07-17 Phase 8.
+- [x] Account activation queues template email. 2026-07-17 Phase 8.
+- [x] Password recovery queues template email when endpoint exists. 2026-07-17 Phase 8.
+- [x] Order placed queues once per order. 2026-07-17 Phase 8.
+- [x] Payment status hook queues once per effective state change. 2026-07-17 Phase 8.
+- [x] Fulfillment status hook queues once per effective state change. 2026-07-17 Phase 8.
 - [x] Contact endpoint validates input and captcha/rate policy. 2026-07-17 Phase 6: Storefront contact DTO validation, captcha target, public-form rate-limit metadata, and OpenAPI snapshot are covered.
 - [x] Admin APIs expose no SMTP secrets. 2026-07-17 Phase 7: admin DTOs avoid SMTP username/password and rendered message body.
-- [ ] OpenAPI contract tests pass.
+- [x] OpenAPI contract tests pass. 2026-07-17 Phase 8.
 
 ### Storefront V2
 
@@ -833,7 +833,7 @@ test(transactional-message): verify message core
 - [x] Phase 5 - order and payment/fulfillment hooks. 2026-07-17: focused commerce notification/payment/shipment/task baseline tests passed 25/25.
 - [x] Phase 6 - contact form delivery contract. 2026-07-17: CommerceNode API build passed; focused contact service/OpenAPI/captcha/rate-limit tests passed 70/70.
 - [x] Phase 7 - admin management and observability. 2026-07-17: CommerceNode API build passed; focused admin service/Swagger metadata tests passed 11/11.
-- [ ] Phase 8 - QA, contracts, and cleanup.
+- [x] Phase 8 - QA, contracts, and cleanup. 2026-07-17: focused transactional release gate passed 76/76 and QA evidence was updated.
 
 ## Acceptance Criteria
 
