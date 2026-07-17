@@ -1088,6 +1088,11 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Stock adjustment is behind `IOrderStockAdjustmentHook` and default behavior preserves unmanaged-stock products. 2026-07-17 Phase 6: unmanaged stock checkout remains at quantity `0` after order.
 - [x] Injected stock hook failure leaves no order/payment/history/task side effects and keeps cart active. 2026-07-17 Phase 6: `PlaceOrderAsync_WhenStockHookFails_DoesNotPersistPlacementSideEffects` passed.
 - [x] Order Placement Phase 6 focused release gate passed. 2026-07-17: CommerceNode API build passed and focused checkout/payment/model run passed 88/88.
+- [x] Storefront order response exposes safe `paymentSummary` and customer-visible `historyEntries` without token hash, admin note, provider secrets, or raw payment metadata. 2026-07-17 Phase 7: guest order lookup assertion and Storefront OpenAPI contract tests passed.
+- [x] Admin order projection includes full order history and payment attempt summary for ControlPlane gateway consumption. 2026-07-17 Phase 7: `GetOrder` projection updated through CommerceNode admin order service.
+- [x] ControlPlane Web consumes order history through existing ControlPlane API DTOs and still does not call CommerceNode directly. 2026-07-17 Phase 7: `ControlPlaneArchitectureBoundaryTests` passed.
+- [x] Storefront OpenAPI snapshot includes `StorefrontOrderPaymentSummaryResponse` and `StorefrontOrderHistoryEntryResponse`. 2026-07-17 Phase 7: snapshot refreshed and focused Storefront OpenAPI tests passed.
+- [x] Order Placement Phase 7 focused release gate passed. 2026-07-17: CommerceNode API build, ControlPlane Web build, and focused checkout/payment/shipment/OpenAPI/boundary run passed 103/103.
 
 ## Payment Core
 

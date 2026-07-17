@@ -172,6 +172,30 @@
                 </div>
             </section>
 
+            @if (selectedOrder.HistoryEntries.Count > 0)
+            {
+                <section class="rounded-md border border-ink-200 p-4">
+                    <h2 class="text-sm font-semibold text-ink-900">History</h2>
+                    <div class="mt-3 divide-y divide-ink-100 rounded-md border border-ink-200">
+                        @foreach (var entry in selectedOrder.HistoryEntries.OrderByDescending(entry => entry.CreatedAtUtc))
+                        {
+                            <div class="grid gap-2 p-3 text-sm md:grid-cols-[160px_minmax(0,1fr)_120px]">
+                                <div class="font-mono text-xs text-ink-500">@entry.CreatedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
+                                <div>
+                                    <div class="font-semibold text-ink-900">@entry.Message</div>
+                                    <div class="mt-1 font-mono text-xs text-ink-500">@entry.EventType</div>
+                                    @if (!string.IsNullOrWhiteSpace(entry.OldValue) || !string.IsNullOrWhiteSpace(entry.NewValue))
+                                    {
+                                        <div class="mt-1 text-xs text-ink-500">@entry.OldValue -> @entry.NewValue</div>
+                                    }
+                                </div>
+                                <div class="text-xs text-ink-500">@entry.Source</div>
+                            </div>
+                        }
+                    </div>
+                </section>
+            }
+
             @if (selectedOrder.ExchangeRate.HasValue && selectedOrder.BaseTotalAmount.HasValue)
             {
                 <section class="rounded-md border border-ink-200 p-4">

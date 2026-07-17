@@ -83,6 +83,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             ("StorefrontCheckoutReviewResponse", "lines"),
             ("StorefrontCheckoutReviewResponse", "issues"),
             ("StorefrontOrderResponse", "trackingEvents"),
+            ("StorefrontOrderResponse", "historyEntries"),
             ("StorefrontOrderResponse", "lines"),
             ("StorefrontOrderLineResponse", "variantAttributes"),
             ("StorefrontProductFilterMetadataResponse", "pageSizes"),

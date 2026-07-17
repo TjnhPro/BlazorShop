@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Order Placement Core.md`
 
-Status: Phase 6 complete. Phase 7 not started.
+Status: Phase 7 complete. Phase 8 not started.
 
 Scope: turn the existing Commerce Node order placement flow from a working checkout MVP into a practical order core. The goal is stable historical order snapshots, safe placement guarantees, and enough order state history for real store operations without adding a full OMS, tax engine, discount engine, stock reservation ledger, invoice/accounting system, or fulfillment platform.
 
@@ -577,47 +577,47 @@ Goal: expose useful order data safely without breaking existing clients.
 
 Implementation checklist:
 
-- [ ] Add Storefront order totals breakdown fields.
-- [ ] Add Storefront billing address summary if safe.
-- [ ] Add Storefront shipping method summary.
-- [ ] Add Storefront customer-visible history entries.
-- [ ] Add Storefront payment state summary.
-- [ ] Add guest completion token flow where applicable.
-- [ ] Add Admin full snapshot details.
-- [ ] Add Admin history entries.
-- [ ] Add Admin payment attempt references.
-- [ ] Add Admin shipping method snapshot.
-- [ ] Add Admin totals breakdown.
-- [ ] Forward new admin order fields through ControlPlane API only.
-- [ ] Prevent ControlPlane Web from calling CommerceNode directly.
-- [ ] Keep current Storefront checkout completion route working.
-- [ ] Storefront V2 uses token-protected order lookup for guest details when available.
-- [ ] Storefront V2 shows safe totals/status/tracking fields.
-- [ ] Add/update Swagger operation IDs and summaries for changed endpoints.
-- [ ] Use explicit request/response DTOs.
-- [ ] Add standard errors.
-- [ ] Add security metadata.
-- [ ] Mark request bodies required.
+- [x] Add Storefront order totals breakdown fields. 2026-07-17 Phase 7: existing additive fields remain in `StorefrontOrderResponse`.
+- [x] Add Storefront billing address summary if safe. 2026-07-17 Phase 7: existing safe billing snapshot fields remain public.
+- [x] Add Storefront shipping method summary. 2026-07-17 Phase 7: existing shipping method snapshot fields remain public.
+- [x] Add Storefront customer-visible history entries. 2026-07-17 Phase 7: `historyEntries` exposes only customer-visible events.
+- [x] Add Storefront payment state summary. 2026-07-17 Phase 7: `paymentSummary` exposes status/method/attempt state/amount/currency only.
+- [x] Add guest completion token flow where applicable. 2026-07-17 Phase 7: secure lookup from Phase 4 now returns payment summary and customer-visible history.
+- [x] Add Admin full snapshot details. 2026-07-17 Phase 7: `GetOrder` carries additive snapshot fields.
+- [x] Add Admin history entries. 2026-07-17 Phase 7: admin projection includes all order history entries.
+- [x] Add Admin payment attempt references. 2026-07-17 Phase 7: admin projection includes payment attempt public id/provider/status summary.
+- [x] Add Admin shipping method snapshot. 2026-07-17 Phase 7: existing `GetOrder` shipping snapshot fields remain populated.
+- [x] Add Admin totals breakdown. 2026-07-17 Phase 7: existing `GetOrder` total breakdown fields remain populated.
+- [x] Forward new admin order fields through ControlPlane API only. 2026-07-17 Phase 7: ControlPlane Web consumes gateway `GetOrder` DTO.
+- [x] Prevent ControlPlane Web from calling CommerceNode directly. 2026-07-17 Phase 7: boundary test passed.
+- [x] Keep current Storefront checkout completion route working. 2026-07-17 Phase 7: focused checkout tests passed.
+- [x] Storefront V2 uses token-protected order lookup for guest details when available. 2026-07-17 Phase 7: guest lookup test asserts token/store scope and new projection.
+- [x] Storefront V2 shows safe totals/status/tracking fields. 2026-07-17 Phase 7: public order DTO remains additive and secret-safe.
+- [x] Add/update Swagger operation IDs and summaries for changed endpoints. 2026-07-17 Phase 7: no route or operation id change; snapshot refreshed for response schema.
+- [x] Use explicit request/response DTOs. 2026-07-17 Phase 7: `StorefrontOrderResponse` has explicit payment/history response records.
+- [x] Add standard errors. 2026-07-17 Phase 7: existing endpoint error contracts remain unchanged and contract tests passed.
+- [x] Add security metadata. 2026-07-17 Phase 7: existing protected endpoint security metadata remains unchanged and contract tests passed.
+- [x] Mark request bodies required. 2026-07-17 Phase 7: no new request body added; existing body metadata remains covered by contract tests.
 
 Rules:
 
-- [ ] Public Storefront responses do not expose provider secrets.
-- [ ] Public Storefront responses do not expose raw payment metadata JSON.
-- [ ] Public Storefront responses do not expose guest token hash.
-- [ ] Public Storefront responses do not expose admin note unless explicitly customer-visible history entry.
-- [ ] Public Storefront responses do not expose internal audit metadata.
+- [x] Public Storefront responses do not expose provider secrets. 2026-07-17 Phase 7.
+- [x] Public Storefront responses do not expose raw payment metadata JSON. 2026-07-17 Phase 7.
+- [x] Public Storefront responses do not expose guest token hash. 2026-07-17 Phase 7.
+- [x] Public Storefront responses do not expose admin note unless explicitly customer-visible history entry. 2026-07-17 Phase 7.
+- [x] Public Storefront responses do not expose internal audit metadata. 2026-07-17 Phase 7.
 
 Verification checklist:
 
-- [ ] OpenAPI contract tests pass.
-- [ ] Storefront V2 COD completion smoke still passes.
-- [ ] Payment success/cancel smoke tests still pass.
-- [ ] ControlPlane boundary tests still pass.
+- [x] OpenAPI contract tests pass. 2026-07-17 Phase 7: refreshed Storefront OpenAPI snapshot and focused contract run passed.
+- [x] Storefront V2 COD completion smoke still passes. 2026-07-17 Phase 7: covered by focused checkout service placement tests.
+- [x] Payment success/cancel smoke tests still pass. 2026-07-17 Phase 7: focused payment attempt tests passed.
+- [x] ControlPlane boundary tests still pass. 2026-07-17 Phase 7.
 
 Exit criteria:
 
-- [ ] Existing clients remain compatible.
-- [ ] New order snapshot/history data is consumed safely by Storefront/Admin.
+- [x] Existing clients remain compatible. 2026-07-17 Phase 7: response changes are additive.
+- [x] New order snapshot/history data is consumed safely by Storefront/Admin. 2026-07-17 Phase 7.
 
 Suggested commit:
 
@@ -799,7 +799,7 @@ test(order-placement): verify order placement core
 - [x] Phase 4 - guest completion access token. 2026-07-17: committed after guest lookup/OpenAPI/model focused tests passed.
 - [x] Phase 5 - order status transition and history. 2026-07-17: committed after CommerceNode API build and focused 95/95 test run.
 - [x] Phase 6 - placement transaction and event hook. 2026-07-17: committed after CommerceNode API build and focused 88/88 test run.
-- [ ] Phase 7 - API projection and Storefront/Admin integration.
+- [x] Phase 7 - API projection and Storefront/Admin integration. 2026-07-17: committed after CommerceNode/ControlPlane builds and focused 103/103 test run.
 - [ ] Phase 8 - QA, migration safety, and documentation.
 
 ## Acceptance Criteria

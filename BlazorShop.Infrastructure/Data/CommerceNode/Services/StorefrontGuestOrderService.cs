@@ -62,13 +62,47 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             return new ServiceResponse<GetOrder>(true, "Guest order loaded.", order.Id)
             {
-                Payload = Map(order),
+                Payload = await this.MapAsync(order, cancellationToken),
                 ResponseType = ServiceResponseType.Success,
             };
         }
 
-        private static GetOrder Map(Order order)
+        private async Task<GetOrder> MapAsync(Order order, CancellationToken cancellationToken)
         {
+            var historyEntries = await this.context.OrderHistoryEntries
+                .AsNoTracking()
+                .Where(entry => entry.OrderId == order.Id && entry.VisibleToCustomer)
+                .OrderBy(entry => entry.CreatedAtUtc)
+                .Select(entry => new GetOrderHistoryEntry
+                {
+                    Id = entry.Id,
+                    EventType = entry.EventType,
+                    OldValue = entry.OldValue,
+                    NewValue = entry.NewValue,
+                    Message = entry.Message,
+                    VisibleToCustomer = entry.VisibleToCustomer,
+                    CreatedAtUtc = entry.CreatedAtUtc,
+                    Source = entry.Source,
+                })
+                .ToArrayAsync(cancellationToken);
+
+            var paymentAttempt = await this.context.PaymentAttempts
+                .AsNoTracking()
+                .Where(attempt => attempt.OrderId == order.Id)
+                .OrderByDescending(attempt => attempt.UpdatedAtUtc)
+                .Select(attempt => new GetOrderPaymentSummary
+                {
+                    PaymentAttemptPublicId = attempt.PublicId,
+                    ProviderKey = attempt.ProviderKey,
+                    PaymentStatus = attempt.State,
+                    PaymentMethodKey = attempt.PaymentMethodKey,
+                    AttemptState = attempt.State,
+                    Amount = attempt.Amount,
+                    CurrencyCode = attempt.CurrencyCode,
+                    UpdatedAtUtc = attempt.UpdatedAtUtc,
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+
             return new GetOrder
             {
                 Id = order.Id,
@@ -78,6 +112,18 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 PaymentStatus = order.PaymentStatus,
                 PaymentMethodKey = order.PaymentMethodKey,
                 PaymentAt = order.PaymentAt,
+                PaymentSummary = new GetOrderPaymentSummary
+                {
+                    PaymentAttemptPublicId = paymentAttempt?.PaymentAttemptPublicId,
+                    ProviderKey = paymentAttempt?.ProviderKey,
+                    PaymentStatus = order.PaymentStatus,
+                    PaymentMethodKey = order.PaymentMethodKey,
+                    AttemptState = paymentAttempt?.AttemptState,
+                    Amount = paymentAttempt?.Amount,
+                    CurrencyCode = paymentAttempt?.CurrencyCode,
+                    PaymentAt = order.PaymentAt,
+                    UpdatedAtUtc = paymentAttempt?.UpdatedAtUtc,
+                },
                 StoreSnapshot = OrderSnapshotProjection.ToStoreSnapshot(order),
                 CurrencyCode = order.CurrencyCode,
                 TotalAmount = order.TotalAmount,
@@ -123,6 +169,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 ShippingMethod = OrderSnapshotProjection.ToShippingMethod(order),
                 CompletedAt = order.CompletedAt,
                 CancelledAt = order.CancelledAt,
+                HistoryEntries = historyEntries,
                 Lines = order.Lines.Select(line => new GetOrderLine
                 {
                     ProductId = line.ProductId,

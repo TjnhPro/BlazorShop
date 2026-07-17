@@ -16,6 +16,8 @@ namespace BlazorShop.Application.DTOs.Payment
 
         public DateTime? PaymentAt { get; set; }
 
+        public GetOrderPaymentSummary? PaymentSummary { get; set; }
+
         public GetOrderStoreSnapshot? StoreSnapshot { get; set; }
 
         public string? CurrencyCode { get; set; }
@@ -92,7 +94,30 @@ namespace BlazorShop.Application.DTOs.Payment
 
         public IReadOnlyList<GetShipmentTrackingEvent> TrackingEvents { get; set; } = [];
 
+        public IReadOnlyList<GetOrderHistoryEntry> HistoryEntries { get; set; } = [];
+
         public IEnumerable<GetOrderLine> Lines { get; set; } = Array.Empty<GetOrderLine>();
+    }
+
+    public sealed class GetOrderPaymentSummary
+    {
+        public Guid? PaymentAttemptPublicId { get; set; }
+
+        public string? ProviderKey { get; set; }
+
+        public string PaymentStatus { get; set; } = string.Empty;
+
+        public string PaymentMethodKey { get; set; } = string.Empty;
+
+        public string? AttemptState { get; set; }
+
+        public decimal? Amount { get; set; }
+
+        public string? CurrencyCode { get; set; }
+
+        public DateTime? PaymentAt { get; set; }
+
+        public DateTimeOffset? UpdatedAtUtc { get; set; }
     }
 
     public sealed class GetOrderStoreSnapshot
@@ -163,5 +188,24 @@ namespace BlazorShop.Application.DTOs.Payment
         public string? CurrencyCode { get; set; }
 
         public string? DeliveryEstimateText { get; set; }
+    }
+
+    public sealed class GetOrderHistoryEntry
+    {
+        public Guid Id { get; set; }
+
+        public string EventType { get; set; } = string.Empty;
+
+        public string? OldValue { get; set; }
+
+        public string? NewValue { get; set; }
+
+        public string Message { get; set; } = string.Empty;
+
+        public bool VisibleToCustomer { get; set; }
+
+        public DateTimeOffset CreatedAtUtc { get; set; }
+
+        public string Source { get; set; } = string.Empty;
     }
 }

@@ -468,6 +468,7 @@ Status legend:
 - [x] Payment Methods page shows provider capability status without direct CommerceNode calls. 2026-07-17 Payment Core Phase 6/8: `ControlPlaneArchitectureBoundaryTests|LayoutAssetFoundationTests` passed inside focused release gate.
 - [x] Orders drawer shows order/payment/shipping statuses separately. 2026-07-13: Orders table/drawer showed order `processing`, payment `paid`, shipping `not_yet_shipped`, then `shipped`.
 - [x] Orders drawer Mark Complete calls ControlPlane API and updates order detail. 2026-07-13: visible browser marked `ORD-20260713-6672B965` complete after shipping update; network capture still showed no direct CommerceNode calls.
+- [x] Orders drawer shows order history from ControlPlane API order detail projection. 2026-07-17 Order Placement Phase 7: ControlPlane Web build and `ControlPlaneArchitectureBoundaryTests` passed; no direct CommerceNode call was added.
 - [ ] Orders drawer Cancel calls ControlPlane API and updates order detail.
 
 ## Catalog Structure Core

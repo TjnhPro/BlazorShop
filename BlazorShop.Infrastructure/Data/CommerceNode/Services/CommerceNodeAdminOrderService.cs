@@ -295,6 +295,57 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 .Select(product => new { product.Id, product.Name })
                 .ToDictionaryAsync(product => product.Id, product => product.Name ?? string.Empty);
 
+            var orderIds = orders.Select(order => order.Id).ToArray();
+            var historyEntries = await this.context.OrderHistoryEntries
+                .AsNoTracking()
+                .Where(entry => orderIds.Contains(entry.OrderId))
+                .OrderBy(entry => entry.CreatedAtUtc)
+                .Select(entry => new
+                {
+                    entry.OrderId,
+                    Entry = new GetOrderHistoryEntry
+                    {
+                        Id = entry.Id,
+                        EventType = entry.EventType,
+                        OldValue = entry.OldValue,
+                        NewValue = entry.NewValue,
+                        Message = entry.Message,
+                        VisibleToCustomer = entry.VisibleToCustomer,
+                        CreatedAtUtc = entry.CreatedAtUtc,
+                        Source = entry.Source,
+                    },
+                })
+                .ToListAsync();
+
+            var historyEntriesByOrder = historyEntries
+                .GroupBy(item => item.OrderId)
+                .ToDictionary(group => group.Key, group => group.Select(item => item.Entry).ToArray());
+
+            var paymentAttempts = await this.context.PaymentAttempts
+                .AsNoTracking()
+                .Where(attempt => attempt.OrderId.HasValue && orderIds.Contains(attempt.OrderId.Value))
+                .OrderByDescending(attempt => attempt.UpdatedAtUtc)
+                .Select(attempt => new
+                {
+                    OrderId = attempt.OrderId!.Value,
+                    Summary = new GetOrderPaymentSummary
+                    {
+                        PaymentAttemptPublicId = attempt.PublicId,
+                        ProviderKey = attempt.ProviderKey,
+                        PaymentStatus = attempt.State,
+                        PaymentMethodKey = attempt.PaymentMethodKey,
+                        AttemptState = attempt.State,
+                        Amount = attempt.Amount,
+                        CurrencyCode = attempt.CurrencyCode,
+                        UpdatedAtUtc = attempt.UpdatedAtUtc,
+                    },
+                })
+                .ToListAsync();
+
+            var paymentSummaryByOrder = paymentAttempts
+                .GroupBy(item => item.OrderId)
+                .ToDictionary(group => group.Key, group => group.First().Summary);
+
             return orders.Select(order => new GetOrder
             {
                 Id = order.Id,
@@ -304,6 +355,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 PaymentStatus = order.PaymentStatus,
                 PaymentMethodKey = order.PaymentMethodKey,
                 PaymentAt = order.PaymentAt,
+                PaymentSummary = CreatePaymentSummary(
+                    order,
+                    paymentSummaryByOrder.TryGetValue(order.Id, out var paymentSummary) ? paymentSummary : null),
                 StoreSnapshot = OrderSnapshotProjection.ToStoreSnapshot(order),
                 CurrencyCode = order.CurrencyCode,
                 TotalAmount = order.TotalAmount,
@@ -351,6 +405,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 CompletedAt = order.CompletedAt,
                 CancelledAt = order.CancelledAt,
                 AdminNote = order.AdminNote,
+                HistoryEntries = historyEntriesByOrder.TryGetValue(order.Id, out var history) ? history : [],
                 Lines = order.Lines.Select(line => new GetOrderLine
                 {
                     ProductId = line.ProductId,
@@ -375,6 +430,22 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 Summary = summary,
                 MetadataJson = JsonSerializer.Serialize(metadata),
             });
+        }
+
+        private static GetOrderPaymentSummary CreatePaymentSummary(Order order, GetOrderPaymentSummary? paymentAttempt)
+        {
+            return new GetOrderPaymentSummary
+            {
+                PaymentAttemptPublicId = paymentAttempt?.PaymentAttemptPublicId,
+                ProviderKey = paymentAttempt?.ProviderKey,
+                PaymentStatus = order.PaymentStatus,
+                PaymentMethodKey = order.PaymentMethodKey,
+                AttemptState = paymentAttempt?.AttemptState,
+                Amount = paymentAttempt?.Amount,
+                CurrencyCode = paymentAttempt?.CurrencyCode,
+                PaymentAt = order.PaymentAt,
+                UpdatedAtUtc = paymentAttempt?.UpdatedAtUtc,
+            };
         }
 
         private static DateTime EnsureUtc(DateTime value)

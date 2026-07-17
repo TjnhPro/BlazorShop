@@ -1121,6 +1121,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 order.PaymentStatus,
                 order.PaymentMethodKey,
                 order.PaymentAt,
+                order.PaymentSummary?.ToStorefrontContract(),
                 order.StoreSnapshot?.ToStorefrontContract(),
                 order.CurrencyCode,
                 order.TotalAmount,
@@ -1158,7 +1159,23 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 order.CompletedAt,
                 order.CancelledAt,
                 order.TrackingEvents.Select(item => item.ToStorefrontContract()).ToArray(),
+                order.HistoryEntries
+                    .Where(item => item.VisibleToCustomer)
+                    .Select(item => item.ToStorefrontContract())
+                    .ToArray(),
                 order.Lines.Select(line => line.ToStorefrontContract()).ToArray());
+        }
+
+        public static StorefrontOrderPaymentSummaryResponse ToStorefrontContract(this GetOrderPaymentSummary summary)
+        {
+            return new StorefrontOrderPaymentSummaryResponse(
+                summary.PaymentStatus,
+                summary.PaymentMethodKey,
+                summary.AttemptState,
+                summary.Amount,
+                summary.CurrencyCode,
+                summary.PaymentAt,
+                summary.UpdatedAtUtc);
         }
 
         public static StorefrontOrderStoreSnapshotResponse ToStorefrontContract(this GetOrderStoreSnapshot snapshot)
@@ -1218,6 +1235,16 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 item.OccurredAtUtc,
                 item.Location,
                 item.Source);
+        }
+
+        public static StorefrontOrderHistoryEntryResponse ToStorefrontContract(this GetOrderHistoryEntry item)
+        {
+            return new StorefrontOrderHistoryEntryResponse(
+                item.EventType,
+                item.OldValue,
+                item.NewValue,
+                item.Message,
+                item.CreatedAtUtc);
         }
 
         public static StorefrontOrderLineResponse ToStorefrontContract(this GetOrderLine line)

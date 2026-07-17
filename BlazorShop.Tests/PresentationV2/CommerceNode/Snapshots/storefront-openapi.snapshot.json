@@ -8762,6 +8762,32 @@
         },
         "additionalProperties": false
       },
+      "StorefrontOrderHistoryEntryResponse": {
+        "type": "object",
+        "properties": {
+          "eventType": {
+            "type": "string",
+            "nullable": true
+          },
+          "oldValue": {
+            "type": "string",
+            "nullable": true
+          },
+          "newValue": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontOrderItemHistoryResponse": {
         "type": "object",
         "properties": {
@@ -8903,8 +8929,46 @@
         },
         "additionalProperties": false
       },
+      "StorefrontOrderPaymentSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "paymentStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentMethodKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "attemptState": {
+            "type": "string",
+            "nullable": true
+          },
+          "amount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "currencyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updatedAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontOrderResponse": {
         "required": [
+          "historyEntries",
           "lines",
           "trackingEvents"
         ],
@@ -8938,6 +9002,9 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          },
+          "paymentSummary": {
+            "$ref": "#/components/schemas/StorefrontOrderPaymentSummaryResponse"
           },
           "storeSnapshot": {
             "$ref": "#/components/schemas/StorefrontOrderStoreSnapshotResponse"
@@ -9052,6 +9119,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/StorefrontOrderTrackingEventResponse"
+            }
+          },
+          "historyEntries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontOrderHistoryEntryResponse"
             }
           },
           "lines": {

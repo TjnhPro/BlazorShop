@@ -831,6 +831,16 @@ namespace BlazorShop.Tests.Application.CommerceNode
 
             Assert.True(lookup.Success, lookup.Message);
             Assert.Equal(persistedOrder.Reference, lookup.Payload!.Reference);
+            Assert.NotNull(lookup.Payload.PaymentSummary);
+            Assert.Equal(PaymentStatuses.Paid, lookup.Payload.PaymentSummary.PaymentStatus);
+            Assert.Equal(PaymentMethodKeys.Cod, lookup.Payload.PaymentSummary.PaymentMethodKey);
+            Assert.Equal(PaymentAttemptStates.Captured, lookup.Payload.PaymentSummary.AttemptState);
+            Assert.Equal(27.25m, lookup.Payload.PaymentSummary.Amount);
+            Assert.Equal("USD", lookup.Payload.PaymentSummary.CurrencyCode);
+            Assert.Equal(
+                ["order.created", "payment.captured"],
+                lookup.Payload.HistoryEntries.Select(item => item.EventType).OrderBy(item => item).ToArray());
+            Assert.All(lookup.Payload.HistoryEntries, item => Assert.True(item.VisibleToCustomer));
             Assert.False(wrongToken.Success);
             Assert.Equal(ServiceResponseType.NotFound, wrongToken.ResponseType);
             Assert.False(wrongStore.Success);

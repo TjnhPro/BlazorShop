@@ -1085,6 +1085,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         string PaymentStatus,
         string PaymentMethodKey,
         DateTime? PaymentAt,
+        StorefrontOrderPaymentSummaryResponse? PaymentSummary,
         StorefrontOrderStoreSnapshotResponse? StoreSnapshot,
         string? CurrencyCode,
         decimal TotalAmount,
@@ -1113,7 +1114,17 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         DateTime? CompletedAt,
         DateTime? CancelledAt,
         IReadOnlyList<StorefrontOrderTrackingEventResponse> TrackingEvents,
+        IReadOnlyList<StorefrontOrderHistoryEntryResponse> HistoryEntries,
         IReadOnlyList<StorefrontOrderLineResponse> Lines);
+
+    public sealed record StorefrontOrderPaymentSummaryResponse(
+        string PaymentStatus,
+        string PaymentMethodKey,
+        string? AttemptState,
+        decimal? Amount,
+        string? CurrencyCode,
+        DateTime? PaymentAt,
+        DateTimeOffset? UpdatedAtUtc);
 
     public sealed record StorefrontOrderStoreSnapshotResponse(
         Guid? PublicId,
@@ -1147,6 +1158,13 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         DateTime OccurredAtUtc,
         string? Location,
         string Source);
+
+    public sealed record StorefrontOrderHistoryEntryResponse(
+        string EventType,
+        string? OldValue,
+        string? NewValue,
+        string Message,
+        DateTimeOffset CreatedAtUtc);
 
     public sealed record StorefrontShippingAddressResponse(
         string? FullName,
