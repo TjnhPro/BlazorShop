@@ -8,7 +8,6 @@
     using BlazorShop.Application.Services.Contracts.Authentication;
     using BlazorShop.Application.Services.Contracts.Logging;
     using BlazorShop.Application.Validations;
-    using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Contracts.Authentication;
     using BlazorShop.Domain.Entities.Identity;
 
@@ -28,7 +27,7 @@
         private readonly IValidator<ChangePassword> _changePasswordValidator;
         private readonly IValidator<ResetPassword> _resetPasswordValidator;
         private readonly IValidationService _validationService;
-        private readonly IEmailService _emailService;
+        private readonly IAccountEmailDispatcher _accountEmailDispatcher;
         private readonly ClientAppOptions _clientAppOptions;
         private readonly IdentityConfirmationOptions _identityConfirmationOptions;
 
@@ -43,7 +42,7 @@
             IValidationService validationService,
             IValidator<ChangePassword> changePasswordValidator,
             IValidator<ResetPassword> resetPasswordValidator,
-            IEmailService emailService,
+            IAccountEmailDispatcher accountEmailDispatcher,
             IOptions<ClientAppOptions> clientAppOptions,
             IOptions<IdentityConfirmationOptions> identityConfirmationOptions)
         {
@@ -57,7 +56,7 @@
             _validationService = validationService;
             _changePasswordValidator = changePasswordValidator;
             _resetPasswordValidator = resetPasswordValidator;
-            _emailService = emailService;
+            _accountEmailDispatcher = accountEmailDispatcher;
             _clientAppOptions = clientAppOptions.Value;
             _identityConfirmationOptions = identityConfirmationOptions.Value;
         }
@@ -112,12 +111,15 @@
                     var token = await _userManager.GenerateEmailConfirmationTokenAsync(currentUser);
                     var confirmationLink = this.BuildClientUrl($"confirm-email?userId={currentUser.Id}&token={Uri.EscapeDataString(token)}");
 
-                    await this.SendConfirmationEmail(user.Email,
-                        $"Please confirm your email by clicking <a href=\"{confirmationLink}\">here</a>.");
+                    await this.SendConfirmationEmail(
+                        user.Email,
+                        confirmationLink,
+                        currentUser.FullName,
+                        currentUser.Id);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Failed to send email confirmation link to {user.Email}");
+                _logger.LogError(ex, $"Failed to enqueue email confirmation link to {user.Email}");
                     await RollbackCreatedUserAsync(currentUser.Email,
                         $"User with Email {currentUser.Email} failed to be removed after confirmation email dispatch failed.");
                     return new ServiceResponse { Message = "Failed to send confirmation email." };
@@ -327,14 +329,23 @@
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var resetLink = this.BuildClientUrl(
                     $"reset-password?email={Uri.EscapeDataString(user.Email)}&token={Uri.EscapeDataString(token)}");
-                await _emailService.SendEmailAsync(
-                    user.Email,
-                    "Reset your password",
-                    $"Reset your password by clicking <a href=\"{resetLink}\">here</a>.");
+                var dispatchResult = await _accountEmailDispatcher.SendPasswordRecoveryAsync(
+                    new AccountEmailDispatchRequest(
+                        user.Email,
+                        user.FullName,
+                        resetLink,
+                        user.Id));
+
+                if (!dispatchResult.Success)
+                {
+                    _logger.LogError(
+                        new InvalidOperationException(dispatchResult.ErrorCode ?? "account_email.password_recovery_failed"),
+                        $"Failed to enqueue password reset email to {user.Email}");
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Failed to send password reset email to {email}");
+                _logger.LogError(ex, $"Failed to enqueue password reset email to {email}");
             }
 
             return genericResponse;
@@ -360,9 +371,23 @@
                 : new ServiceResponse(false, "Password reset could not be completed.");
         }
 
-        public async Task SendConfirmationEmail(string email, string confirmationLink)
+        public Task SendConfirmationEmail(string email, string confirmationLink)
         {
-            await _emailService.SendEmailAsync(email, "Confirm your email", confirmationLink);
+            return this.SendConfirmationEmail(email, confirmationLink, null, null);
+        }
+
+        private async Task SendConfirmationEmail(
+            string email,
+            string confirmationLink,
+            string? fullName,
+            string? userId)
+        {
+            var result = await _accountEmailDispatcher.SendActivationAsync(
+                new AccountEmailDispatchRequest(email, fullName, confirmationLink, userId));
+            if (!result.Success)
+            {
+                throw new InvalidOperationException(result.ErrorCode ?? "account_email.activation_failed");
+            }
         }
 
         public async Task<ServiceResponse> UpdateProfile(string userId, UpdateProfile dto)
@@ -406,8 +431,26 @@
             var pendingEmail = currentUser.Email;
             if (!string.IsNullOrWhiteSpace(pendingEmail))
             {
-                await this.SendConfirmationEmail(pendingEmail,
-                    $"Please confirm your email by clicking <a href=\"{confirmationLink}\">here</a>.");
+                try
+                {
+                    await this.SendConfirmationEmail(
+                        pendingEmail,
+                        confirmationLink,
+                        currentUser.FullName,
+                        currentUser.Id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(
+                        ex,
+                        $"Failed to enqueue email confirmation link for unconfirmed login. Email: {currentUser.Email}, UserId: {currentUser.Id}");
+
+                    return new LoginResponse
+                    {
+                        Success = false,
+                        Message = "Email not confirmed. A new confirmation link could not be sent at this time."
+                    };
+                }
             }
 
             _logger.LogWarning($"User with unconfirmed email tried to log in. Email: {currentUser.Email}, UserId: {currentUser.Id}");

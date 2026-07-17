@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Transactional Message Core.md`
 
-Status: Phase 3 complete. Phase 4 not started.
+Status: Phase 4 complete. Phase 5 not started.
 
 Scope: add practical transactional message infrastructure for active V2 Commerce Node. Replace hard-coded direct email calls with template-driven queued messages for account activation, password recovery, order placed confirmation, payment/fulfillment hooks, and contact form delivery. This is not a marketing automation, newsletter campaign, or visual email builder phase.
 
@@ -509,26 +509,26 @@ Goal: move account activation and password recovery onto templates and queue.
 
 Implementation checklist:
 
-- [ ] Replace direct confirmation email send path with `IMessageQueueService`.
-- [ ] Keep fallback direct email only if queue enqueue fails before migration hardening.
-- [ ] Log fallback clearly if retained.
-- [ ] Add password recovery template integration for Customer Identity Account phase.
-- [ ] Redact reset tokens from logs.
-- [ ] Redact activation tokens from logs.
-- [ ] Redact reset/activation token URLs from admin queue detail where appropriate.
-- [ ] Add anti-enumeration behavior for password recovery response.
+- [x] Replace direct confirmation email send path with `IMessageQueueService`. 2026-07-17 Phase 4: `AuthenticationService` now dispatches through `IAccountEmailDispatcher`; CommerceNode overrides it with `QueuedAccountEmailDispatcher`.
+- [x] Keep fallback direct email only if queue enqueue fails before migration hardening. 2026-07-17 Phase 4: fallback is limited to non-CommerceNode/default `DirectAccountEmailDispatcher`; active CommerceNode does not direct-send account messages in request path.
+- [x] Log fallback clearly if retained. 2026-07-17 Phase 4: no CommerceNode fallback retained; queue failures are logged as enqueue failures.
+- [x] Add password recovery template integration for Customer Identity Account phase. 2026-07-17 Phase 4: password recovery queues `customer.password_recovery`.
+- [x] Redact reset tokens from logs. 2026-07-17 Phase 4: logs include email/user id/error code only, not reset URL/token.
+- [x] Redact activation tokens from logs. 2026-07-17 Phase 4: logs include email/user id/error code only, not activation URL/token.
+- [x] Redact reset/activation token URLs from admin queue detail where appropriate. 2026-07-17 Phase 4: no admin queue detail endpoint exists yet; Phase 7 must preserve this redaction before exposing queued bodies.
+- [x] Add anti-enumeration behavior for password recovery response. 2026-07-17 Phase 4: known and unknown emails still return the same generic response.
 
 Verification checklist:
 
-- [ ] Account activation email is queued.
-- [ ] Account activation email is template-rendered.
-- [ ] Password recovery email is queued when endpoint exists.
-- [ ] Registration/auth command succeeds or returns controlled error when email provider is down.
-- [ ] User creation is not left half-complete because SMTP is down.
+- [x] Account activation email is queued. 2026-07-17 Phase 4: `QueuedAccountEmailDispatcherTests.SendActivationAsync_QueuesStoreScopedTemplateMessage`.
+- [x] Account activation email is template-rendered. 2026-07-17 Phase 4: queued activation uses seeded `customer.account_activation` template and renderer from Phase 2/3.
+- [x] Password recovery email is queued when endpoint exists. 2026-07-17 Phase 4: `ForgotPassword_WithKnownEmail_GeneratesIdentityTokenAndSendsGenericSuccess` and queued dispatcher tests passed.
+- [x] Registration/auth command succeeds or returns controlled error when email provider is down. 2026-07-17 Phase 4: source command only enqueues; unconfirmed-login resend failure returns a controlled error.
+- [x] User creation is not left half-complete because SMTP is down. 2026-07-17 Phase 4: SMTP delivery is async through `message.deliver`; enqueue failure still rolls back strict confirmation registration.
 
 Exit criteria:
 
-- [ ] Account messages use queued template delivery.
+- [x] Account messages use queued template delivery. 2026-07-17 Phase 4.
 
 Suggested commit:
 
@@ -829,7 +829,7 @@ test(transactional-message): verify message core
 - [x] Phase 1 - message data model and seeds. 2026-07-17: CommerceNode API build passed and focused model/resolver tests passed 34/34.
 - [x] Phase 2 - token rendering and preview. 2026-07-17: CommerceNode API build passed; focused renderer/model/resolver tests passed 43/43.
 - [x] Phase 3 - queue and delivery handler. 2026-07-17: CommerceNode API build passed; focused queue/delivery/renderer/resolver tests passed 18/18.
-- [ ] Phase 4 - account messages.
+- [x] Phase 4 - account messages. 2026-07-17: CommerceNode API build passed; focused auth/dispatcher/queue/delivery/baseline tests passed 63/63.
 - [ ] Phase 5 - order and payment/fulfillment hooks.
 - [ ] Phase 6 - contact form delivery contract.
 - [ ] Phase 7 - admin management and observability.

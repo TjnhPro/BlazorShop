@@ -1146,3 +1146,6 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Transactional message enqueue creates one `QueuedMessage` and one `message.deliver` CommerceTask with idempotency protection. 2026-07-17 Phase 3: `MessageQueueServiceTests` passed.
 - [x] `message.deliver` delivery sends through `IEmailService` and updates sent/retry/failed message state without coupling SMTP failure to source commands. 2026-07-17 Phase 3: `MessageDeliveryServiceTests` passed.
 - [x] Manual queued-message retry/cancel service methods are available for later admin endpoints. 2026-07-17 Phase 3: `RetryAndCancel_UpdateQueuedMessageState` passed.
+- [x] Account activation and password recovery use queued template delivery in CommerceNode while non-CommerceNode runtime keeps direct SMTP compatibility through a dispatcher seam. 2026-07-17 Phase 4: `AuthenticationServiceTests`, `DirectAccountEmailDispatcherTests`, and `QueuedAccountEmailDispatcherTests` passed.
+- [x] Password recovery remains anti-enumeration-safe after queue integration. 2026-07-17 Phase 4: known and unknown email tests return the same generic response.
+- [x] Account email enqueue failures are controlled and do not log reset/activation URLs. 2026-07-17 Phase 4: resend failure test returns a controlled login error; auth logs use email/user/error code context only.

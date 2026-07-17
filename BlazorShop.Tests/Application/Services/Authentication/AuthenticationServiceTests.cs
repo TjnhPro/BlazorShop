@@ -8,6 +8,7 @@ namespace BlazorShop.Tests.Application.Services.Authentication
     using BlazorShop.Application.DTOs.UserIdentity;
     using BlazorShop.Application.Options;
     using BlazorShop.Application.Services.Authentication;
+    using BlazorShop.Application.Services.Contracts.Authentication;
     using BlazorShop.Application.Services.Contracts.Logging;
     using BlazorShop.Application.Validations;
     using BlazorShop.Domain.Contracts;
@@ -35,7 +36,7 @@ namespace BlazorShop.Tests.Application.Services.Authentication
         private readonly Mock<IValidator<ResetPassword>> _resetPasswordValidatorMock;
         private readonly Mock<IValidationService> _validationServiceMock;
         private readonly AuthenticationService _authenticationService;
-        private readonly Mock<IEmailService> _emailServiceMock;
+        private readonly Mock<IAccountEmailDispatcher> _accountEmailDispatcherMock;
 
         public AuthenticationServiceTests()
         {
@@ -49,7 +50,17 @@ namespace BlazorShop.Tests.Application.Services.Authentication
             _changePasswordValidatorMock = new Mock<IValidator<ChangePassword>>();
             _resetPasswordValidatorMock = new Mock<IValidator<ResetPassword>>();
             _validationServiceMock = new Mock<IValidationService>();
-            _emailServiceMock = new Mock<IEmailService>();
+            _accountEmailDispatcherMock = new Mock<IAccountEmailDispatcher>();
+            _accountEmailDispatcherMock
+                .Setup(dispatcher => dispatcher.SendActivationAsync(
+                    It.IsAny<AccountEmailDispatchRequest>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(AccountEmailDispatchResult.Succeeded());
+            _accountEmailDispatcherMock
+                .Setup(dispatcher => dispatcher.SendPasswordRecoveryAsync(
+                    It.IsAny<AccountEmailDispatchRequest>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(AccountEmailDispatchResult.Succeeded());
 
             _authenticationService = CreateAuthenticationService();
         }
@@ -67,7 +78,7 @@ namespace BlazorShop.Tests.Application.Services.Authentication
                 _validationServiceMock.Object,
                 _changePasswordValidatorMock.Object,
                 _resetPasswordValidatorMock.Object,
-                _emailServiceMock.Object,
+                _accountEmailDispatcherMock.Object,
                 Options.Create(new ClientAppOptions { BaseUrl = "https://localhost:7258" }),
                 Options.Create(identityConfirmationOptions ?? new IdentityConfirmationOptions()));
         }
@@ -98,7 +109,15 @@ namespace BlazorShop.Tests.Application.Services.Authentication
             // Assert
             Assert.True(result.Success);
             Assert.Equal("User created successfully.", result.Message);
-            _emailServiceMock.Verify(e => e.SendEmailAsync(createUser.Email, "Confirm your email", It.IsAny<string>()), Times.Once);
+            _accountEmailDispatcherMock.Verify(
+                dispatcher => dispatcher.SendActivationAsync(
+                    It.Is<AccountEmailDispatchRequest>(request =>
+                        request.Email == createUser.Email
+                        && request.FullName == mappedUser.FullName
+                        && request.UserId == mappedUser.Id
+                        && request.ActionUrl.Contains("confirm-email?userId=user-id&token=confirmation-token", StringComparison.Ordinal)),
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
             _userManagerMock.Verify(u => u.ConfirmEmailAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
         }
 
@@ -157,8 +176,11 @@ namespace BlazorShop.Tests.Application.Services.Authentication
             _userManagerMock.Setup(u => u.GetAllUsersAsync()).ReturnsAsync(new List<AppUser> { mappedUser });
             _roleManagerMock.Setup(r => r.AddUserToRoleAsync(mappedUser, "Admin")).ReturnsAsync(true);
             _userManagerMock.Setup(u => u.GenerateEmailConfirmationTokenAsync(mappedUser)).ReturnsAsync("confirmation-token");
-            _emailServiceMock.Setup(e => e.SendEmailAsync(createUser.Email, It.IsAny<string>(), It.IsAny<string>()))
-                .ThrowsAsync(new Exception("Email service error"));
+            _accountEmailDispatcherMock
+                .Setup(dispatcher => dispatcher.SendActivationAsync(
+                    It.IsAny<AccountEmailDispatchRequest>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(AccountEmailDispatchResult.Failed("account_email.queue_failed", "Queue failed."));
             _userManagerMock.Setup(u => u.RemoveUserByEmail(createUser.Email)).ReturnsAsync(1);
 
             // Act
@@ -247,7 +269,11 @@ namespace BlazorShop.Tests.Application.Services.Authentication
             Assert.NotNull(result);
             Assert.True(result.Success);
             Assert.Equal("User created successfully.", result.Message);
-            _emailServiceMock.Verify(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _accountEmailDispatcherMock.Verify(
+                dispatcher => dispatcher.SendActivationAsync(
+                    It.IsAny<AccountEmailDispatchRequest>(),
+                    It.IsAny<CancellationToken>()),
+                Times.Never);
             _userManagerMock.Verify(u => u.ConfirmEmailAsync(mappedUser, "confirmation-token"), Times.Once);
         }
 
@@ -274,9 +300,11 @@ namespace BlazorShop.Tests.Application.Services.Authentication
             _roleManagerMock.Setup(r => r.AddUserToRoleAsync(mappedUser, "Admin")).ReturnsAsync(true);
             _userManagerMock.Setup(u => u.GenerateEmailConfirmationTokenAsync(mappedUser)).ReturnsAsync("confirmation-token");
             _userManagerMock.Setup(u => u.ConfirmEmailAsync(mappedUser, "confirmation-token")).ReturnsAsync(true);
-            _emailServiceMock
-                .Setup(e => e.SendEmailAsync(createUser.Email, It.IsAny<string>(), It.IsAny<string>()))
-                .ThrowsAsync(new Exception("Email service error"));
+            _accountEmailDispatcherMock
+                .Setup(dispatcher => dispatcher.SendActivationAsync(
+                    It.IsAny<AccountEmailDispatchRequest>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(AccountEmailDispatchResult.Failed("account_email.queue_failed", "Queue failed."));
 
             // Act
             var result = await authenticationService.CreateUser(createUser);
@@ -285,7 +313,11 @@ namespace BlazorShop.Tests.Application.Services.Authentication
             Assert.NotNull(result);
             Assert.True(result.Success);
             Assert.Equal("User created successfully.", result.Message);
-            _emailServiceMock.Verify(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _accountEmailDispatcherMock.Verify(
+                dispatcher => dispatcher.SendActivationAsync(
+                    It.IsAny<AccountEmailDispatchRequest>(),
+                    It.IsAny<CancellationToken>()),
+                Times.Never);
             _userManagerMock.Verify(u => u.ConfirmEmailAsync(mappedUser, "confirmation-token"), Times.Once);
         }
 
@@ -314,7 +346,11 @@ namespace BlazorShop.Tests.Application.Services.Authentication
             Assert.False(result.Success);
             Assert.Equal("Error occurred in creating account.", result.Message);
             _userManagerMock.Verify(u => u.RemoveUserByEmail(createUser.Email), Times.Once);
-            _emailServiceMock.Verify(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _accountEmailDispatcherMock.Verify(
+                dispatcher => dispatcher.SendActivationAsync(
+                    It.IsAny<AccountEmailDispatchRequest>(),
+                    It.IsAny<CancellationToken>()),
+                Times.Never);
         }
 
         [Fact]
@@ -491,7 +527,42 @@ namespace BlazorShop.Tests.Application.Services.Authentication
             Assert.NotNull(result);
             Assert.False(result.Success);
             Assert.Equal("Email not confirmed. A new confirmation link has been sent to your email.", result.Message);
-            _emailServiceMock.Verify(e => e.SendEmailAsync(user.Email, "Confirm your email", It.IsAny<string>()), Times.Once);
+            _accountEmailDispatcherMock.Verify(
+                dispatcher => dispatcher.SendActivationAsync(
+                    It.Is<AccountEmailDispatchRequest>(request =>
+                        request.Email == user.Email
+                        && request.UserId == appUser.Id
+                        && request.ActionUrl.Contains("confirm-email?userId=userId&token=valid_token", StringComparison.Ordinal)),
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task LoginUser_WhenConfirmationResendFails_ReturnsControlledError()
+        {
+            var user = new LoginUser { Email = "test@example.com", Password = "Password123" };
+            var appUser = new AppUser { Id = "userId", Email = user.Email, EmailConfirmed = false };
+
+            _validationServiceMock
+                .Setup(v => v.ValidateAsync(user, _loginUserValidatorMock.Object))
+                .ReturnsAsync(new ServiceResponse { Success = true });
+            _mapperMock
+                .Setup(m => m.Map<AppUser>(It.IsAny<LoginUser>()))
+                .Returns(appUser);
+            _userManagerMock.Setup(u => u.GetUserByEmailAsync(user.Email)).ReturnsAsync(appUser);
+            _userManagerMock.Setup(u => u.LoginUserAsync(It.IsAny<AppUser>())).ReturnsAsync(new UserLoginResult(false, false, true));
+            _userManagerMock.Setup(u => u.GenerateEmailConfirmationTokenAsync(appUser)).ReturnsAsync("valid_token");
+            _accountEmailDispatcherMock
+                .Setup(dispatcher => dispatcher.SendActivationAsync(
+                    It.IsAny<AccountEmailDispatchRequest>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(AccountEmailDispatchResult.Failed("account_email.queue_failed", "Queue failed."));
+
+            var result = await _authenticationService.LoginUser(user);
+
+            Assert.False(result.Success);
+            Assert.Equal("Email not confirmed. A new confirmation link could not be sent at this time.", result.Message);
+            _loggerMock.Verify(logger => logger.LogError(It.IsAny<Exception>(), It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
@@ -562,7 +633,11 @@ namespace BlazorShop.Tests.Application.Services.Authentication
             Assert.Equal("Login successful.", result.Message);
             Assert.Equal(accessToken, result.Token);
             Assert.Equal(refreshToken, result.RefreshToken);
-            _emailServiceMock.Verify(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _accountEmailDispatcherMock.Verify(
+                dispatcher => dispatcher.SendActivationAsync(
+                    It.IsAny<AccountEmailDispatchRequest>(),
+                    It.IsAny<CancellationToken>()),
+                Times.Never);
         }
 
         [Fact]
@@ -899,7 +974,11 @@ namespace BlazorShop.Tests.Application.Services.Authentication
             Assert.Equal("If an account exists for this email, password reset instructions have been sent.", result.Message);
             _userManagerMock.Verify(u => u.GetUserByEmailAsync("missing@example.test"), Times.Once);
             _userManagerMock.Verify(u => u.GeneratePasswordResetTokenAsync(It.IsAny<AppUser>()), Times.Never);
-            _emailServiceMock.Verify(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _accountEmailDispatcherMock.Verify(
+                dispatcher => dispatcher.SendPasswordRecoveryAsync(
+                    It.IsAny<AccountEmailDispatchRequest>(),
+                    It.IsAny<CancellationToken>()),
+                Times.Never);
         }
 
         [Fact]
@@ -914,11 +993,13 @@ namespace BlazorShop.Tests.Application.Services.Authentication
             Assert.True(result.Success);
             Assert.Equal("If an account exists for this email, password reset instructions have been sent.", result.Message);
             _userManagerMock.Verify(u => u.GeneratePasswordResetTokenAsync(user), Times.Once);
-            _emailServiceMock.Verify(
-                e => e.SendEmailAsync(
-                    "customer@example.test",
-                    "Reset your password",
-                    It.Is<string>(body => body.Contains("reset-password?email=customer%40example.test&token=reset%20token", StringComparison.Ordinal))),
+            _accountEmailDispatcherMock.Verify(
+                dispatcher => dispatcher.SendPasswordRecoveryAsync(
+                    It.Is<AccountEmailDispatchRequest>(request =>
+                        request.Email == "customer@example.test"
+                        && request.UserId == "user-id"
+                        && request.ActionUrl.Contains("reset-password?email=customer%40example.test&token=reset%20token", StringComparison.Ordinal)),
+                    It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -980,7 +1061,13 @@ namespace BlazorShop.Tests.Application.Services.Authentication
             await _authenticationService.SendConfirmationEmail(email, confirmationLink);
 
             // Assert
-            _emailServiceMock.Verify(e => e.SendEmailAsync(email, "Confirm your email", confirmationLink), Times.Once);
+            _accountEmailDispatcherMock.Verify(
+                dispatcher => dispatcher.SendActivationAsync(
+                    It.Is<AccountEmailDispatchRequest>(request =>
+                        request.Email == email
+                        && request.ActionUrl == confirmationLink),
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
         }
     }
 }

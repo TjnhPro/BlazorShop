@@ -32,10 +32,11 @@ namespace BlazorShop.Tests.Application.CommerceNode
 
             Assert.Equal(
                 [
-                    "BlazorShop.Application/Services/Authentication/AuthenticationService.cs",
+                    "BlazorShop.Application/Services/Authentication/DirectAccountEmailDispatcher.cs",
                     "BlazorShop.Application/Services/NewsletterService.cs",
                     "BlazorShop.Application/Services/Payment/CartService.cs",
                     "BlazorShop.Domain/Contracts/IEmailService.cs",
+                    "BlazorShop.Infrastructure/Data/CommerceNode/Services/MessageDeliveryService.cs",
                     "BlazorShop.Infrastructure/Services/EmailService.cs",
                     "BlazorShop.Infrastructure/Services/OrderTrackingService.cs",
                 ],

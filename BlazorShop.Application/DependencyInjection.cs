@@ -54,6 +54,7 @@
             services.AddScoped<IValidationService, ValidationService>();
             services.AddScoped<IAddressValidationService, AddressValidationService>();
             services.AddSingleton<IAddressLookupService, AddressLookupService>();
+            services.AddScoped<IAccountEmailDispatcher, DirectAccountEmailDispatcher>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
 
             services.AddScoped<ICartService, CartService>();
