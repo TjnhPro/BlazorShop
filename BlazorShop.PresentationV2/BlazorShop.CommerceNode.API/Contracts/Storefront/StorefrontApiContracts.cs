@@ -925,6 +925,33 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         public string? CaptchaToken { get; set; }
     }
 
+    public sealed class StorefrontContactRequest
+    {
+        [Required]
+        [MaxLength(160)]
+        public string Name { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress]
+        [MaxLength(StorefrontContractValidation.EmailMaxLength)]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(200)]
+        public string Subject { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(4000)]
+        public string Message { get; set; } = string.Empty;
+
+        [MaxLength(4096)]
+        public string? CaptchaToken { get; set; }
+    }
+
+    public sealed record StorefrontContactResponse(
+        bool Accepted,
+        string Message);
+
     public sealed class StorefrontPayPalCaptureRequest
     {
         [Required]

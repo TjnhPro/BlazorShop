@@ -1107,6 +1107,11 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "Subscribe an email to the Storefront newsletter.",
                         typeof(CommerceNodeApiResponse),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedContact", "Submit")] = new(
+                        "StorefrontContact_Submit",
+                        "Submit a Storefront contact request.",
+                        typeof(CommerceNodeApiResponse<StorefrontContactResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedOrders", "ConfirmOrder")] = new(
                         "StorefrontOrders_Confirm",
                         "Confirm an order for the current customer.",

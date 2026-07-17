@@ -20,6 +20,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Customers;
     using BlazorShop.Application.CommerceNode.Features;
+    using BlazorShop.Application.CommerceNode.Messages;
     using BlazorShop.Application.CommerceNode.Orders;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.ProductSelections;
@@ -1850,6 +1851,69 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return this.FromServiceResponse(result);
         }
 
+    }
+
+    [ApiController]
+    [Route("api/storefront/stores/{storeKey}/contact")]
+    public sealed class StorefrontScopedContactController : StorefrontApiControllerBase
+    {
+        private readonly IStorefrontContactMessageService contactMessageService;
+        private readonly ICaptchaVerifier captchaVerifier;
+        private readonly IStoreSecurityPrivacySettingsService securityPrivacySettingsService;
+
+        public StorefrontScopedContactController(
+            IStorefrontContactMessageService contactMessageService,
+            ICaptchaVerifier captchaVerifier,
+            IStoreSecurityPrivacySettingsService securityPrivacySettingsService)
+        {
+            this.contactMessageService = contactMessageService;
+            this.captchaVerifier = captchaVerifier;
+            this.securityPrivacySettingsService = securityPrivacySettingsService;
+        }
+
+        [HttpPost]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Newsletter)]
+        public async Task<IActionResult> Submit(
+            [FromBody] StorefrontContactRequest request,
+            CancellationToken cancellationToken)
+        {
+            if (request is null)
+            {
+                return this.Failure<object>(ServiceResponseType.ValidationError, "Contact request is required.");
+            }
+
+            var runtimeSettings = await this.securityPrivacySettingsService.ResolveCurrentAsync(cancellationToken);
+            if (runtimeSettings.Captcha.Enabled && runtimeSettings.Captcha.Targets.Contact)
+            {
+                if (string.IsNullOrWhiteSpace(request.CaptchaToken))
+                {
+                    return this.Error(StatusCodes.Status400BadRequest, "captcha.required", "Security verification is required.");
+                }
+
+                var captcha = await this.captchaVerifier.VerifyAsync(
+                    new CaptchaVerificationRequest(
+                        CaptchaTargetNames.Contact,
+                        request.CaptchaToken,
+                        this.HttpContext.Connection.RemoteIpAddress?.ToString(),
+                        this.Request.Headers.UserAgent.ToString()),
+                    cancellationToken);
+                if (!captcha.Success)
+                {
+                    return this.Error(StatusCodes.Status400BadRequest, "captcha.failed", "Security verification failed.");
+                }
+            }
+
+            var result = await this.contactMessageService.SendAsync(
+                new StorefrontContactMessageRequest(
+                    request.Name,
+                    request.Email,
+                    request.Subject,
+                    request.Message),
+                cancellationToken);
+            return this.FromServiceResponse(
+                result,
+                payload => payload is null ? null : new StorefrontContactResponse(payload.Accepted, payload.Message));
+        }
     }
 
     [ApiController]

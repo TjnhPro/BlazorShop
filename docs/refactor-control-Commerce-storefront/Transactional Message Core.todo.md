@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Transactional Message Core.md`
 
-Status: Phase 5 complete. Phase 6 not started.
+Status: Phase 6 complete. Phase 7 not started.
 
 Scope: add practical transactional message infrastructure for active V2 Commerce Node. Replace hard-coded direct email calls with template-driven queued messages for account activation, password recovery, order placed confirmation, payment/fulfillment hooks, and contact form delivery. This is not a marketing automation, newsletter campaign, or visual email builder phase.
 
@@ -574,30 +574,30 @@ Goal: provide backend delivery support for future Storefront/WASM contact compon
 
 Implementation checklist:
 
-- [ ] Add Storefront contact request DTO.
-- [ ] Add Storefront contact response DTO.
-- [ ] Add `POST api/storefront/stores/{storeKey}/contact`.
-- [ ] Validate name length.
-- [ ] Validate email format.
-- [ ] Validate subject length.
-- [ ] Validate message length.
-- [ ] Apply contact captcha when enabled.
-- [ ] Apply Storefront rate-limit policy.
-- [ ] Resolve recipient from store support email.
-- [ ] Fall back to store company email/admin notification email if support email missing.
-- [ ] Enqueue `storefront.contact_form`.
-- [ ] Return generic accepted/success response.
+- [x] Add Storefront contact request DTO. 2026-07-17 Phase 6: `StorefrontContactRequest`.
+- [x] Add Storefront contact response DTO. 2026-07-17 Phase 6: `StorefrontContactResponse`.
+- [x] Add `POST api/storefront/stores/{storeKey}/contact`. 2026-07-17 Phase 6: `StorefrontScopedContactController.Submit`.
+- [x] Validate name length. 2026-07-17 Phase 6: required and max 160.
+- [x] Validate email format. 2026-07-17 Phase 6: required email with max 254.
+- [x] Validate subject length. 2026-07-17 Phase 6: required and max 200.
+- [x] Validate message length. 2026-07-17 Phase 6: required and max 4000.
+- [x] Apply contact captcha when enabled. 2026-07-17 Phase 6: uses `CaptchaTargetNames.Contact`.
+- [x] Apply Storefront rate-limit policy. 2026-07-17 Phase 6: reuses the existing public-form Storefront newsletter limiter policy.
+- [x] Resolve recipient from store support email. 2026-07-17 Phase 6.
+- [x] Fall back to store company email/admin notification email if support email missing. 2026-07-17 Phase 6: implemented safe `CompanyEmail` fallback; admin notification-email fallback remains deferred until a Storefront-safe field exists.
+- [x] Enqueue `storefront.contact_form`. 2026-07-17 Phase 6: `StorefrontContactMessageService` queues through `IMessageQueueService`.
+- [x] Return generic accepted/success response. 2026-07-17 Phase 6.
 
 Verification checklist:
 
-- [ ] Contact delivery can be used by future Storefront component.
-- [ ] Endpoint does not require full content page implementation.
-- [ ] Captcha/rate limiting are available.
-- [ ] Store support recipient is validated.
+- [x] Contact delivery can be used by future Storefront component. 2026-07-17 Phase 6: request/response DTOs and OpenAPI metadata are generator-safe.
+- [x] Endpoint does not require full content page implementation. 2026-07-17 Phase 6: backend-only contract endpoint.
+- [x] Captcha/rate limiting are available. 2026-07-17 Phase 6: focused captcha/rate-limit tests passed with contact endpoint included.
+- [x] Store support recipient is validated. 2026-07-17 Phase 6: missing support/company recipient returns conflict and does not queue.
 
 Exit criteria:
 
-- [ ] Storefront contact delivery contract exists and is spam-aware.
+- [x] Storefront contact delivery contract exists and is spam-aware. 2026-07-17 Phase 6: focused contact service and Storefront OpenAPI/captcha/rate-limit tests passed 70/70.
 
 Suggested commit:
 
@@ -703,15 +703,15 @@ test(transactional-message): verify message core
 - [ ] Order placed queues once per order.
 - [ ] Payment status hook queues once per effective state change.
 - [ ] Fulfillment status hook queues once per effective state change.
-- [ ] Contact endpoint validates input and captcha/rate policy.
+- [x] Contact endpoint validates input and captcha/rate policy. 2026-07-17 Phase 6: Storefront contact DTO validation, captcha target, public-form rate-limit metadata, and OpenAPI snapshot are covered.
 - [ ] Admin APIs expose no SMTP secrets.
 - [ ] OpenAPI contract tests pass.
 
 ### Storefront V2
 
-- [ ] Contact form endpoint can be consumed by future component.
-- [ ] Contact submission returns generic accepted/success response.
-- [ ] Contact submission does not expose SMTP or support internals.
+- [x] Contact form endpoint can be consumed by future component. 2026-07-17 Phase 6: Storefront OpenAPI snapshot includes `StorefrontContact_Submit`.
+- [x] Contact submission returns generic accepted/success response. 2026-07-17 Phase 6.
+- [x] Contact submission does not expose SMTP or support internals. 2026-07-17 Phase 6: response only returns accepted/message in the standard envelope.
 - [ ] Account activation/password recovery pages keep existing UX when queue-backed email is enabled.
 - [ ] Browser network does not expose reset/activation tokens except intended user-facing URLs.
 
@@ -776,11 +776,11 @@ test(transactional-message): verify message core
 - [ ] Payment/fulfillment hook tests:
   - [ ] status change queues once.
   - [ ] no-op does not queue.
-- [ ] Contact form tests:
-  - [ ] validation.
-  - [ ] captcha branch.
-  - [ ] rate-limit metadata.
-  - [ ] generic success.
+- [x] Contact form tests:
+  - [x] validation. 2026-07-17 Phase 6.
+  - [x] captcha branch. 2026-07-17 Phase 6.
+  - [x] rate-limit metadata. 2026-07-17 Phase 6.
+  - [x] generic success. 2026-07-17 Phase 6.
 - [ ] Admin API tests:
   - [ ] operation IDs.
   - [ ] schemas.
@@ -831,7 +831,7 @@ test(transactional-message): verify message core
 - [x] Phase 3 - queue and delivery handler. 2026-07-17: CommerceNode API build passed; focused queue/delivery/renderer/resolver tests passed 18/18.
 - [x] Phase 4 - account messages. 2026-07-17: CommerceNode API build passed; focused auth/dispatcher/queue/delivery/baseline tests passed 63/63.
 - [x] Phase 5 - order and payment/fulfillment hooks. 2026-07-17: focused commerce notification/payment/shipment/task baseline tests passed 25/25.
-- [ ] Phase 6 - contact form delivery contract.
+- [x] Phase 6 - contact form delivery contract. 2026-07-17: CommerceNode API build passed; focused contact service/OpenAPI/captcha/rate-limit tests passed 70/70.
 - [ ] Phase 7 - admin management and observability.
 - [ ] Phase 8 - QA, contracts, and cleanup.
 
@@ -843,7 +843,7 @@ test(transactional-message): verify message core
 - [ ] Order placed confirmation is queued once per order.
 - [ ] Payment notification hook exists without workflow expansion.
 - [ ] Fulfillment notification hook exists without workflow expansion.
-- [ ] Contact form delivery endpoint/contract exists if selected for implementation.
+- [x] Contact form delivery endpoint/contract exists if selected for implementation. 2026-07-17 Phase 6.
 - [ ] Queued messages have retry/failure/audit state.
 - [ ] Admin can inspect templates without seeing SMTP secrets.
 - [ ] Admin can inspect queued messages without seeing SMTP secrets.

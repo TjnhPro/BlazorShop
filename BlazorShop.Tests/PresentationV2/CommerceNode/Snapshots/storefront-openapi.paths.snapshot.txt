@@ -46,6 +46,7 @@ GET /api/storefront/stores/{storeKey}/configuration
 POST /api/storefront/stores/{storeKey}/consent
 GET /api/storefront/stores/{storeKey}/consent/current
 POST /api/storefront/stores/{storeKey}/consent/revoke
+POST /api/storefront/stores/{storeKey}/contact
 POST /api/storefront/stores/{storeKey}/currency/preference
 GET /api/storefront/stores/{storeKey}/customer/addresses
 POST /api/storefront/stores/{storeKey}/customer/addresses

@@ -3889,6 +3889,97 @@
         }
       }
     },
+    "/api/storefront/stores/{storeKey}/contact": {
+      "post": {
+        "tags": [
+          "StorefrontScopedContact"
+        ],
+        "summary": "Submit a Storefront contact request.",
+        "operationId": "StorefrontContact_Submit",
+        "parameters": [
+          {
+            "name": "storeKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontContactRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontContactRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontContactRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontContactResponseCommerceNodeApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/storefront/stores/{storeKey}/currency/preference": {
       "post": {
         "tags": [
@@ -8723,6 +8814,73 @@
         },
         "additionalProperties": false
       },
+      "StorefrontContactRequest": {
+        "required": [
+          "email",
+          "message",
+          "name",
+          "subject"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "maxLength": 160,
+            "minLength": 1,
+            "type": "string"
+          },
+          "email": {
+            "maxLength": 254,
+            "minLength": 1,
+            "type": "string",
+            "format": "email"
+          },
+          "subject": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "message": {
+            "maxLength": 4000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "captchaToken": {
+            "maxLength": 4096,
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontContactResponse": {
+        "type": "object",
+        "properties": {
+          "accepted": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontContactResponseCommerceNodeApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/StorefrontContactResponse"
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontCreateCartSessionRequest": {
         "type": "object",
         "properties": {
@@ -11917,6 +12075,9 @@
     },
     {
       "name": "StorefrontScopedConsent"
+    },
+    {
+      "name": "StorefrontScopedContact"
     },
     {
       "name": "StorefrontScopedCurrency"

@@ -160,6 +160,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IMessageDeliveryService, MessageDeliveryService>();
             services.AddScoped<ICommerceTransactionalMessageService, CommerceTransactionalMessageService>();
             services.AddScoped<IAccountEmailDispatcher, QueuedAccountEmailDispatcher>();
+            services.AddScoped<IStorefrontContactMessageService, StorefrontContactMessageService>();
             services.AddScoped<IProductMediaService, ProductMediaService>();
             services.AddScoped<ICommerceMediaAssetService, CommerceMediaAssetService>();
             services.AddScoped<ICategoryMediaService, CategoryMediaService>();
