@@ -43,6 +43,7 @@ namespace BlazorShop.Storefront.Services
         private const string StorefrontCustomerAddressesRoute = "customer/addresses";
         private const string StorefrontStoreCurrentRoute = "store/current";
         private const string StorefrontPaymentMethodsRoute = "payments/methods";
+        private const string StorefrontCheckoutStartRoute = "checkout/start";
         private const string StorefrontCheckoutPreviewRoute = "checkout/preview";
         private const string StorefrontPlaceOrderRoute = "checkout/place-order";
         private const string StorefrontPaymentAttemptsRoute = "payments/attempts";
@@ -535,6 +536,118 @@ namespace BlazorShop.Storefront.Services
                 cartToken,
                 request,
                 "Unable to preview checkout right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCheckoutSessionResponse>> StartCheckoutAsync(
+            string cartToken,
+            CancellationToken cancellationToken = default)
+        {
+            return SendCartAsync<StorefrontCheckoutSessionResponse>(
+                HttpMethod.Post,
+                StorefrontCheckoutStartRoute,
+                cartToken,
+                new StorefrontCheckoutStartRequest(),
+                "Unable to start checkout right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCheckoutSessionResponse>> LoadCheckoutAsync(
+            string cartToken,
+            Guid checkoutSessionId,
+            CancellationToken cancellationToken = default)
+        {
+            if (checkoutSessionId == Guid.Empty)
+            {
+                return Task.FromResult(StorefrontSubmitResult<StorefrontCheckoutSessionResponse>.Failed("Checkout session is required."));
+            }
+
+            return SendCartAsync<StorefrontCheckoutSessionResponse>(
+                HttpMethod.Get,
+                $"checkout/{checkoutSessionId:D}",
+                cartToken,
+                request: null,
+                "Unable to load checkout right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCheckoutSessionResponse>> UpdateCheckoutAddressesAsync(
+            string cartToken,
+            Guid checkoutSessionId,
+            StorefrontCheckoutAddressStepRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            if (checkoutSessionId == Guid.Empty)
+            {
+                return Task.FromResult(StorefrontSubmitResult<StorefrontCheckoutSessionResponse>.Failed("Checkout session is required."));
+            }
+
+            return SendCartAsync<StorefrontCheckoutSessionResponse>(
+                HttpMethod.Post,
+                $"checkout/{checkoutSessionId:D}/addresses",
+                cartToken,
+                request,
+                "Unable to update checkout address right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCheckoutSessionResponse>> SelectCheckoutShippingMethodAsync(
+            string cartToken,
+            Guid checkoutSessionId,
+            StorefrontCheckoutShippingMethodRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            if (checkoutSessionId == Guid.Empty)
+            {
+                return Task.FromResult(StorefrontSubmitResult<StorefrontCheckoutSessionResponse>.Failed("Checkout session is required."));
+            }
+
+            return SendCartAsync<StorefrontCheckoutSessionResponse>(
+                HttpMethod.Post,
+                $"checkout/{checkoutSessionId:D}/shipping-method",
+                cartToken,
+                request,
+                "Unable to update shipping method right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCheckoutSessionResponse>> SelectCheckoutPaymentMethodAsync(
+            string cartToken,
+            Guid checkoutSessionId,
+            StorefrontCheckoutPaymentMethodRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            if (checkoutSessionId == Guid.Empty)
+            {
+                return Task.FromResult(StorefrontSubmitResult<StorefrontCheckoutSessionResponse>.Failed("Checkout session is required."));
+            }
+
+            return SendCartAsync<StorefrontCheckoutSessionResponse>(
+                HttpMethod.Post,
+                $"checkout/{checkoutSessionId:D}/payment-method",
+                cartToken,
+                request,
+                "Unable to update payment method right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCheckoutReviewResponse>> ReviewCheckoutAsync(
+            string cartToken,
+            Guid checkoutSessionId,
+            StorefrontCheckoutReviewRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            if (checkoutSessionId == Guid.Empty)
+            {
+                return Task.FromResult(StorefrontSubmitResult<StorefrontCheckoutReviewResponse>.Failed("Checkout session is required."));
+            }
+
+            return SendCartAsync<StorefrontCheckoutReviewResponse>(
+                HttpMethod.Post,
+                $"checkout/{checkoutSessionId:D}/review",
+                cartToken,
+                request,
+                "Unable to review checkout right now.",
                 cancellationToken);
         }
 
@@ -1501,24 +1614,28 @@ namespace BlazorShop.Storefront.Services
         decimal Amount,
         string CurrencyCode);
 
-        public sealed class StorefrontCheckoutPreviewRequest
-        {
-            public int ExpectedCartVersion { get; set; }
+    public sealed class StorefrontCheckoutPreviewRequest
+    {
+        public int ExpectedCartVersion { get; set; }
 
         public string CustomerEmail { get; set; } = string.Empty;
 
         public string CustomerName { get; set; } = string.Empty;
 
-            public string PaymentMethodKey { get; set; } = string.Empty;
+        public string PaymentMethodKey { get; set; } = string.Empty;
 
-            public Guid? ShippingAddressId { get; set; }
+        public Guid? ShippingAddressId { get; set; }
 
-            public Guid? BillingAddressId { get; set; }
+        public Guid? BillingAddressId { get; set; }
 
-            public bool UseShippingAddressAsBillingAddress { get; set; } = true;
+        public bool UseShippingAddressAsBillingAddress { get; set; } = true;
 
-            public StorefrontCheckoutPreviewShippingAddress? ShippingAddress { get; set; } = new();
-        }
+        public StorefrontCheckoutPreviewShippingAddress? ShippingAddress { get; set; } = new();
+    }
+
+    public sealed class StorefrontCheckoutStartRequest
+    {
+    }
 
     public sealed class StorefrontCheckoutPreviewShippingAddress
     {
@@ -1577,9 +1694,121 @@ namespace BlazorShop.Storefront.Services
         Guid? LineId,
         Guid? ProductId);
 
+    public sealed class StorefrontCheckoutAddressStepRequest
+    {
+        public Guid? BillingAddressId { get; set; }
+
+        public Guid? ShippingAddressId { get; set; }
+
+        public bool UseBillingAddressAsShippingAddress { get; set; }
+
+        public StorefrontCheckoutPreviewShippingAddress? BillingAddress { get; set; }
+
+        public StorefrontCheckoutPreviewShippingAddress? ShippingAddress { get; set; }
+    }
+
+    public sealed class StorefrontCheckoutShippingMethodRequest
+    {
+        public string ShippingOptionKey { get; set; } = string.Empty;
+    }
+
+    public sealed class StorefrontCheckoutPaymentMethodRequest
+    {
+        public string PaymentMethodKey { get; set; } = string.Empty;
+    }
+
+    public sealed class StorefrontCheckoutReviewRequest
+    {
+        public bool TermsAccepted { get; set; }
+
+        public string? TermsVersion { get; set; }
+    }
+
+    public sealed record StorefrontCheckoutShippingOptionResponse(
+        string Key,
+        string DisplayName,
+        string? Description,
+        decimal Price,
+        string CurrencyCode,
+        string? DeliveryEstimateText,
+        bool Selected);
+
+    public sealed record StorefrontCheckoutPaymentMethodOptionResponse(
+        string Key,
+        string DisplayName,
+        string? Description,
+        string? ShortDisplayText,
+        string? IconUrl,
+        string ProviderKey,
+        string NextActionKind,
+        bool Selected);
+
+    public sealed record StorefrontCheckoutSessionResponse(
+        Guid CheckoutSessionId,
+        Guid CartId,
+        int CheckoutVersion,
+        int CartVersion,
+        int LastValidatedCartVersion,
+        string State,
+        string CurrentStep,
+        IReadOnlyList<string> CompletedSteps,
+        bool IsActive,
+        string NextAction,
+        string CustomerEmail,
+        string CustomerName,
+        string PaymentMethodKey,
+        decimal Subtotal,
+        decimal ShippingTotal,
+        decimal TaxTotal,
+        decimal DiscountTotal,
+        decimal GrandTotal,
+        string CurrencyCode,
+        DateTimeOffset ExpiresAtUtc,
+        bool ShippingRequired,
+        StorefrontCheckoutShippingOptionResponse? SelectedShippingOption,
+        IReadOnlyList<StorefrontCheckoutShippingOptionResponse> ShippingOptions,
+        StorefrontCheckoutPaymentMethodOptionResponse? SelectedPaymentMethod,
+        IReadOnlyList<StorefrontCheckoutPaymentMethodOptionResponse> PaymentMethods,
+        IReadOnlyList<StorefrontCheckoutLineSummaryResponse> Lines,
+        IReadOnlyList<StorefrontCheckoutValidationIssueResponse> Issues);
+
+    public sealed record StorefrontCheckoutReviewResponse(
+        Guid CheckoutSessionId,
+        Guid CartId,
+        int CheckoutVersion,
+        int CartVersion,
+        int LastValidatedCartVersion,
+        string State,
+        string CurrentStep,
+        IReadOnlyList<string> CompletedSteps,
+        bool IsActive,
+        string NextAction,
+        string CustomerEmail,
+        string CustomerName,
+        StorefrontCheckoutPreviewShippingAddress? BillingAddress,
+        StorefrontCheckoutPreviewShippingAddress? ShippingAddress,
+        StorefrontCheckoutShippingOptionResponse? SelectedShippingOption,
+        StorefrontCheckoutPaymentMethodOptionResponse? SelectedPaymentMethod,
+        IReadOnlyList<StorefrontCheckoutLineSummaryResponse> Lines,
+        decimal Subtotal,
+        decimal ShippingTotal,
+        decimal TaxTotal,
+        decimal DiscountTotal,
+        decimal GrandTotal,
+        string CurrencyCode,
+        bool TermsRequired,
+        bool TermsAccepted,
+        string? TermsVersion,
+        DateTimeOffset? TermsAcceptedAtUtc,
+        bool PlaceOrderAllowed,
+        string NextRequiredStep,
+        IReadOnlyList<StorefrontCheckoutValidationIssueResponse> Issues);
+
     public sealed class StorefrontPlaceOrderRequest
     {
         public Guid CheckoutSessionId { get; set; }
+
+        public int ExpectedCheckoutVersion { get; set; }
 
         public int ExpectedCartVersion { get; set; }
 

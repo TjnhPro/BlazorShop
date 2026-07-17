@@ -10,12 +10,13 @@ namespace BlazorShop.Storefront.Pages
     public partial class CheckoutPage
     {
         private readonly List<CartLine> lines = [];
-        private IReadOnlyList<GetPaymentMethod> paymentMethods = [];
+        private IReadOnlyList<StorefrontCheckoutPaymentMethodOptionResponse> paymentMethods = [];
         private IReadOnlyList<StorefrontAddressCountryResponse> addressCountries = [];
         private IReadOnlyList<StorefrontAddressStateProvinceResponse> addressStates = [];
         private IReadOnlyList<StorefrontCustomerAddressResponse> customerAddresses = [];
         private StorefrontCustomerAddressResponse? selectedShippingAddress;
         private StorefrontAddressFieldConfigurationResponse? addressConfiguration;
+        private StorefrontCheckoutSessionResponse? checkoutSession;
         private StorefrontDisplayContext displayContext = StorefrontDisplayContext.Fallback;
 
         [CascadingParameter]
@@ -29,7 +30,7 @@ namespace BlazorShop.Storefront.Pages
 
         private IReadOnlyList<CartLine> Lines => lines;
 
-        private IReadOnlyList<GetPaymentMethod> PaymentMethods => paymentMethods;
+        private IReadOnlyList<StorefrontCheckoutPaymentMethodOptionResponse> PaymentMethods => paymentMethods;
 
         private IReadOnlyList<StorefrontAddressCountryResponse> AddressCountries => addressCountries;
 
@@ -57,13 +58,21 @@ namespace BlazorShop.Storefront.Pages
 
         private string IdempotencyKey { get; set; } = Guid.NewGuid().ToString("N");
 
-        private string GrandTotalDisplay => FormatPrice(lines.Sum(line => line.LineTotal), GrandTotalCurrencyCode);
+        private string GrandTotalDisplay => FormatPrice(checkoutSession?.GrandTotal ?? lines.Sum(line => line.LineTotal), GrandTotalCurrencyCode);
 
-        private string GrandTotalCurrencyCode => lines
+        private string GrandTotalCurrencyCode => checkoutSession?.CurrencyCode ?? lines
             .Select(line => line.CurrencyCode)
             .Distinct(StringComparer.Ordinal)
             .SingleOrDefault()
             ?? displayContext.CurrencyCode;
+
+        private decimal? ServerSubtotal => checkoutSession?.Subtotal;
+
+        private decimal? ServerShippingTotal => checkoutSession?.ShippingTotal;
+
+        private decimal? ServerTaxTotal => checkoutSession?.TaxTotal;
+
+        private decimal? ServerDiscountTotal => checkoutSession?.DiscountTotal;
 
         [Inject]
         private IStorefrontDisplayContextProvider DisplayContextProvider { get; set; } = default!;
@@ -83,6 +92,7 @@ namespace BlazorShop.Storefront.Pages
             {
                 lines.Clear();
                 paymentMethods = [];
+                checkoutSession = null;
                 return;
             }
 
@@ -92,19 +102,45 @@ namespace BlazorShop.Storefront.Pages
                 Error = cartResolution.Message;
                 lines.Clear();
                 paymentMethods = [];
+                checkoutSession = null;
                 return;
             }
 
             var cartItems = cartResolution.Cart?.Lines ?? [];
             CartVersion = cartResolution.Cart?.Version ?? 0;
+            checkoutSession = null;
+            if (!string.IsNullOrWhiteSpace(cartResolution.CartToken) && cartItems.Count > 0)
+            {
+                var checkoutResult = await ApiClient.StartCheckoutAsync(cartResolution.CartToken);
+                if (checkoutResult.Success && checkoutResult.Data is not null)
+                {
+                    checkoutSession = checkoutResult.Data;
+                    CartVersion = checkoutResult.Data.CartVersion;
+                }
+                else if (string.IsNullOrWhiteSpace(Error))
+                {
+                    Error = checkoutResult.Message;
+                }
+            }
+
             var productsById = await LoadProductsAsync(cartItems);
             lines.Clear();
             lines.AddRange(BuildLines(cartItems, productsById));
 
-            var paymentResult = await ApiClient.GetPaymentMethodsAsync();
-            paymentMethods = paymentResult.IsSuccess && paymentResult.Value is not null
-                ? paymentResult.Value.Where(method => SupportsCurrency(method, GrandTotalCurrencyCode)).ToArray()
-                : [];
+            if (checkoutSession?.PaymentMethods.Count > 0)
+            {
+                paymentMethods = checkoutSession.PaymentMethods;
+            }
+            else
+            {
+                var paymentResult = await ApiClient.GetPaymentMethodsAsync();
+                paymentMethods = paymentResult.IsSuccess && paymentResult.Value is not null
+                    ? paymentResult.Value
+                        .Where(method => SupportsCurrency(method, GrandTotalCurrencyCode))
+                        .Select(ToCheckoutPaymentOption)
+                        .ToArray()
+                    : [];
+            }
 
             await LoadAddressMetadataAsync();
         }
@@ -235,6 +271,19 @@ namespace BlazorShop.Storefront.Pages
             return normalized is { Length: 2 } && normalized.All(char.IsLetter)
                 ? normalized
                 : null;
+        }
+
+        private static StorefrontCheckoutPaymentMethodOptionResponse ToCheckoutPaymentOption(GetPaymentMethod method)
+        {
+            return new StorefrontCheckoutPaymentMethodOptionResponse(
+                method.Key,
+                method.Name,
+                method.Description,
+                method.ShortDisplayText,
+                method.IconUrl,
+                method.Key,
+                "none",
+                Selected: false);
         }
 
         private static bool SupportsCurrency(GetPaymentMethod method, string currencyCode)

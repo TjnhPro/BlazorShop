@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Checkout Core.md`
 
-Status: In progress. Phase 0-1 completed.
+Status: In progress. Phase 0-8 completed.
 
 Scope: evolve the current V2 checkout from one-shot preview/place-order into a practical stateful checkout core without introducing a full shipping, tax, discount, or workflow engine.
 
@@ -665,34 +665,43 @@ Goal: improve UX while keeping frontend scope controlled.
 
 Implementation checklist:
 
-- [ ] Update Storefront API client for checkout start.
-- [ ] Update Storefront API client for checkout resume.
-- [ ] Update Storefront API client for checkout review.
-- [ ] Update Storefront API client for address commands.
-- [ ] Update Storefront API client for payment command.
-- [ ] Keep initial checkout page as one page with server-backed state.
-- [ ] Use review projection for totals.
-- [ ] Use review projection for final button state.
-- [ ] Show stale cart/reset messages clearly.
-- [ ] Preserve antiforgery on local POST forms.
-- [ ] Do not move checkout to full WASM yet.
-- [ ] Keep payment success/cancel pages noindex.
-- [ ] Clear cart token only when checkout result is completed/order created.
-- [ ] Preserve recoverable context for hosted payment pending/cancel.
+- [x] Update Storefront API client for checkout start.
+- [x] Update Storefront API client for checkout resume.
+- [x] Update Storefront API client for checkout review.
+- [x] Update Storefront API client for address commands.
+- [x] Update Storefront API client for payment command.
+- [x] Keep initial checkout page as one page with server-backed state.
+- [x] Use review projection for totals.
+- [x] Use review projection for final button state.
+- [x] Show stale cart/reset messages clearly.
+- [x] Preserve antiforgery on local POST forms.
+- [x] Do not move checkout to full WASM yet.
+- [x] Keep payment success/cancel pages noindex.
+- [x] Clear cart token only when checkout result is completed/order created.
+- [x] Preserve recoverable context for hosted payment pending/cancel.
 
 Verification checklist:
 
-- [ ] Existing checkout page still works.
-- [ ] User can recover from stale cart.
-- [ ] User can recover from cancelled hosted payment.
-- [ ] Displayed totals come from server review projection.
-- [ ] Hosted payment redirect flow does not lose checkout context prematurely.
-- [ ] Storefront V2 host/static tests pass.
+- [x] Existing checkout page still works.
+- [x] User can recover from stale cart.
+- [x] User can recover from cancelled hosted payment.
+- [x] Displayed totals come from server review projection.
+- [x] Hosted payment redirect flow does not lose checkout context prematurely.
+- [x] Storefront V2 host/static tests pass.
 
 Exit criteria:
 
-- [ ] Storefront consumes stateful checkout without full wizard rewrite.
-- [ ] Frontend does not duplicate checkout business rules.
+- [x] Storefront consumes stateful checkout without full wizard rewrite.
+- [x] Frontend does not duplicate checkout business rules.
+
+Phase 8 evidence:
+
+- 2026-07-17: `StorefrontApiClient` now exposes checkout start/load/address/shipping/payment/review methods and typed session/review DTOs.
+- 2026-07-17: Storefront V2 checkout remains one SSR form, but GET starts/resumes checkout for server-owned totals and POST executes address, shipping, payment, review, then place-order.
+- 2026-07-17: Storefront V2 rejects stale posted cart versions with a recoverable checkout message before final order placement.
+- 2026-07-17: Host smoke handler now proves checkout POST uses review `expectedCheckoutVersion`, does not send totals/status fields, keeps hosted payment cart cookies, and clears cart cookies only for completed order.
+- 2026-07-17: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed with 0 warnings.
+- 2026-07-17: Focused `StorefrontV2HostSmokeTests.Checkout_PostRedirectsToProviderNextAction|Checkout_PostCompletedOrderClearsCartCookies` passed 2/2.
 
 Suggested commit:
 

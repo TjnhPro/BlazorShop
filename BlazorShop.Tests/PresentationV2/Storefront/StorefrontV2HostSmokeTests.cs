@@ -653,6 +653,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.False(DeletesCookie(response, "bs-cart-token"));
             Assert.False(DeletesCookie(response, "my-cart"));
             Assert.Equal(1, handler.PlaceOrderCalls);
+            Assert.Equal(1, handler.ReviewCalls);
+            Assert.Contains("\"expectedCheckoutVersion\":5", handler.LastPlaceOrderBody, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("grandTotal", handler.LastAddressBody + handler.LastPaymentBody + handler.LastPlaceOrderBody, StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]
@@ -681,6 +684,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.True(DeletesCookie(response, "bs-cart-token"));
             Assert.True(DeletesCookie(response, "my-cart"));
             Assert.Equal(1, handler.PlaceOrderCalls);
+            Assert.Equal(1, handler.ReviewCalls);
         }
 
         [Fact]
@@ -1332,12 +1336,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             public int PlaceOrderCalls { get; private set; }
 
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            public int ReviewCalls { get; private set; }
+
+            public string LastAddressBody { get; private set; } = string.Empty;
+
+            public string LastPaymentBody { get; private set; } = string.Empty;
+
+            public string LastPlaceOrderBody { get; private set; } = string.Empty;
+
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 var path = request.RequestUri?.AbsolutePath ?? string.Empty;
                 if (request.Method == HttpMethod.Post && path.EndsWith("/cart/session", StringComparison.Ordinal))
                 {
-                    return Task.FromResult(JsonResponse(new
+                    return JsonResponse(new
                     {
                         success = true,
                         message = "OK",
@@ -1349,17 +1361,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                             version = 2,
                             expiresAtUtc = ExpiresAtUtc,
                         },
-                    }));
+                    });
                 }
 
                 if (request.Method == HttpMethod.Get && path.EndsWith("/cart", StringComparison.Ordinal))
                 {
-                    return Task.FromResult(JsonResponse(CreateCartEnvelope()));
+                    return JsonResponse(CreateCartEnvelope());
                 }
 
                 if (request.Method == HttpMethod.Get && path.EndsWith($"/catalog/products/{ProductId:D}", StringComparison.OrdinalIgnoreCase))
                 {
-                    return Task.FromResult(JsonResponse(new
+                    return JsonResponse(new
                     {
                         success = true,
                         message = "OK",
@@ -1376,12 +1388,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                             updatedAt = DateTime.UtcNow,
                             variants = Array.Empty<object>(),
                         },
-                    }));
+                    });
                 }
 
                 if (request.Method == HttpMethod.Get && path.EndsWith("/payments/methods", StringComparison.Ordinal))
                 {
-                    return Task.FromResult(JsonResponse(new
+                    return JsonResponse(new
                     {
                         success = true,
                         message = "OK",
@@ -1395,12 +1407,35 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                                 description = "Pay online",
                             },
                         },
-                    }));
+                    });
                 }
 
-                if (request.Method == HttpMethod.Post && path.EndsWith("/checkout/preview", StringComparison.Ordinal))
+                if (request.Method == HttpMethod.Post && path.EndsWith("/checkout/start", StringComparison.Ordinal))
                 {
-                    return Task.FromResult(JsonResponse(new
+                    return JsonResponse(CreateCheckoutSessionEnvelope(1, "entry", includeShipping: true, includePayment: true, selectedPayment: false));
+                }
+
+                if (request.Method == HttpMethod.Post && path.EndsWith($"/checkout/{CheckoutSessionId:D}/addresses", StringComparison.OrdinalIgnoreCase))
+                {
+                    this.LastAddressBody = await request.Content!.ReadAsStringAsync(cancellationToken);
+                    return JsonResponse(CreateCheckoutSessionEnvelope(2, "shipping_method", includeShipping: true, includePayment: false, selectedPayment: false));
+                }
+
+                if (request.Method == HttpMethod.Post && path.EndsWith($"/checkout/{CheckoutSessionId:D}/shipping-method", StringComparison.OrdinalIgnoreCase))
+                {
+                    return JsonResponse(CreateCheckoutSessionEnvelope(3, "payment_method", includeShipping: true, includePayment: true, selectedPayment: false));
+                }
+
+                if (request.Method == HttpMethod.Post && path.EndsWith($"/checkout/{CheckoutSessionId:D}/payment-method", StringComparison.OrdinalIgnoreCase))
+                {
+                    this.LastPaymentBody = await request.Content!.ReadAsStringAsync(cancellationToken);
+                    return JsonResponse(CreateCheckoutSessionEnvelope(4, "review", includeShipping: true, includePayment: true, selectedPayment: true));
+                }
+
+                if (request.Method == HttpMethod.Post && path.EndsWith($"/checkout/{CheckoutSessionId:D}/review", StringComparison.OrdinalIgnoreCase))
+                {
+                    this.ReviewCalls++;
+                    return JsonResponse(new
                     {
                         success = true,
                         message = "OK",
@@ -1408,49 +1443,45 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                         {
                             checkoutSessionId = CheckoutSessionId,
                             cartId = CartId,
+                            checkoutVersion = 5,
                             cartVersion = 2,
+                            lastValidatedCartVersion = 2,
                             state = "ready",
-                            isValid = true,
-                            nextAction = "placeOrder",
+                            currentStep = "review",
+                            completedSteps = new[] { "entry", "shipping_address", "shipping_method", "payment_method", "review" },
+                            isActive = true,
+                            nextAction = "place_order",
                             customerEmail = "customer@example.test",
                             customerName = "Customer One",
-                            paymentMethodKey = "stripe",
+                            billingAddress = CreateAddress(),
+                            shippingAddress = CreateAddress(),
+                            selectedShippingOption = CreateShippingOption(),
+                            selectedPaymentMethod = CreatePaymentOption(selected: true),
+                            lines = CreateCheckoutLines(),
                             subtotal = 12.34m,
                             shippingTotal = 0m,
                             taxTotal = 0m,
                             discountTotal = 0m,
                             grandTotal = 12.34m,
                             currencyCode = "USD",
-                            expiresAtUtc = ExpiresAtUtc,
-                            lines = new[]
-                            {
-                                new
-                                {
-                                    lineId = LineId,
-                                    productId = ProductId,
-                                    productVariantId = (Guid?)null,
-                                    quantity = 1,
-                                    unitPrice = 12.34m,
-                                    lineTotal = 12.34m,
-                                    selectedAttributesJson = (string?)null,
-                                    personalizationHash = (string?)null,
-                                    personalizationJson = (string?)null,
-                                    artworkAssetId = (Guid?)null,
-                                    artworkVersion = (int?)null,
-                                    fulfillmentProviderKey = (string?)null,
-                                },
-                            },
+                            termsRequired = false,
+                            termsAccepted = false,
+                            termsVersion = (string?)null,
+                            termsAcceptedAtUtc = (DateTimeOffset?)null,
+                            placeOrderAllowed = true,
+                            nextRequiredStep = "place_order",
                             issues = Array.Empty<object>(),
                         },
-                    }));
+                    });
                 }
 
                 if (request.Method == HttpMethod.Post && path.EndsWith("/checkout/place-order", StringComparison.Ordinal))
                 {
                     this.PlaceOrderCalls++;
+                    this.LastPlaceOrderBody = await request.Content!.ReadAsStringAsync(cancellationToken);
                     if (this.completedOrder)
                     {
-                        return Task.FromResult(JsonResponse(new
+                        return JsonResponse(new
                         {
                             success = true,
                             message = "OK",
@@ -1469,10 +1500,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                                 createdOn = DateTime.UtcNow,
                                 nextAction = (object?)null,
                             },
-                        }));
+                        });
                     }
 
-                    return Task.FromResult(JsonResponse(new
+                    return JsonResponse(new
                     {
                         success = true,
                         message = "OK",
@@ -1495,10 +1526,116 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                                 url = "https://checkout.stripe.test/session",
                             },
                         },
-                    }));
+                    });
                 }
 
-                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
+                return new HttpResponseMessage(HttpStatusCode.NotFound);
+            }
+
+            private static object CreateCheckoutSessionEnvelope(
+                int checkoutVersion,
+                string currentStep,
+                bool includeShipping,
+                bool includePayment,
+                bool selectedPayment)
+            {
+                return new
+                {
+                    success = true,
+                    message = "OK",
+                    data = new
+                    {
+                        checkoutSessionId = CheckoutSessionId,
+                        cartId = CartId,
+                        checkoutVersion,
+                        cartVersion = 2,
+                        lastValidatedCartVersion = 2,
+                        state = selectedPayment ? "ready" : "draft",
+                        currentStep,
+                        completedSteps = Array.Empty<string>(),
+                        isActive = true,
+                        nextAction = selectedPayment ? "review" : currentStep,
+                        customerEmail = "customer@example.test",
+                        customerName = "Customer One",
+                        paymentMethodKey = selectedPayment ? "stripe" : string.Empty,
+                        subtotal = 12.34m,
+                        shippingTotal = 0m,
+                        taxTotal = 0m,
+                        discountTotal = 0m,
+                        grandTotal = 12.34m,
+                        currencyCode = "USD",
+                        expiresAtUtc = ExpiresAtUtc,
+                        shippingRequired = true,
+                        selectedShippingOption = includeShipping ? CreateShippingOption() : null,
+                        shippingOptions = includeShipping ? new[] { CreateShippingOption() } : Array.Empty<object>(),
+                        selectedPaymentMethod = selectedPayment ? CreatePaymentOption(selected: true) : null,
+                        paymentMethods = includePayment ? new[] { CreatePaymentOption(selected: selectedPayment) } : Array.Empty<object>(),
+                        lines = CreateCheckoutLines(),
+                        issues = Array.Empty<object>(),
+                    },
+                };
+            }
+
+            private static object CreateAddress()
+            {
+                return new
+                {
+                    fullName = "Customer One",
+                    email = "customer@example.test",
+                    phone = "5550100",
+                    address1 = "1 Test Street",
+                    address2 = (string?)null,
+                    city = "Test City",
+                    state = (string?)null,
+                    postalCode = "10000",
+                    countryCode = "US",
+                };
+            }
+
+            private static object CreateShippingOption()
+            {
+                return new
+                {
+                    key = "free_standard",
+                    displayName = "Standard shipping",
+                    description = "Standard delivery",
+                    price = 0m,
+                    currencyCode = "USD",
+                    deliveryEstimateText = "3-5 business days",
+                    selected = true,
+                };
+            }
+
+            private static object CreatePaymentOption(bool selected)
+            {
+                return new
+                {
+                    key = "stripe",
+                    displayName = "Stripe",
+                    description = "Pay online",
+                    shortDisplayText = "Card",
+                    iconUrl = (string?)null,
+                    providerKey = "stripe",
+                    nextActionKind = "redirect",
+                    selected,
+                };
+            }
+
+            private static object[] CreateCheckoutLines()
+            {
+                return
+                [
+                    new
+                    {
+                        lineId = LineId,
+                        productId = ProductId,
+                        productVariantId = (Guid?)null,
+                        quantity = 1,
+                        unitPrice = 12.34m,
+                        lineTotal = 12.34m,
+                        currencyCode = "USD",
+                    },
+                ];
             }
 
             private static object CreateCartEnvelope()

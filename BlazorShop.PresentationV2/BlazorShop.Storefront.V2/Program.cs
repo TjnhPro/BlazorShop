@@ -270,28 +270,88 @@ app.MapPost(StorefrontRoutes.Checkout, async (
         return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("error", "Your cart is empty."));
     }
 
-    var previewResult = await apiClient.PreviewCheckoutAsync(
-        cartToken,
-        BuildCheckoutPreviewRequest(form, form.CartVersion > 0 ? form.CartVersion : cartResult.Data.Version),
-        cancellationToken);
-    if (!previewResult.Success || previewResult.Data is null)
+    if (form.CartVersion > 0 && form.CartVersion != cartResult.Data.Version)
     {
-        return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("error", previewResult.Message));
+        return Results.Redirect(BuildCheckoutErrorUrl("Your cart changed. Review the latest cart and try checkout again."));
     }
 
-    if (!previewResult.Data.IsValid)
+    var startResult = await apiClient.StartCheckoutAsync(cartToken, cancellationToken);
+    if (!startResult.Success || startResult.Data is null)
     {
-        var firstIssue = previewResult.Data.Issues.FirstOrDefault();
-        return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create(
-            "error",
-            firstIssue?.Message ?? "Review checkout details before placing the order."));
+        return Results.Redirect(BuildCheckoutErrorUrl(startResult.Message));
+    }
+
+    var addressResult = await apiClient.UpdateCheckoutAddressesAsync(
+        cartToken,
+        startResult.Data.CheckoutSessionId,
+        BuildCheckoutAddressStepRequest(form),
+        cancellationToken);
+    if (!addressResult.Success || addressResult.Data is null)
+    {
+        return Results.Redirect(BuildCheckoutErrorUrl(addressResult.Message));
+    }
+
+    var checkoutState = addressResult.Data;
+    var shippingOptionKey = ResolveShippingOptionKey(checkoutState);
+    if (checkoutState.ShippingRequired && string.IsNullOrWhiteSpace(shippingOptionKey))
+    {
+        return Results.Redirect(BuildCheckoutErrorUrl("Shipping is not available for this checkout."));
+    }
+
+    if (!string.IsNullOrWhiteSpace(shippingOptionKey))
+    {
+        var shippingResult = await apiClient.SelectCheckoutShippingMethodAsync(
+            cartToken,
+            checkoutState.CheckoutSessionId,
+            new StorefrontCheckoutShippingMethodRequest { ShippingOptionKey = shippingOptionKey },
+            cancellationToken);
+        if (!shippingResult.Success || shippingResult.Data is null)
+        {
+            return Results.Redirect(BuildCheckoutErrorUrl(shippingResult.Message));
+        }
+
+        checkoutState = shippingResult.Data;
+    }
+
+    var paymentMethodKey = ResolvePaymentMethodKey(form, checkoutState);
+    if (string.IsNullOrWhiteSpace(paymentMethodKey))
+    {
+        return Results.Redirect(BuildCheckoutErrorUrl("No payment method is currently available."));
+    }
+
+    var paymentResult = await apiClient.SelectCheckoutPaymentMethodAsync(
+        cartToken,
+        checkoutState.CheckoutSessionId,
+        new StorefrontCheckoutPaymentMethodRequest { PaymentMethodKey = paymentMethodKey },
+        cancellationToken);
+    if (!paymentResult.Success || paymentResult.Data is null)
+    {
+        return Results.Redirect(BuildCheckoutErrorUrl(paymentResult.Message));
+    }
+
+    var reviewResult = await apiClient.ReviewCheckoutAsync(
+        cartToken,
+        paymentResult.Data.CheckoutSessionId,
+        new StorefrontCheckoutReviewRequest(),
+        cancellationToken);
+    if (!reviewResult.Success || reviewResult.Data is null)
+    {
+        return Results.Redirect(BuildCheckoutErrorUrl(reviewResult.Message));
+    }
+
+    if (!reviewResult.Data.PlaceOrderAllowed)
+    {
+        return Results.Redirect(BuildCheckoutErrorUrl(
+            reviewResult.Data.Issues.FirstOrDefault()?.Message
+                ?? "Review checkout details before placing the order."));
     }
 
     var placeOrderResult = await apiClient.PlaceOrderAsync(
         new StorefrontPlaceOrderRequest
         {
-            CheckoutSessionId = previewResult.Data.CheckoutSessionId,
-            ExpectedCartVersion = previewResult.Data.CartVersion,
+            CheckoutSessionId = reviewResult.Data.CheckoutSessionId,
+            ExpectedCheckoutVersion = reviewResult.Data.CheckoutVersion,
+            ExpectedCartVersion = reviewResult.Data.CartVersion,
             IdempotencyKey = string.IsNullOrWhiteSpace(form.IdempotencyKey)
                 ? Guid.NewGuid().ToString("N")
                 : form.IdempotencyKey.Trim(),
@@ -299,7 +359,7 @@ app.MapPost(StorefrontRoutes.Checkout, async (
         cancellationToken);
     if (!placeOrderResult.Success || placeOrderResult.Data is null)
     {
-        return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("error", placeOrderResult.Message));
+        return Results.Redirect(BuildCheckoutErrorUrl(placeOrderResult.Message));
     }
 
     var nextAction = placeOrderResult.Data.NextAction;
@@ -312,7 +372,7 @@ app.MapPost(StorefrontRoutes.Checkout, async (
 
     if (string.IsNullOrWhiteSpace(placeOrderResult.Data.Reference))
     {
-        return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("error", "Order confirmation is not available yet."));
+        return Results.Redirect(BuildCheckoutErrorUrl("Order confirmation is not available yet."));
     }
 
     httpContext.Response.Cookies.Delete(StorefrontCookieNames.Cart, new CookieOptions { Path = "/" });
@@ -706,39 +766,74 @@ static string? ResolveStoreKey(IConfiguration configuration)
     return StorefrontStoreKeyResolver.Resolve(configuration);
 }
 
-static StorefrontCheckoutPreviewRequest BuildCheckoutPreviewRequest(StorefrontCheckoutForm form, int expectedCartVersion)
+static StorefrontCheckoutAddressStepRequest BuildCheckoutAddressStepRequest(StorefrontCheckoutForm form)
 {
     var shippingAddressId = form.ShippingAddressId is { } shippingId && shippingId != Guid.Empty
         ? shippingId
         : (Guid?)null;
     var billingAddressId = form.BillingAddressId is { } billingId && billingId != Guid.Empty
         ? billingId
-        : (Guid?)null;
+        : shippingAddressId;
+    var directAddress = shippingAddressId.HasValue
+        ? null
+        : BuildCheckoutAddress(form);
 
-    return new StorefrontCheckoutPreviewRequest
+    return new StorefrontCheckoutAddressStepRequest
     {
-        ExpectedCartVersion = expectedCartVersion,
-        CustomerEmail = form.CustomerEmail?.Trim() ?? string.Empty,
-        CustomerName = form.CustomerName?.Trim() ?? string.Empty,
-        PaymentMethodKey = form.PaymentMethodKey?.Trim() ?? string.Empty,
-        ShippingAddressId = shippingAddressId,
         BillingAddressId = billingAddressId,
-        UseShippingAddressAsBillingAddress = form.UseShippingAddressAsBillingAddress,
-        ShippingAddress = shippingAddressId.HasValue
-            ? null
-            : new StorefrontCheckoutPreviewShippingAddress
-        {
-            FullName = form.ShippingFullName?.Trim() ?? string.Empty,
-            Email = form.ShippingEmail?.Trim() ?? form.CustomerEmail?.Trim() ?? string.Empty,
-            Phone = form.ShippingPhone?.Trim(),
-            Address1 = form.ShippingAddress1?.Trim() ?? string.Empty,
-            Address2 = form.ShippingAddress2?.Trim(),
-            City = form.ShippingCity?.Trim() ?? string.Empty,
-            State = form.ShippingState?.Trim(),
-            PostalCode = form.ShippingPostalCode?.Trim() ?? string.Empty,
-            CountryCode = form.ShippingCountryCode?.Trim() ?? string.Empty,
-        },
+        ShippingAddressId = shippingAddressId,
+        UseBillingAddressAsShippingAddress = form.UseShippingAddressAsBillingAddress,
+        BillingAddress = billingAddressId.HasValue ? null : directAddress,
+        ShippingAddress = shippingAddressId.HasValue || form.UseShippingAddressAsBillingAddress ? null : directAddress,
     };
+}
+
+static StorefrontCheckoutPreviewShippingAddress BuildCheckoutAddress(StorefrontCheckoutForm form)
+{
+    var email = form.ShippingEmail?.Trim();
+    if (string.IsNullOrWhiteSpace(email))
+    {
+        email = form.CustomerEmail?.Trim();
+    }
+
+    return new StorefrontCheckoutPreviewShippingAddress
+    {
+        FullName = form.ShippingFullName?.Trim() ?? form.CustomerName?.Trim() ?? string.Empty,
+        Email = email ?? string.Empty,
+        Phone = form.ShippingPhone?.Trim(),
+        Address1 = form.ShippingAddress1?.Trim() ?? string.Empty,
+        Address2 = form.ShippingAddress2?.Trim(),
+        City = form.ShippingCity?.Trim() ?? string.Empty,
+        State = form.ShippingState?.Trim(),
+        PostalCode = form.ShippingPostalCode?.Trim() ?? string.Empty,
+        CountryCode = form.ShippingCountryCode?.Trim() ?? string.Empty,
+    };
+}
+
+static string? ResolveShippingOptionKey(StorefrontCheckoutSessionResponse session)
+{
+    return session.SelectedShippingOption?.Key
+        ?? session.ShippingOptions.FirstOrDefault(option => option.Selected)?.Key
+        ?? session.ShippingOptions.FirstOrDefault()?.Key;
+}
+
+static string? ResolvePaymentMethodKey(StorefrontCheckoutForm form, StorefrontCheckoutSessionResponse session)
+{
+    var requested = form.PaymentMethodKey?.Trim();
+    if (!string.IsNullOrWhiteSpace(requested))
+    {
+        return requested;
+    }
+
+    return session.SelectedPaymentMethod?.Key
+        ?? session.PaymentMethods.FirstOrDefault(option => option.Selected)?.Key
+        ?? session.PaymentMethods.FirstOrDefault()?.Key;
+}
+
+static string BuildCheckoutErrorUrl(string? message)
+{
+    return StorefrontRoutes.Checkout
+        + QueryString.Create("error", string.IsNullOrWhiteSpace(message) ? "Checkout could not be completed." : message);
 }
 
 static string? NormalizeCurrencyCode(string? currencyCode)

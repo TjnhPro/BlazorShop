@@ -160,7 +160,7 @@
                                     <label class="flex cursor-pointer items-start gap-3 rounded-2xl border border-neutral-200 bg-neutral-50 p-4 text-sm hover:bg-neutral-100">
                                         <input class="mt-1" type="radio" name="PaymentMethodKey" value="@method.Key" checked="@(method == PaymentMethods[0])" />
                                         <span>
-                                            <span class="block font-bold text-neutral-950">@method.Name</span>
+                                            <span class="block font-bold text-neutral-950">@method.DisplayName</span>
                                             <span class="mt-1 block text-neutral-600">@method.Description</span>
                                         </span>
                                     </label>
@@ -189,6 +189,30 @@
                         </div>
                     }
                 </div>
+                @if (ServerSubtotal.HasValue)
+                {
+                    <div class="mt-5 space-y-2 border-t border-neutral-200 pt-4 text-sm text-neutral-700">
+                        <div class="flex items-center justify-between">
+                            <span>Subtotal</span>
+                            <span>@FormatPrice(ServerSubtotal.Value, GrandTotalCurrencyCode)</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span>Shipping</span>
+                            <span>@FormatPrice(ServerShippingTotal.GetValueOrDefault(), GrandTotalCurrencyCode)</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span>Tax</span>
+                            <span>@FormatPrice(ServerTaxTotal.GetValueOrDefault(), GrandTotalCurrencyCode)</span>
+                        </div>
+                        @if (ServerDiscountTotal.GetValueOrDefault() != 0m)
+                        {
+                            <div class="flex items-center justify-between">
+                                <span>Discount</span>
+                                <span>@FormatPrice(ServerDiscountTotal.GetValueOrDefault(), GrandTotalCurrencyCode)</span>
+                            </div>
+                        }
+                    </div>
+                }
                 <div class="mt-5 flex items-center justify-between border-t border-neutral-200 pt-4 text-base font-black text-neutral-950">
                     <span>Total</span>
                     <span>@GrandTotalDisplay</span>
