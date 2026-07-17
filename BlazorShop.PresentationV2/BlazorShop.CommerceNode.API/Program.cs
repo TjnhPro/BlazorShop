@@ -74,6 +74,7 @@ builder.Services.AddScoped<ICommerceTaskHandler, StoreCreateAndDeployTaskHandler
 builder.Services.AddScoped<ICommerceTaskHandler, ProductMediaImportTaskHandler>();
 builder.Services.AddScoped<ICommerceTaskHandler, ProductImportTaskHandler>();
 builder.Services.AddScoped<ICommerceTaskHandler, CurrencyExchangeRateUpdateTaskHandler>();
+builder.Services.AddScoped<ICommerceTaskHandler, MessageDeliverTaskHandler>();
 builder.Services.AddHostedService<CommerceTaskWorker>();
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(options =>

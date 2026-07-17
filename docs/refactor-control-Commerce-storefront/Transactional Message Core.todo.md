@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Transactional Message Core.md`
 
-Status: Phase 2 complete. Phase 3 not started.
+Status: Phase 3 complete. Phase 4 not started.
 
 Scope: add practical transactional message infrastructure for active V2 Commerce Node. Replace hard-coded direct email calls with template-driven queued messages for account activation, password recovery, order placed confirmation, payment/fulfillment hooks, and contact form delivery. This is not a marketing automation, newsletter campaign, or visual email builder phase.
 
@@ -470,32 +470,32 @@ Goal: enqueue and send messages asynchronously using existing CommerceTask infra
 
 Implementation checklist:
 
-- [ ] Add `IMessageQueueService`.
-- [ ] Add `IMessageDeliveryService`.
-- [ ] Add `MessageDeliverTaskHandler` with task type `message.deliver`.
-- [ ] Enqueue creates `QueuedMessage`.
-- [ ] Enqueue creates `CommerceTask`.
-- [ ] Handler loads `QueuedMessage`.
-- [ ] Handler marks message `sending`.
-- [ ] Handler calls `IEmailService`.
-- [ ] Handler marks message `sent` on success.
-- [ ] Handler marks retry/failure state on failure.
-- [ ] Idempotency prevents duplicate queue rows for same command.
-- [ ] Failed delivery does not throw back into order/auth transactions.
-- [ ] Add admin retry service method.
-- [ ] Add admin cancel service method.
+- [x] Add `IMessageQueueService`. 2026-07-17 Phase 3: Phase 1 contract now has `MessageQueueService` implementation.
+- [x] Add `IMessageDeliveryService`. 2026-07-17 Phase 3.
+- [x] Add `MessageDeliverTaskHandler` with task type `message.deliver`. 2026-07-17 Phase 3.
+- [x] Enqueue creates `QueuedMessage`. 2026-07-17 Phase 3: `MessageQueueServiceTests.QueueAsync_CreatesQueuedMessageAndDeliveryTask`.
+- [x] Enqueue creates `CommerceTask`. 2026-07-17 Phase 3: task type/payload/idempotency asserted.
+- [x] Handler loads `QueuedMessage`. 2026-07-17 Phase 3: handler delegates by queued message public id to `IMessageDeliveryService`.
+- [x] Handler marks message `sending`. 2026-07-17 Phase 3: `MessageDeliveryService` persists `sending` before transport send.
+- [x] Handler calls `IEmailService`. 2026-07-17 Phase 3: `MessageDeliveryServiceTests.DeliverAsync_SendsEmailAndMarksMessageSent`.
+- [x] Handler marks message `sent` on success. 2026-07-17 Phase 3.
+- [x] Handler marks retry/failure state on failure. 2026-07-17 Phase 3: retryable and terminal SMTP failure tests passed.
+- [x] Idempotency prevents duplicate queue rows for same command. 2026-07-17 Phase 3: `QueueAsync_WithSameIdempotencyKey_ReturnsExistingQueuedMessage`.
+- [x] Failed delivery does not throw back into order/auth transactions. 2026-07-17 Phase 3: enqueue writes queue/task only; task handler returns retryable/terminal task result instead of coupling delivery to source commands.
+- [x] Add admin retry service method. 2026-07-17 Phase 3: `IMessageDeliveryService.RetryAsync`.
+- [x] Add admin cancel service method. 2026-07-17 Phase 3: `IMessageDeliveryService.CancelAsync`.
 
 Verification checklist:
 
-- [ ] Queued message can be delivered by `CommerceTaskWorker`.
-- [ ] Retryable failure updates task and message state.
-- [ ] Terminal failure updates task and message state.
-- [ ] Manual retry requeues delivery safely.
-- [ ] Duplicate idempotency key does not enqueue duplicate message.
+- [x] Queued message can be delivered by `CommerceTaskWorker`. 2026-07-17 Phase 3: `MessageDeliverTaskHandler` registered as `ICommerceTaskHandler`; CommerceNode API build passed.
+- [x] Retryable failure updates task and message state. 2026-07-17 Phase 3: `DeliverAsync_WhenSmtpFailsBeforeMaxAttempts_MarksWaitingRetry`.
+- [x] Terminal failure updates task and message state. 2026-07-17 Phase 3: `DeliverAsync_WhenSmtpFailsAtMaxAttempts_MarksFailed`.
+- [x] Manual retry requeues delivery safely. 2026-07-17 Phase 3: `RetryAndCancel_UpdateQueuedMessageState`.
+- [x] Duplicate idempotency key does not enqueue duplicate message. 2026-07-17 Phase 3.
 
 Exit criteria:
 
-- [ ] Transactional messages can be delivered through existing worker infrastructure.
+- [x] Transactional messages can be delivered through existing worker infrastructure. 2026-07-17 Phase 3.
 
 Suggested commit:
 
@@ -828,7 +828,7 @@ test(transactional-message): verify message core
 - [x] Phase 0 - baseline guardrails. 2026-07-17: focused transactional baseline/auth/settings tests passed.
 - [x] Phase 1 - message data model and seeds. 2026-07-17: CommerceNode API build passed and focused model/resolver tests passed 34/34.
 - [x] Phase 2 - token rendering and preview. 2026-07-17: CommerceNode API build passed; focused renderer/model/resolver tests passed 43/43.
-- [ ] Phase 3 - queue and delivery handler.
+- [x] Phase 3 - queue and delivery handler. 2026-07-17: CommerceNode API build passed; focused queue/delivery/renderer/resolver tests passed 18/18.
 - [ ] Phase 4 - account messages.
 - [ ] Phase 5 - order and payment/fulfillment hooks.
 - [ ] Phase 6 - contact form delivery contract.

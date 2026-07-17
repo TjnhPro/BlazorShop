@@ -52,6 +52,15 @@ namespace BlazorShop.Application.CommerceNode.Messages
         string? ErrorCode = null,
         string? Message = null);
 
+    public sealed record MessageDeliveryResult(
+        bool Success,
+        bool Retryable,
+        string? ErrorCode = null,
+        string? Message = null);
+
+    public sealed record MessageDeliverTaskPayload(
+        Guid QueuedMessagePublicId);
+
     public sealed record MessageTokenRenderRequest(
         string Template,
         IReadOnlyDictionary<string, string?> Tokens,
@@ -68,4 +77,9 @@ namespace BlazorShop.Application.CommerceNode.Messages
         string Code,
         string TokenName,
         string Message);
+
+    public static class TransactionalMessageTaskTypes
+    {
+        public const string Deliver = "message.deliver";
+    }
 }

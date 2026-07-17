@@ -156,6 +156,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<ICommerceTaskService, CommerceTaskService>();
             services.AddScoped<IMessageTemplateResolver, MessageTemplateResolver>();
             services.AddSingleton<IMessageTokenRenderer, MessageTokenRenderer>();
+            services.AddScoped<IMessageQueueService, MessageQueueService>();
+            services.AddScoped<IMessageDeliveryService, MessageDeliveryService>();
             services.AddScoped<IProductMediaService, ProductMediaService>();
             services.AddScoped<ICommerceMediaAssetService, CommerceMediaAssetService>();
             services.AddScoped<ICategoryMediaService, CategoryMediaService>();
