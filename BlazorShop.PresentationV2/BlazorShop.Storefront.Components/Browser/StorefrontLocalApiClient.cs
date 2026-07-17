@@ -98,7 +98,7 @@ public sealed class StorefrontLocalApiClient
         }
 
         if (route.StartsWith("//", StringComparison.Ordinal) ||
-            Uri.TryCreate(route, UriKind.Absolute, out _))
+            route.Contains("://", StringComparison.Ordinal))
         {
             throw new ArgumentException("Storefront WASM local API calls must use same-origin relative routes.", nameof(route));
         }
