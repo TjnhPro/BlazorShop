@@ -3,6 +3,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
     using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Entities;
     using BlazorShop.Domain.Entities.CommerceNode;
+    using BlazorShop.Domain.Entities.Payment;
     using BlazorShop.Infrastructure.Data.CommerceNode;
 
     using Microsoft.EntityFrameworkCore;
@@ -329,6 +330,23 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal(
                 ProductPurchaseConstraints.DeliveryEstimateTextMaxLength,
                 modelEntity.FindProperty(nameof(Product.DeliveryEstimateText))!.GetMaxLength());
+        }
+
+        [Fact]
+        public void OrderShippingSnapshotFields_HaveSafeLengthsAndPrecision()
+        {
+            using var context = CreateContext();
+            var modelEntity = context.Model.FindEntityType(typeof(Order));
+
+            Assert.NotNull(modelEntity);
+            Assert.Equal(64, modelEntity!.FindProperty(nameof(Order.ShippingMethodKey))!.GetMaxLength());
+            Assert.Equal(64, modelEntity.FindProperty(nameof(Order.ShippingProviderSystemName))!.GetMaxLength());
+            Assert.Equal(64, modelEntity.FindProperty(nameof(Order.ShippingMethodCode))!.GetMaxLength());
+            Assert.Equal(128, modelEntity.FindProperty(nameof(Order.ShippingMethodName))!.GetMaxLength());
+            Assert.Equal(18, modelEntity.FindProperty(nameof(Order.ShippingTotal))!.GetPrecision());
+            Assert.Equal(2, modelEntity.FindProperty(nameof(Order.ShippingTotal))!.GetScale());
+            Assert.Equal(3, modelEntity.FindProperty(nameof(Order.ShippingCurrencyCode))!.GetMaxLength());
+            Assert.Equal(128, modelEntity.FindProperty(nameof(Order.ShippingDeliveryEstimateText))!.GetMaxLength());
         }
 
         private static CommerceNodeDbContext CreateContext()

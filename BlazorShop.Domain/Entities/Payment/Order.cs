@@ -83,6 +83,20 @@ namespace BlazorShop.Domain.Entities.Payment
 
         public string ShippingStatus { get; set; } = ShippingStatuses.NotYetShipped;
 
+        public string? ShippingMethodKey { get; set; }
+
+        public string? ShippingProviderSystemName { get; set; }
+
+        public string? ShippingMethodCode { get; set; }
+
+        public string? ShippingMethodName { get; set; }
+
+        public decimal ShippingTotal { get; set; }
+
+        public string? ShippingCurrencyCode { get; set; }
+
+        public string? ShippingDeliveryEstimateText { get; set; }
+
         public DateTime? ShippedOn { get; set; }
 
         public DateTime? DeliveredOn { get; set; }

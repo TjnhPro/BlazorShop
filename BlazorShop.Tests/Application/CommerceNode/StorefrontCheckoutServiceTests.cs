@@ -750,8 +750,52 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var order = Assert.Single(context.Orders);
             var attempt = Assert.Single(context.PaymentAttempts);
             Assert.Equal(27.25m, order.TotalAmount);
+            Assert.Equal("ground", order.ShippingMethodKey);
+            Assert.Equal("test", order.ShippingProviderSystemName);
+            Assert.Equal("ground", order.ShippingMethodCode);
+            Assert.Equal("Ground", order.ShippingMethodName);
+            Assert.Equal(7.25m, order.ShippingTotal);
+            Assert.Equal("USD", order.ShippingCurrencyCode);
+            Assert.Equal("3-5 days", order.ShippingDeliveryEstimateText);
+            Assert.Equal(ShippingStatuses.NotYetShipped, order.ShippingStatus);
             Assert.Equal(27.25m, attempt.Amount);
             Assert.Equal(7.25m, context.CheckoutSessions.Single().ShippingTotal);
+        }
+
+        [Fact]
+        public async Task PlaceOrderAsync_NonShippingOrderSnapshotsShippingNotRequired()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            product.ShippingRequired = false;
+            product.FreeShipping = true;
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
+            var service = CreateCheckoutService(context, cartService);
+            var preview = await service.PreviewAsync(CreateRequest(storeId, cart.Payload.Token!, add.Payload!.Version));
+
+            var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                preview.Payload!.CheckoutSessionId,
+                preview.Payload.CheckoutVersion,
+                preview.Payload.CartVersion,
+                "non-shipping-order"));
+
+            Assert.True(preview.Success, preview.Message);
+            Assert.True(result.Success, result.Message);
+            var order = Assert.Single(context.Orders);
+            Assert.Equal(ShippingStatuses.ShippingNotRequired, order.ShippingStatus);
+            Assert.Null(order.ShippingMethodKey);
+            Assert.Equal(0m, order.ShippingTotal);
+            Assert.Equal("USD", order.ShippingCurrencyCode);
         }
 
         [Fact]

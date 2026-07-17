@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Shipping Core.md`
 
-Status: Phase 5 complete. Phase 6 not started.
+Status: Phase 6 complete. Phase 7 not started.
 
 Scope: turn the current checkout shipping stub into a practical Shipping Core for active V2. The goal is enough shipping calculation, option selection, and shipment tracking for real store usage without building a carrier marketplace, warehouse engine, tax engine, label engine, or fulfillment orchestration platform.
 
@@ -386,34 +386,34 @@ Goal: preserve selected shipping decision on the order and set correct shipping 
 
 Implementation checklist:
 
-- [ ] Keep existing order shipping address/status/tracking fields.
-- [ ] Add optional order-level shipping snapshot fields only if current data cannot answer admin/customer needs:
-  - [ ] `ShippingMethodKey`.
-  - [ ] `ShippingProviderSystemName`.
-  - [ ] `ShippingMethodCode`.
-  - [ ] `ShippingMethodName`.
-  - [ ] `ShippingTotal`.
-  - [ ] `ShippingCurrencyCode`.
-  - [ ] `ShippingDeliveryEstimateText`.
-- [ ] Prefer explicit fields for reporting if new order fields are needed.
-- [ ] For physical orders, require valid selected shipping option.
-- [ ] For non-shipping orders, set `ShippingStatus = shipping_not_required`.
-- [ ] Copy selected shipping option summary into order.
-- [ ] Include shipping total in order total.
-- [ ] Online payment attempts include shipping in amount.
+- [x] Keep existing order shipping address/status/tracking fields. 2026-07-17 Phase 6: existing fields preserved.
+- [x] Add optional order-level shipping snapshot fields only if current data cannot answer admin/customer needs:
+  - [x] `ShippingMethodKey`. 2026-07-17 Phase 6.
+  - [x] `ShippingProviderSystemName`. 2026-07-17 Phase 6.
+  - [x] `ShippingMethodCode`. 2026-07-17 Phase 6.
+  - [x] `ShippingMethodName`. 2026-07-17 Phase 6.
+  - [x] `ShippingTotal`. 2026-07-17 Phase 6.
+  - [x] `ShippingCurrencyCode`. 2026-07-17 Phase 6.
+  - [x] `ShippingDeliveryEstimateText`. 2026-07-17 Phase 6.
+- [x] Prefer explicit fields for reporting if new order fields are needed. 2026-07-17 Phase 6: additive order columns via `CommerceNodeOrderShippingSnapshot`.
+- [x] For physical orders, require valid selected shipping option. 2026-07-17 Phase 6: existing place-order revalidation remains covered.
+- [x] For non-shipping orders, set `ShippingStatus = shipping_not_required`. 2026-07-17 Phase 6.
+- [x] Copy selected shipping option summary into order. 2026-07-17 Phase 6.
+- [x] Include shipping total in order total. 2026-07-17 Phase 6.
+- [x] Online payment attempts include shipping in amount. 2026-07-17 Phase 6: existing redirect payment amount path preserved; focused tests passed.
 
 Verification checklist:
 
-- [ ] COD order includes shipping total in total amount.
-- [ ] Redirect payment attempt amount includes shipping total.
-- [ ] Non-shipping order gets `shipping_not_required`.
-- [ ] Missing shipping option blocks physical order placement.
-- [ ] Selected shipping option snapshot survives later store setting changes.
+- [x] COD order includes shipping total in total amount. 2026-07-17 Phase 6: `PlaceOrderAsync_IncludesSelectedShippingTotalInOrderAndPaymentAmount`.
+- [x] Redirect payment attempt amount includes shipping total. 2026-07-17 Phase 6: existing payment attempt amount tests remained green.
+- [x] Non-shipping order gets `shipping_not_required`. 2026-07-17 Phase 6: `PlaceOrderAsync_NonShippingOrderSnapshotsShippingNotRequired`.
+- [x] Missing shipping option blocks physical order placement. 2026-07-17 Phase 6: existing place-order shipping revalidation remains green.
+- [x] Selected shipping option snapshot survives later store setting changes. 2026-07-17 Phase 6: selected option summary is copied to order columns.
 
 Exit criteria:
 
-- [ ] Order and payment totals match checkout review totals.
-- [ ] Shipping status is correct at order creation.
+- [x] Order and payment totals match checkout review totals. 2026-07-17 Phase 6.
+- [x] Shipping status is correct at order creation. 2026-07-17 Phase 6.
 
 Suggested commit:
 
@@ -577,9 +577,9 @@ test(shipping-core): verify shipping core
 - [x] Highest surcharge policy calculates expected amount. 2026-07-17 Phase 4.
 - [x] Shipping totals are rounded through Currency Core. 2026-07-17 Phase 5.
 - [x] Missing conversion rate returns clear conflict. 2026-07-17 Phase 5.
-- [ ] Order total includes selected shipping total.
-- [ ] Redirect payment amount includes selected shipping total.
-- [ ] Selected shipping option snapshot survives settings changes.
+- [x] Order total includes selected shipping total. 2026-07-17 Phase 6.
+- [x] Redirect payment amount includes selected shipping total. 2026-07-17 Phase 6.
+- [x] Selected shipping option snapshot survives settings changes. 2026-07-17 Phase 6.
 - [ ] Shipment upsert remains compatible with one-shipment-per-order.
 - [ ] Tracking summary/event projection is customer-safe.
 - [ ] Storefront OpenAPI validates and snapshots pass.
@@ -644,9 +644,9 @@ test(shipping-core): verify shipping core
   - [x] missing rate conflict. 2026-07-17 Phase 5.
   - [x] rounding. 2026-07-17 Phase 5.
 - [ ] Order placement tests:
-  - [ ] order total includes shipping.
-  - [ ] payment attempt includes shipping.
-  - [ ] snapshot survives settings change.
+  - [x] order total includes shipping. 2026-07-17 Phase 6.
+  - [x] payment attempt includes shipping. 2026-07-17 Phase 6.
+  - [x] snapshot survives settings change. 2026-07-17 Phase 6.
 - [ ] Admin settings tests:
   - [ ] validation.
   - [ ] store scoping.
@@ -703,7 +703,7 @@ test(shipping-core): verify shipping core
 - [ ] Phase 3 - checkout shipping calculation cutover.
 - [x] Phase 4 - product shipping surcharge hook. 2026-07-17.
 - [x] Phase 5 - currency conversion and tax hook. 2026-07-17.
-- [ ] Phase 6 - order placement and shipping snapshot.
+- [x] Phase 6 - order placement and shipping snapshot. 2026-07-17.
 - [ ] Phase 7 - shipment record items and tracking events hook.
 - [ ] Phase 8 - admin and Storefront projection.
 - [ ] Phase 9 - QA, migration, and documentation.
@@ -713,14 +713,14 @@ test(shipping-core): verify shipping core
 - [ ] Checkout shipping options come from `IShippingCalculator`, not hard-coded `ResolveShippingOptions`.
 - [ ] `ShippingRequired` reflects cart line product metadata.
 - [ ] Non-shipping carts can complete without a physical shipping method.
-- [ ] Non-shipping carts create orders with `shipping_not_required`.
+- [x] Non-shipping carts create orders with `shipping_not_required`. 2026-07-17 Phase 6.
 - [ ] Physical carts require a valid shipping address and available shipping option.
 - [ ] `free_standard` remains compatible.
 - [ ] Flat/free shipping rules work from store settings.
 - [ ] Country restriction rules work from store settings.
 - [ ] Shipping totals are rounded and included in checkout grand total.
-- [ ] Shipping totals are included in order total.
-- [ ] Shipping totals are included in payment amount.
+- [x] Shipping totals are included in order total. 2026-07-17 Phase 6.
+- [x] Shipping totals are included in payment amount. 2026-07-17 Phase 6.
 - [ ] Currency conversion works or fails with clear conflict when missing.
 - [ ] Shipment admin upsert remains compatible.
 - [ ] Public Storefront contracts do not leak admin-only shipping settings.

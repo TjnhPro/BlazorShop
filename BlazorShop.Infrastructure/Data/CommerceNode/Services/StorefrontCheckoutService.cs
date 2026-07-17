@@ -1179,6 +1179,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 ShippingPostalCode = session.ShippingPostalCode,
                 ShippingCountryCode = session.ShippingCountryCode,
                 ShippingStatus = shippingResult.ShippingRequired ? ShippingStatuses.NotYetShipped : ShippingStatuses.ShippingNotRequired,
+                ShippingMethodKey = currentSelectedShippingOption?.Key,
+                ShippingProviderSystemName = currentSelectedShippingOption?.ProviderSystemName,
+                ShippingMethodCode = currentSelectedShippingOption?.MethodCode,
+                ShippingMethodName = currentSelectedShippingOption?.DisplayName,
+                ShippingTotal = shippingTotal,
+                ShippingCurrencyCode = currentSelectedShippingOption?.CurrencyCode ?? currencyCode,
+                ShippingDeliveryEstimateText = currentSelectedShippingOption?.DeliveryEstimateText,
                 CreatedOn = now.UtcDateTime,
                 UpdatedAt = now.UtcDateTime,
                 Lines = lines.Select(line => new OrderLine
@@ -2145,6 +2152,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 "Shipping option mapped.",
                 new StorefrontCheckoutShippingOption(
                 option.Key,
+                option.ProviderSystemName,
+                option.MethodCode,
                 option.DisplayName,
                 option.Description,
                 price,

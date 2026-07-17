@@ -78,6 +78,8 @@ namespace BlazorShop.Application.CommerceNode.Checkout
 
     public sealed record StorefrontCheckoutShippingOption(
         string Key,
+        string ProviderSystemName,
+        string MethodCode,
         string DisplayName,
         string? Description,
         decimal Price,

@@ -436,6 +436,8 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         {
             return new StorefrontCheckoutShippingOptionResponse(
                 option.Key,
+                option.ProviderSystemName,
+                option.MethodCode,
                 option.DisplayName,
                 option.Description,
                 option.Price,

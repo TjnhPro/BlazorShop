@@ -1045,6 +1045,9 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Shipping rates convert from cart base currency to checkout working currency before session totals are saved. 2026-07-17 Phase 5: `SelectShippingMethodAsync_ConvertsBaseShippingRateToCheckoutCurrency` passed.
 - [x] Missing shipping-rate exchange rate returns a clear checkout conflict instead of silently using a guessed rate. 2026-07-17 Phase 5: `SelectShippingMethodAsync_WhenShippingRateConversionMissing_ReturnsConflict` passed.
 - [x] Shipping tax hook is explicit and returns zero with reason/source while Tax Core remains out of scope. 2026-07-17 Phase 5: `ZeroShippingTaxCalculator_ReturnsExplicitNotConfiguredResult` passed.
+- [x] Orders snapshot selected shipping method key/provider/method/name/rate/currency/delivery estimate at placement. 2026-07-17 Phase 6: `CommerceNodeOrderShippingSnapshot` migration and checkout order tests passed.
+- [x] Non-shipping orders are created with `shipping_not_required` and no selected shipping method snapshot. 2026-07-17 Phase 6: `PlaceOrderAsync_NonShippingOrderSnapshotsShippingNotRequired` passed.
+- [x] Storefront checkout shipping option response exposes provider system name and method code for generator-safe clients. 2026-07-17 Phase 6: Storefront OpenAPI snapshot refreshed and contract tests passed.
 - [ ] Commerce Admin OpenAPI remains generator-safe after all Shipping Core API additions.
 
 ## Payment Core

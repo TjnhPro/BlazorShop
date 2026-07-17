@@ -443,6 +443,8 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
 
     public sealed record StorefrontCheckoutShippingOptionResponse(
         string Key,
+        string ProviderSystemName,
+        string MethodCode,
         string DisplayName,
         string? Description,
         decimal Price,

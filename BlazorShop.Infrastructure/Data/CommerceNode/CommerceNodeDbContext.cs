@@ -1239,6 +1239,41 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 .HasDefaultValue(string.Empty);
 
             modelBuilder.Entity<Order>()
+                .Property(order => order.ShippingMethodKey)
+                .HasColumnName("shipping_method_key")
+                .HasMaxLength(64);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ShippingProviderSystemName)
+                .HasColumnName("shipping_provider_system_name")
+                .HasMaxLength(64);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ShippingMethodCode)
+                .HasColumnName("shipping_method_code")
+                .HasMaxLength(64);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ShippingMethodName)
+                .HasColumnName("shipping_method_name")
+                .HasMaxLength(128);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ShippingTotal)
+                .HasColumnName("shipping_total")
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ShippingCurrencyCode)
+                .HasColumnName("shipping_currency_code")
+                .HasMaxLength(3);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ShippingDeliveryEstimateText)
+                .HasColumnName("shipping_delivery_estimate_text")
+                .HasMaxLength(128);
+
+            modelBuilder.Entity<Order>()
                 .Property(order => order.UpdatedAt)
                 .HasColumnName("updated_at")
                 .HasColumnType("timestamp with time zone")

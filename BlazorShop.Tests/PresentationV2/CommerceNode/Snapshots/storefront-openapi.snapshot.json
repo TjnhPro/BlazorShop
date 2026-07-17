@@ -7851,6 +7851,14 @@
             "type": "string",
             "nullable": true
           },
+          "providerSystemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "methodCode": {
+            "type": "string",
+            "nullable": true
+          },
           "displayName": {
             "type": "string",
             "nullable": true
