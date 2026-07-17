@@ -1116,6 +1116,7 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Guest completion lookup requires reference plus access token and compares only token hash. 2026-07-17 Phase 5: `StorefrontGuestOrderServiceTests.GetAsync_WithoutToken_ReturnsValidationError` passed; existing checkout guest lookup tests cover correct token, wrong token, and wrong store.
 - [x] Guest completion response uses safe order detail contract. 2026-07-17 Phase 5: `StorefrontOrders_GetGuestOrder` now returns `StorefrontCustomerOrderDetailResponse`, and `StorefrontSwagger_GuestOrderLookupRequiresTokenAndReturnsSafeDetailContract` passed.
 - [x] Storefront V2 account UI consumes the protected customer/order contracts without changing CommerceNode runtime behavior. 2026-07-17 Phase 6: Storefront API client tests passed 22/22 and host smoke tests passed 44/44 against safe customer order/address DTOs.
+- [x] Customer Identity account release gate passed for CommerceNode contracts and services. 2026-07-17 Phase 7: CommerceNode API build passed; focused auth/profile/address/order/guest/OpenAPI/Storefront suite passed 245/245; final address UI command subset passed 68/68.
 
 ## Payment Core
 

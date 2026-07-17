@@ -286,6 +286,24 @@ app.MapPost(StorefrontRoutes.AccountChangePassword, async (
         ? Results.Redirect(StorefrontReturnUrl.BuildAccountChangePasswordUrl(saved: true))
         : Results.Redirect(StorefrontReturnUrl.BuildAccountChangePasswordUrl(result.Message));
 });
+app.MapPost(StorefrontRoutes.AccountAddresses, async (
+    [FromForm] StorefrontAccountAddressForm form,
+    IStorefrontSessionResolver sessionResolver,
+    StorefrontApiClient apiClient,
+    CancellationToken cancellationToken) =>
+{
+    var session = await sessionResolver.GetCurrentUserAsync(cancellationToken);
+    if (!session.IsAuthenticated || string.IsNullOrWhiteSpace(session.AccessToken))
+    {
+        return Results.Redirect(StorefrontReturnUrl.BuildSignInUrl(StorefrontRoutes.AccountAddresses));
+    }
+
+    var result = await ExecuteCustomerAddressCommandAsync(apiClient, session.AccessToken, form, cancellationToken);
+
+    return result.Success
+        ? Results.Redirect(StorefrontReturnUrl.BuildAccountAddressesUrl(saved: true))
+        : Results.Redirect(StorefrontReturnUrl.BuildAccountAddressesUrl(result.Message));
+});
 app.MapPost(StorefrontRoutes.CurrencyPreference, async (
     [FromForm] StorefrontCurrencyPreferenceForm form,
     StorefrontApiClient apiClient,
@@ -921,6 +939,92 @@ static string? NormalizeCurrencyCode(string? currencyCode)
 static string? NormalizeOptionalFormValue(string? value)
 {
     return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+}
+
+static StorefrontCustomerAddressRequest BuildCustomerAddressRequest(StorefrontAccountAddressForm form)
+{
+    var (firstName, lastName) = SplitFullName(NormalizeOptionalFormValue(form.FullName));
+    return new StorefrontCustomerAddressRequest
+    {
+        FirstName = firstName,
+        LastName = lastName,
+        Company = NormalizeOptionalFormValue(form.Company),
+        Email = NormalizeOptionalFormValue(form.Email),
+        Phone = NormalizeOptionalFormValue(form.Phone),
+        Address1 = NormalizeOptionalFormValue(form.Address1) ?? string.Empty,
+        Address2 = NormalizeOptionalFormValue(form.Address2),
+        City = NormalizeOptionalFormValue(form.City) ?? string.Empty,
+        StateProvinceCode = NormalizeOptionalFormValue(form.StateProvinceCode),
+        StateProvinceName = NormalizeOptionalFormValue(form.StateProvinceName),
+        PostalCode = NormalizeOptionalFormValue(form.PostalCode) ?? string.Empty,
+        CountryCode = NormalizeOptionalFormValue(form.CountryCode) ?? string.Empty,
+        IsDefaultShipping = form.IsDefaultShipping,
+        IsDefaultBilling = form.IsDefaultBilling,
+    };
+}
+
+static (string FirstName, string LastName) SplitFullName(string? fullName)
+{
+    if (string.IsNullOrWhiteSpace(fullName))
+    {
+        return (string.Empty, string.Empty);
+    }
+
+    var parts = fullName.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    return parts.Length == 1
+        ? (parts[0], string.Empty)
+        : (parts[0], parts[1]);
+}
+
+static async Task<(bool Success, string? Message)> ExecuteCustomerAddressCommandAsync(
+    StorefrontApiClient apiClient,
+    string bearerToken,
+    StorefrontAccountAddressForm form,
+    CancellationToken cancellationToken)
+{
+    var action = NormalizeOptionalFormValue(form.Action)?.ToLowerInvariant();
+    switch (action)
+    {
+        case "create":
+        {
+            var result = await apiClient.CreateCustomerAddressAsync(
+                bearerToken,
+                BuildCustomerAddressRequest(form),
+                cancellationToken);
+            return (result.Success, result.Message);
+        }
+
+        case "update" when form.AddressId is { } addressId:
+        {
+            var result = await apiClient.UpdateCustomerAddressAsync(
+                bearerToken,
+                addressId,
+                BuildCustomerAddressRequest(form),
+                cancellationToken);
+            return (result.Success, result.Message);
+        }
+
+        case "delete" when form.AddressId is { } addressId:
+        {
+            var result = await apiClient.DeleteCustomerAddressAsync(bearerToken, addressId, cancellationToken);
+            return (result.Success, result.Message);
+        }
+
+        case "default-shipping" when form.AddressId is { } addressId:
+        {
+            var result = await apiClient.SetDefaultShippingAddressAsync(bearerToken, addressId, cancellationToken);
+            return (result.Success, result.Message);
+        }
+
+        case "default-billing" when form.AddressId is { } addressId:
+        {
+            var result = await apiClient.SetDefaultBillingAddressAsync(bearerToken, addressId, cancellationToken);
+            return (result.Success, result.Message);
+        }
+
+        default:
+            return (false, "Address action is required.");
+    }
 }
 
 static IResult ToLocalCartMutationResult(StorefrontCartMutationResult result)

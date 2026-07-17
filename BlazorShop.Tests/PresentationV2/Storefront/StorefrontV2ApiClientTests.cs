@@ -766,6 +766,82 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task CustomerAddressCommands_SendBearerAndUseScopedRoutes()
+        {
+            var addressId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+            var requests = new List<string>();
+            var handler = new RecordingHandler(request =>
+            {
+                requests.Add($"{request.Method.Method} {request.RequestUri?.AbsolutePath}");
+                Assert.Equal("Bearer", request.Headers.Authorization?.Scheme);
+                Assert.Equal("access-token", request.Headers.Authorization?.Parameter);
+
+                if (request.Content is not null)
+                {
+                    var body = request.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    Assert.DoesNotContain("customerId", body, StringComparison.OrdinalIgnoreCase);
+                    Assert.DoesNotContain("userId", body, StringComparison.OrdinalIgnoreCase);
+                    Assert.DoesNotContain("storeId", body, StringComparison.OrdinalIgnoreCase);
+                }
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    $$"""
+                    {
+                      "success": true,
+                      "message": "ok",
+                      "data": {
+                        "publicId": "{{addressId}}",
+                        "firstName": "Customer",
+                        "lastName": "One",
+                        "company": null,
+                        "address1": "1 Test Street",
+                        "address2": null,
+                        "city": "New York",
+                        "postalCode": "10000",
+                        "countryCode": "US",
+                        "stateProvinceCode": "NY",
+                        "stateProvinceName": "New York",
+                        "phone": "5550100",
+                        "email": "customer@example.test",
+                        "isDefaultShipping": true,
+                        "isDefaultBilling": true,
+                        "createdAtUtc": "2026-07-17T00:00:00Z",
+                        "updatedAtUtc": "2026-07-17T00:00:00Z"
+                      }
+                    }
+                    """);
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+            var request = new StorefrontCustomerAddressRequest
+            {
+                FirstName = "Customer",
+                LastName = "One",
+                Address1 = "1 Test Street",
+                City = "New York",
+                PostalCode = "10000",
+                CountryCode = "US",
+            };
+
+            Assert.True((await apiClient.CreateCustomerAddressAsync("access-token", request)).Success);
+            Assert.True((await apiClient.UpdateCustomerAddressAsync("access-token", addressId, request)).Success);
+            Assert.True((await apiClient.SetDefaultShippingAddressAsync("access-token", addressId)).Success);
+            Assert.True((await apiClient.SetDefaultBillingAddressAsync("access-token", addressId)).Success);
+            Assert.True((await apiClient.DeleteCustomerAddressAsync("access-token", addressId)).Success);
+
+            Assert.Equal(
+                [
+                    "POST /api/storefront/stores/default/customer/addresses",
+                    "PUT /api/storefront/stores/default/customer/addresses/11111111-1111-1111-1111-111111111111",
+                    "POST /api/storefront/stores/default/customer/addresses/11111111-1111-1111-1111-111111111111/default-shipping",
+                    "POST /api/storefront/stores/default/customer/addresses/11111111-1111-1111-1111-111111111111/default-billing",
+                    "DELETE /api/storefront/stores/default/customer/addresses/11111111-1111-1111-1111-111111111111",
+                ],
+                requests);
+        }
+
+        [Fact]
         public async Task CustomerOrdersAsync_SendsBearerAndReadsPagedOrders()
         {
             var handler = new RecordingHandler(request =>

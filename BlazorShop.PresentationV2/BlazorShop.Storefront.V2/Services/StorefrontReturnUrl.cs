@@ -82,9 +82,9 @@ namespace BlazorShop.Storefront.Services
             return BuildAccountUrl(StorefrontRoutes.AccountOrders, error, saved: false);
         }
 
-        public static string BuildAccountAddressesUrl(string? error = null)
+        public static string BuildAccountAddressesUrl(string? error = null, bool saved = false)
         {
-            return BuildAccountUrl(StorefrontRoutes.AccountAddresses, error, saved: false);
+            return BuildAccountUrl(StorefrontRoutes.AccountAddresses, error, saved);
         }
 
         private static string BuildAccountUrl(string route, string? error, bool saved)

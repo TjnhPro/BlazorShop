@@ -447,6 +447,40 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task AccountAddresses_PostCreate_UsesBearerAndRedirectsSaved()
+        {
+            var handler = new AccountSelfServiceHandler();
+            var session = new StorefrontSessionInfo(true, false, "Customer One", "customer@example.test", "access-token");
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontSessionResolver>();
+                    services.RemoveAll<StorefrontApiClient>();
+                    services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
+                    services.AddScoped(_ => new StorefrontApiClient(
+                        new HttpClient(handler)
+                        {
+                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
+                        },
+                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.AccountAddresses);
+            using var request = CreateAccountAddressPost(token, cookieHeader);
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/account/addresses?saved=1", response.Headers.Location?.ToString());
+            Assert.Contains("Bearer access-token", handler.AuthorizationHeaders);
+            Assert.Contains("POST /api/storefront/stores/demo/customer/addresses", handler.Requests);
+            Assert.Contains("\"firstName\":\"Customer\"", handler.LastAddressCommandBody, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("customerId", handler.LastAddressCommandBody, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("userId", handler.LastAddressCommandBody, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("storeId", handler.LastAddressCommandBody, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
         public async Task AccountOrderDetail_WhenAuthenticated_RendersSafeOrderDetail()
         {
             var session = new StorefrontSessionInfo(true, false, "Customer One", "customer@example.test", "access-token");
@@ -1123,6 +1157,31 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             return request;
         }
 
+        private static HttpRequestMessage CreateAccountAddressPost(string antiforgeryToken, string cookieHeader)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, StorefrontRoutes.AccountAddresses)
+            {
+                Content = new FormUrlEncodedContent(
+                [
+                    new KeyValuePair<string, string>("__RequestVerificationToken", antiforgeryToken),
+                    new KeyValuePair<string, string>("Action", "create"),
+                    new KeyValuePair<string, string>("FullName", "Customer One"),
+                    new KeyValuePair<string, string>("Email", "customer@example.test"),
+                    new KeyValuePair<string, string>("Phone", "5550100"),
+                    new KeyValuePair<string, string>("Address1", "1 Test Street"),
+                    new KeyValuePair<string, string>("City", "New York"),
+                    new KeyValuePair<string, string>("StateProvinceName", "New York"),
+                    new KeyValuePair<string, string>("PostalCode", "10000"),
+                    new KeyValuePair<string, string>("CountryCode", "US"),
+                    new KeyValuePair<string, string>("IsDefaultShipping", "true"),
+                ]),
+            };
+
+            request.Headers.Add("Cookie", cookieHeader);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            return request;
+        }
+
         private static HttpRequestMessage CreateCurrencyPreferencePost(
             string antiforgeryToken,
             string cookieHeader,
@@ -1381,9 +1440,55 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
         private sealed class AccountSelfServiceHandler : HttpMessageHandler
         {
+            public List<string> Requests { get; } = [];
+
+            public List<string> AuthorizationHeaders { get; } = [];
+
+            public string LastAddressCommandBody { get; private set; } = string.Empty;
+
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 var path = request.RequestUri?.AbsolutePath ?? string.Empty;
+                this.Requests.Add($"{request.Method.Method} {path}");
+                if (request.Headers.Authorization is not null)
+                {
+                    this.AuthorizationHeaders.Add($"{request.Headers.Authorization.Scheme} {request.Headers.Authorization.Parameter}");
+                }
+
+                if (string.Equals(path, "/api/storefront/stores/demo/customer/addresses", StringComparison.Ordinal)
+                    && request.Method == HttpMethod.Post)
+                {
+                    this.LastAddressCommandBody = request.Content is null
+                        ? string.Empty
+                        : request.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
+                    return Task.FromResult(CreateJsonResponse(
+                        """
+                        {
+                          "success": true,
+                          "message": "Address saved.",
+                          "data": {
+                            "publicId": "11111111-1111-1111-1111-111111111111",
+                            "firstName": "Customer",
+                            "lastName": "One",
+                            "company": null,
+                            "address1": "1 Test Street",
+                            "address2": null,
+                            "city": "New York",
+                            "postalCode": "10000",
+                            "countryCode": "US",
+                            "stateProvinceCode": null,
+                            "stateProvinceName": "New York",
+                            "phone": "5550100",
+                            "email": "customer@example.test",
+                            "isDefaultShipping": true,
+                            "isDefaultBilling": false,
+                            "createdAtUtc": "2026-07-17T00:00:00Z",
+                            "updatedAtUtc": "2026-07-17T00:00:00Z"
+                          }
+                        }
+                        """));
+                }
+
                 var response = path switch
                 {
                     "/api/storefront/stores/demo/orders/current-user" => CreateJsonResponse(
