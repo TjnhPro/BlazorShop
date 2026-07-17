@@ -650,7 +650,36 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
             Assert.Equal("https://checkout.stripe.test/session", response.Headers.Location?.ToString());
-            Assert.Contains(response.Headers.GetValues("Set-Cookie"), value => value.Contains("bs-cart-token=", StringComparison.Ordinal));
+            Assert.False(DeletesCookie(response, "bs-cart-token"));
+            Assert.False(DeletesCookie(response, "my-cart"));
+            Assert.Equal(1, handler.PlaceOrderCalls);
+        }
+
+        [Fact]
+        public async Task Checkout_PostCompletedOrderClearsCartCookies()
+        {
+            var handler = new CheckoutPaymentRedirectHandler(completedOrder: true);
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<StorefrontApiClient>();
+                    services.AddScoped(_ => new StorefrontApiClient(
+                        new HttpClient(handler)
+                        {
+                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
+                        },
+                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.Checkout, "bs-cart-token=server-token; my-cart=[]");
+            using var request = CreateCheckoutPost(token, AppendCookie(cookieHeader, "bs-cart-token=server-token; my-cart=[]"));
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal($"{StorefrontRoutes.Checkout}?orderReference=ORD-TEST-1", response.Headers.Location?.ToString());
+            Assert.True(DeletesCookie(response, "bs-cart-token"));
+            Assert.True(DeletesCookie(response, "my-cart"));
             Assert.Equal(1, handler.PlaceOrderCalls);
         }
 
@@ -832,6 +861,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             request.Headers.Add("Cookie", cookieHeader);
             request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
             return request;
+        }
+
+        private static bool DeletesCookie(HttpResponseMessage response, string cookieName)
+        {
+            return response.Headers.TryGetValues("Set-Cookie", out var values)
+                && values.Any(value =>
+                    value.Contains(cookieName + "=", StringComparison.Ordinal)
+                    && value.Contains("expires=Thu, 01 Jan 1970", StringComparison.OrdinalIgnoreCase));
         }
 
         private static HttpRequestMessage CreateLogoutPost(string antiforgeryToken, string cookieHeader)
@@ -1286,6 +1323,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             private static readonly Guid CheckoutSessionId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
             private static readonly Guid PaymentAttemptId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
             private static readonly DateTimeOffset ExpiresAtUtc = DateTimeOffset.UtcNow.AddDays(30);
+            private readonly bool completedOrder;
+
+            public CheckoutPaymentRedirectHandler(bool completedOrder = false)
+            {
+                this.completedOrder = completedOrder;
+            }
 
             public int PlaceOrderCalls { get; private set; }
 
@@ -1405,6 +1448,30 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 if (request.Method == HttpMethod.Post && path.EndsWith("/checkout/place-order", StringComparison.Ordinal))
                 {
                     this.PlaceOrderCalls++;
+                    if (this.completedOrder)
+                    {
+                        return Task.FromResult(JsonResponse(new
+                        {
+                            success = true,
+                            message = "OK",
+                            data = new
+                            {
+                                checkoutSessionId = CheckoutSessionId,
+                                paymentAttemptId = PaymentAttemptId,
+                                orderId = Guid.Parse("99999999-9999-9999-9999-999999999999"),
+                                reference = "ORD-TEST-1",
+                                orderStatus = "confirmed",
+                                paymentStatus = "paid",
+                                paymentMethodKey = "cod",
+                                totalAmount = 12.34m,
+                                currencyCode = "USD",
+                                idempotencyKey = "checkout-online-key",
+                                createdOn = DateTime.UtcNow,
+                                nextAction = (object?)null,
+                            },
+                        }));
+                    }
+
                     return Task.FromResult(JsonResponse(new
                     {
                         success = true,

@@ -557,6 +557,45 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public async Task PlaceOrderAsync_WhenCheckoutSessionExpired_BlocksOrderAndMarksExpired()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            SeedPaymentMethod(context, storeId);
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 12m, stock: 10);
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 1));
+            var service = CreateCheckoutService(context, cartService);
+            var preview = await service.PreviewAsync(CreateRequest(storeId, cart.Payload.Token!, add.Payload!.Version));
+            var session = context.CheckoutSessions.Single();
+            session.ExpiresAtUtc = DateTimeOffset.UtcNow.AddMinutes(-1);
+            await context.SaveChangesAsync();
+
+            var result = await service.PlaceOrderAsync(new StorefrontPlaceOrderRequest(
+                storeId,
+                preview.Payload!.CheckoutSessionId,
+                preview.Payload.CartVersion,
+                "expired-checkout"));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.Conflict, result.ResponseType);
+            Assert.Equal("Checkout session has expired.", result.Message);
+            Assert.Empty(context.Orders);
+            Assert.Equal(CheckoutSessionStates.Expired, session.State);
+            Assert.Equal(CartSessionStates.Active, context.CartSessions.Single().State);
+        }
+
+        [Fact]
         public async Task PlaceOrderAsync_RejectsProductUnpublishedAfterPreview()
         {
             using var context = CreateContext();

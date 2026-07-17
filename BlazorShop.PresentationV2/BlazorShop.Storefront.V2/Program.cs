@@ -302,8 +302,6 @@ app.MapPost(StorefrontRoutes.Checkout, async (
         return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("error", placeOrderResult.Message));
     }
 
-    httpContext.Response.Cookies.Delete(StorefrontCookieNames.Cart, new CookieOptions { Path = "/" });
-    httpContext.Response.Cookies.Delete(StorefrontCookieNames.CartToken, new CookieOptions { Path = "/" });
     var nextAction = placeOrderResult.Data.NextAction;
     var nextActionUrl = nextAction?.Url;
     if (string.Equals(nextAction?.Type, "redirect", StringComparison.OrdinalIgnoreCase)
@@ -316,6 +314,9 @@ app.MapPost(StorefrontRoutes.Checkout, async (
     {
         return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("error", "Order confirmation is not available yet."));
     }
+
+    httpContext.Response.Cookies.Delete(StorefrontCookieNames.Cart, new CookieOptions { Path = "/" });
+    httpContext.Response.Cookies.Delete(StorefrontCookieNames.CartToken, new CookieOptions { Path = "/" });
 
     return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("orderReference", placeOrderResult.Data.Reference));
 });

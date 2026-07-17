@@ -539,6 +539,8 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [ ] Required contact/shipping validation blocks submit.
 - [x] COD checkout succeeds with visible order reference. 2026-07-13: visible browser created `ORD-20260713-6672B965` and displayed the confirmation page.
 - [x] Cart cookie is cleared after checkout success. 2026-07-13: browser `document.cookie` returned empty after successful checkout.
+- [x] Hosted payment redirect keeps cart cookies so checkout/payment context remains recoverable until provider confirmation. 2026-07-17 Checkout Core Phase 0: `Checkout_PostRedirectsToProviderNextAction` asserts `bs-cart-token` and legacy cart cookies are not deleted.
+- [x] Completed order checkout clears cart cookies. 2026-07-17 Checkout Core Phase 0: `Checkout_PostCompletedOrderClearsCartCookies` asserts `bs-cart-token` and legacy cart cookies are expired after order reference result.
 - [ ] Browser network shows no legacy API/Web requests.
 - [ ] Checkout page is noindex/private and absent from sitemap.
 
