@@ -28,6 +28,10 @@
 
         Task<bool> ConfirmEmailAsync(AppUser user, string token);
 
+        Task<string> GeneratePasswordResetTokenAsync(AppUser user);
+
+        Task<bool> ResetPasswordAsync(AppUser user, string token, string newPassword);
+
         Task<bool> UpdateUserAsync(string userId, string fullName, string email, string? phoneNumber);
 
     }

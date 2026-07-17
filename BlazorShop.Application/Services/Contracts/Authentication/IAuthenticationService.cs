@@ -17,6 +17,10 @@
 
         Task<ServiceResponse> ConfirmEmail(string email, string token);
 
+        Task<ServiceResponse> ForgotPassword(string email);
+
+        Task<ServiceResponse> ResetPassword(ResetPassword resetPassword);
+
         Task<ServiceResponse> UpdateProfile(string userId, UpdateProfile dto);
     }
 }

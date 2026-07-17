@@ -55,6 +55,17 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
             };
         }
 
+        public static ResetPassword ToApplicationRequest(this StorefrontResetPasswordRequest request)
+        {
+            return new ResetPassword
+            {
+                Email = request.Email,
+                Token = request.Token,
+                Password = request.Password,
+                ConfirmPassword = request.ConfirmPassword,
+            };
+        }
+
         public static UpdateProfile ToApplicationRequest(this StorefrontUpdateProfileRequest request)
         {
             return new UpdateProfile
@@ -1458,6 +1469,11 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
             if (options.Enabled && options.Targets.Newsletter)
             {
                 enabledTargets.Add(CaptchaTargetNames.Newsletter);
+            }
+
+            if (options.Enabled && options.Targets.PasswordRecovery)
+            {
+                enabledTargets.Add(CaptchaTargetNames.PasswordRecovery);
             }
 
             return new StorefrontCaptchaConfigurationResponse(

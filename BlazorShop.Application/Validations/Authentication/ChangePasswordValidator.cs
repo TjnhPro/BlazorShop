@@ -8,7 +8,7 @@
         public ChangePasswordValidator()
         {
             RuleFor(x => x.CurrentPassword).NotEmpty();
-            RuleFor(x => x.NewPassword).NotEmpty().MinimumLength(6).WithMessage("Password must be at least 6 characters.");
+            RuleFor(x => x.NewPassword).ApplyStrongPasswordRules();
             RuleFor(x => x.ConfirmPassword).Equal(x => x.NewPassword).WithMessage("Passwords must match.");
         }
     }

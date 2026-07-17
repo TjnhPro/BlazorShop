@@ -59,13 +59,57 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             await AssertTypedErrorAsync(response, HttpStatusCode.Unauthorized, "auth.refresh_cookie_missing");
         }
 
-        private HttpClient CreateClient()
+        [Fact]
+        public async Task Register_WhenRegistrationIsDisabled_ReturnsTypedForbiddenError()
+        {
+            using var client = this.CreateClient(settings =>
+            {
+                settings["Runtime:Security:RegistrationMode"] = "disabled";
+            });
+
+            using var response = await client.PostAsJsonAsync(
+                "/api/storefront/stores/test-store/auth/register",
+                new
+                {
+                    fullName = "Disabled Customer",
+                    email = "disabled@example.test",
+                    password = "Password123!",
+                    confirmPassword = "Password123!",
+                });
+
+            await AssertTypedErrorAsync(response, HttpStatusCode.Forbidden, "auth.registration_disabled");
+        }
+
+        [Fact]
+        public async Task RegistrationPolicy_ReturnsConfiguredModeWithoutAuthentication()
+        {
+            using var client = this.CreateClient(settings =>
+            {
+                settings["Runtime:Security:RegistrationMode"] = "disabled";
+            });
+
+            using var response = await client.GetAsync("/api/storefront/stores/test-store/auth/registration-policy");
+            using var body = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.True(body.RootElement.GetProperty("success").GetBoolean());
+            Assert.Equal("disabled", body.RootElement.GetProperty("data").GetProperty("mode").GetString());
+            Assert.False(body.RootElement.GetProperty("data").GetProperty("registrationAllowed").GetBoolean());
+        }
+
+        private HttpClient CreateClient(Action<IDictionary<string, string?>>? configureSettings = null)
         {
             var configuredFactory = this.factory.WithWebHostBuilder(builder =>
             {
                 builder.UseEnvironment("Development");
                 builder.UseSetting("CommerceNode:Database:MigrateOnStartup", "false");
                 builder.UseSetting("CommerceTaskWorker:Enabled", "false");
+                var settings = new Dictionary<string, string?>(StringComparer.Ordinal);
+                configureSettings?.Invoke(settings);
+                foreach (var setting in settings)
+                {
+                    builder.UseSetting(setting.Key, setting.Value);
+                }
             });
 
             return configuredFactory.CreateClient(new WebApplicationFactoryClientOptions

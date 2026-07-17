@@ -340,6 +340,61 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         }
 
         [Fact]
+        public async Task StorefrontSwagger_AuthRecoveryEndpointsHaveGeneratorSafeContracts()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var operations = GetOperations(swagger)
+                .ToDictionary(
+                    operation => operation.Value["operationId"]?.GetValue<string>() ?? string.Empty,
+                    operation => operation.Value,
+                    StringComparer.Ordinal);
+
+            var registrationPolicy = operations["StorefrontAuth_GetRegistrationPolicy"];
+            Assert.False(string.IsNullOrWhiteSpace(registrationPolicy["summary"]?.GetValue<string>()));
+            Assert.True(registrationPolicy["responses"]?.AsObject().Count > 1);
+            Assert.Null(registrationPolicy["requestBody"]);
+            Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(registrationPolicy));
+
+            var forgotPassword = operations["StorefrontAuth_ForgotPassword"];
+            Assert.False(string.IsNullOrWhiteSpace(forgotPassword["summary"]?.GetValue<string>()));
+            Assert.True(forgotPassword["responses"]?.AsObject().Count > 1);
+            AssertRequiredRequestBody(forgotPassword);
+            Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(forgotPassword));
+
+            var resetPassword = operations["StorefrontAuth_ResetPassword"];
+            Assert.False(string.IsNullOrWhiteSpace(resetPassword["summary"]?.GetValue<string>()));
+            Assert.True(resetPassword["responses"]?.AsObject().Count > 1);
+            AssertRequiredRequestBody(resetPassword);
+            Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(resetPassword));
+
+            var policySchema = schemas["StorefrontRegistrationPolicyResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontRegistrationPolicyResponse schema was not found.");
+            Assert.Contains("mode", GetPropertyNames(policySchema));
+            Assert.Contains("registrationAllowed", GetPropertyNames(policySchema));
+
+            var forgotSchema = schemas["StorefrontForgotPasswordRequest"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontForgotPasswordRequest schema was not found.");
+            Assert.Contains("email", GetRequiredProperties(forgotSchema));
+            Assert.Equal("email", forgotSchema["properties"]?["email"]?["format"]?.GetValue<string>());
+            Assert.Equal(254, forgotSchema["properties"]?["email"]?["maxLength"]?.GetValue<int>());
+            Assert.DoesNotContain("userId", GetPropertyNames(forgotSchema), StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("customerId", GetPropertyNames(forgotSchema), StringComparer.OrdinalIgnoreCase);
+
+            var resetSchema = schemas["StorefrontResetPasswordRequest"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontResetPasswordRequest schema was not found.");
+            var required = GetRequiredProperties(resetSchema).ToArray();
+            Assert.Contains("email", required);
+            Assert.Contains("token", required);
+            Assert.Contains("password", required);
+            Assert.Contains("confirmPassword", required);
+            Assert.Equal("email", resetSchema["properties"]?["email"]?["format"]?.GetValue<string>());
+            Assert.Equal(8, resetSchema["properties"]?["password"]?["minLength"]?.GetValue<int>());
+            Assert.DoesNotContain("userId", GetPropertyNames(resetSchema), StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("customerId", GetPropertyNames(resetSchema), StringComparer.OrdinalIgnoreCase);
+        }
+
+        [Fact]
         public async Task StorefrontSwagger_CustomerAddressBookHasGeneratorSafeContract()
         {
             var swagger = await this.GetStorefrontSwaggerAsync();

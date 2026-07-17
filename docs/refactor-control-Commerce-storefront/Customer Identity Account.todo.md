@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Customer Identity Account.md`
 
-Status: Phase 1 complete. Phase 2 not started.
+Status: Phase 2 complete. Phase 3 not started.
 
 Scope: move storefront customer identity and account self-service from MVP auth/cart behavior to a practical customer account core. Keep existing V2 boundaries, reuse server-side cart, address, checkout, and order placement foundations, and avoid building a full CRM/customer-group platform.
 
@@ -403,34 +403,34 @@ Goal: complete practical auth behavior while keeping email login only.
 
 Implementation checklist:
 
-- [ ] Add Storefront registration policy model with `disabled`.
-- [ ] Add Storefront registration policy model with `standard`.
-- [ ] Resolve policy from typed settings/configuration foundation or Commerce Node runtime setting shape.
-- [ ] Enforce policy in `POST /auth/register`.
-- [ ] Add `GET /auth/registration-policy`.
-- [ ] Add `POST /auth/forgot-password`.
-- [ ] Add `POST /auth/reset-password`.
-- [ ] Use existing email service.
-- [ ] Use ASP.NET Identity token generation.
-- [ ] Add captcha check for password recovery only when enabled.
-- [ ] Align change-password validation with registration password complexity.
-- [ ] Keep forgot-password response generic for anti-enumeration.
+- [x] Add Storefront registration policy model with `disabled`. 2026-07-17 Phase 2.
+- [x] Add Storefront registration policy model with `standard`. 2026-07-17 Phase 2.
+- [x] Resolve policy from typed settings/configuration foundation or Commerce Node runtime setting shape. 2026-07-17 Phase 2: `Runtime:Security:RegistrationMode`.
+- [x] Enforce policy in `POST /auth/register`. 2026-07-17 Phase 2.
+- [x] Add `GET /auth/registration-policy`. 2026-07-17 Phase 2.
+- [x] Add `POST /auth/forgot-password`. 2026-07-17 Phase 2.
+- [x] Add `POST /auth/reset-password`. 2026-07-17 Phase 2.
+- [x] Use existing email service. 2026-07-17 Phase 2.
+- [x] Use ASP.NET Identity token generation. 2026-07-17 Phase 2.
+- [x] Add captcha check for password recovery only when enabled. 2026-07-17 Phase 2.
+- [x] Align change-password validation with registration password complexity. 2026-07-17 Phase 2.
+- [x] Keep forgot-password response generic for anti-enumeration. 2026-07-17 Phase 2.
 
 Verification checklist:
 
-- [ ] Registration disabled returns safe documented validation/forbidden response.
-- [ ] Standard registration preserves current behavior.
-- [ ] Unknown email password recovery does not reveal account existence.
-- [ ] Reset token flow uses Identity APIs.
-- [ ] No custom token storage is introduced for password reset.
-- [ ] OpenAPI includes request bodies.
-- [ ] OpenAPI includes validation metadata.
-- [ ] OpenAPI includes response schemas.
-- [ ] OpenAPI includes security metadata.
+- [x] Registration disabled returns safe documented validation/forbidden response. 2026-07-17 Phase 2: contract test covers 403 `auth.registration_disabled`.
+- [x] Standard registration preserves current behavior. 2026-07-17 Phase 2: existing auth tests remained green.
+- [x] Unknown email password recovery does not reveal account existence. 2026-07-17 Phase 2: service test covers generic response and no email send.
+- [x] Reset token flow uses Identity APIs. 2026-07-17 Phase 2: service test verifies reset token call.
+- [x] No custom token storage is introduced for password reset. 2026-07-17 Phase 2.
+- [x] OpenAPI includes request bodies. 2026-07-17 Phase 2.
+- [x] OpenAPI includes validation metadata. 2026-07-17 Phase 2.
+- [x] OpenAPI includes response schemas. 2026-07-17 Phase 2.
+- [x] OpenAPI includes security metadata. 2026-07-17 Phase 2.
 
 Exit criteria:
 
-- [ ] Storefront auth has practical registration policy and recovery flow without widening login modes.
+- [x] Storefront auth has practical registration policy and recovery flow without widening login modes. 2026-07-17 Phase 2.
 
 Suggested commit:
 
@@ -771,7 +771,7 @@ test(customer-account): verify account core
 
 - [x] Phase 0 - baseline guardrails. 2026-07-17: committed after focused identity baseline run passed 60/60.
 - [x] Phase 1 - customer profile model. 2026-07-17: CommerceNode API build passed, focused customer/model subset passed 37/37, and broader customer/address/checkout/model run passed 95/95.
-- [ ] Phase 2 - registration policy and password recovery.
+- [x] Phase 2 - registration policy and password recovery. 2026-07-17: CommerceNode API build passed, focused auth/OpenAPI/captcha tests passed 88/88, and Storefront OpenAPI snapshots were refreshed.
 - [ ] Phase 3 - account profile API and Storefront pages.
 - [ ] Phase 4 - customer order self-service API.
 - [ ] Phase 5 - guest completion lookup.

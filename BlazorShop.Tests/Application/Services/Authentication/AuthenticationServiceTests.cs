@@ -32,6 +32,7 @@ namespace BlazorShop.Tests.Application.Services.Authentication
         private readonly Mock<IValidator<CreateUser>> _createUserValidatorMock;
         private readonly Mock<IValidator<LoginUser>> _loginUserValidatorMock;
         private readonly Mock<IValidator<ChangePassword>> _changePasswordValidatorMock;
+        private readonly Mock<IValidator<ResetPassword>> _resetPasswordValidatorMock;
         private readonly Mock<IValidationService> _validationServiceMock;
         private readonly AuthenticationService _authenticationService;
         private readonly Mock<IEmailService> _emailServiceMock;
@@ -46,6 +47,7 @@ namespace BlazorShop.Tests.Application.Services.Authentication
             _createUserValidatorMock = new Mock<IValidator<CreateUser>>();
             _loginUserValidatorMock = new Mock<IValidator<LoginUser>>();
             _changePasswordValidatorMock = new Mock<IValidator<ChangePassword>>();
+            _resetPasswordValidatorMock = new Mock<IValidator<ResetPassword>>();
             _validationServiceMock = new Mock<IValidationService>();
             _emailServiceMock = new Mock<IEmailService>();
 
@@ -64,6 +66,7 @@ namespace BlazorShop.Tests.Application.Services.Authentication
                 _loginUserValidatorMock.Object,
                 _validationServiceMock.Object,
                 _changePasswordValidatorMock.Object,
+                _resetPasswordValidatorMock.Object,
                 _emailServiceMock.Object,
                 Options.Create(new ClientAppOptions { BaseUrl = "https://localhost:7258" }),
                 Options.Create(identityConfirmationOptions ?? new IdentityConfirmationOptions()));
@@ -885,6 +888,85 @@ namespace BlazorShop.Tests.Application.Services.Authentication
             Assert.NotNull(result);
             Assert.False(result.Success);
             Assert.Equal("Email confirmation failed.", result.Message);
+        }
+
+        [Fact]
+        public async Task ForgotPassword_WithUnknownEmail_ReturnsGenericSuccessWithoutSendingEmail()
+        {
+            var result = await _authenticationService.ForgotPassword("missing@example.test");
+
+            Assert.True(result.Success);
+            Assert.Equal("If an account exists for this email, password reset instructions have been sent.", result.Message);
+            _userManagerMock.Verify(u => u.GetUserByEmailAsync("missing@example.test"), Times.Once);
+            _userManagerMock.Verify(u => u.GeneratePasswordResetTokenAsync(It.IsAny<AppUser>()), Times.Never);
+            _emailServiceMock.Verify(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ForgotPassword_WithKnownEmail_GeneratesIdentityTokenAndSendsGenericSuccess()
+        {
+            var user = new AppUser { Id = "user-id", Email = "customer@example.test" };
+            _userManagerMock.Setup(u => u.GetUserByEmailAsync("customer@example.test")).ReturnsAsync(user);
+            _userManagerMock.Setup(u => u.GeneratePasswordResetTokenAsync(user)).ReturnsAsync("reset token");
+
+            var result = await _authenticationService.ForgotPassword(" customer@example.test ");
+
+            Assert.True(result.Success);
+            Assert.Equal("If an account exists for this email, password reset instructions have been sent.", result.Message);
+            _userManagerMock.Verify(u => u.GeneratePasswordResetTokenAsync(user), Times.Once);
+            _emailServiceMock.Verify(
+                e => e.SendEmailAsync(
+                    "customer@example.test",
+                    "Reset your password",
+                    It.Is<string>(body => body.Contains("reset-password?email=customer%40example.test&token=reset%20token", StringComparison.Ordinal))),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task ResetPassword_UsesIdentityResetToken()
+        {
+            var resetPassword = new ResetPassword
+            {
+                Email = "customer@example.test",
+                Token = "identity-token",
+                Password = "NewPassword123!",
+                ConfirmPassword = "NewPassword123!",
+            };
+            var user = new AppUser { Id = "user-id", Email = resetPassword.Email };
+
+            _validationServiceMock
+                .Setup(v => v.ValidateAsync(resetPassword, _resetPasswordValidatorMock.Object))
+                .ReturnsAsync(new ServiceResponse(true, "Validation passed."));
+            _userManagerMock.Setup(u => u.GetUserByEmailAsync(resetPassword.Email)).ReturnsAsync(user);
+            _userManagerMock.Setup(u => u.ResetPasswordAsync(user, resetPassword.Token, resetPassword.Password)).ReturnsAsync(true);
+
+            var result = await _authenticationService.ResetPassword(resetPassword);
+
+            Assert.True(result.Success);
+            Assert.Equal("Password reset successfully.", result.Message);
+            _userManagerMock.Verify(u => u.ResetPasswordAsync(user, resetPassword.Token, resetPassword.Password), Times.Once);
+        }
+
+        [Fact]
+        public async Task ResetPassword_WithUnknownEmail_ReturnsGenericFailure()
+        {
+            var resetPassword = new ResetPassword
+            {
+                Email = "missing@example.test",
+                Token = "identity-token",
+                Password = "NewPassword123!",
+                ConfirmPassword = "NewPassword123!",
+            };
+
+            _validationServiceMock
+                .Setup(v => v.ValidateAsync(resetPassword, _resetPasswordValidatorMock.Object))
+                .ReturnsAsync(new ServiceResponse(true, "Validation passed."));
+
+            var result = await _authenticationService.ResetPassword(resetPassword);
+
+            Assert.False(result.Success);
+            Assert.Equal("Password reset could not be completed.", result.Message);
+            _userManagerMock.Verify(u => u.ResetPasswordAsync(It.IsAny<AppUser>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
 
         [Fact]

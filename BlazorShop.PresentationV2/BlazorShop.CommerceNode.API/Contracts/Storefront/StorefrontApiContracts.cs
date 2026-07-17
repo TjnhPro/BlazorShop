@@ -53,6 +53,41 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         public string? CaptchaToken { get; set; }
     }
 
+    public sealed record StorefrontRegistrationPolicyResponse(
+        string Mode,
+        bool RegistrationAllowed);
+
+    public sealed class StorefrontForgotPasswordRequest
+    {
+        [Required]
+        [EmailAddress]
+        [MaxLength(StorefrontContractValidation.EmailMaxLength)]
+        public string Email { get; set; } = string.Empty;
+
+        [MaxLength(4096)]
+        public string? CaptchaToken { get; set; }
+    }
+
+    public sealed class StorefrontResetPasswordRequest
+    {
+        [Required]
+        [EmailAddress]
+        [MaxLength(StorefrontContractValidation.EmailMaxLength)]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(4096)]
+        public string Token { get; set; } = string.Empty;
+
+        [Required]
+        [MinLength(StorefrontContractValidation.PasswordMinLength)]
+        public string Password { get; set; } = string.Empty;
+
+        [Required]
+        [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+
     public sealed class StorefrontChangePasswordRequest
     {
         [Required]

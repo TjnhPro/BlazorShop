@@ -268,6 +268,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
         [EnableRateLimiting(StorefrontRateLimitPolicyNames.AuthStrict)]
         public async Task<IActionResult> Register([FromBody] StorefrontRegisterRequest user, CancellationToken cancellationToken)
         {
+            if (!this.IsRegistrationAllowed())
+            {
+                return this.Error(StatusCodes.Status403Forbidden, "auth.registration_disabled", "Customer registration is disabled.");
+            }
+
             var captchaFailure = await this.ValidateCaptchaAsync(CaptchaTargetNames.Registration, user.CaptchaToken, cancellationToken);
             if (captchaFailure is not null)
             {
@@ -279,6 +284,16 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 result,
                 payload => new StorefrontRegistrationResponse(
                     result.Id ?? (payload is Guid userId ? userId : Guid.Empty)));
+        }
+
+        [HttpGet("registration-policy")]
+        [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult GetRegistrationPolicy()
+        {
+            var mode = this.GetRegistrationMode();
+            return this.Ok(CommerceNodeApiResponse<StorefrontRegistrationPolicyResponse>.Succeeded(
+                new StorefrontRegistrationPolicyResponse(mode, string.Equals(mode, "standard", StringComparison.Ordinal)),
+                "Registration policy returned."));
         }
 
         [HttpPost("login")]
@@ -389,6 +404,33 @@ namespace BlazorShop.CommerceNode.API.Controllers
             }
 
             var result = await this.authenticationService.ChangePassword(dto.ToApplicationRequest(), userId);
+            return this.FromServiceResponse(result);
+        }
+
+        [HttpPost("forgot-password")]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.AuthStrict)]
+        [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> ForgotPassword([FromBody] StorefrontForgotPasswordRequest request, CancellationToken cancellationToken)
+        {
+            var captchaFailure = await this.ValidateCaptchaAsync(
+                CaptchaTargetNames.PasswordRecovery,
+                request.CaptchaToken,
+                cancellationToken);
+            if (captchaFailure is not null)
+            {
+                return captchaFailure;
+            }
+
+            var result = await this.authenticationService.ForgotPassword(request.Email);
+            return this.FromServiceResponse(result);
+        }
+
+        [HttpPost("reset-password")]
+        [EnableRateLimiting(StorefrontRateLimitPolicyNames.AuthStrict)]
+        [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> ResetPassword([FromBody] StorefrontResetPasswordRequest request)
+        {
+            var result = await this.authenticationService.ResetPassword(request.ToApplicationRequest());
             return this.FromServiceResponse(result);
         }
 
@@ -503,8 +545,24 @@ namespace BlazorShop.CommerceNode.API.Controllers
             {
                 CaptchaTargetNames.Login => options.Targets.Login,
                 CaptchaTargetNames.Registration => options.Targets.Registration,
+                CaptchaTargetNames.PasswordRecovery => options.Targets.PasswordRecovery,
                 _ => false,
             };
+        }
+
+        private bool IsRegistrationAllowed()
+        {
+            return string.Equals(this.GetRegistrationMode(), "standard", StringComparison.Ordinal);
+        }
+
+        private string GetRegistrationMode()
+        {
+            return string.Equals(
+                this.runtimeOptions.Security.RegistrationMode,
+                "disabled",
+                StringComparison.OrdinalIgnoreCase)
+                ? "disabled"
+                : "standard";
         }
 
         private static LoginResponse SanitizeLoginResponse(LoginResponse response)

@@ -26,6 +26,7 @@ namespace BlazorShop.Application.ControlPlane
             services.AddScoped<IValidator<CreateUser>, CreateUserValidator>();
             services.AddScoped<IValidator<LoginUser>, LoginUserValidator>();
             services.AddScoped<IValidator<ChangePassword>, ChangePasswordValidator>();
+            services.AddScoped<IValidator<ResetPassword>, ResetPasswordValidator>();
             services.AddScoped<IValidationService, ValidationService>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
 

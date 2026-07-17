@@ -124,6 +124,17 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Repositories
             return result.Succeeded;
         }
 
+        public async Task<string> GeneratePasswordResetTokenAsync(AppUser user)
+        {
+            return await this.userManager.GeneratePasswordResetTokenAsync(user);
+        }
+
+        public async Task<bool> ResetPasswordAsync(AppUser user, string token, string newPassword)
+        {
+            var result = await this.userManager.ResetPasswordAsync(user, token, newPassword);
+            return result.Succeeded;
+        }
+
         public async Task<bool> UpdateUserAsync(string userId, string fullName, string email, string? phoneNumber)
         {
             var user = await this.userManager.FindByIdAsync(userId);

@@ -1102,6 +1102,10 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] `CommerceCustomer` profile fields are additive and CommerceNode-owned. 2026-07-17 Phase 1: migration `CommerceNodeCustomerProfileFields` adds first/last/company/preferred language/preferred currency/is-active/last-activity fields to `commerce_customers` only.
 - [x] Storefront customer resolution keeps `FullName` compatibility while storing profile fields when supplied. 2026-07-17 Phase 1: `StorefrontCustomerServiceTests` passed.
 - [x] Customer profile model release gate passed. 2026-07-17 Phase 1: CommerceNode API build passed, focused customer/model subset passed 37/37, and broader customer/address/checkout/model run passed 95/95.
+- [x] Registration policy supports `standard` and `disabled` without adding new login modes. 2026-07-17 Phase 2: `CommerceNodeStorefrontAuthContractTests` covers disabled policy response and 403 `auth.registration_disabled`.
+- [x] Password recovery uses ASP.NET Identity reset tokens and existing email service without custom token storage. 2026-07-17 Phase 2: `AuthenticationServiceTests` covers known-email token generation and reset-token application.
+- [x] Unknown password recovery email keeps a generic response and does not reveal account existence. 2026-07-17 Phase 2: `AuthenticationServiceTests.ForgotPassword_WithUnknownEmail_ReturnsGenericSuccessWithoutSendingEmail` passed.
+- [x] Storefront OpenAPI includes generator-safe registration policy, forgot-password, and reset-password contracts. 2026-07-17 Phase 2: snapshots refreshed and focused auth/OpenAPI/captcha run passed 88/88.
 
 ## Payment Core
 

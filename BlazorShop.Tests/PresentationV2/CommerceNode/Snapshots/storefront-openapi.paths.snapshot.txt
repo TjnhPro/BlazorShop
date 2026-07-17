@@ -3,10 +3,13 @@ GET /api/storefront/stores/{storeKey}/address/countries
 GET /api/storefront/stores/{storeKey}/address/countries/{countryCode}/states
 POST /api/storefront/stores/{storeKey}/auth/change-password
 GET /api/storefront/stores/{storeKey}/auth/confirm-email
+POST /api/storefront/stores/{storeKey}/auth/forgot-password
 POST /api/storefront/stores/{storeKey}/auth/login
 POST /api/storefront/stores/{storeKey}/auth/logout
 POST /api/storefront/stores/{storeKey}/auth/refresh-token
 POST /api/storefront/stores/{storeKey}/auth/register
+GET /api/storefront/stores/{storeKey}/auth/registration-policy
+POST /api/storefront/stores/{storeKey}/auth/reset-password
 POST /api/storefront/stores/{storeKey}/auth/update-profile
 DELETE /api/storefront/stores/{storeKey}/cart
 GET /api/storefront/stores/{storeKey}/cart

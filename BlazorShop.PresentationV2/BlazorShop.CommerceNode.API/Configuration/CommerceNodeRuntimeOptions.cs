@@ -11,6 +11,8 @@ namespace BlazorShop.CommerceNode.API.Configuration
 
     public sealed class CommerceNodeSecurityOptions
     {
+        public string RegistrationMode { get; set; } = "standard";
+
         public string RefreshTokenCookieName { get; set; } = "__Host-blazorshop-refresh";
 
         public string RefreshTokenCookieSameSite { get; set; } = "Strict";

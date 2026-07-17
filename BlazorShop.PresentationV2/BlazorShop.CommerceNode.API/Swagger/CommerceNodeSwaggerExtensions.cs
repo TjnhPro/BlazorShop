@@ -876,7 +876,12 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "StorefrontAuth_Register",
                         "Register a Storefront customer.",
                         typeof(CommerceNodeApiResponse<StorefrontRegistrationResponse>),
-                        [StatusCodes.Status400BadRequest, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status403Forbidden, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedAuth", "GetRegistrationPolicy")] = new(
+                        "StorefrontAuth_GetRegistrationPolicy",
+                        "Get Storefront registration policy.",
+                        typeof(CommerceNodeApiResponse<StorefrontRegistrationPolicyResponse>),
+                        [StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedAuth", "Login")] = new(
                         "StorefrontAuth_Login",
                         "Sign in a Storefront customer.",
@@ -900,6 +905,16 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         typeof(CommerceNodeApiResponse),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status500InternalServerError],
                         Security: StorefrontSecurityRequirement.Bearer),
+                    [("StorefrontScopedAuth", "ForgotPassword")] = new(
+                        "StorefrontAuth_ForgotPassword",
+                        "Request a Storefront password reset.",
+                        typeof(CommerceNodeApiResponse),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status500InternalServerError]),
+                    [("StorefrontScopedAuth", "ResetPassword")] = new(
+                        "StorefrontAuth_ResetPassword",
+                        "Reset a Storefront customer password.",
+                        typeof(CommerceNodeApiResponse),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status500InternalServerError]),
                     [("StorefrontScopedAuth", "ConfirmEmail")] = new(
                         "StorefrontAuth_ConfirmEmail",
                         "Confirm a Storefront customer email.",
@@ -1349,6 +1364,7 @@ namespace BlazorShop.CommerceNode.API.Swagger
                 {
                     StatusCodes.Status400BadRequest => "Bad Request",
                     StatusCodes.Status401Unauthorized => "Unauthorized",
+                    StatusCodes.Status403Forbidden => "Forbidden",
                     StatusCodes.Status404NotFound => "Not Found",
                     StatusCodes.Status409Conflict => "Conflict",
                     StatusCodes.Status500InternalServerError => "Internal Server Error",

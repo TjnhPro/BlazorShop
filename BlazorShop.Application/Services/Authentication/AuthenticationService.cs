@@ -26,6 +26,7 @@
         private readonly IValidator<CreateUser> _createUserValidator;
         private readonly IValidator<LoginUser> _loginUserValidator;
         private readonly IValidator<ChangePassword> _changePasswordValidator;
+        private readonly IValidator<ResetPassword> _resetPasswordValidator;
         private readonly IValidationService _validationService;
         private readonly IEmailService _emailService;
         private readonly ClientAppOptions _clientAppOptions;
@@ -41,6 +42,7 @@
             IValidator<LoginUser> loginUserValidator,
             IValidationService validationService,
             IValidator<ChangePassword> changePasswordValidator,
+            IValidator<ResetPassword> resetPasswordValidator,
             IEmailService emailService,
             IOptions<ClientAppOptions> clientAppOptions,
             IOptions<IdentityConfirmationOptions> identityConfirmationOptions)
@@ -54,6 +56,7 @@
             _loginUserValidator = loginUserValidator;
             _validationService = validationService;
             _changePasswordValidator = changePasswordValidator;
+            _resetPasswordValidator = resetPasswordValidator;
             _emailService = emailService;
             _clientAppOptions = clientAppOptions.Value;
             _identityConfirmationOptions = identityConfirmationOptions.Value;
@@ -300,6 +303,61 @@
             }
 
             return new ServiceResponse { Success = true, Message = "Email confirmed successfully." };
+        }
+
+        public async Task<ServiceResponse> ForgotPassword(string email)
+        {
+            var genericResponse = new ServiceResponse(
+                true,
+                "If an account exists for this email, password reset instructions have been sent.");
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return genericResponse;
+            }
+
+            var user = await _userManager.GetUserByEmailAsync(email.Trim());
+            if (user is null || string.IsNullOrWhiteSpace(user.Email))
+            {
+                return genericResponse;
+            }
+
+            try
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var resetLink = this.BuildClientUrl(
+                    $"reset-password?email={Uri.EscapeDataString(user.Email)}&token={Uri.EscapeDataString(token)}");
+                await _emailService.SendEmailAsync(
+                    user.Email,
+                    "Reset your password",
+                    $"Reset your password by clicking <a href=\"{resetLink}\">here</a>.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to send password reset email to {email}");
+            }
+
+            return genericResponse;
+        }
+
+        public async Task<ServiceResponse> ResetPassword(ResetPassword resetPassword)
+        {
+            var validationResult = await _validationService.ValidateAsync(resetPassword, _resetPasswordValidator);
+            if (!validationResult.Success)
+            {
+                return validationResult;
+            }
+
+            var user = await _userManager.GetUserByEmailAsync(resetPassword.Email.Trim());
+            if (user is null)
+            {
+                return new ServiceResponse(false, "Password reset could not be completed.");
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, resetPassword.Token, resetPassword.Password);
+            return result
+                ? new ServiceResponse(true, "Password reset successfully.")
+                : new ServiceResponse(false, "Password reset could not be completed.");
         }
 
         public async Task SendConfirmationEmail(string email, string confirmationLink)
