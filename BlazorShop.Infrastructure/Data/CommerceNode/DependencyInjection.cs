@@ -1,6 +1,7 @@
 namespace BlazorShop.Infrastructure.Data.CommerceNode
 {
     using BlazorShop.Application.DTOs;
+    using BlazorShop.Application.CommerceNode.Addresses;
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.CommerceNode.Captcha;
@@ -113,6 +114,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IAdminAuditService, CommerceNodeAdminAuditService>();
             services.AddSingleton<ISlugService, SlugService>();
             services.AddScoped<IValidationService, ValidationService>();
+            services.AddScoped<IAddressValidationService, AddressValidationService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IProductVariantService, ProductVariantService>();

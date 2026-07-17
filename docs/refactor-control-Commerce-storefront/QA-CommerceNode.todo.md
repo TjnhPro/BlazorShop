@@ -937,3 +937,7 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Default billing uniqueness is enforced for active rows. 2026-07-17 Phase 1: filtered unique index `is_default_billing = true AND deleted_at_utc IS NULL` generated and covered by model test.
 - [x] Existing checkout/order snapshot tables are unchanged by address persistence migration. 2026-07-17 Phase 1: migration inspection confirmed only `commerce_customer_addresses` is created/dropped.
 - [x] Address persistence model and existing checkout service tests pass together. 2026-07-17 Phase 1: focused run passed 38/38.
+- [x] Address validation returns stable issue codes. 2026-07-17 Phase 2: `AddressValidationServiceTests` covers required fields, invalid country/email, state-required countries, and length errors.
+- [x] Address normalization is deterministic server-side. 2026-07-17 Phase 2: tests assert trim, uppercase country/state code, optional blank-to-null, and preserved name/address casing.
+- [x] Address validation can run independently from checkout/UI code. 2026-07-17 Phase 2: `IAddressValidationService` lives in Application and is registered for CommerceNode runtime.
+- [x] Address validation field max lengths align with Phase 1 persistence mapping. 2026-07-17 Phase 2: service and tests cover phone/address length limits; model tests cover DB max lengths.

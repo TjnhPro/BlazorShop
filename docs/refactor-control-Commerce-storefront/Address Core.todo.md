@@ -213,41 +213,50 @@ Goal: centralize address rules before exposing API endpoints.
 
 Implementation checklist:
 
-- [ ] Add application DTOs for address create/update input.
-- [ ] Add application DTOs for address response/output.
-- [ ] Add stable validation issue DTO with code/message/field.
-- [ ] Add `IAddressValidationService`.
-- [ ] Implement provider-free validation:
-  - [ ] first name required.
-  - [ ] last name required.
-  - [ ] address line 1 required.
-  - [ ] city required.
-  - [ ] postal code required by default.
-  - [ ] country code must be two letters.
-  - [ ] state/province required only when country catalog says so.
-  - [ ] email optional but valid when present.
-  - [ ] phone optional with max length.
-  - [ ] max lengths align with API contract and DB mapping.
-- [ ] Implement normalization:
-  - [ ] trim whitespace.
-  - [ ] uppercase country codes.
-  - [ ] uppercase state/province codes.
-  - [ ] collapse empty optional fields to null.
-  - [ ] preserve user-entered casing for names/address lines.
-- [ ] Return stable validation codes rather than message-only failures.
-- [ ] Add tests for validation and normalization.
+- [x] Add application DTOs for address create/update input.
+- [x] Add application DTOs for address response/output.
+- [x] Add stable validation issue DTO with code/message/field.
+- [x] Add `IAddressValidationService`.
+- [x] Implement provider-free validation:
+  - [x] first name required.
+  - [x] last name required.
+  - [x] address line 1 required.
+  - [x] city required.
+  - [x] postal code required by default.
+  - [x] country code must be two letters.
+  - [x] state/province required only when country catalog says so.
+  - [x] email optional but valid when present.
+  - [x] phone optional with max length.
+  - [x] max lengths align with API contract and DB mapping.
+- [x] Implement normalization:
+  - [x] trim whitespace.
+  - [x] uppercase country codes.
+  - [x] uppercase state/province codes.
+  - [x] collapse empty optional fields to null.
+  - [x] preserve user-entered casing for names/address lines.
+- [x] Return stable validation codes rather than message-only failures.
+- [x] Add tests for validation and normalization.
 
 Verification checklist:
 
-- [ ] Missing required fields return stable codes.
-- [ ] Invalid country/state/email return stable codes.
-- [ ] Normalized output is deterministic.
-- [ ] No checkout code depends on UI-only validation.
+- [x] Missing required fields return stable codes.
+- [x] Invalid country/state/email return stable codes.
+- [x] Normalized output is deterministic.
+- [x] No checkout code depends on UI-only validation.
 
 Exit criteria:
 
-- [ ] Address validation can run independently from checkout.
-- [ ] Server-side validation owns the rules.
+- [x] Address validation can run independently from checkout.
+- [x] Server-side validation owns the rules.
+
+Phase 2 evidence:
+
+- 2026-07-17: Added `CustomerAddressCreateRequest`, `CustomerAddressUpdateRequest`, `CustomerAddressDto`, `AddressValidationIssue`, `AddressValidationResult`, and `IAddressValidationService`.
+- 2026-07-17: Added provider-free `AddressValidationService` with trim/uppercase/null-collapse normalization and stable issue codes.
+- 2026-07-17: State/province requirement is currently backed by a small provider-free country list (`US`, `CA`, `AU`) until Phase 3 exposes lookup/config metadata.
+- 2026-07-17: Registered `IAddressValidationService` in Application and CommerceNode infrastructure DI.
+- 2026-07-17: Added `AddressValidationServiceTests`.
+- 2026-07-17: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~AddressValidationServiceTests|FullyQualifiedName~CommerceNodeDbContextModelTests"` passed 27/27.
 
 Suggested commit:
 

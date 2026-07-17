@@ -2,6 +2,7 @@
 {
     using System;
 
+    using BlazorShop.Application.CommerceNode.Addresses;
     using BlazorShop.Application.Mapping;
     using BlazorShop.Application.Options;
     using BlazorShop.Application.Services;
@@ -51,6 +52,7 @@
 
             services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
             services.AddScoped<IValidationService, ValidationService>();
+            services.AddScoped<IAddressValidationService, AddressValidationService>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
 
             services.AddScoped<ICartService, CartService>();
