@@ -1025,12 +1025,18 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Unknown shipping option selection is rejected and does not write `SelectedShippingOptionJson`. 2026-07-17 Phase 0: `SelectShippingMethodAsync_RejectsUnknownShippingOption` passed.
 - [x] Active CommerceNode tracking service does not send tracking email synchronously. 2026-07-17 Phase 0: `CommerceNodeOrderTrackingService_DoesNotSendEmailSynchronously` passed.
 - [x] Shipping provider registry returns free standard and keeps optional flat rate deferred until store settings exist. 2026-07-17 Phase 1: `FreeStandardProvider_ReturnsOption_WhenShippingIsRequired` passed; flat rate remains Phase 2+.
+- [x] Store shipping settings schema is store-scoped with one settings row per store. 2026-07-17 Phase 2: migration `CommerceNodeStoreShippingSettings` and `CommerceNodeDbContextModelTests.StoreShippingSettings_HasOneSettingsRowPerStore` passed.
+- [x] Commerce Admin shipping settings endpoint validates country codes, non-negative flat rate/threshold, surcharge policy, and origin-country requirements. 2026-07-17 Phase 2: `StoreShippingSettingsServiceTests` passed.
+- [x] Flat-rate provider consumes store `DefaultFlatRate` and `FreeShippingThreshold`. 2026-07-17 Phase 2: `FlatRateProvider_UsesConfiguredRateAndFreeShippingThreshold` passed.
+- [x] Shipping providers enforce store enabled country restrictions. 2026-07-17 Phase 2: `FreeStandardProvider_RejectsUnavailableCountry_WhenSettingsRestrictCountries` passed.
+- [x] Commerce Admin shipping settings OpenAPI has stable operation IDs and response schemas. 2026-07-17 Phase 2: `CommerceNodeAdminStoreOpenApiMetadataTests` covers `CommerceShippingSettings_Get` and `CommerceShippingSettings_Update`.
+- [x] ControlPlane shipping settings gateway appends `storeKey` and node credentials instead of exposing direct CommerceNode calls. 2026-07-17 Phase 2: `ControlPlaneCommerceCatalogServiceStoreMappingTests` covers GET/PUT shipping settings forwarding.
 - [x] Shipping calculator computes `ShippingRequired` from cart lines. 2026-07-17 Phase 1: `Calculator_ReturnsNoShippingRequired_WhenNoPackageLinesNeedShipping` passed.
 - [x] Unknown shipping provider is rejected. 2026-07-17 Phase 1: `Resolver_RejectsUnknownProvider` passed.
 - [x] Provider warning/error payloads are preserved by the calculator. 2026-07-17 Phase 1: `Calculator_PreservesProviderWarningsAndErrors` passed.
 - [ ] Physical carts require a valid shipping address and option.
 - [ ] Non-shipping carts can continue without a physical shipping method.
-- [ ] Country restriction and free-shipping threshold behavior are covered by focused tests.
+- [x] Country restriction and free-shipping threshold behavior are covered by focused tests. 2026-07-17 Phase 2: focused shipping settings/provider tests passed.
 - [ ] Shipping totals are included in checkout, order, and payment amounts.
 - [ ] Storefront and Commerce Admin OpenAPI remain generator-safe after Shipping Core API additions.
 

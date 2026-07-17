@@ -21,6 +21,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         [InlineData(typeof(StoreCurrencyExchangeRate))]
         [InlineData(typeof(StoreNavigationMenu))]
         [InlineData(typeof(StoreNavigationMenuItem))]
+        [InlineData(typeof(StoreShippingSettings))]
         public void CatalogStoreId_IsRequiredInCommerceNode(Type entityType)
         {
             using var context = CreateContext();
@@ -130,6 +131,35 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.True(rateIndex!.IsUnique);
             Assert.NotNull(foreignKey);
             Assert.Equal(DeleteBehavior.Cascade, foreignKey!.DeleteBehavior);
+        }
+
+        [Fact]
+        public void StoreShippingSettings_HasOneSettingsRowPerStore()
+        {
+            using var context = CreateContext();
+            var modelEntity = context.Model.FindEntityType(typeof(StoreShippingSettings));
+
+            Assert.NotNull(modelEntity);
+            Assert.Equal("store_shipping_settings", modelEntity!.GetTableName());
+
+            var storeIndex = modelEntity.GetIndexes()
+                .SingleOrDefault(index => index.Properties.Select(property => property.Name).SequenceEqual(["StoreId"]));
+            var publicIdIndex = modelEntity.GetIndexes()
+                .SingleOrDefault(index => index.Properties.Select(property => property.Name).SequenceEqual(["PublicId"]));
+            var foreignKey = modelEntity.GetForeignKeys()
+                .SingleOrDefault(key => key.PrincipalEntityType.ClrType == typeof(CommerceStore)
+                    && key.Properties.Any(property => property.Name == "StoreId"));
+
+            Assert.NotNull(storeIndex);
+            Assert.True(storeIndex!.IsUnique);
+            Assert.NotNull(publicIdIndex);
+            Assert.True(publicIdIndex!.IsUnique);
+            Assert.NotNull(foreignKey);
+            Assert.Equal(DeleteBehavior.Cascade, foreignKey!.DeleteBehavior);
+            Assert.Equal("sum", modelEntity.FindProperty(nameof(StoreShippingSettings.SurchargePolicy))!.GetDefaultValue());
+            Assert.Equal(2, modelEntity.FindProperty(nameof(StoreShippingSettings.OriginCountryCode))!.GetMaxLength());
+            Assert.Equal(16, modelEntity.FindProperty(nameof(StoreShippingSettings.SurchargePolicy))!.GetMaxLength());
+            Assert.Equal(128, modelEntity.FindProperty(nameof(StoreShippingSettings.DefaultDeliveryEstimateText))!.GetMaxLength());
         }
 
         [Fact]

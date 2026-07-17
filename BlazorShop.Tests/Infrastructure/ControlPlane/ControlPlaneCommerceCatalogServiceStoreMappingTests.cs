@@ -4,6 +4,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
     using System.Text;
 
     using BlazorShop.Application.CommerceNode.Navigation;
+    using BlazorShop.Application.CommerceNode.Shipping;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.ControlPlane.Nodes;
     using BlazorShop.Application.ControlPlane.Stores;
@@ -179,6 +180,58 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             Assert.Contains("storeKey=main-store", request.RequestUri.Query);
         }
 
+        [Fact]
+        public async Task GetShippingSettingsAsync_AppendsStoreKeyToCommerceNodeRequest()
+        {
+            await using var context = CreateContext();
+            var store = await CreateStoreAsync(context);
+            var handler = new RecordingHandler(RecordingHandler.ShippingSettingsEnvelope);
+            var service = new ControlPlaneCommerceCatalogService(context, new HttpClient(handler));
+
+            var result = await service.GetShippingSettingsAsync(store.PublicId);
+
+            Assert.True(result.Success);
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal(HttpMethod.Get, request.Method);
+            Assert.Equal("https://node.example.test/api/commerce/admin/shipping/settings", request.RequestUri!.GetLeftPart(UriPartial.Path));
+            Assert.Contains("storeKey=main-store", request.RequestUri.Query);
+            Assert.Equal("node-a", request.Headers.GetValues("X-Node-Key").Single());
+            Assert.Equal("test-node-secret", request.Headers.GetValues("X-Node-Secret").Single());
+        }
+
+        [Fact]
+        public async Task UpdateShippingSettingsAsync_AppendsStoreKeyToCommerceNodeRequest()
+        {
+            await using var context = CreateContext();
+            var store = await CreateStoreAsync(context);
+            var handler = new RecordingHandler(RecordingHandler.ShippingSettingsEnvelope);
+            var service = new ControlPlaneCommerceCatalogService(context, new HttpClient(handler));
+
+            var result = await service.UpdateShippingSettingsAsync(
+                store.PublicId,
+                new UpdateStoreShippingSettingsRequest(
+                    new StoreShippingOriginDto(
+                        "Fulfillment",
+                        "Main Store",
+                        "1 Shipping Way",
+                        null,
+                        "Austin",
+                        "TX",
+                        "78701",
+                        "US"),
+                    ["US"],
+                    7.5m,
+                    100m,
+                    StoreShippingSurchargePolicies.Sum,
+                    "3-5 days"));
+
+            Assert.True(result.Success);
+            var request = Assert.Single(handler.Requests);
+            Assert.Equal(HttpMethod.Put, request.Method);
+            Assert.Equal("https://node.example.test/api/commerce/admin/shipping/settings", request.RequestUri!.GetLeftPart(UriPartial.Path));
+            Assert.Contains("storeKey=main-store", request.RequestUri.Query);
+        }
+
         private static async Task<ControlPlaneStoreDetail> CreateStoreAsync(ControlPlaneDbContext context)
         {
             var nodeService = new ControlPlaneNodeService(context);
@@ -280,6 +333,34 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
                     "isEnabled": true,
                     "updatedAt": "2026-07-15T00:00:00+00:00",
                     "items": []
+                  }
+                }
+                """;
+
+            public const string ShippingSettingsEnvelope = """
+                {
+                  "success": true,
+                  "message": "ok",
+                  "data": {
+                    "publicId": "22222222-2222-2222-2222-222222222222",
+                    "origin": {
+                      "fullName": "Fulfillment",
+                      "company": "Main Store",
+                      "address1": "1 Shipping Way",
+                      "address2": null,
+                      "city": "Austin",
+                      "stateProvinceCode": "TX",
+                      "postalCode": "78701",
+                      "countryCode": "US"
+                    },
+                    "enabledCountryCodes": ["US"],
+                    "defaultFlatRate": 7.5,
+                    "freeShippingThreshold": 100,
+                    "surchargePolicy": "sum",
+                    "defaultDeliveryEstimateText": "3-5 days",
+                    "createdAt": "2026-07-17T00:00:00+00:00",
+                    "updatedAt": "2026-07-17T00:00:00+00:00",
+                    "updatedByUserId": "actor-1"
                   }
                 }
                 """;

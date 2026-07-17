@@ -7,10 +7,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     {
         public const string SystemName = "free_standard";
         public const string MethodCode = "standard";
+        private readonly IStoreShippingSettingsService? settingsService;
+
+        public InternalFreeStandardShippingProvider(IStoreShippingSettingsService? settingsService = null)
+        {
+            this.settingsService = settingsService;
+        }
 
         public string ProviderSystemName => SystemName;
 
-        public Task<ShippingProviderResult> GetOptionsAsync(
+        public async Task<ShippingProviderResult> GetOptionsAsync(
             ShippingOptionsRequest request,
             CancellationToken cancellationToken = default)
         {
@@ -18,7 +24,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             if (!ShippingCalculator.RequiresShipping(request.PackageLines))
             {
-                return Task.FromResult(ShippingProviderResult.Empty);
+                return ShippingProviderResult.Empty;
+            }
+
+            var settings = await this.ResolveSettingsAsync(request.StoreId, cancellationToken);
+            if (!SupportsDestination(settings, request.Address))
+            {
+                return new ShippingProviderResult(
+                    Options: [],
+                    Warnings: [],
+                    Errors: ["Shipping is not available for the selected country."]);
             }
 
             var currencyCode = NormalizeCurrency(request.CurrencyCode);
@@ -35,13 +50,91 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 Errors: [],
                 RuleMatch: "internal.free_standard");
 
-            return Task.FromResult(new ShippingProviderResult([option], [], []));
+            return new ShippingProviderResult([option], [], []);
+        }
+
+        private async Task<StoreShippingRuntimeSettings> ResolveSettingsAsync(Guid storeId, CancellationToken cancellationToken)
+        {
+            return this.settingsService is null
+                ? new StoreShippingRuntimeSettings(new StoreShippingOriginDto(null, null, null, null, null, null, null, null), [], null, null, StoreShippingSurchargePolicies.Sum, null)
+                : await this.settingsService.ResolveAsync(storeId, cancellationToken);
         }
 
         private static string NormalizeCurrency(string? value)
         {
             var normalized = value?.Trim().ToUpperInvariant();
             return string.IsNullOrWhiteSpace(normalized) ? "USD" : normalized;
+        }
+
+        internal static bool SupportsDestination(StoreShippingRuntimeSettings settings, ShippingAddressSnapshot? address)
+        {
+            if (settings.EnabledCountryCodes.Count == 0)
+            {
+                return true;
+            }
+
+            var destinationCountry = address?.CountryCode?.Trim().ToUpperInvariant();
+            return !string.IsNullOrWhiteSpace(destinationCountry)
+                && settings.EnabledCountryCodes.Contains(destinationCountry, StringComparer.OrdinalIgnoreCase);
+        }
+    }
+
+    public sealed class InternalFlatRateShippingProvider : IShippingProvider
+    {
+        public const string SystemName = "flat_rate";
+        public const string MethodCode = "flat_rate";
+
+        private readonly IStoreShippingSettingsService settingsService;
+
+        public InternalFlatRateShippingProvider(IStoreShippingSettingsService settingsService)
+        {
+            this.settingsService = settingsService;
+        }
+
+        public string ProviderSystemName => SystemName;
+
+        public async Task<ShippingProviderResult> GetOptionsAsync(
+            ShippingOptionsRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(request);
+
+            if (!ShippingCalculator.RequiresShipping(request.PackageLines))
+            {
+                return ShippingProviderResult.Empty;
+            }
+
+            var settings = await this.settingsService.ResolveAsync(request.StoreId, cancellationToken);
+            if (!InternalFreeStandardShippingProvider.SupportsDestination(settings, request.Address))
+            {
+                return new ShippingProviderResult([], [], ["Shipping is not available for the selected country."]);
+            }
+
+            if (!settings.DefaultFlatRate.HasValue)
+            {
+                return ShippingProviderResult.Empty;
+            }
+
+            var rate = settings.FreeShippingThreshold.HasValue && request.Subtotal >= settings.FreeShippingThreshold.Value
+                ? 0m
+                : settings.DefaultFlatRate.Value;
+            var estimate = settings.DefaultDeliveryEstimateText ?? "Standard delivery";
+            var currencyCode = string.IsNullOrWhiteSpace(request.CurrencyCode) ? "USD" : request.CurrencyCode.Trim().ToUpperInvariant();
+
+            var option = new ShippingOptionDto(
+                Key: SystemName,
+                ProviderSystemName: SystemName,
+                MethodCode: MethodCode,
+                DisplayName: "Flat rate",
+                Description: "Store configured flat-rate shipping.",
+                Rate: rate,
+                CurrencyCode: currencyCode,
+                DeliveryEstimateText: estimate,
+                Warnings: [],
+                Errors: [],
+                RuleMatch: rate == 0m ? "store.free_shipping_threshold" : "store.flat_rate");
+
+            return new ShippingProviderResult([option], [], []);
         }
     }
 

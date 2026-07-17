@@ -11,6 +11,7 @@ namespace BlazorShop.Application.ControlPlane.Catalog
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.CommerceNode.SecurityPrivacy;
+    using BlazorShop.Application.CommerceNode.Shipping;
     using BlazorShop.Application.CommerceNode.Tasks;
     using BlazorShop.Application.DTOs.Category;
     using BlazorShop.Application.DTOs.Payment;
@@ -520,6 +521,15 @@ namespace BlazorShop.Application.ControlPlane.Catalog
         Task<ControlPlaneCommerceCatalogResult<StoreSecurityPrivacySettingsDto>> UpdateSecurityPrivacySettingsAsync(
             Guid storePublicId,
             UpdateStoreSecurityPrivacySettingsRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StoreShippingSettingsDto>> GetShippingSettingsAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StoreShippingSettingsDto>> UpdateShippingSettingsAsync(
+            Guid storePublicId,
+            UpdateStoreShippingSettingsRequest request,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneCommerceCatalogResult<GetShipment>> GetShipmentAsync(

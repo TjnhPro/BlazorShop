@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Shipping Core.md`
 
-Status: Phase 1 complete. Phase 2 not started.
+Status: Phase 2 complete. Phase 3 not started.
 
 Scope: turn the current checkout shipping stub into a practical Shipping Core for active V2. The goal is enough shipping calculation, option selection, and shipment tracking for real store usage without building a carrier marketplace, warehouse engine, tax engine, label engine, or fulfillment orchestration platform.
 
@@ -21,17 +21,17 @@ Approved:
   - [x] delivery estimate. 2026-07-17 Phase 1: `ShippingOptionDto.DeliveryEstimateText`.
   - [x] errors and warnings. 2026-07-17 Phase 1: provider and option warnings/errors are explicit.
   - [x] rule matching result. 2026-07-17 Phase 1: `ShippingOptionDto.RuleMatch`.
-- [ ] First internal providers:
+- [x] First internal providers:
   - [x] `free_standard`. 2026-07-17 Phase 1: `InternalFreeStandardShippingProvider`.
-  - [ ] optional `flat_rate`. Deferred until Phase 2 store shipping settings exist.
+  - [x] optional `flat_rate`. 2026-07-17 Phase 2: `InternalFlatRateShippingProvider` reads store shipping settings.
   - [x] `shipping_not_required` path when no cart line needs shipping. 2026-07-17 Phase 1: calculator returns `ShippingRequired=false` and no options.
 - [ ] Core shipping calculation:
-  - [ ] store shipping origin address.
+  - [x] store shipping origin address. 2026-07-17 Phase 2: `StoreShippingSettings` stores normalized origin data.
   - [x] product shipping-required flag. 2026-07-17 Phase 1: `ShippingPackageLine.ShippingRequired` drives calculator `ShippingRequired`.
   - [ ] product shipping surcharge hook.
-  - [ ] free-shipping threshold hook.
-  - [ ] country restriction.
-  - [ ] highest surcharge vs sum policy.
+  - [x] free-shipping threshold hook. 2026-07-17 Phase 2: flat-rate provider waives rate when subtotal reaches `FreeShippingThreshold`.
+  - [x] country restriction. 2026-07-17 Phase 2: providers reject destinations outside `EnabledCountryCodes`.
+  - [ ] highest surcharge vs sum policy. Phase 2 stores validated policy; product surcharge calculation remains Phase 4.
   - [ ] tax calculation hook returning zero for now.
   - [ ] currency conversion/rounding through existing Currency Core services.
 - [ ] Checkout integration:
@@ -50,8 +50,8 @@ Approved:
   - [ ] notification hook.
 - [ ] API/contract hardening:
   - [ ] explicit DTOs.
-  - [ ] stable operation IDs.
-  - [ ] validation metadata.
+  - [x] stable operation IDs for shipping settings admin endpoints. 2026-07-17 Phase 2: `CommerceShippingSettings_Get` and `CommerceShippingSettings_Update`.
+  - [x] validation metadata for shipping settings admin contracts. 2026-07-17 Phase 2: admin service validates country code, money, origin, and surcharge policy inputs.
   - [ ] safe public tracking projection.
 
 Deferred:
@@ -232,36 +232,36 @@ Goal: give internal providers enough store-level data to calculate practical rat
 
 Implementation checklist:
 
-- [ ] Add `StoreShippingSettings` or equivalent typed settings row:
-  - [ ] `StoreId`.
-  - [ ] optional origin full name/company.
-  - [ ] origin address1/address2/city/state/postal/country.
-  - [ ] `EnabledCountryCodesJson`.
-  - [ ] `DefaultFlatRate`.
-  - [ ] `FreeShippingThreshold`.
-  - [ ] `SurchargePolicy`: `sum` or `highest`.
-  - [ ] `DefaultDeliveryEstimateText`.
-  - [ ] `CreatedAtUtc`.
-  - [ ] `UpdatedAtUtc`.
-- [ ] Validate country codes as 2-letter uppercase values.
-- [ ] Validate flat rate and threshold are null or >= 0.
-- [ ] Validate surcharge policy is known.
-- [ ] Require origin country when country restrictions/rate providers depend on origin.
-- [ ] Add Commerce Admin endpoint under `api/commerce/admin/shipping/settings`.
-- [ ] Add ControlPlane gateway using existing store-scoped admin pattern.
-- [ ] Do not expose internal settings through Storefront unless explicitly public-safe.
+- [x] Add `StoreShippingSettings` or equivalent typed settings row:
+  - [x] `StoreId`. 2026-07-17 Phase 2: store-scoped EF row with unique `StoreId`.
+  - [x] optional origin full name/company. 2026-07-17 Phase 2.
+  - [x] origin address1/address2/city/state/postal/country. 2026-07-17 Phase 2.
+  - [x] `EnabledCountryCodesJson`. 2026-07-17 Phase 2: stored as `jsonb`.
+  - [x] `DefaultFlatRate`. 2026-07-17 Phase 2.
+  - [x] `FreeShippingThreshold`. 2026-07-17 Phase 2.
+  - [x] `SurchargePolicy`: `sum` or `highest`. 2026-07-17 Phase 2.
+  - [x] `DefaultDeliveryEstimateText`. 2026-07-17 Phase 2.
+  - [x] `CreatedAtUtc`. 2026-07-17 Phase 2: `CreatedAt` uses `DateTimeOffset`/`timestamptz`.
+  - [x] `UpdatedAtUtc`. 2026-07-17 Phase 2: `UpdatedAt` uses `DateTimeOffset`/`timestamptz`.
+- [x] Validate country codes as 2-letter uppercase values. 2026-07-17 Phase 2: `StoreShippingSettingsServiceTests` covers invalid and normalized values.
+- [x] Validate flat rate and threshold are null or >= 0. 2026-07-17 Phase 2.
+- [x] Validate surcharge policy is known. 2026-07-17 Phase 2.
+- [x] Require origin country when country restrictions/rate providers depend on origin. 2026-07-17 Phase 2.
+- [x] Add Commerce Admin endpoint under `api/commerce/admin/shipping/settings`. 2026-07-17 Phase 2: `CommerceShippingSettingsController`.
+- [x] Add ControlPlane gateway using existing store-scoped admin pattern. 2026-07-17 Phase 2: gateway forwards through ControlPlane with `storeKey`.
+- [x] Do not expose internal settings through Storefront unless explicitly public-safe. 2026-07-17 Phase 2: no Storefront route/client/config projection was added.
 
 Verification checklist:
 
-- [ ] Default settings are created or resolved defensively.
-- [ ] Admin update validates country codes.
-- [ ] Admin update validates non-negative money fields.
-- [ ] Control Plane gateway preserves boundary.
-- [ ] Storefront public config does not leak internal shipping settings.
+- [x] Default settings are created or resolved defensively. 2026-07-17 Phase 2: `GetAsync_ReturnsDefensiveDefaultsWithoutPersistingRow`.
+- [x] Admin update validates country codes. 2026-07-17 Phase 2: focused service tests passed.
+- [x] Admin update validates non-negative money fields. 2026-07-17 Phase 2: focused service tests passed.
+- [x] Control Plane gateway preserves boundary. 2026-07-17 Phase 2: `ControlPlaneCommerceCatalogServiceStoreMappingTests` covers GET/PUT shipping settings forwarding.
+- [x] Storefront public config does not leak internal shipping settings. 2026-07-17 Phase 2: no Storefront-facing DTO/endpoint was introduced.
 
 Exit criteria:
 
-- [ ] Internal provider can resolve store origin/country/threshold/rate settings.
+- [x] Internal provider can resolve store origin/country/threshold/rate settings. 2026-07-17 Phase 2: flat-rate/free-standard provider tests passed.
 
 Suggested commit:
 

@@ -187,7 +187,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IProductSellabilityResolver, ProductSellabilityResolver>();
             services.AddScoped<IProductSelectionResolver, ProductSelectionResolver>();
             services.AddScoped<IStorefrontCartService, StorefrontCartService>();
+            services.AddScoped<IStoreShippingSettingsService, StoreShippingSettingsService>();
             services.AddScoped<IShippingProvider, InternalFreeStandardShippingProvider>();
+            services.AddScoped<IShippingProvider, InternalFlatRateShippingProvider>();
             services.AddScoped<IShippingProviderResolver, ShippingProviderResolver>();
             services.AddScoped<IShippingCalculator, ShippingCalculator>();
             services.AddScoped<IStorefrontCheckoutService, StorefrontCheckoutService>();

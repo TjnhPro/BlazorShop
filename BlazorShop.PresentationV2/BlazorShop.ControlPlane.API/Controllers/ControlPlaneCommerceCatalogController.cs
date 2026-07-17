@@ -12,6 +12,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.CommerceNode.SecurityPrivacy;
+    using BlazorShop.Application.CommerceNode.Shipping;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.Payments;
@@ -1141,6 +1142,23 @@ namespace BlazorShop.ControlPlane.API.Controllers
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.catalogService.UpdateSecurityPrivacySettingsAsync(storePublicId, request, cancellationToken));
+        }
+
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/shipping/settings")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsRead)]
+        public async Task<IActionResult> GetShippingSettings(Guid storePublicId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.GetShippingSettingsAsync(storePublicId, cancellationToken));
+        }
+
+        [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/shipping/settings")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsWrite)]
+        public async Task<IActionResult> UpdateShippingSettings(
+            Guid storePublicId,
+            UpdateStoreShippingSettingsRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.UpdateShippingSettingsAsync(storePublicId, request, cancellationToken));
         }
 
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/orders/{orderId:guid}/shipment")]

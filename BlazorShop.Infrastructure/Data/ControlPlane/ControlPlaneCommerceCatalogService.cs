@@ -14,6 +14,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.CommerceNode.SecurityPrivacy;
+    using BlazorShop.Application.CommerceNode.Shipping;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.CommerceNode.Tasks;
     using BlazorShop.Application.DTOs.Admin.Inventory;
@@ -1320,6 +1321,31 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 storePublicId,
                 HttpMethod.Put,
                 "api/commerce/admin/security-privacy",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<StoreShippingSettingsDto>> GetShippingSettingsAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<StoreShippingSettingsDto>(
+                storePublicId,
+                HttpMethod.Get,
+                "api/commerce/admin/shipping/settings",
+                null,
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneCommerceCatalogResult<StoreShippingSettingsDto>> UpdateShippingSettingsAsync(
+            Guid storePublicId,
+            UpdateStoreShippingSettingsRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendAsync<StoreShippingSettingsDto>(
+                storePublicId,
+                HttpMethod.Put,
+                "api/commerce/admin/shipping/settings",
                 request,
                 cancellationToken);
         }

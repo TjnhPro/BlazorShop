@@ -119,6 +119,28 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("requestBody.Required = true", source);
         }
 
+        [Fact]
+        public void CommerceShippingSettingsAdminSwaggerFilter_DefinesStableOperationMetadata()
+        {
+            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwaggerExtensions.cs");
+
+            var operationIds = new[]
+            {
+                "CommerceShippingSettings_Get",
+                "CommerceShippingSettings_Update",
+            };
+
+            foreach (var operationId in operationIds)
+            {
+                Assert.Contains(operationId, source);
+            }
+
+            Assert.Contains("CommerceShippingAdminOperationMetadataFilter", source);
+            Assert.Contains("typeof(CommerceNodeApiResponse<StoreShippingSettingsDto>)", source);
+            Assert.Contains("api/commerce/admin/shipping/settings", source);
+            Assert.Contains("requestBody.Required = true", source);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath));
