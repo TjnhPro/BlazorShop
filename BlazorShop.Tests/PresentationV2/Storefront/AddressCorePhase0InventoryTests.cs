@@ -65,7 +65,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
 
-            Assert.Contains("ShippingAddress = new StorefrontCheckoutPreviewShippingAddress", program, StringComparison.Ordinal);
+            Assert.Contains("ShippingAddressId = shippingAddressId", program, StringComparison.Ordinal);
+            Assert.Contains("ShippingAddress = shippingAddressId.HasValue", program, StringComparison.Ordinal);
+            Assert.Contains("new StorefrontCheckoutPreviewShippingAddress", program, StringComparison.Ordinal);
             Assert.Contains("CustomerEmail = form.CustomerEmail", program, StringComparison.Ordinal);
             Assert.Contains("CustomerName = form.CustomerName", program, StringComparison.Ordinal);
 

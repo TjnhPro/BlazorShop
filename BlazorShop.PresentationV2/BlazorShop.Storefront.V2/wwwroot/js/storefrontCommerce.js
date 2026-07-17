@@ -8,6 +8,9 @@
   const selectionPreviewSelector = "[data-storefront-selection-preview]";
   const selectionQuantitySelector = "[data-storefront-selection-quantity]";
   const attributeControlSelector = "[data-storefront-attribute-control]";
+  const addressSelectSelector = "[data-storefront-address-select]";
+  const manualAddressSelector = "[data-storefront-manual-address]";
+  const manualAddressFieldSelector = "[data-storefront-manual-address-field]";
   const toastRegionSelector = "[data-storefront-toast-region]";
   const toastTemplateSelector = "[data-storefront-toast-template]";
   const antiforgeryTokenSelector = 'meta[name="blazorshop-antiforgery-token"]';
@@ -424,6 +427,27 @@
     }
   }
 
+  function syncManualAddressFields(select) {
+    if (!(select instanceof HTMLSelectElement)) {
+      return;
+    }
+
+    const manualAddress = document.querySelector(manualAddressSelector);
+    const useSavedAddress = Boolean((select.value || "").trim());
+    toggleHidden(manualAddress, useSavedAddress);
+    document.querySelectorAll(manualAddressFieldSelector).forEach((field) => {
+      if (field instanceof HTMLInputElement || field instanceof HTMLSelectElement || field instanceof HTMLTextAreaElement) {
+        field.disabled = useSavedAddress;
+      }
+    });
+  }
+
+  function initCheckoutAddressSelection() {
+    document.querySelectorAll(addressSelectSelector).forEach((select) => {
+      syncManualAddressFields(select);
+    });
+  }
+
   function applySelectionPreview(container, preview) {
     const button = container.querySelector(buttonSelector);
     const price = container.closest("main")?.querySelector("[data-storefront-selection-price]") || document.querySelector("[data-storefront-selection-price]");
@@ -691,6 +715,11 @@
       return;
     }
 
+    if (target instanceof HTMLSelectElement && target.matches(addressSelectSelector)) {
+      syncManualAddressFields(target);
+      return;
+    }
+
     if (!(target instanceof HTMLInputElement) || !target.matches(cartQuantitySelector)) {
       return;
     }
@@ -716,6 +745,7 @@
   function initialize() {
     flushQueuedToast();
     initConsentBanner();
+    initCheckoutAddressSelection();
     refreshCartSummary();
     startBadgePolling();
     document.querySelectorAll(selectionPreviewSelector).forEach((container) => {

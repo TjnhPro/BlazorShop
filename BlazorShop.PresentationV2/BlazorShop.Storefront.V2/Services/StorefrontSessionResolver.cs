@@ -117,7 +117,7 @@ namespace BlazorShop.Storefront.Services
                 var email = ReadClaimValue(root, ClaimTypes.Email)
                     ?? ReadClaimValue(root, "email");
 
-                return new StorefrontSessionInfo(true, isAdmin, displayName, email);
+                return new StorefrontSessionInfo(true, isAdmin, displayName, email, token);
             }
             catch
             {

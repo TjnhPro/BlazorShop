@@ -601,6 +601,170 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(["/api/storefront/stores/default/cart/merge-current-customer"], handler.RequestPaths);
         }
 
+        [Fact]
+        public async Task GetAddressCountriesAsync_ReadsStoreScopedLookup()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal(HttpMethod.Get, request.Method);
+                Assert.Equal("/api/storefront/stores/default/address/countries", request.RequestUri?.AbsolutePath);
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    """
+                    {
+                      "success": true,
+                      "message": "ok",
+                      "data": [
+                        { "code": "US", "name": "United States", "postalCodeRequired": true, "stateProvinceRequired": true }
+                      ]
+                    }
+                    """);
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var result = await apiClient.GetAddressCountriesAsync();
+
+            Assert.True(result.IsSuccess);
+            var country = Assert.Single(result.Value!);
+            Assert.Equal("US", country.Code);
+            Assert.True(country.StateProvinceRequired);
+            Assert.Equal(["/api/storefront/stores/default/address/countries"], handler.RequestPaths);
+        }
+
+        [Fact]
+        public async Task GetAddressStatesAsync_NormalizesCountryAndReadsStoreScopedLookup()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal(HttpMethod.Get, request.Method);
+                Assert.Equal("/api/storefront/stores/default/address/countries/US/states", request.RequestUri?.AbsolutePath);
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    """
+                    {
+                      "success": true,
+                      "message": "ok",
+                      "data": [
+                        { "code": "NY", "name": "New York" }
+                      ]
+                    }
+                    """);
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var result = await apiClient.GetAddressStatesAsync(" us ");
+
+            Assert.True(result.IsSuccess);
+            var state = Assert.Single(result.Value!);
+            Assert.Equal("NY", state.Code);
+            Assert.Equal(["/api/storefront/stores/default/address/countries/US/states"], handler.RequestPaths);
+        }
+
+        [Fact]
+        public async Task GetAddressConfigurationAsync_ReadsFieldConfiguration()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal(HttpMethod.Get, request.Method);
+                Assert.Equal("/api/storefront/stores/default/address/configuration", request.RequestUri?.AbsolutePath);
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    """
+                    {
+                      "success": true,
+                      "message": "ok",
+                      "data": {
+                        "companyEnabled": true,
+                        "phoneEnabled": true,
+                        "phoneRequired": false,
+                        "postalCodeRequired": true,
+                        "billingAddressEnabled": true,
+                        "useShippingAddressAsBillingDefault": true,
+                        "firstNameMaxLength": 120,
+                        "lastNameMaxLength": 120,
+                        "companyMaxLength": 160,
+                        "addressLineMaxLength": 240,
+                        "cityMaxLength": 120,
+                        "postalCodeMaxLength": 32,
+                        "stateProvinceCodeMaxLength": 64,
+                        "stateProvinceNameMaxLength": 120,
+                        "phoneMaxLength": 32,
+                        "emailMaxLength": 256,
+                        "stateProvinceRequiredCountryCodes": ["US"]
+                      }
+                    }
+                    """);
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var result = await apiClient.GetAddressConfigurationAsync();
+
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.True(result.Value!.BillingAddressEnabled);
+            Assert.Equal(["US"], result.Value.StateProvinceRequiredCountryCodes);
+        }
+
+        [Fact]
+        public async Task GetCustomerAddressesAsync_SendsBearerAndReadsAddressBook()
+        {
+            var addressId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal(HttpMethod.Get, request.Method);
+                Assert.Equal("/api/storefront/stores/default/customer/addresses", request.RequestUri?.AbsolutePath);
+                Assert.Equal("Bearer", request.Headers.Authorization?.Scheme);
+                Assert.Equal("access-token", request.Headers.Authorization?.Parameter);
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    $$"""
+                    {
+                      "success": true,
+                      "message": "ok",
+                      "data": [
+                        {
+                          "publicId": "{{addressId}}",
+                          "firstName": "Customer",
+                          "lastName": "One",
+                          "company": null,
+                          "address1": "1 Test Street",
+                          "address2": null,
+                          "city": "New York",
+                          "postalCode": "10000",
+                          "countryCode": "US",
+                          "stateProvinceCode": "NY",
+                          "stateProvinceName": "New York",
+                          "phone": "5550100",
+                          "email": "customer@example.test",
+                          "isDefaultShipping": true,
+                          "isDefaultBilling": true,
+                          "createdAtUtc": "2026-07-17T00:00:00Z",
+                          "updatedAtUtc": "2026-07-17T00:00:00Z"
+                        }
+                      ]
+                    }
+                    """);
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var result = await apiClient.GetCustomerAddressesAsync("access-token");
+
+            Assert.True(result.Success);
+            var address = Assert.Single(result.Data!);
+            Assert.Equal(addressId, address.PublicId);
+            Assert.Equal("Customer One", address.FullName);
+            Assert.True(address.IsDefaultShipping);
+            Assert.Equal(["/api/storefront/stores/default/customer/addresses"], handler.RequestPaths);
+        }
+
         private static StorefrontApiClient CreateApiClient(HttpClient client, bool enableLegacyFallback = false)
         {
             return new StorefrontApiClient(

@@ -598,5 +598,7 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] CommerceNode Storefront API exposes anonymous country/state/config lookup endpoints for future checkout UI consumption. 2026-07-17 Phase 3: Storefront OpenAPI snapshots include `StorefrontAddress_ListCountries`, `StorefrontAddress_ListStates`, and `StorefrontAddress_GetConfiguration`.
 - [x] CommerceNode Storefront API exposes protected customer address book endpoints for future Storefront V2 account/checkout consumption. 2026-07-17 Phase 4: OpenAPI snapshots include list/create/update/delete/default address operations with Bearer security.
 - [x] CommerceNode checkout preview contract supports saved address IDs while preserving direct address entry. 2026-07-17 Phase 5: Storefront OpenAPI contract tests cover additive saved-address fields; Storefront V2 UI consumption remains Phase 6.
-- [~] Storefront V2 checkout UI still uses direct address entry until Phase 6 adds lookup/address-book consumption.
-- [ ] Visible browser QA for saved address selection remains pending until Address Core UI phases add lookup/address-book behavior.
+- [x] Storefront V2 API client consumes address lookup/config and protected customer address-book endpoints. 2026-07-17 Phase 6: `StorefrontV2ApiClientTests` covers country/state/config lookup and Bearer customer address list route.
+- [x] Storefront V2 checkout UI renders API-backed country choices, state choices for the selected/default country, saved-address selector for authenticated customers, and manual-entry fallback. 2026-07-17 Phase 6: `StorefrontBrandingMarkupTests.CheckoutPage_RendersAddressLookupAndSavedAddressSelection` passed.
+- [x] Storefront V2 checkout host smoke remains green after address UI integration. 2026-07-17 Phase 6: `StorefrontV2HostSmokeTests` passed 34/34.
+- [ ] Visible browser QA for saved address selection remains pending against a seeded authenticated customer.

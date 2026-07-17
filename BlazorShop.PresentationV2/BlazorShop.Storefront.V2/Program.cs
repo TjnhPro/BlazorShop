@@ -707,13 +707,25 @@ static string? ResolveStoreKey(IConfiguration configuration)
 
 static StorefrontCheckoutPreviewRequest BuildCheckoutPreviewRequest(StorefrontCheckoutForm form, int expectedCartVersion)
 {
+    var shippingAddressId = form.ShippingAddressId is { } shippingId && shippingId != Guid.Empty
+        ? shippingId
+        : (Guid?)null;
+    var billingAddressId = form.BillingAddressId is { } billingId && billingId != Guid.Empty
+        ? billingId
+        : (Guid?)null;
+
     return new StorefrontCheckoutPreviewRequest
     {
         ExpectedCartVersion = expectedCartVersion,
         CustomerEmail = form.CustomerEmail?.Trim() ?? string.Empty,
         CustomerName = form.CustomerName?.Trim() ?? string.Empty,
         PaymentMethodKey = form.PaymentMethodKey?.Trim() ?? string.Empty,
-        ShippingAddress = new StorefrontCheckoutPreviewShippingAddress
+        ShippingAddressId = shippingAddressId,
+        BillingAddressId = billingAddressId,
+        UseShippingAddressAsBillingAddress = form.UseShippingAddressAsBillingAddress,
+        ShippingAddress = shippingAddressId.HasValue
+            ? null
+            : new StorefrontCheckoutPreviewShippingAddress
         {
             FullName = form.ShippingFullName?.Trim() ?? string.Empty,
             Email = form.ShippingEmail?.Trim() ?? form.CustomerEmail?.Trim() ?? string.Empty,

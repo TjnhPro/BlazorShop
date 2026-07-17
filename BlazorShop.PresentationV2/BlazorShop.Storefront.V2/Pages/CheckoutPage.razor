@@ -54,6 +54,7 @@
                             <AntiforgeryToken />
                             <input type="hidden" name="CartVersion" value="@CartVersion" />
                             <input type="hidden" name="IdempotencyKey" value="@IdempotencyKey" />
+                            <input type="hidden" name="UseShippingAddressAsBillingAddress" value="true" />
 
                             <section class="grid gap-4 md:grid-cols-2">
                                 <label class="block text-sm">
@@ -68,42 +69,86 @@
 
                             <section class="space-y-4">
                                 <h2 class="text-lg font-bold text-neutral-950">Shipping address</h2>
-                                <div class="grid gap-4 md:grid-cols-2">
+                                @if (CustomerAddresses.Count > 0)
+                                {
+                                    <label class="block text-sm">
+                                        <span class="font-semibold text-neutral-800">Saved address</span>
+                                        <select name="ShippingAddressId" data-storefront-address-select class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100">
+                                            <option value="">Enter a new address</option>
+                                            @foreach (var address in CustomerAddresses)
+                                            {
+                                                <option value="@address.PublicId" selected="@(SelectedShippingAddress?.PublicId == address.PublicId)">
+                                                    @FormatAddressOption(address)
+                                                </option>
+                                            }
+                                        </select>
+                                    </label>
+                                }
+
+                                <div class="grid gap-4 md:grid-cols-2" data-storefront-manual-address>
                                     <label class="block text-sm">
                                         <span class="font-semibold text-neutral-800">Full name</span>
-                                        <input name="ShippingFullName" required class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
+                                        <input name="ShippingFullName" value="@SelectedShippingAddress?.FullName" autocomplete="shipping name" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
                                     </label>
                                     <label class="block text-sm">
                                         <span class="font-semibold text-neutral-800">Email</span>
-                                        <input name="ShippingEmail" type="email" required class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
+                                        <input name="ShippingEmail" value="@SelectedShippingAddress?.Email" type="email" autocomplete="shipping email" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
                                     </label>
+                                    @if (PhoneEnabled)
+                                    {
+                                        <label class="block text-sm">
+                                            <span class="font-semibold text-neutral-800">Phone</span>
+                                            <input name="ShippingPhone" value="@SelectedShippingAddress?.Phone" autocomplete="shipping tel" required="@PhoneRequired" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
+                                        </label>
+                                    }
                                     <label class="block text-sm">
-                                        <span class="font-semibold text-neutral-800">Phone</span>
-                                        <input name="ShippingPhone" autocomplete="tel" class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                                    </label>
-                                    <label class="block text-sm">
-                                        <span class="font-semibold text-neutral-800">Country code</span>
-                                        <input name="ShippingCountryCode" maxlength="2" value="US" required class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm uppercase text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
+                                        <span class="font-semibold text-neutral-800">Country</span>
+                                        @if (HasAddressCountries)
+                                        {
+                                            <select name="ShippingCountryCode" autocomplete="shipping country" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100">
+                                                @foreach (var country in AddressCountries)
+                                                {
+                                                    <option value="@country.Code" selected="@(string.Equals(country.Code, DefaultShippingCountryCode, StringComparison.OrdinalIgnoreCase))">@country.Name</option>
+                                                }
+                                            </select>
+                                        }
+                                        else
+                                        {
+                                            <input name="ShippingCountryCode" maxlength="2" value="@DefaultShippingCountryCode" autocomplete="shipping country" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm uppercase text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
+                                        }
                                     </label>
                                     <label class="block text-sm md:col-span-2">
                                         <span class="font-semibold text-neutral-800">Address line 1</span>
-                                        <input name="ShippingAddress1" autocomplete="address-line1" required class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
+                                        <input name="ShippingAddress1" value="@SelectedShippingAddress?.Address1" autocomplete="shipping address-line1" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
                                     </label>
                                     <label class="block text-sm md:col-span-2">
                                         <span class="font-semibold text-neutral-800">Address line 2</span>
-                                        <input name="ShippingAddress2" autocomplete="address-line2" class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
+                                        <input name="ShippingAddress2" value="@SelectedShippingAddress?.Address2" autocomplete="shipping address-line2" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
                                     </label>
                                     <label class="block text-sm">
                                         <span class="font-semibold text-neutral-800">City</span>
-                                        <input name="ShippingCity" autocomplete="address-level2" required class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
+                                        <input name="ShippingCity" value="@SelectedShippingAddress?.City" autocomplete="shipping address-level2" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
                                     </label>
                                     <label class="block text-sm">
-                                        <span class="font-semibold text-neutral-800">State</span>
-                                        <input name="ShippingState" autocomplete="address-level1" class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
+                                        <span class="font-semibold text-neutral-800">State / province</span>
+                                        @if (HasAddressStates)
+                                        {
+                                            <select name="ShippingState" autocomplete="shipping address-level1" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100">
+                                                <option value="">Select state / province</option>
+                                                @foreach (var state in AddressStates)
+                                                {
+                                                    <option value="@state.Code" selected="@(string.Equals(state.Code, DefaultShippingStateCode, StringComparison.OrdinalIgnoreCase))">@state.Name</option>
+                                                }
+                                            </select>
+                                        }
+                                        else
+                                        {
+                                            <input name="ShippingState" value="@DefaultShippingStateCode" autocomplete="shipping address-level1" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
+                                        }
                                     </label>
                                     <label class="block text-sm">
                                         <span class="font-semibold text-neutral-800">Postal code</span>
-                                        <input name="ShippingPostalCode" autocomplete="postal-code" required class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
+                                        <input name="ShippingPostalCode" value="@SelectedShippingAddress?.PostalCode" autocomplete="shipping postal-code" required="@PostalCodeRequired" data-storefront-manual-address-field class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
                                     </label>
                                 </div>
                             </section>

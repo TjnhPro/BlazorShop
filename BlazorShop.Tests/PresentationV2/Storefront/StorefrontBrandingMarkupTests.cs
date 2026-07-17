@@ -175,6 +175,28 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("private int InitialStockValue => _product?.ManageStock == false ? 999999", markup);
         }
 
+        [Fact]
+        public void CheckoutPage_RendersAddressLookupAndSavedAddressSelection()
+        {
+            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CheckoutPage.razor");
+            var codeBehind = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CheckoutPage.razor.cs");
+            var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
+            var apiClient = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.cs");
+
+            Assert.Contains("data-storefront-address-select", markup);
+            Assert.Contains("data-storefront-manual-address", markup);
+            Assert.Contains("data-storefront-manual-address-field", markup);
+            Assert.Contains("GetAddressCountriesAsync", codeBehind);
+            Assert.Contains("GetAddressStatesAsync", codeBehind);
+            Assert.Contains("GetCustomerAddressesAsync", codeBehind);
+            Assert.Contains("GetAddressConfigurationAsync", codeBehind);
+            Assert.Contains("StorefrontAddressCountriesRoute", apiClient);
+            Assert.Contains("StorefrontAddressConfigurationRoute", apiClient);
+            Assert.Contains("customer/addresses", apiClient);
+            Assert.Contains("syncManualAddressFields", script);
+            Assert.Contains("field.disabled = useSavedAddress", script);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath));

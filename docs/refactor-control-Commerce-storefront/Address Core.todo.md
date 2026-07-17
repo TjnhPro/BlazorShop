@@ -20,8 +20,8 @@ Approved:
 - [x] Country to state/province lookup.
 - [x] Basic field required/enabled configuration shape.
 - [x] Address normalization and validation hook.
-- [ ] Snapshot selected checkout address into checkout session and order.
-- [ ] Keep guest checkout address entry working.
+- [x] Snapshot selected checkout address into checkout session and order.
+- [x] Keep guest checkout address entry working.
 
 Deferred:
 
@@ -56,7 +56,7 @@ Missing:
 - [x] Country/state/province catalog endpoint gap closed. 2026-07-17 Phase 3: resolved by Storefront address lookup endpoints.
 - [x] Address field configuration endpoint gap closed. 2026-07-17 Phase 3: resolved by `GET /address/configuration`.
 - [x] Reusable address validation service gap closed. 2026-07-17 Phase 2: `IAddressValidationService` added.
-- [ ] No safe authenticated address management route in Storefront V2.
+- [x] Safe authenticated address consumption route in Storefront V2 exists for checkout selection. 2026-07-17 Phase 6: Storefront V2 refreshes customer access token through the existing session resolver and calls protected address-book APIs through `StorefrontApiClient`.
 
 ## Core Decisions
 
@@ -435,32 +435,43 @@ Goal: make the feature usable without overbuilding account UI.
 
 Implementation checklist:
 
-- [ ] Update Storefront V2 API client with address lookup methods.
-- [ ] Update Storefront V2 API client with address book methods.
-- [ ] Update checkout page to load country list from API.
-- [ ] Update checkout page to show state selector when catalog has states.
-- [ ] Keep direct entry fallback when no saved address exists.
-- [ ] For authenticated customer, load saved addresses.
-- [ ] For authenticated customer, preselect default shipping address.
-- [ ] Allow manual/direct address entry fallback.
-- [ ] Add minimal account address page or component only if active account pages are ready enough.
-- [ ] Keep component boundaries friendly to future WASM migration.
-- [ ] Do not embed address business rules in Razor components.
-- [ ] Use API/configuration for field required/enabled behavior.
+- [x] Update Storefront V2 API client with address lookup methods.
+- [x] Update Storefront V2 API client with address book methods.
+- [x] Update checkout page to load country list from API.
+- [x] Update checkout page to show state selector when catalog has states.
+- [x] Keep direct entry fallback when no saved address exists.
+- [x] For authenticated customer, load saved addresses.
+- [x] For authenticated customer, preselect default shipping address.
+- [x] Allow manual/direct address entry fallback.
+- [x] Add minimal account address page or component only if active account pages are ready enough.
+- [x] Keep component boundaries friendly to future WASM migration.
+- [x] Do not embed address business rules in Razor components.
+- [x] Use API/configuration for field required/enabled behavior.
 
 Verification checklist:
 
-- [ ] Checkout renders country choices from API.
-- [ ] Checkout renders state choices for state-aware countries.
-- [ ] Authenticated customer can use a saved address in checkout.
-- [ ] Direct entry still works.
-- [ ] UI does not require a full account redesign.
-- [ ] Storefront V2 host/static/API client tests pass.
+- [x] Checkout renders country choices from API.
+- [x] Checkout renders state choices for state-aware countries.
+- [x] Authenticated customer can use a saved address in checkout.
+- [x] Direct entry still works.
+- [x] UI does not require a full account redesign.
+- [x] Storefront V2 host/static/API client tests pass.
 
 Exit criteria:
 
-- [ ] Address selection is usable in Storefront V2 checkout.
-- [ ] UI remains additive and does not duplicate server rules.
+- [x] Address selection is usable in Storefront V2 checkout.
+- [x] UI remains additive and does not duplicate server rules.
+
+Phase 6 evidence:
+
+- 2026-07-17: Storefront V2 `StorefrontApiClient` now consumes anonymous address country/state/config lookup endpoints and protected customer address-book CRUD/default endpoints.
+- 2026-07-17: Storefront session resolution keeps the refreshed customer access token inside server-side session info so checkout can call protected address-book APIs without exposing browser-supplied ownership fields.
+- 2026-07-17: Checkout page loads address metadata from API, renders country select/state select when metadata exists, and falls back to direct manual entry when lookup/address-book calls are unavailable.
+- 2026-07-17: Authenticated checkout loads saved addresses, preselects default shipping when available, and uses a small JS toggle to disable manual fields when a saved address is selected.
+- 2026-07-17: No standalone account address page was added because current active account pages are auth-facing only; checkout consumption is the stable minimal UI for this phase.
+- 2026-07-17: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed.
+- 2026-07-17: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontV2ApiClientTests|FullyQualifiedName~AddressCorePhase0InventoryTests|FullyQualifiedName~StorefrontBrandingMarkupTests"` passed 34/34.
+- 2026-07-17: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontV2HostSmokeTests"` passed 34/34.
 
 Suggested commit:
 
@@ -628,7 +639,7 @@ test(address-core): complete release gate
 - [x] Phase 3 - country and state/province lookup.
 - [x] Phase 4 - authenticated address book API.
 - [x] Phase 5 - checkout address selection.
-- [ ] Phase 6 - Storefront V2 UI integration.
+- [x] Phase 6 - Storefront V2 UI integration.
 - [ ] Phase 7 - admin/settings preparation.
 - [ ] Phase 8 - QA and regression coverage.
 
@@ -638,7 +649,7 @@ test(address-core): complete release gate
 - [x] Guest checkout can still enter address directly.
 - [x] Checkout can select a saved shipping address.
 - [x] Checkout/order continue to snapshot address fields.
-- [ ] Storefront can render country/state choices without hard-coded `US` input.
+- [x] Storefront can render country/state choices without hard-coded `US` input.
 - [x] Address validation is centralized server-side.
 - [x] Protected address APIs use auth metadata and do not trust browser-supplied ownership.
 - [x] The implementation stays inside active V2 Commerce Node and Storefront V2 boundaries.

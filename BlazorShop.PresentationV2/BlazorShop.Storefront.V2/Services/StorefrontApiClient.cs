@@ -37,6 +37,10 @@ namespace BlazorShop.Storefront.Services
         private const string StorefrontConsentCurrentRoute = "consent/current";
         private const string StorefrontConsentRoute = "consent";
         private const string StorefrontConsentRevokeRoute = "consent/revoke";
+        private const string StorefrontAddressBaseRoute = "address";
+        private const string StorefrontAddressCountriesRoute = StorefrontAddressBaseRoute + "/countries";
+        private const string StorefrontAddressConfigurationRoute = StorefrontAddressBaseRoute + "/configuration";
+        private const string StorefrontCustomerAddressesRoute = "customer/addresses";
         private const string StorefrontStoreCurrentRoute = "store/current";
         private const string StorefrontPaymentMethodsRoute = "payments/methods";
         private const string StorefrontCheckoutPreviewRoute = "checkout/preview";
@@ -302,6 +306,156 @@ namespace BlazorShop.Storefront.Services
                 StorefrontConfigurationRoute,
                 cancellationToken,
                 CatalogRequestTimeout);
+        }
+
+        public async Task<StorefrontApiResult<IReadOnlyList<StorefrontAddressCountryResponse>>> GetAddressCountriesAsync(
+            CancellationToken cancellationToken = default)
+        {
+            var result = await GetAsync<List<StorefrontAddressCountryResponse>>(
+                StorefrontAddressCountriesRoute,
+                cancellationToken,
+                [],
+                CatalogRequestTimeout);
+
+            return result.IsSuccess && result.Value is not null
+                ? StorefrontApiResult<IReadOnlyList<StorefrontAddressCountryResponse>>.Success(result.Value)
+                : result.IsServiceUnavailable
+                    ? StorefrontApiResult<IReadOnlyList<StorefrontAddressCountryResponse>>.ServiceUnavailable()
+                    : StorefrontApiResult<IReadOnlyList<StorefrontAddressCountryResponse>>.Success([]);
+        }
+
+        public async Task<StorefrontApiResult<IReadOnlyList<StorefrontAddressStateProvinceResponse>>> GetAddressStatesAsync(
+            string? countryCode,
+            CancellationToken cancellationToken = default)
+        {
+            var normalizedCountryCode = NormalizeCountryCode(countryCode);
+            if (normalizedCountryCode is null)
+            {
+                return StorefrontApiResult<IReadOnlyList<StorefrontAddressStateProvinceResponse>>.Success([]);
+            }
+
+            var result = await GetAsync<List<StorefrontAddressStateProvinceResponse>>(
+                $"{StorefrontAddressCountriesRoute}/{Uri.EscapeDataString(normalizedCountryCode)}/states",
+                cancellationToken,
+                [],
+                CatalogRequestTimeout);
+
+            return result.IsSuccess && result.Value is not null
+                ? StorefrontApiResult<IReadOnlyList<StorefrontAddressStateProvinceResponse>>.Success(result.Value)
+                : result.IsServiceUnavailable
+                    ? StorefrontApiResult<IReadOnlyList<StorefrontAddressStateProvinceResponse>>.ServiceUnavailable()
+                    : StorefrontApiResult<IReadOnlyList<StorefrontAddressStateProvinceResponse>>.Success([]);
+        }
+
+        public Task<StorefrontApiResult<StorefrontAddressFieldConfigurationResponse>> GetAddressConfigurationAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return GetMaybeNotFoundAsync<StorefrontAddressFieldConfigurationResponse>(
+                StorefrontAddressConfigurationRoute,
+                cancellationToken,
+                CatalogRequestTimeout);
+        }
+
+        public Task<StorefrontSubmitResult<IReadOnlyList<StorefrontCustomerAddressResponse>>> GetCustomerAddressesAsync(
+            string bearerToken,
+            CancellationToken cancellationToken = default)
+        {
+            return SendAuthorizedAsync<IReadOnlyList<StorefrontCustomerAddressResponse>>(
+                HttpMethod.Get,
+                StorefrontCustomerAddressesRoute,
+                bearerToken,
+                request: null,
+                "Unable to load saved addresses right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCustomerAddressResponse>> CreateCustomerAddressAsync(
+            string bearerToken,
+            StorefrontCustomerAddressRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return SendAuthorizedAsync<StorefrontCustomerAddressResponse>(
+                HttpMethod.Post,
+                StorefrontCustomerAddressesRoute,
+                bearerToken,
+                request,
+                "Unable to save this address right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCustomerAddressResponse>> UpdateCustomerAddressAsync(
+            string bearerToken,
+            Guid addressId,
+            StorefrontCustomerAddressRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            if (addressId == Guid.Empty)
+            {
+                return Task.FromResult(StorefrontSubmitResult<StorefrontCustomerAddressResponse>.Failed("Address is required."));
+            }
+
+            return SendAuthorizedAsync<StorefrontCustomerAddressResponse>(
+                HttpMethod.Put,
+                $"{StorefrontCustomerAddressesRoute}/{addressId:D}",
+                bearerToken,
+                request,
+                "Unable to update this address right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<object>> DeleteCustomerAddressAsync(
+            string bearerToken,
+            Guid addressId,
+            CancellationToken cancellationToken = default)
+        {
+            if (addressId == Guid.Empty)
+            {
+                return Task.FromResult(StorefrontSubmitResult<object>.Failed("Address is required."));
+            }
+
+            return SendAuthorizedAsync<object>(
+                HttpMethod.Delete,
+                $"{StorefrontCustomerAddressesRoute}/{addressId:D}",
+                bearerToken,
+                request: null,
+                "Unable to delete this address right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCustomerAddressResponse>> SetDefaultShippingAddressAsync(
+            string bearerToken,
+            Guid addressId,
+            CancellationToken cancellationToken = default)
+        {
+            return SetDefaultCustomerAddressAsync(bearerToken, addressId, "default-shipping", cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCustomerAddressResponse>> SetDefaultBillingAddressAsync(
+            string bearerToken,
+            Guid addressId,
+            CancellationToken cancellationToken = default)
+        {
+            return SetDefaultCustomerAddressAsync(bearerToken, addressId, "default-billing", cancellationToken);
+        }
+
+        private Task<StorefrontSubmitResult<StorefrontCustomerAddressResponse>> SetDefaultCustomerAddressAsync(
+            string bearerToken,
+            Guid addressId,
+            string command,
+            CancellationToken cancellationToken)
+        {
+            if (addressId == Guid.Empty)
+            {
+                return Task.FromResult(StorefrontSubmitResult<StorefrontCustomerAddressResponse>.Failed("Address is required."));
+            }
+
+            return SendAuthorizedAsync<StorefrontCustomerAddressResponse>(
+                HttpMethod.Post,
+                $"{StorefrontCustomerAddressesRoute}/{addressId:D}/{command}",
+                bearerToken,
+                request: null,
+                "Unable to update this address right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontSubmitResult<StorefrontConsentState>> GetConsentAsync(
@@ -780,6 +934,14 @@ namespace BlazorShop.Storefront.Services
                 : null;
         }
 
+        private static string? NormalizeCountryCode(string? countryCode)
+        {
+            var normalized = countryCode?.Trim().ToUpperInvariant();
+            return normalized is { Length: 2 } && normalized.All(char.IsLetter)
+                ? normalized
+                : null;
+        }
+
         private static async Task<T?> ReadPayloadAsync<T>(HttpResponseMessage response, CancellationToken cancellationToken)
         {
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
@@ -851,6 +1013,48 @@ namespace BlazorShop.Storefront.Services
                 {
                     message.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
                 }
+
+                if (request is not null)
+                {
+                    message.Content = JsonContent.Create(request, options: JsonOptions);
+                }
+
+                using var response = await _httpClient.SendAsync(message, cancellationToken);
+                var envelope = await ReadEnvelopeAsync<TData>(response, cancellationToken);
+                if (envelope is not null)
+                {
+                    return envelope.Success
+                        ? StorefrontSubmitResult<TData>.Succeeded(envelope.Data, envelope.Message)
+                        : StorefrontSubmitResult<TData>.Failed(envelope.Message);
+                }
+
+                return response.IsSuccessStatusCode
+                    ? StorefrontSubmitResult<TData>.Succeeded(default, "Request completed.")
+                    : StorefrontSubmitResult<TData>.Failed(unavailableMessage);
+            }
+            catch (Exception exception) when (exception is HttpRequestException or JsonException or NotSupportedException or TaskCanceledException)
+            {
+                return StorefrontSubmitResult<TData>.Failed(unavailableMessage);
+            }
+        }
+
+        private async Task<StorefrontSubmitResult<TData>> SendAuthorizedAsync<TData>(
+            HttpMethod method,
+            string route,
+            string bearerToken,
+            object? request,
+            string unavailableMessage,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(bearerToken))
+            {
+                return StorefrontSubmitResult<TData>.Failed("Customer identity is required.");
+            }
+
+            try
+            {
+                using var message = new HttpRequestMessage(method, route);
+                message.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
 
                 if (request is not null)
                 {
@@ -1297,18 +1501,24 @@ namespace BlazorShop.Storefront.Services
         decimal Amount,
         string CurrencyCode);
 
-    public sealed class StorefrontCheckoutPreviewRequest
-    {
-        public int ExpectedCartVersion { get; set; }
+        public sealed class StorefrontCheckoutPreviewRequest
+        {
+            public int ExpectedCartVersion { get; set; }
 
         public string CustomerEmail { get; set; } = string.Empty;
 
         public string CustomerName { get; set; } = string.Empty;
 
-        public string PaymentMethodKey { get; set; } = string.Empty;
+            public string PaymentMethodKey { get; set; } = string.Empty;
 
-        public StorefrontCheckoutPreviewShippingAddress ShippingAddress { get; set; } = new();
-    }
+            public Guid? ShippingAddressId { get; set; }
+
+            public Guid? BillingAddressId { get; set; }
+
+            public bool UseShippingAddressAsBillingAddress { get; set; } = true;
+
+            public StorefrontCheckoutPreviewShippingAddress? ShippingAddress { get; set; } = new();
+        }
 
     public sealed class StorefrontCheckoutPreviewShippingAddress
     {
@@ -1411,4 +1621,86 @@ namespace BlazorShop.Storefront.Services
         DateTimeOffset ExpiresAtUtc,
         DateTimeOffset CreatedAtUtc,
         DateTimeOffset UpdatedAtUtc);
+
+    public sealed record StorefrontAddressCountryResponse(
+        string Code,
+        string Name,
+        bool PostalCodeRequired,
+        bool StateProvinceRequired);
+
+    public sealed record StorefrontAddressStateProvinceResponse(
+        string Code,
+        string Name);
+
+    public sealed record StorefrontAddressFieldConfigurationResponse(
+        bool CompanyEnabled,
+        bool PhoneEnabled,
+        bool PhoneRequired,
+        bool PostalCodeRequired,
+        bool BillingAddressEnabled,
+        bool UseShippingAddressAsBillingDefault,
+        int FirstNameMaxLength,
+        int LastNameMaxLength,
+        int CompanyMaxLength,
+        int AddressLineMaxLength,
+        int CityMaxLength,
+        int PostalCodeMaxLength,
+        int StateProvinceCodeMaxLength,
+        int StateProvinceNameMaxLength,
+        int PhoneMaxLength,
+        int EmailMaxLength,
+        IReadOnlyList<string> StateProvinceRequiredCountryCodes);
+
+    public sealed class StorefrontCustomerAddressRequest
+    {
+        public string FirstName { get; set; } = string.Empty;
+
+        public string LastName { get; set; } = string.Empty;
+
+        public string? Company { get; set; }
+
+        public string Address1 { get; set; } = string.Empty;
+
+        public string? Address2 { get; set; }
+
+        public string City { get; set; } = string.Empty;
+
+        public string PostalCode { get; set; } = string.Empty;
+
+        public string CountryCode { get; set; } = string.Empty;
+
+        public string? StateProvinceCode { get; set; }
+
+        public string? StateProvinceName { get; set; }
+
+        public string? Phone { get; set; }
+
+        public string? Email { get; set; }
+
+        public bool IsDefaultShipping { get; set; }
+
+        public bool IsDefaultBilling { get; set; }
+    }
+
+    public sealed record StorefrontCustomerAddressResponse(
+        Guid PublicId,
+        string FirstName,
+        string LastName,
+        string? Company,
+        string Address1,
+        string? Address2,
+        string City,
+        string PostalCode,
+        string CountryCode,
+        string? StateProvinceCode,
+        string? StateProvinceName,
+        string? Phone,
+        string? Email,
+        bool IsDefaultShipping,
+        bool IsDefaultBilling,
+        DateTimeOffset CreatedAtUtc,
+        DateTimeOffset UpdatedAtUtc)
+    {
+        public string FullName => string.Join(" ", new[] { FirstName, LastName }.Where(part => !string.IsNullOrWhiteSpace(part)));
+    }
 }

@@ -11,6 +11,11 @@ namespace BlazorShop.Storefront.Pages
     {
         private readonly List<CartLine> lines = [];
         private IReadOnlyList<GetPaymentMethod> paymentMethods = [];
+        private IReadOnlyList<StorefrontAddressCountryResponse> addressCountries = [];
+        private IReadOnlyList<StorefrontAddressStateProvinceResponse> addressStates = [];
+        private IReadOnlyList<StorefrontCustomerAddressResponse> customerAddresses = [];
+        private StorefrontCustomerAddressResponse? selectedShippingAddress;
+        private StorefrontAddressFieldConfigurationResponse? addressConfiguration;
         private StorefrontDisplayContext displayContext = StorefrontDisplayContext.Fallback;
 
         [CascadingParameter]
@@ -25,6 +30,28 @@ namespace BlazorShop.Storefront.Pages
         private IReadOnlyList<CartLine> Lines => lines;
 
         private IReadOnlyList<GetPaymentMethod> PaymentMethods => paymentMethods;
+
+        private IReadOnlyList<StorefrontAddressCountryResponse> AddressCountries => addressCountries;
+
+        private IReadOnlyList<StorefrontAddressStateProvinceResponse> AddressStates => addressStates;
+
+        private IReadOnlyList<StorefrontCustomerAddressResponse> CustomerAddresses => customerAddresses;
+
+        private StorefrontCustomerAddressResponse? SelectedShippingAddress => selectedShippingAddress;
+
+        private bool HasAddressCountries => addressCountries.Count > 0;
+
+        private bool HasAddressStates => addressStates.Count > 0;
+
+        private bool PhoneEnabled => addressConfiguration?.PhoneEnabled ?? true;
+
+        private bool PhoneRequired => addressConfiguration?.PhoneRequired ?? false;
+
+        private bool PostalCodeRequired => addressConfiguration?.PostalCodeRequired ?? true;
+
+        private string DefaultShippingCountryCode => NormalizeCountryCode(selectedShippingAddress?.CountryCode) ?? "US";
+
+        private string DefaultShippingStateCode => selectedShippingAddress?.StateProvinceCode ?? selectedShippingAddress?.StateProvinceName ?? string.Empty;
 
         private int CartVersion { get; set; }
 
@@ -43,6 +70,9 @@ namespace BlazorShop.Storefront.Pages
 
         [Inject]
         private IStorefrontPriceFormatter PriceFormatter { get; set; } = default!;
+
+        [Inject]
+        private IStorefrontSessionResolver SessionResolver { get; set; } = default!;
 
         protected override async Task OnParametersSetAsync()
         {
@@ -75,6 +105,8 @@ namespace BlazorShop.Storefront.Pages
             paymentMethods = paymentResult.IsSuccess && paymentResult.Value is not null
                 ? paymentResult.Value.Where(method => SupportsCurrency(method, GrandTotalCurrencyCode)).ToArray()
                 : [];
+
+            await LoadAddressMetadataAsync();
         }
 
         private async Task<Dictionary<Guid, GetProduct>> LoadProductsAsync(IEnumerable<StorefrontCartLineResponse> cartItems)
@@ -136,6 +168,54 @@ namespace BlazorShop.Storefront.Pages
 
         private string FormatPrice(decimal amount, string currencyCode) => PriceFormatter.Format(amount, displayContext with { CurrencyCode = currencyCode });
 
+        private async Task LoadAddressMetadataAsync()
+        {
+            var countriesResult = await ApiClient.GetAddressCountriesAsync();
+            addressCountries = countriesResult.IsSuccess && countriesResult.Value is not null
+                ? countriesResult.Value
+                : [];
+
+            var configurationResult = await ApiClient.GetAddressConfigurationAsync();
+            addressConfiguration = configurationResult.IsSuccess
+                ? configurationResult.Value
+                : null;
+
+            customerAddresses = [];
+            selectedShippingAddress = null;
+            var session = await SessionResolver.GetCurrentUserAsync();
+            if (session.IsAuthenticated && !string.IsNullOrWhiteSpace(session.AccessToken))
+            {
+                var addressesResult = await ApiClient.GetCustomerAddressesAsync(session.AccessToken);
+                customerAddresses = addressesResult.Success && addressesResult.Data is not null
+                    ? addressesResult.Data
+                    : [];
+                selectedShippingAddress = customerAddresses.FirstOrDefault(address => address.IsDefaultShipping)
+                    ?? customerAddresses.FirstOrDefault();
+            }
+
+            var statesResult = await ApiClient.GetAddressStatesAsync(DefaultShippingCountryCode);
+            addressStates = statesResult.IsSuccess && statesResult.Value is not null
+                ? statesResult.Value
+                : [];
+        }
+
+        private string FormatAddressOption(StorefrontCustomerAddressResponse address)
+        {
+            var region = string.IsNullOrWhiteSpace(address.StateProvinceCode)
+                ? address.StateProvinceName
+                : address.StateProvinceCode;
+            var parts = new[]
+            {
+                address.FullName,
+                address.Address1,
+                address.City,
+                region,
+                address.CountryCode,
+            };
+
+            return string.Join(", ", parts.Where(part => !string.IsNullOrWhiteSpace(part)));
+        }
+
         private sealed record CartLine(string DisplayName, int Quantity, decimal UnitPrice, string CurrencyCode)
         {
             public decimal LineTotal => UnitPrice * Quantity;
@@ -145,6 +225,14 @@ namespace BlazorShop.Storefront.Pages
         {
             var normalized = currencyCode?.Trim().ToUpperInvariant();
             return normalized is { Length: 3 } && normalized.All(char.IsLetter)
+                ? normalized
+                : null;
+        }
+
+        private static string? NormalizeCountryCode(string? countryCode)
+        {
+            var normalized = countryCode?.Trim().ToUpperInvariant();
+            return normalized is { Length: 2 } && normalized.All(char.IsLetter)
                 ? normalized
                 : null;
         }

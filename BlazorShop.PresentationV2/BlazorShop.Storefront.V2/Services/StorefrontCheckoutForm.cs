@@ -12,6 +12,12 @@ namespace BlazorShop.Storefront.Services
 
         public string? PaymentMethodKey { get; set; }
 
+        public Guid? ShippingAddressId { get; set; }
+
+        public Guid? BillingAddressId { get; set; }
+
+        public bool UseShippingAddressAsBillingAddress { get; set; } = true;
+
         public string? ShippingFullName { get; set; }
 
         public string? ShippingEmail { get; set; }

@@ -5,7 +5,12 @@ namespace BlazorShop.Storefront.Services.Contracts
         Task<StorefrontSessionInfo> GetCurrentUserAsync(CancellationToken cancellationToken = default);
     }
 
-    public sealed record StorefrontSessionInfo(bool IsAuthenticated, bool IsAdmin, string? DisplayName, string? Email)
+    public sealed record StorefrontSessionInfo(
+        bool IsAuthenticated,
+        bool IsAdmin,
+        string? DisplayName,
+        string? Email,
+        string? AccessToken = null)
     {
         public static StorefrontSessionInfo Anonymous { get; } = new(false, false, null, null);
     }
