@@ -1073,8 +1073,18 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         string PaymentStatus,
         string PaymentMethodKey,
         DateTime? PaymentAt,
+        StorefrontOrderStoreSnapshotResponse? StoreSnapshot,
         string? CurrencyCode,
         decimal TotalAmount,
+        StorefrontOrderTotalBreakdownResponse? TotalBreakdown,
+        string? BaseCurrencyCode,
+        decimal? BaseTotalAmount,
+        StorefrontOrderTotalBreakdownResponse? BaseTotalBreakdown,
+        decimal? ExchangeRate,
+        string? ExchangeRateProviderKey,
+        string? ExchangeRateSource,
+        DateTimeOffset? ExchangeRateEffectiveAtUtc,
+        DateTimeOffset? ExchangeRateExpiresAtUtc,
         DateTime CreatedOn,
         string ShippingStatus,
         string? ShippingCarrier,
@@ -1084,11 +1094,40 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         DateTime? DeliveredOn,
         string? CustomerName,
         string? CustomerEmail,
+        StorefrontShippingAddressResponse? BillingAddress,
+        StorefrontShippingAddressResponse? ShippingAddressSnapshot,
         StorefrontShippingAddressResponse ShippingAddress,
+        StorefrontOrderShippingMethodResponse? ShippingMethod,
         DateTime? CompletedAt,
         DateTime? CancelledAt,
         IReadOnlyList<StorefrontOrderTrackingEventResponse> TrackingEvents,
         IReadOnlyList<StorefrontOrderLineResponse> Lines);
+
+    public sealed record StorefrontOrderStoreSnapshotResponse(
+        Guid? PublicId,
+        string? StoreKey,
+        string? Name,
+        string? BaseUrl,
+        string? CompanyName,
+        string? CompanyEmail,
+        string? CompanyPhone,
+        string? CompanyAddress);
+
+    public sealed record StorefrontOrderTotalBreakdownResponse(
+        decimal? Subtotal,
+        decimal? ShippingTotal,
+        decimal? TaxTotal,
+        decimal? DiscountTotal,
+        decimal? GrandTotal);
+
+    public sealed record StorefrontOrderShippingMethodResponse(
+        string? Key,
+        string? ProviderSystemName,
+        string? MethodCode,
+        string? Name,
+        decimal? Total,
+        string? CurrencyCode,
+        string? DeliveryEstimateText);
 
     public sealed record StorefrontOrderTrackingEventResponse(
         string Status,

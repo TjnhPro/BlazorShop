@@ -1182,6 +1182,45 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 .HasColumnType("jsonb");
 
             modelBuilder.Entity<Order>()
+                .Property(order => order.StorePublicId)
+                .HasColumnName("store_public_id");
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.StoreKeySnapshot)
+                .HasColumnName("store_key_snapshot")
+                .HasMaxLength(128);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.StoreNameSnapshot)
+                .HasColumnName("store_name_snapshot")
+                .HasMaxLength(400);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.StoreBaseUrlSnapshot)
+                .HasColumnName("store_base_url_snapshot")
+                .HasMaxLength(2048);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.StoreCompanyNameSnapshot)
+                .HasColumnName("store_company_name_snapshot")
+                .HasMaxLength(200);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.StoreCompanyEmailSnapshot)
+                .HasColumnName("store_company_email_snapshot")
+                .HasMaxLength(254);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.StoreCompanyPhoneSnapshot)
+                .HasColumnName("store_company_phone_snapshot")
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.StoreCompanyAddressSnapshot)
+                .HasColumnName("store_company_address_snapshot")
+                .HasMaxLength(500);
+
+            modelBuilder.Entity<Order>()
                 .Property(order => order.CustomerName)
                 .HasColumnName("customer_name")
                 .HasMaxLength(256);
@@ -1190,6 +1229,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 .Property(order => order.CustomerEmail)
                 .HasColumnName("customer_email")
                 .HasMaxLength(256);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.BillingAddressSnapshotJson)
+                .HasColumnName("billing_address_snapshot_json")
+                .HasColumnType("jsonb");
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ShippingAddressSnapshotJson)
+                .HasColumnName("shipping_address_snapshot_json")
+                .HasColumnType("jsonb");
 
             modelBuilder.Entity<Order>()
                 .Property(order => order.ShippingFullName)
@@ -1278,6 +1327,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 .HasMaxLength(128);
 
             modelBuilder.Entity<Order>()
+                .Property(order => order.ShippingMethodSnapshotJson)
+                .HasColumnName("shipping_method_snapshot_json")
+                .HasColumnType("jsonb");
+
+            modelBuilder.Entity<Order>()
                 .Property(order => order.UpdatedAt)
                 .HasColumnName("updated_at")
                 .HasColumnType("timestamp with time zone")
@@ -1302,11 +1356,61 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 .HasMaxLength(3);
 
             modelBuilder.Entity<Order>()
+                .Property(order => order.SubtotalAmount)
+                .HasColumnName("subtotal_amount")
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.ShippingTotalAmount)
+                .HasColumnName("shipping_total_amount")
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.TaxTotalAmount)
+                .HasColumnName("tax_total_amount")
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.DiscountTotalAmount)
+                .HasColumnName("discount_total_amount")
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.GrandTotalAmount)
+                .HasColumnName("grand_total_amount")
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Order>()
                 .Property(order => order.BaseCurrencyCode)
                 .HasMaxLength(3);
 
             modelBuilder.Entity<Order>()
                 .Property(order => order.BaseTotalAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.BaseSubtotalAmount)
+                .HasColumnName("base_subtotal_amount")
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.BaseShippingTotalAmount)
+                .HasColumnName("base_shipping_total_amount")
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.BaseTaxTotalAmount)
+                .HasColumnName("base_tax_total_amount")
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.BaseDiscountTotalAmount)
+                .HasColumnName("base_discount_total_amount")
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.BaseGrandTotalAmount)
+                .HasColumnName("base_grand_total_amount")
                 .HasPrecision(18, 2);
 
             modelBuilder.Entity<Order>()
@@ -1327,6 +1431,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
             modelBuilder.Entity<Order>()
                 .Property(order => order.ExchangeRateExpiresAtUtc)
+                .HasColumnType("timestamp with time zone");
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.GuestAccessTokenHash)
+                .HasColumnName("guest_access_token_hash")
+                .HasMaxLength(64);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.GuestAccessTokenExpiresAtUtc)
+                .HasColumnName("guest_access_token_expires_at_utc")
                 .HasColumnType("timestamp with time zone");
 
             modelBuilder.Entity<Order>()

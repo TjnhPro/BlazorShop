@@ -206,7 +206,7 @@
                 "$ref": "#/components/schemas/StorefrontRegisterRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontRegisterRequest"
               }
@@ -287,7 +287,7 @@
                 "$ref": "#/components/schemas/StorefrontLoginRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontLoginRequest"
               }
@@ -400,7 +400,7 @@
         },
         "security": [
           {
-            "RefreshCookie": [ ]
+            "RefreshCookie": []
           }
         ]
       }
@@ -456,7 +456,7 @@
         },
         "security": [
           {
-            "RefreshCookie": [ ]
+            "RefreshCookie": []
           }
         ]
       }
@@ -466,7 +466,7 @@
         "tags": [
           "StorefrontScopedAuth"
         ],
-        "summary": "Change the current customer's password.",
+        "summary": "Change the current customer\u0027s password.",
         "operationId": "StorefrontAuth_ChangePassword",
         "parameters": [
           {
@@ -490,7 +490,7 @@
                 "$ref": "#/components/schemas/StorefrontChangePasswordRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontChangePasswordRequest"
               }
@@ -542,7 +542,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -651,7 +651,7 @@
                 "$ref": "#/components/schemas/StorefrontUpdateProfileRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontUpdateProfileRequest"
               }
@@ -703,7 +703,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -737,7 +737,7 @@
                 "$ref": "#/components/schemas/StorefrontCreateCartSessionRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCreateCartSessionRequest"
               }
@@ -989,7 +989,7 @@
                 "$ref": "#/components/schemas/StorefrontCartLineCreateRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCartLineCreateRequest"
               }
@@ -1096,7 +1096,7 @@
                 "$ref": "#/components/schemas/StorefrontCartLineUpdateRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCartLineUpdateRequest"
               }
@@ -1279,7 +1279,7 @@
                 "$ref": "#/components/schemas/StorefrontCartValidateRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCartValidateRequest"
               }
@@ -1377,7 +1377,7 @@
                 "$ref": "#/components/schemas/StorefrontCartRecalculateRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCartRecalculateRequest"
               }
@@ -1527,7 +1527,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -1537,7 +1537,7 @@
         "tags": [
           "StorefrontScopedCart"
         ],
-        "summary": "Save the current customer's checkout history.",
+        "summary": "Save the current customer\u0027s checkout history.",
         "operationId": "StorefrontCart_SaveCheckout",
         "parameters": [
           {
@@ -1567,7 +1567,7 @@
                 }
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "type": "array",
                 "items": {
@@ -1622,7 +1622,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -2399,7 +2399,7 @@
                 "$ref": "#/components/schemas/StorefrontProductSelectionPreviewRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontProductSelectionPreviewRequest"
               }
@@ -2528,7 +2528,7 @@
                 "$ref": "#/components/schemas/StorefrontCheckoutStartRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCheckoutStartRequest"
               }
@@ -2809,7 +2809,7 @@
                 "$ref": "#/components/schemas/StorefrontCheckoutAddressStepRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCheckoutAddressStepRequest"
               }
@@ -2916,7 +2916,7 @@
                 "$ref": "#/components/schemas/StorefrontCheckoutShippingMethodRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCheckoutShippingMethodRequest"
               }
@@ -3023,7 +3023,7 @@
                 "$ref": "#/components/schemas/StorefrontCheckoutPaymentMethodRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCheckoutPaymentMethodRequest"
               }
@@ -3130,7 +3130,7 @@
                 "$ref": "#/components/schemas/StorefrontCheckoutReviewRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCheckoutReviewRequest"
               }
@@ -3228,7 +3228,7 @@
                 "$ref": "#/components/schemas/StorefrontCheckoutPreviewRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCheckoutPreviewRequest"
               }
@@ -3319,7 +3319,7 @@
                 "$ref": "#/components/schemas/StorefrontPlaceOrderRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontPlaceOrderRequest"
               }
@@ -3556,7 +3556,7 @@
                 "$ref": "#/components/schemas/StorefrontConsentSaveRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontConsentSaveRequest"
               }
@@ -3725,7 +3725,7 @@
                 "$ref": "#/components/schemas/StorefrontCurrencyPreferenceRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCurrencyPreferenceRequest"
               }
@@ -3848,7 +3848,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       },
@@ -3880,7 +3880,7 @@
                 "$ref": "#/components/schemas/StorefrontCustomerAddressRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCustomerAddressRequest"
               }
@@ -3952,7 +3952,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -3995,7 +3995,7 @@
                 "$ref": "#/components/schemas/StorefrontCustomerAddressRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCustomerAddressRequest"
               }
@@ -4067,7 +4067,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       },
@@ -4140,7 +4140,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -4225,7 +4225,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -4310,7 +4310,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -4403,7 +4403,7 @@
                 "$ref": "#/components/schemas/StorefrontNewsletterSubscribeRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontNewsletterSubscribeRequest"
               }
@@ -4490,7 +4490,7 @@
                 }
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "type": "array",
                 "items": {
@@ -4555,7 +4555,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -4611,7 +4611,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -4677,7 +4677,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -4950,7 +4950,7 @@
                 "$ref": "#/components/schemas/StorefrontPaymentCallbackRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontPaymentCallbackRequest"
               }
@@ -5056,7 +5056,7 @@
                 "$ref": "#/components/schemas/StorefrontPaymentWebhookRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontPaymentWebhookRequest"
               }
@@ -5148,7 +5148,7 @@
                 "$ref": "#/components/schemas/StorefrontPayPalCaptureRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontPayPalCaptureRequest"
               }
@@ -8838,6 +8838,9 @@
             "format": "date-time",
             "nullable": true
           },
+          "storeSnapshot": {
+            "$ref": "#/components/schemas/StorefrontOrderStoreSnapshotResponse"
+          },
           "currencyCode": {
             "type": "string",
             "nullable": true
@@ -8845,6 +8848,44 @@
           "totalAmount": {
             "type": "number",
             "format": "double"
+          },
+          "totalBreakdown": {
+            "$ref": "#/components/schemas/StorefrontOrderTotalBreakdownResponse"
+          },
+          "baseCurrencyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "baseTotalAmount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "baseTotalBreakdown": {
+            "$ref": "#/components/schemas/StorefrontOrderTotalBreakdownResponse"
+          },
+          "exchangeRate": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "exchangeRateProviderKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "exchangeRateSource": {
+            "type": "string",
+            "nullable": true
+          },
+          "exchangeRateEffectiveAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "exchangeRateExpiresAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           },
           "createdOn": {
             "type": "string",
@@ -8884,8 +8925,17 @@
             "type": "string",
             "nullable": true
           },
+          "billingAddress": {
+            "$ref": "#/components/schemas/StorefrontShippingAddressResponse"
+          },
+          "shippingAddressSnapshot": {
+            "$ref": "#/components/schemas/StorefrontShippingAddressResponse"
+          },
           "shippingAddress": {
             "$ref": "#/components/schemas/StorefrontShippingAddressResponse"
+          },
+          "shippingMethod": {
+            "$ref": "#/components/schemas/StorefrontOrderShippingMethodResponse"
           },
           "completedAt": {
             "type": "string",
@@ -8927,6 +8977,111 @@
             "items": {
               "$ref": "#/components/schemas/StorefrontOrderResponse"
             },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontOrderShippingMethodResponse": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "nullable": true
+          },
+          "providerSystemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "methodCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "total": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "currencyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "deliveryEstimateText": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontOrderStoreSnapshotResponse": {
+        "type": "object",
+        "properties": {
+          "publicId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "storeKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "baseUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyAddress": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StorefrontOrderTotalBreakdownResponse": {
+        "type": "object",
+        "properties": {
+          "subtotal": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "shippingTotal": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "taxTotal": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "discountTotal": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "grandTotal": {
+            "type": "number",
+            "format": "double",
             "nullable": true
           }
         },

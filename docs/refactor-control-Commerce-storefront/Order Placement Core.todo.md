@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Order Placement Core.md`
 
-Status: Phase 0 complete. Phase 1 not started.
+Status: Phase 1 complete. Phase 2 not started.
 
 Scope: turn the existing Commerce Node order placement flow from a working checkout MVP into a practical order core. The goal is stable historical order snapshots, safe placement guarantees, and enough order state history for real store operations without adding a full OMS, tax engine, discount engine, stock reservation ledger, invoice/accounting system, or fulfillment platform.
 
@@ -181,42 +181,42 @@ Existing store data for snapshot:
 
 Add to `Order` additively/nullable where needed:
 
-- [ ] `PublicId` if a stable non-internal public order id is desired beyond `Reference`.
-- [ ] `StorePublicId`.
-- [ ] `StoreKeySnapshot`.
-- [ ] `StoreNameSnapshot`.
-- [ ] `StoreBaseUrlSnapshot`.
-- [ ] `StoreCompanyNameSnapshot`.
-- [ ] `StoreCompanyEmailSnapshot`.
-- [ ] `StoreCompanyPhoneSnapshot`.
-- [ ] `StoreCompanyAddressSnapshot`.
-- [ ] `BillingAddressSnapshotJson`.
-- [ ] `ShippingAddressSnapshotJson` or keep existing columns plus optional normalized JSON.
-- [ ] `SubtotalAmount`.
-- [ ] `ShippingTotalAmount`.
-- [ ] `TaxTotalAmount`.
-- [ ] `DiscountTotalAmount`.
-- [ ] `GrandTotalAmount`.
-- [ ] `BaseSubtotalAmount`.
-- [ ] `BaseShippingTotalAmount`.
-- [ ] `BaseTaxTotalAmount`.
-- [ ] `BaseDiscountTotalAmount`.
-- [ ] `BaseGrandTotalAmount`.
-- [ ] `ShippingMethodKey`.
-- [ ] `ShippingMethodName`.
-- [ ] `ShippingMethodSnapshotJson`.
-- [ ] `GuestAccessTokenHash`.
-- [ ] `GuestAccessTokenExpiresAtUtc`.
+- [x] `PublicId` if a stable non-internal public order id is desired beyond `Reference`. 2026-07-17 Phase 1: not added; Phase 0 D4 keeps `Order.Reference` as the public order number.
+- [x] `StorePublicId`. 2026-07-17 Phase 1.
+- [x] `StoreKeySnapshot`. 2026-07-17 Phase 1.
+- [x] `StoreNameSnapshot`. 2026-07-17 Phase 1.
+- [x] `StoreBaseUrlSnapshot`. 2026-07-17 Phase 1.
+- [x] `StoreCompanyNameSnapshot`. 2026-07-17 Phase 1.
+- [x] `StoreCompanyEmailSnapshot`. 2026-07-17 Phase 1.
+- [x] `StoreCompanyPhoneSnapshot`. 2026-07-17 Phase 1.
+- [x] `StoreCompanyAddressSnapshot`. 2026-07-17 Phase 1.
+- [x] `BillingAddressSnapshotJson`. 2026-07-17 Phase 1.
+- [x] `ShippingAddressSnapshotJson` or keep existing columns plus optional normalized JSON. 2026-07-17 Phase 1.
+- [x] `SubtotalAmount`. 2026-07-17 Phase 1.
+- [x] `ShippingTotalAmount`. 2026-07-17 Phase 1.
+- [x] `TaxTotalAmount`. 2026-07-17 Phase 1.
+- [x] `DiscountTotalAmount`. 2026-07-17 Phase 1.
+- [x] `GrandTotalAmount`. 2026-07-17 Phase 1.
+- [x] `BaseSubtotalAmount`. 2026-07-17 Phase 1.
+- [x] `BaseShippingTotalAmount`. 2026-07-17 Phase 1.
+- [x] `BaseTaxTotalAmount`. 2026-07-17 Phase 1.
+- [x] `BaseDiscountTotalAmount`. 2026-07-17 Phase 1.
+- [x] `BaseGrandTotalAmount`. 2026-07-17 Phase 1.
+- [x] `ShippingMethodKey`. 2026-07-17 Phase 1: kept existing Shipping Core field.
+- [x] `ShippingMethodName`. 2026-07-17 Phase 1: kept existing Shipping Core field.
+- [x] `ShippingMethodSnapshotJson`. 2026-07-17 Phase 1.
+- [x] `GuestAccessTokenHash`. 2026-07-17 Phase 1.
+- [x] `GuestAccessTokenExpiresAtUtc`. 2026-07-17 Phase 1.
 - [ ] `CreatedAtUtc` alias only if migrating off `CreatedOn` is approved later.
 
 Keep compatible:
 
-- [ ] `Reference`.
-- [ ] `TotalAmount`.
-- [ ] Existing shipping columns.
-- [ ] Existing status fields.
-- [ ] `AdminNote`.
-- [ ] `TotalAmount` remains the charged/order total.
+- [x] `Reference`. 2026-07-17 Phase 1 preserved.
+- [x] `TotalAmount`. 2026-07-17 Phase 1 preserved.
+- [x] Existing shipping columns. 2026-07-17 Phase 1 preserved.
+- [x] Existing status fields. 2026-07-17 Phase 1 preserved.
+- [x] `AdminNote`. 2026-07-17 Phase 1 preserved.
+- [x] `TotalAmount` remains the charged/order total. 2026-07-17 Phase 1 preserved.
 - [ ] `GrandTotalAmount` equals `TotalAmount` for new/backfilled rows.
 - [ ] Existing rows render safely with null breakdown fields.
 
@@ -293,38 +293,38 @@ Goal: make the order row capable of preserving checkout/store/totals data withou
 
 Implementation checklist:
 
-- [ ] Add nullable snapshot fields to `Order`.
-- [ ] Map fields in `CommerceNodeDbContext`.
-- [ ] Add EF migration under Commerce Node migrations only.
-- [ ] Preserve existing `Order.Reference` unique index.
-- [ ] Add `GuestAccessTokenHash` filtered unique index only if guest lookup endpoint is added in this phase.
-- [ ] Avoid over-indexing snapshot display fields.
-- [ ] Extend `GetOrder` additively with safe snapshot fields.
-- [ ] Extend `StorefrontOrderResponse` additively with safe snapshot fields.
-- [ ] Extend Admin order DTO additively with historical fields.
-- [ ] Add total breakdown fields to public/admin responses.
-- [ ] Add billing address projection only when safe.
-- [ ] Add shipping method summary projection.
-- [ ] Add store snapshot summary if needed for confirmation/email.
+- [x] Add nullable snapshot fields to `Order`. 2026-07-17 Phase 1.
+- [x] Map fields in `CommerceNodeDbContext`. 2026-07-17 Phase 1.
+- [x] Add EF migration under Commerce Node migrations only. 2026-07-17 Phase 1: `20260717064548_CommerceNodeOrderPlacementSnapshots`.
+- [x] Preserve existing `Order.Reference` unique index. 2026-07-17 Phase 1: no index changes.
+- [x] Add `GuestAccessTokenHash` filtered unique index only if guest lookup endpoint is added in this phase. 2026-07-17 Phase 1: endpoint not added; no token index added yet.
+- [x] Avoid over-indexing snapshot display fields. 2026-07-17 Phase 1: no display-field indexes added.
+- [x] Extend `GetOrder` additively with safe snapshot fields. 2026-07-17 Phase 1.
+- [x] Extend `StorefrontOrderResponse` additively with safe snapshot fields. 2026-07-17 Phase 1.
+- [x] Extend Admin order DTO additively with historical fields. 2026-07-17 Phase 1.
+- [x] Add total breakdown fields to public/admin responses. 2026-07-17 Phase 1.
+- [x] Add billing address projection only when safe. 2026-07-17 Phase 1: structured address DTO only; raw JSON is not exposed.
+- [x] Add shipping method summary projection. 2026-07-17 Phase 1.
+- [x] Add store snapshot summary if needed for confirmation/email. 2026-07-17 Phase 1.
 
 Rules:
 
-- [ ] Existing rows remain valid.
-- [ ] Null snapshot fields render safely.
-- [ ] Public API does not expose token hashes.
-- [ ] Public API does not expose internal metadata JSON.
+- [x] Existing rows remain valid. 2026-07-17 Phase 1: new columns are nullable.
+- [x] Null snapshot fields render safely. 2026-07-17 Phase 1: projection returns nullable summary objects.
+- [x] Public API does not expose token hashes. 2026-07-17 Phase 1.
+- [x] Public API does not expose internal metadata JSON. 2026-07-17 Phase 1.
 
 Verification checklist:
 
-- [ ] EF model/migration compiles.
-- [ ] Contract tests cover additive schemas.
-- [ ] Existing order list/detail tests pass.
-- [ ] Existing Storefront order consumers remain compatible.
+- [x] EF model/migration compiles. 2026-07-17 Phase 1: CommerceNode API build passed.
+- [x] Contract tests cover additive schemas. 2026-07-17 Phase 1: Storefront OpenAPI snapshot refreshed and focused contract tests passed.
+- [x] Existing order list/detail tests pass. 2026-07-17 Phase 1: focused order/payment/checkout run passed 120/120.
+- [x] Existing Storefront order consumers remain compatible. 2026-07-17 Phase 1: response changes are additive and Storefront V2 build passed inside test run.
 
 Exit criteria:
 
-- [ ] Database can store new snapshot fields.
-- [ ] Existing order API consumers are not broken.
+- [x] Database can store new snapshot fields. 2026-07-17 Phase 1.
+- [x] Existing order API consumers are not broken. 2026-07-17 Phase 1.
 
 Suggested commit:
 
@@ -793,7 +793,7 @@ test(order-placement): verify order placement core
 ## Recommended Implementation Order
 
 - [x] Phase 0 - baseline and safety snapshot. 2026-07-17: current order placement behavior documented and 97 focused baseline tests passed.
-- [ ] Phase 1 - add order snapshot schema.
+- [x] Phase 1 - add order snapshot schema. 2026-07-17: committed after schema/test verification.
 - [ ] Phase 2 - shared order placement builder.
 - [ ] Phase 3 - fill permanent order snapshots.
 - [ ] Phase 4 - guest completion access token.

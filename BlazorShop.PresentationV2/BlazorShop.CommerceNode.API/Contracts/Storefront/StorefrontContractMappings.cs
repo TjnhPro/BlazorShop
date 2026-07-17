@@ -1112,8 +1112,18 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 order.PaymentStatus,
                 order.PaymentMethodKey,
                 order.PaymentAt,
+                order.StoreSnapshot?.ToStorefrontContract(),
                 order.CurrencyCode,
                 order.TotalAmount,
+                order.TotalBreakdown?.ToStorefrontContract(),
+                order.BaseCurrencyCode,
+                order.BaseTotalAmount,
+                order.BaseTotalBreakdown?.ToStorefrontContract(),
+                order.ExchangeRate,
+                order.ExchangeRateProviderKey,
+                order.ExchangeRateSource,
+                order.ExchangeRateEffectiveAtUtc,
+                order.ExchangeRateExpiresAtUtc,
                 order.CreatedOn,
                 order.ShippingStatus,
                 order.ShippingCarrier,
@@ -1123,6 +1133,8 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 order.DeliveredOn,
                 order.CustomerName,
                 order.CustomerEmail,
+                order.BillingAddress?.ToStorefrontContract(),
+                order.ShippingAddressSnapshot?.ToStorefrontContract(),
                 new StorefrontShippingAddressResponse(
                     order.ShippingFullName,
                     order.ShippingEmail,
@@ -1133,10 +1145,60 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                     order.ShippingState,
                     order.ShippingPostalCode,
                     order.ShippingCountryCode),
+                order.ShippingMethod?.ToStorefrontContract(),
                 order.CompletedAt,
                 order.CancelledAt,
                 order.TrackingEvents.Select(item => item.ToStorefrontContract()).ToArray(),
                 order.Lines.Select(line => line.ToStorefrontContract()).ToArray());
+        }
+
+        public static StorefrontOrderStoreSnapshotResponse ToStorefrontContract(this GetOrderStoreSnapshot snapshot)
+        {
+            return new StorefrontOrderStoreSnapshotResponse(
+                snapshot.PublicId,
+                snapshot.StoreKey,
+                snapshot.Name,
+                snapshot.BaseUrl,
+                snapshot.CompanyName,
+                snapshot.CompanyEmail,
+                snapshot.CompanyPhone,
+                snapshot.CompanyAddress);
+        }
+
+        public static StorefrontOrderTotalBreakdownResponse ToStorefrontContract(this GetOrderTotalBreakdown breakdown)
+        {
+            return new StorefrontOrderTotalBreakdownResponse(
+                breakdown.Subtotal,
+                breakdown.ShippingTotal,
+                breakdown.TaxTotal,
+                breakdown.DiscountTotal,
+                breakdown.GrandTotal);
+        }
+
+        public static StorefrontShippingAddressResponse ToStorefrontContract(this GetOrderAddress address)
+        {
+            return new StorefrontShippingAddressResponse(
+                address.FullName,
+                address.Email,
+                address.Phone,
+                address.Address1,
+                address.Address2,
+                address.City,
+                address.State,
+                address.PostalCode,
+                address.CountryCode);
+        }
+
+        public static StorefrontOrderShippingMethodResponse ToStorefrontContract(this GetOrderShippingMethodSnapshot shippingMethod)
+        {
+            return new StorefrontOrderShippingMethodResponse(
+                shippingMethod.Key,
+                shippingMethod.ProviderSystemName,
+                shippingMethod.MethodCode,
+                shippingMethod.Name,
+                shippingMethod.Total,
+                shippingMethod.CurrencyCode,
+                shippingMethod.DeliveryEstimateText);
         }
 
         public static StorefrontOrderTrackingEventResponse ToStorefrontContract(this GetShipmentTrackingEvent item)

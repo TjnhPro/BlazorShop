@@ -1065,6 +1065,9 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Phase 0 baseline records current order entity, order line snapshot, checkout placement path, payment capture path, admin order behavior, Storefront order contract, and CommerceNode EF ownership. 2026-07-17: source review recorded in `Order Placement Core.todo.md`.
 - [x] Order placement baseline tests passed before refactor. 2026-07-17: focused `StorefrontCheckoutServiceTests|PaymentAttemptServiceTests|CommerceNodeAdminShipmentServiceTests|CommerceNodeStorefrontOpenApiContractTests|CommerceNodeStorefrontPaymentContractTests` passed 97/97.
 - [x] No legacy `AppDbContext`, legacy Presentation route, or active `api/internal/*` order-placement code was edited in Phase 0. 2026-07-17: docs-only baseline.
+- [x] Order placement snapshot schema is additive and CommerceNode-owned. 2026-07-17 Phase 1: migration `20260717064548_CommerceNodeOrderPlacementSnapshots` adds nullable order snapshot columns only.
+- [x] Order snapshot response fields are safe projections, not raw metadata. 2026-07-17 Phase 1: Storefront response exposes store/total/address/shipping-method summaries and does not expose guest token hash or raw snapshot JSON.
+- [x] Storefront OpenAPI snapshot remains generator-safe after additive order response fields. 2026-07-17 Phase 1: Storefront OpenAPI snapshot refreshed and focused contract/model/order flow tests passed 120/120.
 
 ## Payment Core
 

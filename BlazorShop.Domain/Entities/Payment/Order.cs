@@ -25,13 +25,49 @@ namespace BlazorShop.Domain.Entities.Payment
 
         public Guid? StoreId { get; set; }
 
+        public Guid? StorePublicId { get; set; }
+
+        public string? StoreKeySnapshot { get; set; }
+
+        public string? StoreNameSnapshot { get; set; }
+
+        public string? StoreBaseUrlSnapshot { get; set; }
+
+        public string? StoreCompanyNameSnapshot { get; set; }
+
+        public string? StoreCompanyEmailSnapshot { get; set; }
+
+        public string? StoreCompanyPhoneSnapshot { get; set; }
+
+        public string? StoreCompanyAddressSnapshot { get; set; }
+
         public string? CurrencyCode { get; set; }
 
         public decimal TotalAmount { get; set; }
 
+        public decimal? SubtotalAmount { get; set; }
+
+        public decimal? ShippingTotalAmount { get; set; }
+
+        public decimal? TaxTotalAmount { get; set; }
+
+        public decimal? DiscountTotalAmount { get; set; }
+
+        public decimal? GrandTotalAmount { get; set; }
+
         public string? BaseCurrencyCode { get; set; }
 
         public decimal? BaseTotalAmount { get; set; }
+
+        public decimal? BaseSubtotalAmount { get; set; }
+
+        public decimal? BaseShippingTotalAmount { get; set; }
+
+        public decimal? BaseTaxTotalAmount { get; set; }
+
+        public decimal? BaseDiscountTotalAmount { get; set; }
+
+        public decimal? BaseGrandTotalAmount { get; set; }
 
         public decimal? ExchangeRate { get; set; }
 
@@ -56,6 +92,10 @@ namespace BlazorShop.Domain.Entities.Payment
         public string? CustomerName { get; set; }
 
         public string? CustomerEmail { get; set; }
+
+        public string? BillingAddressSnapshotJson { get; set; }
+
+        public string? ShippingAddressSnapshotJson { get; set; }
 
         public string ShippingFullName { get; set; } = string.Empty;
 
@@ -97,6 +137,8 @@ namespace BlazorShop.Domain.Entities.Payment
 
         public string? ShippingDeliveryEstimateText { get; set; }
 
+        public string? ShippingMethodSnapshotJson { get; set; }
+
         public DateTime? ShippedOn { get; set; }
 
         public DateTime? DeliveredOn { get; set; }
@@ -104,6 +146,10 @@ namespace BlazorShop.Domain.Entities.Payment
         public DateTime? LastTrackingUpdate { get; set; }
 
         public string? AdminNote { get; set; }
+
+        public string? GuestAccessTokenHash { get; set; }
+
+        public DateTimeOffset? GuestAccessTokenExpiresAtUtc { get; set; }
 
         public CommerceCustomer? Customer { get; set; }
     }

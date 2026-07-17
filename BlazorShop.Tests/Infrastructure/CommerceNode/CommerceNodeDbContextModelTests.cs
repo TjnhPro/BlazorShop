@@ -350,6 +350,50 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         }
 
         [Fact]
+        public void OrderPlacementSnapshotFields_HaveSafeLengthsPrecisionAndJsonColumns()
+        {
+            using var context = CreateContext();
+            var modelEntity = context.Model.FindEntityType(typeof(Order));
+
+            Assert.NotNull(modelEntity);
+            Assert.Equal(128, modelEntity!.FindProperty(nameof(Order.StoreKeySnapshot))!.GetMaxLength());
+            Assert.Equal(400, modelEntity.FindProperty(nameof(Order.StoreNameSnapshot))!.GetMaxLength());
+            Assert.Equal(2048, modelEntity.FindProperty(nameof(Order.StoreBaseUrlSnapshot))!.GetMaxLength());
+            Assert.Equal(200, modelEntity.FindProperty(nameof(Order.StoreCompanyNameSnapshot))!.GetMaxLength());
+            Assert.Equal(254, modelEntity.FindProperty(nameof(Order.StoreCompanyEmailSnapshot))!.GetMaxLength());
+            Assert.Equal(50, modelEntity.FindProperty(nameof(Order.StoreCompanyPhoneSnapshot))!.GetMaxLength());
+            Assert.Equal(500, modelEntity.FindProperty(nameof(Order.StoreCompanyAddressSnapshot))!.GetMaxLength());
+            Assert.Equal("jsonb", modelEntity.FindProperty(nameof(Order.BillingAddressSnapshotJson))!.GetColumnType());
+            Assert.Equal("jsonb", modelEntity.FindProperty(nameof(Order.ShippingAddressSnapshotJson))!.GetColumnType());
+            Assert.Equal("jsonb", modelEntity.FindProperty(nameof(Order.ShippingMethodSnapshotJson))!.GetColumnType());
+            Assert.Equal(64, modelEntity.FindProperty(nameof(Order.GuestAccessTokenHash))!.GetMaxLength());
+            Assert.Equal("timestamp with time zone", modelEntity.FindProperty(nameof(Order.GuestAccessTokenExpiresAtUtc))!.GetColumnType());
+            Assert.DoesNotContain(
+                modelEntity.GetIndexes(),
+                index => index.Properties.Select(property => property.Name).SequenceEqual(["GuestAccessTokenHash"]));
+
+            foreach (var propertyName in new[]
+            {
+                nameof(Order.SubtotalAmount),
+                nameof(Order.ShippingTotalAmount),
+                nameof(Order.TaxTotalAmount),
+                nameof(Order.DiscountTotalAmount),
+                nameof(Order.GrandTotalAmount),
+                nameof(Order.BaseSubtotalAmount),
+                nameof(Order.BaseShippingTotalAmount),
+                nameof(Order.BaseTaxTotalAmount),
+                nameof(Order.BaseDiscountTotalAmount),
+                nameof(Order.BaseGrandTotalAmount),
+            })
+            {
+                var property = modelEntity.FindProperty(propertyName);
+                Assert.NotNull(property);
+                Assert.Equal(18, property!.GetPrecision());
+                Assert.Equal(2, property.GetScale());
+            }
+        }
+
+        [Fact]
         public void ShipmentItemsAndTrackingEvents_HaveSafeRelationshipsAndLengths()
         {
             using var context = CreateContext();
