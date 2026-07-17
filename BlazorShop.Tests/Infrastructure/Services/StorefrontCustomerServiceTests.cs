@@ -36,6 +36,42 @@ namespace BlazorShop.Tests.Infrastructure.Services
         }
 
         [Fact]
+        public async Task ResolveOrCreateAsync_StoresProfileFields_WhenSupplied()
+        {
+            await using var context = CreateContext();
+            var service = new StorefrontCustomerService(context);
+            var storeId = Guid.NewGuid();
+
+            var result = await service.ResolveOrCreateAsync(new StorefrontCustomerResolutionRequest(
+                storeId,
+                "buyer@example.com",
+                Phone: " 123456 ",
+                AppUserId: "user-1",
+                FirstName: " Ada ",
+                LastName: " Lovelace ",
+                Company: " Analytical Engines ",
+                PreferredLanguage: " en-US ",
+                PreferredCurrencyCode: " usd "));
+
+            Assert.True(result.Success);
+            Assert.Equal("Ada Lovelace", result.Payload!.FullName);
+            Assert.Equal("Ada", result.Payload.FirstName);
+            Assert.Equal("Lovelace", result.Payload.LastName);
+            Assert.Equal("Analytical Engines", result.Payload.Company);
+            Assert.Equal("en-US", result.Payload.PreferredLanguage);
+            Assert.Equal("USD", result.Payload.PreferredCurrencyCode);
+            Assert.True(result.Payload.IsActive);
+            Assert.Null(result.Payload.LastActivityAtUtc);
+            var customer = await context.CommerceCustomers.SingleAsync();
+            Assert.Equal("Ada", customer.FirstName);
+            Assert.Equal("Lovelace", customer.LastName);
+            Assert.Equal("Analytical Engines", customer.Company);
+            Assert.Equal("en-US", customer.PreferredLanguage);
+            Assert.Equal("USD", customer.PreferredCurrencyCode);
+            Assert.True(customer.IsActive);
+        }
+
+        [Fact]
         public async Task ResolveOrCreateAsync_ReusesCustomer_ForSameStoreAndNormalizedEmail()
         {
             await using var context = CreateContext();
@@ -56,6 +92,34 @@ namespace BlazorShop.Tests.Infrastructure.Services
             Assert.Equal(first.Payload!.Id, second.Payload!.Id);
             Assert.Equal("Buyer Updated", second.Payload.FullName);
             Assert.Equal(1, await context.CommerceCustomers.CountAsync());
+        }
+
+        [Fact]
+        public async Task ResolveOrCreateAsync_UpdatesProfileFields_WithoutBreakingFullNameFallback()
+        {
+            await using var context = CreateContext();
+            var service = new StorefrontCustomerService(context);
+            var storeId = Guid.NewGuid();
+            await service.ResolveOrCreateAsync(new StorefrontCustomerResolutionRequest(
+                storeId,
+                "buyer@example.com",
+                "Buyer"));
+
+            var result = await service.ResolveOrCreateAsync(new StorefrontCustomerResolutionRequest(
+                storeId,
+                "buyer@example.com",
+                FirstName: "Grace",
+                LastName: "Hopper",
+                Company: "Compiler Lab",
+                PreferredCurrencyCode: "eur"));
+
+            Assert.True(result.Success);
+            Assert.Equal("Grace Hopper", result.Payload!.FullName);
+            Assert.Equal("Grace", result.Payload.FirstName);
+            Assert.Equal("Hopper", result.Payload.LastName);
+            Assert.Equal("Compiler Lab", result.Payload.Company);
+            Assert.Equal("EUR", result.Payload.PreferredCurrencyCode);
+            Assert.Equal("Grace Hopper", (await context.CommerceCustomers.SingleAsync()).FullName);
         }
 
         [Fact]
@@ -96,6 +160,26 @@ namespace BlazorShop.Tests.Infrastructure.Services
             Assert.True(result.Success);
             Assert.Equal("user-1", result.Payload!.AppUserId);
             Assert.Equal("user-1", (await context.CommerceCustomers.SingleAsync()).AppUserId);
+        }
+
+        [Fact]
+        public async Task TouchLastActivityAsync_UpdatesAuthenticatedCustomerActivity()
+        {
+            await using var context = CreateContext();
+            var service = new StorefrontCustomerService(context);
+            var storeId = Guid.NewGuid();
+            await service.ResolveOrCreateAsync(new StorefrontCustomerResolutionRequest(
+                storeId,
+                "buyer@example.com",
+                "Buyer",
+                AppUserId: "user-1"));
+            var activityAt = new DateTimeOffset(2026, 7, 17, 8, 0, 0, TimeSpan.Zero);
+
+            var result = await service.TouchLastActivityAsync(storeId, "user-1", activityAt);
+
+            Assert.True(result.Success);
+            Assert.Equal(activityAt, result.Payload!.LastActivityAtUtc);
+            Assert.Equal(activityAt, (await context.CommerceCustomers.SingleAsync()).LastActivityAtUtc);
         }
 
         [Fact]

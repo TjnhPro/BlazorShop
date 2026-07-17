@@ -1099,6 +1099,9 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Phase 0 baseline records active Storefront auth, cart merge, customer address, guest completion token, and current customer order self-service gap. 2026-07-17: source review recorded in `Customer Identity Account.todo.md`.
 - [x] Current user order query gap is protected before behavior change. 2026-07-17 Phase 0: `CommerceNodeOrderQueryServiceTests.GetOrdersForUserAsync_CurrentlyMissesV2OrdersLinkedOnlyByCustomerId` passed and documents that `Order.CustomerId`-only V2 orders do not appear through the legacy `UserId` query.
 - [x] Existing auth/customer-address/cart merge contract guardrails remain covered. 2026-07-17 Phase 0: focused Storefront auth contract/OpenAPI, cart merge, address ownership, and Storefront auth client tests passed 60/60.
+- [x] `CommerceCustomer` profile fields are additive and CommerceNode-owned. 2026-07-17 Phase 1: migration `CommerceNodeCustomerProfileFields` adds first/last/company/preferred language/preferred currency/is-active/last-activity fields to `commerce_customers` only.
+- [x] Storefront customer resolution keeps `FullName` compatibility while storing profile fields when supplied. 2026-07-17 Phase 1: `StorefrontCustomerServiceTests` passed.
+- [x] Customer profile model release gate passed. 2026-07-17 Phase 1: CommerceNode API build passed, focused customer/model subset passed 37/37, and broader customer/address/checkout/model run passed 95/95.
 
 ## Payment Core
 

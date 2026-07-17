@@ -165,6 +165,25 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         }
 
         [Fact]
+        public void CommerceCustomer_ProfileFields_HaveSafeLengthsAndDefaults()
+        {
+            using var context = CreateContext();
+            var modelEntity = context.Model.FindEntityType(typeof(CommerceCustomer));
+
+            Assert.NotNull(modelEntity);
+            Assert.Equal("commerce_customers", modelEntity!.GetTableName());
+            Assert.Equal(120, modelEntity.FindProperty(nameof(CommerceCustomer.FirstName))!.GetMaxLength());
+            Assert.Equal(120, modelEntity.FindProperty(nameof(CommerceCustomer.LastName))!.GetMaxLength());
+            Assert.Equal(200, modelEntity.FindProperty(nameof(CommerceCustomer.Company))!.GetMaxLength());
+            Assert.Equal(16, modelEntity.FindProperty(nameof(CommerceCustomer.PreferredLanguage))!.GetMaxLength());
+            Assert.Equal(3, modelEntity.FindProperty(nameof(CommerceCustomer.PreferredCurrencyCode))!.GetMaxLength());
+            Assert.Equal(true, modelEntity.FindProperty(nameof(CommerceCustomer.IsActive))!.GetDefaultValue());
+            Assert.Equal(
+                "timestamp with time zone",
+                modelEntity.FindProperty(nameof(CommerceCustomer.LastActivityAtUtc))!.GetColumnType());
+        }
+
+        [Fact]
         public void CommerceCustomerAddress_HasStoreCustomerScopeAndDefaultIndexes()
         {
             using var context = CreateContext();

@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Customer Identity Account.md`
 
-Status: Phase 0 complete. Phase 1 not started.
+Status: Phase 1 complete. Phase 2 not started.
 
 Scope: move storefront customer identity and account self-service from MVP auth/cart behavior to a practical customer account core. Keep existing V2 boundaries, reuse server-side cart, address, checkout, and order placement foundations, and avoid building a full CRM/customer-group platform.
 
@@ -369,27 +369,27 @@ Goal: make `CommerceCustomer` a usable store-scoped customer profile without rep
 
 Implementation checklist:
 
-- [ ] Extend `CommerceCustomer` with approved profile fields.
-- [ ] Add EF configuration/migration in `CommerceNodeDbContext`.
-- [ ] Update profile DTO and mapping.
-- [ ] Update `StorefrontCustomerService` to keep `FullName` compatibility.
-- [ ] Store first name when supplied.
-- [ ] Store last name when supplied.
-- [ ] Store company/preferences when supplied.
-- [ ] Add `LastActivityAtUtc` update helper for authenticated account operations.
-- [ ] Keep checkout resolution behavior compatible.
+- [x] Extend `CommerceCustomer` with approved profile fields. 2026-07-17 Phase 1.
+- [x] Add EF configuration/migration in `CommerceNodeDbContext`. 2026-07-17 Phase 1: migration `CommerceNodeCustomerProfileFields`.
+- [x] Update profile DTO and mapping. 2026-07-17 Phase 1.
+- [x] Update `StorefrontCustomerService` to keep `FullName` compatibility. 2026-07-17 Phase 1.
+- [x] Store first name when supplied. 2026-07-17 Phase 1.
+- [x] Store last name when supplied. 2026-07-17 Phase 1.
+- [x] Store company/preferences when supplied. 2026-07-17 Phase 1.
+- [x] Add `LastActivityAtUtc` update helper for authenticated account operations. 2026-07-17 Phase 1: `TouchLastActivityAsync`.
+- [x] Keep checkout resolution behavior compatible. 2026-07-17 Phase 1: focused checkout/customer tests passed.
 
 Verification checklist:
 
-- [ ] Existing checkout customer creation still works.
-- [ ] Existing address customer resolution still works.
-- [ ] Existing `FullName` consumers keep working.
-- [ ] New columns default safely for existing rows.
-- [ ] Migration is CommerceNode-only.
+- [x] Existing checkout customer creation still works. 2026-07-17 Phase 1: focused checkout tests passed inside 95/95 run.
+- [x] Existing address customer resolution still works. 2026-07-17 Phase 1: address service tests passed inside 95/95 run.
+- [x] Existing `FullName` consumers keep working. 2026-07-17 Phase 1: `StorefrontCustomerServiceTests` covers fallback/update.
+- [x] New columns default safely for existing rows. 2026-07-17 Phase 1: nullable profile fields, `IsActive=true`.
+- [x] Migration is CommerceNode-only. 2026-07-17 Phase 1.
 
 Exit criteria:
 
-- [ ] `CommerceCustomer` supports practical profile data while `AppUser` remains auth owner.
+- [x] `CommerceCustomer` supports practical profile data while `AppUser` remains auth owner. 2026-07-17 Phase 1.
 
 Suggested commit:
 
@@ -770,7 +770,7 @@ test(customer-account): verify account core
 ## Recommended Implementation Order
 
 - [x] Phase 0 - baseline guardrails. 2026-07-17: committed after focused identity baseline run passed 60/60.
-- [ ] Phase 1 - customer profile model.
+- [x] Phase 1 - customer profile model. 2026-07-17: CommerceNode API build passed, focused customer/model subset passed 37/37, and broader customer/address/checkout/model run passed 95/95.
 - [ ] Phase 2 - registration policy and password recovery.
 - [ ] Phase 3 - account profile API and Storefront pages.
 - [ ] Phase 4 - customer order self-service API.

@@ -44,14 +44,22 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var now = DateTimeOffset.UtcNow;
+            var firstName = NormalizeNullable(request.FirstName);
+            var lastName = NormalizeNullable(request.LastName);
             var customer = new CommerceCustomer
             {
                 Id = Guid.NewGuid(),
                 StoreId = request.StoreId,
                 Email = email,
                 NormalizedEmail = normalizedEmail,
-                FullName = NormalizeNullable(request.FullName) ?? email,
+                FullName = ResolveFullName(request.FullName, firstName, lastName, email),
+                FirstName = firstName,
+                LastName = lastName,
+                Company = NormalizeNullable(request.Company),
                 Phone = NormalizeNullable(request.Phone),
+                PreferredLanguage = NormalizeNullable(request.PreferredLanguage),
+                PreferredCurrencyCode = NormalizeCurrencyCode(request.PreferredCurrencyCode),
+                IsActive = true,
                 AppUserId = NormalizeNullable(request.AppUserId),
                 CreatedAt = now,
                 UpdatedAt = now,
@@ -80,6 +88,40 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
         }
 
+        public async Task<ServiceResponse<StorefrontCustomerProfile>> TouchLastActivityAsync(
+            Guid storeId,
+            string appUserId,
+            DateTimeOffset? activityAtUtc = null,
+            CancellationToken cancellationToken = default)
+        {
+            if (storeId == Guid.Empty)
+            {
+                return Failed(ServiceResponseType.ValidationError, "Store is required.");
+            }
+
+            var normalizedAppUserId = NormalizeNullable(appUserId);
+            if (normalizedAppUserId is null)
+            {
+                return Failed(ServiceResponseType.ValidationError, "Authenticated user is required.");
+            }
+
+            var customer = await this.context.CommerceCustomers.FirstOrDefaultAsync(
+                item => item.StoreId == storeId && item.AppUserId == normalizedAppUserId,
+                cancellationToken);
+
+            if (customer is null)
+            {
+                return Failed(ServiceResponseType.NotFound, "Customer was not found.");
+            }
+
+            var now = activityAtUtc ?? DateTimeOffset.UtcNow;
+            customer.LastActivityAtUtc = now;
+            customer.UpdatedAt = now;
+            await this.context.SaveChangesAsync(cancellationToken);
+
+            return Succeeded("Customer activity updated.", Map(customer));
+        }
+
         private async Task<CommerceCustomer?> LoadCustomerAsync(
             Guid storeId,
             string normalizedEmail,
@@ -102,15 +144,46 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var fullName = NormalizeNullable(request.FullName);
-            if (fullName is not null && !string.Equals(customer.FullName, fullName, StringComparison.Ordinal))
+            var firstName = NormalizeNullable(request.FirstName);
+            var lastName = NormalizeNullable(request.LastName);
+            var resolvedFullName = fullName ?? ResolveFullName(null, firstName, lastName, null);
+            if (resolvedFullName is not null && !string.Equals(customer.FullName, resolvedFullName, StringComparison.Ordinal))
             {
-                customer.FullName = fullName;
+                customer.FullName = resolvedFullName;
+            }
+
+            if (firstName is not null && !string.Equals(customer.FirstName, firstName, StringComparison.Ordinal))
+            {
+                customer.FirstName = firstName;
+            }
+
+            if (lastName is not null && !string.Equals(customer.LastName, lastName, StringComparison.Ordinal))
+            {
+                customer.LastName = lastName;
+            }
+
+            var company = NormalizeNullable(request.Company);
+            if (company is not null && !string.Equals(customer.Company, company, StringComparison.Ordinal))
+            {
+                customer.Company = company;
             }
 
             var phone = NormalizeNullable(request.Phone);
             if (phone is not null && !string.Equals(customer.Phone, phone, StringComparison.Ordinal))
             {
                 customer.Phone = phone;
+            }
+
+            var preferredLanguage = NormalizeNullable(request.PreferredLanguage);
+            if (preferredLanguage is not null && !string.Equals(customer.PreferredLanguage, preferredLanguage, StringComparison.Ordinal))
+            {
+                customer.PreferredLanguage = preferredLanguage;
+            }
+
+            var preferredCurrencyCode = NormalizeCurrencyCode(request.PreferredCurrencyCode);
+            if (preferredCurrencyCode is not null && !string.Equals(customer.PreferredCurrencyCode, preferredCurrencyCode, StringComparison.Ordinal))
+            {
+                customer.PreferredCurrencyCode = preferredCurrencyCode;
             }
 
             var appUserId = NormalizeNullable(request.AppUserId);
@@ -133,10 +206,41 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 customer.Email,
                 customer.NormalizedEmail,
                 customer.FullName,
+                customer.FirstName,
+                customer.LastName,
+                customer.Company,
                 customer.Phone,
+                customer.PreferredLanguage,
+                customer.PreferredCurrencyCode,
+                customer.IsActive,
+                customer.LastActivityAtUtc,
                 customer.CreatedAt,
                 customer.UpdatedAt,
                 customer.LastCheckoutAt);
+        }
+
+        private static string ResolveFullName(
+            string? fullName,
+            string? firstName,
+            string? lastName,
+            string? fallback)
+        {
+            var normalizedFullName = NormalizeNullable(fullName);
+            if (normalizedFullName is not null)
+            {
+                return normalizedFullName;
+            }
+
+            var combinedName = string.Join(
+                " ",
+                new[] { firstName, lastName }.Where(item => !string.IsNullOrWhiteSpace(item)));
+            return string.IsNullOrWhiteSpace(combinedName) ? fallback ?? string.Empty : combinedName;
+        }
+
+        private static string? NormalizeCurrencyCode(string? value)
+        {
+            var normalized = NormalizeNullable(value);
+            return normalized is null ? null : normalized.ToUpperInvariant();
         }
 
         private static string? NormalizeEmail(string? email)

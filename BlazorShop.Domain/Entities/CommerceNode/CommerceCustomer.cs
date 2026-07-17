@@ -17,7 +17,21 @@ namespace BlazorShop.Domain.Entities.CommerceNode
 
         public string FullName { get; set; } = string.Empty;
 
+        public string? FirstName { get; set; }
+
+        public string? LastName { get; set; }
+
+        public string? Company { get; set; }
+
         public string? Phone { get; set; }
+
+        public string? PreferredLanguage { get; set; }
+
+        public string? PreferredCurrencyCode { get; set; }
+
+        public bool IsActive { get; set; } = true;
+
+        public DateTimeOffset? LastActivityAtUtc { get; set; }
 
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 

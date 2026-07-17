@@ -234,7 +234,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.Property(customer => customer.Email).HasColumnName("email").HasMaxLength(256).IsRequired();
                 entity.Property(customer => customer.NormalizedEmail).HasColumnName("normalized_email").HasMaxLength(256).IsRequired();
                 entity.Property(customer => customer.FullName).HasColumnName("full_name").HasMaxLength(256).IsRequired();
+                entity.Property(customer => customer.FirstName).HasColumnName("first_name").HasMaxLength(120);
+                entity.Property(customer => customer.LastName).HasColumnName("last_name").HasMaxLength(120);
+                entity.Property(customer => customer.Company).HasColumnName("company").HasMaxLength(200);
                 entity.Property(customer => customer.Phone).HasColumnName("phone").HasMaxLength(64);
+                entity.Property(customer => customer.PreferredLanguage).HasColumnName("preferred_language").HasMaxLength(16);
+                entity.Property(customer => customer.PreferredCurrencyCode).HasColumnName("preferred_currency_code").HasMaxLength(3);
+                entity.Property(customer => customer.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+                entity.Property(customer => customer.LastActivityAtUtc).HasColumnName("last_activity_at_utc").HasColumnType("timestamp with time zone");
                 entity.Property(customer => customer.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
                 entity.Property(customer => customer.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp with time zone").HasDefaultValueSql("CURRENT_TIMESTAMP");
                 entity.Property(customer => customer.LastCheckoutAt).HasColumnName("last_checkout_at").HasColumnType("timestamp with time zone");

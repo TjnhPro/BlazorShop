@@ -7,5 +7,11 @@ namespace BlazorShop.Application.CommerceNode.Customers
         Task<ServiceResponse<StorefrontCustomerProfile>> ResolveOrCreateAsync(
             StorefrontCustomerResolutionRequest request,
             CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<StorefrontCustomerProfile>> TouchLastActivityAsync(
+            Guid storeId,
+            string appUserId,
+            DateTimeOffset? activityAtUtc = null,
+            CancellationToken cancellationToken = default);
     }
 }
