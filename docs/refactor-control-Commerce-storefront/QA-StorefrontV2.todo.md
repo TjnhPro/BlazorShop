@@ -552,6 +552,7 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Shipping Core Phase 3 backend checkout returns actual `ShippingRequired`, calculated shipping options, and selected shipping totals through Storefront checkout session results. 2026-07-17: focused `StorefrontCheckoutServiceTests` passed 48/48.
 - [x] Shipping Core Phase 3 backend checkout allows non-shipping carts to continue without selected physical shipping method. 2026-07-17: `SelectPaymentMethodAsync_AllowsNonShippingCartWithoutSelectedShippingMethod` passed.
 - [x] Shipping Core Phase 3 backend checkout surfaces unavailable shipping as recoverable validation issues. 2026-07-17: `PreviewAsync_WhenShippingCalculatorReturnsError_AddsValidationIssue` passed.
+- [x] Shipping Core Phase 4 backend checkout returns product surcharge in selected shipping option and review totals. 2026-07-17: `SelectShippingMethodAsync_AppliesPersistedProductShippingSurcharge` passed.
 - [ ] Shipping Core visible checkout QA confirms physical checkout can select a valid shipping option.
 - [ ] Shipping Core visible checkout QA confirms non-shipping cart does not block on shipping method after calculation cutover.
 - [ ] Shipping Core visible checkout QA confirms country-unavailable state shows a recoverable checkout message.

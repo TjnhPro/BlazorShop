@@ -303,6 +303,11 @@
                 return new ServiceResponse(false, $"Delivery estimate text must be {ProductPurchaseConstraints.DeliveryEstimateTextMaxLength} characters or fewer.");
             }
 
+            if (product.ShippingSurcharge is < 0)
+            {
+                return new ServiceResponse(false, "Shipping surcharge cannot be negative.");
+            }
+
             return new ServiceResponse(true, string.Empty);
         }
 

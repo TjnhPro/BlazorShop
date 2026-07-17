@@ -82,6 +82,10 @@ namespace BlazorShop.Web.SharedV2.Models.Product
 
         public bool FreeShipping { get; set; }
 
+        [DataType(DataType.Currency)]
+        [Range(0, double.MaxValue)]
+        public decimal? ShippingSurcharge { get; set; }
+
         public string? DeliveryEstimateText { get; set; }
 
         public int DisplayOrder { get; set; }

@@ -160,6 +160,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.Property(product => product.HideWhenOutOfStock).HasDefaultValue(false);
                 entity.Property(product => product.ShippingRequired).HasDefaultValue(true);
                 entity.Property(product => product.FreeShipping).HasDefaultValue(false);
+                entity.Property(product => product.ShippingSurcharge).HasPrecision(18, 2);
                 entity.Property(product => product.DeliveryEstimateText)
                     .HasMaxLength(BlazorShop.Domain.Constants.ProductPurchaseConstraints.DeliveryEstimateTextMaxLength);
                 entity.HasOne<CommerceStore>()

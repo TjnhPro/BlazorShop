@@ -1038,7 +1038,11 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Non-shipping carts can continue without a physical shipping method. 2026-07-17 Phase 3: `SelectPaymentMethodAsync_AllowsNonShippingCartWithoutSelectedShippingMethod` passed.
 - [x] Country restriction and free-shipping threshold behavior are covered by focused tests. 2026-07-17 Phase 2: focused shipping settings/provider tests passed.
 - [x] Shipping totals are included in checkout, order, and payment amounts. 2026-07-17 Phase 3: `SelectShippingMethodAsync_UsesCalculatedRateAndUpdatesGrandTotal` covers checkout totals; place-order path now validates selected shipping total before payment/order creation.
-- [ ] Storefront and Commerce Admin OpenAPI remain generator-safe after Shipping Core API additions.
+- [x] Product shipping surcharge is persisted, mapped to checkout package lines, and rejected when negative. 2026-07-17 Phase 4: additive migration, DTO/read-model mapping, `ProductServiceTests`, and `CommerceNodeDbContextModelTests` passed.
+- [x] Shipping providers apply product surcharge by `sum` and `highest` policy, exclude free-shipping lines, and waive surcharge at the free-shipping threshold. 2026-07-17 Phase 4: `ShippingProviderRegistryTests` passed.
+- [x] Storefront checkout applies persisted product shipping surcharge to selected option, `ShippingTotal`, and `GrandTotal`. 2026-07-17 Phase 4: `SelectShippingMethodAsync_AppliesPersistedProductShippingSurcharge` passed.
+- [x] Storefront OpenAPI remains generator-safe after Shipping Core surcharge changes. 2026-07-17 Phase 4: `CommerceNodeStorefrontOpenApiContractTests` passed inside focused 141/141 run.
+- [ ] Commerce Admin OpenAPI remains generator-safe after all Shipping Core API additions.
 
 ## Payment Core
 

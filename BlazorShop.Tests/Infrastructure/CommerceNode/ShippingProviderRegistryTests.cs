@@ -69,7 +69,70 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal(["rate unavailable"], result.Payload.Errors);
         }
 
-        private static ShippingOptionsRequest CreateRequest(bool shippingRequired)
+        [Fact]
+        public async Task FreeStandardProvider_AddsProductSurchargeAndExcludesFreeShippingLines()
+        {
+            var provider = new InternalFreeStandardShippingProvider();
+
+            var result = await provider.GetOptionsAsync(CreateRequest(
+                shippingRequired: true,
+                packageLines:
+                [
+                    CreatePackageLine(quantity: 2, shippingRequired: true, freeShipping: false, surcharge: 2.5m),
+                    CreatePackageLine(quantity: 1, shippingRequired: true, freeShipping: true, surcharge: 100m),
+                ]));
+
+            var option = Assert.Single(result.Options);
+            Assert.Equal(5m, option.Rate);
+            Assert.Equal("product.surcharge.sum", option.RuleMatch);
+        }
+
+        [Fact]
+        public async Task FlatRateProvider_UsesHighestSurchargePolicy()
+        {
+            var provider = new InternalFlatRateShippingProvider(new StubStoreShippingSettingsService(
+                defaultFlatRate: 5m,
+                freeShippingThreshold: null,
+                StoreShippingSurchargePolicies.Highest));
+
+            var result = await provider.GetOptionsAsync(CreateRequest(
+                shippingRequired: true,
+                packageLines:
+                [
+                    CreatePackageLine(quantity: 3, shippingRequired: true, freeShipping: false, surcharge: 2m),
+                    CreatePackageLine(quantity: 1, shippingRequired: true, freeShipping: false, surcharge: 7m),
+                ]));
+
+            var option = Assert.Single(result.Options);
+            Assert.Equal(12m, option.Rate);
+            Assert.Equal("store.flat_rate+product.surcharge.highest", option.RuleMatch);
+        }
+
+        [Fact]
+        public async Task FlatRateProvider_FreeShippingThresholdWaivesBaseRateAndSurcharge()
+        {
+            var provider = new InternalFlatRateShippingProvider(new StubStoreShippingSettingsService(
+                defaultFlatRate: 5m,
+                freeShippingThreshold: 20m,
+                StoreShippingSurchargePolicies.Sum));
+
+            var result = await provider.GetOptionsAsync(CreateRequest(
+                shippingRequired: true,
+                subtotal: 20m,
+                packageLines:
+                [
+                    CreatePackageLine(quantity: 1, shippingRequired: true, freeShipping: false, surcharge: 7m),
+                ]));
+
+            var option = Assert.Single(result.Options);
+            Assert.Equal(0m, option.Rate);
+            Assert.Equal("store.free_shipping_threshold", option.RuleMatch);
+        }
+
+        private static ShippingOptionsRequest CreateRequest(
+            bool shippingRequired,
+            decimal subtotal = 20m,
+            IReadOnlyList<ShippingPackageLine>? packageLines = null)
         {
             return new ShippingOptionsRequest(
                 StoreId: Guid.NewGuid(),
@@ -87,21 +150,71 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                     Phone: "5550100",
                     Email: "customer@example.test"),
                 CurrencyCode: "usd",
-                Subtotal: 20m,
-                PackageLines:
+                Subtotal: subtotal,
+                PackageLines: packageLines ??
                 [
-                    new ShippingPackageLine(
-                        ProductId: Guid.NewGuid(),
-                        ProductVariantId: null,
-                        Quantity: 1,
-                        ShippingRequired: shippingRequired,
-                        FreeShipping: false,
-                        Weight: 1.25m,
-                        Length: 10m,
-                        Width: 5m,
-                        Height: 2m,
-                        Surcharge: null),
+                    CreatePackageLine(quantity: 1, shippingRequired, freeShipping: false, surcharge: null),
                 ]);
+        }
+
+        private static ShippingPackageLine CreatePackageLine(
+            int quantity,
+            bool shippingRequired,
+            bool freeShipping,
+            decimal? surcharge)
+        {
+            return new ShippingPackageLine(
+                ProductId: Guid.NewGuid(),
+                ProductVariantId: null,
+                Quantity: quantity,
+                ShippingRequired: shippingRequired,
+                FreeShipping: freeShipping,
+                Weight: 1.25m,
+                Length: 10m,
+                Width: 5m,
+                Height: 2m,
+                Surcharge: surcharge);
+        }
+
+        private sealed class StubStoreShippingSettingsService : IStoreShippingSettingsService
+        {
+            private readonly StoreShippingRuntimeSettings settings;
+
+            public StubStoreShippingSettingsService(
+                decimal? defaultFlatRate,
+                decimal? freeShippingThreshold,
+                string surchargePolicy)
+            {
+                this.settings = new StoreShippingRuntimeSettings(
+                    new StoreShippingOriginDto(null, null, null, null, null, null, null, "US"),
+                    [],
+                    defaultFlatRate,
+                    freeShippingThreshold,
+                    surchargePolicy,
+                    "Standard delivery");
+            }
+
+            public Task<ServiceResponse<StoreShippingSettingsDto>> GetAsync(CancellationToken cancellationToken = default)
+            {
+                throw new NotSupportedException();
+            }
+
+            public Task<ServiceResponse<StoreShippingSettingsDto>> UpdateAsync(
+                UpdateStoreShippingSettingsRequest request,
+                CancellationToken cancellationToken = default)
+            {
+                throw new NotSupportedException();
+            }
+
+            public Task<StoreShippingRuntimeSettings> ResolveAsync(Guid storeId, CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(this.settings);
+            }
+
+            public Task<StoreShippingRuntimeSettings> ResolveCurrentAsync(CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(this.settings);
+            }
         }
 
         private sealed class WarningShippingProvider : IShippingProvider

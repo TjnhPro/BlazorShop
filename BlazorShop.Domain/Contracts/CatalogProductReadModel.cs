@@ -68,6 +68,8 @@ namespace BlazorShop.Domain.Contracts
 
         public bool FreeShipping { get; init; }
 
+        public decimal? ShippingSurcharge { get; init; }
+
         public string? DeliveryEstimateText { get; init; }
 
         public bool IsPublished { get; init; }

@@ -1907,6 +1907,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     product.Length,
                     product.Width,
                     product.Height,
+                    product.ShippingSurcharge,
                 })
                 .ToDictionaryAsync(
                     product => product.Id,
@@ -1916,7 +1917,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                         product.Weight,
                         product.Length,
                         product.Width,
-                        product.Height),
+                        product.Height,
+                        product.ShippingSurcharge),
                     cancellationToken);
         }
 
@@ -1935,7 +1937,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 product?.Weight,
                 product?.Length,
                 product?.Width,
-                product?.Height);
+                product?.Height,
+                product?.ShippingSurcharge);
         }
 
         private StorefrontCheckoutShippingOption MapShippingOption(ShippingOptionDto option, string? selectedKey)
@@ -2824,7 +2827,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             decimal? Weight,
             decimal? Length,
             decimal? Width,
-            decimal? Height);
+            decimal? Height,
+            decimal? ShippingSurcharge);
 
         private sealed record CheckoutShippingCalculationResult(
             bool ShippingRequired,

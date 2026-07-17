@@ -37,18 +37,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var currencyCode = NormalizeCurrency(request.CurrencyCode);
+            var surcharge = CalculatePackageSurcharge(request.PackageLines, settings.SurchargePolicy);
+            var rate = IsFreeShippingThresholdMet(settings, request.Subtotal) ? 0m : surcharge;
             var option = new ShippingOptionDto(
                 Key: SystemName,
                 ProviderSystemName: SystemName,
                 MethodCode: MethodCode,
                 DisplayName: "Free standard",
                 Description: "Standard shipping for MVP stores.",
-                Rate: 0m,
+                Rate: rate,
                 CurrencyCode: currencyCode,
                 DeliveryEstimateText: "Standard delivery",
                 Warnings: [],
                 Errors: [],
-                RuleMatch: "internal.free_standard");
+                RuleMatch: rate == 0m ? "internal.free_standard" : $"product.surcharge.{settings.SurchargePolicy}");
 
             return new ShippingProviderResult([option], [], []);
         }
@@ -76,6 +78,34 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var destinationCountry = address?.CountryCode?.Trim().ToUpperInvariant();
             return !string.IsNullOrWhiteSpace(destinationCountry)
                 && settings.EnabledCountryCodes.Contains(destinationCountry, StringComparer.OrdinalIgnoreCase);
+        }
+
+        internal static decimal CalculatePackageSurcharge(
+            IReadOnlyList<ShippingPackageLine> packageLines,
+            string? surchargePolicy)
+        {
+            var surcharges = packageLines
+                .Where(line => line.Quantity > 0 && line.ShippingRequired && !line.FreeShipping && line.Surcharge is > 0m)
+                .Select(line => new
+                {
+                    Quantity = Math.Max(1, line.Quantity),
+                    Surcharge = line.Surcharge!.Value,
+                })
+                .ToArray();
+
+            if (surcharges.Length == 0)
+            {
+                return 0m;
+            }
+
+            return string.Equals(surchargePolicy, StoreShippingSurchargePolicies.Highest, StringComparison.OrdinalIgnoreCase)
+                ? surcharges.Max(line => line.Surcharge)
+                : surcharges.Sum(line => line.Surcharge * line.Quantity);
+        }
+
+        internal static bool IsFreeShippingThresholdMet(StoreShippingRuntimeSettings settings, decimal subtotal)
+        {
+            return settings.FreeShippingThreshold.HasValue && subtotal >= settings.FreeShippingThreshold.Value;
         }
     }
 
@@ -115,9 +145,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return ShippingProviderResult.Empty;
             }
 
-            var rate = settings.FreeShippingThreshold.HasValue && request.Subtotal >= settings.FreeShippingThreshold.Value
+            var surcharge = InternalFreeStandardShippingProvider.CalculatePackageSurcharge(
+                request.PackageLines,
+                settings.SurchargePolicy);
+            var rate = InternalFreeStandardShippingProvider.IsFreeShippingThresholdMet(settings, request.Subtotal)
                 ? 0m
-                : settings.DefaultFlatRate.Value;
+                : settings.DefaultFlatRate.Value + surcharge;
             var estimate = settings.DefaultDeliveryEstimateText ?? "Standard delivery";
             var currencyCode = string.IsNullOrWhiteSpace(request.CurrencyCode) ? "USD" : request.CurrencyCode.Trim().ToUpperInvariant();
 
@@ -132,7 +165,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 DeliveryEstimateText: estimate,
                 Warnings: [],
                 Errors: [],
-                RuleMatch: rate == 0m ? "store.free_shipping_threshold" : "store.flat_rate");
+                RuleMatch: rate == 0m
+                    ? "store.free_shipping_threshold"
+                    : surcharge > 0m ? $"store.flat_rate+product.surcharge.{settings.SurchargePolicy}" : "store.flat_rate");
 
             return new ShippingProviderResult([option], [], []);
         }

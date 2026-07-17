@@ -75,6 +75,9 @@
 
         public bool FreeShipping { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? ShippingSurcharge { get; set; }
+
         [MaxLength(ProductPurchaseConstraints.DeliveryEstimateTextMaxLength)]
         public string? DeliveryEstimateText { get; set; }
 

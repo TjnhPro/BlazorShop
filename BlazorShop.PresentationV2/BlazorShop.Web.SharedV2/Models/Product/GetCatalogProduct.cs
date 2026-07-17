@@ -84,6 +84,8 @@ namespace BlazorShop.Web.SharedV2.Models.Product
 
         public bool FreeShipping { get; set; }
 
+        public decimal? ShippingSurcharge { get; set; }
+
         public string? DeliveryEstimateText { get; set; }
 
         public DateTime? AvailableStartUtc { get; set; }

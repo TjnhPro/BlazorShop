@@ -321,6 +321,8 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal(false, modelEntity.FindProperty(nameof(Product.HideWhenOutOfStock))!.GetDefaultValue());
             Assert.Equal(true, modelEntity.FindProperty(nameof(Product.ShippingRequired))!.GetDefaultValue());
             Assert.Equal(false, modelEntity.FindProperty(nameof(Product.FreeShipping))!.GetDefaultValue());
+            Assert.Equal(18, modelEntity.FindProperty(nameof(Product.ShippingSurcharge))!.GetPrecision());
+            Assert.Equal(2, modelEntity.FindProperty(nameof(Product.ShippingSurcharge))!.GetScale());
             Assert.Equal(
                 ProductPurchaseConstraints.PurchasingDisabledReasonMaxLength,
                 modelEntity.FindProperty(nameof(Product.PurchasingDisabledReason))!.GetMaxLength());

@@ -523,6 +523,50 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public async Task SelectShippingMethodAsync_AppliesPersistedProductShippingSurcharge()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            product.ShippingRequired = true;
+            product.FreeShipping = false;
+            product.ShippingSurcharge = 3m;
+            SeedProduct(context, product);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            await cartService.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                Quantity: 2));
+            var service = CreateCheckoutService(context, cartService);
+            var start = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload.Token!));
+            await service.UpdateAddressesAsync(new StorefrontCheckoutAddressStepRequest(
+                storeId,
+                start.Payload!.CheckoutSessionId,
+                cart.Payload.Token!,
+                BillingAddress: CreateAddress(),
+                ShippingAddress: CreateAddress(),
+                UseBillingAddressAsShippingAddress: true));
+
+            var result = await service.SelectShippingMethodAsync(new StorefrontCheckoutShippingMethodRequest(
+                storeId,
+                start.Payload.CheckoutSessionId,
+                cart.Payload.Token!,
+                "free_standard"));
+
+            Assert.True(result.Success, result.Message);
+            Assert.Equal(6m, result.Payload!.ShippingTotal);
+            Assert.Equal(46m, result.Payload.GrandTotal);
+            Assert.Equal("free_standard", result.Payload.SelectedShippingOption!.Key);
+            Assert.Equal(6m, result.Payload.SelectedShippingOption.Price);
+        }
+
+        [Fact]
         public async Task PlaceOrderAsync_IncludesSelectedShippingTotalInOrderAndPaymentAmount()
         {
             using var context = CreateContext();

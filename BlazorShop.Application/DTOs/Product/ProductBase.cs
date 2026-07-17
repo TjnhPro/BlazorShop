@@ -78,6 +78,10 @@
 
         public bool FreeShipping { get; set; }
 
+        [DataType(DataType.Currency)]
+        [Range(0, double.MaxValue)]
+        public decimal? ShippingSurcharge { get; set; }
+
         [MaxLength(ProductPurchaseConstraints.DeliveryEstimateTextMaxLength)]
         public string? DeliveryEstimateText { get; set; }
 

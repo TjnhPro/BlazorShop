@@ -421,6 +421,7 @@
                 HideWhenOutOfStock = true,
                 ShippingRequired = false,
                 FreeShipping = true,
+                ShippingSurcharge = 3.5m,
                 DeliveryEstimateText = " Ships next week ",
             };
             var mappedProduct = new Product
@@ -435,6 +436,7 @@
                 HideWhenOutOfStock = product.HideWhenOutOfStock,
                 ShippingRequired = product.ShippingRequired,
                 FreeShipping = product.FreeShipping,
+                ShippingSurcharge = product.ShippingSurcharge,
                 DeliveryEstimateText = product.DeliveryEstimateText,
             };
             this._mockMapper.Setup(mapper => mapper.Map<Product>(product))
@@ -454,8 +456,32 @@
             Assert.True(mappedProduct.HideWhenOutOfStock);
             Assert.False(mappedProduct.ShippingRequired);
             Assert.True(mappedProduct.FreeShipping);
+            Assert.Equal(3.5m, mappedProduct.ShippingSurcharge);
             Assert.Equal("Ships next week", mappedProduct.DeliveryEstimateText);
             this._mockProductRepository.Verify(repo => repo.AddAsync(mappedProduct), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddAsync_WhenShippingSurchargeIsNegative_ReturnsFailure()
+        {
+            var product = new CreateProduct
+            {
+                Name = "Product",
+                ShippingSurcharge = -0.01m,
+            };
+            var mappedProduct = new Product
+            {
+                Name = product.Name,
+                ShippingSurcharge = product.ShippingSurcharge,
+            };
+            this._mockMapper.Setup(mapper => mapper.Map<Product>(product))
+                .Returns(mappedProduct);
+
+            var result = await this._productService.AddAsync(product);
+
+            Assert.False(result.Success);
+            Assert.Equal("Shipping surcharge cannot be negative.", result.Message);
+            this._mockProductRepository.Verify(repo => repo.AddAsync(It.IsAny<Product>()), Times.Never);
         }
 
         [Fact]

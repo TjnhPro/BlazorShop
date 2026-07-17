@@ -345,6 +345,10 @@
                         <span class="font-medium text-ink-700">Delivery estimate</span>
                         <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" maxlength="@ProductPurchaseConstraints.DeliveryEstimateTextMaxLength" @bind="basicForm.DeliveryEstimateText" />
                     </label>
+                    <label class="space-y-1">
+                        <span class="font-medium text-ink-700">Shipping surcharge</span>
+                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="0" step="0.01" @bind="basicForm.ShippingSurcharge" />
+                    </label>
                     <div class="md:col-span-2 pt-2 text-xs font-semibold uppercase text-ink-500">Identity & shipping prep</div>
                     <label class="space-y-1">
                         <span class="font-medium text-ink-700">GTIN</span>
@@ -959,6 +963,7 @@
                     HideWhenOutOfStock = basicForm.HideWhenOutOfStock,
                     ShippingRequired = basicForm.ShippingRequired,
                     FreeShipping = basicForm.FreeShipping,
+                    ShippingSurcharge = basicForm.ShippingSurcharge,
                     DeliveryEstimateText = basicForm.DeliveryEstimateText,
                     DisplayOrder = basicForm.DisplayOrder,
                     ProductType = selectedProduct.ProductType,
@@ -1626,6 +1631,8 @@
 
         public bool FreeShipping { get; set; }
 
+        public decimal? ShippingSurcharge { get; set; }
+
         public string? DeliveryEstimateText { get; set; }
 
         public string? Gtin { get; set; }
@@ -1665,6 +1672,7 @@
                 HideWhenOutOfStock = product.HideWhenOutOfStock,
                 ShippingRequired = product.ShippingRequired,
                 FreeShipping = product.FreeShipping,
+                ShippingSurcharge = product.ShippingSurcharge,
                 DeliveryEstimateText = product.DeliveryEstimateText,
                 Gtin = product.Gtin,
                 Barcode = product.Barcode,

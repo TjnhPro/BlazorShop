@@ -78,6 +78,8 @@ namespace BlazorShop.Application.DTOs.Product
 
         public bool FreeShipping { get; set; }
 
+        public decimal? ShippingSurcharge { get; set; }
+
         public string? DeliveryEstimateText { get; set; }
 
         public bool IsPublished { get; set; }

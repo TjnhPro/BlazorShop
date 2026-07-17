@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Shipping Core.md`
 
-Status: Phase 3 complete. Phase 4 not started.
+Status: Phase 4 complete. Phase 5 not started.
 
 Scope: turn the current checkout shipping stub into a practical Shipping Core for active V2. The goal is enough shipping calculation, option selection, and shipment tracking for real store usage without building a carrier marketplace, warehouse engine, tax engine, label engine, or fulfillment orchestration platform.
 
@@ -28,10 +28,10 @@ Approved:
 - [ ] Core shipping calculation:
   - [x] store shipping origin address. 2026-07-17 Phase 2: `StoreShippingSettings` stores normalized origin data.
   - [x] product shipping-required flag. 2026-07-17 Phase 1: `ShippingPackageLine.ShippingRequired` drives calculator `ShippingRequired`.
-  - [ ] product shipping surcharge hook.
+  - [x] product shipping surcharge hook. 2026-07-17 Phase 4: `Product.ShippingSurcharge` feeds checkout package lines and internal provider rates.
   - [x] free-shipping threshold hook. 2026-07-17 Phase 2: flat-rate provider waives rate when subtotal reaches `FreeShippingThreshold`.
   - [x] country restriction. 2026-07-17 Phase 2: providers reject destinations outside `EnabledCountryCodes`.
-  - [ ] highest surcharge vs sum policy. Phase 2 stores validated policy; product surcharge calculation remains Phase 4.
+  - [x] highest surcharge vs sum policy. 2026-07-17 Phase 4: internal providers support `sum` and `highest` policies.
   - [ ] tax calculation hook returning zero for now.
   - [ ] currency conversion/rounding through existing Currency Core services.
 - [x] Checkout integration:
@@ -49,7 +49,7 @@ Approved:
   - [ ] customer-visible tracking events hook.
   - [ ] notification hook.
 - [ ] API/contract hardening:
-  - [ ] explicit DTOs.
+  - [x] explicit DTOs for product surcharge field. 2026-07-17 Phase 4: product create/update/catalog DTOs expose nullable `ShippingSurcharge`.
   - [x] stable operation IDs for shipping settings admin endpoints. 2026-07-17 Phase 2: `CommerceShippingSettings_Get` and `CommerceShippingSettings_Update`.
   - [x] validation metadata for shipping settings admin contracts. 2026-07-17 Phase 2: admin service validates country code, money, origin, and surcharge policy inputs.
   - [ ] safe public tracking projection.
@@ -319,27 +319,27 @@ Goal: support practical per-product shipping charges without building a rate tab
 
 Implementation checklist:
 
-- [ ] Add nullable `ShippingSurcharge` to `Product` only if approved during implementation review.
-- [ ] Do not add variant surcharge unless current product variant UX requires it.
-- [ ] Do not add category/manufacturer surcharge rules.
-- [ ] Include surcharge only when `ShippingRequired = true` and `FreeShipping = false`.
-- [ ] Implement `sum` policy: sum line surcharge * quantity.
-- [ ] Implement `highest` policy: highest line surcharge once unless settings explicitly choose quantity behavior.
-- [ ] Make free shipping threshold waive total shipping amount.
-- [ ] Add product form field and DTO mapping only if data field is added.
-- [ ] Validate surcharge >= 0.
+- [x] Add nullable `ShippingSurcharge` to `Product` only if approved during implementation review. 2026-07-17 Phase 4: additive CommerceNode migration `CommerceNodeProductShippingSurcharge`.
+- [x] Do not add variant surcharge unless current product variant UX requires it. 2026-07-17 Phase 4: product-level field only.
+- [x] Do not add category/manufacturer surcharge rules. 2026-07-17 Phase 4: no category/manufacturer shipping rule tables or services added.
+- [x] Include surcharge only when `ShippingRequired = true` and `FreeShipping = false`. 2026-07-17 Phase 4: provider surcharge filter enforces both flags.
+- [x] Implement `sum` policy: sum line surcharge * quantity. 2026-07-17 Phase 4: provider test covers `2 * 2.5 = 5`.
+- [x] Implement `highest` policy: highest line surcharge once unless settings explicitly choose quantity behavior. 2026-07-17 Phase 4: flat-rate provider test covers highest surcharge once.
+- [x] Make free shipping threshold waive total shipping amount. 2026-07-17 Phase 4: threshold test covers base rate plus surcharge waived to zero.
+- [x] Add product form field and DTO mapping only if data field is added. 2026-07-17 Phase 4: ControlPlane product basic form, shared DTOs, and read models include surcharge.
+- [x] Validate surcharge >= 0. 2026-07-17 Phase 4: `ProductServiceTests.AddAsync_WhenShippingSurchargeIsNegative_ReturnsFailure`.
 
 Verification checklist:
 
-- [ ] Sum policy calculates expected surcharge.
-- [ ] Highest policy calculates expected surcharge.
-- [ ] Free-shipping product does not contribute surcharge.
-- [ ] Threshold waives shipping.
-- [ ] Currency rounding is applied.
+- [x] Sum policy calculates expected surcharge. 2026-07-17 Phase 4: `FreeStandardProvider_AddsProductSurchargeAndExcludesFreeShippingLines`.
+- [x] Highest policy calculates expected surcharge. 2026-07-17 Phase 4: `FlatRateProvider_UsesHighestSurchargePolicy`.
+- [x] Free-shipping product does not contribute surcharge. 2026-07-17 Phase 4: free-shipping package line is excluded in provider test.
+- [x] Threshold waives shipping. 2026-07-17 Phase 4: `FlatRateProvider_FreeShippingThresholdWaivesBaseRateAndSurcharge`.
+- [x] Currency rounding is applied. 2026-07-17 Phase 4: checkout surcharge total passes through existing `RoundOrderTotal` path; `SelectShippingMethodAsync_AppliesPersistedProductShippingSurcharge` passed.
 
 Exit criteria:
 
-- [ ] Stores can charge simple product-level shipping without external providers.
+- [x] Stores can charge simple product-level shipping without external providers. 2026-07-17 Phase 4.
 
 Suggested commit:
 
@@ -572,9 +572,9 @@ test(shipping-core): verify shipping core
 - [ ] Physical carts require a valid shipping address and option.
 - [ ] Country restriction blocks unavailable destinations.
 - [ ] Free shipping threshold waives shipping.
-- [ ] Product free-shipping flag excludes line surcharge.
-- [ ] Sum surcharge policy calculates expected amount.
-- [ ] Highest surcharge policy calculates expected amount.
+- [x] Product free-shipping flag excludes line surcharge. 2026-07-17 Phase 4.
+- [x] Sum surcharge policy calculates expected amount. 2026-07-17 Phase 4.
+- [x] Highest surcharge policy calculates expected amount. 2026-07-17 Phase 4.
 - [ ] Shipping totals are rounded through Currency Core.
 - [ ] Missing conversion rate returns clear conflict.
 - [ ] Order total includes selected shipping total.
@@ -632,7 +632,7 @@ test(shipping-core): verify shipping core
   - [ ] shipping not required.
   - [ ] threshold.
   - [ ] country restriction.
-  - [ ] surcharge policies.
+  - [x] surcharge policies. 2026-07-17 Phase 4.
 - [ ] Checkout tests:
   - [ ] select option.
   - [ ] reset on address/cart change.
@@ -675,7 +675,7 @@ test(shipping-core): verify shipping core
   - [ ] no country restrictions.
   - [ ] free standard available.
   - [ ] zero tax hook.
-- [ ] Existing products do not require product surcharge.
+- [x] Existing products do not require product surcharge. 2026-07-17 Phase 4: nullable additive column defaults to no surcharge.
 - [ ] Free-standard behavior does not require shipping origin.
 - [ ] Storefront clients that expect `ShippingOptions` and `SelectedShippingOption` remain compatible.
 
@@ -701,7 +701,7 @@ test(shipping-core): verify shipping core
 - [ ] Phase 1 - shipping contracts and internal provider registry.
 - [ ] Phase 2 - store shipping settings.
 - [ ] Phase 3 - checkout shipping calculation cutover.
-- [ ] Phase 4 - product shipping surcharge hook.
+- [x] Phase 4 - product shipping surcharge hook. 2026-07-17.
 - [ ] Phase 5 - currency conversion and tax hook.
 - [ ] Phase 6 - order placement and shipping snapshot.
 - [ ] Phase 7 - shipment record items and tracking events hook.
