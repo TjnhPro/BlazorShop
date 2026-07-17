@@ -1,5 +1,6 @@
 namespace BlazorShop.Storefront.Services
 {
+    using System.Net.Http.Headers;
     using System.Net.Http.Json;
     using System.Text.Json;
 
@@ -10,6 +11,7 @@ namespace BlazorShop.Storefront.Services
     {
         private const string RegisterRoute = "auth/register";
         private const string LoginRoute = "auth/login";
+        private const string ChangePasswordRoute = "auth/change-password";
         private const string LogoutRoute = "auth/logout";
 
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
@@ -37,6 +39,25 @@ namespace BlazorShop.Storefront.Services
                 user,
                 "Unable to create your account right now.",
                 cancellationToken);
+        }
+
+        public async Task<StorefrontAuthResult<object>> ChangePasswordAsync(
+            string bearerToken,
+            ChangePassword changePassword,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(bearerToken))
+            {
+                return StorefrontAuthResult<object>.Failed("Customer identity is required.");
+            }
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, ChangePasswordRoute)
+            {
+                Content = JsonContent.Create(changePassword, options: JsonOptions),
+            };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
+
+            return await this.SendAsync<object>(request, "Unable to change password right now.", cancellationToken);
         }
 
         public async Task<StorefrontAuthResult<object>> LogoutAsync(

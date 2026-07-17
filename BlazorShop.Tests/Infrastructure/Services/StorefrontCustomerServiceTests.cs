@@ -183,6 +183,67 @@ namespace BlazorShop.Tests.Infrastructure.Services
         }
 
         [Fact]
+        public async Task GetOrCreateAuthenticatedProfileAsync_CreatesProfileWithoutCheckoutTimestamp()
+        {
+            await using var context = CreateContext();
+            var service = new StorefrontCustomerService(context);
+            var storeId = Guid.NewGuid();
+
+            var result = await service.GetOrCreateAuthenticatedProfileAsync(
+                new StorefrontAuthenticatedCustomerProfileRequest(
+                    storeId,
+                    "user-1",
+                    " Customer@Example.TEST ",
+                    "Customer One"));
+
+            Assert.True(result.Success);
+            Assert.Equal(storeId, result.Payload!.StoreId);
+            Assert.Equal("user-1", result.Payload.AppUserId);
+            Assert.Equal("customer@example.test", result.Payload.Email);
+            Assert.Equal("Customer One", result.Payload.FullName);
+            Assert.NotNull(result.Payload.LastActivityAtUtc);
+            Assert.Null(result.Payload.LastCheckoutAt);
+        }
+
+        [Fact]
+        public async Task UpdateAuthenticatedProfileAsync_UpdatesOnlySafeCustomerProfileFields()
+        {
+            await using var context = CreateContext();
+            var service = new StorefrontCustomerService(context);
+            var storeId = Guid.NewGuid();
+            await service.GetOrCreateAuthenticatedProfileAsync(
+                new StorefrontAuthenticatedCustomerProfileRequest(
+                    storeId,
+                    "user-1",
+                    "customer@example.test",
+                    "Customer One"));
+
+            var result = await service.UpdateAuthenticatedProfileAsync(
+                new StorefrontCustomerProfileUpdateRequest(
+                    storeId,
+                    "user-1",
+                    "customer@example.test",
+                    "Customer Updated",
+                    FirstName: "Customer",
+                    LastName: "Updated",
+                    Company: "Example LLC",
+                    Phone: "5550100",
+                    PreferredLanguage: "en",
+                    PreferredCurrencyCode: "usd"));
+
+            Assert.True(result.Success);
+            Assert.Equal("Customer Updated", result.Payload!.FullName);
+            Assert.Equal("Customer", result.Payload.FirstName);
+            Assert.Equal("Updated", result.Payload.LastName);
+            Assert.Equal("Example LLC", result.Payload.Company);
+            Assert.Equal("5550100", result.Payload.Phone);
+            Assert.Equal("en", result.Payload.PreferredLanguage);
+            Assert.Equal("USD", result.Payload.PreferredCurrencyCode);
+            Assert.NotNull(result.Payload.LastActivityAtUtc);
+            Assert.Null(result.Payload.LastCheckoutAt);
+        }
+
+        [Fact]
         public async Task ResolveOrCreateAsync_ReturnsValidationError_WhenEmailMissing()
         {
             await using var context = CreateContext();

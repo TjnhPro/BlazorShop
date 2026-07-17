@@ -145,6 +145,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [InlineData("/signin")]
         [InlineData("/register")]
         [InlineData("/logout")]
+        [InlineData("/account/profile")]
+        [InlineData("/account/change-password")]
         [InlineData("/currency")]
         [InlineData("/checkout")]
         public async Task StorefrontFormPost_WithoutAntiforgeryToken_ReturnsBadRequest(string path)
@@ -305,6 +307,91 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("Sign out", content, StringComparison.Ordinal);
             Assert.DoesNotContain("My Account", content, StringComparison.Ordinal);
             Assert.DoesNotContain("Admin Panel", content, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task AccountProfile_WhenAuthenticated_RendersSafeProfileForm()
+        {
+            var session = new StorefrontSessionInfo(true, false, "Customer One", "customer@example.test", "access-token");
+            using var client = CreateClient(services =>
+            {
+                services.RemoveAll<IStorefrontSessionResolver>();
+                services.RemoveAll<StorefrontApiClient>();
+                services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
+                services.AddScoped(_ => new StorefrontApiClient(
+                    new HttpClient(new AccountProfileHandler())
+                    {
+                        BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
+                    },
+                    Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+            });
+
+            using var response = await client.GetAsync(StorefrontRoutes.AccountProfile);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("Account profile", content, StringComparison.Ordinal);
+            Assert.Contains("name=\"FullName\"", content, StringComparison.Ordinal);
+            Assert.Contains("name=\"Email\"", content, StringComparison.Ordinal);
+            Assert.DoesNotContain("name=\"customerId\"", content, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("name=\"appUserId\"", content, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("name=\"storeId\"", content, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("name=\"isActive\"", content, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public async Task AccountProfile_PostSuccess_UsesBearerAndRedirectsSaved()
+        {
+            var handler = new AccountProfileHandler();
+            var session = new StorefrontSessionInfo(true, false, "Customer One", "customer@example.test", "access-token");
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontSessionResolver>();
+                    services.RemoveAll<StorefrontApiClient>();
+                    services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
+                    services.AddScoped(_ => new StorefrontApiClient(
+                        new HttpClient(handler)
+                        {
+                            BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/demo/"),
+                        },
+                        Microsoft.Extensions.Options.Options.Create(new StorefrontV2::BlazorShop.Storefront.Options.StorefrontApiOptions())));
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.AccountProfile);
+            using var request = CreateAccountProfilePost(token, cookieHeader);
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/account/profile?saved=1", response.Headers.Location?.ToString());
+            Assert.Contains("Bearer access-token", handler.AuthorizationHeaders);
+            Assert.Contains("PUT /api/storefront/stores/demo/customer/profile", handler.Requests);
+        }
+
+        [Fact]
+        public async Task AccountChangePassword_PostSuccess_UsesBearerAndRedirectsSaved()
+        {
+            var authClient = new StubStorefrontAuthClient(
+                changePasswordResult: StorefrontAuthResult<object>.Succeeded(null, "Password changed.", []));
+            var session = new StorefrontSessionInfo(true, false, "Customer One", "customer@example.test", "access-token");
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontSessionResolver>();
+                    services.RemoveAll<IStorefrontAuthClient>();
+                    services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(session));
+                    services.AddScoped<IStorefrontAuthClient>(_ => authClient);
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.AccountChangePassword);
+            using var request = CreateChangePasswordPost(token, cookieHeader);
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/account/change-password?saved=1", response.Headers.Location?.ToString());
+            Assert.Equal("access-token", authClient.LastChangePasswordBearerToken);
         }
 
         [Fact]
@@ -918,6 +1005,44 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             return request;
         }
 
+        private static HttpRequestMessage CreateAccountProfilePost(string antiforgeryToken, string cookieHeader)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, StorefrontRoutes.AccountProfile)
+            {
+                Content = new FormUrlEncodedContent(
+                [
+                    new KeyValuePair<string, string>("__RequestVerificationToken", antiforgeryToken),
+                    new KeyValuePair<string, string>("FullName", "Customer One"),
+                    new KeyValuePair<string, string>("Email", "customer@example.test"),
+                    new KeyValuePair<string, string>("FirstName", "Customer"),
+                    new KeyValuePair<string, string>("LastName", "One"),
+                    new KeyValuePair<string, string>("PreferredCurrencyCode", "USD"),
+                ]),
+            };
+
+            request.Headers.Add("Cookie", cookieHeader);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            return request;
+        }
+
+        private static HttpRequestMessage CreateChangePasswordPost(string antiforgeryToken, string cookieHeader)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, StorefrontRoutes.AccountChangePassword)
+            {
+                Content = new FormUrlEncodedContent(
+                [
+                    new KeyValuePair<string, string>("__RequestVerificationToken", antiforgeryToken),
+                    new KeyValuePair<string, string>("CurrentPassword", "OldPassword123!"),
+                    new KeyValuePair<string, string>("NewPassword", "NewPassword123!"),
+                    new KeyValuePair<string, string>("ConfirmPassword", "NewPassword123!"),
+                ]),
+            };
+
+            request.Headers.Add("Cookie", cookieHeader);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            return request;
+        }
+
         private static HttpRequestMessage CreateCurrencyPreferencePost(
             string antiforgeryToken,
             string cookieHeader,
@@ -1073,15 +1198,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             private readonly StorefrontAuthResult<StorefrontTokenResponse> loginResult;
             private readonly StorefrontAuthResult<object> registerResult;
+            private readonly StorefrontAuthResult<object> changePasswordResult;
             private readonly StorefrontAuthResult<object> logoutResult;
 
             public StubStorefrontAuthClient(
                 StorefrontAuthResult<StorefrontTokenResponse>? loginResult = null,
                 StorefrontAuthResult<object>? registerResult = null,
+                StorefrontAuthResult<object>? changePasswordResult = null,
                 StorefrontAuthResult<object>? logoutResult = null)
             {
                 this.loginResult = loginResult ?? StorefrontAuthResult<StorefrontTokenResponse>.Failed("Login is not used by this test.");
                 this.registerResult = registerResult ?? StorefrontAuthResult<object>.Failed("Register is not used by this test.");
+                this.changePasswordResult = changePasswordResult ?? StorefrontAuthResult<object>.Failed("Change password is not used by this test.");
                 this.logoutResult = logoutResult ?? StorefrontAuthResult<object>.Failed("Logout is not used by this test.");
             }
 
@@ -1092,6 +1220,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             public CreateUser? LastRegisteredUser { get; private set; }
 
             public string? LastLogoutCookieHeader { get; private set; }
+
+            public string? LastChangePasswordBearerToken { get; private set; }
 
             public Task<StorefrontAuthResult<StorefrontTokenResponse>> LoginAsync(LoginUser user, CancellationToken cancellationToken = default)
             {
@@ -1105,11 +1235,67 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 return Task.FromResult(this.registerResult);
             }
 
+            public Task<StorefrontAuthResult<object>> ChangePasswordAsync(string bearerToken, ChangePassword changePassword, CancellationToken cancellationToken = default)
+            {
+                this.LastChangePasswordBearerToken = bearerToken;
+                return Task.FromResult(this.changePasswordResult);
+            }
+
             public Task<StorefrontAuthResult<object>> LogoutAsync(string? cookieHeader, string? userAgent, CancellationToken cancellationToken = default)
             {
                 this.LogoutCalls++;
                 this.LastLogoutCookieHeader = cookieHeader;
                 return Task.FromResult(this.logoutResult);
+            }
+        }
+
+        private sealed class AccountProfileHandler : HttpMessageHandler
+        {
+            public List<string> Requests { get; } = [];
+
+            public List<string> AuthorizationHeaders { get; } = [];
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                this.Requests.Add($"{request.Method.Method} {request.RequestUri?.AbsolutePath}");
+                if (request.Headers.Authorization is not null)
+                {
+                    this.AuthorizationHeaders.Add($"{request.Headers.Authorization.Scheme} {request.Headers.Authorization.Parameter}");
+                }
+
+                if (!string.Equals(
+                    request.RequestUri?.AbsolutePath,
+                    "/api/storefront/stores/demo/customer/profile",
+                    StringComparison.Ordinal))
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+                }
+
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(
+                        """
+                        {
+                          "success": true,
+                          "message": "Profile returned.",
+                          "data": {
+                            "customerPublicId": "22222222-2222-2222-2222-222222222222",
+                            "email": "customer@example.test",
+                            "fullName": "Customer One",
+                            "firstName": "Customer",
+                            "lastName": "One",
+                            "company": null,
+                            "phoneNumber": "5550100",
+                            "preferredLanguage": "en",
+                            "preferredCurrencyCode": "USD",
+                            "createdAtUtc": "2026-07-17T00:00:00Z",
+                            "lastActivityAtUtc": "2026-07-17T01:00:00Z"
+                          }
+                        }
+                        """,
+                        Encoding.UTF8,
+                        "application/json"),
+                });
             }
         }
 

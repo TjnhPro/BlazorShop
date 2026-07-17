@@ -88,6 +88,142 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
         }
 
+        public async Task<ServiceResponse<StorefrontCustomerProfile>> GetOrCreateAuthenticatedProfileAsync(
+            StorefrontAuthenticatedCustomerProfileRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var validation = ValidateAuthenticatedRequest(request.StoreId, request.AppUserId, request.Email);
+            if (validation is not null)
+            {
+                return validation;
+            }
+
+            var email = NormalizeEmail(request.Email)!;
+            var appUserId = NormalizeNullable(request.AppUserId)!;
+            var normalizedEmail = NormalizeEmailKey(email);
+            var customer = await this.LoadAuthenticatedCustomerAsync(request.StoreId, appUserId, normalizedEmail, cancellationToken);
+            var now = DateTimeOffset.UtcNow;
+
+            if (customer is null)
+            {
+                customer = new CommerceCustomer
+                {
+                    Id = Guid.NewGuid(),
+                    StoreId = request.StoreId,
+                    AppUserId = appUserId,
+                    Email = email,
+                    NormalizedEmail = normalizedEmail,
+                    FullName = ResolveFullName(request.FullName, null, null, email),
+                    IsActive = true,
+                    CreatedAt = now,
+                    UpdatedAt = now,
+                    LastActivityAtUtc = now,
+                };
+                this.context.CommerceCustomers.Add(customer);
+            }
+            else
+            {
+                if (!customer.IsActive)
+                {
+                    return Failed(ServiceResponseType.Conflict, "Customer account is disabled.");
+                }
+
+                if (string.IsNullOrWhiteSpace(customer.AppUserId))
+                {
+                    customer.AppUserId = appUserId;
+                }
+
+                if (!string.Equals(customer.Email, email, StringComparison.Ordinal))
+                {
+                    customer.Email = email;
+                    customer.NormalizedEmail = normalizedEmail;
+                }
+
+                var fullName = NormalizeNullable(request.FullName);
+                if (fullName is not null && !string.Equals(customer.FullName, fullName, StringComparison.Ordinal))
+                {
+                    customer.FullName = fullName;
+                }
+
+                customer.UpdatedAt = now;
+                customer.LastActivityAtUtc = now;
+            }
+
+            try
+            {
+                await this.context.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateException)
+            {
+                return Failed(ServiceResponseType.Conflict, "Customer profile could not be resolved.");
+            }
+
+            return Succeeded("Customer profile returned.", Map(customer));
+        }
+
+        public async Task<ServiceResponse<StorefrontCustomerProfile>> UpdateAuthenticatedProfileAsync(
+            StorefrontCustomerProfileUpdateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var validation = ValidateAuthenticatedRequest(request.StoreId, request.AppUserId, request.Email);
+            if (validation is not null)
+            {
+                return validation;
+            }
+
+            var fullName = NormalizeNullable(request.FullName);
+            if (fullName is null)
+            {
+                return Failed(ServiceResponseType.ValidationError, "Full name is required.");
+            }
+
+            var email = NormalizeEmail(request.Email)!;
+            var appUserId = NormalizeNullable(request.AppUserId)!;
+            var normalizedEmail = NormalizeEmailKey(email);
+            var customer = await this.LoadAuthenticatedCustomerAsync(request.StoreId, appUserId, normalizedEmail, cancellationToken);
+            var now = DateTimeOffset.UtcNow;
+
+            if (customer is null)
+            {
+                customer = new CommerceCustomer
+                {
+                    Id = Guid.NewGuid(),
+                    StoreId = request.StoreId,
+                    AppUserId = appUserId,
+                    CreatedAt = now,
+                    IsActive = true,
+                };
+                this.context.CommerceCustomers.Add(customer);
+            }
+            else if (!customer.IsActive)
+            {
+                return Failed(ServiceResponseType.Conflict, "Customer account is disabled.");
+            }
+
+            customer.Email = email;
+            customer.NormalizedEmail = normalizedEmail;
+            customer.FullName = fullName;
+            customer.FirstName = NormalizeNullable(request.FirstName);
+            customer.LastName = NormalizeNullable(request.LastName);
+            customer.Company = NormalizeNullable(request.Company);
+            customer.Phone = NormalizeNullable(request.Phone);
+            customer.PreferredLanguage = NormalizeNullable(request.PreferredLanguage);
+            customer.PreferredCurrencyCode = NormalizeCurrencyCode(request.PreferredCurrencyCode);
+            customer.UpdatedAt = now;
+            customer.LastActivityAtUtc = now;
+
+            try
+            {
+                await this.context.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateException)
+            {
+                return Failed(ServiceResponseType.Conflict, "Customer profile could not be updated.");
+            }
+
+            return Succeeded("Customer profile updated.", Map(customer));
+        }
+
         public async Task<ServiceResponse<StorefrontCustomerProfile>> TouchLastActivityAsync(
             Guid storeId,
             string appUserId,
@@ -130,6 +266,41 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return await this.context.CommerceCustomers.FirstOrDefaultAsync(
                 customer => customer.StoreId == storeId && customer.NormalizedEmail == normalizedEmail,
                 cancellationToken);
+        }
+
+        private async Task<CommerceCustomer?> LoadAuthenticatedCustomerAsync(
+            Guid storeId,
+            string appUserId,
+            string normalizedEmail,
+            CancellationToken cancellationToken)
+        {
+            return await this.context.CommerceCustomers.FirstOrDefaultAsync(
+                customer => customer.StoreId == storeId
+                    && (customer.AppUserId == appUserId || customer.NormalizedEmail == normalizedEmail),
+                cancellationToken);
+        }
+
+        private static ServiceResponse<StorefrontCustomerProfile>? ValidateAuthenticatedRequest(
+            Guid storeId,
+            string appUserId,
+            string email)
+        {
+            if (storeId == Guid.Empty)
+            {
+                return Failed(ServiceResponseType.ValidationError, "Store is required.");
+            }
+
+            if (NormalizeNullable(appUserId) is null)
+            {
+                return Failed(ServiceResponseType.ValidationError, "Authenticated user is required.");
+            }
+
+            if (NormalizeEmail(email) is null)
+            {
+                return Failed(ServiceResponseType.ValidationError, "Customer email is required.");
+            }
+
+            return null;
         }
 
         private static bool ApplyProfileUpdate(

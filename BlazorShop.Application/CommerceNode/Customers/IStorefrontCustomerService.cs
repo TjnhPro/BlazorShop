@@ -8,6 +8,14 @@ namespace BlazorShop.Application.CommerceNode.Customers
             StorefrontCustomerResolutionRequest request,
             CancellationToken cancellationToken = default);
 
+        Task<ServiceResponse<StorefrontCustomerProfile>> GetOrCreateAuthenticatedProfileAsync(
+            StorefrontAuthenticatedCustomerProfileRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ServiceResponse<StorefrontCustomerProfile>> UpdateAuthenticatedProfileAsync(
+            StorefrontCustomerProfileUpdateRequest request,
+            CancellationToken cancellationToken = default);
+
         Task<ServiceResponse<StorefrontCustomerProfile>> TouchLastActivityAsync(
             Guid storeId,
             string appUserId,

@@ -8,6 +8,8 @@ namespace BlazorShop.Storefront.Services.Contracts
 
         Task<StorefrontAuthResult<object>> RegisterAsync(CreateUser user, CancellationToken cancellationToken = default);
 
+        Task<StorefrontAuthResult<object>> ChangePasswordAsync(string bearerToken, ChangePassword changePassword, CancellationToken cancellationToken = default);
+
         Task<StorefrontAuthResult<object>> LogoutAsync(string? cookieHeader, string? userAgent, CancellationToken cancellationToken = default);
     }
 

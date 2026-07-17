@@ -16,6 +16,9 @@ namespace BlazorShop.Storefront.Services
         public const string SignIn = "/signin";
         public const string Register = "/register";
         public const string Logout = "/logout";
+        public const string Account = "/account";
+        public const string AccountProfile = "/account/profile";
+        public const string AccountChangePassword = "/account/change-password";
         public const string CurrencyPreference = "/currency";
         public const string Sitemap = "/sitemap.xml";
         public const string Robots = "/robots.txt";

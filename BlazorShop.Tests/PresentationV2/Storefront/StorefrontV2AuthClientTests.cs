@@ -123,6 +123,34 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(["/api/storefront/stores/default/auth/logout"], handler.RequestPaths);
         }
 
+        [Fact]
+        public async Task ChangePasswordAsync_PostsBearerProtectedCommand()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal("/api/storefront/stores/default/auth/change-password", request.RequestUri?.AbsolutePath);
+                Assert.Equal("Bearer", request.Headers.Authorization?.Scheme);
+                Assert.Equal("access-token", request.Headers.Authorization?.Parameter);
+
+                return JsonResponse(HttpStatusCode.OK, """{"success":true,"message":"Password changed.","data":null}""");
+            });
+
+            var authClient = new StorefrontAuthClient(CreateClient(handler));
+
+            var result = await authClient.ChangePasswordAsync(
+                "access-token",
+                new ChangePassword
+                {
+                    CurrentPassword = "OldPassword123!",
+                    NewPassword = "NewPassword123!",
+                    ConfirmPassword = "NewPassword123!",
+                });
+
+            Assert.True(result.Success);
+            Assert.Equal("Password changed.", result.Message);
+            Assert.Equal(["/api/storefront/stores/default/auth/change-password"], handler.RequestPaths);
+        }
+
         private static HttpClient CreateClient(HttpMessageHandler handler)
         {
             return new HttpClient(handler)

@@ -872,6 +872,18 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         typeof(CommerceNodeApiResponse<StorefrontCustomerAddressResponse>),
                         [StatusCodes.Status401Unauthorized, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError],
                         Security: StorefrontSecurityRequirement.Bearer),
+                    [("StorefrontScopedCustomerProfile", "GetProfile")] = new(
+                        "StorefrontCustomerProfile_Get",
+                        "Get current customer profile.",
+                        typeof(CommerceNodeApiResponse<StorefrontCustomerProfileResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError],
+                        Security: StorefrontSecurityRequirement.Bearer),
+                    [("StorefrontScopedCustomerProfile", "UpdateProfile")] = new(
+                        "StorefrontCustomerProfile_Update",
+                        "Update current customer profile.",
+                        typeof(CommerceNodeApiResponse<StorefrontCustomerProfileResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError],
+                        Security: StorefrontSecurityRequirement.Bearer),
                     [("StorefrontScopedAuth", "Register")] = new(
                         "StorefrontAuth_Register",
                         "Register a Storefront customer.",
@@ -1404,6 +1416,8 @@ namespace BlazorShop.CommerceNode.API.Swagger
                     ["StorefrontCustomerAddresses_Delete"] = StorefrontSecurityRequirement.Bearer,
                     ["StorefrontCustomerAddresses_SetDefaultShipping"] = StorefrontSecurityRequirement.Bearer,
                     ["StorefrontCustomerAddresses_SetDefaultBilling"] = StorefrontSecurityRequirement.Bearer,
+                    ["StorefrontCustomerProfile_Get"] = StorefrontSecurityRequirement.Bearer,
+                    ["StorefrontCustomerProfile_Update"] = StorefrontSecurityRequirement.Bearer,
                     ["StorefrontCart_MergeCurrentCustomer"] = StorefrontSecurityRequirement.Bearer,
                     ["StorefrontCart_SaveCheckout"] = StorefrontSecurityRequirement.Bearer,
                     ["StorefrontOrders_Confirm"] = StorefrontSecurityRequirement.Bearer,

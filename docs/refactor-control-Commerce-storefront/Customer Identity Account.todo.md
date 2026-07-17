@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Customer Identity Account.md`
 
-Status: Phase 2 complete. Phase 3 not started.
+Status: Phase 3 complete. Phase 4 not started.
 
 Scope: move storefront customer identity and account self-service from MVP auth/cart behavior to a practical customer account core. Keep existing V2 boundaries, reuse server-side cart, address, checkout, and order placement foundations, and avoid building a full CRM/customer-group platform.
 
@@ -444,31 +444,31 @@ Goal: give authenticated customers safe self-service for profile and password.
 
 Implementation checklist:
 
-- [ ] Add `GET /customer/profile`.
-- [ ] Add `PUT /customer/profile`.
-- [ ] Synchronize profile updates to `AppUser`.
-- [ ] Synchronize profile updates to `CommerceCustomer`.
-- [ ] Preserve email confirmation behavior for email changes, or return explicit unsupported response.
-- [ ] Add Storefront V2 profile page/form.
-- [ ] Add Storefront V2 change-password page/form.
-- [ ] Add safe access denied behavior.
-- [ ] Add return URL validation.
+- [x] Add `GET /customer/profile`. 2026-07-17 Phase 3.
+- [x] Add `PUT /customer/profile`. 2026-07-17 Phase 3.
+- [x] Synchronize profile updates to `AppUser`. 2026-07-17 Phase 3: profile update calls `IAuthenticationService.UpdateProfile`.
+- [x] Synchronize profile updates to `CommerceCustomer`. 2026-07-17 Phase 3: authenticated profile service updates customer fields by `StoreId + AppUserId`.
+- [x] Preserve email confirmation behavior for email changes, or return explicit unsupported response. 2026-07-17 Phase 3: profile endpoint rejects email change with `profile.email_change_unsupported`.
+- [x] Add Storefront V2 profile page/form. 2026-07-17 Phase 3.
+- [x] Add Storefront V2 change-password page/form. 2026-07-17 Phase 3.
+- [x] Add safe access denied behavior. 2026-07-17 Phase 3: unauthenticated account pages/posts redirect to sign-in with safe return URL.
+- [x] Add return URL validation. 2026-07-17 Phase 3: uses existing `StorefrontReturnUrl` normalization.
 
 Verification checklist:
 
-- [ ] Authenticated customer can view profile.
-- [ ] Customer can update allowed profile fields.
-- [ ] Customer cannot update role.
-- [ ] Customer cannot update active state.
-- [ ] Customer cannot update store id.
-- [ ] Customer cannot update app user id.
-- [ ] Customer cannot update customer id.
-- [ ] Change password uses existing protected endpoint.
-- [ ] Unauthenticated user redirects to sign-in with safe return URL.
+- [x] Authenticated customer can view profile. 2026-07-17 Phase 3: Storefront host smoke and client tests passed.
+- [x] Customer can update allowed profile fields. 2026-07-17 Phase 3: service and Storefront POST tests passed.
+- [x] Customer cannot update role. 2026-07-17 Phase 3: OpenAPI contract excludes role fields from request.
+- [x] Customer cannot update active state. 2026-07-17 Phase 3: OpenAPI contract excludes active state from request.
+- [x] Customer cannot update store id. 2026-07-17 Phase 3: OpenAPI contract excludes `storeId` from request.
+- [x] Customer cannot update app user id. 2026-07-17 Phase 3: OpenAPI contract excludes `appUserId` from request.
+- [x] Customer cannot update customer id. 2026-07-17 Phase 3: OpenAPI contract excludes `customerId` from request.
+- [x] Change password uses existing protected endpoint. 2026-07-17 Phase 3: Storefront auth client and host smoke tests passed.
+- [x] Unauthenticated user redirects to sign-in with safe return URL. 2026-07-17 Phase 3.
 
 Exit criteria:
 
-- [ ] Storefront customers can manage safe profile/password fields.
+- [x] Storefront customers can manage safe profile/password fields. 2026-07-17 Phase 3.
 
 Suggested commit:
 
@@ -772,7 +772,7 @@ test(customer-account): verify account core
 - [x] Phase 0 - baseline guardrails. 2026-07-17: committed after focused identity baseline run passed 60/60.
 - [x] Phase 1 - customer profile model. 2026-07-17: CommerceNode API build passed, focused customer/model subset passed 37/37, and broader customer/address/checkout/model run passed 95/95.
 - [x] Phase 2 - registration policy and password recovery. 2026-07-17: CommerceNode API build passed, focused auth/OpenAPI/captcha tests passed 88/88, and Storefront OpenAPI snapshots were refreshed.
-- [ ] Phase 3 - account profile API and Storefront pages.
+- [x] Phase 3 - account profile API and Storefront pages. 2026-07-17: CommerceNode API build passed, Storefront V2 build passed, Storefront host/client subset passed 66/66, CommerceNode profile/OpenAPI subset passed 44/44, and customer service tests passed 10/10.
 - [ ] Phase 4 - customer order self-service API.
 - [ ] Phase 5 - guest completion lookup.
 - [ ] Phase 6 - Storefront account UI integration.

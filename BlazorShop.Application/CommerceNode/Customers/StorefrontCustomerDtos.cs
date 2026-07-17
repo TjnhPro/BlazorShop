@@ -12,6 +12,24 @@ namespace BlazorShop.Application.CommerceNode.Customers
         string? PreferredLanguage = null,
         string? PreferredCurrencyCode = null);
 
+    public sealed record StorefrontAuthenticatedCustomerProfileRequest(
+        Guid StoreId,
+        string AppUserId,
+        string Email,
+        string? FullName = null);
+
+    public sealed record StorefrontCustomerProfileUpdateRequest(
+        Guid StoreId,
+        string AppUserId,
+        string Email,
+        string FullName,
+        string? FirstName = null,
+        string? LastName = null,
+        string? Company = null,
+        string? Phone = null,
+        string? PreferredLanguage = null,
+        string? PreferredCurrencyCode = null);
+
     public sealed record StorefrontCustomerProfile(
         Guid Id,
         Guid StoreId,

@@ -17,6 +17,7 @@
             </div>
 
             <div class="bs-storefront-account-menu__links">
+                <a href="@StorefrontRoutes.AccountProfile" class="bs-storefront-account-menu__link">Profile</a>
                 <form method="post" action="@StorefrontRoutes.Logout">
                     <AntiforgeryToken />
                     <input type="hidden" name="ReturnUrl" value="@StorefrontRoutes.Home" />

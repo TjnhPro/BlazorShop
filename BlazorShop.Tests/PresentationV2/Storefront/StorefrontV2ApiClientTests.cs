@@ -765,6 +765,62 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(["/api/storefront/stores/default/customer/addresses"], handler.RequestPaths);
         }
 
+        [Fact]
+        public async Task CustomerProfileAsync_SendsBearerAndUsesSafePayload()
+        {
+            var profileId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal("/api/storefront/stores/default/customer/profile", request.RequestUri?.AbsolutePath);
+                Assert.Equal("Bearer", request.Headers.Authorization?.Scheme);
+                Assert.Equal("access-token", request.Headers.Authorization?.Parameter);
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    $$"""
+                    {
+                      "success": true,
+                      "message": "ok",
+                      "data": {
+                        "customerPublicId": "{{profileId}}",
+                        "email": "customer@example.test",
+                        "fullName": "Customer One",
+                        "firstName": "Customer",
+                        "lastName": "One",
+                        "company": "Example LLC",
+                        "phoneNumber": "5550100",
+                        "preferredLanguage": "en",
+                        "preferredCurrencyCode": "USD",
+                        "createdAtUtc": "2026-07-17T00:00:00Z",
+                        "lastActivityAtUtc": "2026-07-17T01:00:00Z"
+                      }
+                    }
+                    """);
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var getResult = await apiClient.GetCustomerProfileAsync("access-token");
+            var updateResult = await apiClient.UpdateCustomerProfileAsync(
+                "access-token",
+                new StorefrontCustomerProfileUpdateRequest
+                {
+                    FullName = "Customer One",
+                    Email = "customer@example.test",
+                    FirstName = "Customer",
+                    LastName = "One",
+                    PreferredCurrencyCode = "USD",
+                });
+
+            Assert.True(getResult.Success);
+            Assert.True(updateResult.Success);
+            Assert.Equal(profileId, getResult.Data?.CustomerPublicId);
+            Assert.Equal("Customer One", updateResult.Data?.FullName);
+            Assert.Equal(
+                ["/api/storefront/stores/default/customer/profile", "/api/storefront/stores/default/customer/profile"],
+                handler.RequestPaths);
+        }
+
         private static StorefrontApiClient CreateApiClient(HttpClient client, bool enableLegacyFallback = false)
         {
             return new StorefrontApiClient(

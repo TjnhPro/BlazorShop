@@ -212,6 +212,80 @@ app.MapPost(StorefrontRoutes.Logout, async (
 
     return Results.Redirect(safeReturnUrl);
 });
+app.MapPost(StorefrontRoutes.AccountProfile, async (
+    [FromForm] StorefrontAccountProfileForm form,
+    IStorefrontSessionResolver sessionResolver,
+    StorefrontApiClient apiClient,
+    CancellationToken cancellationToken) =>
+{
+    var session = await sessionResolver.GetCurrentUserAsync(cancellationToken);
+    if (!session.IsAuthenticated || string.IsNullOrWhiteSpace(session.AccessToken))
+    {
+        return Results.Redirect(StorefrontReturnUrl.BuildSignInUrl(StorefrontRoutes.AccountProfile));
+    }
+
+    if (string.IsNullOrWhiteSpace(form.FullName) || string.IsNullOrWhiteSpace(form.Email))
+    {
+        return Results.Redirect(StorefrontReturnUrl.BuildAccountProfileUrl("Full name and email are required."));
+    }
+
+    var result = await apiClient.UpdateCustomerProfileAsync(
+        session.AccessToken,
+        new StorefrontCustomerProfileUpdateRequest
+        {
+            FullName = form.FullName.Trim(),
+            Email = form.Email.Trim(),
+            FirstName = NormalizeOptionalFormValue(form.FirstName),
+            LastName = NormalizeOptionalFormValue(form.LastName),
+            Company = NormalizeOptionalFormValue(form.Company),
+            PhoneNumber = NormalizeOptionalFormValue(form.PhoneNumber),
+            PreferredLanguage = NormalizeOptionalFormValue(form.PreferredLanguage),
+            PreferredCurrencyCode = NormalizeOptionalFormValue(form.PreferredCurrencyCode),
+        },
+        cancellationToken);
+
+    return result.Success
+        ? Results.Redirect(StorefrontReturnUrl.BuildAccountProfileUrl(saved: true))
+        : Results.Redirect(StorefrontReturnUrl.BuildAccountProfileUrl(result.Message));
+});
+app.MapPost(StorefrontRoutes.AccountChangePassword, async (
+    [FromForm] StorefrontChangePasswordForm form,
+    IStorefrontSessionResolver sessionResolver,
+    IStorefrontAuthClient authClient,
+    CancellationToken cancellationToken) =>
+{
+    var session = await sessionResolver.GetCurrentUserAsync(cancellationToken);
+    if (!session.IsAuthenticated || string.IsNullOrWhiteSpace(session.AccessToken))
+    {
+        return Results.Redirect(StorefrontReturnUrl.BuildSignInUrl(StorefrontRoutes.AccountChangePassword));
+    }
+
+    if (string.IsNullOrWhiteSpace(form.CurrentPassword)
+        || string.IsNullOrWhiteSpace(form.NewPassword)
+        || string.IsNullOrWhiteSpace(form.ConfirmPassword))
+    {
+        return Results.Redirect(StorefrontReturnUrl.BuildAccountChangePasswordUrl("All password fields are required."));
+    }
+
+    if (!string.Equals(form.NewPassword, form.ConfirmPassword, StringComparison.Ordinal))
+    {
+        return Results.Redirect(StorefrontReturnUrl.BuildAccountChangePasswordUrl("Passwords do not match."));
+    }
+
+    var result = await authClient.ChangePasswordAsync(
+        session.AccessToken,
+        new ChangePassword
+        {
+            CurrentPassword = form.CurrentPassword,
+            NewPassword = form.NewPassword,
+            ConfirmPassword = form.ConfirmPassword,
+        },
+        cancellationToken);
+
+    return result.Success
+        ? Results.Redirect(StorefrontReturnUrl.BuildAccountChangePasswordUrl(saved: true))
+        : Results.Redirect(StorefrontReturnUrl.BuildAccountChangePasswordUrl(result.Message));
+});
 app.MapPost(StorefrontRoutes.CurrencyPreference, async (
     [FromForm] StorefrontCurrencyPreferenceForm form,
     StorefrontApiClient apiClient,
@@ -842,6 +916,11 @@ static string? NormalizeCurrencyCode(string? currencyCode)
     return normalized is { Length: 3 } && normalized.All(char.IsLetter)
         ? normalized
         : null;
+}
+
+static string? NormalizeOptionalFormValue(string? value)
+{
+    return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
 static IResult ToLocalCartMutationResult(StorefrontCartMutationResult result)

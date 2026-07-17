@@ -76,6 +76,41 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
             };
         }
 
+        public static BlazorShop.Application.CommerceNode.Customers.StorefrontCustomerProfileUpdateRequest ToApplicationRequest(
+            this StorefrontCustomerProfileUpdateRequest request,
+            Guid storeId,
+            string appUserId)
+        {
+            return new BlazorShop.Application.CommerceNode.Customers.StorefrontCustomerProfileUpdateRequest(
+                storeId,
+                appUserId,
+                request.Email,
+                request.FullName,
+                request.FirstName,
+                request.LastName,
+                request.Company,
+                request.PhoneNumber,
+                request.PreferredLanguage,
+                request.PreferredCurrencyCode);
+        }
+
+        public static StorefrontCustomerProfileResponse ToStorefrontContract(
+            this BlazorShop.Application.CommerceNode.Customers.StorefrontCustomerProfile profile)
+        {
+            return new StorefrontCustomerProfileResponse(
+                profile.Id,
+                profile.Email,
+                profile.FullName,
+                profile.FirstName,
+                profile.LastName,
+                profile.Company,
+                profile.Phone,
+                profile.PreferredLanguage,
+                profile.PreferredCurrencyCode,
+                profile.CreatedAt,
+                profile.LastActivityAtUtc);
+        }
+
         public static ProductCatalogQuery ToApplicationQuery(this StorefrontProductCatalogQuery query)
         {
             return new ProductCatalogQuery

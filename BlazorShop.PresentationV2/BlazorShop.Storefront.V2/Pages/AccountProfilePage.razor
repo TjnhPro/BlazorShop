@@ -1,0 +1,117 @@
+@page "/account"
+@page "/account/profile"
+@inject IStorefrontSessionResolver SessionResolver
+@inject StorefrontApiClient ApiClient
+@inject NavigationManager NavigationManager
+
+<PageTitle>Account profile</PageTitle>
+
+<HeadContent>
+    <meta name="robots" content="noindex,nofollow" />
+</HeadContent>
+
+<section class="mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8">
+    <div class="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
+        <nav class="rounded border border-neutral-200 bg-white p-4 text-sm">
+            <a class="block rounded bg-neutral-900 px-3 py-2 font-semibold text-white" href="@StorefrontRoutes.AccountProfile">Profile</a>
+            <a class="mt-2 block rounded px-3 py-2 font-semibold text-neutral-700 hover:bg-neutral-100" href="@StorefrontRoutes.AccountChangePassword">Password</a>
+        </nav>
+
+        <article class="rounded border border-neutral-200 bg-white">
+            <header class="border-b border-neutral-200 px-6 py-6">
+                <p class="text-sm font-semibold uppercase text-neutral-500">Customer account</p>
+                <h1 class="mt-2 text-3xl font-extrabold text-neutral-900">Profile</h1>
+            </header>
+
+            <div class="px-6 py-6">
+                @if (!string.IsNullOrWhiteSpace(SuccessMessage))
+                {
+                    <div class="mb-5 rounded border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800" role="status">@SuccessMessage</div>
+                }
+                @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+                {
+                    <div class="mb-5 rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800" role="alert">@ErrorMessage</div>
+                }
+
+                @if (_loading)
+                {
+                    <p class="text-sm text-neutral-600">Loading profile...</p>
+                }
+                else if (_profile is null)
+                {
+                    <p class="text-sm text-neutral-700">Profile could not be loaded.</p>
+                }
+                else
+                {
+                    <form method="post" action="@StorefrontRoutes.AccountProfile" class="grid max-w-3xl gap-5 sm:grid-cols-2">
+                        <AntiforgeryToken />
+                        <label class="block text-sm sm:col-span-2">
+                            <span class="font-semibold text-neutral-800">Email address</span>
+                            <input name="Email" type="email" autocomplete="email" required value="@_profile.Email" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+                        </label>
+                        <label class="block text-sm sm:col-span-2">
+                            <span class="font-semibold text-neutral-800">Display name</span>
+                            <input name="FullName" type="text" autocomplete="name" required value="@_profile.FullName" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+                        </label>
+                        <label class="block text-sm">
+                            <span class="font-semibold text-neutral-800">First name</span>
+                            <input name="FirstName" type="text" autocomplete="given-name" value="@_profile.FirstName" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+                        </label>
+                        <label class="block text-sm">
+                            <span class="font-semibold text-neutral-800">Last name</span>
+                            <input name="LastName" type="text" autocomplete="family-name" value="@_profile.LastName" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+                        </label>
+                        <label class="block text-sm">
+                            <span class="font-semibold text-neutral-800">Company</span>
+                            <input name="Company" type="text" autocomplete="organization" value="@_profile.Company" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+                        </label>
+                        <label class="block text-sm">
+                            <span class="font-semibold text-neutral-800">Phone</span>
+                            <input name="PhoneNumber" type="tel" autocomplete="tel" value="@_profile.PhoneNumber" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+                        </label>
+                        <label class="block text-sm">
+                            <span class="font-semibold text-neutral-800">Language</span>
+                            <input name="PreferredLanguage" type="text" value="@_profile.PreferredLanguage" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+                        </label>
+                        <label class="block text-sm">
+                            <span class="font-semibold text-neutral-800">Currency</span>
+                            <input name="PreferredCurrencyCode" type="text" maxlength="3" value="@_profile.PreferredCurrencyCode" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm uppercase" />
+                        </label>
+                        <div class="sm:col-span-2">
+                            <button type="submit" class="inline-flex rounded bg-neutral-900 px-5 py-3 text-sm font-semibold text-white hover:bg-neutral-800">Save profile</button>
+                        </div>
+                    </form>
+                }
+            </div>
+        </article>
+    </div>
+</section>
+
+@code {
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? Error { get; set; }
+
+    [SupplyParameterFromQuery(Name = "saved")]
+    public string? Saved { get; set; }
+
+    private bool _loading = true;
+    private StorefrontCustomerProfileResponse? _profile;
+
+    private string? ErrorMessage => this.Error;
+
+    private string? SuccessMessage => this.Saved == "1" ? "Profile updated." : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var session = await SessionResolver.GetCurrentUserAsync();
+        if (!session.IsAuthenticated || string.IsNullOrWhiteSpace(session.AccessToken))
+        {
+            NavigationManager.NavigateTo(StorefrontReturnUrl.BuildSignInUrl(StorefrontRoutes.AccountProfile), replace: true);
+            return;
+        }
+
+        var result = await ApiClient.GetCustomerProfileAsync(session.AccessToken);
+        _profile = result.Success ? result.Data : null;
+        _loading = false;
+    }
+}

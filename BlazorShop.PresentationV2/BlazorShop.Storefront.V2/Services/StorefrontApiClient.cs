@@ -41,6 +41,7 @@ namespace BlazorShop.Storefront.Services
         private const string StorefrontAddressCountriesRoute = StorefrontAddressBaseRoute + "/countries";
         private const string StorefrontAddressConfigurationRoute = StorefrontAddressBaseRoute + "/configuration";
         private const string StorefrontCustomerAddressesRoute = "customer/addresses";
+        private const string StorefrontCustomerProfileRoute = "customer/profile";
         private const string StorefrontStoreCurrentRoute = "store/current";
         private const string StorefrontPaymentMethodsRoute = "payments/methods";
         private const string StorefrontCheckoutStartRoute = "checkout/start";
@@ -355,6 +356,33 @@ namespace BlazorShop.Storefront.Services
                 StorefrontAddressConfigurationRoute,
                 cancellationToken,
                 CatalogRequestTimeout);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCustomerProfileResponse>> GetCustomerProfileAsync(
+            string bearerToken,
+            CancellationToken cancellationToken = default)
+        {
+            return SendAuthorizedAsync<StorefrontCustomerProfileResponse>(
+                HttpMethod.Get,
+                StorefrontCustomerProfileRoute,
+                bearerToken,
+                request: null,
+                "Unable to load customer profile right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontSubmitResult<StorefrontCustomerProfileResponse>> UpdateCustomerProfileAsync(
+            string bearerToken,
+            StorefrontCustomerProfileUpdateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return SendAuthorizedAsync<StorefrontCustomerProfileResponse>(
+                HttpMethod.Put,
+                StorefrontCustomerProfileRoute,
+                bearerToken,
+                request,
+                "Unable to update customer profile right now.",
+                cancellationToken);
         }
 
         public Task<StorefrontSubmitResult<IReadOnlyList<StorefrontCustomerAddressResponse>>> GetCustomerAddressesAsync(
@@ -1260,6 +1288,38 @@ namespace BlazorShop.Storefront.Services
         {
             return new(false, string.IsNullOrWhiteSpace(message) ? "The request could not be completed." : message, default);
         }
+    }
+
+    public sealed record StorefrontCustomerProfileResponse(
+        Guid CustomerPublicId,
+        string Email,
+        string FullName,
+        string? FirstName,
+        string? LastName,
+        string? Company,
+        string? PhoneNumber,
+        string? PreferredLanguage,
+        string? PreferredCurrencyCode,
+        DateTimeOffset CreatedAtUtc,
+        DateTimeOffset? LastActivityAtUtc);
+
+    public sealed class StorefrontCustomerProfileUpdateRequest
+    {
+        public string FullName { get; set; } = string.Empty;
+
+        public string Email { get; set; } = string.Empty;
+
+        public string? FirstName { get; set; }
+
+        public string? LastName { get; set; }
+
+        public string? Company { get; set; }
+
+        public string? PhoneNumber { get; set; }
+
+        public string? PreferredLanguage { get; set; }
+
+        public string? PreferredCurrencyCode { get; set; }
     }
 
     public sealed record StorefrontProductFilterMetadataResponse(

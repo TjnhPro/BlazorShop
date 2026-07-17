@@ -53,6 +53,8 @@ DELETE /api/storefront/stores/{storeKey}/customer/addresses/{addressId}
 PUT /api/storefront/stores/{storeKey}/customer/addresses/{addressId}
 POST /api/storefront/stores/{storeKey}/customer/addresses/{addressId}/default-billing
 POST /api/storefront/stores/{storeKey}/customer/addresses/{addressId}/default-shipping
+GET /api/storefront/stores/{storeKey}/customer/profile
+PUT /api/storefront/stores/{storeKey}/customer/profile
 GET /api/storefront/stores/{storeKey}/navigation/{systemName}
 POST /api/storefront/stores/{storeKey}/newsletter/subscribe
 POST /api/storefront/stores/{storeKey}/orders/confirm

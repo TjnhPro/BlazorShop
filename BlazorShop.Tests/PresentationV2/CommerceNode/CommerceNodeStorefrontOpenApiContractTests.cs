@@ -32,6 +32,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             "StorefrontCustomerAddresses_Delete",
             "StorefrontCustomerAddresses_SetDefaultShipping",
             "StorefrontCustomerAddresses_SetDefaultBilling",
+            "StorefrontCustomerProfile_Get",
+            "StorefrontCustomerProfile_Update",
             "StorefrontCart_MergeCurrentCustomer",
             "StorefrontCart_SaveCheckout",
             "StorefrontOrders_Confirm",
@@ -52,6 +54,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 ["StorefrontCustomerAddresses_Delete"] = "Bearer",
                 ["StorefrontCustomerAddresses_SetDefaultShipping"] = "Bearer",
                 ["StorefrontCustomerAddresses_SetDefaultBilling"] = "Bearer",
+                ["StorefrontCustomerProfile_Get"] = "Bearer",
+                ["StorefrontCustomerProfile_Update"] = "Bearer",
                 ["StorefrontCart_MergeCurrentCustomer"] = "Bearer",
                 ["StorefrontCart_SaveCheckout"] = "Bearer",
                 ["StorefrontOrders_Confirm"] = "Bearer",
@@ -456,6 +460,54 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Equal(120, requestSchema["properties"]?["firstName"]?["maxLength"]?.GetValue<int>());
             Assert.Equal(240, requestSchema["properties"]?["address1"]?["maxLength"]?.GetValue<int>());
             Assert.True(schemas.ContainsKey("StorefrontCustomerAddressResponse"));
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_CustomerProfileHasGeneratorSafeContract()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var operations = GetOperations(swagger)
+                .ToDictionary(
+                    operation => operation.Value["operationId"]?.GetValue<string>() ?? string.Empty,
+                    operation => operation.Value,
+                    StringComparer.Ordinal);
+
+            Assert.True(operations.TryGetValue("StorefrontCustomerProfile_Get", out var getProfile));
+            Assert.True(operations.TryGetValue("StorefrontCustomerProfile_Update", out var updateProfile));
+            Assert.Null(getProfile!["requestBody"]);
+            AssertRequiredRequestBody(updateProfile!);
+            Assert.Contains("Bearer", GetSecuritySchemeNames(getProfile));
+            Assert.Contains("Bearer", GetSecuritySchemeNames(updateProfile));
+
+            var requestSchema = schemas["StorefrontCustomerProfileUpdateRequest"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCustomerProfileUpdateRequest schema was not found.");
+            var requestProperties = GetPropertyNames(requestSchema).ToArray();
+            Assert.Contains("fullName", GetRequiredProperties(requestSchema));
+            Assert.Contains("email", GetRequiredProperties(requestSchema));
+            Assert.Contains("firstName", requestProperties);
+            Assert.Contains("lastName", requestProperties);
+            Assert.Contains("company", requestProperties);
+            Assert.Contains("phoneNumber", requestProperties);
+            Assert.Contains("preferredLanguage", requestProperties);
+            Assert.Contains("preferredCurrencyCode", requestProperties);
+            Assert.DoesNotContain("customerId", requestProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("appUserId", requestProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("storeId", requestProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("role", requestProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("isActive", requestProperties, StringComparer.OrdinalIgnoreCase);
+
+            var responseSchema = schemas["StorefrontCustomerProfileResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontCustomerProfileResponse schema was not found.");
+            var responseProperties = GetPropertyNames(responseSchema).ToArray();
+            Assert.Contains("customerPublicId", responseProperties);
+            Assert.Contains("email", responseProperties);
+            Assert.Contains("fullName", responseProperties);
+            Assert.Contains("lastActivityAtUtc", responseProperties);
+            Assert.DoesNotContain("appUserId", responseProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("storeId", responseProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("normalizedEmail", responseProperties, StringComparer.OrdinalIgnoreCase);
+            Assert.DoesNotContain("isActive", responseProperties, StringComparer.OrdinalIgnoreCase);
         }
 
         [Fact]

@@ -1106,6 +1106,9 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Password recovery uses ASP.NET Identity reset tokens and existing email service without custom token storage. 2026-07-17 Phase 2: `AuthenticationServiceTests` covers known-email token generation and reset-token application.
 - [x] Unknown password recovery email keeps a generic response and does not reveal account existence. 2026-07-17 Phase 2: `AuthenticationServiceTests.ForgotPassword_WithUnknownEmail_ReturnsGenericSuccessWithoutSendingEmail` passed.
 - [x] Storefront OpenAPI includes generator-safe registration policy, forgot-password, and reset-password contracts. 2026-07-17 Phase 2: snapshots refreshed and focused auth/OpenAPI/captcha run passed 88/88.
+- [x] Storefront customer profile API is Bearer-protected and uses safe request/response DTOs. 2026-07-17 Phase 3: `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_CustomerProfileHasGeneratorSafeContract` passed.
+- [x] Authenticated customer profile persistence uses `StoreId + AppUserId` and does not mutate checkout timestamp. 2026-07-17 Phase 3: `StorefrontCustomerServiceTests` covered get/create and update profile paths.
+- [x] Customer profile update rejects email changes until confirmation flow exists. 2026-07-17 Phase 3: CommerceNode controller returns `profile.email_change_unsupported` for mismatched claim email.
 
 ## Payment Core
 
