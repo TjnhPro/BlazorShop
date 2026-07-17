@@ -100,6 +100,60 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task ForgotPasswordAsync_PostsScopedRecoveryRequest()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal("/api/storefront/stores/default/auth/forgot-password", request.RequestUri?.AbsolutePath);
+                var body = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+                using var document = JsonDocument.Parse(body);
+                Assert.Equal("customer@example.test", document.RootElement.GetProperty("email").GetString());
+                Assert.Equal("captcha-token", document.RootElement.GetProperty("captchaToken").GetString());
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    """{"success":true,"message":"If the email exists, reset instructions will be sent.","data":null}""");
+            });
+
+            var authClient = new StorefrontAuthClient(CreateClient(handler));
+
+            var result = await authClient.ForgotPasswordAsync("customer@example.test", "captcha-token");
+
+            Assert.True(result.Success);
+            Assert.Equal("If the email exists, reset instructions will be sent.", result.Message);
+            Assert.Equal(["/api/storefront/stores/default/auth/forgot-password"], handler.RequestPaths);
+        }
+
+        [Fact]
+        public async Task ResetPasswordAsync_PostsScopedResetRequest()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal("/api/storefront/stores/default/auth/reset-password", request.RequestUri?.AbsolutePath);
+                var body = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+                using var document = JsonDocument.Parse(body);
+                Assert.Equal("customer@example.test", document.RootElement.GetProperty("email").GetString());
+                Assert.Equal("reset-token", document.RootElement.GetProperty("token").GetString());
+                Assert.Equal("NewPassword123!", document.RootElement.GetProperty("password").GetString());
+                Assert.Equal("NewPassword123!", document.RootElement.GetProperty("confirmPassword").GetString());
+
+                return JsonResponse(HttpStatusCode.OK, """{"success":true,"message":"Password reset.","data":null}""");
+            });
+
+            var authClient = new StorefrontAuthClient(CreateClient(handler));
+
+            var result = await authClient.ResetPasswordAsync(
+                "customer@example.test",
+                "reset-token",
+                "NewPassword123!",
+                "NewPassword123!");
+
+            Assert.True(result.Success);
+            Assert.Equal("Password reset.", result.Message);
+            Assert.Equal(["/api/storefront/stores/default/auth/reset-password"], handler.RequestPaths);
+        }
+
+        [Fact]
         public async Task LogoutAsync_SendsRefreshCookieAndCapturesExpiredCookie()
         {
             var handler = new RecordingHandler(request =>

@@ -183,6 +183,50 @@ app.MapPost(StorefrontRoutes.Register, async (
 
     return Results.Redirect(StorefrontReturnUrl.BuildSignInUrl(safeReturnUrl, registered: true));
 });
+app.MapPost(StorefrontRoutes.ForgotPassword, async (
+    [FromForm] StorefrontForgotPasswordForm form,
+    IStorefrontAuthClient authClient,
+    CancellationToken cancellationToken) =>
+{
+    var email = form.Email?.Trim();
+    if (!IsValidEmail(email))
+    {
+        return Results.Redirect(StorefrontReturnUrl.BuildForgotPasswordUrl(email, "Enter a valid email address."));
+    }
+
+    var result = await authClient.ForgotPasswordAsync(email!, form.CaptchaToken, cancellationToken);
+    return result.Success
+        ? Results.Redirect(StorefrontReturnUrl.BuildForgotPasswordUrl(email, sent: true))
+        : Results.Redirect(StorefrontReturnUrl.BuildForgotPasswordUrl(email, "Password recovery is temporarily unavailable. Try again shortly."));
+});
+app.MapPost(StorefrontRoutes.ResetPassword, async (
+    [FromForm] StorefrontResetPasswordForm form,
+    IStorefrontAuthClient authClient,
+    CancellationToken cancellationToken) =>
+{
+    var email = form.Email?.Trim();
+    var token = form.Token?.Trim();
+    if (!IsValidEmail(email) || string.IsNullOrWhiteSpace(token))
+    {
+        return Results.Redirect(StorefrontReturnUrl.BuildResetPasswordUrl(email, token, "This reset link is invalid or expired."));
+    }
+
+    if (string.IsNullOrWhiteSpace(form.Password)
+        || string.IsNullOrWhiteSpace(form.ConfirmPassword))
+    {
+        return Results.Redirect(StorefrontReturnUrl.BuildResetPasswordUrl(email, token, "Password and confirmation are required."));
+    }
+
+    if (!string.Equals(form.Password, form.ConfirmPassword, StringComparison.Ordinal))
+    {
+        return Results.Redirect(StorefrontReturnUrl.BuildResetPasswordUrl(email, token, "Passwords do not match."));
+    }
+
+    var result = await authClient.ResetPasswordAsync(email!, token!, form.Password, form.ConfirmPassword, cancellationToken);
+    return result.Success
+        ? Results.Redirect(StorefrontReturnUrl.BuildSignInUrl(passwordReset: true))
+        : Results.Redirect(StorefrontReturnUrl.BuildResetPasswordUrl(email, token, "This reset link is invalid or expired."));
+});
 app.MapPost(StorefrontRoutes.Logout, async (
     [FromForm] StorefrontLogoutForm form,
     IStorefrontAuthClient authClient,
@@ -934,6 +978,13 @@ static string? NormalizeCurrencyCode(string? currencyCode)
     return normalized is { Length: 3 } && normalized.All(char.IsLetter)
         ? normalized
         : null;
+}
+
+static bool IsValidEmail(string? email)
+{
+    return !string.IsNullOrWhiteSpace(email)
+        && email.Length <= 254
+        && new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(email);
 }
 
 static string? NormalizeOptionalFormValue(string? value)

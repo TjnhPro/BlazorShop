@@ -11,6 +11,8 @@ namespace BlazorShop.Storefront.Services
     {
         private const string RegisterRoute = "auth/register";
         private const string LoginRoute = "auth/login";
+        private const string ForgotPasswordRoute = "auth/forgot-password";
+        private const string ResetPasswordRoute = "auth/reset-password";
         private const string ChangePasswordRoute = "auth/change-password";
         private const string LogoutRoute = "auth/logout";
 
@@ -38,6 +40,42 @@ namespace BlazorShop.Storefront.Services
                 RegisterRoute,
                 user,
                 "Unable to create your account right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontAuthResult<object>> ForgotPasswordAsync(
+            string email,
+            string? captchaToken,
+            CancellationToken cancellationToken = default)
+        {
+            return this.PostAsync<StorefrontForgotPasswordRequest, object>(
+                ForgotPasswordRoute,
+                new StorefrontForgotPasswordRequest
+                {
+                    Email = email,
+                    CaptchaToken = captchaToken,
+                },
+                "Unable to request password recovery right now.",
+                cancellationToken);
+        }
+
+        public Task<StorefrontAuthResult<object>> ResetPasswordAsync(
+            string email,
+            string token,
+            string password,
+            string confirmPassword,
+            CancellationToken cancellationToken = default)
+        {
+            return this.PostAsync<ResetPassword, object>(
+                ResetPasswordRoute,
+                new ResetPassword
+                {
+                    Email = email,
+                    Token = token,
+                    Password = password,
+                    ConfirmPassword = confirmPassword,
+                },
+                "Unable to reset your password right now.",
                 cancellationToken);
         }
 
@@ -153,5 +191,12 @@ namespace BlazorShop.Storefront.Services
         }
 
         private sealed record StorefrontAuthEnvelope<TData>(bool Success, string? Message, TData? Data);
+
+        private sealed class StorefrontForgotPasswordRequest
+        {
+            public string Email { get; set; } = string.Empty;
+
+            public string? CaptchaToken { get; set; }
+        }
     }
 }

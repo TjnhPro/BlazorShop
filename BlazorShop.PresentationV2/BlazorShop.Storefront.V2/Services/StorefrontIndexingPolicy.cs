@@ -13,6 +13,8 @@ namespace BlazorShop.Storefront.Services
             StorefrontRoutes.Checkout,
             StorefrontRoutes.SignIn,
             StorefrontRoutes.Register,
+            StorefrontRoutes.ForgotPassword,
+            StorefrontRoutes.ResetPassword,
             StorefrontRoutes.Logout,
             StorefrontRoutes.PaymentSuccess,
             StorefrontRoutes.PaymentCancel,

@@ -15,6 +15,8 @@ namespace BlazorShop.Storefront.Services
         public const string PaymentCancel = "/payment-cancel";
         public const string SignIn = "/signin";
         public const string Register = "/register";
+        public const string ForgotPassword = "/forgot-password";
+        public const string ResetPassword = "/reset-password";
         public const string Logout = "/logout";
         public const string Account = "/account";
         public const string AccountProfile = "/account/profile";

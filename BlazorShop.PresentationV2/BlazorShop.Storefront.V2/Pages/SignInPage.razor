@@ -55,6 +55,10 @@
                                class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
                     </label>
 
+                    <div class="text-right text-sm">
+                        <a href="@ForgotPasswordUrl" class="font-semibold text-neutral-800 hover:text-neutral-950">Forgot password?</a>
+                    </div>
+
                     <button type="submit" class="inline-flex w-full items-center justify-center rounded bg-neutral-900 px-4 py-3 font-semibold text-white hover:bg-neutral-800">
                         Sign in
                     </button>
@@ -95,6 +99,9 @@
     [SupplyParameterFromQuery(Name = "registered")]
     public string? Registered { get; set; }
 
+    [SupplyParameterFromQuery(Name = "passwordReset")]
+    public string? PasswordReset { get; set; }
+
     private string SafeReturnUrl => StorefrontReturnUrl.Normalize(this.ReturnUrl);
 
     private string PostAction => StorefrontReturnUrl.BuildSignInUrl(this.SafeReturnUrl);
@@ -103,8 +110,12 @@
         ? StorefrontRoutes.Register
         : $"{StorefrontRoutes.Register}{QueryString.Create("returnUrl", this.SafeReturnUrl)}";
 
+    private string ForgotPasswordUrl => StorefrontRoutes.ForgotPassword;
+
     private string? SuccessMessage => this.Registered == "1"
         ? "Account created. Sign in to continue."
+        : this.PasswordReset == "1"
+            ? "Password updated. Sign in with your new password."
         : null;
 
     protected override async Task OnInitializedAsync()

@@ -96,13 +96,13 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Phase 0 baseline confirms Commerce Node OpenAPI metadata already includes `StorefrontAuth_ForgotPassword` and `StorefrontAuth_ResetPassword`. 2026-07-17: `CommerceNodeStorefrontOpenApiContractTests` asserts both operations and request schemas.
 - [x] Phase 0 baseline confirms Storefront V2 local cart endpoints exist for WASM migration and mutations validate antiforgery. 2026-07-17: source review of `Program.cs` found `GET /api/cart`, `POST /api/cart/lines`, `PUT /api/cart/lines/{lineId}`, `DELETE /api/cart/lines/{lineId}`, and `DELETE /api/cart` with `ValidateLocalCartAntiforgeryAsync` on mutations.
 - [x] Phase 0 baseline confirms WASM is already wired through `AddInteractiveWebAssemblyComponents()` and `AddInteractiveWebAssemblyRenderMode()`, but current real cart/account/checkout interactions still use server forms and/or `storefrontCommerce.js`. 2026-07-17: source review before Phase 1 code changes.
-- [ ] Forgot password page renders from `/forgot-password`.
-- [ ] Sign-in page links to forgot password.
-- [ ] Forgot password accepts valid email format and shows generic success.
-- [ ] Forgot password rejects invalid email format with validation.
-- [ ] Reset password page handles `email` and `token` query values.
-- [ ] Reset password succeeds with valid token and password.
-- [ ] Reset password fails generically with invalid/expired token.
+- [x] Forgot password page renders from `/forgot-password`. 2026-07-17 Phase 1: `StorefrontV2HostSmokeTests.ForgotPassword_ReturnsRecoveryPage` passed.
+- [x] Sign-in page links to forgot password. 2026-07-17 Phase 1: `SignIn_ReturnsStorefrontLoginPage` asserts `/forgot-password`.
+- [x] Forgot password accepts valid email format and shows generic success. 2026-07-17 Phase 1: local POST redirects to generic sent state and scoped auth client route is covered.
+- [x] Forgot password rejects invalid email format with validation. 2026-07-17 Phase 1: invalid email redirects with local validation error and does not call Commerce Node.
+- [x] Reset password page handles `email` and `token` query values. 2026-07-17 Phase 1: reset page smoke renders hidden token field without displaying token text.
+- [x] Reset password succeeds with valid token and password. 2026-07-17 Phase 1: local POST calls scoped reset client and redirects to sign-in password-reset state.
+- [x] Reset password fails generically with invalid/expired token. 2026-07-17 Phase 1: failed provider response redirects with generic reset-link error.
 - [ ] WASM same-origin client has no Commerce Node base URL, node key, node secret, refresh token, or access token configuration.
 - [ ] Cart WASM loads existing cart.
 - [ ] Cart WASM updates quantity.

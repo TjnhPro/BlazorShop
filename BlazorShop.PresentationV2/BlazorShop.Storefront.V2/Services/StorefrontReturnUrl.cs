@@ -24,7 +24,11 @@ namespace BlazorShop.Storefront.Services
             return candidate;
         }
 
-        public static string BuildSignInUrl(string? returnUrl = null, string? error = null, bool registered = false)
+        public static string BuildSignInUrl(
+            string? returnUrl = null,
+            string? error = null,
+            bool registered = false,
+            bool passwordReset = false)
         {
             var query = new Dictionary<string, string?>();
             var safeReturnUrl = Normalize(returnUrl, fallback: string.Empty);
@@ -43,9 +47,60 @@ namespace BlazorShop.Storefront.Services
                 query["registered"] = "1";
             }
 
+            if (passwordReset)
+            {
+                query["passwordReset"] = "1";
+            }
+
             return query.Count == 0
                 ? StorefrontRoutes.SignIn
                 : $"{StorefrontRoutes.SignIn}{QueryString.Create(query)}";
+        }
+
+        public static string BuildForgotPasswordUrl(string? email = null, string? error = null, bool sent = false)
+        {
+            var query = new Dictionary<string, string?>();
+            if (!string.IsNullOrWhiteSpace(email))
+            {
+                query["email"] = email.Trim();
+            }
+
+            if (!string.IsNullOrWhiteSpace(error))
+            {
+                query["error"] = error;
+            }
+
+            if (sent)
+            {
+                query["sent"] = "1";
+            }
+
+            return query.Count == 0
+                ? StorefrontRoutes.ForgotPassword
+                : $"{StorefrontRoutes.ForgotPassword}{QueryString.Create(query)}";
+        }
+
+        public static string BuildResetPasswordUrl(string? email = null, string? token = null, string? error = null)
+        {
+            var query = new Dictionary<string, string?>();
+            if (!string.IsNullOrWhiteSpace(email))
+            {
+                query["email"] = email.Trim();
+            }
+
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                query["token"] = token;
+            }
+
+            if (!string.IsNullOrWhiteSpace(error))
+            {
+                query["error"] = error;
+            }
+
+            return query.Count == 0
+                ? StorefrontRoutes.ResetPassword
+                : $"{StorefrontRoutes.ResetPassword}{QueryString.Create(query)}";
         }
 
         public static string BuildRegisterUrl(string? returnUrl = null, string? error = null)

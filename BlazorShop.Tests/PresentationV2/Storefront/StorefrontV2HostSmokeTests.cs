@@ -13,6 +13,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Mvc.Testing;
+    using Microsoft.AspNetCore.WebUtilities;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using Xunit;
@@ -66,6 +67,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Contains("Customer account", content, StringComparison.Ordinal);
             Assert.Contains("method=\"post\"", content, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("href=\"/forgot-password\"", content, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -144,6 +146,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Theory]
         [InlineData("/signin")]
         [InlineData("/register")]
+        [InlineData("/forgot-password")]
+        [InlineData("/reset-password")]
         [InlineData("/logout")]
         [InlineData("/account/profile")]
         [InlineData("/account/change-password")]
@@ -255,6 +259,132 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(1, authClient.RegisterCalls);
             Assert.Equal("Customer One", authClient.LastRegisteredUser?.FullName);
             Assert.Equal("customer@example.test", authClient.LastRegisteredUser?.Email);
+        }
+
+        [Fact]
+        public async Task ForgotPassword_ReturnsRecoveryPage()
+        {
+            using var client = CreateClient(services =>
+            {
+                services.RemoveAll<IStorefrontSessionResolver>();
+                services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
+            });
+
+            using var response = await client.GetAsync(StorefrontRoutes.ForgotPassword);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("Forgot password", content, StringComparison.Ordinal);
+            Assert.Contains("method=\"post\"", content, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("data-storefront-captcha-token=\"password-recovery\"", content, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task ForgotPassword_PostValidEmail_RedirectsToGenericSentState()
+        {
+            var authClient = new StubStorefrontAuthClient(
+                forgotPasswordResult: StorefrontAuthResult<object>.Succeeded(new object(), "If the email exists, reset instructions will be sent.", []));
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontAuthClient>();
+                    services.AddScoped<IStorefrontAuthClient>(_ => authClient);
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.ForgotPassword);
+            using var request = CreateForgotPasswordPost(token, cookieHeader, "customer@example.test");
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            var query = AssertRedirect(response, StorefrontRoutes.ForgotPassword);
+            Assert.Equal("customer@example.test", query["email"]);
+            Assert.Equal("1", query["sent"]);
+            Assert.Equal(1, authClient.ForgotPasswordCalls);
+            Assert.Equal("customer@example.test", authClient.LastForgotPasswordEmail);
+        }
+
+        [Fact]
+        public async Task ForgotPassword_PostInvalidEmail_RedirectsWithValidationError()
+        {
+            var authClient = new StubStorefrontAuthClient();
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontAuthClient>();
+                    services.AddScoped<IStorefrontAuthClient>(_ => authClient);
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.ForgotPassword);
+            using var request = CreateForgotPasswordPost(token, cookieHeader, "invalid-email");
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            var query = AssertRedirect(response, StorefrontRoutes.ForgotPassword);
+            Assert.Equal("invalid-email", query["email"]);
+            Assert.Equal("Enter a valid email address.", query["error"]);
+            Assert.Equal(0, authClient.ForgotPasswordCalls);
+        }
+
+        [Fact]
+        public async Task ResetPassword_ReturnsResetPageWithoutRenderingTokenText()
+        {
+            using var client = CreateClient(_ => { });
+
+            using var response = await client.GetAsync("/reset-password?email=customer%40example.test&token=secret-reset-token");
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("Reset password", content, StringComparison.Ordinal);
+            Assert.Contains("name=\"Token\"", content, StringComparison.Ordinal);
+            Assert.DoesNotContain(">secret-reset-token<", content, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task ResetPassword_PostSuccess_RedirectsToSignInPasswordResetState()
+        {
+            var authClient = new StubStorefrontAuthClient(
+                resetPasswordResult: StorefrontAuthResult<object>.Succeeded(new object(), "Password reset.", []));
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontAuthClient>();
+                    services.AddScoped<IStorefrontAuthClient>(_ => authClient);
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, "/reset-password?email=customer%40example.test&token=reset-token");
+            using var request = CreateResetPasswordPost(token, cookieHeader, "customer@example.test", "reset-token");
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/signin?passwordReset=1", response.Headers.Location?.ToString());
+            Assert.Equal("customer@example.test", authClient.LastResetPasswordEmail);
+            Assert.Equal("reset-token", authClient.LastResetPasswordToken);
+        }
+
+        [Fact]
+        public async Task ResetPassword_PostFailure_RedirectsWithGenericError()
+        {
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontAuthClient>();
+                    services.AddScoped<IStorefrontAuthClient>(_ => new StubStorefrontAuthClient(
+                        resetPasswordResult: StorefrontAuthResult<object>.Failed("Detailed provider failure.")));
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, "/reset-password?email=customer%40example.test&token=reset-token");
+            using var request = CreateResetPasswordPost(token, cookieHeader, "customer@example.test", "reset-token");
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            var query = AssertRedirect(response, StorefrontRoutes.ResetPassword);
+            Assert.Equal("customer@example.test", query["email"]);
+            Assert.Equal("reset-token", query["token"]);
+            Assert.Equal("This reset link is invalid or expired.", query["error"]);
         }
 
         [Fact]
@@ -1068,6 +1198,60 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             return request;
         }
 
+        private static HttpRequestMessage CreateForgotPasswordPost(string antiforgeryToken, string cookieHeader, string email)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, StorefrontRoutes.ForgotPassword)
+            {
+                Content = new FormUrlEncodedContent(
+                [
+                    new KeyValuePair<string, string>("__RequestVerificationToken", antiforgeryToken),
+                    new KeyValuePair<string, string>("Email", email),
+                    new KeyValuePair<string, string>("CaptchaToken", "captcha-token"),
+                ]),
+            };
+
+            request.Headers.Add("Cookie", cookieHeader);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            return request;
+        }
+
+        private static HttpRequestMessage CreateResetPasswordPost(
+            string antiforgeryToken,
+            string cookieHeader,
+            string email,
+            string resetToken,
+            string confirmPassword = "NewPassword123!")
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, StorefrontRoutes.ResetPassword)
+            {
+                Content = new FormUrlEncodedContent(
+                [
+                    new KeyValuePair<string, string>("__RequestVerificationToken", antiforgeryToken),
+                    new KeyValuePair<string, string>("Email", email),
+                    new KeyValuePair<string, string>("Token", resetToken),
+                    new KeyValuePair<string, string>("Password", "NewPassword123!"),
+                    new KeyValuePair<string, string>("ConfirmPassword", confirmPassword),
+                ]),
+            };
+
+            request.Headers.Add("Cookie", cookieHeader);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            return request;
+        }
+
+        private static Dictionary<string, Microsoft.Extensions.Primitives.StringValues> AssertRedirect(HttpResponseMessage response, string expectedPath)
+        {
+            var location = response.Headers.Location?.ToString();
+            Assert.False(string.IsNullOrWhiteSpace(location));
+
+            var queryStart = location.IndexOf('?', StringComparison.Ordinal);
+            var path = queryStart >= 0 ? location[..queryStart] : location;
+            var query = queryStart >= 0 ? location[queryStart..] : string.Empty;
+
+            Assert.Equal(expectedPath, path);
+            return QueryHelpers.ParseQuery(query);
+        }
+
         private static HttpRequestMessage CreateCheckoutPost(string antiforgeryToken, string cookieHeader, int cartVersion = 2)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, StorefrontRoutes.Checkout)
@@ -1337,26 +1521,40 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             private readonly StorefrontAuthResult<StorefrontTokenResponse> loginResult;
             private readonly StorefrontAuthResult<object> registerResult;
+            private readonly StorefrontAuthResult<object> forgotPasswordResult;
+            private readonly StorefrontAuthResult<object> resetPasswordResult;
             private readonly StorefrontAuthResult<object> changePasswordResult;
             private readonly StorefrontAuthResult<object> logoutResult;
 
             public StubStorefrontAuthClient(
                 StorefrontAuthResult<StorefrontTokenResponse>? loginResult = null,
                 StorefrontAuthResult<object>? registerResult = null,
+                StorefrontAuthResult<object>? forgotPasswordResult = null,
+                StorefrontAuthResult<object>? resetPasswordResult = null,
                 StorefrontAuthResult<object>? changePasswordResult = null,
                 StorefrontAuthResult<object>? logoutResult = null)
             {
                 this.loginResult = loginResult ?? StorefrontAuthResult<StorefrontTokenResponse>.Failed("Login is not used by this test.");
                 this.registerResult = registerResult ?? StorefrontAuthResult<object>.Failed("Register is not used by this test.");
+                this.forgotPasswordResult = forgotPasswordResult ?? StorefrontAuthResult<object>.Failed("Forgot password is not used by this test.");
+                this.resetPasswordResult = resetPasswordResult ?? StorefrontAuthResult<object>.Failed("Reset password is not used by this test.");
                 this.changePasswordResult = changePasswordResult ?? StorefrontAuthResult<object>.Failed("Change password is not used by this test.");
                 this.logoutResult = logoutResult ?? StorefrontAuthResult<object>.Failed("Logout is not used by this test.");
             }
 
             public int RegisterCalls { get; private set; }
 
+            public int ForgotPasswordCalls { get; private set; }
+
             public int LogoutCalls { get; private set; }
 
             public CreateUser? LastRegisteredUser { get; private set; }
+
+            public string? LastForgotPasswordEmail { get; private set; }
+
+            public string? LastResetPasswordEmail { get; private set; }
+
+            public string? LastResetPasswordToken { get; private set; }
 
             public string? LastLogoutCookieHeader { get; private set; }
 
@@ -1372,6 +1570,25 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 this.RegisterCalls++;
                 this.LastRegisteredUser = user;
                 return Task.FromResult(this.registerResult);
+            }
+
+            public Task<StorefrontAuthResult<object>> ForgotPasswordAsync(string email, string? captchaToken, CancellationToken cancellationToken = default)
+            {
+                this.ForgotPasswordCalls++;
+                this.LastForgotPasswordEmail = email;
+                return Task.FromResult(this.forgotPasswordResult);
+            }
+
+            public Task<StorefrontAuthResult<object>> ResetPasswordAsync(
+                string email,
+                string token,
+                string password,
+                string confirmPassword,
+                CancellationToken cancellationToken = default)
+            {
+                this.LastResetPasswordEmail = email;
+                this.LastResetPasswordToken = token;
+                return Task.FromResult(this.resetPasswordResult);
             }
 
             public Task<StorefrontAuthResult<object>> ChangePasswordAsync(string bearerToken, ChangePassword changePassword, CancellationToken cancellationToken = default)
