@@ -1,5 +1,6 @@
 namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 {
+    using BlazorShop.Application.CommerceNode.Messages;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Contracts.Payment;
@@ -11,13 +12,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     {
         private readonly CommerceNodeDbContext context;
         private readonly ICommerceStoreContext storeContext;
+        private readonly ICommerceTransactionalMessageService? transactionalMessageService;
 
         public CommerceNodeOrderTrackingService(
             CommerceNodeDbContext context,
-            ICommerceStoreContext storeContext)
+            ICommerceStoreContext storeContext,
+            ICommerceTransactionalMessageService? transactionalMessageService = null)
         {
             this.context = context;
             this.storeContext = storeContext;
+            this.transactionalMessageService = transactionalMessageService;
         }
 
         public async Task<bool> UpdateTrackingAsync(Guid orderId, string carrier, string trackingNumber, string trackingUrl)
@@ -64,6 +68,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 oldTrackingNumber,
                 source: "manual_admin");
             await this.context.SaveChangesAsync();
+            await this.TryQueueFulfillmentStatusChangedAsync(storeId.Value, order.Id);
 
             return true;
         }
@@ -119,8 +124,26 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             await this.context.SaveChangesAsync();
+            await this.TryQueueFulfillmentStatusChangedAsync(storeId.Value, order.Id);
 
             return true;
+        }
+
+        private async Task TryQueueFulfillmentStatusChangedAsync(Guid storeId, Guid orderId)
+        {
+            if (this.transactionalMessageService is null)
+            {
+                return;
+            }
+
+            try
+            {
+                await this.transactionalMessageService.QueueFulfillmentStatusChangedAsync(storeId, orderId);
+            }
+            catch
+            {
+                // Notification delivery is asynchronous and must not roll back fulfillment updates.
+            }
         }
 
         private static DateTime EnsureUtc(DateTime value)

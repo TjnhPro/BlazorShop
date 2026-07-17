@@ -61,6 +61,15 @@ namespace BlazorShop.Application.CommerceNode.Messages
     public sealed record MessageDeliverTaskPayload(
         Guid QueuedMessagePublicId);
 
+    public sealed record OrderCreatedTaskPayload(
+        Guid OrderId,
+        Guid StoreId,
+        string? Reference = null,
+        string? CustomerEmail = null,
+        decimal? TotalAmount = null,
+        string? CurrencyCode = null,
+        DateTime? CreatedAtUtc = null);
+
     public sealed record MessageTokenRenderRequest(
         string Template,
         IReadOnlyDictionary<string, string?> Tokens,

@@ -71,6 +71,8 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Contains("AddHostedService<CommerceTaskWorker>", program, StringComparison.Ordinal);
             Assert.Contains("AddScoped<ICommerceTaskHandler", program, StringComparison.Ordinal);
             Assert.Contains("CommerceTaskWorkerOptions.SectionName", program, StringComparison.Ordinal);
+            Assert.Contains("OrderCreatedTaskHandler", program, StringComparison.Ordinal);
+            Assert.Contains("MessageDeliverTaskHandler", program, StringComparison.Ordinal);
         }
 
         private static string FindRepositoryRoot()

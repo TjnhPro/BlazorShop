@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Transactional Message Core.md`
 
-Status: Phase 4 complete. Phase 5 not started.
+Status: Phase 5 complete. Phase 6 not started.
 
 Scope: add practical transactional message infrastructure for active V2 Commerce Node. Replace hard-coded direct email calls with template-driven queued messages for account activation, password recovery, order placed confirmation, payment/fulfillment hooks, and contact form delivery. This is not a marketing automation, newsletter campaign, or visual email builder phase.
 
@@ -542,25 +542,25 @@ Goal: enqueue core commerce transactional notifications after state changes.
 
 Implementation checklist:
 
-- [ ] Add `order.placed` enqueue call after order is created.
-- [ ] Ensure order notification enqueue happens outside main order transaction or through post-commit/outbox-safe point.
-- [ ] Add payment status changed hook after payment/order payment transitions.
-- [ ] Add fulfillment/shipping status changed hook in V2 Commerce Node order tracking/admin shipping updates.
-- [ ] Use order snapshot data for message content.
-- [ ] Do not use live mutable product/customer data for historical message content.
-- [ ] Add idempotency keys based on store/order/message event.
+- [x] Add `order.placed` enqueue call after order is created. 2026-07-17 Phase 5: `OrderCreatedTaskHandler` queues `order.placed` through `ICommerceTransactionalMessageService`.
+- [x] Ensure order notification enqueue happens outside main order transaction or through post-commit/outbox-safe point. 2026-07-17 Phase 5: order placement still writes durable `order.created` CommerceTask; worker handler queues message afterward.
+- [x] Add payment status changed hook after payment/order payment transitions. 2026-07-17 Phase 5: `PaymentAttemptService` queues after state save/commit when attempt has an order.
+- [x] Add fulfillment/shipping status changed hook in V2 Commerce Node order tracking/admin shipping updates. 2026-07-17 Phase 5: shipment upsert and order tracking status updates queue fulfillment notifications after save.
+- [x] Use order snapshot data for message content. 2026-07-17 Phase 5: notification service uses order/customer/store snapshots first, with store record only for missing support/default-culture metadata.
+- [x] Do not use live mutable product/customer data for historical message content. 2026-07-17 Phase 5: tokens come from order snapshot fields, not product/customer tables.
+- [x] Add idempotency keys based on store/order/message event. 2026-07-17 Phase 5: keys use order id plus event/status.
 
 Verification checklist:
 
-- [ ] Order placed confirmation queues once per order.
-- [ ] Retried checkout/place-order does not send duplicate order confirmation.
-- [ ] Payment hooks do not fire duplicate messages for no-op status updates.
-- [ ] Fulfillment hooks do not fire duplicate messages for no-op status updates.
-- [ ] Message delivery failure does not roll back order/payment/shipping state.
+- [x] Order placed confirmation queues once per order. 2026-07-17 Phase 5: order.created task idempotency remains per order and handler registration is guarded.
+- [x] Retried checkout/place-order does not send duplicate order confirmation. 2026-07-17 Phase 5: existing order placement idempotency plus message idempotency key `order.placed:{orderId}`.
+- [x] Payment hooks do not fire duplicate messages for no-op status updates. 2026-07-17 Phase 5: payment transition no-op returns before hook; message idempotency includes payment status.
+- [x] Fulfillment hooks do not fire duplicate messages for no-op status updates. 2026-07-17 Phase 5: message idempotency includes shipping status.
+- [x] Message delivery failure does not roll back order/payment/shipping state. 2026-07-17 Phase 5: payment and shipment hook tests inject queue failure and assert state still saves.
 
 Exit criteria:
 
-- [ ] Core commerce events can enqueue transactional messages safely.
+- [x] Core commerce events can enqueue transactional messages safely. 2026-07-17 Phase 5.
 
 Suggested commit:
 
@@ -830,7 +830,7 @@ test(transactional-message): verify message core
 - [x] Phase 2 - token rendering and preview. 2026-07-17: CommerceNode API build passed; focused renderer/model/resolver tests passed 43/43.
 - [x] Phase 3 - queue and delivery handler. 2026-07-17: CommerceNode API build passed; focused queue/delivery/renderer/resolver tests passed 18/18.
 - [x] Phase 4 - account messages. 2026-07-17: CommerceNode API build passed; focused auth/dispatcher/queue/delivery/baseline tests passed 63/63.
-- [ ] Phase 5 - order and payment/fulfillment hooks.
+- [x] Phase 5 - order and payment/fulfillment hooks. 2026-07-17: focused commerce notification/payment/shipment/task baseline tests passed 25/25.
 - [ ] Phase 6 - contact form delivery contract.
 - [ ] Phase 7 - admin management and observability.
 - [ ] Phase 8 - QA, contracts, and cleanup.

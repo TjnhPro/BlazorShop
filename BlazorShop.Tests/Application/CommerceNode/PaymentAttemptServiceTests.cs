@@ -1,14 +1,18 @@
 namespace BlazorShop.Tests.Application.CommerceNode
 {
+    using BlazorShop.Application.CommerceNode.Messages;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Entities;
     using BlazorShop.Domain.Entities.CommerceNode;
+    using BlazorShop.Domain.Entities.Payment;
     using BlazorShop.Infrastructure.Data.CommerceNode;
     using BlazorShop.Infrastructure.Data.CommerceNode.Services;
 
     using Microsoft.EntityFrameworkCore;
+
+    using Moq;
 
     using Xunit;
 
@@ -102,6 +106,58 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var audit = context.PaymentAttemptAuditLogs.Single(item => item.EventType == "payment_attempt.failed");
             Assert.Contains("provider_declined", audit.MetadataJson);
             Assert.DoesNotContain("sk_test_raw", audit.MetadataJson);
+        }
+
+        [Fact]
+        public async Task TransitionAsync_WithOrderQueuesPaymentStatusNotificationWithoutBlockingStateChange()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var orderId = Guid.NewGuid();
+            context.Orders.Add(new Order
+            {
+                Id = orderId,
+                StoreId = storeId,
+                UserId = "customer-1",
+                Reference = "ORD-PAYMENT",
+                CustomerEmail = "customer@example.test",
+                CurrencyCode = "USD",
+                TotalAmount = 42m,
+            });
+            await context.SaveChangesAsync();
+            var notificationService = new Mock<ICommerceTransactionalMessageService>();
+            notificationService
+                .Setup(service => service.QueuePaymentStatusChangedAsync(
+                    storeId,
+                    orderId,
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new QueuedMessageResult(false, ErrorCode: "message_queue.failed", Message: "Queue unavailable."));
+            var service = new PaymentAttemptService(context, transactionalMessageService: notificationService.Object);
+            var created = await service.CreateAsync(new CreatePaymentAttemptRequest(
+                storeId,
+                Guid.NewGuid(),
+                orderId,
+                PaymentMethodKeys.Cod,
+                PaymentMethodKeys.Cod,
+                42m,
+                "USD",
+                "payment-notification-key"));
+
+            var failed = await service.TransitionAsync(new TransitionPaymentAttemptRequest(
+                storeId,
+                created.Payload!.Id,
+                PaymentAttemptStates.Failed,
+                FailureCode: "provider_failed",
+                FailureMessage: "Provider failed."));
+
+            Assert.True(failed.Success);
+            Assert.Equal(PaymentAttemptStates.Failed, failed.Payload!.State);
+            notificationService.Verify(
+                service => service.QueuePaymentStatusChangedAsync(
+                    storeId,
+                    orderId,
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
         }
 
         [Fact]

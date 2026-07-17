@@ -1,5 +1,6 @@
 namespace BlazorShop.Tests.Infrastructure.CommerceNode
 {
+    using BlazorShop.Application.CommerceNode.Messages;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
@@ -13,6 +14,8 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
     using BlazorShop.Infrastructure.Data.CommerceNode.Services;
 
     using Microsoft.EntityFrameworkCore;
+
+    using Moq;
 
     using Xunit;
 
@@ -104,6 +107,37 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         }
 
         [Fact]
+        public async Task UpsertShipmentAsync_QueuesFulfillmentNotificationWithoutBlockingShipmentSave()
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            SeedStore(context, storeId);
+            var order = SeedOrder(context, storeId, quantity: 1);
+            var notificationService = new Mock<ICommerceTransactionalMessageService>();
+            notificationService
+                .Setup(service => service.QueueFulfillmentStatusChangedAsync(
+                    storeId,
+                    order.Id,
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new QueuedMessageResult(false, ErrorCode: "message_queue.failed", Message: "Queue unavailable."));
+            var service = CreateService(
+                context,
+                storeId,
+                transactionalMessageService: notificationService.Object);
+
+            var result = await service.UpsertShipmentAsync(order.Id, CreateRequest());
+
+            Assert.True(result.Success, result.Message);
+            Assert.Single(context.Shipments);
+            notificationService.Verify(
+                service => service.QueueFulfillmentStatusChangedAsync(
+                    storeId,
+                    order.Id,
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Fact]
         public async Task UpsertShipmentAsync_WhenTrackingChanges_AppendsTrackingUpdatedEvent()
         {
             var storeId = Guid.NewGuid();
@@ -135,7 +169,17 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var shipmentService = CreateService(context, storeId);
             await shipmentService.UpsertShipmentAsync(order.Id, CreateRequest());
             context.ChangeTracker.Clear();
-            var trackingService = new CommerceNodeOrderTrackingService(context, new StubCommerceStoreContext(storeId));
+            var notificationService = new Mock<ICommerceTransactionalMessageService>();
+            notificationService
+                .Setup(service => service.QueueFulfillmentStatusChangedAsync(
+                    storeId,
+                    order.Id,
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new QueuedMessageResult(true, Guid.NewGuid()));
+            var trackingService = new CommerceNodeOrderTrackingService(
+                context,
+                new StubCommerceStoreContext(storeId),
+                notificationService.Object);
             var deliveredOn = new DateTime(2026, 7, 18, 2, 0, 0, DateTimeKind.Utc);
 
             var updated = await trackingService.UpdateShippingStatusAsync(order.Id, ShippingStatuses.Delivered, deliveredOn: deliveredOn);
@@ -148,6 +192,12 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 item.EventType == "shipping_status.updated"
                 && item.NewValue == ShippingStatuses.Delivered
                 && item.VisibleToCustomer);
+            notificationService.Verify(
+                service => service.QueueFulfillmentStatusChangedAsync(
+                    storeId,
+                    order.Id,
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
         }
 
         [Fact]
@@ -240,12 +290,14 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         private static CommerceNodeAdminShipmentService CreateService(
             CommerceNodeDbContext context,
             Guid storeId,
-            CapturingAdminAuditService? auditService = null)
+            CapturingAdminAuditService? auditService = null,
+            ICommerceTransactionalMessageService? transactionalMessageService = null)
         {
             return new CommerceNodeAdminShipmentService(
                 context,
                 auditService ?? new CapturingAdminAuditService(),
-                new StubCommerceStoreContext(storeId));
+                new StubCommerceStoreContext(storeId),
+                transactionalMessageService);
         }
 
         private static CommerceNodeAdminOrderService CreateOrderService(

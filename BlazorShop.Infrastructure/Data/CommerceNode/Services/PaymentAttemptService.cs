@@ -4,6 +4,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using System.Text;
     using System.Text.Json;
 
+    using BlazorShop.Application.CommerceNode.Messages;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Domain.Constants;
@@ -49,13 +50,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private readonly CommerceNodeDbContext context;
         private readonly IOrderPlacementService orderPlacementService;
+        private readonly ICommerceTransactionalMessageService? transactionalMessageService;
 
         public PaymentAttemptService(
             CommerceNodeDbContext context,
-            IOrderPlacementService? orderPlacementService = null)
+            IOrderPlacementService? orderPlacementService = null,
+            ICommerceTransactionalMessageService? transactionalMessageService = null)
         {
             this.context = context;
             this.orderPlacementService = orderPlacementService ?? new OrderPlacementService(context);
+            this.transactionalMessageService = transactionalMessageService;
         }
 
         public async Task<ServiceResponse<PaymentAttemptDto>> GetAsync(
@@ -252,7 +256,31 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 throw;
             }
 
+            await this.TryQueuePaymentStatusChangedAsync(attempt, cancellationToken);
+
             return Succeeded("Payment attempt updated.", ToDto(attempt));
+        }
+
+        private async Task TryQueuePaymentStatusChangedAsync(
+            PaymentAttempt attempt,
+            CancellationToken cancellationToken)
+        {
+            if (this.transactionalMessageService is null || !attempt.OrderId.HasValue)
+            {
+                return;
+            }
+
+            try
+            {
+                await this.transactionalMessageService.QueuePaymentStatusChangedAsync(
+                    attempt.StoreId,
+                    attempt.OrderId.Value,
+                    cancellationToken);
+            }
+            catch
+            {
+                // Notification delivery is handled by the message queue and must not roll back payment state.
+            }
         }
 
         private async Task<OrderCreationResult> CreateCapturedOrderAsync(

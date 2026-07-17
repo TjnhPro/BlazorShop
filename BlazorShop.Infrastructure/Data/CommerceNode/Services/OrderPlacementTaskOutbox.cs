@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 {
     using System.Text.Json;
 
+    using BlazorShop.Application.CommerceNode.Messages;
     using BlazorShop.Domain.Entities.CommerceNode;
     using BlazorShop.Domain.Entities.Payment;
 
@@ -44,16 +45,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 LockKey = $"order:{order.Id:N}",
                 PayloadSchemaVersion = "v1",
                 PayloadJson = JsonSerializer.Serialize(
-                    new
-                    {
-                        orderId = order.Id,
-                        storeId = order.StoreId,
-                        reference = order.Reference,
-                        customerEmail = order.CustomerEmail,
-                        totalAmount = order.TotalAmount,
-                        currencyCode = order.CurrencyCode,
-                        createdAtUtc = order.CreatedOn,
-                    },
+                    new OrderCreatedTaskPayload(
+                        order.Id,
+                        order.StoreId ?? Guid.Empty,
+                        order.Reference,
+                        order.CustomerEmail,
+                        order.TotalAmount,
+                        order.CurrencyCode,
+                        order.CreatedOn),
                     JsonOptions),
                 AttemptCount = 0,
                 MaxAttempts = 3,

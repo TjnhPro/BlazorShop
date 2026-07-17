@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 {
     using System.Text.Json;
 
+    using BlazorShop.Application.CommerceNode.Messages;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
@@ -18,15 +19,18 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly CommerceNodeDbContext context;
         private readonly IAdminAuditService auditService;
         private readonly ICommerceStoreContext storeContext;
+        private readonly ICommerceTransactionalMessageService? transactionalMessageService;
 
         public CommerceNodeAdminShipmentService(
             CommerceNodeDbContext context,
             IAdminAuditService auditService,
-            ICommerceStoreContext storeContext)
+            ICommerceStoreContext storeContext,
+            ICommerceTransactionalMessageService? transactionalMessageService = null)
         {
             this.context = context;
             this.auditService = auditService;
             this.storeContext = storeContext;
+            this.transactionalMessageService = transactionalMessageService;
         }
 
         public async Task<ServiceResponse<GetShipment>> GetShipmentAsync(Guid orderId)
@@ -198,6 +202,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 source: "manual_admin");
 
             await this.context.SaveChangesAsync();
+            await this.TryQueueFulfillmentStatusChangedAsync(storeId.Value, order.Id);
             var trackingEventCount = await this.context.ShipmentTrackingEvents
                 .AsNoTracking()
                 .CountAsync(item => item.ShipmentId == shipment.Id);
@@ -241,6 +246,23 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 Summary = summary,
                 MetadataJson = JsonSerializer.Serialize(metadata),
             });
+        }
+
+        private async Task TryQueueFulfillmentStatusChangedAsync(Guid storeId, Guid orderId)
+        {
+            if (this.transactionalMessageService is null)
+            {
+                return;
+            }
+
+            try
+            {
+                await this.transactionalMessageService.QueueFulfillmentStatusChangedAsync(storeId, orderId);
+            }
+            catch
+            {
+                // Notification delivery is asynchronous and must not roll back fulfillment updates.
+            }
         }
 
         private static string? Validate(UpsertShipmentRequest request)
