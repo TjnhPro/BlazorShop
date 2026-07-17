@@ -54,6 +54,7 @@
                     <thead class="bg-ink-50 text-xs font-semibold uppercase text-ink-500">
                         <tr>
                             <th class="px-4 py-3">Method</th>
+                            <th class="px-4 py-3">Provider</th>
                             <th class="px-4 py-3">Enabled</th>
                             <th class="px-4 py-3">Display</th>
                             <th class="px-4 py-3">Order</th>
@@ -70,7 +71,15 @@
                                     <div class="mt-1 text-xs text-ink-500">Updated @method.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
                                 </td>
                                 <td class="px-4 py-3 align-top">
-                                    <input class="size-5 rounded border-ink-300 text-control-700 focus:ring-control-500" type="checkbox" @bind="method.Enabled" />
+                                    <div class="text-sm font-semibold @(method.ProviderActive ? "text-green-700" : "text-amber-700")">@method.ProviderStatusText</div>
+                                    <div class="mt-1 text-xs text-ink-500">@method.MethodType</div>
+                                    @if (method.RequiresWebhookSignature)
+                                    {
+                                        <div class="mt-1 text-xs text-ink-500">Webhook signature required</div>
+                                    }
+                                </td>
+                                <td class="px-4 py-3 align-top">
+                                    <input class="size-5 rounded border-ink-300 text-control-700 focus:ring-control-500 disabled:cursor-not-allowed disabled:opacity-50" type="checkbox" disabled="@(!method.Enabled && !method.ProviderActive)" @bind="method.Enabled" />
                                 </td>
                                 <td class="px-4 py-3 align-top">
                                     <input class="min-h-10 w-56 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="method.DisplayName" />
@@ -204,6 +213,16 @@
 
         public bool Enabled { get; set; }
 
+        public bool ProviderInstalled { get; set; }
+
+        public bool ProviderActive { get; set; }
+
+        public string MethodType { get; set; } = string.Empty;
+
+        public bool RequiresWebhookSignature { get; set; }
+
+        public string ProviderStatusText => ProviderActive ? "Active" : ProviderInstalled ? "Inactive" : "Not installed";
+
         public int DisplayOrder { get; set; }
 
         public string? SettingsJson { get; set; }
@@ -222,6 +241,10 @@
                 DisplayName = method.DisplayName,
                 Description = method.Description,
                 Enabled = method.Enabled,
+                ProviderInstalled = method.Capability.Installed,
+                ProviderActive = method.Capability.Active,
+                MethodType = method.Capability.MethodType,
+                RequiresWebhookSignature = method.Capability.RequiresWebhookSignature,
                 DisplayOrder = method.DisplayOrder,
                 SettingsConfigured = method.Settings.Configured,
                 SettingsJson = null,

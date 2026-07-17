@@ -35,6 +35,10 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
 
             var method = Assert.Single(methods, item => item.PaymentMethodKey == PaymentMethodKeys.Stripe);
             Assert.True(method.Settings.Configured);
+            Assert.True(method.Capability.Installed);
+            Assert.True(method.Capability.Active);
+            Assert.Equal(PaymentProviderMethodTypes.Redirect, method.Capability.MethodType);
+            Assert.True(method.Capability.RequiresWebhookSignature);
             var serialized = JsonSerializer.Serialize(method);
             Assert.DoesNotContain("super-secret", serialized, StringComparison.Ordinal);
             Assert.DoesNotContain("settingsJson", serialized, StringComparison.OrdinalIgnoreCase);
@@ -157,6 +161,34 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.DoesNotContain("settingsJson", serialized, StringComparison.OrdinalIgnoreCase);
         }
 
+        [Fact]
+        public async Task UpdateAsync_WhenProviderIsInactive_RejectsEnable()
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            context.CommerceStores.Add(new CommerceStore
+            {
+                Id = storeId,
+                StoreKey = "default",
+                Name = "Default",
+            });
+            await context.SaveChangesAsync();
+            var service = CreateService(context, storeId);
+
+            var result = await service.UpdateAsync(
+                PaymentMethodKeys.PayPal,
+                new UpdateStorePaymentMethodRequest(
+                    Enabled: true,
+                    DisplayName: "PayPal",
+                    Description: "PayPal checkout.",
+                    DisplayOrder: 30,
+                    SettingsJson: null));
+
+            Assert.False(result.Success);
+            Assert.Equal(ServiceResponseType.ValidationError, result.ResponseType);
+            Assert.Equal("Payment provider is not installed or active.", result.Message);
+        }
+
         private static async Task SeedConfiguredPaymentMethodAsync(
             CommerceNodeDbContext context,
             Guid storeId,
@@ -195,7 +227,8 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 context,
                 new StubCommerceStoreContext(storeId),
                 auditService ?? new CapturingAdminAuditService(),
-                new StorefrontPublicConfigurationCache(context, cache));
+                new StorefrontPublicConfigurationCache(context, cache),
+                new PaymentProviderCapabilityRegistry([new FakePaymentProvider(PaymentMethodKeys.Stripe)]));
         }
 
         private static CommerceNodeDbContext CreateContext()
@@ -247,6 +280,23 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             {
                 this.MetadataJson = request.MetadataJson ?? string.Empty;
                 return Task.FromResult(new ServiceResponse<AdminAuditLogDto>(true, "Audit logged."));
+            }
+        }
+
+        private sealed class FakePaymentProvider : IStorefrontPaymentProvider
+        {
+            public FakePaymentProvider(string providerKey)
+            {
+                this.ProviderKey = providerKey;
+            }
+
+            public string ProviderKey { get; }
+
+            public Task<ServiceResponse<PaymentProviderSessionResult>> CreateHostedSessionAsync(
+                CreatePaymentProviderSessionRequest request,
+                CancellationToken cancellationToken = default)
+            {
+                throw new NotSupportedException();
             }
         }
     }

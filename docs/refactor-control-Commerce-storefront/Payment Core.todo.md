@@ -4,7 +4,7 @@ Generated: 2026-07-17
 
 Source plan: `Payment Core.md`
 
-Status: In progress. Phase 0-5 completed.
+Status: In progress. Phase 0-6 completed.
 
 Scope: turn the existing checkout payment foundation into a practical provider core for active V2. The goal is enough payment behavior for real store usage without moving PayPal/Stripe SDK logic into Domain/Application and without building a full payment platform.
 
@@ -49,10 +49,10 @@ Approved:
   - [ ] webhook idempotency.
   - [ ] out-of-order event handling.
   - [x] order note/audit trail for payment transitions.
-- [ ] Safe public/admin projections:
-  - [ ] Storefront receives public method metadata only.
-  - [ ] Admin can manage provider activation/settings without exposing secrets back in DTOs.
-  - [ ] OpenAPI remains generator-safe.
+- [x] Safe public/admin projections:
+  - [x] Storefront receives public method metadata only.
+  - [x] Admin can manage provider activation/settings without exposing secrets back in DTOs.
+  - [x] OpenAPI remains generator-safe.
 
 Deferred:
 
@@ -507,42 +507,42 @@ Goal: make provider configuration manageable and safe.
 
 Implementation checklist:
 
-- [ ] Keep Commerce Admin route under `api/commerce/admin/payment-methods`.
-- [ ] Add capability metadata to admin response.
-- [ ] Allow enabling/disabling only supported providers.
-- [ ] Validate provider settings JSON by provider when validator exists.
-- [ ] Preserve omitted `SettingsJson` behavior so secrets are not cleared accidentally.
-- [ ] Allow clearing settings only with explicit flag.
-- [ ] Continue audit log metadata with settings configured/changed status only.
-- [ ] Keep ControlPlane gateway path: `ControlPlane.Web -> ControlPlane.API -> CommerceNode.API`.
-- [ ] Reuse existing provider/settings permissions where possible.
-- [ ] Do not let ControlPlane Web call CommerceNode directly.
-- [ ] Storefront public payment methods response remains allowlisted:
-  - [ ] display name.
-  - [ ] short description.
-  - [ ] icon.
-  - [ ] display order.
-  - [ ] supported currency/country metadata if useful.
-  - [ ] method type/next action hint if needed.
-- [ ] Never return `SettingsJson`.
-- [ ] Never return secret keys.
-- [ ] Never return webhook secrets.
-- [ ] Never return provider account internal config.
-- [ ] Never return raw provider payload.
+- [x] Keep Commerce Admin route under `api/commerce/admin/payment-methods`.
+- [x] Add capability metadata to admin response.
+- [x] Allow enabling/disabling only supported providers.
+- [n/a] Validate provider settings JSON by provider when validator exists. No provider-specific settings validator exists yet; generic JSON validation remains in place.
+- [x] Preserve omitted `SettingsJson` behavior so secrets are not cleared accidentally.
+- [x] Allow clearing settings only with explicit flag.
+- [x] Continue audit log metadata with settings configured/changed status only.
+- [x] Keep ControlPlane gateway path: `ControlPlane.Web -> ControlPlane.API -> CommerceNode.API`.
+- [x] Reuse existing provider/settings permissions where possible.
+- [x] Do not let ControlPlane Web call CommerceNode directly.
+- [x] Storefront public payment methods response remains allowlisted:
+  - [x] display name.
+  - [x] short description.
+  - [x] icon.
+  - [x] display order.
+  - [x] supported currency/country metadata if useful.
+  - [n/a] method type/next action hint if needed. Checkout session projections already carry next-action data; public payment method list remains display-only.
+- [x] Never return `SettingsJson`.
+- [x] Never return secret keys.
+- [x] Never return webhook secrets.
+- [x] Never return provider account internal config.
+- [x] Never return raw provider payload.
 
 Verification checklist:
 
-- [ ] Admin update preserves settings when settings omitted.
-- [ ] Admin clear settings works only with explicit flag.
-- [ ] Public config never includes secret fields.
-- [ ] Payment metadata cache invalidates on update.
-- [ ] Control Plane gateway uses Commerce admin route and `storeKey` query.
-- [ ] ControlPlane Web has no direct CommerceNode payment calls.
+- [x] Admin update preserves settings when settings omitted.
+- [x] Admin clear settings works only with explicit flag.
+- [x] Public config never includes secret fields.
+- [x] Payment metadata cache invalidates on update.
+- [x] Control Plane gateway uses Commerce admin route and `storeKey` query.
+- [x] ControlPlane Web has no direct CommerceNode payment calls.
 
 Exit criteria:
 
-- [ ] Admin can manage provider activation safely.
-- [ ] Storefront can render payment choices without private settings.
+- [x] Admin can manage provider activation safely.
+- [x] Storefront can render payment choices without private settings.
 
 Suggested commit:
 
@@ -663,9 +663,9 @@ test(payment-core): verify provider core
 - [x] Captured online payment creates one order exactly once.
 - [x] Terminal payment state cannot be overwritten by late event.
 - [x] Payment audit/note metadata contains no secrets.
-- [ ] Public payment method response does not expose `SettingsJson` or secrets.
-- [ ] Admin payment method update preserves settings when omitted.
-- [ ] Admin clear settings requires explicit flag.
+- [x] Public payment method response does not expose `SettingsJson` or secrets.
+- [x] Admin payment method update preserves settings when omitted.
+- [x] Admin clear settings requires explicit flag.
 - [ ] Storefront OpenAPI validates and snapshots pass.
 
 ### Storefront V2
@@ -777,7 +777,7 @@ test(payment-core): verify provider core
 - [ ] Phase 3 - checkout cutover from provider name to capability.
 - [ ] Phase 4 - webhook and callback hardening.
 - [x] Phase 5 - payment attempt state, order notes, and audit trail.
-- [ ] Phase 6 - admin and public projection cleanup.
+- [x] Phase 6 - admin and public projection cleanup.
 - [ ] Phase 7 - PayPal compatibility and provider route cleanup.
 - [ ] Phase 8 - contract, QA, and documentation.
 

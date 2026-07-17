@@ -28,17 +28,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly ICommerceStoreContext storeContext;
         private readonly IAdminAuditService auditService;
         private readonly IStorefrontPublicConfigurationCache publicConfigurationCache;
+        private readonly IPaymentProviderCapabilityRegistry capabilityRegistry;
 
         public CommerceNodePaymentMethodService(
             CommerceNodeDbContext context,
             ICommerceStoreContext storeContext,
             IAdminAuditService auditService,
-            IStorefrontPublicConfigurationCache publicConfigurationCache)
+            IStorefrontPublicConfigurationCache publicConfigurationCache,
+            IPaymentProviderCapabilityRegistry capabilityRegistry)
         {
             this.context = context;
             this.storeContext = storeContext;
             this.auditService = auditService;
             this.publicConfigurationCache = publicConfigurationCache;
+            this.capabilityRegistry = capabilityRegistry;
         }
 
         public async Task<IEnumerable<GetPaymentMethod>> GetPaymentMethodsAsync()
@@ -94,13 +97,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             await this.EnsureDefaultsAsync(storeResult.Payload, cancellationToken);
-            return await this.context.StorePaymentMethods
+            var methods = await this.context.StorePaymentMethods
                 .AsNoTracking()
                 .Where(method => method.StoreId == storeResult.Payload)
                 .OrderBy(method => method.DisplayOrder)
                 .ThenBy(method => method.DisplayName)
-                .Select(method => Map(method))
                 .ToListAsync(cancellationToken);
+
+            return methods.Select(this.Map).ToList();
         }
 
         public async Task<ServiceResponse<StorePaymentMethodDto>> UpdateAsync(
@@ -111,9 +115,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             ArgumentNullException.ThrowIfNull(request);
 
             var key = NormalizeKey(paymentMethodKey);
-            if (!IsSupportedKey(key))
+            var capabilityResult = this.capabilityRegistry.Get(key);
+            if (!capabilityResult.Success || capabilityResult.Payload is null)
             {
                 return Failure("Payment method key is not supported.", ServiceResponseType.ValidationError);
+            }
+
+            var capability = capabilityResult.Payload;
+            if (request.Enabled && (!capability.Installed || !capability.Active))
+            {
+                return Failure("Payment provider is not installed or active.", ServiceResponseType.ValidationError);
             }
 
             var validationMessage = Validate(request);
@@ -196,7 +207,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             method.UpdatedAt = DateTime.UtcNow;
 
             await this.context.SaveChangesAsync(cancellationToken);
-            var dto = Map(method);
+            var dto = this.Map(method);
 
             await this.auditService.LogAsync(new CreateAdminAuditLogDto
             {
@@ -254,7 +265,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             await this.context.SaveChangesAsync(cancellationToken);
         }
 
-        private static StorePaymentMethodDto Map(StorePaymentMethod method)
+        private StorePaymentMethodDto Map(StorePaymentMethod method)
+        {
+            var capability = this.capabilityRegistry.Get(method.PaymentMethodKey).Payload ?? CreateUnsupportedCapability(method.PaymentMethodKey);
+            return Map(method, capability);
+        }
+
+        private static StorePaymentMethodDto Map(StorePaymentMethod method, PaymentProviderCapabilityDto capability)
         {
             return new StorePaymentMethodDto(
                 method.Id,
@@ -269,6 +286,17 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 ParseCodes(method.SupportedCountryCodesJson),
                 method.MinOrderTotal,
                 method.MaxOrderTotal,
+                new StorePaymentMethodCapabilityDto(
+                    capability.Installed,
+                    capability.Active,
+                    capability.MethodType,
+                    capability.RecurringCapable,
+                    capability.SupportsAuthorize,
+                    capability.SupportsCapture,
+                    capability.SupportsVoid,
+                    capability.SupportsRefund,
+                    capability.SupportsPartialRefund,
+                    capability.RequiresWebhookSignature),
                 new StorePaymentMethodSettingsStatusDto(method.SettingsJson is not null),
                 method.CreatedAt,
                 method.UpdatedAt);
@@ -355,11 +383,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return null;
         }
 
-        private static bool IsSupportedKey(string key)
-        {
-            return key is PaymentMethodKeys.Cod or PaymentMethodKeys.Stripe or PaymentMethodKeys.PayPal;
-        }
-
         private static string NormalizeKey(string? value)
         {
             return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().ToLowerInvariant();
@@ -438,6 +461,31 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             {
                 ResponseType = responseType,
             };
+        }
+
+        private static PaymentProviderCapabilityDto CreateUnsupportedCapability(string systemName)
+        {
+            return new PaymentProviderCapabilityDto(
+                systemName,
+                Installed: false,
+                Active: false,
+                DisplayName: systemName,
+                Description: null,
+                IconUrl: null,
+                DefaultDisplayOrder: 0,
+                SupportedStoreIds: [],
+                SupportedCurrencyCodes: [],
+                SupportedCountryCodes: [],
+                MinOrderTotal: null,
+                MaxOrderTotal: null,
+                MethodType: "unknown",
+                RecurringCapable: false,
+                SupportsAuthorize: false,
+                SupportsCapture: false,
+                SupportsVoid: false,
+                SupportsRefund: false,
+                SupportsPartialRefund: false,
+                RequiresWebhookSignature: false);
         }
 
         private sealed record StorePaymentMethodSeed(

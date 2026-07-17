@@ -353,9 +353,22 @@ namespace BlazorShop.Application.CommerceNode.Payments
         IReadOnlyList<string> SupportedCountryCodes,
         decimal? MinOrderTotal,
         decimal? MaxOrderTotal,
+        StorePaymentMethodCapabilityDto Capability,
         StorePaymentMethodSettingsStatusDto Settings,
         DateTime CreatedAt,
         DateTime UpdatedAt);
+
+    public sealed record StorePaymentMethodCapabilityDto(
+        bool Installed,
+        bool Active,
+        string MethodType,
+        bool RecurringCapable,
+        bool SupportsAuthorize,
+        bool SupportsCapture,
+        bool SupportsVoid,
+        bool SupportsRefund,
+        bool SupportsPartialRefund,
+        bool RequiresWebhookSignature);
 
     public sealed record StorePaymentMethodSettingsStatusDto(
         bool Configured);

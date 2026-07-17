@@ -53,7 +53,8 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 context,
                 new StubCommerceStoreContext(storeId),
                 new NoopAdminAuditService(),
-                publicConfigurationCache);
+                publicConfigurationCache,
+                new PaymentProviderCapabilityRegistry([]));
 
             publicConfigurationCache.Set("default", "cached-config");
 
