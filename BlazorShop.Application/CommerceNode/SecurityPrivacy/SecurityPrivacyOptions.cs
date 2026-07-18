@@ -15,5 +15,7 @@ namespace BlazorShop.Application.CommerceNode.SecurityPrivacy
         public int NewsletterConsentEvidenceRetentionDays { get; set; } = 365;
 
         public bool AnonymizeIpAfterRetentionWindow { get; set; } = true;
+
+        public string DefaultRegistrationMode { get; set; } = "standard";
     }
 }

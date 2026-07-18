@@ -49,32 +49,36 @@ Acceptance:
 
 ## Phase 1 - Commerce Node Store-Scoped Registration Setting
 
-- [ ] Them model setting vao `BlazorShop.Application.CommerceNode.SecurityPrivacy`:
+- [x] Them model setting vao `BlazorShop.Application.CommerceNode.SecurityPrivacy`:
   - `StoreRegistrationAdminSettingsDto`
   - `Registration` property trong `StoreSecurityPrivacySettingsDto`
   - `Registration` property trong `UpdateStoreSecurityPrivacySettingsRequest`
   - runtime projection co `RegistrationMode` hoac `RegistrationAllowed`.
-- [ ] Them property vao domain entity `StoreSecurityPrivacySettings`:
+  2026-07-18 Phase 1: added `StoreRegistrationAdminSettingsDto` and `StoreRegistrationRuntimeSettings`.
+- [x] Them property vao domain entity `StoreSecurityPrivacySettings`:
   - `RegistrationMode` string, default `"standard"`, max length hop ly.
-- [ ] Update `CommerceNodeDbContext` mapping:
+  2026-07-18 Phase 1: added `RegistrationMode = "standard"`.
+- [x] Update `CommerceNodeDbContext` mapping:
   - column `registration_mode`
   - default `"standard"`
   - max length, required.
-- [ ] Tao EF migration cho `CommerceNodeDbContext`.
-- [ ] Update `StoreSecurityPrivacySettingsService`:
+  2026-07-18 Phase 1: mapping uses max length 32, required, default `standard`.
+- [x] Tao EF migration cho `CommerceNodeDbContext`. 2026-07-18 Phase 1: migration `20260718123244_CommerceNodeStoreRegistrationMode` only adds/drops `registration_mode` on `store_security_privacy_settings`.
+- [x] Update `StoreSecurityPrivacySettingsService`:
   - default entity lay registration mode tu `Runtime:Security:RegistrationMode` neu chua co row.
   - map DTO admin.
   - validate chi chap nhan `"standard"` hoac `"disabled"`.
   - apply update.
   - audit metadata co `RegistrationMode`.
   - invalidate public config cache nhu setting hien tai.
-- [ ] Update development seeder de seed `RegistrationMode = "standard"` cho test store.
+  2026-07-18 Phase 1: service maps/applies/validates registration mode and includes it in audit metadata; `SecurityPrivacyOptions.DefaultRegistrationMode` is wired from `Runtime:Security:RegistrationMode`.
+- [x] Update development seeder de seed `RegistrationMode = "standard"` cho test store. 2026-07-18 Phase 1: development QA seed sets `standard`.
 
 Acceptance:
 
-- [ ] Store moi khong bi khoa dang ky ngoai y muon.
-- [ ] Update setting validation tra loi ro rang khi mode invalid.
-- [ ] Migration khong dung `AppDbContext` hoac `ControlPlaneDbContext`.
+- [x] Store moi khong bi khoa dang ky ngoai y muon. 2026-07-18 Phase 1: entity/migration/default service mode is `standard`.
+- [x] Update setting validation tra loi ro rang khi mode invalid. 2026-07-18 Phase 1: invalid mode returns `Registration mode must be either standard or disabled.`
+- [x] Migration khong dung `AppDbContext` hoac `ControlPlaneDbContext`. 2026-07-18 Phase 1: migration generated for `CommerceNodeDbContext`; CommerceNode API build passed.
 
 ## Phase 2 - Storefront API Enforcement From Store Setting
 

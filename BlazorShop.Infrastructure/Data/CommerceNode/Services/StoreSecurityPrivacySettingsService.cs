@@ -19,6 +19,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     public sealed class StoreSecurityPrivacySettingsService : IStoreSecurityPrivacySettingsService
     {
         private static readonly Regex ProviderRegex = new("^[a-z0-9._-]{1,64}$", RegexOptions.Compiled);
+        private const string RegistrationModeStandard = "standard";
+        private const string RegistrationModeDisabled = "disabled";
 
         private readonly CommerceNodeDbContext context;
         private readonly ICommerceStoreContext storeContext;
@@ -141,6 +143,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 CaptchaPasswordRecoveryEnabled = runtime.Captcha.Targets.PasswordRecovery,
                 CaptchaContactEnabled = runtime.Captcha.Targets.Contact,
                 CaptchaReviewEnabled = runtime.Captcha.Targets.Review,
+                RegistrationMode = runtime.Registration.Mode,
                 RefreshTokenIpRetentionDays = runtime.Privacy.RefreshTokenIpRetentionDays,
                 RefreshTokenUserAgentRetentionDays = runtime.Privacy.RefreshTokenUserAgentRetentionDays,
                 CaptchaVerificationLogRetentionDays = runtime.Privacy.CaptchaVerificationLogRetentionDays,
@@ -183,6 +186,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                             Review = this.captchaDefaults.Targets.Review,
                         },
                     },
+                    new StoreRegistrationRuntimeSettings(
+                        NormalizeRegistrationMode(this.privacyDefaults.DefaultRegistrationMode),
+                        string.Equals(
+                            NormalizeRegistrationMode(this.privacyDefaults.DefaultRegistrationMode),
+                            RegistrationModeStandard,
+                            StringComparison.Ordinal)),
                     new SecurityPrivacyOptions
                     {
                         RefreshTokenIpRetentionDays = this.privacyDefaults.RefreshTokenIpRetentionDays,
@@ -191,9 +200,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                         CaptchaVerificationLogRetentionDays = this.privacyDefaults.CaptchaVerificationLogRetentionDays,
                         NewsletterConsentEvidenceRetentionDays = this.privacyDefaults.NewsletterConsentEvidenceRetentionDays,
                         AnonymizeIpAfterRetentionWindow = this.privacyDefaults.AnonymizeIpAfterRetentionWindow,
+                        DefaultRegistrationMode = NormalizeRegistrationMode(this.privacyDefaults.DefaultRegistrationMode),
                     });
             }
 
+            var registrationMode = NormalizeRegistrationMode(settings.RegistrationMode);
             return new StoreSecurityPrivacyRuntimeSettings(
                 new StorefrontConsentOptions
                 {
@@ -222,6 +233,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                         Review = settings.CaptchaReviewEnabled,
                     },
                 },
+                new StoreRegistrationRuntimeSettings(
+                    registrationMode,
+                    string.Equals(registrationMode, RegistrationModeStandard, StringComparison.Ordinal)),
                 new SecurityPrivacyOptions
                 {
                     RefreshTokenIpRetentionDays = settings.RefreshTokenIpRetentionDays,
@@ -230,6 +244,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     CaptchaVerificationLogRetentionDays = settings.CaptchaVerificationLogRetentionDays,
                     NewsletterConsentEvidenceRetentionDays = settings.NewsletterConsentEvidenceRetentionDays,
                     AnonymizeIpAfterRetentionWindow = settings.AnonymizeIpAfterRetentionWindow,
+                    DefaultRegistrationMode = registrationMode,
                 });
         }
 
@@ -262,6 +277,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                         runtime.Captcha.Targets.PasswordRecovery,
                         runtime.Captcha.Targets.Contact,
                         runtime.Captcha.Targets.Review)),
+                new StoreRegistrationAdminSettingsDto(
+                    runtime.Registration.Mode,
+                    runtime.Registration.RegistrationAllowed),
                 new StorePrivacyRetentionSettingsDto(
                     runtime.Privacy.RefreshTokenIpRetentionDays,
                     runtime.Privacy.RefreshTokenUserAgentRetentionDays,
@@ -293,6 +311,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             settings.CaptchaPasswordRecoveryEnabled = request.Captcha.Targets.PasswordRecovery;
             settings.CaptchaContactEnabled = request.Captcha.Targets.Contact;
             settings.CaptchaReviewEnabled = request.Captcha.Targets.Review;
+            settings.RegistrationMode = NormalizeRegistrationMode(request.Registration?.Mode);
             settings.RefreshTokenIpRetentionDays = request.Privacy.RefreshTokenIpRetentionDays;
             settings.RefreshTokenUserAgentRetentionDays = request.Privacy.RefreshTokenUserAgentRetentionDays;
             settings.CaptchaVerificationLogRetentionDays = request.Privacy.CaptchaVerificationLogRetentionDays;
@@ -323,6 +342,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 settings.CaptchaEnabled,
                 settings.CaptchaProviderSystemName,
                 CaptchaSecretConfigured = !string.IsNullOrWhiteSpace(settings.CaptchaSecretReference),
+                settings.RegistrationMode,
                 settings.RefreshTokenIpRetentionDays,
                 settings.RefreshTokenUserAgentRetentionDays,
             });
@@ -352,6 +372,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             if (request.Privacy is null)
             {
                 return "Privacy retention settings are required.";
+            }
+
+            if (request.Registration is not null
+                && !IsSupportedRegistrationMode(request.Registration.Mode))
+            {
+                return "Registration mode must be either standard or disabled.";
             }
 
             if (string.IsNullOrWhiteSpace(request.Consent.CurrentVersion) || request.Consent.CurrentVersion.Length > 64)
@@ -406,6 +432,29 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private static string? NormalizeNullable(string? value)
         {
             return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
+
+        private static string NormalizeRegistrationMode(string? value)
+        {
+            var mode = string.IsNullOrWhiteSpace(value)
+                ? RegistrationModeStandard
+                : value.Trim().ToLowerInvariant();
+
+            return string.Equals(mode, RegistrationModeDisabled, StringComparison.Ordinal)
+                ? RegistrationModeDisabled
+                : RegistrationModeStandard;
+        }
+
+        private static bool IsSupportedRegistrationMode(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return false;
+            }
+
+            var mode = value.Trim().ToLowerInvariant();
+            return string.Equals(mode, RegistrationModeStandard, StringComparison.Ordinal)
+                   || string.Equals(mode, RegistrationModeDisabled, StringComparison.Ordinal);
         }
 
         private static ServiceResponse<StoreSecurityPrivacySettingsDto> Success(StoreSecurityPrivacySettingsDto payload, string message)

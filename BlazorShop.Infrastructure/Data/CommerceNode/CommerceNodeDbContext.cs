@@ -2382,6 +2382,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 entity.Property(settings => settings.CaptchaPasswordRecoveryEnabled).HasColumnName("captcha_password_recovery_enabled");
                 entity.Property(settings => settings.CaptchaContactEnabled).HasColumnName("captcha_contact_enabled");
                 entity.Property(settings => settings.CaptchaReviewEnabled).HasColumnName("captcha_review_enabled");
+                entity.Property(settings => settings.RegistrationMode).HasColumnName("registration_mode").HasMaxLength(32).HasDefaultValue("standard").IsRequired();
                 entity.Property(settings => settings.RefreshTokenIpRetentionDays).HasColumnName("refresh_token_ip_retention_days");
                 entity.Property(settings => settings.RefreshTokenUserAgentRetentionDays).HasColumnName("refresh_token_user_agent_retention_days");
                 entity.Property(settings => settings.CaptchaVerificationLogRetentionDays).HasColumnName("captcha_verification_log_retention_days");

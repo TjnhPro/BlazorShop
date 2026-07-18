@@ -8,6 +8,7 @@ namespace BlazorShop.Application.CommerceNode.SecurityPrivacy
         Guid PublicId,
         StoreConsentAdminSettingsDto Consent,
         StoreCaptchaAdminSettingsDto Captcha,
+        StoreRegistrationAdminSettingsDto Registration,
         StorePrivacyRetentionSettingsDto Privacy,
         DateTimeOffset CreatedAt,
         DateTimeOffset UpdatedAt,
@@ -40,6 +41,10 @@ namespace BlazorShop.Application.CommerceNode.SecurityPrivacy
         bool Contact,
         bool Review);
 
+    public sealed record StoreRegistrationAdminSettingsDto(
+        string Mode,
+        bool RegistrationAllowed);
+
     public sealed record StorePrivacyRetentionSettingsDto(
         int RefreshTokenIpRetentionDays,
         int RefreshTokenUserAgentRetentionDays,
@@ -51,7 +56,8 @@ namespace BlazorShop.Application.CommerceNode.SecurityPrivacy
     public sealed record UpdateStoreSecurityPrivacySettingsRequest(
         StoreConsentAdminSettingsDto Consent,
         UpdateStoreCaptchaAdminSettingsDto Captcha,
-        StorePrivacyRetentionSettingsDto Privacy);
+        StorePrivacyRetentionSettingsDto Privacy,
+        StoreRegistrationAdminSettingsDto? Registration = null);
 
     public sealed record UpdateStoreCaptchaAdminSettingsDto(
         bool Enabled,
@@ -65,7 +71,12 @@ namespace BlazorShop.Application.CommerceNode.SecurityPrivacy
     public sealed record StoreSecurityPrivacyRuntimeSettings(
         StorefrontConsentOptions Consent,
         CaptchaOptions Captcha,
+        StoreRegistrationRuntimeSettings Registration,
         SecurityPrivacyOptions Privacy);
+
+    public sealed record StoreRegistrationRuntimeSettings(
+        string Mode,
+        bool RegistrationAllowed);
 
     public interface IStoreSecurityPrivacySettingsService
     {

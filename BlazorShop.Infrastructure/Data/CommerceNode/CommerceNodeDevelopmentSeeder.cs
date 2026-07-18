@@ -586,6 +586,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             settings.PolicyPagePath = "/pages/cookies";
             settings.CaptchaEnabled = false;
             settings.CaptchaProviderSystemName = "none";
+            settings.RegistrationMode = "standard";
             settings.UpdatedAt = DateTimeOffset.UtcNow;
             settings.UpdatedByUserId = "development-qa-seed";
         }

@@ -48,6 +48,8 @@ namespace BlazorShop.Domain.Entities.CommerceNode
 
         public bool CaptchaReviewEnabled { get; set; }
 
+        public string RegistrationMode { get; set; } = "standard";
+
         public int RefreshTokenIpRetentionDays { get; set; } = 30;
 
         public int RefreshTokenUserAgentRetentionDays { get; set; } = 30;

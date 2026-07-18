@@ -91,6 +91,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.Configure<StorefrontConsentOptions>(configuration.GetSection("Runtime:Consent"));
             services.Configure<CaptchaOptions>(configuration.GetSection("Runtime:Captcha"));
             services.Configure<SecurityPrivacyOptions>(configuration.GetSection(SecurityPrivacyOptions.SectionName));
+            services.Configure<SecurityPrivacyOptions>(options =>
+            {
+                options.DefaultRegistrationMode = configuration["Runtime:Security:RegistrationMode"] ?? options.DefaultRegistrationMode;
+            });
             services.Configure<IdentityConfirmationOptions>(configuration.GetSection(IdentityConfirmationOptions.SectionName));
             services.Configure<BankTransferSettings>(configuration.GetSection("BankTransfer"));
             services.AddOptions<ClientAppOptions>()
