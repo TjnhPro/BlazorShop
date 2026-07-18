@@ -83,16 +83,27 @@ Kết luận theo code hiện tại:
 
 ## Fixture Gate
 
-- [ ] `FX-001 P0` - Store test active, đúng domain/base URL, maintenance tắt.
-- [ ] `FX-002 P0` - Store test có ít nhất 1 category published và 1 page legal published.
-- [ ] `FX-003 P0` - Product simple published, purchasable, COD-compatible, stock đủ cho order test.
-- [ ] `FX-004 P0` - Product variant published với ít nhất 2 option active để test selection preview.
-- [ ] `FX-005 P0` - Product out-of-stock hoặc non-purchasable để test disabled buy.
-- [ ] `FX-006 P0` - Customer synthetic đã confirm email, có profile và ít nhất 1 saved address.
-- [ ] `FX-007 P0` - COD enabled cho store/currency test.
-- [ ] `FX-008 P0` - Shipping flat/free option configured cho địa chỉ synthetic.
+- [x] `FX-001 P0` - Store test active, đúng domain/base URL, maintenance tắt. 2026-07-18: `CommerceNodeDevelopmentSeeder` seeds `default` as active with `http://localhost:18598`; API check `GET /api/storefront/stores/default/configuration` returned 200 and `maintenanceModeEnabled=false`.
+- [x] `FX-002 P0` - Store test có ít nhất 1 category published và 1 page legal published. 2026-07-18: seed creates Apparel/T-Shirts and `qa-legal`; API checks returned 200 for categories, navigation, and `/pages/qa-legal`; unpublished page returned 404.
+- [x] `FX-003 P0` - Product simple published, purchasable, COD-compatible, stock đủ cho order test. 2026-07-18: seed creates `QA Simple Product 100` with stock 20; API check `GET /catalog/products/slug/qa-simple-product-100` returned 200.
+- [x] `FX-004 P0` - Product variant published với ít nhất 2 option active để test selection preview. 2026-07-18: seed creates `Catalog QA T-Shirt` as variant product with active Red/M and Red/XL variants plus inactive Black/M guard fixture.
+- [x] `FX-005 P0` - Product out-of-stock hoặc non-purchasable để test disabled buy. 2026-07-18: seed creates `QA Out Of Stock Product`, quantity-rule, scheduled, expired, unpublished, digital, surcharge, SEO/media, and escaping fixtures.
+- [x] `FX-006 P0` - Customer synthetic đã confirm email, có profile và ít nhất 1 saved address. 2026-07-18: seed creates confirmed `qa.customer@example.local` / `QaCustomer123!`; API login returned 200 and authenticated profile returned the seeded customer.
+- [x] `FX-007 P0` - COD enabled cho store/currency test. 2026-07-18: seed enables COD for default and S2; API check `GET /payments/methods` returned Cash on Delivery.
+- [x] `FX-008 P0` - Shipping flat/free option configured cho địa chỉ synthetic. 2026-07-18: seed configures store shipping origin, allowed countries `US,VN`, flat rate, free threshold, and seeded US address.
 - [ ] `FX-009 P1` - Email sandbox/capture hoạt động cho recovery và order placed message.
-- [ ] `FX-010 P1` - Cleanup protocol cho order synthetic: tag/reference hoặc manual status để quản trị biết đây là order test.
+- [x] `FX-010 P1` - Cleanup protocol cho order synthetic: tag/reference hoặc manual status để quản trị biết đây là order test. 2026-07-18: seed creates stable snapshot references `QA-CATALOG-SNAPSHOT` and `QA-QA-S2-SNAPSHOT`.
+
+### QA Seed Fixture Clusters
+
+Seed source: `BlazorShop.Infrastructure/Data/CommerceNode/CommerceNodeDevelopmentSeeder.cs`.
+
+| Cluster | Fixture | Evidence |
+| --- | --- | --- |
+| Store/config | `default`, `qa-s2`, `qa-maintenance`, `qa-disabled`; currencies EUR/USD, consent, features, shipping, COD | API checks: default configuration 200, S2 product 200, disabled store configuration 404 |
+| Catalog/product | Published simple, variant, out-of-stock, unmanaged stock, quantity-rule, unpublished, scheduled, expired, shipping surcharge, digital, SEO/media, HTML escaping fixtures | API checks: products page returned 11 items; simple product 200; unpublished product 404 |
+| Content/navigation/SEO | Legal/cookies pages, draft hidden page, main/footer navigation, old legal page redirect | API checks: `qa-legal` 200, draft page 404, main navigation 4 items, footer legal 2 items, redirect resolved |
+| Account/order | Confirmed QA customers for default and S2 with addresses and sample order references | API checks: default and S2 login 200; authenticated default profile returned `qa.customer@example.local` |
 
 ## Runtime, Store, Navigation
 
