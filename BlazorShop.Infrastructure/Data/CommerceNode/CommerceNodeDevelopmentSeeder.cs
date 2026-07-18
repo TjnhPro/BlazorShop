@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 {
     using System.Text.Json;
 
+    using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Domain.Constants;
@@ -12,6 +13,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Hosting;
+    using Microsoft.Extensions.Options;
 
     public sealed class CommerceNodeDevelopmentSeeder
     {
@@ -21,18 +24,23 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
         private const string DisabledStoreKey = "qa-disabled";
         private const string QaCustomerEmail = "qa.customer@example.local";
         private const string QaCustomerPassword = "QaCustomer123!";
+        private const string QaOtherCustomerEmail = "qa.other@example.local";
+        private const string QaOtherCustomerPassword = "QaOther123!";
         private const string QaSecondStoreCustomerEmail = "qa.s2.customer@example.local";
         private const string QaSecondStoreCustomerPassword = "QaS2Customer123!";
         private const string StorefrontQaUserRole = "User";
+        private const string ProductMediaRootPath = "runtime/media";
 
         private static readonly Guid ApparelCategoryId = Guid.Parse("8d4830f9-a21f-4f4a-96d7-83d1e6dc0201");
         private static readonly Guid TshirtsCategoryId = Guid.Parse("e0e5e4f8-3f12-4c17-b041-7a8fc62e6b14");
         private static readonly Guid LegalPageId = Guid.Parse("1a111111-1111-4111-8111-111111111111");
         private static readonly Guid CookiePageId = Guid.Parse("1a111111-1111-4111-8111-111111111112");
         private static readonly Guid DraftPageId = Guid.Parse("1a111111-1111-4111-8111-111111111113");
+        private static readonly Guid EscapingPageId = Guid.Parse("1a111111-1111-4111-8111-111111111114");
         private static readonly Guid LegalPagePublicId = Guid.Parse("1a111111-1111-4111-8111-111111111211");
         private static readonly Guid CookiePagePublicId = Guid.Parse("1a111111-1111-4111-8111-111111111212");
         private static readonly Guid DraftPagePublicId = Guid.Parse("1a111111-1111-4111-8111-111111111213");
+        private static readonly Guid EscapingPagePublicId = Guid.Parse("1a111111-1111-4111-8111-111111111214");
         private static readonly Guid TshirtProductId = Guid.Parse("68ba3d10-4d13-46c4-8c8d-4a53b37cf201");
         private static readonly Guid LowStockProductId = Guid.Parse("e9f21b8f-7b2d-4a08-8971-c0dfe037fc1a");
         private static readonly Guid SimpleProductId = Guid.Parse("2b111111-1111-4111-8111-111111111101");
@@ -46,9 +54,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
         private static readonly Guid DigitalProductId = Guid.Parse("2b111111-1111-4111-8111-111111111112");
         private static readonly Guid SeoMediaProductId = Guid.Parse("2b111111-1111-4111-8111-111111111113");
         private static readonly Guid HtmlNameProductId = Guid.Parse("2b111111-1111-4111-8111-111111111115");
+        private static readonly Guid MissingImageProductId = Guid.Parse("2b111111-1111-4111-8111-111111111116");
+        private static readonly Guid PurchasingDisabledProductId = Guid.Parse("2b111111-1111-4111-8111-111111111117");
         private static readonly Guid QaCustomerId = Guid.Parse("3c111111-1111-4111-8111-111111111101");
+        private static readonly Guid QaOtherCustomerId = Guid.Parse("3c111111-1111-4111-8111-111111111102");
         private static readonly Guid QaCustomerShippingAddressId = Guid.Parse("3c111111-1111-4111-8111-111111111201");
         private static readonly Guid QaCustomerBillingAddressId = Guid.Parse("3c111111-1111-4111-8111-111111111202");
+        private static readonly Guid QaOtherCustomerShippingAddressId = Guid.Parse("3c111111-1111-4111-8111-111111111203");
         private static readonly Guid QaS2StoreId = Guid.Parse("4d111111-1111-4111-8111-111111111102");
         private static readonly Guid QaMaintenanceStoreId = Guid.Parse("4d111111-1111-4111-8111-111111111103");
         private static readonly Guid QaDisabledStoreId = Guid.Parse("4d111111-1111-4111-8111-111111111104");
@@ -56,19 +68,38 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
         private static readonly Guid QaS2ProductId = Guid.Parse("5e111111-1111-4111-8111-111111111202");
         private static readonly Guid QaS2CustomerId = Guid.Parse("5e111111-1111-4111-8111-111111111302");
         private static readonly Guid QaS2CustomerAddressId = Guid.Parse("5e111111-1111-4111-8111-111111111402");
+        private static readonly Guid SeoMediaProductMediaId = Guid.Parse("6f111111-1111-4111-8111-111111111113");
+        private static readonly Guid SeoMediaProductMediaPublicId = Guid.Parse("6f111111-1111-4111-8111-111111111213");
+        private static readonly Guid QaS2ProductMediaId = Guid.Parse("6f111111-1111-4111-8111-111111111202");
+        private static readonly Guid QaS2ProductMediaPublicId = Guid.Parse("6f111111-1111-4111-8111-111111111302");
+        private static readonly Guid DefaultContentMediaAssetId = Guid.Parse("7a111111-1111-4111-8111-111111111101");
+        private static readonly Guid DefaultContentMediaAssetPublicId = Guid.Parse("7a111111-1111-4111-8111-111111111201");
+        private static readonly Guid QaS2ContentMediaAssetId = Guid.Parse("7a111111-1111-4111-8111-111111111102");
+        private static readonly Guid QaS2ContentMediaAssetPublicId = Guid.Parse("7a111111-1111-4111-8111-111111111202");
         private static readonly Guid TshirtRedMVariantId = Guid.Parse("c34f5a0f-401d-4f58-b3d9-c9349ed6d101");
         private static readonly Guid TshirtRedXlVariantId = Guid.Parse("910cb350-8d44-43a7-b86d-8e38ea0cd102");
         private static readonly Guid TshirtBlackMVariantId = Guid.Parse("6894d9f0-071b-4f77-83a7-3d81d8a3d103");
+        private static readonly byte[] QaFixturePngBytes = Convert.FromBase64String(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=");
 
         private readonly CommerceNodeDbContext dbContext;
         private readonly UserManager<AppUser> userManager;
+        private readonly IHostEnvironment hostEnvironment;
+        private readonly IMediaStorageProvider mediaStorageProvider;
+        private readonly CommerceMediaStorageOptions commerceMediaStorageOptions;
 
         public CommerceNodeDevelopmentSeeder(
             CommerceNodeDbContext dbContext,
-            UserManager<AppUser> userManager)
+            UserManager<AppUser> userManager,
+            IHostEnvironment hostEnvironment,
+            IMediaStorageProvider mediaStorageProvider,
+            IOptions<CommerceMediaStorageOptions> commerceMediaStorageOptions)
         {
             this.dbContext = dbContext;
             this.userManager = userManager;
+            this.hostEnvironment = hostEnvironment;
+            this.mediaStorageProvider = mediaStorageProvider;
+            this.commerceMediaStorageOptions = commerceMediaStorageOptions.Value;
         }
 
         public async Task SeedAsync(CancellationToken cancellationToken = default)
@@ -81,6 +112,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             await this.EnsureStoreConfigurationAsync(isolationStore.Id, cancellationToken);
             await this.EnsureCategoriesAsync(store.Id, cancellationToken);
             await this.EnsureProductsAsync(store.Id, cancellationToken);
+            await this.EnsureMediaFixtureFilesAsync(cancellationToken);
+            await this.EnsureProductMediaFixturesAsync(store.Id, cancellationToken);
             await this.EnsureStorefrontPagesAsync(store.Id, cancellationToken);
             await this.EnsureNavigationAsync(store.Id, cancellationToken);
             var customer = await this.EnsureCustomerAsync(
@@ -92,7 +125,17 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 QaCustomerPassword,
                 "QA Customer",
                 cancellationToken);
+            var otherCustomer = await this.EnsureCustomerAsync(
+                store.Id,
+                QaOtherCustomerId,
+                QaOtherCustomerShippingAddressId,
+                null,
+                QaOtherCustomerEmail,
+                QaOtherCustomerPassword,
+                "QA Other Customer",
+                cancellationToken);
             await this.EnsureIsolationCatalogAsync(isolationStore.Id, cancellationToken);
+            await this.EnsureProductMediaFixturesAsync(isolationStore.Id, cancellationToken);
             var isolationCustomer = await this.EnsureCustomerAsync(
                 isolationStore.Id,
                 QaS2CustomerId,
@@ -103,6 +146,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 "QA S2 Customer",
                 cancellationToken);
             await this.EnsureSampleOrderAsync(store, customer, cancellationToken);
+            await this.EnsureSampleOrderAsync(store, otherCustomer, "QA-OTHER-CUSTOMER-SNAPSHOT", cancellationToken);
             await this.EnsureSampleOrderAsync(isolationStore, isolationCustomer, cancellationToken);
         }
 
@@ -672,6 +716,21 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 cancellationToken);
             await this.EnsureQaProductAsync(
                 new ProductSeed(
+                    PurchasingDisabledProductId,
+                    "QA Purchasing Disabled Product",
+                    "qa-purchasing-disabled-product",
+                    "QA-P7-DISABLED",
+                    "Published QA product with purchasing disabled and a visible reason.",
+                    65.00m,
+                    20,
+                    DisplayOrder: 70,
+                    PurchasingDisabled: true,
+                    PurchasingDisabledReason: "QA fixture: purchasing is disabled for this product."),
+                storeId,
+                TshirtsCategoryId,
+                cancellationToken);
+            await this.EnsureQaProductAsync(
+                new ProductSeed(
                     UnpublishedProductId,
                     "QA Unpublished Product",
                     "qa-unpublished-product",
@@ -763,13 +822,27 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             await this.EnsureQaProductAsync(
                 new ProductSeed(
                     HtmlNameProductId,
-                    "QA Unicode <Safe> Tee",
+                    "QA Unicode Safe <Tag> Tee",
                     "qa-unicode-safe-tee",
                     "QA-P15-UNICODE",
                     "QA product with Unicode and HTML-like text for escaping checks.",
                     42.00m,
                     12,
                     DisplayOrder: 150),
+                storeId,
+                TshirtsCategoryId,
+                cancellationToken);
+            await this.EnsureQaProductAsync(
+                new ProductSeed(
+                    MissingImageProductId,
+                    "QA Missing Image Product",
+                    "qa-missing-image-product",
+                    "QA-P16-NOIMAGE",
+                    "Published QA product with no image to verify fallback rendering.",
+                    18.00m,
+                    10,
+                    DisplayOrder: 160,
+                    Image: null),
                 storeId,
                 TshirtsCategoryId,
                 cancellationToken);
@@ -812,6 +885,202 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 false,
                 false,
                 cancellationToken);
+        }
+
+        private async Task EnsureMediaFixtureFilesAsync(CancellationToken cancellationToken)
+        {
+            await this.EnsureMediaFixtureFileAsync(
+                ProductMediaRootPath,
+                "qa-fixtures/default/seo-media-product.png",
+                cancellationToken);
+            await this.EnsureMediaFixtureFileAsync(
+                ProductMediaRootPath,
+                "qa-fixtures/qa-s2/isolation-product.png",
+                cancellationToken);
+            await this.EnsureMediaFixtureFileAsync(
+                this.commerceMediaStorageOptions.RootPath,
+                "qa-fixtures/default/content-fixture.png",
+                cancellationToken);
+            await this.EnsureMediaFixtureFileAsync(
+                this.commerceMediaStorageOptions.RootPath,
+                "qa-fixtures/qa-s2/content-fixture.png",
+                cancellationToken);
+        }
+
+        private async Task EnsureMediaFixtureFileAsync(
+            string rootPath,
+            string storagePath,
+            CancellationToken cancellationToken)
+        {
+            if (this.mediaStorageProvider.FileExists(this.hostEnvironment.ContentRootPath, rootPath, storagePath))
+            {
+                return;
+            }
+
+            await this.mediaStorageProvider.WriteAllBytesAsync(
+                this.hostEnvironment.ContentRootPath,
+                rootPath,
+                storagePath,
+                QaFixturePngBytes,
+                cancellationToken);
+        }
+
+        private async Task EnsureProductMediaFixturesAsync(Guid storeId, CancellationToken cancellationToken)
+        {
+            var storeKey = await this.dbContext.CommerceStores
+                .Where(store => store.Id == storeId)
+                .Select(store => store.StoreKey)
+                .FirstAsync(cancellationToken);
+
+            if (string.Equals(storeKey, IsolationStoreKey, StringComparison.OrdinalIgnoreCase))
+            {
+                await this.EnsurePrimaryProductMediaAsync(
+                    QaS2ProductMediaId,
+                    QaS2ProductMediaPublicId,
+                    storeId,
+                    QaS2ProductId,
+                    "qa-fixtures/qa-s2/isolation-product.png",
+                    "qa-s2-isolation-product.png",
+                    "QA S2 isolation product image",
+                    "qa-fixture-product-media-s2",
+                    cancellationToken);
+                await this.EnsureCommerceMediaAssetAsync(
+                    QaS2ContentMediaAssetId,
+                    QaS2ContentMediaAssetPublicId,
+                    storeId,
+                    "qa-fixtures/qa-s2/content-fixture.png",
+                    "qa-s2-content-fixture.png",
+                    "QA S2 content fixture",
+                    "QA S2 content fixture image",
+                    "qa-fixture-content-media-s2",
+                    cancellationToken);
+                return;
+            }
+
+            await this.EnsurePrimaryProductMediaAsync(
+                SeoMediaProductMediaId,
+                SeoMediaProductMediaPublicId,
+                storeId,
+                SeoMediaProductId,
+                "qa-fixtures/default/seo-media-product.png",
+                "qa-seo-media-product.png",
+                "QA SEO media product image",
+                "qa-fixture-product-media-default",
+                cancellationToken);
+            await this.EnsureCommerceMediaAssetAsync(
+                DefaultContentMediaAssetId,
+                DefaultContentMediaAssetPublicId,
+                storeId,
+                "qa-fixtures/default/content-fixture.png",
+                "qa-content-fixture.png",
+                "QA content fixture",
+                "QA content fixture image",
+                "qa-fixture-content-media-default",
+                cancellationToken);
+        }
+
+        private async Task EnsurePrimaryProductMediaAsync(
+            Guid id,
+            Guid publicId,
+            Guid storeId,
+            Guid productId,
+            string storagePath,
+            string fileName,
+            string altText,
+            string contentHash,
+            CancellationToken cancellationToken)
+        {
+            var product = await this.dbContext.Products.FirstOrDefaultAsync(item => item.Id == productId, cancellationToken);
+            if (product is null)
+            {
+                return;
+            }
+
+            var otherPrimaryMedia = await this.dbContext.ProductMedia
+                .Where(media => media.StoreId == storeId
+                    && media.ProductId == productId
+                    && media.Id != id
+                    && media.IsPrimary
+                    && media.DeletedAt == null)
+                .ToListAsync(cancellationToken);
+            foreach (var existingPrimary in otherPrimaryMedia)
+            {
+                existingPrimary.IsPrimary = false;
+                existingPrimary.UpdatedAt = DateTimeOffset.UtcNow;
+            }
+
+            var media = await this.dbContext.ProductMedia.FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
+            if (media is null)
+            {
+                media = new ProductMedia { Id = id };
+                this.dbContext.ProductMedia.Add(media);
+            }
+
+            media.PublicId = publicId;
+            media.StoreId = storeId;
+            media.ProductId = productId;
+            media.OriginalSourceUrl = null;
+            media.OriginalStoragePath = storagePath;
+            media.ContentHash = contentHash;
+            media.FileName = fileName;
+            media.MimeType = "image/png";
+            media.Width = 1;
+            media.Height = 1;
+            media.FileSizeBytes = QaFixturePngBytes.Length;
+            media.SortOrder = 0;
+            media.IsPrimary = true;
+            media.AltText = altText;
+            media.Status = ProductMediaStatuses.Stored;
+            media.ErrorMessage = null;
+            media.Version = 1;
+            media.ProcessedAt = DateTimeOffset.UtcNow;
+            media.DeletedAt = null;
+            media.UpdatedAt = DateTimeOffset.UtcNow;
+
+            product.Image = $"/media/products/{publicId:D}?w=640&fit=contain&format=webp&v=1";
+            product.UpdatedAt = DateTime.UtcNow;
+            await this.dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        private async Task EnsureCommerceMediaAssetAsync(
+            Guid id,
+            Guid publicId,
+            Guid storeId,
+            string storagePath,
+            string canonicalFileName,
+            string displayName,
+            string altText,
+            string contentHash,
+            CancellationToken cancellationToken)
+        {
+            var asset = await this.dbContext.CommerceMediaAssets.FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
+            if (asset is null)
+            {
+                asset = new CommerceMediaAsset
+                {
+                    Id = id,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                };
+                this.dbContext.CommerceMediaAssets.Add(asset);
+            }
+
+            asset.PublicId = publicId;
+            asset.StoreId = storeId;
+            asset.OriginalFileName = canonicalFileName;
+            asset.CanonicalFileName = canonicalFileName;
+            asset.DisplayName = displayName;
+            asset.AltText = altText;
+            asset.TitleText = displayName;
+            asset.UsageType = CommerceMediaAssetUsageTypes.Content;
+            asset.OriginalStoragePath = storagePath;
+            asset.ContentHash = contentHash;
+            asset.MimeType = "image/png";
+            asset.Extension = "png";
+            asset.Width = 1;
+            asset.Height = 1;
+            asset.FileSizeBytes = QaFixturePngBytes.Length;
+            asset.UpdatedAt = DateTimeOffset.UtcNow;
+            await this.dbContext.SaveChangesAsync(cancellationToken);
         }
 
         private async Task EnsureQaProductAsync(
@@ -960,6 +1229,19 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 navigationLocation: null,
                 pageKey: null,
                 cancellationToken);
+            await this.EnsureStorefrontPageAsync(
+                EscapingPageId,
+                storeId,
+                "qa-escaping-content",
+                "QA Escaping <Tag> Page",
+                "Published page with encoded script-like text for escaping QA.",
+                "<p data-qa=\"escaping-content\">Safe encoded payload: &lt;script&gt;window.__qaXssExecuted=true&lt;/script&gt;</p><p>HTML markup remains controlled while script text stays inert.</p>",
+                isPublished: true,
+                includeInSitemap: true,
+                includeInNavigation: false,
+                navigationLocation: null,
+                pageKey: "qa_escaping_content",
+                cancellationToken);
 
             await this.EnsureSeoRedirectAsync(
                 storeId,
@@ -998,13 +1280,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             }
 
             page.StoreId = storeId;
-            page.PublicId = id == LegalPageId
-                ? LegalPagePublicId
-                : id == CookiePageId
-                    ? CookiePagePublicId
-                    : id == DraftPageId
-                        ? DraftPagePublicId
-                        : page.PublicId;
+            page.PublicId = id switch
+            {
+                var value when value == LegalPageId => LegalPagePublicId,
+                var value when value == CookiePageId => CookiePagePublicId,
+                var value when value == DraftPageId => DraftPagePublicId,
+                var value when value == EscapingPageId => EscapingPagePublicId,
+                _ => page.PublicId,
+            };
             page.Slug = slug;
             page.Title = title;
             page.Intro = intro;
@@ -1354,6 +1637,15 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
         private async Task EnsureSampleOrderAsync(CommerceStore store, CommerceCustomer customer, CancellationToken cancellationToken)
         {
             var reference = store.StoreKey == DefaultStoreKey ? "QA-CATALOG-SNAPSHOT" : $"QA-{store.StoreKey.ToUpperInvariant()}-SNAPSHOT";
+            await this.EnsureSampleOrderAsync(store, customer, reference, cancellationToken);
+        }
+
+        private async Task EnsureSampleOrderAsync(
+            CommerceStore store,
+            CommerceCustomer customer,
+            string reference,
+            CancellationToken cancellationToken)
+        {
             if (await this.dbContext.Orders.AnyAsync(order => order.Reference == reference, cancellationToken))
             {
                 return;
@@ -1444,7 +1736,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             decimal Price,
             int Quantity,
             int DisplayOrder,
-            string Image = "/images/banner-bg.jpg",
+            string? Image = "/images/banner-bg.jpg",
             bool ManageStock = true,
             int MinOrderQuantity = 1,
             int? MaxOrderQuantity = null,
