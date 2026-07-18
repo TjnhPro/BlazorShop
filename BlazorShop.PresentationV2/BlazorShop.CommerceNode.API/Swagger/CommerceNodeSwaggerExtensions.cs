@@ -823,6 +823,31 @@ namespace BlazorShop.CommerceNode.API.Swagger
             private static readonly IReadOnlyDictionary<(string Controller, string Action), CommerceTransactionalMessageOperationMetadata> Metadata =
                 new Dictionary<(string Controller, string Action), CommerceTransactionalMessageOperationMetadata>
                 {
+                    [("CommerceStoreEmailSettings", "Get")] = new(
+                        "CommerceStoreEmailSettings_Get",
+                        "Get store email SMTP settings.",
+                        typeof(CommerceNodeApiResponse<StoreEmailSettingsResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    [("CommerceStoreEmailSettings", "Update")] = new(
+                        "CommerceStoreEmailSettings_Update",
+                        "Update store email SMTP settings.",
+                        typeof(CommerceNodeApiResponse<StoreEmailSettingsResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
+                    [("CommerceStoreEmailSettings", "RotatePassword")] = new(
+                        "CommerceStoreEmailSettings_RotatePassword",
+                        "Rotate the store SMTP password.",
+                        typeof(CommerceNodeApiResponse<StoreEmailSettingsResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    [("CommerceStoreEmailSettings", "ClearPassword")] = new(
+                        "CommerceStoreEmailSettings_ClearPassword",
+                        "Clear the store SMTP password.",
+                        typeof(CommerceNodeApiResponse<StoreEmailSettingsResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
+                    [("CommerceStoreEmailSettings", "SendTest")] = new(
+                        "CommerceStoreEmailSettings_SendTest",
+                        "Send a store SMTP test email.",
+                        typeof(CommerceNodeApiResponse<SendStoreEmailTestResponse>),
+                        [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError]),
                     [("CommerceMessageTemplates", "List")] = new(
                         "CommerceMessageTemplates_List",
                         "List transactional message templates.",

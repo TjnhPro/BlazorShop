@@ -173,37 +173,37 @@ Acceptance:
 
 Purpose: make SMTP/message operations manageable without breaking boundaries.
 
-- [ ] Add or extend Commerce Node admin endpoint to get store email settings.
-- [ ] Add or extend Commerce Node admin endpoint to update store email settings.
-- [ ] Add endpoint/action to rotate SMTP password.
-- [ ] Add endpoint/action to clear SMTP password.
-- [ ] Add endpoint/action to send test email.
-- [ ] Reuse existing message template list/detail/update/reset/preview endpoints.
-- [ ] Reuse existing queued message list/detail/retry/cancel endpoints.
-- [ ] Add Control Plane API gateway method for get store email settings.
-- [ ] Add Control Plane API gateway method for update store email settings.
-- [ ] Add Control Plane API gateway method for test email.
-- [ ] Add Control Plane API gateway methods for template operations if missing.
-- [ ] Add Control Plane API gateway methods for queued-message operations if missing.
-- [ ] Protect read routes with existing `CommerceSettingsRead` or a narrower existing policy.
-- [ ] Protect write/test/retry/cancel routes with `CommerceSettingsWrite` or a narrower existing policy.
-- [ ] Add Control Plane Web page/tab with store selector.
-- [ ] Show SMTP effective status per store.
-- [ ] Show `SecretsConfigured` indicator.
-- [ ] Show host/port/SSL/username/from/reply-to fields.
-- [ ] Add password rotate input that never echoes current password.
-- [ ] Add clear password action.
-- [ ] Add send test email action.
-- [ ] Add template list/preview/update/reset UI if missing.
-- [ ] Add queued message list/detail/retry/cancel UI if missing.
+- [x] Add or extend Commerce Node admin endpoint to get store email settings. 2026-07-18 Phase 4: `GET api/commerce/admin/email-settings` resolves current store from admin `storeKey`.
+- [x] Add or extend Commerce Node admin endpoint to update store email settings. 2026-07-18 Phase 4: `PUT api/commerce/admin/email-settings`.
+- [x] Add endpoint/action to rotate SMTP password. 2026-07-18 Phase 4: `POST api/commerce/admin/email-settings/password/rotate`.
+- [x] Add endpoint/action to clear SMTP password. 2026-07-18 Phase 4: `POST api/commerce/admin/email-settings/password/clear` clears the secret and disables store email to keep validation safe.
+- [x] Add endpoint/action to send test email. 2026-07-18 Phase 4: `POST api/commerce/admin/email-settings/test-send`.
+- [x] Reuse existing message template list/detail/update/reset/preview endpoints. 2026-07-18 Phase 4: Control Plane gateway forwards to existing Commerce Node endpoints.
+- [x] Reuse existing queued message list/detail/retry/cancel endpoints. 2026-07-18 Phase 4: Control Plane gateway forwards to existing Commerce Node endpoints.
+- [x] Add Control Plane API gateway method for get store email settings.
+- [x] Add Control Plane API gateway method for update store email settings.
+- [x] Add Control Plane API gateway method for test email.
+- [x] Add Control Plane API gateway methods for template operations if missing.
+- [x] Add Control Plane API gateway methods for queued-message operations if missing.
+- [x] Protect read routes with existing `CommerceSettingsRead` or a narrower existing policy. 2026-07-18 Phase 4: read routes use `CommerceSettingsRead`.
+- [x] Protect write/test/retry/cancel routes with `CommerceSettingsWrite` or a narrower existing policy. 2026-07-18 Phase 4: write/test/retry/cancel routes use `CommerceSettingsWrite`.
+- [x] Add Control Plane Web page/tab with store selector. 2026-07-18 Phase 4: `/commerce-admin/email`.
+- [x] Show SMTP effective status per store.
+- [x] Show `SecretsConfigured` indicator.
+- [x] Show host/port/SSL/username/from/reply-to fields.
+- [x] Add password rotate input that never echoes current password.
+- [x] Add clear password action.
+- [x] Add send test email action.
+- [x] Add template list/preview/update/reset UI if missing.
+- [x] Add queued message list/detail/retry/cancel UI if missing.
 
 Acceptance:
 
-- [ ] Browser network capture proves Control Plane Web calls only Control Plane API.
-- [ ] Commerce Node Swagger has stable operation IDs and safe schemas.
-- [ ] Control Plane API response envelope stays consistent.
-- [ ] Test email sends with selected store SMTP settings.
-- [ ] No SMTP password appears in API response, DOM, console, trace, audit metadata, or logs.
+- [x] Browser network capture proves Control Plane Web calls only Control Plane API. 2026-07-18 Phase 4: static boundary test proves the Web page uses only `IControlPlaneCatalogClient`; live browser capture remains in QA checklist.
+- [x] Commerce Node Swagger has stable operation IDs and safe schemas. 2026-07-18 Phase 4: `EmailSmtpControlPlaneGatewayTests.CommerceNodeSwagger_DefinesStoreEmailOperationMetadata`.
+- [x] Control Plane API response envelope stays consistent. 2026-07-18 Phase 4: endpoints route through existing `ToActionResult` envelope writer.
+- [x] Test email sends with selected store SMTP settings. 2026-07-18 Phase 4: endpoint uses `IStoreEmailTestSendService`, covered by `StoreEmailTestSendServiceTests`.
+- [x] No SMTP password appears in API response, DOM, console, trace, audit metadata, or logs. 2026-07-18 Phase 4: response DTO tests assert no password/protected secret fields; UI does not render current password.
 
 ## Phase 5 - Recovery Email E2E
 

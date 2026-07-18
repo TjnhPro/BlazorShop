@@ -5,6 +5,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
     using System.Text.Json;
 
     using BlazorShop.Application.CommerceNode.Currencies;
+    using BlazorShop.Application.CommerceNode.Messages;
     using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Application.ControlPlane.Catalog;
     using BlazorShop.Application.ControlPlane.Security;
@@ -1052,6 +1053,126 @@ namespace BlazorShop.ControlPlane.API.Controllers
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.catalogService.UpdatePaymentMethodAsync(storePublicId, paymentMethodKey, request, cancellationToken));
+        }
+
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/email-settings")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsRead)]
+        public async Task<IActionResult> GetEmailSettings(Guid storePublicId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.GetEmailSettingsAsync(storePublicId, cancellationToken));
+        }
+
+        [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/email-settings")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsWrite)]
+        public async Task<IActionResult> UpdateEmailSettings(
+            Guid storePublicId,
+            UpdateStoreEmailSettingsRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.UpdateEmailSettingsAsync(storePublicId, request, cancellationToken));
+        }
+
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/email-settings/password/rotate")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsWrite)]
+        public async Task<IActionResult> RotateEmailPassword(
+            Guid storePublicId,
+            RotateStoreEmailPasswordRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.RotateEmailPasswordAsync(storePublicId, request, cancellationToken));
+        }
+
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/email-settings/password/clear")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsWrite)]
+        public async Task<IActionResult> ClearEmailPassword(Guid storePublicId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ClearEmailPasswordAsync(storePublicId, cancellationToken));
+        }
+
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/email-settings/test-send")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsWrite)]
+        public async Task<IActionResult> SendEmailTest(
+            Guid storePublicId,
+            SendStoreEmailTestRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.SendEmailTestAsync(storePublicId, request, cancellationToken));
+        }
+
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/message-templates")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsRead)]
+        public async Task<IActionResult> ListMessageTemplates(Guid storePublicId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ListMessageTemplatesAsync(storePublicId, cancellationToken));
+        }
+
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/message-templates/{templatePublicId:guid}")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsRead)]
+        public async Task<IActionResult> GetMessageTemplate(Guid storePublicId, Guid templatePublicId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.GetMessageTemplateAsync(storePublicId, templatePublicId, cancellationToken));
+        }
+
+        [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/message-templates/{templatePublicId:guid}")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsWrite)]
+        public async Task<IActionResult> UpdateMessageTemplate(
+            Guid storePublicId,
+            Guid templatePublicId,
+            UpdateMessageTemplateRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.UpdateMessageTemplateAsync(storePublicId, templatePublicId, request, cancellationToken));
+        }
+
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/message-templates/{templatePublicId:guid}/reset")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsWrite)]
+        public async Task<IActionResult> ResetMessageTemplate(Guid storePublicId, Guid templatePublicId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.ResetMessageTemplateAsync(storePublicId, templatePublicId, cancellationToken));
+        }
+
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/message-templates/preview")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsRead)]
+        public async Task<IActionResult> PreviewMessageTemplate(
+            Guid storePublicId,
+            PreviewMessageTemplateRequest request,
+            CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.PreviewMessageTemplateAsync(storePublicId, request, cancellationToken));
+        }
+
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/queued-messages")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsRead)]
+        public async Task<IActionResult> ListQueuedMessages(
+            Guid storePublicId,
+            [FromQuery] string? status,
+            [FromQuery] string? templateSystemName,
+            [FromQuery] int skip = 0,
+            [FromQuery] int take = 25,
+            CancellationToken cancellationToken = default)
+        {
+            return ToActionResult(await this.catalogService.ListQueuedMessagesAsync(storePublicId, status, templateSystemName, skip, take, cancellationToken));
+        }
+
+        [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/queued-messages/{queuedMessagePublicId:guid}")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsRead)]
+        public async Task<IActionResult> GetQueuedMessage(Guid storePublicId, Guid queuedMessagePublicId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.GetQueuedMessageAsync(storePublicId, queuedMessagePublicId, cancellationToken));
+        }
+
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/queued-messages/{queuedMessagePublicId:guid}/retry")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsWrite)]
+        public async Task<IActionResult> RetryQueuedMessage(Guid storePublicId, Guid queuedMessagePublicId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.RetryQueuedMessageAsync(storePublicId, queuedMessagePublicId, cancellationToken));
+        }
+
+        [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/queued-messages/{queuedMessagePublicId:guid}/cancel")]
+        [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsWrite)]
+        public async Task<IActionResult> CancelQueuedMessage(Guid storePublicId, Guid queuedMessagePublicId, CancellationToken cancellationToken)
+        {
+            return ToActionResult(await this.catalogService.CancelQueuedMessageAsync(storePublicId, queuedMessagePublicId, cancellationToken));
         }
 
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/currencies")]

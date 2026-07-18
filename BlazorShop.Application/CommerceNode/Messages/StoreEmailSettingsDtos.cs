@@ -68,6 +68,14 @@ namespace BlazorShop.Application.CommerceNode.Messages
         public string? CaptureRedirectToEmail { get; set; }
     }
 
+    public sealed class RotateStoreEmailPasswordRequest
+    {
+        [Required]
+        [MinLength(8)]
+        [MaxLength(1024)]
+        public string Password { get; set; } = string.Empty;
+    }
+
     public sealed record StoreEmailSettingsValidationContext(
         bool ExistingSecretConfigured = false,
         bool CaptureModeAllowed = false);
@@ -259,9 +267,14 @@ namespace BlazorShop.Application.CommerceNode.Messages
         public string? Subject { get; set; }
     }
 
+    public sealed record SendStoreEmailTestResponse(
+        string ToEmail,
+        string Subject,
+        DateTimeOffset SentAtUtc);
+
     public interface IStoreEmailTestSendService
     {
-        Task<ServiceResponse> SendAsync(
+        Task<ServiceResponse<SendStoreEmailTestResponse>> SendAsync(
             Guid storeId,
             SendStoreEmailTestRequest request,
             CancellationToken cancellationToken = default);

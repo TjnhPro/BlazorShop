@@ -1175,6 +1175,9 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Store SMTP test-send service uses the same resolver and transport sender as real queued delivery. 2026-07-18 Phase 2: `StoreEmailTestSendServiceTests` passed.
 - [x] Local Mailpit SMTP/web/API capture service is available for email QA. 2026-07-18 Phase 3: `docker compose -f compose.commercenode.yml up -d commercenode-mailpit`; SMTP smoke to `localhost:1025` appeared in `http://localhost:8025/api/v1/messages`, then inbox was cleared.
 - [x] Development seeding configures `default` and `qa-s2` store SMTP capture settings without Storefront SMTP env. 2026-07-18 Phase 3: `run-v2-local.ps1 -StopExisting -NoOpenBrowser` succeeded; DB query showed both stores enabled in `capture` mode on `localhost:1025`.
+- [x] CommerceNode admin email settings endpoints are store-scoped and documented in Swagger metadata. 2026-07-18 Phase 4: focused CommerceNode API build passed; `EmailSmtpControlPlaneGatewayTests` asserts operation IDs and safe response schemas.
+- [x] ControlPlane API gateway exposes store email settings, test-send, message-template, and queued-message operations behind CommerceSettings policies. 2026-07-18 Phase 4: focused ControlPlane API build passed; static gateway tests passed.
+- [x] ControlPlane Web has `/commerce-admin/email` for SMTP settings, test-send, template edit/preview/reset, and queued-message retry/cancel without direct CommerceNode calls. 2026-07-18 Phase 4: ControlPlane Web build passed; static boundary test passed.
 - [ ] Local Mailpit capture receives password recovery email sent through store SMTP settings.
 - [ ] Local Mailpit capture receives exactly one order placed email for a real COD order.
 - [ ] Multi-store SMTP isolation proves Store A and Store B use different sender profiles.

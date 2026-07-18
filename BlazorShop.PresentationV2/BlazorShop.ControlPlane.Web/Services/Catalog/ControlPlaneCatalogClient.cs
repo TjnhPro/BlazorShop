@@ -6,6 +6,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
     using BlazorShop.Application.ControlPlane.Catalog;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
+    using BlazorShop.Application.CommerceNode.Messages;
     using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
@@ -462,6 +463,77 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             Guid storePublicId,
             string paymentMethodKey,
             UpdateStorePaymentMethodRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StoreEmailSettingsResponse>> GetEmailSettingsAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StoreEmailSettingsResponse>> UpdateEmailSettingsAsync(
+            Guid storePublicId,
+            UpdateStoreEmailSettingsRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StoreEmailSettingsResponse>> RotateEmailPasswordAsync(
+            Guid storePublicId,
+            RotateStoreEmailPasswordRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StoreEmailSettingsResponse>> ClearEmailPasswordAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<SendStoreEmailTestResponse>> SendEmailTestAsync(
+            Guid storePublicId,
+            SendStoreEmailTestRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<IReadOnlyList<MessageTemplateAdminSummary>>> ListMessageTemplatesAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<MessageTemplateAdminDetail>> GetMessageTemplateAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<MessageTemplateAdminDetail>> UpdateMessageTemplateAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            UpdateMessageTemplateRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<MessageTemplateAdminDetail>> ResetMessageTemplateAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<MessageTemplatePreviewResponse>> PreviewMessageTemplateAsync(
+            Guid storePublicId,
+            PreviewMessageTemplateRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<QueuedMessageAdminListResponse>> ListQueuedMessagesAsync(
+            Guid storePublicId,
+            string? status = null,
+            string? templateSystemName = null,
+            int skip = 0,
+            int take = 25,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<QueuedMessageAdminDetail>> GetQueuedMessageAsync(
+            Guid storePublicId,
+            Guid queuedMessagePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<QueuedMessageAdminDetail>> RetryQueuedMessageAsync(
+            Guid storePublicId,
+            Guid queuedMessagePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<QueuedMessageAdminDetail>> CancelQueuedMessageAsync(
+            Guid storePublicId,
+            Guid queuedMessagePublicId,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneClientResult<IReadOnlyList<StoreCurrencyDto>>> ListCurrenciesAsync(
@@ -1482,6 +1554,166 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
                 cancellationToken);
         }
 
+        public Task<ControlPlaneClientResult<StoreEmailSettingsResponse>> GetEmailSettingsAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<StoreEmailSettingsResponse>(
+                CommerceRoute(storePublicId, "email-settings"),
+                "Unable to load store email settings.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StoreEmailSettingsResponse>> UpdateEmailSettingsAsync(
+            Guid storePublicId,
+            UpdateStoreEmailSettingsRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<UpdateStoreEmailSettingsRequest, StoreEmailSettingsResponse>(
+                CommerceRoute(storePublicId, "email-settings"),
+                request,
+                "Unable to update store email settings.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StoreEmailSettingsResponse>> RotateEmailPasswordAsync(
+            Guid storePublicId,
+            RotateStoreEmailPasswordRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<RotateStoreEmailPasswordRequest, StoreEmailSettingsResponse>(
+                CommerceRoute(storePublicId, "email-settings/password/rotate"),
+                request,
+                "Unable to rotate store SMTP password.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StoreEmailSettingsResponse>> ClearEmailPasswordAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<StoreEmailSettingsResponse>(
+                CommerceRoute(storePublicId, "email-settings/password/clear"),
+                "Unable to clear store SMTP password.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<SendStoreEmailTestResponse>> SendEmailTestAsync(
+            Guid storePublicId,
+            SendStoreEmailTestRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<SendStoreEmailTestRequest, SendStoreEmailTestResponse>(
+                CommerceRoute(storePublicId, "email-settings/test-send"),
+                request,
+                "Unable to send store SMTP test email.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<IReadOnlyList<MessageTemplateAdminSummary>>> ListMessageTemplatesAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<IReadOnlyList<MessageTemplateAdminSummary>>(
+                CommerceRoute(storePublicId, "message-templates"),
+                "Unable to load message templates.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<MessageTemplateAdminDetail>> GetMessageTemplateAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<MessageTemplateAdminDetail>(
+                CommerceRoute(storePublicId, $"message-templates/{templatePublicId:D}"),
+                "Unable to load message template.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<MessageTemplateAdminDetail>> UpdateMessageTemplateAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            UpdateMessageTemplateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<UpdateMessageTemplateRequest, MessageTemplateAdminDetail>(
+                CommerceRoute(storePublicId, $"message-templates/{templatePublicId:D}"),
+                request,
+                "Unable to update message template.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<MessageTemplateAdminDetail>> ResetMessageTemplateAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<MessageTemplateAdminDetail>(
+                CommerceRoute(storePublicId, $"message-templates/{templatePublicId:D}/reset"),
+                "Unable to reset message template.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<MessageTemplatePreviewResponse>> PreviewMessageTemplateAsync(
+            Guid storePublicId,
+            PreviewMessageTemplateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<PreviewMessageTemplateRequest, MessageTemplatePreviewResponse>(
+                CommerceRoute(storePublicId, "message-templates/preview"),
+                request,
+                "Unable to preview message template.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<QueuedMessageAdminListResponse>> ListQueuedMessagesAsync(
+            Guid storePublicId,
+            string? status = null,
+            string? templateSystemName = null,
+            int skip = 0,
+            int take = 25,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<QueuedMessageAdminListResponse>(
+                CommerceRoute(storePublicId, "queued-messages" + BuildQueuedMessageQuery(status, templateSystemName, skip, take)),
+                "Unable to load queued messages.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<QueuedMessageAdminDetail>> GetQueuedMessageAsync(
+            Guid storePublicId,
+            Guid queuedMessagePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<QueuedMessageAdminDetail>(
+                CommerceRoute(storePublicId, $"queued-messages/{queuedMessagePublicId:D}"),
+                "Unable to load queued message.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<QueuedMessageAdminDetail>> RetryQueuedMessageAsync(
+            Guid storePublicId,
+            Guid queuedMessagePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<QueuedMessageAdminDetail>(
+                CommerceRoute(storePublicId, $"queued-messages/{queuedMessagePublicId:D}/retry"),
+                "Unable to retry queued message.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<QueuedMessageAdminDetail>> CancelQueuedMessageAsync(
+            Guid storePublicId,
+            Guid queuedMessagePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PostPrivateAsync<QueuedMessageAdminDetail>(
+                CommerceRoute(storePublicId, $"queued-messages/{queuedMessagePublicId:D}/cancel"),
+                "Unable to cancel queued message.",
+                cancellationToken);
+        }
+
         public Task<ControlPlaneClientResult<IReadOnlyList<StoreCurrencyDto>>> ListCurrenciesAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
@@ -1704,6 +1936,19 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
             AddIfPresent(values, "shippingStatus", query.ShippingStatus);
             AddIfPresent(values, "fromUtc", query.FromUtc?.ToString("O", CultureInfo.InvariantCulture));
             AddIfPresent(values, "toUtc", query.ToUtc?.ToString("O", CultureInfo.InvariantCulture));
+            return ToQueryString(values);
+        }
+
+        private static string BuildQueuedMessageQuery(string? status, string? templateSystemName, int skip, int take)
+        {
+            var values = new List<KeyValuePair<string, string>>
+            {
+                new("skip", Math.Max(0, skip).ToString(CultureInfo.InvariantCulture)),
+                new("take", Math.Clamp(take, 1, 100).ToString(CultureInfo.InvariantCulture)),
+            };
+
+            AddIfPresent(values, "status", status);
+            AddIfPresent(values, "templateSystemName", templateSystemName);
             return ToQueryString(values);
         }
 

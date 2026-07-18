@@ -19,7 +19,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.transportSender = transportSender;
         }
 
-        public async Task<ServiceResponse> SendAsync(
+        public async Task<ServiceResponse<SendStoreEmailTestResponse>> SendAsync(
             Guid storeId,
             SendStoreEmailTestRequest request,
             CancellationToken cancellationToken = default)
@@ -31,7 +31,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     validationResults,
                     validateAllProperties: true))
             {
-                return new ServiceResponse(
+                return new ServiceResponse<SendStoreEmailTestResponse>(
                     false,
                     string.Join(" ", validationResults.Select(result => result.ErrorMessage)));
             }
@@ -41,7 +41,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 cancellationToken);
             if (!transportResult.Success || transportResult.Transport is null)
             {
-                return new ServiceResponse(
+                return new ServiceResponse<SendStoreEmailTestResponse>(
                     false,
                     transportResult.Message ?? "Store SMTP transport is not configured.");
             }
@@ -58,7 +58,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 body,
                 cancellationToken);
 
-            return new ServiceResponse(true, "Store SMTP test email sent.");
+            return new ServiceResponse<SendStoreEmailTestResponse>(true, "Store SMTP test email sent.")
+            {
+                Payload = new SendStoreEmailTestResponse(request.ToEmail.Trim(), subject, DateTimeOffset.UtcNow),
+            };
         }
     }
 }

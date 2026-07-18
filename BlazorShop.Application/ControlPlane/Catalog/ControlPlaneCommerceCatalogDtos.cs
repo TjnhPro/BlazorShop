@@ -1,6 +1,7 @@
 namespace BlazorShop.Application.ControlPlane.Catalog
 {
     using BlazorShop.Application.CommerceNode.Currencies;
+    using BlazorShop.Application.CommerceNode.Messages;
     using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
@@ -473,6 +474,77 @@ namespace BlazorShop.Application.ControlPlane.Catalog
             Guid storePublicId,
             string paymentMethodKey,
             UpdateStorePaymentMethodRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> GetEmailSettingsAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> UpdateEmailSettingsAsync(
+            Guid storePublicId,
+            UpdateStoreEmailSettingsRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> RotateEmailPasswordAsync(
+            Guid storePublicId,
+            RotateStoreEmailPasswordRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> ClearEmailPasswordAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<SendStoreEmailTestResponse>> SendEmailTestAsync(
+            Guid storePublicId,
+            SendStoreEmailTestRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<MessageTemplateAdminSummary>>> ListMessageTemplatesAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<MessageTemplateAdminDetail>> GetMessageTemplateAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<MessageTemplateAdminDetail>> UpdateMessageTemplateAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            UpdateMessageTemplateRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<MessageTemplateAdminDetail>> ResetMessageTemplateAsync(
+            Guid storePublicId,
+            Guid templatePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<MessageTemplatePreviewResponse>> PreviewMessageTemplateAsync(
+            Guid storePublicId,
+            PreviewMessageTemplateRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminListResponse>> ListQueuedMessagesAsync(
+            Guid storePublicId,
+            string? status = null,
+            string? templateSystemName = null,
+            int skip = 0,
+            int take = 25,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminDetail>> GetQueuedMessageAsync(
+            Guid storePublicId,
+            Guid queuedMessagePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminDetail>> RetryQueuedMessageAsync(
+            Guid storePublicId,
+            Guid queuedMessagePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminDetail>> CancelQueuedMessageAsync(
+            Guid storePublicId,
+            Guid queuedMessagePublicId,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreCurrencyDto>>> ListCurrenciesAsync(

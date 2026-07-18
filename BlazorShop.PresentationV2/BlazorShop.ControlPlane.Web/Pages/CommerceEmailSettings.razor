@@ -1,0 +1,841 @@
+@page "/commerce-admin/email"
+@attribute [Authorize]
+@inject IControlPlaneStoreClient StoreClient
+@inject IControlPlaneCatalogClient CatalogClient
+
+<PageTitle>Email</PageTitle>
+
+<section class="space-y-5">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+            <p class="text-sm font-semibold text-control-700">Commerce Admin</p>
+            <h1 class="text-2xl font-bold text-ink-900">Email</h1>
+            <p class="mt-1 text-sm text-ink-500">Configure store-scoped SMTP sender and capture transport.</p>
+        </div>
+        <div class="flex flex-col gap-2 sm:flex-row">
+            <select class="min-h-10 min-w-64 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="selectedStorePublicId">
+                <option value="">Select store</option>
+                @foreach (var store in stores)
+                {
+                    <option value="@store.PublicId">@store.Name (@store.StoreKey)</option>
+                }
+            </select>
+            <button class="cp-button cp-button-secondary" @onclick="LoadEmailSettingsAsync">
+                <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">@errorMessage</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">@successMessage</div>
+    }
+
+    @if (!HasStore)
+    {
+        <div class="cp-card p-8 text-center text-sm text-ink-500">Select a store to load email settings.</div>
+    }
+    else if (isLoading)
+    {
+        <div class="cp-card p-8 text-center text-sm text-ink-500">Loading email settings...</div>
+    }
+    else
+    {
+        <div class="grid gap-4 xl:grid-cols-[1fr_360px]">
+            <div class="cp-card p-4">
+                <div class="mb-4 flex items-center justify-between gap-3 border-b border-ink-100 pb-3">
+                    <div>
+                        <div class="text-sm font-semibold text-ink-900">Store SMTP</div>
+                        <div class="mt-1 text-xs text-ink-500">Password is write-only and never returned by the API.</div>
+                    </div>
+                    <span class="rounded-full px-2 py-1 text-xs font-semibold @(form.Enabled ? "bg-green-50 text-green-700" : "bg-ink-100 text-ink-500")">
+                        @(form.Enabled ? "Enabled" : "Disabled")
+                    </span>
+                </div>
+
+                <div class="grid gap-4 lg:grid-cols-2">
+                    <label class="flex items-center gap-2 text-sm font-medium text-ink-700">
+                        <input class="size-4 rounded border-ink-300 text-control-700 focus:ring-control-500" type="checkbox" @bind="form.Enabled" />
+                        Enabled
+                    </label>
+                    <label class="grid gap-1 text-sm font-medium text-ink-700">
+                        Delivery mode
+                        <select class="min-h-10 rounded-md border border-ink-300 px-3 font-normal outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="form.DeliveryMode">
+                            <option value="smtp">smtp</option>
+                            <option value="capture">capture</option>
+                        </select>
+                    </label>
+                    <label class="grid gap-1 text-sm font-medium text-ink-700">
+                        SMTP host
+                        <input class="min-h-10 rounded-md border border-ink-300 px-3 font-normal outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="form.SmtpHost" />
+                    </label>
+                    <label class="grid gap-1 text-sm font-medium text-ink-700">
+                        SMTP port
+                        <input class="min-h-10 rounded-md border border-ink-300 px-3 font-normal outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="1" max="65535" @bind="form.SmtpPort" />
+                    </label>
+                    <label class="flex items-center gap-2 text-sm font-medium text-ink-700">
+                        <input class="size-4 rounded border-ink-300 text-control-700 focus:ring-control-500" type="checkbox" @bind="form.UseSsl" />
+                        Use SSL/TLS
+                    </label>
+                    <label class="grid gap-1 text-sm font-medium text-ink-700">
+                        Username
+                        <input class="min-h-10 rounded-md border border-ink-300 px-3 font-normal outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" autocomplete="username" @bind="form.Username" />
+                    </label>
+                    <label class="grid gap-1 text-sm font-medium text-ink-700">
+                        From email
+                        <input class="min-h-10 rounded-md border border-ink-300 px-3 font-normal outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="email" @bind="form.FromEmail" />
+                    </label>
+                    <label class="grid gap-1 text-sm font-medium text-ink-700">
+                        From display name
+                        <input class="min-h-10 rounded-md border border-ink-300 px-3 font-normal outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="form.FromDisplayName" />
+                    </label>
+                    <label class="grid gap-1 text-sm font-medium text-ink-700">
+                        Reply-to email
+                        <input class="min-h-10 rounded-md border border-ink-300 px-3 font-normal outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="email" @bind="form.ReplyToEmail" />
+                    </label>
+                    <label class="grid gap-1 text-sm font-medium text-ink-700">
+                        Capture redirect email
+                        <input class="min-h-10 rounded-md border border-ink-300 px-3 font-normal outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="email" @bind="form.CaptureRedirectToEmail" />
+                    </label>
+                </div>
+
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <button class="cp-button cp-button-primary" disabled="@isSaving" @onclick="SaveAsync">
+                        <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                        Save
+                    </button>
+                    <button class="cp-button cp-button-secondary" disabled="@isSaving" @onclick="ClearPasswordAsync">
+                        <i class="fa-solid fa-eraser" aria-hidden="true"></i>
+                        Clear password
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="cp-card p-4">
+                    <div class="mb-3 text-sm font-semibold text-ink-900">Effective status</div>
+                    <dl class="grid gap-2 text-sm">
+                        <div class="flex justify-between gap-3">
+                            <dt class="text-ink-500">Secret</dt>
+                            <dd class="font-semibold text-ink-800">@(current?.SecretsConfigured == true ? "Configured" : "Missing")</dd>
+                        </div>
+                        <div class="flex justify-between gap-3">
+                            <dt class="text-ink-500">Mode</dt>
+                            <dd class="font-mono text-ink-800">@(current?.DeliveryMode ?? "-")</dd>
+                        </div>
+                        <div class="flex justify-between gap-3">
+                            <dt class="text-ink-500">Sender</dt>
+                            <dd class="truncate text-right text-ink-800">@(current?.FromEmail ?? "-")</dd>
+                        </div>
+                        <div class="flex justify-between gap-3">
+                            <dt class="text-ink-500">Updated</dt>
+                            <dd class="text-right text-ink-800">@FormatDate(current?.UpdatedAtUtc)</dd>
+                        </div>
+                    </dl>
+                </div>
+
+                <div class="cp-card p-4">
+                    <div class="mb-3 text-sm font-semibold text-ink-900">Rotate password</div>
+                    <div class="grid gap-2">
+                        <input class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="password" autocomplete="new-password" placeholder="New SMTP password" @bind="rotatePassword" />
+                        <button class="cp-button cp-button-secondary justify-center" disabled="@isSaving" @onclick="RotatePasswordAsync">
+                            <i class="fa-solid fa-key" aria-hidden="true"></i>
+                            Rotate
+                        </button>
+                    </div>
+                </div>
+
+                <div class="cp-card p-4">
+                    <div class="mb-3 text-sm font-semibold text-ink-900">Test send</div>
+                    <div class="grid gap-2">
+                        <input class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="email" placeholder="Recipient email" @bind="testToEmail" />
+                        <input class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Subject" @bind="testSubject" />
+                        <button class="cp-button cp-button-primary justify-center" disabled="@isTesting" @onclick="SendTestAsync">
+                            <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+                            Send test
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid gap-4 xl:grid-cols-[1fr_420px]">
+            <div class="cp-card overflow-hidden">
+                <div class="flex items-center justify-between gap-3 border-b border-ink-100 px-4 py-3">
+                    <div>
+                        <div class="text-sm font-semibold text-ink-900">Message templates</div>
+                        <div class="mt-1 text-xs text-ink-500">Store overrides are managed through the Control Plane gateway.</div>
+                    </div>
+                    <button class="cp-button cp-button-secondary" disabled="@isLoadingMessages" @onclick="LoadMessageOperationsAsync">
+                        <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                        Refresh
+                    </button>
+                </div>
+                @if (templates.Count == 0)
+                {
+                    <div class="p-8 text-center text-sm text-ink-500">No templates found.</div>
+                }
+                else
+                {
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-ink-200 text-left text-sm">
+                            <thead class="bg-ink-50 text-xs font-semibold uppercase text-ink-500">
+                                <tr>
+                                    <th class="px-4 py-3">Template</th>
+                                    <th class="px-4 py-3">Subject</th>
+                                    <th class="px-4 py-3">State</th>
+                                    <th class="px-4 py-3 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-ink-100">
+                                @foreach (var template in templates)
+                                {
+                                    <tr>
+                                        <td class="px-4 py-3 align-top">
+                                            <div class="font-mono font-semibold text-ink-900">@template.SystemName</div>
+                                            <div class="mt-1 text-xs text-ink-500">@(template.LanguageCode ?? "default")</div>
+                                        </td>
+                                        <td class="px-4 py-3 align-top">@template.SubjectTemplate</td>
+                                        <td class="px-4 py-3 align-top">
+                                            <div><StatusBadge Text="@(template.IsActive ? "Active" : "Inactive")" Tone="@(template.IsActive ? "success" : "neutral")" /></div>
+                                            <div class="mt-1 text-xs text-ink-500">@(template.IsStoreOverride ? "Store override" : "Default")</div>
+                                        </td>
+                                        <td class="px-4 py-3 text-right align-top">
+                                            <button class="cp-button cp-button-secondary justify-center" disabled="@isLoadingMessages" @onclick="() => EditTemplateAsync(template.PublicId)">
+                                                <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                                Edit
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+
+            <div class="cp-card p-4">
+                <div class="mb-3 text-sm font-semibold text-ink-900">Template editor</div>
+                @if (selectedTemplate is null)
+                {
+                    <div class="text-sm text-ink-500">Select a template to edit or preview.</div>
+                }
+                else
+                {
+                    <div class="grid gap-2">
+                        <div class="font-mono text-sm font-semibold text-ink-900">@selectedTemplate.SystemName</div>
+                        <input class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Subject template" @bind="templateForm.SubjectTemplate" />
+                        <textarea class="min-h-40 rounded-md border border-ink-300 px-3 py-2 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="HTML body template" @bind="templateForm.BodyHtmlTemplate"></textarea>
+                        <input class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Description" @bind="templateForm.Description" />
+                        <input class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Language code" @bind="templateForm.LanguageCode" />
+                        <label class="flex items-center gap-2 text-sm font-medium text-ink-700">
+                            <input class="size-4 rounded border-ink-300 text-control-700 focus:ring-control-500" type="checkbox" @bind="templateForm.IsActive" />
+                            Active
+                        </label>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="cp-button cp-button-primary" disabled="@isSavingTemplate" @onclick="SaveTemplateAsync">
+                                <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                                Save
+                            </button>
+                            <button class="cp-button cp-button-secondary" disabled="@isSavingTemplate" @onclick="PreviewTemplateAsync">
+                                <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                                Preview
+                            </button>
+                            <button class="cp-button cp-button-secondary" disabled="@isSavingTemplate" @onclick="ResetTemplateAsync">
+                                <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+                                Reset
+                            </button>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(previewSubject))
+                        {
+                            <div class="rounded-md border border-control-100 bg-control-50 p-3 text-sm text-control-900">
+                                <div class="font-semibold">@previewSubject</div>
+                                <div class="mt-2 max-h-40 overflow-auto text-xs">@previewBody</div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="cp-card overflow-hidden">
+            <div class="flex flex-col gap-3 border-b border-ink-100 px-4 py-3 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <div class="text-sm font-semibold text-ink-900">Queued messages</div>
+                    <div class="mt-1 text-xs text-ink-500">Inspect delivery state and retry or cancel failed messages.</div>
+                </div>
+                <div class="flex flex-col gap-2 sm:flex-row">
+                    <input class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Status" @bind="queueStatusFilter" />
+                    <input class="min-h-10 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Template" @bind="queueTemplateFilter" />
+                    <button class="cp-button cp-button-secondary" disabled="@isLoadingMessages" @onclick="LoadQueuedMessagesAsync">
+                        <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+            @if (queuedMessages.Count == 0)
+            {
+                <div class="p-8 text-center text-sm text-ink-500">No queued messages found.</div>
+            }
+            else
+            {
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-ink-200 text-left text-sm">
+                        <thead class="bg-ink-50 text-xs font-semibold uppercase text-ink-500">
+                            <tr>
+                                <th class="px-4 py-3">Template</th>
+                                <th class="px-4 py-3">Recipient</th>
+                                <th class="px-4 py-3">Subject</th>
+                                <th class="px-4 py-3">Status</th>
+                                <th class="px-4 py-3">Attempts</th>
+                                <th class="px-4 py-3 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-ink-100">
+                            @foreach (var message in queuedMessages)
+                            {
+                                <tr>
+                                    <td class="px-4 py-3 align-top font-mono text-xs">@message.TemplateSystemName</td>
+                                    <td class="px-4 py-3 align-top">@message.ToEmail</td>
+                                    <td class="px-4 py-3 align-top">@message.Subject</td>
+                                    <td class="px-4 py-3 align-top"><StatusBadge Text="@message.Status" Tone="@QueueTone(message.Status)" /></td>
+                                    <td class="px-4 py-3 align-top">@message.AttemptCount / @message.MaxAttempts</td>
+                                    <td class="px-4 py-3 text-right align-top">
+                                        <div class="flex justify-end gap-2">
+                                            <button class="cp-button cp-button-secondary justify-center" disabled="@isQueueActionRunning" @onclick="() => RetryQueuedMessageAsync(message.PublicId)">
+                                                <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+                                                Retry
+                                            </button>
+                                            <button class="cp-button cp-button-secondary justify-center" disabled="@isQueueActionRunning" @onclick="() => CancelQueuedMessageAsync(message.PublicId)">
+                                                <i class="fa-solid fa-ban" aria-hidden="true"></i>
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    private readonly List<StoreSummary> stores = [];
+    private Guid? selectedStorePublicId;
+    private StoreEmailSettingsResponse? current;
+    private EmailSettingsForm form = new();
+    private readonly List<MessageTemplateAdminSummary> templates = [];
+    private readonly List<QueuedMessageAdminSummary> queuedMessages = [];
+    private MessageTemplateAdminDetail? selectedTemplate;
+    private TemplateForm templateForm = new();
+    private string? rotatePassword;
+    private string? testToEmail;
+    private string? testSubject;
+    private string? previewSubject;
+    private string? previewBody;
+    private string? queueStatusFilter;
+    private string? queueTemplateFilter;
+    private string? errorMessage;
+    private string? successMessage;
+    private bool isLoading;
+    private bool isSaving;
+    private bool isTesting;
+    private bool isLoadingMessages;
+    private bool isSavingTemplate;
+    private bool isQueueActionRunning;
+
+    private bool HasStore => selectedStorePublicId is not null && selectedStorePublicId != Guid.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var response = await StoreClient.ListAsync(pageSize: 100);
+            stores.Clear();
+            stores.AddRange(response.Items.Where(store => !string.Equals(store.Status, "archived", StringComparison.OrdinalIgnoreCase)));
+            selectedStorePublicId = stores.FirstOrDefault()?.PublicId;
+            await LoadEmailSettingsAsync();
+        }
+        catch (InvalidOperationException ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private async Task LoadEmailSettingsAsync()
+    {
+        ClearMessages();
+        if (!HasStore)
+        {
+            current = null;
+            form = new EmailSettingsForm();
+            return;
+        }
+
+        isLoading = true;
+        try
+        {
+            var result = await CatalogClient.GetEmailSettingsAsync(selectedStorePublicId!.Value);
+            if (!result.Success || result.Data is null)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            current = result.Data;
+            form = EmailSettingsForm.From(result.Data);
+            await LoadMessageOperationsAsync();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        ClearMessages();
+        isSaving = true;
+        try
+        {
+            var result = await CatalogClient.UpdateEmailSettingsAsync(selectedStorePublicId!.Value, form.ToRequest());
+            ApplyMutationResult(result, "Store email settings saved.");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task RotatePasswordAsync()
+    {
+        if (!HasStore || string.IsNullOrWhiteSpace(rotatePassword))
+        {
+            errorMessage = "New SMTP password is required.";
+            return;
+        }
+
+        ClearMessages();
+        isSaving = true;
+        try
+        {
+            var result = await CatalogClient.RotateEmailPasswordAsync(
+                selectedStorePublicId!.Value,
+                new RotateStoreEmailPasswordRequest { Password = rotatePassword });
+            rotatePassword = null;
+            ApplyMutationResult(result, "SMTP password rotated.");
+        }
+        finally
+        {
+            rotatePassword = null;
+            isSaving = false;
+        }
+    }
+
+    private async Task ClearPasswordAsync()
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        ClearMessages();
+        isSaving = true;
+        try
+        {
+            var result = await CatalogClient.ClearEmailPasswordAsync(selectedStorePublicId!.Value);
+            ApplyMutationResult(result, "SMTP password cleared and store email disabled.");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task SendTestAsync()
+    {
+        if (!HasStore || string.IsNullOrWhiteSpace(testToEmail))
+        {
+            errorMessage = "Recipient email is required.";
+            return;
+        }
+
+        ClearMessages();
+        isTesting = true;
+        try
+        {
+            var result = await CatalogClient.SendEmailTestAsync(
+                selectedStorePublicId!.Value,
+                new SendStoreEmailTestRequest
+                {
+                    ToEmail = testToEmail,
+                    Subject = testSubject,
+                });
+            testToEmail = null;
+            testSubject = null;
+            successMessage = result.Success
+                ? $"Test email sent at {FormatDate(result.Data?.SentAtUtc)}."
+                : result.Message;
+            if (!result.Success)
+            {
+                errorMessage = result.Message;
+                successMessage = null;
+            }
+        }
+        finally
+        {
+            testToEmail = null;
+            testSubject = null;
+            isTesting = false;
+        }
+    }
+
+    private void ApplyMutationResult(ControlPlaneClientResult<StoreEmailSettingsResponse> result, string message)
+    {
+        if (!result.Success || result.Data is null)
+        {
+            errorMessage = result.Message;
+            return;
+        }
+
+        current = result.Data;
+        form = EmailSettingsForm.From(result.Data);
+        successMessage = message;
+    }
+
+    private async Task LoadMessageOperationsAsync()
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        isLoadingMessages = true;
+        try
+        {
+            var templateResult = await CatalogClient.ListMessageTemplatesAsync(selectedStorePublicId!.Value);
+            if (templateResult.Success && templateResult.Data is not null)
+            {
+                templates.Clear();
+                templates.AddRange(templateResult.Data.OrderBy(item => item.SystemName).ThenBy(item => item.LanguageCode));
+            }
+            else if (!string.IsNullOrWhiteSpace(templateResult.Message))
+            {
+                errorMessage = templateResult.Message;
+            }
+
+            await LoadQueuedMessagesAsync();
+        }
+        finally
+        {
+            isLoadingMessages = false;
+        }
+    }
+
+    private async Task LoadQueuedMessagesAsync()
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        var result = await CatalogClient.ListQueuedMessagesAsync(
+            selectedStorePublicId!.Value,
+            queueStatusFilter,
+            queueTemplateFilter,
+            skip: 0,
+            take: 25);
+        if (!result.Success || result.Data is null)
+        {
+            errorMessage = result.Message;
+            return;
+        }
+
+        queuedMessages.Clear();
+        queuedMessages.AddRange(result.Data.Items);
+    }
+
+    private async Task EditTemplateAsync(Guid templatePublicId)
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        ClearMessages();
+        var result = await CatalogClient.GetMessageTemplateAsync(selectedStorePublicId!.Value, templatePublicId);
+        if (!result.Success || result.Data is null)
+        {
+            errorMessage = result.Message;
+            return;
+        }
+
+        selectedTemplate = result.Data;
+        templateForm = TemplateForm.From(result.Data);
+        previewSubject = null;
+        previewBody = null;
+    }
+
+    private async Task SaveTemplateAsync()
+    {
+        if (!HasStore || selectedTemplate is null)
+        {
+            return;
+        }
+
+        ClearMessages();
+        isSavingTemplate = true;
+        try
+        {
+            var result = await CatalogClient.UpdateMessageTemplateAsync(
+                selectedStorePublicId!.Value,
+                selectedTemplate.PublicId,
+                templateForm.ToRequest());
+            if (!result.Success || result.Data is null)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            selectedTemplate = result.Data;
+            templateForm = TemplateForm.From(result.Data);
+            successMessage = "Message template saved.";
+            await LoadMessageOperationsAsync();
+        }
+        finally
+        {
+            isSavingTemplate = false;
+        }
+    }
+
+    private async Task PreviewTemplateAsync()
+    {
+        if (!HasStore || selectedTemplate is null)
+        {
+            return;
+        }
+
+        ClearMessages();
+        var result = await CatalogClient.PreviewMessageTemplateAsync(
+            selectedStorePublicId!.Value,
+            new PreviewMessageTemplateRequest
+            {
+                SystemName = selectedTemplate.SystemName,
+                LanguageCode = templateForm.LanguageCode,
+                SubjectTemplate = templateForm.SubjectTemplate,
+                BodyHtmlTemplate = templateForm.BodyHtmlTemplate,
+            });
+        if (!result.Success || result.Data is null)
+        {
+            errorMessage = result.Message;
+            return;
+        }
+
+        previewSubject = result.Data.Subject;
+        previewBody = result.Data.BodyHtml;
+    }
+
+    private async Task ResetTemplateAsync()
+    {
+        if (!HasStore || selectedTemplate is null)
+        {
+            return;
+        }
+
+        ClearMessages();
+        isSavingTemplate = true;
+        try
+        {
+            var result = await CatalogClient.ResetMessageTemplateAsync(selectedStorePublicId!.Value, selectedTemplate.PublicId);
+            if (!result.Success || result.Data is null)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            selectedTemplate = result.Data;
+            templateForm = TemplateForm.From(result.Data);
+            successMessage = "Message template reset.";
+            await LoadMessageOperationsAsync();
+        }
+        finally
+        {
+            isSavingTemplate = false;
+        }
+    }
+
+    private async Task RetryQueuedMessageAsync(Guid publicId)
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        ClearMessages();
+        isQueueActionRunning = true;
+        try
+        {
+            var result = await CatalogClient.RetryQueuedMessageAsync(selectedStorePublicId!.Value, publicId);
+            successMessage = result.Success ? "Queued message retry requested." : null;
+            errorMessage = result.Success ? null : result.Message;
+            await LoadQueuedMessagesAsync();
+        }
+        finally
+        {
+            isQueueActionRunning = false;
+        }
+    }
+
+    private async Task CancelQueuedMessageAsync(Guid publicId)
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        ClearMessages();
+        isQueueActionRunning = true;
+        try
+        {
+            var result = await CatalogClient.CancelQueuedMessageAsync(selectedStorePublicId!.Value, publicId);
+            successMessage = result.Success ? "Queued message canceled." : null;
+            errorMessage = result.Success ? null : result.Message;
+            await LoadQueuedMessagesAsync();
+        }
+        finally
+        {
+            isQueueActionRunning = false;
+        }
+    }
+
+    private void ClearMessages()
+    {
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private static string FormatDate(DateTimeOffset? value)
+    {
+        return value is null ? "-" : value.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+    }
+
+    private static string QueueTone(string? status)
+    {
+        return status?.ToLowerInvariant() switch
+        {
+            "sent" => "success",
+            "failed" => "danger",
+            "waiting_retry" => "warning",
+            "canceled" => "neutral",
+            _ => "info",
+        };
+    }
+
+    private sealed class EmailSettingsForm
+    {
+        public bool Enabled { get; set; }
+
+        public string? SmtpHost { get; set; }
+
+        public int SmtpPort { get; set; } = 587;
+
+        public bool UseSsl { get; set; } = true;
+
+        public string? Username { get; set; }
+
+        public string? FromEmail { get; set; }
+
+        public string? FromDisplayName { get; set; }
+
+        public string? ReplyToEmail { get; set; }
+
+        public string DeliveryMode { get; set; } = "smtp";
+
+        public string? CaptureRedirectToEmail { get; set; }
+
+        public static EmailSettingsForm From(StoreEmailSettingsResponse response)
+        {
+            return new EmailSettingsForm
+            {
+                Enabled = response.Enabled,
+                SmtpHost = response.SmtpHost,
+                SmtpPort = response.SmtpPort,
+                UseSsl = response.UseSsl,
+                Username = response.Username,
+                FromEmail = response.FromEmail,
+                FromDisplayName = response.FromDisplayName,
+                ReplyToEmail = response.ReplyToEmail,
+                DeliveryMode = response.DeliveryMode,
+                CaptureRedirectToEmail = response.CaptureRedirectToEmail,
+            };
+        }
+
+        public UpdateStoreEmailSettingsRequest ToRequest()
+        {
+            return new UpdateStoreEmailSettingsRequest
+            {
+                Enabled = this.Enabled,
+                SmtpHost = this.SmtpHost,
+                SmtpPort = this.SmtpPort,
+                UseSsl = this.UseSsl,
+                Username = this.Username,
+                UseExistingPassword = true,
+                FromEmail = this.FromEmail,
+                FromDisplayName = this.FromDisplayName,
+                ReplyToEmail = this.ReplyToEmail,
+                DeliveryMode = this.DeliveryMode,
+                CaptureRedirectToEmail = this.CaptureRedirectToEmail,
+            };
+        }
+    }
+
+    private sealed class TemplateForm
+    {
+        public string SubjectTemplate { get; set; } = string.Empty;
+
+        public string BodyHtmlTemplate { get; set; } = string.Empty;
+
+        public string? Description { get; set; }
+
+        public string? LanguageCode { get; set; }
+
+        public bool IsActive { get; set; } = true;
+
+        public static TemplateForm From(MessageTemplateAdminDetail detail)
+        {
+            return new TemplateForm
+            {
+                SubjectTemplate = detail.SubjectTemplate,
+                BodyHtmlTemplate = detail.BodyHtmlTemplate,
+                Description = detail.Description,
+                LanguageCode = detail.LanguageCode,
+                IsActive = detail.IsActive,
+            };
+        }
+
+        public UpdateMessageTemplateRequest ToRequest()
+        {
+            return new UpdateMessageTemplateRequest
+            {
+                SubjectTemplate = this.SubjectTemplate,
+                BodyHtmlTemplate = this.BodyHtmlTemplate,
+                Description = this.Description,
+                LanguageCode = this.LanguageCode,
+                IsActive = this.IsActive,
+            };
+        }
+    }
+}

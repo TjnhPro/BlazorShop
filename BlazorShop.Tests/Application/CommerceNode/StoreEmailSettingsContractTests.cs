@@ -23,6 +23,28 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public void EmailSettingsOperationResponses_DoNotExposeSmtpPassword()
+        {
+            var responseTypes = new[]
+            {
+                typeof(StoreEmailSettingsResponse),
+                typeof(SendStoreEmailTestResponse),
+            };
+
+            foreach (var responseType in responseTypes)
+            {
+                var propertyNames = responseType
+                    .GetProperties()
+                    .Select(property => property.Name)
+                    .ToArray();
+
+                Assert.DoesNotContain("Password", propertyNames);
+                Assert.DoesNotContain("SmtpPassword", propertyNames);
+                Assert.DoesNotContain("ProtectedPassword", propertyNames);
+            }
+        }
+
+        [Fact]
         public void UpdateStoreEmailSettingsRequest_KeepsPasswordWriteOnlyRequestSide()
         {
             var responsePropertyNames = typeof(StoreEmailSettingsResponse)
@@ -37,6 +59,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Contains("Password", requestPropertyNames);
             Assert.Contains("ClearPassword", requestPropertyNames);
             Assert.Contains("UseExistingPassword", requestPropertyNames);
+            Assert.Contains("Password", typeof(RotateStoreEmailPasswordRequest).GetProperties().Select(property => property.Name));
             Assert.DoesNotContain("Password", responsePropertyNames);
         }
 
