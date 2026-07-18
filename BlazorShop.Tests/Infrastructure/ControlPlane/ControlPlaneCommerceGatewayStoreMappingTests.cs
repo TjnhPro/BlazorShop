@@ -16,7 +16,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
 
     using Xunit;
 
-    public sealed class ControlPlaneCommerceCatalogServiceStoreMappingTests
+    public sealed class ControlPlaneCommerceGatewayStoreMappingTests
     {
         [Fact]
         public async Task QueryProductsAsync_AppendsStoreKeyAndNodeCredentialsToCommerceNodeRequest()
@@ -24,9 +24,9 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler();
-            var service = CreateService(context, handler);
+            var gateways = CreateGateways(context, handler);
 
-            var result = await service.QueryProductsAsync(store.PublicId, new ProductCatalogQuery { SearchTerm = "bag" });
+            var result = await gateways.Products.QueryProductsAsync(store.PublicId, new ProductCatalogQuery { SearchTerm = "bag" });
 
             Assert.True(result.Success);
             var request = Assert.Single(handler.Requests);
@@ -43,9 +43,9 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler();
-            var service = CreateService(context, handler);
+            var gateways = CreateGateways(context, handler);
 
-            var result = await service.ListCategoriesAsync(store.PublicId);
+            var result = await gateways.Categories.ListCategoriesAsync(store.PublicId);
 
             Assert.True(result.Success);
             var request = Assert.Single(handler.Requests);
@@ -61,9 +61,9 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler();
-            var service = CreateService(context, handler);
+            var gateways = CreateGateways(context, handler);
 
-            var result = await service.ListStorefrontPagesAsync(
+            var result = await gateways.Content.ListStorefrontPagesAsync(
                 store.PublicId,
                 new StorefrontPageListQuery(PageNumber: 2, PageSize: 10, Search: "about"));
 
@@ -82,9 +82,9 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler(RecordingHandler.EmptyArrayEnvelope);
-            var service = CreateService(context, handler);
+            var gateways = CreateGateways(context, handler);
 
-            var result = await service.GetStorefrontPageTemplateStatusAsync(store.PublicId);
+            var result = await gateways.Content.GetStorefrontPageTemplateStatusAsync(store.PublicId);
 
             Assert.True(result.Success);
             var request = Assert.Single(handler.Requests);
@@ -100,9 +100,9 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler(RecordingHandler.EmptyPageEnvelope);
-            var service = CreateService(context, handler);
+            var gateways = CreateGateways(context, handler);
 
-            var result = await service.CreateStorefrontPageDraftFromTemplateAsync(
+            var result = await gateways.Content.CreateStorefrontPageDraftFromTemplateAsync(
                 store.PublicId,
                 "about",
                 new CreatePageFromTemplateRequest());
@@ -120,10 +120,10 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler(RecordingHandler.EmptyPageEnvelope);
-            var service = CreateService(context, handler);
+            var gateways = CreateGateways(context, handler);
             var pageId = Guid.Parse("7a89bf2d-3177-4923-9806-902ab6625c72");
 
-            var result = await service.UpdateStorefrontPageNavigationAsync(
+            var result = await gateways.Content.UpdateStorefrontPageNavigationAsync(
                 store.PublicId,
                 pageId,
                 new UpdatePageNavigationRequest(100, true, StorefrontPageContentRules.FooterCompany));
@@ -141,9 +141,9 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler(RecordingHandler.EmptyArrayEnvelope);
-            var service = CreateService(context, handler);
+            var gateways = CreateGateways(context, handler);
 
-            var result = await service.ListNavigationMenusAsync(store.PublicId);
+            var result = await gateways.Navigation.ListNavigationMenusAsync(store.PublicId);
 
             Assert.True(result.Success);
             var request = Assert.Single(handler.Requests);
@@ -160,10 +160,10 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler(RecordingHandler.NavigationMenuEnvelope);
-            var service = CreateService(context, handler);
+            var gateways = CreateGateways(context, handler);
             var menuPublicId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
-            var result = await service.CreateNavigationItemAsync(
+            var result = await gateways.Navigation.CreateNavigationItemAsync(
                 store.PublicId,
                 menuPublicId,
                 new CreateStoreNavigationMenuItemRequest(
@@ -187,9 +187,9 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler(RecordingHandler.ShippingSettingsEnvelope);
-            var service = CreateService(context, handler);
+            var gateways = CreateGateways(context, handler);
 
-            var result = await service.GetShippingSettingsAsync(store.PublicId);
+            var result = await gateways.Shipping.GetShippingSettingsAsync(store.PublicId);
 
             Assert.True(result.Success);
             var request = Assert.Single(handler.Requests);
@@ -206,9 +206,9 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler(RecordingHandler.ShippingSettingsEnvelope);
-            var service = CreateService(context, handler);
+            var gateways = CreateGateways(context, handler);
 
-            var result = await service.UpdateShippingSettingsAsync(
+            var result = await gateways.Shipping.UpdateShippingSettingsAsync(
                 store.PublicId,
                 new UpdateStoreShippingSettingsRequest(
                     new StoreShippingOriginDto(
@@ -234,14 +234,12 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
         }
 
         [Fact]
-        public void CatalogFacade_DoesNotContainTransportLogic()
+        public void LegacyCatalogFacade_IsRemovedFromInfrastructure()
         {
-            var source = ReadRepositoryFile("BlazorShop.Infrastructure/Data/ControlPlane/ControlPlaneCommerceCatalogService.cs");
+            var root = FindRepositoryRoot().FullName;
+            var path = Path.Combine(root, "BlazorShop.Infrastructure", "Data", "ControlPlane", "ControlPlaneCommerce" + "CatalogService.cs");
 
-            Assert.DoesNotContain("new HttpRequestMessage", source, StringComparison.Ordinal);
-            Assert.DoesNotContain("X-Node-Key", source, StringComparison.Ordinal);
-            Assert.DoesNotContain("X-Node-Secret", source, StringComparison.Ordinal);
-            Assert.DoesNotContain("AppendStoreKeyQuery", source, StringComparison.Ordinal);
+            Assert.False(File.Exists(path));
         }
 
         [Fact]
@@ -360,25 +358,25 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             return store.Payload!;
         }
 
-        private static ControlPlaneCommerceCatalogService CreateService(
+        private static GatewaySet CreateGateways(
             ControlPlaneDbContext context,
             RecordingHandler handler)
         {
             var transport = CreateTransport(context, handler);
-            return new ControlPlaneCommerceCatalogService(
-                new ControlPlaneSecurityPrivacyGateway(transport),
-                new ControlPlaneStoreConfigurationGateway(transport),
-                new ControlPlaneMessageGateway(transport),
-                new ControlPlaneNavigationGateway(transport),
-                new ControlPlaneCurrencyGateway(transport),
-                new ControlPlaneMediaGateway(transport),
-                new ControlPlanePaymentGateway(transport),
-                new ControlPlaneOrderGateway(transport),
+            return new GatewaySet(
                 new ControlPlaneProductGateway(transport),
+                new ControlPlaneCategoryGateway(transport),
                 new ControlPlaneContentGateway(transport),
-                new ControlPlaneShippingGateway(transport),
-                new ControlPlaneCategoryGateway(transport));
+                new ControlPlaneNavigationGateway(transport),
+                new ControlPlaneShippingGateway(transport));
         }
+
+        private sealed record GatewaySet(
+            ControlPlaneProductGateway Products,
+            ControlPlaneCategoryGateway Categories,
+            ControlPlaneContentGateway Content,
+            ControlPlaneNavigationGateway Navigation,
+            ControlPlaneShippingGateway Shipping);
 
         private static CommerceNodeAdminGatewayTransport CreateTransport(
             ControlPlaneDbContext context,

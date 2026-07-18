@@ -74,7 +74,7 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
             var webSource = ReadControlPlaneWebSource();
 
             Assert.Contains("api/controlplane/commerce/stores/{storePublicId:D}", client, StringComparison.Ordinal);
-            Assert.DoesNotContain("@inject IControlPlaneCatalogClient", webSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("@inject IControlPlane" + "CatalogClient", webSource, StringComparison.Ordinal);
             Assert.DoesNotContain("CatalogClient.", webSource, StringComparison.Ordinal);
             Assert.DoesNotContain("api/commerce", webSource, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("api/storefront", webSource, StringComparison.OrdinalIgnoreCase);

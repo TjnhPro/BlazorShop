@@ -28,7 +28,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         {
             var controller = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/Controllers/CommerceGateway/ControlPlaneCommerceSecurityPrivacyController.cs");
             var gateway = ReadRepositoryFile("BlazorShop.Infrastructure/Data/ControlPlane/CommerceGateway/ControlPlaneSecurityPrivacyGateway.cs");
-            var webClient = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Services/Catalog/ControlPlaneCatalogClient.cs");
+            var webClient = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Services/Commerce/SecurityPrivacy/ControlPlaneSecurityPrivacyClient.cs");
             var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/CommerceSecurityPrivacy.razor");
             var nav = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Layout/NavMenu.razor");
 

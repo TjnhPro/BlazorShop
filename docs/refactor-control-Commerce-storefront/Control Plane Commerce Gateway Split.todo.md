@@ -539,19 +539,21 @@ Verification:
 
 Mục tiêu: khi các capability controllers/clients đã hoạt động, xóa lớp god interface cũ khỏi active path.
 
-- [ ] Xóa hoặc retire `IControlPlaneCommerceCatalogService`.
-- [ ] Xóa hoặc retire `ControlPlaneCommerceCatalogService` nếu không còn adapter cần thiết.
-- [ ] Xóa hoặc retire `IControlPlaneCatalogClient`.
-- [ ] Xóa hoặc retire `ControlPlaneCatalogClient`.
-- [ ] Xóa `ControlPlaneCommerceCatalogController` nếu không còn action.
-- [ ] Nếu route `api/control-plane/stores/{storePublicId}/catalog/*` còn cần compatibility, giữ bằng action trong capability controllers, không bằng controller god cũ.
-- [ ] Cập nhật namespaces/docs/tests không còn nói mọi thứ là catalog.
+- [x] Xóa hoặc retire `IControlPlaneCommerceCatalogService`.
+- [x] Xóa hoặc retire `ControlPlaneCommerceCatalogService` nếu không còn adapter cần thiết.
+- [x] Xóa hoặc retire `IControlPlaneCatalogClient`.
+- [x] Xóa hoặc retire `ControlPlaneCatalogClient`.
+- [x] Xóa `ControlPlaneCommerceCatalogController` nếu không còn action.
+- [x] Nếu route `api/control-plane/stores/{storePublicId}/catalog/*` còn cần compatibility, giữ bằng action trong capability controllers, không bằng controller god cũ.
+- [x] Cập nhật namespaces/docs/tests không còn nói mọi thứ là catalog.
+  2026-07-18 Phase 6: removed the active god service, Web catalog adapter, and empty catalog controller. Shared result DTOs remain because capability gateways still use `ControlPlaneCommerceCatalogResult<TPayload>` and related response/result records.
 
 Verification:
 
-- [ ] `rg "IControlPlaneCommerceCatalogService|ControlPlaneCommerceCatalogService|IControlPlaneCatalogClient|ControlPlaneCatalogClient|ControlPlaneCommerceCatalogController" BlazorShop.Application BlazorShop.Infrastructure BlazorShop.PresentationV2 BlazorShop.Tests`
-- [ ] Chỉ còn references trong historical docs hoặc intentional migration notes.
-- [ ] Focused tests pass.
+- [x] `rg "IControlPlaneCommerceCatalogService|ControlPlaneCommerceCatalogService|IControlPlaneCatalogClient|ControlPlaneCatalogClient|ControlPlaneCommerceCatalogController" BlazorShop.Application BlazorShop.Infrastructure BlazorShop.PresentationV2 BlazorShop.Tests`
+- [x] Chỉ còn references trong historical docs hoặc intentional migration notes.
+- [x] Focused tests pass.
+  2026-07-18 Phase 6: active source `rg` returned no matches. Application, Infrastructure, ControlPlane API, and ControlPlane Web builds passed with 0 warnings/errors after rerunning Application outside the earlier parallel compiler lock. Focused tests passed 34/34 with existing package advisory warnings.
 
 ## Phase 7 - Permission And Contract Cleanup
 

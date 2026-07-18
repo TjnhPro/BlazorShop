@@ -8,12 +8,11 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
     using ControlPlaneApi::BlazorShop.ControlPlane.API.Controllers;
 
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.AspNetCore.Mvc.Routing;
     using Moq;
 
     using Xunit;
 
-    public sealed class ControlPlaneCommerceCatalogControllerTests
+    public sealed class ControlPlaneCommerceProductControllerTests
     {
         [Fact]
         public void DownloadProductImportTemplate_ReturnsCanonicalParserHeader()
@@ -45,16 +44,5 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
             Assert.Contains("~/api/controlplane/commerce/product-imports/template", routes);
         }
 
-        [Fact]
-        public void OldCatalogController_DoesNotOwnCommerceActions()
-        {
-            var actionCount = typeof(ControlPlaneCommerceCatalogController)
-                .GetMethods(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.DeclaredOnly)
-                .Count(method => method
-                    .GetCustomAttributes(typeof(HttpMethodAttribute), inherit: false)
-                    .Any());
-
-            Assert.Equal(0, actionCount);
-        }
     }
 }

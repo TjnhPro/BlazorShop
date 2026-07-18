@@ -100,7 +100,6 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                     var timeoutSeconds = Math.Clamp(configuration.GetValue("ControlPlane:Tasks:TimeoutSeconds", 30), 1, 120);
                     client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
                 });
-            services.AddScoped<IControlPlaneCommerceCatalogService, ControlPlaneCommerceCatalogService>();
             services.AddHttpClient<ICommerceNodeAdminGatewayTransport, CommerceNodeAdminGatewayTransport>(
                 client =>
                 {
