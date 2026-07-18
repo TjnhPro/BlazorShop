@@ -76,7 +76,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         [Fact]
         public void StorefrontRuntime_ResolvesCaptchaConsentAndRegistrationFromSecurityPrivacyService()
         {
-            var controller = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/StorefrontScopedControllers.cs");
+            var controller = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/StorefrontScopedAuthController.cs")
+                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/StorefrontScopedConfigurationController.cs");
             var service = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/Services/StoreSecurityPrivacySettingsService.cs");
 
             Assert.Contains("IStoreSecurityPrivacySettingsService", controller, StringComparison.Ordinal);

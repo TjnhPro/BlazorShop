@@ -362,22 +362,24 @@ Acceptance:
 
 ## Phase 5 - Split Commerce Node Storefront Scoped Controllers
 
-- [ ] Create folder `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront`.
-- [ ] Move each controller from `StorefrontScopedControllers.cs` into its own file.
-- [ ] Keep namespace `BlazorShop.CommerceNode.API.Controllers` unless a namespace move is verified to be harmless.
-- [ ] Keep class names and constructor signatures stable unless the V2 cutover plan has already removed old dependencies.
-- [ ] Keep route attributes exactly as they are.
-- [ ] Keep `[ApiController]`, `[Authorize]`, `[AllowAnonymous]`, `[EnableRateLimiting]` attributes unchanged.
-- [ ] Move `StorefrontScopedNavigationController` from `CommerceNavigationController.cs` to `Controllers/Storefront/StorefrontScopedNavigationController.cs` only if it can be done without changing admin navigation controller behavior.
-- [ ] Keep `StorefrontApiControllerBase.cs` in its current shared controller location.
-- [ ] Delete original `StorefrontScopedControllers.cs` only after build passes and all moved controllers are discovered.
+- [x] Create folder `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront`.
+- [x] Move each controller from `StorefrontScopedControllers.cs` into its own file.
+- [x] Keep namespace `BlazorShop.CommerceNode.API.Controllers` unless a namespace move is verified to be harmless.
+- [x] Keep class names and constructor signatures stable unless the V2 cutover plan has already removed old dependencies.
+- [x] Keep route attributes exactly as they are.
+- [x] Keep `[ApiController]`, `[Authorize]`, `[AllowAnonymous]`, `[EnableRateLimiting]` attributes unchanged.
+- [x] Move `StorefrontScopedNavigationController` from `CommerceNavigationController.cs` to `Controllers/Storefront/StorefrontScopedNavigationController.cs` only if it can be done without changing admin navigation controller behavior.
+- [x] Keep `StorefrontApiControllerBase.cs` in its current shared controller location.
+- [x] Delete original `StorefrontScopedControllers.cs` only after build passes and all moved controllers are discovered.
+  2026-07-18 Phase 5: storefront scoped controllers now live under `Controllers/Storefront/StorefrontScoped*Controller.cs`; `CommerceNavigationController.cs` keeps only the commerce admin navigation controller, and `StorefrontApiControllerBase.cs` remains in the shared controller location.
 
 Acceptance:
 
-- [ ] Commerce Node Storefront routes are unchanged.
-- [ ] Storefront OpenAPI operation IDs remain unchanged.
-- [ ] Controller tests still construct the expected controller types.
-- [ ] No route disappears except routes explicitly handled by `Storefront V2 Commerce Flow Cutover.todo.md`.
+- [x] Commerce Node Storefront routes are unchanged.
+- [x] Storefront OpenAPI operation IDs remain unchanged.
+- [x] Controller tests still construct the expected controller types.
+- [x] No route disappears except routes explicitly handled by `Storefront V2 Commerce Flow Cutover.todo.md`.
+  2026-07-18 Phase 5 verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed; focused storefront scoped/static guard tests passed 79/79; Commerce Node Storefront OpenAPI/auth/payment contract tests passed 44/44.
 
 ## Phase 6 - Split Commerce Node Storefront Contracts And Mappings
 

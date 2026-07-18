@@ -22,7 +22,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void AddressFieldConfiguration_RemainsStorefrontScopedAndAnonymous()
         {
-            var controllers = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/StorefrontScopedControllers.cs");
+            var controllers = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/StorefrontScopedAddressController.cs");
             var controller = ExtractBlock(controllers, "class StorefrontScopedAddressController");
 
             Assert.Contains("[Route(\"api/storefront/stores/{storeKey}/address\")]", controllers, StringComparison.Ordinal);

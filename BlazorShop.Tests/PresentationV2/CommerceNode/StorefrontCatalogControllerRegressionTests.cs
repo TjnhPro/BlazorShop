@@ -10,7 +10,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             // Regression: CAT-002 - product filter metadata triggered concurrent EF operations on one scoped DbContext.
             // Found by /qa on 2026-07-18.
             // Report: .gstack/qa-reports/storefront-release-2026-07-18.md
-            var controller = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/StorefrontScopedControllers.cs");
+            var controller = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/StorefrontScopedCatalogController.cs");
 
             Assert.Contains("var categories = await this.publicCatalogService.GetPublishedCategoryTreeAsync();", controller);
             Assert.Contains("var metadata = await this.publicCatalogService.GetPublishedProductFilterMetadataAsync", controller);

@@ -31,7 +31,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void CommerceNode_StorefrontMutationRoutesMatchSecurityPrivacyInventory()
         {
-            var controllers = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/StorefrontScopedControllers.cs");
+            var controllers = ReadStorefrontScopedControllerSources();
 
             Assert.Contains("[Route(\"api/storefront/stores/{storeKey}/auth\")]", controllers, StringComparison.Ordinal);
             Assert.Contains("[HttpPost(\"register\")]", controllers, StringComparison.Ordinal);
@@ -75,7 +75,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("CurrencyPreference = \"bs-currency\"", cookieNames, StringComparison.Ordinal);
             Assert.Contains("__Host-blazorshop-refresh", authCookies, StringComparison.Ordinal);
             Assert.Contains("__Host-blazorshop-refresh", commerceRuntimeOptions, StringComparison.Ordinal);
-            Assert.Contains("IsEssential = true", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/StorefrontScopedControllers.cs"), StringComparison.Ordinal);
+            Assert.Contains("IsEssential = true", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/StorefrontScopedAuthController.cs"), StringComparison.Ordinal);
             Assert.Contains("StorefrontCookieNames.Cart", cartTokenService, StringComparison.Ordinal);
             Assert.Contains("StorefrontCookieNames.CartToken", cartTokenService, StringComparison.Ordinal);
             Assert.Contains("StorefrontCookieNames.CurrencyPreference", authEndpoints, StringComparison.Ordinal);
@@ -108,6 +108,32 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             }
 
             throw new FileNotFoundException($"Could not locate repository file '{relativePath}'.");
+        }
+
+        private static string ReadStorefrontScopedControllerSources()
+        {
+            var directory = new DirectoryInfo(AppContext.BaseDirectory);
+            while (directory is not null)
+            {
+                var candidate = Path.Combine(
+                    directory.FullName,
+                    "BlazorShop.PresentationV2",
+                    "BlazorShop.CommerceNode.API",
+                    "Controllers",
+                    "Storefront");
+                if (Directory.Exists(candidate))
+                {
+                    return string.Join(
+                        Environment.NewLine,
+                        Directory.GetFiles(candidate, "StorefrontScoped*Controller.cs")
+                            .Order(StringComparer.Ordinal)
+                            .Select(File.ReadAllText));
+                }
+
+                directory = directory.Parent;
+            }
+
+            throw new DirectoryNotFoundException("Could not locate Commerce Node storefront controller directory.");
         }
     }
 }

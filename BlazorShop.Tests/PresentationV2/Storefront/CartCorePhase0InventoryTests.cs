@@ -36,7 +36,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void CommerceNode_CartControllerDerivesStoreAndTokenServerSide()
         {
-            var controllers = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/StorefrontScopedControllers.cs");
+            var controllers = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/StorefrontScopedCartController.cs");
 
             Assert.Contains("[Route(\"api/storefront/stores/{storeKey}/cart\")]", controllers, StringComparison.Ordinal);
             Assert.Contains("[FromHeader(Name = CartTokenHeaderName)] string cartToken", controllers, StringComparison.Ordinal);

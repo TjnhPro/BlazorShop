@@ -57,7 +57,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void CommerceNodeStorefrontCartAndOrdersControllers_DoNotInjectLegacyCartServices()
         {
-            var controller = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/StorefrontScopedControllers.cs");
+            var controller = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/StorefrontScopedCartController.cs")
+                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/StorefrontScopedOrdersController.cs")
+                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/StorefrontScopedPaymentsController.cs");
 
             Assert.DoesNotContain("StorefrontScopedCartController(\r\n            ICartService", controller, StringComparison.Ordinal);
             Assert.DoesNotContain("StorefrontScopedOrdersController(\r\n            ICartService", controller, StringComparison.Ordinal);

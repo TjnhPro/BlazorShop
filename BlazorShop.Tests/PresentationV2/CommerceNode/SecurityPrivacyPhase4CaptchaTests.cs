@@ -38,7 +38,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             var options = ReadRepositoryFile("BlazorShop.Application/CommerceNode/Captcha/CaptchaOptions.cs");
             var verifier = ReadRepositoryFile("BlazorShop.Application/CommerceNode/Captcha/ICaptchaVerifier.cs");
             var noop = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/Services/NoopCaptchaVerifier.cs");
-            var controller = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/StorefrontScopedControllers.cs");
+            var controller = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/StorefrontScopedAuthController.cs");
 
             Assert.Contains("public bool Enabled { get; set; }", options, StringComparison.Ordinal);
             Assert.Contains("ICaptchaVerifier", verifier, StringComparison.Ordinal);
