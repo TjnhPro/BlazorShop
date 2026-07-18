@@ -11,8 +11,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void StorefrontV2_BrowserMutationRoutesMatchSecurityPrivacyInventory()
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+            var pipeline = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontApplicationBuilderExtensions.cs");
 
-            Assert.Contains("app.UseAntiforgery();", program, StringComparison.Ordinal);
+            Assert.Contains("app.UseStorefrontV2HostPipeline(storefrontRateLimitingOptions);", program, StringComparison.Ordinal);
+            Assert.Contains("app.UseAntiforgery();", pipeline, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(StorefrontRoutes.SignIn", program, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(StorefrontRoutes.Register", program, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(StorefrontRoutes.Logout", program, StringComparison.Ordinal);
@@ -53,7 +55,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("[HttpPost(\"subscribe\")]", controllers, StringComparison.Ordinal);
 
             Assert.Contains("[Route(\"api/storefront/stores/{storeKey}/orders\")]", controllers, StringComparison.Ordinal);
-            Assert.Contains("[HttpPost(\"confirm\")]", controllers, StringComparison.Ordinal);
+            Assert.DoesNotContain("[HttpPost(\"confirm\")]", controllers, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -63,6 +65,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var commerceRuntimeOptions = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Configuration/CommerceNodeRuntimeOptions.cs");
             var cartTokenService = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontCartTokenService.cs");
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+            var pipeline = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontApplicationBuilderExtensions.cs");
             var cookieNames = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/StorefrontCookieNames.cs");
 
             Assert.Contains("Cart = \"my-cart\"", cookieNames, StringComparison.Ordinal);
@@ -74,7 +77,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("StorefrontCookieNames.Cart", cartTokenService, StringComparison.Ordinal);
             Assert.Contains("StorefrontCookieNames.CartToken", cartTokenService, StringComparison.Ordinal);
             Assert.Contains("StorefrontCookieNames.CurrencyPreference", program, StringComparison.Ordinal);
-            Assert.Contains("UseAntiforgery", program, StringComparison.Ordinal);
+            Assert.Contains("UseAntiforgery", pipeline, StringComparison.Ordinal);
         }
 
         [Theory]

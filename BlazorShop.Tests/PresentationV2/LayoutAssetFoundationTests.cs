@@ -117,7 +117,7 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.Contains("Action=\"@StorefrontRoutes.Search\"", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowCategory=\"true\"", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowSearch=\"true\"", searchMarkup, StringComparison.Ordinal);
-            Assert.Contains("SearchTerm=\"Q\"", searchMarkup, StringComparison.Ordinal);
+            Assert.Contains("SearchTerm=\"@Q\"", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowPageSize=\"true\"", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("StorefrontRoutes.SearchUrl(Q, Category, pageNumber, _pageSize, SortBy, MinPrice, MaxPrice, InStock ? true : null)", searchMarkup, StringComparison.Ordinal);
             Assert.Contains("CatalogSearchPolicy.MinimumSearchTermLength", searchMarkup, StringComparison.Ordinal);
@@ -127,8 +127,10 @@ namespace BlazorShop.Tests.PresentationV2
         public void StorefrontProgram_KeepsStaticAssetMiddleware()
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+            var pipeline = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontApplicationBuilderExtensions.cs");
 
-            Assert.Contains("app.UseStaticFiles();", program);
+            Assert.Contains("app.UseStorefrontV2HostPipeline(storefrontRateLimitingOptions);", program);
+            Assert.Contains("app.UseStaticFiles();", pipeline);
             Assert.Contains("app.MapStaticAssets();", program);
             Assert.Contains("app.MapGet(\"/favicon.ico\", () => Results.Redirect(\"/icon-192.png\", permanent: false));", program);
         }

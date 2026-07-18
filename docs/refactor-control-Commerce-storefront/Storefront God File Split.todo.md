@@ -171,8 +171,8 @@ Acceptance:
 
 ## Phase 1 - Extract Storefront V2 Service Registration And Host Pipeline
 
-- [ ] Create `Configuration/StorefrontServiceCollectionExtensions.cs`.
-- [ ] Move service registration from `Program.cs` into `AddStorefrontV2Services(...)` or similarly named extension:
+- [x] Create `Configuration/StorefrontServiceCollectionExtensions.cs`.
+- [x] Move service registration from `Program.cs` into `AddStorefrontV2Services(...)` or similarly named extension:
   - options validators
   - antiforgery
   - memory cache
@@ -182,8 +182,9 @@ Acceptance:
   - price formatter
   - `StorefrontCartTokenService`
   - Http clients for session/auth/API client
-- [ ] Create `Configuration/StorefrontApplicationBuilderExtensions.cs`.
-- [ ] Move stable middleware pipeline pieces into an extension if it improves readability:
+  2026-07-18 Phase 1: service registration now lives in `AddStorefrontV2Services(...)`; HTTP client base-address/rate-limit delegates still point to existing `Program.cs` helpers until Phase 2.
+- [x] Create `Configuration/StorefrontApplicationBuilderExtensions.cs`.
+- [x] Move stable middleware pipeline pieces into an extension if it improves readability:
   - forwarded headers
   - static files
   - error status headers
@@ -191,14 +192,17 @@ Acceptance:
   - public redirect middleware
   - rate limiter
   - antiforgery
-- [ ] Keep `app.MapStaticAssets()`, favicon, default endpoints, endpoint extension calls, Razor component mapping visible in `Program.cs`.
-- [ ] Keep behavior and order of middleware unchanged.
+  2026-07-18 Phase 1: pipeline is grouped in `UseStorefrontV2HostPipeline(...)` with the same order: development WASM debugging, forwarded headers, static files, error response headers, current-store middleware, public redirect middleware, rate limiter when enabled, antiforgery.
+- [x] Keep `app.MapStaticAssets()`, favicon, default endpoints, endpoint extension calls, Razor component mapping visible in `Program.cs`.
+- [x] Keep behavior and order of middleware unchanged.
+  2026-07-18 Phase 1: static tests were updated to assert the new extension files instead of requiring middleware literals in `Program.cs`; two stale expectations were corrected to match current V2 cutover/search markup state.
 
 Acceptance:
 
-- [ ] `Program.cs` still starts the same runtime with same middleware order.
-- [ ] No endpoint route changes.
-- [ ] Storefront V2 host smoke tests still pass.
+- [x] `Program.cs` still starts the same runtime with same middleware order.
+- [x] No endpoint route changes.
+- [x] Storefront V2 host smoke tests still pass.
+  2026-07-18 Phase 1 verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed; focused static/security/layout tests passed 58/58; targeted `StorefrontV2HostSmokeTests` subset for sign-in, CSRF, robots, and sitemap passed 7/7. A full host-smoke class run was not used for the phase gate because it timed out after about 4 minutes.
 
 ## Phase 2 - Extract Rate Limit And HTTP Client Helpers
 

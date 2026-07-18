@@ -65,9 +65,11 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         public void StorefrontLocalCartMutations_HaveRateLimitPolicyAndTypedResponse()
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+            var pipeline = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontApplicationBuilderExtensions.cs");
             var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Options/StorefrontRateLimitingOptions.cs");
 
             Assert.Contains("Storefront:RateLimiting", options, StringComparison.Ordinal);
+            Assert.Contains("UseRateLimiter", pipeline, StringComparison.Ordinal);
             Assert.Equal(4, Regex.Matches(program, "RequireRateLimiting\\(StorefrontLocalCartRateLimitPolicyName\\)").Count);
             Assert.Contains("StorefrontLocalCartErrorResponse(\"Too many cart requests. Try again shortly.\")", program, StringComparison.Ordinal);
             Assert.Contains("MetadataName.RetryAfter", program, StringComparison.Ordinal);

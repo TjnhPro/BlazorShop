@@ -4,7 +4,6 @@ using System.Threading.RateLimiting;
 using BlazorShop.Application.Diagnostics;
 using BlazorShop.Application.DTOs.UserIdentity;
 using BlazorShop.Application.CommerceNode.VariationTemplates;
-using BlazorShop.Application.Options;
 using BlazorShop.Application.Services;
 using BlazorShop.Application.Services.Contracts;
 using BlazorShop.Storefront.Configuration;
@@ -20,7 +19,6 @@ using BlazorShop.Web.SharedV2.Models;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 const string StorefrontLocalCartRateLimitPolicyName = "storefront-local-cart";
@@ -31,91 +29,15 @@ var storefrontRateLimitingOptions = builder.Configuration
 
 builder.AddServiceDefaults();
 
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddMemoryCache();
-builder.Services.AddAntiforgery(options =>
-{
-    options.HeaderName = "X-CSRF-TOKEN";
-});
-builder.Services.AddSingleton<IValidateOptions<StorefrontApiOptions>, StorefrontApiOptionsValidator>();
-builder.Services.AddSingleton<IValidateOptions<ClientAppOptions>, StorefrontClientAppOptionsValidator>();
-builder.Services.AddSingleton<IValidateOptions<StorefrontPublicUrlOptions>, StorefrontPublicUrlOptionsValidator>();
-builder.Services.AddSingleton<IValidateOptions<StorefrontStoreResolutionOptions>, StorefrontStoreResolutionOptionsValidator>();
-builder.Services.ConfigureOptions<StorefrontForwardedHeadersOptionsSetup>();
-builder.Services.AddOptions<StorefrontApiOptions>()
-    .Bind(builder.Configuration.GetSection(StorefrontApiOptions.SectionName))
-    .ValidateOnStart();
-builder.Services.AddOptions<ClientAppOptions>()
-    .Bind(builder.Configuration.GetSection(ClientAppOptions.SectionName))
-    .ValidateOnStart();
-builder.Services.AddOptions<StorefrontPublicUrlOptions>()
-    .Bind(builder.Configuration.GetSection(StorefrontPublicUrlOptions.SectionName))
-    .ValidateOnStart();
-builder.Services.AddOptions<StorefrontStoreResolutionOptions>()
-    .Bind(builder.Configuration.GetSection(StorefrontStoreResolutionOptions.SectionName))
-    .ValidateOnStart();
-builder.Services.AddOptions<StorefrontRateLimitingOptions>()
-    .Bind(builder.Configuration.GetSection(StorefrontRateLimitingOptions.SectionName));
-if (storefrontRateLimitingOptions.Enabled)
-{
-    builder.Services.AddRateLimiter(options => ConfigureStorefrontRateLimiter(options, storefrontRateLimitingOptions));
-}
-
-builder.Services
-    .AddRazorComponents()
-    .AddInteractiveWebAssemblyComponents();
-builder.Services.AddSingleton<ISeoMetadataBuilder, SeoMetadataBuilder>();
-builder.Services.AddScoped<IStorefrontClientAppUrlResolver, StorefrontClientAppUrlResolver>();
-builder.Services.AddScoped<IStorefrontPublicUrlResolver, StorefrontPublicUrlResolver>();
-builder.Services.AddScoped<IStorefrontRobotsService, StorefrontRobotsService>();
-builder.Services.AddScoped<IStorefrontSeoSettingsProvider, StorefrontSeoSettingsProvider>();
-builder.Services.AddScoped<IStorefrontSeoComposer, StorefrontSeoComposer>();
-builder.Services.AddScoped<IStorefrontStructuredDataComposer, StorefrontStructuredDataComposer>();
-builder.Services.AddScoped<IStorefrontSitemapService, StorefrontSitemapService>();
-builder.Services.AddScoped<IStorefrontCurrentStoreProvider, StorefrontCurrentStoreProvider>();
-builder.Services.AddScoped<IStorefrontDisplayContextProvider, StorefrontDisplayContextProvider>();
-builder.Services.AddScoped<IStorefrontPageNavigationProvider, StorefrontPageNavigationProvider>();
-builder.Services.AddScoped<IStorefrontNavigationProvider, StorefrontNavigationProvider>();
-builder.Services.AddScoped<IStorefrontPriceFormatter, StorefrontPriceFormatter>();
-builder.Services.AddScoped<StorefrontCartTokenService>();
-builder.Services.AddHttpClient<IStorefrontSessionResolver, StorefrontSessionResolver>((serviceProvider, client) =>
-{
-    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-    ConfigureStorefrontHttpClient(client, configuration);
-});
-builder.Services.AddHttpClient<IStorefrontAuthClient, StorefrontAuthClient>((serviceProvider, client) =>
-{
-    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-    ConfigureStorefrontHttpClient(client, configuration);
-});
-builder.Services.AddHttpClient<StorefrontApiClient>((serviceProvider, client) =>
-{
-    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-    ConfigureStorefrontHttpClient(client, configuration);
-});
+builder.Services.AddStorefrontV2Services(
+    builder.Configuration,
+    storefrontRateLimitingOptions,
+    ConfigureStorefrontRateLimiter,
+    ConfigureStorefrontHttpClient);
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseWebAssemblyDebugging();
-}
-
-app.UseForwardedHeaders();
-app.UseStaticFiles();
-app.Use(async (context, next) =>
-{
-    StorefrontResponseHeaders.RegisterErrorStatusHeaders(context);
-    await next();
-});
-app.UseMiddleware<StorefrontCurrentStoreMiddleware>();
-app.UseMiddleware<StorefrontPublicRedirectMiddleware>();
-if (storefrontRateLimitingOptions.Enabled)
-{
-    app.UseRateLimiter();
-}
-
-app.UseAntiforgery();
+app.UseStorefrontV2HostPipeline(storefrontRateLimitingOptions);
 app.MapStaticAssets();
 app.MapGet("/favicon.ico", () => Results.Redirect("/icon-192.png", permanent: false));
 app.MapDefaultEndpoints();
