@@ -2,18 +2,15 @@ extern alias StorefrontV2;
 
 namespace BlazorShop.Tests.PresentationV2.Storefront
 {
-    using System.Net;
-    using System.Net.Http.Json;
     using System.Xml.Linq;
 
     using BlazorShop.Application.DTOs.Seo;
     using BlazorShop.Web.SharedV2.Models.Discovery;
 
-    using Microsoft.Extensions.Options;
+    using Moq;
 
     using Xunit;
 
-    using StorefrontV2::BlazorShop.Storefront.Options;
     using StorefrontV2::BlazorShop.Storefront.Services;
     using StorefrontV2::BlazorShop.Storefront.Services.Contracts;
 
@@ -51,18 +48,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
         private static StorefrontSitemapService CreateService(GetPublicCatalogSitemap sitemap)
         {
-            var apiClient = new StorefrontApiClient(
-                new HttpClient(new SitemapHttpMessageHandler(sitemap))
-                {
-                    BaseAddress = new Uri("https://commerce.example/api/storefront/stores/default/"),
-                },
-                Options.Create(new StorefrontApiOptions
-                {
-                    EnableLegacyFallback = false,
-                }));
+            var apiClient = new Mock<IStorefrontCatalogClient>();
+            apiClient
+                .Setup(client => client.GetPublishedSitemapAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(StorefrontApiResult<GetPublicCatalogSitemap>.Success(sitemap));
 
             return new StorefrontSitemapService(
-                apiClient,
+                apiClient.Object,
                 new StubPublicUrlResolver(),
                 new StubSeoSettingsProvider());
         }
@@ -75,25 +67,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 .Descendants(ns + "loc")
                 .Select(element => element.Value)
                 .ToList();
-        }
-
-        private sealed class SitemapHttpMessageHandler : HttpMessageHandler
-        {
-            private readonly GetPublicCatalogSitemap sitemap;
-
-            public SitemapHttpMessageHandler(GetPublicCatalogSitemap sitemap)
-            {
-                this.sitemap = sitemap;
-            }
-
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            {
-                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = JsonContent.Create(this.sitemap),
-                    RequestMessage = request,
-                });
-            }
         }
 
         private sealed class StubPublicUrlResolver : IStorefrontPublicUrlResolver

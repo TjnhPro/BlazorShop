@@ -5,10 +5,10 @@ namespace BlazorShop.Storefront.Services
 
     public sealed class StorefrontNavigationProvider : IStorefrontNavigationProvider
     {
-        private readonly StorefrontApiClient apiClient;
+        private readonly IStorefrontContentClient apiClient;
         private readonly Dictionary<string, Task<StoreNavigationPublicMenuDto?>> menuTasks = new(StringComparer.OrdinalIgnoreCase);
 
-        public StorefrontNavigationProvider(StorefrontApiClient apiClient)
+        public StorefrontNavigationProvider(IStorefrontContentClient apiClient)
         {
             this.apiClient = apiClient;
         }

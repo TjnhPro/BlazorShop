@@ -3,6 +3,7 @@ namespace BlazorShop.Storefront.Services
     using System.Text.Json;
 
     using BlazorShop.Application.CommerceNode.VariationTemplates;
+    using BlazorShop.Storefront.Services.Contracts;
     using BlazorShop.Web.SharedV2;
     using ProcessCart = BlazorShop.Web.SharedV2.Models.Payment.ProcessCart;
 
@@ -10,10 +11,10 @@ namespace BlazorShop.Storefront.Services
     {
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
-        private readonly StorefrontApiClient apiClient;
+        private readonly IStorefrontCartClient apiClient;
         private readonly IHostEnvironment environment;
 
-        public StorefrontCartTokenService(StorefrontApiClient apiClient, IHostEnvironment environment)
+        public StorefrontCartTokenService(IStorefrontCartClient apiClient, IHostEnvironment environment)
         {
             this.apiClient = apiClient;
             this.environment = environment;

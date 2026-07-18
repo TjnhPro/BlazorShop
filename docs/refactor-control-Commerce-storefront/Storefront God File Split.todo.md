@@ -452,26 +452,29 @@ Acceptance:
 
 Only start this after Phase 7 is stable.
 
-- [ ] Introduce public capability clients only where consumer boundaries are clear:
+- [x] Introduce public capability clients only where consumer boundaries are clear:
   - `IStorefrontCatalogClient`
   - `IStorefrontCartClient`
   - `IStorefrontCheckoutClient`
   - `IStorefrontCustomerClient`
   - `IStorefrontPaymentClient`
   - `IStorefrontStoreConfigurationClient`
-- [ ] Keep `StorefrontApiClient` as a compatibility facade until all direct consumers are migrated.
-- [ ] Migrate one consumer group at a time:
+  2026-07-18 Phase 8: added capability interfaces for catalog, cart, checkout, customer, payment, store configuration, address, consent, and content/navigation/SEO; all map to the existing `StorefrontApiClient` facade.
+- [x] Keep `StorefrontApiClient` as a compatibility facade until all direct consumers are migrated.
+- [x] Migrate one consumer group at a time:
   - catalog pages
   - SEO/sitemap/navigation services
   - account pages
   - checkout/payment pages
-- [ ] Do not create duplicate `HttpClient` setup per capability; use the shared transport/base address configuration.
+  2026-07-18 Phase 8: migrated provider/service consumers only: sitemap, navigation/page navigation, SEO settings, public redirect middleware, current-store/display context, and cart token service. Razor pages/endpoints still use the facade unless they have a clear later migration.
+- [x] Do not create duplicate `HttpClient` setup per capability; use the shared transport/base address configuration.
 
 Acceptance:
 
-- [ ] No duplicated base address/store key/header logic.
-- [ ] Consumer injection becomes capability-specific where useful.
-- [ ] Tests can stub one capability without replacing unrelated client behavior.
+- [x] No duplicated base address/store key/header logic.
+- [x] Consumer injection becomes capability-specific where useful.
+- [x] Tests can stub one capability without replacing unrelated client behavior.
+  2026-07-18 Phase 8 verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed; API/provider tests passed 50/50; representative host-smoke subset passed 4/4. `StorefrontSitemapServiceTests` now stubs `IStorefrontCatalogClient` directly.
 
 ## Phase 9 - Coordinate With V2 Commerce Flow Cutover
 

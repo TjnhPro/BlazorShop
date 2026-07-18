@@ -13,6 +13,7 @@ namespace BlazorShop.Storefront.Services
     using BlazorShop.Application.DTOs.Seo;
     using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Storefront.Options;
+    using BlazorShop.Storefront.Services.Contracts;
     using BlazorShop.Web.SharedV2.Models.Category;
     using BlazorShop.Web.SharedV2.Models.Pages;
     using BlazorShop.Web.SharedV2.Models.Product;
@@ -22,7 +23,16 @@ namespace BlazorShop.Storefront.Services
 
     using GetCategoryTreeNode = BlazorShop.Application.DTOs.Category.GetCategoryTreeNode;
 
-    public partial class StorefrontApiClient
+    public partial class StorefrontApiClient :
+        IStorefrontAddressClient,
+        IStorefrontCartClient,
+        IStorefrontCatalogClient,
+        IStorefrontCheckoutClient,
+        IStorefrontConsentClient,
+        IStorefrontContentClient,
+        IStorefrontCustomerClient,
+        IStorefrontPaymentClient,
+        IStorefrontStoreConfigurationClient
     {
         // Static informational pages should degrade faster than catalog-backed pages when the API is offline.
         private static readonly TimeSpan CatalogRequestTimeout = TimeSpan.FromSeconds(2);

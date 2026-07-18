@@ -11,12 +11,12 @@ namespace BlazorShop.Storefront.Services
 
     public class StorefrontSitemapService : IStorefrontSitemapService
     {
-        private readonly StorefrontApiClient _apiClient;
+        private readonly IStorefrontCatalogClient _apiClient;
         private readonly IStorefrontPublicUrlResolver _publicUrlResolver;
         private readonly IStorefrontSeoSettingsProvider _seoSettingsProvider;
 
         public StorefrontSitemapService(
-            StorefrontApiClient apiClient,
+            IStorefrontCatalogClient apiClient,
             IStorefrontPublicUrlResolver publicUrlResolver,
             IStorefrontSeoSettingsProvider seoSettingsProvider)
         {

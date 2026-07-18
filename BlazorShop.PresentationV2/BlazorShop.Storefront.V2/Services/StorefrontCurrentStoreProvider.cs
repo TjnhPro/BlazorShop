@@ -6,12 +6,12 @@ namespace BlazorShop.Storefront.Services
     {
         private static readonly object ContextItemKey = new();
 
-        private readonly StorefrontApiClient _apiClient;
+        private readonly IStorefrontStoreConfigurationClient _apiClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<StorefrontCurrentStoreProvider> _logger;
 
         public StorefrontCurrentStoreProvider(
-            StorefrontApiClient apiClient,
+            IStorefrontStoreConfigurationClient apiClient,
             IHttpContextAccessor httpContextAccessor,
             ILogger<StorefrontCurrentStoreProvider> logger)
         {

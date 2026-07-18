@@ -3,6 +3,7 @@ namespace BlazorShop.Storefront.Services
     using System.IO;
 
     using BlazorShop.Application.Diagnostics;
+    using BlazorShop.Storefront.Services.Contracts;
 
     using Microsoft.AspNetCore.Http.Extensions;
     using Microsoft.Extensions.Logging;
@@ -32,7 +33,7 @@ namespace BlazorShop.Storefront.Services
             _logger = logger;
         }
 
-        public async Task InvokeAsync(HttpContext context, StorefrontApiClient apiClient)
+        public async Task InvokeAsync(HttpContext context, IStorefrontContentClient apiClient)
         {
             if (!ShouldResolveRedirect(context.Request))
             {

@@ -5,10 +5,10 @@ namespace BlazorShop.Storefront.Services
 
     public sealed class StorefrontPageNavigationProvider : IStorefrontPageNavigationProvider
     {
-        private readonly StorefrontApiClient apiClient;
+        private readonly IStorefrontContentClient apiClient;
         private Task<IReadOnlyList<StorefrontPageNavigationLinkDto>>? linksTask;
 
-        public StorefrontPageNavigationProvider(StorefrontApiClient apiClient)
+        public StorefrontPageNavigationProvider(IStorefrontContentClient apiClient)
         {
             this.apiClient = apiClient;
         }

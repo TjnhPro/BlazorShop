@@ -14,12 +14,12 @@ namespace BlazorShop.Storefront.Services
         private const string DefaultCurrencyCode = "USD";
 
         private readonly IStorefrontCurrentStoreProvider _currentStoreProvider;
-        private readonly StorefrontApiClient? _apiClient;
+        private readonly IStorefrontStoreConfigurationClient? _apiClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public StorefrontDisplayContextProvider(
             IStorefrontCurrentStoreProvider currentStoreProvider,
-            StorefrontApiClient? apiClient = null,
+            IStorefrontStoreConfigurationClient? apiClient = null,
             IHttpContextAccessor? httpContextAccessor = null)
         {
             _currentStoreProvider = currentStoreProvider;

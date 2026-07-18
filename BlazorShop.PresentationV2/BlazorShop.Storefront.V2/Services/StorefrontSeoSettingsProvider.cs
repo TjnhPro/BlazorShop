@@ -9,11 +9,11 @@ namespace BlazorShop.Storefront.Services
     {
         private const string CacheKey = "storefront-seo-settings";
 
-        private readonly StorefrontApiClient _apiClient;
+        private readonly IStorefrontContentClient _apiClient;
         private readonly IConfiguration _configuration;
         private readonly IMemoryCache _memoryCache;
 
-        public StorefrontSeoSettingsProvider(StorefrontApiClient apiClient, IConfiguration configuration, IMemoryCache memoryCache)
+        public StorefrontSeoSettingsProvider(IStorefrontContentClient apiClient, IConfiguration configuration, IMemoryCache memoryCache)
         {
             _apiClient = apiClient;
             _configuration = configuration;

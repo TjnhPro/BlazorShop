@@ -96,6 +96,15 @@ namespace BlazorShop.Storefront.Configuration
                     var serviceConfiguration = serviceProvider.GetRequiredService<IConfiguration>();
                     configureHttpClient(client, serviceConfiguration);
                 });
+            services.AddScoped<IStorefrontAddressClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontCartClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontCatalogClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontCheckoutClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontConsentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontContentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontCustomerClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontPaymentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontStoreConfigurationClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
 
             return services;
         }
