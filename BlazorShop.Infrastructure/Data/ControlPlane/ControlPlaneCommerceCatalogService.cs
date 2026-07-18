@@ -1,10 +1,9 @@
 namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using System.Globalization;
-    using System.Net.Http.Json;
-    using System.Text.Json;
 
     using BlazorShop.Application.ControlPlane.Catalog;
+    using BlazorShop.Application.ControlPlane.CommerceGateway;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -26,26 +25,14 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using BlazorShop.Application.DTOs.Product.ProductVariant;
     using BlazorShop.Application.DTOs.Seo;
     using BlazorShop.Domain.Contracts;
-    using BlazorShop.Domain.Entities.ControlPlane;
-
-    using Microsoft.EntityFrameworkCore;
 
     public sealed class ControlPlaneCommerceCatalogService : IControlPlaneCommerceCatalogService
     {
-        private const string ControlApiEndpointKind = "control_api";
+        private readonly ICommerceNodeAdminGatewayTransport transport;
 
-        private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web)
+        public ControlPlaneCommerceCatalogService(ICommerceNodeAdminGatewayTransport transport)
         {
-            PropertyNameCaseInsensitive = true,
-        };
-
-        private readonly ControlPlaneDbContext dbContext;
-        private readonly HttpClient httpClient;
-
-        public ControlPlaneCommerceCatalogService(ControlPlaneDbContext dbContext, HttpClient httpClient)
-        {
-            this.dbContext = dbContext;
-            this.httpClient = httpClient;
+            this.transport = transport;
         }
 
         public Task<ControlPlaneCommerceCatalogResult<PagedResult<GetCatalogProduct>>> QueryProductsAsync(
@@ -78,11 +65,14 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            var store = await this.LoadStoreAsync(storePublicId, cancellationToken);
-            var validation = ValidateStoreForRemoteCall(store);
-            if (validation is not null)
+            var storeKey = await this.ResolveStoreKeyAsync(storePublicId, cancellationToken);
+            if (!storeKey.Success)
             {
-                return validation.ToResult<CommerceStoreDetail>();
+                return new ControlPlaneCommerceCatalogResult<CommerceStoreDetail>(
+                    false,
+                    storeKey.Message,
+                    Failure: storeKey.Failure,
+                    HttpStatusCode: storeKey.HttpStatusCode);
             }
 
             var result = await this.SendAsync<CommerceStoreListResponse>(
@@ -102,7 +92,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             }
 
             var runtimeStore = result.Payload?.Items.FirstOrDefault(item =>
-                string.Equals(item.StoreKey, store!.StoreKey, StringComparison.OrdinalIgnoreCase));
+                string.Equals(item.StoreKey, storeKey.Payload, StringComparison.OrdinalIgnoreCase));
             if (runtimeStore is null)
             {
                 return Failure<CommerceStoreDetail>("Runtime store was not found.", ControlPlaneCommerceCatalogFailure.NotFound);
@@ -1593,71 +1583,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             object? body,
             CancellationToken cancellationToken)
         {
-            var store = await this.LoadStoreAsync(storePublicId, cancellationToken);
-            var validation = ValidateStoreForRemoteCall(store);
-            if (validation is not null)
-            {
-                return validation.ToResult<TPayload>();
-            }
-
-            try
-            {
-                using var request = new HttpRequestMessage(method, AppendPath(GetControlApiUrl(store!.Node!), AppendStoreKeyQuery(path, store.StoreKey)));
-                request.Headers.TryAddWithoutValidation("X-Node-Key", store.Node!.NodeKey);
-                request.Headers.TryAddWithoutValidation("X-Node-Secret", store.Node.NodeSecret);
-
-                if (body is not null)
-                {
-                    request.Content = JsonContent.Create(body, options: SerializerOptions);
-                }
-
-                using var response = await this.httpClient.SendAsync(request, cancellationToken);
-                var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
-                if (string.IsNullOrWhiteSpace(responseBody))
-                {
-                    return Failure<TPayload>(
-                        "Commerce Node returned an empty response.",
-                        ControlPlaneCommerceCatalogFailure.RemoteFailure,
-                        (int)response.StatusCode);
-                }
-
-                var envelope = JsonSerializer.Deserialize<CommerceNodeEnvelope<TPayload>>(responseBody, SerializerOptions);
-                if (envelope is null)
-                {
-                    return Failure<TPayload>(
-                        "Commerce Node returned a malformed response envelope.",
-                        ControlPlaneCommerceCatalogFailure.RemoteFailure,
-                        (int)response.StatusCode);
-                }
-
-                if (!response.IsSuccessStatusCode || !envelope.Success)
-                {
-                    return new ControlPlaneCommerceCatalogResult<TPayload>(
-                        false,
-                        string.IsNullOrWhiteSpace(envelope.Message) ? "Commerce Node catalog request failed." : envelope.Message,
-                        envelope.Data,
-                        ToFailure(response.StatusCode),
-                        (int)response.StatusCode);
-                }
-
-                return new ControlPlaneCommerceCatalogResult<TPayload>(
-                    true,
-                    envelope.Message,
-                    envelope.Data,
-                    HttpStatusCode: (int)response.StatusCode);
-            }
-            catch (TaskCanceledException)
-            {
-                return Failure<TPayload>("Commerce Node catalog request timed out.", ControlPlaneCommerceCatalogFailure.RemoteFailure);
-            }
-            catch (HttpRequestException ex)
-            {
-                return Failure<TPayload>(ex.Message, ControlPlaneCommerceCatalogFailure.RemoteFailure);
-            }
-            catch (JsonException)
-            {
-                return Failure<TPayload>("Commerce Node returned malformed JSON.", ControlPlaneCommerceCatalogFailure.RemoteFailure);
-            }
+            return ToCatalogResult(await this.transport.SendAsync<TPayload>(
+                storePublicId,
+                method,
+                path,
+                body,
+                cancellationToken));
         }
 
         private async Task<ControlPlaneCommerceMediaResult> SendMediaAsync(
@@ -1665,45 +1596,14 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             string path,
             CancellationToken cancellationToken)
         {
-            var store = await this.LoadStoreAsync(storePublicId, cancellationToken);
-            var validation = ValidateStoreForRemoteCall(store);
-            if (validation is not null)
-            {
-                return validation.ToMediaResult();
-            }
-
-            try
-            {
-                using var request = new HttpRequestMessage(HttpMethod.Get, AppendPath(GetControlApiUrl(store!.Node!), AppendStoreKeyQuery(path, store.StoreKey)));
-                request.Headers.TryAddWithoutValidation("X-Node-Key", store.Node!.NodeKey);
-                request.Headers.TryAddWithoutValidation("X-Node-Secret", store.Node.NodeSecret);
-
-                using var response = await this.httpClient.SendAsync(request, cancellationToken);
-                var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
-                if (!response.IsSuccessStatusCode)
-                {
-                    return new ControlPlaneCommerceMediaResult(
-                        false,
-                        bytes.Length > 0 ? System.Text.Encoding.UTF8.GetString(bytes) : "Commerce Node media preview request failed.",
-                        Failure: ToFailure(response.StatusCode),
-                        HttpStatusCode: (int)response.StatusCode);
-                }
-
-                return new ControlPlaneCommerceMediaResult(
-                    true,
-                    "Product media preview loaded.",
-                    bytes,
-                    response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream",
-                    HttpStatusCode: (int)response.StatusCode);
-            }
-            catch (TaskCanceledException)
-            {
-                return new ControlPlaneCommerceMediaResult(false, "Commerce Node media preview request timed out.", Failure: ControlPlaneCommerceCatalogFailure.RemoteFailure);
-            }
-            catch (HttpRequestException ex)
-            {
-                return new ControlPlaneCommerceMediaResult(false, ex.Message, Failure: ControlPlaneCommerceCatalogFailure.RemoteFailure);
-            }
+            var result = await this.transport.SendMediaAsync(storePublicId, path, cancellationToken);
+            return new ControlPlaneCommerceMediaResult(
+                result.Success,
+                result.Message,
+                result.Content,
+                result.ContentType,
+                ToCatalogFailure(result.Failure),
+                result.HttpStatusCode);
         }
 
         private async Task<ControlPlaneCommerceCatalogResult<TPayload>> SendMultipartAsync<TPayload>(
@@ -1712,67 +1612,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             ProductImportUploadRequest upload,
             CancellationToken cancellationToken)
         {
-            var store = await this.LoadStoreAsync(storePublicId, cancellationToken);
-            var validation = ValidateStoreForRemoteCall(store);
-            if (validation is not null)
-            {
-                return validation.ToResult<TPayload>();
-            }
-
-            try
-            {
-                using var request = new HttpRequestMessage(HttpMethod.Post, AppendPath(GetControlApiUrl(store!.Node!), AppendStoreKeyQuery(path, store.StoreKey)));
-                request.Headers.TryAddWithoutValidation("X-Node-Key", store.Node!.NodeKey);
-                request.Headers.TryAddWithoutValidation("X-Node-Secret", store.Node.NodeSecret);
-
-                using var form = new MultipartFormDataContent();
-                using var fileContent = new StreamContent(upload.Content);
-                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/csv");
-                form.Add(fileContent, "file", string.IsNullOrWhiteSpace(upload.FileName) ? "products.csv" : upload.FileName);
-                form.Add(new StringContent(string.IsNullOrWhiteSpace(upload.Mode) ? ProductImportModes.CreateOnly : upload.Mode), "mode");
-                request.Content = form;
-
-                using var response = await this.httpClient.SendAsync(request, cancellationToken);
-                var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
-                if (string.IsNullOrWhiteSpace(responseBody))
-                {
-                    return Failure<TPayload>("Commerce Node returned an empty response.", ControlPlaneCommerceCatalogFailure.RemoteFailure, (int)response.StatusCode);
-                }
-
-                var envelope = JsonSerializer.Deserialize<CommerceNodeEnvelope<TPayload>>(responseBody, SerializerOptions);
-                if (envelope is null)
-                {
-                    return Failure<TPayload>("Commerce Node returned a malformed response envelope.", ControlPlaneCommerceCatalogFailure.RemoteFailure, (int)response.StatusCode);
-                }
-
-                if (!response.IsSuccessStatusCode || !envelope.Success)
-                {
-                    return new ControlPlaneCommerceCatalogResult<TPayload>(
-                        false,
-                        string.IsNullOrWhiteSpace(envelope.Message) ? "Commerce Node catalog request failed." : envelope.Message,
-                        envelope.Data,
-                        ToFailure(response.StatusCode),
-                        (int)response.StatusCode);
-                }
-
-                return new ControlPlaneCommerceCatalogResult<TPayload>(
-                    true,
-                    envelope.Message,
-                    envelope.Data,
-                    HttpStatusCode: (int)response.StatusCode);
-            }
-            catch (TaskCanceledException)
-            {
-                return Failure<TPayload>("Commerce Node catalog request timed out.", ControlPlaneCommerceCatalogFailure.RemoteFailure);
-            }
-            catch (HttpRequestException ex)
-            {
-                return Failure<TPayload>(ex.Message, ControlPlaneCommerceCatalogFailure.RemoteFailure);
-            }
-            catch (JsonException)
-            {
-                return Failure<TPayload>("Commerce Node returned malformed JSON.", ControlPlaneCommerceCatalogFailure.RemoteFailure);
-            }
+            return ToCatalogResult(await this.transport.SendProductImportMultipartAsync<TPayload>(
+                storePublicId,
+                path,
+                upload,
+                cancellationToken));
         }
 
         private async Task<ControlPlaneCommerceCatalogResult<TPayload>> SendMediaAssetMultipartAsync<TPayload>(
@@ -1781,128 +1625,40 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             CommerceMediaAssetUploadRequest upload,
             CancellationToken cancellationToken)
         {
-            var store = await this.LoadStoreAsync(storePublicId, cancellationToken);
-            var validation = ValidateStoreForRemoteCall(store);
-            if (validation is not null)
-            {
-                return validation.ToResult<TPayload>();
-            }
-
-            try
-            {
-                using var request = new HttpRequestMessage(HttpMethod.Post, AppendPath(GetControlApiUrl(store!.Node!), AppendStoreKeyQuery(path, store.StoreKey)));
-                request.Headers.TryAddWithoutValidation("X-Node-Key", store.Node!.NodeKey);
-                request.Headers.TryAddWithoutValidation("X-Node-Secret", store.Node.NodeSecret);
-
-                using var form = new MultipartFormDataContent();
-                using var fileContent = new StreamContent(upload.Content);
-                if (!string.IsNullOrWhiteSpace(upload.ContentType))
-                {
-                    fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(upload.ContentType);
-                }
-
-                form.Add(fileContent, "file", string.IsNullOrWhiteSpace(upload.FileName) ? "media-asset" : upload.FileName);
-                request.Content = form;
-
-                using var response = await this.httpClient.SendAsync(request, cancellationToken);
-                var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
-                if (string.IsNullOrWhiteSpace(responseBody))
-                {
-                    return Failure<TPayload>("Commerce Node returned an empty response.", ControlPlaneCommerceCatalogFailure.RemoteFailure, (int)response.StatusCode);
-                }
-
-                var envelope = JsonSerializer.Deserialize<CommerceNodeEnvelope<TPayload>>(responseBody, SerializerOptions);
-                if (envelope is null)
-                {
-                    return Failure<TPayload>("Commerce Node returned a malformed response envelope.", ControlPlaneCommerceCatalogFailure.RemoteFailure, (int)response.StatusCode);
-                }
-
-                if (!response.IsSuccessStatusCode || !envelope.Success)
-                {
-                    return new ControlPlaneCommerceCatalogResult<TPayload>(
-                        false,
-                        string.IsNullOrWhiteSpace(envelope.Message) ? "Commerce Node catalog request failed." : envelope.Message,
-                        envelope.Data,
-                        ToFailure(response.StatusCode),
-                        (int)response.StatusCode);
-                }
-
-                return new ControlPlaneCommerceCatalogResult<TPayload>(
-                    true,
-                    envelope.Message,
-                    envelope.Data,
-                    HttpStatusCode: (int)response.StatusCode);
-            }
-            catch (TaskCanceledException)
-            {
-                return Failure<TPayload>("Commerce Node catalog request timed out.", ControlPlaneCommerceCatalogFailure.RemoteFailure);
-            }
-            catch (HttpRequestException ex)
-            {
-                return Failure<TPayload>(ex.Message, ControlPlaneCommerceCatalogFailure.RemoteFailure);
-            }
-            catch (JsonException)
-            {
-                return Failure<TPayload>("Commerce Node returned malformed JSON.", ControlPlaneCommerceCatalogFailure.RemoteFailure);
-            }
+            return ToCatalogResult(await this.transport.SendMediaAssetMultipartAsync<TPayload>(
+                storePublicId,
+                path,
+                upload,
+                cancellationToken));
         }
 
-        private async Task<StoreRegistry?> LoadStoreAsync(Guid publicId, CancellationToken cancellationToken)
+        private async Task<ControlPlaneCommerceCatalogResult<string>> ResolveStoreKeyAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken)
         {
-            return await this.dbContext.Stores
-                .AsNoTracking()
-                .Include(store => store.Node)
-                    .ThenInclude(node => node!.Endpoints)
-                .FirstOrDefaultAsync(store => store.PublicId == publicId, cancellationToken);
+            return ToCatalogResult(await this.transport.ResolveStoreKeyAsync(storePublicId, cancellationToken));
         }
 
-        private static StoreValidationFailure? ValidateStoreForRemoteCall(StoreRegistry? store)
+        private static ControlPlaneCommerceCatalogResult<TPayload> ToCatalogResult<TPayload>(
+            CommerceNodeAdminGatewayResult<TPayload> result)
         {
-            if (store is null)
-            {
-                return new StoreValidationFailure(ControlPlaneCommerceCatalogFailure.NotFound, "Store was not found.");
-            }
-
-            if (store.Status == "archived")
-            {
-                return new StoreValidationFailure(ControlPlaneCommerceCatalogFailure.Validation, "Archived stores cannot be managed.");
-            }
-
-            if (store.Node is null || store.Node.Status == "disabled")
-            {
-                return new StoreValidationFailure(ControlPlaneCommerceCatalogFailure.Validation, "Store node is missing or disabled.");
-            }
-
-            if (string.IsNullOrWhiteSpace(store.Node.NodeSecret))
-            {
-                return new StoreValidationFailure(ControlPlaneCommerceCatalogFailure.Validation, "Store node does not have a node secret configured.");
-            }
-
-            if (string.IsNullOrWhiteSpace(GetControlApiUrl(store.Node)))
-            {
-                return new StoreValidationFailure(ControlPlaneCommerceCatalogFailure.Validation, "Store node does not have an active Control API endpoint.");
-            }
-
-            return null;
+            return new ControlPlaneCommerceCatalogResult<TPayload>(
+                result.Success,
+                result.Message,
+                result.Payload,
+                ToCatalogFailure(result.Failure),
+                result.HttpStatusCode);
         }
 
-        private static string GetControlApiUrl(CommerceNode node)
+        private static ControlPlaneCommerceCatalogFailure? ToCatalogFailure(CommerceNodeAdminGatewayFailure? failure)
         {
-            return node.Endpoints.FirstOrDefault(endpoint =>
-                endpoint.Kind == ControlApiEndpointKind &&
-                endpoint.IsPrimary &&
-                endpoint.DisabledAt is null)?.Url ?? string.Empty;
-        }
-
-        private static Uri AppendPath(string baseUrl, string path)
-        {
-            return new Uri(baseUrl.TrimEnd('/') + "/" + path.TrimStart('/'), UriKind.Absolute);
-        }
-
-        private static string AppendStoreKeyQuery(string path, string storeKey)
-        {
-            var separator = path.Contains('?', StringComparison.Ordinal) ? "&" : "?";
-            return path + separator + "storeKey=" + Uri.EscapeDataString(storeKey);
+            return failure switch
+            {
+                CommerceNodeAdminGatewayFailure.Validation => ControlPlaneCommerceCatalogFailure.Validation,
+                CommerceNodeAdminGatewayFailure.NotFound => ControlPlaneCommerceCatalogFailure.NotFound,
+                CommerceNodeAdminGatewayFailure.RemoteFailure => ControlPlaneCommerceCatalogFailure.RemoteFailure,
+                _ => null,
+            };
         }
 
         private static string BuildProductQuery(ProductCatalogQuery query)
@@ -2085,17 +1841,6 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                     Uri.EscapeDataString(value.Key) + "=" + Uri.EscapeDataString(value.Value)));
         }
 
-        private static ControlPlaneCommerceCatalogFailure ToFailure(System.Net.HttpStatusCode statusCode)
-        {
-            return statusCode switch
-            {
-                System.Net.HttpStatusCode.NotFound => ControlPlaneCommerceCatalogFailure.NotFound,
-                System.Net.HttpStatusCode.BadRequest => ControlPlaneCommerceCatalogFailure.Validation,
-                System.Net.HttpStatusCode.Conflict => ControlPlaneCommerceCatalogFailure.Validation,
-                _ => ControlPlaneCommerceCatalogFailure.RemoteFailure,
-            };
-        }
-
         private static ControlPlaneCommerceCatalogResult<TPayload> Failure<TPayload>(
             string message,
             ControlPlaneCommerceCatalogFailure failure,
@@ -2106,30 +1851,6 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 message,
                 Failure: failure,
                 HttpStatusCode: httpStatusCode);
-        }
-
-        private sealed record CommerceNodeEnvelope<TPayload>(
-            bool Success,
-            string? Message,
-            TPayload? Data);
-
-        private sealed record StoreValidationFailure(ControlPlaneCommerceCatalogFailure Failure, string Message)
-        {
-            public ControlPlaneCommerceCatalogResult<TPayload> ToResult<TPayload>()
-            {
-                return new ControlPlaneCommerceCatalogResult<TPayload>(
-                    false,
-                    this.Message,
-                    Failure: this.Failure);
-            }
-
-            public ControlPlaneCommerceMediaResult ToMediaResult()
-            {
-                return new ControlPlaneCommerceMediaResult(
-                    false,
-                    this.Message,
-                    Failure: this.Failure);
-            }
         }
     }
 }

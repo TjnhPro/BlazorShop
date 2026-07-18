@@ -250,52 +250,59 @@ Verification:
 
 Mục tiêu: kéo phần shared transport ra khỏi `ControlPlaneCommerceCatalogService` nhưng chưa tách capability service.
 
-- [ ] Tạo contracts trong `BlazorShop.Application/ControlPlane/CommerceGateway/` hoặc `BlazorShop.Application/ControlPlane/Gateway/`:
-  - [ ] `ICommerceNodeAdminGatewayTransport`
-  - [ ] `CommerceNodeAdminGatewayResult<TPayload>`
-  - [ ] `CommerceNodeAdminMediaGatewayResult`
-  - [ ] `CommerceNodeAdminGatewayFailure`
-  - [ ] request helper model cho multipart nếu cần.
-- [ ] Tạo implementation trong `BlazorShop.Infrastructure/Data/ControlPlane/`:
-  - [ ] `CommerceNodeAdminGatewayTransport`
-- [ ] Transport chịu trách nhiệm:
-  - [ ] load `StoreRegistry` theo `storePublicId`.
-  - [ ] include `Node` và `Endpoints`.
-  - [ ] validate store not found.
-  - [ ] validate archived store.
-  - [ ] validate node missing/disabled.
-  - [ ] validate node secret.
-  - [ ] resolve primary `control_api` endpoint.
-  - [ ] append `storeKey` query cho Commerce Admin route.
-  - [ ] add `X-Node-Key` và `X-Node-Secret`.
-  - [ ] send JSON request/response.
-  - [ ] send multipart product import/media upload.
-  - [ ] stream media preview bytes.
-  - [ ] parse standard Commerce Node envelope.
-  - [ ] map remote status code sang gateway failure.
-- [ ] Đổi `ControlPlaneCommerceCatalogService` dùng transport mới.
-- [ ] Giữ tên `ControlPlaneCommerceCatalogResult<TPayload>` tạm thời hoặc chuyển bằng adapter để giảm diff.
-- [ ] Đăng ký DI:
-  - [ ] `AddHttpClient<ICommerceNodeAdminGatewayTransport, CommerceNodeAdminGatewayTransport>()`
-  - [ ] giữ `IControlPlaneCommerceCatalogService` trong phase này.
-- [ ] Không đổi route/controller/Web client.
+- [x] Tạo contracts trong `BlazorShop.Application/ControlPlane/CommerceGateway/` hoặc `BlazorShop.Application/ControlPlane/Gateway/`:
+  - [x] `ICommerceNodeAdminGatewayTransport`
+  - [x] `CommerceNodeAdminGatewayResult<TPayload>`
+  - [x] `CommerceNodeAdminMediaGatewayResult`
+  - [x] `CommerceNodeAdminGatewayFailure`
+  - [x] request helper model cho multipart nếu cần.
+  2026-07-18 Phase 1: contract created in `BlazorShop.Application/ControlPlane/CommerceGateway/CommerceNodeAdminGatewayDtos.cs`; existing multipart request DTOs are reused.
+- [x] Tạo implementation trong `BlazorShop.Infrastructure/Data/ControlPlane/`:
+  - [x] `CommerceNodeAdminGatewayTransport`
+- [x] Transport chịu trách nhiệm:
+  - [x] load `StoreRegistry` theo `storePublicId`.
+  - [x] include `Node` và `Endpoints`.
+  - [x] validate store not found.
+  - [x] validate archived store.
+  - [x] validate node missing/disabled.
+  - [x] validate node secret.
+  - [x] resolve primary `control_api` endpoint.
+  - [x] append `storeKey` query cho Commerce Admin route.
+  - [x] add `X-Node-Key` và `X-Node-Secret`.
+  - [x] send JSON request/response.
+  - [x] send multipart product import/media upload.
+  - [x] stream media preview bytes.
+  - [x] parse standard Commerce Node envelope.
+  - [x] map remote status code sang gateway failure.
+  2026-07-18 Phase 1: transport owns node credential headers, storeKey query, store/node/control endpoint validation, JSON envelope parsing, media byte streaming, and upload multipart forwarding.
+- [x] Đổi `ControlPlaneCommerceCatalogService` dùng transport mới.
+  2026-07-18 Phase 1: catalog service constructor now takes `ICommerceNodeAdminGatewayTransport`; old `HttpRequestMessage`, store load, and node header code was removed from the service.
+- [x] Giữ tên `ControlPlaneCommerceCatalogResult<TPayload>` tạm thời hoặc chuyển bằng adapter để giảm diff.
+  2026-07-18 Phase 1: catalog service maps `CommerceNodeAdminGatewayResult<TPayload>` back to existing catalog result types.
+- [x] Đăng ký DI:
+  - [x] `AddHttpClient<ICommerceNodeAdminGatewayTransport, CommerceNodeAdminGatewayTransport>()`
+  - [x] giữ `IControlPlaneCommerceCatalogService` trong phase này.
+- [x] Không đổi route/controller/Web client.
+  2026-07-18 Phase 1: route/controller/Web client files were not changed.
 
 Risk controls:
 
-- [ ] Không để capability service tự biết node secret.
-- [ ] Không để Web client biết Commerce Node URL.
-- [ ] Không copy `LoadStoreAsync`, `ValidateStoreForRemoteCall`, `AppendStoreKeyQuery` sang nhiều service.
+- [x] Không để capability service tự biết node secret. 2026-07-18 Phase 1: node secret handling is inside `CommerceNodeAdminGatewayTransport`.
+- [x] Không để Web client biết Commerce Node URL. 2026-07-18 Phase 1: no Web changes; existing boundary guard remains.
+- [x] Không copy `LoadStoreAsync`, `ValidateStoreForRemoteCall`, `AppendStoreKeyQuery` sang nhiều service. 2026-07-18 Phase 1: these concerns moved into one transport.
 
 Verification:
 
-- [ ] `ControlPlaneCommerceCatalogServiceStoreMappingTests` vẫn pass.
-- [ ] Thêm test trực tiếp cho `CommerceNodeAdminGatewayTransport`:
-  - [ ] appends `storeKey`.
-  - [ ] sends node credentials.
-  - [ ] returns validation failure for archived store.
-  - [ ] maps empty/malformed remote response.
-  - [ ] maps 404/400/409/5xx.
-- [ ] `dotnet build BlazorShop.Infrastructure/BlazorShop.Infrastructure.csproj`
+- [x] `ControlPlaneCommerceCatalogServiceStoreMappingTests` vẫn pass.
+- [x] Thêm test trực tiếp cho `CommerceNodeAdminGatewayTransport`:
+  - [x] appends `storeKey`.
+  - [x] sends node credentials.
+  - [x] returns validation failure for archived store.
+  - [x] maps empty/malformed remote response.
+  - [x] maps 404/400/409/5xx.
+  2026-07-18 Phase 1: focused gateway run passed 17/17 with existing package advisory warnings.
+- [x] `dotnet build BlazorShop.Infrastructure/BlazorShop.Infrastructure.csproj`
+  2026-07-18 Phase 1: passed with 0 warnings and 0 errors. Additional `ControlPlane.API` build also passed with 0 warnings and 0 errors.
 
 ## Phase 2 - Split Application Gateway Contracts
 

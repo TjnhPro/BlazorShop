@@ -7,6 +7,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
     using BlazorShop.Application.CommerceNode.Shipping;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.ControlPlane.Nodes;
+    using BlazorShop.Application.ControlPlane.CommerceGateway;
     using BlazorShop.Application.ControlPlane.Stores;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Infrastructure.Data.ControlPlane;
@@ -23,7 +24,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler();
-            var service = new ControlPlaneCommerceCatalogService(context, new HttpClient(handler));
+            var service = CreateService(context, handler);
 
             var result = await service.QueryProductsAsync(store.PublicId, new ProductCatalogQuery { SearchTerm = "bag" });
 
@@ -42,7 +43,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler();
-            var service = new ControlPlaneCommerceCatalogService(context, new HttpClient(handler));
+            var service = CreateService(context, handler);
 
             var result = await service.ListCategoriesAsync(store.PublicId);
 
@@ -60,7 +61,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler();
-            var service = new ControlPlaneCommerceCatalogService(context, new HttpClient(handler));
+            var service = CreateService(context, handler);
 
             var result = await service.ListStorefrontPagesAsync(
                 store.PublicId,
@@ -81,7 +82,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler(RecordingHandler.EmptyArrayEnvelope);
-            var service = new ControlPlaneCommerceCatalogService(context, new HttpClient(handler));
+            var service = CreateService(context, handler);
 
             var result = await service.GetStorefrontPageTemplateStatusAsync(store.PublicId);
 
@@ -99,7 +100,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler(RecordingHandler.EmptyPageEnvelope);
-            var service = new ControlPlaneCommerceCatalogService(context, new HttpClient(handler));
+            var service = CreateService(context, handler);
 
             var result = await service.CreateStorefrontPageDraftFromTemplateAsync(
                 store.PublicId,
@@ -119,7 +120,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler(RecordingHandler.EmptyPageEnvelope);
-            var service = new ControlPlaneCommerceCatalogService(context, new HttpClient(handler));
+            var service = CreateService(context, handler);
             var pageId = Guid.Parse("7a89bf2d-3177-4923-9806-902ab6625c72");
 
             var result = await service.UpdateStorefrontPageNavigationAsync(
@@ -140,7 +141,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler(RecordingHandler.EmptyArrayEnvelope);
-            var service = new ControlPlaneCommerceCatalogService(context, new HttpClient(handler));
+            var service = CreateService(context, handler);
 
             var result = await service.ListNavigationMenusAsync(store.PublicId);
 
@@ -159,7 +160,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler(RecordingHandler.NavigationMenuEnvelope);
-            var service = new ControlPlaneCommerceCatalogService(context, new HttpClient(handler));
+            var service = CreateService(context, handler);
             var menuPublicId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
             var result = await service.CreateNavigationItemAsync(
@@ -186,7 +187,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler(RecordingHandler.ShippingSettingsEnvelope);
-            var service = new ControlPlaneCommerceCatalogService(context, new HttpClient(handler));
+            var service = CreateService(context, handler);
 
             var result = await service.GetShippingSettingsAsync(store.PublicId);
 
@@ -205,7 +206,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var store = await CreateStoreAsync(context);
             var handler = new RecordingHandler(RecordingHandler.ShippingSettingsEnvelope);
-            var service = new ControlPlaneCommerceCatalogService(context, new HttpClient(handler));
+            var service = CreateService(context, handler);
 
             var result = await service.UpdateShippingSettingsAsync(
                 store.PublicId,
@@ -232,6 +233,99 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             Assert.Contains("storeKey=main-store", request.RequestUri.Query);
         }
 
+        [Fact]
+        public async Task Transport_ReturnsValidationFailureForArchivedStore()
+        {
+            await using var context = CreateContext();
+            var store = await CreateStoreAsync(context);
+            var entity = await context.Stores.SingleAsync(item => item.PublicId == store.PublicId);
+            entity.Status = "archived";
+            await context.SaveChangesAsync();
+            var handler = new RecordingHandler();
+            var transport = CreateTransport(context, handler);
+
+            var result = await transport.SendAsync<object>(
+                store.PublicId,
+                HttpMethod.Get,
+                "api/commerce/admin/products/query",
+                null);
+
+            Assert.False(result.Success);
+            Assert.Equal(CommerceNodeAdminGatewayFailure.Validation, result.Failure);
+            Assert.Empty(handler.Requests);
+        }
+
+        [Fact]
+        public async Task Transport_MapsMalformedRemoteResponse()
+        {
+            await using var context = CreateContext();
+            var store = await CreateStoreAsync(context);
+            var handler = new RecordingHandler("{not-json}");
+            var transport = CreateTransport(context, handler);
+
+            var result = await transport.SendAsync<object>(
+                store.PublicId,
+                HttpMethod.Get,
+                "api/commerce/admin/products/query",
+                null);
+
+            Assert.False(result.Success);
+            Assert.Equal(CommerceNodeAdminGatewayFailure.RemoteFailure, result.Failure);
+            Assert.Equal("Commerce Node returned malformed JSON.", result.Message);
+        }
+
+        [Fact]
+        public async Task Transport_MapsEmptyRemoteResponse()
+        {
+            await using var context = CreateContext();
+            var store = await CreateStoreAsync(context);
+            var handler = new RecordingHandler(string.Empty);
+            var transport = CreateTransport(context, handler);
+
+            var result = await transport.SendAsync<object>(
+                store.PublicId,
+                HttpMethod.Get,
+                "api/commerce/admin/products/query",
+                null);
+
+            Assert.False(result.Success);
+            Assert.Equal(CommerceNodeAdminGatewayFailure.RemoteFailure, result.Failure);
+            Assert.Equal("Commerce Node returned an empty response.", result.Message);
+        }
+
+        [Theory]
+        [InlineData(HttpStatusCode.BadRequest, CommerceNodeAdminGatewayFailure.Validation)]
+        [InlineData(HttpStatusCode.NotFound, CommerceNodeAdminGatewayFailure.NotFound)]
+        [InlineData(HttpStatusCode.Conflict, CommerceNodeAdminGatewayFailure.Validation)]
+        [InlineData(HttpStatusCode.InternalServerError, CommerceNodeAdminGatewayFailure.RemoteFailure)]
+        public async Task Transport_MapsRemoteFailureStatusCodes(
+            HttpStatusCode statusCode,
+            CommerceNodeAdminGatewayFailure expectedFailure)
+        {
+            await using var context = CreateContext();
+            var store = await CreateStoreAsync(context);
+            var handler = new RecordingHandler(
+                """
+                {
+                  "success": false,
+                  "message": "remote failed",
+                  "data": null
+                }
+                """,
+                statusCode);
+            var transport = CreateTransport(context, handler);
+
+            var result = await transport.SendAsync<object>(
+                store.PublicId,
+                HttpMethod.Get,
+                "api/commerce/admin/products/query",
+                null);
+
+            Assert.False(result.Success);
+            Assert.Equal(expectedFailure, result.Failure);
+            Assert.Equal((int)statusCode, result.HttpStatusCode);
+        }
+
         private static async Task<ControlPlaneStoreDetail> CreateStoreAsync(ControlPlaneDbContext context)
         {
             var nodeService = new ControlPlaneNodeService(context);
@@ -253,6 +347,20 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
 
             Assert.True(store.Success);
             return store.Payload!;
+        }
+
+        private static ControlPlaneCommerceCatalogService CreateService(
+            ControlPlaneDbContext context,
+            RecordingHandler handler)
+        {
+            return new ControlPlaneCommerceCatalogService(CreateTransport(context, handler));
+        }
+
+        private static CommerceNodeAdminGatewayTransport CreateTransport(
+            ControlPlaneDbContext context,
+            RecordingHandler handler)
+        {
+            return new CommerceNodeAdminGatewayTransport(context, new HttpClient(handler));
         }
 
         private static ControlPlaneDbContext CreateContext()
@@ -366,15 +474,17 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
                 """;
 
             private readonly string responseBody;
+            private readonly HttpStatusCode statusCode;
 
             public RecordingHandler()
                 : this(EmptyPagedEnvelope)
             {
             }
 
-            public RecordingHandler(string responseBody)
+            public RecordingHandler(string responseBody, HttpStatusCode statusCode = HttpStatusCode.OK)
             {
                 this.responseBody = responseBody;
+                this.statusCode = statusCode;
             }
 
             public List<HttpRequestMessage> Requests { get; } = [];
@@ -383,7 +493,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             {
                 this.Requests.Add(CloneRequest(request));
 
-                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                return Task.FromResult(new HttpResponseMessage(this.statusCode)
                 {
                     Content = new StringContent(this.responseBody, Encoding.UTF8, "application/json")
                 });
@@ -402,3 +512,4 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
         }
     }
 }
+
