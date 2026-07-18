@@ -500,8 +500,18 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 .Select(seed => Assert.IsType<string>(seed[nameof(MessageTemplate.SystemName)]))
                 .OrderBy(systemName => systemName, StringComparer.Ordinal)
                 .ToArray();
+            var orderPlacedSeed = designEntity!.GetSeedData()
+                .Single(seed => string.Equals(
+                    Assert.IsType<string>(seed[nameof(MessageTemplate.SystemName)]),
+                    TransactionalMessageTemplateSystemNames.OrderPlaced,
+                    StringComparison.Ordinal));
+            var orderPlacedSubject = Assert.IsType<string>(orderPlacedSeed[nameof(MessageTemplate.SubjectTemplate)]);
+            var orderPlacedBody = Assert.IsType<string>(orderPlacedSeed[nameof(MessageTemplate.BodyHtmlTemplate)]);
 
             Assert.Equal(TransactionalMessageTemplateSystemNames.Required.OrderBy(name => name, StringComparer.Ordinal), seedSystemNames);
+            Assert.Contains("{{Store.Name}}", orderPlacedSubject, StringComparison.Ordinal);
+            Assert.Contains("{{Store.Name}}", orderPlacedBody, StringComparison.Ordinal);
+            Assert.Contains("{{Order.DetailUrl}}", orderPlacedBody, StringComparison.Ordinal);
         }
 
         [Fact]

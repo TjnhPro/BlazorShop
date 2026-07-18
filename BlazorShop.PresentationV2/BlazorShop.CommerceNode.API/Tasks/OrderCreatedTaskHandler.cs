@@ -8,6 +8,8 @@ namespace BlazorShop.CommerceNode.API.Tasks
 
     public sealed class OrderCreatedTaskHandler : ICommerceTaskHandler
     {
+        private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
+
         private readonly ICommerceTransactionalMessageService messageService;
 
         public OrderCreatedTaskHandler(ICommerceTransactionalMessageService messageService)
@@ -24,7 +26,9 @@ namespace BlazorShop.CommerceNode.API.Tasks
             OrderCreatedTaskPayload? payload;
             try
             {
-                payload = JsonSerializer.Deserialize<OrderCreatedTaskPayload>(context.PayloadJson);
+                payload = JsonSerializer.Deserialize<OrderCreatedTaskPayload>(
+                    context.PayloadJson,
+                    SerializerOptions);
             }
             catch (JsonException)
             {

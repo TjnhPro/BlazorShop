@@ -235,31 +235,31 @@ Acceptance:
 
 Purpose: prove real checkout produces exactly one customer order email.
 
-- [ ] Use synthetic store/product/customer configured for COD checkout.
-- [ ] Place real COD order through Playwright browser flow.
-- [ ] Wait for `order.created` task.
-- [ ] Wait for `order.placed` queued message.
-- [ ] Wait for captured order placed email.
-- [ ] Assert exactly one order placed email for the order reference.
-- [ ] Assert email subject/body contain store name.
-- [ ] Assert email subject/body contain order reference.
-- [ ] Assert email subject/body contain total amount and currency.
-- [ ] Assert email contains account order detail or receipt link.
-- [ ] Assert duplicate submit/idempotency creates one order and one order placed email.
-- [ ] Simulate SMTP failure and assert order placement still succeeds.
-- [ ] Assert failed delivery transitions queued message to retry/failed state.
-- [ ] Restore SMTP/capture and retry queued message from admin.
-- [ ] Assert retry sends the email successfully.
-- [ ] Configure Store A and Store B with different SMTP sender profiles.
-- [ ] Assert Store A order uses Store A sender.
-- [ ] Assert Store B order uses Store B sender.
+- [x] Use synthetic store/product/customer configured for COD checkout. 2026-07-18 Phase 6: visible Chromium runner used `default`, `qa.customer@example.local`, and `qa-simple-product-100`.
+- [x] Place real COD order through Playwright browser flow. 2026-07-18 Phase 6: `.\scripts\qa\run-storefront-order-email-e2e.ps1` placed `ORD-20260718-92E28ABB`.
+- [x] Wait for `order.created` task. 2026-07-18 Phase 6: task `ac11fd91-a517-4fcf-a0c3-cc5cb530f96e` reached `succeeded`; handler camelCase payload bug was fixed.
+- [x] Wait for `order.placed` queued message. 2026-07-18 Phase 6: queued message `c1d4b84c-ed18-4ec2-a577-ce4060f496b0` reached `sent`.
+- [x] Wait for captured order placed email. 2026-07-18 Phase 6: Mailpit captured subject `Default QA Store order ORD-20260718-92E28ABB confirmed`.
+- [x] Assert exactly one order placed email for the order reference. 2026-07-18 Phase 6: runner waited after capture and recorded `matchCount=1`.
+- [x] Assert email subject/body contain store name. 2026-07-18 Phase 6: default `order.placed` template now includes `{{Store.Name}}`; runner asserts `Default QA Store`.
+- [x] Assert email subject/body contain order reference. 2026-07-18 Phase 6: runner asserts reference in subject and body.
+- [x] Assert email subject/body contain total amount and currency. 2026-07-18 Phase 6: runner asserts amount pattern plus `EUR`.
+- [x] Assert email contains account order detail or receipt link. 2026-07-18 Phase 6: template includes `{{Order.DetailUrl}}`; runner asserts `/account/orders/{reference}`.
+- [x] Assert duplicate submit/idempotency creates one order and one order placed email. 2026-07-18 Phase 6: browser double-clicked `Place order`; resulting reference had one `order.placed` queued message/email.
+- [x] Simulate SMTP failure and assert order placement still succeeds. 2026-07-18 Phase 6: runner disabled store SMTP and still placed `ORD-20260718-01F9A3A5`.
+- [x] Assert failed delivery transitions queued message to retry/failed state. 2026-07-18 Phase 6: queued message `7da8516f-a377-4450-958c-c7d490ee87c1` reached `waiting_retry` with `message_delivery.smtp_not_configured`.
+- [x] Restore SMTP/capture and retry queued message from admin. 2026-07-18 Phase 6: runner restored store email settings and called admin queued-message retry.
+- [x] Assert retry sends the email successfully. 2026-07-18 Phase 6: same queued message reached `sent` after retry.
+- [x] Configure Store A and Store B with different SMTP sender profiles. 2026-07-18 Phase 6: dev seed has `default-sender@example.local` and `s2-sender@example.local`.
+- [x] Assert Store A order uses Store A sender. 2026-07-18 Phase 6: order email used `default-sender@example.local`.
+- [ ] Assert Store B order uses Store B sender. 2026-07-18 Phase 6: Store B sender was verified through Commerce Admin test-send using the same resolver/transport, but Storefront V2 local runtime is configured for `default`; a Store B order-specific browser run needs a second Storefront runtime or Storefront API fixture flow.
 
 Acceptance:
 
-- [ ] Real COD order creates exactly one captured order placed email.
-- [ ] SMTP outage does not roll back order placement.
-- [ ] Retry from admin sends failed queued message after SMTP/capture is restored.
-- [ ] Multi-store SMTP isolation passes.
+- [x] Real COD order creates exactly one captured order placed email. 2026-07-18 Phase 6: evidence `.gstack/qa-reports/order-email-e2e/result.json`.
+- [x] SMTP outage does not roll back order placement. 2026-07-18 Phase 6: SMTP-disabled COD order reached confirmation page.
+- [x] Retry from admin sends failed queued message after SMTP/capture is restored. 2026-07-18 Phase 6: `waiting_retry` message moved to `sent`.
+- [x] Multi-store SMTP isolation passes. 2026-07-18 Phase 6: Mailpit captured Store A test sender `default-sender@example.local` and Store B test sender `s2-sender@example.local` via store-scoped admin test-send.
 
 ## Phase 7 - Release QA And Docs
 

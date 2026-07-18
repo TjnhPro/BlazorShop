@@ -2464,8 +2464,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                     "11111111-1111-1111-1111-000000000003",
                     "11111111-1111-1111-1111-100000000003",
                     TransactionalMessageTemplateSystemNames.OrderPlaced,
-                    "Order {{Order.Reference}} confirmed",
-                    "<p>Thanks for your order {{Order.Reference}}.</p><p>Total: {{Order.Total}} {{Order.Currency}}</p>",
+                    "{{Store.Name}} order {{Order.Reference}} confirmed",
+                    "<p>Thanks for your order from {{Store.Name}}.</p><p>Order: {{Order.Reference}}</p><p>Total: {{Order.Total}} {{Order.Currency}}</p><p>View your order: <a href=\"{{Order.DetailUrl}}\">{{Order.DetailUrl}}</a></p>",
                     "Default order placed confirmation template.",
                     createdAt),
                 CreateMessageTemplate(

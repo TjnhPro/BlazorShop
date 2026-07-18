@@ -259,6 +259,8 @@ Ghi chú: checkout shell hiện là WASM component cho state, shipping/payment s
 - [x] `CHK-021 P0` - Cart cookie/token được clear/closed theo transaction rule sau order completed.
 - [x] `CHK-022 P0` - Order vừa tạo xuất hiện trong account order history WASM.
 - [x] `CHK-023 P0` - Order detail/receipt của order vừa tạo khớp checkout snapshot.
+- [x] `CHK-028 P0` - COD order thật queue `order.placed` và gửi đúng một email qua Mailpit capture. 2026-07-18: `.\scripts\qa\run-storefront-order-email-e2e.ps1` visible Chromium placed `ORD-20260718-92E28ABB`, task `order.created` succeeded, queued message was sent, and Mailpit `matchCount=1`.
+- [x] `CHK-029 P0` - SMTP outage không rollback order placement; queued message vào retry/failed và admin retry gửi được sau khi restore. 2026-07-18: same runner placed `ORD-20260718-01F9A3A5` while SMTP disabled, saw `message_delivery.smtp_not_configured`, restored SMTP, retried, and message reached `sent`.
 - [x] `CHK-024 P0` - Grand total = subtotal + shipping - discount + tax(0); tax mặc định 0 không cộng sai tổng.
 - [x] `CHK-025 P1` - Payment method bị disabled giữa flow thì review/place order revalidate và chặn.
 - [x] `CHK-026 P1` - Price/stock thay đổi trước place order bị server revalidate, không order bằng giá giả.
@@ -319,6 +321,8 @@ Ghi chú: checkout shell hiện là WASM component cho state, shipping/payment s
 - [x] P0 auth/session/cart/checkout/order pass trên Firefox và WebKit.
 - [x] Playwright place COD order thật thành công trên test store/account/SKU synthetic.
 - [x] Không có duplicate order trong double-submit/idempotency test.
+- [x] Order placed email capture pass: exactly one Mailpit email for the order reference, with store name, order reference, total/currency, account order link, and store sender.
+- [x] SMTP delivery outage does not rollback checkout order placement and failed queued message retry succeeds after SMTP restore.
 - [x] Không thể mua product/variant hết stock hoặc không purchasable.
 - [x] Server reject browser-tampered price/variant/attribute/address/order ID.
 - [x] Store S1/S2 isolation pass cho catalog, page, media, cart, account và order.
