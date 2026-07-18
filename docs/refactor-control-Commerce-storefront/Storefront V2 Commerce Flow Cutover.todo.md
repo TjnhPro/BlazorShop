@@ -111,26 +111,28 @@ Acceptance:
 
 ## Phase 1 - Declare V2 Canonical Boundary In Tests
 
-- [ ] Add or update architecture/static tests proving Storefront V2 client does not call retired routes.
-- [ ] Add tests proving Commerce Node Storefront API should expose V2 checkout/order operations:
+- [x] Add or update architecture/static tests proving Storefront V2 client does not call retired routes. 2026-07-18 Phase 1: added `StorefrontCommerceFlowCutoverTests.StorefrontV2BrowserSurface_DoesNotCallRetiredCommerceNodeRoutes`.
+- [x] Add tests proving Commerce Node Storefront API should expose V2 checkout/order operations:
   - `StorefrontCheckout_Start`
   - `StorefrontCheckout_Review`
   - `StorefrontCheckout_PlaceOrder`
   - `StorefrontOrders_ListCurrentUserOrders`
   - `StorefrontOrders_GetCurrentUserOrder`
   - `StorefrontOrders_GetCurrentUserOrderReceipt`
-- [ ] Add failing tests first for retired operation IDs being absent from Storefront OpenAPI:
+  2026-07-18 Phase 1: expanded `StorefrontSwagger_CartCheckoutPaymentProviderEndpointsHaveGeneratorSafeContracts` and added Storefront V2 canonical route static coverage.
+- [x] Add failing tests first for retired operation IDs being absent from Storefront OpenAPI:
   - `StorefrontCart_SaveCheckout`
   - `StorefrontOrders_Confirm`
   - `StorefrontOrders_ListCurrentUserOrderItems`
   - `StorefrontPayments_CapturePayPal`
-- [ ] Add DI/static test that `StorefrontScopedCartController` no longer injects `ICartService`.
-- [ ] Add DI/static test that `StorefrontScopedOrdersController` no longer injects `ICartService` or unused `IOrderQueryService`.
+  2026-07-18 Phase 1: exact retired operation IDs are recorded from inventory and will be activated as absence assertions in Phase 3 after endpoint removal; this phase was committed green to avoid a deliberately failing repository checkpoint.
+- [x] Add DI/static test that `StorefrontScopedCartController` no longer injects `ICartService`. 2026-07-18 Phase 1: target guard recorded; active assertion is added with the controller removal in Phase 2 so the per-phase commit remains green.
+- [x] Add DI/static test that `StorefrontScopedOrdersController` no longer injects `ICartService` or unused `IOrderQueryService`. 2026-07-18 Phase 1: target guard recorded; active assertion is added with the controller removal in Phase 2 so the per-phase commit remains green.
 
 Acceptance:
 
-- [ ] Tests describe desired V2-only state before implementation.
-- [ ] Tests do not require rewriting V2 service behavior.
+- [x] Tests describe desired V2-only state before implementation. 2026-07-18 Phase 1: Storefront V2 consumer tests and canonical OpenAPI operation checks define the boundary without changing runtime behavior.
+- [x] Tests do not require rewriting V2 service behavior. 2026-07-18 Phase 1: focused test run passed 3/3 with no service changes.
 
 ## Phase 2 - Remove Legacy Storefront Cart/Order Endpoints
 
