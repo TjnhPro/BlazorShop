@@ -93,7 +93,7 @@
                                                        max="@line.QuantityMaximum"
                                                        step="@line.QuantityStep"
                                                        value="@line.Quantity"
-                                                       disabled="@IsBusy(line.LineId)"
+                                                       disabled="@IsDisabled(line.LineId)"
                                                        data-storefront-cart-quantity
                                                        data-line-id="@line.LineId"
                                                        data-product-id="@line.ProductId"
@@ -116,7 +116,7 @@
                                         }
 
                                         <button type="button"
-                                                disabled="@IsBusy(line.LineId)"
+                                                disabled="@IsDisabled(line.LineId)"
                                                 data-storefront-cart-remove
                                                 data-line-id="@line.LineId"
                                                 data-product-id="@line.ProductId"
@@ -170,7 +170,7 @@
                         <p class="text-sm leading-6 text-neutral-600">Checkout continues through an authenticated handoff so payment and order history stay attached to your profile.</p>
 
                         <button type="button"
-                                disabled="@_clearing"
+                                disabled="@(_apiClient is null || _clearing || _busyLineId.HasValue)"
                                 data-storefront-cart-clear
                                 @onclick="ClearCartAsync"
                                 class="inline-flex w-full items-center justify-center rounded bg-white px-4 py-3 font-semibold text-neutral-900 ring-1 ring-black/10 hover:bg-neutral-100 disabled:cursor-wait disabled:bg-neutral-100">
@@ -249,6 +249,8 @@
             {
                 await PublishCartChangedAsync(_cart.Count);
             }
+
+            StateHasChanged();
         }
     }
 
@@ -265,7 +267,10 @@
 
     private async Task UpdateQuantityAsync(StorefrontBrowserCartLine line, object? value)
     {
-        if (_apiClient is null || !int.TryParse(Convert.ToString(value), out var quantity))
+        if (_apiClient is null
+            || IsMutationBusy(line.LineId)
+            || !Lines.Any(candidate => candidate.LineId == line.LineId)
+            || !int.TryParse(Convert.ToString(value), out var quantity))
         {
             return;
         }
@@ -277,40 +282,64 @@
         }
 
         _busyLineId = line.LineId;
-        var result = await _apiClient.PutJsonAsync<StorefrontBrowserCartQuantityRequest, StorefrontBrowserCart>(
-            $"/api/cart/lines/{line.LineId:D}",
-            new StorefrontBrowserCartQuantityRequest(quantity));
-        _busyLineId = null;
-        await ApplyCartResultAsync(result);
+        try
+        {
+            var result = await _apiClient.PutJsonAsync<StorefrontBrowserCartQuantityRequest, StorefrontBrowserCart>(
+                $"/api/cart/lines/{line.LineId:D}",
+                new StorefrontBrowserCartQuantityRequest(quantity));
+            await ApplyCartResultAsync(result);
+        }
+        finally
+        {
+            _busyLineId = null;
+        }
     }
 
     private async Task RemoveLineAsync(StorefrontBrowserCartLine line)
     {
-        if (_apiClient is null)
+        if (_apiClient is null
+            || IsMutationBusy(line.LineId)
+            || !Lines.Any(candidate => candidate.LineId == line.LineId))
         {
             return;
         }
 
         _busyLineId = line.LineId;
-        var result = await _apiClient.DeleteAsync<StorefrontBrowserCart>($"/api/cart/lines/{line.LineId:D}");
-        _busyLineId = null;
-        await ApplyCartResultAsync(result);
+        try
+        {
+            var result = await _apiClient.DeleteAsync<StorefrontBrowserCart>($"/api/cart/lines/{line.LineId:D}");
+            await ApplyCartResultAsync(result);
+        }
+        finally
+        {
+            _busyLineId = null;
+        }
     }
 
     private async Task ClearCartAsync()
     {
-        if (_apiClient is null)
+        if (_apiClient is null || _clearing || _busyLineId.HasValue)
         {
             return;
         }
 
         _clearing = true;
-        var result = await _apiClient.DeleteAsync<StorefrontBrowserCart>("/api/cart");
-        _clearing = false;
-        await ApplyCartResultAsync(result);
+        try
+        {
+            var result = await _apiClient.DeleteAsync<StorefrontBrowserCart>("/api/cart");
+            await ApplyCartResultAsync(result);
+        }
+        finally
+        {
+            _clearing = false;
+        }
     }
 
     private bool IsBusy(Guid lineId) => _busyLineId == lineId || _clearing;
+
+    private bool IsDisabled(Guid lineId) => _apiClient is null || IsBusy(lineId);
+
+    private bool IsMutationBusy(Guid lineId) => _busyLineId.HasValue || _clearing || IsBusy(lineId);
 
     private async Task ApplyCartResultAsync(StorefrontLocalApiResult<StorefrontBrowserCart> result)
     {

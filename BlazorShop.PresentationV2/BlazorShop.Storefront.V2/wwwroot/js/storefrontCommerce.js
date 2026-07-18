@@ -2,9 +2,6 @@
   const cartApiRoute = "/api/cart";
   const buttonSelector = "[data-storefront-add-to-cart]";
   const badgeSelector = "[data-storefront-cart-badge]";
-  const cartRemoveSelector = "[data-storefront-cart-remove]";
-  const cartClearSelector = "[data-storefront-cart-clear]";
-  const cartQuantitySelector = "[data-storefront-cart-quantity]";
   const selectionPreviewSelector = "[data-storefront-selection-preview]";
   const selectionQuantitySelector = "[data-storefront-selection-quantity]";
   const attributeControlSelector = "[data-storefront-attribute-control]";
@@ -466,7 +463,10 @@
       toggleHidden(sku, !preview.sku);
     }
 
-    setText(message, validationMessages[0] || (preview.canAddToCart ? "Selection ready." : "This selection is not available."));
+    const suppressUntil = parseInteger(container.dataset.cartFeedbackSuppressUntil, 0);
+    if (Date.now() >= suppressUntil) {
+      setText(message, validationMessages[0] || (preview.canAddToCart ? "Selection ready." : "This selection is not available."));
+    }
 
     if (button instanceof HTMLButtonElement) {
       button.disabled = !preview.canAddToCart;
@@ -595,6 +595,10 @@
         Quantity: payload.Quantity
       });
       applyCartSummary(summary);
+      const previewContainer = findPreviewContainer(button);
+      if (previewContainer instanceof HTMLElement) {
+        previewContainer.dataset.cartFeedbackSuppressUntil = String(Date.now() + buttonResetDelayMs);
+      }
       setFeedback(button, feedbackMessage, false);
       showToast("success", "Cart", feedbackMessage);
       flashButton(button);
@@ -607,91 +611,7 @@
     }
   }
 
-  async function removeCartLine(button) {
-    const lineId = (button.dataset.lineId || "").trim();
-    if (!lineId) {
-      showToast("error", "Cart", "This cart item could not be removed.");
-      return;
-    }
-
-    const productName = formatCartLabel(button.dataset.productName, button.dataset.sizeValue);
-    try {
-      await sendCartRequest(`${cartApiRoute}/lines/${encodeURIComponent(lineId)}`, "DELETE");
-      queueToastForNextLoad("warning", "Cart", `Removed ${productName} from cart.`);
-      window.location.reload();
-    } catch (error) {
-      showToast("error", "Cart", error instanceof Error ? error.message : "This cart item could not be removed.");
-    }
-  }
-
-  async function clearCart() {
-    try {
-      await sendCartRequest(cartApiRoute, "DELETE");
-      queueToastForNextLoad("info", "Cart", "Cart cleared.");
-      window.location.reload();
-    } catch (error) {
-      showToast("error", "Cart", error instanceof Error ? error.message : "Cart could not be cleared.");
-    }
-  }
-
-  async function updateCartQuantity(input) {
-    const lineId = (input.dataset.lineId || "").trim();
-    const productName = formatCartLabel(input.dataset.productName, input.dataset.sizeValue);
-    const nextQuantity = parseInteger(input.value, Number.NaN);
-    const currentQuantity = parseInteger(input.getAttribute("value"), 1);
-
-    if (!lineId) {
-      showToast("error", "Cart", "This cart item could not be updated.");
-      return;
-    }
-
-    if (!Number.isFinite(nextQuantity) || nextQuantity < 0) {
-      input.value = String(currentQuantity);
-      showToast("error", "Cart", "Enter a valid quantity.");
-      return;
-    }
-
-    if (nextQuantity === currentQuantity) {
-      return;
-    }
-
-    if (nextQuantity === 0) {
-      try {
-        await sendCartRequest(`${cartApiRoute}/lines/${encodeURIComponent(lineId)}`, "DELETE");
-        queueToastForNextLoad("warning", "Cart", `Removed ${productName} from cart.`);
-        window.location.reload();
-      } catch (error) {
-        input.value = String(currentQuantity);
-        showToast("error", "Cart", error instanceof Error ? error.message : "This cart item could not be removed.");
-      }
-      return;
-    }
-
-    try {
-      await sendCartRequest(`${cartApiRoute}/lines/${encodeURIComponent(lineId)}`, "PUT", { Quantity: nextQuantity });
-      queueToastForNextLoad("info", "Cart", `Updated quantity of ${productName}.`);
-      window.location.reload();
-    } catch (error) {
-      input.value = String(currentQuantity);
-      showToast("error", "Cart", error instanceof Error ? error.message : "This cart item could not be updated.");
-    }
-  }
-
   function handleClick(event) {
-    const clearButton = event.target.closest(cartClearSelector);
-    if (clearButton instanceof HTMLButtonElement) {
-      event.preventDefault();
-      clearCart();
-      return;
-    }
-
-    const removeButton = event.target.closest(cartRemoveSelector);
-    if (removeButton instanceof HTMLButtonElement) {
-      event.preventDefault();
-      removeCartLine(removeButton);
-      return;
-    }
-
     const button = event.target.closest(buttonSelector);
     if (!(button instanceof HTMLButtonElement)) {
       return;
@@ -723,12 +643,6 @@
       syncManualAddressFields(target);
       return;
     }
-
-    if (!(target instanceof HTMLInputElement) || !target.matches(cartQuantitySelector)) {
-      return;
-    }
-
-    updateCartQuantity(target);
   }
 
   function handleInput(event) {

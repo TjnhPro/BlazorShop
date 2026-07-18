@@ -108,9 +108,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("if (_cart is null)", component, StringComparison.Ordinal);
             Assert.Contains("await LoadCartAsync();", component, StringComparison.Ordinal);
             Assert.Contains("await PublishCartChangedAsync(_cart.Count);", component, StringComparison.Ordinal);
+            Assert.Contains("StateHasChanged();", component, StringComparison.Ordinal);
             Assert.Contains("PutJsonAsync<StorefrontBrowserCartQuantityRequest, StorefrontBrowserCart>", component, StringComparison.Ordinal);
             Assert.Contains("DeleteAsync<StorefrontBrowserCart>($\"/api/cart/lines/{line.LineId:D}\")", component, StringComparison.Ordinal);
             Assert.Contains("DeleteAsync<StorefrontBrowserCart>(\"/api/cart\")", component, StringComparison.Ordinal);
+            Assert.Contains("IsMutationBusy(line.LineId)", component, StringComparison.Ordinal);
+            Assert.Contains("IsDisabled(line.LineId)", component, StringComparison.Ordinal);
+            Assert.Contains("_apiClient is null || _clearing || _busyLineId.HasValue", component, StringComparison.Ordinal);
+            Assert.Contains("!Lines.Any(candidate => candidate.LineId == line.LineId)", component, StringComparison.Ordinal);
             Assert.Contains("data-storefront-cart-quantity", component, StringComparison.Ordinal);
             Assert.Contains("data-storefront-cart-remove", component, StringComparison.Ordinal);
             Assert.Contains("data-storefront-cart-clear", component, StringComparison.Ordinal);
@@ -132,6 +137,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("setInterval(refreshCartSummary", script, StringComparison.Ordinal);
             Assert.DoesNotContain("startBadgePolling", script, StringComparison.Ordinal);
             Assert.DoesNotContain("badgePollIntervalMs", script, StringComparison.Ordinal);
+            Assert.DoesNotContain("data-storefront-cart-remove", script, StringComparison.Ordinal);
+            Assert.DoesNotContain("data-storefront-cart-clear", script, StringComparison.Ordinal);
+            Assert.DoesNotContain("data-storefront-cart-quantity", script, StringComparison.Ordinal);
+            Assert.Contains("cartFeedbackSuppressUntil", script, StringComparison.Ordinal);
         }
 
         [Fact]
