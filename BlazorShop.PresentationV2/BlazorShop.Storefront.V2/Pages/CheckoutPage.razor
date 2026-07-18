@@ -20,6 +20,7 @@
     }
     else if (Lines.Count == 0)
     {
+        <StorefrontCheckoutShell InitialState="CheckoutState" @rendermode="InteractiveWebAssembly" />
         <div class="rounded-3xl border border-dashed border-neutral-300 bg-white/80 px-6 py-10 text-center shadow-sm">
             <h1 class="text-3xl font-extrabold tracking-tight text-neutral-900">Your cart is empty</h1>
             <p class="mx-auto mt-3 max-w-xl text-base leading-7 text-neutral-700">Add products before continuing to checkout.</p>
@@ -28,6 +29,7 @@
     }
     else
     {
+        <StorefrontCheckoutShell InitialState="CheckoutState" @rendermode="InteractiveWebAssembly" />
         <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
             <article class="rounded-3xl border border-neutral-200/70 bg-white/95 shadow-lg">
                 <header class="border-b border-neutral-200 px-6 py-7 sm:px-8">

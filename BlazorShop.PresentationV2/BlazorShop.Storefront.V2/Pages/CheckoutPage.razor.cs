@@ -1,6 +1,7 @@
 namespace BlazorShop.Storefront.Pages
 {
     using BlazorShop.Application.DTOs.Payment;
+    using BlazorShop.Storefront.Components.Browser;
     using BlazorShop.Storefront.Services;
     using BlazorShop.Storefront.Services.Contracts;
     using BlazorShop.Web.SharedV2.Models.Product;
@@ -17,6 +18,7 @@ namespace BlazorShop.Storefront.Pages
         private StorefrontCustomerAddressResponse? selectedShippingAddress;
         private StorefrontAddressFieldConfigurationResponse? addressConfiguration;
         private StorefrontCheckoutSessionResponse? checkoutSession;
+        private StorefrontBrowserCheckoutState checkoutState = CreateEmptyCheckoutState("Checkout is not available yet.");
         private StorefrontDisplayContext displayContext = StorefrontDisplayContext.Fallback;
 
         [CascadingParameter]
@@ -74,6 +76,8 @@ namespace BlazorShop.Storefront.Pages
 
         private decimal? ServerDiscountTotal => checkoutSession?.DiscountTotal;
 
+        private StorefrontBrowserCheckoutState CheckoutState => checkoutState;
+
         [Inject]
         private IStorefrontDisplayContextProvider DisplayContextProvider { get; set; } = default!;
 
@@ -93,6 +97,7 @@ namespace BlazorShop.Storefront.Pages
                 lines.Clear();
                 paymentMethods = [];
                 checkoutSession = null;
+                checkoutState = CreateEmptyCheckoutState("Order placed.");
                 return;
             }
 
@@ -103,6 +108,7 @@ namespace BlazorShop.Storefront.Pages
                 lines.Clear();
                 paymentMethods = [];
                 checkoutSession = null;
+                checkoutState = CreateEmptyCheckoutState(Error ?? "Your cart is empty.");
                 return;
             }
 
@@ -126,6 +132,9 @@ namespace BlazorShop.Storefront.Pages
             var productsById = await LoadProductsAsync(cartItems);
             lines.Clear();
             lines.AddRange(BuildLines(cartItems, productsById));
+            checkoutState = checkoutSession is null
+                ? CreateEmptyCheckoutState(Error ?? "Checkout is not available yet.")
+                : ToBrowserCheckoutState(checkoutSession);
 
             if (checkoutSession?.PaymentMethods.Count > 0)
             {
@@ -295,6 +304,66 @@ namespace BlazorShop.Storefront.Pages
                 .ToArray();
 
             return supportedCodes.Length == 0 || supportedCodes.Contains(currencyCode, StringComparer.Ordinal);
+        }
+
+        private StorefrontBrowserCheckoutState ToBrowserCheckoutState(StorefrontCheckoutSessionResponse session)
+        {
+            var checkoutContext = displayContext with { CurrencyCode = session.CurrencyCode };
+            return new StorefrontBrowserCheckoutState(
+                true,
+                null,
+                session.CheckoutSessionId,
+                session.CheckoutVersion,
+                session.CartVersion,
+                session.State,
+                session.CurrentStep,
+                session.IsActive,
+                session.ShippingRequired,
+                false,
+                PriceFormatter.Format(session.GrandTotal, checkoutContext),
+                session.Lines.Select(line => new StorefrontBrowserCheckoutLine(
+                    line.LineId,
+                    line.ProductId,
+                    line.ProductVariantId,
+                    line.Quantity,
+                    PriceFormatter.Format(line.UnitPrice, checkoutContext with { CurrencyCode = line.CurrencyCode }),
+                    PriceFormatter.Format(line.LineTotal, checkoutContext with { CurrencyCode = line.CurrencyCode }))).ToArray(),
+                session.ShippingOptions.Select(option => new StorefrontBrowserCheckoutOption(
+                    option.Key,
+                    option.DisplayName,
+                    option.Description,
+                    PriceFormatter.Format(option.Price, checkoutContext with { CurrencyCode = option.CurrencyCode }),
+                    option.Selected)).ToArray(),
+                session.PaymentMethods.Select(method => new StorefrontBrowserCheckoutOption(
+                    method.Key,
+                    method.DisplayName,
+                    method.Description,
+                    null,
+                    method.Selected)).ToArray(),
+                session.Issues.Select(issue => new StorefrontBrowserCheckoutIssue(
+                    issue.Code,
+                    issue.Message,
+                    issue.Field)).ToArray());
+        }
+
+        private static StorefrontBrowserCheckoutState CreateEmptyCheckoutState(string message)
+        {
+            return new StorefrontBrowserCheckoutState(
+                false,
+                message,
+                null,
+                0,
+                0,
+                "empty",
+                "cart",
+                false,
+                false,
+                false,
+                string.Empty,
+                [],
+                [],
+                [],
+                []);
         }
     }
 }

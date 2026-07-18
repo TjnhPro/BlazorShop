@@ -952,6 +952,186 @@ app.MapPost("/api/account/change-password", async (
         ? Results.Ok(new StorefrontBrowserAccountCommandResult(true, "Password changed."))
         : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
 });
+app.MapGet("/api/checkout", async (
+    StorefrontCartTokenService cartTokenService,
+    StorefrontApiClient apiClient,
+    IStorefrontDisplayContextProvider displayContextProvider,
+    IStorefrontPriceFormatter priceFormatter,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    StorefrontResponseHeaders.ApplyPrivatePage(httpContext);
+    var cartResolution = await cartTokenService.ResolveAsync(httpContext, cancellationToken: cancellationToken);
+    if (!cartResolution.Success || string.IsNullOrWhiteSpace(cartResolution.CartToken) || cartResolution.Cart?.Lines.Count is null or 0)
+    {
+        return Results.Ok(CreateEmptyCheckoutState("Your cart is empty."));
+    }
+
+    var checkoutResult = await apiClient.StartCheckoutAsync(cartResolution.CartToken, cancellationToken);
+    if (!checkoutResult.Success || checkoutResult.Data is null)
+    {
+        return Results.Json(new StorefrontLocalApiErrorResponse(checkoutResult.Message), statusCode: StatusCodes.Status503ServiceUnavailable);
+    }
+
+    var displayContext = await displayContextProvider.GetAsync(cancellationToken);
+    return Results.Ok(ToBrowserCheckoutState(checkoutResult.Data, displayContext, priceFormatter));
+});
+app.MapPost("/api/checkout/addresses", async (
+    StorefrontBrowserCheckoutAddressRequest request,
+    StorefrontApiClient apiClient,
+    IStorefrontDisplayContextProvider displayContextProvider,
+    IStorefrontPriceFormatter priceFormatter,
+    IAntiforgery antiforgery,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    var guard = await ValidateLocalCheckoutCommandAsync(httpContext, antiforgery, apiClient, request.CheckoutSessionId, request.ExpectedCartVersion, cancellationToken);
+    if (guard.Failure is not null)
+    {
+        return guard.Failure;
+    }
+
+    var result = await apiClient.UpdateCheckoutAddressesAsync(
+        guard.CartToken!,
+        request.CheckoutSessionId,
+        ToCheckoutAddressStepRequest(request),
+        cancellationToken);
+    return await ToLocalCheckoutStateResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
+});
+app.MapPost("/api/checkout/shipping-method", async (
+    StorefrontBrowserCheckoutSelectionRequest request,
+    StorefrontApiClient apiClient,
+    IStorefrontDisplayContextProvider displayContextProvider,
+    IStorefrontPriceFormatter priceFormatter,
+    IAntiforgery antiforgery,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    var guard = await ValidateLocalCheckoutCommandAsync(httpContext, antiforgery, apiClient, request.CheckoutSessionId, request.ExpectedCartVersion, cancellationToken);
+    if (guard.Failure is not null)
+    {
+        return guard.Failure;
+    }
+
+    var result = await apiClient.SelectCheckoutShippingMethodAsync(
+        guard.CartToken!,
+        request.CheckoutSessionId,
+        new StorefrontCheckoutShippingMethodRequest { ShippingOptionKey = request.Key },
+        cancellationToken);
+    return await ToLocalCheckoutStateResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
+});
+app.MapPost("/api/checkout/payment-method", async (
+    StorefrontBrowserCheckoutSelectionRequest request,
+    StorefrontApiClient apiClient,
+    IStorefrontDisplayContextProvider displayContextProvider,
+    IStorefrontPriceFormatter priceFormatter,
+    IAntiforgery antiforgery,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    var guard = await ValidateLocalCheckoutCommandAsync(httpContext, antiforgery, apiClient, request.CheckoutSessionId, request.ExpectedCartVersion, cancellationToken);
+    if (guard.Failure is not null)
+    {
+        return guard.Failure;
+    }
+
+    var result = await apiClient.SelectCheckoutPaymentMethodAsync(
+        guard.CartToken!,
+        request.CheckoutSessionId,
+        new StorefrontCheckoutPaymentMethodRequest { PaymentMethodKey = request.Key },
+        cancellationToken);
+    return await ToLocalCheckoutStateResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
+});
+app.MapPost("/api/checkout/review", async (
+    StorefrontBrowserCheckoutReviewRequest request,
+    StorefrontApiClient apiClient,
+    IStorefrontDisplayContextProvider displayContextProvider,
+    IStorefrontPriceFormatter priceFormatter,
+    IAntiforgery antiforgery,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    var guard = await ValidateLocalCheckoutCommandAsync(httpContext, antiforgery, apiClient, request.CheckoutSessionId, request.ExpectedCartVersion, cancellationToken);
+    if (guard.Failure is not null)
+    {
+        return guard.Failure;
+    }
+
+    var result = await apiClient.ReviewCheckoutAsync(
+        guard.CartToken!,
+        request.CheckoutSessionId,
+        new StorefrontCheckoutReviewRequest
+        {
+            TermsAccepted = request.TermsAccepted,
+            TermsVersion = request.TermsVersion,
+        },
+        cancellationToken);
+    if (!result.Success || result.Data is null)
+    {
+        return Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    var displayContext = await displayContextProvider.GetAsync(cancellationToken);
+    return Results.Ok(ToBrowserCheckoutReviewState(result.Data, displayContext, priceFormatter));
+});
+app.MapPost("/api/checkout/place-order", async (
+    StorefrontBrowserCheckoutPlaceOrderRequest request,
+    StorefrontApiClient apiClient,
+    IAntiforgery antiforgery,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    var guard = await ValidateLocalCheckoutCommandAsync(httpContext, antiforgery, apiClient, request.CheckoutSessionId, request.ExpectedCartVersion, cancellationToken);
+    if (guard.Failure is not null)
+    {
+        return guard.Failure;
+    }
+
+    if (request.ExpectedCheckoutVersion < 1)
+    {
+        return Results.BadRequest(new StorefrontLocalApiErrorResponse("Review checkout before placing the order."));
+    }
+
+    var result = await apiClient.PlaceOrderAsync(
+        new StorefrontPlaceOrderRequest
+        {
+            CheckoutSessionId = request.CheckoutSessionId,
+            ExpectedCheckoutVersion = request.ExpectedCheckoutVersion,
+            ExpectedCartVersion = request.ExpectedCartVersion,
+            IdempotencyKey = string.IsNullOrWhiteSpace(request.IdempotencyKey)
+                ? Guid.NewGuid().ToString("N")
+                : request.IdempotencyKey.Trim(),
+        },
+        cancellationToken);
+    if (!result.Success || result.Data is null)
+    {
+        return Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    var nextActionUrl = result.Data.NextAction?.Url;
+    if (string.Equals(result.Data.NextAction?.Type, "redirect", StringComparison.OrdinalIgnoreCase)
+        && !string.IsNullOrWhiteSpace(nextActionUrl))
+    {
+        return Results.Ok(new StorefrontBrowserCheckoutPlaceOrderResult(
+            true,
+            "Continue payment.",
+            result.Data.Reference,
+            nextActionUrl));
+    }
+
+    if (string.IsNullOrWhiteSpace(result.Data.Reference))
+    {
+        return Results.Json(new StorefrontLocalApiErrorResponse("Order confirmation is not available yet."), statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    httpContext.Response.Cookies.Delete(StorefrontCookieNames.Cart, new CookieOptions { Path = "/" });
+    httpContext.Response.Cookies.Delete(StorefrontCookieNames.CartToken, new CookieOptions { Path = "/" });
+    return Results.Ok(new StorefrontBrowserCheckoutPlaceOrderResult(
+        true,
+        "Order placed.",
+        result.Data.Reference,
+        StorefrontRoutes.Checkout + QueryString.Create("orderReference", result.Data.Reference)));
+});
 app.MapGet("/api/consent/current", async (
     StorefrontApiClient apiClient,
     HttpContext httpContext,
@@ -1230,6 +1410,203 @@ static StorefrontCheckoutPreviewShippingAddress BuildCheckoutAddress(StorefrontC
         PostalCode = form.ShippingPostalCode?.Trim() ?? string.Empty,
         CountryCode = form.ShippingCountryCode?.Trim() ?? string.Empty,
     };
+}
+
+static StorefrontCheckoutAddressStepRequest ToCheckoutAddressStepRequest(StorefrontBrowserCheckoutAddressRequest request)
+{
+    return new StorefrontCheckoutAddressStepRequest
+    {
+        BillingAddressId = request.BillingAddressId,
+        ShippingAddressId = request.ShippingAddressId,
+        UseBillingAddressAsShippingAddress = request.UseShippingAddressAsBillingAddress,
+        BillingAddress = request.BillingAddressId.HasValue ? null : ToCheckoutAddress(request.BillingAddress),
+        ShippingAddress = request.ShippingAddressId.HasValue ? null : ToCheckoutAddress(request.ShippingAddress),
+    };
+}
+
+static StorefrontCheckoutPreviewShippingAddress? ToCheckoutAddress(StorefrontBrowserCheckoutAddress? address)
+{
+    if (address is null)
+    {
+        return null;
+    }
+
+    return new StorefrontCheckoutPreviewShippingAddress
+    {
+        FullName = address.FullName.Trim(),
+        Email = address.Email.Trim(),
+        Phone = NormalizeOptionalFormValue(address.Phone),
+        Address1 = address.Address1.Trim(),
+        Address2 = NormalizeOptionalFormValue(address.Address2),
+        City = address.City.Trim(),
+        State = NormalizeOptionalFormValue(address.State),
+        PostalCode = address.PostalCode.Trim(),
+        CountryCode = address.CountryCode.Trim().ToUpperInvariant(),
+    };
+}
+
+static async Task<(string? CartToken, IResult? Failure)> ValidateLocalCheckoutCommandAsync(
+    HttpContext httpContext,
+    IAntiforgery antiforgery,
+    StorefrontApiClient apiClient,
+    Guid checkoutSessionId,
+    int expectedCartVersion,
+    CancellationToken cancellationToken)
+{
+    var antiforgeryFailure = await ValidateLocalCartAntiforgeryAsync(httpContext, antiforgery);
+    if (antiforgeryFailure is not null)
+    {
+        return (null, antiforgeryFailure);
+    }
+
+    if (checkoutSessionId == Guid.Empty)
+    {
+        return (null, Results.BadRequest(new StorefrontLocalApiErrorResponse("Checkout session is required.")));
+    }
+
+    var cartToken = httpContext.Request.Cookies[StorefrontCookieNames.CartToken];
+    if (string.IsNullOrWhiteSpace(cartToken))
+    {
+        return (null, Results.Json(new StorefrontLocalApiErrorResponse("Your cart is empty."), statusCode: StatusCodes.Status409Conflict));
+    }
+
+    var cartResult = await apiClient.GetCartAsync(cartToken, cancellationToken);
+    if (!cartResult.Success || cartResult.Data is null || cartResult.Data.Lines.Count == 0)
+    {
+        return (null, Results.Json(new StorefrontLocalApiErrorResponse("Your cart is empty."), statusCode: StatusCodes.Status409Conflict));
+    }
+
+    if (expectedCartVersion > 0 && expectedCartVersion != cartResult.Data.Version)
+    {
+        return (null, Results.Json(new StorefrontLocalApiErrorResponse("Your cart changed. Review the latest cart and try checkout again."), statusCode: StatusCodes.Status409Conflict));
+    }
+
+    return (cartToken, null);
+}
+
+static async Task<IResult> ToLocalCheckoutStateResultAsync(
+    StorefrontSubmitResult<StorefrontCheckoutSessionResponse> result,
+    IStorefrontDisplayContextProvider displayContextProvider,
+    IStorefrontPriceFormatter priceFormatter,
+    CancellationToken cancellationToken)
+{
+    if (!result.Success || result.Data is null)
+    {
+        return Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    var displayContext = await displayContextProvider.GetAsync(cancellationToken);
+    return Results.Ok(ToBrowserCheckoutState(result.Data, displayContext, priceFormatter));
+}
+
+static StorefrontBrowserCheckoutState CreateEmptyCheckoutState(string message)
+{
+    return new StorefrontBrowserCheckoutState(
+        false,
+        message,
+        null,
+        0,
+        0,
+        "empty",
+        "cart",
+        false,
+        false,
+        false,
+        string.Empty,
+        [],
+        [],
+        [],
+        []);
+}
+
+static StorefrontBrowserCheckoutState ToBrowserCheckoutState(
+    StorefrontCheckoutSessionResponse session,
+    StorefrontDisplayContext displayContext,
+    IStorefrontPriceFormatter priceFormatter)
+{
+    var checkoutContext = displayContext with { CurrencyCode = session.CurrencyCode };
+    return new StorefrontBrowserCheckoutState(
+        true,
+        null,
+        session.CheckoutSessionId,
+        session.CheckoutVersion,
+        session.CartVersion,
+        session.State,
+        session.CurrentStep,
+        session.IsActive,
+        session.ShippingRequired,
+        false,
+        priceFormatter.Format(session.GrandTotal, checkoutContext),
+        session.Lines.Select(line => new StorefrontBrowserCheckoutLine(
+            line.LineId,
+            line.ProductId,
+            line.ProductVariantId,
+            line.Quantity,
+            priceFormatter.Format(line.UnitPrice, checkoutContext with { CurrencyCode = line.CurrencyCode }),
+            priceFormatter.Format(line.LineTotal, checkoutContext with { CurrencyCode = line.CurrencyCode }))).ToArray(),
+        session.ShippingOptions.Select(option => new StorefrontBrowserCheckoutOption(
+            option.Key,
+            option.DisplayName,
+            option.Description,
+            priceFormatter.Format(option.Price, checkoutContext with { CurrencyCode = option.CurrencyCode }),
+            option.Selected)).ToArray(),
+        session.PaymentMethods.Select(method => new StorefrontBrowserCheckoutOption(
+            method.Key,
+            method.DisplayName,
+            method.Description,
+            null,
+            method.Selected)).ToArray(),
+        session.Issues.Select(issue => new StorefrontBrowserCheckoutIssue(
+            issue.Code,
+            issue.Message,
+            issue.Field)).ToArray());
+}
+
+static StorefrontBrowserCheckoutState ToBrowserCheckoutReviewState(
+    StorefrontCheckoutReviewResponse review,
+    StorefrontDisplayContext displayContext,
+    IStorefrontPriceFormatter priceFormatter)
+{
+    var checkoutContext = displayContext with { CurrencyCode = review.CurrencyCode };
+    return new StorefrontBrowserCheckoutState(
+        true,
+        review.PlaceOrderAllowed ? "Checkout is ready to place." : review.Issues.FirstOrDefault()?.Message,
+        review.CheckoutSessionId,
+        review.CheckoutVersion,
+        review.CartVersion,
+        review.State,
+        review.CurrentStep,
+        review.IsActive,
+        review.SelectedShippingOption is not null,
+        review.PlaceOrderAllowed,
+        priceFormatter.Format(review.GrandTotal, checkoutContext),
+        review.Lines.Select(line => new StorefrontBrowserCheckoutLine(
+            line.LineId,
+            line.ProductId,
+            line.ProductVariantId,
+            line.Quantity,
+            priceFormatter.Format(line.UnitPrice, checkoutContext with { CurrencyCode = line.CurrencyCode }),
+            priceFormatter.Format(line.LineTotal, checkoutContext with { CurrencyCode = line.CurrencyCode }))).ToArray(),
+        review.SelectedShippingOption is null
+            ? []
+            : [new StorefrontBrowserCheckoutOption(
+                review.SelectedShippingOption.Key,
+                review.SelectedShippingOption.DisplayName,
+                review.SelectedShippingOption.Description,
+                priceFormatter.Format(review.SelectedShippingOption.Price, checkoutContext with { CurrencyCode = review.SelectedShippingOption.CurrencyCode }),
+                true)],
+        review.SelectedPaymentMethod is null
+            ? []
+            : [new StorefrontBrowserCheckoutOption(
+                review.SelectedPaymentMethod.Key,
+                review.SelectedPaymentMethod.DisplayName,
+                review.SelectedPaymentMethod.Description,
+                null,
+                true)],
+        review.Issues.Select(issue => new StorefrontBrowserCheckoutIssue(
+            issue.Code,
+            issue.Message,
+            issue.Field)).ToArray());
 }
 
 static string? ResolveShippingOptionKey(StorefrontCheckoutSessionResponse session)

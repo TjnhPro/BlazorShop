@@ -178,6 +178,57 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("customerId", program.Substring(program.IndexOf("app.MapGet(\"/api/account/profile\"", StringComparison.Ordinal)), StringComparison.OrdinalIgnoreCase);
         }
 
+        [Fact]
+        public void CheckoutPage_HostsInteractiveWasmCheckoutShellWithServerSnapshot()
+        {
+            var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CheckoutPage.razor");
+            var codeBehind = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CheckoutPage.razor.cs");
+
+            Assert.Contains("<StorefrontCheckoutShell", page, StringComparison.Ordinal);
+            Assert.Contains("InitialState=\"CheckoutState\"", page, StringComparison.Ordinal);
+            Assert.Contains("@rendermode=\"InteractiveWebAssembly\"", page, StringComparison.Ordinal);
+            Assert.Contains("StorefrontBrowserCheckoutState", codeBehind, StringComparison.Ordinal);
+            Assert.Contains("ToBrowserCheckoutState(checkoutSession)", codeBehind, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void CheckoutWasmShell_UsesSameOriginLocalCheckoutEndpoints()
+        {
+            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Checkout/StorefrontCheckoutShell.razor");
+
+            Assert.Contains("GetAsync<StorefrontBrowserCheckoutState>(\"/api/checkout\")", component, StringComparison.Ordinal);
+            Assert.Contains("PostJsonAsync<StorefrontBrowserCheckoutSelectionRequest, StorefrontBrowserCheckoutState>", component, StringComparison.Ordinal);
+            Assert.Contains("\"/api/checkout/shipping-method\"", component, StringComparison.Ordinal);
+            Assert.Contains("\"/api/checkout/payment-method\"", component, StringComparison.Ordinal);
+            Assert.Contains("\"/api/checkout/review\"", component, StringComparison.Ordinal);
+            Assert.Contains("\"/api/checkout/place-order\"", component, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-checkout-shell", component, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-checkout-cart-version", component, StringComparison.Ordinal);
+            Assert.DoesNotContain("api/storefront/stores", component, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("CommerceNode", component, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("accessToken", component, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void CheckoutLocalEndpoints_KeepCartTokenAndStaleVersionChecksServerSide()
+        {
+            var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+
+            Assert.Contains("app.MapGet(\"/api/checkout\"", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapPost(\"/api/checkout/addresses\"", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapPost(\"/api/checkout/shipping-method\"", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapPost(\"/api/checkout/payment-method\"", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapPost(\"/api/checkout/review\"", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapPost(\"/api/checkout/place-order\"", program, StringComparison.Ordinal);
+            Assert.Contains("ValidateLocalCheckoutCommandAsync", program, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCookieNames.CartToken", program, StringComparison.Ordinal);
+            Assert.Contains("expectedCartVersion > 0 && expectedCartVersion != cartResult.Data.Version", program, StringComparison.Ordinal);
+            Assert.Contains("StatusCodes.Status409Conflict", program, StringComparison.Ordinal);
+            Assert.Contains("Your cart changed. Review the latest cart and try checkout again.", program, StringComparison.Ordinal);
+            Assert.Contains("ExpectedCheckoutVersion = request.ExpectedCheckoutVersion", program, StringComparison.Ordinal);
+            Assert.Contains("IdempotencyKey = string.IsNullOrWhiteSpace(request.IdempotencyKey)", program, StringComparison.Ordinal);
+        }
+
         private static string RepositoryRoot()
         {
             var current = AppContext.BaseDirectory;

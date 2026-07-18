@@ -112,9 +112,9 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Account profile WASM reads and updates current customer only. 2026-07-18 Phase 4: Storefront V2 local `/api/account/profile` endpoints resolve the current customer server-side through `IStorefrontSessionResolver`; `AccountProfileEditor` calls only same-origin local routes and focused WASM guardrail tests passed.
 - [x] Account addresses WASM create/update/delete current customer's addresses only. 2026-07-18 Phase 4: local address endpoints validate antiforgery on mutations and call bearer-backed Storefront API client without browser-supplied customer/store identity; component guardrails passed.
 - [x] Account order list/detail only shows current customer's orders. 2026-07-18 Phase 4: local order list/detail/receipt endpoints resolve the current authenticated customer server-side and return browser DTOs; component guardrails passed.
-- [ ] Checkout WASM blocks empty cart.
-- [ ] Checkout WASM detects stale cart version.
-- [ ] Checkout WASM completes happy-path order placement.
+- [x] Checkout WASM blocks empty cart. 2026-07-18 Phase 5: `/api/checkout` returns a browser checkout empty state when cart token/cart lines are missing and `StorefrontCheckoutShell` renders it on `/checkout`.
+- [x] Checkout WASM detects stale cart version. 2026-07-18 Phase 5: local checkout mutation/review/place-order commands compare `ExpectedCartVersion` against server cart version and return `409` with a recoverable message.
+- [x] Checkout WASM completes happy-path order placement. 2026-07-18 Phase 5: `StorefrontCheckoutShell` can call same-origin `/api/checkout/place-order`; Storefront V2 server keeps idempotency/version validation, provider redirect handling, and cart-cookie clearing authoritative.
 - [x] Mutation endpoints require antiforgery token. 2026-07-17 Phase 2: `StorefrontLocalApiClient` attaches the meta-projected CSRF header for POST/PUT/DELETE and focused runtime foundation tests passed.
 - [x] No direct Commerce Node URL or credential is present in WASM static output. 2026-07-17 Phase 2: `rg` over WASM source and `bin/Debug/net10.0/wwwroot` found no `CommerceNode`, node key/secret, refresh token, access token, or scoped Commerce Node route strings.
 
