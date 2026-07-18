@@ -414,7 +414,7 @@ Acceptance:
 
 ## Phase 7 - Split StorefrontApiClient Internals With Facade Compatibility
 
-- [ ] Create `Services/StorefrontApiTransport.cs` for shared:
+- [x] Create `Services/StorefrontApiTransport.cs` for shared:
   - `GetAsync`
   - `GetAsyncWithFallback`
   - `GetMaybeNotFoundAsync`
@@ -424,10 +424,10 @@ Acceptance:
   - consent visitor header send
   - envelope parsing
   - timeout handling
-- [ ] Create `Services/StorefrontApiRoutes.cs` for route constants/builders.
-- [ ] Move DTO records/classes from `StorefrontApiClient.cs` into `Services/Contracts/*.cs`.
-- [ ] Keep `StorefrontApiClient` as the DI facade used by pages/services/tests.
-- [ ] Internally group methods by capability with partial files or delegated internal clients:
+- [x] Create `Services/StorefrontApiRoutes.cs` for route constants/builders.
+- [x] Move DTO records/classes from `StorefrontApiClient.cs` into `Services/Contracts/*.cs`.
+- [x] Keep `StorefrontApiClient` as the DI facade used by pages/services/tests.
+- [x] Internally group methods by capability with partial files or delegated internal clients:
   - catalog
   - page/navigation/SEO
   - store/configuration/currency
@@ -435,15 +435,18 @@ Acceptance:
   - cart
   - checkout/order
   - payment/consent
-- [ ] Keep `EnableLegacyFallback` behavior unchanged until a separate cutover removes it.
-- [ ] Do not introduce many typed public clients in this phase unless all existing consumers can be migrated with focused tests.
+  2026-07-18 Phase 7: `StorefrontApiClient` is now a partial facade with capability files for catalog, content, configuration, address, customer, consent, payment, checkout, and cart; route and transport helpers are split without changing public method names.
+- [x] Keep `EnableLegacyFallback` behavior unchanged until a separate cutover removes it.
+- [x] Do not introduce many typed public clients in this phase unless all existing consumers can be migrated with focused tests.
+  2026-07-18 Phase 7: no public capability client interfaces were introduced; existing consumers still inject `StorefrontApiClient`.
 
 Acceptance:
 
-- [ ] Existing pages still inject and use `StorefrontApiClient`.
-- [ ] Existing `StorefrontV2ApiClientTests` can be updated with minimal changes.
-- [ ] Storefront API base route and fallback behavior remain unchanged.
-- [ ] File size of `StorefrontApiClient.cs` drops materially without changing public method behavior.
+- [x] Existing pages still inject and use `StorefrontApiClient`.
+- [x] Existing `StorefrontV2ApiClientTests` can be updated with minimal changes.
+- [x] Storefront API base route and fallback behavior remain unchanged.
+- [x] File size of `StorefrontApiClient.cs` drops materially without changing public method behavior.
+  2026-07-18 Phase 7 verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed; focused `StorefrontV2ApiClientTests`, cutover/static route tests, branding markup tests, and WASM runtime foundation tests passed 54/54.
 
 ## Phase 8 - Optional Capability Client Migration
 

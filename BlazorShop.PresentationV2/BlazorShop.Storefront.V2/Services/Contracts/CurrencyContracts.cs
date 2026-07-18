@@ -22,22 +22,20 @@ namespace BlazorShop.Storefront.Services
 
     using GetCategoryTreeNode = BlazorShop.Application.DTOs.Category.GetCategoryTreeNode;
 
-    public partial class StorefrontApiClient
+    public sealed record StorefrontCurrencyOptions(
+        string DefaultCurrencyCode,
+        IReadOnlyList<string> SupportedCurrencyCodes);
+
+    public sealed class StorefrontCurrencyPreferenceRequest
     {
-        // Static informational pages should degrade faster than catalog-backed pages when the API is offline.
-        private static readonly TimeSpan CatalogRequestTimeout = TimeSpan.FromSeconds(2);
-        private static readonly TimeSpan RedirectResolutionRequestTimeout = TimeSpan.FromMilliseconds(500);
-        private static readonly TimeSpan SeoSettingsRequestTimeout = TimeSpan.FromMilliseconds(500);
-        private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-
-        private readonly HttpClient _httpClient;
-        private readonly bool _enableLegacyFallback;
-
-        public StorefrontApiClient(HttpClient httpClient, IOptions<StorefrontApiOptions> options)
-        {
-            _httpClient = httpClient;
-            _enableLegacyFallback = options.Value.EnableLegacyFallback;
-        }
-
+        public string CurrencyCode { get; set; } = string.Empty;
     }
+
+    public sealed record StorefrontCurrencyPreferenceResponse(
+        string CurrencyCode,
+        string BaseCurrencyCode,
+        string? RequestedCurrencyCode,
+        bool RequestedCurrencySupported,
+        bool CheckoutCurrencyEnabled,
+        string Reason);
 }

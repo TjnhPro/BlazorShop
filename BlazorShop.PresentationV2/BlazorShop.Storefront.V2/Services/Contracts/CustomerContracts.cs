@@ -22,22 +22,35 @@ namespace BlazorShop.Storefront.Services
 
     using GetCategoryTreeNode = BlazorShop.Application.DTOs.Category.GetCategoryTreeNode;
 
-    public partial class StorefrontApiClient
+    public sealed record StorefrontCustomerProfileResponse(
+        Guid CustomerPublicId,
+        string Email,
+        string FullName,
+        string? FirstName,
+        string? LastName,
+        string? Company,
+        string? PhoneNumber,
+        string? PreferredLanguage,
+        string? PreferredCurrencyCode,
+        DateTimeOffset CreatedAtUtc,
+        DateTimeOffset? LastActivityAtUtc);
+
+    public sealed class StorefrontCustomerProfileUpdateRequest
     {
-        // Static informational pages should degrade faster than catalog-backed pages when the API is offline.
-        private static readonly TimeSpan CatalogRequestTimeout = TimeSpan.FromSeconds(2);
-        private static readonly TimeSpan RedirectResolutionRequestTimeout = TimeSpan.FromMilliseconds(500);
-        private static readonly TimeSpan SeoSettingsRequestTimeout = TimeSpan.FromMilliseconds(500);
-        private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+        public string FullName { get; set; } = string.Empty;
 
-        private readonly HttpClient _httpClient;
-        private readonly bool _enableLegacyFallback;
+        public string Email { get; set; } = string.Empty;
 
-        public StorefrontApiClient(HttpClient httpClient, IOptions<StorefrontApiOptions> options)
-        {
-            _httpClient = httpClient;
-            _enableLegacyFallback = options.Value.EnableLegacyFallback;
-        }
+        public string? FirstName { get; set; }
 
+        public string? LastName { get; set; }
+
+        public string? Company { get; set; }
+
+        public string? PhoneNumber { get; set; }
+
+        public string? PreferredLanguage { get; set; }
+
+        public string? PreferredCurrencyCode { get; set; }
     }
 }

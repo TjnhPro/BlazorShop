@@ -181,7 +181,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CheckoutPage.razor");
             var codeBehind = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CheckoutPage.razor.cs");
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
-            var apiClient = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.cs");
+            var apiRoutes = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiRoutes.cs");
 
             Assert.Contains("data-storefront-address-select", markup);
             Assert.Contains("data-storefront-manual-address", markup);
@@ -190,9 +190,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("GetAddressStatesAsync", codeBehind);
             Assert.Contains("GetCustomerAddressesAsync", codeBehind);
             Assert.Contains("GetAddressConfigurationAsync", codeBehind);
-            Assert.Contains("StorefrontAddressCountriesRoute", apiClient);
-            Assert.Contains("StorefrontAddressConfigurationRoute", apiClient);
-            Assert.Contains("customer/addresses", apiClient);
+            Assert.Contains("StorefrontAddressCountriesRoute", apiRoutes);
+            Assert.Contains("StorefrontAddressConfigurationRoute", apiRoutes);
+            Assert.Contains("customer/addresses", apiRoutes);
             Assert.Contains("syncManualAddressFields", script);
             Assert.Contains("field.disabled = useSavedAddress", script);
         }

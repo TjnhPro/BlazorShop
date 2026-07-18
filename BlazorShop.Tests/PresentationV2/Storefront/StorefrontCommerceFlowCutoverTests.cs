@@ -15,19 +15,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontV2BrowserSurface_DoesNotCallRetiredCommerceNodeRoutes()
         {
-            var activeStorefrontFiles = new[]
+            var activeStorefrontSources = new[]
             {
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.cs",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Checkout/StorefrontCheckoutShell.razor",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Cart/StorefrontCartView.razor",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Account/AccountOrderList.razor",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Account/AccountOrderDetail.razor",
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs"),
+                ReadStorefrontApiClientSources(),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Checkout/StorefrontCheckoutShell.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Cart/StorefrontCartView.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Account/AccountOrderList.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Account/AccountOrderDetail.razor"),
             };
 
-            foreach (var relativePath in activeStorefrontFiles)
+            foreach (var source in activeStorefrontSources)
             {
-                var source = ReadRepositoryFile(relativePath);
                 foreach (var retiredRoute in RetiredStorefrontRoutes)
                 {
                     Assert.DoesNotContain(retiredRoute, source, StringComparison.Ordinal);
@@ -38,7 +37,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontV2CheckoutAndAccountFlow_UsesCanonicalRoutes()
         {
-            var apiClient = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.cs");
+            var apiClient = ReadStorefrontApiClientSources();
             var checkoutEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCheckoutEndpoints.cs");
             var checkoutShell = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Checkout/StorefrontCheckoutShell.razor");
 
@@ -97,6 +96,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("AddScoped<IStorefrontPaymentProviderResolver, StorefrontPaymentProviderResolver>", dependencyInjection, StringComparison.Ordinal);
         }
 
+        private static string ReadStorefrontApiClientSources()
+        {
+            var root = FindRepositoryRoot();
+            var servicesDirectory = Path.Combine(root, "BlazorShop.PresentationV2", "BlazorShop.Storefront.V2", "Services");
+            return string.Join(
+                Environment.NewLine,
+                Directory.GetFiles(servicesDirectory, "StorefrontApi*.cs")
+                    .Where(path => !path.EndsWith("StorefrontApiResult.cs", StringComparison.Ordinal))
+                    .Order(StringComparer.Ordinal)
+                    .Select(File.ReadAllText));
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             var directory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -112,6 +123,22 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             }
 
             throw new FileNotFoundException($"Could not locate repository file '{relativePath}'.");
+        }
+
+        private static string FindRepositoryRoot()
+        {
+            var directory = new DirectoryInfo(AppContext.BaseDirectory);
+            while (directory is not null)
+            {
+                if (File.Exists(Path.Combine(directory.FullName, "BlazorShop.sln")))
+                {
+                    return directory.FullName;
+                }
+
+                directory = directory.Parent;
+            }
+
+            throw new InvalidOperationException("Unable to locate BlazorShop.sln from the test output directory.");
         }
     }
 }

@@ -22,22 +22,16 @@ namespace BlazorShop.Storefront.Services
 
     using GetCategoryTreeNode = BlazorShop.Application.DTOs.Category.GetCategoryTreeNode;
 
-    public partial class StorefrontApiClient
+    public sealed record StorefrontSubmitResult<TData>(bool Success, string Message, TData? Data)
     {
-        // Static informational pages should degrade faster than catalog-backed pages when the API is offline.
-        private static readonly TimeSpan CatalogRequestTimeout = TimeSpan.FromSeconds(2);
-        private static readonly TimeSpan RedirectResolutionRequestTimeout = TimeSpan.FromMilliseconds(500);
-        private static readonly TimeSpan SeoSettingsRequestTimeout = TimeSpan.FromMilliseconds(500);
-        private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-
-        private readonly HttpClient _httpClient;
-        private readonly bool _enableLegacyFallback;
-
-        public StorefrontApiClient(HttpClient httpClient, IOptions<StorefrontApiOptions> options)
+        public static StorefrontSubmitResult<TData> Succeeded(TData? data, string? message)
         {
-            _httpClient = httpClient;
-            _enableLegacyFallback = options.Value.EnableLegacyFallback;
+            return new(true, string.IsNullOrWhiteSpace(message) ? "Request completed." : message, data);
         }
 
+        public static StorefrontSubmitResult<TData> Failed(string? message)
+        {
+            return new(false, string.IsNullOrWhiteSpace(message) ? "The request could not be completed." : message, default);
+        }
     }
 }
