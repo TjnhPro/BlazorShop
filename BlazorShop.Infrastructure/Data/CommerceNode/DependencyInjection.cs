@@ -53,6 +53,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
     using FluentValidation;
 
+    using Microsoft.AspNetCore.DataProtection;
     using Microsoft.AspNetCore.Authentication.JwtBearer;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
@@ -81,6 +82,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                     }));
 
             services.AddHttpContextAccessor();
+            services.AddDataProtection();
             services.AddAutoMapper(cfg => cfg.AddProfile<MappingConfig>());
             services.AddValidatorsFromAssemblyContaining<SeoRedirectDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
@@ -160,6 +162,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IMessageDeliveryService, MessageDeliveryService>();
             services.AddScoped<ICommerceTransactionalMessageService, CommerceTransactionalMessageService>();
             services.AddScoped<ITransactionalMessageAdminService, TransactionalMessageAdminService>();
+            services.AddScoped<IStoreEmailSettingsService, StoreEmailSettingsService>();
+            services.AddSingleton<IStoreEmailSecretProtector, DataProtectionStoreEmailSecretProtector>();
             services.AddScoped<IAccountEmailDispatcher, QueuedAccountEmailDispatcher>();
             services.AddScoped<IStorefrontContactMessageService, StorefrontContactMessageService>();
             services.AddScoped<IProductMediaService, ProductMediaService>();

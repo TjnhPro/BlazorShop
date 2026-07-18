@@ -24,6 +24,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         [InlineData(typeof(StoreNavigationMenu))]
         [InlineData(typeof(StoreNavigationMenuItem))]
         [InlineData(typeof(StoreShippingSettings))]
+        [InlineData(typeof(StoreEmailSettings))]
         [InlineData(typeof(OrderHistoryEntry))]
         public void CatalogStoreId_IsRequiredInCommerceNode(Type entityType)
         {
@@ -525,6 +526,40 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Contains(modelEntity.GetIndexes(), index => index.Properties.Select(property => property.Name).SequenceEqual([nameof(QueuedMessage.StoreId), nameof(QueuedMessage.Status), nameof(QueuedMessage.NextAttemptAtUtc)]));
             Assert.Contains(modelEntity.GetIndexes(), index => index.Properties.Select(property => property.Name).SequenceEqual([nameof(QueuedMessage.StoreId), nameof(QueuedMessage.TemplateSystemName), nameof(QueuedMessage.CreatedAtUtc)]));
             Assert.Contains(modelEntity.GetIndexes(), index => index.Properties.Select(property => property.Name).SequenceEqual([nameof(QueuedMessage.StoreId), nameof(QueuedMessage.RelatedEntityType), nameof(QueuedMessage.RelatedEntityId)]));
+        }
+
+        [Fact]
+        public void StoreEmailSettings_HasOneSettingsRowPerStoreAndSecretSafeColumns()
+        {
+            using var context = CreateContext();
+            var modelEntity = context.Model.FindEntityType(typeof(StoreEmailSettings));
+
+            Assert.NotNull(modelEntity);
+            Assert.Equal("store_email_settings", modelEntity!.GetTableName());
+            Assert.Equal(253, modelEntity.FindProperty(nameof(StoreEmailSettings.SmtpHost))!.GetMaxLength());
+            Assert.Equal(320, modelEntity.FindProperty(nameof(StoreEmailSettings.Username))!.GetMaxLength());
+            Assert.Equal("text", modelEntity.FindProperty(nameof(StoreEmailSettings.ProtectedPassword))!.GetColumnType());
+            Assert.Equal(254, modelEntity.FindProperty(nameof(StoreEmailSettings.FromEmail))!.GetMaxLength());
+            Assert.Equal(160, modelEntity.FindProperty(nameof(StoreEmailSettings.FromDisplayName))!.GetMaxLength());
+            Assert.Equal(254, modelEntity.FindProperty(nameof(StoreEmailSettings.ReplyToEmail))!.GetMaxLength());
+            Assert.Equal(32, modelEntity.FindProperty(nameof(StoreEmailSettings.DeliveryMode))!.GetMaxLength());
+            Assert.Equal(StoreEmailDeliveryModes.Smtp, modelEntity.FindProperty(nameof(StoreEmailSettings.DeliveryMode))!.GetDefaultValue());
+            Assert.Equal(587, modelEntity.FindProperty(nameof(StoreEmailSettings.SmtpPort))!.GetDefaultValue());
+            Assert.Equal(false, modelEntity.FindProperty(nameof(StoreEmailSettings.Enabled))!.GetDefaultValue());
+            Assert.Equal(true, modelEntity.FindProperty(nameof(StoreEmailSettings.UseSsl))!.GetDefaultValue());
+
+            Assert.Contains(modelEntity.GetIndexes(), index => index.IsUnique && index.Properties.Select(property => property.Name).SequenceEqual([nameof(StoreEmailSettings.PublicId)]));
+            Assert.Contains(modelEntity.GetIndexes(), index => index.IsUnique && index.Properties.Select(property => property.Name).SequenceEqual([nameof(StoreEmailSettings.StoreId)]));
+            var designEntity = context.GetService<IDesignTimeModel>().Model.FindEntityType(typeof(StoreEmailSettings));
+            Assert.NotNull(designEntity);
+            Assert.Contains(designEntity!.GetCheckConstraints(), constraint => constraint.Name == "ck_store_email_settings_delivery_mode");
+            Assert.Contains(designEntity.GetCheckConstraints(), constraint => constraint.Name == "ck_store_email_settings_smtp_port");
+
+            var foreignKey = modelEntity.GetForeignKeys()
+                .SingleOrDefault(key => key.PrincipalEntityType.ClrType == typeof(CommerceStore)
+                    && key.Properties.Any(property => property.Name == nameof(StoreEmailSettings.StoreId)));
+            Assert.NotNull(foreignKey);
+            Assert.Equal(DeleteBehavior.Cascade, foreignKey!.DeleteBehavior);
         }
 
         private static CommerceNodeDbContext CreateContext()

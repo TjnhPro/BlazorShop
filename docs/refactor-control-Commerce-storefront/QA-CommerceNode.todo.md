@@ -1167,7 +1167,9 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Phase 0 baseline confirms CommerceNode account recovery uses `QueuedAccountEmailDispatcher`, not the direct SMTP dispatcher. 2026-07-18: `TransactionalMessageBaselineTests.CommerceNodeAccountEmails_UseQueuedDispatcherInsteadOfDirectSmtpDispatcher` passed.
 - [x] Phase 0 baseline confirms `OrderCreatedTaskHandler` queues `order.placed` and has no direct SMTP call. 2026-07-18: `TransactionalMessageBaselineTests.CommerceNodeOrderCreatedTask_QueuesOrderPlacedMessageWithoutDirectSmtpCall` passed.
 - [x] Phase 0 baseline records current global-only SMTP config shape and missing local Mailpit capture service. 2026-07-18: `TransactionalMessageBaselineTests.CurrentSmtpConfigurationShape_IsGlobalOnlyBeforeStoreScopedSmtpMigration` passed.
-- [ ] Store email settings are configurable per store without exposing SMTP username/password or decrypted secret material.
+- [x] Store email settings are configurable per store without exposing SMTP password or decrypted secret material. 2026-07-18 Phase 1: `StoreEmailSettingsServiceTests` covers rotate/clear response secrecy; `StoreEmailSettingsContractTests` asserts response DTO has no raw/protected password property.
+- [x] CommerceNode `store_email_settings` schema is one row per store with delivery mode and SMTP port constraints. 2026-07-18 Phase 1: migration `CommerceNodeStoreEmailSettings` applied to local PostgreSQL; `CommerceNodeDbContextModelTests.StoreEmailSettings_HasOneSettingsRowPerStoreAndSecretSafeColumns` passed.
+- [x] Store email settings validation blocks incomplete enabled SMTP config and capture mode unless explicitly allowed. 2026-07-18 Phase 1: focused validator/service tests passed.
 - [ ] `message.deliver` resolves SMTP transport from queued message `StoreId` and snapshots store-specific sender metadata.
 - [ ] Missing store SMTP config fails queued delivery into retry/failed state without rolling back password recovery, order placement, or checkout source commands.
 - [ ] Local Mailpit capture receives password recovery email sent through store SMTP settings.

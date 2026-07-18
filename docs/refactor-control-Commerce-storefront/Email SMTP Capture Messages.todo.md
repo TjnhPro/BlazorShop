@@ -81,42 +81,42 @@ Acceptance:
 
 Purpose: add store-scoped data model for Control Plane-managed SMTP.
 
-- [ ] Add Commerce Node entity/table such as `StoreEmailSettings`.
-- [ ] Key `StoreEmailSettings` by `StoreId`.
-- [ ] Add `Enabled`.
-- [ ] Add `SmtpHost`.
-- [ ] Add `SmtpPort`.
-- [ ] Add `UseSsl` or explicit secure socket option.
-- [ ] Add `Username`.
-- [ ] Add encrypted password field or secret reference.
-- [ ] Add `FromEmail`.
-- [ ] Add `FromDisplayName`.
-- [ ] Add `ReplyToEmail`.
-- [ ] Add `DeliveryMode` such as `Smtp` or `Capture`.
-- [ ] Add optional `CaptureRedirectToEmail` guarded for non-production/test mode.
-- [ ] Add audit timestamps and updated-by actor.
-- [ ] Add safe response DTO with `SecretsConfigured` and `PasswordUpdatedAt`.
-- [ ] Add update request with optional `Password`.
-- [ ] Add update request with `ClearPassword`.
-- [ ] Add update request with `UseExistingPassword` semantics where needed.
-- [ ] Validate SMTP host.
-- [ ] Validate SMTP port.
-- [ ] Validate from email.
-- [ ] Validate reply-to email.
-- [ ] Validate username/password length.
-- [ ] Validate capture mode is blocked in production unless explicitly allowed.
-- [ ] Add `IStoreEmailSecretProtector` or equivalent.
-- [ ] Protect stored SMTP password with runtime key/material outside database.
-- [ ] Ensure decrypted SMTP password is never logged.
-- [ ] Add EF migration for Commerce Node.
+- [x] Add Commerce Node entity/table such as `StoreEmailSettings`. 2026-07-18: `StoreEmailSettings` entity and `store_email_settings` table added.
+- [x] Key `StoreEmailSettings` by `StoreId`. 2026-07-18: unique `StoreId` index and FK to `commerce_store`.
+- [x] Add `Enabled`.
+- [x] Add `SmtpHost`.
+- [x] Add `SmtpPort`.
+- [x] Add `UseSsl` or explicit secure socket option.
+- [x] Add `Username`.
+- [x] Add encrypted password field or secret reference. 2026-07-18: database stores `ProtectedPassword`, not plaintext request password.
+- [x] Add `FromEmail`.
+- [x] Add `FromDisplayName`.
+- [x] Add `ReplyToEmail`.
+- [x] Add `DeliveryMode` such as `Smtp` or `Capture`.
+- [x] Add optional `CaptureRedirectToEmail` guarded for non-production/test mode. 2026-07-18: validator requires explicit `captureModeAllowed`.
+- [x] Add audit timestamps and updated-by actor.
+- [x] Add safe response DTO with `SecretsConfigured` and `PasswordUpdatedAt`.
+- [x] Add update request with optional `Password`.
+- [x] Add update request with `ClearPassword`.
+- [x] Add update request with `UseExistingPassword` semantics where needed.
+- [x] Validate SMTP host.
+- [x] Validate SMTP port.
+- [x] Validate from email.
+- [x] Validate reply-to email.
+- [x] Validate username/password length.
+- [x] Validate capture mode is blocked in production unless explicitly allowed.
+- [x] Add `IStoreEmailSecretProtector` or equivalent.
+- [x] Protect stored SMTP password with runtime key/material outside database. 2026-07-18: `DataProtectionStoreEmailSecretProtector` uses ASP.NET Core Data Protection.
+- [x] Ensure decrypted SMTP password is never logged. 2026-07-18: Phase 1 service only protects/clears stored value and response serialization tests confirm no raw/protected secret in DTO.
+- [x] Add EF migration for Commerce Node. 2026-07-18: `20260718100946_CommerceNodeStoreEmailSettings`.
 
 Acceptance:
 
-- [ ] Commerce Node model build passes.
-- [ ] Migration applies to `CommerceNodeDbContext`.
-- [ ] DTO reflection tests prove raw password is absent from all responses.
-- [ ] Validation blocks incomplete SMTP config when `Enabled=true`.
-- [ ] Secret clear/rotate paths do not expose old password.
+- [x] Commerce Node model build passes. 2026-07-18: CommerceNode API build passed.
+- [x] Migration applies to `CommerceNodeDbContext`. 2026-07-18: `dotnet ef database update` applied `CommerceNodeStoreEmailSettings` to local PostgreSQL.
+- [x] DTO reflection tests prove raw password is absent from all responses. 2026-07-18: `StoreEmailSettingsContractTests`.
+- [x] Validation blocks incomplete SMTP config when `Enabled=true`. 2026-07-18: `StoreEmailSettingsContractTests.Validator_BlocksIncompleteEnabledSmtpConfig`.
+- [x] Secret clear/rotate paths do not expose old password. 2026-07-18: `StoreEmailSettingsServiceTests` verifies rotate/clear response secrecy.
 
 ## Phase 2 - SMTP Transport And Sender Resolution
 
