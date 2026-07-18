@@ -145,13 +145,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("<AccountProfileEditor", profilePage, StringComparison.Ordinal);
             Assert.Contains("InitialProfile=\"_profile\"", profilePage, StringComparison.Ordinal);
+            Assert.Contains("InitialError=\"@ErrorMessage\"", profilePage, StringComparison.Ordinal);
+            Assert.Contains("InitialSuccess=\"@SuccessMessage\"", profilePage, StringComparison.Ordinal);
             Assert.Contains("<AccountAddressBook", addressesPage, StringComparison.Ordinal);
             Assert.Contains("InitialAddresses=\"_addresses\"", addressesPage, StringComparison.Ordinal);
+            Assert.Contains("InitialError=\"@(_error ?? Error)\"", addressesPage, StringComparison.Ordinal);
             Assert.Contains("<AccountOrderList", ordersPage, StringComparison.Ordinal);
             Assert.Contains("InitialOrders=\"_orders\"", ordersPage, StringComparison.Ordinal);
+            Assert.Contains("InitialError=\"@_error\"", ordersPage, StringComparison.Ordinal);
             Assert.Contains("<AccountOrderDetail", orderDetailPage, StringComparison.Ordinal);
             Assert.Contains("InitialOrder=\"_order\"", orderDetailPage, StringComparison.Ordinal);
+            Assert.Contains("InitialError=\"@_error\"", orderDetailPage, StringComparison.Ordinal);
             Assert.Contains("<AccountChangePasswordForm", passwordPage, StringComparison.Ordinal);
+            Assert.Contains("InitialError=\"@ErrorMessage\"", passwordPage, StringComparison.Ordinal);
+            Assert.Contains("InitialSuccess=\"@SuccessMessage\"", passwordPage, StringComparison.Ordinal);
             Assert.Contains("@rendermode=\"InteractiveWebAssembly\"", profilePage + addressesPage + ordersPage + orderDetailPage + passwordPage, StringComparison.Ordinal);
         }
 
@@ -165,6 +172,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var passwordComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Account/AccountChangePasswordForm.razor");
             var allComponents = profileComponent + addressesComponent + ordersComponent + orderDetailComponent + passwordComponent;
 
+            Assert.Contains("<AntiforgeryToken />", profileComponent, StringComparison.Ordinal);
+            Assert.Contains("<AntiforgeryToken />", addressesComponent, StringComparison.Ordinal);
+            Assert.Contains("<AntiforgeryToken />", passwordComponent, StringComparison.Ordinal);
+            Assert.Contains("Passwords do not match.", passwordComponent, StringComparison.Ordinal);
             Assert.Contains("GetAsync<StorefrontBrowserCustomerProfile>(\"/api/account/profile\")", profileComponent, StringComparison.Ordinal);
             Assert.Contains("PutJsonAsync<StorefrontBrowserCustomerProfileUpdateRequest, StorefrontBrowserCustomerProfile>(\"/api/account/profile\"", profileComponent, StringComparison.Ordinal);
             Assert.Contains("GetAsync<IReadOnlyList<StorefrontBrowserCustomerAddress>>(\"/api/account/addresses\")", addressesComponent, StringComparison.Ordinal);

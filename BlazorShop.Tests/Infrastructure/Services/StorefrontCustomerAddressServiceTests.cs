@@ -136,6 +136,30 @@ namespace BlazorShop.Tests.Infrastructure.Services
             Assert.Equal(second.Payload.PublicId, addresses.Single(address => address.IsDefaultBilling).PublicId);
         }
 
+        [Fact]
+        public async Task SetDefaultShippingAsync_ClearsOtherShippingDefaults()
+        {
+            await using var context = CreateContext();
+            var service = CreateService(context);
+            var customer = CustomerContext(Guid.NewGuid(), "customer-1", "buyer@example.test");
+
+            var first = await service.CreateAsync(customer, ValidAddress() with { IsDefaultShipping = true });
+            var second = await service.CreateAsync(customer, ValidAddress() with
+            {
+                Address1 = "200 Main St",
+                IsDefaultShipping = false,
+                IsDefaultBilling = false,
+            });
+
+            var result = await service.SetDefaultShippingAsync(customer, second.Payload!.PublicId);
+
+            Assert.True(first.Success);
+            Assert.True(result.Success);
+            var addresses = await context.CommerceCustomerAddresses.ToArrayAsync();
+            Assert.Single(addresses, address => address.IsDefaultShipping);
+            Assert.Equal(second.Payload.PublicId, addresses.Single(address => address.IsDefaultShipping).PublicId);
+        }
+
         private static StorefrontCustomerAddressContext CustomerContext(
             Guid storeId,
             string appUserId,

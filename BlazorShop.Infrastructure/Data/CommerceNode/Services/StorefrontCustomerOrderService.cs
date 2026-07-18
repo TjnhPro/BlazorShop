@@ -132,8 +132,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     || (order.CustomerId == null
                         && normalizedAppUserId != null
                         && order.UserId == normalizedAppUserId
-                        && (string.IsNullOrWhiteSpace(order.CustomerEmail)
-                            || NormalizeEmail(order.CustomerEmail) == normalizedEmail)));
+                        && (order.CustomerEmail == null
+                            || order.CustomerEmail.Trim() == string.Empty
+                            || order.CustomerEmail.Trim().ToUpper() == normalizedEmail)));
         }
 
         private async Task<ServiceResponse<CustomerOrderScope>> ResolveScopeAsync(

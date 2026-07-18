@@ -15,6 +15,7 @@
     <section class="mb-8 rounded border border-neutral-200 p-4">
         <h2 class="text-lg font-bold text-neutral-900">Add address</h2>
         <form method="post" action="@FormAction" class="mt-4 grid gap-4 sm:grid-cols-2" @onsubmit="CreateAsync" @onsubmit:preventDefault="true">
+            <AntiforgeryToken />
             @RenderAntiforgeryField()
             <input type="hidden" name="Action" value="create" />
             @RenderAddressInputs(_newAddress, false)
@@ -59,6 +60,7 @@
                     <p class="text-sm text-neutral-700">@address.CountryCode</p>
 
                     <form method="post" action="@FormAction" class="mt-4 grid gap-3" @onsubmit="() => UpdateAsync(address.PublicId)" @onsubmit:preventDefault="true">
+                        <AntiforgeryToken />
                         @RenderAntiforgeryField()
                         <input type="hidden" name="AddressId" value="@address.PublicId" />
                         <div class="grid gap-3 sm:grid-cols-2">

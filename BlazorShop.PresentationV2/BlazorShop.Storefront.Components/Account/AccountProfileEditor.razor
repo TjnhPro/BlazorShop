@@ -19,6 +19,7 @@
     else
     {
         <form method="post" action="@FormAction" class="grid max-w-3xl gap-5 sm:grid-cols-2" @onsubmit="SaveAsync" @onsubmit:preventDefault="true">
+            <AntiforgeryToken />
             @RenderAntiforgeryField()
             <label class="block text-sm sm:col-span-2">
                 <span class="font-semibold text-neutral-800">Email address</span>

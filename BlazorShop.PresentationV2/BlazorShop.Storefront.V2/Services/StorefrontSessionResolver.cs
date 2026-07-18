@@ -13,6 +13,8 @@ namespace BlazorShop.Storefront.Services
 
     public sealed class StorefrontSessionResolver : IStorefrontSessionResolver
     {
+        private static readonly object CurrentUserCacheKey = new();
+
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConfiguration _configuration;
@@ -24,23 +26,44 @@ namespace BlazorShop.Storefront.Services
             _configuration = configuration;
         }
 
-        public async Task<StorefrontSessionInfo> GetCurrentUserAsync(CancellationToken cancellationToken = default)
+        public Task<StorefrontSessionInfo> GetCurrentUserAsync(CancellationToken cancellationToken = default)
         {
             var httpContext = _httpContextAccessor.HttpContext;
             if (httpContext is null)
             {
-                return StorefrontSessionInfo.Anonymous;
+                return Task.FromResult(StorefrontSessionInfo.Anonymous);
             }
 
-            var cookieName = GetRefreshTokenCookieName();
-            if (!httpContext.Request.Cookies.TryGetValue(cookieName, out var refreshToken)
-                || string.IsNullOrWhiteSpace(refreshToken))
+            if (httpContext.Items.TryGetValue(CurrentUserCacheKey, out var cached)
+                && cached is Task<StorefrontSessionInfo> cachedTask)
+            {
+                return cachedTask;
+            }
+
+            lock (httpContext.Items)
+            {
+                if (httpContext.Items.TryGetValue(CurrentUserCacheKey, out cached)
+                    && cached is Task<StorefrontSessionInfo> lockedCachedTask)
+                {
+                    return lockedCachedTask;
+                }
+
+                var task = ResolveCurrentUserAsync(httpContext, cancellationToken);
+                httpContext.Items[CurrentUserCacheKey] = task;
+                return task;
+            }
+        }
+
+        private async Task<StorefrontSessionInfo> ResolveCurrentUserAsync(HttpContext httpContext, CancellationToken cancellationToken)
+        {
+            var cookieHeader = StorefrontAuthCookies.BuildRefreshTokenCookieHeader(httpContext.Request, _configuration);
+            if (string.IsNullOrWhiteSpace(cookieHeader))
             {
                 return StorefrontSessionInfo.Anonymous;
             }
 
             using var request = new HttpRequestMessage(HttpMethod.Post, GetRefreshTokenRoute());
-            request.Headers.TryAddWithoutValidation("Cookie", $"{cookieName}={Uri.EscapeDataString(refreshToken)}");
+            request.Headers.TryAddWithoutValidation("Cookie", cookieHeader);
 
             var userAgent = httpContext.Request.Headers.UserAgent.ToString();
             if (!string.IsNullOrWhiteSpace(userAgent))

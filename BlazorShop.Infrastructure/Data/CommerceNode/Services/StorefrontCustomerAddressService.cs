@@ -82,7 +82,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             };
 
             ApplyAddress(address, normalized, now);
-            ApplyDefaultSelection(activeAddresses, address.IsDefaultShipping, address.IsDefaultBilling);
+            await this.ClearDefaultSelectionAsync(activeAddresses, Guid.Empty, address.IsDefaultShipping, address.IsDefaultBilling, now, cancellationToken);
             this.context.CommerceCustomerAddresses.Add(address);
             await this.context.SaveChangesAsync(cancellationToken);
 
@@ -132,10 +132,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var normalized = validation.Address;
             var now = DateTimeOffset.UtcNow;
             var activeAddresses = await this.LoadActiveAddressesAsync(context.StoreId, customer.Id, cancellationToken);
+            await this.ClearDefaultSelectionAsync(activeAddresses, address.Id, normalized.IsDefaultShipping, normalized.IsDefaultBilling, now, cancellationToken);
             ApplyAddress(address, normalized, now);
             address.IsDefaultShipping = normalized.IsDefaultShipping;
             address.IsDefaultBilling = normalized.IsDefaultBilling;
-            ApplyDefaultSelection(activeAddresses.Where(candidate => candidate.Id != address.Id), address.IsDefaultShipping, address.IsDefaultBilling);
             await this.context.SaveChangesAsync(cancellationToken);
 
             return Succeeded("Customer address updated.", Map(address));
@@ -164,6 +164,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             address.UpdatedAtUtc = address.DeletedAtUtc.Value;
             address.IsDefaultShipping = false;
             address.IsDefaultBilling = false;
+
+            if (wasDefaultShipping || wasDefaultBilling)
+            {
+                await this.context.SaveChangesAsync(cancellationToken);
+            }
 
             await PromoteDefaultsAfterDeleteAsync(
                 context.StoreId,
@@ -212,18 +217,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var activeAddresses = await this.LoadActiveAddressesAsync(context.StoreId, customer.Id, cancellationToken);
-            foreach (var candidate in activeAddresses)
+            var now = DateTimeOffset.UtcNow;
+            await this.ClearDefaultSelectionAsync(activeAddresses, address.Id, clearShipping: shipping, clearBilling: !shipping, now, cancellationToken);
+            address.UpdatedAtUtc = now;
+            if (shipping)
             {
-                if (shipping)
-                {
-                    candidate.IsDefaultShipping = candidate.Id == address.Id;
-                }
-                else
-                {
-                    candidate.IsDefaultBilling = candidate.Id == address.Id;
-                }
-
-                candidate.UpdatedAtUtc = DateTimeOffset.UtcNow;
+                address.IsDefaultShipping = true;
+            }
+            else
+            {
+                address.IsDefaultBilling = true;
             }
 
             await this.context.SaveChangesAsync(cancellationToken);
@@ -345,22 +348,40 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             address.UpdatedAtUtc = now;
         }
 
-        private static void ApplyDefaultSelection(
+        private async Task ClearDefaultSelectionAsync(
             IEnumerable<CommerceCustomerAddress> addresses,
+            Guid selectedAddressId,
             bool clearShipping,
-            bool clearBilling)
+            bool clearBilling,
+            DateTimeOffset now,
+            CancellationToken cancellationToken)
         {
+            var changed = false;
             foreach (var existing in addresses)
             {
-                if (clearShipping)
+                if (existing.Id == selectedAddressId)
                 {
-                    existing.IsDefaultShipping = false;
+                    continue;
                 }
 
-                if (clearBilling)
+                if (clearShipping && existing.IsDefaultShipping)
+                {
+                    existing.IsDefaultShipping = false;
+                    existing.UpdatedAtUtc = now;
+                    changed = true;
+                }
+
+                if (clearBilling && existing.IsDefaultBilling)
                 {
                     existing.IsDefaultBilling = false;
+                    existing.UpdatedAtUtc = now;
+                    changed = true;
                 }
+            }
+
+            if (changed)
+            {
+                await this.context.SaveChangesAsync(cancellationToken);
             }
         }
 

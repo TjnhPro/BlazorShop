@@ -35,7 +35,7 @@
                 {
                     <AccountAddressBook
                         InitialAddresses="_addresses"
-                        InitialError="_error ?? Error"
+                        InitialError="@(_error ?? Error)"
                         InitialSuccess="@(Saved == "1" ? "Address book updated." : null)"
                         FormAction="@StorefrontRoutes.AccountAddresses"
                         AntiforgeryFieldName="_antiforgeryFieldName"

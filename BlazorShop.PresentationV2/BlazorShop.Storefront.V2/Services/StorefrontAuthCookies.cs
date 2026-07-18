@@ -17,9 +17,50 @@ namespace BlazorShop.Storefront.Services
         public static string? BuildRefreshTokenCookieHeader(HttpRequest request, IConfiguration configuration)
         {
             var cookieName = GetRefreshTokenCookieName(configuration);
-            return request.Cookies.TryGetValue(cookieName, out var refreshToken) && !string.IsNullOrWhiteSpace(refreshToken)
-                ? $"{cookieName}={Uri.EscapeDataString(refreshToken)}"
+            if (TryGetRawCookieValue(request, cookieName, out var refreshToken))
+            {
+                return BuildRefreshTokenCookieHeader(cookieName, refreshToken);
+            }
+
+            return request.Cookies.TryGetValue(cookieName, out refreshToken) && !string.IsNullOrWhiteSpace(refreshToken)
+                ? BuildRefreshTokenCookieHeader(cookieName, refreshToken)
                 : null;
+        }
+
+        public static string BuildRefreshTokenCookieHeader(string cookieName, string refreshToken)
+        {
+            return $"{cookieName}={refreshToken}";
+        }
+
+        private static bool TryGetRawCookieValue(HttpRequest request, string cookieName, out string refreshToken)
+        {
+            foreach (var cookieHeader in request.Headers.Cookie)
+            {
+                if (string.IsNullOrWhiteSpace(cookieHeader))
+                {
+                    continue;
+                }
+
+                var cookies = cookieHeader.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                foreach (var cookie in cookies)
+                {
+                    var equalsIndex = cookie.IndexOf('=');
+                    if (equalsIndex <= 0)
+                    {
+                        continue;
+                    }
+
+                    var name = cookie[..equalsIndex];
+                    if (string.Equals(name, cookieName, StringComparison.Ordinal))
+                    {
+                        refreshToken = cookie[(equalsIndex + 1)..];
+                        return !string.IsNullOrWhiteSpace(refreshToken);
+                    }
+                }
+            }
+
+            refreshToken = string.Empty;
+            return false;
         }
     }
 }

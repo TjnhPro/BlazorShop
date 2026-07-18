@@ -41,7 +41,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var storeId = Guid.NewGuid();
             await using var context = CreateContext();
             var customer = SeedCustomer(context, storeId, "app-user-1", "buyer@example.test");
-            var legacy = SeedOrder(context, storeId, "ORD-LEGACY", customerId: null, userId: "app-user-1", email: "buyer@example.test");
+            var legacy = SeedOrder(context, storeId, "ORD-LEGACY", customerId: null, userId: "app-user-1", email: " Buyer@Example.Test ");
             SeedOrder(context, storeId, "ORD-OTHER-EMAIL", customerId: null, userId: "app-user-1", email: "other@example.test");
             SeedOrder(context, storeId, "ORD-OTHER-CUSTOMER", Guid.NewGuid(), userId: "app-user-1", email: customer.Email);
             await context.SaveChangesAsync();
