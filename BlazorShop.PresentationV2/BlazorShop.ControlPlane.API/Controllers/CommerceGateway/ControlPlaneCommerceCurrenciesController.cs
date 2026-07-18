@@ -54,7 +54,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> UpdateCurrency(
             Guid storePublicId,
             string currencyCode,
-            UpdateStoreCurrencyRequest request,
+            [FromBody] UpdateStoreCurrencyRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpdateCurrencyAsync(storePublicId, currencyCode, request, cancellationToken));
@@ -78,7 +78,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         [Authorize(Policy = ControlPlanePolicyNames.CommerceProvidersWrite)]
         public async Task<IActionResult> FetchExchangeRates(
             Guid storePublicId,
-            FetchStoreCurrencyExchangeRatesRequest request,
+            [FromBody] FetchStoreCurrencyExchangeRatesRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.FetchExchangeRatesAsync(storePublicId, request, cancellationToken));
@@ -88,7 +88,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         [Authorize(Policy = ControlPlanePolicyNames.CommerceProvidersWrite)]
         public async Task<IActionResult> QueueExchangeRateUpdate(
             Guid storePublicId,
-            QueueStoreCurrencyExchangeRateUpdateRequest request,
+            [FromBody] QueueStoreCurrencyExchangeRateUpdateRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.QueueExchangeRateUpdateAsync(storePublicId, request, cancellationToken));
@@ -99,7 +99,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> UpsertExchangeRate(
             Guid storePublicId,
             string targetCurrencyCode,
-            UpsertStoreCurrencyExchangeRateRequest request,
+            [FromBody] UpsertStoreCurrencyExchangeRateRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpsertExchangeRateAsync(storePublicId, targetCurrencyCode, request, cancellationToken));

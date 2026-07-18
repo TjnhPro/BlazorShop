@@ -64,7 +64,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
         public async Task<IActionResult> CreateProduct(
             Guid storePublicId,
-            CreateProduct request,
+            [FromBody] CreateProduct request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.CreateProductAsync(storePublicId, request, cancellationToken));
@@ -76,7 +76,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> UpdateProduct(
             Guid storePublicId,
             Guid productId,
-            UpdateProduct request,
+            [FromBody] UpdateProduct request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpdateProductAsync(storePublicId, productId, request, cancellationToken));
@@ -101,7 +101,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> UpdateProductSeo(
             Guid storePublicId,
             Guid productId,
-            UpdateProductSeoDto request,
+            [FromBody] UpdateProductSeoDto request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpdateProductSeoAsync(storePublicId, productId, request, cancellationToken));
@@ -229,7 +229,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> SetCategoryPrimaryMedia(
             Guid storePublicId,
             Guid categoryId,
-            SetCategoryPrimaryMediaRequest request,
+            [FromBody] SetCategoryPrimaryMediaRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.SetCategoryPrimaryMediaAsync(storePublicId, categoryId, request, cancellationToken));
@@ -264,7 +264,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> CreateVariant(
             Guid storePublicId,
             Guid productId,
-            CreateProductVariant request,
+            [FromBody] CreateProductVariant request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.CreateVariantAsync(storePublicId, productId, request, cancellationToken));
@@ -277,7 +277,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             Guid storePublicId,
             Guid productId,
             Guid variantId,
-            UpdateProductVariant request,
+            [FromBody] UpdateProductVariant request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpdateVariantAsync(storePublicId, productId, variantId, request, cancellationToken));
@@ -311,7 +311,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> UpdateProductStock(
             Guid storePublicId,
             Guid productId,
-            UpdateProductStockDto request,
+            [FromBody] UpdateProductStockDto request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpdateProductStockAsync(storePublicId, productId, request, cancellationToken));
@@ -325,7 +325,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             Guid storePublicId,
             Guid? productId,
             Guid variantId,
-            UpdateVariantStockDto request,
+            [FromBody] UpdateVariantStockDto request,
             CancellationToken cancellationToken)
         {
             _ = productId;
@@ -346,7 +346,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
         public async Task<IActionResult> CreateVariationTemplate(
             Guid storePublicId,
-            CreateVariationTemplateRequest request,
+            [FromBody] CreateVariationTemplateRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.CreateVariationTemplateAsync(storePublicId, request, cancellationToken));
@@ -366,7 +366,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> UpdateVariationTemplate(
             Guid storePublicId,
             Guid templatePublicId,
-            UpdateVariationTemplateRequest request,
+            [FromBody] UpdateVariationTemplateRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpdateVariationTemplateAsync(storePublicId, templatePublicId, request, cancellationToken));
@@ -377,7 +377,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> CreateVariationTemplateOption(
             Guid storePublicId,
             Guid templatePublicId,
-            CreateVariationTemplateOptionRequest request,
+            [FromBody] CreateVariationTemplateOptionRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.CreateVariationTemplateOptionAsync(storePublicId, templatePublicId, request, cancellationToken));
@@ -389,7 +389,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             Guid storePublicId,
             Guid templatePublicId,
             Guid optionPublicId,
-            UpdateVariationTemplateOptionRequest request,
+            [FromBody] UpdateVariationTemplateOptionRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpdateVariationTemplateOptionAsync(storePublicId, templatePublicId, optionPublicId, request, cancellationToken));
@@ -401,7 +401,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             Guid storePublicId,
             Guid templatePublicId,
             Guid optionPublicId,
-            CreateVariationTemplateValueRequest request,
+            [FromBody] CreateVariationTemplateValueRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.CreateVariationTemplateValueAsync(storePublicId, templatePublicId, optionPublicId, request, cancellationToken));
@@ -414,7 +414,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             Guid templatePublicId,
             Guid optionPublicId,
             Guid valuePublicId,
-            UpdateVariationTemplateValueRequest request,
+            [FromBody] UpdateVariationTemplateValueRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpdateVariationTemplateValueAsync(storePublicId, templatePublicId, optionPublicId, valuePublicId, request, cancellationToken));

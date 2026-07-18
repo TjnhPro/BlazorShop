@@ -53,7 +53,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         [Authorize(Policy = ControlPlanePolicyNames.CommerceSecurityPrivacyWrite)]
         public async Task<IActionResult> UpdateSecurityPrivacySettings(
             Guid storePublicId,
-            UpdateStoreSecurityPrivacySettingsRequest request,
+            [FromBody] UpdateStoreSecurityPrivacySettingsRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpdateSecurityPrivacySettingsAsync(storePublicId, request, cancellationToken));

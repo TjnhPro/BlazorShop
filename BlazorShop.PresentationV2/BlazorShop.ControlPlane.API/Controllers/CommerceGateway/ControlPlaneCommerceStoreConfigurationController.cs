@@ -53,7 +53,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> UpdateRuntimeStore(
             Guid storePublicId,
             Guid runtimeStorePublicId,
-            UpdateCommerceStoreRequest request,
+            [FromBody] UpdateCommerceStoreRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpdateRuntimeStoreAsync(

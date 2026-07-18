@@ -53,7 +53,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsWrite)]
         public async Task<IActionResult> UpdateShippingSettings(
             Guid storePublicId,
-            UpdateStoreShippingSettingsRequest request,
+            [FromBody] UpdateStoreShippingSettingsRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpdateShippingSettingsAsync(storePublicId, request, cancellationToken));

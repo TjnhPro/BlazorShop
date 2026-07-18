@@ -60,7 +60,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> ImportProductMedia(
             Guid storePublicId,
             Guid productId,
-            ImportProductMediaRequest request,
+            [FromBody] ImportProductMediaRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.ImportProductMediaAsync(storePublicId, productId, request, cancellationToken));
@@ -72,7 +72,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> UpdateProductMediaOrder(
             Guid storePublicId,
             Guid productId,
-            UpdateProductMediaOrderRequest request,
+            [FromBody] UpdateProductMediaOrderRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpdateProductMediaOrderAsync(storePublicId, productId, request, cancellationToken));
@@ -196,7 +196,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> UpdateMediaAssetMetadata(
             Guid storePublicId,
             Guid assetPublicId,
-            CommerceMediaAssetMetadataRequest request,
+            [FromBody] CommerceMediaAssetMetadataRequest request,
             CancellationToken cancellationToken = default)
         {
             return ToActionResult(await this.gateway.UpdateMediaAssetMetadataAsync(

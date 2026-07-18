@@ -53,7 +53,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsWrite)]
         public async Task<IActionResult> UpdateEmailSettings(
             Guid storePublicId,
-            UpdateStoreEmailSettingsRequest request,
+            [FromBody] UpdateStoreEmailSettingsRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpdateEmailSettingsAsync(storePublicId, request, cancellationToken));
@@ -63,7 +63,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsWrite)]
         public async Task<IActionResult> RotateEmailPassword(
             Guid storePublicId,
-            RotateStoreEmailPasswordRequest request,
+            [FromBody] RotateStoreEmailPasswordRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.RotateEmailPasswordAsync(storePublicId, request, cancellationToken));
@@ -80,7 +80,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsWrite)]
         public async Task<IActionResult> SendEmailTest(
             Guid storePublicId,
-            SendStoreEmailTestRequest request,
+            [FromBody] SendStoreEmailTestRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.SendEmailTestAsync(storePublicId, request, cancellationToken));
@@ -105,7 +105,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> UpdateMessageTemplate(
             Guid storePublicId,
             Guid templatePublicId,
-            UpdateMessageTemplateRequest request,
+            [FromBody] UpdateMessageTemplateRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpdateMessageTemplateAsync(storePublicId, templatePublicId, request, cancellationToken));
@@ -122,7 +122,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         [Authorize(Policy = ControlPlanePolicyNames.CommerceSettingsRead)]
         public async Task<IActionResult> PreviewMessageTemplate(
             Guid storePublicId,
-            PreviewMessageTemplateRequest request,
+            [FromBody] PreviewMessageTemplateRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.PreviewMessageTemplateAsync(storePublicId, request, cancellationToken));

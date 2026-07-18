@@ -54,7 +54,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> UpdatePaymentMethod(
             Guid storePublicId,
             string paymentMethodKey,
-            UpdateStorePaymentMethodRequest request,
+            [FromBody] UpdateStorePaymentMethodRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpdatePaymentMethodAsync(storePublicId, paymentMethodKey, request, cancellationToken));

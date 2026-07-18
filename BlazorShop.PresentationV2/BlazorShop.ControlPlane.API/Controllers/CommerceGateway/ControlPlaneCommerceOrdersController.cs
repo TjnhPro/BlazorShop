@@ -62,7 +62,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> UpdateOrderAdminNote(
             Guid storePublicId,
             Guid orderId,
-            UpdateOrderAdminNoteRequest request,
+            [FromBody] UpdateOrderAdminNoteRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpdateOrderAdminNoteAsync(storePublicId, orderId, request, cancellationToken));
@@ -73,7 +73,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> UpdateOrderShippingStatus(
             Guid storePublicId,
             Guid orderId,
-            UpdateShippingStatusRequest request,
+            [FromBody] UpdateShippingStatusRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpdateOrderShippingStatusAsync(storePublicId, orderId, request, cancellationToken));
@@ -104,7 +104,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> UpsertShipment(
             Guid storePublicId,
             Guid orderId,
-            UpsertShipmentRequest request,
+            [FromBody] UpsertShipmentRequest request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpsertShipmentAsync(storePublicId, orderId, request, cancellationToken));

@@ -559,20 +559,22 @@ Verification:
 
 Mục tiêu: sau khi tách capability, kiểm tra permission và OpenAPI quality.
 
-- [ ] Review operation names/summaries nếu Control Plane OpenAPI đang expose controller mới.
-- [ ] Đảm bảo protected endpoints vẫn có security metadata.
-- [ ] Đảm bảo no side-effecting GET.
-- [ ] Đảm bảo request bodies required cho POST/PUT.
-- [ ] Đánh giá có cần permission riêng cho catalog product/category/order/media không:
-  - [ ] Nếu chưa cần trong MVP, giữ `StoresRead/StoresWrite` cho catalog/admin chung.
-  - [ ] Nếu thêm permission mới, phải có migration/seed/authorization tests.
-- [ ] Không thêm permission mới chỉ vì tách file.
+- [x] Review operation names/summaries nếu Control Plane OpenAPI đang expose controller mới.
+- [x] Đảm bảo protected endpoints vẫn có security metadata.
+- [x] Đảm bảo no side-effecting GET.
+- [x] Đảm bảo request bodies required cho POST/PUT.
+- [x] Đánh giá có cần permission riêng cho catalog product/category/order/media không:
+  - [x] Nếu chưa cần trong MVP, giữ `StoresRead/StoresWrite` cho catalog/admin chung.
+  - [x] Nếu thêm permission mới, phải có migration/seed/authorization tests.
+- [x] Không thêm permission mới chỉ vì tách file.
+  2026-07-18 Phase 7: Control Plane API currently uses default Swagger generation without a dedicated Control Plane OpenAPI snapshot/custom operation metadata layer. This phase preserved existing route names and policies, added explicit `[FromBody]` for command request DTOs, and added reflection tests for controller authorization, no side-effecting GET, and explicit command bodies. No new permissions were introduced.
 
 Verification:
 
-- [ ] `ControlPlaneAuthorizationTests`
-- [ ] Controller reflection/security tests.
-- [ ] API build.
+- [x] `ControlPlaneAuthorizationTests`
+- [x] Controller reflection/security tests.
+- [x] API build.
+  2026-07-18 Phase 7: no dedicated `ControlPlaneAuthorizationTests` class was found; equivalent coverage was added in `ControlPlaneCommerceGatewayContractTests`. Focused tests passed 19/19 with existing package advisory warnings, and `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` passed with 0 warnings/errors.
 
 ## Phase 8 - QA Checklist And Documentation Update
 

@@ -53,7 +53,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> UpdateCategorySeo(
             Guid storePublicId,
             Guid categoryId,
-            UpdateCategorySeoDto request,
+            [FromBody] UpdateCategorySeoDto request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpdateCategorySeoAsync(storePublicId, categoryId, request, cancellationToken));
@@ -82,7 +82,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
         public async Task<IActionResult> CreateCategory(
             Guid storePublicId,
-            CreateCategory request,
+            [FromBody] CreateCategory request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.CreateCategoryAsync(storePublicId, request, cancellationToken));
@@ -94,7 +94,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
         public async Task<IActionResult> UpdateCategory(
             Guid storePublicId,
             Guid categoryId,
-            UpdateCategory request,
+            [FromBody] UpdateCategory request,
             CancellationToken cancellationToken)
         {
             return ToActionResult(await this.gateway.UpdateCategoryAsync(storePublicId, categoryId, request, cancellationToken));
