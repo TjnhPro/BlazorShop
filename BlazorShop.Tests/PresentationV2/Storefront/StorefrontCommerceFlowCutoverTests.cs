@@ -54,6 +54,19 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("\"/api/checkout/place-order\"", checkoutShell, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void CommerceNodeStorefrontCartAndOrdersControllers_DoNotInjectLegacyCartServices()
+        {
+            var controller = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/StorefrontScopedControllers.cs");
+
+            Assert.DoesNotContain("StorefrontScopedCartController(\r\n            ICartService", controller, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontScopedOrdersController(\r\n            ICartService", controller, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontScopedOrdersController(\r\n            IOrderQueryService", controller, StringComparison.Ordinal);
+            Assert.DoesNotContain("SaveCheckout(", controller, StringComparison.Ordinal);
+            Assert.DoesNotContain("ConfirmOrder(", controller, StringComparison.Ordinal);
+            Assert.DoesNotContain("GetCurrentUserOrderItems(", controller, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             var directory = new DirectoryInfo(AppContext.BaseDirectory);

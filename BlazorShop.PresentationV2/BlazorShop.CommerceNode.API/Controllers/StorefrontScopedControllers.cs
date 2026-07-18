@@ -1231,16 +1231,13 @@ namespace BlazorShop.CommerceNode.API.Controllers
     {
         private const string CartTokenHeaderName = "X-Cart-Token";
 
-        private readonly ICartService cartService;
         private readonly IStorefrontCartService storefrontCartService;
         private readonly ICommerceStoreContext storeContext;
 
         public StorefrontScopedCartController(
-            ICartService cartService,
             IStorefrontCartService storefrontCartService,
             ICommerceStoreContext storeContext)
         {
-            this.cartService = cartService;
             this.storefrontCartService = storefrontCartService;
             this.storeContext = storeContext;
         }
@@ -1456,22 +1453,6 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return this.FromServiceResponse(
                 result,
                 payload => payload?.ToStorefrontContract());
-        }
-
-        [HttpPost("save-checkout")]
-        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Cart)]
-        public async Task<IActionResult> SaveCheckout([FromBody] IReadOnlyList<StorefrontOrderItemRequest> orderItems)
-        {
-            var userId = this.GetCurrentCustomerId();
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                return this.Error(StatusCodes.Status401Unauthorized, "unauthorized", "Customer identity was not found.");
-            }
-
-            var result = await this.cartService.SaveCheckoutHistoryAsync(
-                userId,
-                orderItems.Select(orderItem => orderItem.ToCreateOrderItem()).ToArray());
-            return this.FromServiceResponse(result);
         }
 
         private string? GetCurrentCustomerId()
@@ -1917,41 +1898,15 @@ namespace BlazorShop.CommerceNode.API.Controllers
     [Authorize]
     public sealed class StorefrontScopedOrdersController : StorefrontApiControllerBase
     {
-        private readonly ICartService cartService;
-        private readonly IOrderQueryService orderQueryService;
         private readonly IStorefrontGuestOrderService guestOrderService;
         private readonly IStorefrontCustomerOrderService customerOrderService;
 
         public StorefrontScopedOrdersController(
-            ICartService cartService,
-            IOrderQueryService orderQueryService,
             IStorefrontGuestOrderService guestOrderService,
             IStorefrontCustomerOrderService customerOrderService)
         {
-            this.cartService = cartService;
-            this.orderQueryService = orderQueryService;
             this.guestOrderService = guestOrderService;
             this.customerOrderService = customerOrderService;
-        }
-
-        [HttpPost("confirm")]
-        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Checkout)]
-        public async Task<IActionResult> ConfirmOrder([FromBody] IReadOnlyList<StorefrontCartItemRequest> carts)
-        {
-            var userId = this.GetCurrentCustomerId();
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                return this.Error(StatusCodes.Status401Unauthorized, "unauthorized", "Customer identity was not found.");
-            }
-
-            var result = await this.cartService.ConfirmOrderAsync(
-                carts.Select(cart => cart.ToProcessCart()).ToArray(),
-                userId);
-            return this.FromServiceResponse(
-                result,
-                payload => payload is ApplicationStorefrontCheckoutResult checkoutResult
-                    ? checkoutResult.ToStorefrontContract()
-                    : null);
         }
 
         [HttpGet("current-user")]
@@ -2005,26 +1960,6 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 new StorefrontCustomerOrderLookupRequest(userId, orderReference),
                 cancellationToken);
             return this.FromServiceResponse(result, order => order?.ToCustomerOrderDetailContract(receiptMode: true));
-        }
-
-        [HttpGet("current-user/items")]
-        public async Task<IActionResult> GetCurrentUserOrderItems()
-        {
-            var userId = this.GetCurrentCustomerId();
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                return this.Error(StatusCodes.Status401Unauthorized, "unauthorized", "Customer identity was not found.");
-            }
-
-            var orderItems = (await this.cartService.GetCheckoutHistoryByUserId(userId)).ToArray();
-            return orderItems.Length == 0
-                ? this.Failure<IReadOnlyList<StorefrontOrderItemHistoryResponse>>(
-                    ServiceResponseType.NotFound,
-                    "No orders found for the current customer.",
-                    [])
-                : this.Success(
-                    orderItems.Select(item => item.ToStorefrontContract()).ToArray(),
-                    "Current customer order items loaded.");
         }
 
         [AllowAnonymous]

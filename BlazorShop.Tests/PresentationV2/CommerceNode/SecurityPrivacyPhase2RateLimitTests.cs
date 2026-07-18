@@ -103,14 +103,12 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             yield return [typeof(StorefrontScopedCartController), nameof(StorefrontScopedCartController.RemoveLine), StorefrontRateLimitPolicyNames.Cart];
             yield return [typeof(StorefrontScopedCartController), nameof(StorefrontScopedCartController.Clear), StorefrontRateLimitPolicyNames.Cart];
             yield return [typeof(StorefrontScopedCartController), nameof(StorefrontScopedCartController.Validate), StorefrontRateLimitPolicyNames.Cart];
-            yield return [typeof(StorefrontScopedCartController), nameof(StorefrontScopedCartController.SaveCheckout), StorefrontRateLimitPolicyNames.Cart];
             yield return [typeof(StorefrontScopedCurrencyController), nameof(StorefrontScopedCurrencyController.SetPreference), StorefrontRateLimitPolicyNames.Currency];
             yield return [typeof(StorefrontScopedCheckoutController), nameof(StorefrontScopedCheckoutController.Preview), StorefrontRateLimitPolicyNames.Checkout];
             yield return [typeof(StorefrontScopedCheckoutController), nameof(StorefrontScopedCheckoutController.PlaceOrder), StorefrontRateLimitPolicyNames.Checkout];
             yield return [typeof(StorefrontScopedNewsletterController), nameof(StorefrontScopedNewsletterController.Subscribe), StorefrontRateLimitPolicyNames.Newsletter];
             yield return [typeof(StorefrontScopedConsentController), nameof(StorefrontScopedConsentController.Save), StorefrontRateLimitPolicyNames.Newsletter];
             yield return [typeof(StorefrontScopedConsentController), nameof(StorefrontScopedConsentController.Revoke), StorefrontRateLimitPolicyNames.Newsletter];
-            yield return [typeof(StorefrontScopedOrdersController), nameof(StorefrontScopedOrdersController.ConfirmOrder), StorefrontRateLimitPolicyNames.Checkout];
             yield return [typeof(StorefrontScopedPaymentsController), nameof(StorefrontScopedPaymentsController.HandleProviderCallback), StorefrontRateLimitPolicyNames.Checkout];
             yield return [typeof(StorefrontScopedPaymentsController), nameof(StorefrontScopedPaymentsController.HandleWebhook), StorefrontRateLimitPolicyNames.Checkout];
             yield return [typeof(StorefrontScopedPaymentsController), nameof(StorefrontScopedPaymentsController.CapturePayPal), StorefrontRateLimitPolicyNames.Checkout];

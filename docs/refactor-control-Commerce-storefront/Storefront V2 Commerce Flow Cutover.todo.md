@@ -136,29 +136,31 @@ Acceptance:
 
 ## Phase 2 - Remove Legacy Storefront Cart/Order Endpoints
 
-- [ ] Remove `ICartService cartService` from `StorefrontScopedCartController`.
-- [ ] Remove `SaveCheckout` action from `StorefrontScopedCartController`.
-- [ ] Remove `ICartService cartService` from `StorefrontScopedOrdersController`.
-- [ ] Remove unused `IOrderQueryService orderQueryService` from `StorefrontScopedOrdersController`.
-- [ ] Remove `ConfirmOrder` action from `StorefrontScopedOrdersController`.
-- [ ] Remove `GetCurrentUserOrderItems` action from `StorefrontScopedOrdersController`.
-- [ ] Keep these active customer order self-service actions:
+- [x] Remove `ICartService cartService` from `StorefrontScopedCartController`. 2026-07-18 Phase 2: constructor now only takes `IStorefrontCartService` and `ICommerceStoreContext`.
+- [x] Remove `SaveCheckout` action from `StorefrontScopedCartController`. 2026-07-18 Phase 2: `SaveCheckout` action removed from active Storefront cart controller.
+- [x] Remove `ICartService cartService` from `StorefrontScopedOrdersController`. 2026-07-18 Phase 2: constructor no longer takes legacy cart service.
+- [x] Remove unused `IOrderQueryService orderQueryService` from `StorefrontScopedOrdersController`. 2026-07-18 Phase 2: unused field and constructor parameter removed.
+- [x] Remove `ConfirmOrder` action from `StorefrontScopedOrdersController`. 2026-07-18 Phase 2: legacy confirm action removed; active checkout placement stays under `checkout/place-order`.
+- [x] Remove `GetCurrentUserOrderItems` action from `StorefrontScopedOrdersController`. 2026-07-18 Phase 2: legacy checkout-history item action removed.
+- [x] Keep these active customer order self-service actions:
   - `GetCurrentUserOrders`
   - `GetCurrentUserOrder`
   - `GetCurrentUserOrderReceipt`
   - `GetGuestOrder`
-- [ ] Remove obsolete request/response DTOs only if they are no longer used by active V2 routes:
+  2026-07-18 Phase 2: active customer/guest order actions remain in controller.
+- [x] Remove obsolete request/response DTOs only if they are no longer used by active V2 routes:
   - `StorefrontOrderItemRequest`
   - `StorefrontCartItemRequest`
   - `StorefrontOrderItemHistoryResponse`
   - mapping methods tied only to removed actions.
+  2026-07-18 Phase 2: DTOs/mappings are still referenced by Swagger metadata until Phase 3; no DTO deletion in this phase.
 
 Acceptance:
 
-- [ ] Active Storefront API can no longer save checkout history through `cart/save-checkout`.
-- [ ] Active Storefront API can no longer create order through `orders/confirm`.
-- [ ] Account order UI still reads order list/detail/receipt through V2 customer order service.
-- [ ] No active V2 controller uses `ICartService`.
+- [x] Active Storefront API can no longer save checkout history through `cart/save-checkout`. 2026-07-18 Phase 2: route action removed and source guard added.
+- [x] Active Storefront API can no longer create order through `orders/confirm`. 2026-07-18 Phase 2: route action removed and source guard added.
+- [x] Account order UI still reads order list/detail/receipt through V2 customer order service. 2026-07-18 Phase 2: customer/guest order actions remain and focused build passed.
+- [x] No active V2 controller uses `ICartService`. 2026-07-18 Phase 2: source search found no `ICartService cartService` in `StorefrontScopedControllers.cs`; `StorefrontCommerceFlowCutoverTests` guards it.
 
 ## Phase 3 - Update Storefront OpenAPI And Contract Tests
 
