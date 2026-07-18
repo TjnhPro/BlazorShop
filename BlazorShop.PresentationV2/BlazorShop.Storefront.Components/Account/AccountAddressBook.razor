@@ -1,0 +1,294 @@
+@namespace BlazorShop.Storefront.Components.Account
+@using BlazorShop.Storefront.Components.Browser
+@inject IServiceProvider Services
+
+<div data-storefront-account-addresses>
+    @if (!string.IsNullOrWhiteSpace(_success))
+    {
+        <div class="mb-5 rounded border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800" role="status">@_success</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="mb-5 rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800" role="alert">@_error</div>
+    }
+
+    <section class="mb-8 rounded border border-neutral-200 p-4">
+        <h2 class="text-lg font-bold text-neutral-900">Add address</h2>
+        <form method="post" action="@FormAction" class="mt-4 grid gap-4 sm:grid-cols-2" @onsubmit="CreateAsync" @onsubmit:preventDefault="true">
+            @RenderAntiforgeryField()
+            <input type="hidden" name="Action" value="create" />
+            @RenderAddressInputs(_newAddress, false)
+            <div class="sm:col-span-2">
+                <button class="rounded bg-neutral-900 px-4 py-2 text-sm font-semibold text-white disabled:cursor-wait disabled:bg-neutral-500" type="submit" disabled="@_saving">Save address</button>
+            </div>
+        </form>
+    </section>
+
+    @if (_addresses.Count == 0)
+    {
+        <p class="text-sm text-neutral-700">No saved addresses yet.</p>
+    }
+    else
+    {
+        <div class="grid gap-4 xl:grid-cols-2">
+            @foreach (var address in _addresses)
+            {
+                var form = _forms[address.PublicId];
+                <section class="rounded border border-neutral-200 p-4" @key="address.PublicId">
+                    <div class="flex flex-wrap gap-2 text-xs font-semibold uppercase text-neutral-500">
+                        @if (address.IsDefaultShipping)
+                        {
+                            <span class="rounded bg-emerald-50 px-2 py-1 text-emerald-700">Default shipping</span>
+                        }
+                        @if (address.IsDefaultBilling)
+                        {
+                            <span class="rounded bg-sky-50 px-2 py-1 text-sky-700">Default billing</span>
+                        }
+                    </div>
+                    <h2 class="mt-3 text-base font-bold text-neutral-900">@address.FullName</h2>
+                    @if (!string.IsNullOrWhiteSpace(address.Company))
+                    {
+                        <p class="mt-1 text-sm text-neutral-700">@address.Company</p>
+                    }
+                    <p class="mt-2 text-sm text-neutral-700">@address.Address1</p>
+                    @if (!string.IsNullOrWhiteSpace(address.Address2))
+                    {
+                        <p class="text-sm text-neutral-700">@address.Address2</p>
+                    }
+                    <p class="text-sm text-neutral-700">@address.City, @address.PostalCode</p>
+                    <p class="text-sm text-neutral-700">@address.CountryCode</p>
+
+                    <form method="post" action="@FormAction" class="mt-4 grid gap-3" @onsubmit="() => UpdateAsync(address.PublicId)" @onsubmit:preventDefault="true">
+                        @RenderAntiforgeryField()
+                        <input type="hidden" name="AddressId" value="@address.PublicId" />
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            @RenderAddressInputs(form, true)
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="rounded bg-neutral-900 px-3 py-2 text-sm font-semibold text-white" type="submit" name="Action" value="update">Update</button>
+                            <button class="rounded border border-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-800" type="button" @onclick="() => SetDefaultAsync(address.PublicId, true)">Default shipping</button>
+                            <button class="rounded border border-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-800" type="button" @onclick="() => SetDefaultAsync(address.PublicId, false)">Default billing</button>
+                            <button class="rounded border border-rose-300 px-3 py-2 text-sm font-semibold text-rose-700" type="button" @onclick="() => DeleteAsync(address.PublicId)">Delete</button>
+                        </div>
+                    </form>
+                </section>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public IReadOnlyList<StorefrontBrowserCustomerAddress> InitialAddresses { get; set; } = [];
+
+    [Parameter]
+    public string? InitialError { get; set; }
+
+    [Parameter]
+    public string? InitialSuccess { get; set; }
+
+    [Parameter]
+    public string FormAction { get; set; } = "/account/addresses";
+
+    [Parameter]
+    public string? AntiforgeryFieldName { get; set; }
+
+    [Parameter]
+    public string? AntiforgeryRequestToken { get; set; }
+
+    private IReadOnlyList<StorefrontBrowserCustomerAddress> _addresses = [];
+    private readonly Dictionary<Guid, StorefrontBrowserCustomerAddressRequest> _forms = [];
+    private StorefrontBrowserCustomerAddressRequest _newAddress = new();
+    private string? _error;
+    private string? _success;
+    private bool _saving;
+
+    protected override void OnParametersSet()
+    {
+        _addresses = InitialAddresses;
+        _error = InitialError;
+        _success = InitialSuccess;
+        SyncForms();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !OperatingSystem.IsBrowser())
+        {
+            return;
+        }
+
+        await RefreshAsync();
+    }
+
+    private async Task CreateAsync()
+    {
+        await MutateAsync(client => client.PostJsonAsync<StorefrontBrowserCustomerAddressRequest, StorefrontBrowserCustomerAddress>(
+            "/api/account/addresses",
+            _newAddress));
+        _newAddress = new();
+    }
+
+    private Task UpdateAsync(Guid addressId)
+    {
+        return _forms.TryGetValue(addressId, out var form)
+            ? MutateAsync(client => client.PutJsonAsync<StorefrontBrowserCustomerAddressRequest, StorefrontBrowserCustomerAddress>(
+                $"/api/account/addresses/{addressId:D}",
+                form))
+            : Task.CompletedTask;
+    }
+
+    private Task DeleteAsync(Guid addressId)
+    {
+        return MutateAsync(client => client.DeleteAsync<StorefrontBrowserAccountCommandResult>($"/api/account/addresses/{addressId:D}"));
+    }
+
+    private Task SetDefaultAsync(Guid addressId, bool shipping)
+    {
+        var route = shipping ? "default-shipping" : "default-billing";
+        return MutateAsync(client => client.PostJsonAsync<object, StorefrontBrowserCustomerAddress>(
+            $"/api/account/addresses/{addressId:D}/{route}",
+            new { }));
+    }
+
+    private async Task MutateAsync<T>(Func<StorefrontLocalApiClient, Task<StorefrontLocalApiResult<T>>> action)
+    {
+        if (!OperatingSystem.IsBrowser())
+        {
+            return;
+        }
+
+        var apiClient = Services.GetService(typeof(StorefrontLocalApiClient)) as StorefrontLocalApiClient;
+        if (apiClient is null)
+        {
+            return;
+        }
+
+        _saving = true;
+        _error = null;
+        _success = null;
+        var result = await action(apiClient);
+        _saving = false;
+        if (!result.Success)
+        {
+            _error = result.Message;
+            return;
+        }
+
+        _success = "Address book updated.";
+        await RefreshAsync();
+    }
+
+    private async Task RefreshAsync()
+    {
+        var apiClient = Services.GetService(typeof(StorefrontLocalApiClient)) as StorefrontLocalApiClient;
+        if (apiClient is null)
+        {
+            return;
+        }
+
+        var result = await apiClient.GetAsync<IReadOnlyList<StorefrontBrowserCustomerAddress>>("/api/account/addresses");
+        if (result.Success && result.Data is not null)
+        {
+            _addresses = result.Data;
+            SyncForms();
+            StateHasChanged();
+        }
+    }
+
+    private void SyncForms()
+    {
+        _forms.Clear();
+        foreach (var address in _addresses)
+        {
+            _forms[address.PublicId] = new StorefrontBrowserCustomerAddressRequest
+            {
+                FullName = address.FullName,
+                Company = address.Company,
+                Email = address.Email,
+                Phone = address.Phone,
+                Address1 = address.Address1,
+                Address2 = address.Address2,
+                City = address.City,
+                PostalCode = address.PostalCode,
+                CountryCode = address.CountryCode,
+                StateProvinceCode = address.StateProvinceCode,
+                StateProvinceName = address.StateProvinceName,
+                IsDefaultShipping = address.IsDefaultShipping,
+                IsDefaultBilling = address.IsDefaultBilling,
+            };
+        }
+    }
+
+    private RenderFragment RenderAddressInputs(StorefrontBrowserCustomerAddressRequest form, bool compact) => builder =>
+    {
+        AddTextInput(builder, 0, form, nameof(form.FullName), "Full name", "name", true, value => form.FullName = value ?? string.Empty, form.FullName, compact);
+        AddTextInput(builder, 10, form, nameof(form.Company), "Company", "organization", false, value => form.Company = value, form.Company, compact);
+        AddTextInput(builder, 20, form, nameof(form.Email), "Email", "email", false, value => form.Email = value, form.Email, compact, type: "email");
+        AddTextInput(builder, 30, form, nameof(form.Phone), "Phone", "tel", false, value => form.Phone = value, form.Phone, compact);
+        AddTextInput(builder, 40, form, nameof(form.Address1), "Address line 1", "address-line1", true, value => form.Address1 = value ?? string.Empty, form.Address1, compact, spanTwo: true);
+        AddTextInput(builder, 50, form, nameof(form.Address2), "Address line 2", "address-line2", false, value => form.Address2 = value, form.Address2, compact, spanTwo: true);
+        AddTextInput(builder, 60, form, nameof(form.City), "City", "address-level2", true, value => form.City = value ?? string.Empty, form.City, compact);
+        AddTextInput(builder, 70, form, nameof(form.StateProvinceName), "State / province", "address-level1", false, value => form.StateProvinceName = value, form.StateProvinceName, compact);
+        AddTextInput(builder, 80, form, nameof(form.PostalCode), "Postal code", "postal-code", true, value => form.PostalCode = value ?? string.Empty, form.PostalCode, compact);
+        AddTextInput(builder, 90, form, nameof(form.CountryCode), "Country code", "country", true, value => form.CountryCode = value ?? string.Empty, form.CountryCode, compact, maxLength: 2);
+    };
+
+    private RenderFragment RenderAntiforgeryField() => builder =>
+    {
+        if (string.IsNullOrWhiteSpace(AntiforgeryFieldName) || string.IsNullOrWhiteSpace(AntiforgeryRequestToken))
+        {
+            return;
+        }
+
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "type", "hidden");
+        builder.AddAttribute(2, "name", AntiforgeryFieldName);
+        builder.AddAttribute(3, "value", AntiforgeryRequestToken);
+        builder.CloseElement();
+    };
+
+    private static void AddTextInput(
+        RenderTreeBuilder builder,
+        int sequence,
+        StorefrontBrowserCustomerAddressRequest form,
+        string name,
+        string label,
+        string autocomplete,
+        bool required,
+        Action<string?> setter,
+        string? value,
+        bool compact,
+        string type = "text",
+        bool spanTwo = false,
+        int? maxLength = null)
+    {
+        var labelClass = compact
+            ? "grid gap-1 text-xs font-semibold uppercase text-neutral-500" + (spanTwo ? " sm:col-span-2" : string.Empty)
+            : "grid gap-1 text-sm font-semibold text-neutral-700" + (spanTwo ? " sm:col-span-2" : string.Empty);
+        builder.OpenElement(sequence, "label");
+        builder.AddAttribute(sequence + 1, "class", labelClass);
+        builder.AddContent(sequence + 2, label);
+        builder.OpenElement(sequence + 3, "input");
+        builder.AddAttribute(sequence + 4, "class", compact
+            ? "rounded border border-neutral-300 px-3 py-2 text-sm font-normal normal-case text-neutral-900"
+            : "rounded border border-neutral-300 px-3 py-2 font-normal");
+        builder.AddAttribute(sequence + 5, "name", name);
+        builder.AddAttribute(sequence + 6, "autocomplete", autocomplete);
+        builder.AddAttribute(sequence + 7, "type", type);
+        builder.AddAttribute(sequence + 8, "value", value);
+        builder.AddAttribute(sequence + 9, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(form, args => setter(args.Value?.ToString())));
+        if (required)
+        {
+            builder.AddAttribute(sequence + 10, "required", true);
+        }
+
+        if (maxLength.HasValue)
+        {
+            builder.AddAttribute(sequence + 11, "maxlength", maxLength.Value);
+        }
+
+        builder.CloseElement();
+        builder.CloseElement();
+    }
+}

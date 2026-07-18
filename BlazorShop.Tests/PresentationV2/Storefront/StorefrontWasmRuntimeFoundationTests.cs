@@ -120,6 +120,64 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("blazorshop:cart-changed", interop, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void AccountPages_HostInteractiveWasmAccountComponentsWithServerSnapshots()
+        {
+            var profilePage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountProfilePage.razor");
+            var addressesPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountAddressesPage.razor");
+            var ordersPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountOrdersPage.razor");
+            var orderDetailPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountOrderDetailPage.razor");
+            var passwordPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountChangePasswordPage.razor");
+
+            Assert.Contains("<AccountProfileEditor", profilePage, StringComparison.Ordinal);
+            Assert.Contains("InitialProfile=\"_profile\"", profilePage, StringComparison.Ordinal);
+            Assert.Contains("<AccountAddressBook", addressesPage, StringComparison.Ordinal);
+            Assert.Contains("InitialAddresses=\"_addresses\"", addressesPage, StringComparison.Ordinal);
+            Assert.Contains("<AccountOrderList", ordersPage, StringComparison.Ordinal);
+            Assert.Contains("InitialOrders=\"_orders\"", ordersPage, StringComparison.Ordinal);
+            Assert.Contains("<AccountOrderDetail", orderDetailPage, StringComparison.Ordinal);
+            Assert.Contains("InitialOrder=\"_order\"", orderDetailPage, StringComparison.Ordinal);
+            Assert.Contains("<AccountChangePasswordForm", passwordPage, StringComparison.Ordinal);
+            Assert.Contains("@rendermode=\"InteractiveWebAssembly\"", profilePage + addressesPage + ordersPage + orderDetailPage + passwordPage, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void AccountWasmComponents_UseSameOriginLocalAccountEndpoints()
+        {
+            var profileComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Account/AccountProfileEditor.razor");
+            var addressesComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Account/AccountAddressBook.razor");
+            var ordersComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Account/AccountOrderList.razor");
+            var orderDetailComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Account/AccountOrderDetail.razor");
+            var passwordComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Account/AccountChangePasswordForm.razor");
+            var allComponents = profileComponent + addressesComponent + ordersComponent + orderDetailComponent + passwordComponent;
+
+            Assert.Contains("GetAsync<StorefrontBrowserCustomerProfile>(\"/api/account/profile\")", profileComponent, StringComparison.Ordinal);
+            Assert.Contains("PutJsonAsync<StorefrontBrowserCustomerProfileUpdateRequest, StorefrontBrowserCustomerProfile>(\"/api/account/profile\"", profileComponent, StringComparison.Ordinal);
+            Assert.Contains("GetAsync<IReadOnlyList<StorefrontBrowserCustomerAddress>>(\"/api/account/addresses\")", addressesComponent, StringComparison.Ordinal);
+            Assert.Contains("PostJsonAsync<StorefrontBrowserCustomerAddressRequest, StorefrontBrowserCustomerAddress>", addressesComponent, StringComparison.Ordinal);
+            Assert.Contains("GetAsync<StorefrontBrowserAccountOrderList>", ordersComponent, StringComparison.Ordinal);
+            Assert.Contains("GetAsync<StorefrontBrowserAccountOrderDetail>", orderDetailComponent, StringComparison.Ordinal);
+            Assert.Contains("PostJsonAsync<object, StorefrontBrowserAccountCommandResult>", passwordComponent, StringComparison.Ordinal);
+            Assert.DoesNotContain("api/storefront/stores", allComponents, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("CommerceNode", allComponents, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("accessToken", allComponents, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void AccountLocalEndpoints_ResolveCurrentCustomerServerSide()
+        {
+            var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+
+            Assert.Contains("app.MapGet(\"/api/account/profile\"", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapPut(\"/api/account/profile\"", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapGet(\"/api/account/addresses\"", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapPost(\"/api/account/change-password\"", program, StringComparison.Ordinal);
+            Assert.Contains("ResolveLocalCustomerSessionAsync", program, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontSessionResolver sessionResolver", program, StringComparison.Ordinal);
+            Assert.Contains("StatusCodes.Status401Unauthorized", program, StringComparison.Ordinal);
+            Assert.DoesNotContain("customerId", program.Substring(program.IndexOf("app.MapGet(\"/api/account/profile\"", StringComparison.Ordinal)), StringComparison.OrdinalIgnoreCase);
+        }
+
         private static string RepositoryRoot()
         {
             var current = AppContext.BaseDirectory;

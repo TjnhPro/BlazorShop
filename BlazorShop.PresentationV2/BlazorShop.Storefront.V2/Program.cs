@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Threading.RateLimiting;
 
 using BlazorShop.Application.Diagnostics;
@@ -14,6 +15,7 @@ using BlazorShop.Storefront.Services;
 using BlazorShop.Storefront.Services.Contracts;
 using BlazorShop.Storefront.WASM;
 using BlazorShop.Web.SharedV2;
+using BlazorShop.Web.SharedV2.Models;
 
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
@@ -678,6 +680,278 @@ app.MapDelete("/api/cart", async (
     var result = await cartTokenService.ClearAsync(httpContext, cancellationToken);
     return await ToLocalCartMutationResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
 }).RequireRateLimiting(StorefrontLocalCartRateLimitPolicyName);
+app.MapGet("/api/account/profile", async (
+    IStorefrontSessionResolver sessionResolver,
+    StorefrontApiClient apiClient,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    StorefrontResponseHeaders.ApplyPrivatePage(httpContext);
+    var session = await ResolveLocalCustomerSessionAsync(sessionResolver, cancellationToken);
+    if (session.Failure is not null)
+    {
+        return session.Failure;
+    }
+
+    var result = await apiClient.GetCustomerProfileAsync(session.AccessToken!, cancellationToken);
+    return result.Success && result.Data is not null
+        ? Results.Ok(ToBrowserProfile(result.Data))
+        : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status503ServiceUnavailable);
+});
+app.MapPut("/api/account/profile", async (
+    StorefrontBrowserCustomerProfileUpdateRequest request,
+    IStorefrontSessionResolver sessionResolver,
+    StorefrontApiClient apiClient,
+    IAntiforgery antiforgery,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    var antiforgeryFailure = await ValidateLocalCartAntiforgeryAsync(httpContext, antiforgery);
+    if (antiforgeryFailure is not null)
+    {
+        return antiforgeryFailure;
+    }
+
+    var session = await ResolveLocalCustomerSessionAsync(sessionResolver, cancellationToken);
+    if (session.Failure is not null)
+    {
+        return session.Failure;
+    }
+
+    if (string.IsNullOrWhiteSpace(request.FullName) || !IsValidEmail(request.Email))
+    {
+        return Results.BadRequest(new StorefrontLocalApiErrorResponse("Full name and valid email are required."));
+    }
+
+    var result = await apiClient.UpdateCustomerProfileAsync(
+        session.AccessToken!,
+        ToCustomerProfileUpdateRequest(request),
+        cancellationToken);
+    return result.Success && result.Data is not null
+        ? Results.Ok(ToBrowserProfile(result.Data))
+        : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+});
+app.MapGet("/api/account/addresses", async (
+    IStorefrontSessionResolver sessionResolver,
+    StorefrontApiClient apiClient,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    StorefrontResponseHeaders.ApplyPrivatePage(httpContext);
+    var session = await ResolveLocalCustomerSessionAsync(sessionResolver, cancellationToken);
+    if (session.Failure is not null)
+    {
+        return session.Failure;
+    }
+
+    var result = await apiClient.GetCustomerAddressesAsync(session.AccessToken!, cancellationToken);
+    return result.Success
+        ? Results.Ok((result.Data ?? []).Select(ToBrowserAddress).ToArray())
+        : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status503ServiceUnavailable);
+});
+app.MapPost("/api/account/addresses", async (
+    StorefrontBrowserCustomerAddressRequest request,
+    IStorefrontSessionResolver sessionResolver,
+    StorefrontApiClient apiClient,
+    IAntiforgery antiforgery,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    var antiforgeryFailure = await ValidateLocalCartAntiforgeryAsync(httpContext, antiforgery);
+    if (antiforgeryFailure is not null)
+    {
+        return antiforgeryFailure;
+    }
+
+    var session = await ResolveLocalCustomerSessionAsync(sessionResolver, cancellationToken);
+    if (session.Failure is not null)
+    {
+        return session.Failure;
+    }
+
+    var result = await apiClient.CreateCustomerAddressAsync(session.AccessToken!, ToCustomerAddressRequest(request), cancellationToken);
+    return result.Success && result.Data is not null
+        ? Results.Ok(ToBrowserAddress(result.Data))
+        : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+});
+app.MapPut("/api/account/addresses/{addressId:guid}", async (
+    Guid addressId,
+    StorefrontBrowserCustomerAddressRequest request,
+    IStorefrontSessionResolver sessionResolver,
+    StorefrontApiClient apiClient,
+    IAntiforgery antiforgery,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    var antiforgeryFailure = await ValidateLocalCartAntiforgeryAsync(httpContext, antiforgery);
+    if (antiforgeryFailure is not null)
+    {
+        return antiforgeryFailure;
+    }
+
+    var session = await ResolveLocalCustomerSessionAsync(sessionResolver, cancellationToken);
+    if (session.Failure is not null)
+    {
+        return session.Failure;
+    }
+
+    var result = await apiClient.UpdateCustomerAddressAsync(session.AccessToken!, addressId, ToCustomerAddressRequest(request), cancellationToken);
+    return result.Success && result.Data is not null
+        ? Results.Ok(ToBrowserAddress(result.Data))
+        : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+});
+app.MapDelete("/api/account/addresses/{addressId:guid}", async (
+    Guid addressId,
+    IStorefrontSessionResolver sessionResolver,
+    StorefrontApiClient apiClient,
+    IAntiforgery antiforgery,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    var antiforgeryFailure = await ValidateLocalCartAntiforgeryAsync(httpContext, antiforgery);
+    if (antiforgeryFailure is not null)
+    {
+        return antiforgeryFailure;
+    }
+
+    var session = await ResolveLocalCustomerSessionAsync(sessionResolver, cancellationToken);
+    if (session.Failure is not null)
+    {
+        return session.Failure;
+    }
+
+    var result = await apiClient.DeleteCustomerAddressAsync(session.AccessToken!, addressId, cancellationToken);
+    return result.Success
+        ? Results.Ok(new StorefrontBrowserAccountCommandResult(true, "Address deleted."))
+        : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+});
+app.MapPost("/api/account/addresses/{addressId:guid}/default-shipping", async (
+    Guid addressId,
+    IStorefrontSessionResolver sessionResolver,
+    StorefrontApiClient apiClient,
+    IAntiforgery antiforgery,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    return await ExecuteDefaultAddressLocalCommandAsync(addressId, setShippingDefault: true, sessionResolver, apiClient, antiforgery, httpContext, cancellationToken);
+});
+app.MapPost("/api/account/addresses/{addressId:guid}/default-billing", async (
+    Guid addressId,
+    IStorefrontSessionResolver sessionResolver,
+    StorefrontApiClient apiClient,
+    IAntiforgery antiforgery,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    return await ExecuteDefaultAddressLocalCommandAsync(addressId, setShippingDefault: false, sessionResolver, apiClient, antiforgery, httpContext, cancellationToken);
+});
+app.MapGet("/api/account/orders", async (
+    int? page,
+    int? pageSize,
+    IStorefrontSessionResolver sessionResolver,
+    StorefrontApiClient apiClient,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    StorefrontResponseHeaders.ApplyPrivatePage(httpContext);
+    var session = await ResolveLocalCustomerSessionAsync(sessionResolver, cancellationToken);
+    if (session.Failure is not null)
+    {
+        return session.Failure;
+    }
+
+    var result = await apiClient.GetCustomerOrdersAsync(
+        session.AccessToken!,
+        Math.Max(1, page.GetValueOrDefault(1)),
+        Math.Clamp(pageSize.GetValueOrDefault(10), 1, 25),
+        cancellationToken);
+    return result.Success && result.Data is not null
+        ? Results.Ok(ToBrowserOrderList(result.Data))
+        : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status503ServiceUnavailable);
+});
+app.MapGet("/api/account/orders/{orderReference}", async (
+    string orderReference,
+    IStorefrontSessionResolver sessionResolver,
+    StorefrontApiClient apiClient,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    StorefrontResponseHeaders.ApplyPrivatePage(httpContext);
+    var session = await ResolveLocalCustomerSessionAsync(sessionResolver, cancellationToken);
+    if (session.Failure is not null)
+    {
+        return session.Failure;
+    }
+
+    var result = await apiClient.GetCustomerOrderAsync(session.AccessToken!, orderReference, cancellationToken);
+    return result.Success && result.Data is not null
+        ? Results.Ok(ToBrowserOrderDetail(result.Data, receiptMode: false))
+        : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status404NotFound);
+});
+app.MapGet("/api/account/orders/{orderReference}/receipt", async (
+    string orderReference,
+    IStorefrontSessionResolver sessionResolver,
+    StorefrontApiClient apiClient,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    StorefrontResponseHeaders.ApplyPrivatePage(httpContext);
+    var session = await ResolveLocalCustomerSessionAsync(sessionResolver, cancellationToken);
+    if (session.Failure is not null)
+    {
+        return session.Failure;
+    }
+
+    var result = await apiClient.GetCustomerOrderReceiptAsync(session.AccessToken!, orderReference, cancellationToken);
+    return result.Success && result.Data is not null
+        ? Results.Ok(ToBrowserOrderDetail(result.Data, receiptMode: true))
+        : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status404NotFound);
+});
+app.MapPost("/api/account/change-password", async (
+    StorefrontChangePasswordForm request,
+    IStorefrontSessionResolver sessionResolver,
+    IStorefrontAuthClient authClient,
+    IAntiforgery antiforgery,
+    HttpContext httpContext,
+    CancellationToken cancellationToken) =>
+{
+    var antiforgeryFailure = await ValidateLocalCartAntiforgeryAsync(httpContext, antiforgery);
+    if (antiforgeryFailure is not null)
+    {
+        return antiforgeryFailure;
+    }
+
+    var session = await ResolveLocalCustomerSessionAsync(sessionResolver, cancellationToken);
+    if (session.Failure is not null)
+    {
+        return session.Failure;
+    }
+
+    if (string.IsNullOrWhiteSpace(request.CurrentPassword)
+        || string.IsNullOrWhiteSpace(request.NewPassword)
+        || string.IsNullOrWhiteSpace(request.ConfirmPassword))
+    {
+        return Results.BadRequest(new StorefrontLocalApiErrorResponse("All password fields are required."));
+    }
+
+    if (!string.Equals(request.NewPassword, request.ConfirmPassword, StringComparison.Ordinal))
+    {
+        return Results.BadRequest(new StorefrontLocalApiErrorResponse("Passwords do not match."));
+    }
+
+    var result = await authClient.ChangePasswordAsync(
+        session.AccessToken!,
+        new ChangePassword
+        {
+            CurrentPassword = request.CurrentPassword,
+            NewPassword = request.NewPassword,
+            ConfirmPassword = request.ConfirmPassword,
+        },
+        cancellationToken);
+    return result.Success
+        ? Results.Ok(new StorefrontBrowserAccountCommandResult(true, "Password changed."))
+        : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+});
 app.MapGet("/api/consent/current", async (
     StorefrontApiClient apiClient,
     HttpContext httpContext,
@@ -1088,6 +1362,190 @@ static async Task<(bool Success, string? Message)> ExecuteCustomerAddressCommand
         default:
             return (false, "Address action is required.");
     }
+}
+
+static async Task<(string? AccessToken, IResult? Failure)> ResolveLocalCustomerSessionAsync(
+    IStorefrontSessionResolver sessionResolver,
+    CancellationToken cancellationToken)
+{
+    var session = await sessionResolver.GetCurrentUserAsync(cancellationToken);
+    if (!session.IsAuthenticated || string.IsNullOrWhiteSpace(session.AccessToken))
+    {
+        return (null, Results.Json(
+            new StorefrontLocalApiErrorResponse("Sign in is required."),
+            statusCode: StatusCodes.Status401Unauthorized));
+    }
+
+    return (session.AccessToken, null);
+}
+
+static async Task<IResult> ExecuteDefaultAddressLocalCommandAsync(
+    Guid addressId,
+    bool setShippingDefault,
+    IStorefrontSessionResolver sessionResolver,
+    StorefrontApiClient apiClient,
+    IAntiforgery antiforgery,
+    HttpContext httpContext,
+    CancellationToken cancellationToken)
+{
+    var antiforgeryFailure = await ValidateLocalCartAntiforgeryAsync(httpContext, antiforgery);
+    if (antiforgeryFailure is not null)
+    {
+        return antiforgeryFailure;
+    }
+
+    var session = await ResolveLocalCustomerSessionAsync(sessionResolver, cancellationToken);
+    if (session.Failure is not null)
+    {
+        return session.Failure;
+    }
+
+    var result = setShippingDefault
+        ? await apiClient.SetDefaultShippingAddressAsync(session.AccessToken!, addressId, cancellationToken)
+        : await apiClient.SetDefaultBillingAddressAsync(session.AccessToken!, addressId, cancellationToken);
+    return result.Success && result.Data is not null
+        ? Results.Ok(ToBrowserAddress(result.Data))
+        : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+}
+
+static StorefrontBrowserCustomerProfile ToBrowserProfile(StorefrontCustomerProfileResponse profile)
+{
+    return new StorefrontBrowserCustomerProfile(
+        profile.CustomerPublicId,
+        profile.Email,
+        profile.FullName,
+        profile.FirstName,
+        profile.LastName,
+        profile.Company,
+        profile.PhoneNumber,
+        profile.PreferredLanguage,
+        profile.PreferredCurrencyCode,
+        profile.CreatedAtUtc.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+        profile.LastActivityAtUtc?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+}
+
+static StorefrontCustomerProfileUpdateRequest ToCustomerProfileUpdateRequest(StorefrontBrowserCustomerProfileUpdateRequest request)
+{
+    return new StorefrontCustomerProfileUpdateRequest
+    {
+        FullName = request.FullName.Trim(),
+        Email = request.Email.Trim(),
+        FirstName = NormalizeOptionalFormValue(request.FirstName),
+        LastName = NormalizeOptionalFormValue(request.LastName),
+        Company = NormalizeOptionalFormValue(request.Company),
+        PhoneNumber = NormalizeOptionalFormValue(request.PhoneNumber),
+        PreferredLanguage = NormalizeOptionalFormValue(request.PreferredLanguage),
+        PreferredCurrencyCode = NormalizeCurrencyCode(request.PreferredCurrencyCode),
+    };
+}
+
+static StorefrontBrowserCustomerAddress ToBrowserAddress(StorefrontCustomerAddressResponse address)
+{
+    return new StorefrontBrowserCustomerAddress(
+        address.PublicId,
+        address.FullName,
+        address.Company,
+        address.Email,
+        address.Phone,
+        address.Address1,
+        address.Address2,
+        address.City,
+        address.PostalCode,
+        address.CountryCode,
+        address.StateProvinceCode,
+        address.StateProvinceName,
+        address.IsDefaultShipping,
+        address.IsDefaultBilling);
+}
+
+static StorefrontCustomerAddressRequest ToCustomerAddressRequest(StorefrontBrowserCustomerAddressRequest request)
+{
+    var (firstName, lastName) = SplitFullName(NormalizeOptionalFormValue(request.FullName));
+    return new StorefrontCustomerAddressRequest
+    {
+        FirstName = firstName,
+        LastName = lastName,
+        Company = NormalizeOptionalFormValue(request.Company),
+        Email = NormalizeOptionalFormValue(request.Email),
+        Phone = NormalizeOptionalFormValue(request.Phone),
+        Address1 = NormalizeOptionalFormValue(request.Address1) ?? string.Empty,
+        Address2 = NormalizeOptionalFormValue(request.Address2),
+        City = NormalizeOptionalFormValue(request.City) ?? string.Empty,
+        StateProvinceCode = NormalizeOptionalFormValue(request.StateProvinceCode),
+        StateProvinceName = NormalizeOptionalFormValue(request.StateProvinceName),
+        PostalCode = NormalizeOptionalFormValue(request.PostalCode) ?? string.Empty,
+        CountryCode = NormalizeOptionalFormValue(request.CountryCode)?.ToUpperInvariant() ?? string.Empty,
+        IsDefaultShipping = request.IsDefaultShipping,
+        IsDefaultBilling = request.IsDefaultBilling,
+    };
+}
+
+static StorefrontBrowserAccountOrderList ToBrowserOrderList(PagedResult<StorefrontCustomerOrderListItemResponse> orders)
+{
+    return new StorefrontBrowserAccountOrderList(
+        orders.Items.Select(ToBrowserOrderListItem).ToArray(),
+        orders.PageNumber,
+        orders.PageSize,
+        orders.TotalCount,
+        orders.TotalPages);
+}
+
+static StorefrontBrowserAccountOrderListItem ToBrowserOrderListItem(StorefrontCustomerOrderListItemResponse order)
+{
+    return new StorefrontBrowserAccountOrderListItem(
+        order.Reference,
+        order.CreatedOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+        order.OrderStatus,
+        order.PaymentStatus,
+        order.ShippingStatus,
+        FormatMoney(order.TotalAmount, order.CurrencyCode),
+        order.ItemCount);
+}
+
+static StorefrontBrowserAccountOrderDetail ToBrowserOrderDetail(StorefrontCustomerOrderDetailResponse order, bool receiptMode)
+{
+    var currencyCode = order.CurrencyCode;
+    var totals = order.TotalBreakdown;
+    return new StorefrontBrowserAccountOrderDetail(
+        order.Reference,
+        receiptMode,
+        order.CreatedOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+        order.OrderStatus,
+        order.PaymentStatus,
+        order.ShippingStatus,
+        FormatMoney(order.TotalAmount, currencyCode),
+        ToBrowserOrderAddress(order.ShippingAddress),
+        order.BillingAddress is null ? null : ToBrowserOrderAddress(order.BillingAddress),
+        order.Lines.Select(line => new StorefrontBrowserAccountOrderLine(
+            line.ProductName,
+            line.Sku,
+            line.Quantity,
+            FormatMoney(line.LineTotal, currencyCode))).ToArray(),
+        new StorefrontBrowserOrderTotals(
+            FormatMoney(totals?.Subtotal ?? 0m, currencyCode),
+            FormatMoney(totals?.ShippingTotal ?? 0m, currencyCode),
+            FormatMoney(totals?.TaxTotal ?? 0m, currencyCode),
+            FormatMoney(totals?.DiscountTotal ?? 0m, currencyCode),
+            FormatMoney(totals?.GrandTotal ?? order.TotalAmount, currencyCode)));
+}
+
+static StorefrontBrowserOrderAddress ToBrowserOrderAddress(StorefrontShippingAddressResponse address)
+{
+    return new StorefrontBrowserOrderAddress(
+        address.FullName,
+        address.Email,
+        address.Phone,
+        address.Address1,
+        address.Address2,
+        address.City,
+        address.State,
+        address.PostalCode,
+        address.CountryCode);
+}
+
+static string FormatMoney(decimal amount, string? currencyCode)
+{
+    return string.Create(CultureInfo.InvariantCulture, $"{amount:0.00} {currencyCode ?? string.Empty}").Trim();
 }
 
 static async Task<IResult> ToLocalCartMutationResultAsync(

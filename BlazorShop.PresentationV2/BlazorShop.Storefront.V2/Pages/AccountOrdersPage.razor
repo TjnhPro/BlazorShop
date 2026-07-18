@@ -30,45 +30,9 @@
                 {
                     <p class="text-sm text-neutral-600">Loading orders...</p>
                 }
-                else if (!string.IsNullOrWhiteSpace(_error))
-                {
-                    <div class="rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800" role="alert">@_error</div>
-                }
-                else if (_orders.Count == 0)
-                {
-                    <p class="text-sm text-neutral-700">No orders yet.</p>
-                }
                 else
                 {
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-neutral-200 text-sm">
-                            <thead class="text-left text-xs font-semibold uppercase text-neutral-500">
-                                <tr>
-                                    <th class="py-3 pr-4">Reference</th>
-                                    <th class="py-3 pr-4">Date</th>
-                                    <th class="py-3 pr-4">Status</th>
-                                    <th class="py-3 pr-4">Payment</th>
-                                    <th class="py-3 pr-4">Total</th>
-                                    <th class="py-3 pr-4">Items</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-neutral-100">
-                                @foreach (var order in _orders)
-                                {
-                                    <tr>
-                                        <td class="py-4 pr-4 font-semibold text-neutral-900">
-                                            <a class="underline decoration-neutral-300 underline-offset-4 hover:decoration-neutral-900" href="@BuildOrderUrl(order.Reference)">@order.Reference</a>
-                                        </td>
-                                        <td class="py-4 pr-4 text-neutral-700">@order.CreatedOn.ToString("yyyy-MM-dd")</td>
-                                        <td class="py-4 pr-4 text-neutral-700">@order.OrderStatus</td>
-                                        <td class="py-4 pr-4 text-neutral-700">@order.PaymentStatus</td>
-                                        <td class="py-4 pr-4 text-neutral-900">@FormatMoney(order.TotalAmount, order.CurrencyCode)</td>
-                                        <td class="py-4 pr-4 text-neutral-700">@order.ItemCount</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+                    <AccountOrderList InitialOrders="_orders" InitialError="_error" PageNumber="Page" @rendermode="InteractiveWebAssembly" />
                 }
             </div>
         </article>
@@ -81,7 +45,7 @@
 
     private bool _loading = true;
     private string? _error;
-    private IReadOnlyList<StorefrontCustomerOrderListItemResponse> _orders = [];
+    private StorefrontBrowserAccountOrderList _orders = new([], 1, 10, 0, 0);
 
     protected override async Task OnInitializedAsync()
     {
@@ -95,7 +59,7 @@
         var result = await ApiClient.GetCustomerOrdersAsync(session.AccessToken, Math.Max(1, Page), 10);
         if (result.Success)
         {
-            _orders = result.Data?.Items ?? [];
+            _orders = result.Data is null ? new([], Math.Max(1, Page), 10, 0, 0) : ToBrowserOrderList(result.Data);
         }
         else
         {
@@ -105,9 +69,26 @@
         _loading = false;
     }
 
-    private static string BuildOrderUrl(string reference)
+    private static StorefrontBrowserAccountOrderList ToBrowserOrderList(PagedResult<StorefrontCustomerOrderListItemResponse> orders)
     {
-        return $"/account/orders/{Uri.EscapeDataString(reference)}";
+        return new StorefrontBrowserAccountOrderList(
+            orders.Items.Select(ToBrowserOrderListItem).ToArray(),
+            orders.PageNumber,
+            orders.PageSize,
+            orders.TotalCount,
+            orders.TotalPages);
+    }
+
+    private static StorefrontBrowserAccountOrderListItem ToBrowserOrderListItem(StorefrontCustomerOrderListItemResponse order)
+    {
+        return new StorefrontBrowserAccountOrderListItem(
+            order.Reference,
+            order.CreatedOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            order.OrderStatus,
+            order.PaymentStatus,
+            order.ShippingStatus,
+            FormatMoney(order.TotalAmount, order.CurrencyCode),
+            order.ItemCount);
     }
 
     private static string FormatMoney(decimal amount, string? currencyCode)

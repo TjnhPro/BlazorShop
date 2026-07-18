@@ -31,89 +31,14 @@
                 {
                     <p class="text-sm text-neutral-600">Loading order...</p>
                 }
-                else if (!string.IsNullOrWhiteSpace(_error))
+                else
                 {
-                    <div class="rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800" role="alert">@_error</div>
-                }
-                else if (_order is not null)
-                {
-                    <div class="grid gap-5 md:grid-cols-3">
-                        <div>
-                            <p class="text-xs font-semibold uppercase text-neutral-500">Order status</p>
-                            <p class="mt-1 font-semibold text-neutral-900">@_order.OrderStatus</p>
-                        </div>
-                        <div>
-                            <p class="text-xs font-semibold uppercase text-neutral-500">Payment</p>
-                            <p class="mt-1 font-semibold text-neutral-900">@_order.PaymentStatus</p>
-                        </div>
-                        <div>
-                            <p class="text-xs font-semibold uppercase text-neutral-500">Total</p>
-                            <p class="mt-1 font-semibold text-neutral-900">@FormatMoney(_order.TotalAmount, _order.CurrencyCode)</p>
-                        </div>
-                    </div>
-
-                    <div class="mt-8 grid gap-5 lg:grid-cols-2">
-                        <section class="rounded border border-neutral-200 p-4">
-                            <h2 class="font-bold text-neutral-900">Shipping address</h2>
-                            <div class="mt-3 text-sm text-neutral-700">
-                                <p class="font-semibold text-neutral-900">@_order.ShippingAddress.FullName</p>
-                                <p>@_order.ShippingAddress.Address1</p>
-                                @if (!string.IsNullOrWhiteSpace(_order.ShippingAddress.Address2))
-                                {
-                                    <p>@_order.ShippingAddress.Address2</p>
-                                }
-                                <p>@_order.ShippingAddress.City, @_order.ShippingAddress.PostalCode</p>
-                                <p>@_order.ShippingAddress.CountryCode</p>
-                            </div>
-                        </section>
-                        <section class="rounded border border-neutral-200 p-4">
-                            <h2 class="font-bold text-neutral-900">Billing address</h2>
-                            @{
-                                var billingAddress = _order.BillingAddress ?? _order.ShippingAddress;
-                            }
-                            <div class="mt-3 text-sm text-neutral-700">
-                                <p class="font-semibold text-neutral-900">@billingAddress.FullName</p>
-                                <p>@billingAddress.Address1</p>
-                                @if (!string.IsNullOrWhiteSpace(billingAddress.Address2))
-                                {
-                                    <p>@billingAddress.Address2</p>
-                                }
-                                <p>@billingAddress.City, @billingAddress.PostalCode</p>
-                                <p>@billingAddress.CountryCode</p>
-                            </div>
-                        </section>
-                    </div>
-
-                    <section class="mt-8">
-                        <h2 class="font-bold text-neutral-900">Items</h2>
-                        <div class="mt-3 divide-y divide-neutral-100 rounded border border-neutral-200">
-                            @foreach (var line in _order.Lines)
-                            {
-                                <div class="grid gap-2 p-4 sm:grid-cols-[minmax(0,1fr)_80px_120px]">
-                                    <div>
-                                        <p class="font-semibold text-neutral-900">@line.ProductName</p>
-                                        @if (!string.IsNullOrWhiteSpace(line.Sku))
-                                        {
-                                            <p class="text-sm text-neutral-500">@line.Sku</p>
-                                        }
-                                    </div>
-                                    <p class="text-sm text-neutral-700">Qty @line.Quantity</p>
-                                    <p class="text-sm font-semibold text-neutral-900">@FormatMoney(line.LineTotal, _order.CurrencyCode)</p>
-                                </div>
-                            }
-                        </div>
-                    </section>
-
-                    <section class="mt-8 max-w-md rounded border border-neutral-200 p-4">
-                        <h2 class="font-bold text-neutral-900">Totals</h2>
-                        <div class="mt-3 space-y-2 text-sm">
-                            <div class="flex justify-between gap-4"><span>Subtotal</span><span>@FormatMoney(_order.TotalBreakdown?.Subtotal ?? 0m, _order.CurrencyCode)</span></div>
-                            <div class="flex justify-between gap-4"><span>Shipping</span><span>@FormatMoney(_order.TotalBreakdown?.ShippingTotal ?? 0m, _order.CurrencyCode)</span></div>
-                            <div class="flex justify-between gap-4"><span>Tax</span><span>@FormatMoney(_order.TotalBreakdown?.TaxTotal ?? 0m, _order.CurrencyCode)</span></div>
-                            <div class="flex justify-between gap-4"><span>Discount</span><span>@FormatMoney(_order.TotalBreakdown?.DiscountTotal ?? 0m, _order.CurrencyCode)</span></div>
-                            <div class="flex justify-between gap-4 border-t border-neutral-200 pt-3 font-bold text-neutral-900"><span>Grand total</span><span>@FormatMoney(_order.TotalBreakdown?.GrandTotal ?? _order.TotalAmount, _order.CurrencyCode)</span></div>
-                        </div>
-                    </section>
+                    <AccountOrderDetail
+                        InitialOrder="_order"
+                        InitialError="_error"
+                        OrderReference="OrderReference"
+                        ReceiptMode="_receiptMode"
+                        @rendermode="InteractiveWebAssembly" />
                 }
             </div>
         </article>
@@ -127,7 +52,7 @@
     private bool _loading = true;
     private bool _receiptMode;
     private string? _error;
-    private StorefrontCustomerOrderDetailResponse? _order;
+    private StorefrontBrowserAccountOrderDetail? _order;
 
     protected override async Task OnInitializedAsync()
     {
@@ -146,7 +71,7 @@
 
         if (result.Success)
         {
-            _order = result.Data;
+            _order = result.Data is null ? null : ToBrowserOrderDetail(result.Data, _receiptMode);
         }
         else
         {
@@ -154,6 +79,47 @@
         }
 
         _loading = false;
+    }
+
+    private static StorefrontBrowserAccountOrderDetail ToBrowserOrderDetail(StorefrontCustomerOrderDetailResponse order, bool receiptMode)
+    {
+        var currencyCode = order.CurrencyCode;
+        var totals = order.TotalBreakdown;
+        return new StorefrontBrowserAccountOrderDetail(
+            order.Reference,
+            receiptMode,
+            order.CreatedOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            order.OrderStatus,
+            order.PaymentStatus,
+            order.ShippingStatus,
+            FormatMoney(order.TotalAmount, currencyCode),
+            ToBrowserOrderAddress(order.ShippingAddress),
+            order.BillingAddress is null ? null : ToBrowserOrderAddress(order.BillingAddress),
+            order.Lines.Select(line => new StorefrontBrowserAccountOrderLine(
+                line.ProductName,
+                line.Sku,
+                line.Quantity,
+                FormatMoney(line.LineTotal, currencyCode))).ToArray(),
+            new StorefrontBrowserOrderTotals(
+                FormatMoney(totals?.Subtotal ?? 0m, currencyCode),
+                FormatMoney(totals?.ShippingTotal ?? 0m, currencyCode),
+                FormatMoney(totals?.TaxTotal ?? 0m, currencyCode),
+                FormatMoney(totals?.DiscountTotal ?? 0m, currencyCode),
+                FormatMoney(totals?.GrandTotal ?? order.TotalAmount, currencyCode)));
+    }
+
+    private static StorefrontBrowserOrderAddress ToBrowserOrderAddress(StorefrontShippingAddressResponse address)
+    {
+        return new StorefrontBrowserOrderAddress(
+            address.FullName,
+            address.Email,
+            address.Phone,
+            address.Address1,
+            address.Address2,
+            address.City,
+            address.State,
+            address.PostalCode,
+            address.CountryCode);
     }
 
     private static string FormatMoney(decimal amount, string? currencyCode)

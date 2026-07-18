@@ -1,0 +1,93 @@
+@namespace BlazorShop.Storefront.Components.Account
+@using BlazorShop.Storefront.Components.Browser
+@inject IServiceProvider Services
+
+<div data-storefront-account-orders>
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800" role="alert">@_error</div>
+    }
+    else if (_orders.Items.Count == 0)
+    {
+        <p class="text-sm text-neutral-700">No orders yet.</p>
+    }
+    else
+    {
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-neutral-200 text-sm">
+                <thead class="text-left text-xs font-semibold uppercase text-neutral-500">
+                    <tr>
+                        <th class="py-3 pr-4">Reference</th>
+                        <th class="py-3 pr-4">Date</th>
+                        <th class="py-3 pr-4">Status</th>
+                        <th class="py-3 pr-4">Payment</th>
+                        <th class="py-3 pr-4">Total</th>
+                        <th class="py-3 pr-4">Items</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-neutral-100">
+                    @foreach (var order in _orders.Items)
+                    {
+                        <tr>
+                            <td class="py-4 pr-4 font-semibold text-neutral-900">
+                                <a class="underline decoration-neutral-300 underline-offset-4 hover:decoration-neutral-900" href="@BuildOrderUrl(order.Reference)">@order.Reference</a>
+                            </td>
+                            <td class="py-4 pr-4 text-neutral-700">@order.CreatedOnDisplay</td>
+                            <td class="py-4 pr-4 text-neutral-700">@order.OrderStatus</td>
+                            <td class="py-4 pr-4 text-neutral-700">@order.PaymentStatus</td>
+                            <td class="py-4 pr-4 text-neutral-900">@order.TotalDisplay</td>
+                            <td class="py-4 pr-4 text-neutral-700">@order.ItemCount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public StorefrontBrowserAccountOrderList InitialOrders { get; set; } = new([], 1, 10, 0, 0);
+
+    [Parameter]
+    public int PageNumber { get; set; } = 1;
+
+    [Parameter]
+    public string? InitialError { get; set; }
+
+    private StorefrontBrowserAccountOrderList _orders = new([], 1, 10, 0, 0);
+    private string? _error;
+
+    protected override void OnParametersSet()
+    {
+        _orders = InitialOrders;
+        _error = InitialError;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !OperatingSystem.IsBrowser())
+        {
+            return;
+        }
+
+        var apiClient = Services.GetService(typeof(StorefrontLocalApiClient)) as StorefrontLocalApiClient;
+        if (apiClient is null)
+        {
+            return;
+        }
+
+        var result = await apiClient.GetAsync<StorefrontBrowserAccountOrderList>($"/api/account/orders?page={Math.Max(1, PageNumber)}");
+        if (result.Success && result.Data is not null)
+        {
+            _orders = result.Data;
+            _error = null;
+            StateHasChanged();
+        }
+    }
+
+    private static string BuildOrderUrl(string reference)
+    {
+        return $"/account/orders/{Uri.EscapeDataString(reference)}";
+    }
+}

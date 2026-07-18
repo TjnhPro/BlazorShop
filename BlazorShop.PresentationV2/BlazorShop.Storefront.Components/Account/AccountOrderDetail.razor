@@ -1,0 +1,145 @@
+@namespace BlazorShop.Storefront.Components.Account
+@using BlazorShop.Storefront.Components.Browser
+@inject IServiceProvider Services
+
+<div data-storefront-account-order-detail>
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800" role="alert">@_error</div>
+    }
+    else if (_order is not null)
+    {
+        <div class="grid gap-5 md:grid-cols-3">
+            <div>
+                <p class="text-xs font-semibold uppercase text-neutral-500">Order status</p>
+                <p class="mt-1 font-semibold text-neutral-900">@_order.OrderStatus</p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold uppercase text-neutral-500">Payment</p>
+                <p class="mt-1 font-semibold text-neutral-900">@_order.PaymentStatus</p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold uppercase text-neutral-500">Total</p>
+                <p class="mt-1 font-semibold text-neutral-900">@_order.TotalDisplay</p>
+            </div>
+        </div>
+
+        <div class="mt-8 grid gap-5 lg:grid-cols-2">
+            @RenderAddress("Shipping address", _order.ShippingAddress)
+            @RenderAddress("Billing address", _order.BillingAddress ?? _order.ShippingAddress)
+        </div>
+
+        <section class="mt-8">
+            <h2 class="font-bold text-neutral-900">Items</h2>
+            <div class="mt-3 divide-y divide-neutral-100 rounded border border-neutral-200">
+                @foreach (var line in _order.Lines)
+                {
+                    <div class="grid gap-2 p-4 sm:grid-cols-[minmax(0,1fr)_80px_120px]">
+                        <div>
+                            <p class="font-semibold text-neutral-900">@line.ProductName</p>
+                            @if (!string.IsNullOrWhiteSpace(line.Sku))
+                            {
+                                <p class="text-sm text-neutral-500">@line.Sku</p>
+                            }
+                        </div>
+                        <p class="text-sm text-neutral-700">Qty @line.Quantity</p>
+                        <p class="text-sm font-semibold text-neutral-900">@line.LineTotalDisplay</p>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <section class="mt-8 max-w-md rounded border border-neutral-200 p-4">
+            <h2 class="font-bold text-neutral-900">Totals</h2>
+            <div class="mt-3 space-y-2 text-sm">
+                <div class="flex justify-between gap-4"><span>Subtotal</span><span>@_order.Totals.SubtotalDisplay</span></div>
+                <div class="flex justify-between gap-4"><span>Shipping</span><span>@_order.Totals.ShippingDisplay</span></div>
+                <div class="flex justify-between gap-4"><span>Tax</span><span>@_order.Totals.TaxDisplay</span></div>
+                <div class="flex justify-between gap-4"><span>Discount</span><span>@_order.Totals.DiscountDisplay</span></div>
+                <div class="flex justify-between gap-4 border-t border-neutral-200 pt-3 font-bold text-neutral-900"><span>Grand total</span><span>@_order.Totals.GrandTotalDisplay</span></div>
+            </div>
+        </section>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public StorefrontBrowserAccountOrderDetail? InitialOrder { get; set; }
+
+    [Parameter]
+    public string? OrderReference { get; set; }
+
+    [Parameter]
+    public bool ReceiptMode { get; set; }
+
+    [Parameter]
+    public string? InitialError { get; set; }
+
+    private StorefrontBrowserAccountOrderDetail? _order;
+    private string? _error;
+
+    protected override void OnParametersSet()
+    {
+        _order = InitialOrder;
+        _error = InitialError;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !OperatingSystem.IsBrowser() || string.IsNullOrWhiteSpace(OrderReference))
+        {
+            return;
+        }
+
+        var apiClient = Services.GetService(typeof(StorefrontLocalApiClient)) as StorefrontLocalApiClient;
+        if (apiClient is null)
+        {
+            return;
+        }
+
+        var suffix = ReceiptMode ? "/receipt" : string.Empty;
+        var result = await apiClient.GetAsync<StorefrontBrowserAccountOrderDetail>($"/api/account/orders/{Uri.EscapeDataString(OrderReference)}{suffix}");
+        if (result.Success && result.Data is not null)
+        {
+            _order = result.Data;
+            _error = null;
+            StateHasChanged();
+        }
+    }
+
+    private static RenderFragment RenderAddress(string title, StorefrontBrowserOrderAddress address) => builder =>
+    {
+        builder.OpenElement(0, "section");
+        builder.AddAttribute(1, "class", "rounded border border-neutral-200 p-4");
+        builder.OpenElement(2, "h2");
+        builder.AddAttribute(3, "class", "font-bold text-neutral-900");
+        builder.AddContent(4, title);
+        builder.CloseElement();
+        builder.OpenElement(5, "div");
+        builder.AddAttribute(6, "class", "mt-3 text-sm text-neutral-700");
+        AddAddressLine(builder, 7, address.FullName, "font-semibold text-neutral-900");
+        AddAddressLine(builder, 10, address.Address1, null);
+        AddAddressLine(builder, 13, address.Address2, null);
+        AddAddressLine(builder, 16, string.Join(", ", new[] { address.City, address.PostalCode }.Where(part => !string.IsNullOrWhiteSpace(part))), null);
+        AddAddressLine(builder, 19, address.CountryCode, null);
+        builder.CloseElement();
+        builder.CloseElement();
+    };
+
+    private static void AddAddressLine(RenderTreeBuilder builder, int sequence, string? value, string? cssClass)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return;
+        }
+
+        builder.OpenElement(sequence, "p");
+        if (!string.IsNullOrWhiteSpace(cssClass))
+        {
+            builder.AddAttribute(sequence + 1, "class", cssClass);
+        }
+
+        builder.AddContent(sequence + 2, value);
+        builder.CloseElement();
+    }
+}

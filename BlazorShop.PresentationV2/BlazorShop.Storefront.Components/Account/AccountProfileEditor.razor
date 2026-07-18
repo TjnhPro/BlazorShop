@@ -1,0 +1,181 @@
+@namespace BlazorShop.Storefront.Components.Account
+@using BlazorShop.Storefront.Components.Browser
+@inject IServiceProvider Services
+
+<div data-storefront-account-profile>
+    @if (!string.IsNullOrWhiteSpace(_success))
+    {
+        <div class="mb-5 rounded border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800" role="status">@_success</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="mb-5 rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800" role="alert">@_error</div>
+    }
+
+    @if (_profile is null)
+    {
+        <p class="text-sm text-neutral-700">Profile could not be loaded.</p>
+    }
+    else
+    {
+        <form method="post" action="@FormAction" class="grid max-w-3xl gap-5 sm:grid-cols-2" @onsubmit="SaveAsync" @onsubmit:preventDefault="true">
+            @RenderAntiforgeryField()
+            <label class="block text-sm sm:col-span-2">
+                <span class="font-semibold text-neutral-800">Email address</span>
+                <input name="Email" type="email" autocomplete="email" required @bind="_form.Email" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+            </label>
+            <label class="block text-sm sm:col-span-2">
+                <span class="font-semibold text-neutral-800">Display name</span>
+                <input name="FullName" type="text" autocomplete="name" required @bind="_form.FullName" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+            </label>
+            <label class="block text-sm">
+                <span class="font-semibold text-neutral-800">First name</span>
+                <input name="FirstName" type="text" autocomplete="given-name" @bind="_form.FirstName" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+            </label>
+            <label class="block text-sm">
+                <span class="font-semibold text-neutral-800">Last name</span>
+                <input name="LastName" type="text" autocomplete="family-name" @bind="_form.LastName" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+            </label>
+            <label class="block text-sm">
+                <span class="font-semibold text-neutral-800">Company</span>
+                <input name="Company" type="text" autocomplete="organization" @bind="_form.Company" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+            </label>
+            <label class="block text-sm">
+                <span class="font-semibold text-neutral-800">Phone</span>
+                <input name="PhoneNumber" type="tel" autocomplete="tel" @bind="_form.PhoneNumber" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+            </label>
+            <label class="block text-sm">
+                <span class="font-semibold text-neutral-800">Language</span>
+                <input name="PreferredLanguage" type="text" @bind="_form.PreferredLanguage" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
+            </label>
+            <label class="block text-sm">
+                <span class="font-semibold text-neutral-800">Currency</span>
+                <input name="PreferredCurrencyCode" type="text" maxlength="3" @bind="_form.PreferredCurrencyCode" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm uppercase" />
+            </label>
+            <div class="sm:col-span-2">
+                <button type="submit" disabled="@_saving" class="inline-flex rounded bg-neutral-900 px-5 py-3 text-sm font-semibold text-white hover:bg-neutral-800 disabled:cursor-wait disabled:bg-neutral-500">@(_saving ? "Saving..." : "Save profile")</button>
+            </div>
+        </form>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public StorefrontBrowserCustomerProfile? InitialProfile { get; set; }
+
+    [Parameter]
+    public string? InitialError { get; set; }
+
+    [Parameter]
+    public string? InitialSuccess { get; set; }
+
+    [Parameter]
+    public string FormAction { get; set; } = "/account/profile";
+
+    [Parameter]
+    public string? AntiforgeryFieldName { get; set; }
+
+    [Parameter]
+    public string? AntiforgeryRequestToken { get; set; }
+
+    private StorefrontBrowserCustomerProfile? _profile;
+    private StorefrontBrowserCustomerProfileUpdateRequest _form = new();
+    private string? _error;
+    private string? _success;
+    private bool _saving;
+
+    protected override void OnParametersSet()
+    {
+        _profile = InitialProfile;
+        _error = InitialError;
+        _success = InitialSuccess;
+        if (_profile is not null && string.IsNullOrWhiteSpace(_form.Email))
+        {
+            _form = new StorefrontBrowserCustomerProfileUpdateRequest
+            {
+                Email = _profile.Email,
+                FullName = _profile.FullName,
+                FirstName = _profile.FirstName,
+                LastName = _profile.LastName,
+                Company = _profile.Company,
+                PhoneNumber = _profile.PhoneNumber,
+                PreferredLanguage = _profile.PreferredLanguage,
+                PreferredCurrencyCode = _profile.PreferredCurrencyCode,
+            };
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !OperatingSystem.IsBrowser())
+        {
+            return;
+        }
+
+        var apiClient = Services.GetService(typeof(StorefrontLocalApiClient)) as StorefrontLocalApiClient;
+        if (apiClient is null)
+        {
+            return;
+        }
+
+        var result = await apiClient.GetAsync<StorefrontBrowserCustomerProfile>("/api/account/profile");
+        if (result.Success && result.Data is not null)
+        {
+            _profile = result.Data;
+            _form = new StorefrontBrowserCustomerProfileUpdateRequest
+            {
+                Email = result.Data.Email,
+                FullName = result.Data.FullName,
+                FirstName = result.Data.FirstName,
+                LastName = result.Data.LastName,
+                Company = result.Data.Company,
+                PhoneNumber = result.Data.PhoneNumber,
+                PreferredLanguage = result.Data.PreferredLanguage,
+                PreferredCurrencyCode = result.Data.PreferredCurrencyCode,
+            };
+            StateHasChanged();
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!OperatingSystem.IsBrowser())
+        {
+            return;
+        }
+
+        var apiClient = Services.GetService(typeof(StorefrontLocalApiClient)) as StorefrontLocalApiClient;
+        if (apiClient is null)
+        {
+            return;
+        }
+
+        _saving = true;
+        _error = null;
+        _success = null;
+        var result = await apiClient.PutJsonAsync<StorefrontBrowserCustomerProfileUpdateRequest, StorefrontBrowserCustomerProfile>("/api/account/profile", _form);
+        _saving = false;
+        if (result.Success && result.Data is not null)
+        {
+            _profile = result.Data;
+            _success = "Profile updated.";
+            return;
+        }
+
+        _error = result.Message;
+    }
+
+    private RenderFragment RenderAntiforgeryField() => builder =>
+    {
+        if (string.IsNullOrWhiteSpace(AntiforgeryFieldName) || string.IsNullOrWhiteSpace(AntiforgeryRequestToken))
+        {
+            return;
+        }
+
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "type", "hidden");
+        builder.AddAttribute(2, "name", AntiforgeryFieldName);
+        builder.AddAttribute(3, "value", AntiforgeryRequestToken);
+        builder.CloseElement();
+    };
+}

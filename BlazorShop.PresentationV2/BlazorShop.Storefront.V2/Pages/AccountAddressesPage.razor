@@ -1,7 +1,9 @@
 @page "/account/addresses"
+@using Microsoft.AspNetCore.Antiforgery
 @inject IStorefrontSessionResolver SessionResolver
 @inject StorefrontApiClient ApiClient
 @inject NavigationManager NavigationManager
+@inject IAntiforgery Antiforgery
 
 <PageTitle>Account addresses</PageTitle>
 
@@ -25,171 +27,20 @@
             </header>
 
             <div class="px-6 py-6">
-                @if (Saved == "1")
-                {
-                    <div class="mb-5 rounded border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800" role="status">Address book updated.</div>
-                }
-                @if (!string.IsNullOrWhiteSpace(Error))
-                {
-                    <div class="mb-5 rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800" role="alert">@Error</div>
-                }
-
                 @if (_loading)
                 {
                     <p class="text-sm text-neutral-600">Loading addresses...</p>
                 }
-                else if (!string.IsNullOrWhiteSpace(_error))
-                {
-                    <div class="rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800" role="alert">@_error</div>
-                }
-                else if (_addresses.Count == 0)
-                {
-                    <p class="text-sm text-neutral-700">No saved addresses yet.</p>
-                }
                 else
                 {
-                    <section class="mb-8 rounded border border-neutral-200 p-4">
-                        <h2 class="text-lg font-bold text-neutral-900">Add address</h2>
-                        <form method="post" action="@StorefrontRoutes.AccountAddresses" class="mt-4 grid gap-4 sm:grid-cols-2">
-                            <input type="hidden" name="Action" value="create" />
-                            <label class="grid gap-1 text-sm font-semibold text-neutral-700">
-                                Full name
-                                <input class="rounded border border-neutral-300 px-3 py-2 font-normal" name="FullName" autocomplete="name" required maxlength="160" />
-                            </label>
-                            <label class="grid gap-1 text-sm font-semibold text-neutral-700">
-                                Company
-                                <input class="rounded border border-neutral-300 px-3 py-2 font-normal" name="Company" autocomplete="organization" maxlength="160" />
-                            </label>
-                            <label class="grid gap-1 text-sm font-semibold text-neutral-700">
-                                Email
-                                <input class="rounded border border-neutral-300 px-3 py-2 font-normal" name="Email" autocomplete="email" type="email" maxlength="256" />
-                            </label>
-                            <label class="grid gap-1 text-sm font-semibold text-neutral-700">
-                                Phone
-                                <input class="rounded border border-neutral-300 px-3 py-2 font-normal" name="Phone" autocomplete="tel" maxlength="64" />
-                            </label>
-                            <label class="grid gap-1 text-sm font-semibold text-neutral-700 sm:col-span-2">
-                                Address line 1
-                                <input class="rounded border border-neutral-300 px-3 py-2 font-normal" name="Address1" autocomplete="address-line1" required maxlength="200" />
-                            </label>
-                            <label class="grid gap-1 text-sm font-semibold text-neutral-700 sm:col-span-2">
-                                Address line 2
-                                <input class="rounded border border-neutral-300 px-3 py-2 font-normal" name="Address2" autocomplete="address-line2" maxlength="200" />
-                            </label>
-                            <label class="grid gap-1 text-sm font-semibold text-neutral-700">
-                                City
-                                <input class="rounded border border-neutral-300 px-3 py-2 font-normal" name="City" autocomplete="address-level2" required maxlength="120" />
-                            </label>
-                            <label class="grid gap-1 text-sm font-semibold text-neutral-700">
-                                State / province
-                                <input class="rounded border border-neutral-300 px-3 py-2 font-normal" name="StateProvinceName" autocomplete="address-level1" maxlength="120" />
-                            </label>
-                            <label class="grid gap-1 text-sm font-semibold text-neutral-700">
-                                Postal code
-                                <input class="rounded border border-neutral-300 px-3 py-2 font-normal" name="PostalCode" autocomplete="postal-code" required maxlength="32" />
-                            </label>
-                            <label class="grid gap-1 text-sm font-semibold text-neutral-700">
-                                Country code
-                                <input class="rounded border border-neutral-300 px-3 py-2 font-normal uppercase" name="CountryCode" autocomplete="country" required minlength="2" maxlength="2" />
-                            </label>
-                            <div class="flex flex-wrap gap-4 text-sm text-neutral-700 sm:col-span-2">
-                                <label class="inline-flex items-center gap-2"><input type="checkbox" name="IsDefaultShipping" value="true" /> Default shipping</label>
-                                <label class="inline-flex items-center gap-2"><input type="checkbox" name="IsDefaultBilling" value="true" /> Default billing</label>
-                            </div>
-                            <div class="sm:col-span-2">
-                                <button class="rounded bg-neutral-900 px-4 py-2 text-sm font-semibold text-white" type="submit">Save address</button>
-                            </div>
-                        </form>
-                    </section>
-
-                    <div class="grid gap-4 xl:grid-cols-2">
-                        @foreach (var address in _addresses)
-                        {
-                            <section class="rounded border border-neutral-200 p-4">
-                                <div class="flex flex-wrap gap-2 text-xs font-semibold uppercase text-neutral-500">
-                                    @if (address.IsDefaultShipping)
-                                    {
-                                        <span class="rounded bg-emerald-50 px-2 py-1 text-emerald-700">Default shipping</span>
-                                    }
-                                    @if (address.IsDefaultBilling)
-                                    {
-                                        <span class="rounded bg-sky-50 px-2 py-1 text-sky-700">Default billing</span>
-                                    }
-                                </div>
-                                <h2 class="mt-3 text-base font-bold text-neutral-900">@address.FullName</h2>
-                                @if (!string.IsNullOrWhiteSpace(address.Company))
-                                {
-                                    <p class="mt-1 text-sm text-neutral-700">@address.Company</p>
-                                }
-                                <p class="mt-2 text-sm text-neutral-700">@address.Address1</p>
-                                @if (!string.IsNullOrWhiteSpace(address.Address2))
-                                {
-                                    <p class="text-sm text-neutral-700">@address.Address2</p>
-                                }
-                                <p class="text-sm text-neutral-700">@address.City, @address.PostalCode</p>
-                                <p class="text-sm text-neutral-700">@address.CountryCode</p>
-                                @if (!string.IsNullOrWhiteSpace(address.Phone))
-                                {
-                                    <p class="mt-2 text-sm text-neutral-600">@address.Phone</p>
-                                }
-                                <form method="post" action="@StorefrontRoutes.AccountAddresses" class="mt-4 grid gap-3">
-                                    <input type="hidden" name="AddressId" value="@address.PublicId" />
-                                    <div class="grid gap-3 sm:grid-cols-2">
-                                        <label class="grid gap-1 text-xs font-semibold uppercase text-neutral-500">
-                                            Full name
-                                            <input class="rounded border border-neutral-300 px-3 py-2 text-sm font-normal normal-case text-neutral-900" name="FullName" value="@address.FullName" required maxlength="160" />
-                                        </label>
-                                        <label class="grid gap-1 text-xs font-semibold uppercase text-neutral-500">
-                                            Company
-                                            <input class="rounded border border-neutral-300 px-3 py-2 text-sm font-normal normal-case text-neutral-900" name="Company" value="@address.Company" maxlength="160" />
-                                        </label>
-                                        <label class="grid gap-1 text-xs font-semibold uppercase text-neutral-500">
-                                            Email
-                                            <input class="rounded border border-neutral-300 px-3 py-2 text-sm font-normal normal-case text-neutral-900" name="Email" value="@address.Email" type="email" maxlength="256" />
-                                        </label>
-                                        <label class="grid gap-1 text-xs font-semibold uppercase text-neutral-500">
-                                            Phone
-                                            <input class="rounded border border-neutral-300 px-3 py-2 text-sm font-normal normal-case text-neutral-900" name="Phone" value="@address.Phone" maxlength="64" />
-                                        </label>
-                                        <label class="grid gap-1 text-xs font-semibold uppercase text-neutral-500 sm:col-span-2">
-                                            Address line 1
-                                            <input class="rounded border border-neutral-300 px-3 py-2 text-sm font-normal normal-case text-neutral-900" name="Address1" value="@address.Address1" required maxlength="200" />
-                                        </label>
-                                        <label class="grid gap-1 text-xs font-semibold uppercase text-neutral-500 sm:col-span-2">
-                                            Address line 2
-                                            <input class="rounded border border-neutral-300 px-3 py-2 text-sm font-normal normal-case text-neutral-900" name="Address2" value="@address.Address2" maxlength="200" />
-                                        </label>
-                                        <label class="grid gap-1 text-xs font-semibold uppercase text-neutral-500">
-                                            City
-                                            <input class="rounded border border-neutral-300 px-3 py-2 text-sm font-normal normal-case text-neutral-900" name="City" value="@address.City" required maxlength="120" />
-                                        </label>
-                                        <label class="grid gap-1 text-xs font-semibold uppercase text-neutral-500">
-                                            State / province
-                                            <input class="rounded border border-neutral-300 px-3 py-2 text-sm font-normal normal-case text-neutral-900" name="StateProvinceName" value="@address.StateProvinceName" maxlength="120" />
-                                        </label>
-                                        <label class="grid gap-1 text-xs font-semibold uppercase text-neutral-500">
-                                            Postal code
-                                            <input class="rounded border border-neutral-300 px-3 py-2 text-sm font-normal normal-case text-neutral-900" name="PostalCode" value="@address.PostalCode" required maxlength="32" />
-                                        </label>
-                                        <label class="grid gap-1 text-xs font-semibold uppercase text-neutral-500">
-                                            Country code
-                                            <input class="rounded border border-neutral-300 px-3 py-2 text-sm font-normal uppercase text-neutral-900" name="CountryCode" value="@address.CountryCode" required minlength="2" maxlength="2" />
-                                        </label>
-                                    </div>
-                                    <div class="flex flex-wrap gap-4 text-sm text-neutral-700">
-                                        <label class="inline-flex items-center gap-2"><input type="checkbox" name="IsDefaultShipping" value="true" checked="@address.IsDefaultShipping" /> Default shipping</label>
-                                        <label class="inline-flex items-center gap-2"><input type="checkbox" name="IsDefaultBilling" value="true" checked="@address.IsDefaultBilling" /> Default billing</label>
-                                    </div>
-                                    <div class="flex flex-wrap gap-2">
-                                        <button class="rounded bg-neutral-900 px-3 py-2 text-sm font-semibold text-white" type="submit" name="Action" value="update">Update</button>
-                                        <button class="rounded border border-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-800" type="submit" name="Action" value="default-shipping">Default shipping</button>
-                                        <button class="rounded border border-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-800" type="submit" name="Action" value="default-billing">Default billing</button>
-                                        <button class="rounded border border-rose-300 px-3 py-2 text-sm font-semibold text-rose-700" type="submit" name="Action" value="delete">Delete</button>
-                                    </div>
-                                </form>
-                            </section>
-                        }
-                    </div>
+                    <AccountAddressBook
+                        InitialAddresses="_addresses"
+                        InitialError="_error ?? Error"
+                        InitialSuccess="@(Saved == "1" ? "Address book updated." : null)"
+                        FormAction="@StorefrontRoutes.AccountAddresses"
+                        AntiforgeryFieldName="_antiforgeryFieldName"
+                        AntiforgeryRequestToken="_antiforgeryRequestToken"
+                        @rendermode="InteractiveWebAssembly" />
                 }
             </div>
         </article>
@@ -199,7 +50,12 @@
 @code {
     private bool _loading = true;
     private string? _error;
-    private IReadOnlyList<StorefrontCustomerAddressResponse> _addresses = [];
+    private IReadOnlyList<StorefrontBrowserCustomerAddress> _addresses = [];
+    private string? _antiforgeryFieldName;
+    private string? _antiforgeryRequestToken;
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
 
     [SupplyParameterFromQuery(Name = "error")]
     public string? Error { get; set; }
@@ -209,6 +65,10 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var tokens = HttpContext is null ? null : Antiforgery.GetAndStoreTokens(HttpContext);
+        _antiforgeryFieldName = tokens?.FormFieldName;
+        _antiforgeryRequestToken = tokens?.RequestToken;
+
         var session = await SessionResolver.GetCurrentUserAsync();
         if (!session.IsAuthenticated || string.IsNullOrWhiteSpace(session.AccessToken))
         {
@@ -219,7 +79,7 @@
         var result = await ApiClient.GetCustomerAddressesAsync(session.AccessToken);
         if (result.Success)
         {
-            _addresses = result.Data ?? [];
+            _addresses = (result.Data ?? []).Select(ToBrowserAddress).ToArray();
         }
         else
         {
@@ -227,5 +87,24 @@
         }
 
         _loading = false;
+    }
+
+    private static StorefrontBrowserCustomerAddress ToBrowserAddress(StorefrontCustomerAddressResponse address)
+    {
+        return new StorefrontBrowserCustomerAddress(
+            address.PublicId,
+            address.FullName,
+            address.Company,
+            address.Email,
+            address.Phone,
+            address.Address1,
+            address.Address2,
+            address.City,
+            address.PostalCode,
+            address.CountryCode,
+            address.StateProvinceCode,
+            address.StateProvinceName,
+            address.IsDefaultShipping,
+            address.IsDefaultBilling);
     }
 }

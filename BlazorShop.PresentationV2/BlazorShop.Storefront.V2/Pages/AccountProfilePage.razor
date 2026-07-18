@@ -1,8 +1,10 @@
 @page "/account"
 @page "/account/profile"
+@using Microsoft.AspNetCore.Antiforgery
 @inject IStorefrontSessionResolver SessionResolver
 @inject StorefrontApiClient ApiClient
 @inject NavigationManager NavigationManager
+@inject IAntiforgery Antiforgery
 
 <PageTitle>Account profile</PageTitle>
 
@@ -24,63 +26,20 @@
             </header>
 
             <div class="px-6 py-6">
-                @if (!string.IsNullOrWhiteSpace(SuccessMessage))
-                {
-                    <div class="mb-5 rounded border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800" role="status">@SuccessMessage</div>
-                }
-                @if (!string.IsNullOrWhiteSpace(ErrorMessage))
-                {
-                    <div class="mb-5 rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800" role="alert">@ErrorMessage</div>
-                }
-
                 @if (_loading)
                 {
                     <p class="text-sm text-neutral-600">Loading profile...</p>
                 }
-                else if (_profile is null)
-                {
-                    <p class="text-sm text-neutral-700">Profile could not be loaded.</p>
-                }
                 else
                 {
-                    <form method="post" action="@StorefrontRoutes.AccountProfile" class="grid max-w-3xl gap-5 sm:grid-cols-2">
-                        <AntiforgeryToken />
-                        <label class="block text-sm sm:col-span-2">
-                            <span class="font-semibold text-neutral-800">Email address</span>
-                            <input name="Email" type="email" autocomplete="email" required value="@_profile.Email" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
-                        </label>
-                        <label class="block text-sm sm:col-span-2">
-                            <span class="font-semibold text-neutral-800">Display name</span>
-                            <input name="FullName" type="text" autocomplete="name" required value="@_profile.FullName" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
-                        </label>
-                        <label class="block text-sm">
-                            <span class="font-semibold text-neutral-800">First name</span>
-                            <input name="FirstName" type="text" autocomplete="given-name" value="@_profile.FirstName" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
-                        </label>
-                        <label class="block text-sm">
-                            <span class="font-semibold text-neutral-800">Last name</span>
-                            <input name="LastName" type="text" autocomplete="family-name" value="@_profile.LastName" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
-                        </label>
-                        <label class="block text-sm">
-                            <span class="font-semibold text-neutral-800">Company</span>
-                            <input name="Company" type="text" autocomplete="organization" value="@_profile.Company" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
-                        </label>
-                        <label class="block text-sm">
-                            <span class="font-semibold text-neutral-800">Phone</span>
-                            <input name="PhoneNumber" type="tel" autocomplete="tel" value="@_profile.PhoneNumber" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
-                        </label>
-                        <label class="block text-sm">
-                            <span class="font-semibold text-neutral-800">Language</span>
-                            <input name="PreferredLanguage" type="text" value="@_profile.PreferredLanguage" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm" />
-                        </label>
-                        <label class="block text-sm">
-                            <span class="font-semibold text-neutral-800">Currency</span>
-                            <input name="PreferredCurrencyCode" type="text" maxlength="3" value="@_profile.PreferredCurrencyCode" class="mt-2 min-h-11 w-full rounded border border-neutral-300 px-3 text-sm uppercase" />
-                        </label>
-                        <div class="sm:col-span-2">
-                            <button type="submit" class="inline-flex rounded bg-neutral-900 px-5 py-3 text-sm font-semibold text-white hover:bg-neutral-800">Save profile</button>
-                        </div>
-                    </form>
+                    <AccountProfileEditor
+                        InitialProfile="_profile"
+                        InitialError="ErrorMessage"
+                        InitialSuccess="SuccessMessage"
+                        FormAction="@StorefrontRoutes.AccountProfile"
+                        AntiforgeryFieldName="_antiforgeryFieldName"
+                        AntiforgeryRequestToken="_antiforgeryRequestToken"
+                        @rendermode="InteractiveWebAssembly" />
                 }
             </div>
         </article>
@@ -95,7 +54,12 @@
     public string? Saved { get; set; }
 
     private bool _loading = true;
-    private StorefrontCustomerProfileResponse? _profile;
+    private StorefrontBrowserCustomerProfile? _profile;
+    private string? _antiforgeryFieldName;
+    private string? _antiforgeryRequestToken;
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
 
     private string? ErrorMessage => this.Error;
 
@@ -103,6 +67,10 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var tokens = HttpContext is null ? null : Antiforgery.GetAndStoreTokens(HttpContext);
+        _antiforgeryFieldName = tokens?.FormFieldName;
+        _antiforgeryRequestToken = tokens?.RequestToken;
+
         var session = await SessionResolver.GetCurrentUserAsync();
         if (!session.IsAuthenticated || string.IsNullOrWhiteSpace(session.AccessToken))
         {
@@ -111,7 +79,23 @@
         }
 
         var result = await ApiClient.GetCustomerProfileAsync(session.AccessToken);
-        _profile = result.Success ? result.Data : null;
+        _profile = result.Success && result.Data is not null ? ToBrowserProfile(result.Data) : null;
         _loading = false;
+    }
+
+    private static StorefrontBrowserCustomerProfile ToBrowserProfile(StorefrontCustomerProfileResponse profile)
+    {
+        return new StorefrontBrowserCustomerProfile(
+            profile.CustomerPublicId,
+            profile.Email,
+            profile.FullName,
+            profile.FirstName,
+            profile.LastName,
+            profile.Company,
+            profile.PhoneNumber,
+            profile.PreferredLanguage,
+            profile.PreferredCurrencyCode,
+            profile.CreatedAtUtc.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+            profile.LastActivityAtUtc?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
     }
 }

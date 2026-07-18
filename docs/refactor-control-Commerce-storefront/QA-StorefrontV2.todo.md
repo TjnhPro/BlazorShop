@@ -109,9 +109,9 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Cart WASM removes a line. 2026-07-17 Phase 3: `StorefrontCartView` calls same-origin `DELETE /api/cart/lines/{lineId}`; focused cart suite passed.
 - [x] Cart WASM clears cart. 2026-07-17 Phase 3: `StorefrontCartView` calls same-origin `DELETE /api/cart`; focused cart suite passed.
 - [x] Cart badge updates after cart mutation. 2026-07-17 Phase 3: WASM interop updates `[data-storefront-cart-badge]` and dispatches `blazorshop:cart-changed`; static guard and focused cart suite passed.
-- [ ] Account profile WASM reads and updates current customer only.
-- [ ] Account addresses WASM create/update/delete current customer's addresses only.
-- [ ] Account order list/detail only shows current customer's orders.
+- [x] Account profile WASM reads and updates current customer only. 2026-07-18 Phase 4: Storefront V2 local `/api/account/profile` endpoints resolve the current customer server-side through `IStorefrontSessionResolver`; `AccountProfileEditor` calls only same-origin local routes and focused WASM guardrail tests passed.
+- [x] Account addresses WASM create/update/delete current customer's addresses only. 2026-07-18 Phase 4: local address endpoints validate antiforgery on mutations and call bearer-backed Storefront API client without browser-supplied customer/store identity; component guardrails passed.
+- [x] Account order list/detail only shows current customer's orders. 2026-07-18 Phase 4: local order list/detail/receipt endpoints resolve the current authenticated customer server-side and return browser DTOs; component guardrails passed.
 - [ ] Checkout WASM blocks empty cart.
 - [ ] Checkout WASM detects stale cart version.
 - [ ] Checkout WASM completes happy-path order placement.
