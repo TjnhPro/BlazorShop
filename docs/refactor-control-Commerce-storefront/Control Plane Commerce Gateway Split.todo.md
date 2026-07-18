@@ -362,43 +362,51 @@ Verification:
 
 Mục tiêu: chia `ControlPlaneCommerceCatalogService.cs` thành implementation nhỏ, mỗi file dùng transport chung.
 
-- [ ] Tạo implementation files trong `BlazorShop.Infrastructure/Data/ControlPlane/CommerceGateway/`:
-  - [ ] `ControlPlaneProductGateway.cs`
-  - [ ] `ControlPlaneCategoryGateway.cs`
-  - [ ] `ControlPlaneMediaGateway.cs`
-  - [ ] `ControlPlaneOrderGateway.cs`
-  - [ ] `ControlPlaneContentGateway.cs`
-  - [ ] `ControlPlaneNavigationGateway.cs`
-  - [ ] `ControlPlaneStoreConfigurationGateway.cs`
-  - [ ] `ControlPlaneCurrencyGateway.cs`
-  - [ ] `ControlPlanePaymentGateway.cs`
-  - [ ] `ControlPlaneShippingGateway.cs`
-  - [ ] `ControlPlaneSecurityPrivacyGateway.cs`
-- [ ] Move method bodies theo capability.
-- [ ] Move query builders theo capability:
-  - [ ] `BuildProductQuery` vào Product gateway.
-  - [ ] `BuildInventoryQuery` vào Product gateway.
-  - [ ] `BuildProductImportQuery`/`BuildProductImportRowsQuery` vào Product gateway.
-  - [ ] `BuildStorefrontPageQuery` vào Content gateway.
-  - [ ] `BuildOrderQuery` vào Order gateway.
-  - [ ] media preview/list query builders vào Media gateway.
-  - [ ] common `ToQueryString`/`AddIfPresent` vào small internal helper nếu duplication xuất hiện.
-- [ ] Đăng ký DI cho từng gateway.
-- [ ] Giữ adapter `ControlPlaneCommerceCatalogService` nếu cần để không đổi controller cùng phase.
-- [ ] Nếu adapter còn lại, adapter chỉ delegate sang gateway mới, không chứa transport logic.
+- [x] Tạo implementation files trong `BlazorShop.Infrastructure/Data/ControlPlane/CommerceGateway/`:
+  - [x] `ControlPlaneProductGateway.cs`
+  - [x] `ControlPlaneCategoryGateway.cs`
+  - [x] `ControlPlaneMediaGateway.cs`
+  - [x] `ControlPlaneOrderGateway.cs`
+  - [x] `ControlPlaneContentGateway.cs`
+  - [x] `ControlPlaneNavigationGateway.cs`
+  - [x] `ControlPlaneStoreConfigurationGateway.cs`
+  - [x] `ControlPlaneCurrencyGateway.cs`
+  - [x] `ControlPlanePaymentGateway.cs`
+  - [x] `ControlPlaneShippingGateway.cs`
+  - [x] `ControlPlaneSecurityPrivacyGateway.cs`
+  - [x] `ControlPlaneMessageGateway.cs`
+  2026-07-18 Phase 3: added `ControlPlaneCommerceGatewayBase` and one implementation per capability, including Messages for email/message-template/queued-message methods.
+- [x] Move method bodies theo capability.
+  2026-07-18 Phase 3: 113 method bodies were moved out of `ControlPlaneCommerceCatalogService` into capability gateway classes.
+- [x] Move query builders theo capability:
+  - [x] `BuildProductQuery` vào Product gateway.
+  - [x] `BuildInventoryQuery` vào Product gateway.
+  - [x] `BuildProductImportQuery`/`BuildProductImportRowsQuery` vào Product gateway.
+  - [x] `BuildStorefrontPageQuery` vào Content gateway.
+  - [x] `BuildOrderQuery` vào Order gateway.
+  - [x] media preview/list query builders vào Media gateway.
+  - [x] common `ToQueryString`/`AddIfPresent` vào small internal helper nếu duplication xuất hiện.
+  2026-07-18 Phase 3: query builders and send/result adapters live in `ControlPlaneCommerceGatewayBase` to avoid duplicating transport/query helper code across gateway classes.
+- [x] Đăng ký DI cho từng gateway.
+- [x] Giữ adapter `ControlPlaneCommerceCatalogService` nếu cần để không đổi controller cùng phase.
+- [x] Nếu adapter còn lại, adapter chỉ delegate sang gateway mới, không chứa transport logic.
+  2026-07-18 Phase 3: facade delegates to capability interfaces and static test rejects `new HttpRequestMessage`, node headers, and `AppendStoreKeyQuery`.
 
 Risk controls:
 
-- [ ] Không để nhiều gateway tự build base URL/node headers.
-- [ ] Không tạo static global HttpClient.
-- [ ] Không trộn ControlPlaneDbContext query vào capability gateway ngoài transport.
+- [x] Không để nhiều gateway tự build base URL/node headers. 2026-07-18 Phase 3: only `CommerceNodeAdminGatewayTransport` owns base URL/node headers.
+- [x] Không tạo static global HttpClient. 2026-07-18 Phase 3: gateway implementations use DI transport only.
+- [x] Không trộn ControlPlaneDbContext query vào capability gateway ngoài transport. 2026-07-18 Phase 3: capability classes do not inject `ControlPlaneDbContext`.
 
 Verification:
 
-- [ ] Store mapping tests được đổi để test từng gateway.
-- [ ] Thêm test đảm bảo old adapter không chứa `new HttpRequestMessage` nếu adapter còn lại.
-- [ ] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~ControlPlaneCommerceCatalogServiceStoreMappingTests"`
-- [ ] `dotnet build BlazorShop.Infrastructure/BlazorShop.Infrastructure.csproj`
+- [x] Store mapping tests được đổi để test từng gateway.
+  2026-07-18 Phase 3: existing facade tests now exercise capability gateways through the facade and shared transport.
+- [x] Thêm test đảm bảo old adapter không chứa `new HttpRequestMessage` nếu adapter còn lại.
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~ControlPlaneCommerceCatalogServiceStoreMappingTests"`
+  2026-07-18 Phase 3: passed 18/18 with existing package advisory warnings.
+- [x] `dotnet build BlazorShop.Infrastructure/BlazorShop.Infrastructure.csproj`
+  2026-07-18 Phase 3: passed with 0 warnings and 0 errors.
 
 ## Phase 4 - Split Control Plane API Controllers
 

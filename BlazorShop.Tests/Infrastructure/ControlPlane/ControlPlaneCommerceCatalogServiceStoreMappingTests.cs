@@ -234,6 +234,17 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
         }
 
         [Fact]
+        public void CatalogFacade_DoesNotContainTransportLogic()
+        {
+            var source = ReadRepositoryFile("BlazorShop.Infrastructure/Data/ControlPlane/ControlPlaneCommerceCatalogService.cs");
+
+            Assert.DoesNotContain("new HttpRequestMessage", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("X-Node-Key", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("X-Node-Secret", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("AppendStoreKeyQuery", source, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public async Task Transport_ReturnsValidationFailureForArchivedStore()
         {
             await using var context = CreateContext();
@@ -353,7 +364,20 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             ControlPlaneDbContext context,
             RecordingHandler handler)
         {
-            return new ControlPlaneCommerceCatalogService(CreateTransport(context, handler));
+            var transport = CreateTransport(context, handler);
+            return new ControlPlaneCommerceCatalogService(
+                new ControlPlaneSecurityPrivacyGateway(transport),
+                new ControlPlaneStoreConfigurationGateway(transport),
+                new ControlPlaneMessageGateway(transport),
+                new ControlPlaneNavigationGateway(transport),
+                new ControlPlaneCurrencyGateway(transport),
+                new ControlPlaneMediaGateway(transport),
+                new ControlPlanePaymentGateway(transport),
+                new ControlPlaneOrderGateway(transport),
+                new ControlPlaneProductGateway(transport),
+                new ControlPlaneContentGateway(transport),
+                new ControlPlaneShippingGateway(transport),
+                new ControlPlaneCategoryGateway(transport));
         }
 
         private static CommerceNodeAdminGatewayTransport CreateTransport(
@@ -361,6 +385,23 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             RecordingHandler handler)
         {
             return new CommerceNodeAdminGatewayTransport(context, new HttpClient(handler));
+        }
+
+        private static string ReadRepositoryFile(string relativePath)
+        {
+            return File.ReadAllText(Path.Combine(FindRepositoryRoot().FullName, relativePath));
+        }
+
+        private static DirectoryInfo FindRepositoryRoot()
+        {
+            var current = new DirectoryInfo(AppContext.BaseDirectory);
+            while (current is not null && !File.Exists(Path.Combine(current.FullName, "BlazorShop.sln")))
+            {
+                current = current.Parent;
+            }
+
+            Assert.NotNull(current);
+            return current!;
         }
 
         private static ControlPlaneDbContext CreateContext()

@@ -4,6 +4,18 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using BlazorShop.Application.ControlPlane.Actions;
     using BlazorShop.Application.ControlPlane.Catalog;
     using BlazorShop.Application.ControlPlane.CommerceGateway;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Categories;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Content;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Currencies;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Media;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Messages;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Navigation;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Orders;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Payments;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Products;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.SecurityPrivacy;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Shipping;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.StoreConfiguration;
     using BlazorShop.Application.ControlPlane.Credentials;
     using BlazorShop.Application.ControlPlane.Dashboard;
     using BlazorShop.Application.ControlPlane.Health;
@@ -63,6 +75,18 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             services.AddScoped<IControlPlaneStoreService, ControlPlaneStoreService>();
             services.AddScoped<IControlPlaneStoreDeploymentService, ControlPlaneStoreDeploymentService>();
             services.AddScoped<IControlPlaneUserManagementService, ControlPlaneUserManagementService>();
+            services.AddScoped<IControlPlaneProductGateway, ControlPlaneProductGateway>();
+            services.AddScoped<IControlPlaneCategoryGateway, ControlPlaneCategoryGateway>();
+            services.AddScoped<IControlPlaneMediaGateway, ControlPlaneMediaGateway>();
+            services.AddScoped<IControlPlaneOrderGateway, ControlPlaneOrderGateway>();
+            services.AddScoped<IControlPlaneContentGateway, ControlPlaneContentGateway>();
+            services.AddScoped<IControlPlaneNavigationGateway, ControlPlaneNavigationGateway>();
+            services.AddScoped<IControlPlaneStoreConfigurationGateway, ControlPlaneStoreConfigurationGateway>();
+            services.AddScoped<IControlPlaneCurrencyGateway, ControlPlaneCurrencyGateway>();
+            services.AddScoped<IControlPlanePaymentGateway, ControlPlanePaymentGateway>();
+            services.AddScoped<IControlPlaneShippingGateway, ControlPlaneShippingGateway>();
+            services.AddScoped<IControlPlaneSecurityPrivacyGateway, ControlPlaneSecurityPrivacyGateway>();
+            services.AddScoped<IControlPlaneMessageGateway, ControlPlaneMessageGateway>();
             services.AddHostedService<ControlPlaneProbeBackgroundService>();
             services.AddHttpClient<ICommerceNodeControlClient, CommerceNodeControlClient>(
                 client =>

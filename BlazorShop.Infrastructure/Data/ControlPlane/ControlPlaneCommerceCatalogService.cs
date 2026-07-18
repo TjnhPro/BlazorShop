@@ -25,413 +25,288 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using BlazorShop.Application.DTOs.Product.ProductVariant;
     using BlazorShop.Application.DTOs.Seo;
     using BlazorShop.Domain.Contracts;
-
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Categories;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Content;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Currencies;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Media;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Messages;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Navigation;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Orders;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Payments;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Products;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.SecurityPrivacy;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Shipping;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.StoreConfiguration;
     public sealed class ControlPlaneCommerceCatalogService : IControlPlaneCommerceCatalogService
     {
-        private readonly ICommerceNodeAdminGatewayTransport transport;
+        private readonly IControlPlaneSecurityPrivacyGateway securityPrivacy;
+        private readonly IControlPlaneStoreConfigurationGateway storeConfiguration;
+        private readonly IControlPlaneMessageGateway messages;
+        private readonly IControlPlaneNavigationGateway navigation;
+        private readonly IControlPlaneCurrencyGateway currencies;
+        private readonly IControlPlaneMediaGateway media;
+        private readonly IControlPlanePaymentGateway payments;
+        private readonly IControlPlaneOrderGateway orders;
+        private readonly IControlPlaneProductGateway products;
+        private readonly IControlPlaneContentGateway content;
+        private readonly IControlPlaneShippingGateway shipping;
+        private readonly IControlPlaneCategoryGateway categories;
 
-        public ControlPlaneCommerceCatalogService(ICommerceNodeAdminGatewayTransport transport)
+        public ControlPlaneCommerceCatalogService(
+            IControlPlaneSecurityPrivacyGateway securityPrivacy,
+            IControlPlaneStoreConfigurationGateway storeConfiguration,
+            IControlPlaneMessageGateway messages,
+            IControlPlaneNavigationGateway navigation,
+            IControlPlaneCurrencyGateway currencies,
+            IControlPlaneMediaGateway media,
+            IControlPlanePaymentGateway payments,
+            IControlPlaneOrderGateway orders,
+            IControlPlaneProductGateway products,
+            IControlPlaneContentGateway content,
+            IControlPlaneShippingGateway shipping,
+            IControlPlaneCategoryGateway categories)
         {
-            this.transport = transport;
+            this.securityPrivacy = securityPrivacy;
+            this.storeConfiguration = storeConfiguration;
+            this.messages = messages;
+            this.navigation = navigation;
+            this.currencies = currencies;
+            this.media = media;
+            this.payments = payments;
+            this.orders = orders;
+            this.products = products;
+            this.content = content;
+            this.shipping = shipping;
+            this.categories = categories;
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<PagedResult<GetCatalogProduct>>> QueryProductsAsync(
+                public Task<ControlPlaneCommerceCatalogResult<PagedResult<GetCatalogProduct>>> QueryProductsAsync(
             Guid storePublicId,
             ProductCatalogQuery query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<PagedResult<GetCatalogProduct>>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/products/query" + BuildProductQuery(query),
-                null,
-                cancellationToken);
+            return this.products.QueryProductsAsync(storePublicId, query, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<GetProduct>> GetProductAsync(
+                public Task<ControlPlaneCommerceCatalogResult<GetProduct>> GetProductAsync(
             Guid storePublicId,
             Guid productId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<GetProduct>(
-                storePublicId,
-                HttpMethod.Get,
-                $"api/commerce/admin/products/{productId:D}",
-                null,
-                cancellationToken);
+            return this.products.GetProductAsync(storePublicId, productId, cancellationToken);
         }
 
-        public async Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> GetRuntimeStoreAsync(
+                public Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> GetRuntimeStoreAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            var storeKey = await this.ResolveStoreKeyAsync(storePublicId, cancellationToken);
-            if (!storeKey.Success)
-            {
-                return new ControlPlaneCommerceCatalogResult<CommerceStoreDetail>(
-                    false,
-                    storeKey.Message,
-                    Failure: storeKey.Failure,
-                    HttpStatusCode: storeKey.HttpStatusCode);
-            }
-
-            var result = await this.SendAsync<CommerceStoreListResponse>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/stores",
-                null,
-                cancellationToken);
-
-            if (!result.Success)
-            {
-                return new ControlPlaneCommerceCatalogResult<CommerceStoreDetail>(
-                    false,
-                    result.Message,
-                    Failure: result.Failure,
-                    HttpStatusCode: result.HttpStatusCode);
-            }
-
-            var runtimeStore = result.Payload?.Items.FirstOrDefault(item =>
-                string.Equals(item.StoreKey, storeKey.Payload, StringComparison.OrdinalIgnoreCase));
-            if (runtimeStore is null)
-            {
-                return Failure<CommerceStoreDetail>("Runtime store was not found.", ControlPlaneCommerceCatalogFailure.NotFound);
-            }
-
-            return await this.SendAsync<CommerceStoreDetail>(
-                storePublicId,
-                HttpMethod.Get,
-                $"api/commerce/admin/stores/{runtimeStore.PublicId:D}",
-                null,
-                cancellationToken);
+            return this.storeConfiguration.GetRuntimeStoreAsync(storePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> UpdateRuntimeStoreAsync(
+                public Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> UpdateRuntimeStoreAsync(
             Guid storePublicId,
             Guid runtimeStorePublicId,
             UpdateCommerceStoreRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<CommerceStoreDetail>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/stores/{runtimeStorePublicId:D}",
-                request,
-                cancellationToken);
+            return this.storeConfiguration.UpdateRuntimeStoreAsync(storePublicId, runtimeStorePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> ActivateRuntimeStoreAsync(
+                public Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> ActivateRuntimeStoreAsync(
             Guid storePublicId,
             Guid runtimeStorePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<CommerceStoreDetail>(
-                storePublicId,
-                HttpMethod.Post,
-                $"api/commerce/admin/stores/{runtimeStorePublicId:D}/activate",
-                null,
-                cancellationToken);
+            return this.storeConfiguration.ActivateRuntimeStoreAsync(storePublicId, runtimeStorePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> DeactivateRuntimeStoreAsync(
+                public Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> DeactivateRuntimeStoreAsync(
             Guid storePublicId,
             Guid runtimeStorePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<CommerceStoreDetail>(
-                storePublicId,
-                HttpMethod.Post,
-                $"api/commerce/admin/stores/{runtimeStorePublicId:D}/deactivate",
-                null,
-                cancellationToken);
+            return this.storeConfiguration.DeactivateRuntimeStoreAsync(storePublicId, runtimeStorePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<object>> CreateProductAsync(
+                public Task<ControlPlaneCommerceCatalogResult<object>> CreateProductAsync(
             Guid storePublicId,
             CreateProduct request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<object>(
-                storePublicId,
-                HttpMethod.Post,
-                "api/commerce/admin/products",
-                request,
-                cancellationToken);
+            return this.products.CreateProductAsync(storePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<object>> UpdateProductAsync(
+                public Task<ControlPlaneCommerceCatalogResult<object>> UpdateProductAsync(
             Guid storePublicId,
             Guid productId,
             UpdateProduct request,
             CancellationToken cancellationToken = default)
         {
-            request.Id = productId;
-            return this.SendAsync<object>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/products/{productId:D}",
-                request,
-                cancellationToken);
+            return this.products.UpdateProductAsync(storePublicId, productId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<object>> ArchiveProductAsync(
+                public Task<ControlPlaneCommerceCatalogResult<object>> ArchiveProductAsync(
             Guid storePublicId,
             Guid productId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<object>(
-                storePublicId,
-                HttpMethod.Delete,
-                $"api/commerce/admin/products/{productId:D}",
-                null,
-                cancellationToken);
+            return this.products.ArchiveProductAsync(storePublicId, productId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CategorySeoDto>> GetCategorySeoAsync(
+                public Task<ControlPlaneCommerceCatalogResult<CategorySeoDto>> GetCategorySeoAsync(
             Guid storePublicId,
             Guid categoryId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<CategorySeoDto>(
-                storePublicId,
-                HttpMethod.Get,
-                $"api/commerce/admin/categories/{categoryId:D}/seo",
-                null,
-                cancellationToken);
+            return this.categories.GetCategorySeoAsync(storePublicId, categoryId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CategorySeoDto>> UpdateCategorySeoAsync(
+                public Task<ControlPlaneCommerceCatalogResult<CategorySeoDto>> UpdateCategorySeoAsync(
             Guid storePublicId,
             Guid categoryId,
             UpdateCategorySeoDto request,
             CancellationToken cancellationToken = default)
         {
-            request.CategoryId = categoryId;
-            return this.SendAsync<CategorySeoDto>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/categories/{categoryId:D}/seo",
-                request,
-                cancellationToken);
+            return this.categories.UpdateCategorySeoAsync(storePublicId, categoryId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<ProductSeoDto>> GetProductSeoAsync(
+                public Task<ControlPlaneCommerceCatalogResult<ProductSeoDto>> GetProductSeoAsync(
             Guid storePublicId,
             Guid productId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<ProductSeoDto>(
-                storePublicId,
-                HttpMethod.Get,
-                $"api/commerce/admin/products/{productId:D}/seo",
-                null,
-                cancellationToken);
+            return this.products.GetProductSeoAsync(storePublicId, productId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<ProductSeoDto>> UpdateProductSeoAsync(
+                public Task<ControlPlaneCommerceCatalogResult<ProductSeoDto>> UpdateProductSeoAsync(
             Guid storePublicId,
             Guid productId,
             UpdateProductSeoDto request,
             CancellationToken cancellationToken = default)
         {
-            request.ProductId = productId;
-            return this.SendAsync<ProductSeoDto>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/products/{productId:D}/seo",
-                request,
-                cancellationToken);
+            return this.products.UpdateProductSeoAsync(storePublicId, productId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreSeoSlugPolicyResult>> GenerateSeoSlugAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreSeoSlugPolicyResult>> GenerateSeoSlugAsync(
             Guid storePublicId,
             StoreSeoSlugGenerateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreSeoSlugPolicyResult>(
-                storePublicId,
-                HttpMethod.Post,
-                "api/commerce/admin/seo/slugs/generate",
-                request,
-                cancellationToken);
+            return this.products.GenerateSeoSlugAsync(storePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreSeoSlugPolicyResult>> ValidateSeoSlugAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreSeoSlugPolicyResult>> ValidateSeoSlugAsync(
             Guid storePublicId,
             StoreSeoSlugValidateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreSeoSlugPolicyResult>(
-                storePublicId,
-                HttpMethod.Post,
-                "api/commerce/admin/seo/slugs/validate",
-                request,
-                cancellationToken);
+            return this.products.ValidateSeoSlugAsync(storePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreSeoSlugHistoryDto>>> ListSeoSlugHistoryAsync(
+                public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreSeoSlugHistoryDto>>> ListSeoSlugHistoryAsync(
             Guid storePublicId,
             StoreSeoSlugHistoryQuery query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<StoreSeoSlugHistoryDto>>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/seo/slugs/history" + BuildSeoSlugHistoryQuery(query),
-                null,
-                cancellationToken);
+            return this.products.ListSeoSlugHistoryAsync(storePublicId, query, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<ProductImportUploadResponse>> UploadProductImportAsync(
+                public Task<ControlPlaneCommerceCatalogResult<ProductImportUploadResponse>> UploadProductImportAsync(
             Guid storePublicId,
             ProductImportUploadRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendMultipartAsync<ProductImportUploadResponse>(
-                storePublicId,
-                "api/commerce/admin/products/import",
-                request,
-                cancellationToken);
+            return this.products.UploadProductImportAsync(storePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<ProductImportJobListResponse>> ListProductImportsAsync(
+                public Task<ControlPlaneCommerceCatalogResult<ProductImportJobListResponse>> ListProductImportsAsync(
             Guid storePublicId,
             ProductImportJobListQuery query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<ProductImportJobListResponse>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/products/imports" + BuildProductImportQuery(query),
-                null,
-                cancellationToken);
+            return this.products.ListProductImportsAsync(storePublicId, query, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<ProductImportJobDetailDto>> GetProductImportAsync(
+                public Task<ControlPlaneCommerceCatalogResult<ProductImportJobDetailDto>> GetProductImportAsync(
             Guid storePublicId,
             Guid jobPublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<ProductImportJobDetailDto>(
-                storePublicId,
-                HttpMethod.Get,
-                $"api/commerce/admin/products/imports/{jobPublicId:D}",
-                null,
-                cancellationToken);
+            return this.products.GetProductImportAsync(storePublicId, jobPublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<ProductImportRowsResponse>> ListProductImportRowsAsync(
+                public Task<ControlPlaneCommerceCatalogResult<ProductImportRowsResponse>> ListProductImportRowsAsync(
             Guid storePublicId,
             Guid jobPublicId,
             ProductImportRowsQuery query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<ProductImportRowsResponse>(
-                storePublicId,
-                HttpMethod.Get,
-                $"api/commerce/admin/products/imports/{jobPublicId:D}/rows" + BuildProductImportRowsQuery(query),
-                null,
-                cancellationToken);
+            return this.products.ListProductImportRowsAsync(storePublicId, jobPublicId, query, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateListResponse>> ListVariationTemplatesAsync(
+                public Task<ControlPlaneCommerceCatalogResult<VariationTemplateListResponse>> ListVariationTemplatesAsync(
             Guid storePublicId,
             VariationTemplateListQuery query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<VariationTemplateListResponse>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/variation-templates" + BuildPageQuery(query.PageNumber, query.PageSize),
-                null,
-                cancellationToken);
+            return this.products.ListVariationTemplatesAsync(storePublicId, query, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> GetVariationTemplateAsync(
+                public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> GetVariationTemplateAsync(
             Guid storePublicId,
             Guid templatePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<VariationTemplateDetailDto>(
-                storePublicId,
-                HttpMethod.Get,
-                $"api/commerce/admin/variation-templates/{templatePublicId:D}",
-                null,
-                cancellationToken);
+            return this.products.GetVariationTemplateAsync(storePublicId, templatePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> CreateVariationTemplateAsync(
+                public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> CreateVariationTemplateAsync(
             Guid storePublicId,
             CreateVariationTemplateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<VariationTemplateDetailDto>(
-                storePublicId,
-                HttpMethod.Post,
-                "api/commerce/admin/variation-templates",
-                request,
-                cancellationToken);
+            return this.products.CreateVariationTemplateAsync(storePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> UpdateVariationTemplateAsync(
+                public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> UpdateVariationTemplateAsync(
             Guid storePublicId,
             Guid templatePublicId,
             UpdateVariationTemplateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<VariationTemplateDetailDto>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/variation-templates/{templatePublicId:D}",
-                request,
-                cancellationToken);
+            return this.products.UpdateVariationTemplateAsync(storePublicId, templatePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> CreateVariationTemplateOptionAsync(
+                public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> CreateVariationTemplateOptionAsync(
             Guid storePublicId,
             Guid templatePublicId,
             CreateVariationTemplateOptionRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<VariationTemplateDetailDto>(
-                storePublicId,
-                HttpMethod.Post,
-                $"api/commerce/admin/variation-templates/{templatePublicId:D}/options",
-                request,
-                cancellationToken);
+            return this.products.CreateVariationTemplateOptionAsync(storePublicId, templatePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> UpdateVariationTemplateOptionAsync(
+                public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> UpdateVariationTemplateOptionAsync(
             Guid storePublicId,
             Guid templatePublicId,
             Guid optionPublicId,
             UpdateVariationTemplateOptionRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<VariationTemplateDetailDto>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/variation-templates/{templatePublicId:D}/options/{optionPublicId:D}",
-                request,
-                cancellationToken);
+            return this.products.UpdateVariationTemplateOptionAsync(storePublicId, templatePublicId, optionPublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> CreateVariationTemplateValueAsync(
+                public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> CreateVariationTemplateValueAsync(
             Guid storePublicId,
             Guid templatePublicId,
             Guid optionPublicId,
             CreateVariationTemplateValueRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<VariationTemplateDetailDto>(
-                storePublicId,
-                HttpMethod.Post,
-                $"api/commerce/admin/variation-templates/{templatePublicId:D}/options/{optionPublicId:D}/values",
-                request,
-                cancellationToken);
+            return this.products.CreateVariationTemplateValueAsync(storePublicId, templatePublicId, optionPublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> UpdateVariationTemplateValueAsync(
+                public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> UpdateVariationTemplateValueAsync(
             Guid storePublicId,
             Guid templatePublicId,
             Guid optionPublicId,
@@ -439,884 +314,552 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             UpdateVariationTemplateValueRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<VariationTemplateDetailDto>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/variation-templates/{templatePublicId:D}/options/{optionPublicId:D}/values/{valuePublicId:D}",
-                request,
-                cancellationToken);
+            return this.products.UpdateVariationTemplateValueAsync(storePublicId, templatePublicId, optionPublicId, valuePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageListResponse>> ListStorefrontPagesAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StorefrontPageListResponse>> ListStorefrontPagesAsync(
             Guid storePublicId,
             StorefrontPageListQuery query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorefrontPageListResponse>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/pages" + BuildStorefrontPageQuery(query),
-                null,
-                cancellationToken);
+            return this.content.ListStorefrontPagesAsync(storePublicId, query, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StorefrontPageTemplateDefinitionDto>>> ListStorefrontPageTemplatesAsync(
+                public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StorefrontPageTemplateDefinitionDto>>> ListStorefrontPageTemplatesAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<StorefrontPageTemplateDefinitionDto>>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/pages/templates",
-                null,
-                cancellationToken);
+            return this.content.ListStorefrontPageTemplatesAsync(storePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StorefrontPageTemplateStatusDto>>> GetStorefrontPageTemplateStatusAsync(
+                public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StorefrontPageTemplateStatusDto>>> GetStorefrontPageTemplateStatusAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<StorefrontPageTemplateStatusDto>>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/pages/template-status",
-                null,
-                cancellationToken);
+            return this.content.GetStorefrontPageTemplateStatusAsync(storePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> GetStorefrontPageAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> GetStorefrontPageAsync(
             Guid storePublicId,
             Guid pagePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorefrontPageDetailDto>(
-                storePublicId,
-                HttpMethod.Get,
-                $"api/commerce/admin/pages/{pagePublicId:D}",
-                null,
-                cancellationToken);
+            return this.content.GetStorefrontPageAsync(storePublicId, pagePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> CreateStorefrontPageAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> CreateStorefrontPageAsync(
             Guid storePublicId,
             CreateStorefrontPageRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorefrontPageDetailDto>(
-                storePublicId,
-                HttpMethod.Post,
-                "api/commerce/admin/pages",
-                request,
-                cancellationToken);
+            return this.content.CreateStorefrontPageAsync(storePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> UpdateStorefrontPageAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> UpdateStorefrontPageAsync(
             Guid storePublicId,
             Guid pagePublicId,
             UpdateStorefrontPageRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorefrontPageDetailDto>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/pages/{pagePublicId:D}",
-                request,
-                cancellationToken);
+            return this.content.UpdateStorefrontPageAsync(storePublicId, pagePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> ArchiveStorefrontPageAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> ArchiveStorefrontPageAsync(
             Guid storePublicId,
             Guid pagePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorefrontPageDetailDto>(
-                storePublicId,
-                HttpMethod.Delete,
-                $"api/commerce/admin/pages/{pagePublicId:D}",
-                null,
-                cancellationToken);
+            return this.content.ArchiveStorefrontPageAsync(storePublicId, pagePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> CreateStorefrontPageDraftFromTemplateAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> CreateStorefrontPageDraftFromTemplateAsync(
             Guid storePublicId,
             string pageKey,
             CreatePageFromTemplateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorefrontPageDetailDto>(
-                storePublicId,
-                HttpMethod.Post,
-                $"api/commerce/admin/pages/templates/{Uri.EscapeDataString(pageKey)}/draft",
-                request,
-                cancellationToken);
+            return this.content.CreateStorefrontPageDraftFromTemplateAsync(storePublicId, pageKey, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> MapStorefrontPageTemplateAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> MapStorefrontPageTemplateAsync(
             Guid storePublicId,
             Guid pagePublicId,
             MapPageTemplateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorefrontPageDetailDto>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/pages/{pagePublicId:D}/template",
-                request,
-                cancellationToken);
+            return this.content.MapStorefrontPageTemplateAsync(storePublicId, pagePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> ClearStorefrontPageTemplateAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> ClearStorefrontPageTemplateAsync(
             Guid storePublicId,
             Guid pagePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorefrontPageDetailDto>(
-                storePublicId,
-                HttpMethod.Delete,
-                $"api/commerce/admin/pages/{pagePublicId:D}/template",
-                null,
-                cancellationToken);
+            return this.content.ClearStorefrontPageTemplateAsync(storePublicId, pagePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> UpdateStorefrontPageNavigationAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> UpdateStorefrontPageNavigationAsync(
             Guid storePublicId,
             Guid pagePublicId,
             UpdatePageNavigationRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorefrontPageDetailDto>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/pages/{pagePublicId:D}/navigation",
-                request,
-                cancellationToken);
+            return this.content.UpdateStorefrontPageNavigationAsync(storePublicId, pagePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreNavigationMenuSummaryDto>>> ListNavigationMenusAsync(
+                public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreNavigationMenuSummaryDto>>> ListNavigationMenusAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<StoreNavigationMenuSummaryDto>>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/navigation/menus",
-                null,
-                cancellationToken);
+            return this.navigation.ListNavigationMenusAsync(storePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> GetNavigationMenuAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> GetNavigationMenuAsync(
             Guid storePublicId,
             Guid menuPublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreNavigationMenuDetailDto>(
-                storePublicId,
-                HttpMethod.Get,
-                $"api/commerce/admin/navigation/menus/{menuPublicId:D}",
-                null,
-                cancellationToken);
+            return this.navigation.GetNavigationMenuAsync(storePublicId, menuPublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> CreateNavigationMenuAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> CreateNavigationMenuAsync(
             Guid storePublicId,
             CreateStoreNavigationMenuRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreNavigationMenuDetailDto>(
-                storePublicId,
-                HttpMethod.Post,
-                "api/commerce/admin/navigation/menus",
-                request,
-                cancellationToken);
+            return this.navigation.CreateNavigationMenuAsync(storePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> UpdateNavigationMenuAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> UpdateNavigationMenuAsync(
             Guid storePublicId,
             Guid menuPublicId,
             UpdateStoreNavigationMenuRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreNavigationMenuDetailDto>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/navigation/menus/{menuPublicId:D}",
-                request,
-                cancellationToken);
+            return this.navigation.UpdateNavigationMenuAsync(storePublicId, menuPublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> CreateNavigationItemAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> CreateNavigationItemAsync(
             Guid storePublicId,
             Guid menuPublicId,
             CreateStoreNavigationMenuItemRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreNavigationMenuDetailDto>(
-                storePublicId,
-                HttpMethod.Post,
-                $"api/commerce/admin/navigation/menus/{menuPublicId:D}/items",
-                request,
-                cancellationToken);
+            return this.navigation.CreateNavigationItemAsync(storePublicId, menuPublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> UpdateNavigationItemAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> UpdateNavigationItemAsync(
             Guid storePublicId,
             Guid itemPublicId,
             UpdateStoreNavigationMenuItemRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreNavigationMenuDetailDto>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/navigation/items/{itemPublicId:D}",
-                request,
-                cancellationToken);
+            return this.navigation.UpdateNavigationItemAsync(storePublicId, itemPublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> ArchiveNavigationItemAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> ArchiveNavigationItemAsync(
             Guid storePublicId,
             Guid itemPublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreNavigationMenuDetailDto>(
-                storePublicId,
-                HttpMethod.Delete,
-                $"api/commerce/admin/navigation/items/{itemPublicId:D}",
-                null,
-                cancellationToken);
+            return this.navigation.ArchiveNavigationItemAsync(storePublicId, itemPublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> UpdateNavigationItemOrderAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> UpdateNavigationItemOrderAsync(
             Guid storePublicId,
             Guid menuPublicId,
             UpdateStoreNavigationMenuItemOrderRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreNavigationMenuDetailDto>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/navigation/menus/{menuPublicId:D}/items/order",
-                request,
-                cancellationToken);
+            return this.navigation.UpdateNavigationItemOrderAsync(storePublicId, menuPublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreNavigationTargetOptionDto>>> ListNavigationSystemTargetsAsync(
+                public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreNavigationTargetOptionDto>>> ListNavigationSystemTargetsAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<StoreNavigationTargetOptionDto>>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/navigation/system-targets",
-                null,
-                cancellationToken);
+            return this.navigation.ListNavigationSystemTargetsAsync(storePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<ProductMediaListResponse>> ListProductMediaAsync(
+                public Task<ControlPlaneCommerceCatalogResult<ProductMediaListResponse>> ListProductMediaAsync(
             Guid storePublicId,
             Guid productId,
             ProductMediaListQuery query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<ProductMediaListResponse>(
-                storePublicId,
-                HttpMethod.Get,
-                $"api/commerce/admin/products/{productId:D}/media" + BuildPageQuery(query.PageNumber, query.PageSize),
-                null,
-                cancellationToken);
+            return this.media.ListProductMediaAsync(storePublicId, productId, query, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<ImportProductMediaResponse>> ImportProductMediaAsync(
+                public Task<ControlPlaneCommerceCatalogResult<ImportProductMediaResponse>> ImportProductMediaAsync(
             Guid storePublicId,
             Guid productId,
             ImportProductMediaRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<ImportProductMediaResponse>(
-                storePublicId,
-                HttpMethod.Post,
-                $"api/commerce/admin/products/{productId:D}/media/import",
-                request,
-                cancellationToken);
+            return this.media.ImportProductMediaAsync(storePublicId, productId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<ProductMediaListResponse>> UpdateProductMediaOrderAsync(
+                public Task<ControlPlaneCommerceCatalogResult<ProductMediaListResponse>> UpdateProductMediaOrderAsync(
             Guid storePublicId,
             Guid productId,
             UpdateProductMediaOrderRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<ProductMediaListResponse>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/products/{productId:D}/media/order",
-                request,
-                cancellationToken);
+            return this.media.UpdateProductMediaOrderAsync(storePublicId, productId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<ProductMediaDto>> SetPrimaryProductMediaAsync(
+                public Task<ControlPlaneCommerceCatalogResult<ProductMediaDto>> SetPrimaryProductMediaAsync(
             Guid storePublicId,
             Guid productId,
             Guid mediaPublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<ProductMediaDto>(
-                storePublicId,
-                HttpMethod.Post,
-                $"api/commerce/admin/products/{productId:D}/media/{mediaPublicId:D}/primary",
-                null,
-                cancellationToken);
+            return this.media.SetPrimaryProductMediaAsync(storePublicId, productId, mediaPublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<ProductMediaListResponse>> DeleteProductMediaAsync(
+                public Task<ControlPlaneCommerceCatalogResult<ProductMediaListResponse>> DeleteProductMediaAsync(
             Guid storePublicId,
             Guid productId,
             Guid mediaPublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<ProductMediaListResponse>(
-                storePublicId,
-                HttpMethod.Delete,
-                $"api/commerce/admin/products/{productId:D}/media/{mediaPublicId:D}",
-                null,
-                cancellationToken);
+            return this.media.DeleteProductMediaAsync(storePublicId, productId, mediaPublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<ImportProductMediaResponse>> RetryProductMediaAsync(
+                public Task<ControlPlaneCommerceCatalogResult<ImportProductMediaResponse>> RetryProductMediaAsync(
             Guid storePublicId,
             Guid productId,
             Guid mediaPublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<ImportProductMediaResponse>(
-                storePublicId,
-                HttpMethod.Post,
-                $"api/commerce/admin/products/{productId:D}/media/{mediaPublicId:D}/retry",
-                null,
-                cancellationToken);
+            return this.media.RetryProductMediaAsync(storePublicId, productId, mediaPublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetListResponse>> ListMediaAssetsAsync(
+                public Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetListResponse>> ListMediaAssetsAsync(
             Guid storePublicId,
             CommerceMediaAssetListQuery query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<CommerceMediaAssetListResponse>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/media/assets" + BuildMediaAssetListQuery(query),
-                null,
-                cancellationToken);
+            return this.media.ListMediaAssetsAsync(storePublicId, query, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> GetMediaAssetAsync(
+                public Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> GetMediaAssetAsync(
             Guid storePublicId,
             Guid assetPublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<CommerceMediaAssetDto>(
-                storePublicId,
-                HttpMethod.Get,
-                $"api/commerce/admin/media/assets/{assetPublicId:D}",
-                null,
-                cancellationToken);
+            return this.media.GetMediaAssetAsync(storePublicId, assetPublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> UploadMediaAssetAsync(
+                public Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> UploadMediaAssetAsync(
             Guid storePublicId,
             CommerceMediaAssetUploadRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendMediaAssetMultipartAsync<CommerceMediaAssetDto>(
-                storePublicId,
-                "api/commerce/admin/media/assets",
-                request,
-                cancellationToken);
+            return this.media.UploadMediaAssetAsync(storePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> UpdateMediaAssetMetadataAsync(
+                public Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> UpdateMediaAssetMetadataAsync(
             Guid storePublicId,
             Guid assetPublicId,
             CommerceMediaAssetMetadataRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<CommerceMediaAssetDto>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/media/assets/{assetPublicId:D}",
-                request,
-                cancellationToken);
+            return this.media.UpdateMediaAssetMetadataAsync(storePublicId, assetPublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> ReplaceMediaAssetAsync(
+                public Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> ReplaceMediaAssetAsync(
             Guid storePublicId,
             Guid assetPublicId,
             CommerceMediaAssetUploadRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendMediaAssetMultipartAsync<CommerceMediaAssetDto>(
-                storePublicId,
-                $"api/commerce/admin/media/assets/{assetPublicId:D}/replace",
-                request,
-                cancellationToken);
+            return this.media.ReplaceMediaAssetAsync(storePublicId, assetPublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<object>> DeleteMediaAssetAsync(
+                public Task<ControlPlaneCommerceCatalogResult<object>> DeleteMediaAssetAsync(
             Guid storePublicId,
             Guid assetPublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<object>(
-                storePublicId,
-                HttpMethod.Delete,
-                $"api/commerce/admin/media/assets/{assetPublicId:D}",
-                null,
-                cancellationToken);
+            return this.media.DeleteMediaAssetAsync(storePublicId, assetPublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<PagedResult<GetCategory>>> ListCategoriesAsync(
+                public Task<ControlPlaneCommerceCatalogResult<PagedResult<GetCategory>>> ListCategoriesAsync(
             Guid storePublicId,
             int pageNumber = 1,
             int pageSize = 25,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<PagedResult<GetCategory>>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/categories" + BuildPageQuery(pageNumber, pageSize),
-                null,
-                cancellationToken);
+            return this.categories.ListCategoriesAsync(storePublicId, 1, 25, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<GetCategoryTreeNode>>> GetCategoryTreeAsync(
+                public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<GetCategoryTreeNode>>> GetCategoryTreeAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<GetCategoryTreeNode>>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/categories/tree",
-                null,
-                cancellationToken);
+            return this.categories.GetCategoryTreeAsync(storePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<object>> CreateCategoryAsync(
+                public Task<ControlPlaneCommerceCatalogResult<object>> CreateCategoryAsync(
             Guid storePublicId,
             CreateCategory request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<object>(
-                storePublicId,
-                HttpMethod.Post,
-                "api/commerce/admin/categories",
-                request,
-                cancellationToken);
+            return this.categories.CreateCategoryAsync(storePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<object>> UpdateCategoryAsync(
+                public Task<ControlPlaneCommerceCatalogResult<object>> UpdateCategoryAsync(
             Guid storePublicId,
             Guid categoryId,
             UpdateCategory request,
             CancellationToken cancellationToken = default)
         {
-            request.Id = categoryId;
-            return this.SendAsync<object>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/categories/{categoryId:D}",
-                request,
-                cancellationToken);
+            return this.categories.UpdateCategoryAsync(storePublicId, categoryId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<object>> ArchiveCategoryAsync(
+                public Task<ControlPlaneCommerceCatalogResult<object>> ArchiveCategoryAsync(
             Guid storePublicId,
             Guid categoryId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<object>(
-                storePublicId,
-                HttpMethod.Delete,
-                $"api/commerce/admin/categories/{categoryId:D}",
-                null,
-                cancellationToken);
+            return this.categories.ArchiveCategoryAsync(storePublicId, categoryId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CategoryMediaAssignmentDto>> GetCategoryMediaAsync(
+                public Task<ControlPlaneCommerceCatalogResult<CategoryMediaAssignmentDto>> GetCategoryMediaAsync(
             Guid storePublicId,
             Guid categoryId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<CategoryMediaAssignmentDto>(
-                storePublicId,
-                HttpMethod.Get,
-                $"api/commerce/admin/categories/{categoryId:D}/media",
-                null,
-                cancellationToken);
+            return this.categories.GetCategoryMediaAsync(storePublicId, categoryId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CategoryMediaAssignmentDto>> SetCategoryPrimaryMediaAsync(
+                public Task<ControlPlaneCommerceCatalogResult<CategoryMediaAssignmentDto>> SetCategoryPrimaryMediaAsync(
             Guid storePublicId,
             Guid categoryId,
             SetCategoryPrimaryMediaRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<CategoryMediaAssignmentDto>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/categories/{categoryId:D}/media/primary",
-                request,
-                cancellationToken);
+            return this.products.SetCategoryPrimaryMediaAsync(storePublicId, categoryId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CategoryMediaAssignmentDto>> ClearCategoryPrimaryMediaAsync(
+                public Task<ControlPlaneCommerceCatalogResult<CategoryMediaAssignmentDto>> ClearCategoryPrimaryMediaAsync(
             Guid storePublicId,
             Guid categoryId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<CategoryMediaAssignmentDto>(
-                storePublicId,
-                HttpMethod.Delete,
-                $"api/commerce/admin/categories/{categoryId:D}/media/primary",
-                null,
-                cancellationToken);
+            return this.products.ClearCategoryPrimaryMediaAsync(storePublicId, categoryId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<PagedResult<GetProductVariant>>> ListVariantsAsync(
+                public Task<ControlPlaneCommerceCatalogResult<PagedResult<GetProductVariant>>> ListVariantsAsync(
             Guid storePublicId,
             Guid productId,
             int pageNumber = 1,
             int pageSize = 25,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<PagedResult<GetProductVariant>>(
-                storePublicId,
-                HttpMethod.Get,
-                $"api/commerce/admin/products/{productId:D}/variants" + BuildPageQuery(pageNumber, pageSize),
-                null,
-                cancellationToken);
+            return this.products.ListVariantsAsync(storePublicId, productId, 1, 25, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<object>> CreateVariantAsync(
+                public Task<ControlPlaneCommerceCatalogResult<object>> CreateVariantAsync(
             Guid storePublicId,
             Guid productId,
             CreateProductVariant request,
             CancellationToken cancellationToken = default)
         {
-            request.ProductId = productId;
-            return this.SendAsync<object>(
-                storePublicId,
-                HttpMethod.Post,
-                $"api/commerce/admin/products/{productId:D}/variants",
-                request,
-                cancellationToken);
+            return this.products.CreateVariantAsync(storePublicId, productId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<object>> UpdateVariantAsync(
+                public Task<ControlPlaneCommerceCatalogResult<object>> UpdateVariantAsync(
             Guid storePublicId,
             Guid productId,
             Guid variantId,
             UpdateProductVariant request,
             CancellationToken cancellationToken = default)
         {
-            request.ProductId = productId;
-            request.Id = variantId;
-            return this.SendAsync<object>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/products/{productId:D}/variants/{variantId:D}",
-                request,
-                cancellationToken);
+            return this.products.UpdateVariantAsync(storePublicId, productId, variantId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<object>> DeleteVariantAsync(
+                public Task<ControlPlaneCommerceCatalogResult<object>> DeleteVariantAsync(
             Guid storePublicId,
             Guid productId,
             Guid variantId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<object>(
-                storePublicId,
-                HttpMethod.Delete,
-                $"api/commerce/admin/products/{productId:D}/variants/{variantId:D}",
-                null,
-                cancellationToken);
+            return this.products.DeleteVariantAsync(storePublicId, productId, variantId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<PagedResult<AdminInventoryItemDto>>> QueryInventoryAsync(
+                public Task<ControlPlaneCommerceCatalogResult<PagedResult<AdminInventoryItemDto>>> QueryInventoryAsync(
             Guid storePublicId,
             AdminInventoryQueryDto query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<PagedResult<AdminInventoryItemDto>>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/inventory" + BuildInventoryQuery(query),
-                null,
-                cancellationToken);
+            return this.products.QueryInventoryAsync(storePublicId, query, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<AdminInventoryItemDto>> UpdateProductStockAsync(
+                public Task<ControlPlaneCommerceCatalogResult<AdminInventoryItemDto>> UpdateProductStockAsync(
             Guid storePublicId,
             Guid productId,
             UpdateProductStockDto request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<AdminInventoryItemDto>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/inventory/products/{productId:D}",
-                request,
-                cancellationToken);
+            return this.products.UpdateProductStockAsync(storePublicId, productId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<AdminInventoryVariantDto>> UpdateVariantStockAsync(
+                public Task<ControlPlaneCommerceCatalogResult<AdminInventoryVariantDto>> UpdateVariantStockAsync(
             Guid storePublicId,
             Guid variantId,
             UpdateVariantStockDto request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<AdminInventoryVariantDto>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/inventory/variants/{variantId:D}",
-                request,
-                cancellationToken);
+            return this.products.UpdateVariantStockAsync(storePublicId, variantId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<PagedResult<GetOrder>>> QueryOrdersAsync(
+                public Task<ControlPlaneCommerceCatalogResult<PagedResult<GetOrder>>> QueryOrdersAsync(
             Guid storePublicId,
             AdminOrderQueryDto query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<PagedResult<GetOrder>>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/orders" + BuildOrderQuery(query),
-                null,
-                cancellationToken);
+            return this.orders.QueryOrdersAsync(storePublicId, query, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<GetOrder>> GetOrderAsync(
+                public Task<ControlPlaneCommerceCatalogResult<GetOrder>> GetOrderAsync(
             Guid storePublicId,
             Guid orderId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<GetOrder>(
-                storePublicId,
-                HttpMethod.Get,
-                $"api/commerce/admin/orders/{orderId:D}",
-                null,
-                cancellationToken);
+            return this.orders.GetOrderAsync(storePublicId, orderId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<GetOrder>> UpdateOrderAdminNoteAsync(
+                public Task<ControlPlaneCommerceCatalogResult<GetOrder>> UpdateOrderAdminNoteAsync(
             Guid storePublicId,
             Guid orderId,
             UpdateOrderAdminNoteRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<GetOrder>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/orders/{orderId:D}/admin-note",
-                request,
-                cancellationToken);
+            return this.orders.UpdateOrderAdminNoteAsync(storePublicId, orderId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<GetOrder>> UpdateOrderShippingStatusAsync(
+                public Task<ControlPlaneCommerceCatalogResult<GetOrder>> UpdateOrderShippingStatusAsync(
             Guid storePublicId,
             Guid orderId,
             UpdateShippingStatusRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<GetOrder>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/orders/{orderId:D}/shipping-status",
-                request,
-                cancellationToken);
+            return this.orders.UpdateOrderShippingStatusAsync(storePublicId, orderId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<GetOrder>> CompleteOrderAsync(
+                public Task<ControlPlaneCommerceCatalogResult<GetOrder>> CompleteOrderAsync(
             Guid storePublicId,
             Guid orderId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<GetOrder>(
-                storePublicId,
-                HttpMethod.Post,
-                $"api/commerce/admin/orders/{orderId:D}/complete",
-                null,
-                cancellationToken);
+            return this.orders.CompleteOrderAsync(storePublicId, orderId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<GetOrder>> CancelOrderAsync(
+                public Task<ControlPlaneCommerceCatalogResult<GetOrder>> CancelOrderAsync(
             Guid storePublicId,
             Guid orderId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<GetOrder>(
-                storePublicId,
-                HttpMethod.Post,
-                $"api/commerce/admin/orders/{orderId:D}/cancel",
-                null,
-                cancellationToken);
+            return this.orders.CancelOrderAsync(storePublicId, orderId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StorePaymentMethodDto>>> ListPaymentMethodsAsync(
+                public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StorePaymentMethodDto>>> ListPaymentMethodsAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<StorePaymentMethodDto>>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/payment-methods",
-                null,
-                cancellationToken);
+            return this.payments.ListPaymentMethodsAsync(storePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorePaymentMethodDto>> UpdatePaymentMethodAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StorePaymentMethodDto>> UpdatePaymentMethodAsync(
             Guid storePublicId,
             string paymentMethodKey,
             UpdateStorePaymentMethodRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorePaymentMethodDto>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/payment-methods/{Uri.EscapeDataString(paymentMethodKey)}",
-                request,
-                cancellationToken);
+            return this.payments.UpdatePaymentMethodAsync(storePublicId, paymentMethodKey, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> GetEmailSettingsAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> GetEmailSettingsAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreEmailSettingsResponse>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/email-settings",
-                null,
-                cancellationToken);
+            return this.messages.GetEmailSettingsAsync(storePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> UpdateEmailSettingsAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> UpdateEmailSettingsAsync(
             Guid storePublicId,
             UpdateStoreEmailSettingsRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreEmailSettingsResponse>(
-                storePublicId,
-                HttpMethod.Put,
-                "api/commerce/admin/email-settings",
-                request,
-                cancellationToken);
+            return this.messages.UpdateEmailSettingsAsync(storePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> RotateEmailPasswordAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> RotateEmailPasswordAsync(
             Guid storePublicId,
             RotateStoreEmailPasswordRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreEmailSettingsResponse>(
-                storePublicId,
-                HttpMethod.Post,
-                "api/commerce/admin/email-settings/password/rotate",
-                request,
-                cancellationToken);
+            return this.messages.RotateEmailPasswordAsync(storePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> ClearEmailPasswordAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> ClearEmailPasswordAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreEmailSettingsResponse>(
-                storePublicId,
-                HttpMethod.Post,
-                "api/commerce/admin/email-settings/password/clear",
-                null,
-                cancellationToken);
+            return this.messages.ClearEmailPasswordAsync(storePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<SendStoreEmailTestResponse>> SendEmailTestAsync(
+                public Task<ControlPlaneCommerceCatalogResult<SendStoreEmailTestResponse>> SendEmailTestAsync(
             Guid storePublicId,
             SendStoreEmailTestRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<SendStoreEmailTestResponse>(
-                storePublicId,
-                HttpMethod.Post,
-                "api/commerce/admin/email-settings/test-send",
-                request,
-                cancellationToken);
+            return this.messages.SendEmailTestAsync(storePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<MessageTemplateAdminSummary>>> ListMessageTemplatesAsync(
+                public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<MessageTemplateAdminSummary>>> ListMessageTemplatesAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<MessageTemplateAdminSummary>>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/message-templates",
-                null,
-                cancellationToken);
+            return this.messages.ListMessageTemplatesAsync(storePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<MessageTemplateAdminDetail>> GetMessageTemplateAsync(
+                public Task<ControlPlaneCommerceCatalogResult<MessageTemplateAdminDetail>> GetMessageTemplateAsync(
             Guid storePublicId,
             Guid templatePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<MessageTemplateAdminDetail>(
-                storePublicId,
-                HttpMethod.Get,
-                $"api/commerce/admin/message-templates/{templatePublicId:D}",
-                null,
-                cancellationToken);
+            return this.messages.GetMessageTemplateAsync(storePublicId, templatePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<MessageTemplateAdminDetail>> UpdateMessageTemplateAsync(
+                public Task<ControlPlaneCommerceCatalogResult<MessageTemplateAdminDetail>> UpdateMessageTemplateAsync(
             Guid storePublicId,
             Guid templatePublicId,
             UpdateMessageTemplateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<MessageTemplateAdminDetail>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/message-templates/{templatePublicId:D}",
-                request,
-                cancellationToken);
+            return this.messages.UpdateMessageTemplateAsync(storePublicId, templatePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<MessageTemplateAdminDetail>> ResetMessageTemplateAsync(
+                public Task<ControlPlaneCommerceCatalogResult<MessageTemplateAdminDetail>> ResetMessageTemplateAsync(
             Guid storePublicId,
             Guid templatePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<MessageTemplateAdminDetail>(
-                storePublicId,
-                HttpMethod.Post,
-                $"api/commerce/admin/message-templates/{templatePublicId:D}/reset",
-                null,
-                cancellationToken);
+            return this.messages.ResetMessageTemplateAsync(storePublicId, templatePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<MessageTemplatePreviewResponse>> PreviewMessageTemplateAsync(
+                public Task<ControlPlaneCommerceCatalogResult<MessageTemplatePreviewResponse>> PreviewMessageTemplateAsync(
             Guid storePublicId,
             PreviewMessageTemplateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<MessageTemplatePreviewResponse>(
-                storePublicId,
-                HttpMethod.Post,
-                "api/commerce/admin/message-templates/preview",
-                request,
-                cancellationToken);
+            return this.messages.PreviewMessageTemplateAsync(storePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminListResponse>> ListQueuedMessagesAsync(
+                public Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminListResponse>> ListQueuedMessagesAsync(
             Guid storePublicId,
             string? status = null,
             string? templateSystemName = null,
@@ -1324,533 +867,161 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             int take = 25,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<QueuedMessageAdminListResponse>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/queued-messages" + BuildQueuedMessageQuery(status, templateSystemName, skip, take),
-                null,
-                cancellationToken);
+            return this.messages.ListQueuedMessagesAsync(storePublicId, status, templateSystemName, 0, 25, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminDetail>> GetQueuedMessageAsync(
+                public Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminDetail>> GetQueuedMessageAsync(
             Guid storePublicId,
             Guid queuedMessagePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<QueuedMessageAdminDetail>(
-                storePublicId,
-                HttpMethod.Get,
-                $"api/commerce/admin/queued-messages/{queuedMessagePublicId:D}",
-                null,
-                cancellationToken);
+            return this.messages.GetQueuedMessageAsync(storePublicId, queuedMessagePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminDetail>> RetryQueuedMessageAsync(
+                public Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminDetail>> RetryQueuedMessageAsync(
             Guid storePublicId,
             Guid queuedMessagePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<QueuedMessageAdminDetail>(
-                storePublicId,
-                HttpMethod.Post,
-                $"api/commerce/admin/queued-messages/{queuedMessagePublicId:D}/retry",
-                null,
-                cancellationToken);
+            return this.messages.RetryQueuedMessageAsync(storePublicId, queuedMessagePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminDetail>> CancelQueuedMessageAsync(
+                public Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminDetail>> CancelQueuedMessageAsync(
             Guid storePublicId,
             Guid queuedMessagePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<QueuedMessageAdminDetail>(
-                storePublicId,
-                HttpMethod.Post,
-                $"api/commerce/admin/queued-messages/{queuedMessagePublicId:D}/cancel",
-                null,
-                cancellationToken);
+            return this.messages.CancelQueuedMessageAsync(storePublicId, queuedMessagePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreCurrencyDto>>> ListCurrenciesAsync(
+                public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreCurrencyDto>>> ListCurrenciesAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<StoreCurrencyDto>>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/currencies",
-                null,
-                cancellationToken);
+            return this.currencies.ListCurrenciesAsync(storePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreCurrencyDto>> UpdateCurrencyAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreCurrencyDto>> UpdateCurrencyAsync(
             Guid storePublicId,
             string currencyCode,
             UpdateStoreCurrencyRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreCurrencyDto>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/currencies/{Uri.EscapeDataString(currencyCode)}",
-                request,
-                cancellationToken);
+            return this.currencies.UpdateCurrencyAsync(storePublicId, currencyCode, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreCurrencyExchangeRateDto>>> ListExchangeRatesAsync(
+                public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreCurrencyExchangeRateDto>>> ListExchangeRatesAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<StoreCurrencyExchangeRateDto>>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/currencies/exchange-rates",
-                null,
-                cancellationToken);
+            return this.currencies.ListExchangeRatesAsync(storePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreCurrencyExchangeRateProviderDto>>> ListExchangeRateProvidersAsync(
+                public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreCurrencyExchangeRateProviderDto>>> ListExchangeRateProvidersAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<StoreCurrencyExchangeRateProviderDto>>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/currencies/exchange-rate-providers",
-                null,
-                cancellationToken);
+            return this.currencies.ListExchangeRateProvidersAsync(storePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreCurrencyExchangeRateProviderFetchResult>> FetchExchangeRatesAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreCurrencyExchangeRateProviderFetchResult>> FetchExchangeRatesAsync(
             Guid storePublicId,
             FetchStoreCurrencyExchangeRatesRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreCurrencyExchangeRateProviderFetchResult>(
-                storePublicId,
-                HttpMethod.Post,
-                "api/commerce/admin/currencies/exchange-rates/fetch",
-                request,
-                cancellationToken);
+            return this.currencies.FetchExchangeRatesAsync(storePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CommerceTaskSummary>> QueueExchangeRateUpdateAsync(
+                public Task<ControlPlaneCommerceCatalogResult<CommerceTaskSummary>> QueueExchangeRateUpdateAsync(
             Guid storePublicId,
             QueueStoreCurrencyExchangeRateUpdateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<CommerceTaskSummary>(
-                storePublicId,
-                HttpMethod.Post,
-                "api/commerce/admin/currencies/exchange-rates/update-tasks",
-                request,
-                cancellationToken);
+            return this.currencies.QueueExchangeRateUpdateAsync(storePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreCurrencyExchangeRateDto>> UpsertExchangeRateAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreCurrencyExchangeRateDto>> UpsertExchangeRateAsync(
             Guid storePublicId,
             string targetCurrencyCode,
             UpsertStoreCurrencyExchangeRateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreCurrencyExchangeRateDto>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/currencies/exchange-rates/{Uri.EscapeDataString(targetCurrencyCode)}",
-                request,
-                cancellationToken);
+            return this.currencies.UpsertExchangeRateAsync(storePublicId, targetCurrencyCode, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreCurrencyExchangeRateDto>> DisableExchangeRateAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreCurrencyExchangeRateDto>> DisableExchangeRateAsync(
             Guid storePublicId,
             string targetCurrencyCode,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreCurrencyExchangeRateDto>(
-                storePublicId,
-                HttpMethod.Post,
-                $"api/commerce/admin/currencies/exchange-rates/{Uri.EscapeDataString(targetCurrencyCode)}/disable",
-                null,
-                cancellationToken);
+            return this.currencies.DisableExchangeRateAsync(storePublicId, targetCurrencyCode, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreSecurityPrivacySettingsDto>> GetSecurityPrivacySettingsAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreSecurityPrivacySettingsDto>> GetSecurityPrivacySettingsAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreSecurityPrivacySettingsDto>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/security-privacy",
-                null,
-                cancellationToken);
+            return this.securityPrivacy.GetSecurityPrivacySettingsAsync(storePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreSecurityPrivacySettingsDto>> UpdateSecurityPrivacySettingsAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreSecurityPrivacySettingsDto>> UpdateSecurityPrivacySettingsAsync(
             Guid storePublicId,
             UpdateStoreSecurityPrivacySettingsRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreSecurityPrivacySettingsDto>(
-                storePublicId,
-                HttpMethod.Put,
-                "api/commerce/admin/security-privacy",
-                request,
-                cancellationToken);
+            return this.securityPrivacy.UpdateSecurityPrivacySettingsAsync(storePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreShippingSettingsDto>> GetShippingSettingsAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreShippingSettingsDto>> GetShippingSettingsAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreShippingSettingsDto>(
-                storePublicId,
-                HttpMethod.Get,
-                "api/commerce/admin/shipping/settings",
-                null,
-                cancellationToken);
+            return this.shipping.GetShippingSettingsAsync(storePublicId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreShippingSettingsDto>> UpdateShippingSettingsAsync(
+                public Task<ControlPlaneCommerceCatalogResult<StoreShippingSettingsDto>> UpdateShippingSettingsAsync(
             Guid storePublicId,
             UpdateStoreShippingSettingsRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreShippingSettingsDto>(
-                storePublicId,
-                HttpMethod.Put,
-                "api/commerce/admin/shipping/settings",
-                request,
-                cancellationToken);
+            return this.shipping.UpdateShippingSettingsAsync(storePublicId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<GetShipment>> GetShipmentAsync(
+                public Task<ControlPlaneCommerceCatalogResult<GetShipment>> GetShipmentAsync(
             Guid storePublicId,
             Guid orderId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<GetShipment>(
-                storePublicId,
-                HttpMethod.Get,
-                $"api/commerce/admin/orders/{orderId:D}/shipment",
-                null,
-                cancellationToken);
+            return this.orders.GetShipmentAsync(storePublicId, orderId, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<GetShipment>> UpsertShipmentAsync(
+                public Task<ControlPlaneCommerceCatalogResult<GetShipment>> UpsertShipmentAsync(
             Guid storePublicId,
             Guid orderId,
             UpsertShipmentRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<GetShipment>(
-                storePublicId,
-                HttpMethod.Put,
-                $"api/commerce/admin/orders/{orderId:D}/shipment",
-                request,
-                cancellationToken);
+            return this.orders.UpsertShipmentAsync(storePublicId, orderId, request, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceMediaResult> GetProductMediaPreviewAsync(
+                public Task<ControlPlaneCommerceMediaResult> GetProductMediaPreviewAsync(
             Guid storePublicId,
             Guid mediaPublicId,
             ProductMediaPreviewQuery query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendMediaAsync(
-                storePublicId,
-                $"api/commerce/admin/media/products/{mediaPublicId:D}" + BuildMediaPreviewQuery(query),
-                cancellationToken);
+            return this.media.GetProductMediaPreviewAsync(storePublicId, mediaPublicId, query, cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceMediaResult> GetMediaAssetPreviewAsync(
+                public Task<ControlPlaneCommerceMediaResult> GetMediaAssetPreviewAsync(
             Guid storePublicId,
             Guid assetPublicId,
             string canonicalFileName,
             MediaAssetPreviewQuery query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendMediaAsync(
-                storePublicId,
-                $"api/commerce/admin/media/assets/{assetPublicId:D}/preview" + BuildMediaAssetPreviewQuery(query),
-                cancellationToken);
-        }
-
-        private async Task<ControlPlaneCommerceCatalogResult<TPayload>> SendAsync<TPayload>(
-            Guid storePublicId,
-            HttpMethod method,
-            string path,
-            object? body,
-            CancellationToken cancellationToken)
-        {
-            return ToCatalogResult(await this.transport.SendAsync<TPayload>(
-                storePublicId,
-                method,
-                path,
-                body,
-                cancellationToken));
-        }
-
-        private async Task<ControlPlaneCommerceMediaResult> SendMediaAsync(
-            Guid storePublicId,
-            string path,
-            CancellationToken cancellationToken)
-        {
-            var result = await this.transport.SendMediaAsync(storePublicId, path, cancellationToken);
-            return new ControlPlaneCommerceMediaResult(
-                result.Success,
-                result.Message,
-                result.Content,
-                result.ContentType,
-                ToCatalogFailure(result.Failure),
-                result.HttpStatusCode);
-        }
-
-        private async Task<ControlPlaneCommerceCatalogResult<TPayload>> SendMultipartAsync<TPayload>(
-            Guid storePublicId,
-            string path,
-            ProductImportUploadRequest upload,
-            CancellationToken cancellationToken)
-        {
-            return ToCatalogResult(await this.transport.SendProductImportMultipartAsync<TPayload>(
-                storePublicId,
-                path,
-                upload,
-                cancellationToken));
-        }
-
-        private async Task<ControlPlaneCommerceCatalogResult<TPayload>> SendMediaAssetMultipartAsync<TPayload>(
-            Guid storePublicId,
-            string path,
-            CommerceMediaAssetUploadRequest upload,
-            CancellationToken cancellationToken)
-        {
-            return ToCatalogResult(await this.transport.SendMediaAssetMultipartAsync<TPayload>(
-                storePublicId,
-                path,
-                upload,
-                cancellationToken));
-        }
-
-        private async Task<ControlPlaneCommerceCatalogResult<string>> ResolveStoreKeyAsync(
-            Guid storePublicId,
-            CancellationToken cancellationToken)
-        {
-            return ToCatalogResult(await this.transport.ResolveStoreKeyAsync(storePublicId, cancellationToken));
-        }
-
-        private static ControlPlaneCommerceCatalogResult<TPayload> ToCatalogResult<TPayload>(
-            CommerceNodeAdminGatewayResult<TPayload> result)
-        {
-            return new ControlPlaneCommerceCatalogResult<TPayload>(
-                result.Success,
-                result.Message,
-                result.Payload,
-                ToCatalogFailure(result.Failure),
-                result.HttpStatusCode);
-        }
-
-        private static ControlPlaneCommerceCatalogFailure? ToCatalogFailure(CommerceNodeAdminGatewayFailure? failure)
-        {
-            return failure switch
-            {
-                CommerceNodeAdminGatewayFailure.Validation => ControlPlaneCommerceCatalogFailure.Validation,
-                CommerceNodeAdminGatewayFailure.NotFound => ControlPlaneCommerceCatalogFailure.NotFound,
-                CommerceNodeAdminGatewayFailure.RemoteFailure => ControlPlaneCommerceCatalogFailure.RemoteFailure,
-                _ => null,
-            };
-        }
-
-        private static string BuildProductQuery(ProductCatalogQuery query)
-        {
-            var values = new List<KeyValuePair<string, string>>
-            {
-                new("pageNumber", query.GetNormalizedPageNumber().ToString(CultureInfo.InvariantCulture)),
-                new("pageSize", query.GetNormalizedPageSize().ToString(CultureInfo.InvariantCulture)),
-                new("sortBy", query.SortBy.ToString()),
-            };
-
-            AddIfPresent(values, "searchTerm", query.SearchTerm);
-            AddIfPresent(values, "categoryId", query.CategoryId?.ToString("D"));
-            AddIfPresent(values, "minPrice", query.MinPrice?.ToString(CultureInfo.InvariantCulture));
-            AddIfPresent(values, "maxPrice", query.MaxPrice?.ToString(CultureInfo.InvariantCulture));
-            AddIfPresent(values, "inStock", query.InStock?.ToString());
-            AddIfPresent(values, "isPublished", query.IsPublished?.ToString());
-
-            return ToQueryString(values);
-        }
-
-        private static string BuildSeoSlugHistoryQuery(StoreSeoSlugHistoryQuery query)
-        {
-            var values = new List<KeyValuePair<string, string>>();
-            AddIfPresent(values, "entityType", query.EntityType);
-            if (query.EntityId != Guid.Empty)
-            {
-                values.Add(new KeyValuePair<string, string>("entityId", query.EntityId.ToString("D")));
-            }
-
-            AddIfPresent(values, "languageCode", query.LanguageCode);
-            return ToQueryString(values);
-        }
-
-        private static string BuildInventoryQuery(AdminInventoryQueryDto query)
-        {
-            var values = new List<KeyValuePair<string, string>>
-            {
-                new("pageNumber", Math.Max(1, query.PageNumber).ToString(CultureInfo.InvariantCulture)),
-                new("pageSize", Math.Clamp(query.PageSize, 1, 100).ToString(CultureInfo.InvariantCulture)),
-                new("lowStockOnly", query.LowStockOnly.ToString()),
-                new("outOfStockOnly", query.OutOfStockOnly.ToString()),
-                new("lowStockThreshold", Math.Max(0, query.LowStockThreshold).ToString(CultureInfo.InvariantCulture)),
-            };
-
-            AddIfPresent(values, "searchTerm", query.SearchTerm);
-            return ToQueryString(values);
-        }
-
-        private static string BuildOrderQuery(AdminOrderQueryDto query)
-        {
-            var values = new List<KeyValuePair<string, string>>
-            {
-                new("pageNumber", Math.Max(1, query.PageNumber).ToString(CultureInfo.InvariantCulture)),
-                new("pageSize", Math.Clamp(query.PageSize, 1, 100).ToString(CultureInfo.InvariantCulture)),
-            };
-
-            AddIfPresent(values, "searchTerm", query.SearchTerm);
-            AddIfPresent(values, "status", query.Status);
-            AddIfPresent(values, "shippingStatus", query.ShippingStatus);
-            AddIfPresent(values, "fromUtc", query.FromUtc?.ToString("O", CultureInfo.InvariantCulture));
-            AddIfPresent(values, "toUtc", query.ToUtc?.ToString("O", CultureInfo.InvariantCulture));
-            return ToQueryString(values);
-        }
-
-        private static string BuildQueuedMessageQuery(string? status, string? templateSystemName, int skip, int take)
-        {
-            var values = new List<KeyValuePair<string, string>>
-            {
-                new("skip", Math.Max(0, skip).ToString(CultureInfo.InvariantCulture)),
-                new("take", Math.Clamp(take, 1, 100).ToString(CultureInfo.InvariantCulture)),
-            };
-
-            AddIfPresent(values, "status", status);
-            AddIfPresent(values, "templateSystemName", templateSystemName);
-            return ToQueryString(values);
-        }
-
-        private static string BuildMediaPreviewQuery(ProductMediaPreviewQuery query)
-        {
-            var values = new List<KeyValuePair<string, string>>();
-            AddIfPresent(values, "w", query.Width?.ToString(CultureInfo.InvariantCulture));
-            AddIfPresent(values, "h", query.Height?.ToString(CultureInfo.InvariantCulture));
-            AddIfPresent(values, "fit", query.Fit);
-            AddIfPresent(values, "format", query.Format);
-            AddIfPresent(values, "v", query.Version?.ToString(CultureInfo.InvariantCulture));
-            return ToQueryString(values);
-        }
-
-        private static string BuildMediaAssetPreviewQuery(MediaAssetPreviewQuery query)
-        {
-            var values = new List<KeyValuePair<string, string>>();
-            AddIfPresent(values, "w", query.Width?.ToString(CultureInfo.InvariantCulture));
-            AddIfPresent(values, "h", query.Height?.ToString(CultureInfo.InvariantCulture));
-            AddIfPresent(values, "fit", query.Fit);
-            AddIfPresent(values, "format", query.Format);
-            AddIfPresent(values, "v", query.Version?.ToString(CultureInfo.InvariantCulture));
-            return ToQueryString(values);
-        }
-
-        private static string BuildMediaAssetListQuery(CommerceMediaAssetListQuery query)
-        {
-            var values = new List<KeyValuePair<string, string>>
-            {
-                new("pageNumber", Math.Max(1, query.PageNumber).ToString(CultureInfo.InvariantCulture)),
-                new("pageSize", Math.Clamp(query.PageSize, 1, 100).ToString(CultureInfo.InvariantCulture)),
-            };
-
-            AddIfPresent(values, "search", query.Search);
-            AddIfPresent(values, "usageType", query.UsageType);
-            return ToQueryString(values);
-        }
-
-        private static string BuildProductImportQuery(ProductImportJobListQuery query)
-        {
-            var values = new List<KeyValuePair<string, string>>
-            {
-                new("pageNumber", Math.Max(1, query.PageNumber).ToString(CultureInfo.InvariantCulture)),
-                new("pageSize", Math.Clamp(query.PageSize, 1, 100).ToString(CultureInfo.InvariantCulture)),
-            };
-
-            AddIfPresent(values, "status", query.Status);
-            return ToQueryString(values);
-        }
-
-        private static string BuildPageQuery(int pageNumber, int pageSize)
-        {
-            var values = new List<KeyValuePair<string, string>>
-            {
-                new("pageNumber", Math.Max(1, pageNumber).ToString(CultureInfo.InvariantCulture)),
-                new("pageSize", Math.Clamp(pageSize, 1, 100).ToString(CultureInfo.InvariantCulture)),
-            };
-
-            return ToQueryString(values);
-        }
-
-        private static string BuildProductImportRowsQuery(ProductImportRowsQuery query)
-        {
-            var values = new List<KeyValuePair<string, string>>
-            {
-                new("pageNumber", Math.Max(1, query.PageNumber).ToString(CultureInfo.InvariantCulture)),
-                new("pageSize", Math.Clamp(query.PageSize, 1, 100).ToString(CultureInfo.InvariantCulture)),
-            };
-
-            AddIfPresent(values, "status", query.Status);
-            return ToQueryString(values);
-        }
-
-        private static string BuildStorefrontPageQuery(StorefrontPageListQuery query)
-        {
-            var values = new List<KeyValuePair<string, string>>
-            {
-                new("pageNumber", Math.Max(1, query.PageNumber).ToString(CultureInfo.InvariantCulture)),
-                new("pageSize", Math.Clamp(query.PageSize, 1, 100).ToString(CultureInfo.InvariantCulture)),
-            };
-
-            AddIfPresent(values, "search", query.Search);
-            AddIfPresent(values, "status", query.Status);
-            return ToQueryString(values);
-        }
-
-        private static void AddIfPresent(List<KeyValuePair<string, string>> values, string key, string? value)
-        {
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                values.Add(new KeyValuePair<string, string>(key, value.Trim()));
-            }
-        }
-
-        private static string ToQueryString(IReadOnlyCollection<KeyValuePair<string, string>> values)
-        {
-            if (values.Count == 0)
-            {
-                return string.Empty;
-            }
-
-            return "?" + string.Join(
-                "&",
-                values.Select(value =>
-                    Uri.EscapeDataString(value.Key) + "=" + Uri.EscapeDataString(value.Value)));
-        }
-
-        private static ControlPlaneCommerceCatalogResult<TPayload> Failure<TPayload>(
-            string message,
-            ControlPlaneCommerceCatalogFailure failure,
-            int? httpStatusCode = null)
-        {
-            return new ControlPlaneCommerceCatalogResult<TPayload>(
-                false,
-                message,
-                Failure: failure,
-                HttpStatusCode: httpStatusCode);
+            return this.media.GetMediaAssetPreviewAsync(storePublicId, assetPublicId, canonicalFileName, query, cancellationToken);
         }
     }
 }
+
