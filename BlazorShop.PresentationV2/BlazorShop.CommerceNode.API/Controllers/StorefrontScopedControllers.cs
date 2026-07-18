@@ -379,9 +379,10 @@ namespace BlazorShop.CommerceNode.API.Controllers
         [EnableRateLimiting(StorefrontRateLimitPolicyNames.AuthStrict)]
         public async Task<IActionResult> Register([FromBody] StorefrontRegisterRequest user, CancellationToken cancellationToken)
         {
-            if (!this.IsRegistrationAllowed())
+            var registration = await this.GetRegistrationPolicyAsync(cancellationToken);
+            if (!registration.RegistrationAllowed)
             {
-                return this.Error(StatusCodes.Status403Forbidden, "auth.registration_disabled", "Customer registration is disabled.");
+                return this.Error(StatusCodes.Status403Forbidden, "auth.registration_disabled", registration.Message);
             }
 
             var captchaFailure = await this.ValidateCaptchaAsync(CaptchaTargetNames.Registration, user.CaptchaToken, cancellationToken);
@@ -399,11 +400,11 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         [HttpGet("registration-policy")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult GetRegistrationPolicy()
+        public async Task<IActionResult> GetRegistrationPolicy(CancellationToken cancellationToken)
         {
-            var mode = this.GetRegistrationMode();
+            var policy = await this.GetRegistrationPolicyAsync(cancellationToken);
             return this.Ok(CommerceNodeApiResponse<StorefrontRegistrationPolicyResponse>.Succeeded(
-                new StorefrontRegistrationPolicyResponse(mode, string.Equals(mode, "standard", StringComparison.Ordinal)),
+                policy,
                 "Registration policy returned."));
         }
 
@@ -661,19 +662,16 @@ namespace BlazorShop.CommerceNode.API.Controllers
             };
         }
 
-        private bool IsRegistrationAllowed()
+        private async Task<StorefrontRegistrationPolicyResponse> GetRegistrationPolicyAsync(CancellationToken cancellationToken)
         {
-            return string.Equals(this.GetRegistrationMode(), "standard", StringComparison.Ordinal);
-        }
-
-        private string GetRegistrationMode()
-        {
-            return string.Equals(
-                this.runtimeOptions.Security.RegistrationMode,
-                "disabled",
-                StringComparison.OrdinalIgnoreCase)
-                ? "disabled"
-                : "standard";
+            var runtimeSettings = await this.securityPrivacySettingsService.ResolveCurrentAsync(cancellationToken);
+            var message = runtimeSettings.Registration.RegistrationAllowed
+                ? "Customer registration is available."
+                : "Customer registration is disabled.";
+            return new StorefrontRegistrationPolicyResponse(
+                runtimeSettings.Registration.Mode,
+                runtimeSettings.Registration.RegistrationAllowed,
+                message);
         }
 
         private static LoginResponse SanitizeLoginResponse(LoginResponse response)

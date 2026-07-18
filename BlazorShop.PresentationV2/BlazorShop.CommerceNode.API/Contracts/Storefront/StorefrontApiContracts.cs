@@ -57,7 +57,8 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
 
     public sealed record StorefrontRegistrationPolicyResponse(
         string Mode,
-        bool RegistrationAllowed);
+        bool RegistrationAllowed,
+        string Message);
 
     public sealed class StorefrontForgotPasswordRequest
     {

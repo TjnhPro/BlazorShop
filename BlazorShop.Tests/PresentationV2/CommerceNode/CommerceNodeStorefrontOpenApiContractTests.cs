@@ -380,6 +380,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 ?? throw new InvalidOperationException("StorefrontRegistrationPolicyResponse schema was not found.");
             Assert.Contains("mode", GetPropertyNames(policySchema));
             Assert.Contains("registrationAllowed", GetPropertyNames(policySchema));
+            Assert.Contains("message", GetPropertyNames(policySchema));
 
             var forgotSchema = schemas["StorefrontForgotPasswordRequest"]?.AsObject()
                 ?? throw new InvalidOperationException("StorefrontForgotPasswordRequest schema was not found.");

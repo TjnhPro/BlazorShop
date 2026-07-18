@@ -82,22 +82,23 @@ Acceptance:
 
 ## Phase 2 - Storefront API Enforcement From Store Setting
 
-- [ ] Doi `StorefrontScopedAuthController` de resolve registration mode tu `IStoreSecurityPrivacySettingsService.ResolveCurrentAsync()`.
-- [ ] Giu runtime option `Runtime:Security:RegistrationMode` lam fallback trong service/defaults, khong doc truc tiep trong controller cho policy chinh.
-- [ ] Doi `Register` thanh async policy check:
+- [x] Doi `StorefrontScopedAuthController` de resolve registration mode tu `IStoreSecurityPrivacySettingsService.ResolveCurrentAsync()`. 2026-07-18 Phase 2: controller registration policy now comes from security/privacy runtime settings.
+- [x] Giu runtime option `Runtime:Security:RegistrationMode` lam fallback trong service/defaults, khong doc truc tiep trong controller cho policy chinh. 2026-07-18 Phase 2: controller no longer reads `RegistrationMode`; Infrastructure wires the runtime option into `SecurityPrivacyOptions.DefaultRegistrationMode`.
+- [x] Doi `Register` thanh async policy check:
   - resolve current settings.
   - neu disabled, return `403 auth.registration_disabled` truoc captcha va truoc `CreateUser`.
   - neu standard, tiep tuc captcha va `CreateUser` nhu hien tai.
-- [ ] Doi `GetRegistrationPolicy` thanh async va tra policy theo store setting.
-- [ ] Neu can, mo rong `StorefrontRegistrationPolicyResponse` them `message` an toan cho storefront UI; giu `mode` va `registrationAllowed` de khong pha client hien co.
-- [ ] Cap nhat Swagger metadata/snapshot neu response schema thay doi.
+  2026-07-18 Phase 2: `Register` checks policy before captcha and registration service call.
+- [x] Doi `GetRegistrationPolicy` thanh async va tra policy theo store setting. 2026-07-18 Phase 2: endpoint returns async store-scoped policy.
+- [x] Neu can, mo rong `StorefrontRegistrationPolicyResponse` them `message` an toan cho storefront UI; giu `mode` va `registrationAllowed` de khong pha client hien co. 2026-07-18 Phase 2: response now includes safe `message`.
+- [x] Cap nhat Swagger metadata/snapshot neu response schema thay doi. 2026-07-18 Phase 2: Storefront OpenAPI snapshot and contract assertion include `message`.
 
 Acceptance:
 
-- [ ] Direct API register khi disabled tra `403 auth.registration_disabled`.
-- [ ] Direct API register khi enabled van theo luong hien tai.
-- [ ] Policy endpoint khong can auth, store-scoped theo route `{storeKey}`.
-- [ ] Khong leak admin/internal setting trong public response.
+- [x] Direct API register khi disabled tra `403 auth.registration_disabled`. 2026-07-18 Phase 2: `CommerceNodeStorefrontAuthContractTests` passed.
+- [x] Direct API register khi enabled van theo luong hien tai. 2026-07-18 Phase 2: enabled path still proceeds after policy check; CommerceNode API build passed.
+- [x] Policy endpoint khong can auth, store-scoped theo route `{storeKey}`. 2026-07-18 Phase 2: endpoint remains anonymous under scoped Storefront auth route.
+- [x] Khong leak admin/internal setting trong public response. 2026-07-18 Phase 2: response exposes only `mode`, `registrationAllowed`, and safe `message`.
 
 ## Phase 3 - Control Plane API/Web Admin Surface
 

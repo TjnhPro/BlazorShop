@@ -11603,6 +11603,10 @@
           },
           "registrationAllowed": {
             "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
