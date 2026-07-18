@@ -334,18 +334,20 @@ Acceptance:
 
 ## Phase 4 - Update Storefront V2 Tests Away From Program.cs Literal Coupling
 
-- [ ] Replace tests that assert `Program.cs` contains literal `app.MapGet(...)`/`app.MapPost(...)` with one of:
+- [x] Replace tests that assert `Program.cs` contains literal `app.MapGet(...)`/`app.MapPost(...)` with one of:
   - route behavior tests through test host.
   - static tests reading new endpoint extension files.
   - endpoint data source assertions when practical.
-- [ ] Keep WASM component tests that assert browser components call same-origin routes.
-- [ ] Add a structure test proving `Program.cs` no longer contains local endpoint bodies for:
+  2026-07-18 Phase 4: tests now read `Endpoints/Storefront*Endpoints.cs`, `StorefrontLocalEndpointSupport.cs`, and `StorefrontMediaProxyService.cs` for local endpoint internals; host-smoke tests still prove route behavior for representative flows.
+- [x] Keep WASM component tests that assert browser components call same-origin routes.
+- [x] Add a structure test proving `Program.cs` no longer contains local endpoint bodies for:
   - cart
   - account
   - checkout
   - consent
   - media proxy
-- [ ] Add guard test that `Program.cs` still maps:
+  2026-07-18 Phase 4: `StorefrontProgram_DelegatesLocalBrowserApiMappingToEndpointExtensions` asserts extension calls and absence of local endpoint bodies.
+- [x] Add guard test that `Program.cs` still maps:
   - static assets
   - default endpoints
   - Storefront endpoint extension methods
@@ -353,9 +355,10 @@ Acceptance:
 
 Acceptance:
 
-- [ ] Tests protect behavior, not accidental file placement.
-- [ ] Refactor does not reduce endpoint coverage.
-- [ ] Future endpoint split does not require editing unrelated host tests.
+- [x] Tests protect behavior, not accidental file placement.
+- [x] Refactor does not reduce endpoint coverage.
+- [x] Future endpoint split does not require editing unrelated host tests.
+  2026-07-18 Phase 4 verification: covered by Phase 3 test run after endpoint extraction: focused static endpoint guard tests passed 109/109 and targeted host smoke subset passed 10/10.
 
 ## Phase 5 - Split Commerce Node Storefront Scoped Controllers
 
