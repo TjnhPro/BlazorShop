@@ -33,7 +33,7 @@ Control Plane API owns:
 - Node/store registry lookup.
 - Commerce Node credential usage.
 - Audit for platform actions.
-- Gateway calls to Commerce Node.
+- Commerce Admin gateway capability calls to Commerce Node.
 - Startup EF Core migration for `ControlPlaneDbContext` only.
 
 Main route group:
@@ -50,7 +50,9 @@ Examples:
 - `api/control-plane/stores`
 - `api/control-plane/health`
 - `api/control-plane/actions`
-- `api/control-plane/stores/{storePublicId}/catalog`
+- `api/controlplane/commerce/stores/{storePublicId}/products`
+- `api/controlplane/commerce/stores/{storePublicId}/orders`
+- `api/controlplane/commerce/stores/{storePublicId}/pages`
 
 ## Commerce Node Boundary
 
@@ -84,7 +86,7 @@ Responsibilities:
 - Store management on the node.
 - Task orchestration.
 - Deployment task lifecycle.
-- Catalog admin operations.
+- Catalog, content, media, inventory, order, currency, shipping, payment, security/privacy, and message admin operations.
 - Inventory, order admin, metrics, SEO, audit, media.
 - Product media import is asynchronous through `commerce_task` and the existing `CommerceTaskWorker` in MVP.
 

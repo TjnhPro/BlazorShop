@@ -578,24 +578,26 @@ Verification:
 
 ## Phase 8 - QA Checklist And Documentation Update
 
-- [ ] Cập nhật `docs/architecture/06-feature-map.md`:
-  - [ ] đổi wording từ "Catalog gateway" thành "Commerce Admin gateway capabilities".
-  - [ ] ghi rõ transport chung ở Control Plane API -> Commerce Node.
-- [ ] Cập nhật `docs/architecture/03-runtime-boundaries.md` nếu cần:
-  - [ ] Control Plane API vẫn là boundary duy nhất gọi Commerce Node.
-  - [ ] Control Plane Web vẫn UI-only.
-- [ ] Cập nhật `docs/architecture/05-project-and-folder-guide.md` nếu thêm folder gateway mới.
-- [ ] Cập nhật `docs/refactor-control-Commerce-storefront/QA-ControlPlane.todo.md`:
-  - [ ] gateway split giữ storeKey forwarding.
-  - [ ] node credentials không lộ vào Web.
-  - [ ] manager pages vẫn dùng Control Plane API.
-  - [ ] product/category/media/order/page/navigation/currency/payment/shipping/security manager pages vẫn load qua gateway mới.
-- [ ] Nếu route public không đổi, ghi rõ đây là internal refactor, không phải API breaking change.
+- [x] Cập nhật `docs/architecture/06-feature-map.md`:
+  - [x] đổi wording từ "Catalog gateway" thành "Commerce Admin gateway capabilities".
+  - [x] ghi rõ transport chung ở Control Plane API -> Commerce Node.
+- [x] Cập nhật `docs/architecture/03-runtime-boundaries.md` nếu cần:
+  - [x] Control Plane API vẫn là boundary duy nhất gọi Commerce Node.
+  - [x] Control Plane Web vẫn UI-only.
+- [x] Cập nhật `docs/architecture/05-project-and-folder-guide.md` nếu thêm folder gateway mới.
+- [x] Cập nhật `docs/refactor-control-Commerce-storefront/QA-ControlPlane.todo.md`:
+  - [x] gateway split giữ storeKey forwarding.
+  - [x] node credentials không lộ vào Web.
+  - [x] manager pages vẫn dùng Control Plane API.
+  - [x] product/category/media/order/page/navigation/currency/payment/shipping/security manager pages vẫn load qua gateway mới.
+- [x] Nếu route public không đổi, ghi rõ đây là internal refactor, không phải API breaking change.
+  2026-07-18 Phase 8: architecture docs now describe Commerce Admin gateway capabilities, `Controllers/CommerceGateway`, and `Services/Commerce`; QA-ControlPlane has a dedicated Commerce Admin Gateway Split checklist. Route templates were preserved, so this remains an internal Control Plane split rather than a public API route break.
 
 Verification:
 
-- [ ] `rg "Catalog gateway" docs/architecture docs/refactor-control-Commerce-storefront`
-- [ ] docs không còn mô tả sai mọi capability là catalog.
+- [x] `rg "Catalog gateway" docs/architecture docs/refactor-control-Commerce-storefront`
+- [x] docs không còn mô tả sai mọi capability là catalog.
+  2026-07-18 Phase 8: docs scan for old catalog gateway/facade/test names returned no matches in architecture docs and `QA-ControlPlane.todo.md`.
 
 ## Phase 9 - Release Verification
 

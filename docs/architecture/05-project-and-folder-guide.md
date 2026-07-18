@@ -77,6 +77,7 @@ Avoid:
 Important folders:
 
 - `Controllers/` - `api/control-plane/*` endpoints.
+- `Controllers/CommerceGateway/` - Control Plane API capability controllers that forward Commerce Admin operations to Commerce Node through shared server-side transport.
 - `Authorization/` - Control Plane policies and auth setup.
 - `Middleware/` - correlation and API behavior middleware.
 - `Responses/` - Control Plane API envelope helpers.
@@ -86,7 +87,7 @@ Use for:
 
 - Platform-facing APIs.
 - Control Plane auth and permission enforcement.
-- Gateway behavior to Commerce Node.
+- Commerce Admin gateway behavior to Commerce Node.
 
 Do not:
 
@@ -101,6 +102,7 @@ Important folders:
 - `Pages/` - Blazor WASM pages.
 - `Layout/` - Control Plane layouts.
 - `Services/` - typed clients calling Control Plane API.
+- `Services/Commerce/` - capability-specific commerce admin clients. These call Control Plane API only and never hold Commerce Node URLs or credentials.
 - `Authentication/` - Web client auth state.
 - `wwwroot/` - static assets and Web config.
 

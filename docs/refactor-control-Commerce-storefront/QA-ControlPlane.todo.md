@@ -191,14 +191,23 @@ Status legend:
 
 ## Commerce Admin Gateway Rescope
 
-- [x] ControlPlane CommerceNode catalog/media gateway appends `storeKey` query to Commerce Admin calls. 2026-07-14: `ControlPlaneCommerceCatalogService` gateway routes were updated in Phase 6.
-- [x] ControlPlane CommerceNode catalog/media gateway keeps `X-Node-Key` and `X-Node-Secret`. 2026-07-14: build verified after Phase 6 gateway update.
-- [x] ControlPlane CommerceNode catalog/media gateway no longer sends `X-Store-Key` to Commerce Admin endpoints. 2026-07-14: Phase 6 removed the header from gateway calls.
-- [x] ControlPlane product/category/page manager gateway requests append `storeKey` and keep node credentials server-side. 2026-07-15: `ControlPlaneCommerceCatalogServiceStoreMappingTests` passed 3/3 for product query, category list, and page list.
+- [x] ControlPlane Commerce Admin gateway capabilities append `storeKey` query to Commerce Admin calls. 2026-07-18: `ControlPlaneCommerceGatewayStoreMappingTests` verifies product, category, page, navigation, and shipping forwarding through capability gateways.
+- [x] ControlPlane Commerce Admin gateway capabilities keep `X-Node-Key` and `X-Node-Secret` server-side. 2026-07-18: transport/gateway tests verify node credentials are added by Control Plane API and not exposed to Web.
+- [x] ControlPlane Commerce Admin gateway capabilities no longer send `X-Store-Key` to Commerce Admin endpoints. 2026-07-18: shared `CommerceNodeAdminGatewayTransport` forwards store scope as `storeKey` query.
+- [x] ControlPlane product/category/page manager gateway requests append `storeKey` and keep node credentials server-side. 2026-07-18: `ControlPlaneCommerceGatewayStoreMappingTests` covers product query, category list, page list/template/navigation, navigation menu/item, and shipping settings forwarding.
 - [x] ControlPlane product/category/order/media/admin pages still load after Commerce Admin missing-`storeKey` enforcement. 2026-07-15: visible browser QA loaded Products, Categories, Pages, Orders, and Media Library for `Default QA Store (default)`.
 - [x] Browser network capture confirms ControlPlane Web still calls only ControlPlane API. 2026-07-15: Playwright request capture across Products, Categories, Pages, Orders, and Media Library found 0 direct `localhost:5180` or `/api/commerce/*` browser calls; all commerce calls used `localhost:5280/api/controlplane/commerce/...`.
 - [x] ControlPlane API product media preview calls `api/commerce/admin/media/products/{mediaId}?storeKey={storeKey}`. 2026-07-15: Products page media previews returned 200 through ControlPlane API; ControlPlane API log showed server-side CommerceNode product media preview calls and CommerceNode resolved the request by store key.
 - [x] ControlPlane API asset media preview calls `api/commerce/admin/media/assets/{assetId}/preview?storeKey={storeKey}`. 2026-07-15: Media Library asset preview returned 200 through ControlPlane API; ControlPlane API log showed server-side CommerceNode asset preview call and CommerceNode resolved the request by store key.
+
+## Commerce Admin Gateway Split
+
+- [x] ControlPlane API uses capability controllers under `Controllers/CommerceGateway` instead of a single commerce catalog controller. 2026-07-18: Phase 6 removed the old active controller and `rg` found no old facade/controller references in active source.
+- [x] Shared ControlPlane API -> CommerceNode transport still appends store scope and server-side node credentials. 2026-07-18: `ControlPlaneCommerceGatewayStoreMappingTests` passed in the focused phase gate.
+- [x] ControlPlane Web manager pages use capability clients under `Services/Commerce` instead of a single catalog client. 2026-07-18: `ControlPlaneVariantAttributeWorkflowTests` rejects page `CatalogClient.` usage and passed.
+- [x] Browser-facing ControlPlane Web code still has no CommerceNode base URL, `api/commerce/*`, `api/storefront/*`, `X-Node-Key`, or `X-Node-Secret`. 2026-07-18: source scan and focused boundary tests passed.
+- [x] Product/category/media/order/page/navigation/currency/payment/shipping/security manager routes remain ControlPlane API routes. 2026-07-18: controller split preserved existing route templates; ControlPlane API and Web builds passed.
+- [x] Commerce gateway protected endpoints keep authorization metadata, avoid side-effecting GET, and declare command request bodies explicitly. 2026-07-18: `ControlPlaneCommerceGatewayContractTests` passed.
 
 ## Commerce Storefront Pages
 
@@ -232,19 +241,19 @@ Status legend:
 
 ### Basic Page Content Core
 
-- [x] ControlPlane API exposes page template definitions/status/draft/map/clear/navigation gateway endpoints under `api/controlplane/commerce/stores/{storePublicId}/pages/*`. 2026-07-15: ControlPlane API build passed and `ControlPlaneCommerceCatalogServiceStoreMappingTests` covered store-key forwarding.
+- [x] ControlPlane API exposes page template definitions/status/draft/map/clear/navigation gateway endpoints under `api/controlplane/commerce/stores/{storePublicId}/pages/*`. 2026-07-18: ControlPlane API build passed and `ControlPlaneCommerceGatewayStoreMappingTests` covered store-key forwarding.
 - [x] ControlPlane Web pages manager renders a content readiness panel for the selected store. 2026-07-15: `CommercePages.razor` adds template status rows and ControlPlane Web build passed.
-- [x] Readiness panel supports create draft shell, map suggested existing page, open mapped page, and clear mapping actions through `IControlPlaneCatalogClient`. 2026-07-15: ControlPlane Web build passed after wiring template actions.
+- [x] Readiness panel supports create draft shell, map suggested existing page, open mapped page, and clear mapping actions through the Control Plane content capability client. 2026-07-18: ControlPlane Web build passed after the commerce client split.
 - [x] Page drawer exposes page key, display order, include-in-navigation, and navigation location controls without adding contact form/page-builder/component-selector scope. 2026-07-15: `CommercePages.razor` updated and build passed.
 - [x] Page save blocks `IncludeInNavigation=true` without a selected navigation location before sending the request. 2026-07-15: ControlPlane Web build passed with client-side guard.
-- [x] ControlPlane Web still calls ControlPlane API only for page template/readiness operations. 2026-07-15: code path uses `ControlPlaneCatalogClient` gateway methods only; no direct CommerceNode client or route was added to Web.
-- [x] Focused page template/gateway tests pass. 2026-07-15: `dotnet test BlazorShop.Tests\BlazorShop.Tests.csproj --filter "FullyQualifiedName~ControlPlaneCommerceCatalogServiceStoreMappingTests|FullyQualifiedName~StorefrontPageTemplateServiceTests"` passed 12/12 after UI phase.
+- [x] ControlPlane Web still calls ControlPlane API only for page template/readiness operations. 2026-07-18: code path uses `IControlPlaneContentClient`; no direct CommerceNode client or route was added to Web.
+- [x] Focused page template/gateway tests pass. 2026-07-18: focused commerce gateway split tests passed after moving store-key coverage to `ControlPlaneCommerceGatewayStoreMappingTests`.
 
 ## Menu Navigation Core
 
 - [x] ControlPlane permissions include `commerce.navigation.read` and `commerce.navigation.write`. 2026-07-15: ControlPlane permission migration and role seed updates were added in Menu Navigation Phase 3.
-- [x] ControlPlane API gateways navigation management through `api/controlplane/commerce/stores/{storePublicId}/navigation/*` and appends the resolved CommerceNode `storeKey`. 2026-07-15: `ControlPlaneCommerceCatalogServiceStoreMappingTests` covers navigation menu and target-option forwarding.
-- [x] ControlPlane Web Navigation manager calls `IControlPlaneCatalogClient` only and does not call CommerceNode directly in code. 2026-07-15: `CommerceNavigation.razor` uses ControlPlane client methods for menu/item/system-target operations.
+- [x] ControlPlane API gateways navigation management through `api/controlplane/commerce/stores/{storePublicId}/navigation/*` and appends the resolved CommerceNode `storeKey`. 2026-07-18: `ControlPlaneCommerceGatewayStoreMappingTests` covers navigation menu and item forwarding.
+- [x] ControlPlane Web Navigation manager calls `IControlPlaneNavigationClient` only and does not call CommerceNode directly in code. 2026-07-18: `CommerceNavigation.razor` uses the Control Plane navigation capability client for menu/item/system-target operations.
 - [x] ControlPlane Web builds after Navigation manager UI changes. 2026-07-15: `dotnet build BlazorShop.PresentationV2\BlazorShop.ControlPlane.Web\BlazorShop.ControlPlane.Web.csproj` passed.
 - [x] Final focused ControlPlane verification passed. 2026-07-15: `dotnet build` passed for ControlPlane API/Web and focused gateway tests passed in the Menu Navigation closeout run.
 - [ ] Visible browser QA: Navigation manager can create/edit menus, add system/page/category/product/external/group items, and reload the resolved tree.
@@ -266,9 +275,9 @@ Status legend:
 - [x] Delete asset removes it from the grid. 2026-07-13: delete returned the page to `No media assets found`.
 - [x] Link generator emits a local `/media/assets/{assetPublicId}/{canonicalFileName}` URL with transform query. 2026-07-13: generated `/media/assets/.../summer-sale-banner.png?w=320&h=180&fit=cover&format=webp&v=...`.
 - [x] Link generator emits an `<img>` snippet with `alt`, optional `title`, `loading="lazy"`, and width/height when selected. 2026-07-13: snippet included edited alt/title, `width="320"`, `height="180"`, and lazy loading.
-- [x] Media Core Phase 0 confirms existing product media and media library gateway routes stay behind ControlPlane API. 2026-07-15: reviewed `ControlPlaneCommerceCatalogController` routes for product media list/import/order/primary/delete/retry/preview and media asset list/upload/metadata/replace/delete/preview.
-- [x] Media Core category media assignment route goes through ControlPlane API only after Phase 5/7 implementation. 2026-07-15: ControlPlane API exposes `GET/PUT/DELETE /api/control-plane/stores/{storePublicId}/catalog/categories/{categoryId}/media[/primary]` and forwards to CommerceNode through `ControlPlaneCommerceCatalogService`; ControlPlane API build passed.
-- [x] Media Core Phase 6 media library list can forward `usageType` filter through ControlPlane API. 2026-07-15: ControlPlane `ListMediaAssets` accepts `usageType` and `ControlPlaneCommerceCatalogService` forwards it to CommerceNode; ControlPlane API build passed.
+- [x] Media Core Phase 0 confirms existing product media and media library gateway routes stay behind ControlPlane API. 2026-07-18: product media and media asset routes are owned by `ControlPlaneCommerceMediaController`.
+- [x] Media Core category media assignment route goes through ControlPlane API only after Phase 5/7 implementation. 2026-07-18: ControlPlane API capability controllers forward media/category media actions to CommerceNode through shared gateway transport; ControlPlane API build passed.
+- [x] Media Core Phase 6 media library list can forward `usageType` filter through ControlPlane API. 2026-07-18: `ControlPlaneMediaGateway` forwards it to CommerceNode; ControlPlane API build passed.
 
 ## Commerce Admin UX Completion
 
@@ -478,11 +487,11 @@ Status legend:
 - [x] ControlPlane Web still uses ControlPlane API category client/gateway, not direct CommerceNode calls. 2026-07-16: category page changes reused existing `CatalogClient.CreateCategoryAsync`/`UpdateCategoryAsync`.
 - [x] Product manager shows derived publication status for draft, scheduled, published, and expired products. 2026-07-16 Phase 4: `CommerceProducts.razor` derives status from publish flag and availability window; focused Razor build/test run passed.
 - [x] Product editor can set availability start/end UTC through Control Plane Web without direct CommerceNode calls. 2026-07-16 Phase 4: Basic info form sends `AvailableStartUtc`/`AvailableEndUtc` through existing `CatalogClient.UpdateProductAsync`; focused build/test run passed.
-- [x] Product import template exposes availability columns. 2026-07-16: `ControlPlaneCommerceCatalogControllerTests.DownloadProductImportTemplate_ReturnsCanonicalParserHeader` passed.
+- [x] Product import template exposes availability columns. 2026-07-18: `ControlPlaneCommerceProductControllerTests.DownloadProductImportTemplate_ReturnsCanonicalParserHeader` passed after the commerce controller split.
 - [x] Product editor can set GTIN, barcode, manufacturer part number, condition, weight, length, width, and height through Control Plane Web. 2026-07-16 Phase 5: Basic info form sends fields through existing `CatalogClient.UpdateProductAsync`; focused build/test run passed.
 - [x] Product import template exposes optional identity/dimension columns. 2026-07-16 Phase 5: ControlPlane template test passed with `gtin`, `barcode`, `manufacturer_part_number`, `condition`, `weight`, `length`, `width`, and `height`.
-- [x] Catalog structure fields stay behind Control Plane API gateway and storeKey forwarding. 2026-07-16 Phase 7: `ControlPlaneCommerceCatalogServiceStoreMappingTests|ControlPlaneArchitectureBoundaryTests` passed 14/14; Control Plane API build passed; Control Plane Web build passed with one transient file-lock retry warning.
-- [x] Catalog Structure Core final Control Plane release gate passed. 2026-07-16 Phase 10: `ControlPlaneCommerceCatalogServiceStoreMappingTests|ControlPlaneArchitectureBoundaryTests|ControlPlaneCommerceCatalogControllerTests` passed 16/16 and ControlPlane Web build passed with 0 warnings.
+- [x] Catalog structure fields stay behind Control Plane API gateway and storeKey forwarding. 2026-07-18: `ControlPlaneCommerceGatewayStoreMappingTests|ControlPlaneArchitectureBoundaryTests` remains the current guard after the gateway split.
+- [x] Catalog Structure Core final Control Plane release gate passed. 2026-07-18: post-split guards are `ControlPlaneCommerceGatewayStoreMappingTests|ControlPlaneArchitectureBoundaryTests|ControlPlaneCommerceProductControllerTests`.
 - [ ] Visible browser QA creates/updates a category description through Control Plane and confirms it reloads in the drawer.
 
 ## Product Variant Attribute
@@ -497,7 +506,7 @@ Status legend:
 - [x] Product variant manager warns for missing required option. 2026-07-16 Phase 6: product drawer renders missing required-option warnings from active template metadata; static workflow test guards the warning path.
 - [x] Product variant manager warns for stale template value. 2026-07-16 Phase 6: product drawer renders stale option/value warnings when saved variant attributes no longer match active template metadata.
 - [x] ControlPlane Web calls only ControlPlane API. 2026-07-16 Phase 6: `ControlPlaneVariantAttributeWorkflowTests.ControlPlaneWeb_UsesControlPlaneCommerceGatewayRoutesOnly` and `ControlPlaneArchitectureBoundaryTests` passed.
-- [x] Product Variant Attribute Control Plane release gate passed. 2026-07-16 Phase 7: ControlPlane API/Web builds passed, `ControlPlaneCommerceCatalogControllerTests|ControlPlaneCommerceCatalogServiceStoreMappingTests|ControlPlaneArchitectureBoundaryTests|ControlPlaneVariantAttributeWorkflowTests` passed inside the 140-test focused release-gate run.
+- [x] Product Variant Attribute Control Plane release gate passed. 2026-07-18: post-split focused guards are `ControlPlaneCommerceProductControllerTests|ControlPlaneCommerceGatewayStoreMappingTests|ControlPlaneArchitectureBoundaryTests|ControlPlaneVariantAttributeWorkflowTests`.
 
 ## Availability Quantity
 
@@ -506,9 +515,9 @@ Status legend:
 - [x] Inventory manager continues to update product quantity and variant stock through Control Plane API. 2026-07-16 Phase 0: existing `CatalogClient.UpdateProductStockAsync` and `UpdateVariantStockAsync` path confirmed.
 - [x] ControlPlane Web does not call CommerceNode API directly. 2026-07-16 Phase 0: no ControlPlane Web changes in baseline; existing boundary tests remain applicable.
 - [x] ControlPlane product basic save preserves purchase metadata returned by `GetProduct`. 2026-07-16 Phase 1: `CommerceProducts.razor` forwards selected product min/max/step, purchase-disabled, manage-stock, hide-when-out-of-stock, shipping, free-shipping, and delivery estimate fields through `CatalogClient.UpdateProductAsync`.
-- [x] ControlPlane shipping settings gateway uses ControlPlane API -> CommerceNode Admin boundary and appends store scope. 2026-07-17 Shipping Core Phase 2: `ControlPlaneCommerceCatalogServiceStoreMappingTests` covers shipping settings GET/PUT forwarding with `storeKey` and node credentials.
+- [x] ControlPlane shipping settings gateway uses ControlPlane API -> CommerceNode Admin boundary and appends store scope. 2026-07-18: `ControlPlaneCommerceGatewayStoreMappingTests` covers shipping settings GET/PUT forwarding with `storeKey` and node credentials.
 - [x] Product manager exposes manage-stock, min/max/step, purchase-disabled reason, hide-when-out-of-stock, and delivery metadata through the Control Plane gateway. 2026-07-16 Phase 7: `ControlPlaneVariantAttributeWorkflowTests.ProductManager_ExposesAvailabilityQuantityWorkflowControls` passed and ControlPlane Web build passed.
 - [x] Product manager exposes and preserves product shipping surcharge through the Control Plane product form and shared DTOs. 2026-07-17 Shipping Core Phase 4: ControlPlane Web build passed after adding the field to `CommerceProducts.razor`.
 - [x] Product manager shows availability quantity workflow state for managed/unmanaged stock, low stock, out of stock, purchase paused, and hide-when-out-of-stock. 2026-07-16 Phase 7: `ControlPlaneVariantAttributeWorkflowTests.ProductManager_ShowsAvailabilityQuantityWorkflowState` passed.
 - [x] Availability Quantity manager workflow keeps ControlPlane Web behind ControlPlane API. 2026-07-16 Phase 7: `ControlPlaneVariantAttributeWorkflowTests.ControlPlaneWeb_UsesControlPlaneCommerceGatewayRoutesOnly` passed; no direct CommerceNode calls were added.
-- [x] Availability Quantity Control Plane release gate passed. 2026-07-16 Phase 8: ControlPlane API/Web builds passed; focused `ControlPlaneCommerceCatalogServiceStoreMappingTests|ControlPlaneArchitectureBoundaryTests|ControlPlaneCommerceCatalogControllerTests|ControlPlaneVariantAttributeWorkflowTests` passed 21/21.
+- [x] Availability Quantity Control Plane release gate passed. 2026-07-18: post-split focused guards are `ControlPlaneCommerceGatewayStoreMappingTests|ControlPlaneArchitectureBoundaryTests|ControlPlaneCommerceProductControllerTests|ControlPlaneVariantAttributeWorkflowTests`.

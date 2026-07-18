@@ -25,8 +25,8 @@ Capabilities:
 - Node health and manual probe.
 - Control actions and attempts.
 - Audit logs.
-- Catalog gateway from Control Plane API to Commerce Node API.
-- Commerce storefront page gateway and admin UI. Control Plane Web must call Control Plane API only.
+- Commerce Admin gateway capabilities from Control Plane API to Commerce Node API for products, categories, media, pages, navigation, orders, currencies, payment methods, shipping, security/privacy, messages, and runtime store configuration.
+- Control Plane Web commerce admin UI. Web calls typed Control Plane API clients only; Commerce Node credentials and store-key forwarding stay server-side in Control Plane API.
 
 Decision rule:
 
