@@ -164,26 +164,29 @@ Acceptance:
 
 ## Phase 3 - Update Storefront OpenAPI And Contract Tests
 
-- [ ] Remove metadata entries from `CommerceNodeSwaggerExtensions.cs`:
+- [x] Remove metadata entries from `CommerceNodeSwaggerExtensions.cs`:
   - `StorefrontCart_SaveCheckout`
   - `StorefrontOrders_Confirm`
   - `StorefrontOrders_ListCurrentUserOrderItems`
-- [ ] Remove protected-security mapping for retired operation IDs.
-- [ ] Update `CommerceNodeStorefrontOpenApiContractTests`:
+  2026-07-18 Phase 3: metadata entries removed for the three retired cart/order operations.
+- [x] Remove protected-security mapping for retired operation IDs. 2026-07-18 Phase 3: `StorefrontSecurityDocumentFilter` no longer maps the retired operation IDs.
+- [x] Update `CommerceNodeStorefrontOpenApiContractTests`:
   - remove retired operation IDs from protected operation arrays.
   - replace old "risky contract fixes" assertions with absence assertions.
   - generated client check must not contain retired methods.
-- [ ] Refresh `storefront-openapi.snapshot.json`.
-- [ ] Refresh `storefront-openapi.paths.snapshot.txt`.
-- [ ] Add route absence assertions:
+  2026-07-18 Phase 3: added absence assertions for retired operation IDs/paths/generated client and endpoint metadata.
+- [x] Refresh `storefront-openapi.snapshot.json`. 2026-07-18 Phase 3: snapshot refreshed from raw Storefront Swagger runtime output.
+- [x] Refresh `storefront-openapi.paths.snapshot.txt`. 2026-07-18 Phase 3: path snapshot regenerated with the same ordinal sort used by the test helper.
+- [x] Add route absence assertions:
   - retired paths are not present in Swagger.
   - direct HTTP calls return `404` or no matching endpoint once route removed.
+  2026-07-18 Phase 3: endpoint metadata test asserts no route endpoint exists for `cart/save-checkout`, `orders/confirm`, or `orders/current-user/items`; HTTP-level auth middleware can otherwise mask missing endpoints as 401.
 
 Acceptance:
 
-- [ ] Swagger no longer publishes retired cart/order compatibility endpoints.
-- [ ] Generated Storefront client does not contain retired operation names.
-- [ ] V2 canonical checkout/order operations remain stable.
+- [x] Swagger no longer publishes retired cart/order compatibility endpoints. 2026-07-18 Phase 3: `CommerceNodeStorefrontOpenApiContractTests` passed 35/35.
+- [x] Generated Storefront client does not contain retired operation names. 2026-07-18 Phase 3: TypeScript client smoke asserts absence.
+- [x] V2 canonical checkout/order operations remain stable. 2026-07-18 Phase 3: canonical checkout/order operation checks remain in the passing OpenAPI suite.
 
 ## Phase 4 - Remove Legacy Cart/Order Services From Commerce Node Runtime
 

@@ -9,6 +9,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
 
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Mvc.Testing;
+    using Microsoft.AspNetCore.Routing;
+    using Microsoft.Extensions.DependencyInjection;
     using Microsoft.OpenApi;
     using Microsoft.OpenApi.Reader;
 
@@ -35,12 +37,9 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             "StorefrontCustomerProfile_Get",
             "StorefrontCustomerProfile_Update",
             "StorefrontCart_MergeCurrentCustomer",
-            "StorefrontCart_SaveCheckout",
-            "StorefrontOrders_Confirm",
             "StorefrontOrders_ListCurrentUserOrders",
             "StorefrontOrders_GetCurrentUserOrder",
             "StorefrontOrders_GetCurrentUserOrderReceipt",
-            "StorefrontOrders_ListCurrentUserOrderItems",
         ];
 
         private static readonly IReadOnlyDictionary<string, string> ProtectedOperationSecuritySchemes =
@@ -59,12 +58,9 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 ["StorefrontCustomerProfile_Get"] = "Bearer",
                 ["StorefrontCustomerProfile_Update"] = "Bearer",
                 ["StorefrontCart_MergeCurrentCustomer"] = "Bearer",
-                ["StorefrontCart_SaveCheckout"] = "Bearer",
-                ["StorefrontOrders_Confirm"] = "Bearer",
                 ["StorefrontOrders_ListCurrentUserOrders"] = "Bearer",
                 ["StorefrontOrders_GetCurrentUserOrder"] = "Bearer",
                 ["StorefrontOrders_GetCurrentUserOrderReceipt"] = "Bearer",
-                ["StorefrontOrders_ListCurrentUserOrderItems"] = "Bearer",
             };
 
         private static readonly (string SchemaName, string PropertyName)[] NonNullableResponseCollections =
@@ -114,7 +110,6 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             "unitPrice",
             "lineTotal",
             "totalAmount",
-            "amountPaid",
         ];
 
         private static readonly string[] PublicConfigurationSchemaNames =
@@ -681,24 +676,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             var schemas = swagger["components"]?["schemas"]?.AsObject()
                 ?? throw new InvalidOperationException("Swagger document does not contain component schemas.");
 
-            var saveCheckout = GetOperation(swagger, "StorefrontCart_SaveCheckout");
-            AssertRequiredRequestBody(saveCheckout);
-            var saveCheckoutSchema = ResolveRequestBodySchema(saveCheckout, schemas);
-            Assert.DoesNotContain("userId", GetPropertyNames(saveCheckoutSchema), StringComparer.OrdinalIgnoreCase);
-
-            var confirm = GetOperation(swagger, "StorefrontOrders_Confirm");
-            AssertRequiredRequestBody(confirm);
-            Assert.DoesNotContain(
-                confirm["parameters"]?.AsArray() ?? [],
-                parameter => string.Equals(parameter?["name"]?.GetValue<string>(), "status", StringComparison.OrdinalIgnoreCase));
-
-            var cartItem = schemas["StorefrontCartItemRequest"]?.AsObject()
-                ?? throw new InvalidOperationException("StorefrontCartItemRequest schema was not found.");
-            Assert.Equal(1, cartItem["properties"]?["quantity"]?["minimum"]?.GetValue<int>());
-
-            var orderItem = schemas["StorefrontOrderItemRequest"]?.AsObject()
-                ?? throw new InvalidOperationException("StorefrontOrderItemRequest schema was not found.");
-            Assert.Equal(1, orderItem["properties"]?["quantity"]?["minimum"]?.GetValue<int>());
+            AssertRetiredStorefrontCommerceFlowIsAbsent(swagger);
 
             var catalog = GetOperation(swagger, "StorefrontCatalog_QueryProducts");
             var catalogParameters = catalog["parameters"]?.AsArray()
@@ -807,7 +785,6 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             var serializedSchemas = schemas.ToJsonString();
 
             Assert.DoesNotContain("amountPayed", serializedSchemas, StringComparison.Ordinal);
-            Assert.Contains("amountPaid", serializedSchemas, StringComparison.Ordinal);
 
             foreach (var propertyName in MonetaryPropertyNames)
             {
@@ -891,6 +868,42 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("StorefrontOrders_GetCurrentUserOrderReceipt", client, StringComparison.Ordinal);
             Assert.DoesNotContain("any /* missing operationId */", client, StringComparison.Ordinal);
             Assert.DoesNotContain("Promise<any>", client, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontCart_SaveCheckout", client, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontOrders_Confirm", client, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontOrders_ListCurrentUserOrderItems", client, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_RetiredCartOrderCompatibilityRoutesAreAbsent()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+
+            AssertRetiredStorefrontCommerceFlowIsAbsent(swagger);
+        }
+
+        [Fact]
+        public void StorefrontApi_RetiredCartOrderCompatibilityRoutesHaveNoEndpointMetadata()
+        {
+            var configuredFactory = this.factory.WithWebHostBuilder(builder =>
+            {
+                builder.UseEnvironment("Development");
+                builder.UseSetting("CommerceNode:Database:MigrateOnStartup", "false");
+                builder.UseSetting("CommerceTaskWorker:Enabled", "false");
+            });
+
+            _ = configuredFactory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+
+            var endpoints = configuredFactory.Services
+                .GetRequiredService<EndpointDataSource>()
+                .Endpoints
+                .OfType<RouteEndpoint>()
+                .Select(endpoint => endpoint.RoutePattern.RawText)
+                .Where(pattern => !string.IsNullOrWhiteSpace(pattern))
+                .ToArray();
+
+            Assert.DoesNotContain("api/storefront/stores/{storeKey}/cart/save-checkout", endpoints);
+            Assert.DoesNotContain("api/storefront/stores/{storeKey}/orders/confirm", endpoints);
+            Assert.DoesNotContain("api/storefront/stores/{storeKey}/orders/current-user/items", endpoints);
         }
 
         [Fact]
@@ -1427,6 +1440,25 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             return GetOperations(swagger)
                 .Select(operation => operation.Value)
                 .Single(operation => string.Equals(operation["operationId"]?.GetValue<string>(), operationId, StringComparison.Ordinal));
+        }
+
+        private static void AssertRetiredStorefrontCommerceFlowIsAbsent(JsonObject swagger)
+        {
+            var operationIds = GetOperations(swagger)
+                .Select(operation => operation.Value["operationId"]?.GetValue<string>())
+                .Where(operationId => !string.IsNullOrWhiteSpace(operationId))
+                .ToArray();
+
+            Assert.DoesNotContain("StorefrontCart_SaveCheckout", operationIds);
+            Assert.DoesNotContain("StorefrontOrders_Confirm", operationIds);
+            Assert.DoesNotContain("StorefrontOrders_ListCurrentUserOrderItems", operationIds);
+
+            var paths = swagger["paths"]?.AsObject()
+                ?? throw new InvalidOperationException("Swagger document does not contain paths.");
+            var pathNames = paths.Select(path => path.Key).ToArray();
+            Assert.DoesNotContain("/api/storefront/stores/{storeKey}/cart/save-checkout", pathNames, StringComparer.Ordinal);
+            Assert.DoesNotContain("/api/storefront/stores/{storeKey}/orders/confirm", pathNames, StringComparer.Ordinal);
+            Assert.DoesNotContain("/api/storefront/stores/{storeKey}/orders/current-user/items", pathNames, StringComparer.Ordinal);
         }
 
         private static JsonObject GetSchemas(JsonObject swagger)

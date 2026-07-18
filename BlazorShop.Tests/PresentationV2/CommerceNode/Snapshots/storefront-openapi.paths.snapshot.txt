@@ -18,7 +18,6 @@ DELETE /api/storefront/stores/{storeKey}/cart/lines/{lineId}
 PUT /api/storefront/stores/{storeKey}/cart/lines/{lineId}
 POST /api/storefront/stores/{storeKey}/cart/merge-current-customer
 POST /api/storefront/stores/{storeKey}/cart/recalculate
-POST /api/storefront/stores/{storeKey}/cart/save-checkout
 POST /api/storefront/stores/{storeKey}/cart/session
 POST /api/storefront/stores/{storeKey}/cart/validate
 GET /api/storefront/stores/{storeKey}/catalog/categories
@@ -58,9 +57,7 @@ GET /api/storefront/stores/{storeKey}/customer/profile
 PUT /api/storefront/stores/{storeKey}/customer/profile
 GET /api/storefront/stores/{storeKey}/navigation/{systemName}
 POST /api/storefront/stores/{storeKey}/newsletter/subscribe
-POST /api/storefront/stores/{storeKey}/orders/confirm
 GET /api/storefront/stores/{storeKey}/orders/current-user
-GET /api/storefront/stores/{storeKey}/orders/current-user/items
 GET /api/storefront/stores/{storeKey}/orders/current-user/{orderReference}
 GET /api/storefront/stores/{storeKey}/orders/current-user/{orderReference}/receipt
 POST /api/storefront/stores/{storeKey}/orders/guest-lookup

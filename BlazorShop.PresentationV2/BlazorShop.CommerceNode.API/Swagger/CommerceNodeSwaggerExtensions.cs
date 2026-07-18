@@ -1171,12 +1171,6 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         typeof(CommerceNodeApiResponse<StorefrontCartResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError],
                         Security: StorefrontSecurityRequirement.Bearer),
-                    [("StorefrontScopedCart", "SaveCheckout")] = new(
-                        "StorefrontCart_SaveCheckout",
-                        "Save the current customer's checkout history.",
-                        typeof(CommerceNodeApiResponse),
-                        [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status500InternalServerError],
-                        Security: StorefrontSecurityRequirement.Bearer),
                     [("StorefrontScopedCurrency", "SetPreference")] = new(
                         "StorefrontCurrency_SetPreference",
                         "Set a Storefront currency preference.",
@@ -1237,12 +1231,6 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "Submit a Storefront contact request.",
                         typeof(CommerceNodeApiResponse<StorefrontContactResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
-                    [("StorefrontScopedOrders", "ConfirmOrder")] = new(
-                        "StorefrontOrders_Confirm",
-                        "Confirm an order for the current customer.",
-                        typeof(CommerceNodeApiResponse<StorefrontCheckoutResultResponse>),
-                        [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError],
-                        Security: StorefrontSecurityRequirement.Bearer),
                     [("StorefrontScopedOrders", "GetCurrentUserOrders")] = new(
                         "StorefrontOrders_ListCurrentUserOrders",
                         "List orders for the current customer.",
@@ -1260,12 +1248,6 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "Get a receipt projection for the current customer order.",
                         typeof(CommerceNodeApiResponse<StorefrontCustomerOrderDetailResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status401Unauthorized, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError],
-                        Security: StorefrontSecurityRequirement.Bearer),
-                    [("StorefrontScopedOrders", "GetCurrentUserOrderItems")] = new(
-                        "StorefrontOrders_ListCurrentUserOrderItems",
-                        "List order items for the current customer.",
-                        typeof(CommerceNodeApiResponse<IReadOnlyList<StorefrontOrderItemHistoryResponse>>),
-                        [StatusCodes.Status401Unauthorized, StatusCodes.Status404NotFound, StatusCodes.Status500InternalServerError],
                         Security: StorefrontSecurityRequirement.Bearer),
                     [("StorefrontScopedOrders", "GetGuestOrder")] = new(
                         "StorefrontOrders_GetGuestOrder",
@@ -1561,12 +1543,9 @@ namespace BlazorShop.CommerceNode.API.Swagger
                     ["StorefrontCustomerProfile_Get"] = StorefrontSecurityRequirement.Bearer,
                     ["StorefrontCustomerProfile_Update"] = StorefrontSecurityRequirement.Bearer,
                     ["StorefrontCart_MergeCurrentCustomer"] = StorefrontSecurityRequirement.Bearer,
-                    ["StorefrontCart_SaveCheckout"] = StorefrontSecurityRequirement.Bearer,
-                    ["StorefrontOrders_Confirm"] = StorefrontSecurityRequirement.Bearer,
                     ["StorefrontOrders_ListCurrentUserOrders"] = StorefrontSecurityRequirement.Bearer,
                     ["StorefrontOrders_GetCurrentUserOrder"] = StorefrontSecurityRequirement.Bearer,
                     ["StorefrontOrders_GetCurrentUserOrderReceipt"] = StorefrontSecurityRequirement.Bearer,
-                    ["StorefrontOrders_ListCurrentUserOrderItems"] = StorefrontSecurityRequirement.Bearer,
                 };
 
             public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
