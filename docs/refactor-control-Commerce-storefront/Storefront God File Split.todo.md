@@ -478,23 +478,26 @@ Acceptance:
 
 ## Phase 9 - Coordinate With V2 Commerce Flow Cutover
 
-- [ ] Before moving or polishing old cart/order/payment actions, check `Storefront V2 Commerce Flow Cutover.todo.md`.
-- [ ] If cutover is not complete, mark old actions as compatibility/deprecated in comments/tests instead of making them look first-class.
-- [ ] If cutover is complete, remove instead of moving:
+- [x] Before moving or polishing old cart/order/payment actions, check `Storefront V2 Commerce Flow Cutover.todo.md`.
+- [x] If cutover is not complete, mark old actions as compatibility/deprecated in comments/tests instead of making them look first-class.
+- [x] If cutover is complete, remove instead of moving:
   - `StorefrontScopedCartController.SaveCheckout`
   - `StorefrontScopedOrdersController.ConfirmOrder`
   - `StorefrontScopedOrdersController.GetCurrentUserOrderItems`
   - `StorefrontScopedPaymentsController.CapturePayPal`
-- [ ] Update:
+  2026-07-18 Phase 9: cutover phases 2-4 were already complete; active V2 source search found no retired storefront cart/order/payment actions or routes in `PresentationV2`.
+- [x] Update:
   - `CommerceNodeSwaggerExtensions.cs`
   - Storefront OpenAPI tests
   - QA-CommerceNode todo
   - QA-StorefrontV2 todo
+  2026-07-18 Phase 9: no new Swagger/QA updates were needed in this phase because the cutover plan already removed retired metadata and tests assert absence; this phase records the coordination gate.
 
 Acceptance:
 
-- [ ] No obsolete V1/legacy flow is reintroduced as a "clean" V2 capability.
-- [ ] Canonical V2 routes remain the only active cart/checkout/order path after cutover.
+- [x] No obsolete V1/legacy flow is reintroduced as a "clean" V2 capability.
+- [x] Canonical V2 routes remain the only active cart/checkout/order path after cutover.
+  2026-07-18 Phase 9 verification: source search over active `PresentationV2` returned no retired action/route matches; `StorefrontCommerceFlowCutoverTests`, `CommerceNodeStorefrontOpenApiContractTests`, and `CommerceNodeStorefrontPaymentContractTests` passed 42/42.
 
 ## Phase 10 - Final QA And Documentation
 
