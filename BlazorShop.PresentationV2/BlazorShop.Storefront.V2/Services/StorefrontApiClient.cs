@@ -662,7 +662,8 @@ namespace BlazorShop.Storefront.Services
             string cartToken,
             Guid checkoutSessionId,
             StorefrontCheckoutAddressStepRequest request,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            string? bearerToken = null)
         {
             if (checkoutSessionId == Guid.Empty)
             {
@@ -675,7 +676,8 @@ namespace BlazorShop.Storefront.Services
                 cartToken,
                 request,
                 "Unable to update checkout address right now.",
-                cancellationToken);
+                cancellationToken,
+                bearerToken);
         }
 
         public Task<StorefrontSubmitResult<StorefrontCheckoutSessionResponse>> SelectCheckoutShippingMethodAsync(

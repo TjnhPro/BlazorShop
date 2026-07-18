@@ -40,6 +40,18 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public void StorefrontCheckoutService_CapturedPaymentPlacementUsesExecutionStrategyTransaction()
+        {
+            var source = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/Services/StorefrontCheckoutService.cs");
+            var strategyIndex = source.IndexOf("this.context.Database.CreateExecutionStrategy()", StringComparison.Ordinal);
+            var transactionIndex = source.IndexOf("this.context.Database.BeginTransactionAsync(cancellationToken)", StringComparison.Ordinal);
+
+            Assert.True(strategyIndex >= 0, "Captured checkout placement must create an EF execution strategy before starting a transaction.");
+            Assert.True(transactionIndex > strategyIndex, "BeginTransactionAsync must run inside the execution strategy block.");
+            Assert.Contains("return await executionStrategy.ExecuteAsync(async () =>", source, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void CommerceNodeOrderTrackingService_DoesNotSendEmailSynchronously()
         {
             var constructorParameterTypes = typeof(CommerceNodeOrderTrackingService)
@@ -366,6 +378,9 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.True(result.Success, result.Message);
             var session = context.CheckoutSessions.Single();
             Assert.Equal("saved", session.ShippingAddressSource);
+            Assert.Equal(customer.Id, session.CustomerId);
+            Assert.Equal("saved@example.test", session.CustomerEmail);
+            Assert.Equal("Saved Customer", session.CustomerName);
             Assert.Equal("200 Saved St", session.ShippingAddress1);
             Assert.Contains("200 Saved St", session.BillingAddressSnapshotJson, StringComparison.Ordinal);
         }
@@ -2782,6 +2797,29 @@ namespace BlazorShop.Tests.Application.CommerceNode
                     ResponseType = ServiceResponseType.Success,
                 });
             }
+        }
+
+        private static string ReadRepositoryFile(string relativePath)
+        {
+            return File.ReadAllText(Path.Combine(
+                FindRepositoryRoot(),
+                relativePath.Replace('/', Path.DirectorySeparatorChar)));
+        }
+
+        private static string FindRepositoryRoot()
+        {
+            var directory = new DirectoryInfo(AppContext.BaseDirectory);
+            while (directory is not null)
+            {
+                if (File.Exists(Path.Combine(directory.FullName, "BlazorShop.sln")))
+                {
+                    return directory.FullName;
+                }
+
+                directory = directory.Parent;
+            }
+
+            throw new DirectoryNotFoundException("Unable to locate BlazorShop.sln from test output directory.");
         }
     }
 }

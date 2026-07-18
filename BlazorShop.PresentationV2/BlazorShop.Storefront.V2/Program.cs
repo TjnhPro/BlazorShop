@@ -393,6 +393,7 @@ app.MapPost(StorefrontRoutes.CurrencyPreference, async (
 app.MapPost(StorefrontRoutes.Checkout, async (
     [FromForm] StorefrontCheckoutForm form,
     StorefrontApiClient apiClient,
+    IStorefrontSessionResolver sessionResolver,
     HttpContext httpContext,
     CancellationToken cancellationToken) =>
 {
@@ -421,11 +422,16 @@ app.MapPost(StorefrontRoutes.Checkout, async (
         return Results.Redirect(BuildCheckoutErrorUrl(startResult.Message));
     }
 
+    var customerSession = await sessionResolver.GetCurrentUserAsync(cancellationToken);
+    var customerAccessToken = customerSession.IsAuthenticated
+        ? customerSession.AccessToken
+        : null;
     var addressResult = await apiClient.UpdateCheckoutAddressesAsync(
         cartToken,
         startResult.Data.CheckoutSessionId,
         BuildCheckoutAddressStepRequest(form),
-        cancellationToken);
+        cancellationToken,
+        customerAccessToken);
     if (!addressResult.Success || addressResult.Data is null)
     {
         return Results.Redirect(BuildCheckoutErrorUrl(addressResult.Message));
@@ -982,6 +988,7 @@ app.MapPost("/api/checkout/addresses", async (
     StorefrontApiClient apiClient,
     IStorefrontDisplayContextProvider displayContextProvider,
     IStorefrontPriceFormatter priceFormatter,
+    IStorefrontSessionResolver sessionResolver,
     IAntiforgery antiforgery,
     HttpContext httpContext,
     CancellationToken cancellationToken) =>
@@ -992,11 +999,16 @@ app.MapPost("/api/checkout/addresses", async (
         return guard.Failure;
     }
 
+    var customerSession = await sessionResolver.GetCurrentUserAsync(cancellationToken);
+    var customerAccessToken = customerSession.IsAuthenticated
+        ? customerSession.AccessToken
+        : null;
     var result = await apiClient.UpdateCheckoutAddressesAsync(
         guard.CartToken!,
         request.CheckoutSessionId,
         ToCheckoutAddressStepRequest(request),
-        cancellationToken);
+        cancellationToken,
+        customerAccessToken);
     return await ToLocalCheckoutStateResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
 });
 app.MapPost("/api/checkout/shipping-method", async (

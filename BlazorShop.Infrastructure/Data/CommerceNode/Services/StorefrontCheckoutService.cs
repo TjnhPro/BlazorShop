@@ -271,19 +271,34 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var session = resolution.Session!;
+            var resolvedShippingAddress = shippingAddress!;
+            var customer = await this.FindAuthenticatedCustomerAsync(
+                request.StoreId,
+                request.CustomerAppUserId,
+                cancellationToken);
             session.BillingAddressSnapshotJson = JsonSerializer.Serialize(billingAddress, JsonOptions);
             session.ShippingAddressSource = request.UseBillingAddressAsShippingAddress
                 ? "billing"
                 : request.ShippingAddressId.HasValue ? "saved" : "direct";
-            session.ShippingFullName = NormalizeNullable(shippingAddress!.FullName) ?? string.Empty;
-            session.ShippingEmail = NormalizeNullable(shippingAddress.Email) ?? string.Empty;
-            session.ShippingPhone = NormalizeNullable(shippingAddress.Phone);
-            session.ShippingAddress1 = NormalizeNullable(shippingAddress.Address1) ?? string.Empty;
-            session.ShippingAddress2 = NormalizeNullable(shippingAddress.Address2);
-            session.ShippingCity = NormalizeNullable(shippingAddress.City) ?? string.Empty;
-            session.ShippingState = NormalizeNullable(shippingAddress.State);
-            session.ShippingPostalCode = NormalizeNullable(shippingAddress.PostalCode) ?? string.Empty;
-            session.ShippingCountryCode = NormalizeNullable(shippingAddress.CountryCode)?.ToUpperInvariant() ?? string.Empty;
+            session.CustomerId = customer?.Id ?? session.CustomerId;
+            session.CustomerEmail = NormalizeNullable(customer?.Email)
+                ?? NormalizeNullable(resolvedShippingAddress.Email)
+                ?? session.CustomerEmail;
+            session.CustomerName = NormalizeNullable(customer?.FullName)
+                ?? NormalizeNullable(resolvedShippingAddress.FullName)
+                ?? session.CustomerName;
+            session.CustomerPhone = NormalizeNullable(customer?.Phone)
+                ?? NormalizeNullable(resolvedShippingAddress.Phone)
+                ?? session.CustomerPhone;
+            session.ShippingFullName = NormalizeNullable(resolvedShippingAddress.FullName) ?? string.Empty;
+            session.ShippingEmail = NormalizeNullable(resolvedShippingAddress.Email) ?? string.Empty;
+            session.ShippingPhone = NormalizeNullable(resolvedShippingAddress.Phone);
+            session.ShippingAddress1 = NormalizeNullable(resolvedShippingAddress.Address1) ?? string.Empty;
+            session.ShippingAddress2 = NormalizeNullable(resolvedShippingAddress.Address2);
+            session.ShippingCity = NormalizeNullable(resolvedShippingAddress.City) ?? string.Empty;
+            session.ShippingState = NormalizeNullable(resolvedShippingAddress.State);
+            session.ShippingPostalCode = NormalizeNullable(resolvedShippingAddress.PostalCode) ?? string.Empty;
+            session.ShippingCountryCode = NormalizeNullable(resolvedShippingAddress.CountryCode)?.ToUpperInvariant() ?? string.Empty;
             session.PaymentMethodKey = string.Empty;
             ClearTermsAcknowledgement(session);
             session.CompletedStepsJson = JsonSerializer.Serialize(
@@ -1149,103 +1164,107 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, paymentAttempt.FailureMessage);
             }
 
-            await using var transaction = this.context.Database.IsRelational()
-                ? await this.context.Database.BeginTransactionAsync(cancellationToken)
-                : null;
+            var executionStrategy = this.context.Database.CreateExecutionStrategy();
+            return await executionStrategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = this.context.Database.IsRelational()
+                    ? await this.context.Database.BeginTransactionAsync(cancellationToken)
+                    : null;
 
-            var placement = await this.orderPlacementService.PlaceAsync(
-                new OrderPlacementRequest(
-                    request.StoreId,
-                    session,
+                var placement = await this.orderPlacementService.PlaceAsync(
+                    new OrderPlacementRequest(
+                        request.StoreId,
+                        session,
+                        paymentAttempt,
+                        new OrderSnapshotInput(
+                            OrderStatuses.Processing,
+                            PaymentStatuses.Paid,
+                            paymentMethodKey,
+                            now,
+                            operation.MetadataJson,
+                            currencyCode,
+                            totalAmount,
+                            new OrderPlacementCurrencySnapshot(
+                                rateSnapshot.BaseCurrencyCode,
+                                rateSnapshot.BaseTotalAmount,
+                                rateSnapshot.ExchangeRate,
+                                rateSnapshot.ExchangeRateProviderKey,
+                                rateSnapshot.ExchangeRateSource,
+                                rateSnapshot.ExchangeRateEffectiveAtUtc,
+                                rateSnapshot.ExchangeRateExpiresAtUtc),
+                            shippingResult.ShippingRequired ? ShippingStatuses.NotYetShipped : ShippingStatuses.ShippingNotRequired,
+                            currentSelectedShippingOption)),
+                    cancellationToken);
+                if (!placement.Success || placement.Order is null)
+                {
+                    if (transaction is not null)
+                    {
+                        await transaction.RollbackAsync(cancellationToken);
+                    }
+
+                    return Failed<StorefrontPlaceOrderResult>(placement.ResponseType, placement.Message);
+                }
+
+                var order = placement.Order;
+                this.context.PaymentAttempts.Add(paymentAttempt);
+                this.AppendPaymentAudit(
                     paymentAttempt,
-                    new OrderSnapshotInput(
-                        OrderStatuses.Processing,
-                        PaymentStatuses.Paid,
-                        paymentMethodKey,
-                        now,
-                        operation.MetadataJson,
-                        currencyCode,
-                        totalAmount,
-                        new OrderPlacementCurrencySnapshot(
-                            rateSnapshot.BaseCurrencyCode,
-                            rateSnapshot.BaseTotalAmount,
-                            rateSnapshot.ExchangeRate,
-                            rateSnapshot.ExchangeRateProviderKey,
-                            rateSnapshot.ExchangeRateSource,
-                            rateSnapshot.ExchangeRateEffectiveAtUtc,
-                            rateSnapshot.ExchangeRateExpiresAtUtc),
-                        shippingResult.ShippingRequired ? ShippingStatuses.NotYetShipped : ShippingStatuses.ShippingNotRequired,
-                        currentSelectedShippingOption)),
-                cancellationToken);
-            if (!placement.Success || placement.Order is null)
-            {
-                if (transaction is not null)
+                    oldState: null,
+                    PaymentAttemptStates.Created,
+                    "payment_attempt.created",
+                    "Payment attempt created.",
+                    operation.MetadataJson);
+                session.IdempotencyKey = idempotencyKey;
+                session.BaseCurrencyCode = rateSnapshot.BaseCurrencyCode;
+                session.BaseSubtotal = rateSnapshot.BaseTotalAmount;
+                session.BaseGrandTotal = rateSnapshot.BaseTotalAmount;
+                session.ExchangeRate = rateSnapshot.ExchangeRate;
+                session.ExchangeRateProviderKey = rateSnapshot.ExchangeRateProviderKey;
+                session.ExchangeRateSource = rateSnapshot.ExchangeRateSource;
+                session.ExchangeRateEffectiveAtUtc = rateSnapshot.ExchangeRateEffectiveAtUtc;
+                session.ExchangeRateExpiresAtUtc = rateSnapshot.ExchangeRateExpiresAtUtc;
+
+                paymentAttempt.State = PaymentAttemptStates.Captured;
+                paymentAttempt.ProviderSessionId = operation.ProviderSessionId;
+                paymentAttempt.ProviderReference = operation.ProviderReference;
+                paymentAttempt.NextActionType = operation.ActionType;
+                paymentAttempt.NextActionUrl = operation.ActionUrl;
+                paymentAttempt.MetadataJson = operation.MetadataJson;
+                paymentAttempt.UpdatedAtUtc = now;
+                this.AppendPaymentAudit(
+                    paymentAttempt,
+                    PaymentAttemptStates.Created,
+                    PaymentAttemptStates.Captured,
+                    "payment_attempt.captured",
+                    "Payment attempt captured during checkout.",
+                    operation.MetadataJson);
+
+                try
                 {
-                    await transaction.RollbackAsync(cancellationToken);
+                    await this.context.SaveChangesAsync(cancellationToken);
+                    if (transaction is not null)
+                    {
+                        await transaction.CommitAsync(cancellationToken);
+                    }
+                }
+                catch (DbUpdateException)
+                {
+                    if (transaction is not null)
+                    {
+                        await transaction.RollbackAsync(cancellationToken);
+                    }
+
+                    var duplicate = await this.FindCompletedByIdempotencyKeyAsync(request.StoreId, idempotencyKey, cancellationToken);
+                    if (duplicate is not null)
+                    {
+                        return Succeeded("Order already placed.", duplicate);
+                    }
+
+                    throw;
                 }
 
-                return Failed<StorefrontPlaceOrderResult>(placement.ResponseType, placement.Message);
-            }
-
-            var order = placement.Order;
-            this.context.PaymentAttempts.Add(paymentAttempt);
-            this.AppendPaymentAudit(
-                paymentAttempt,
-                oldState: null,
-                PaymentAttemptStates.Created,
-                "payment_attempt.created",
-                "Payment attempt created.",
-                operation.MetadataJson);
-            session.IdempotencyKey = idempotencyKey;
-            session.BaseCurrencyCode = rateSnapshot.BaseCurrencyCode;
-            session.BaseSubtotal = rateSnapshot.BaseTotalAmount;
-            session.BaseGrandTotal = rateSnapshot.BaseTotalAmount;
-            session.ExchangeRate = rateSnapshot.ExchangeRate;
-            session.ExchangeRateProviderKey = rateSnapshot.ExchangeRateProviderKey;
-            session.ExchangeRateSource = rateSnapshot.ExchangeRateSource;
-            session.ExchangeRateEffectiveAtUtc = rateSnapshot.ExchangeRateEffectiveAtUtc;
-            session.ExchangeRateExpiresAtUtc = rateSnapshot.ExchangeRateExpiresAtUtc;
-
-            paymentAttempt.State = PaymentAttemptStates.Captured;
-            paymentAttempt.ProviderSessionId = operation.ProviderSessionId;
-            paymentAttempt.ProviderReference = operation.ProviderReference;
-            paymentAttempt.NextActionType = operation.ActionType;
-            paymentAttempt.NextActionUrl = operation.ActionUrl;
-            paymentAttempt.MetadataJson = operation.MetadataJson;
-            paymentAttempt.UpdatedAtUtc = now;
-            this.AppendPaymentAudit(
-                paymentAttempt,
-                PaymentAttemptStates.Created,
-                PaymentAttemptStates.Captured,
-                "payment_attempt.captured",
-                "Payment attempt captured during checkout.",
-                operation.MetadataJson);
-
-            try
-            {
-                await this.context.SaveChangesAsync(cancellationToken);
-                if (transaction is not null)
-                {
-                    await transaction.CommitAsync(cancellationToken);
-                }
-            }
-            catch (DbUpdateException)
-            {
-                if (transaction is not null)
-                {
-                    await transaction.RollbackAsync(cancellationToken);
-                }
-
-                var duplicate = await this.FindCompletedByIdempotencyKeyAsync(request.StoreId, idempotencyKey, cancellationToken);
-                if (duplicate is not null)
-                {
-                    return Succeeded("Order already placed.", duplicate);
-                }
-
-                throw;
-            }
-
-            return Succeeded("Order placed successfully.", ToPlaceOrderResult(session, order, paymentAttempt.PublicId, idempotencyKey, placement.GuestAccessToken));
+                return Succeeded("Order placed successfully.", ToPlaceOrderResult(session, order, paymentAttempt.PublicId, idempotencyKey, placement.GuestAccessToken));
+            });
         }
 
         private async Task<ServiceResponse<StorefrontPlaceOrderResult>> CreateOnlinePaymentSessionAsync(
@@ -2691,6 +2710,26 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 NormalizeNullable(savedAddress.StateProvinceName) ?? NormalizeNullable(savedAddress.StateProvinceCode),
                 savedAddress.PostalCode,
                 savedAddress.CountryCode));
+        }
+
+        private async Task<CommerceCustomer?> FindAuthenticatedCustomerAsync(
+            Guid storeId,
+            string? customerAppUserId,
+            CancellationToken cancellationToken)
+        {
+            var appUserId = NormalizeNullable(customerAppUserId);
+            if (appUserId is null)
+            {
+                return null;
+            }
+
+            return await this.context.CommerceCustomers
+                .FirstOrDefaultAsync(
+                    customer =>
+                        customer.StoreId == storeId
+                        && customer.AppUserId == appUserId
+                        && customer.IsActive,
+                    cancellationToken);
         }
 
         private IEnumerable<StorefrontCheckoutValidationIssue> ValidateAddressFields(

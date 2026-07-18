@@ -247,6 +247,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void CheckoutLocalEndpoints_KeepCartTokenAndStaleVersionChecksServerSide()
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+            var apiClient = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.cs");
 
             Assert.Contains("app.MapGet(\"/api/checkout\"", program, StringComparison.Ordinal);
             Assert.Contains("app.MapPost(\"/api/checkout/addresses\"", program, StringComparison.Ordinal);
@@ -261,6 +262,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("Your cart changed. Review the latest cart and try checkout again.", program, StringComparison.Ordinal);
             Assert.Contains("ExpectedCheckoutVersion = request.ExpectedCheckoutVersion", program, StringComparison.Ordinal);
             Assert.Contains("IdempotencyKey = string.IsNullOrWhiteSpace(request.IdempotencyKey)", program, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontSessionResolver sessionResolver", program, StringComparison.Ordinal);
+            Assert.Contains("customerSession.IsAuthenticated", program, StringComparison.Ordinal);
+            Assert.Contains("customerAccessToken", program, StringComparison.Ordinal);
+            Assert.Contains("string? bearerToken = null", apiClient, StringComparison.Ordinal);
+            Assert.Contains("message.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(\"Bearer\", bearerToken)", apiClient, StringComparison.Ordinal);
+            Assert.Contains("\"Unable to update checkout address right now.\",", apiClient, StringComparison.Ordinal);
         }
 
         private static string RepositoryRoot()
