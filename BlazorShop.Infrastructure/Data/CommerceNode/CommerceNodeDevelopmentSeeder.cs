@@ -110,6 +110,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             await this.EnsureStorePaymentMethodsAsync(isolationStore.Id, cancellationToken);
             await this.EnsureStoreConfigurationAsync(store.Id, cancellationToken);
             await this.EnsureStoreConfigurationAsync(isolationStore.Id, cancellationToken);
+            await this.EnsureStoreEmailSettingsAsync(store.Id, "default-sender@example.local", cancellationToken);
+            await this.EnsureStoreEmailSettingsAsync(isolationStore.Id, "s2-sender@example.local", cancellationToken);
             await this.EnsureCategoriesAsync(store.Id, cancellationToken);
             await this.EnsureProductsAsync(store.Id, cancellationToken);
             await this.EnsureMediaFixtureFilesAsync(cancellationToken);
@@ -527,6 +529,39 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             settings.SurchargePolicy = "sum";
             settings.DefaultDeliveryEstimateText = "3-5 business days";
             settings.UpdatedAt = DateTimeOffset.UtcNow;
+            settings.UpdatedByUserId = "development-qa-seed";
+        }
+
+        private async Task EnsureStoreEmailSettingsAsync(
+            Guid storeId,
+            string fromEmail,
+            CancellationToken cancellationToken)
+        {
+            var settings = await this.dbContext.StoreEmailSettings
+                .FirstOrDefaultAsync(item => item.StoreId == storeId, cancellationToken);
+            if (settings is null)
+            {
+                settings = new StoreEmailSettings
+                {
+                    StoreId = storeId,
+                    CreatedAtUtc = DateTimeOffset.UtcNow,
+                };
+                this.dbContext.StoreEmailSettings.Add(settings);
+            }
+
+            settings.Enabled = true;
+            settings.DeliveryMode = StoreEmailDeliveryModes.Capture;
+            settings.SmtpHost = "localhost";
+            settings.SmtpPort = 1025;
+            settings.UseSsl = false;
+            settings.Username = null;
+            settings.ProtectedPassword = null;
+            settings.PasswordUpdatedAtUtc = null;
+            settings.FromEmail = fromEmail;
+            settings.FromDisplayName = "BlazorShop QA Store";
+            settings.ReplyToEmail = "support@example.local";
+            settings.CaptureRedirectToEmail = null;
+            settings.UpdatedAtUtc = DateTimeOffset.UtcNow;
             settings.UpdatedByUserId = "development-qa-seed";
         }
 

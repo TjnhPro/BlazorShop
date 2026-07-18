@@ -7,7 +7,7 @@ This document records the current development deployment model. It is not a prod
 | File | Purpose |
 | --- | --- |
 | `compose.controlplane.yml` | Runs Control Plane PostgreSQL on host port `5433`. |
-| `compose.commercenode.yml` | Runs Commerce Node PostgreSQL on host port `5434`, Nginx on host port `8088`, and imgproxy on host port `8089`. |
+| `compose.commercenode.yml` | Runs Commerce Node PostgreSQL on host port `5434`, Nginx on host port `8088`, imgproxy on host port `8089`, and Mailpit SMTP capture on ports `1025`/`8025`. |
 | `compose.production.yml` | Production-oriented compose file. Check before using because V2 architecture is evolving. |
 
 ## Local Ports
@@ -19,6 +19,8 @@ This document records the current development deployment model. It is not a prod
 | Legacy/default PostgreSQL | `5432` | Used by legacy `AppDbContext` if running legacy. |
 | Commerce Node Nginx | `8088 -> 80` | Reverse proxy/runtime config for deployed storefront containers. |
 | Commerce Node imgproxy | `8089 -> 8080` | Local image resize/format service for product media. |
+| Commerce Node Mailpit SMTP | `1025 -> 1025` | Local/staging-style SMTP capture target for store email settings. |
+| Commerce Node Mailpit inbox | `8025 -> 8025` | Web/API inbox for Playwright and manual QA: `http://localhost:8025`. |
 
 ## Preferred V2 Local Runner
 
@@ -97,9 +99,19 @@ The Commerce Node compose file includes:
 - PostgreSQL.
 - Nginx.
 - imgproxy.
+- Mailpit for local SMTP capture.
 - A dedicated `blazorshop-commercenode` network.
 - Mounted Nginx config and log folders under `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/nginx`.
 - Bind-mounted product media storage under `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/media`.
+
+Local email capture:
+
+- Development seeding configures the `default` and `qa-s2` stores with store-scoped email settings in capture mode.
+- Both stores send to Mailpit SMTP at `localhost:1025`; Storefront V2 has no SMTP env/config dependency.
+- Inspect captured messages at `http://localhost:8025` or through Mailpit's HTTP API from Playwright.
+- `CommerceNode:EmailTransport:CaptureModeAllowed=true` is development/local only. Production examples keep capture disabled and require per-store SMTP setup through Control Plane once the management UI is enabled.
+- `CommerceNode:EmailTransport:AllowGlobalEmailSettingsFallback=false` keeps production multi-store email from silently falling back to global `EmailSettings`.
+- Store SMTP passwords are protected with ASP.NET Core Data Protection before they are stored in Commerce Node PostgreSQL. Production operators must persist and protect the Data Protection key ring outside the database and outside storefront/runtime env files so API restarts or multiple API instances can decrypt existing store SMTP secrets safely.
 
 Nginx store-resolution smoke:
 

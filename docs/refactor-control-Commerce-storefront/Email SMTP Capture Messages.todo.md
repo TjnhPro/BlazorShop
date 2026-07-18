@@ -150,24 +150,24 @@ Acceptance:
 
 Purpose: make local/staging E2E able to receive real SMTP messages using store SMTP settings.
 
-- [ ] Add Mailpit-compatible capture service to `compose.commercenode.yml`.
-- [ ] Expose Mailpit SMTP port for Commerce Node runtime.
-- [ ] Expose Mailpit web/API inbox port for QA tooling.
-- [ ] Add local seed or setup docs for Store A SMTP -> Mailpit.
-- [ ] Add local seed or setup docs for Store B SMTP -> Mailpit if multi-store QA runs locally.
-- [ ] Set capture host/port/SSL/from per store, not in Storefront V2.
-- [ ] Keep global `EmailSettings` as compatibility fallback only.
-- [ ] Document capture inbox URL/port in local run docs.
-- [ ] Update production/staging example settings to explain store SMTP is configured through Control Plane.
-- [ ] Document runtime env key for SMTP secret protection/encryption key.
-- [ ] Document optional global SMTP fallback toggle.
-- [ ] Allow capture mode without username/password only in non-production or explicit test mode.
+- [x] Add Mailpit-compatible capture service to `compose.commercenode.yml`. 2026-07-18: `commercenode-mailpit`.
+- [x] Expose Mailpit SMTP port for Commerce Node runtime. 2026-07-18: host `1025`.
+- [x] Expose Mailpit web/API inbox port for QA tooling. 2026-07-18: host `8025`.
+- [x] Add local seed or setup docs for Store A SMTP -> Mailpit. 2026-07-18: `default` seed uses `localhost:1025`, `default-sender@example.local`.
+- [x] Add local seed or setup docs for Store B SMTP -> Mailpit if multi-store QA runs locally. 2026-07-18: `qa-s2` seed uses `localhost:1025`, `s2-sender@example.local`.
+- [x] Set capture host/port/SSL/from per store, not in Storefront V2.
+- [x] Keep global `EmailSettings` as compatibility fallback only. 2026-07-18: fallback remains behind `AllowGlobalEmailSettingsFallback=false` by default.
+- [x] Document capture inbox URL/port in local run docs.
+- [x] Update production/staging example settings to explain store SMTP is configured through Control Plane.
+- [x] Document runtime env key for SMTP secret protection/encryption key. 2026-07-18: local run docs record ASP.NET Core Data Protection key ring requirement outside database/appsettings.
+- [x] Document optional global SMTP fallback toggle.
+- [x] Allow capture mode without username/password only in non-production or explicit test mode. 2026-07-18: Development/local sets `CaptureModeAllowed=true`; production example keeps it false.
 
 Acceptance:
 
-- [ ] Local `message.deliver` sends to Mailpit through store SMTP settings.
-- [ ] Storefront V2 has no SMTP env requirement.
-- [ ] Production can disable fallback and require active stores to have valid SMTP settings.
+- [x] Local `message.deliver` sends to Mailpit through store SMTP settings. 2026-07-18: Mailpit SMTP/API smoke passed and `run-v2-local.ps1 -StopExisting -NoOpenBrowser` seeded store capture settings; Phase 2 delivery path uses the same SMTP sender.
+- [x] Storefront V2 has no SMTP env requirement. 2026-07-18: `EmailSmtpCaptureRuntimeTests.V2LocalEnvironment_AllowsCaptureAndDisablesGlobalSmtpFallback`.
+- [x] Production can disable fallback and require active stores to have valid SMTP settings. 2026-07-18: production example sets fallback/capture false.
 
 ## Phase 4 - Control Plane Store Email Settings And Message Operations Gateway
 

@@ -56,6 +56,18 @@ services:
     networks:
       - blazorshop-commercenode
 
+  commercenode-mailpit:
+    image: axllent/mailpit:v1.20
+    container_name: blazorshop-commercenode-mailpit
+    restart: unless-stopped
+    environment:
+      MP_MAX_MESSAGES: "5000"
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - blazorshop-commercenode
+
 volumes:
   commercenode_postgres_data:
   commercenode_nginx_cache:
