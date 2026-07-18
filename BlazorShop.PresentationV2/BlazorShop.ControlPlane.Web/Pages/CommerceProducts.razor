@@ -2,7 +2,10 @@
 @attribute [Authorize]
 @using BlazorShop.Domain.Constants
 @inject IControlPlaneStoreClient StoreClient
-@inject IControlPlaneCatalogClient CatalogClient
+@inject IControlPlaneProductClient ProductClient
+@inject IControlPlaneCategoryClient CategoryClient
+@inject IControlPlaneMediaClient MediaClient
+@inject IControlPlaneSeoClient SeoClient
 
 <PageTitle>Products</PageTitle>
 
@@ -111,7 +114,7 @@
                                             <div class="truncate font-semibold text-ink-900">@product.Name</div>
                                             <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-ink-500">
                                                 <span class="font-mono">@product.Sku</span>
-                                                <span>·</span>
+                                                <span>Â·</span>
                                                 <span class="font-mono">@product.Slug</span>
                                                 @if (!string.IsNullOrWhiteSpace(product.Slug))
                                                 {
@@ -150,7 +153,7 @@
                 </table>
             </div>
             <div class="flex items-center justify-between border-t border-ink-200 p-4 text-sm">
-                <div class="text-ink-500">Page @pageNumber · @products.Count of @totalCount</div>
+                <div class="text-ink-500">Page @pageNumber Â· @products.Count of @totalCount</div>
                 <div class="flex gap-2">
                     <button class="cp-button cp-button-secondary" disabled="@(pageNumber <= 1)" @onclick="PreviousPageAsync">
                         <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
@@ -651,7 +654,7 @@
         errorMessage = null;
         try
         {
-            var categoryResult = await CatalogClient.ListCategoriesAsync(selectedStorePublicId!.Value);
+            var categoryResult = await CategoryClient.ListCategoriesAsync(selectedStorePublicId!.Value);
             if (categoryResult.Success)
             {
                 categories.Clear();
@@ -679,7 +682,7 @@
             return;
         }
 
-        var result = await CatalogClient.QueryProductsAsync(
+        var result = await ProductClient.QueryProductsAsync(
             selectedStorePublicId!.Value,
             new ProductCatalogQuery
             {
@@ -708,7 +711,7 @@
         thumbnailUrls.Clear();
         foreach (var product in products.Where(product => product.PrimaryMediaPublicId.HasValue))
         {
-            var preview = await CatalogClient.GetProductMediaPreviewAsync(
+            var preview = await MediaClient.GetProductMediaPreviewAsync(
                 selectedStorePublicId!.Value,
                 product.Id,
                 product.PrimaryMediaPublicId!.Value,
@@ -729,7 +732,7 @@
         }
 
         errorMessage = null;
-        var productResult = await CatalogClient.GetProductAsync(selectedStorePublicId!.Value, productId);
+        var productResult = await ProductClient.GetProductAsync(selectedStorePublicId!.Value, productId);
         if (!productResult.Success || productResult.Data is null)
         {
             errorMessage = productResult.Message;
@@ -757,7 +760,7 @@
             PublishedOn = selectedProduct.PublishedOn,
         };
 
-        var seoResult = await CatalogClient.GetProductSeoAsync(selectedStorePublicId.Value, productId);
+        var seoResult = await ProductClient.GetProductSeoAsync(selectedStorePublicId.Value, productId);
         if (seoResult.Success && seoResult.Data is not null)
         {
             seoForm = seoResult.Data;
@@ -778,7 +781,7 @@
             return;
         }
 
-        var validation = await CatalogClient.ValidateSeoSlugAsync(
+        var validation = await SeoClient.ValidateSeoSlugAsync(
             selectedStorePublicId!.Value,
             new StoreSeoSlugValidateRequest
             {
@@ -791,7 +794,7 @@
             productSlugResult = validation.Data;
         }
 
-        var history = await CatalogClient.ListSeoSlugHistoryAsync(
+        var history = await SeoClient.ListSeoSlugHistoryAsync(
             selectedStorePublicId.Value,
             new StoreSeoSlugHistoryQuery
             {
@@ -815,7 +818,7 @@
         errorMessage = null;
         try
         {
-            var result = await CatalogClient.GenerateSeoSlugAsync(
+            var result = await SeoClient.GenerateSeoSlugAsync(
                 selectedStorePublicId!.Value,
                 new StoreSeoSlugGenerateRequest
                 {
@@ -852,7 +855,7 @@
         errorMessage = null;
         try
         {
-            var result = await CatalogClient.ValidateSeoSlugAsync(
+            var result = await SeoClient.ValidateSeoSlugAsync(
                 selectedStorePublicId!.Value,
                 new StoreSeoSlugValidateRequest
                 {
@@ -883,7 +886,7 @@
         errorMessage = null;
         try
         {
-            var result = await CatalogClient.UpdateProductSeoAsync(
+            var result = await ProductClient.UpdateProductSeoAsync(
                 selectedStorePublicId!.Value,
                 selectedProduct.Id,
                 new UpdateProductSeoDto
@@ -931,7 +934,7 @@
         errorMessage = null;
         try
         {
-            var result = await CatalogClient.UpdateProductAsync(
+            var result = await ProductClient.UpdateProductAsync(
                 selectedStorePublicId!.Value,
                 selectedProduct.Id,
                 new UpdateProduct
@@ -998,7 +1001,7 @@
             return;
         }
 
-        var result = await CatalogClient.ListProductMediaAsync(
+        var result = await MediaClient.ListProductMediaAsync(
             selectedStorePublicId!.Value,
             selectedProduct.Id,
             new ProductMediaListQuery(PageSize: 100));
@@ -1009,7 +1012,7 @@
             mediaItems.AddRange(result.Data?.Items ?? []);
             foreach (var media in mediaItems.Where(media => media.Status.Equals("stored", StringComparison.OrdinalIgnoreCase)))
             {
-                var preview = await CatalogClient.GetProductMediaPreviewAsync(
+                var preview = await MediaClient.GetProductMediaPreviewAsync(
                     selectedStorePublicId.Value,
                     selectedProduct.Id,
                     media.PublicId,
@@ -1030,7 +1033,7 @@
             return;
         }
 
-        var result = await CatalogClient.QueryInventoryAsync(
+        var result = await ProductClient.QueryInventoryAsync(
             selectedStorePublicId!.Value,
             new AdminInventoryQueryDto
             {
@@ -1065,7 +1068,7 @@
             return;
         }
 
-        var result = await CatalogClient.ImportProductMediaAsync(selectedStorePublicId!.Value, selectedProduct.Id, new ImportProductMediaRequest(items));
+        var result = await MediaClient.ImportProductMediaAsync(selectedStorePublicId!.Value, selectedProduct.Id, new ImportProductMediaRequest(items));
         if (!result.Success)
         {
             errorMessage = result.Message;
@@ -1084,7 +1087,7 @@
             return;
         }
 
-        var result = await CatalogClient.SetPrimaryProductMediaAsync(selectedStorePublicId!.Value, selectedProduct.Id, mediaPublicId);
+        var result = await MediaClient.SetPrimaryProductMediaAsync(selectedStorePublicId!.Value, selectedProduct.Id, mediaPublicId);
         if (!result.Success)
         {
             errorMessage = result.Message;
@@ -1102,7 +1105,7 @@
             return;
         }
 
-        var result = await CatalogClient.RetryProductMediaAsync(selectedStorePublicId!.Value, selectedProduct.Id, mediaPublicId);
+        var result = await MediaClient.RetryProductMediaAsync(selectedStorePublicId!.Value, selectedProduct.Id, mediaPublicId);
         if (!result.Success)
         {
             errorMessage = result.Message;
@@ -1119,7 +1122,7 @@
             return;
         }
 
-        var result = await CatalogClient.DeleteProductMediaAsync(selectedStorePublicId!.Value, selectedProduct.Id, mediaPublicId);
+        var result = await MediaClient.DeleteProductMediaAsync(selectedStorePublicId!.Value, selectedProduct.Id, mediaPublicId);
         if (!result.Success)
         {
             errorMessage = result.Message;
@@ -1137,7 +1140,7 @@
             return;
         }
 
-        var result = await CatalogClient.UpdateProductStockAsync(selectedStorePublicId!.Value, selectedProduct.Id, new UpdateProductStockDto { Quantity = productQuantity });
+        var result = await ProductClient.UpdateProductStockAsync(selectedStorePublicId!.Value, selectedProduct.Id, new UpdateProductStockDto { Quantity = productQuantity });
         if (!result.Success)
         {
             errorMessage = result.Message;
@@ -1155,7 +1158,7 @@
             return;
         }
 
-        var result = await CatalogClient.UpdateVariantStockAsync(selectedStorePublicId!.Value, variantId, new UpdateVariantStockDto { Stock = GetVariantStockValue(variantId) });
+        var result = await ProductClient.UpdateVariantStockAsync(selectedStorePublicId!.Value, variantId, new UpdateVariantStockDto { Stock = GetVariantStockValue(variantId) });
         if (!result.Success)
         {
             errorMessage = result.Message;
@@ -1183,7 +1186,7 @@
         errorMessage = null;
         try
         {
-            var result = await CatalogClient.UpdateVariantAsync(
+            var result = await ProductClient.UpdateVariantAsync(
                 selectedStorePublicId!.Value,
                 selectedProduct.Id,
                 variant.Id,

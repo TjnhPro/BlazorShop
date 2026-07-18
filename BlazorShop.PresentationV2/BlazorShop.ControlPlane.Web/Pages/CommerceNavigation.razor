@@ -1,7 +1,7 @@
 @page "/commerce-admin/navigation"
 @attribute [Authorize]
 @inject IControlPlaneStoreClient StoreClient
-@inject IControlPlaneCatalogClient CatalogClient
+@inject IControlPlaneNavigationClient NavigationClient
 
 <PageTitle>Storefront Navigation</PageTitle>
 
@@ -303,7 +303,7 @@
 
     private string SelectedMenuSubtitle => selectedMenu is null
         ? "No menu selected."
-        : $"{selectedMenu.SystemName} · {(selectedMenu.IsEnabled ? "enabled" : "disabled")}";
+        : $"{selectedMenu.SystemName} Â· {(selectedMenu.IsEnabled ? "enabled" : "disabled")}";
 
     private string ItemFormTitle => itemForm.PublicId.HasValue ? "Edit item" : "Create item";
 
@@ -328,7 +328,7 @@
         errorMessage = null;
         try
         {
-            var menuResult = await CatalogClient.ListNavigationMenusAsync(selectedStorePublicId!.Value);
+            var menuResult = await NavigationClient.ListNavigationMenusAsync(selectedStorePublicId!.Value);
             if (!menuResult.Success)
             {
                 errorMessage = menuResult.Message;
@@ -338,7 +338,7 @@
             menus.Clear();
             menus.AddRange(menuResult.Data ?? []);
 
-            var targetResult = await CatalogClient.ListNavigationSystemTargetsAsync(selectedStorePublicId.Value);
+            var targetResult = await NavigationClient.ListNavigationSystemTargetsAsync(selectedStorePublicId.Value);
             if (targetResult.Success)
             {
                 systemTargets.Clear();
@@ -368,7 +368,7 @@
             return;
         }
 
-        var result = await CatalogClient.GetNavigationMenuAsync(selectedStorePublicId!.Value, menuPublicId);
+        var result = await NavigationClient.GetNavigationMenuAsync(selectedStorePublicId!.Value, menuPublicId);
         if (!result.Success || result.Data is null)
         {
             errorMessage = result.Message;
@@ -402,8 +402,8 @@
         try
         {
             var result = selectedMenu is null
-                ? await CatalogClient.CreateNavigationMenuAsync(selectedStorePublicId!.Value, menuForm.ToCreateRequest())
-                : await CatalogClient.UpdateNavigationMenuAsync(selectedStorePublicId!.Value, selectedMenu.PublicId, menuForm.ToUpdateRequest());
+                ? await NavigationClient.CreateNavigationMenuAsync(selectedStorePublicId!.Value, menuForm.ToCreateRequest())
+                : await NavigationClient.UpdateNavigationMenuAsync(selectedStorePublicId!.Value, selectedMenu.PublicId, menuForm.ToUpdateRequest());
             if (!result.Success || result.Data is null)
             {
                 errorMessage = result.Message;
@@ -450,8 +450,8 @@
         try
         {
             var result = itemForm.PublicId.HasValue
-                ? await CatalogClient.UpdateNavigationItemAsync(selectedStorePublicId!.Value, itemForm.PublicId.Value, itemForm.ToUpdateRequest())
-                : await CatalogClient.CreateNavigationItemAsync(selectedStorePublicId!.Value, selectedMenu.PublicId, itemForm.ToCreateRequest());
+                ? await NavigationClient.UpdateNavigationItemAsync(selectedStorePublicId!.Value, itemForm.PublicId.Value, itemForm.ToUpdateRequest())
+                : await NavigationClient.CreateNavigationItemAsync(selectedStorePublicId!.Value, selectedMenu.PublicId, itemForm.ToCreateRequest());
             if (!result.Success || result.Data is null)
             {
                 errorMessage = result.Message;
@@ -476,7 +476,7 @@
             return;
         }
 
-        var result = await CatalogClient.ArchiveNavigationItemAsync(selectedStorePublicId!.Value, itemPublicId);
+        var result = await NavigationClient.ArchiveNavigationItemAsync(selectedStorePublicId!.Value, itemPublicId);
         if (!result.Success || result.Data is null)
         {
             errorMessage = result.Message;

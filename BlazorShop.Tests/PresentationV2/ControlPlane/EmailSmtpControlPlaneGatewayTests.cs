@@ -22,8 +22,8 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
         [Fact]
         public void ControlPlaneGateway_ExposesMessageTemplateAndQueueOperations()
         {
-            var interfaceSource = ReadRepositoryFile("BlazorShop.Application/ControlPlane/CommerceGateway/Messages/IControlPlaneMessageGateway.cs");
-            var clientSource = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Services/Catalog/ControlPlaneCatalogClient.cs");
+            var interfaceSource = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Services/Commerce/Messages/IControlPlaneMessageClient.cs");
+            var clientSource = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Services/Commerce/Messages/ControlPlaneMessageClient.cs");
 
             foreach (var methodName in new[]
             {
@@ -49,9 +49,10 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
             var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/CommerceEmailSettings.razor");
 
             Assert.Contains("@page \"/commerce-admin/email\"", source, StringComparison.Ordinal);
-            Assert.Contains("CatalogClient.GetEmailSettingsAsync", source, StringComparison.Ordinal);
-            Assert.Contains("CatalogClient.UpdateEmailSettingsAsync", source, StringComparison.Ordinal);
-            Assert.Contains("CatalogClient.SendEmailTestAsync", source, StringComparison.Ordinal);
+            Assert.Contains("MessageClient.GetEmailSettingsAsync", source, StringComparison.Ordinal);
+            Assert.Contains("MessageClient.UpdateEmailSettingsAsync", source, StringComparison.Ordinal);
+            Assert.Contains("MessageClient.SendEmailTestAsync", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("CatalogClient.", source, StringComparison.Ordinal);
             Assert.DoesNotContain("api/commerce/admin", source, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("CommerceNode", source, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("current password", source, StringComparison.OrdinalIgnoreCase);

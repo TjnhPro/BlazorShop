@@ -1,7 +1,8 @@
 @page "/commerce-admin/pages"
 @attribute [Authorize]
 @inject IControlPlaneStoreClient StoreClient
-@inject IControlPlaneCatalogClient CatalogClient
+@inject IControlPlaneContentClient ContentClient
+@inject IControlPlaneSeoClient SeoClient
 
 <PageTitle>Storefront Pages</PageTitle>
 
@@ -197,7 +198,7 @@
                 </table>
             </div>
             <div class="flex flex-col gap-3 border-t border-ink-100 px-4 py-3 text-sm text-ink-600 sm:flex-row sm:items-center sm:justify-between">
-                <div>Page @pageNumber of @Math.Max(1, totalPages) · @totalCount total</div>
+                <div>Page @pageNumber of @Math.Max(1, totalPages) Â· @totalCount total</div>
                 <div class="flex gap-2">
                     <button class="cp-button cp-button-secondary" disabled="@(pageNumber <= 1 || isLoading)" @onclick="PreviousPageAsync">Previous</button>
                     <button class="cp-button cp-button-secondary" disabled="@(pageNumber >= totalPages || isLoading)" @onclick="NextPageAsync">Next</button>
@@ -403,7 +404,7 @@
         errorMessage = null;
         try
         {
-            var result = await CatalogClient.ListStorefrontPagesAsync(
+            var result = await ContentClient.ListStorefrontPagesAsync(
                 selectedStorePublicId!.Value,
                 new StorefrontPageListQuery(pageNumber, pageSize, search, status));
             if (!result.Success)
@@ -455,7 +456,7 @@
             return;
         }
 
-        var result = await CatalogClient.GetStorefrontPageAsync(selectedStorePublicId!.Value, pagePublicId);
+        var result = await ContentClient.GetStorefrontPageAsync(selectedStorePublicId!.Value, pagePublicId);
         if (!result.Success || result.Data is null)
         {
             errorMessage = result.Message;
@@ -477,7 +478,7 @@
             return;
         }
 
-        var validation = await CatalogClient.ValidateSeoSlugAsync(
+        var validation = await SeoClient.ValidateSeoSlugAsync(
             selectedStorePublicId!.Value,
             new StoreSeoSlugValidateRequest
             {
@@ -495,7 +496,7 @@
             return;
         }
 
-        var history = await CatalogClient.ListSeoSlugHistoryAsync(
+        var history = await SeoClient.ListSeoSlugHistoryAsync(
             selectedStorePublicId.Value,
             new StoreSeoSlugHistoryQuery
             {
@@ -519,7 +520,7 @@
         errorMessage = null;
         try
         {
-            var result = await CatalogClient.GenerateSeoSlugAsync(
+            var result = await SeoClient.GenerateSeoSlugAsync(
                 selectedStorePublicId!.Value,
                 new StoreSeoSlugGenerateRequest
                 {
@@ -556,7 +557,7 @@
         errorMessage = null;
         try
         {
-            var result = await CatalogClient.ValidateSeoSlugAsync(
+            var result = await SeoClient.ValidateSeoSlugAsync(
                 selectedStorePublicId!.Value,
                 new StoreSeoSlugValidateRequest
                 {
@@ -600,8 +601,8 @@
         try
         {
             var result = selectedPage is null
-                ? await CatalogClient.CreateStorefrontPageAsync(selectedStorePublicId!.Value, form.ToCreateRequest())
-                : await CatalogClient.UpdateStorefrontPageAsync(selectedStorePublicId!.Value, selectedPage.PublicId, form.ToUpdateRequest());
+                ? await ContentClient.CreateStorefrontPageAsync(selectedStorePublicId!.Value, form.ToCreateRequest())
+                : await ContentClient.UpdateStorefrontPageAsync(selectedStorePublicId!.Value, selectedPage.PublicId, form.ToUpdateRequest());
 
             if (!result.Success || result.Data is null)
             {
@@ -632,7 +633,7 @@
         errorMessage = null;
         try
         {
-            var result = await CatalogClient.ArchiveStorefrontPageAsync(selectedStorePublicId!.Value, selectedPage.PublicId);
+            var result = await ContentClient.ArchiveStorefrontPageAsync(selectedStorePublicId!.Value, selectedPage.PublicId);
             if (!result.Success)
             {
                 errorMessage = result.Message;
@@ -668,7 +669,7 @@
         errorMessage = null;
         try
         {
-            var result = await CatalogClient.GetStorefrontPageTemplateStatusAsync(selectedStorePublicId!.Value);
+            var result = await ContentClient.GetStorefrontPageTemplateStatusAsync(selectedStorePublicId!.Value);
             if (!result.Success)
             {
                 errorMessage = result.Message;
@@ -695,7 +696,7 @@
         errorMessage = null;
         try
         {
-            var result = await CatalogClient.CreateStorefrontPageDraftFromTemplateAsync(
+            var result = await ContentClient.CreateStorefrontPageDraftFromTemplateAsync(
                 selectedStorePublicId!.Value,
                 pageKey,
                 new CreatePageFromTemplateRequest());
@@ -729,7 +730,7 @@
         try
         {
             var suggested = status.SuggestedExistingPages[0];
-            var result = await CatalogClient.MapStorefrontPageTemplateAsync(
+            var result = await ContentClient.MapStorefrontPageTemplateAsync(
                 selectedStorePublicId!.Value,
                 suggested.PublicId,
                 new MapPageTemplateRequest(status.PageKey));
@@ -762,7 +763,7 @@
         errorMessage = null;
         try
         {
-            var result = await CatalogClient.ClearStorefrontPageTemplateAsync(selectedStorePublicId!.Value, pagePublicId);
+            var result = await ContentClient.ClearStorefrontPageTemplateAsync(selectedStorePublicId!.Value, pagePublicId);
             if (!result.Success || result.Data is null)
             {
                 errorMessage = result.Message;

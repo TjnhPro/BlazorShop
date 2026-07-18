@@ -1,7 +1,7 @@
 @page "/commerce-admin/product-imports"
 @attribute [Authorize]
 @inject IControlPlaneStoreClient StoreClient
-@inject IControlPlaneCatalogClient CatalogClient
+@inject IControlPlaneProductImportClient ProductImportClient
 @inject IJSRuntime JSRuntime
 
 <PageTitle>Product Imports</PageTitle>
@@ -132,12 +132,12 @@
                                 <tr class="cursor-pointer hover:bg-ink-50" @onclick="() => OpenJobAsync(job.PublicId)">
                                     <td class="px-4 py-3">
                                         <div class="font-semibold text-ink-900">@job.FileName</div>
-                                        <div class="text-xs text-ink-500">@job.Mode · @job.FileHash</div>
+                                        <div class="text-xs text-ink-500">@job.Mode Â· @job.FileHash</div>
                                     </td>
                                     <td class="px-4 py-3">
                                         <StatusBadge Text="@job.Status" Tone="@StatusTone(job.Status)" />
                                     </td>
-                                    <td class="px-4 py-3 text-ink-600">@job.TotalRows total · @job.CreatedCount created · @job.UpdatedCount updated · @job.FailedCount failed</td>
+                                    <td class="px-4 py-3 text-ink-600">@job.TotalRows total Â· @job.CreatedCount created Â· @job.UpdatedCount updated Â· @job.FailedCount failed</td>
                                     <td class="px-4 py-3 text-ink-600">@job.MediaQueuedCount queued</td>
                                     <td class="px-4 py-3 text-ink-500">@job.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
                                 </tr>
@@ -146,7 +146,7 @@
                     </table>
                 </div>
                 <div class="flex flex-col gap-3 border-t border-ink-200 px-4 py-3 text-sm text-ink-600 md:flex-row md:items-center md:justify-between">
-                    <div>Page @jobPageNumber of @DisplayTotalPages(jobTotalPages) · @jobs.Count of @jobTotalCount jobs</div>
+                    <div>Page @jobPageNumber of @DisplayTotalPages(jobTotalPages) Â· @jobs.Count of @jobTotalCount jobs</div>
                     <div class="flex gap-2">
                         <button class="cp-button cp-button-secondary" disabled="@(jobPageNumber <= 1 || isLoading)" @onclick="PreviousJobsPageAsync">
                             <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
@@ -234,7 +234,7 @@
                     </tbody>
                 </table>
                 <div class="flex flex-col gap-3 border-t border-ink-200 px-4 py-3 text-sm text-ink-600 md:flex-row md:items-center md:justify-between">
-                    <div>Page @rowPageNumber of @DisplayTotalPages(rowTotalPages) · @rows.Count of @rowTotalCount rows</div>
+                    <div>Page @rowPageNumber of @DisplayTotalPages(rowTotalPages) Â· @rows.Count of @rowTotalCount rows</div>
                     <div class="flex gap-2">
                         <button class="cp-button cp-button-secondary" disabled="@(rowPageNumber <= 1 || isRowsLoading)" @onclick="PreviousRowsPageAsync">
                             <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
@@ -315,7 +315,7 @@
         errorMessage = null;
         try
         {
-            var result = await CatalogClient.ListProductImportsAsync(
+            var result = await ProductImportClient.ListProductImportsAsync(
                 selectedStorePublicId!.Value,
                 new ProductImportJobListQuery(statusFilter, jobPageNumber, JobPageSize));
 
@@ -354,7 +354,7 @@
         try
         {
             await using var stream = selectedFile.OpenReadStream(5 * 1024 * 1024);
-            var result = await CatalogClient.UploadProductImportAsync(
+            var result = await ProductImportClient.UploadProductImportAsync(
                 selectedStorePublicId!.Value,
                 stream,
                 selectedFile.Name,
@@ -379,7 +379,7 @@
 
     private async Task DownloadTemplateAsync()
     {
-        var result = await CatalogClient.DownloadProductImportTemplateAsync();
+        var result = await ProductImportClient.DownloadProductImportTemplateAsync();
         await DownloadAsync(result, "product-import-template.csv");
     }
 
@@ -390,7 +390,7 @@
             return;
         }
 
-        var detailResult = await CatalogClient.GetProductImportAsync(selectedStorePublicId!.Value, jobPublicId);
+        var detailResult = await ProductImportClient.GetProductImportAsync(selectedStorePublicId!.Value, jobPublicId);
         if (!detailResult.Success || detailResult.Data is null)
         {
             errorMessage = detailResult.Message;
@@ -414,7 +414,7 @@
         isRowsLoading = true;
         try
         {
-            var rowsResult = await CatalogClient.ListProductImportRowsAsync(
+            var rowsResult = await ProductImportClient.ListProductImportRowsAsync(
                 selectedStorePublicId!.Value,
                 selectedJob.Job.PublicId,
                 new ProductImportRowsQuery(PageNumber: rowPageNumber, PageSize: RowPageSize));
@@ -443,7 +443,7 @@
             return;
         }
 
-        var result = await CatalogClient.DownloadProductImportErrorsAsync(selectedStorePublicId!.Value, selectedJob.Job.PublicId);
+        var result = await ProductImportClient.DownloadProductImportErrorsAsync(selectedStorePublicId!.Value, selectedJob.Job.PublicId);
         await DownloadAsync(result, $"product-import-{selectedJob.Job.PublicId:D}-errors.csv");
     }
 

@@ -70,10 +70,12 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
         [Fact]
         public void ControlPlaneWeb_UsesControlPlaneCommerceGatewayRoutesOnly()
         {
-            var client = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Services/Catalog/ControlPlaneCatalogClient.cs");
+            var client = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Services/Commerce/ControlPlaneCommerceClientBase.cs");
             var webSource = ReadControlPlaneWebSource();
 
             Assert.Contains("api/controlplane/commerce/stores/{storePublicId:D}", client, StringComparison.Ordinal);
+            Assert.DoesNotContain("@inject IControlPlaneCatalogClient", webSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("CatalogClient.", webSource, StringComparison.Ordinal);
             Assert.DoesNotContain("api/commerce", webSource, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("api/storefront", webSource, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("CommerceNodeApi", webSource, StringComparison.OrdinalIgnoreCase);

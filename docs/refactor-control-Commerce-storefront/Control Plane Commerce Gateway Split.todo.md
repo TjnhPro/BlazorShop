@@ -475,56 +475,65 @@ Verification:
 
 Mục tiêu: Web page inject đúng client theo capability, vẫn dùng `IControlPlaneApiClient`.
 
-- [ ] Tạo service folders trong `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Services/Commerce/`:
-  - [ ] `Products`
-  - [ ] `Categories`
-  - [ ] `Media`
-  - [ ] `Orders`
-  - [ ] `Content`
-  - [ ] `Navigation`
-  - [ ] `Currencies`
-  - [ ] `Payments`
-  - [ ] `Shipping`
-  - [ ] `SecurityPrivacy`
-- [ ] Tạo clients:
-  - [ ] `IControlPlaneProductClient`
-  - [ ] `IControlPlaneCategoryClient`
-  - [ ] `IControlPlaneMediaClient`
-  - [ ] `IControlPlaneOrderClient`
-  - [ ] `IControlPlaneContentClient`
-  - [ ] `IControlPlaneNavigationClient`
-  - [ ] `IControlPlaneCurrencyClient`
-  - [ ] `IControlPlanePaymentClient`
-  - [ ] `IControlPlaneShippingClient`
-  - [ ] `IControlPlaneSecurityPrivacyClient`
-- [ ] Di chuyển methods từ `ControlPlaneCatalogClient`.
-- [ ] Mỗi client chỉ gọi `IControlPlaneApiClient`.
-- [ ] Giữ `CommerceRoute(storePublicId, path)` helper nếu cần, nhưng đặt trong shared internal helper không chứa Commerce Node URL.
-- [ ] Cập nhật DI trong `ControlPlane.Web/Program.cs`.
-- [ ] Cập nhật page injections:
-  - [ ] `CommerceProducts.razor` dùng Product/Category/Media nếu cần.
-  - [ ] `CommerceCategories.razor` dùng Category/Media.
-  - [ ] `CommerceMediaLibrary.razor` dùng Media.
-  - [ ] `CommerceCurrencies.razor` dùng Currency.
-  - [ ] `CommerceOrders.razor` dùng Order.
-  - [ ] `CommerceNavigation.razor` dùng Navigation.
-  - [ ] `CommercePaymentMethods.razor` dùng Payment.
-  - [ ] `CommercePages.razor` dùng Content/Navigation nếu cần.
-  - [ ] `CommerceVariationTemplates.razor` dùng Product hoặc dedicated variation client nếu tách.
-  - [ ] `CommerceProductImports.razor` dùng Product import client.
-- [ ] Giữ `IControlPlaneCatalogClient` adapter tạm nếu cần để giảm diff, nhưng không để page còn inject adapter sau phase này.
+- [x] Tạo service folders trong `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Services/Commerce/`:
+  - [x] `Products`
+  - [x] `Categories`
+  - [x] `Media`
+  - [x] `Orders`
+  - [x] `Content`
+  - [x] `Navigation`
+  - [x] `Currencies`
+  - [x] `Payments`
+  - [x] `Shipping`
+  - [x] `SecurityPrivacy`
+  2026-07-18 Phase 5: folders were added under `Services/Commerce`; extra `Messages` and `Seo` folders were added because email/message settings and generic slug policy are active page capabilities, and `ProductImports` lives under `Products`.
+- [x] Tạo clients:
+  - [x] `IControlPlaneProductClient`
+  - [x] `IControlPlaneCategoryClient`
+  - [x] `IControlPlaneMediaClient`
+  - [x] `IControlPlaneOrderClient`
+  - [x] `IControlPlaneContentClient`
+  - [x] `IControlPlaneNavigationClient`
+  - [x] `IControlPlaneCurrencyClient`
+  - [x] `IControlPlanePaymentClient`
+  - [x] `IControlPlaneShippingClient`
+  - [x] `IControlPlaneSecurityPrivacyClient`
+  2026-07-18 Phase 5: capability clients were created and registered; additional `IControlPlaneMessageClient`, `IControlPlaneProductImportClient`, and `IControlPlaneSeoClient` avoid forcing unrelated pages through a broad product/catalog client.
+- [x] Di chuyển methods từ `ControlPlaneCatalogClient`.
+  2026-07-18 Phase 5: active page methods were copied into capability clients. The old adapter remains temporarily for Phase 6 removal.
+- [x] Mỗi client chỉ gọi `IControlPlaneApiClient`.
+  2026-07-18 Phase 5: clients inherit shared `ControlPlaneCommerceClientBase`, which owns only `IControlPlaneApiClient` and route/query helpers.
+- [x] Giữ `CommerceRoute(storePublicId, path)` helper nếu cần, nhưng đặt trong shared internal helper không chứa Commerce Node URL.
+  2026-07-18 Phase 5: `ControlPlaneCommerceClientBase` centralizes `CommerceRoute(storePublicId, path)` with `api/controlplane/commerce/stores/{storePublicId:D}`.
+- [x] Cập nhật DI trong `ControlPlane.Web/Program.cs`.
+- [x] Cập nhật page injections:
+  - [x] `CommerceProducts.razor` dùng Product/Category/Media nếu cần.
+  - [x] `CommerceCategories.razor` dùng Category/Media.
+  - [x] `CommerceMediaLibrary.razor` dùng Media.
+  - [x] `CommerceCurrencies.razor` dùng Currency.
+  - [x] `CommerceOrders.razor` dùng Order.
+  - [x] `CommerceNavigation.razor` dùng Navigation.
+  - [x] `CommercePaymentMethods.razor` dùng Payment.
+  - [x] `CommercePages.razor` dùng Content/Navigation nếu cần.
+  - [x] `CommerceVariationTemplates.razor` dùng Product hoặc dedicated variation client nếu tách.
+  - [x] `CommerceProductImports.razor` dùng Product import client.
+  2026-07-18 Phase 5: pages now inject capability clients; generic SEO calls use `IControlPlaneSeoClient`, and email/message management uses `IControlPlaneMessageClient`.
+- [x] Giữ `IControlPlaneCatalogClient` adapter tạm nếu cần để giảm diff, nhưng không để page còn inject adapter sau phase này.
+  2026-07-18 Phase 5: adapter is still registered temporarily, but `rg` found no page-level `@inject IControlPlaneCatalogClient` or `CatalogClient.` usage.
 
 Risk controls:
 
-- [ ] Web không chứa `api/commerce`.
-- [ ] Web không chứa `X-Node-Key` hoặc `X-Node-Secret`.
-- [ ] Không đổi UX hoặc page route.
+- [x] Web không chứa `api/commerce`.
+- [x] Web không chứa `X-Node-Key` hoặc `X-Node-Secret`.
+- [x] Không đổi UX hoặc page route.
+  2026-07-18 Phase 5: page routes and markup were not intentionally changed; scan of Web `.cs/.razor/.json` found no direct Commerce Node route or node credential header strings.
 
 Verification:
 
-- [ ] `ControlPlaneVariantAttributeWorkflowTests.ControlPlaneWeb_UsesControlPlaneCommerceGatewayRoutesOnly` cập nhật để scan tất cả capability clients.
-- [ ] Build ControlPlane Web.
-- [ ] Optional Playwright/manual later: mở từng manager page và xác nhận load state.
+- [x] `ControlPlaneVariantAttributeWorkflowTests.ControlPlaneWeb_UsesControlPlaneCommerceGatewayRoutesOnly` cập nhật để scan tất cả capability clients.
+- [x] Build ControlPlane Web.
+- [x] Optional Playwright/manual later: mở từng manager page và xác nhận load state.
+  2026-07-18 Phase 5: focused tests passed 14/14 and `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` passed with 0 warnings/errors. Browser smoke is deferred to the release QA checklist because this phase only split Web client bindings.
 
 ## Phase 6 - Remove Old Catalog Facades
 

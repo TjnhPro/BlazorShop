@@ -1,7 +1,7 @@
 @page "/commerce-admin/payment-methods"
 @attribute [Authorize]
 @inject IControlPlaneStoreClient StoreClient
-@inject IControlPlaneCatalogClient CatalogClient
+@inject IControlPlanePaymentClient PaymentClient
 
 <PageTitle>Payment Methods</PageTitle>
 
@@ -144,7 +144,7 @@
         successMessage = null;
         try
         {
-            var result = await CatalogClient.ListPaymentMethodsAsync(selectedStorePublicId!.Value);
+            var result = await PaymentClient.ListPaymentMethodsAsync(selectedStorePublicId!.Value);
             if (!result.Success || result.Data is null)
             {
                 errorMessage = result.Message;
@@ -172,7 +172,7 @@
         successMessage = null;
         try
         {
-            var result = await CatalogClient.UpdatePaymentMethodAsync(
+            var result = await PaymentClient.UpdatePaymentMethodAsync(
                 selectedStorePublicId!.Value,
                 method.PaymentMethodKey,
                 new UpdateStorePaymentMethodRequest(

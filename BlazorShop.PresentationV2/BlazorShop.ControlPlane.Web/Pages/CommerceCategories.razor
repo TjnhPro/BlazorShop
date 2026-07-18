@@ -1,7 +1,8 @@
 @page "/commerce-admin/categories"
 @attribute [Authorize]
 @inject IControlPlaneStoreClient StoreClient
-@inject IControlPlaneCatalogClient CatalogClient
+@inject IControlPlaneCategoryClient CategoryClient
+@inject IControlPlaneSeoClient SeoClient
 
 <PageTitle>Categories</PageTitle>
 
@@ -287,7 +288,7 @@
         errorMessage = null;
         try
         {
-            var categoriesResult = await CatalogClient.ListCategoriesAsync(selectedStorePublicId!.Value);
+            var categoriesResult = await CategoryClient.ListCategoriesAsync(selectedStorePublicId!.Value);
             if (!categoriesResult.Success)
             {
                 errorMessage = categoriesResult.Message;
@@ -297,7 +298,7 @@
             categories.Clear();
             categories.AddRange(categoriesResult.Data?.Items ?? []);
 
-            var treeResult = await CatalogClient.GetCategoryTreeAsync(selectedStorePublicId.Value);
+            var treeResult = await CategoryClient.GetCategoryTreeAsync(selectedStorePublicId.Value);
             if (treeResult.Success)
             {
                 categoryTree.Clear();
@@ -360,7 +361,7 @@
             return;
         }
 
-        var result = await CatalogClient.GetCategorySeoAsync(selectedStorePublicId!.Value, selectedCategory.Id);
+        var result = await CategoryClient.GetCategorySeoAsync(selectedStorePublicId!.Value, selectedCategory.Id);
         if (result.Success && result.Data is not null)
         {
             categorySeoForm = result.Data;
@@ -376,7 +377,7 @@
             return;
         }
 
-        var validation = await CatalogClient.ValidateSeoSlugAsync(
+        var validation = await SeoClient.ValidateSeoSlugAsync(
             selectedStorePublicId!.Value,
             new StoreSeoSlugValidateRequest
             {
@@ -389,7 +390,7 @@
             categorySlugResult = validation.Data;
         }
 
-        var history = await CatalogClient.ListSeoSlugHistoryAsync(
+        var history = await SeoClient.ListSeoSlugHistoryAsync(
             selectedStorePublicId.Value,
             new StoreSeoSlugHistoryQuery
             {
@@ -413,7 +414,7 @@
         errorMessage = null;
         try
         {
-            var result = await CatalogClient.GenerateSeoSlugAsync(
+            var result = await SeoClient.GenerateSeoSlugAsync(
                 selectedStorePublicId!.Value,
                 new StoreSeoSlugGenerateRequest
                 {
@@ -450,7 +451,7 @@
         errorMessage = null;
         try
         {
-            var result = await CatalogClient.ValidateSeoSlugAsync(
+            var result = await SeoClient.ValidateSeoSlugAsync(
                 selectedStorePublicId!.Value,
                 new StoreSeoSlugValidateRequest
                 {
@@ -484,8 +485,8 @@
         {
             categoryForm.ParentCategoryId = Guid.TryParse(categoryParentId, out var parentId) ? parentId : null;
             var result = selectedCategory is null
-                ? await CatalogClient.CreateCategoryAsync(selectedStorePublicId!.Value, categoryForm)
-                : await CatalogClient.UpdateCategoryAsync(
+                ? await CategoryClient.CreateCategoryAsync(selectedStorePublicId!.Value, categoryForm)
+                : await CategoryClient.UpdateCategoryAsync(
                     selectedStorePublicId!.Value,
                     selectedCategory.Id,
                     new UpdateCategory
@@ -526,7 +527,7 @@
         successMessage = null;
         try
         {
-            var result = await CatalogClient.UpdateCategorySeoAsync(
+            var result = await CategoryClient.UpdateCategorySeoAsync(
                 selectedStorePublicId!.Value,
                 selectedCategory.Id,
                 new UpdateCategorySeoDto
@@ -574,7 +575,7 @@
         successMessage = null;
         try
         {
-            var result = await CatalogClient.ArchiveCategoryAsync(selectedStorePublicId!.Value, selectedCategory.Id);
+            var result = await CategoryClient.ArchiveCategoryAsync(selectedStorePublicId!.Value, selectedCategory.Id);
             if (!result.Success)
             {
                 errorMessage = result.Message;

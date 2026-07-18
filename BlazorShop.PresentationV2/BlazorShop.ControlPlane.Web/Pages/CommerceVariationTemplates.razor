@@ -2,7 +2,7 @@
 @attribute [Authorize]
 @using BlazorShop.Domain.Constants
 @inject IControlPlaneStoreClient StoreClient
-@inject IControlPlaneCatalogClient CatalogClient
+@inject IControlPlaneProductClient ProductClient
 
 <PageTitle>Variation Templates</PageTitle>
 
@@ -151,7 +151,7 @@
                         <div class="flex flex-wrap items-center justify-between gap-3">
                             <button class="text-left" @onclick="() => EditOption(option)">
                                 <div class="font-semibold text-ink-900">@option.Name</div>
-                                <div class="text-xs text-ink-500">Sort @option.SortOrder · @option.ControlType · @(option.IsRequired ? "required" : "optional") · @option.Values.Count values</div>
+                                <div class="text-xs text-ink-500">Sort @option.SortOrder Â· @option.ControlType Â· @(option.IsRequired ? "required" : "optional") Â· @option.Values.Count values</div>
                             </button>
                             <StatusBadge Text="@(option.IsActive ? "Active" : "Disabled")" Tone="@(option.IsActive ? "success" : "neutral")" />
                         </div>
@@ -240,7 +240,7 @@
         errorMessage = null;
         try
         {
-            var result = await CatalogClient.ListVariationTemplatesAsync(
+            var result = await ProductClient.ListVariationTemplatesAsync(
                 selectedStorePublicId!.Value,
                 new VariationTemplateListQuery(PageSize: 100));
             if (!result.Success)
@@ -275,7 +275,7 @@
             return;
         }
 
-        var result = await CatalogClient.GetVariationTemplateAsync(selectedStorePublicId!.Value, templatePublicId);
+        var result = await ProductClient.GetVariationTemplateAsync(selectedStorePublicId!.Value, templatePublicId);
         if (!result.Success || result.Data is null)
         {
             errorMessage = result.Message;
@@ -310,10 +310,10 @@
         try
         {
             var result = selectedTemplate is null
-                ? await CatalogClient.CreateVariationTemplateAsync(
+                ? await ProductClient.CreateVariationTemplateAsync(
                     selectedStorePublicId!.Value,
                     new CreateVariationTemplateRequest(templateForm.Name, templateForm.Slug, templateForm.IsActive))
-                : await CatalogClient.UpdateVariationTemplateAsync(
+                : await ProductClient.UpdateVariationTemplateAsync(
                     selectedStorePublicId!.Value,
                     selectedTemplate.PublicId,
                     new UpdateVariationTemplateRequest(templateForm.Name, templateForm.Slug, templateForm.IsActive));
@@ -344,11 +344,11 @@
         try
         {
             var result = editingOptionPublicId is null
-                ? await CatalogClient.CreateVariationTemplateOptionAsync(
+                ? await ProductClient.CreateVariationTemplateOptionAsync(
                     selectedStorePublicId!.Value,
                     selectedTemplate.PublicId,
                     new CreateVariationTemplateOptionRequest(optionForm.Name, optionForm.SortOrder, optionForm.IsActive, optionForm.ControlType, optionForm.IsRequired))
-                : await CatalogClient.UpdateVariationTemplateOptionAsync(
+                : await ProductClient.UpdateVariationTemplateOptionAsync(
                     selectedStorePublicId!.Value,
                     selectedTemplate.PublicId,
                     editingOptionPublicId.Value,
@@ -383,12 +383,12 @@
         try
         {
             var result = form.EditingValuePublicId is null
-                ? await CatalogClient.CreateVariationTemplateValueAsync(
+                ? await ProductClient.CreateVariationTemplateValueAsync(
                     selectedStorePublicId!.Value,
                     selectedTemplate.PublicId,
                     optionPublicId,
                     new CreateVariationTemplateValueRequest(form.Value, form.SortOrder, form.IsActive, NormalizeColorHexForOption(optionPublicId, form.ColorHex)))
-                : await CatalogClient.UpdateVariationTemplateValueAsync(
+                : await ProductClient.UpdateVariationTemplateValueAsync(
                     selectedStorePublicId!.Value,
                     selectedTemplate.PublicId,
                     optionPublicId,
