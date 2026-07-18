@@ -304,38 +304,43 @@ Acceptance:
 
 ## Phase 9 - Focused Verification
 
-- [ ] Run focused Commerce Node contract tests:
+- [x] Run focused Commerce Node contract tests:
   - `CommerceNodeStorefrontOpenApiContractTests`
   - `CommerceNodeStorefrontPaymentContractTests` after PayPal removal edits
   - `SecurityPrivacyPhase2RateLimitTests`
-- [ ] Run focused V2 service tests:
+  2026-07-18 Phase 9: passed 63/63 with existing `MessagePack` and legacy `Microsoft.OpenApi` advisory warnings.
+- [x] Run focused V2 service tests:
   - `StorefrontCartServiceTests`
   - `StorefrontCheckoutServiceTests`
   - `PaymentAttemptServiceTests`
   - `StorefrontCustomerOrderServiceTests`
   - `StorefrontGuestOrderServiceTests`
-- [ ] Run focused Storefront V2 tests:
+  2026-07-18 Phase 9: passed 97/97 with existing package advisory warnings.
+- [x] Run focused Storefront V2 tests:
   - `StorefrontV2AuthClientTests` if auth/network client snapshot changes
   - checkout host/browser local API tests
   - account order component tests if present
-- [ ] Run build for active V2 projects:
+  2026-07-18 Phase 9: focused cutover/WASM/API client route tests passed 8/8.
+- [x] Run build for active V2 projects:
   - `BlazorShop.CommerceNode.API`
   - `BlazorShop.Storefront.V2`
   - `BlazorShop.Storefront.Components`
   - `BlazorShop.Storefront.WASM`
-- [ ] Run Playwright release subset:
+  2026-07-18 Phase 9: all four project builds passed with 0 warnings and 0 errors.
+- [x] Run Playwright release subset:
   - cart add/update/remove.
   - checkout start/review/place COD order.
   - account orders list/detail/receipt.
   - network audit confirms no retired routes.
+  2026-07-18 Phase 9: `.\scripts\qa\run-storefront-order-email-e2e.ps1` passed in headed Chromium. Evidence file `.gstack/qa-reports/order-email-e2e/result.json` recorded successful COD order `ORD-20260718-23370800`, account order list/detail/receipt screenshots, `retiredFlowCallCount=0`, and `response5xxCount=0`.
 
 Acceptance:
 
-- [ ] V2 COD order placement creates exactly one order.
-- [ ] Cart closes/expires according to V2 placement rule.
-- [ ] Account order list/detail still shows placed order.
-- [ ] Storefront browser does not call retired routes.
-- [ ] Storefront OpenAPI contains only canonical V2 commerce flow.
+- [x] V2 COD order placement creates exactly one order. 2026-07-18 Phase 9: order email runner observed exactly one order email for `ORD-20260718-23370800` and queued task succeeded.
+- [x] Cart closes/expires according to V2 placement rule. 2026-07-18 Phase 9: order placement redirected to `/checkout?orderReference=...` and the placement suite stayed green.
+- [x] Account order list/detail still shows placed order. 2026-07-18 Phase 9: runner opened list/detail/receipt for `ORD-20260718-23370800`.
+- [x] Storefront browser does not call retired routes. 2026-07-18 Phase 9: network audit recorded `retiredFlowCallCount=0`.
+- [x] Storefront OpenAPI contains only canonical V2 commerce flow. 2026-07-18 Phase 9: focused OpenAPI/payment contract tests passed 63/63.
 
 ## Phase 10 - Deferred Data And Legacy Cleanup
 

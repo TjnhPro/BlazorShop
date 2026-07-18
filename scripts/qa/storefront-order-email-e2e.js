@@ -53,7 +53,9 @@ async function main() {
       ok: true,
       orderReference: success.orderReference,
       confirmationScreenshot: success.confirmationScreenshot,
+      orderListScreenshot: success.orderListScreenshot,
       orderDetailScreenshot: success.orderDetailScreenshot,
+      orderReceiptScreenshot: success.orderReceiptScreenshot,
     });
 
     const orderCreatedTask = await waitForTask("order.created", success.orderReference, "succeeded", 30000);
@@ -224,13 +226,25 @@ async function placeCodOrder(page, label) {
 
   const confirmationScreenshot = path.join(artifactRoot, `${label}-confirmation.png`);
   await page.screenshot({ path: confirmationScreenshot, fullPage: true });
+
+  await page.goto(`${baseUrl}/account/orders`, { waitUntil: "domcontentloaded" });
+  await expectBodyContains(page, orderReference);
+  const orderListScreenshot = path.join(artifactRoot, `${label}-order-list.png`);
+  await page.screenshot({ path: orderListScreenshot, fullPage: true });
+
   await page.goto(`${baseUrl}/account/orders/${encodeURIComponent(orderReference)}`, { waitUntil: "domcontentloaded" });
   await expectBodyContains(page, orderReference);
   await expectBodyMatches(page, /EUR 100\.00|100\.00/);
   const orderDetailScreenshot = path.join(artifactRoot, `${label}-order-detail.png`);
   await page.screenshot({ path: orderDetailScreenshot, fullPage: true });
 
-  return { orderReference, confirmationScreenshot, orderDetailScreenshot };
+  await page.goto(`${baseUrl}/account/orders/${encodeURIComponent(orderReference)}/receipt`, { waitUntil: "domcontentloaded" });
+  await expectBodyContains(page, orderReference);
+  await expectBodyMatches(page, /receipt|EUR 100\.00|100\.00/i);
+  const orderReceiptScreenshot = path.join(artifactRoot, `${label}-order-receipt.png`);
+  await page.screenshot({ path: orderReceiptScreenshot, fullPage: true });
+
+  return { orderReference, confirmationScreenshot, orderListScreenshot, orderDetailScreenshot, orderReceiptScreenshot };
 }
 
 async function signIn(page, email, password) {
@@ -490,6 +504,10 @@ function assertNoUnexpectedNetwork(network) {
         || url.pathname.startsWith("/api/commerce")
         || url.pathname.startsWith("/api/control-plane"));
   });
+  const retiredFlowCalls = network.requests.filter((item) => {
+    const url = new URL(item.url);
+    return url.origin === baseUrl && isRetiredStorefrontFlowPath(url.pathname);
+  });
 
   if (unexpected5xx.length > 0) {
     throw new Error(`Unexpected 5xx responses: ${JSON.stringify(unexpected5xx)}`);
@@ -498,6 +516,17 @@ function assertNoUnexpectedNetwork(network) {
   if (forbiddenCalls.length > 0) {
     throw new Error(`Storefront browser made forbidden admin/control calls: ${JSON.stringify(forbiddenCalls)}`);
   }
+
+  if (retiredFlowCalls.length > 0) {
+    throw new Error(`Storefront browser called retired commerce flow routes: ${JSON.stringify(retiredFlowCalls)}`);
+  }
+}
+
+function isRetiredStorefrontFlowPath(pathname) {
+  return pathname.includes("/cart/save-checkout")
+    || pathname.includes("/orders/confirm")
+    || pathname.includes("/orders/current-user/items")
+    || pathname.includes("/payments/paypal/capture");
 }
 
 function createNetworkAudit(page) {
@@ -518,6 +547,7 @@ function createNetworkAudit(page) {
         requestCount: requests.length,
         responseCount: responses.length,
         response5xxCount: responses.filter((item) => item.status >= 500).length,
+        retiredFlowCallCount: requests.filter((item) => isRetiredStorefrontFlowPath(new URL(item.url).pathname)).length,
       };
     },
   };

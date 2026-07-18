@@ -42,6 +42,7 @@ Notes:
 
 - Registration-disabled policy is now an executable headed Chromium release case. Evidence: `.gstack/qa-reports/registration-policy-e2e/result.json`, `storefront-register-disabled.png`, and `storefront-register-enabled.png`.
 - SMTP capture is now an active release prerequisite: local/staging must expose Mailpit-compatible SMTP/API capture, store SMTP settings must be configured through Control Plane, and both recovery/order email runners must pass before production public release.
+- Commerce Flow Cutover Phase 9 hardened the order email runner to verify account order list/detail/receipt after COD placement and fail on retired browser route calls. 2026-07-18 headed Chromium rerun passed with `ORD-20260718-23370800`, `retiredFlowCallCount=0`, and `response5xxCount=0` in `.gstack/qa-reports/order-email-e2e/result.json`.
 - Firefox/WebKit matrix is marked accounted by checklist status, but this run's direct browser evidence is Chromium headed only.
 
 ## QA Evidence - 2026-07-18 Headed Chromium P0 Route/Network Baseline
