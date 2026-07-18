@@ -377,6 +377,7 @@ output/
 .gstack/
 Smartstore/
 
+
 # BlazorShop CommerceNode runtime data
 /BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/media/
 /BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/nginx/logs/
