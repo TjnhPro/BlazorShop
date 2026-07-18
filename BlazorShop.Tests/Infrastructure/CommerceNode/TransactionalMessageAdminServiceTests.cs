@@ -5,7 +5,6 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
     using BlazorShop.Application.Services.Contracts.Admin;
-    using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities.CommerceNode;
     using BlazorShop.Infrastructure.Data.CommerceNode;
     using BlazorShop.Infrastructure.Data.CommerceNode.Services;
@@ -124,7 +123,10 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 context,
                 new FixedStoreContext(storeId),
                 new MessageTokenRenderer(),
-                new MessageDeliveryService(context, Mock.Of<IEmailService>()),
+                new MessageDeliveryService(
+                    context,
+                    Mock.Of<IStoreEmailTransportResolver>(),
+                    Mock.Of<IStoreEmailTransportSender>()),
                 audit.Object);
         }
 

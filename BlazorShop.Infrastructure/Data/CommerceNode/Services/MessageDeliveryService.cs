@@ -1,7 +1,6 @@
 namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 {
     using BlazorShop.Application.CommerceNode.Messages;
-    using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities.CommerceNode;
 
     using Microsoft.EntityFrameworkCore;
@@ -9,12 +8,17 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     public sealed class MessageDeliveryService : IMessageDeliveryService
     {
         private readonly CommerceNodeDbContext context;
-        private readonly IEmailService emailService;
+        private readonly IStoreEmailTransportResolver transportResolver;
+        private readonly IStoreEmailTransportSender transportSender;
 
-        public MessageDeliveryService(CommerceNodeDbContext context, IEmailService emailService)
+        public MessageDeliveryService(
+            CommerceNodeDbContext context,
+            IStoreEmailTransportResolver transportResolver,
+            IStoreEmailTransportSender transportSender)
         {
             this.context = context;
-            this.emailService = emailService;
+            this.transportResolver = transportResolver;
+            this.transportSender = transportSender;
         }
 
         public async Task<MessageDeliveryResult> DeliverAsync(
@@ -50,7 +54,24 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             try
             {
-                await this.emailService.SendEmailAsync(message.ToEmail, message.Subject, message.BodyHtml);
+                var transportResult = await this.transportResolver.ResolveTransportAsync(
+                    message.StoreId,
+                    cancellationToken);
+                if (!transportResult.Success || transportResult.Transport is null)
+                {
+                    return await this.MarkFailedAsync(
+                        message,
+                        transportResult.ErrorCode ?? "message_delivery.smtp_not_configured",
+                        transportResult.Message ?? "Store SMTP transport is not configured.",
+                        cancellationToken);
+                }
+
+                await this.transportSender.SendAsync(
+                    transportResult.Transport,
+                    message.ToEmail,
+                    message.Subject,
+                    message.BodyHtml,
+                    cancellationToken);
 
                 now = DateTimeOffset.UtcNow;
                 message.Status = QueuedMessageStatuses.Sent;
@@ -63,17 +84,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                now = DateTimeOffset.UtcNow;
-                var retryable = message.AttemptCount < message.MaxAttempts;
-                message.Status = retryable ? QueuedMessageStatuses.WaitingRetry : QueuedMessageStatuses.Failed;
-                message.NextAttemptAtUtc = retryable ? now.AddMinutes(Math.Min(60, message.AttemptCount * 5)) : null;
-                message.FailedAtUtc = retryable ? null : now;
-                message.ErrorCode = "message_delivery.smtp_failed";
-                message.ErrorMessage = Truncate(ex.Message, 1024);
-                message.UpdatedAtUtc = now;
-                await this.context.SaveChangesAsync(cancellationToken);
-
-                return new MessageDeliveryResult(false, retryable, message.ErrorCode, "Queued message delivery failed.");
+                return await this.MarkFailedAsync(
+                    message,
+                    "message_delivery.smtp_failed",
+                    ex.Message,
+                    cancellationToken);
             }
         }
 
@@ -134,6 +149,25 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return string.IsNullOrWhiteSpace(value)
                 ? null
                 : value.Length <= maxLength ? value : value[..maxLength];
+        }
+
+        private async Task<MessageDeliveryResult> MarkFailedAsync(
+            QueuedMessage message,
+            string errorCode,
+            string? errorMessage,
+            CancellationToken cancellationToken)
+        {
+            var now = DateTimeOffset.UtcNow;
+            var retryable = message.AttemptCount < message.MaxAttempts;
+            message.Status = retryable ? QueuedMessageStatuses.WaitingRetry : QueuedMessageStatuses.Failed;
+            message.NextAttemptAtUtc = retryable ? now.AddMinutes(Math.Min(60, message.AttemptCount * 5)) : null;
+            message.FailedAtUtc = retryable ? null : now;
+            message.ErrorCode = errorCode;
+            message.ErrorMessage = Truncate(errorMessage, 1024);
+            message.UpdatedAtUtc = now;
+            await this.context.SaveChangesAsync(cancellationToken);
+
+            return new MessageDeliveryResult(false, retryable, errorCode, "Queued message delivery failed.");
         }
     }
 }

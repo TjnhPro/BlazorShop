@@ -122,29 +122,29 @@ Acceptance:
 
 Purpose: make queued delivery use store SMTP settings instead of global app env.
 
-- [ ] Add `IStoreEmailTransportResolver` or equivalent.
-- [ ] Resolve SMTP transport by queued message `StoreId`.
-- [ ] Prefer active `StoreEmailSettings` for the message store.
-- [ ] Allow global `EmailSettings` fallback only when explicitly enabled.
-- [ ] Return safe `message_delivery.smtp_not_configured` failure when no usable config exists.
-- [ ] Change `MessageQueueService` to snapshot `FromEmail` from store email settings.
-- [ ] Change `MessageQueueService` to snapshot `FromName` from store email settings.
-- [ ] Change `MessageDeliveryService` to send through store-resolved SMTP transport.
-- [ ] Keep `EmailService` reusable only if store selection remains explicit.
-- [ ] Add request/model shape for sending with resolved host/port/credentials if needed.
-- [ ] Add test-send service that uses same resolver and transport as real delivery.
-- [ ] Keep queued-message admin detail secret-safe.
-- [ ] Keep reset-token rendered body out of queued-message admin detail.
-- [ ] Keep idempotency key out of queued-message admin detail.
+- [x] Add `IStoreEmailTransportResolver` or equivalent. 2026-07-18: `IStoreEmailTransportResolver`.
+- [x] Resolve SMTP transport by queued message `StoreId`. 2026-07-18: `MessageDeliveryService` resolves transport from `message.StoreId`.
+- [x] Prefer active `StoreEmailSettings` for the message store. 2026-07-18: resolver tests cover Store A/B different settings.
+- [x] Allow global `EmailSettings` fallback only when explicitly enabled. 2026-07-18: `StoreEmailTransportOptions.AllowGlobalEmailSettingsFallback`.
+- [x] Return safe `message_delivery.smtp_not_configured` failure when no usable config exists.
+- [x] Change `MessageQueueService` to snapshot `FromEmail` from store email settings.
+- [x] Change `MessageQueueService` to snapshot `FromName` from store email settings.
+- [x] Change `MessageDeliveryService` to send through store-resolved SMTP transport.
+- [x] Keep `EmailService` reusable only if store selection remains explicit. 2026-07-18: queued delivery no longer injects global `IEmailService`.
+- [x] Add request/model shape for sending with resolved host/port/credentials if needed. 2026-07-18: `StoreEmailTransportSettings`.
+- [x] Add test-send service that uses same resolver and transport as real delivery. 2026-07-18: `StoreEmailTestSendService`.
+- [x] Keep queued-message admin detail secret-safe.
+- [x] Keep reset-token rendered body out of queued-message admin detail.
+- [x] Keep idempotency key out of queued-message admin detail.
 
 Acceptance:
 
-- [ ] Store A and Store B can use different SMTP hosts.
-- [ ] Store A and Store B can use different from addresses.
-- [ ] Missing store SMTP config fails queued delivery into retry/failed state.
-- [ ] Missing store SMTP config does not roll back recovery/order/checkout source commands.
-- [ ] Queued messages snapshot expected store sender.
-- [ ] API response, audit metadata, DOM, and logs do not expose SMTP credentials.
+- [x] Store A and Store B can use different SMTP hosts. 2026-07-18: `StoreEmailTransportResolverTests.ResolveTransportAsync_UsesStoreSpecificSmtpSettings`.
+- [x] Store A and Store B can use different from addresses. 2026-07-18: same resolver test covers per-store sender.
+- [x] Missing store SMTP config fails queued delivery into retry/failed state. 2026-07-18: `MessageDeliveryServiceTests.DeliverAsync_WhenStoreSmtpMissing_MarksWaitingRetryWithoutSending`.
+- [x] Missing store SMTP config does not roll back recovery/order/checkout source commands. 2026-07-18: queue keeps source commands decoupled; missing SMTP config is handled during `message.deliver`.
+- [x] Queued messages snapshot expected store sender. 2026-07-18: `MessageQueueServiceTests.QueueAsync_CreatesQueuedMessageAndDeliveryTask`.
+- [x] API response, audit metadata, DOM, and logs do not expose SMTP credentials. 2026-07-18: no API/DOM added in Phase 2; response DTO and service tests continue to assert no password/protected secret serialization.
 
 ## Phase 3 - SMTP Capture Runtime Setup
 

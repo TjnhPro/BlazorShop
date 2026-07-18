@@ -1,7 +1,6 @@
 namespace BlazorShop.Tests.Infrastructure.CommerceNode
 {
     using BlazorShop.Application.CommerceNode.Messages;
-    using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities.CommerceNode;
     using BlazorShop.Infrastructure.Data.CommerceNode;
     using BlazorShop.Infrastructure.Data.CommerceNode.Services;
@@ -21,13 +20,23 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var message = CreateMessage();
             context.QueuedMessages.Add(message);
             await context.SaveChangesAsync();
-            var emailService = new Mock<IEmailService>();
-            var service = new MessageDeliveryService(context, emailService.Object);
+            var sender = new Mock<IStoreEmailTransportSender>();
+            var service = new MessageDeliveryService(
+                context,
+                CreateResolver(success: true),
+                sender.Object);
 
             var result = await service.DeliverAsync(message.PublicId, attemptNumber: 1);
 
             Assert.True(result.Success);
-            emailService.Verify(email => email.SendEmailAsync("customer@example.test", "Subject", "<p>Body</p>"), Times.Once);
+            sender.Verify(
+                email => email.SendAsync(
+                    It.IsAny<StoreEmailTransportSettings>(),
+                    "customer@example.test",
+                    "Subject",
+                    "<p>Body</p>",
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
             var updated = await context.QueuedMessages.SingleAsync();
             Assert.Equal(QueuedMessageStatuses.Sent, updated.Status);
             Assert.Equal(1, updated.AttemptCount);
@@ -41,11 +50,19 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var message = CreateMessage();
             context.QueuedMessages.Add(message);
             await context.SaveChangesAsync();
-            var emailService = new Mock<IEmailService>();
-            emailService
-                .Setup(email => email.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            var sender = new Mock<IStoreEmailTransportSender>();
+            sender
+                .Setup(email => email.SendAsync(
+                    It.IsAny<StoreEmailTransportSettings>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidOperationException("smtp down"));
-            var service = new MessageDeliveryService(context, emailService.Object);
+            var service = new MessageDeliveryService(
+                context,
+                CreateResolver(success: true),
+                sender.Object);
 
             var result = await service.DeliverAsync(message.PublicId, attemptNumber: 1);
 
@@ -67,11 +84,19 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             message.MaxAttempts = 3;
             context.QueuedMessages.Add(message);
             await context.SaveChangesAsync();
-            var emailService = new Mock<IEmailService>();
-            emailService
-                .Setup(email => email.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            var sender = new Mock<IStoreEmailTransportSender>();
+            sender
+                .Setup(email => email.SendAsync(
+                    It.IsAny<StoreEmailTransportSettings>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidOperationException("smtp down"));
-            var service = new MessageDeliveryService(context, emailService.Object);
+            var service = new MessageDeliveryService(
+                context,
+                CreateResolver(success: true),
+                sender.Object);
 
             var result = await service.DeliverAsync(message.PublicId, attemptNumber: 3);
 
@@ -93,7 +118,10 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             message.ErrorCode = "message_delivery.smtp_failed";
             context.QueuedMessages.Add(message);
             await context.SaveChangesAsync();
-            var service = new MessageDeliveryService(context, Mock.Of<IEmailService>());
+            var service = new MessageDeliveryService(
+                context,
+                CreateResolver(success: true),
+                Mock.Of<IStoreEmailTransportSender>());
 
             var retry = await service.RetryAsync(message.PublicId);
             var cancel = await service.CancelAsync(message.PublicId);
@@ -103,6 +131,36 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var updated = await context.QueuedMessages.SingleAsync();
             Assert.Equal(QueuedMessageStatuses.Cancelled, updated.Status);
             Assert.Null(updated.ErrorCode);
+        }
+
+        [Fact]
+        public async Task DeliverAsync_WhenStoreSmtpMissing_MarksWaitingRetryWithoutSending()
+        {
+            await using var context = CreateContext();
+            var message = CreateMessage();
+            context.QueuedMessages.Add(message);
+            await context.SaveChangesAsync();
+            var sender = new Mock<IStoreEmailTransportSender>();
+            var service = new MessageDeliveryService(
+                context,
+                CreateResolver(success: false),
+                sender.Object);
+
+            var result = await service.DeliverAsync(message.PublicId, attemptNumber: 1);
+
+            Assert.False(result.Success);
+            Assert.True(result.Retryable);
+            sender.Verify(
+                email => email.SendAsync(
+                    It.IsAny<StoreEmailTransportSettings>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()),
+                Times.Never);
+            var updated = await context.QueuedMessages.SingleAsync();
+            Assert.Equal(QueuedMessageStatuses.WaitingRetry, updated.Status);
+            Assert.Equal("message_delivery.smtp_not_configured", updated.ErrorCode);
         }
 
         private static QueuedMessage CreateMessage()
@@ -129,6 +187,34 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 .Options;
 
             return new CommerceNodeDbContext(options);
+        }
+
+        private static IStoreEmailTransportResolver CreateResolver(bool success)
+        {
+            var resolver = new Mock<IStoreEmailTransportResolver>();
+            resolver
+                .Setup(item => item.ResolveTransportAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(success
+                    ? new StoreEmailTransportResolutionResult(
+                        true,
+                        new StoreEmailTransportSettings(
+                            Guid.NewGuid(),
+                            StoreEmailDeliveryModes.Smtp,
+                            "sender@example.test",
+                            "Sender",
+                            null,
+                            "smtp.example.test",
+                            587,
+                            true,
+                            "smtp-user",
+                            "smtp-password"))
+                    : new StoreEmailTransportResolutionResult(
+                        false,
+                        ErrorCode: "message_delivery.smtp_not_configured",
+                        Message: "Store SMTP transport is not configured."));
+            return resolver.Object;
         }
     }
 }

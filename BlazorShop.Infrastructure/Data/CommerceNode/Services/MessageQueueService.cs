@@ -4,11 +4,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
     using BlazorShop.Application.CommerceNode.Messages;
     using BlazorShop.Application.CommerceNode.Tasks;
-    using BlazorShop.Application.DTOs;
     using BlazorShop.Domain.Entities.CommerceNode;
 
     using Microsoft.EntityFrameworkCore;
-    using Microsoft.Extensions.Options;
 
     public sealed class MessageQueueService : IMessageQueueService
     {
@@ -26,20 +24,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly IMessageTemplateResolver templateResolver;
         private readonly IMessageTokenRenderer tokenRenderer;
         private readonly ICommerceTaskService taskService;
-        private readonly EmailSettings emailSettings;
+        private readonly IStoreEmailTransportResolver transportResolver;
 
         public MessageQueueService(
             CommerceNodeDbContext context,
             IMessageTemplateResolver templateResolver,
             IMessageTokenRenderer tokenRenderer,
             ICommerceTaskService taskService,
-            IOptions<EmailSettings> emailSettings)
+            IStoreEmailTransportResolver transportResolver)
         {
             this.context = context;
             this.templateResolver = templateResolver;
             this.tokenRenderer = tokenRenderer;
             this.taskService = taskService;
-            this.emailSettings = emailSettings.Value;
+            this.transportResolver = transportResolver;
         }
 
         public async Task<QueuedMessageResult> QueueAsync(
@@ -80,6 +78,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 templateResult.Template.BodyHtmlTemplate,
                 request.Tokens,
                 SafeHtmlTokens));
+            var sender = await this.transportResolver.ResolveSenderProfileAsync(
+                request.StoreId,
+                cancellationToken);
             var now = DateTimeOffset.UtcNow;
             var queuedMessage = new QueuedMessage
             {
@@ -91,8 +92,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 LanguageCode = NormalizeOptional(request.LanguageCode),
                 ToEmail = request.ToEmail.Trim(),
                 ToName = NormalizeOptional(request.ToName),
-                FromEmail = this.emailSettings.From.Trim(),
-                FromName = NormalizeOptional(this.emailSettings.DisplayName),
+                FromEmail = sender.FromEmail,
+                FromName = NormalizeOptional(sender.FromName),
+                ReplyToEmail = NormalizeOptional(sender.ReplyToEmail),
                 Subject = subject.Rendered,
                 BodyHtml = body.Rendered,
                 Status = QueuedMessageStatuses.Pending,
@@ -159,11 +161,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             if (string.IsNullOrWhiteSpace(request.ToEmail))
             {
                 return "Recipient email is required.";
-            }
-
-            if (string.IsNullOrWhiteSpace(this.emailSettings.From))
-            {
-                return "Sender email is not configured.";
             }
 
             return null;

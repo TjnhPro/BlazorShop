@@ -97,6 +97,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 .Bind(configuration.GetSection(ClientAppOptions.SectionName));
             services.AddOptions<EmailSettings>()
                 .Bind(configuration.GetSection("EmailSettings"));
+            services.AddOptions<StoreEmailTransportOptions>()
+                .Bind(configuration.GetSection(StoreEmailTransportOptions.SectionName));
             services.AddScoped<CommerceNodeDevelopmentSeeder>();
             services.AddScoped(typeof(IAppLogger<>), typeof(LoggerAdapter<>));
             services.AddTransient<IEmailService, EmailService>();
@@ -164,6 +166,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<ITransactionalMessageAdminService, TransactionalMessageAdminService>();
             services.AddScoped<IStoreEmailSettingsService, StoreEmailSettingsService>();
             services.AddSingleton<IStoreEmailSecretProtector, DataProtectionStoreEmailSecretProtector>();
+            services.AddScoped<IStoreEmailTransportResolver, StoreEmailTransportResolver>();
+            services.AddScoped<IStoreEmailTransportSender, MailKitStoreEmailTransportSender>();
+            services.AddScoped<IStoreEmailTestSendService, StoreEmailTestSendService>();
             services.AddScoped<IAccountEmailDispatcher, QueuedAccountEmailDispatcher>();
             services.AddScoped<IStorefrontContactMessageService, StorefrontContactMessageService>();
             services.AddScoped<IProductMediaService, ProductMediaService>();

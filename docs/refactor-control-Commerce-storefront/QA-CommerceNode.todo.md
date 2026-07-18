@@ -1170,8 +1170,9 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Store email settings are configurable per store without exposing SMTP password or decrypted secret material. 2026-07-18 Phase 1: `StoreEmailSettingsServiceTests` covers rotate/clear response secrecy; `StoreEmailSettingsContractTests` asserts response DTO has no raw/protected password property.
 - [x] CommerceNode `store_email_settings` schema is one row per store with delivery mode and SMTP port constraints. 2026-07-18 Phase 1: migration `CommerceNodeStoreEmailSettings` applied to local PostgreSQL; `CommerceNodeDbContextModelTests.StoreEmailSettings_HasOneSettingsRowPerStoreAndSecretSafeColumns` passed.
 - [x] Store email settings validation blocks incomplete enabled SMTP config and capture mode unless explicitly allowed. 2026-07-18 Phase 1: focused validator/service tests passed.
-- [ ] `message.deliver` resolves SMTP transport from queued message `StoreId` and snapshots store-specific sender metadata.
-- [ ] Missing store SMTP config fails queued delivery into retry/failed state without rolling back password recovery, order placement, or checkout source commands.
+- [x] `message.deliver` resolves SMTP transport from queued message `StoreId` and snapshots store-specific sender metadata. 2026-07-18 Phase 2: `StoreEmailTransportResolverTests`, `MessageQueueServiceTests`, and `MessageDeliveryServiceTests` passed.
+- [x] Missing store SMTP config fails queued delivery into retry/failed state without rolling back password recovery, order placement, or checkout source commands. 2026-07-18 Phase 2: delivery returns `message_delivery.smtp_not_configured` and queue/source commands remain decoupled.
+- [x] Store SMTP test-send service uses the same resolver and transport sender as real queued delivery. 2026-07-18 Phase 2: `StoreEmailTestSendServiceTests` passed.
 - [ ] Local Mailpit capture receives password recovery email sent through store SMTP settings.
 - [ ] Local Mailpit capture receives exactly one order placed email for a real COD order.
 - [ ] Multi-store SMTP isolation proves Store A and Store B use different sender profiles.

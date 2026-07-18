@@ -1,13 +1,11 @@
 namespace BlazorShop.Tests.Infrastructure.CommerceNode
 {
     using BlazorShop.Application.CommerceNode.Messages;
-    using BlazorShop.Application.DTOs;
     using BlazorShop.Domain.Entities.CommerceNode;
     using BlazorShop.Infrastructure.Data.CommerceNode;
     using BlazorShop.Infrastructure.Data.CommerceNode.Services;
 
     using Microsoft.EntityFrameworkCore;
-    using Microsoft.Extensions.Options;
 
     using Xunit;
 
@@ -45,6 +43,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal("Order ORD-1", message.Subject);
             Assert.Contains("&lt;script&gt;alert(1)&lt;/script&gt;", message.BodyHtml, StringComparison.Ordinal);
             Assert.Equal("sender@example.test", message.FromEmail);
+            Assert.Equal("reply@example.test", message.ReplyToEmail);
             Assert.Equal("order:ORD-1:placed", message.IdempotencyKey);
 
             var task = await context.CommerceTasks.SingleAsync();
@@ -87,11 +86,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 new MessageTemplateResolver(context),
                 new MessageTokenRenderer(),
                 new CommerceTaskService(context),
-                Options.Create(new EmailSettings
-                {
-                    From = "sender@example.test",
-                    DisplayName = "Store Sender",
-                }));
+                new StubStoreEmailTransportResolver());
         }
 
         private static MessageTemplate CreateTemplate(string systemName)
@@ -114,6 +109,27 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 .Options;
 
             return new CommerceNodeDbContext(options);
+        }
+
+        private sealed class StubStoreEmailTransportResolver : IStoreEmailTransportResolver
+        {
+            public Task<StoreEmailSenderProfile> ResolveSenderProfileAsync(
+                Guid storeId,
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(new StoreEmailSenderProfile(
+                    "sender@example.test",
+                    "Store Sender",
+                    "reply@example.test",
+                    FromStoreSettings: true));
+            }
+
+            public Task<StoreEmailTransportResolutionResult> ResolveTransportAsync(
+                Guid storeId,
+                CancellationToken cancellationToken = default)
+            {
+                throw new NotSupportedException();
+            }
         }
     }
 }

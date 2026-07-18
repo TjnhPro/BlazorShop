@@ -193,4 +193,77 @@ namespace BlazorShop.Application.CommerceNode.Messages
             bool captureModeAllowed,
             CancellationToken cancellationToken = default);
     }
+
+    public sealed class StoreEmailTransportOptions
+    {
+        public const string SectionName = "CommerceNode:EmailTransport";
+
+        public bool AllowGlobalEmailSettingsFallback { get; set; }
+
+        public bool CaptureModeAllowed { get; set; }
+    }
+
+    public sealed record StoreEmailSenderProfile(
+        string FromEmail,
+        string? FromName,
+        string? ReplyToEmail,
+        bool FromStoreSettings);
+
+    public sealed record StoreEmailTransportSettings(
+        Guid StoreId,
+        string DeliveryMode,
+        string FromEmail,
+        string? FromName,
+        string? ReplyToEmail,
+        string SmtpHost,
+        int SmtpPort,
+        bool UseSsl,
+        string? Username,
+        string? Password);
+
+    public sealed record StoreEmailTransportResolutionResult(
+        bool Success,
+        StoreEmailTransportSettings? Transport = null,
+        string? ErrorCode = null,
+        string? Message = null);
+
+    public interface IStoreEmailTransportResolver
+    {
+        Task<StoreEmailSenderProfile> ResolveSenderProfileAsync(
+            Guid storeId,
+            CancellationToken cancellationToken = default);
+
+        Task<StoreEmailTransportResolutionResult> ResolveTransportAsync(
+            Guid storeId,
+            CancellationToken cancellationToken = default);
+    }
+
+    public interface IStoreEmailTransportSender
+    {
+        Task SendAsync(
+            StoreEmailTransportSettings transport,
+            string toEmail,
+            string subject,
+            string bodyHtml,
+            CancellationToken cancellationToken = default);
+    }
+
+    public sealed class SendStoreEmailTestRequest
+    {
+        [Required]
+        [EmailAddress]
+        [MaxLength(254)]
+        public string ToEmail { get; set; } = string.Empty;
+
+        [MaxLength(512)]
+        public string? Subject { get; set; }
+    }
+
+    public interface IStoreEmailTestSendService
+    {
+        Task<ServiceResponse> SendAsync(
+            Guid storeId,
+            SendStoreEmailTestRequest request,
+            CancellationToken cancellationToken = default);
+    }
 }
