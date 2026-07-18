@@ -40,7 +40,7 @@ Evidence artifacts:
 
 Notes:
 
-- Registration-disabled policy remains marked as accounted/deferred because that fixture/config path is still being developed by prior agreement.
+- Registration-disabled policy is now an executable headed Chromium release case. Evidence: `.gstack/qa-reports/registration-policy-e2e/result.json`, `storefront-register-disabled.png`, and `storefront-register-enabled.png`.
 - SMTP capture is now an active release prerequisite: local/staging must expose Mailpit-compatible SMTP/API capture, store SMTP settings must be configured through Control Plane, and both recovery/order email runners must pass before production public release.
 - Firefox/WebKit matrix is marked accounted by checklist status, but this run's direct browser evidence is Chromium headed only.
 
@@ -198,7 +198,7 @@ Seed source: `BlazorShop.Infrastructure/Data/CommerceNode/CommerceNodeDevelopmen
 Ghi chú: account profile/address/order/change-password hiện là component WASM gọi same-origin `/api/account/*`; SSR page host vẫn chịu trách nhiệm auth redirect và initial render.
 
 - [x] `AUTH-001 P0` - Register standard policy tạo account synthetic một lần.
-- [x] `AUTH-002 P0` - Register disabled policy không cho submit. Accounted/deferred while registration-disabled fixture/config is still being developed.
+- [x] `AUTH-002 P0` - Register disabled policy không cho submit. 2026-07-18: headed Chromium run `.\scripts\qa\run-storefront-registration-policy-e2e.ps1` set store `default` registration to disabled through Control Plane gateway, verified `/register` disabled state without register form/captcha token, direct CommerceNode register returned `403 auth.registration_disabled`, restored mode `standard`, and recorded no forbidden Storefront browser API calls or 5xx responses. Evidence: `.gstack/qa-reports/registration-policy-e2e/result.json`.
 - [x] `AUTH-003 P0` - Password policy và confirm mismatch bị reject.
 - [x] `AUTH-004 P0` - Login đúng vào return URL local an toàn.
 - [x] `AUTH-005 P0` - Login sai password/email không tồn tại hiển thị generic message.

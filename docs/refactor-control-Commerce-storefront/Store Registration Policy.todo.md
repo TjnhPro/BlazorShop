@@ -1,6 +1,6 @@
 # Store Registration Policy
 
-Status: in progress
+Status: complete
 Date: 2026-07-18
 Purpose: cho phép Control Plane khoa/mo dang ky tai khoan customer theo tung store, va dam bao storefront khong cho submit khi register disabled.
 
@@ -14,7 +14,7 @@ Purpose: cho phép Control Plane khoa/mo dang ky tai khoan customer theo tung st
 - Control Plane Web chua co page/menu de admin cau hinh Security/Privacy settings.
 - Storefront V2 register page hien render form SSR tai `/register`, submit qua local POST `/register`, sau do server goi `IStorefrontAuthClient.RegisterAsync`.
 - Storefront V2 `StorefrontAuthClient` chua co method doc `registration-policy`, nen UI chua biet disable form truoc khi submit.
-- `Storefront Playwright E2E Release.todo.md` dang account/defer `AUTH-002 P0` vi fixture/config registration-disabled chua duoc chuan hoa.
+- `Storefront Playwright E2E Release.todo.md` da co executable `AUTH-002 P0` cho registration-disabled policy.
 
 ## Autoplan Decisions
 
@@ -180,13 +180,15 @@ Acceptance:
 
 ## Phase 6 - Playwright Release QA
 
-- [ ] Update fixture setup de co store/test account state:
+- [x] Update fixture setup de co store/test account state:
   - store registration enabled cho luong register binh thuong.
   - store registration disabled cho `AUTH-002`.
   - neu dung cung store, test phai set disabled qua Control Plane UI/API roi restore enabled sau test.
-- [ ] Update `Storefront Playwright E2E Release.todo.md`:
+  2026-07-18 Phase 6: `scripts/qa/storefront-registration-policy-e2e.js` loads current store security/privacy through Control Plane API, sets registration disabled for the scoped store, verifies the Storefront behavior, then restores the original mode.
+- [x] Update `Storefront Playwright E2E Release.todo.md`:
   - chuyen `AUTH-002 P0` tu accounted/deferred sang testcase executable.
-- [ ] Browser testcase:
+  2026-07-18 Phase 6: `AUTH-002 P0` now references headed Chromium evidence under `.gstack/qa-reports/registration-policy-e2e/result.json`.
+- [x] Browser testcase:
   - admin login Control Plane.
   - mo `commerce-admin/security-privacy`.
   - chon store test.
@@ -197,19 +199,22 @@ Acceptance:
   - try tamper submit/direct request va expect no account created.
   - restore registration standard.
   - verify `/register` hien form lai.
-- [ ] Browser network assertions:
+  2026-07-18 Phase 6: headed Chromium opened Control Plane Security/Privacy page, then Storefront `/register` disabled and enabled states. Direct CommerceNode register returned `403 auth.registration_disabled`.
+- [x] Browser network assertions:
   - Storefront browser khong call `api/commerce/*`, `api/controlplane/*`, `api/internal/*` truc tiep.
   - unexpected 5xx = 0.
-- [ ] Evidence artifacts:
+  2026-07-18 Phase 6: network evidence reports `forbiddenBrowserCalls=[]` and `response5xx=[]`.
+- [x] Evidence artifacts:
   - screenshots disabled/enabled.
   - network json.
   - response evidence for forbidden direct register.
+  2026-07-18 Phase 6: artifacts are `.gstack/qa-reports/registration-policy-e2e/result.json`, `control-plane-security-privacy.png`, `storefront-register-disabled.png`, and `storefront-register-enabled.png`.
 
 Acceptance:
 
-- [ ] `AUTH-002 P0` pass bang headed Chromium Playwright release run.
-- [ ] Store state duoc restore sau test.
-- [ ] QA note khong con ghi registration-disabled policy la deferred.
+- [x] `AUTH-002 P0` pass bang headed Chromium Playwright release run. 2026-07-18 Phase 6: `.\scripts\qa\run-storefront-registration-policy-e2e.ps1` passed with `headed=true`.
+- [x] Store state duoc restore sau test. 2026-07-18 Phase 6: evidence step `control-plane.api.registration-policy.final-restore` restored mode `standard`.
+- [x] QA note khong con ghi registration-disabled policy la deferred. 2026-07-18 Phase 6: release QA note and `AUTH-002` checklist updated.
 
 ## Not In Scope
 
@@ -224,9 +229,9 @@ Acceptance:
 
 ## Release Gate
 
-- [ ] Control Plane admin co the disable register theo tung store.
-- [ ] Storefront UI khong cho submit khi disabled.
-- [ ] Commerce Node API van chan server-side khi bi bypass UI.
-- [ ] Enabled mode khong bi regression.
-- [ ] Playwright `AUTH-002 P0` co evidence that.
-- [ ] QA todo files duoc update sau implementation.
+- [x] Control Plane admin co the disable register theo tung store. 2026-07-18 Phase 6: Control Plane Security/Privacy route opened and policy was updated for store `default` through Control Plane gateway.
+- [x] Storefront UI khong cho submit khi disabled. 2026-07-18 Phase 6: headed browser verified disabled message and no register form fields/captcha token.
+- [x] Commerce Node API van chan server-side khi bi bypass UI. 2026-07-18 Phase 6: direct scoped Storefront API register returned `403 auth.registration_disabled`.
+- [x] Enabled mode khong bi regression. 2026-07-18 Phase 6: headed browser verified `/register` renders the form again after restore.
+- [x] Playwright `AUTH-002 P0` co evidence that. 2026-07-18 Phase 6: evidence stored at `.gstack/qa-reports/registration-policy-e2e/result.json`.
+- [x] QA todo files duoc update sau implementation. 2026-07-18 Phase 6: Storefront release QA and Storefront V2 QA checklist updated.

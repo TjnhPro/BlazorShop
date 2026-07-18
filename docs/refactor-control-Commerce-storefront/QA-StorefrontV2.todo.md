@@ -419,6 +419,7 @@ Use this checklist whenever Storefront V2 auth UI or Commerce Node auth API chan
 
 - [x] `GET /signin` renders Storefront V2 page with local form and no redirect to legacy Web. 2026-07-09: Playwright verified `http://localhost:18598/signin`.
 - [x] `GET /register` renders Storefront V2 page with local form and no redirect to legacy Web. 2026-07-09: Playwright verified `http://localhost:18598/register`.
+- [x] Register disabled policy blocks Storefront UI submit and direct scoped API bypass, then restores the store mode. 2026-07-18 Store Registration Policy Phase 6: headed Chromium QA passed via `scripts/qa/run-storefront-registration-policy-e2e.ps1`; evidence `.gstack/qa-reports/registration-policy-e2e/result.json`.
 - [x] Register empty/invalid required fields stay browser-validatable and do not call Commerce Node. 2026-07-09: empty submit stayed on `/register`; invalid required fields were `FullName`, `Email`, `Password`, `ConfirmPassword`.
 - [x] Register password mismatch returns safe Storefront error message. 2026-07-09: returned `Passwords do not match.`
 - [ ] Register new customer succeeds against Commerce Node `api/storefront/stores/{storeKey}/auth/register`.
