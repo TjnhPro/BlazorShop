@@ -344,20 +344,24 @@ Acceptance:
 
 ## Phase 10 - Deferred Data And Legacy Cleanup
 
-- [ ] Audit whether `CheckoutOrderItems` has production data that must remain readable.
-- [ ] Decide separately whether to keep, archive, or migrate old checkout history data.
-- [ ] Only after legacy presentation retirement decision:
+- [x] Audit whether `CheckoutOrderItems` has production data that must remain readable.
+  2026-07-18 Phase 10: code/schema audit found `CheckoutOrderItems` still exists in `CommerceNodeDbContext`, legacy `AppDbContext`, EF migrations/snapshots, `CommerceNodeCartRepository`, legacy `CartRepository`, shared `ICartService`, `CartService`, and legacy tests. Production data was not queried in this phase, so the table is treated as potentially requiring retention.
+- [x] Decide separately whether to keep, archive, or migrate old checkout history data.
+  2026-07-18 Phase 10: decision deferred; keep schema/services until a separate legacy/data-retention plan explicitly chooses keep/archive/migrate/drop.
+- [x] Only after legacy presentation retirement decision:
   - remove shared `ICartService`.
   - remove shared `CartService`.
   - remove shared `IOrderQueryService`.
   - remove legacy repositories tied only to `AppDbContext`.
   - remove legacy presentation tests for old cart/checkout endpoints.
-- [ ] Do not combine this deferred cleanup with active V2 cutover unless explicitly approved.
+  2026-07-18 Phase 10: no broad legacy shared service or repository removal was performed in this cutover.
+- [x] Do not combine this deferred cleanup with active V2 cutover unless explicitly approved.
+  2026-07-18 Phase 10: active V2 runtime already stopped injecting retired legacy services; shared/legacy code remains for separate retirement.
 
 Acceptance:
 
-- [ ] No data loss risk is introduced during active V2 cutover.
-- [ ] Legacy removal is handled as a separate, explicit decision.
+- [x] No data loss risk is introduced during active V2 cutover. 2026-07-18 Phase 10: no migration drops, data deletes, or table removals were added.
+- [x] Legacy removal is handled as a separate, explicit decision. 2026-07-18 Phase 10: remaining cleanup is documented as deferred.
 
 ## Not In Scope
 
@@ -371,13 +375,13 @@ Acceptance:
 
 ## Release Gate
 
-- [ ] `cart/save-checkout` is absent from active Storefront API and OpenAPI.
-- [ ] `orders/confirm` is absent from active Storefront API and OpenAPI.
-- [ ] `orders/current-user/items` is absent from active Storefront API and OpenAPI.
-- [ ] direct `payments/paypal/capture` is absent from active Storefront API and OpenAPI, or explicitly deferred with a removal ticket if PayPal provider adapter is not ready.
-- [ ] Commerce Node Storefront cart controller only uses `IStorefrontCartService`.
-- [ ] Commerce Node Storefront orders controller only uses V2 customer/guest order services.
-- [ ] Commerce Node checkout placement only uses `IStorefrontCheckoutService` and `IOrderPlacementService`.
-- [ ] Commerce Node payment flow only uses payment attempt/provider abstractions for active Storefront checkout.
-- [ ] Storefront V2/WASM checkout and account flows pass focused tests.
-- [ ] Playwright verifies real COD order placement and account order visibility without retired endpoint calls.
+- [x] `cart/save-checkout` is absent from active Storefront API and OpenAPI. 2026-07-18 Phase 3/9: endpoint metadata and OpenAPI tests passed.
+- [x] `orders/confirm` is absent from active Storefront API and OpenAPI. 2026-07-18 Phase 3/9: endpoint metadata and OpenAPI tests passed.
+- [x] `orders/current-user/items` is absent from active Storefront API and OpenAPI. 2026-07-18 Phase 3/9: endpoint metadata and OpenAPI tests passed.
+- [x] direct `payments/paypal/capture` is absent from active Storefront API and OpenAPI, or explicitly deferred with a removal ticket if PayPal provider adapter is not ready. 2026-07-18 Phase 6/9: direct capture route removed; OpenAPI/payment tests passed.
+- [x] Commerce Node Storefront cart controller only uses `IStorefrontCartService`. 2026-07-18 Phase 4/9: static guard and focused tests passed.
+- [x] Commerce Node Storefront orders controller only uses V2 customer/guest order services. 2026-07-18 Phase 4/9: static guard and focused tests passed.
+- [x] Commerce Node checkout placement only uses `IStorefrontCheckoutService` and `IOrderPlacementService`. 2026-07-18 Phase 9: service and Storefront tests passed.
+- [x] Commerce Node payment flow only uses payment attempt/provider abstractions for active Storefront checkout. 2026-07-18 Phase 5/6/9: legacy PayPal capture service removed from active Storefront payment controller and focused payment tests passed.
+- [x] Storefront V2/WASM checkout and account flows pass focused tests. 2026-07-18 Phase 9: focused Storefront tests passed 8/8.
+- [x] Playwright verifies real COD order placement and account order visibility without retired endpoint calls. 2026-07-18 Phase 9: headed Chromium order runner passed with `retiredFlowCallCount=0`.
