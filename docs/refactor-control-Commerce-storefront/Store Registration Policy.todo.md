@@ -102,26 +102,28 @@ Acceptance:
 
 ## Phase 3 - Control Plane API/Web Admin Surface
 
-- [ ] Mo rong `IControlPlaneCatalogClient` va `ControlPlaneCatalogClient` trong Web de co:
+- [x] Mo rong `IControlPlaneCatalogClient` va `ControlPlaneCatalogClient` trong Web de co:
   - `GetSecurityPrivacySettingsAsync`
   - `UpdateSecurityPrivacySettingsAsync`
-- [ ] Them page Control Plane Web `commerce-admin/security-privacy`.
-- [ ] Page co pattern:
+  2026-07-18 Phase 3: methods call existing Control Plane gateway route `security-privacy`.
+- [x] Them page Control Plane Web `commerce-admin/security-privacy`. 2026-07-18 Phase 3: added `CommerceSecurityPrivacy.razor`.
+- [x] Page co pattern:
   - load stores active.
   - select store.
   - load `security-privacy`.
   - hien section `Registration`.
   - toggle/select registration mode `standard` / `disabled`.
   - giu cac section captcha/consent/privacy toi thieu theo DTO neu can update full request.
-- [ ] Them nav item `Security/Privacy` duoi Commerce Admin.
-- [ ] Save qua Control Plane API, khong goi Commerce Node truc tiep tu Web.
-- [ ] Hien warning ro khi disabled: customer moi khong the tao account, customer hien co van login duoc.
+  2026-07-18 Phase 3: page loads active stores, selected store settings, registration, consent, captcha, and privacy retention fields, then sends a full update request.
+- [x] Them nav item `Security/Privacy` duoi Commerce Admin. 2026-07-18 Phase 3: nav item added under Commerce Admin.
+- [x] Save qua Control Plane API, khong goi Commerce Node truc tiep tu Web. 2026-07-18 Phase 3: page uses `IControlPlaneCatalogClient` and `IControlPlaneApiClient`; static boundary tests passed.
+- [x] Hien warning ro khi disabled: customer moi khong the tao account, customer hien co van login duoc. 2026-07-18 Phase 3: page warning states new account creation is blocked while existing sign-in remains.
 
 Acceptance:
 
-- [ ] User co permission `commerce.security_privacy.write` moi save duoc.
-- [ ] Control Plane Web khong chua Commerce Node base URL/secret va khong call `api/commerce/*` truc tiep.
-- [ ] Save thanh cong update dung store dang chon.
+- [x] User co permission `commerce.security_privacy.write` moi save duoc. 2026-07-18 Phase 3: save goes through existing Control Plane API endpoint protected by `CommerceSecurityPrivacyWrite`.
+- [x] Control Plane Web khong chua Commerce Node base URL/secret va khong call `api/commerce/*` truc tiep. 2026-07-18 Phase 3: `SecurityPrivacyPhase6AdminManagementTests` and `EmailSmtpControlPlaneGatewayTests` passed.
+- [x] Save thanh cong update dung store dang chon. 2026-07-18 Phase 3: route uses selected `storePublicId`; ControlPlane Web build passed.
 
 ## Phase 4 - Storefront V2 Register UX
 

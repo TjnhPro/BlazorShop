@@ -10,6 +10,7 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
     using BlazorShop.Application.CommerceNode.Navigation;
     using BlazorShop.Application.CommerceNode.ProductImports;
     using BlazorShop.Application.CommerceNode.ProductMedia;
+    using BlazorShop.Application.CommerceNode.SecurityPrivacy;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.Tasks;
@@ -486,6 +487,15 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
         Task<ControlPlaneClientResult<SendStoreEmailTestResponse>> SendEmailTestAsync(
             Guid storePublicId,
             SendStoreEmailTestRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StoreSecurityPrivacySettingsDto>> GetSecurityPrivacySettingsAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default);
+
+        Task<ControlPlaneClientResult<StoreSecurityPrivacySettingsDto>> UpdateSecurityPrivacySettingsAsync(
+            Guid storePublicId,
+            UpdateStoreSecurityPrivacySettingsRequest request,
             CancellationToken cancellationToken = default);
 
         Task<ControlPlaneClientResult<IReadOnlyList<MessageTemplateAdminSummary>>> ListMessageTemplatesAsync(
@@ -1607,6 +1617,28 @@ namespace BlazorShop.ControlPlane.Web.Services.Catalog
                 CommerceRoute(storePublicId, "email-settings/test-send"),
                 request,
                 "Unable to send store SMTP test email.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StoreSecurityPrivacySettingsDto>> GetSecurityPrivacySettingsAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.GetPrivateAsync<StoreSecurityPrivacySettingsDto>(
+                CommerceRoute(storePublicId, "security-privacy"),
+                "Unable to load security and privacy settings.",
+                cancellationToken);
+        }
+
+        public Task<ControlPlaneClientResult<StoreSecurityPrivacySettingsDto>> UpdateSecurityPrivacySettingsAsync(
+            Guid storePublicId,
+            UpdateStoreSecurityPrivacySettingsRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.apiClient.PutPrivateAsync<UpdateStoreSecurityPrivacySettingsRequest, StoreSecurityPrivacySettingsDto>(
+                CommerceRoute(storePublicId, "security-privacy"),
+                request,
+                "Unable to update security and privacy settings.",
                 cancellationToken);
         }
 

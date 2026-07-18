@@ -1,0 +1,318 @@
+@page "/commerce-admin/security-privacy"
+@attribute [Authorize]
+@inject IControlPlaneStoreClient StoreClient
+@inject IControlPlaneCatalogClient CatalogClient
+
+<PageTitle>Security/Privacy</PageTitle>
+
+<section class="space-y-5">
+    <ControlPlanePageHeader Eyebrow="Commerce Admin"
+                            Title="Security/Privacy"
+                            Description="Configure account registration, captcha, consent and privacy retention per store."
+                            LayoutClass="lg:flex-row lg:items-end lg:justify-between">
+        <Actions>
+            <select class="min-h-10 min-w-64 rounded-md border border-ink-300 px-3 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="selectedStorePublicId">
+                <option value="">Select store</option>
+                @foreach (var store in stores)
+                {
+                    <option value="@store.PublicId">@store.Name (@store.StoreKey)</option>
+                }
+            </select>
+            <button class="cp-button cp-button-secondary" @onclick="LoadSettingsAsync">
+                <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                Refresh
+            </button>
+        </Actions>
+    </ControlPlanePageHeader>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">@errorMessage</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">@successMessage</div>
+    }
+
+    @if (!HasStore)
+    {
+        <div class="cp-card p-8 text-center text-sm text-ink-500">Select a store to load security and privacy settings.</div>
+    }
+    else if (isLoading)
+    {
+        <div class="cp-card p-8 text-center text-sm text-ink-500">Loading security and privacy settings...</div>
+    }
+    else if (settings is null)
+    {
+        <div class="cp-card p-8 text-center text-sm text-ink-500">No settings loaded.</div>
+    }
+    else
+    {
+        <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+            <div class="space-y-4">
+                <div class="cp-card p-4">
+                    <h2 class="text-sm font-semibold text-ink-900">Registration</h2>
+                    <div class="mt-4 grid gap-3 md:grid-cols-2">
+                        <label class="grid gap-1 text-sm">
+                            <span class="font-medium text-ink-700">Registration mode</span>
+                            <select class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="registrationMode">
+                                <option value="standard">Standard</option>
+                                <option value="disabled">Disabled</option>
+                            </select>
+                        </label>
+                        <div class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                            @RegistrationWarning
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cp-card p-4">
+                    <h2 class="text-sm font-semibold text-ink-900">Consent</h2>
+                    <div class="mt-4 grid gap-3 md:grid-cols-2">
+                        <label class="flex items-center gap-2 text-sm text-ink-700">
+                            <input class="size-4 rounded border-ink-300 text-control-700 focus:ring-control-500" type="checkbox" @bind="consentEnabled" />
+                            Consent enabled
+                        </label>
+                        <label class="flex items-center gap-2 text-sm text-ink-700">
+                            <input class="size-4 rounded border-ink-300 text-control-700 focus:ring-control-500" type="checkbox" @bind="consentBannerRequired" />
+                            Banner required
+                        </label>
+                        <label class="grid gap-1 text-sm">
+                            <span class="font-medium text-ink-700">Current version</span>
+                            <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="consentVersion" />
+                        </label>
+                        <label class="grid gap-1 text-sm">
+                            <span class="font-medium text-ink-700">Policy page path</span>
+                            <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="policyPagePath" />
+                        </label>
+                        <label class="grid gap-1 text-sm">
+                            <span class="font-medium text-ink-700">Visitor cookie days</span>
+                            <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="1" max="3650" @bind="visitorCookieLifetimeDays" />
+                        </label>
+                        <label class="grid gap-1 text-sm">
+                            <span class="font-medium text-ink-700">Consent event days</span>
+                            <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="1" max="3650" @bind="consentEventRetentionDays" />
+                        </label>
+                    </div>
+                </div>
+
+                <div class="cp-card p-4">
+                    <h2 class="text-sm font-semibold text-ink-900">Captcha</h2>
+                    <div class="mt-4 grid gap-3 md:grid-cols-2">
+                        <label class="flex items-center gap-2 text-sm text-ink-700">
+                            <input class="size-4 rounded border-ink-300 text-control-700 focus:ring-control-500" type="checkbox" @bind="captchaEnabled" />
+                            Captcha enabled
+                        </label>
+                        <div class="text-sm text-ink-500">Secret configured: @(captchaSecretConfigured ? "Yes" : "No")</div>
+                        <label class="grid gap-1 text-sm">
+                            <span class="font-medium text-ink-700">Provider</span>
+                            <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="captchaProviderSystemName" />
+                        </label>
+                        <label class="grid gap-1 text-sm">
+                            <span class="font-medium text-ink-700">Public site key</span>
+                            <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="captchaPublicSiteKey" />
+                        </label>
+                        <label class="grid gap-1 text-sm">
+                            <span class="font-medium text-ink-700">Minimum score</span>
+                            <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="0" max="1" step="0.1" @bind="captchaMinimumScore" />
+                        </label>
+                    </div>
+                    <div class="mt-4 grid gap-2 sm:grid-cols-3">
+                        <label class="flex items-center gap-2 text-sm text-ink-700"><input class="size-4 rounded border-ink-300 text-control-700 focus:ring-control-500" type="checkbox" @bind="captchaLogin" />Login</label>
+                        <label class="flex items-center gap-2 text-sm text-ink-700"><input class="size-4 rounded border-ink-300 text-control-700 focus:ring-control-500" type="checkbox" @bind="captchaRegistration" />Registration</label>
+                        <label class="flex items-center gap-2 text-sm text-ink-700"><input class="size-4 rounded border-ink-300 text-control-700 focus:ring-control-500" type="checkbox" @bind="captchaNewsletter" />Newsletter</label>
+                        <label class="flex items-center gap-2 text-sm text-ink-700"><input class="size-4 rounded border-ink-300 text-control-700 focus:ring-control-500" type="checkbox" @bind="captchaPasswordRecovery" />Password recovery</label>
+                        <label class="flex items-center gap-2 text-sm text-ink-700"><input class="size-4 rounded border-ink-300 text-control-700 focus:ring-control-500" type="checkbox" @bind="captchaContact" />Contact</label>
+                        <label class="flex items-center gap-2 text-sm text-ink-700"><input class="size-4 rounded border-ink-300 text-control-700 focus:ring-control-500" type="checkbox" @bind="captchaReview" />Review</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="cp-card p-4">
+                    <h2 class="text-sm font-semibold text-ink-900">Privacy retention</h2>
+                    <div class="mt-4 grid gap-3">
+                        <label class="grid gap-1 text-sm"><span class="font-medium text-ink-700">Refresh token IP days</span><input class="min-h-10 rounded-md border border-ink-300 px-3" type="number" min="1" max="3650" @bind="refreshTokenIpRetentionDays" /></label>
+                        <label class="grid gap-1 text-sm"><span class="font-medium text-ink-700">Refresh token user-agent days</span><input class="min-h-10 rounded-md border border-ink-300 px-3" type="number" min="1" max="3650" @bind="refreshTokenUserAgentRetentionDays" /></label>
+                        <label class="grid gap-1 text-sm"><span class="font-medium text-ink-700">Captcha log days</span><input class="min-h-10 rounded-md border border-ink-300 px-3" type="number" min="1" max="3650" @bind="captchaVerificationLogRetentionDays" /></label>
+                        <label class="grid gap-1 text-sm"><span class="font-medium text-ink-700">Newsletter evidence days</span><input class="min-h-10 rounded-md border border-ink-300 px-3" type="number" min="1" max="3650" @bind="newsletterConsentEvidenceRetentionDays" /></label>
+                        <label class="flex items-center gap-2 text-sm text-ink-700"><input class="size-4 rounded border-ink-300 text-control-700 focus:ring-control-500" type="checkbox" @bind="anonymizeIpAfterRetentionWindow" />Anonymize IP after retention</label>
+                    </div>
+                </div>
+
+                <button class="cp-button cp-button-primary w-full justify-center" disabled="@isSaving" @onclick="SaveAsync">
+                    <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                    Save settings
+                </button>
+            </div>
+        </div>
+    }
+</section>
+
+@code {
+    private readonly List<StoreSummary> stores = [];
+    private Guid? selectedStorePublicId;
+    private StoreSecurityPrivacySettingsDto? settings;
+    private bool isLoading;
+    private bool isSaving;
+    private string? errorMessage;
+    private string? successMessage;
+
+    private string registrationMode = "standard";
+    private bool consentEnabled;
+    private string consentVersion = string.Empty;
+    private bool consentBannerRequired;
+    private int visitorCookieLifetimeDays;
+    private int consentEventRetentionDays;
+    private bool optionalCategoriesDefaultEnabled;
+    private string policyPagePath = string.Empty;
+    private bool captchaEnabled;
+    private string captchaProviderSystemName = "none";
+    private string? captchaPublicSiteKey;
+    private bool captchaSecretConfigured;
+    private double captchaMinimumScore;
+    private bool captchaLogin;
+    private bool captchaRegistration;
+    private bool captchaNewsletter;
+    private bool captchaPasswordRecovery;
+    private bool captchaContact;
+    private bool captchaReview;
+    private int refreshTokenIpRetentionDays;
+    private int refreshTokenUserAgentRetentionDays;
+    private int captchaVerificationLogRetentionDays;
+    private int newsletterConsentEvidenceRetentionDays;
+    private bool anonymizeIpAfterRetentionWindow;
+
+    private bool HasStore => selectedStorePublicId.HasValue && selectedStorePublicId.Value != Guid.Empty;
+
+    private string RegistrationWarning => string.Equals(registrationMode, "disabled", StringComparison.Ordinal)
+        ? "New customers cannot create accounts for this store. Existing customers can still sign in."
+        : "New customers can create accounts for this store.";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await StoreClient.ListAsync(status: "active", pageSize: 100);
+        stores.AddRange(response.Items);
+        selectedStorePublicId = stores.FirstOrDefault()?.PublicId;
+        await LoadSettingsAsync();
+    }
+
+    private async Task LoadSettingsAsync()
+    {
+        if (!HasStore)
+        {
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            var result = await CatalogClient.GetSecurityPrivacySettingsAsync(selectedStorePublicId!.Value);
+            if (!result.Success || result.Data is null)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            settings = result.Data;
+            Apply(result.Data);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!HasStore || settings is null)
+        {
+            return;
+        }
+
+        isSaving = true;
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            var request = new UpdateStoreSecurityPrivacySettingsRequest(
+                new StoreConsentAdminSettingsDto(
+                    consentEnabled,
+                    consentVersion,
+                    consentBannerRequired,
+                    visitorCookieLifetimeDays,
+                    consentEventRetentionDays,
+                    optionalCategoriesDefaultEnabled,
+                    policyPagePath),
+                new UpdateStoreCaptchaAdminSettingsDto(
+                    captchaEnabled,
+                    captchaProviderSystemName,
+                    captchaPublicSiteKey,
+                    SecretReference: null,
+                    ClearSecret: false,
+                    captchaMinimumScore,
+                    new StoreCaptchaTargetSettingsDto(
+                        captchaLogin,
+                        captchaRegistration,
+                        captchaNewsletter,
+                        captchaPasswordRecovery,
+                        captchaContact,
+                        captchaReview)),
+                new StorePrivacyRetentionSettingsDto(
+                    refreshTokenIpRetentionDays,
+                    refreshTokenUserAgentRetentionDays,
+                    consentEventRetentionDays,
+                    captchaVerificationLogRetentionDays,
+                    newsletterConsentEvidenceRetentionDays,
+                    anonymizeIpAfterRetentionWindow),
+                new StoreRegistrationAdminSettingsDto(
+                    registrationMode,
+                    string.Equals(registrationMode, "standard", StringComparison.Ordinal)));
+
+            var result = await CatalogClient.UpdateSecurityPrivacySettingsAsync(selectedStorePublicId!.Value, request);
+            if (!result.Success || result.Data is null)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            settings = result.Data;
+            Apply(result.Data);
+            successMessage = "Security and privacy settings saved.";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void Apply(StoreSecurityPrivacySettingsDto dto)
+    {
+        registrationMode = dto.Registration.Mode;
+        consentEnabled = dto.Consent.Enabled;
+        consentVersion = dto.Consent.CurrentVersion;
+        consentBannerRequired = dto.Consent.BannerRequired;
+        visitorCookieLifetimeDays = dto.Consent.VisitorCookieLifetimeDays;
+        consentEventRetentionDays = dto.Consent.EventRetentionDays;
+        optionalCategoriesDefaultEnabled = dto.Consent.OptionalCategoriesDefaultEnabled;
+        policyPagePath = dto.Consent.PolicyPagePath;
+        captchaEnabled = dto.Captcha.Enabled;
+        captchaProviderSystemName = dto.Captcha.ProviderSystemName;
+        captchaPublicSiteKey = dto.Captcha.PublicSiteKey;
+        captchaSecretConfigured = dto.Captcha.SecretConfigured;
+        captchaMinimumScore = dto.Captcha.MinimumScore;
+        captchaLogin = dto.Captcha.Targets.Login;
+        captchaRegistration = dto.Captcha.Targets.Registration;
+        captchaNewsletter = dto.Captcha.Targets.Newsletter;
+        captchaPasswordRecovery = dto.Captcha.Targets.PasswordRecovery;
+        captchaContact = dto.Captcha.Targets.Contact;
+        captchaReview = dto.Captcha.Targets.Review;
+        refreshTokenIpRetentionDays = dto.Privacy.RefreshTokenIpRetentionDays;
+        refreshTokenUserAgentRetentionDays = dto.Privacy.RefreshTokenUserAgentRetentionDays;
+        captchaVerificationLogRetentionDays = dto.Privacy.CaptchaVerificationLogRetentionDays;
+        newsletterConsentEvidenceRetentionDays = dto.Privacy.NewsletterConsentEvidenceRetentionDays;
+        anonymizeIpAfterRetentionWindow = dto.Privacy.AnonymizeIpAfterRetentionWindow;
+    }
+}
