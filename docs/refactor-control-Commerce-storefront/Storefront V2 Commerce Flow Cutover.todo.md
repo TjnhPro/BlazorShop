@@ -190,26 +190,29 @@ Acceptance:
 
 ## Phase 4 - Remove Legacy Cart/Order Services From Commerce Node Runtime
 
-- [ ] Remove Commerce Node DI registrations if no active V2 consumer remains:
+- [x] Remove Commerce Node DI registrations if no active V2 consumer remains:
   - `services.AddScoped<ICartService, CartService>()`
   - `services.AddScoped<ICart, CommerceNodeCartRepository>()`
   - `services.AddScoped<IOrderQueryService, CommerceNodeOrderQueryService>()`
   - `services.AddScoped<IOrderRepository, CommerceNodeOrderRepository>()` only if no active Commerce Node admin/service still uses `IOrderRepository`.
-- [ ] Do not remove legacy `Application.DependencyInjection` or root `Infrastructure.DependencyInjection` yet if legacy projects still build against them.
-- [ ] Remove Commerce Node-only tests for removed adapters if they now test dead active behavior:
+  2026-07-18 Phase 4: removed CommerceNode runtime DI for `ICartService/CartService` and `IOrderQueryService/CommerceNodeOrderQueryService`; retained `IOrderRepository/CommerceNodeOrderRepository` because active admin/order services still use order persistence.
+- [x] Do not remove legacy `Application.DependencyInjection` or root `Infrastructure.DependencyInjection` yet if legacy projects still build against them. 2026-07-18 Phase 4: no changes made to legacy/root DI registration.
+- [x] Remove Commerce Node-only tests for removed adapters if they now test dead active behavior:
   - `CommerceNodeOrderQueryServiceTests` if no active V2 consumer remains.
   - any V2 tests that instantiate `CartService` only to protect removed endpoints.
-- [ ] Keep active V2 service tests:
+  2026-07-18 Phase 4: no test deletion; `CommerceNodeOrderQueryServiceTests` and shipment tests instantiate service directly for read-model coverage, not active runtime route registration.
+- [x] Keep active V2 service tests:
   - `StorefrontCartServiceTests`.
   - `StorefrontCheckoutServiceTests`.
   - `PaymentAttemptServiceTests`.
   - `CommerceNodeOrderQueryService` tests only if still used by admin or customer order path.
+  2026-07-18 Phase 4: active V2 service tests remain untouched; added DI source guard in `StorefrontCommerceFlowCutoverTests`.
 
 Acceptance:
 
-- [ ] Commerce Node runtime no longer registers legacy checkout/order path services.
-- [ ] Legacy shared services can remain for legacy presentation until a separate legacy cleanup phase.
-- [ ] Active V2 build does not require `CartService`.
+- [x] Commerce Node runtime no longer registers legacy checkout/order path services. 2026-07-18 Phase 4: static guard checks no `AddScoped<ICartService, CartService>` or `AddScoped<IOrderQueryService, CommerceNodeOrderQueryService>`.
+- [x] Legacy shared services can remain for legacy presentation until a separate legacy cleanup phase. 2026-07-18 Phase 4: shared `CartService` and legacy DI remain.
+- [x] Active V2 build does not require `CartService`. 2026-07-18 Phase 4: CommerceNode API build passed.
 
 ## Phase 5 - Payment Core Cutover
 

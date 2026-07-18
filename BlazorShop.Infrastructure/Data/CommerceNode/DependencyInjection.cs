@@ -152,8 +152,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IPayPalPaymentService, PayPalPaymentService>();
             services.AddScoped<INewsletterService, NewsletterService>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
-            services.AddScoped<ICartService, CartService>();
-            services.AddScoped<IOrderQueryService, CommerceNodeOrderQueryService>();
             services.AddScoped<IStorefrontGuestOrderService, StorefrontGuestOrderService>();
             services.AddScoped<IStorefrontCustomerOrderService, StorefrontCustomerOrderService>();
             services.AddScoped<IAdminInventoryService, CommerceNodeAdminInventoryService>();

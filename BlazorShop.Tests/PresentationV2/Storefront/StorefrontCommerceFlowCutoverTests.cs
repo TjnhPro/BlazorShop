@@ -67,6 +67,18 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("GetCurrentUserOrderItems(", controller, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void CommerceNodeRuntime_DoesNotRegisterLegacyCartOrderFlowServices()
+        {
+            var dependencyInjection = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/DependencyInjection.cs");
+
+            Assert.DoesNotContain("AddScoped<ICartService, CartService>", dependencyInjection, StringComparison.Ordinal);
+            Assert.DoesNotContain("AddScoped<IOrderQueryService, CommerceNodeOrderQueryService>", dependencyInjection, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<IStorefrontCartService, StorefrontCartService>", dependencyInjection, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<IStorefrontCheckoutService, StorefrontCheckoutService>", dependencyInjection, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<IOrderPlacementService, OrderPlacementService>", dependencyInjection, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             var directory = new DirectoryInfo(AppContext.BaseDirectory);
