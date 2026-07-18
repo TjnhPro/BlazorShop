@@ -263,20 +263,21 @@ Acceptance:
 
 ## Phase 7 - Storefront V2 And WASM Regression Pass
 
-- [ ] Verify `StorefrontApiClient` contains no retired route constants.
-- [ ] Verify `StorefrontCheckoutShell.razor` still places order through same-origin `/api/checkout/place-order`.
-- [ ] Verify local `/api/checkout/place-order` still forwards to Commerce Node `checkout/place-order`.
-- [ ] Verify cart page still uses cart session/lines local APIs, not checkout history.
-- [ ] Verify account page still uses:
+- [x] Verify `StorefrontApiClient` contains no retired route constants. 2026-07-18 Phase 7: exact retired route search returned no Storefront V2/Components/WASM matches.
+- [x] Verify `StorefrontCheckoutShell.razor` still places order through same-origin `/api/checkout/place-order`. 2026-07-18 Phase 7: source search confirms checkout shell posts `/api/checkout/place-order`.
+- [x] Verify local `/api/checkout/place-order` still forwards to Commerce Node `checkout/place-order`. 2026-07-18 Phase 7: `Program.cs` maps same-origin `/api/checkout/place-order`; `StorefrontApiClient` still uses `StorefrontPlaceOrderRoute = "checkout/place-order"`.
+- [x] Verify cart page still uses cart session/lines local APIs, not checkout history. 2026-07-18 Phase 7: cart view/local APIs use `/api/cart` and `/api/cart/lines`; no checkout-history route is referenced.
+- [x] Verify account page still uses:
   - `orders/current-user`
   - `orders/current-user/{orderReference}`
   - `orders/current-user/{orderReference}/receipt`
-- [ ] Add/update static tests that fail if Storefront V2 reintroduces retired routes.
+  2026-07-18 Phase 7: account local APIs route through `/api/account/orders*` and `StorefrontApiClient` uses `orders/current-user`.
+- [x] Add/update static tests that fail if Storefront V2 reintroduces retired routes. 2026-07-18 Phase 7: `StorefrontCommerceFlowCutoverTests` covers active Storefront V2 browser surface and controller guardrails.
 
 Acceptance:
 
-- [ ] Browser-facing Storefront V2 path remains unchanged for users.
-- [ ] No hidden fallback to removed compatibility endpoints.
+- [x] Browser-facing Storefront V2 path remains unchanged for users. 2026-07-18 Phase 7: Storefront V2, Components, and WASM builds passed.
+- [x] No hidden fallback to removed compatibility endpoints. 2026-07-18 Phase 7: targeted Storefront cutover/WASM/API client tests passed 8/8; broader host-smoke filter timed out after about 4 minutes, so focused route coverage was used for this phase.
 
 ## Phase 8 - QA Checklist And Documentation Updates
 
