@@ -111,7 +111,6 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             yield return [typeof(StorefrontScopedConsentController), nameof(StorefrontScopedConsentController.Revoke), StorefrontRateLimitPolicyNames.Newsletter];
             yield return [typeof(StorefrontScopedPaymentsController), nameof(StorefrontScopedPaymentsController.HandleProviderCallback), StorefrontRateLimitPolicyNames.Checkout];
             yield return [typeof(StorefrontScopedPaymentsController), nameof(StorefrontScopedPaymentsController.HandleWebhook), StorefrontRateLimitPolicyNames.Checkout];
-            yield return [typeof(StorefrontScopedPaymentsController), nameof(StorefrontScopedPaymentsController.CapturePayPal), StorefrontRateLimitPolicyNames.Checkout];
         }
 
         private static string ReadRepositoryFile(string relativePath)

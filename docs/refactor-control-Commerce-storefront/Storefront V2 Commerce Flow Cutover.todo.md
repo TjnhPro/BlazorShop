@@ -242,23 +242,24 @@ Acceptance:
 
 ## Phase 6 - Remove Direct PayPal Compatibility Capture Route
 
-- [ ] Confirm Storefront V2 does not call `payments/paypal/capture`.
-- [ ] Confirm QA/sandbox payment flow uses provider callback/webhook or keeps PayPal inactive until provider adapter exists.
-- [ ] Remove `IPayPalPaymentService payPalPaymentService` from `StorefrontScopedPaymentsController`.
-- [ ] Remove `CapturePayPal` action.
-- [ ] Remove `StorefrontPayPalCaptureRequest` and `StorefrontPayPalCaptureResponse` if only used by removed action.
-- [ ] Remove PayPal compatibility metadata from `CommerceNodeSwaggerExtensions.cs`.
-- [ ] Update tests:
+- [x] Confirm Storefront V2 does not call `payments/paypal/capture`. 2026-07-18 Phase 6: `StorefrontCommerceFlowCutoverTests` guards active Storefront V2 browser files against the retired route.
+- [x] Confirm QA/sandbox payment flow uses provider callback/webhook or keeps PayPal inactive until provider adapter exists. 2026-07-18 Phase 6: callback/webhook tests remain active; PayPal skeleton remains unavailable through provider capability until a real adapter exists.
+- [x] Remove `IPayPalPaymentService payPalPaymentService` from `StorefrontScopedPaymentsController`. 2026-07-18 Phase 6: payments controller constructor no longer accepts direct PayPal capture service.
+- [x] Remove `CapturePayPal` action. 2026-07-18 Phase 6: direct `paypal/capture` action removed.
+- [x] Remove `StorefrontPayPalCaptureRequest` and `StorefrontPayPalCaptureResponse` if only used by removed action. 2026-07-18 Phase 6: removed both DTOs from Storefront contracts.
+- [x] Remove PayPal compatibility metadata from `CommerceNodeSwaggerExtensions.cs`. 2026-07-18 Phase 6: `StorefrontPayments_CapturePayPal` metadata removed and snapshots refreshed.
+- [x] Update tests:
   - remove `CommerceNodeStorefrontPaymentContractTests` that assert PayPal capture behavior.
   - replace with absence/deprecation-complete assertion.
   - keep provider callback/webhook hardening tests.
-- [ ] If PayPal provider is not implemented, keep PayPal capability inactive/unavailable in payment methods.
+  2026-07-18 Phase 6: payment contract test now asserts route 404; OpenAPI tests assert operation/path/generated client absence; webhook hardening tests still pass.
+- [x] If PayPal provider is not implemented, keep PayPal capability inactive/unavailable in payment methods. 2026-07-18 Phase 6: no provider capability enablement changed; existing inactive PayPal guardrails remain.
 
 Acceptance:
 
-- [ ] Storefront OpenAPI no longer exposes direct PayPal capture.
-- [ ] Hosted/online payment flow still works through payment attempts and provider operations.
-- [ ] No direct `IPayPalPaymentService` dependency remains in active Commerce Node Storefront payment controller.
+- [x] Storefront OpenAPI no longer exposes direct PayPal capture. 2026-07-18 Phase 6: focused OpenAPI/payment suite passed 67/67.
+- [x] Hosted/online payment flow still works through payment attempts and provider operations. 2026-07-18 Phase 6: provider callback/webhook hardening tests remain green.
+- [x] No direct `IPayPalPaymentService` dependency remains in active Commerce Node Storefront payment controller. 2026-07-18 Phase 6: source guard asserts the constructor/action/route are absent.
 
 ## Phase 7 - Storefront V2 And WASM Regression Pass
 

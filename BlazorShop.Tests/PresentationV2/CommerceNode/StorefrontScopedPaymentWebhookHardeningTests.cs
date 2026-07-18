@@ -6,15 +6,11 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Payment;
-    using BlazorShop.Application.Options;
     using BlazorShop.Application.Services.Contracts.Payment;
-    using BlazorShop.Domain.Entities;
     using BlazorShop.Infrastructure.Data.CommerceNode.Services;
 
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Extensions.Options;
-
     using Moq;
     using Xunit;
 
@@ -302,9 +298,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 paymentAttempts.Object,
                 verifier.Object,
                 providerResolver ?? CreateProviderResolver(),
-                new Mock<IPaymentMethodService>().Object,
-                new StubPayPalPaymentService(),
-                Options.Create(new ClientAppOptions()))
+                new Mock<IPaymentMethodService>().Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -388,20 +382,5 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             }
         }
 
-        private sealed class StubPayPalPaymentService : IPayPalPaymentService
-        {
-            public Task<ServiceResponse> Pay(
-                decimal totalAmount,
-                IEnumerable<Product> cartProducts,
-                IEnumerable<ProcessCart> carts)
-            {
-                return Task.FromResult(new ServiceResponse(false, "PayPal test stub does not implement payment creation."));
-            }
-
-            public Task<bool> CaptureAsync(string orderId)
-            {
-                return Task.FromResult(false);
-            }
-        }
     }
 }

@@ -692,11 +692,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             var sortBy = GetParameter(catalogParameters, "sortBy");
             Assert.Contains("newest", sortBy["schema"]?["pattern"]?.GetValue<string>(), StringComparison.Ordinal);
 
-            var payPalCapture = GetOperation(swagger, "StorefrontPayments_CapturePayPal");
-            Assert.NotNull(payPalCapture["requestBody"]);
-            Assert.True(payPalCapture["deprecated"]?.GetValue<bool>() == true);
-            Assert.Contains("Compatibility route retained", payPalCapture["description"]?.GetValue<string>(), StringComparison.Ordinal);
-            Assert.Contains("provider operation contract", payPalCapture["description"]?.GetValue<string>(), StringComparison.Ordinal);
+            AssertRetiredStorefrontPaymentCaptureIsAbsent(swagger);
         }
 
         [Fact]
@@ -862,7 +858,6 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("StorefrontCheckout_SelectShippingMethod", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCheckout_SelectPaymentMethod", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontCheckout_Review", client, StringComparison.Ordinal);
-            Assert.Contains("StorefrontPayments_CapturePayPal", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontOrders_ListCurrentUserOrders", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontOrders_GetCurrentUserOrder", client, StringComparison.Ordinal);
             Assert.Contains("StorefrontOrders_GetCurrentUserOrderReceipt", client, StringComparison.Ordinal);
@@ -871,6 +866,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.DoesNotContain("StorefrontCart_SaveCheckout", client, StringComparison.Ordinal);
             Assert.DoesNotContain("StorefrontOrders_Confirm", client, StringComparison.Ordinal);
             Assert.DoesNotContain("StorefrontOrders_ListCurrentUserOrderItems", client, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontPayments_CapturePayPal", client, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -879,6 +875,14 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             var swagger = await this.GetStorefrontSwaggerAsync();
 
             AssertRetiredStorefrontCommerceFlowIsAbsent(swagger);
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_RetiredPayPalCompatibilityCaptureRouteIsAbsent()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+
+            AssertRetiredStorefrontPaymentCaptureIsAbsent(swagger);
         }
 
         [Fact]
@@ -1459,6 +1463,21 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.DoesNotContain("/api/storefront/stores/{storeKey}/cart/save-checkout", pathNames, StringComparer.Ordinal);
             Assert.DoesNotContain("/api/storefront/stores/{storeKey}/orders/confirm", pathNames, StringComparer.Ordinal);
             Assert.DoesNotContain("/api/storefront/stores/{storeKey}/orders/current-user/items", pathNames, StringComparer.Ordinal);
+        }
+
+        private static void AssertRetiredStorefrontPaymentCaptureIsAbsent(JsonObject swagger)
+        {
+            var operationIds = GetOperations(swagger)
+                .Select(operation => operation.Value["operationId"]?.GetValue<string>())
+                .Where(operationId => !string.IsNullOrWhiteSpace(operationId))
+                .ToArray();
+
+            Assert.DoesNotContain("StorefrontPayments_CapturePayPal", operationIds);
+
+            var paths = swagger["paths"]?.AsObject()
+                ?? throw new InvalidOperationException("Swagger document does not contain paths.");
+            var pathNames = paths.Select(path => path.Key).ToArray();
+            Assert.DoesNotContain("/api/storefront/stores/{storeKey}/payments/paypal/capture", pathNames, StringComparer.Ordinal);
         }
 
         private static JsonObject GetSchemas(JsonObject swagger)

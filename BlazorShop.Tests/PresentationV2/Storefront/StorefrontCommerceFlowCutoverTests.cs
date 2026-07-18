@@ -65,6 +65,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("SaveCheckout(", controller, StringComparison.Ordinal);
             Assert.DoesNotContain("ConfirmOrder(", controller, StringComparison.Ordinal);
             Assert.DoesNotContain("GetCurrentUserOrderItems(", controller, StringComparison.Ordinal);
+            Assert.DoesNotContain("CapturePayPal(", controller, StringComparison.Ordinal);
+            Assert.DoesNotContain("paypal/capture", controller, StringComparison.Ordinal);
+            Assert.DoesNotContain("IPayPalPaymentService payPalPaymentService", controller, StringComparison.Ordinal);
         }
 
         [Fact]

@@ -1309,13 +1309,6 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         "Accept a Storefront payment provider webhook.",
                         typeof(CommerceNodeApiResponse<StorefrontPaymentWebhookAcceptedResponse>),
                         [StatusCodes.Status400BadRequest, StatusCodes.Status404NotFound, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError]),
-                    [("StorefrontScopedPayments", "CapturePayPal")] = new(
-                        "StorefrontPayments_CapturePayPal",
-                        "Deprecated PayPal compatibility capture route.",
-                        typeof(CommerceNodeApiResponse<StorefrontPayPalCaptureResponse>),
-                        [StatusCodes.Status400BadRequest, StatusCodes.Status409Conflict, StatusCodes.Status500InternalServerError],
-                        Description: "Compatibility route retained during PayPal provider migration. New checkout flow must use provider callbacks/webhooks; remove this route after a real PayPal provider adapter supports capture through the provider operation contract.",
-                        Deprecated: true),
                     [("StorefrontScopedRecommendations", "GetRecommendations")] = new(
                         "StorefrontRecommendations_ListProductRecommendations",
                         "List Storefront product recommendations.",

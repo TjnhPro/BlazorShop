@@ -953,16 +953,6 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         bool Accepted,
         string Message);
 
-    public sealed class StorefrontPayPalCaptureRequest
-    {
-        [Required]
-        [MaxLength(512)]
-        public string Token { get; set; } = string.Empty;
-
-        [MaxLength(2048)]
-        public string? ReturnUrl { get; set; }
-    }
-
     public sealed record StorefrontRegistrationResponse(
         Guid CustomerId);
 
@@ -1402,11 +1392,6 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         string? IconUrl,
         IReadOnlyList<string> SupportedCurrencyCodes,
         IReadOnlyList<string> SupportedCountryCodes);
-
-    public sealed record StorefrontPayPalCaptureResponse(
-        bool Captured,
-        string RedirectPath,
-        string Message);
 
     public sealed record StorefrontProductRecommendationResponse(
         Guid Id,

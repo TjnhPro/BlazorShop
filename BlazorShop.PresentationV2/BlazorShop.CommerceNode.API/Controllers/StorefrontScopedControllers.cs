@@ -2220,30 +2220,24 @@ namespace BlazorShop.CommerceNode.API.Controllers
     [Route("api/storefront/stores/{storeKey}/payments")]
     public sealed class StorefrontScopedPaymentsController : StorefrontApiControllerBase
     {
-        private readonly ClientAppOptions clientAppOptions;
         private readonly ICommerceStoreContext storeContext;
         private readonly IPaymentAttemptService paymentAttemptService;
         private readonly IPaymentWebhookSignatureVerifier paymentWebhookSignatureVerifier;
         private readonly IStorefrontPaymentProviderResolver paymentProviderResolver;
         private readonly IPaymentMethodService paymentMethodService;
-        private readonly IPayPalPaymentService payPalPaymentService;
 
         public StorefrontScopedPaymentsController(
             ICommerceStoreContext storeContext,
             IPaymentAttemptService paymentAttemptService,
             IPaymentWebhookSignatureVerifier paymentWebhookSignatureVerifier,
             IStorefrontPaymentProviderResolver paymentProviderResolver,
-            IPaymentMethodService paymentMethodService,
-            IPayPalPaymentService payPalPaymentService,
-            IOptions<ClientAppOptions> clientAppOptions)
+            IPaymentMethodService paymentMethodService)
         {
             this.storeContext = storeContext;
             this.paymentAttemptService = paymentAttemptService;
             this.paymentWebhookSignatureVerifier = paymentWebhookSignatureVerifier;
             this.paymentProviderResolver = paymentProviderResolver;
             this.paymentMethodService = paymentMethodService;
-            this.payPalPaymentService = payPalPaymentService;
-            this.clientAppOptions = clientAppOptions.Value;
         }
 
         [HttpGet("methods")]
@@ -2496,47 +2490,6 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 cancellationToken);
 
             return transition.Success ? null : this.FromServiceResponse(transition);
-        }
-
-        // Compatibility route retained while PayPal is migrated to IStorefrontPaymentProvider.
-        // New checkout work must use provider callbacks/webhooks instead of this action.
-        [HttpPost("paypal/capture")]
-        [EnableRateLimiting(StorefrontRateLimitPolicyNames.Checkout)]
-        public async Task<IActionResult> CapturePayPal([FromBody] StorefrontPayPalCaptureRequest request)
-        {
-            if (request is null || string.IsNullOrWhiteSpace(request.Token))
-            {
-                return this.Error(
-                    StatusCodes.Status400BadRequest,
-                    "payment.paypal_token_missing",
-                    "Missing PayPal token.");
-            }
-
-            var captured = await this.payPalPaymentService.CaptureAsync(request.Token);
-            if (!captured)
-            {
-                return this.Error(
-                    StatusCodes.Status409Conflict,
-                    "payment.paypal_capture_failed",
-                    "PayPal payment capture failed.");
-            }
-
-            return this.Success(
-                new StorefrontPayPalCaptureResponse(
-                    true,
-                    this.BuildClientUrl("payment-success"),
-                    "PayPal payment captured."),
-                "PayPal payment captured.");
-        }
-
-        private string BuildClientUrl(string path)
-        {
-            if (string.IsNullOrWhiteSpace(this.clientAppOptions.BaseUrl))
-            {
-                return $"/{path.TrimStart('/')}";
-            }
-
-            return $"{this.clientAppOptions.BaseUrl.TrimEnd('/')}/{path.TrimStart('/')}";
         }
 
         private async Task<Guid?> ResolveStoreIdAsync(CancellationToken cancellationToken)
