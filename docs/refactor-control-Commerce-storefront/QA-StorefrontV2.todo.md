@@ -98,6 +98,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Phase 0 baseline confirms WASM is already wired through `AddInteractiveWebAssemblyComponents()` and `AddInteractiveWebAssemblyRenderMode()`, but current real cart/account/checkout interactions still use server forms and/or `storefrontCommerce.js`. 2026-07-17: source review before Phase 1 code changes.
 - [x] Forgot password page renders from `/forgot-password`. 2026-07-17 Phase 1: `StorefrontV2HostSmokeTests.ForgotPassword_ReturnsRecoveryPage` passed.
 - [x] Sign-in page links to forgot password. 2026-07-17 Phase 1: `SignIn_ReturnsStorefrontLoginPage` asserts `/forgot-password`.
+- [x] Password recovery E2E passes through Storefront browser, CommerceNode queued email, and Mailpit capture. 2026-07-18 Email SMTP Capture Phase 5: `.\scripts\qa\run-storefront-email-recovery-e2e.ps1` passed with visible Chromium; known customer reset/login succeeded and unknown email produced no captured message.
 - [x] Forgot password accepts valid email format and shows generic success. 2026-07-17 Phase 1: local POST redirects to generic sent state and scoped auth client route is covered.
 - [x] Forgot password rejects invalid email format with validation. 2026-07-17 Phase 1: invalid email redirects with local validation error and does not call Commerce Node.
 - [x] Reset password page handles `email` and `token` query values. 2026-07-17 Phase 1: reset page smoke renders hidden token field without displaying token text.

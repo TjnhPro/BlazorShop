@@ -1178,7 +1178,7 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] CommerceNode admin email settings endpoints are store-scoped and documented in Swagger metadata. 2026-07-18 Phase 4: focused CommerceNode API build passed; `EmailSmtpControlPlaneGatewayTests` asserts operation IDs and safe response schemas.
 - [x] ControlPlane API gateway exposes store email settings, test-send, message-template, and queued-message operations behind CommerceSettings policies. 2026-07-18 Phase 4: focused ControlPlane API build passed; static gateway tests passed.
 - [x] ControlPlane Web has `/commerce-admin/email` for SMTP settings, test-send, template edit/preview/reset, and queued-message retry/cancel without direct CommerceNode calls. 2026-07-18 Phase 4: ControlPlane Web build passed; static boundary test passed.
-- [ ] Local Mailpit capture receives password recovery email sent through store SMTP settings.
+- [x] Local Mailpit capture receives password recovery email sent through store SMTP settings. 2026-07-18 Phase 5: `.\scripts\qa\run-storefront-email-recovery-e2e.ps1` visible Chromium run passed; Mailpit captured `Reset your Default QA Store password` from `default-sender@example.local` to `qa.customer@example.local`.
 - [ ] Local Mailpit capture receives exactly one order placed email for a real COD order.
 - [ ] Multi-store SMTP isolation proves Store A and Store B use different sender profiles.
 - [ ] Queued-message admin detail remains secret-safe and does not expose rendered reset-token email body.

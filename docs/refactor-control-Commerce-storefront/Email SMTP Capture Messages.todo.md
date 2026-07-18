@@ -209,27 +209,27 @@ Acceptance:
 
 Purpose: prove password recovery works from browser to captured store SMTP email.
 
-- [ ] Configure Playwright to read Mailpit/capture inbox.
-- [ ] Clear capture inbox before test run or filter by unique synthetic email.
-- [ ] Open `/forgot-password` in browser.
-- [ ] Submit known synthetic customer email.
-- [ ] Wait for `customer.password_recovery` captured email.
-- [ ] Extract reset link from captured email.
-- [ ] Reset password through browser.
-- [ ] Login with new password.
-- [ ] Restore original password or recreate synthetic customer.
-- [ ] Submit unknown email.
-- [ ] Assert unknown email shows same generic sent state.
-- [ ] Assert unknown email produces no captured message.
-- [ ] Assert recovery email uses current store SMTP sender/from profile.
-- [ ] Assert captured recovery email does not leak raw token outside reset URL.
-- [ ] Assert queued-message admin detail does not expose rendered reset body.
+- [x] Configure Playwright to read Mailpit/capture inbox. 2026-07-18 Phase 5: `scripts/qa/storefront-email-recovery-e2e.js` reads `MAILPIT_API_URL`.
+- [x] Clear capture inbox before test run or filter by unique synthetic email. 2026-07-18 Phase 5: runner clears Mailpit before known and unknown flows.
+- [x] Open `/forgot-password` in browser. 2026-07-18 Phase 5: headed Chromium run opened `http://localhost:18598/forgot-password`.
+- [x] Submit known synthetic customer email. 2026-07-18 Phase 5: submitted `qa.customer@example.local`.
+- [x] Wait for `customer.password_recovery` captured email. 2026-07-18 Phase 5: Mailpit captured `Reset your Default QA Store password`.
+- [x] Extract reset link from captured email. 2026-07-18 Phase 5: runner extracted `/reset-password?email=qa.customer%40example.local&token=[redacted]`.
+- [x] Reset password through browser. 2026-07-18 Phase 5: browser submitted reset form and landed on `/signin?passwordReset=1`.
+- [x] Login with new password. 2026-07-18 Phase 5: browser login reached `/account/profile`.
+- [x] Restore original password or recreate synthetic customer. 2026-07-18 Phase 5: runner resets to the seed password `QaCustomer123!`, preserving the synthetic customer credential.
+- [x] Submit unknown email. 2026-07-18 Phase 5: submitted unique `missing-*.example.local` address.
+- [x] Assert unknown email shows same generic sent state. 2026-07-18 Phase 5: unknown flow redirected to `/forgot-password?...&sent=1`.
+- [x] Assert unknown email produces no captured message. 2026-07-18 Phase 5: Mailpit remained empty after unknown flow.
+- [x] Assert recovery email uses current store SMTP sender/from profile. 2026-07-18 Phase 5: Mailpit sender was `default-sender@example.local`.
+- [x] Assert captured recovery email does not leak raw token outside reset URL. 2026-07-18 Phase 5: runner validates and redacts reset token evidence.
+- [x] Assert queued-message admin detail does not expose rendered reset body. 2026-07-18 Phase 5: existing admin DTO remains detail-only and Phase 2/4 DTO tests guard body/reset token secrecy.
 
 Acceptance:
 
-- [ ] Known-email recovery passes end to end through real browser and SMTP capture.
-- [ ] Unknown-email recovery remains anti-enumeration-safe.
-- [ ] Recovery email is store-scoped by sender and recipient behavior.
+- [x] Known-email recovery passes end to end through real browser and SMTP capture. 2026-07-18: `.\scripts\qa\run-storefront-email-recovery-e2e.ps1` passed with `headless=false`.
+- [x] Unknown-email recovery remains anti-enumeration-safe. 2026-07-18: same visible-browser run showed generic sent state and no Mailpit message for unknown email.
+- [x] Recovery email is store-scoped by sender and recipient behavior. 2026-07-18: sender `default-sender@example.local`, recipient `qa.customer@example.local`.
 
 ## Phase 6 - Order Placed Email E2E
 
