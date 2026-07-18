@@ -603,27 +603,29 @@ Verification:
 
 Focused build/test:
 
-- [ ] `dotnet build BlazorShop.Application/BlazorShop.Application.csproj`
-- [ ] `dotnet build BlazorShop.Infrastructure/BlazorShop.Infrastructure.csproj`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj`
-- [ ] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~ControlPlaneCommerceCatalogServiceStoreMappingTests|FullyQualifiedName~ControlPlaneAuthorizationTests|FullyQualifiedName~ControlPlaneCommerceCatalogControllerTests|FullyQualifiedName~ControlPlaneVariantAttributeWorkflowTests|FullyQualifiedName~SecurityPrivacyPhase6AdminManagementTests"`
+- [x] `dotnet build BlazorShop.Application/BlazorShop.Application.csproj`
+- [x] `dotnet build BlazorShop.Infrastructure/BlazorShop.Infrastructure.csproj`
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj`
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj`
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~ControlPlaneCommerceGatewayStoreMappingTests|FullyQualifiedName~ControlPlaneCommerceGatewayContractTests|FullyQualifiedName~ControlPlaneCommerceProductControllerTests|FullyQualifiedName~ControlPlaneVariantAttributeWorkflowTests|FullyQualifiedName~SecurityPrivacyPhase6AdminManagementTests"`
+  2026-07-18 Phase 9: Application/API builds passed directly; initial parallel Infrastructure/Web builds hit a transient compiler file lock, then `dotnet build-server shutdown` and sequential Infrastructure/Web builds passed with 0 warnings/errors. Focused tests passed 33/33 with existing package advisory warnings.
 
 Manual/browser QA nếu có thay đổi Web page injections:
 
-- [ ] Run V2 local environment.
-- [ ] Login Control Plane.
-- [ ] Open Products manager.
-- [ ] Open Categories manager.
-- [ ] Open Media Library.
-- [ ] Open Pages manager.
-- [ ] Open Navigation manager.
-- [ ] Open Orders manager.
-- [ ] Open Payment Methods.
-- [ ] Open Currencies.
-- [ ] Open Shipping settings.
-- [ ] Open Security/Privacy settings.
-- [ ] Confirm no browser request goes directly to Commerce Node `api/commerce/*`.
+- [x] Run V2 local environment.
+- [x] Login Control Plane.
+- [x] Open Products manager.
+- [x] Open Categories manager.
+- [x] Open Media Library.
+- [x] Open Pages manager.
+- [x] Open Navigation manager.
+- [x] Open Orders manager.
+- [x] Open Payment Methods.
+- [x] Open Currencies.
+- [n/a] Open Shipping settings.
+- [x] Open Security/Privacy settings.
+- [x] Confirm no browser request goes directly to Commerce Node `api/commerce/*`.
+  2026-07-18 Phase 9: `.\scripts\run-v2-local.ps1 -StopExisting -NoStorefront -NoOpenBrowser` started ControlPlane API/Web and CommerceNode API; health checks returned 200. Python Playwright browser smoke logged in with seeded admin and opened 9 implemented manager pages with 0 console/page errors and 0 direct CommerceNode requests. Control Plane Web does not currently have a dedicated shipping settings page; shipping gateway behavior remains covered by build/tests.
 
 ## Không Thuộc Scope
 
@@ -652,12 +654,13 @@ Manual/browser QA nếu có thay đổi Web page injections:
 
 Phase này chỉ được xem là hoàn thành khi:
 
-- [ ] Không còn active page inject `IControlPlaneCatalogClient`.
-- [ ] Không còn active controller inject `IControlPlaneCommerceCatalogService`.
-- [ ] Không còn active transport logic trong class catalog cũ.
-- [ ] Mọi Control Plane Web client vẫn chỉ gọi Control Plane API.
-- [ ] Mọi Commerce Node Admin call vẫn đi qua Control Plane API transport với node credentials server-side.
-- [ ] Store-scoped Commerce Admin requests vẫn append `storeKey`.
-- [ ] Focused build/test pass.
-- [ ] QA-ControlPlane todo được cập nhật.
-- [ ] Architecture docs không còn mô tả mọi capability là catalog gateway.
+- [x] Không còn active page inject `IControlPlaneCatalogClient`.
+- [x] Không còn active controller inject `IControlPlaneCommerceCatalogService`.
+- [x] Không còn active transport logic trong class catalog cũ.
+- [x] Mọi Control Plane Web client vẫn chỉ gọi Control Plane API.
+- [x] Mọi Commerce Node Admin call vẫn đi qua Control Plane API transport với node credentials server-side.
+- [x] Store-scoped Commerce Admin requests vẫn append `storeKey`.
+- [x] Focused build/test pass.
+- [x] QA-ControlPlane todo được cập nhật.
+- [x] Architecture docs không còn mô tả mọi capability là catalog gateway.
+  2026-07-18 Phase 9: release gate passed by active source `rg`, focused build/test, docs scan, and browser smoke evidence at `.gstack/qa-reports/control-plane-commerce-gateway-split/phase9-browser-smoke.txt`.
