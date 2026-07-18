@@ -19,12 +19,10 @@
   const consentManageSelector = "[data-storefront-consent-manage]";
   const cartChangedEventName = "blazorshop:cart-changed";
   const pendingToastStorageKey = "blazorshop:storefront:pending-toast";
-  const badgePollIntervalMs = 1500;
   const buttonResetDelayMs = 1600;
   const toastDurationMs = 5000;
   const buttonResetTimers = new WeakMap();
   const previewTimers = new WeakMap();
-  let badgePollHandle = 0;
 
   function parseInteger(value, fallback = 0) {
     const parsed = Number.parseInt(value, 10);
@@ -734,20 +732,11 @@
     }
   }
 
-  function startBadgePolling() {
-    if (badgePollHandle) {
-      return;
-    }
-
-    badgePollHandle = window.setInterval(refreshCartSummary, badgePollIntervalMs);
-  }
-
   function initialize() {
     flushQueuedToast();
     initConsentBanner();
     initCheckoutAddressSelection();
     refreshCartSummary();
-    startBadgePolling();
     document.querySelectorAll(selectionPreviewSelector).forEach((container) => {
       if (container instanceof HTMLElement) {
         scheduleSelectionPreview(container);

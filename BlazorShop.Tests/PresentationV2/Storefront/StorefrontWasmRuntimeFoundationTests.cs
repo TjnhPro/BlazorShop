@@ -121,6 +121,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void StorefrontCommerceScript_DoesNotPollCartSummaryAfterWasmCartMigration()
+        {
+            var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
+
+            Assert.Contains("refreshCartSummary();", script, StringComparison.Ordinal);
+            Assert.DoesNotContain("setInterval(refreshCartSummary", script, StringComparison.Ordinal);
+            Assert.DoesNotContain("startBadgePolling", script, StringComparison.Ordinal);
+            Assert.DoesNotContain("badgePollIntervalMs", script, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void AccountPages_HostInteractiveWasmAccountComponentsWithServerSnapshots()
         {
             var profilePage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountProfilePage.razor");
