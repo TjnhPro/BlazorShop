@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Threading.RateLimiting;
 
 using BlazorShop.Application.Diagnostics;
 using BlazorShop.Application.DTOs.UserIdentity;
@@ -21,7 +20,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
-const string StorefrontLocalCartRateLimitPolicyName = "storefront-local-cart";
 const string StorefrontConsentVisitorCookieName = "bs-consent-visitor";
 var storefrontRateLimitingOptions = builder.Configuration
     .GetSection(StorefrontRateLimitingOptions.SectionName)
@@ -32,8 +30,8 @@ builder.AddServiceDefaults();
 builder.Services.AddStorefrontV2Services(
     builder.Configuration,
     storefrontRateLimitingOptions,
-    ConfigureStorefrontRateLimiter,
-    ConfigureStorefrontHttpClient);
+    StorefrontRateLimitPolicies.ConfigureStorefrontRateLimiter,
+    StorefrontApiEndpointResolver.ConfigureStorefrontHttpClient);
 
 var app = builder.Build();
 
@@ -557,7 +555,7 @@ app.MapPost("/api/cart/lines", async (
         cancellationToken);
 
     return await ToLocalCartMutationResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
-}).RequireRateLimiting(StorefrontLocalCartRateLimitPolicyName);
+}).RequireRateLimiting(StorefrontRateLimitPolicies.LocalCartPolicyName);
 app.MapPut("/api/cart/lines/{lineId:guid}", async (
     Guid lineId,
     StorefrontLocalCartQuantityRequest request,
@@ -581,7 +579,7 @@ app.MapPut("/api/cart/lines/{lineId:guid}", async (
 
     var result = await cartTokenService.UpdateLineAsync(httpContext, lineId, request.Quantity, cancellationToken);
     return await ToLocalCartMutationResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
-}).RequireRateLimiting(StorefrontLocalCartRateLimitPolicyName);
+}).RequireRateLimiting(StorefrontRateLimitPolicies.LocalCartPolicyName);
 app.MapDelete("/api/cart/lines/{lineId:guid}", async (
     Guid lineId,
     StorefrontCartTokenService cartTokenService,
@@ -599,7 +597,7 @@ app.MapDelete("/api/cart/lines/{lineId:guid}", async (
 
     var result = await cartTokenService.RemoveLineAsync(httpContext, lineId, cancellationToken);
     return await ToLocalCartMutationResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
-}).RequireRateLimiting(StorefrontLocalCartRateLimitPolicyName);
+}).RequireRateLimiting(StorefrontRateLimitPolicies.LocalCartPolicyName);
 app.MapDelete("/api/cart", async (
     StorefrontCartTokenService cartTokenService,
     IStorefrontDisplayContextProvider displayContextProvider,
@@ -616,7 +614,7 @@ app.MapDelete("/api/cart", async (
 
     var result = await cartTokenService.ClearAsync(httpContext, cancellationToken);
     return await ToLocalCartMutationResultAsync(result, displayContextProvider, priceFormatter, cancellationToken);
-}).RequireRateLimiting(StorefrontLocalCartRateLimitPolicyName);
+}).RequireRateLimiting(StorefrontRateLimitPolicies.LocalCartPolicyName);
 app.MapGet("/api/account/profile", async (
     IStorefrontSessionResolver sessionResolver,
     StorefrontApiClient apiClient,
@@ -1210,29 +1208,6 @@ app.MapRazorComponents<App>()
 
 app.Run();
 
-static Uri ResolveApiBaseAddress(IConfiguration configuration)
-{
-    var configuredBaseAddress = configuration[$"{StorefrontApiOptions.SectionName}:BaseUrl"];
-    if (!string.IsNullOrWhiteSpace(configuredBaseAddress)
-        && Uri.TryCreate(configuredBaseAddress, UriKind.Absolute, out var configuredUri))
-    {
-        return configuredUri;
-    }
-
-    return new Uri("https+http://apiservice/api/");
-}
-
-static Uri ResolveCommerceNodeBaseAddress(IConfiguration configuration)
-{
-    var apiBaseAddress = ResolveApiBaseAddress(configuration);
-    return new UriBuilder(apiBaseAddress)
-    {
-        Path = "/",
-        Query = string.Empty,
-        Fragment = string.Empty,
-    }.Uri;
-}
-
 static async Task<IResult> ProxyCommerceNodeMediaAsync(
     string mediaPath,
     HttpContext httpContext,
@@ -1240,7 +1215,7 @@ static async Task<IResult> ProxyCommerceNodeMediaAsync(
     IConfiguration configuration,
     CancellationToken cancellationToken)
 {
-    var storeKey = ResolveStoreKey(configuration);
+    var storeKey = StorefrontApiEndpointResolver.ResolveStoreKey(configuration);
     if (string.IsNullOrWhiteSpace(storeKey))
     {
         return Results.NotFound();
@@ -1248,7 +1223,7 @@ static async Task<IResult> ProxyCommerceNodeMediaAsync(
 
     var client = httpClientFactory.CreateClient();
     var targetUri = new Uri(
-        ResolveCommerceNodeBaseAddress(configuration),
+        StorefrontApiEndpointResolver.ResolveCommerceNodeBaseAddress(configuration),
         $"{mediaPath}{httpContext.Request.QueryString}");
 
     using var request = new HttpRequestMessage(HttpMethod.Get, targetUri);
@@ -1277,38 +1252,6 @@ static void CopyHeaderIfPresent(HttpResponseMessage source, HttpResponse destina
     {
         destination.Headers[headerName] = string.Join(",", values);
     }
-}
-
-static void ConfigureStorefrontHttpClient(HttpClient client, IConfiguration configuration)
-{
-    client.BaseAddress = ResolveScopedStorefrontApiBaseAddress(configuration);
-}
-
-static Uri ResolveScopedStorefrontApiBaseAddress(IConfiguration configuration)
-{
-    var apiBaseAddress = ResolveApiBaseAddress(configuration);
-    var storeKey = ResolveStoreKey(configuration);
-    if (string.IsNullOrWhiteSpace(storeKey))
-    {
-        return apiBaseAddress;
-    }
-
-    var path = apiBaseAddress.AbsolutePath.TrimEnd('/')
-        + "/storefront/stores/"
-        + Uri.EscapeDataString(storeKey)
-        + "/";
-
-    return new UriBuilder(apiBaseAddress)
-    {
-        Path = path,
-        Query = string.Empty,
-        Fragment = string.Empty,
-    }.Uri;
-}
-
-static string? ResolveStoreKey(IConfiguration configuration)
-{
-    return StorefrontStoreKeyResolver.Resolve(configuration);
 }
 
 static StorefrontCheckoutAddressStepRequest BuildCheckoutAddressStepRequest(StorefrontCheckoutForm form)
@@ -1885,54 +1828,6 @@ static async Task<IResult> ToLocalCartMutationResultAsync(
         statusCode: StatusCodes.Status400BadRequest);
 }
 
-static void ConfigureStorefrontRateLimiter(RateLimiterOptions options, StorefrontRateLimitingOptions rateLimitingOptions)
-{
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.OnRejected = async (context, cancellationToken) =>
-    {
-        var httpContext = context.HttpContext;
-        StorefrontResponseHeaders.ApplyPrivatePage(httpContext);
-        httpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-
-        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
-        {
-            httpContext.Response.Headers["Retry-After"] = Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds)).ToString();
-        }
-
-        await httpContext.Response.WriteAsJsonAsync(
-            new StorefrontLocalCartErrorResponse("Too many cart requests. Try again shortly."),
-            cancellationToken);
-    };
-
-    options.AddPolicy(
-        StorefrontLocalCartRateLimitPolicyName,
-        httpContext => CreateStorefrontRateLimitPartition(httpContext, rateLimitingOptions.Cart));
-}
-
-static RateLimitPartition<string> CreateStorefrontRateLimitPartition(
-    HttpContext httpContext,
-    StorefrontRateLimitPolicyOptions policyOptions)
-{
-    var configuration = httpContext.RequestServices.GetRequiredService<IConfiguration>();
-    var storeKey = StorefrontStoreKeyResolver.Resolve(configuration) ?? "unknown-store";
-    var route = httpContext.GetEndpoint()?.DisplayName
-        ?? httpContext.Request.Path.Value
-        ?? "unknown-route";
-    var actor = $"ip:{httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
-    var partitionKey = string.Join('|', storeKey, route, actor);
-
-    return RateLimitPartition.GetFixedWindowLimiter(
-        partitionKey,
-        _ => new FixedWindowRateLimiterOptions
-        {
-            PermitLimit = Math.Clamp(policyOptions.PermitLimit, 1, 10_000),
-            Window = TimeSpan.FromSeconds(Math.Clamp(policyOptions.WindowSeconds, 1, 3600)),
-            QueueLimit = Math.Clamp(policyOptions.QueueLimit, 0, 1000),
-            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-            AutoReplenishment = true,
-        });
-}
-
 static async Task<IResult?> ValidateLocalCartAntiforgeryAsync(HttpContext httpContext, IAntiforgery antiforgery)
 {
     StorefrontResponseHeaders.ApplyPrivatePage(httpContext);
@@ -2146,6 +2041,5 @@ public sealed class StorefrontCurrencyPreferenceForm
     public string? ReturnUrl { get; set; }
 }
 
-public sealed record StorefrontLocalCartErrorResponse(string Message);
 
 public partial class Program;

@@ -206,20 +206,26 @@ Acceptance:
 
 ## Phase 2 - Extract Rate Limit And HTTP Client Helpers
 
-- [ ] Move `ConfigureStorefrontRateLimiter` and `CreateStorefrontRateLimitPartition` out of `Program.cs`.
-- [ ] Keep policy name `storefront-local-cart` stable unless tests are updated for a better constant owner.
-- [ ] Move `ResolveApiBaseAddress`, `ResolveCommerceNodeBaseAddress`, `ResolveScopedStorefrontApiBaseAddress`, `ResolveStoreKey`, and `ConfigureStorefrontHttpClient` into a small resolver/helper.
-- [ ] Do not change accepted store key config keys:
+- [x] Move `ConfigureStorefrontRateLimiter` and `CreateStorefrontRateLimitPartition` out of `Program.cs`.
+  2026-07-18 Phase 2: rate-limit setup now lives in `Configuration/StorefrontRateLimitPolicies.cs`.
+- [x] Keep policy name `storefront-local-cart` stable unless tests are updated for a better constant owner.
+  2026-07-18 Phase 2: policy name is exposed as `StorefrontRateLimitPolicies.LocalCartPolicyName = "storefront-local-cart"` and local cart mutations use that constant.
+- [x] Move `ResolveApiBaseAddress`, `ResolveCommerceNodeBaseAddress`, `ResolveScopedStorefrontApiBaseAddress`, `ResolveStoreKey`, and `ConfigureStorefrontHttpClient` into a small resolver/helper.
+  2026-07-18 Phase 2: API/media base-address helpers now live in `Configuration/StorefrontApiEndpointResolver.cs`.
+- [x] Do not change accepted store key config keys:
   - `Api:StoreKey`
   - `StoreKey`
   - `STORE_KEY`
-- [ ] Add or update unit/static tests if route base address behavior is currently protected by `Program.cs` text checks.
+  2026-07-18 Phase 2: resolver tests cover all three keys.
+- [x] Add or update unit/static tests if route base address behavior is currently protected by `Program.cs` text checks.
+  2026-07-18 Phase 2: added `StorefrontApiEndpointResolverTests` and updated rate-limit static tests to read the new helper files.
 
 Acceptance:
 
-- [ ] Storefront API clients still target `api/storefront/stores/{storeKey}/`.
-- [ ] Missing store key behavior remains unchanged.
-- [ ] Rate limiter still returns 429 and same JSON error shape.
+- [x] Storefront API clients still target `api/storefront/stores/{storeKey}/`.
+- [x] Missing store key behavior remains unchanged.
+- [x] Rate limiter still returns 429 and same JSON error shape.
+  2026-07-18 Phase 2 verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed; focused resolver/rate/CSRF/host rate-limit tests passed 35/35.
 
 ## Phase 3 - Extract Storefront Local Browser API Endpoints
 
