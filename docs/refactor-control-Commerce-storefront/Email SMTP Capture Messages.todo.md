@@ -1,17 +1,17 @@
 # Email SMTP Capture Messages Todo
 
-Status: in progress  
+Status: phase 7 complete; Store B order-specific browser proof remains a documented follow-up  
 Date: 2026-07-18  
 Scope: Store-scoped SMTP settings managed from Control Plane, capture inbox for QA, password recovery email, and order placed email.
 
 ## Goal
 
-- [ ] Mỗi store có SMTP sender/transport riêng.
-- [ ] Control Plane là nơi admin cấu hình SMTP theo store.
-- [ ] Storefront V2 không giữ SMTP credential, SMTP env, hoặc SMTP admin UI.
-- [ ] Commerce Node dùng store SMTP khi gửi queued transactional message.
-- [ ] Local/staging có SMTP capture inbox để Playwright kiểm thử recovery và order placed email thật.
-- [ ] Password recovery email và order placed email đi qua message queue hiện có, không gửi đồng bộ trong checkout/order transaction.
+- [x] Mỗi store có SMTP sender/transport riêng. 2026-07-18: `IStoreEmailTransportResolver` resolves from queued message `StoreId`; Store A/B sender isolation verified through Mailpit.
+- [x] Control Plane là nơi admin cấu hình SMTP theo store. 2026-07-18: `/commerce-admin/email` routes through Control Plane API gateway to Commerce Node admin endpoints.
+- [x] Storefront V2 không giữ SMTP credential, SMTP env, hoặc SMTP admin UI. 2026-07-18: Storefront V2 has no SMTP config dependency; release runner asserts no browser calls to admin/control/internal APIs.
+- [x] Commerce Node dùng store SMTP khi gửi queued transactional message. 2026-07-18: delivery service uses store-resolved transport and sender snapshots.
+- [x] Local/staging có SMTP capture inbox để Playwright kiểm thử recovery và order placed email thật. 2026-07-18: Mailpit local capture documented and used by visible Chromium recovery/order email runs.
+- [x] Password recovery email và order placed email đi qua message queue hiện có, không gửi đồng bộ trong checkout/order transaction. 2026-07-18: focused tests and E2E evidence cover queued recovery and `order.created` -> `order.placed`.
 
 ## Codebase Baseline
 
@@ -25,9 +25,9 @@ Scope: Store-scoped SMTP settings managed from Control Plane, capture inbox for 
 - [x] Order placed đã dùng `order.created` task để queue `order.placed`.
 - [x] Commerce Node admin message template/queued-message endpoints đã tồn tại.
 - [x] Control Plane đã có gateway pattern cho commerce settings.
-- [ ] Control Plane chưa có flow rõ ràng cho store SMTP settings/message inspection.
-- [ ] SMTP runtime hiện chưa store-scoped vì delivery vẫn đọc global `EmailSettings`.
-- [ ] Local compose/env chưa có Mailpit/MailHog SMTP capture service.
+- [x] Control Plane chưa có flow rõ ràng cho store SMTP settings/message inspection. 2026-07-18: resolved by Control Plane `/commerce-admin/email`.
+- [x] SMTP runtime hiện chưa store-scoped vì delivery vẫn đọc global `EmailSettings`. 2026-07-18: resolved by store-scoped transport resolver; global fallback is disabled by default.
+- [x] Local compose/env chưa có Mailpit/MailHog SMTP capture service. 2026-07-18: resolved by `commercenode-mailpit` and V2 local seed.
 
 ## Architecture Decisions
 
@@ -265,26 +265,26 @@ Acceptance:
 
 Purpose: make this usable as a production gate.
 
-- [ ] Update `QA-CommerceNode.todo.md` with store SMTP settings checks.
-- [ ] Update `QA-CommerceNode.todo.md` with SMTP capture checks.
-- [ ] Update `QA-CommerceNode.todo.md` with recovery email checks.
-- [ ] Update `QA-CommerceNode.todo.md` with order placed email checks.
-- [ ] Update Storefront Playwright release checklist with email capture prerequisites.
-- [ ] Update Storefront Playwright release checklist with recovery email E2E.
-- [ ] Update Storefront Playwright release checklist with order placed email E2E.
-- [ ] Add runbook notes for local capture setup.
-- [ ] Add runbook notes for staging capture setup.
-- [ ] Add runbook notes for per-store SMTP setup from Control Plane.
-- [ ] Add runbook notes for production SMTP secret protection key.
-- [ ] Add runbook notes for queued message inspection.
-- [ ] Add runbook notes for retry/cancel failed messages.
-- [ ] Add actionable SMTP misconfiguration errors: problem, cause, fix.
+- [x] Update `QA-CommerceNode.todo.md` with store SMTP settings checks. 2026-07-18 Phase 7: added operator readiness and safe-secret checks.
+- [x] Update `QA-CommerceNode.todo.md` with SMTP capture checks. 2026-07-18 Phase 7: added Mailpit local/staging capture gate.
+- [x] Update `QA-CommerceNode.todo.md` with recovery email checks. 2026-07-18 Phase 7: linked recovery E2E evidence.
+- [x] Update `QA-CommerceNode.todo.md` with order placed email checks. 2026-07-18 Phase 7: linked order email E2E and outage/retry evidence.
+- [x] Update Storefront Playwright release checklist with email capture prerequisites. 2026-07-18 Phase 7: `FX-009` is now an active capture prerequisite.
+- [x] Update Storefront Playwright release checklist with recovery email E2E. 2026-07-18 Phase 7: evidence artifacts include email recovery result.
+- [x] Update Storefront Playwright release checklist with order placed email E2E. 2026-07-18 Phase 7: `CHK-028` and `CHK-029` are release gates.
+- [x] Add runbook notes for local capture setup. 2026-07-18 Phase 7: local run doc and production runbook list Mailpit ports and scripts.
+- [x] Add runbook notes for staging capture setup. 2026-07-18 Phase 7: production runbook defines staging capture constraints.
+- [x] Add runbook notes for per-store SMTP setup from Control Plane. 2026-07-18 Phase 7: production runbook documents Control Plane setup workflow.
+- [x] Add runbook notes for production SMTP secret protection key. 2026-07-18 Phase 7: production runbook documents Data Protection key-ring requirements.
+- [x] Add runbook notes for queued message inspection. 2026-07-18 Phase 7: production runbook documents metadata-only inspection.
+- [x] Add runbook notes for retry/cancel failed messages. 2026-07-18 Phase 7: production runbook documents retry/cancel rules.
+- [x] Add actionable SMTP misconfiguration errors: problem, cause, fix. 2026-07-18 Phase 7: production runbook includes error/cause/action table.
 
 Acceptance:
 
-- [ ] Operator can verify every active store SMTP readiness without seeing secrets.
-- [ ] Playwright release run proves recovery and order placed email before production public release.
-- [ ] QA artifacts redact reset tokens and SMTP credentials.
+- [x] Operator can verify every active store SMTP readiness without seeing secrets. 2026-07-18 Phase 7: Control Plane email page exposes readiness, `SecretsConfigured`, test-send, queued-message status, retry, and cancel without echoing current password.
+- [x] Playwright release run proves recovery and order placed email before production public release. 2026-07-18 Phase 7: release checklist links recovery/order email evidence.
+- [x] QA artifacts redact reset tokens and SMTP credentials. 2026-07-18 Phase 7: recovery runner redacts reset token evidence and no SMTP password is present in API/DOM/docs artifacts.
 
 ## Not In Scope
 
@@ -300,13 +300,13 @@ Acceptance:
 
 ## Release Gate
 
-- [ ] Store SMTP settings can be configured from Control Plane per store.
-- [ ] Control Plane Web never calls Commerce Node directly for SMTP/message management.
-- [ ] Storefront V2 has no SMTP credential/config dependency.
-- [ ] Raw SMTP password never appears in response DTOs, DOM, logs, audit metadata, traces, or screenshots.
-- [ ] Store A and Store B SMTP isolation passes.
-- [ ] Password recovery email E2E passes through captured store SMTP email.
-- [ ] Order placed email E2E passes through captured store SMTP email.
-- [ ] Duplicate order submit creates one order and one order placed email.
-- [ ] SMTP failure does not roll back order placement.
-- [ ] Failed queued message can be retried after SMTP is fixed.
+- [x] Store SMTP settings can be configured from Control Plane per store. 2026-07-18: Phase 4 gateway/UI implemented.
+- [x] Control Plane Web never calls Commerce Node directly for SMTP/message management. 2026-07-18: static boundary test and E2E browser network checks passed.
+- [x] Storefront V2 has no SMTP credential/config dependency. 2026-07-18: local/prod docs and runtime tests guard this.
+- [x] Raw SMTP password never appears in response DTOs, DOM, logs, audit metadata, traces, or screenshots. 2026-07-18: DTO tests and visible-browser QA evidence guard this.
+- [x] Store A and Store B SMTP isolation passes. 2026-07-18: Mailpit captured store-scoped admin test-send from different sender profiles; Store B order-specific browser proof remains separate follow-up.
+- [x] Password recovery email E2E passes through captured store SMTP email. 2026-07-18: headed Chromium recovery runner passed.
+- [x] Order placed email E2E passes through captured store SMTP email. 2026-07-18: headed Chromium order runner passed.
+- [x] Duplicate order submit creates one order and one order placed email. 2026-07-18: headed Chromium order runner double-clicked place order and recorded one email for the reference.
+- [x] SMTP failure does not roll back order placement. 2026-07-18: SMTP-disabled order reached confirmation.
+- [x] Failed queued message can be retried after SMTP is fixed. 2026-07-18: failed/waiting message reached `sent` after restore/retry.

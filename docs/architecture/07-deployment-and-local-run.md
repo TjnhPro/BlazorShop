@@ -113,6 +113,15 @@ Local email capture:
 - `CommerceNode:EmailTransport:AllowGlobalEmailSettingsFallback=false` keeps production multi-store email from silently falling back to global `EmailSettings`.
 - Store SMTP passwords are protected with ASP.NET Core Data Protection before they are stored in Commerce Node PostgreSQL. Production operators must persist and protect the Data Protection key ring outside the database and outside storefront/runtime env files so API restarts or multiple API instances can decrypt existing store SMTP secrets safely.
 
+Email capture QA commands:
+
+```powershell
+.\scripts\qa\run-storefront-email-recovery-e2e.ps1
+.\scripts\qa\run-storefront-order-email-e2e.ps1
+```
+
+Both scripts run visible Chromium by default through the local Playwright toolchain, read Mailpit at `http://localhost:8025/api/v1`, and assert that the browser does not call `api/internal/*`, `api/commerce/*`, or `api/control-plane/*` directly. The order email runner also verifies SMTP-outage retry behavior and store-scoped sender isolation through the Commerce Node resolver/transport path.
+
 Nginx store-resolution smoke:
 
 ```powershell

@@ -127,17 +127,17 @@ Outside `Development`, the storefront now fails startup unless:
 - `ClientApp:BaseUrl` is configured as an absolute URL, or Aspire service discovery provides `Services:adminclient:*`
 - `PublicUrl:BaseUrl` is configured as an absolute URL
 
-In the standard production build, email is not optional. Account confirmation and newsletter flows depend on a working SMTP sender configuration. Outside `Development`, the API fails startup when `EmailSettings:From`, `SmtpServer`, `Username`, or `Password` are blank or still placeholder values.
+For active V2 Commerce Node email, do not put store SMTP credentials in Storefront V2 config. Transactional customer messages are queued in Commerce Node and delivered with store-scoped SMTP settings managed through Control Plane.
 
-If you deploy with an appsettings override file instead of environment variables, treat these email keys as required in production:
+Production V2 operators must configure SMTP per active store before public traffic:
 
-- `EmailSettings:From`
-- `EmailSettings:SmtpServer`
-- `EmailSettings:Username`
-- `EmailSettings:Password`
-- `EmailSettings:Port` must be a valid TCP port
+- Open Control Plane Web, then `Commerce Admin -> Email`.
+- Select the store and verify the effective SMTP status.
+- Set `Enabled`, host, port, SSL mode, username if required, write-only password, from email, from display name, and optional reply-to.
+- Use the store-scoped test-send action before enabling account recovery or checkout release gates.
+- Verify queued-message delivery through the same Control Plane page without exposing SMTP password or rendered reset-token bodies.
 
-`EmailSettings:DisplayName` is optional.
+Legacy `EmailSettings:*` remains a legacy/bootstrap compatibility surface. For V2 production, keep `CommerceNode:EmailTransport:AllowGlobalEmailSettingsFallback=false` unless you are intentionally running a transition environment and have documented the risk.
 
 ## Auth and Email Production Notes
 
@@ -145,7 +145,50 @@ If you deploy with an appsettings override file instead of environment variables
 - Confirmation emails and password-reset style links depend on `ClientApp:BaseUrl` because they link back into the authenticated Web client, not the SSR storefront.
 - Stripe success and cancel URLs also depend on `ClientApp:BaseUrl`; do not point that value at the public storefront domain unless the authenticated client is actually hosted there.
 - Refresh-token cookies remain `HttpOnly` and `Secure`. `SameSite=Strict` is correct for the standard `shop.example.com` / `account.shop.example.com` / `api.shop.example.com` model because those subdomains are cross-origin but still same-site.
-- SMTP delivery failures are now logged with the full exception and bubble back to callers. In strict confirmation mode, that keeps registration fail-closed instead of creating users who never receive a usable confirmation link.
+- V2 password recovery and order placed emails must go through queued messages, not synchronous SMTP inside account recovery or checkout/order transactions.
+- SMTP delivery failures for queued V2 messages must leave the source command intact and move the queued message into a retry/failure state with an actionable error code such as `message_delivery.smtp_not_configured`.
+- SMTP failure handling must not log SMTP passwords, reset tokens, node credentials, or rendered reset-token email bodies.
+
+## V2 Store SMTP Operations
+
+Local capture setup:
+
+1. Start V2 locally with `.\scripts\run-v2-local.ps1 -StopExisting`.
+2. Confirm `compose.commercenode.yml` started Mailpit on SMTP port `1025` and inbox/API port `8025`.
+3. Open `http://localhost:8025` or use Mailpit API `http://localhost:8025/api/v1/messages`.
+4. Development seed configures `default` and `qa-s2` store email settings in capture mode with different sender addresses.
+5. Run `.\scripts\qa\run-storefront-email-recovery-e2e.ps1` and `.\scripts\qa\run-storefront-order-email-e2e.ps1` before public release checks that depend on email.
+
+Staging capture setup:
+
+- Use a Mailpit/MailHog-style sandbox only in staging or test environments.
+- Configure store SMTP through Control Plane, not Storefront env files.
+- Keep `CommerceNode:EmailTransport:CaptureModeAllowed=true` only for the staging/test runtime that intentionally captures email.
+- Keep customer fixtures synthetic and clear or filter the capture inbox by unique test email/reference before each Playwright run.
+
+Production secret protection:
+
+- Persist ASP.NET Core Data Protection keys for `BlazorShop.CommerceNode.API` outside the database and outside checked-in config.
+- Protect the key ring with the platform secret store or encrypted volume controls.
+- Do not rotate or delete Data Protection keys until all encrypted store SMTP password values that depend on old keys have been rotated.
+- In multi-instance production, all Commerce Node API instances that read the same Commerce Node database must share the same protected key ring.
+
+Queued message inspection and retry:
+
+- Use Control Plane Web `Commerce Admin -> Email` to inspect message templates and queued messages for the selected store.
+- Use queued-message detail for status, error code, attempt count, template key, recipient, and delivery metadata only.
+- Do not expose rendered reset-password bodies, reset tokens, idempotency keys, SMTP passwords, or protected secret material in admin detail.
+- Retry a failed or waiting-retry message only after the store SMTP status is ready or the upstream SMTP outage has been corrected.
+- Cancel messages that should not be sent after policy, template, recipient, or store-status review.
+
+Actionable SMTP errors:
+
+| Error | Likely cause | Operator action |
+| --- | --- | --- |
+| `message_delivery.smtp_not_configured` | Store email settings are disabled, missing, incomplete, or password was cleared. | Open Control Plane email settings for the store, complete SMTP fields, send a test email, then retry queued messages. |
+| `message_delivery.smtp_send_failed` | SMTP host rejected connection/auth/message or network path failed. | Check host, port, SSL mode, username/password, sender policy, firewall, and provider logs, then retry. |
+| `message_delivery.store_not_found` | Queued message references a deleted or unavailable store. | Investigate store lifecycle and queue data before retrying; do not fallback to another store sender. |
+| `message_delivery.template_missing` | Required transactional template is missing or disabled. | Reset the template to default or restore a valid store override, preview it, then retry. |
 
 ## Legacy Web Runtime Config
 

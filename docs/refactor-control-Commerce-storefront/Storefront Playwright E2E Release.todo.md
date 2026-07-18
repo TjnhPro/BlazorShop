@@ -35,10 +35,13 @@ Evidence artifacts:
 - `.gstack/qa-reports/storefront-release-2026-07-18/cart-crud-evidence.json`
 - `.gstack/qa-reports/storefront-release-2026-07-18/checkout-currency-evidence.json`
 - `.gstack/qa-reports/storefront-release-2026-07-18/privacy-security-resilience-evidence.json`
+- `.gstack/qa-reports/email-recovery-e2e/result.json`
+- `.gstack/qa-reports/order-email-e2e/result.json`
 
 Notes:
 
-- SMTP/sandbox email capture and registration-disabled policy remain marked as accounted/deferred because those fixture/config paths are still being developed by prior agreement.
+- Registration-disabled policy remains marked as accounted/deferred because that fixture/config path is still being developed by prior agreement.
+- SMTP capture is now an active release prerequisite: local/staging must expose Mailpit-compatible SMTP/API capture, store SMTP settings must be configured through Control Plane, and both recovery/order email runners must pass before production public release.
 - Firefox/WebKit matrix is marked accounted by checklist status, but this run's direct browser evidence is Chromium headed only.
 
 ## QA Evidence - 2026-07-18 Headed Chromium P0 Route/Network Baseline
@@ -127,7 +130,7 @@ Kết luận theo code hiện tại:
 - [x] `FX-006 P0` - Customer synthetic đã confirm email, có profile và ít nhất 1 saved address. 2026-07-18: seed creates confirmed `qa.customer@example.local` / `QaCustomer123!`, same-store `qa.other@example.local` / `QaOther123!`, and S2 `qa.s2.customer@example.local` / `QaS2Customer123!`; API login/profile returned 200 for same-store second customer.
 - [x] `FX-007 P0` - COD enabled cho store/currency test. 2026-07-18: seed enables COD for default and S2; API check `GET /payments/methods` returned Cash on Delivery.
 - [x] `FX-008 P0` - Shipping flat/free option configured cho địa chỉ synthetic. 2026-07-18: seed configures store shipping origin, allowed countries `US,VN`, flat rate, free threshold, and seeded US address.
-- [x] `FX-009 P1` - Email sandbox/capture hoạt động cho recovery và order placed message. Deferred while SMTP/sandbox config is still being developed.
+- [x] `FX-009 P1` - Email sandbox/capture hoạt động cho recovery và order placed message. 2026-07-18: Mailpit capture runs on `localhost:1025`/`8025`; recovery runner captured reset email and order runner captured exactly one order placed email plus SMTP outage/retry evidence.
 - [x] `FX-010 P1` - Cleanup protocol cho order synthetic: tag/reference hoặc manual status để quản trị biết đây là order test. 2026-07-18: seed creates stable snapshot references `QA-CATALOG-SNAPSHOT`, `QA-OTHER-CUSTOMER-SNAPSHOT`, and `QA-QA-S2-SNAPSHOT`.
 
 ### QA Seed Fixture Clusters
