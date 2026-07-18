@@ -151,28 +151,32 @@ Acceptance:
 
 ## Phase 5 - Tests And Contract Gates
 
-- [ ] Update `CommerceNodeStorefrontAuthContractTests`:
+- [x] Update `CommerceNodeStorefrontAuthContractTests`:
   - disabled policy lay tu DB setting theo store, khong chi runtime option.
   - enabled store van allow.
   - invalid/missing store behavior khong fallback.
-- [ ] Update/add SecurityPrivacy admin tests:
+  2026-07-18 Phase 5: focused auth contract tests pass with controller reading security/privacy runtime policy; runtime option is fallback only when no store row is resolved.
+- [x] Update/add SecurityPrivacy admin tests:
   - DTO co registration setting.
   - validation mode.
   - audit metadata.
   - Control Plane gateway route va permission khong doi boundary.
-- [ ] Add Control Plane Web static markup tests:
+  2026-07-18 Phase 5: `SecurityPrivacyPhase6AdminManagementTests` guards registration DTO/entity/service validation/audit references and Control Plane gateway policies.
+- [x] Add Control Plane Web static markup tests:
   - page/nav co `Security/Privacy`.
   - page dung `StoreClient`/`CatalogClient`, khong call Commerce Node direct.
-- [ ] Add Storefront V2 tests:
+  2026-07-18 Phase 5: static tests guard page/nav/client and no Commerce Node route/secret in page.
+- [x] Add Storefront V2 tests:
   - `RegisterPage` render disabled message/form gate.
   - `StorefrontAuthClient` doc policy endpoint.
   - local POST `/register` handles disabled policy.
-- [ ] Update OpenAPI snapshots neu contract thay doi.
+  2026-07-18 Phase 5: `StorefrontV2AuthClientTests` and `StorefrontV2HostSmokeTests.Register*` passed.
+- [x] Update OpenAPI snapshots neu contract thay doi. 2026-07-18 Phase 5: snapshot includes registration policy `message`.
 
 Acceptance:
 
-- [ ] Focused `dotnet test` pass cho CommerceNode auth/security privacy, ControlPlane Web, Storefront V2 auth client/page tests.
-- [ ] Snapshot OpenAPI hop le va operation id giu on dinh.
+- [x] Focused `dotnet test` pass cho CommerceNode auth/security privacy, ControlPlane Web, Storefront V2 auth client/page tests. 2026-07-18 Phase 5: focused run passed 29/29.
+- [x] Snapshot OpenAPI hop le va operation id giu on dinh. 2026-07-18 Phase 5: `StorefrontAuth_GetRegistrationPolicy` snapshot/contract tests passed.
 
 ## Phase 6 - Playwright Release QA
 
