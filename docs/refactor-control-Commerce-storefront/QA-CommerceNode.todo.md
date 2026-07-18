@@ -1161,3 +1161,16 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Queued message admin detail is secret-safe and omits rendered body/reset-token content. 2026-07-17 Phase 7: DTO reflection test asserts no `BodyHtml` or `IdempotencyKey` public detail fields.
 - [x] Queued message retry is store-scoped and writes through the delivery service state transition. 2026-07-17 Phase 7: focused admin service tests passed.
 - [x] Transactional Message Core automated release gate passed. 2026-07-17 Phase 8: CommerceNode API build passed and focused transactional baseline/template/token/queue/delivery/account/order/contact/admin/OpenAPI suite passed 76/76.
+
+## Email SMTP Capture Messages
+
+- [x] Phase 0 baseline confirms CommerceNode account recovery uses `QueuedAccountEmailDispatcher`, not the direct SMTP dispatcher. 2026-07-18: `TransactionalMessageBaselineTests.CommerceNodeAccountEmails_UseQueuedDispatcherInsteadOfDirectSmtpDispatcher` passed.
+- [x] Phase 0 baseline confirms `OrderCreatedTaskHandler` queues `order.placed` and has no direct SMTP call. 2026-07-18: `TransactionalMessageBaselineTests.CommerceNodeOrderCreatedTask_QueuesOrderPlacedMessageWithoutDirectSmtpCall` passed.
+- [x] Phase 0 baseline records current global-only SMTP config shape and missing local Mailpit capture service. 2026-07-18: `TransactionalMessageBaselineTests.CurrentSmtpConfigurationShape_IsGlobalOnlyBeforeStoreScopedSmtpMigration` passed.
+- [ ] Store email settings are configurable per store without exposing SMTP username/password or decrypted secret material.
+- [ ] `message.deliver` resolves SMTP transport from queued message `StoreId` and snapshots store-specific sender metadata.
+- [ ] Missing store SMTP config fails queued delivery into retry/failed state without rolling back password recovery, order placement, or checkout source commands.
+- [ ] Local Mailpit capture receives password recovery email sent through store SMTP settings.
+- [ ] Local Mailpit capture receives exactly one order placed email for a real COD order.
+- [ ] Multi-store SMTP isolation proves Store A and Store B use different sender profiles.
+- [ ] Queued-message admin detail remains secret-safe and does not expose rendered reset-token email body.

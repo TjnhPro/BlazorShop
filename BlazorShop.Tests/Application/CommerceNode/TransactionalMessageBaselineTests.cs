@@ -75,6 +75,62 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Contains("MessageDeliverTaskHandler", program, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void CommerceNodeAccountEmails_UseQueuedDispatcherInsteadOfDirectSmtpDispatcher()
+        {
+            var root = FindRepositoryRoot();
+            var dependencyInjection = File.ReadAllText(Path.Combine(
+                root,
+                "BlazorShop.Infrastructure",
+                "Data",
+                "CommerceNode",
+                "DependencyInjection.cs"));
+
+            Assert.Contains("AddScoped<IAccountEmailDispatcher, QueuedAccountEmailDispatcher>", dependencyInjection, StringComparison.Ordinal);
+            Assert.DoesNotContain("AddScoped<IAccountEmailDispatcher, DirectAccountEmailDispatcher>", dependencyInjection, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void CommerceNodeOrderCreatedTask_QueuesOrderPlacedMessageWithoutDirectSmtpCall()
+        {
+            var root = FindRepositoryRoot();
+            var handler = File.ReadAllText(Path.Combine(
+                root,
+                "BlazorShop.PresentationV2",
+                "BlazorShop.CommerceNode.API",
+                "Tasks",
+                "OrderCreatedTaskHandler.cs"));
+
+            Assert.Contains("QueueOrderPlacedAsync", handler, StringComparison.Ordinal);
+            Assert.DoesNotContain("SendEmailAsync", handler, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void CurrentSmtpConfigurationShape_IsGlobalOnlyBeforeStoreScopedSmtpMigration()
+        {
+            var root = FindRepositoryRoot();
+            var commerceNodeAppSettings = File.ReadAllText(Path.Combine(
+                root,
+                "BlazorShop.PresentationV2",
+                "BlazorShop.CommerceNode.API",
+                "appsettings.json"));
+            var commerceNodeDevelopmentSettings = File.ReadAllText(Path.Combine(
+                root,
+                "BlazorShop.PresentationV2",
+                "BlazorShop.CommerceNode.API",
+                "appsettings.Development.json"));
+            var localEnv = File.ReadAllText(Path.Combine(root, "scripts", "env", "v2-local.env"));
+            var commerceNodeCompose = File.ReadAllText(Path.Combine(root, "compose.commercenode.yml"));
+            var productionCompose = File.ReadAllText(Path.Combine(root, "compose.production.yml"));
+
+            Assert.DoesNotContain("EmailSettings", commerceNodeAppSettings, StringComparison.Ordinal);
+            Assert.DoesNotContain("EmailSettings", commerceNodeDevelopmentSettings, StringComparison.Ordinal);
+            Assert.DoesNotContain("EmailSettings", localEnv, StringComparison.Ordinal);
+            Assert.DoesNotContain("mailpit", commerceNodeCompose, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("EmailSettings__SmtpServer", productionCompose, StringComparison.Ordinal);
+            Assert.Contains("EmailSettings__Password", productionCompose, StringComparison.Ordinal);
+        }
+
         private static string FindRepositoryRoot()
         {
             var directory = new DirectoryInfo(AppContext.BaseDirectory);
