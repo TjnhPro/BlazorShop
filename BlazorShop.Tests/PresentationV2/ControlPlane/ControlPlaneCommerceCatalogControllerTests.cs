@@ -4,10 +4,11 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
 {
     using System.Text;
 
-    using BlazorShop.Application.ControlPlane.Catalog;
+    using BlazorShop.Application.ControlPlane.CommerceGateway.Products;
     using ControlPlaneApi::BlazorShop.ControlPlane.API.Controllers;
 
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Mvc.Routing;
     using Moq;
 
     using Xunit;
@@ -17,7 +18,7 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
         [Fact]
         public void DownloadProductImportTemplate_ReturnsCanonicalParserHeader()
         {
-            var controller = new ControlPlaneCommerceCatalogController(new Mock<IControlPlaneCommerceCatalogService>().Object);
+            var controller = new ControlPlaneCommerceProductsController(new Mock<IControlPlaneProductGateway>().Object);
 
             var result = Assert.IsType<FileContentResult>(controller.DownloadProductImportTemplate());
             var content = Encoding.UTF8.GetString(result.FileContents);
@@ -34,14 +35,26 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
         [Fact]
         public void DownloadProductImportTemplate_HasGlobalRoute()
         {
-            var routes = typeof(ControlPlaneCommerceCatalogController)
-                .GetMethod(nameof(ControlPlaneCommerceCatalogController.DownloadProductImportTemplate))!
+            var routes = typeof(ControlPlaneCommerceProductsController)
+                .GetMethod(nameof(ControlPlaneCommerceProductsController.DownloadProductImportTemplate))!
                 .GetCustomAttributes(typeof(HttpGetAttribute), inherit: false)
                 .Cast<HttpGetAttribute>()
                 .Select(attribute => attribute.Template)
                 .ToArray();
 
             Assert.Contains("~/api/controlplane/commerce/product-imports/template", routes);
+        }
+
+        [Fact]
+        public void OldCatalogController_DoesNotOwnCommerceActions()
+        {
+            var actionCount = typeof(ControlPlaneCommerceCatalogController)
+                .GetMethods(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.DeclaredOnly)
+                .Count(method => method
+                    .GetCustomAttributes(typeof(HttpMethodAttribute), inherit: false)
+                    .Any());
+
+            Assert.Equal(0, actionCount);
         }
     }
 }

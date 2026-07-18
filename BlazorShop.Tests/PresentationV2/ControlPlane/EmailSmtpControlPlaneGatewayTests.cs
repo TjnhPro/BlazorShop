@@ -7,7 +7,7 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
         [Fact]
         public void ControlPlaneApi_ExposesStoreScopedEmailSettingsGatewayWithPolicies()
         {
-            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/Controllers/ControlPlaneCommerceCatalogController.cs");
+            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/Controllers/CommerceGateway/ControlPlaneCommerceMessagesController.cs");
 
             Assert.Contains("api/controlplane/commerce/stores/{storePublicId:guid}/email-settings", source, StringComparison.Ordinal);
             Assert.Contains("GetEmailSettings", source, StringComparison.Ordinal);
@@ -22,7 +22,7 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
         [Fact]
         public void ControlPlaneGateway_ExposesMessageTemplateAndQueueOperations()
         {
-            var interfaceSource = ReadRepositoryFile("BlazorShop.Application/ControlPlane/Catalog/ControlPlaneCommerceCatalogDtos.cs");
+            var interfaceSource = ReadRepositoryFile("BlazorShop.Application/ControlPlane/CommerceGateway/Messages/IControlPlaneMessageGateway.cs");
             var clientSource = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Services/Catalog/ControlPlaneCatalogClient.cs");
 
             foreach (var methodName in new[]

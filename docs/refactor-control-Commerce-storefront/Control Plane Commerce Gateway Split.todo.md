@@ -412,54 +412,64 @@ Verification:
 
 Mục tiêu: controller theo capability, giữ route hiện tại.
 
-- [ ] Tạo controllers:
-  - [ ] `ControlPlaneCommerceProductsController`
-  - [ ] `ControlPlaneCommerceCategoriesController`
-  - [ ] `ControlPlaneCommerceMediaController`
-  - [ ] `ControlPlaneCommerceOrdersController`
-  - [ ] `ControlPlaneCommerceContentController`
-  - [ ] `ControlPlaneCommerceNavigationController`
-  - [ ] `ControlPlaneCommerceStoreConfigurationController`
-  - [ ] `ControlPlaneCommerceCurrenciesController`
-  - [ ] `ControlPlaneCommercePaymentsController`
-  - [ ] `ControlPlaneCommerceShippingController`
-  - [ ] `ControlPlaneCommerceSecurityPrivacyController`
-- [ ] Mỗi controller inject đúng gateway capability.
-- [ ] Giữ route templates hiện tại:
-  - [ ] `~/api/controlplane/commerce/stores/{storePublicId:guid}/products`
-  - [ ] `~/api/controlplane/commerce/stores/{storePublicId:guid}/categories`
-  - [ ] `~/api/controlplane/commerce/stores/{storePublicId:guid}/media/assets`
-  - [ ] `~/api/controlplane/commerce/stores/{storePublicId:guid}/pages`
-  - [ ] `~/api/controlplane/commerce/stores/{storePublicId:guid}/navigation/...`
-  - [ ] `~/api/controlplane/commerce/stores/{storePublicId:guid}/orders`
-  - [ ] `~/api/controlplane/commerce/stores/{storePublicId:guid}/payment-methods`
-  - [ ] `~/api/controlplane/commerce/stores/{storePublicId:guid}/currencies`
-  - [ ] `~/api/controlplane/commerce/stores/{storePublicId:guid}/security-privacy`
-  - [ ] `~/api/controlplane/commerce/stores/{storePublicId:guid}/shipping/settings`
-- [ ] Giữ legacy/base relative `api/control-plane/stores/{storePublicId}/catalog/*` cho product/category routes nếu tests/consumer còn dùng.
-- [ ] Extract response mapping helper:
-  - [ ] `ControlPlaneCommerceGatewayResponseMapper`
-  - [ ] hoặc extension method trong API project.
-- [ ] Product import CSV helper có thể ở Product controller hoặc small private helper file.
-- [ ] Media preview response handling nằm ở Media controller.
-- [ ] Xóa hoặc làm rỗng `ControlPlaneCommerceCatalogController` chỉ sau khi không còn action.
+- [x] Tạo controllers:
+  - [x] `ControlPlaneCommerceProductsController`
+  - [x] `ControlPlaneCommerceCategoriesController`
+  - [x] `ControlPlaneCommerceMediaController`
+  - [x] `ControlPlaneCommerceOrdersController`
+  - [x] `ControlPlaneCommerceContentController`
+  - [x] `ControlPlaneCommerceNavigationController`
+  - [x] `ControlPlaneCommerceStoreConfigurationController`
+  - [x] `ControlPlaneCommerceCurrenciesController`
+  - [x] `ControlPlaneCommercePaymentsController`
+  - [x] `ControlPlaneCommerceShippingController`
+  - [x] `ControlPlaneCommerceSecurityPrivacyController`
+  2026-07-18 Phase 4: controllers were created under `BlazorShop.ControlPlane.API/Controllers/CommerceGateway/`; `ControlPlaneCommerceMessagesController` was also added because email settings, message templates, and queued messages are a separate capability in current code.
+- [x] Mỗi controller inject đúng gateway capability.
+  2026-07-18 Phase 4: controllers now inject capability gateways such as `IControlPlaneProductGateway`, `IControlPlaneMediaGateway`, `IControlPlaneSecurityPrivacyGateway`, and `IControlPlaneMessageGateway`; controller code no longer references `IControlPlaneCommerceCatalogService`.
+- [x] Giữ route templates hiện tại:
+  - [x] `~/api/controlplane/commerce/stores/{storePublicId:guid}/products`
+  - [x] `~/api/controlplane/commerce/stores/{storePublicId:guid}/categories`
+  - [x] `~/api/controlplane/commerce/stores/{storePublicId:guid}/media/assets`
+  - [x] `~/api/controlplane/commerce/stores/{storePublicId:guid}/pages`
+  - [x] `~/api/controlplane/commerce/stores/{storePublicId:guid}/navigation/...`
+  - [x] `~/api/controlplane/commerce/stores/{storePublicId:guid}/orders`
+  - [x] `~/api/controlplane/commerce/stores/{storePublicId:guid}/payment-methods`
+  - [x] `~/api/controlplane/commerce/stores/{storePublicId:guid}/currencies`
+  - [x] `~/api/controlplane/commerce/stores/{storePublicId:guid}/security-privacy`
+  - [x] `~/api/controlplane/commerce/stores/{storePublicId:guid}/shipping/settings`
+  2026-07-18 Phase 4: route attributes were moved with their original templates unchanged.
+- [x] Giữ legacy/base relative `api/control-plane/stores/{storePublicId}/catalog/*` cho product/category routes nếu tests/consumer còn dùng.
+  2026-07-18 Phase 4: capability controllers keep the old base route attribute, while compatibility absolute routes remain unchanged.
+- [x] Extract response mapping helper:
+  - [x] `ControlPlaneCommerceGatewayResponseMapper`
+  - [x] hoặc extension method trong API project.
+  2026-07-18 Phase 4: shared response/file/error mapping is centralized in `ControlPlaneCommerceGatewayControllerBase`.
+- [x] Product import CSV helper có thể ở Product controller hoặc small private helper file.
+  2026-07-18 Phase 4: product import template, upload, and CSV error helpers live with `ControlPlaneCommerceProductsController` through the shared base helpers.
+- [x] Media preview response handling nằm ở Media controller.
+  2026-07-18 Phase 4: media/product-media preview endpoints are owned by `ControlPlaneCommerceMediaController`.
+- [x] Xóa hoặc làm rỗng `ControlPlaneCommerceCatalogController` chỉ sau khi không còn action.
+  2026-07-18 Phase 4: `ControlPlaneCommerceCatalogController` is an empty shell and `OldCatalogController_DoesNotOwnCommerceActions` guards that it has zero HTTP actions.
 
 Permission review:
 
-- [ ] Product/category/variant/inventory/import giữ `StoresRead/StoresWrite` trước khi có permission catalog riêng.
-- [ ] Pages dùng `CommercePagesRead/Write`.
-- [ ] Navigation dùng `CommerceNavigationRead/Write`.
-- [ ] Currency/shipping dùng `CommerceSettingsRead/Write`.
-- [ ] Exchange providers/payment provider management dùng `CommerceProvidersRead/Write` nếu hợp lý.
-- [ ] Security/privacy dùng `CommerceSecurityPrivacyRead/Write`.
-- [ ] Không giảm permission hiện có.
+- [x] Product/category/variant/inventory/import giữ `StoresRead/StoresWrite` trước khi có permission catalog riêng.
+- [x] Pages dùng `CommercePagesRead/Write`.
+- [x] Navigation dùng `CommerceNavigationRead/Write`.
+- [x] Currency/shipping dùng `CommerceSettingsRead/Write`.
+- [x] Exchange providers/payment provider management dùng `CommerceProvidersRead/Write` nếu hợp lý.
+- [x] Security/privacy dùng `CommerceSecurityPrivacyRead/Write`.
+- [x] Không giảm permission hiện có.
+  2026-07-18 Phase 4: generated capability controllers preserve the action-level authorization attributes from the previous catalog controller; security/privacy and email static guard tests now read the new controller files.
 
 Verification:
 
-- [ ] Controller route reflection tests cập nhật theo controller mới.
-- [ ] `DownloadProductImportTemplate_ReturnsCanonicalParserHeader` vẫn pass.
-- [ ] API build pass.
-- [ ] OpenAPI/contract tests pass nếu Control Plane API có snapshot/contract tests liên quan.
+- [x] Controller route reflection tests cập nhật theo controller mới.
+- [x] `DownloadProductImportTemplate_ReturnsCanonicalParserHeader` vẫn pass.
+- [x] API build pass.
+- [x] OpenAPI/contract tests pass nếu Control Plane API có snapshot/contract tests liên quan.
+  2026-07-18 Phase 4: no Control Plane OpenAPI snapshot gate was found for this split; focused controller/static tests passed 35/35 and `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` passed with 0 warnings/errors.
 
 ## Phase 5 - Split Control Plane Web Clients
 
