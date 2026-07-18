@@ -802,8 +802,8 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 SearchTerm = searchTerm,
                 CurrencyCode = currencyCode,
             };
-            var categoriesTask = this.publicCatalogService.GetPublishedCategoryTreeAsync();
-            var metadataTask = this.publicCatalogService.GetPublishedProductFilterMetadataAsync(new ProductCatalogQuery
+            var categories = await this.publicCatalogService.GetPublishedCategoryTreeAsync();
+            var metadata = await this.publicCatalogService.GetPublishedProductFilterMetadataAsync(new ProductCatalogQuery
             {
                 CategorySlug = query.CategorySlug,
                 IncludeSubcategories = !string.IsNullOrWhiteSpace(query.CategorySlug),
@@ -811,8 +811,6 @@ namespace BlazorShop.CommerceNode.API.Controllers
             });
             var displayCurrencyTask = this.ResolveDisplayCurrencyAsync(query.CurrencyCode, cancellationToken);
 
-            var categories = await categoriesTask;
-            var metadata = await metadataTask;
             var displayCurrency = await displayCurrencyTask;
 
             var response = new StorefrontProductFilterMetadataResponse(
