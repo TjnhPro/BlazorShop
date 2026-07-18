@@ -77,6 +77,8 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
             Assert.DoesNotContain("api/commerce", webSource, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("api/storefront", webSource, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("CommerceNodeApi", webSource, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("X-Node-Key", webSource, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("X-Node-Secret", webSource, StringComparison.OrdinalIgnoreCase);
         }
 
         private static string ReadControlPlaneWebSource()
