@@ -118,6 +118,9 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Checkout WASM blocks empty cart. 2026-07-18 Phase 5: `/api/checkout` returns a browser checkout empty state when cart token/cart lines are missing and `StorefrontCheckoutShell` renders it on `/checkout`.
 - [x] Checkout WASM detects stale cart version. 2026-07-18 Phase 5: local checkout mutation/review/place-order commands compare `ExpectedCartVersion` against server cart version and return `409` with a recoverable message.
 - [x] Checkout WASM completes happy-path order placement. 2026-07-18 Phase 5: `StorefrontCheckoutShell` can call same-origin `/api/checkout/place-order`; Storefront V2 server keeps idempotency/version validation, provider redirect handling, and cart-cookie clearing authoritative.
+- [x] Storefront V2 commerce flow uses canonical local checkout route. 2026-07-18 Commerce Flow Cutover Phase 8: browser-facing order placement is tracked through same-origin `/api/checkout/place-order`; retired Commerce Node compatibility routes are not active V2 endpoints.
+- [ ] Browser QA after COD placement opens account order list, detail, and receipt for the placed order.
+- [ ] Browser network audit for cart/checkout/account order flow confirms no calls to retired routes: `cart/save-checkout`, `orders/confirm`, `orders/current-user/items`, or `payments/paypal/capture`.
 - [x] Mutation endpoints require antiforgery token. 2026-07-17 Phase 2: `StorefrontLocalApiClient` attaches the meta-projected CSRF header for POST/PUT/DELETE and focused runtime foundation tests passed.
 - [x] No direct Commerce Node URL or credential is present in WASM static output. 2026-07-17 Phase 2: `rg` over WASM source and `bin/Debug/net10.0/wwwroot` found no `CommerceNode`, node key/secret, refresh token, access token, or scoped Commerce Node route strings.
 

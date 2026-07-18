@@ -281,24 +281,26 @@ Acceptance:
 
 ## Phase 8 - QA Checklist And Documentation Updates
 
-- [ ] Update `QA-CommerceNode.todo.md`:
+- [x] Update `QA-CommerceNode.todo.md`:
   - mark `cart/save-checkout`, `orders/confirm`, `orders/current-user/items` as retired/n-a, not pending.
   - mark PayPal direct capture route as retired when removed.
   - add V2 canonical route checks.
-- [ ] Update `QA-StorefrontV2.todo.md`:
+- [x] Update `QA-StorefrontV2.todo.md`:
   - add browser check that checkout/order placement uses V2 `/api/checkout/place-order`.
   - add account order list/detail/receipt checks after COD order.
   - add browser network assertion: no retired endpoint calls.
-- [ ] Update architecture docs if active API contract changes:
+- [x] Update architecture docs if active API contract changes:
   - `docs/architecture/03-runtime-boundaries.md`
   - `docs/architecture/06-feature-map.md` if route ownership/feature map mentions old flow.
   - `docs/architecture/09-api-contract-standards.md` only if API standards change, otherwise no edit.
-- [ ] Update `Storefront Playwright E2E Release.todo.md` if release checklist references old endpoints.
+  2026-07-18 Phase 8: `06-feature-map.md` now describes checkout review/order placement, current-user order detail/receipt, and provider callback/webhook payment flow. `03-runtime-boundaries.md` and `09-api-contract-standards.md` were reviewed and did not require route-specific edits.
+- [x] Update `Storefront Playwright E2E Release.todo.md` if release checklist references old endpoints.
+  2026-07-18 Phase 8: release checklist has no retired endpoint references; browser network audit requirement was added to `QA-StorefrontV2.todo.md`.
 
 Acceptance:
 
-- [ ] Docs and QA no longer present retired endpoints as active/pending work.
-- [ ] Canonical V2 route ownership is explicit.
+- [x] Docs and QA no longer present retired endpoints as active/pending work. 2026-07-18 Phase 8: old active QA checks are now n/a retired, while canonical checkout/order routes remain pending for real browser QA.
+- [x] Canonical V2 route ownership is explicit. 2026-07-18 Phase 8: Commerce Node QA and architecture feature map point to checkout preview/place-order and current-user order list/detail/receipt.
 
 ## Phase 9 - Focused Verification
 

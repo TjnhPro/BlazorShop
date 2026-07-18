@@ -62,10 +62,10 @@ Baseline recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFoundationS
 - [x] Storefront Swagger validates as an OpenAPI document. 2026-07-14: Swagger is fetched, parsed as OpenAPI JSON, and checked for required document sections.
 - [x] Storefront Swagger can generate a C# or TypeScript client in a smoke test. 2026-07-14: contract tests generate a TypeScript client stub from paths and operation IDs.
 - [x] Storefront Swagger snapshot is stored under the test project for breaking-change detection. 2026-07-14: `storefront-openapi.snapshot.json` and path snapshot are committed.
-- [x] Storefront public save-checkout request does not accept `userId`; authenticated identity comes from JWT. 2026-07-14: `CreateOrderItem.UserId` removed and contract tests reject `userId`.
-- [x] Storefront order confirm request does not accept client-supplied `status`. 2026-07-14: scoped confirm action no longer has `status`; contract tests assert no such parameter.
+- [n/a] Storefront public save-checkout request does not accept `userId`; route retired from active Storefront API. 2026-07-18 Commerce Flow Cutover Phase 3: `StorefrontCart_SaveCheckout` is absent from OpenAPI and generated client.
+- [n/a] Storefront order confirm request does not accept client-supplied `status`; route retired from active Storefront API. 2026-07-18 Commerce Flow Cutover Phase 3: `StorefrontOrders_Confirm` is absent from OpenAPI and generated client.
 - [x] Storefront product catalog query does not expose `IsPublished`. 2026-07-14: scoped query uses `StorefrontProductCatalogQuery`; contract tests reject `isPublished`.
-- [x] Storefront PayPal capture uses POST for the capture side effect. 2026-07-14: `StorefrontPayments_CapturePayPal` is POST with a required body.
+- [n/a] Storefront PayPal direct capture route retired from active Storefront API. 2026-07-18 Commerce Flow Cutover Phase 6: `StorefrontPayments_CapturePayPal` is absent from OpenAPI and generated client.
 - [x] Storefront quantity request fields publish `minimum: 1` and reject invalid values. 2026-07-14: request DTOs use `[Range(1, int.MaxValue)]`; contract tests assert OpenAPI minimum.
 - [x] Storefront product catalog `pageSize` publishes minimum/maximum bounds. 2026-07-14: `pageSize` range is `1..100` and asserted in contract tests.
 - [x] Storefront auth and checkout request models publish email, password, and shipping-address validation metadata. 2026-07-14: public Storefront DTOs carry DataAnnotations for email/password/shipping address.
@@ -103,8 +103,8 @@ Final hardening recorded 2026-07-14 for `BlazorShop.CommerceNode.ApiContractFina
 - [x] Public response arrays are required and non-null in OpenAPI. 2026-07-14: category tree, paged items, order lines, variants, sitemap lists, and variation options/values are guarded by contract tests.
 - [x] Storefront product sort values are emitted as a named string enum. 2026-07-14: `sortBy` OpenAPI enum contains `newest`, `priceLowToHigh`, and related lower-camel values.
 - [x] Storefront public order item history exposes `amountPaid`, not `amountPayed`. 2026-07-14: public OpenAPI and SharedV2 model were updated; internal Application spelling remains mapped only at the boundary.
-- [x] PayPal capture failure no longer returns HTTP 200 `success=true`. 2026-07-14: provider failure now returns HTTP 409 with `payment.paypal_capture_failed`.
-- [x] PayPal capture remains POST-only. 2026-07-14: integration test verified GET capture returns 405.
+- [n/a] Legacy PayPal direct capture failure no longer needs active-route QA. 2026-07-18 Commerce Flow Cutover Phase 6: direct PayPal capture is retired from Storefront API and OpenAPI; POST/GET now return 404.
+- [n/a] Legacy PayPal capture method hardening is superseded by route removal. 2026-07-18 Commerce Flow Cutover Phase 6: `StorefrontPayments_CapturePayPal` is absent from OpenAPI and generated clients.
 - [x] Storefront Swagger passes Microsoft.OpenApi reader parsing and has no broken schema references. 2026-07-14: `StorefrontSwagger_PassesOpenApiReaderValidation` and broken-ref traversal tests passed.
 - [x] Storefront Swagger snapshot is updated after final hardening. 2026-07-14: `storefront-openapi.snapshot.json` refreshed and contract suite passed 16/16.
 
@@ -279,7 +279,7 @@ Baseline plan: `BlazorShop.CommerceNode.CartCheckoutPaymentProviderMvp.autoplan.
 ## Payment Core
 
 - [x] Phase 0 baseline records active payment provider core files and known hardening gaps before refactor. 2026-07-17: reviewed `StorePaymentMethod`, `PaymentAttempt`, `PaymentProviderEvent`, payment DTOs, `PaymentAttemptService`, `CommerceNodePaymentMethodService`, `StorefrontCheckoutService`, `StorefrontScopedPaymentsController`, Storefront client, and return pages.
-- [x] Current Storefront payment operations are contract-protected before provider-core changes. 2026-07-17: operation IDs recorded as `StorefrontPayments_GetPaymentMethods`, `StorefrontPayments_GetAttempt`, `StorefrontPayments_HandleProviderCallback`, `StorefrontPayments_HandleWebhook`, and `StorefrontPayments_CapturePayPal`.
+- [x] Current Storefront payment operations are contract-protected after provider-core changes. 2026-07-18 Commerce Flow Cutover Phase 6: operation IDs are `StorefrontPayments_GetPaymentMethods`, `StorefrontPayments_GetAttempt`, `StorefrontPayments_HandleProviderCallback`, and `StorefrontPayments_HandleWebhook`; direct PayPal capture is retired.
 - [x] Payment focused baseline passes before provider-core refactor. 2026-07-17: focused run covering payment attempts, secret boundary, Stripe adapter, PayPal contract, OpenAPI, checkout payment flow, and payment return pages passed 86/86.
 - [x] Payment Core Phase 0 confirms known later-phase risks are not silently fixed or ignored. 2026-07-17: callback/webhook still trust body `State` and signature is not verified; retained as Phase 4 hardening scope.
 - [x] Provider capability registry returns COD offline, Stripe redirect, and PayPal disabled/skeleton without adding a provider table. 2026-07-17 Payment Core Phase 1: `PaymentProviderCapabilityRegistryTests` passed.
@@ -396,10 +396,10 @@ Plan: `Cart Core.todo.md`.
 - [ ] Scoped auth register/login/refresh/logout do not require node key.
 - [ ] Scoped Storefront routes do not require `X-Store-Key`.
 - [ ] Customer routes require JWT:
-  - [ ] `api/storefront/stores/{storeKey}/cart/save-checkout`
-  - [ ] `api/storefront/stores/{storeKey}/orders/confirm`
+  - [n/a] `api/storefront/stores/{storeKey}/cart/save-checkout` retired.
+  - [n/a] `api/storefront/stores/{storeKey}/orders/confirm` retired.
   - [ ] `api/storefront/stores/{storeKey}/orders/current-user`
-  - [ ] `api/storefront/stores/{storeKey}/orders/current-user/items`
+  - [n/a] `api/storefront/stores/{storeKey}/orders/current-user/items` retired.
 - [x] Direct raw cart checkout route is retired from active Storefront API. 2026-07-14: `POST /api/storefront/stores/{storeKey}/cart/checkout` removed from controller, Storefront V2 client, and Storefront Swagger snapshot; session checkout uses `/checkout/preview` + `/checkout/place-order`.
 
 ## Seed Data
@@ -698,10 +698,14 @@ This section records pre-removal `api/internal/*` QA evidence. Do not use it as 
 ### Cart And Orders
 
 - [n/a] `POST /api/storefront/stores/{storeKey}/cart/checkout` retired after server-cart checkout cutover. 2026-07-14: use `/checkout/preview` and `/checkout/place-order`.
-- [ ] `POST /api/storefront/stores/{storeKey}/cart/save-checkout`
-- [ ] `POST /api/storefront/stores/{storeKey}/orders/confirm`
+- [n/a] `POST /api/storefront/stores/{storeKey}/cart/save-checkout` retired after V2 commerce flow cutover. 2026-07-18: use cart session and checkout placement.
+- [n/a] `POST /api/storefront/stores/{storeKey}/orders/confirm` retired after V2 commerce flow cutover. 2026-07-18: use `/checkout/place-order`.
+- [ ] `POST /api/storefront/stores/{storeKey}/checkout/preview`
+- [ ] `POST /api/storefront/stores/{storeKey}/checkout/place-order`
 - [ ] `GET /api/storefront/stores/{storeKey}/orders/current-user`
-- [ ] `GET /api/storefront/stores/{storeKey}/orders/current-user/items`
+- [ ] `GET /api/storefront/stores/{storeKey}/orders/current-user/{orderReference}`
+- [ ] `GET /api/storefront/stores/{storeKey}/orders/current-user/{orderReference}/receipt`
+- [n/a] `GET /api/storefront/stores/{storeKey}/orders/current-user/items` retired after customer order self-service cutover. 2026-07-18: use order list/detail/receipt.
 
 ### Catalog Search MVP
 
@@ -814,7 +818,7 @@ Historical `api/internal/*` checks in this subsection should be ported to scoped
 ## Deferred/Manual Checks
 
 - [x] `POST /api/commerce/admin/media/images` with multipart image upload. 2026-07-09: curl multipart upload returned `success=true`; uploaded PNG was reachable under `/uploads`.
-- [n/a] PayPal capture redirect, because current PayPal service is a stub in this MVP.
+- [n/a] PayPal direct capture redirect, because the Storefront compatibility capture route is retired; provider callbacks/webhooks remain the active integration surface.
 - [n/a] Email delivery for newsletter/bank transfer, because SMTP is not configured for local MVP QA.
 
 ## QA Notes
@@ -825,8 +829,7 @@ Historical `api/internal/*` checks in this subsection should be ported to scoped
 - Refresh token is stored in `Set-Cookie` from login.
 - Local HTTP clients may not resend the refresh cookie automatically because it is `Secure=true`; QA verified refresh by replaying the `Set-Cookie` value as a `Cookie` header.
 - Missing JWT on `[Authorize]` Storefront routes returns HTTP `401` with `CommerceNodeApiErrorResponse` code `auth.unauthenticated`.
-- Scoped cart save-checkout and order confirm routes expect a top-level JSON array. When using PowerShell, send raw JSON for single-item arrays to avoid `ConvertTo-Json` collapsing the array.
-- Historical `api/internal/cart/save-checkout` also required a `userId` field in the request body even though the authenticated customer was resolved from JWT; verify whether the scoped contract still needs cleanup before changing behavior.
+- Scoped cart save-checkout and order confirm routes are retired from active Storefront API. Historical notes about top-level arrays and `userId` apply only to legacy/migration context.
 - Scoped recommendations route requires at least one related published product; a single product in a category correctly returns a not-found response.
 
 ## Fixes Applied During QA
@@ -1130,7 +1133,7 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Admin cannot enable inactive/uninstalled provider skeletons. 2026-07-17 Phase 6: `UpdateAsync_WhenProviderIsInactive_RejectsEnable` rejects PayPal enable with validation error.
 - [x] ControlPlane payment method page consumes capability metadata through ControlPlane API, not direct CommerceNode calls. 2026-07-17 Phase 6: ControlPlane Web page renders provider status from DTO; focused `ControlPlaneArchitectureBoundaryTests|LayoutAssetFoundationTests` passed inside 36/36 run.
 - [x] Storefront public payment method projection remains display-only and secret-safe after admin capability changes. 2026-07-17 Phase 6: `CommerceNodeStorefrontOpenApiContractTests|CommerceNodeStorefrontPaymentContractTests` passed inside 32/32 run.
-- [x] PayPal compatibility capture remains POST-only and is clearly deprecated in Storefront OpenAPI. 2026-07-17 Phase 7: OpenAPI contract asserts `StorefrontPayments_CapturePayPal` has required body, `deprecated=true`, and compatibility/removal description; GET still returns 405.
+- [x] PayPal compatibility capture route is retired from Storefront OpenAPI. 2026-07-18 Commerce Flow Cutover Phase 6: OpenAPI/payment contract tests assert `StorefrontPayments_CapturePayPal` route and generated client method are absent; POST/GET return 404.
 - [x] New checkout payment flow does not depend on legacy `IPayPalPaymentService`. 2026-07-17 Phase 7: `StorefrontCheckoutService_DoesNotDependOnLegacyPayPalCaptureService` passed.
 - [x] Storefront OpenAPI snapshot was refreshed for the PayPal compatibility metadata change. 2026-07-17 Phase 7: focused payment/OpenAPI/checkout run passed 72/72.
 - [x] Payment Core automated release gate passed. 2026-07-17 Phase 8: focused provider registry/operation, payment attempt, webhook signature/hardening, Stripe provider, payment method, checkout, Storefront OpenAPI/payment contracts, Storefront V2 client/host smoke, and ControlPlane boundary/static run passed 185/185.

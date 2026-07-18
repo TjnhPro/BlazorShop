@@ -111,9 +111,9 @@ Capabilities:
 - Public storefront pages by slug.
 - Public navigation menus.
 - Sitemap catalog feed.
-- Cart lifecycle, cart merge, checkout session, address step, shipping method selection, payment method selection, review, order placement, and save checkout.
-- Order confirmation, current user orders, order details, receipts, and order item lists.
-- Payment methods, provider operations/callbacks/webhooks, and deprecated PayPal compatibility capture.
+- Cart lifecycle, cart merge, checkout session, address step, shipping method selection, payment method selection, review, and order placement.
+- Current user orders, order details, receipts, and guest order lookup.
+- Payment methods, payment attempts, and provider operations/callbacks/webhooks.
 - Currency preference and active currency lookup.
 - Shipping address field configuration.
 - Contact metadata.
