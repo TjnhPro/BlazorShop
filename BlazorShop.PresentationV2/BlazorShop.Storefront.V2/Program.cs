@@ -117,6 +117,7 @@ if (storefrontRateLimitingOptions.Enabled)
 
 app.UseAntiforgery();
 app.MapStaticAssets();
+app.MapGet("/favicon.ico", () => Results.Redirect("/icon-192.png", permanent: false));
 app.MapDefaultEndpoints();
 app.MapPost(StorefrontRoutes.SignIn, async (
     [FromForm] StorefrontLoginForm form,

@@ -130,6 +130,7 @@ namespace BlazorShop.Tests.PresentationV2
 
             Assert.Contains("app.UseStaticFiles();", program);
             Assert.Contains("app.MapStaticAssets();", program);
+            Assert.Contains("app.MapGet(\"/favicon.ico\", () => Results.Redirect(\"/icon-192.png\", permanent: false));", program);
         }
 
         [Fact]
