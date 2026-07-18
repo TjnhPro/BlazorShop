@@ -216,27 +216,29 @@ Acceptance:
 
 ## Phase 5 - Payment Core Cutover
 
-- [ ] Remove Commerce Node DI registrations:
+- [x] Remove Commerce Node DI registrations:
   - `IPaymentHandler`
   - `IPaymentHandlerResolver`
   - `CodPaymentHandler`
   - `StripePaymentHandler`
   - `PayPalPaymentHandler`
   - `PaymentHandlerResolver`
-- [ ] Remove `PaymentHandlers.cs` if no active code references it.
-- [ ] Remove `IPaymentHandler` and `IPaymentHandlerResolver` from `CommerceNodePaymentDtos.cs` only after confirming no active compile references remain.
-- [ ] Keep and verify provider core:
+  2026-07-18 Phase 5: removed CommerceNode runtime DI registrations for all legacy payment handlers/resolver.
+- [x] Remove `PaymentHandlers.cs` if no active code references it. 2026-07-18 Phase 5: deleted `BlazorShop.Infrastructure/Data/CommerceNode/Services/PaymentHandlers.cs`; no active compile references remained.
+- [x] Remove `IPaymentHandler` and `IPaymentHandlerResolver` from `CommerceNodePaymentDtos.cs` only after confirming no active compile references remain. 2026-07-18 Phase 5: not removed because shared legacy `CartService` still has a compile-time optional dependency; this remains for deferred legacy cleanup, not active CommerceNode runtime.
+- [x] Keep and verify provider core:
   - `IStorefrontPaymentProvider`
   - `IStorefrontPaymentProviderResolver`
   - `PaymentProviderCapabilityRegistry`
   - `PaymentAttemptService`
   - provider callbacks/webhooks.
-- [ ] Ensure `StorefrontCheckoutService` tests still cover COD and hosted provider flows through provider resolver, not payment handler resolver.
+  2026-07-18 Phase 5: provider registrations remain and static guard asserts them.
+- [x] Ensure `StorefrontCheckoutService` tests still cover COD and hosted provider flows through provider resolver, not payment handler resolver. 2026-07-18 Phase 5: focused checkout/payment/provider test run passed 77/77.
 
 Acceptance:
 
-- [ ] Payment attempt/provider operation is the only active Commerce Node payment abstraction for Storefront checkout.
-- [ ] No V2 checkout code can call `IPaymentHandlerResolver`.
+- [x] Payment attempt/provider operation is the only active Commerce Node payment abstraction for Storefront checkout. 2026-07-18 Phase 5: CommerceNode runtime has no handler DI and retains attempt/provider services.
+- [x] No V2 checkout code can call `IPaymentHandlerResolver`. 2026-07-18 Phase 5: static guard rejects handler resolver registration; active checkout tests passed.
 
 ## Phase 6 - Remove Direct PayPal Compatibility Capture Route
 

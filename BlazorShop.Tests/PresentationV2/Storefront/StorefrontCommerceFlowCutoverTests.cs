@@ -79,6 +79,19 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("AddScoped<IOrderPlacementService, OrderPlacementService>", dependencyInjection, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void CommerceNodeRuntime_DoesNotRegisterLegacyPaymentHandlers()
+        {
+            var dependencyInjection = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/DependencyInjection.cs");
+
+            Assert.DoesNotContain("AddScoped<IPaymentHandler", dependencyInjection, StringComparison.Ordinal);
+            Assert.DoesNotContain("AddScoped<IPaymentHandlerResolver", dependencyInjection, StringComparison.Ordinal);
+            Assert.DoesNotContain("PaymentHandlerResolver", dependencyInjection, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<IPaymentAttemptService, PaymentAttemptService>", dependencyInjection, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<IStorefrontPaymentProvider, CodStorefrontPaymentProvider>", dependencyInjection, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<IStorefrontPaymentProviderResolver, StorefrontPaymentProviderResolver>", dependencyInjection, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             var directory = new DirectoryInfo(AppContext.BaseDirectory);

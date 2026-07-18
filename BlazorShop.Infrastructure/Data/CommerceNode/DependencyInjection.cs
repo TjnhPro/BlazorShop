@@ -135,10 +135,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<CommerceNodePaymentMethodService>();
             services.AddScoped<IPaymentMethodService>(provider => provider.GetRequiredService<CommerceNodePaymentMethodService>());
             services.AddScoped<IStorePaymentMethodAdminService>(provider => provider.GetRequiredService<CommerceNodePaymentMethodService>());
-            services.AddScoped<IPaymentHandler, CodPaymentHandler>();
-            services.AddScoped<IPaymentHandler, StripePaymentHandler>();
-            services.AddScoped<IPaymentHandler, PayPalPaymentHandler>();
-            services.AddScoped<IPaymentHandlerResolver, PaymentHandlerResolver>();
             services.AddScoped<IPaymentAttemptService, PaymentAttemptService>();
             services.AddScoped<IOrderStockAdjustmentHook, DefaultOrderStockAdjustmentHook>();
             services.AddScoped<IOrderPlacementService, OrderPlacementService>();
