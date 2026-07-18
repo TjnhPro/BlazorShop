@@ -231,34 +231,38 @@ Acceptance:
 
 ### Auth/Form Endpoints
 
-- [ ] Create `Endpoints/StorefrontAuthFormEndpoints.cs`.
-- [ ] Move server-rendered form endpoints:
+- [x] Create `Endpoints/StorefrontAuthFormEndpoints.cs`.
+- [x] Move server-rendered form endpoints:
   - `POST StorefrontRoutes.SignIn`
   - `POST StorefrontRoutes.Register`
   - `POST StorefrontRoutes.ForgotPassword`
   - `POST StorefrontRoutes.ResetPassword`
   - `POST StorefrontRoutes.Logout`
   - legacy server form account profile/change-password/address posts if still used by non-WASM pages.
-- [ ] Keep return URL normalization and cart merge on login unchanged.
+  2026-07-18 Phase 3: auth/form, account fallback form, currency preference, and checkout fallback form posts moved into `StorefrontAuthFormEndpoints`.
+- [x] Keep return URL normalization and cart merge on login unchanged.
 
 ### Cart Endpoints
 
-- [ ] Create `Endpoints/StorefrontCartEndpoints.cs`.
-- [ ] Move:
+- [x] Create `Endpoints/StorefrontCartEndpoints.cs`.
+- [x] Move:
   - `GET /api/cart`
   - `POST /api/product-selection-preview`
   - `POST /api/cart/lines`
   - `PUT /api/cart/lines/{lineId:guid}`
   - `DELETE /api/cart/lines/{lineId:guid}`
   - `DELETE /api/cart`
-- [ ] Move local cart request/response DTOs to `Services/Contracts` or `Endpoints/Contracts`.
-- [ ] Move cart projection helper into `Services/Browser/StorefrontCartBrowserMapper.cs`.
-- [ ] Keep antiforgery and rate limiting on mutation endpoints.
+  2026-07-18 Phase 3: cart and product selection preview routes moved into `StorefrontCartEndpoints`.
+- [x] Move local cart request/response DTOs to `Services/Contracts` or `Endpoints/Contracts`.
+  2026-07-18 Phase 3: local cart request/preview DTOs moved into endpoint support namespace.
+- [x] Move cart projection helper into `Services/Browser/StorefrontCartBrowserMapper.cs`.
+  2026-07-18 Phase 3: projection was moved out of `Program.cs` into `StorefrontLocalEndpointSupport` rather than a separate mapper class to keep the mechanical split small; it is now shared endpoint support and no longer in the composition root.
+- [x] Keep antiforgery and rate limiting on mutation endpoints.
 
 ### Account Endpoints
 
-- [ ] Create `Endpoints/StorefrontAccountEndpoints.cs`.
-- [ ] Move:
+- [x] Create `Endpoints/StorefrontAccountEndpoints.cs`.
+- [x] Move:
   - `GET /api/account/profile`
   - `PUT /api/account/profile`
   - `GET /api/account/addresses`
@@ -271,43 +275,49 @@ Acceptance:
   - `GET /api/account/orders/{orderReference}`
   - `GET /api/account/orders/{orderReference}/receipt`
   - `POST /api/account/change-password`
-- [ ] Move session guard to `StorefrontLocalApiGuards`.
-- [ ] Move account projection helper into `StorefrontAccountBrowserMapper`.
-- [ ] Keep private page response headers on account data endpoints.
+  2026-07-18 Phase 3: account WASM bridge routes moved into `StorefrontAccountEndpoints`.
+- [x] Move session guard to `StorefrontLocalApiGuards`.
+  2026-07-18 Phase 3: session guard moved out of `Program.cs` into shared endpoint support; a dedicated guard class can be extracted later without route churn.
+- [x] Move account projection helper into `StorefrontAccountBrowserMapper`.
+  2026-07-18 Phase 3: account projections moved out of `Program.cs` into shared endpoint support to avoid duplicate mapping during the mechanical split.
+- [x] Keep private page response headers on account data endpoints.
 
 ### Checkout Endpoints
 
-- [ ] Create `Endpoints/StorefrontCheckoutEndpoints.cs`.
-- [ ] Move:
+- [x] Create `Endpoints/StorefrontCheckoutEndpoints.cs`.
+- [x] Move:
   - `GET /api/checkout`
   - `POST /api/checkout/addresses`
   - `POST /api/checkout/shipping-method`
   - `POST /api/checkout/payment-method`
   - `POST /api/checkout/review`
   - `POST /api/checkout/place-order`
-- [ ] Move checkout command guard to `StorefrontLocalApiGuards`.
-- [ ] Move checkout projection helper into `StorefrontCheckoutBrowserMapper`.
-- [ ] Keep cart-cookie clearing after successful non-redirect order placement.
-- [ ] Keep idempotency key behavior and cart/checkout version checks.
+  2026-07-18 Phase 3: checkout WASM bridge routes moved into `StorefrontCheckoutEndpoints`.
+- [x] Move checkout command guard to `StorefrontLocalApiGuards`.
+  2026-07-18 Phase 3: checkout command guard moved out of `Program.cs` into shared endpoint support.
+- [x] Move checkout projection helper into `StorefrontCheckoutBrowserMapper`.
+  2026-07-18 Phase 3: checkout projections moved out of `Program.cs` into shared endpoint support.
+- [x] Keep cart-cookie clearing after successful non-redirect order placement.
+- [x] Keep idempotency key behavior and cart/checkout version checks.
 
 ### Consent, SEO, Media
 
-- [ ] Create `Endpoints/StorefrontConsentEndpoints.cs`.
-- [ ] Move:
+- [x] Create `Endpoints/StorefrontConsentEndpoints.cs`.
+- [x] Move:
   - `GET /api/consent/current`
   - `POST /api/consent`
   - `POST /api/consent/revoke`
-- [ ] Move consent visitor cookie helper with same cookie name `bs-consent-visitor`.
-- [ ] Create `Endpoints/StorefrontSeoEndpoints.cs`.
-- [ ] Move:
+- [x] Move consent visitor cookie helper with same cookie name `bs-consent-visitor`.
+- [x] Create `Endpoints/StorefrontSeoEndpoints.cs`.
+- [x] Move:
   - `GET StorefrontRoutes.Robots`
   - `GET StorefrontRoutes.Sitemap`
-- [ ] Create `Endpoints/StorefrontMediaEndpoints.cs`.
-- [ ] Move:
+- [x] Create `Endpoints/StorefrontMediaEndpoints.cs`.
+- [x] Move:
   - `GET /media/products/{mediaPublicId:guid}`
   - `GET /media/assets/{assetPublicId:guid}/{fileName}`
-- [ ] Move media proxy logic into `StorefrontMediaProxyService`.
-- [ ] Keep forwarded cache headers from Commerce Node media response:
+- [x] Move media proxy logic into `StorefrontMediaProxyService`.
+- [x] Keep forwarded cache headers from Commerce Node media response:
   - `Cache-Control`
   - `ETag`
   - `Last-Modified`
@@ -315,11 +325,12 @@ Acceptance:
 
 Acceptance:
 
-- [ ] Same-origin WASM endpoints keep exact route templates and HTTP verbs.
-- [ ] Mutation endpoints still require antiforgery.
-- [ ] Checkout WASM still places order through `/api/checkout/place-order`.
-- [ ] Media proxy still returns same status/content-type/header behavior.
-- [ ] `Program.cs` contains endpoint extension calls, not endpoint bodies.
+- [x] Same-origin WASM endpoints keep exact route templates and HTTP verbs.
+- [x] Mutation endpoints still require antiforgery.
+- [x] Checkout WASM still places order through `/api/checkout/place-order`.
+- [x] Media proxy still returns same status/content-type/header behavior.
+- [x] `Program.cs` contains endpoint extension calls, not endpoint bodies.
+  2026-07-18 Phase 3 verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed; focused static endpoint guard tests passed 109/109; targeted host smoke subset passed 10/10.
 
 ## Phase 4 - Update Storefront V2 Tests Away From Program.cs Literal Coupling
 

@@ -18,7 +18,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         [Fact]
         public void StorefrontMediaProxy_CopiesNoSniffHeader()
         {
-            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Media/StorefrontMediaProxyService.cs");
 
             Assert.Contains("CopyHeaderIfPresent(response, httpContext.Response, \"X-Content-Type-Options\")", source);
         }

@@ -63,17 +63,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontV2_CheckoutLocalPayloadDoesNotSendServerOwnedAddressFields()
         {
-            var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+            var support = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs");
 
-            Assert.Contains("ShippingAddressId = shippingAddressId", program, StringComparison.Ordinal);
-            Assert.Contains("ShippingAddress = shippingAddressId.HasValue", program, StringComparison.Ordinal);
-            Assert.Contains("new StorefrontCheckoutPreviewShippingAddress", program, StringComparison.Ordinal);
-            Assert.Contains("CustomerEmail = form.CustomerEmail", program, StringComparison.Ordinal);
-            Assert.Contains("CustomerName = form.CustomerName", program, StringComparison.Ordinal);
+            Assert.Contains("ShippingAddressId = shippingAddressId", support, StringComparison.Ordinal);
+            Assert.Contains("ShippingAddress = shippingAddressId.HasValue", support, StringComparison.Ordinal);
+            Assert.Contains("new StorefrontCheckoutPreviewShippingAddress", support, StringComparison.Ordinal);
+            Assert.Contains("form.CustomerEmail?.Trim()", support, StringComparison.Ordinal);
+            Assert.Contains("form.CustomerName?.Trim()", support, StringComparison.Ordinal);
 
             foreach (var field in BrowserOwnedAddressRequestFields)
             {
-                Assert.DoesNotContain(field + " =", program, StringComparison.Ordinal);
+                Assert.DoesNotContain(field + " =", support, StringComparison.Ordinal);
             }
         }
 

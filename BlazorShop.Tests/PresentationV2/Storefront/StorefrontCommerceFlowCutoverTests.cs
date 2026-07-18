@@ -39,7 +39,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void StorefrontV2CheckoutAndAccountFlow_UsesCanonicalRoutes()
         {
             var apiClient = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.cs");
-            var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+            var checkoutEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCheckoutEndpoints.cs");
             var checkoutShell = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Checkout/StorefrontCheckoutShell.razor");
 
             Assert.Contains("StorefrontCartSessionRoute = StorefrontCartRoute + \"/session\"", apiClient, StringComparison.Ordinal);
@@ -48,8 +48,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("orders/current-user", apiClient, StringComparison.Ordinal);
             Assert.Contains("GetCustomerOrderReceiptAsync", apiClient, StringComparison.Ordinal);
 
-            Assert.Contains("app.MapPost(\"/api/checkout/review\"", program, StringComparison.Ordinal);
-            Assert.Contains("app.MapPost(\"/api/checkout/place-order\"", program, StringComparison.Ordinal);
+            Assert.Contains("app.MapPost(\"/api/checkout/review\"", checkoutEndpoints, StringComparison.Ordinal);
+            Assert.Contains("app.MapPost(\"/api/checkout/place-order\"", checkoutEndpoints, StringComparison.Ordinal);
             Assert.Contains("\"/api/checkout/review\"", checkoutShell, StringComparison.Ordinal);
             Assert.Contains("\"/api/checkout/place-order\"", checkoutShell, StringComparison.Ordinal);
         }

@@ -108,13 +108,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void StorefrontLocalCart_PostsCurrencyCode()
         {
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
-            var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
-            var apiClient = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.cs");
+            var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCartEndpoints.cs");
+            var support = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs");
 
             Assert.Contains("CurrencyCode: (button.dataset.currencyCode", script);
             Assert.Contains("CurrencyCode: payload.CurrencyCode || null", script);
-            Assert.Contains("CurrencyCode = request.CurrencyCode", program);
-            Assert.Contains("public string? CurrencyCode { get; set; }", apiClient);
+            Assert.Contains("CurrencyCode = request.CurrencyCode", cartEndpoints);
+            Assert.Contains("public string? CurrencyCode { get; set; }", support);
         }
 
         [Fact]
@@ -122,7 +122,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/ProductPage.razor");
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
-            var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+            var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCartEndpoints.cs");
 
             Assert.Contains("data-storefront-selection-preview", markup);
             Assert.Contains("data-preview-route=\"/api/product-selection-preview\"", markup);
@@ -136,9 +136,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("SelectedAttributes: payload.SelectedAttributes || null", script);
             Assert.Contains("/api/product-selection-preview", script);
 
-            Assert.Contains("app.MapPost(\"/api/product-selection-preview\"", program);
-            Assert.Contains("PreviewProductSelectionAsync", program);
-            Assert.Contains("StorefrontLocalProductSelectionPreviewResponse", program);
+            Assert.Contains("app.MapPost(\"/api/product-selection-preview\"", cartEndpoints);
+            Assert.Contains("PreviewProductSelectionAsync", cartEndpoints);
+            Assert.Contains("StorefrontLocalProductSelectionPreviewResponse", cartEndpoints);
         }
 
         [Fact]

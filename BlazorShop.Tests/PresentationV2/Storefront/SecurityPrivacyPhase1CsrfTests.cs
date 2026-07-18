@@ -30,13 +30,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontCartMutationEndpoints_ValidateAntiforgery()
         {
-            var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+            var support = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs");
             var services = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontServiceCollectionExtensions.cs");
 
             Assert.Contains("options.HeaderName = \"X-CSRF-TOKEN\"", services, StringComparison.Ordinal);
-            Assert.Contains("ValidateLocalCartAntiforgeryAsync", program, StringComparison.Ordinal);
-            Assert.Contains("antiforgery.ValidateRequestAsync", program, StringComparison.Ordinal);
-            Assert.Contains("Security validation failed", program, StringComparison.Ordinal);
+            Assert.Contains("ValidateLocalCartAntiforgeryAsync", support, StringComparison.Ordinal);
+            Assert.Contains("antiforgery.ValidateRequestAsync", support, StringComparison.Ordinal);
+            Assert.Contains("Security validation failed", support, StringComparison.Ordinal);
         }
 
         private static string ReadRepositoryFile(string relativePath)

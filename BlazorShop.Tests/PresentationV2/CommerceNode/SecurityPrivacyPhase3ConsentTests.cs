@@ -57,7 +57,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         {
             var layout = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/MainLayout.razor");
             var banner = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Security/StorefrontConsentBanner.razor");
-            var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+            var consentEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontConsentEndpoints.cs");
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
 
             Assert.Contains("<StorefrontConsentBanner />", layout, StringComparison.Ordinal);
@@ -65,8 +65,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("pointer-events-auto", banner, StringComparison.Ordinal);
             Assert.Contains("z-[100]", banner, StringComparison.Ordinal);
             Assert.Contains("data-storefront-consent-revoke", banner, StringComparison.Ordinal);
-            Assert.Contains("/api/consent/current", program, StringComparison.Ordinal);
-            Assert.Contains("/api/consent/revoke", program, StringComparison.Ordinal);
+            Assert.Contains("/api/consent/current", consentEndpoints, StringComparison.Ordinal);
+            Assert.Contains("/api/consent/revoke", consentEndpoints, StringComparison.Ordinal);
             Assert.Contains("data-storefront-consent-manage", ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontFooter.razor"), StringComparison.Ordinal);
             Assert.Contains("sendConsentRequest", script, StringComparison.Ordinal);
             Assert.Contains("readAntiforgeryHeader", script, StringComparison.Ordinal);

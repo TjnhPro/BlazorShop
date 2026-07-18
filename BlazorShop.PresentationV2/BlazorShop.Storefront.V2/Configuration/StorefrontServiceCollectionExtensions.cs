@@ -9,6 +9,7 @@ namespace BlazorShop.Storefront.Configuration
     using BlazorShop.Storefront.Options;
     using BlazorShop.Storefront.Services;
     using BlazorShop.Storefront.Services.Contracts;
+    using BlazorShop.Storefront.Services.Media;
 
     using Microsoft.AspNetCore.RateLimiting;
     using Microsoft.Extensions.DependencyInjection;
@@ -75,6 +76,7 @@ namespace BlazorShop.Storefront.Configuration
             services.AddScoped<IStorefrontPageNavigationProvider, StorefrontPageNavigationProvider>();
             services.AddScoped<IStorefrontNavigationProvider, StorefrontNavigationProvider>();
             services.AddScoped<IStorefrontPriceFormatter, StorefrontPriceFormatter>();
+            services.AddScoped<StorefrontMediaProxyService>();
             services.AddScoped<StorefrontCartTokenService>();
             services.AddHttpClient<IStorefrontSessionResolver, StorefrontSessionResolver>()
                 .ConfigureHttpClient((serviceProvider, client) =>

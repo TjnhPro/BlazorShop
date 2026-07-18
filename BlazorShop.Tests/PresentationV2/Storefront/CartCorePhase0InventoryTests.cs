@@ -69,9 +69,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontV2_LocalCartEndpointsKeepBrowserPayloadCustomerSafe()
         {
-            var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
-            var addLineRoute = ExtractLambdaBody(program, "app.MapPost(\"/api/cart/lines\"");
-            var updateLineRoute = ExtractLambdaBody(program, "app.MapPut(\"/api/cart/lines/{lineId:guid}\"");
+            var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCartEndpoints.cs");
+            var addLineRoute = ExtractLambdaBody(cartEndpoints, "app.MapPost(\"/api/cart/lines\"");
+            var updateLineRoute = ExtractLambdaBody(cartEndpoints, "app.MapPut(\"/api/cart/lines/{lineId:guid}\"");
 
             Assert.Contains("ValidateLocalCartAntiforgeryAsync", addLineRoute, StringComparison.Ordinal);
             Assert.Contains("new StorefrontCartLineCreateRequest", addLineRoute, StringComparison.Ordinal);
@@ -106,7 +106,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void StorefrontV2_CartPageConsumesServerProjection()
         {
             var cartPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CartPage.razor.cs");
-            var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
+            var support = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs");
 
             Assert.DoesNotContain("GetProductByIdAsync", cartPage, StringComparison.Ordinal);
             Assert.DoesNotContain("LoadProductsAsync", cartPage, StringComparison.Ordinal);
@@ -115,8 +115,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("cartItem.QuantityMaximum", cartPage, StringComparison.Ordinal);
             Assert.Contains("cartItem.Warnings", cartPage, StringComparison.Ordinal);
             Assert.Contains("CheckoutAllowed", cartPage, StringComparison.Ordinal);
-            Assert.Contains("GrandTotal", program, StringComparison.Ordinal);
-            Assert.Contains("Adjustments", program, StringComparison.Ordinal);
+            Assert.Contains("GrandTotal", support, StringComparison.Ordinal);
+            Assert.Contains("Adjustments", support, StringComparison.Ordinal);
         }
 
         private static string ExtractClassBody(string source, string className)
