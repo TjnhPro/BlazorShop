@@ -62,14 +62,14 @@
         {
             <a href="@StorefrontRoutes.Product(Product.Slug)" aria-label="View @Product.Name" class="mt-4 block">
                 <div class="relative aspect-[4/3] overflow-hidden rounded-xl bg-neutral-50">
-                    <img src="@Product.Image" alt="@Product.Name" class="absolute inset-0 h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-105" />
+                    @ProductImageContent
                 </div>
             </a>
         }
         else
         {
             <div class="mt-4 relative aspect-[4/3] overflow-hidden rounded-xl bg-neutral-50">
-                <img src="@Product.Image" alt="@Product.Name" class="absolute inset-0 h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-105" />
+                @ProductImageContent
             </div>
         }
 
@@ -178,6 +178,26 @@
     private string? CardDescription => string.IsNullOrWhiteSpace(Product.ShortDescription)
         ? Product.Description
         : Product.ShortDescription;
+
+    private RenderFragment ProductImageContent => builder =>
+    {
+        if (!string.IsNullOrWhiteSpace(Product.Image))
+        {
+            builder.OpenElement(0, "img");
+            builder.AddAttribute(1, "src", Product.Image);
+            builder.AddAttribute(2, "alt", Product.Name);
+            builder.AddAttribute(3, "class", "absolute inset-0 h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-105");
+            builder.CloseElement();
+            return;
+        }
+
+        builder.OpenElement(4, "div");
+        builder.AddAttribute(5, "class", "absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-100 px-4 text-center text-sm font-semibold text-neutral-500");
+        builder.AddAttribute(6, "role", "img");
+        builder.AddAttribute(7, "aria-label", $"Image unavailable for {Product.Name}");
+        builder.AddContent(8, "Image unavailable");
+        builder.CloseElement();
+    };
 
     protected override async Task OnInitializedAsync()
     {

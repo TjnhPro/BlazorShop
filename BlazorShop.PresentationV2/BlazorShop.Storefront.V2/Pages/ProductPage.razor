@@ -30,7 +30,7 @@ else if (_product is not null)
             <div class="grid gap-8 lg:grid-cols-[1fr_1fr]">
                 <div class="rounded-3xl border border-neutral-200/70 bg-white/90 p-6 shadow-lg">
                     <div class="relative aspect-[4/3] overflow-hidden rounded-2xl bg-neutral-50">
-                        <img src="@_product.Image" alt="@_product.Name" class="absolute inset-0 h-full w-full object-contain" />
+                        @ProductImageContent
                     </div>
                 </div>
 
@@ -418,6 +418,26 @@ else if (_product is not null)
     private string ProductSeoContentTitle => _product?.Name is { Length: > 0 } productName
         ? $"More about {productName}"
         : string.Empty;
+
+    private RenderFragment ProductImageContent => builder =>
+    {
+        if (!string.IsNullOrWhiteSpace(_product?.Image))
+        {
+            builder.OpenElement(0, "img");
+            builder.AddAttribute(1, "src", _product.Image);
+            builder.AddAttribute(2, "alt", _product.Name);
+            builder.AddAttribute(3, "class", "absolute inset-0 h-full w-full object-contain");
+            builder.CloseElement();
+            return;
+        }
+
+        builder.OpenElement(4, "div");
+        builder.AddAttribute(5, "class", "absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-100 px-6 text-center text-sm font-semibold text-neutral-500");
+        builder.AddAttribute(6, "role", "img");
+        builder.AddAttribute(7, "aria-label", $"Image unavailable for {_product?.Name ?? "product"}");
+        builder.AddContent(8, "Image unavailable");
+        builder.CloseElement();
+    };
 
     [Parameter]
     public string Slug { get; set; } = string.Empty;
