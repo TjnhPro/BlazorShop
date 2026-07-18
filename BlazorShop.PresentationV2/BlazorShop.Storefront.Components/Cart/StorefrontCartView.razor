@@ -241,7 +241,14 @@
                 JS.InvokeAsync<IJSObjectReference>(
                     "import",
                     "./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js").AsTask());
-            await LoadCartAsync();
+            if (_cart is null)
+            {
+                await LoadCartAsync();
+            }
+            else
+            {
+                await PublishCartChangedAsync(_cart.Count);
+            }
         }
     }
 

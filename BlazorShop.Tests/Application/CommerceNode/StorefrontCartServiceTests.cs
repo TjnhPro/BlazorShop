@@ -403,6 +403,56 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public async Task AddLineAsync_ProjectsVariantLineWithProductNameAndVariantAttributes()
+        {
+            await using var context = CreateContext();
+            var productRepository = new Mock<IProductReadRepository>();
+            var service = CreateService(context, productRepository);
+            var storeId = Guid.NewGuid();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            var variant = new ProductVariant
+            {
+                Id = Guid.NewGuid(),
+                ProductId = product.Id,
+                Stock = 5,
+                Price = 22m,
+                IsActive = true,
+                DisplayName = "Red / XL",
+                AttributesJson = """[{"name":"Color","value":"Red"},{"name":"Size","value":"XL"}]""",
+            };
+            product.ProductType = ProductTypes.VariantInventory;
+            product.Variants.Add(variant);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cart = await service.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+
+            var result = await service.AddLineAsync(new StorefrontCartAddLineRequest(
+                storeId,
+                cart.Payload!.Token!,
+                product.Id,
+                ProductVariantId: variant.Id,
+                Quantity: 1));
+
+            Assert.True(result.Success, result.Message);
+            var line = Assert.Single(result.Payload!.Lines);
+            Assert.Equal("Published product", line.DisplayName);
+            Assert.Equal(variant.Id, line.ProductVariantId);
+            Assert.Collection(
+                line.SelectedAttributes ?? [],
+                attribute =>
+                {
+                    Assert.Equal("Color", attribute.Name);
+                    Assert.Equal("Red", attribute.Value);
+                },
+                attribute =>
+                {
+                    Assert.Equal("Size", attribute.Name);
+                    Assert.Equal("XL", attribute.Value);
+                });
+        }
+
+        [Fact]
         public async Task AddLineAsync_RejectsQuantityBelowMinimum_BeforeProductLookup()
         {
             await using var context = CreateContext();

@@ -105,6 +105,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Cart/StorefrontCartView.razor");
 
             Assert.Contains("GetAsync<StorefrontBrowserCart>(\"/api/cart\")", component, StringComparison.Ordinal);
+            Assert.Contains("if (_cart is null)", component, StringComparison.Ordinal);
+            Assert.Contains("await LoadCartAsync();", component, StringComparison.Ordinal);
+            Assert.Contains("await PublishCartChangedAsync(_cart.Count);", component, StringComparison.Ordinal);
             Assert.Contains("PutJsonAsync<StorefrontBrowserCartQuantityRequest, StorefrontBrowserCart>", component, StringComparison.Ordinal);
             Assert.Contains("DeleteAsync<StorefrontBrowserCart>($\"/api/cart/lines/{line.LineId:D}\")", component, StringComparison.Ordinal);
             Assert.Contains("DeleteAsync<StorefrontBrowserCart>(\"/api/cart\")", component, StringComparison.Ordinal);

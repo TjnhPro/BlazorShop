@@ -8,6 +8,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
     using BlazorShop.Application.CommerceNode.ProductSelections;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.DTOs;
+    using BlazorShop.Application.Services;
     using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities;
@@ -528,6 +529,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
             unitPrice = this.moneyRoundingService.RoundUnitPrice(unitPrice, currencyCode);
             var lineTotal = this.moneyRoundingService.RoundLineTotal(unitPrice * line.Quantity, currencyCode);
             var displayName = ResolveLineDisplayName(product, variant);
+            var displayAttributes = ResolveLineSelectedAttributes(selectedAttributes, variant);
 
             return line with
             {
@@ -535,7 +537,7 @@ namespace BlazorShop.Application.CommerceNode.Carts
                 ProductSlug = product.Slug,
                 ProductUrl = string.IsNullOrWhiteSpace(product.Slug) ? null : $"/products/{product.Slug.Trim()}",
                 ImageUrl = product.Image,
-                SelectedAttributes = selectedAttributes,
+                SelectedAttributes = displayAttributes,
                 UnitPrice = unitPrice,
                 LineSubtotal = lineTotal,
                 LineTotal = lineTotal,
@@ -555,12 +557,27 @@ namespace BlazorShop.Application.CommerceNode.Carts
 
         private static string ResolveLineDisplayName(Product product, ProductVariant? variant)
         {
-            if (!string.IsNullOrWhiteSpace(variant?.DisplayName))
+            return string.IsNullOrWhiteSpace(product.Name) ? "Product" : product.Name.Trim();
+        }
+
+        private static IReadOnlyList<SelectedAttributeDto> ResolveLineSelectedAttributes(
+            IReadOnlyList<SelectedAttributeDto> selectedAttributes,
+            ProductVariant? variant)
+        {
+            if (selectedAttributes.Count > 0 || variant is null)
             {
-                return variant.DisplayName.Trim();
+                return selectedAttributes;
             }
 
-            return string.IsNullOrWhiteSpace(product.Name) ? "Product" : product.Name.Trim();
+            var variantAttributes = ProductVariantAttributeNormalizer.Deserialize(variant.AttributesJson);
+            if (variantAttributes.Count == 0 && !string.IsNullOrWhiteSpace(variant.DisplayName))
+            {
+                return [new SelectedAttributeDto("Variant", variant.DisplayName.Trim())];
+            }
+
+            return variantAttributes
+                .Select(attribute => new SelectedAttributeDto(attribute.Name, attribute.Value))
+                .ToArray();
         }
 
         private static IReadOnlyList<SelectedAttributeDto> DeserializeSelectedAttributes(string? selectedAttributesJson)
