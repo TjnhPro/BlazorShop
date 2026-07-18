@@ -10,6 +10,7 @@ namespace BlazorShop.Storefront.Services
     public sealed class StorefrontAuthClient : IStorefrontAuthClient
     {
         private const string RegisterRoute = "auth/register";
+        private const string RegistrationPolicyRoute = "auth/registration-policy";
         private const string LoginRoute = "auth/login";
         private const string ForgotPasswordRoute = "auth/forgot-password";
         private const string ResetPasswordRoute = "auth/reset-password";
@@ -41,6 +42,22 @@ namespace BlazorShop.Storefront.Services
                 user,
                 "Unable to create your account right now.",
                 cancellationToken);
+        }
+
+        public async Task<StorefrontAuthResult<StorefrontRegistrationPolicy>> GetRegistrationPolicyAsync(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                using var response = await this.httpClient.GetAsync(RegistrationPolicyRoute, cancellationToken);
+                return await CreateResultAsync<StorefrontRegistrationPolicy>(
+                    response,
+                    "Unable to load registration policy right now.",
+                    cancellationToken);
+            }
+            catch (Exception exception) when (exception is HttpRequestException or JsonException or NotSupportedException or TaskCanceledException)
+            {
+                return StorefrontAuthResult<StorefrontRegistrationPolicy>.Failed("Unable to load registration policy right now.");
+            }
         }
 
         public Task<StorefrontAuthResult<object>> ForgotPasswordAsync(

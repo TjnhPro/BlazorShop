@@ -156,6 +156,14 @@ app.MapPost(StorefrontRoutes.Register, async (
     CancellationToken cancellationToken) =>
 {
     var safeReturnUrl = StorefrontReturnUrl.Normalize(form.ReturnUrl);
+    var policy = await authClient.GetRegistrationPolicyAsync(cancellationToken);
+    if (policy.Success
+        && policy.Data is not null
+        && !policy.Data.RegistrationAllowed)
+    {
+        return Results.Redirect(StorefrontReturnUrl.BuildRegisterUrl(safeReturnUrl, policy.Data.Message));
+    }
+
     if (string.IsNullOrWhiteSpace(form.FullName)
         || string.IsNullOrWhiteSpace(form.Email)
         || string.IsNullOrWhiteSpace(form.Password)

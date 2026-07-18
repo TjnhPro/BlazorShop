@@ -8,6 +8,8 @@ namespace BlazorShop.Storefront.Services.Contracts
 
         Task<StorefrontAuthResult<object>> RegisterAsync(CreateUser user, CancellationToken cancellationToken = default);
 
+        Task<StorefrontAuthResult<StorefrontRegistrationPolicy>> GetRegistrationPolicyAsync(CancellationToken cancellationToken = default);
+
         Task<StorefrontAuthResult<object>> ForgotPasswordAsync(string email, string? captchaToken, CancellationToken cancellationToken = default);
 
         Task<StorefrontAuthResult<object>> ResetPasswordAsync(string email, string token, string password, string confirmPassword, CancellationToken cancellationToken = default);
@@ -18,6 +20,11 @@ namespace BlazorShop.Storefront.Services.Contracts
     }
 
     public sealed record StorefrontTokenResponse(string AccessToken, DateTime ExpiresAtUtc);
+
+    public sealed record StorefrontRegistrationPolicy(
+        string Mode,
+        bool RegistrationAllowed,
+        string Message);
 
     public sealed record StorefrontAuthResult<TData>(
         bool Success,

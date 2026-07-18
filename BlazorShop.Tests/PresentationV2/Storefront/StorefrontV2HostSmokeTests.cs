@@ -192,6 +192,31 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task Register_WhenRegistrationDisabled_RendersDisabledStateWithoutSubmit()
+        {
+            using var client = CreateClient(services =>
+            {
+                services.RemoveAll<IStorefrontSessionResolver>();
+                services.RemoveAll<IStorefrontAuthClient>();
+                services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
+                services.AddScoped<IStorefrontAuthClient>(_ => new StubStorefrontAuthClient(
+                    registrationPolicyResult: StorefrontAuthResult<StorefrontRegistrationPolicy>.Succeeded(
+                        new StorefrontRegistrationPolicy("disabled", false, "Customer registration is disabled."),
+                        "Registration policy returned.",
+                        [])));
+            });
+
+            using var response = await client.GetAsync(StorefrontRoutes.Register);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("Customer registration is disabled.", content, StringComparison.Ordinal);
+            Assert.DoesNotContain("method=\"post\"", content, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("name=\"FullName\"", content, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("data-storefront-captcha-token=\"registration\"", content, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public async Task Register_PostPasswordMismatch_RedirectsWithMessageWithoutCallingApi()
         {
             var authClient = new StubStorefrontAuthClient(registerResult: StorefrontAuthResult<object>.Succeeded(new object(), "Created.", []));
@@ -211,6 +236,34 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
             Assert.Equal("/register?returnUrl=%2Fcheckout&error=Passwords%20do%20not%20match.", response.Headers.Location?.ToString());
+            Assert.Equal(0, authClient.RegisterCalls);
+        }
+
+        [Fact]
+        public async Task Register_PostWhenRegistrationDisabled_RedirectsWithoutCallingRegister()
+        {
+            var authClient = new StubStorefrontAuthClient(
+                registerResult: StorefrontAuthResult<object>.Succeeded(new object(), "Created.", []),
+                registrationPolicyResult: StorefrontAuthResult<StorefrontRegistrationPolicy>.Succeeded(
+                    new StorefrontRegistrationPolicy("disabled", false, "Customer registration is disabled."),
+                    "Registration policy returned.",
+                    []));
+            using var client = CreateClient(
+                services =>
+                {
+                    services.RemoveAll<IStorefrontSessionResolver>();
+                    services.RemoveAll<IStorefrontAuthClient>();
+                    services.AddScoped<IStorefrontSessionResolver>(_ => new StubStorefrontSessionResolver(StorefrontSessionInfo.Anonymous));
+                    services.AddScoped<IStorefrontAuthClient>(_ => authClient);
+                },
+                allowAutoRedirect: false);
+
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.SignIn);
+            using var request = CreateRegisterPost(token, cookieHeader, "/checkout");
+            using var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/register?returnUrl=%2Fcheckout&error=Customer%20registration%20is%20disabled.", response.Headers.Location?.ToString());
             Assert.Equal(0, authClient.RegisterCalls);
         }
 
@@ -1550,6 +1603,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             private readonly StorefrontAuthResult<StorefrontTokenResponse> loginResult;
             private readonly StorefrontAuthResult<object> registerResult;
+            private readonly StorefrontAuthResult<StorefrontRegistrationPolicy> registrationPolicyResult;
             private readonly StorefrontAuthResult<object> forgotPasswordResult;
             private readonly StorefrontAuthResult<object> resetPasswordResult;
             private readonly StorefrontAuthResult<object> changePasswordResult;
@@ -1558,6 +1612,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             public StubStorefrontAuthClient(
                 StorefrontAuthResult<StorefrontTokenResponse>? loginResult = null,
                 StorefrontAuthResult<object>? registerResult = null,
+                StorefrontAuthResult<StorefrontRegistrationPolicy>? registrationPolicyResult = null,
                 StorefrontAuthResult<object>? forgotPasswordResult = null,
                 StorefrontAuthResult<object>? resetPasswordResult = null,
                 StorefrontAuthResult<object>? changePasswordResult = null,
@@ -1565,6 +1620,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             {
                 this.loginResult = loginResult ?? StorefrontAuthResult<StorefrontTokenResponse>.Failed("Login is not used by this test.");
                 this.registerResult = registerResult ?? StorefrontAuthResult<object>.Failed("Register is not used by this test.");
+                this.registrationPolicyResult = registrationPolicyResult
+                    ?? StorefrontAuthResult<StorefrontRegistrationPolicy>.Succeeded(
+                        new StorefrontRegistrationPolicy("standard", true, "Customer registration is available."),
+                        "Registration policy returned.",
+                        []);
                 this.forgotPasswordResult = forgotPasswordResult ?? StorefrontAuthResult<object>.Failed("Forgot password is not used by this test.");
                 this.resetPasswordResult = resetPasswordResult ?? StorefrontAuthResult<object>.Failed("Reset password is not used by this test.");
                 this.changePasswordResult = changePasswordResult ?? StorefrontAuthResult<object>.Failed("Change password is not used by this test.");
@@ -1599,6 +1659,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 this.RegisterCalls++;
                 this.LastRegisteredUser = user;
                 return Task.FromResult(this.registerResult);
+            }
+
+            public Task<StorefrontAuthResult<StorefrontRegistrationPolicy>> GetRegistrationPolicyAsync(CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(this.registrationPolicyResult);
             }
 
             public Task<StorefrontAuthResult<object>> ForgotPasswordAsync(string email, string? captchaToken, CancellationToken cancellationToken = default)

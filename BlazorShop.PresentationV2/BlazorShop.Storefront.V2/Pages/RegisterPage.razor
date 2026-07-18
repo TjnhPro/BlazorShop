@@ -1,5 +1,6 @@
 @page "/register"
 @inject IStorefrontSessionResolver SessionResolver
+@inject IStorefrontAuthClient AuthClient
 @inject NavigationManager NavigationManager
 
 <PageTitle>Create account</PageTitle>
@@ -25,51 +26,60 @@
                     </div>
                 }
 
-                <form method="post" action="@PostAction" class="max-w-xl space-y-5">
-                    <AntiforgeryToken />
-                    <input type="hidden" name="ReturnUrl" value="@SafeReturnUrl" />
-                    <input type="hidden" name="CaptchaToken" data-storefront-captcha-token="registration" />
+                @if (!RegistrationAllowed)
+                {
+                    <div class="max-w-xl rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm font-medium text-amber-900" role="status">
+                        @RegistrationMessage
+                    </div>
+                }
+                else
+                {
+                    <form method="post" action="@PostAction" class="max-w-xl space-y-5">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="ReturnUrl" value="@SafeReturnUrl" />
+                        <input type="hidden" name="CaptchaToken" data-storefront-captcha-token="registration" />
 
-                    <label class="block text-sm">
-                        <span class="font-semibold text-neutral-800">Full name</span>
-                        <input name="FullName"
-                               type="text"
-                               autocomplete="name"
-                               required
-                               class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                    </label>
+                        <label class="block text-sm">
+                            <span class="font-semibold text-neutral-800">Full name</span>
+                            <input name="FullName"
+                                   type="text"
+                                   autocomplete="name"
+                                   required
+                                   class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
+                        </label>
 
-                    <label class="block text-sm">
-                        <span class="font-semibold text-neutral-800">Email address</span>
-                        <input name="Email"
-                               type="email"
-                               autocomplete="email"
-                               required
-                               class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                    </label>
+                        <label class="block text-sm">
+                            <span class="font-semibold text-neutral-800">Email address</span>
+                            <input name="Email"
+                                   type="email"
+                                   autocomplete="email"
+                                   required
+                                   class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
+                        </label>
 
-                    <label class="block text-sm">
-                        <span class="font-semibold text-neutral-800">Password</span>
-                        <input name="Password"
-                               type="password"
-                               autocomplete="new-password"
-                               required
-                               class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                    </label>
+                        <label class="block text-sm">
+                            <span class="font-semibold text-neutral-800">Password</span>
+                            <input name="Password"
+                                   type="password"
+                                   autocomplete="new-password"
+                                   required
+                                   class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
+                        </label>
 
-                    <label class="block text-sm">
-                        <span class="font-semibold text-neutral-800">Confirm password</span>
-                        <input name="ConfirmPassword"
-                               type="password"
-                               autocomplete="new-password"
-                               required
-                               class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
-                    </label>
+                        <label class="block text-sm">
+                            <span class="font-semibold text-neutral-800">Confirm password</span>
+                            <input name="ConfirmPassword"
+                                   type="password"
+                                   autocomplete="new-password"
+                                   required
+                                   class="mt-2 min-h-11 w-full rounded-xl border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-neutral-600 focus:ring-2 focus:ring-neutral-100" />
+                        </label>
 
-                    <button type="submit" class="inline-flex w-full items-center justify-center rounded bg-neutral-900 px-4 py-3 font-semibold text-white hover:bg-neutral-800">
-                        Create account
-                    </button>
-                </form>
+                        <button type="submit" class="inline-flex w-full items-center justify-center rounded bg-neutral-900 px-4 py-3 font-semibold text-white hover:bg-neutral-800">
+                            Create account
+                        </button>
+                    </form>
+                }
             </div>
 
             <footer class="border-t border-neutral-200 px-6 py-5 text-sm text-neutral-700 sm:px-8">
@@ -109,12 +119,23 @@
 
     private string SignInUrl => StorefrontReturnUrl.BuildSignInUrl(this.SafeReturnUrl);
 
+    private bool RegistrationAllowed { get; set; } = true;
+
+    private string RegistrationMessage { get; set; } = "Customer registration is disabled.";
+
     protected override async Task OnInitializedAsync()
     {
         var session = await SessionResolver.GetCurrentUserAsync();
         if (session.IsAuthenticated)
         {
             NavigationManager.NavigateTo(this.SafeReturnUrl, replace: true);
+        }
+
+        var policy = await AuthClient.GetRegistrationPolicyAsync();
+        if (policy.Success && policy.Data is not null)
+        {
+            RegistrationAllowed = policy.Data.RegistrationAllowed;
+            RegistrationMessage = policy.Data.Message;
         }
     }
 }

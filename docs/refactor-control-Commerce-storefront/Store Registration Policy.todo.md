@@ -127,24 +127,27 @@ Acceptance:
 
 ## Phase 4 - Storefront V2 Register UX
 
-- [ ] Them DTO/client trong `StorefrontAuthClient`:
+- [x] Them DTO/client trong `StorefrontAuthClient`:
   - `GetRegistrationPolicyAsync`.
-- [ ] Update `IStorefrontAuthClient`.
-- [ ] Update `RegisterPage.razor`:
+  2026-07-18 Phase 4: added `StorefrontRegistrationPolicy` and `GetRegistrationPolicyAsync`.
+- [x] Update `IStorefrontAuthClient`. 2026-07-18 Phase 4: interface includes policy method.
+- [x] Update `RegisterPage.razor`:
   - load policy trong `OnInitializedAsync` sau auth redirect check.
   - neu `registrationAllowed = false`, hien disabled state thay vi form submit.
   - giu noindex/nofollow.
   - link ve sign-in van con cho customer hien co.
-- [ ] Update local POST `/register` trong `Program.cs`:
+  2026-07-18 Phase 4: register page renders disabled state instead of the register form when policy disallows registration.
+- [x] Update local POST `/register` trong `Program.cs`:
   - check policy truoc validate form/captcha/register.
   - neu disabled, redirect ve `/register?error=...` hoac tra disabled state message nhat quan.
-- [ ] Dam bao message khong noi ve internal config/env.
+  2026-07-18 Phase 4: local POST checks policy before form validation/RegisterAsync.
+- [x] Dam bao message khong noi ve internal config/env. 2026-07-18 Phase 4: UI uses public policy `message`.
 
 Acceptance:
 
-- [ ] Browser khong co nut submit active khi disabled.
-- [ ] Tamper POST local `/register` khong tao account va hien message dung.
-- [ ] Enabled mode van render form va register flow khong doi.
+- [x] Browser khong co nut submit active khi disabled. 2026-07-18 Phase 4: host smoke test asserts no register form fields/captcha token when disabled.
+- [x] Tamper POST local `/register` khong tao account va hien message dung. 2026-07-18 Phase 4: host smoke test asserts disabled POST redirects and `RegisterAsync` is not called.
+- [x] Enabled mode van render form va register flow khong doi. 2026-07-18 Phase 4: existing register enabled host tests passed.
 
 ## Phase 5 - Tests And Contract Gates
 

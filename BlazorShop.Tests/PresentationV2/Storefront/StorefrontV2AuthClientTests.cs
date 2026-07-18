@@ -100,6 +100,29 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task GetRegistrationPolicyAsync_ReadsScopedPolicyEndpoint()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal("/api/storefront/stores/default/auth/registration-policy", request.RequestUri?.AbsolutePath);
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    """{"success":true,"message":"Registration policy returned.","data":{"mode":"disabled","registrationAllowed":false,"message":"Customer registration is disabled."}}""");
+            });
+
+            var authClient = new StorefrontAuthClient(CreateClient(handler));
+
+            var result = await authClient.GetRegistrationPolicyAsync();
+
+            Assert.True(result.Success);
+            Assert.Equal("disabled", result.Data?.Mode);
+            Assert.False(result.Data?.RegistrationAllowed);
+            Assert.Equal("Customer registration is disabled.", result.Data?.Message);
+            Assert.Equal(["/api/storefront/stores/default/auth/registration-policy"], handler.RequestPaths);
+        }
+
+        [Fact]
         public async Task ForgotPasswordAsync_PostsScopedRecoveryRequest()
         {
             var handler = new RecordingHandler(request =>
