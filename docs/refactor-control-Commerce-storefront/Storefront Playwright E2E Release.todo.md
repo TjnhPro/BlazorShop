@@ -5,6 +5,59 @@ Date: 2026-07-18
 Source checklist: `blazorshop_playwright_qa_checklist.md`  
 Purpose: gom các testcase phù hợp và testcase còn thiếu thành checklist Playwright browser E2E để gate release/public production.
 
+## QA Evidence - 2026-07-18 Headed Chromium P0 Route/Network Baseline
+
+Command:
+
+```powershell
+.\.gstack\playwright-qa\node_modules\.bin\playwright.cmd test --config .gstack/playwright-qa/playwright.config.js --headed --reporter=line
+```
+
+Runtime:
+
+- Base URL: `http://localhost:18598`
+- Runner: `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser`
+- Browser: Chromium, `headless=false`
+- Result after fix: `3 passed (1.3m)`
+- Fix commit from QA: `809010a fix(qa): ISSUE-001 restore storefront favicon`
+
+Request diagnosis rules used by this run:
+
+- Per route idle audit window: `5000ms`
+- Allowed `GET /api/cart` during idle audit: maximum `2`
+- Allowed browser calls to `/api/internal/*`, `/api/commerce/*`, `/api/control-plane/*`: `0`
+- Allowed unexpected `5xx`: `0`
+
+Evidence artifacts:
+
+| Case | Status | Evidence |
+| --- | --- | --- |
+| `RUN-001 P0` home HTTP 200/no console error | PASS | `.gstack/qa-reports/storefront-release-2026-07-18/screenshots/run-001-home.png`, `.gstack/qa-reports/storefront-release-2026-07-18/run-001-home-network.json` |
+| `RUN-002 P0` direct route load subset: `/my-cart`, `/checkout`, `/account/profile`, `/account/orders` | PASS subset | `.gstack/qa-reports/storefront-release-2026-07-18/run-seo-route-evidence.json` |
+| `RUN-004 P0` mobile home no horizontal overflow | PASS | `.gstack/qa-reports/storefront-release-2026-07-18/screenshots/run-004-mobile-home.png`, `.gstack/qa-reports/storefront-release-2026-07-18/run-004-mobile-home-network.json` |
+| `RUN-010 P0` browser network no admin/internal/control direct calls on tested routes | PASS subset | All `*-network.json` files under `.gstack/qa-reports/storefront-release-2026-07-18/` report `forbiddenBrowserCalls: []` |
+| `SEO-003 P0` private route noindex subset: `/my-cart`, `/checkout`, `/account/profile`, `/account/orders` | PASS | `.gstack/qa-reports/storefront-release-2026-07-18/run-seo-route-evidence.json` records `robots: "noindex,nofollow"` |
+| `SEO-004 P0` robots route HTTP 200/no request spam | PASS | `.gstack/qa-reports/storefront-release-2026-07-18/screenshots/seo-004-robots.png`, `.gstack/qa-reports/storefront-release-2026-07-18/seo-004-robots-network.json` |
+| `SEO-005 P0` sitemap route HTTP 200/no request spam | PASS | `.gstack/qa-reports/storefront-release-2026-07-18/screenshots/seo-005-sitemap.png`, `.gstack/qa-reports/storefront-release-2026-07-18/seo-005-sitemap-network.json` |
+| `CART-001 P0` `/my-cart` prerender/hydration visible | PASS | `.gstack/qa-reports/storefront-release-2026-07-18/screenshots/cart-001-empty-cart.png`, `.gstack/qa-reports/storefront-release-2026-07-18/cart-empty-evidence.json` |
+| `CART-002 P0` empty cart state visible | PASS | `.gstack/qa-reports/storefront-release-2026-07-18/screenshots/cart-001-empty-cart.png` |
+
+Request limit evidence from representative routes:
+
+| Route | Total requests in 5s audit | `GET /api/cart` | Forbidden browser calls | Unexpected 5xx |
+| --- | ---: | ---: | ---: | ---: |
+| `/` | 221 | 1 | 0 | 0 |
+| `/my-cart` | 220 | 2 | 0 | 0 |
+| mobile `/` | 221 | 1 | 0 | 0 |
+
+Failure found and fixed:
+
+- `ISSUE-001`: Chromium requested `/favicon.ico`; Storefront returned `404`, creating console error and failing release QA. Fixed by mapping `/favicon.ico` to redirect to `/icon-192.png`; regression test added in `LayoutAssetFoundationTests.StorefrontProgram_KeepsStaticAssetMiddleware`.
+
+Not covered in this run:
+
+- Full release gate order placement, COD, sandbox payment, S1/S2 isolation, authenticated account mutation, variant inventory tamper, Firefox/WebKit matrix. These still require synthetic fixture setup listed under `Fixture Gate`.
+
 ## Codebase Baseline
 
 Kết luận theo code hiện tại:
