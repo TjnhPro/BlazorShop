@@ -1048,7 +1048,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 product.PurchasingDisabled,
                 product.ManageStock,
                 product.Variants.Any(),
-                product.Variants.Any(variant => variant.IsActive && variant.Stock > 0),
+                IsProductInStock(product),
                 product.Quantity);
             return reasons;
         }

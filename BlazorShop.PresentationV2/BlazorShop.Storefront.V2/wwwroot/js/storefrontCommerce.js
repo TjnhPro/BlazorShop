@@ -457,20 +457,26 @@
       ? preview.validationMessages.filter(Boolean)
       : [];
 
-    setText(price, preview.formattedUnitPrice || "");
-    setText(compare, preview.formattedComparePrice || "");
-    toggleHidden(compare, !preview.formattedComparePrice);
-    setText(stock, preview.isAvailable ? `${preview.stockQuantity} in stock` : "Out of stock");
-    setText(sku, preview.sku ? `SKU ${preview.sku}` : "");
-    toggleHidden(sku, !preview.sku);
+    if (preview.isValid) {
+      setText(price, preview.formattedUnitPrice || "");
+      setText(compare, preview.formattedComparePrice || "");
+      toggleHidden(compare, !preview.formattedComparePrice);
+      setText(stock, preview.isAvailable ? `${preview.stockQuantity} in stock` : "Out of stock");
+      setText(sku, preview.sku ? `SKU ${preview.sku}` : "");
+      toggleHidden(sku, !preview.sku);
+    }
+
     setText(message, validationMessages[0] || (preview.canAddToCart ? "Selection ready." : "This selection is not available."));
 
     if (button instanceof HTMLButtonElement) {
       button.disabled = !preview.canAddToCart;
       button.dataset.resolvedVariantId = preview.productVariantId || "";
-      button.dataset.unitPrice = String(preview.unitPrice ?? button.dataset.unitPrice ?? "");
+      if (preview.isValid) {
+        button.dataset.unitPrice = String(preview.unitPrice ?? button.dataset.unitPrice ?? "");
+        button.dataset.stock = String(preview.stockQuantity ?? button.dataset.stock ?? "0");
+      }
+
       button.dataset.currencyCode = preview.currencyCode || button.dataset.currencyCode || "";
-      button.dataset.stock = String(preview.stockQuantity ?? button.dataset.stock ?? "0");
     }
 
     container.dataset.resolvedVariantId = preview.productVariantId || "";

@@ -210,7 +210,7 @@ else if (_product is not null)
 
                     <div class="mt-4 flex flex-wrap gap-3">
                         <button type="button"
-                                class="inline-flex items-center rounded bg-amber-500 px-4 py-2 font-semibold text-white hover:bg-amber-600"
+                                class="@AddToCartButtonClass"
                                 data-storefront-add-to-cart
                                 data-default-label="Add to Cart"
                                 data-success-label="Added"
@@ -392,6 +392,10 @@ else if (_product is not null)
     private bool CanSubmitInitialPurchase =>
         _product is not null
         && !_product.PurchaseBlockReasons.Any(IsInitialPurchaseHardBlock);
+
+    private string AddToCartButtonClass => CanSubmitInitialPurchase
+        ? "inline-flex items-center rounded bg-amber-500 px-4 py-2 font-semibold text-white hover:bg-amber-600"
+        : "inline-flex cursor-not-allowed items-center rounded bg-neutral-300 px-4 py-2 font-semibold text-neutral-600 hover:bg-neutral-300";
 
     private static bool IsInitialPurchaseHardBlock(string reason) =>
         reason is "not_visible"
