@@ -37,7 +37,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [InlineData("StorefrontPlaceOrderRequest")]
         public void CommerceNode_PublicCheckoutAddressContractsDoNotExposeServerOwnedFields(string className)
         {
-            var contracts = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Contracts/Storefront/StorefrontApiContracts.cs");
+            var contracts = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Contracts/Storefront/AddressContracts.cs")
+                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Contracts/Storefront/CheckoutContracts.cs");
             var classBody = ExtractClassBody(contracts, className);
 
             foreach (var field in BrowserOwnedAddressRequestFields.Concat(OrderSnapshotAddressFields))

@@ -24,7 +24,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [InlineData("StorefrontCartValidateRequest")]
         public void CommerceNode_PublicCartRequestContractsDoNotExposeServerOwnedFields(string className)
         {
-            var contracts = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Contracts/Storefront/StorefrontApiContracts.cs");
+            var contracts = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Contracts/Storefront/CartContracts.cs");
             var classBody = ExtractClassBody(contracts, className);
 
             foreach (var field in BrowserOwnedCartRequestFields)
@@ -48,7 +48,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void CommerceNode_CartContractMappingDoesNotTrustBrowserIdentityOrPrice()
         {
-            var mappings = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Contracts/Storefront/StorefrontContractMappings.cs");
+            var mappings = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Contracts/Storefront/CartMappings.cs");
             var addLineMapping = ExtractMethodBody(mappings, "this StorefrontCartLineCreateRequest request");
             var updateLineMapping = ExtractMethodBody(mappings, "this StorefrontCartLineUpdateRequest request");
 

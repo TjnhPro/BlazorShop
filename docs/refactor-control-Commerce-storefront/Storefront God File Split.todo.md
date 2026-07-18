@@ -383,7 +383,7 @@ Acceptance:
 
 ## Phase 6 - Split Commerce Node Storefront Contracts And Mappings
 
-- [ ] Split `StorefrontApiContracts.cs` by capability only after controller split is stable:
+- [x] Split `StorefrontApiContracts.cs` by capability only after controller split is stable:
   - `AddressContracts.cs`
   - `AuthContracts.cs`
   - `CatalogContracts.cs`
@@ -396,17 +396,21 @@ Acceptance:
   - `PaymentContracts.cs`
   - `SeoContracts.cs`
   - `StoreContracts.cs`
-- [ ] Keep namespace `BlazorShop.CommerceNode.API.Contracts.Storefront`.
-- [ ] Keep public DTO names and JSON property shapes.
-- [ ] Split `StorefrontContractMappings.cs` by capability if it reduces file size without duplicate mapping logic.
-- [ ] Keep extension method names stable where tests or controllers call them.
-- [ ] Remove DTOs/mappings for retired legacy flow only when the cutover plan has completed the matching endpoint removal.
+  2026-07-18 Phase 6: also split `CommonContracts.cs`, `CommunicationContracts.cs`, and `CurrencyContracts.cs` for shared validation/paging, newsletter/contact, and currency-specific request/response DTOs.
+- [x] Keep namespace `BlazorShop.CommerceNode.API.Contracts.Storefront`.
+- [x] Keep public DTO names and JSON property shapes.
+- [x] Split `StorefrontContractMappings.cs` by capability if it reduces file size without duplicate mapping logic.
+  2026-07-18 Phase 6: `StorefrontContractMappings` is now a partial static class across capability mapping files; public extension method names remain unchanged.
+- [x] Keep extension method names stable where tests or controllers call them.
+- [x] Remove DTOs/mappings for retired legacy flow only when the cutover plan has completed the matching endpoint removal.
+  2026-07-18 Phase 6: no legacy DTO/mapping removals were included; this phase is file movement only.
 
 Acceptance:
 
-- [ ] Public OpenAPI schemas remain stable.
-- [ ] DTO namespaces remain stable for controller compile compatibility.
-- [ ] Contract tests pass without schema drift except intentional cutover deletions.
+- [x] Public OpenAPI schemas remain stable.
+- [x] DTO namespaces remain stable for controller compile compatibility.
+- [x] Contract tests pass without schema drift except intentional cutover deletions.
+  2026-07-18 Phase 6 verification: `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` passed; focused contract/static tests plus Commerce Node Storefront OpenAPI/auth/payment contract tests passed 61/61.
 
 ## Phase 7 - Split StorefrontApiClient Internals With Facade Compatibility
 

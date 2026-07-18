@@ -7,7 +7,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void AddressFieldConfigurationContract_KeepsFutureOverrideShape()
         {
-            var contracts = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Contracts/Storefront/StorefrontApiContracts.cs");
+            var contracts = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Contracts/Storefront/AddressContracts.cs");
             var configuration = ExtractBlock(contracts, "record StorefrontAddressFieldConfigurationResponse");
 
             Assert.Contains("bool CompanyEnabled", configuration, StringComparison.Ordinal);
