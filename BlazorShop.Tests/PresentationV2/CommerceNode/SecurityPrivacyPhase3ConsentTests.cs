@@ -62,6 +62,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
 
             Assert.Contains("<StorefrontConsentBanner />", layout, StringComparison.Ordinal);
             Assert.Contains("data-storefront-consent-banner", banner, StringComparison.Ordinal);
+            Assert.Contains("pointer-events-auto", banner, StringComparison.Ordinal);
+            Assert.Contains("z-[100]", banner, StringComparison.Ordinal);
             Assert.Contains("data-storefront-consent-revoke", banner, StringComparison.Ordinal);
             Assert.Contains("/api/consent/current", program, StringComparison.Ordinal);
             Assert.Contains("/api/consent/revoke", program, StringComparison.Ordinal);
