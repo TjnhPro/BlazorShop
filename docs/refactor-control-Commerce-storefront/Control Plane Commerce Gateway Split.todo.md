@@ -308,46 +308,55 @@ Verification:
 
 Mục tiêu: tách interface application theo capability nhưng chưa đổi controller route.
 
-- [ ] Tạo folders dưới `BlazorShop.Application/ControlPlane/CommerceGateway/`:
-  - [ ] `Products`
-  - [ ] `Categories`
-  - [ ] `Media`
-  - [ ] `Orders`
-  - [ ] `Content`
-  - [ ] `Navigation`
-  - [ ] `StoreConfiguration`
-  - [ ] `Currencies`
-  - [ ] `Payments`
-  - [ ] `Shipping`
-  - [ ] `SecurityPrivacy`
-- [ ] Tạo interfaces:
-  - [ ] `IControlPlaneProductGateway`
-  - [ ] `IControlPlaneCategoryGateway`
-  - [ ] `IControlPlaneMediaGateway`
-  - [ ] `IControlPlaneOrderGateway`
-  - [ ] `IControlPlaneContentGateway`
-  - [ ] `IControlPlaneNavigationGateway`
-  - [ ] `IControlPlaneStoreConfigurationGateway`
-  - [ ] `IControlPlaneCurrencyGateway`
-  - [ ] `IControlPlanePaymentGateway`
-  - [ ] `IControlPlaneShippingGateway`
-  - [ ] `IControlPlaneSecurityPrivacyGateway`
-- [ ] Di chuyển method signatures từ `IControlPlaneCommerceCatalogService` sang interface capability tương ứng.
-- [ ] Giữ DTO đang dùng để không tạo churn.
-- [ ] Giữ `ControlPlaneCommerceCatalogResult<TPayload>` tạm thời nếu rename result tạo diff quá lớn.
-- [ ] Tạo adapter `IControlPlaneCommerceCatalogService` tạm thời nếu test/controller cũ vẫn cần, nhưng đánh dấu chỉ là compatibility trong refactor.
+- [x] Tạo folders dưới `BlazorShop.Application/ControlPlane/CommerceGateway/`:
+  - [x] `Products`
+  - [x] `Categories`
+  - [x] `Media`
+  - [x] `Orders`
+  - [x] `Content`
+  - [x] `Navigation`
+  - [x] `StoreConfiguration`
+  - [x] `Currencies`
+  - [x] `Payments`
+  - [x] `Shipping`
+  - [x] `SecurityPrivacy`
+  - [x] `Messages`
+  2026-07-18 Phase 2: `Messages` was added because current codebase has email settings, message templates, and queued-message gateway methods that do not belong in payment/shipping.
+- [x] Tạo interfaces:
+  - [x] `IControlPlaneProductGateway`
+  - [x] `IControlPlaneCategoryGateway`
+  - [x] `IControlPlaneMediaGateway`
+  - [x] `IControlPlaneOrderGateway`
+  - [x] `IControlPlaneContentGateway`
+  - [x] `IControlPlaneNavigationGateway`
+  - [x] `IControlPlaneStoreConfigurationGateway`
+  - [x] `IControlPlaneCurrencyGateway`
+  - [x] `IControlPlanePaymentGateway`
+  - [x] `IControlPlaneShippingGateway`
+  - [x] `IControlPlaneSecurityPrivacyGateway`
+  - [x] `IControlPlaneMessageGateway`
+- [x] Di chuyển method signatures từ `IControlPlaneCommerceCatalogService` sang interface capability tương ứng.
+  2026-07-18 Phase 2: 113 method signatures were split across capability contracts. The old facade now inherits the capability interfaces and declares no direct `Task<...>` methods.
+- [x] Giữ DTO đang dùng để không tạo churn.
+  2026-07-18 Phase 2: DTO/result types remain in `ControlPlaneCommerceCatalogDtos.cs`.
+- [x] Giữ `ControlPlaneCommerceCatalogResult<TPayload>` tạm thời nếu rename result tạo diff quá lớn.
+- [x] Tạo adapter `IControlPlaneCommerceCatalogService` tạm thời nếu test/controller cũ vẫn cần, nhưng đánh dấu chỉ là compatibility trong refactor.
+  2026-07-18 Phase 2: `IControlPlaneCommerceCatalogService` is now a compatibility facade over capability interfaces.
 
 Risk controls:
 
-- [ ] Không tạo interface trống hoặc capability chưa có consumer.
-- [ ] Không gom capability mới vào `Catalog`.
-- [ ] Không đổi permission policy trong phase này.
+- [x] Không tạo interface trống hoặc capability chưa có consumer. 2026-07-18 Phase 2: method counts are Product 31, Media 14, Messages 14, Content 11, Navigation 9, Category 8, Currency 8, Order 8, StoreConfiguration 4, Payment 2, SecurityPrivacy 2, Shipping 2.
+- [x] Không gom capability mới vào `Catalog`. 2026-07-18 Phase 2: old catalog facade has no direct method declarations.
+- [x] Không đổi permission policy trong phase này. 2026-07-18 Phase 2: no API/controller/authorization files changed.
 
 Verification:
 
-- [ ] Build Application.
-- [ ] Search không còn method mới thêm vào `IControlPlaneCommerceCatalogService`.
-- [ ] Test compile.
+- [x] Build Application.
+  2026-07-18 Phase 2: `dotnet build BlazorShop.Application/BlazorShop.Application.csproj --no-restore` passed with 0 warnings and 0 errors.
+- [x] Search không còn method mới thêm vào `IControlPlaneCommerceCatalogService`.
+  2026-07-18 Phase 2: old facade has 0 direct `Task<...>` members.
+- [x] Test compile.
+  2026-07-18 Phase 2: Infrastructure build passed with 0 warnings/errors and focused gateway tests passed 17/17 with existing package advisory warnings.
 
 ## Phase 3 - Split Infrastructure Gateway Implementations
 
