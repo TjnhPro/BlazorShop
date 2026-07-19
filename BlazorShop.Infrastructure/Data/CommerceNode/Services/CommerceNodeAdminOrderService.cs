@@ -22,17 +22,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly IOrderTrackingService trackingService;
         private readonly IAdminAuditService auditService;
         private readonly ICommerceStoreContext storeContext;
+        private readonly OrderReadModelAssembler orderReadModelAssembler;
 
         public CommerceNodeAdminOrderService(
             CommerceNodeDbContext context,
             IOrderTrackingService trackingService,
             IAdminAuditService auditService,
-            ICommerceStoreContext storeContext)
+            ICommerceStoreContext storeContext,
+            OrderReadModelAssembler orderReadModelAssembler)
         {
             this.context = context;
             this.trackingService = trackingService;
             this.auditService = auditService;
             this.storeContext = storeContext;
+            this.orderReadModelAssembler = orderReadModelAssembler;
         }
 
         public async Task<PagedResult<GetOrder>> GetAsync(AdminOrderQueryDto query)
@@ -288,136 +291,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private async Task<IReadOnlyList<GetOrder>> MapOrdersAsync(IReadOnlyCollection<Order> orders)
         {
-            var productIds = orders.SelectMany(order => order.Lines).Select(line => line.ProductId).Distinct().ToArray();
-            var productNames = await this.context.Products
-                .AsNoTracking()
-                .Where(product => productIds.Contains(product.Id))
-                .Select(product => new { product.Id, product.Name })
-                .ToDictionaryAsync(product => product.Id, product => product.Name ?? string.Empty);
-
-            var orderIds = orders.Select(order => order.Id).ToArray();
-            var historyEntries = await this.context.OrderHistoryEntries
-                .AsNoTracking()
-                .Where(entry => orderIds.Contains(entry.OrderId))
-                .OrderBy(entry => entry.CreatedAtUtc)
-                .Select(entry => new
-                {
-                    entry.OrderId,
-                    Entry = new GetOrderHistoryEntry
-                    {
-                        Id = entry.Id,
-                        EventType = entry.EventType,
-                        OldValue = entry.OldValue,
-                        NewValue = entry.NewValue,
-                        Message = entry.Message,
-                        VisibleToCustomer = entry.VisibleToCustomer,
-                        CreatedAtUtc = entry.CreatedAtUtc,
-                        Source = entry.Source,
-                    },
-                })
-                .ToListAsync();
-
-            var historyEntriesByOrder = historyEntries
-                .GroupBy(item => item.OrderId)
-                .ToDictionary(group => group.Key, group => group.Select(item => item.Entry).ToArray());
-
-            var paymentAttempts = await this.context.PaymentAttempts
-                .AsNoTracking()
-                .Where(attempt => attempt.OrderId.HasValue && orderIds.Contains(attempt.OrderId.Value))
-                .OrderByDescending(attempt => attempt.UpdatedAtUtc)
-                .Select(attempt => new
-                {
-                    OrderId = attempt.OrderId!.Value,
-                    Summary = new GetOrderPaymentSummary
-                    {
-                        PaymentAttemptPublicId = attempt.PublicId,
-                        ProviderKey = attempt.ProviderKey,
-                        PaymentStatus = attempt.State,
-                        PaymentMethodKey = attempt.PaymentMethodKey,
-                        AttemptState = attempt.State,
-                        Amount = attempt.Amount,
-                        CurrencyCode = attempt.CurrencyCode,
-                        UpdatedAtUtc = attempt.UpdatedAtUtc,
-                    },
-                })
-                .ToListAsync();
-
-            var paymentSummaryByOrder = paymentAttempts
-                .GroupBy(item => item.OrderId)
-                .ToDictionary(group => group.Key, group => group.First().Summary);
-
-            return orders.Select(order => new GetOrder
-            {
-                Id = order.Id,
-                Reference = order.Reference,
-                Status = order.OrderStatus,
-                OrderStatus = order.OrderStatus,
-                PaymentStatus = order.PaymentStatus,
-                PaymentMethodKey = order.PaymentMethodKey,
-                PaymentAt = order.PaymentAt,
-                PaymentSummary = CreatePaymentSummary(
-                    order,
-                    paymentSummaryByOrder.TryGetValue(order.Id, out var paymentSummary) ? paymentSummary : null),
-                StoreSnapshot = OrderSnapshotProjection.ToStoreSnapshot(order),
-                CurrencyCode = order.CurrencyCode,
-                TotalAmount = order.TotalAmount,
-                TotalBreakdown = OrderSnapshotProjection.ToTotalBreakdown(
-                    order.SubtotalAmount,
-                    order.ShippingTotalAmount,
-                    order.TaxTotalAmount,
-                    order.DiscountTotalAmount,
-                    order.GrandTotalAmount),
-                BaseCurrencyCode = order.BaseCurrencyCode,
-                BaseTotalAmount = order.BaseTotalAmount,
-                BaseTotalBreakdown = OrderSnapshotProjection.ToTotalBreakdown(
-                    order.BaseSubtotalAmount,
-                    order.BaseShippingTotalAmount,
-                    order.BaseTaxTotalAmount,
-                    order.BaseDiscountTotalAmount,
-                    order.BaseGrandTotalAmount),
-                ExchangeRate = order.ExchangeRate,
-                ExchangeRateProviderKey = order.ExchangeRateProviderKey,
-                ExchangeRateSource = order.ExchangeRateSource,
-                ExchangeRateEffectiveAtUtc = order.ExchangeRateEffectiveAtUtc,
-                ExchangeRateExpiresAtUtc = order.ExchangeRateExpiresAtUtc,
-                CreatedOn = order.CreatedOn,
-                ShippingStatus = order.ShippingStatus,
-                ShippingCarrier = order.ShippingCarrier,
-                TrackingNumber = order.TrackingNumber,
-                TrackingUrl = order.TrackingUrl,
-                ShippedOn = order.ShippedOn,
-                DeliveredOn = order.DeliveredOn,
-                UserId = order.UserId,
-                CustomerName = order.CustomerName,
-                CustomerEmail = order.CustomerEmail,
-                BillingAddress = OrderSnapshotProjection.ToAddress(order.BillingAddressSnapshotJson),
-                ShippingAddressSnapshot = OrderSnapshotProjection.ToShippingAddressSnapshot(order),
-                ShippingFullName = order.ShippingFullName,
-                ShippingEmail = order.ShippingEmail,
-                ShippingPhone = order.ShippingPhone,
-                ShippingAddress1 = order.ShippingAddress1,
-                ShippingAddress2 = order.ShippingAddress2,
-                ShippingCity = order.ShippingCity,
-                ShippingState = order.ShippingState,
-                ShippingPostalCode = order.ShippingPostalCode,
-                ShippingCountryCode = order.ShippingCountryCode,
-                ShippingMethod = OrderSnapshotProjection.ToShippingMethod(order),
-                CompletedAt = order.CompletedAt,
-                CancelledAt = order.CancelledAt,
-                AdminNote = order.AdminNote,
-                HistoryEntries = historyEntriesByOrder.TryGetValue(order.Id, out var history) ? history : [],
-                Lines = order.Lines.Select(line => new GetOrderLine
-                {
-                    ProductId = line.ProductId,
-                    Quantity = line.Quantity,
-                    UnitPrice = line.UnitPrice,
-                    ProductName = line.ProductName ?? (productNames.TryGetValue(line.ProductId, out var productName) ? productName : string.Empty),
-                    Sku = line.Sku,
-                    Image = line.Image,
-                    ProductVariantId = line.ProductVariantId,
-                    VariantAttributes = ProductVariantAttributeNormalizer.Deserialize(line.VariantAttributesJson),
-                }),
-            }).ToArray();
+            return await this.orderReadModelAssembler.BuildAsync(orders, OrderReadModelOptions.Admin());
         }
 
         private async Task LogAsync(string action, Guid orderId, string summary, object metadata)
@@ -430,22 +304,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 Summary = summary,
                 MetadataJson = JsonSerializer.Serialize(metadata),
             });
-        }
-
-        private static GetOrderPaymentSummary CreatePaymentSummary(Order order, GetOrderPaymentSummary? paymentAttempt)
-        {
-            return new GetOrderPaymentSummary
-            {
-                PaymentAttemptPublicId = paymentAttempt?.PaymentAttemptPublicId,
-                ProviderKey = paymentAttempt?.ProviderKey,
-                PaymentStatus = order.PaymentStatus,
-                PaymentMethodKey = order.PaymentMethodKey,
-                AttemptState = paymentAttempt?.AttemptState,
-                Amount = paymentAttempt?.Amount,
-                CurrencyCode = paymentAttempt?.CurrencyCode,
-                PaymentAt = order.PaymentAt,
-                UpdatedAtUtc = paymentAttempt?.UpdatedAtUtc,
-            };
         }
 
         private static DateTime EnsureUtc(DateTime value)

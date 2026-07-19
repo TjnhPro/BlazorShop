@@ -313,7 +313,8 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 context,
                 new CommerceNodeOrderTrackingService(context, storeContext),
                 auditService,
-                storeContext);
+                storeContext,
+                new OrderReadModelAssembler(context));
         }
 
         private static void SeedStore(CommerceNodeDbContext context, Guid storeId)

@@ -310,27 +310,33 @@ Acceptance:
 
 ## Phase 6 - Migrate Admin Service
 
-- [ ] Inject `OrderReadModelAssembler` into `CommerceNodeAdminOrderService`.
-- [ ] Replace private `MapOrdersAsync` with assembler call using `OrderReadModelOptions.Admin()`.
-- [ ] Keep admin mutations unchanged:
+- [x] Inject `OrderReadModelAssembler` into `CommerceNodeAdminOrderService`.
+- [x] Replace private `MapOrdersAsync` with assembler call using `OrderReadModelOptions.Admin()`.
+- [x] Keep admin mutations unchanged:
   - update tracking.
   - update shipping status.
   - update admin note.
   - complete.
   - cancel.
   - audit log writes.
-- [ ] Keep current store query/scope in admin service.
-- [ ] Remove duplicate `CreatePaymentSummary` from admin service.
-- [ ] Decide in tests whether admin should continue current no-tracking-events behavior or begin receiving tracking events:
+- [x] Keep current store query/scope in admin service.
+- [x] Remove duplicate `CreatePaymentSummary` from admin service.
+- [x] Decide in tests whether admin should continue current no-tracking-events behavior or begin receiving tracking events:
   - If no behavior change, set admin options to exclude tracking events first.
   - If adding tracking events is desired, make it a separate assertion and update QA/docs.
 
+Phase 6 notes:
+
+- `CommerceNodeAdminOrderService` now delegates projection to `OrderReadModelAssembler` with `OrderReadModelOptions.Admin()`.
+- Admin store scoping, mutation flows, lifecycle helpers, and audit writes remain in the admin service.
+- Admin projection intentionally keeps current no-tracking-events behavior; richer admin tracking visibility remains a separate behavior-change decision.
+
 Acceptance:
 
-- [ ] Admin order tests pass.
-- [ ] Admin sees admin note and all history.
-- [ ] Admin mutation responses still return fresh projected order.
-- [ ] Audit behavior unchanged.
+- [x] Admin order tests pass.
+- [x] Admin sees admin note and all history.
+- [x] Admin mutation responses still return fresh projected order.
+- [x] Audit behavior unchanged.
 
 ## Phase 7 - Remove Duplicate Mapping And Lock The Pattern
 

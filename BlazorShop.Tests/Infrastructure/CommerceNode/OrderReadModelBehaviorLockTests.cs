@@ -37,7 +37,8 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 context,
                 new CommerceNodeOrderTrackingService(context, new FixedStoreContext(storeId)),
                 new NoopAdminAuditService(),
-                new FixedStoreContext(storeId));
+                new FixedStoreContext(storeId),
+                new OrderReadModelAssembler(context));
 
             var result = await service.GetByIdAsync(order.Id);
 
