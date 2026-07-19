@@ -87,6 +87,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.True(descriptor.SupportsCapture);
             Assert.False(descriptor.RequiresWebhookSignature);
             Assert.True(descriptor.ActiveByDefault);
+            Assert.True(descriptor.EnabledByDefault);
         }
 
         private static PaymentProviderOperationRequest CreateOperationRequest()

@@ -17,13 +17,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
     public sealed class CommerceNodePaymentMethodService : IPaymentMethodService, IStorePaymentMethodAdminService
     {
-        private static readonly StorePaymentMethodSeed[] DefaultMethods =
-        [
-            new(PaymentMethodKeys.Cod, "Cash on Delivery", "Test checkout payment method for MVP.", true, 10),
-            new(PaymentMethodKeys.Stripe, "Stripe", "Card payments through Stripe.", false, 20),
-            new(PaymentMethodKeys.PayPal, "PayPal", "PayPal payment skeleton.", false, 30),
-        ];
-
         private readonly CommerceNodeDbContext context;
         private readonly ICommerceStoreContext storeContext;
         private readonly IAdminAuditService auditService;
@@ -252,9 +245,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 .ToArrayAsync(cancellationToken);
 
             var existing = new HashSet<string>(existingKeys, StringComparer.OrdinalIgnoreCase);
-            foreach (var seed in DefaultMethods)
+            foreach (var descriptor in this.capabilityRegistry.ListDescriptors())
             {
-                if (existing.Contains(seed.Key))
+                if (existing.Contains(descriptor.SystemName))
                 {
                     continue;
                 }
@@ -262,11 +255,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 this.context.StorePaymentMethods.Add(new StorePaymentMethod
                 {
                     StoreId = storeId,
-                    PaymentMethodKey = seed.Key,
-                    Enabled = seed.Enabled,
-                    DisplayName = seed.DisplayName,
-                    Description = seed.Description,
-                    DisplayOrder = seed.DisplayOrder,
+                    PaymentMethodKey = NormalizeKey(descriptor.SystemName),
+                    Enabled = descriptor.EnabledByDefault,
+                    DisplayName = descriptor.DisplayName,
+                    Description = descriptor.Description,
+                    DisplayOrder = descriptor.DefaultDisplayOrder,
+                    IconUrl = descriptor.IconUrl,
+                    SupportedCurrencyCodesJson = SerializeCodes(descriptor.SupportedCurrencyCodes),
+                    SupportedCountryCodesJson = SerializeCodes(descriptor.SupportedCountryCodes),
+                    MinOrderTotal = descriptor.MinOrderTotal,
+                    MaxOrderTotal = descriptor.MaxOrderTotal,
                 });
             }
 
@@ -496,11 +494,5 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 RequiresWebhookSignature: false);
         }
 
-        private sealed record StorePaymentMethodSeed(
-            string Key,
-            string DisplayName,
-            string Description,
-            bool Enabled,
-            int DisplayOrder);
     }
 }

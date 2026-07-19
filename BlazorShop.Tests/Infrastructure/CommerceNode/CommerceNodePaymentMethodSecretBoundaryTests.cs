@@ -172,6 +172,15 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 StoreKey = "default",
                 Name = "Default",
             });
+            context.StorePaymentMethods.Add(new StorePaymentMethod
+            {
+                Id = Guid.NewGuid(),
+                StoreId = storeId,
+                PaymentMethodKey = PaymentMethodKeys.PayPal,
+                Enabled = false,
+                DisplayName = "PayPal",
+                DisplayOrder = 30,
+            });
             await context.SaveChangesAsync();
             var service = CreateService(context, storeId);
 
@@ -187,6 +196,98 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.False(result.Success);
             Assert.Equal(ServiceResponseType.ValidationError, result.ResponseType);
             Assert.Equal("Payment provider is not installed or active.", result.Message);
+        }
+
+        [Fact]
+        public async Task GetAsync_CreatesMissingStoreMethodFromProviderDescriptor()
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            context.CommerceStores.Add(new CommerceStore
+            {
+                Id = storeId,
+                StoreKey = "default",
+                Name = "Default",
+            });
+            await context.SaveChangesAsync();
+            var service = CreateService(
+                context,
+                storeId,
+                providers:
+                [
+                    new FakePaymentProvider(
+                        "bank_transfer",
+                        "Bank Transfer",
+                        PaymentProviderMethodTypes.Offline,
+                        defaultDisplayOrder: 40,
+                        enabledByDefault: true),
+                ]);
+
+            var methods = await service.GetAsync();
+
+            var method = Assert.Single(methods, item => item.PaymentMethodKey == "bank_transfer");
+            Assert.True(method.Enabled);
+            Assert.Equal("Bank Transfer", method.DisplayName);
+            Assert.Equal(40, method.DisplayOrder);
+            Assert.Equal(PaymentProviderMethodTypes.Offline, method.Capability.MethodType);
+            Assert.True(await context.StorePaymentMethods.AnyAsync(item => item.StoreId == storeId && item.PaymentMethodKey == "bank_transfer"));
+        }
+
+        [Fact]
+        public async Task GetAsync_WhenProviderIsUnregistered_RetainsExistingMethodAsUnsupported()
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            context.CommerceStores.Add(new CommerceStore
+            {
+                Id = storeId,
+                StoreKey = "default",
+                Name = "Default",
+            });
+            context.StorePaymentMethods.Add(new StorePaymentMethod
+            {
+                Id = Guid.NewGuid(),
+                StoreId = storeId,
+                PaymentMethodKey = PaymentMethodKeys.PayPal,
+                Enabled = false,
+                DisplayName = "PayPal",
+                DisplayOrder = 30,
+            });
+            await context.SaveChangesAsync();
+            var service = CreateService(context, storeId);
+
+            var methods = await service.GetAsync();
+
+            var paypal = Assert.Single(methods, item => item.PaymentMethodKey == PaymentMethodKeys.PayPal);
+            Assert.False(paypal.Capability.Installed);
+            Assert.False(paypal.Capability.Active);
+            Assert.Equal("unknown", paypal.Capability.MethodType);
+        }
+
+        [Fact]
+        public async Task GetAsync_DoesNotOverwriteCustomizedStoreMethodMetadata()
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            await SeedConfiguredPaymentMethodAsync(
+                context,
+                storeId,
+                method =>
+                {
+                    method.DisplayName = "My cards";
+                    method.Description = "Custom copy.";
+                    method.DisplayOrder = 7;
+                    method.IconUrl = "/media/custom-card.svg";
+                });
+            var service = CreateService(context, storeId);
+
+            await service.GetAsync();
+
+            var method = await context.StorePaymentMethods.SingleAsync(item => item.StoreId == storeId && item.PaymentMethodKey == PaymentMethodKeys.Stripe);
+            Assert.Equal("My cards", method.DisplayName);
+            Assert.Equal("Custom copy.", method.Description);
+            Assert.Equal(7, method.DisplayOrder);
+            Assert.Equal("/media/custom-card.svg", method.IconUrl);
         }
 
         private static async Task SeedConfiguredPaymentMethodAsync(
@@ -220,15 +321,19 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         private static CommerceNodePaymentMethodService CreateService(
             CommerceNodeDbContext context,
             Guid storeId,
-            IAdminAuditService? auditService = null)
+            IAdminAuditService? auditService = null,
+            params IStorefrontPaymentProvider[] providers)
         {
             var cache = new MemoryCache(new MemoryCacheOptions());
+            var providerList = providers.Length == 0
+                ? [new FakePaymentProvider(PaymentMethodKeys.Stripe)]
+                : providers;
             return new CommerceNodePaymentMethodService(
                 context,
                 new StubCommerceStoreContext(storeId),
                 auditService ?? new CapturingAdminAuditService(),
                 new StorefrontPublicConfigurationCache(context, cache),
-                new PaymentProviderCapabilityRegistry([new FakePaymentProvider(PaymentMethodKeys.Stripe)]));
+                new PaymentProviderCapabilityRegistry(providerList));
         }
 
         private static CommerceNodeDbContext CreateContext()
@@ -285,28 +390,36 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
 
         private sealed class FakePaymentProvider : IStorefrontPaymentProvider
         {
-            public FakePaymentProvider(string providerKey)
+            public FakePaymentProvider(
+                string providerKey,
+                string? displayName = null,
+                string methodType = PaymentProviderMethodTypes.Redirect,
+                int defaultDisplayOrder = 20,
+                bool requiresWebhookSignature = true,
+                bool activeByDefault = true,
+                bool enabledByDefault = false)
             {
                 this.ProviderKey = providerKey;
                 this.Descriptor = new PaymentProviderDescriptor(
                     providerKey,
-                    providerKey,
+                    displayName ?? providerKey,
                     Description: null,
                     IconUrl: null,
-                    DefaultDisplayOrder: 20,
+                    defaultDisplayOrder,
                     SupportedCurrencyCodes: [],
                     SupportedCountryCodes: [],
                     MinOrderTotal: null,
                     MaxOrderTotal: null,
-                    PaymentProviderMethodTypes.Redirect,
+                    methodType,
                     RecurringCapable: false,
                     SupportsAuthorize: false,
                     SupportsCapture: true,
                     SupportsVoid: false,
                     SupportsRefund: false,
                     SupportsPartialRefund: false,
-                    RequiresWebhookSignature: true,
-                    ActiveByDefault: true);
+                    requiresWebhookSignature,
+                    activeByDefault,
+                    enabledByDefault);
             }
 
             public string ProviderKey { get; }

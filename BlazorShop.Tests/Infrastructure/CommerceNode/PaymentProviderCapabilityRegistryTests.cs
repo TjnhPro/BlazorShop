@@ -46,6 +46,20 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         }
 
         [Fact]
+        public void ListDescriptors_ReturnsProviderDescriptorDefaults()
+        {
+            var registry = new PaymentProviderCapabilityRegistry(
+            [
+                new FakePaymentProvider("invoice", enabledByDefault: true),
+            ]);
+
+            var descriptor = Assert.Single(registry.ListDescriptors());
+
+            Assert.Equal("invoice", descriptor.SystemName);
+            Assert.True(descriptor.EnabledByDefault);
+        }
+
+        [Fact]
         public void Get_WhenProviderUnknown_ReturnsValidationFailure()
         {
             var registry = new PaymentProviderCapabilityRegistry([]);
@@ -108,6 +122,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 int defaultDisplayOrder = 20,
                 bool requiresWebhookSignature = true,
                 bool activeByDefault = true,
+                bool enabledByDefault = false,
                 string? descriptorSystemName = null)
             {
                 this.ProviderKey = providerKey;
@@ -129,7 +144,8 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                     SupportsRefund: false,
                     SupportsPartialRefund: false,
                     requiresWebhookSignature,
-                    activeByDefault);
+                    activeByDefault,
+                    enabledByDefault);
             }
 
             public string ProviderKey { get; }

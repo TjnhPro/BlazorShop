@@ -31,7 +31,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             SupportsRefund: false,
             SupportsPartialRefund: false,
             RequiresWebhookSignature: false,
-            ActiveByDefault: true);
+            ActiveByDefault: true,
+            EnabledByDefault: true);
 
         public Task<ServiceResponse<PaymentProviderOperationResult>> ValidateInputAsync(
             PaymentProviderOperationRequest request,

@@ -212,7 +212,8 @@ namespace BlazorShop.Application.CommerceNode.Payments
         bool SupportsRefund,
         bool SupportsPartialRefund,
         bool RequiresWebhookSignature,
-        bool ActiveByDefault = true);
+        bool ActiveByDefault = true,
+        bool EnabledByDefault = false);
 
     public sealed record PaymentProviderCapabilityDto(
         string SystemName,
@@ -238,6 +239,8 @@ namespace BlazorShop.Application.CommerceNode.Payments
 
     public interface IPaymentProviderCapabilityRegistry
     {
+        IReadOnlyList<PaymentProviderDescriptor> ListDescriptors();
+
         IReadOnlyList<PaymentProviderCapabilityDto> List();
 
         ServiceResponse<PaymentProviderCapabilityDto> Get(string systemName);

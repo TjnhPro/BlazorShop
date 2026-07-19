@@ -25,11 +25,17 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 StringComparer.OrdinalIgnoreCase);
         }
 
-        public IReadOnlyList<PaymentProviderCapabilityDto> List()
+        public IReadOnlyList<PaymentProviderDescriptor> ListDescriptors()
         {
             return this.descriptors.Values
                 .OrderBy(descriptor => descriptor.DefaultDisplayOrder)
                 .ThenBy(descriptor => descriptor.DisplayName, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
+
+        public IReadOnlyList<PaymentProviderCapabilityDto> List()
+        {
+            return this.ListDescriptors()
                 .Select(ToCapability)
                 .ToArray();
         }

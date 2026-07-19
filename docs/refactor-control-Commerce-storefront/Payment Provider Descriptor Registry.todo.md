@@ -249,21 +249,21 @@ Phase 3 evidence:
 
 ## Phase 4 - Move Store Payment Defaults To Provider Descriptors
 
-- [ ] Replace `CommerceNodePaymentMethodService.DefaultMethods` hard-code with defaults generated from `capabilityRegistry.List()`.
-- [ ] Ensure default sync remains additive:
+- [x] Replace `CommerceNodePaymentMethodService.DefaultMethods` hard-code with defaults generated from provider descriptors.
+- [x] Ensure default sync remains additive:
   - create missing `StorePaymentMethod` rows for provider descriptors.
   - do not delete existing rows when a provider is removed from DI.
   - do not overwrite admin customized display name/order/metadata/settings.
-- [ ] Default enabled behavior:
+- [x] Default enabled behavior:
   - COD follows descriptor active/default enabled behavior.
   - Stripe remains disabled by default unless descriptor explicitly says otherwise.
   - providers not registered do not get new default rows.
-- [ ] Existing PayPal rows:
+- [x] Existing PayPal rows:
   - Keep existing database rows.
   - Map them to unsupported capability if no PayPal provider registered.
   - Enabling unsupported PayPal must continue to fail.
-- [ ] Consider whether `PaymentMethods` catalog table should also sync from descriptors at runtime. If needed, sync additively only; do not drop or rewrite seed data.
-- [ ] Add tests:
+- [x] Consider whether `PaymentMethods` catalog table should also sync from descriptors at runtime. If needed, sync additively only; do not drop or rewrite seed data.
+- [x] Add tests:
   - new fake provider creates missing store method.
   - removed/unregistered provider row is retained but maps unsupported.
   - admin custom display metadata is not overwritten by default sync.
@@ -271,9 +271,21 @@ Phase 3 evidence:
 
 Acceptance:
 
-- [ ] Store manager can see/add provider-backed payment methods without service hard-code.
-- [ ] Existing configured store methods are preserved.
-- [ ] No migration/data deletion required.
+- [x] Store manager can see/add provider-backed payment methods without service hard-code.
+- [x] Existing configured store methods are preserved.
+- [x] No migration/data deletion required.
+
+Phase 4 evidence:
+
+- Added `EnabledByDefault` to `PaymentProviderDescriptor` so provider active/usable state stays separate from store default enabled state without changing public `PaymentProviderCapabilityDto`.
+- `CommerceNodePaymentMethodService.EnsureDefaultsAsync` now reads provider descriptors through `IPaymentProviderCapabilityRegistry.ListDescriptors()` and additively creates only missing `StorePaymentMethod` rows.
+- COD descriptor sets `EnabledByDefault = true`; Stripe remains active/usable but disabled by default.
+- Existing unsupported rows, including PayPal rows from older data, are retained and mapped to unsupported capability; enabling them still fails with `Payment provider is not installed or active.`
+- `PaymentMethods` catalog seed was left unchanged and no migration/data deletion was introduced.
+- Focused provider/default command passed 28/28 tests:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~CommerceNodePaymentMethodSecretBoundaryTests|FullyQualifiedName~CommerceNodePaymentMethodServiceCacheTests|FullyQualifiedName~PaymentProviderCapabilityRegistryTests|FullyQualifiedName~PaymentProviderOperationContractTests|FullyQualifiedName~StripeStorefrontPaymentProviderTests" --no-restore --nologo --verbosity minimal`
+- Focused checkout/payment command passed 100/100 tests:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~StorefrontCheckoutServiceTests|FullyQualifiedName~StorefrontCartServiceTests|FullyQualifiedName~PaymentAttemptServiceTests|FullyQualifiedName~CommerceNodeStorefrontPaymentContractTests" --no-restore --nologo --verbosity minimal`
 
 ## Phase 5 - Optional PayPal Placeholder Decision
 
