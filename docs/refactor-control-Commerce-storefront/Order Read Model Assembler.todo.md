@@ -170,23 +170,30 @@ Acceptance:
 
 ## Phase 1 - Add OrderReadModelOptions And Assembler Skeleton
 
-- [ ] Add `OrderReadVisibility` enum under `BlazorShop.Infrastructure/Data/CommerceNode/Services` or a nearby internal models folder.
-- [ ] Add `OrderReadModelOptions` with safe factory methods:
+- [x] Add `OrderReadVisibility` enum under `BlazorShop.Infrastructure/Data/CommerceNode/Services` or a nearby internal models folder.
+- [x] Add `OrderReadModelOptions` with safe factory methods:
   - `Admin()`
   - `Customer()`
   - `Guest()`
   - `Internal()`
-- [ ] Add public concrete `OrderReadModelAssembler`.
-- [ ] Inject `CommerceNodeDbContext` into assembler.
-- [ ] Register assembler in `BlazorShop.Infrastructure/Data/CommerceNode/DependencyInjection.cs`.
-- [ ] Keep `OrderSnapshotProjection` as existing helper; do not duplicate snapshot parsing inside service callers.
-- [ ] Add focused tests for options factory defaults.
+- [x] Add public concrete `OrderReadModelAssembler`.
+- [x] Inject `CommerceNodeDbContext` into assembler.
+- [x] Register assembler in `BlazorShop.Infrastructure/Data/CommerceNode/DependencyInjection.cs`.
+- [x] Keep `OrderSnapshotProjection` as existing helper; do not duplicate snapshot parsing inside service callers.
+- [x] Add focused tests for options factory defaults.
+
+Phase 1 notes:
+
+- Added `OrderReadVisibility`, `OrderReadModelOptions`, and `OrderReadModelAssembler` under `BlazorShop.Infrastructure/Data/CommerceNode/Services`.
+- `OrderReadModelOptions` includes the flags needed to preserve Phase 0 behavior drift: tracking events, payment attempt public reference, admin note, all-history visibility, product-name fallback, and line money detail projection.
+- `OrderReadModelAssembler` is registered in Commerce Node DI but no service consumes it yet.
+- Focused tests: `OrderReadModelOptionsTests`.
 
 Acceptance:
 
-- [ ] Project builds with assembler registered.
-- [ ] No service uses assembler yet.
-- [ ] Options defaults match current behavior matrix.
+- [x] Project builds with assembler registered.
+- [x] No service uses assembler yet.
+- [x] Options defaults match current behavior matrix.
 
 ## Phase 2 - Move Shared Child Data Loaders Into Assembler
 
