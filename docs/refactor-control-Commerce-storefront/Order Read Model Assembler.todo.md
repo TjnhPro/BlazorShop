@@ -393,29 +393,36 @@ Acceptance:
 
 ## Phase 9 - QA And Verification
 
-- [ ] Run focused tests:
+- [x] Run focused tests:
   - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~StorefrontCustomerOrderServiceTests"`
   - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~StorefrontGuestOrderServiceTests"`
   - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~CommerceNodeOrderQueryServiceTests"`
   - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~CommerceNodeAdminShipmentServiceTests"`
-- [ ] Run order/checkout focused tests that cover guest lookup and order snapshot:
+- [x] Run order/checkout focused tests that cover guest lookup and order snapshot:
   - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~StorefrontCheckoutServiceTests"`
-- [ ] Run build:
+- [x] Run build:
   - `dotnet build BlazorShop.sln`
-- [ ] If Storefront/account order browser behavior is affected, run relevant Playwright E2E cases from `Storefront Playwright E2E Release.todo.md`:
+- [x] If Storefront/account order browser behavior is affected, run relevant Playwright E2E cases from `Storefront Playwright E2E Release.todo.md`:
   - account order list/detail/receipt.
   - guest order completion/receipt if covered.
   - checkout place COD order.
-- [ ] Update QA docs only if externally visible behavior changes:
+- [x] Update QA docs only if externally visible behavior changes:
   - `QA-CommerceNode.todo.md`
   - `QA-StorefrontV2.todo.md`
 
+Phase 9 notes:
+
+- Focused verification command passed: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~StorefrontCustomerOrderServiceTests|FullyQualifiedName~StorefrontGuestOrderServiceTests|FullyQualifiedName~CommerceNodeOrderQueryServiceTests|FullyQualifiedName~CommerceNodeAdminShipmentServiceTests|FullyQualifiedName~StorefrontCheckoutServiceTests|FullyQualifiedName~OrderReadModelOptionsTests|FullyQualifiedName~OrderReadModelBehaviorLockTests" --no-restore --nologo --verbosity minimal` with 83 passed.
+- Solution build passed: `dotnet build BlazorShop.sln --no-restore --nologo --verbosity minimal`.
+- Build/test output still reports existing package vulnerability warnings for `MessagePack` and legacy `Microsoft.OpenApi`; no new compile errors.
+- Browser E2E and QA docs were not updated because this phase intentionally preserved external behavior, DTO shape, routes, and OpenAPI surface.
+
 Acceptance:
 
-- [ ] Tests pass.
-- [ ] No DTO/schema route change.
-- [ ] Customer/guest cannot see admin-only data.
-- [ ] Admin still sees admin-specific order data.
+- [x] Tests pass.
+- [x] No DTO/schema route change.
+- [x] Customer/guest cannot see admin-only data.
+- [x] Admin still sees admin-specific order data.
 
 ## Out Of Scope
 
@@ -445,9 +452,9 @@ Acceptance:
 
 ## Definition Of Done
 
-- [ ] `OrderReadModelAssembler` is the single active Commerce Node V2 place that maps `Order` entity collections to `GetOrder` read models.
-- [ ] Four active V2 services no longer maintain separate `Order -> GetOrder` projection copies.
-- [ ] Authorization/store/customer/guest scope remains in the service methods.
-- [ ] Admin/customer/guest visibility is encoded in options and protected by tests.
-- [ ] Existing external API contracts and DTO shapes remain unchanged.
-- [ ] Focused order/customer/guest/admin tests pass.
+- [x] `OrderReadModelAssembler` is the single active Commerce Node V2 place that maps `Order` entity collections to `GetOrder` read models.
+- [x] Four active V2 services no longer maintain separate `Order -> GetOrder` projection copies.
+- [x] Authorization/store/customer/guest scope remains in the service methods.
+- [x] Admin/customer/guest visibility is encoded in options and protected by tests.
+- [x] Existing external API contracts and DTO shapes remain unchanged.
+- [x] Focused order/customer/guest/admin tests pass.
