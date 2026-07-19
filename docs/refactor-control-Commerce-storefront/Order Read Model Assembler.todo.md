@@ -369,20 +369,27 @@ Acceptance:
 
 Only start after Phases 1-7 pass.
 
-- [ ] Review whether `CommerceNodeOrderQueryService` should expose `AdminNote`; likely no unless only admin path uses it.
-- [ ] Review whether guest order detail should include tracking events.
-- [ ] Review whether admin order projection should include all line money fields currently present in customer/query projection.
-- [ ] Review whether customer/guest payment summary should hide provider/public attempt data consistently.
-- [ ] Any behavior change must include:
+- [x] Review whether `CommerceNodeOrderQueryService` should expose `AdminNote`; likely no unless only admin path uses it.
+- [x] Review whether guest order detail should include tracking events.
+- [x] Review whether admin order projection should include all line money fields currently present in customer/query projection.
+- [x] Review whether customer/guest payment summary should hide provider/public attempt data consistently.
+- [x] Any behavior change must include:
   - before/after test.
   - API contract impact review.
   - QA todo update.
 
+Phase 8 notes:
+
+- No behavior corrections are applied in this phase. The refactor remains mechanical and preserves Phase 0 behavior locks.
+- `CommerceNodeOrderQueryService` is not registered in active Commerce Node DI; its `Internal()` visibility continues to preserve legacy/internal-reference behavior until a separate approved removal or visibility-correction phase.
+- Guest tracking events, admin line money enrichment, and payment public-reference normalization remain deferred because each would change existing customer/admin/guest response behavior.
+- Any future correction should be planned as a contract-impact change, not hidden inside assembler cleanup.
+
 Acceptance:
 
-- [ ] Behavior corrections are explicit and not hidden inside refactor.
-- [ ] Storefront account/guest order views keep safe customer-facing projection.
-- [ ] Admin order detail becomes richer only by approved behavior change.
+- [x] Behavior corrections are explicit and not hidden inside refactor.
+- [x] Storefront account/guest order views keep safe customer-facing projection.
+- [x] Admin order detail becomes richer only by approved behavior change.
 
 ## Phase 9 - QA And Verification
 
