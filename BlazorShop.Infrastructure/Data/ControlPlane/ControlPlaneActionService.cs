@@ -25,11 +25,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         };
 
         private readonly ControlPlaneDbContext dbContext;
-        private readonly ILogger<ControlPlaneActionService>? logger;
+        private readonly ILogger<ControlPlaneActionService> logger;
 
         public ControlPlaneActionService(
             ControlPlaneDbContext dbContext,
-            ILogger<ControlPlaneActionService>? logger = null)
+            ILogger<ControlPlaneActionService> logger)
         {
             this.dbContext = dbContext;
             this.logger = logger;
@@ -181,7 +181,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
             if (existing is not null)
             {
-                this.logger?.LogInformation(
+                this.logger.LogInformation(
                     "Control action enqueue deduplicated for node {NodePublicId}, idempotency key {IdempotencyKey}, existing action {ActionPublicId}.",
                     node.PublicId,
                     idempotencyKey,
@@ -218,7 +218,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             this.dbContext.Actions.Add(action);
             await this.dbContext.SaveChangesAsync(cancellationToken);
 
-            this.logger?.LogInformation(
+            this.logger.LogInformation(
                 "Enqueued Control Plane action {ActionPublicId} of type {ActionType} for node {NodePublicId} and store {StorePublicId}.",
                 action.PublicId,
                 action.ActionType,
@@ -291,7 +291,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             action.ErrorMessage = status == "failed" ? NormalizeOptionalText(request.ErrorMessage) : null;
 
             await this.dbContext.SaveChangesAsync(cancellationToken);
-            this.logger?.LogInformation(
+            this.logger.LogInformation(
                 "Recorded attempt {AttemptNumber} for Control Plane action {ActionPublicId} with status {AttemptStatus}, HTTP {HttpStatusCode}, duration {DurationMs} ms.",
                 attempt.AttemptNumber,
                 action.PublicId,
@@ -328,7 +328,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             }
 
             await this.dbContext.SaveChangesAsync(cancellationToken);
-            this.logger?.LogInformation(
+            this.logger.LogInformation(
                 "Cancelled Control Plane action {ActionPublicId} with current status {ActionStatus}.",
                 action.PublicId,
                 action.Status);

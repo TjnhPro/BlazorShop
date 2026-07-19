@@ -1191,3 +1191,10 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] SMTP capture prerequisites are documented for local and staging QA. 2026-07-18 Phase 7: `docs/architecture/07-deployment-and-local-run.md` documents Mailpit ports and email Playwright commands; `docs/production-runbook.md` documents staging capture constraints.
 - [x] Recovery and order placed email release gates are documented with visible-browser evidence. 2026-07-18 Phase 7: Storefront release checklist includes `REC-*`, `CHK-028`, and `CHK-029` evidence from headed Chromium and Mailpit.
 - [x] SMTP misconfiguration errors are actionable for operators. 2026-07-18 Phase 7: production runbook maps `message_delivery.smtp_not_configured`, `message_delivery.smtp_send_failed`, `message_delivery.store_not_found`, and `message_delivery.template_missing` to likely causes and fixes.
+
+## V2 Architecture Boundary Hardening
+
+- [x] Commerce Node Storefront route scope resolves before auth/order/cart handlers and auth contract tests do not bypass store scope. 2026-07-19 Phase 8/9: `CommerceNodeStorefrontAuthContractTests` stubs a valid store execution context and verifies typed auth errors after middleware scope resolution.
+- [x] Commerce Node services consume `ICommerceStoreContext`/execution context instead of parsing HTTP route/query/header/host inside infrastructure. 2026-07-19 Phase 9: `InfrastructureStoreContext_ReadsExecutionContextOnlyAfterPhase5` and `InfrastructureServices_DoNotKeepPrivateStoreScopeResolutionHelpersAfterPhase5` remain in the V2 architecture suite.
+- [x] Development seeding remains idempotent and does not overwrite runtime store profile/config values after API restart. 2026-07-19 Phase 7/9: seeder split guardrails stay in `CommerceNodeDevelopmentSeeder_IsSplitBySeedStepAfterPhase7B`; runtime no-overwrite policy is documented in local run docs.
+- [x] Active Commerce Node production services do not use optional DI collaborator fallbacks for store public configuration cache. 2026-07-19 Phase 9: `CommerceStoreService` now requires `IStorefrontPublicConfigurationCache` and invalidates it explicitly after store changes.

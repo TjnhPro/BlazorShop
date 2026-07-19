@@ -16,7 +16,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         {
             await using var context = CreateContext();
             using var cache = new MemoryCache(new MemoryCacheOptions());
-            var service = new CommerceStoreService(context, cache);
+            var service = CreateService(context, cache);
 
             var result = await service.CreateAsync(CreateRequest(
                 logoUrl: "https://cdn.example.test/logo.png",
@@ -42,7 +42,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         {
             await using var context = CreateContext();
             using var cache = new MemoryCache(new MemoryCacheOptions());
-            var service = new CommerceStoreService(context, cache);
+            var service = CreateService(context, cache);
 
             var result = await service.CreateAsync(CreateRequest(logoUrl: logoUrl));
 
@@ -60,7 +60,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         {
             await using var context = CreateContext();
             using var cache = new MemoryCache(new MemoryCacheOptions());
-            var service = new CommerceStoreService(context, cache);
+            var service = CreateService(context, cache);
 
             var result = await service.CreateAsync(CreateRequest(msTileColor: msTileColor));
 
@@ -78,7 +78,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         {
             await using var context = CreateContext();
             using var cache = new MemoryCache(new MemoryCacheOptions());
-            var service = new CommerceStoreService(context, cache);
+            var service = CreateService(context, cache);
 
             var result = await service.CreateAsync(CreateRequest(cdnHost: cdnHost));
 
@@ -134,6 +134,11 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 MsTileColor: msTileColor,
                 DefaultCurrencyCode: "USD",
                 DefaultCulture: "en-US");
+        }
+
+        private static CommerceStoreService CreateService(CommerceNodeDbContext context, IMemoryCache cache)
+        {
+            return new CommerceStoreService(context, cache, new StorefrontPublicConfigurationCache(context, cache));
         }
 
         private static CommerceNodeDbContext CreateContext()

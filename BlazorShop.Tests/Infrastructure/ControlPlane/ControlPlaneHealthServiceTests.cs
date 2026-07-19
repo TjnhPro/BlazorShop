@@ -9,6 +9,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
     using BlazorShop.Infrastructure.Data.ControlPlane;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Logging.Abstractions;
 
     using Xunit;
 
@@ -144,7 +145,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
         {
             var client = new HttpClient(new StubHttpMessageHandler(responseFactory));
             var controlClient = new CommerceNodeControlClient(client);
-            return new ControlPlaneHealthService(context, controlClient);
+            return new ControlPlaneHealthService(context, controlClient, NullLogger<ControlPlaneHealthService>.Instance);
         }
 
         private static async Task<ControlPlaneNodeDetail> CreateNodeAsync(ControlPlaneDbContext context)

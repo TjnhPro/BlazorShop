@@ -521,3 +521,10 @@ Status legend:
 - [x] Product manager shows availability quantity workflow state for managed/unmanaged stock, low stock, out of stock, purchase paused, and hide-when-out-of-stock. 2026-07-16 Phase 7: `ControlPlaneVariantAttributeWorkflowTests.ProductManager_ShowsAvailabilityQuantityWorkflowState` passed.
 - [x] Availability Quantity manager workflow keeps ControlPlane Web behind ControlPlane API. 2026-07-16 Phase 7: `ControlPlaneVariantAttributeWorkflowTests.ControlPlaneWeb_UsesControlPlaneCommerceGatewayRoutesOnly` passed; no direct CommerceNode calls were added.
 - [x] Availability Quantity Control Plane release gate passed. 2026-07-18: post-split focused guards are `ControlPlaneCommerceGatewayStoreMappingTests|ControlPlaneArchitectureBoundaryTests|ControlPlaneCommerceProductControllerTests|ControlPlaneVariantAttributeWorkflowTests`.
+
+## V2 Architecture Boundary Hardening
+
+- [x] Control Plane commerce gateway interfaces expose application-level `ApplicationResult<T>` contracts only, not `HttpClient`, `HttpMethod`, `HttpStatusCode`, raw route/path strings, or transport response types. 2026-07-19 Phase 9: `V2ArchitectureBoundaryBaselineTests` guards all `BlazorShop.Application/ControlPlane/CommerceGateway` interfaces.
+- [x] Capability gateway interfaces stay below the documented method-count threshold so gateway responsibilities remain split by feature. 2026-07-19 Phase 9: `ControlPlaneCommerceGatewayInterfaces_UseApplicationResultCapabilities` asserts each capability has 1-15 `ApplicationResult<T>` operations.
+- [x] Active Control Plane services do not rely on nullable logger constructor fallbacks. 2026-07-19 Phase 9: `ControlPlaneActionService` and `ControlPlaneHealthService` require DI-provided loggers; mixed infrastructure tests pass with explicit `NullLogger`.
+- [x] Active V2 build/test target is the V2 solution filter, not the legacy/mixed solution. 2026-07-19 Phase 8/9: `dotnet build BlazorShop.V2.slnf --no-restore` and `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore` are documented in architecture rules.

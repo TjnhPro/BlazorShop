@@ -693,42 +693,62 @@ Goal: prevent the same architecture issues from returning.
 
 ### Guardrail Tests
 
-- [ ] Application gateway interfaces do not expose `HttpMethod`, `HttpClient`, `HttpStatusCode`, raw path transport, or transport result types.
-- [ ] Control Plane commerce gateway capability interfaces use `ApplicationResult<T>`.
-- [ ] `ControlPlaneCommerceCatalogResult<T>` is absent from active code.
-- [ ] Capability interface method count stays under configured threshold unless documented.
-- [ ] Active V2 production constructors do not use nullable collaborator dependencies with default `null`.
-- [ ] Active V2 production services do not instantiate fallback collaborators with `new` when DI should supply them.
-- [ ] Storefront endpoint files do not inject concrete `StorefrontApiClient`.
-- [ ] `Web.SharedV2` does not contain Product/Category/Payment/SEO/Page/Discovery business models after migration.
-- [ ] Infrastructure store context does not parse route/query/header/host for normal Storefront/Admin store scope.
-- [ ] Storefront browser network release checks continue to reject direct calls to Commerce Admin, Control Plane, legacy, or `api/internal/*`.
-- [ ] V2 solution filter excludes legacy Presentation projects.
-- [ ] Known hotspot file size thresholds are enforced or documented with an exception.
+- [x] Application gateway interfaces do not expose `HttpMethod`, `HttpClient`, `HttpStatusCode`, raw path transport, or transport result types.
+  - Guarded by `ApplicationGatewayContracts_DoNotExposeHttpTransportPrimitives`.
+- [x] Control Plane commerce gateway capability interfaces use `ApplicationResult<T>`.
+  - Guarded by `ControlPlaneCommerceGatewayInterfaces_UseApplicationResultCapabilities`.
+- [x] `ControlPlaneCommerceCatalogResult<T>` is absent from active code.
+  - Guarded by `ControlPlaneCommerceCatalogResult_IsAbsentFromActiveCode`.
+- [x] Capability interface method count stays under configured threshold unless documented.
+  - Guarded by `ControlPlaneCommerceGatewayInterfaces_UseApplicationResultCapabilities`, threshold 1-15 methods.
+- [x] Active V2 production constructors do not use nullable collaborator dependencies with default `null`.
+  - `ControlPlaneActionService`, `ControlPlaneHealthService`, and `CommerceStoreService` now require DI collaborators.
+- [x] Active V2 production services do not instantiate fallback collaborators with `new` when DI should supply them.
+  - Guarded by `ActiveV2ProductionConstructors_DoNotUseNullableDependencyFallbacks`.
+- [x] Storefront endpoint files do not inject concrete `StorefrontApiClient`.
+  - Guarded by `StorefrontEndpointMappings_DoNotInjectConcreteApiClient`.
+- [x] `Web.SharedV2` does not contain Product/Category/Payment/SEO/Page/Discovery business models after migration.
+  - Current migration exception is frozen by `WebSharedV2BusinessModelFolders_AreFrozenDuringContractMigration`; removal remains tied to generated-client migration.
+- [x] Infrastructure store context does not parse route/query/header/host for normal Storefront/Admin store scope.
+  - Guarded by `InfrastructureStoreContext_ReadsExecutionContextOnlyAfterPhase5` and `InfrastructureServices_DoNotKeepPrivateStoreScopeResolutionHelpersAfterPhase5`.
+- [x] Storefront browser network release checks continue to reject direct calls to Commerce Admin, Control Plane, legacy, or `api/internal/*`.
+  - Existing release checklist keeps `RUN-010` network evidence requirement; no browser route behavior changed in Phase 9.
+- [x] V2 solution filter excludes legacy Presentation projects.
+  - Guarded by `ActiveV2BuildAndTestSurface_IsIsolatedFromLegacyAfterPhase8`.
+- [x] Known hotspot file size thresholds are enforced or documented with an exception.
+  - Guarded by Phase 7 split tests for Swagger, seeder, Control Plane pages, CommerceProducts, and Storefront local endpoints.
 
 ### QA Checklist Updates
 
-- [ ] Update `QA-ControlPlane.todo.md` with gateway/result split checks.
-- [ ] Update `QA-CommerceNode.todo.md` with store execution context and seeder idempotency checks.
-- [ ] Update `QA-StorefrontV2.todo.md` with Storefront endpoint/client boundary and browser network checks if behavior changes.
-- [ ] Update `Storefront Playwright E2E Release.todo.md` only if browser behavior, routes, or release evidence requirements change.
+- [x] Update `QA-ControlPlane.todo.md` with gateway/result split checks.
+- [x] Update `QA-CommerceNode.todo.md` with store execution context and seeder idempotency checks.
+- [x] Update `QA-StorefrontV2.todo.md` with Storefront endpoint/client boundary and browser network checks if behavior changes.
+- [x] Update `Storefront Playwright E2E Release.todo.md` only if browser behavior, routes, or release evidence requirements change.
+  - Not changed in Phase 9; existing `RUN-010` evidence requirement remains valid.
 
 ### Final Verification
 
-- [ ] `dotnet build BlazorShop.V2.slnf --no-restore` when Phase 8 exists.
-- [ ] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore` when Phase 8 exists.
-- [ ] Until Phase 8 exists: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore`.
-- [ ] `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser`.
-- [ ] Fetch `http://localhost:5180/swagger/commerce-admin/swagger.json`.
-- [ ] Fetch `http://localhost:5180/swagger/storefront/swagger.json`.
-- [ ] Run Storefront Playwright release subset if Storefront browser behavior changed.
+- [x] `dotnet build BlazorShop.V2.slnf --no-restore` when Phase 8 exists.
+  - Passed. Existing warnings: MessagePack vulnerability warnings and Browserslist stale notice.
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore` when Phase 8 exists.
+  - Passed: 441 passed, 0 failed, 0 skipped, duration 4 m 8 s. Existing warnings: MessagePack vulnerability warnings and Browserslist stale notice.
+- [x] Until Phase 8 exists: `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore`.
+  - Not applicable after Phase 8. Focused mixed constructor compatibility subset passed: 28 passed, 0 failed.
+- [x] `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser`.
+  - Passed; started Control Plane API/Web, Commerce Node API, Storefront V2, and bootstrapped `dev-node`/`default`.
+- [x] Fetch `http://localhost:5180/swagger/commerce-admin/swagger.json`.
+  - Passed: HTTP 200, length 424156, contains `openapi`.
+- [x] Fetch `http://localhost:5180/swagger/storefront/swagger.json`.
+  - Passed: HTTP 200, length 308629, contains `openapi`.
+- [x] Run Storefront Playwright release subset if Storefront browser behavior changed.
+  - Not applicable; Phase 9 changed architecture guardrails/DI only. Storefront home HTTP smoke returned 200.
 
 ### Done When
 
-- [ ] All architecture guardrails pass.
-- [ ] All affected QA todo files are updated.
-- [ ] V2 runtime starts locally.
-- [ ] Storefront scoped routes, Control Plane gateway routes, cart, checkout, order, SMTP/message flows remain compatible.
+- [x] All architecture guardrails pass.
+- [x] All affected QA todo files are updated.
+- [x] V2 runtime starts locally.
+- [x] Storefront scoped routes, Control Plane gateway routes, cart, checkout, order, SMTP/message flows remain compatible.
 
 ## Risk Register
 
@@ -773,4 +793,4 @@ Goal: prevent the same architecture issues from returning.
 - [ ] Phase 6D decision made after generated-client readiness check.
 - [x] Phase 7 complete by subphase and committed in small batches.
 - [x] Phase 8 complete and committed.
-- [ ] Phase 9 complete and committed.
+- [x] Phase 9 complete and committed.

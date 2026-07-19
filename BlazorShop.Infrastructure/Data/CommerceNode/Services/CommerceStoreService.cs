@@ -25,12 +25,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private readonly CommerceNodeDbContext context;
         private readonly IMemoryCache memoryCache;
-        private readonly IStorefrontPublicConfigurationCache? publicConfigurationCache;
+        private readonly IStorefrontPublicConfigurationCache publicConfigurationCache;
 
         public CommerceStoreService(
             CommerceNodeDbContext context,
             IMemoryCache memoryCache,
-            IStorefrontPublicConfigurationCache? publicConfigurationCache = null)
+            IStorefrontPublicConfigurationCache publicConfigurationCache)
         {
             this.context = context;
             this.memoryCache = memoryCache;
@@ -396,7 +396,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private void InvalidateStoreCache(CommerceStore store)
         {
             this.memoryCache.Remove($"commerce-store:key:{store.StoreKey}");
-            this.publicConfigurationCache?.Invalidate(store.StoreKey);
+            this.publicConfigurationCache.Invalidate(store.StoreKey);
             foreach (var domain in store.Domains)
             {
                 this.memoryCache.Remove($"commerce-store:host:{domain.NormalizedDomain}");

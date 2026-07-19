@@ -672,3 +672,10 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Storefront V2 consumes address field configuration through the public Storefront API rather than embedding address requirements in Razor. 2026-07-17 Phase 7: configuration contract/static tests passed.
 - [x] Address Core Storefront release gate passed. 2026-07-17 Phase 8: focused Storefront client/static/host and backend contract release gate passed inside 134/134 run.
 - [ ] Visible browser QA for saved address selection remains pending against a seeded authenticated customer.
+
+## V2 Architecture Boundary Hardening
+
+- [x] Storefront local endpoint mappings do not inject concrete `StorefrontApiClient`; they use feature interfaces/local support helpers instead. 2026-07-19 Phase 9: `StorefrontEndpointMappings_DoNotInjectConcreteApiClient` guards the endpoint folder.
+- [x] Storefront browser/network release checklist continues to reject direct calls to Commerce Admin, Control Plane, legacy API/Web, and `api/internal/*`. 2026-07-19 Phase 9: existing `Storefront Playwright E2E Release.todo.md` keeps `RUN-010` and per-route network evidence requirements; no browser route behavior changed in this phase.
+- [x] Storefront V2 host smoke is included in the active V2 test project and serialized to avoid WebApplicationFactory races. 2026-07-19 Phase 8/9: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore` passed 439/439 including `StorefrontV2HostSmokeTests`.
+- [x] Storefront public schemas and shared model migration exceptions remain explicitly guarded. 2026-07-19 Phase 9: `WebSharedV2BusinessModelFolders_AreFrozenDuringContractMigration` freezes the remaining shared business-model folders until generated-client migration removes them.

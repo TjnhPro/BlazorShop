@@ -6,6 +6,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
     using BlazorShop.Infrastructure.Data.ControlPlane;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Logging.Abstractions;
 
     using Xunit;
 
@@ -16,7 +17,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
         {
             await using var context = CreateContext();
             var node = await CreateNodeAsync(context, "node-a");
-            var service = new ControlPlaneActionService(context);
+            var service = CreateService(context);
 
             var first = await service.EnqueueAsync(new EnqueueControlActionRequest(
                 node.PublicId,
@@ -43,7 +44,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var node = await CreateNodeAsync(context, "node-a");
             await new ControlPlaneNodeService(context).DisableAsync(node.PublicId);
-            var service = new ControlPlaneActionService(context);
+            var service = CreateService(context);
 
             var result = await service.EnqueueAsync(new EnqueueControlActionRequest(node.PublicId, "probe_health"));
 
@@ -58,7 +59,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             await using var context = CreateContext();
             var node = await CreateNodeAsync(context, "node-a");
             var store = await CreateStoreAsync(context, node.PublicId, "main-store");
-            var service = new ControlPlaneActionService(context);
+            var service = CreateService(context);
 
             var result = await service.EnqueueAsync(new EnqueueControlActionRequest(
                 node.PublicId,
@@ -76,7 +77,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
         {
             await using var context = CreateContext();
             var node = await CreateNodeAsync(context, "node-a");
-            var service = new ControlPlaneActionService(context);
+            var service = CreateService(context);
             var action = await service.EnqueueAsync(new EnqueueControlActionRequest(node.PublicId, "fetch_capabilities"));
 
             var failed = await service.RecordAttemptAsync(
@@ -98,7 +99,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
         {
             await using var context = CreateContext();
             var node = await CreateNodeAsync(context, "node-a");
-            var service = new ControlPlaneActionService(context);
+            var service = CreateService(context);
             var action = await service.EnqueueAsync(new EnqueueControlActionRequest(node.PublicId, "probe_health"));
 
             var result = await service.RecordAttemptAsync(
@@ -116,7 +117,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
         {
             await using var context = CreateContext();
             var node = await CreateNodeAsync(context, "node-a");
-            var service = new ControlPlaneActionService(context);
+            var service = CreateService(context);
             var action = await service.EnqueueAsync(new EnqueueControlActionRequest(node.PublicId, "probe_health"));
 
             var cancelled = await service.CancelAsync(action.Payload!.PublicId);
@@ -142,6 +143,11 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
 
             Assert.True(created.Success);
             return created.Payload!;
+        }
+
+        private static ControlPlaneActionService CreateService(ControlPlaneDbContext context)
+        {
+            return new ControlPlaneActionService(context, NullLogger<ControlPlaneActionService>.Instance);
         }
 
         private static async Task<ControlPlaneStoreDetail> CreateStoreAsync(ControlPlaneDbContext context, Guid nodePublicId, string storeKey)

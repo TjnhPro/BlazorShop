@@ -15,12 +15,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         private const string ControlApiEndpointKind = "control_api";
         private readonly ControlPlaneDbContext dbContext;
         private readonly ICommerceNodeControlClient controlClient;
-        private readonly ILogger<ControlPlaneHealthService>? logger;
+        private readonly ILogger<ControlPlaneHealthService> logger;
 
         public ControlPlaneHealthService(
             ControlPlaneDbContext dbContext,
             ICommerceNodeControlClient controlClient,
-            ILogger<ControlPlaneHealthService>? logger = null)
+            ILogger<ControlPlaneHealthService> logger)
         {
             this.dbContext = dbContext;
             this.controlClient = controlClient;
@@ -181,7 +181,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 return ValidationFailed<ControlPlaneProbeResult>("Node does not have a Commerce Node secret configured.");
             }
 
-            this.logger?.LogInformation(
+            this.logger.LogInformation(
                 "Starting Control Plane health probe for node {NodePublicId} at {ControlApiUrl}.",
                 node.PublicId,
                 endpoint.Url);
@@ -247,7 +247,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
             if (probe.HealthStatus is "healthy" or "warning")
             {
-                this.logger?.LogInformation(
+                this.logger.LogInformation(
                     "Completed Control Plane health probe for node {NodePublicId} with status {HealthStatus} in {DurationMs} ms. CapabilityChanged={CapabilityChanged}.",
                     node.PublicId,
                     probe.HealthStatus,
@@ -256,7 +256,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             }
             else
             {
-                this.logger?.LogWarning(
+                this.logger.LogWarning(
                     "Control Plane health probe for node {NodePublicId} ended with status {HealthStatus}, error {ErrorCode}, duration {DurationMs} ms.",
                     node.PublicId,
                     probe.HealthStatus,

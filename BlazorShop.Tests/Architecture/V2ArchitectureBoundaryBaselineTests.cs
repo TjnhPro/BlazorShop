@@ -28,7 +28,11 @@ namespace BlazorShop.Tests.Architecture
                     var source = File.ReadAllText(path);
                     return source.Contains("HttpMethod", StringComparison.Ordinal)
                            || source.Contains("HttpStatusCode", StringComparison.Ordinal)
-                           || source.Contains("HttpClient", StringComparison.Ordinal);
+                           || source.Contains("HttpClient", StringComparison.Ordinal)
+                           || source.Contains("HttpRequestMessage", StringComparison.Ordinal)
+                           || source.Contains("HttpResponseMessage", StringComparison.Ordinal)
+                           || source.Contains("ServiceResponse<", StringComparison.Ordinal)
+                           || Regex.IsMatch(source, @"\bstring\??\s+(path|relativePath|url|endpoint|route)\b", RegexOptions.IgnoreCase);
                 })
                 .Select(ToRepositoryRelativePath)
                 .OrderBy(path => path, StringComparer.Ordinal)
@@ -36,6 +40,41 @@ namespace BlazorShop.Tests.Architecture
 
             Assert.Empty(offenders);
             Assert.False(File.Exists(RepositoryPath("BlazorShop.Application/ControlPlane/CommerceGateway/CommerceNodeAdminGatewayDtos.cs")));
+        }
+
+        [Fact]
+        public void ControlPlaneCommerceGatewayInterfaces_UseApplicationResultCapabilities()
+        {
+            var gatewayInterfaces = EnumerateSourceFiles("BlazorShop.Application/ControlPlane/CommerceGateway")
+                .Where(path => Path.GetFileName(path).StartsWith("IControlPlane", StringComparison.Ordinal))
+                .Select(path => new
+                {
+                    Path = path,
+                    Source = File.ReadAllText(path),
+                })
+                .ToArray();
+
+            Assert.NotEmpty(gatewayInterfaces);
+
+            var nonApplicationResultTasks = gatewayInterfaces
+                .Where(file => Regex.Matches(file.Source, @"Task<").Count
+                               != Regex.Matches(file.Source, @"Task<ApplicationResult<").Count)
+                .Select(file => ToRepositoryRelativePath(file.Path))
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
+            var oversizedCapabilities = gatewayInterfaces
+                .Select(file => new
+                {
+                    RelativePath = ToRepositoryRelativePath(file.Path),
+                    MethodCount = Regex.Matches(file.Source, @"Task<ApplicationResult<").Count,
+                })
+                .Where(file => file.MethodCount is < 1 or > 15)
+                .Select(file => $"{file.RelativePath}: {file.MethodCount}")
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.Empty(nonApplicationResultTasks);
+            Assert.Empty(oversizedCapabilities);
         }
 
         [Fact]
@@ -101,31 +140,38 @@ namespace BlazorShop.Tests.Architecture
         [Fact]
         public void ActiveV2ProductionConstructors_DoNotUseNullableDependencyFallbacks()
         {
-            var offenderPatterns = new[]
-            {
-                "IProductSelectionResolver?",
-                "new ProductSelectionResolver",
-                "IOptions<StorefrontCartOptions>?",
-                "IStorefrontNavigationCache?",
-                "IStoreSeoSlugPolicyService?",
-                "IStoreSeoSlugHistoryService?",
-                "ISeoRedirectAutomationService?",
-                "IStorefrontStoreConfigurationClient?",
-                "IHttpContextAccessor?",
-                "new HttpContextAccessor",
-                "ICatalogQueryCache?",
-                "IStoreShippingSettingsService?",
-                "ICommerceTransactionalMessageService?",
-            };
-
             var offenders = EnumerateSourceFiles(
-                    "BlazorShop.Application",
-                    "BlazorShop.Infrastructure",
+                    "BlazorShop.Infrastructure/Data/CommerceNode/Services",
+                    "BlazorShop.Infrastructure/Data/ControlPlane",
                     "BlazorShop.PresentationV2")
                 .Where(path =>
                 {
                     var source = File.ReadAllText(path);
-                    return offenderPatterns.Any(pattern => source.Contains(pattern, StringComparison.Ordinal));
+                    return Regex.IsMatch(
+                               source,
+                               @"public\s+[A-Za-z0-9_]+\s*\([^)]*I[A-Za-z0-9_<>,\s]+\?\s+\w+\s*=\s*null",
+                               RegexOptions.Singleline)
+                           || source.Contains("new ProductSelectionResolver", StringComparison.Ordinal)
+                           || source.Contains("new HttpContextAccessor", StringComparison.Ordinal)
+                           || source.Contains("new StorefrontNavigationCache", StringComparison.Ordinal)
+                           || source.Contains("new CatalogQueryCache", StringComparison.Ordinal);
+                })
+                .Select(ToRepositoryRelativePath)
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.Empty(offenders);
+        }
+
+        [Fact]
+        public void StorefrontEndpointMappings_DoNotInjectConcreteApiClient()
+        {
+            var offenders = EnumerateSourceFiles("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints")
+                .Where(path =>
+                {
+                    var source = File.ReadAllText(path);
+                    return source.Contains("StorefrontApiClient ", StringComparison.Ordinal)
+                           || source.Contains("@inject StorefrontApiClient", StringComparison.Ordinal);
                 })
                 .Select(ToRepositoryRelativePath)
                 .OrderBy(path => path, StringComparer.Ordinal)
