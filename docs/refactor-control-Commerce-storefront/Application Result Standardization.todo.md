@@ -482,16 +482,26 @@ Goal: giam duplicate phia client ma khong tron voi Application core.
 
 Tasks:
 
-- [ ] Review `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/Models/ServiceResponse.cs`.
-- [ ] Keep client DTOs separate if they represent HTTP response payload shape.
-- [ ] Avoid referencing `BlazorShop.Application` from UI client just to reuse server-side result model if it would pull unwanted dependencies.
-- [ ] If duplicate enum is kept, document why it is transport/client projection.
-- [ ] If duplicate enum is removed, replace with generated/shared API contract DTO only after contract tests cover clients.
+- [x] Review `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/Models/ServiceResponse.cs`.
+- [x] Keep client DTOs separate if they represent HTTP response payload shape.
+- [x] Avoid referencing `BlazorShop.Application` from UI client just to reuse server-side result model if it would pull unwanted dependencies.
+- [x] If duplicate enum is kept, document why it is transport/client projection.
+- [x] If duplicate enum is removed, replace with generated/shared API contract DTO only after contract tests cover clients.
 
 Exit criteria:
 
-- [ ] Client-side result model decision is documented.
-- [ ] No Control Plane Web direct dependency on Commerce Node internals.
+- [x] Client-side result model decision is documented.
+- [x] No Control Plane Web direct dependency on Commerce Node internals.
+
+Phase 7 evidence:
+
+- Reviewed `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/Models/ServiceResponse.cs` and `ServiceResponseType.cs`.
+- `BlazorShop.Web.SharedV2` remains a UI/client shared project with no `BlazorShop.Application` project reference.
+- Kept the Web.SharedV2 `ServiceResponse<TPayload>` and `ServiceResponseType` as client transport DTOs used by `ApiCallHelper` to parse HTTP response payloads.
+- Did not replace Web.SharedV2 models with `ApplicationResult<T>` because `ApplicationResult<T>` is an application-layer use-case result, not a browser/client transport contract.
+- Future removal of duplicate client enum should wait for generated/shared API contract DTOs plus client contract tests.
+- Focused build passed 0 warnings/0 errors:
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/BlazorShop.Web.SharedV2.csproj --no-restore --nologo --verbosity minimal`
 
 ## Phase 8 - Contract, QA, And Release Gate
 
@@ -566,7 +576,7 @@ Existing clients
 - [x] Phase 4 complete.
 - [x] Phase 5 complete.
 - [x] Phase 6 adapter decision documented.
-- [ ] Phase 7 client result decision documented.
+- [x] Phase 7 client result decision documented.
 - [ ] Phase 8 verification complete.
 
 ## Not In Scope
