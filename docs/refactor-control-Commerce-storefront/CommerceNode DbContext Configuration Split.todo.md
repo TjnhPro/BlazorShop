@@ -480,44 +480,59 @@ Goal: tach cac cum con lai co nhieu index/constraint lien quan storefront catalo
 
 Scope:
 
-- [ ] `ProductCommerceNodeConfiguration`.
-- [ ] `ProductVariantConfiguration`.
-- [ ] `CategoryStoreScopeConfiguration`.
-- [ ] `VariationTemplateConfiguration`.
-- [ ] `VariationTemplateOptionConfiguration`.
-- [ ] `VariationTemplateValueConfiguration`.
-- [ ] `ProductMediaConfiguration`.
-- [ ] `CommerceMediaAssetConfiguration`.
-- [ ] `CategoryMediaAssignmentConfiguration`.
-- [ ] `StorefrontPageConfiguration`.
-- [ ] `StoreSeoSlugHistoryConfiguration`.
-- [ ] `StoreNavigationMenuConfiguration`.
-- [ ] `StoreNavigationMenuItemConfiguration`.
-- [ ] `ProductImportJobConfiguration`.
-- [ ] `ProductImportRowConfiguration`.
+- [x] `ProductCommerceNodeConfiguration`.
+- [x] `ProductVariantConfiguration`.
+- [x] `CategoryStoreScopeConfiguration`.
+- [x] `VariationTemplateConfiguration`.
+- [x] `VariationTemplateOptionConfiguration`.
+- [x] `VariationTemplateValueConfiguration`.
+- [x] `ProductMediaConfiguration`.
+- [x] `CommerceMediaAssetConfiguration`.
+- [x] `CategoryMediaAssignmentConfiguration`.
+- [x] `StorefrontPageConfiguration`.
+- [x] `StoreSeoSlugHistoryConfiguration`.
+- [x] `StoreNavigationMenuConfiguration`.
+- [x] `StoreNavigationMenuItemConfiguration`.
+- [x] `ProductImportJobConfiguration`.
+- [x] `ProductImportRowConfiguration`.
 
 Tasks:
 
-- [ ] Merge Product mapping carefully because `ProductConfiguration` already exists and Commerce Node adds overrides.
-- [ ] Decide one of:
-  - [ ] Keep shared `ProductConfiguration` then add `ProductCommerceNodeConfiguration` for Commerce Node-only additions.
+- [x] Merge Product mapping carefully because `ProductConfiguration` already exists and Commerce Node adds overrides.
+- [x] Decide one of:
+  - [x] Keep shared `ProductConfiguration` then add `ProductCommerceNodeConfiguration` for Commerce Node-only additions.
   - [ ] Move all Commerce Node product mapping into a single Commerce Node config and stop applying shared `ProductConfiguration` from Commerce Node.
-- [ ] Avoid duplicate indexes when shared and Commerce Node configs both configure Product.
-- [ ] Preserve media usage table names and unique indexes.
-- [ ] Preserve storefront page slug/template/navigation mapping.
-- [ ] Preserve product import indexes/check constraints.
-- [ ] Run focused tests:
-  - [ ] `dotnet test BlazorShop.Tests --filter Product`.
-  - [ ] `dotnet test BlazorShop.Tests --filter Category`.
-  - [ ] `dotnet test BlazorShop.Tests --filter Media`.
-  - [ ] `dotnet test BlazorShop.Tests --filter StorefrontPage`.
-  - [ ] `dotnet test BlazorShop.Tests --filter Navigation`.
+- [x] Avoid duplicate indexes when shared and Commerce Node configs both configure Product.
+- [x] Preserve media usage table names and unique indexes.
+- [x] Preserve storefront page slug/template/navigation mapping.
+- [x] Preserve product import indexes/check constraints.
+- [x] Run focused tests:
+  - [x] `dotnet test BlazorShop.Tests --filter Product`.
+  - [x] `dotnet test BlazorShop.Tests --filter Category`.
+  - [x] `dotnet test BlazorShop.Tests --filter Media`.
+  - [x] `dotnet test BlazorShop.Tests --filter StorefrontPage`.
+  - [x] `dotnet test BlazorShop.Tests --filter Navigation`.
 
 Exit criteria:
 
-- [ ] Catalog model metadata unchanged.
-- [ ] Media/content/import tests pass.
-- [ ] No duplicate index or conflicting default warnings.
+- [x] Catalog model metadata unchanged.
+- [x] Media/content/import tests pass.
+- [x] No duplicate index or conflicting default warnings.
+
+Phase 7 evidence:
+
+- Added catalog configuration files under `BlazorShop.Infrastructure/Data/CommerceNode/Configurations/Catalog`.
+- Added media configuration files under `BlazorShop.Infrastructure/Data/CommerceNode/Configurations/Media`.
+- Added content/navigation configuration files under `BlazorShop.Infrastructure/Data/CommerceNode/Configurations/Content`.
+- Added product import configuration files under `BlazorShop.Infrastructure/Data/CommerceNode/Configurations/ProductImports`.
+- Kept shared `ProductConfiguration` and `CategoryConfiguration` explicitly applied in `CommerceNodeDbContext`; moved only Commerce Node store-scope, variant, variation, media, page/navigation and import mappings.
+- Removed moved catalog, media, content/navigation and product import blocks from `CommerceNodeDbContext.OnModelCreating`; DbSet declarations remain.
+- Left `SeoRedirect` store relationship override in `CommerceNodeDbContext` because it is not listed in this phase scope and shared `SeoRedirectConfiguration` is still applied explicitly.
+- Preserved product quantity/purchase/shipping defaults, product variant unique filters, variation control type constraint, media table names/check constraints, page slug/page key indexes, navigation target/system constraints and import status/action/media constraints.
+- `CommerceNodeDbContext.cs` line count is now 396.
+- `modelBuilder.Entity` count dropped from 47 to 22.
+- Focused command passed 392/395 with 3 existing skips:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~Product|FullyQualifiedName~Category|FullyQualifiedName~Media|FullyQualifiedName~StorefrontPage|FullyQualifiedName~Navigation|FullyQualifiedName~Import|FullyQualifiedName~CommerceNodeDbContextModelTests|FullyQualifiedName~CommerceNodeMigrationModelConsistencyTests" --no-restore --nologo --verbosity minimal`
 
 ## Phase 8 - Identity, Tasks, Deployment, And Cleanup
 
@@ -617,7 +632,7 @@ Safety boundary
 - [x] Phase 4 store/currency/security/shipping complete.
 - [x] Phase 5 cart/checkout/customer/address complete.
 - [x] Phase 6 orders/fulfillment complete.
-- [ ] Phase 7 catalog/media/content/imports complete.
+- [x] Phase 7 catalog/media/content/imports complete.
 - [ ] Phase 8 identity/tasks/deployment cleanup complete.
 - [ ] Phase 9 final verification complete.
 
