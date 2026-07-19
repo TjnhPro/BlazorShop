@@ -22,7 +22,7 @@ namespace BlazorShop.Storefront.Endpoints
         {
             app.MapGet("/api/account/profile", async (
                 IStorefrontSessionResolver sessionResolver,
-                StorefrontApiClient apiClient,
+                IStorefrontCustomerClient apiClient,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
             {
@@ -41,7 +41,7 @@ namespace BlazorShop.Storefront.Endpoints
             app.MapPut("/api/account/profile", async (
                 StorefrontBrowserCustomerProfileUpdateRequest request,
                 IStorefrontSessionResolver sessionResolver,
-                StorefrontApiClient apiClient,
+                IStorefrontCustomerClient apiClient,
                 IAntiforgery antiforgery,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
@@ -73,7 +73,7 @@ namespace BlazorShop.Storefront.Endpoints
             });
             app.MapGet("/api/account/addresses", async (
                 IStorefrontSessionResolver sessionResolver,
-                StorefrontApiClient apiClient,
+                IStorefrontCustomerClient apiClient,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
             {
@@ -92,7 +92,7 @@ namespace BlazorShop.Storefront.Endpoints
             app.MapPost("/api/account/addresses", async (
                 StorefrontBrowserCustomerAddressRequest request,
                 IStorefrontSessionResolver sessionResolver,
-                StorefrontApiClient apiClient,
+                IStorefrontCustomerClient apiClient,
                 IAntiforgery antiforgery,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
@@ -118,7 +118,7 @@ namespace BlazorShop.Storefront.Endpoints
                 Guid addressId,
                 StorefrontBrowserCustomerAddressRequest request,
                 IStorefrontSessionResolver sessionResolver,
-                StorefrontApiClient apiClient,
+                IStorefrontCustomerClient apiClient,
                 IAntiforgery antiforgery,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
@@ -143,7 +143,7 @@ namespace BlazorShop.Storefront.Endpoints
             app.MapDelete("/api/account/addresses/{addressId:guid}", async (
                 Guid addressId,
                 IStorefrontSessionResolver sessionResolver,
-                StorefrontApiClient apiClient,
+                IStorefrontCustomerClient apiClient,
                 IAntiforgery antiforgery,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
@@ -168,7 +168,7 @@ namespace BlazorShop.Storefront.Endpoints
             app.MapPost("/api/account/addresses/{addressId:guid}/default-shipping", async (
                 Guid addressId,
                 IStorefrontSessionResolver sessionResolver,
-                StorefrontApiClient apiClient,
+                IStorefrontCustomerClient apiClient,
                 IAntiforgery antiforgery,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
@@ -178,7 +178,7 @@ namespace BlazorShop.Storefront.Endpoints
             app.MapPost("/api/account/addresses/{addressId:guid}/default-billing", async (
                 Guid addressId,
                 IStorefrontSessionResolver sessionResolver,
-                StorefrontApiClient apiClient,
+                IStorefrontCustomerClient apiClient,
                 IAntiforgery antiforgery,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
@@ -189,7 +189,7 @@ namespace BlazorShop.Storefront.Endpoints
                 int? page,
                 int? pageSize,
                 IStorefrontSessionResolver sessionResolver,
-                StorefrontApiClient apiClient,
+                IStorefrontCustomerClient apiClient,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
             {
@@ -212,7 +212,7 @@ namespace BlazorShop.Storefront.Endpoints
             app.MapGet("/api/account/orders/{orderReference}", async (
                 string orderReference,
                 IStorefrontSessionResolver sessionResolver,
-                StorefrontApiClient apiClient,
+                IStorefrontCustomerClient apiClient,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
             {
@@ -231,7 +231,7 @@ namespace BlazorShop.Storefront.Endpoints
             app.MapGet("/api/account/orders/{orderReference}/receipt", async (
                 string orderReference,
                 IStorefrontSessionResolver sessionResolver,
-                StorefrontApiClient apiClient,
+                IStorefrontCustomerClient apiClient,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
             {

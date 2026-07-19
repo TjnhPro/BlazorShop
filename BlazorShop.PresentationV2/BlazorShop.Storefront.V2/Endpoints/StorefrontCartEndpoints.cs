@@ -35,7 +35,7 @@ namespace BlazorShop.Storefront.Endpoints
             });
             app.MapPost("/api/product-selection-preview", async (
                 StorefrontLocalProductSelectionPreviewRequest request,
-                StorefrontApiClient apiClient,
+                IStorefrontCatalogClient apiClient,
                 IStorefrontDisplayContextProvider displayContextProvider,
                 IStorefrontPriceFormatter priceFormatter,
                 CancellationToken cancellationToken) =>

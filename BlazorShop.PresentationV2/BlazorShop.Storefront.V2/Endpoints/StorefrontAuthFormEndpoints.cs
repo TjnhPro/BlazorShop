@@ -172,7 +172,7 @@ namespace BlazorShop.Storefront.Endpoints
             app.MapPost(StorefrontRoutes.AccountProfile, async (
                 [FromForm] StorefrontAccountProfileForm form,
                 IStorefrontSessionResolver sessionResolver,
-                StorefrontApiClient apiClient,
+                IStorefrontCustomerClient apiClient,
                 CancellationToken cancellationToken) =>
             {
                 var session = await sessionResolver.GetCurrentUserAsync(cancellationToken);
@@ -246,7 +246,7 @@ namespace BlazorShop.Storefront.Endpoints
             app.MapPost(StorefrontRoutes.AccountAddresses, async (
                 [FromForm] StorefrontAccountAddressForm form,
                 IStorefrontSessionResolver sessionResolver,
-                StorefrontApiClient apiClient,
+                IStorefrontCustomerClient apiClient,
                 CancellationToken cancellationToken) =>
             {
                 var session = await sessionResolver.GetCurrentUserAsync(cancellationToken);
@@ -263,7 +263,7 @@ namespace BlazorShop.Storefront.Endpoints
             });
             app.MapPost(StorefrontRoutes.CurrencyPreference, async (
                 [FromForm] StorefrontCurrencyPreferenceForm form,
-                StorefrontApiClient apiClient,
+                IStorefrontStoreConfigurationClient apiClient,
                 HttpContext httpContext,
                 IHostEnvironment environment,
                 CancellationToken cancellationToken) =>
@@ -301,7 +301,8 @@ namespace BlazorShop.Storefront.Endpoints
             });
             app.MapPost(StorefrontRoutes.Checkout, async (
                 [FromForm] StorefrontCheckoutForm form,
-                StorefrontApiClient apiClient,
+                IStorefrontCartClient cartClient,
+                IStorefrontCheckoutClient checkoutClient,
                 IStorefrontSessionResolver sessionResolver,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
@@ -314,7 +315,7 @@ namespace BlazorShop.Storefront.Endpoints
                     return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("error", "Your cart is empty."));
                 }
             
-                var cartResult = await apiClient.GetCartAsync(cartToken, cancellationToken);
+                var cartResult = await cartClient.GetCartAsync(cartToken, cancellationToken);
                 if (!cartResult.Success || cartResult.Data is null || cartResult.Data.Lines.Count == 0)
                 {
                     return Results.Redirect(StorefrontRoutes.Checkout + QueryString.Create("error", "Your cart is empty."));
@@ -325,7 +326,7 @@ namespace BlazorShop.Storefront.Endpoints
                     return Results.Redirect(BuildCheckoutErrorUrl("Your cart changed. Review the latest cart and try checkout again."));
                 }
             
-                var startResult = await apiClient.StartCheckoutAsync(cartToken, cancellationToken);
+                var startResult = await checkoutClient.StartCheckoutAsync(cartToken, cancellationToken);
                 if (!startResult.Success || startResult.Data is null)
                 {
                     return Results.Redirect(BuildCheckoutErrorUrl(startResult.Message));
@@ -335,7 +336,7 @@ namespace BlazorShop.Storefront.Endpoints
                 var customerAccessToken = customerSession.IsAuthenticated
                     ? customerSession.AccessToken
                     : null;
-                var addressResult = await apiClient.UpdateCheckoutAddressesAsync(
+                var addressResult = await checkoutClient.UpdateCheckoutAddressesAsync(
                     cartToken,
                     startResult.Data.CheckoutSessionId,
                     BuildCheckoutAddressStepRequest(form),
@@ -355,7 +356,7 @@ namespace BlazorShop.Storefront.Endpoints
             
                 if (!string.IsNullOrWhiteSpace(shippingOptionKey))
                 {
-                    var shippingResult = await apiClient.SelectCheckoutShippingMethodAsync(
+                    var shippingResult = await checkoutClient.SelectCheckoutShippingMethodAsync(
                         cartToken,
                         checkoutState.CheckoutSessionId,
                         new StorefrontCheckoutShippingMethodRequest { ShippingOptionKey = shippingOptionKey },
@@ -374,7 +375,7 @@ namespace BlazorShop.Storefront.Endpoints
                     return Results.Redirect(BuildCheckoutErrorUrl("No payment method is currently available."));
                 }
             
-                var paymentResult = await apiClient.SelectCheckoutPaymentMethodAsync(
+                var paymentResult = await checkoutClient.SelectCheckoutPaymentMethodAsync(
                     cartToken,
                     checkoutState.CheckoutSessionId,
                     new StorefrontCheckoutPaymentMethodRequest { PaymentMethodKey = paymentMethodKey },
@@ -384,7 +385,7 @@ namespace BlazorShop.Storefront.Endpoints
                     return Results.Redirect(BuildCheckoutErrorUrl(paymentResult.Message));
                 }
             
-                var reviewResult = await apiClient.ReviewCheckoutAsync(
+                var reviewResult = await checkoutClient.ReviewCheckoutAsync(
                     cartToken,
                     paymentResult.Data.CheckoutSessionId,
                     new StorefrontCheckoutReviewRequest(),
@@ -401,7 +402,7 @@ namespace BlazorShop.Storefront.Endpoints
                             ?? "Review checkout details before placing the order."));
                 }
             
-                var placeOrderResult = await apiClient.PlaceOrderAsync(
+                var placeOrderResult = await checkoutClient.PlaceOrderAsync(
                     new StorefrontPlaceOrderRequest
                     {
                         CheckoutSessionId = reviewResult.Data.CheckoutSessionId,

@@ -99,7 +99,7 @@ namespace BlazorShop.Storefront.Endpoints
         internal static async Task<(string? CartToken, IResult? Failure)> ValidateLocalCheckoutCommandAsync(
         HttpContext httpContext,
         IAntiforgery antiforgery,
-        StorefrontApiClient apiClient,
+        IStorefrontCartClient apiClient,
         Guid checkoutSessionId,
         int expectedCartVersion,
         CancellationToken cancellationToken)
@@ -342,7 +342,7 @@ namespace BlazorShop.Storefront.Endpoints
     }
     
         internal static async Task<(bool Success, string? Message)> ExecuteCustomerAddressCommandAsync(
-        StorefrontApiClient apiClient,
+        IStorefrontCustomerClient apiClient,
         string bearerToken,
         StorefrontAccountAddressForm form,
         CancellationToken cancellationToken)
@@ -411,7 +411,7 @@ namespace BlazorShop.Storefront.Endpoints
         Guid addressId,
         bool setShippingDefault,
         IStorefrontSessionResolver sessionResolver,
-        StorefrontApiClient apiClient,
+        IStorefrontCustomerClient apiClient,
         IAntiforgery antiforgery,
         HttpContext httpContext,
         CancellationToken cancellationToken)

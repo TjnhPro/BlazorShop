@@ -501,13 +501,13 @@ Goal: stop using `Web.SharedV2` as a business DTO bucket and make Storefront end
 
 ### Phase 6A - Endpoint Dependency Cleanup
 
-- [ ] Change `StorefrontAccountEndpoints` to inject `IStorefrontCustomerClient`, `IStorefrontAddressClient`, or auth-specific interface instead of concrete `StorefrontApiClient`.
-- [ ] Change `StorefrontCartEndpoints` to inject `IStorefrontCartClient`.
-- [ ] Change `StorefrontCheckoutEndpoints` and `StorefrontLocalEndpointSupport` to inject `IStorefrontCheckoutClient`, `IStorefrontAddressClient`, `IStorefrontPaymentClient`, and related feature interfaces.
-- [ ] Change `StorefrontConsentEndpoints` to inject `IStorefrontConsentClient`.
-- [ ] Change auth form endpoints to inject the smallest required auth/customer interfaces.
-- [ ] Add guardrail test: endpoint mapping files must not declare `StorefrontApiClient apiClient` parameters.
-- [ ] Keep `StorefrontApiClient` as the concrete partial implementation behind interfaces for now.
+- [x] Change `StorefrontAccountEndpoints` to inject `IStorefrontCustomerClient`, `IStorefrontAddressClient`, or auth-specific interface instead of concrete `StorefrontApiClient`.
+- [x] Change `StorefrontCartEndpoints` to inject `IStorefrontCartClient`.
+- [x] Change `StorefrontCheckoutEndpoints` and `StorefrontLocalEndpointSupport` to inject `IStorefrontCheckoutClient`, `IStorefrontAddressClient`, `IStorefrontPaymentClient`, and related feature interfaces.
+- [x] Change `StorefrontConsentEndpoints` to inject `IStorefrontConsentClient`.
+- [x] Change auth form endpoints to inject the smallest required auth/customer interfaces.
+- [x] Add guardrail test: endpoint mapping files must not declare `StorefrontApiClient apiClient` parameters.
+- [x] Keep `StorefrontApiClient` as the concrete partial implementation behind interfaces for now.
 
 ### Phase 6B - Contracts Ownership Inventory
 
@@ -537,10 +537,10 @@ Goal: stop using `Web.SharedV2` as a business DTO bucket and make Storefront end
 
 ### Verification
 
-- [ ] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontApiClient|FullyQualifiedName~StorefrontWasmRuntimeFoundation|FullyQualifiedName~ControlPlaneArchitectureBoundary|FullyQualifiedName~CommerceNodeStorefrontOpenApiContract"`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj --no-restore`
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontApiClient|FullyQualifiedName~StorefrontEndpointDependencyBoundary|FullyQualifiedName~StorefrontWasmRuntimeFoundation|FullyQualifiedName~ControlPlaneArchitectureBoundary|FullyQualifiedName~CommerceNodeStorefrontOpenApiContract"` - Passed: 64, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
 
 ### Done When
 

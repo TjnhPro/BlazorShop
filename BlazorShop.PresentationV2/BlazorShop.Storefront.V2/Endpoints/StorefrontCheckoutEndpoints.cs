@@ -22,7 +22,7 @@ namespace BlazorShop.Storefront.Endpoints
         {
             app.MapGet("/api/checkout", async (
                 StorefrontCartTokenService cartTokenService,
-                StorefrontApiClient apiClient,
+                IStorefrontCheckoutClient apiClient,
                 IStorefrontDisplayContextProvider displayContextProvider,
                 IStorefrontPriceFormatter priceFormatter,
                 HttpContext httpContext,
@@ -46,7 +46,8 @@ namespace BlazorShop.Storefront.Endpoints
             });
             app.MapPost("/api/checkout/addresses", async (
                 StorefrontBrowserCheckoutAddressRequest request,
-                StorefrontApiClient apiClient,
+                IStorefrontCheckoutClient apiClient,
+                IStorefrontCartClient cartClient,
                 IStorefrontDisplayContextProvider displayContextProvider,
                 IStorefrontPriceFormatter priceFormatter,
                 IStorefrontSessionResolver sessionResolver,
@@ -54,7 +55,7 @@ namespace BlazorShop.Storefront.Endpoints
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
             {
-                var guard = await ValidateLocalCheckoutCommandAsync(httpContext, antiforgery, apiClient, request.CheckoutSessionId, request.ExpectedCartVersion, cancellationToken);
+                var guard = await ValidateLocalCheckoutCommandAsync(httpContext, antiforgery, cartClient, request.CheckoutSessionId, request.ExpectedCartVersion, cancellationToken);
                 if (guard.Failure is not null)
                 {
                     return guard.Failure;
@@ -74,14 +75,15 @@ namespace BlazorShop.Storefront.Endpoints
             });
             app.MapPost("/api/checkout/shipping-method", async (
                 StorefrontBrowserCheckoutSelectionRequest request,
-                StorefrontApiClient apiClient,
+                IStorefrontCheckoutClient apiClient,
+                IStorefrontCartClient cartClient,
                 IStorefrontDisplayContextProvider displayContextProvider,
                 IStorefrontPriceFormatter priceFormatter,
                 IAntiforgery antiforgery,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
             {
-                var guard = await ValidateLocalCheckoutCommandAsync(httpContext, antiforgery, apiClient, request.CheckoutSessionId, request.ExpectedCartVersion, cancellationToken);
+                var guard = await ValidateLocalCheckoutCommandAsync(httpContext, antiforgery, cartClient, request.CheckoutSessionId, request.ExpectedCartVersion, cancellationToken);
                 if (guard.Failure is not null)
                 {
                     return guard.Failure;
@@ -96,14 +98,15 @@ namespace BlazorShop.Storefront.Endpoints
             });
             app.MapPost("/api/checkout/payment-method", async (
                 StorefrontBrowserCheckoutSelectionRequest request,
-                StorefrontApiClient apiClient,
+                IStorefrontCheckoutClient apiClient,
+                IStorefrontCartClient cartClient,
                 IStorefrontDisplayContextProvider displayContextProvider,
                 IStorefrontPriceFormatter priceFormatter,
                 IAntiforgery antiforgery,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
             {
-                var guard = await ValidateLocalCheckoutCommandAsync(httpContext, antiforgery, apiClient, request.CheckoutSessionId, request.ExpectedCartVersion, cancellationToken);
+                var guard = await ValidateLocalCheckoutCommandAsync(httpContext, antiforgery, cartClient, request.CheckoutSessionId, request.ExpectedCartVersion, cancellationToken);
                 if (guard.Failure is not null)
                 {
                     return guard.Failure;
@@ -118,14 +121,15 @@ namespace BlazorShop.Storefront.Endpoints
             });
             app.MapPost("/api/checkout/review", async (
                 StorefrontBrowserCheckoutReviewRequest request,
-                StorefrontApiClient apiClient,
+                IStorefrontCheckoutClient apiClient,
+                IStorefrontCartClient cartClient,
                 IStorefrontDisplayContextProvider displayContextProvider,
                 IStorefrontPriceFormatter priceFormatter,
                 IAntiforgery antiforgery,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
             {
-                var guard = await ValidateLocalCheckoutCommandAsync(httpContext, antiforgery, apiClient, request.CheckoutSessionId, request.ExpectedCartVersion, cancellationToken);
+                var guard = await ValidateLocalCheckoutCommandAsync(httpContext, antiforgery, cartClient, request.CheckoutSessionId, request.ExpectedCartVersion, cancellationToken);
                 if (guard.Failure is not null)
                 {
                     return guard.Failure;
@@ -150,12 +154,13 @@ namespace BlazorShop.Storefront.Endpoints
             });
             app.MapPost("/api/checkout/place-order", async (
                 StorefrontBrowserCheckoutPlaceOrderRequest request,
-                StorefrontApiClient apiClient,
+                IStorefrontCheckoutClient apiClient,
+                IStorefrontCartClient cartClient,
                 IAntiforgery antiforgery,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
             {
-                var guard = await ValidateLocalCheckoutCommandAsync(httpContext, antiforgery, apiClient, request.CheckoutSessionId, request.ExpectedCartVersion, cancellationToken);
+                var guard = await ValidateLocalCheckoutCommandAsync(httpContext, antiforgery, cartClient, request.CheckoutSessionId, request.ExpectedCartVersion, cancellationToken);
                 if (guard.Failure is not null)
                 {
                     return guard.Failure;

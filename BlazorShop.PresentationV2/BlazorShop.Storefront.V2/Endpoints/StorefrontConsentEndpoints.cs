@@ -21,7 +21,7 @@ namespace BlazorShop.Storefront.Endpoints
         public static WebApplication MapStorefrontConsentEndpoints(this WebApplication app)
         {
             app.MapGet("/api/consent/current", async (
-                StorefrontApiClient apiClient,
+                IStorefrontConsentClient apiClient,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
             {
@@ -34,7 +34,7 @@ namespace BlazorShop.Storefront.Endpoints
             });
             app.MapPost("/api/consent", async (
                 StorefrontConsentSaveRequest request,
-                StorefrontApiClient apiClient,
+                IStorefrontConsentClient apiClient,
                 IAntiforgery antiforgery,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
@@ -52,7 +52,7 @@ namespace BlazorShop.Storefront.Endpoints
                     : Results.Json(new StorefrontLocalCartErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
             });
             app.MapPost("/api/consent/revoke", async (
-                StorefrontApiClient apiClient,
+                IStorefrontConsentClient apiClient,
                 IAntiforgery antiforgery,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
