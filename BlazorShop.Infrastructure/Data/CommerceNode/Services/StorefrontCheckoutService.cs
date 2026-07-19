@@ -114,6 +114,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     return Failed<StorefrontCheckoutSessionResult>(ServiceResponseType.Conflict, "Checkout session has expired.");
                 }
 
+                await this.MarkCartChangedIfNeededAsync(activeSession, cart, cancellationToken);
+
                 return Succeeded("Checkout session resumed.", await this.ToSessionResultAsync(activeSession, cart, cancellationToken));
             }
 
@@ -1510,7 +1512,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             session.CartVersion = cart.Version;
             session.LastValidatedCartVersion = cart.Version;
             session.CompletedStepsJson = "[]";
+            session.SelectedShippingOptionJson = null;
             session.PaymentMethodKey = string.Empty;
+            session.Subtotal = cart.Subtotal;
+            session.ShippingTotal = cart.ShippingEstimate;
+            session.TaxTotal = cart.TaxEstimate;
+            session.DiscountTotal = cart.DiscountTotal;
+            session.GrandTotal = cart.GrandTotal;
+            session.CurrencyCode = NormalizeCurrency(cart.CurrencyCode) ?? DefaultCurrencyCode;
             session.ValidationIssuesJson = JsonSerializer.Serialize(
                 new[]
                 {

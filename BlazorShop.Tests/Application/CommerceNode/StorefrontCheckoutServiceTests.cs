@@ -251,6 +251,45 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Equal(2, result.Payload.CheckoutVersion);
             Assert.Contains(result.Payload.Issues, issue => issue.Code == "cart.version_changed");
             Assert.Equal(result.Payload.CartVersion, result.Payload.LastValidatedCartVersion);
+            Assert.Equal(40m, result.Payload.Subtotal);
+            Assert.Equal(40m, result.Payload.GrandTotal);
+        }
+
+        [Fact]
+        public async Task StartAsync_WhenCartVersionChanged_ResetsSessionTotalsBeforeReturning()
+        {
+            using var context = CreateContext();
+            var storeId = Guid.NewGuid();
+            var productRepository = new Mock<IProductReadRepository>();
+            var product = CreatePublishedProduct(storeId, price: 20m, stock: 10);
+            productRepository
+                .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
+                .ReturnsAsync(product);
+            var cartService = CreateCartService(context, productRepository);
+            var cart = await cartService.CreateOrResumeAsync(new StorefrontCartCreateOrResumeRequest(storeId));
+            var add = await cartService.AddLineAsync(new StorefrontCartAddLineRequest(storeId, cart.Payload!.Token!, product.Id));
+            var service = CreateCheckoutService(context, cartService);
+            var first = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload.Token!));
+
+            await cartService.UpdateLineAsync(new StorefrontCartUpdateLineRequest(
+                storeId,
+                cart.Payload.Token!,
+                add.Payload!.Lines.Single().Id,
+                Quantity: 2));
+            var resumed = await service.StartAsync(new StorefrontCheckoutStartRequest(storeId, cart.Payload.Token!));
+
+            Assert.True(first.Success);
+            Assert.True(resumed.Success);
+            Assert.Equal(first.Payload!.CheckoutSessionId, resumed.Payload!.CheckoutSessionId);
+            Assert.Equal(2, resumed.Payload.CheckoutVersion);
+            Assert.Equal(resumed.Payload.CartVersion, resumed.Payload.LastValidatedCartVersion);
+            Assert.Equal(40m, resumed.Payload.Subtotal);
+            Assert.Equal(0m, resumed.Payload.ShippingTotal);
+            Assert.Equal(0m, resumed.Payload.TaxTotal);
+            Assert.Equal(40m, resumed.Payload.GrandTotal);
+            Assert.Single(resumed.Payload.Lines);
+            Assert.Equal(2, resumed.Payload.Lines.Single().Quantity);
+            Assert.Contains(resumed.Payload.Issues, issue => issue.Code == "cart.version_changed");
         }
 
         [Fact]
