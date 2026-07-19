@@ -7,6 +7,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
     using BlazorShop.Domain.Entities.CommerceNode;
     using BlazorShop.Domain.Entities.Identity;
     using BlazorShop.Domain.Entities.Payment;
+    using BlazorShop.Infrastructure.Data.CommerceNode.Configurations;
     using BlazorShop.Infrastructure.Data.Configurations;
     using BlazorShop.Infrastructure.Data.Configurations.Admin;
 
@@ -142,6 +143,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             modelBuilder.ApplyConfiguration(new StoreSeoSettingsConfiguration());
             modelBuilder.ApplyConfiguration(new AdminAuditLogConfiguration());
             modelBuilder.ApplyConfiguration(new AdminSettingsConfiguration());
+            modelBuilder.ApplyCommerceNodeConfigurations();
 
             modelBuilder.Entity<SeoRedirect>(entity =>
             {
