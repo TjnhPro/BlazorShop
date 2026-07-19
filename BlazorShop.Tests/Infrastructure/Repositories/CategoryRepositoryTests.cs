@@ -76,7 +76,14 @@ namespace BlazorShop.Tests.Infrastructure.Repositories
             var draftCategoryId = Guid.NewGuid();
 
             context.Categories.AddRange(
-                new Category { Id = featuredCategoryId, Name = "Featured", Slug = "featured", IsPublished = true },
+                new Category
+                {
+                    Id = featuredCategoryId,
+                    Name = "Featured",
+                    Slug = "featured",
+                    IsPublished = true,
+                    UpdatedAt = new DateTime(2026, 4, 14, 0, 0, 0, DateTimeKind.Utc),
+                },
                 new Category { Id = draftCategoryId, Name = "Draft", Slug = "draft", IsPublished = false },
                 new Category { Id = Guid.NewGuid(), Name = "Slugless", Slug = null, IsPublished = true });
 

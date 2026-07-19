@@ -509,29 +509,42 @@ Goal: dam bao refactor khong doi hanh vi nguoi dung/API.
 
 Tests:
 
-- [ ] `dotnet test BlazorShop.Tests --filter CommerceMedia`.
-- [ ] `dotnet test BlazorShop.Tests --filter ProductMedia`.
-- [ ] `dotnet test BlazorShop.Tests --filter CategoryMedia`.
-- [ ] `dotnet test BlazorShop.Tests --filter CommerceTask`.
-- [ ] `dotnet test BlazorShop.Tests --filter ControlPlane`.
-- [ ] OpenAPI/contract tests for changed controllers.
-- [ ] Full `dotnet test` before final commit.
+- [x] `dotnet test BlazorShop.Tests --filter CommerceMedia`.
+- [x] `dotnet test BlazorShop.Tests --filter ProductMedia`.
+- [x] `dotnet test BlazorShop.Tests --filter CategoryMedia`.
+- [x] `dotnet test BlazorShop.Tests --filter CommerceTask`.
+- [x] `dotnet test BlazorShop.Tests --filter ControlPlane`.
+- [x] OpenAPI/contract tests for changed controllers.
+- [x] Full `dotnet test` before final commit.
 
 QA:
 
-- [ ] Update `docs/refactor-control-Commerce-storefront/QA-ControlPlane.todo.md` if Control Plane behavior changes.
-- [ ] Update `docs/refactor-control-Commerce-storefront/QA-CommerceNode.todo.md` if Commerce Node admin/storefront behavior changes.
-- [ ] Browser Playwright is not required for pure application result refactor unless visible UI behavior or local Storefront endpoints change.
+- [x] Update `docs/refactor-control-Commerce-storefront/QA-ControlPlane.todo.md` if Control Plane behavior changes.
+- [x] Update `docs/refactor-control-Commerce-storefront/QA-CommerceNode.todo.md` if Commerce Node admin/storefront behavior changes.
+- [x] Browser Playwright is not required for pure application result refactor unless visible UI behavior or local Storefront endpoints change.
 
 Release gate:
 
-- [ ] No response envelope changes.
-- [ ] No dropped error messages without replacement.
-- [ ] No secret/internal exception leakage through `ApplicationError.Message`.
-- [ ] No domain entities exposed in public schemas.
-- [ ] `rg "OperationResult"` shows only approved remaining non-migrated types.
-- [ ] `rg "OperationFailure"` shows only approved remaining non-migrated enums.
-- [ ] All changed controllers use shared mapper instead of controller-local switch.
+- [x] No response envelope changes.
+- [x] No dropped error messages without replacement.
+- [x] No secret/internal exception leakage through `ApplicationError.Message`.
+- [x] No domain entities exposed in public schemas.
+- [x] `rg "OperationResult"` shows only approved remaining non-migrated types.
+- [x] `rg "OperationFailure"` shows only approved remaining non-migrated enums.
+- [x] All changed controllers use shared mapper instead of controller-local switch.
+
+Phase 8 evidence:
+
+- Focused result/contract gate passed 201/201 tests:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~CommerceMedia|FullyQualifiedName~ProductMedia|FullyQualifiedName~CategoryMedia|FullyQualifiedName~CommerceTask|FullyQualifiedName~ControlPlane|FullyQualifiedName~ServiceResponseApplicationResultExtensionsTests|FullyQualifiedName~ApplicationResultStandardizationPhase0Tests|FullyQualifiedName~ApplicationResultTests|FullyQualifiedName~CommerceNodeStorefrontOpenApiContractTests|FullyQualifiedName~PaymentProviderOperationContractTests" --no-restore --nologo --verbosity minimal`
+- Full test suite passed 1493/1505 with 12 expected skips:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --nologo --verbosity minimal`
+- Fixed stale full-suite baselines uncovered by the release gate:
+  - Product/category sitemap tests now seed deterministic `UpdatedAt` values.
+  - Transactional message baseline now reflects store-scoped email transport and local Mailpit capture.
+  - Added `LegacyAppDbContextModelCatchup` migration so legacy `AppDbContext` runtime model matches its migration snapshot.
+- `rg "OperationResult|OperationFailure"` over active Application/Infrastructure/PresentationV2/tests shows only approved remaining `PaymentProviderOperationResult` plus Phase 0 inventory strings.
+- QA checklist files did not require new manual/browser cases because the refactor preserved HTTP envelopes and changed no visible UI behavior.
 
 ## Failure Modes Registry
 
@@ -577,7 +590,7 @@ Existing clients
 - [x] Phase 5 complete.
 - [x] Phase 6 adapter decision documented.
 - [x] Phase 7 client result decision documented.
-- [ ] Phase 8 verification complete.
+- [x] Phase 8 verification complete.
 
 ## Not In Scope
 

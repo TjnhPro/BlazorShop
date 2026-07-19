@@ -36,7 +36,6 @@ namespace BlazorShop.Tests.Application.CommerceNode
                     "BlazorShop.Application/Services/NewsletterService.cs",
                     "BlazorShop.Application/Services/Payment/CartService.cs",
                     "BlazorShop.Domain/Contracts/IEmailService.cs",
-                    "BlazorShop.Infrastructure/Data/CommerceNode/Services/MessageDeliveryService.cs",
                     "BlazorShop.Infrastructure/Services/EmailService.cs",
                     "BlazorShop.Infrastructure/Services/OrderTrackingService.cs",
                 ],
@@ -106,7 +105,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
-        public void CurrentSmtpConfigurationShape_IsGlobalOnlyBeforeStoreScopedSmtpMigration()
+        public void CurrentSmtpConfigurationShape_UsesStoreScopedTransportWithLocalCapture()
         {
             var root = FindRepositoryRoot();
             var commerceNodeAppSettings = File.ReadAllText(Path.Combine(
@@ -124,9 +123,11 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var productionCompose = File.ReadAllText(Path.Combine(root, "compose.production.yml"));
 
             Assert.DoesNotContain("EmailSettings", commerceNodeAppSettings, StringComparison.Ordinal);
-            Assert.DoesNotContain("EmailSettings", commerceNodeDevelopmentSettings, StringComparison.Ordinal);
-            Assert.DoesNotContain("EmailSettings", localEnv, StringComparison.Ordinal);
-            Assert.DoesNotContain("mailpit", commerceNodeCompose, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("EmailTransport", commerceNodeDevelopmentSettings, StringComparison.Ordinal);
+            Assert.Contains("AllowGlobalEmailSettingsFallback", commerceNodeDevelopmentSettings, StringComparison.Ordinal);
+            Assert.Contains("CaptureModeAllowed", commerceNodeDevelopmentSettings, StringComparison.Ordinal);
+            Assert.Contains("COMMERCENODE_API__CommerceNode__EmailTransport__AllowGlobalEmailSettingsFallback=false", localEnv, StringComparison.Ordinal);
+            Assert.Contains("mailpit", commerceNodeCompose, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("EmailSettings__SmtpServer", productionCompose, StringComparison.Ordinal);
             Assert.Contains("EmailSettings__Password", productionCompose, StringComparison.Ordinal);
         }

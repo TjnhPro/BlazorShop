@@ -336,7 +336,8 @@ namespace BlazorShop.Tests.Infrastructure.Repositories
                 Slug = "product-1",
                 IsPublished = true,
                 PublishedOn = new DateTime(2026, 4, 10, 0, 0, 0, DateTimeKind.Utc),
-                CreatedOn = new DateTime(2026, 4, 10, 0, 0, 0, DateTimeKind.Utc)
+                CreatedOn = new DateTime(2026, 4, 10, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2026, 4, 10, 0, 0, 0, DateTimeKind.Utc)
             };
 
             var product2 = new Product
@@ -351,7 +352,8 @@ namespace BlazorShop.Tests.Infrastructure.Repositories
                 Slug = "product-2",
                 IsPublished = true,
                 PublishedOn = new DateTime(2026, 4, 11, 0, 0, 0, DateTimeKind.Utc),
-                CreatedOn = new DateTime(2026, 4, 11, 0, 0, 0, DateTimeKind.Utc)
+                CreatedOn = new DateTime(2026, 4, 11, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2026, 4, 11, 0, 0, 0, DateTimeKind.Utc)
             };
 
             var product3 = new Product
@@ -366,7 +368,8 @@ namespace BlazorShop.Tests.Infrastructure.Repositories
                 Slug = "product-3",
                 IsPublished = true,
                 PublishedOn = new DateTime(2026, 4, 12, 0, 0, 0, DateTimeKind.Utc),
-                CreatedOn = new DateTime(2026, 4, 12, 0, 0, 0, DateTimeKind.Utc)
+                CreatedOn = new DateTime(2026, 4, 12, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2026, 4, 12, 0, 0, 0, DateTimeKind.Utc)
             };
 
             var product4 = new Product
@@ -381,7 +384,8 @@ namespace BlazorShop.Tests.Infrastructure.Repositories
                 Slug = "product-4",
                 IsPublished = true,
                 PublishedOn = new DateTime(2026, 4, 13, 0, 0, 0, DateTimeKind.Utc),
-                CreatedOn = new DateTime(2026, 4, 13, 0, 0, 0, DateTimeKind.Utc)
+                CreatedOn = new DateTime(2026, 4, 13, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2026, 4, 13, 0, 0, 0, DateTimeKind.Utc)
             };
 
             var product5 = new Product
@@ -396,7 +400,8 @@ namespace BlazorShop.Tests.Infrastructure.Repositories
                 Slug = "product-5",
                 IsPublished = true,
                 PublishedOn = new DateTime(2026, 4, 14, 0, 0, 0, DateTimeKind.Utc),
-                CreatedOn = new DateTime(2026, 4, 14, 0, 0, 0, DateTimeKind.Utc)
+                CreatedOn = new DateTime(2026, 4, 14, 0, 0, 0, DateTimeKind.Utc),
+                UpdatedAt = new DateTime(2026, 4, 14, 0, 0, 0, DateTimeKind.Utc)
             };
 
             context.Products.AddRange(product1, product2, product3, product4, product5);
