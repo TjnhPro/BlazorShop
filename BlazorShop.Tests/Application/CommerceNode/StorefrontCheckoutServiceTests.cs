@@ -53,20 +53,32 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
-        public void StorefrontCheckoutService_ConstructorFallbackBaseline_IsDocumentedBeforeRequiredDiCutover()
+        public void StorefrontCheckoutService_ConstructorRequiresDiAndDoesNotBuildFallbackDependencies()
         {
             var source = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/Services/StorefrontCheckoutService.cs");
+            var constructor = Assert.Single(typeof(StorefrontCheckoutService).GetConstructors());
+            var parameters = constructor.GetParameters().ToDictionary(parameter => parameter.Name!, StringComparer.Ordinal);
 
-            Assert.Contains("IProductSellabilityResolver? sellabilityResolver = null", source, StringComparison.Ordinal);
-            Assert.Contains("IAddressValidationService? addressValidationService = null", source, StringComparison.Ordinal);
-            Assert.Contains("IShippingCalculator? shippingCalculator = null", source, StringComparison.Ordinal);
-            Assert.Contains("IShippingTaxCalculator? shippingTaxCalculator = null", source, StringComparison.Ordinal);
-            Assert.Contains("IOrderPlacementService? orderPlacementService = null", source, StringComparison.Ordinal);
-            Assert.Contains("sellabilityResolver ?? new ProductSellabilityResolver()", source, StringComparison.Ordinal);
-            Assert.Contains("addressValidationService ?? new AddressValidationService()", source, StringComparison.Ordinal);
-            Assert.Contains("shippingCalculator ?? new ShippingCalculator([new InternalFreeStandardShippingProvider()])", source, StringComparison.Ordinal);
-            Assert.Contains("shippingTaxCalculator ?? new ZeroShippingTaxCalculator()", source, StringComparison.Ordinal);
-            Assert.Contains("orderPlacementService ?? new OrderPlacementService", source, StringComparison.Ordinal);
+            Assert.False(parameters["sellabilityResolver"].HasDefaultValue);
+            Assert.False(parameters["addressValidationService"].HasDefaultValue);
+            Assert.False(parameters["shippingCalculator"].HasDefaultValue);
+            Assert.False(parameters["shippingTaxCalculator"].HasDefaultValue);
+            Assert.False(parameters["orderPlacementService"].HasDefaultValue);
+            Assert.Equal(typeof(IProductSellabilityResolver), parameters["sellabilityResolver"].ParameterType);
+            Assert.Equal(typeof(IAddressValidationService), parameters["addressValidationService"].ParameterType);
+            Assert.Equal(typeof(IShippingCalculator), parameters["shippingCalculator"].ParameterType);
+            Assert.Equal(typeof(IShippingTaxCalculator), parameters["shippingTaxCalculator"].ParameterType);
+            Assert.Equal(typeof(IOrderPlacementService), parameters["orderPlacementService"].ParameterType);
+            Assert.DoesNotContain("IProductSellabilityResolver? sellabilityResolver = null", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("IAddressValidationService? addressValidationService = null", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("IShippingCalculator? shippingCalculator = null", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("IShippingTaxCalculator? shippingTaxCalculator = null", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("IOrderPlacementService? orderPlacementService = null", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("sellabilityResolver ?? new ProductSellabilityResolver()", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("addressValidationService ?? new AddressValidationService()", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("shippingCalculator ?? new ShippingCalculator", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("shippingTaxCalculator ?? new ZeroShippingTaxCalculator()", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("orderPlacementService ?? new OrderPlacementService", source, StringComparison.Ordinal);
         }
 
         [Fact]

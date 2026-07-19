@@ -153,22 +153,29 @@ Acceptance:
 
 ## Phase 2 - Remove Production Dependency Fallbacks
 
-- [ ] Change `StorefrontCheckoutService` constructor parameters from nullable optional to required:
+- [x] Change `StorefrontCheckoutService` constructor parameters from nullable optional to required:
   - `IProductSellabilityResolver sellabilityResolver`
   - `IAddressValidationService addressValidationService`
   - `IShippingCalculator shippingCalculator`
   - `IShippingTaxCalculator shippingTaxCalculator`
   - `IOrderPlacementService orderPlacementService`
-- [ ] Remove all `?? new ...` fallback logic from `StorefrontCheckoutService`.
-- [ ] Use `ArgumentNullException.ThrowIfNull(...)` or equivalent constructor guard if repo pattern supports it.
-- [ ] Verify `BlazorShop.Infrastructure/Data/CommerceNode/DependencyInjection.cs` already registers every dependency.
-- [ ] Add DI validation/static test for required dependencies and constructor shape.
+- [x] Remove all `?? new ...` fallback logic from `StorefrontCheckoutService`.
+- [x] Use `ArgumentNullException.ThrowIfNull(...)` or equivalent constructor guard if repo pattern supports it.
+- [x] Verify `BlazorShop.Infrastructure/Data/CommerceNode/DependencyInjection.cs` already registers every dependency.
+- [x] Add DI validation/static test for required dependencies and constructor shape.
+
+Phase 2 notes:
+
+- `StorefrontCheckoutService` production constructor now requires all checkout dependencies explicitly and guards them with `ArgumentNullException.ThrowIfNull`.
+- Removed production fallback instantiation of `ProductSellabilityResolver`, `AddressValidationService`, `ShippingCalculator`, `ZeroShippingTaxCalculator`, and `OrderPlacementService`.
+- Updated static guard test to assert required constructor shape and absence of fallback source.
+- Test builder from Phase 1 now owns all test defaults.
 
 Acceptance:
 
-- [ ] Commerce Node API build fails if a checkout dependency is removed from DI.
-- [ ] Test builder owns all default dependencies.
-- [ ] Storefront checkout tests pass without behavior change.
+- [x] Commerce Node API build fails if a checkout dependency is removed from DI.
+- [x] Test builder owns all default dependencies.
+- [x] Storefront checkout tests pass without behavior change.
 
 ## Phase 3 - Extract Checkout Session State Rules
 
@@ -365,7 +372,7 @@ Acceptance:
 
 - [x] Phase 0 complete.
 - [x] Phase 1 complete.
-- [ ] Phase 2 complete.
+- [x] Phase 2 complete.
 - [ ] Phase 3 complete.
 - [ ] Phase 4 complete.
 - [ ] Phase 5 complete.
@@ -386,9 +393,9 @@ Acceptance:
 
 ## Release Gate
 
-- [ ] `StorefrontCheckoutService` constructor has no nullable optional production dependencies.
-- [ ] `StorefrontCheckoutService` source has no `new ProductSellabilityResolver`, `new AddressValidationService`, `new ShippingCalculator`, `new ZeroShippingTaxCalculator`, or `new OrderPlacementService`.
-- [ ] Commerce Node DI registers all checkout dependencies.
+- [x] `StorefrontCheckoutService` constructor has no nullable optional production dependencies.
+- [x] `StorefrontCheckoutService` source has no `new ProductSellabilityResolver`, `new AddressValidationService`, `new ShippingCalculator`, `new ZeroShippingTaxCalculator`, or `new OrderPlacementService`.
+- [x] Commerce Node DI registers all checkout dependencies.
 - [ ] Checkout state rules have pure unit tests.
 - [ ] Pricing calculator has focused unit tests for shipping/tax/currency behavior.
 - [ ] Payment coordinator has focused unit tests for COD, hosted, provider failure, and idempotency.
