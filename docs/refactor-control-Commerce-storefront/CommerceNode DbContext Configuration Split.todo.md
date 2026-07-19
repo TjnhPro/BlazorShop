@@ -392,29 +392,41 @@ Goal: tach customer/cart/checkout tables theo runtime flow V2.
 
 Scope:
 
-- [ ] `CommerceCustomerConfiguration`.
-- [ ] `CommerceCustomerAddressConfiguration`.
-- [ ] `CartSessionConfiguration`.
-- [ ] `CartLineConfiguration`.
-- [ ] `CheckoutSessionConfiguration`.
+- [x] `CommerceCustomerConfiguration`.
+- [x] `CommerceCustomerAddressConfiguration`.
+- [x] `CartSessionConfiguration`.
+- [x] `CartLineConfiguration`.
+- [x] `CheckoutSessionConfiguration`.
 
 Tasks:
 
-- [ ] Move exact mapping blocks.
-- [ ] Preserve token hash indexes and cart uniqueness.
-- [ ] Preserve checkout `jsonb` columns and default JSON SQL.
-- [ ] Preserve cart/customer FK delete behaviors.
-- [ ] Run focused tests:
-  - [ ] `dotnet test BlazorShop.Tests --filter StorefrontCart`.
-  - [ ] `dotnet test BlazorShop.Tests --filter StorefrontCheckout`.
-  - [ ] `dotnet test BlazorShop.Tests --filter StorefrontCustomer`.
-  - [ ] `dotnet test BlazorShop.Tests --filter Address`.
+- [x] Move exact mapping blocks.
+- [x] Preserve token hash indexes and cart uniqueness.
+- [x] Preserve checkout `jsonb` columns and default JSON SQL.
+- [x] Preserve cart/customer FK delete behaviors.
+- [x] Run focused tests:
+  - [x] `dotnet test BlazorShop.Tests --filter StorefrontCart`.
+  - [x] `dotnet test BlazorShop.Tests --filter StorefrontCheckout`.
+  - [x] `dotnet test BlazorShop.Tests --filter StorefrontCustomer`.
+  - [x] `dotnet test BlazorShop.Tests --filter Address`.
 
 Exit criteria:
 
-- [ ] Cart/checkout/customer tests pass.
-- [ ] No schema diff.
-- [ ] No change to V2 cart/checkout runtime APIs.
+- [x] Cart/checkout/customer tests pass.
+- [x] No schema diff.
+- [x] No change to V2 cart/checkout runtime APIs.
+
+Phase 5 evidence:
+
+- Added customer/address configuration files under `BlazorShop.Infrastructure/Data/CommerceNode/Configurations/Customers`.
+- Added cart configuration files under `BlazorShop.Infrastructure/Data/CommerceNode/Configurations/Cart`.
+- Added `CheckoutSessionConfiguration` under `BlazorShop.Infrastructure/Data/CommerceNode/Configurations/Checkout`.
+- Removed the moved customer, address, cart and checkout blocks from `CommerceNodeDbContext.OnModelCreating`; DbSet declarations remain.
+- Preserved cart `PublicId` and `TokenHash` unique indexes, line uniqueness, cart/customer FK delete behavior, checkout `jsonb` columns, checkout default `completed_steps_json` SQL, idempotency unique filter and state check constraint.
+- `CommerceNodeDbContext.cs` line count is now 1485.
+- `modelBuilder.Entity` count dropped from 139 to 134.
+- Focused command passed 206/207 with 1 existing skip:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~StorefrontCart|FullyQualifiedName~StorefrontCheckout|FullyQualifiedName~StorefrontCustomer|FullyQualifiedName~Address|FullyQualifiedName~CommerceNodeDbContextModelTests|FullyQualifiedName~CommerceNodeMigrationModelConsistencyTests" --no-restore --nologo --verbosity minimal`
 
 ## Phase 6 - Orders And Fulfillment
 
@@ -590,7 +602,7 @@ Safety boundary
 - [x] Phase 2 payments pilot complete.
 - [x] Phase 3 messages/email complete.
 - [x] Phase 4 store/currency/security/shipping complete.
-- [ ] Phase 5 cart/checkout/customer/address complete.
+- [x] Phase 5 cart/checkout/customer/address complete.
 - [ ] Phase 6 orders/fulfillment complete.
 - [ ] Phase 7 catalog/media/content/imports complete.
 - [ ] Phase 8 identity/tasks/deployment cleanup complete.
