@@ -52,6 +52,36 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public void StorefrontCheckoutService_ConstructorFallbackBaseline_IsDocumentedBeforeRequiredDiCutover()
+        {
+            var source = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/Services/StorefrontCheckoutService.cs");
+
+            Assert.Contains("IProductSellabilityResolver? sellabilityResolver = null", source, StringComparison.Ordinal);
+            Assert.Contains("IAddressValidationService? addressValidationService = null", source, StringComparison.Ordinal);
+            Assert.Contains("IShippingCalculator? shippingCalculator = null", source, StringComparison.Ordinal);
+            Assert.Contains("IShippingTaxCalculator? shippingTaxCalculator = null", source, StringComparison.Ordinal);
+            Assert.Contains("IOrderPlacementService? orderPlacementService = null", source, StringComparison.Ordinal);
+            Assert.Contains("sellabilityResolver ?? new ProductSellabilityResolver()", source, StringComparison.Ordinal);
+            Assert.Contains("addressValidationService ?? new AddressValidationService()", source, StringComparison.Ordinal);
+            Assert.Contains("shippingCalculator ?? new ShippingCalculator([new InternalFreeStandardShippingProvider()])", source, StringComparison.Ordinal);
+            Assert.Contains("shippingTaxCalculator ?? new ZeroShippingTaxCalculator()", source, StringComparison.Ordinal);
+            Assert.Contains("orderPlacementService ?? new OrderPlacementService", source, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void CommerceNodeDi_RegistersCheckoutDependenciesRequiredForRequiredDiCutover()
+        {
+            var source = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/DependencyInjection.cs");
+
+            Assert.Contains("AddScoped<IAddressValidationService, AddressValidationService>", source, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<IProductSellabilityResolver, ProductSellabilityResolver>", source, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<IShippingCalculator, ShippingCalculator>", source, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<IShippingTaxCalculator, ZeroShippingTaxCalculator>", source, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<IOrderPlacementService, OrderPlacementService>", source, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<IStorefrontCheckoutService, StorefrontCheckoutService>", source, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void CommerceNodeOrderTrackingService_DoesNotSendEmailSynchronously()
         {
             var constructorParameterTypes = typeof(CommerceNodeOrderTrackingService)
