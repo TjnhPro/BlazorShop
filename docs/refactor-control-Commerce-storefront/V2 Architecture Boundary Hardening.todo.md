@@ -32,7 +32,7 @@ This plan covers the architecture hardening issues verified against the current 
 ## Verified Current Evidence
 
 - [x] Phase 0 baseline: `BlazorShop.Application/ControlPlane/CommerceGateway/CommerceNodeAdminGatewayDtos.cs` contained `ICommerceNodeAdminGatewayTransport` with `HttpMethod`, HTTP path, and status-bearing result. Resolved in Phase 1B.
-- [x] `ControlPlaneCommerceCatalogResult<T>` had 236 generic references at Phase 0. After Store configuration, Security/privacy, Shipping, Payment, Currency, Content, Navigation, Order, Media, Category, Message, Product gateway split in Phase 2, and Product result migration in Phase 1C.11, current migration baseline is 10 references.
+- [x] `ControlPlaneCommerceCatalogResult<T>` had 236 generic references at Phase 0 and was removed from active code in Phase 1D.
 - [x] `ApplicationResult<T>`, `ApplicationError`, and `ApplicationErrorKind.RemoteFailure` already exist under `BlazorShop.Application/Common/Results`.
 - [x] `IControlPlaneProductGateway` has 31 current methods spanning product CRUD, product SEO, product import, variation template, category media, variant, and inventory in one interface.
 - [x] `BlazorShop.Application/CommerceNode/Carts/StorefrontCartService.cs` still accepts nullable `IProductSelectionResolver` and falls back to `new ProductSelectionResolver(...)`.
@@ -306,23 +306,23 @@ Phase 1C.1 focused verification:
 
 ### Phase 1D - Retire Catalog-Named Result
 
-- [ ] Remove `ControlPlaneCommerceCatalogResult<T>` once reference count reaches zero.
-- [ ] Remove old gateway failure enum if no longer used outside transport.
-- [ ] Add guardrail test: no `ControlPlaneCommerceCatalogResult` references outside historical docs/migrations.
-- [ ] Add guardrail test: Application gateway interfaces use `ApplicationResult<T>` only.
+- [x] Remove `ControlPlaneCommerceCatalogResult<T>` once reference count reaches zero.
+- [x] Remove old gateway failure enum if no longer used outside transport.
+- [x] Add guardrail test: no `ControlPlaneCommerceCatalogResult` references outside historical docs/migrations.
+- [x] Add guardrail test: Application gateway interfaces use `ApplicationResult<T>` only.
 
 ### Verification
 
-- [ ] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~ControlPlaneCommerce|FullyQualifiedName~ApplicationResult|FullyQualifiedName~ArchitectureBoundary"`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore`
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~ControlPlaneCommerce|FullyQualifiedName~ApplicationResult|FullyQualifiedName~ArchitectureBoundary"` - Passed: 97, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors; Tailwind completed with existing Browserslist stale notice.
 
 ### Done When
 
-- [ ] No Application public gateway contract exposes HTTP transport primitives.
-- [ ] Capability gateways return `ApplicationResult<T>`.
-- [ ] Control Plane API response envelope and status behavior remain compatible.
-- [ ] Old catalog-named result is removed from active code.
+- [x] No Application public gateway contract exposes HTTP transport primitives.
+- [x] Capability gateways return `ApplicationResult<T>`.
+- [x] Control Plane API response envelope and status behavior remain compatible.
+- [x] Old catalog-named result is removed from active code.
 
 ## Phase 2 - Product Gateway Capability Split
 

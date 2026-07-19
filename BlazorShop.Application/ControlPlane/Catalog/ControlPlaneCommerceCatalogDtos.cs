@@ -22,13 +22,6 @@ namespace BlazorShop.Application.ControlPlane.Catalog
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Domain.Contracts;
 
-    public sealed record ControlPlaneCommerceCatalogResult<TPayload>(
-        bool Success,
-        string? Message = null,
-        TPayload? Payload = default,
-        ControlPlaneCommerceCatalogFailure? Failure = null,
-        int? HttpStatusCode = null);
-
     public sealed record ProductMediaPreviewQuery(
         int? Width = null,
         int? Height = null,
@@ -42,12 +35,5 @@ namespace BlazorShop.Application.ControlPlane.Catalog
         string? Fit = null,
         string? Format = null,
         long? Version = null);
-
-    public enum ControlPlaneCommerceCatalogFailure
-    {
-        Validation,
-        NotFound,
-        RemoteFailure
-    }
 }
 

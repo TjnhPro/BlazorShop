@@ -7,16 +7,16 @@ namespace BlazorShop.Tests.Architecture
     public sealed class V2ArchitectureBoundaryBaselineTests
     {
         [Fact]
-        public void ControlPlaneCommerceCatalogResult_ReferenceCountMatchesCurrentMigrationBaseline()
+        public void ControlPlaneCommerceCatalogResult_IsAbsentFromActiveCode()
         {
             var references = EnumerateSourceFiles(
                     "BlazorShop.Application",
                     "BlazorShop.Infrastructure",
                     "BlazorShop.PresentationV2")
-                .SelectMany(path => Regex.Matches(File.ReadAllText(path), "ControlPlaneCommerceCatalogResult<"))
+                .SelectMany(path => Regex.Matches(File.ReadAllText(path), "ControlPlaneCommerceCatalogResult"))
                 .Count();
 
-            Assert.InRange(references, 5, 15);
+            Assert.Equal(0, references);
         }
 
         [Fact]

@@ -35,25 +35,6 @@ namespace BlazorShop.ControlPlane.API.Controllers
     {
         protected const string ProductImportTemplateHeader = "sku,name,slug,category_slug,product_type,variation_template_slug,price,compare_price,quantity,is_published,available_start_utc,available_end_utc,gtin,barcode,manufacturer_part_number,condition,weight,length,width,height,short_description,description,image_urls";
 
-        protected static IActionResult ToActionResult<TPayload>(ControlPlaneCommerceCatalogResult<TPayload> result)
-        {
-            if (result.Success)
-            {
-                return ControlPlaneApiResponseWriter.Success(
-                    StatusCodes.Status200OK,
-                    result.Payload,
-                    string.IsNullOrWhiteSpace(result.Message) ? "Catalog request completed." : result.Message);
-            }
-
-            return result.Failure switch
-            {
-                ControlPlaneCommerceCatalogFailure.NotFound => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status404NotFound, result.Message, result.Payload),
-                ControlPlaneCommerceCatalogFailure.RemoteFailure => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status502BadGateway, result.Message, result.Payload),
-                ControlPlaneCommerceCatalogFailure.Validation => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message, result.Payload),
-                _ => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message, result.Payload),
-            };
-        }
-
         protected static IActionResult ToActionResult<TPayload>(ApplicationResult<TPayload> result)
         {
             return result.ToControlPlaneActionResult();

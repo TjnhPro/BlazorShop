@@ -34,21 +34,6 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             this.transport = transport;
         }
 
-        protected async Task<ControlPlaneCommerceCatalogResult<TPayload>> SendAsync<TPayload>(
-            Guid storePublicId,
-            HttpMethod method,
-            string path,
-            object? body,
-            CancellationToken cancellationToken)
-        {
-            return ToCatalogResult(await this.transport.SendAsync<TPayload>(
-                storePublicId,
-                method,
-                path,
-                body,
-                cancellationToken));
-        }
-
         protected async Task<ApplicationResult<ApplicationMediaContent>> SendMediaApplicationAsync(
             Guid storePublicId,
             string path,
@@ -58,19 +43,6 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return CommerceNodeAdminGatewayApplicationResultMapper.ToApplicationMediaResult(
                 await this.transport.SendMediaAsync(storePublicId, path, cancellationToken),
                 fileName);
-        }
-
-        protected async Task<ControlPlaneCommerceCatalogResult<TPayload>> SendMultipartAsync<TPayload>(
-            Guid storePublicId,
-            string path,
-            ProductImportUploadRequest upload,
-            CancellationToken cancellationToken)
-        {
-            return ToCatalogResult(await this.transport.SendProductImportMultipartAsync<TPayload>(
-                storePublicId,
-                path,
-                upload,
-                cancellationToken));
         }
 
         protected async Task<ApplicationResult<TPayload>> SendMultipartApplicationAsync<TPayload>(
@@ -85,19 +57,6 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                     path,
                     upload,
                     cancellationToken));
-        }
-
-        protected async Task<ControlPlaneCommerceCatalogResult<TPayload>> SendMediaAssetMultipartAsync<TPayload>(
-            Guid storePublicId,
-            string path,
-            CommerceMediaAssetUploadRequest upload,
-            CancellationToken cancellationToken)
-        {
-            return ToCatalogResult(await this.transport.SendMediaAssetMultipartAsync<TPayload>(
-                storePublicId,
-                path,
-                upload,
-                cancellationToken));
         }
 
         protected async Task<ApplicationResult<TPayload>> SendMediaAssetMultipartApplicationAsync<TPayload>(
@@ -130,41 +89,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                     cancellationToken));
         }
 
-        protected async Task<ControlPlaneCommerceCatalogResult<string>> ResolveStoreKeyAsync(
-            Guid storePublicId,
-            CancellationToken cancellationToken)
-        {
-            return ToCatalogResult(await this.transport.ResolveStoreKeyAsync(storePublicId, cancellationToken));
-        }
-
         protected async Task<ApplicationResult<string>> ResolveStoreKeyApplicationAsync(
             Guid storePublicId,
             CancellationToken cancellationToken)
         {
             return CommerceNodeAdminGatewayApplicationResultMapper.ToApplicationResult(
                 await this.transport.ResolveStoreKeyAsync(storePublicId, cancellationToken));
-        }
-
-        protected static ControlPlaneCommerceCatalogResult<TPayload> ToCatalogResult<TPayload>(
-            CommerceNodeAdminGatewayResult<TPayload> result)
-        {
-            return new ControlPlaneCommerceCatalogResult<TPayload>(
-                result.Success,
-                result.Message,
-                result.Payload,
-                ToCatalogFailure(result.Failure),
-                result.HttpStatusCode);
-        }
-
-        protected static ControlPlaneCommerceCatalogFailure? ToCatalogFailure(CommerceNodeAdminGatewayFailure? failure)
-        {
-            return failure switch
-            {
-                CommerceNodeAdminGatewayFailure.Validation => ControlPlaneCommerceCatalogFailure.Validation,
-                CommerceNodeAdminGatewayFailure.NotFound => ControlPlaneCommerceCatalogFailure.NotFound,
-                CommerceNodeAdminGatewayFailure.RemoteFailure => ControlPlaneCommerceCatalogFailure.RemoteFailure,
-                _ => null,
-            };
         }
 
         protected static string BuildProductQuery(ProductCatalogQuery query)
@@ -345,18 +275,6 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 "&",
                 values.Select(value =>
                     Uri.EscapeDataString(value.Key) + "=" + Uri.EscapeDataString(value.Value)));
-        }
-
-        protected static ControlPlaneCommerceCatalogResult<TPayload> Failure<TPayload>(
-            string message,
-            ControlPlaneCommerceCatalogFailure failure,
-            int? httpStatusCode = null)
-        {
-            return new ControlPlaneCommerceCatalogResult<TPayload>(
-                false,
-                message,
-                Failure: failure,
-                HttpStatusCode: httpStatusCode);
         }
 
     }
