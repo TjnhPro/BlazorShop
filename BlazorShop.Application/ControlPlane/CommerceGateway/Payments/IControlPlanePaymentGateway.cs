@@ -1,5 +1,6 @@
 namespace BlazorShop.Application.ControlPlane.CommerceGateway.Payments
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -25,12 +26,12 @@ namespace BlazorShop.Application.ControlPlane.CommerceGateway.Payments
     public interface IControlPlanePaymentGateway
     {
         
-                Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StorePaymentMethodDto>>> ListPaymentMethodsAsync(
+                Task<ApplicationResult<IReadOnlyList<StorePaymentMethodDto>>> ListPaymentMethodsAsync(
                     Guid storePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StorePaymentMethodDto>> UpdatePaymentMethodAsync(
+                Task<ApplicationResult<StorePaymentMethodDto>> UpdatePaymentMethodAsync(
                     Guid storePublicId,
                     string paymentMethodKey,
                     UpdateStorePaymentMethodRequest request,

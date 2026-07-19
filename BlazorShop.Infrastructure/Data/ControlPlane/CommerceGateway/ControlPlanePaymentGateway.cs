@@ -2,8 +2,8 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using System.Globalization;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.ControlPlane.Catalog;
-    using BlazorShop.Application.ControlPlane.CommerceGateway;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -32,11 +32,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StorePaymentMethodDto>>> ListPaymentMethodsAsync(
+        public Task<ApplicationResult<IReadOnlyList<StorePaymentMethodDto>>> ListPaymentMethodsAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<StorePaymentMethodDto>>(
+            return this.SendApplicationAsync<IReadOnlyList<StorePaymentMethodDto>>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/payment-methods",
@@ -44,13 +44,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorePaymentMethodDto>> UpdatePaymentMethodAsync(
+        public Task<ApplicationResult<StorePaymentMethodDto>> UpdatePaymentMethodAsync(
             Guid storePublicId,
             string paymentMethodKey,
             UpdateStorePaymentMethodRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorePaymentMethodDto>(
+            return this.SendApplicationAsync<StorePaymentMethodDto>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/payment-methods/{Uri.EscapeDataString(paymentMethodKey)}",
