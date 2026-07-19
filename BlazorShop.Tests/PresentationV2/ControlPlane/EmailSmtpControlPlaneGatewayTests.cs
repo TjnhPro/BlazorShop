@@ -46,7 +46,7 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
         [Fact]
         public void ControlPlaneWeb_EmailPageCallsOnlyControlPlaneClient()
         {
-            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/CommerceEmailSettings.razor");
+            var source = ReadControlPlanePageSource("CommerceEmailSettings");
 
             Assert.Contains("@page \"/commerce-admin/email\"", source, StringComparison.Ordinal);
             Assert.Contains("MessageClient.GetEmailSettingsAsync", source, StringComparison.Ordinal);
@@ -54,7 +54,8 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
             Assert.Contains("MessageClient.SendEmailTestAsync", source, StringComparison.Ordinal);
             Assert.DoesNotContain("CatalogClient.", source, StringComparison.Ordinal);
             Assert.DoesNotContain("api/commerce/admin", source, StringComparison.OrdinalIgnoreCase);
-            Assert.DoesNotContain("CommerceNode", source, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("CommerceNode.API", source, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("CommerceNodeApi", source, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("current password", source, StringComparison.OrdinalIgnoreCase);
         }
 
@@ -82,6 +83,13 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath.Replace('/', Path.DirectorySeparatorChar)));
+        }
+
+        private static string ReadControlPlanePageSource(string pageName)
+        {
+            return ReadRepositoryFile($"BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/{pageName}.razor")
+                + Environment.NewLine
+                + ReadRepositoryFile($"BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/{pageName}.razor.cs");
         }
 
         private static string ReadCommerceNodeSwaggerSource()

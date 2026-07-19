@@ -286,6 +286,35 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void LargeControlPlanePages_AreSplitIntoMarkupAndCodeBehindAfterPhase7E()
+        {
+            var pages = new[]
+            {
+                "Stores",
+                "CommercePages",
+                "CommerceEmailSettings",
+                "CommerceCurrencies",
+                "CommerceOrders",
+                "CommerceCategories",
+                "Users",
+                "CommerceNavigation",
+            };
+
+            foreach (var page in pages)
+            {
+                var markupPath = RepositoryPath($"BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/{page}.razor");
+                var codeBehindPath = RepositoryPath($"BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/{page}.razor.cs");
+                var markup = File.ReadAllText(markupPath);
+                var codeBehind = File.ReadAllText(codeBehindPath);
+
+                Assert.DoesNotContain("@code", markup, StringComparison.Ordinal);
+                Assert.Contains($"public partial class {page}", codeBehind, StringComparison.Ordinal);
+                Assert.True(File.ReadLines(markupPath).Count() <= 450);
+                Assert.True(File.ReadLines(codeBehindPath).Count() <= 650);
+            }
+        }
+
+        [Fact]
         public void ControlPlaneDbContext_UsesEntityTypeConfigurationsAfterPhase7C()
         {
             var dbContextSource = ReadRepositoryFile("BlazorShop.Infrastructure/Data/ControlPlane/ControlPlaneDbContext.cs");

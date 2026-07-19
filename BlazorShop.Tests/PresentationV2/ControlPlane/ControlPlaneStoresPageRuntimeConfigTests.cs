@@ -37,7 +37,7 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
         [Fact]
         public void StoresPage_SavesRuntimeConfigThroughControlPlaneClientOnly()
         {
-            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/Stores.razor");
+            var markup = ReadControlPlanePageSource("Stores");
 
             Assert.Contains("StoreClient.UpdateRuntimeStoreAsync", markup);
             Assert.Contains("EmptyToNull(runtimeLogoUrl)", markup);
@@ -50,7 +50,7 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
         [Fact]
         public void StoresPage_UsesSafePreviewGuardsForImageAndTileColor()
         {
-            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/Stores.razor");
+            var markup = ReadControlPlanePageSource("Stores");
 
             Assert.Contains("CanPreviewImage(runtimeLogoUrl)", markup);
             Assert.Contains("CanPreviewImage(runtimeFaviconUrl)", markup);
@@ -62,6 +62,13 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath));
+        }
+
+        private static string ReadControlPlanePageSource(string pageName)
+        {
+            return ReadRepositoryFile($"BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/{pageName}.razor")
+                + Environment.NewLine
+                + ReadRepositoryFile($"BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/{pageName}.razor.cs");
         }
 
         private static string FindRepositoryRoot()

@@ -615,9 +615,14 @@ Phase 7D.2 focused verification:
 
 ### Phase 7E - Other Control Plane Pages
 
-- [ ] Prioritize pages over 800 lines: `Stores.razor`, `CommercePages.razor`, `CommerceEmailSettings.razor`.
-- [ ] Then pages 600-800 lines: orders, currencies, categories, users, navigation.
-- [ ] Use page-specific components before shared components unless two pages share real behavior.
+- [x] Prioritize pages over 800 lines: `Stores.razor`, `CommercePages.razor`, `CommerceEmailSettings.razor`.
+- [x] Then pages 600-800 lines: orders, currencies, categories, users, navigation.
+- [x] Use page-specific components before shared components unless two pages share real behavior.
+
+Phase 7E focused verification:
+
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors; Tailwind completed with existing Browserslist stale notice.
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~ArchitectureBoundary|FullyQualifiedName~ControlPlane"` - Passed: 129, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, legacy Presentation Microsoft.OpenApi advisory, Browserslist stale.
 
 ### Phase 7F - Storefront Local Endpoint Support
 
