@@ -540,31 +540,49 @@ Goal: tach infrastructure support mappings va don sach DbContext.
 
 Scope:
 
-- [ ] `CommerceNodeIdentityConfiguration`.
-- [ ] `RefreshTokenConfiguration`.
-- [ ] `CommerceTaskConfiguration`.
-- [ ] `CommerceTaskStepConfiguration`.
-- [ ] `StoreDeploymentConfiguration`.
-- [ ] `StorefrontDeploymentImageConfiguration`.
+- [x] `CommerceNodeIdentityConfiguration`.
+- [x] `RefreshTokenConfiguration`.
+- [x] `CommerceTaskConfiguration`.
+- [x] `CommerceTaskStepConfiguration`.
+- [x] `StoreDeploymentConfiguration`.
+- [x] `StorefrontDeploymentImageConfiguration`.
 
 Tasks:
 
-- [ ] Preserve Identity column max lengths for login/token providers.
-- [ ] Preserve refresh token indexes and columns.
-- [ ] Preserve task table names/check constraints/task step mapping.
-- [ ] Preserve default `StorefrontDeploymentImage` seed.
-- [ ] Remove unused `using` statements from `CommerceNodeDbContext`.
-- [ ] Ensure `CommerceNodeDbContext` contains mostly:
-  - [ ] constructor.
-  - [ ] DbSet declarations.
-  - [ ] short `OnModelCreating`.
-- [ ] Run full infrastructure test set.
+- [x] Preserve Identity column max lengths for login/token providers.
+- [x] Preserve refresh token indexes and columns.
+- [x] Preserve task table names/check constraints/task step mapping.
+- [x] Preserve default `StorefrontDeploymentImage` seed.
+- [x] Remove unused `using` statements from `CommerceNodeDbContext`.
+- [x] Ensure `CommerceNodeDbContext` contains mostly:
+  - [x] constructor.
+  - [x] DbSet declarations.
+  - [x] short `OnModelCreating`.
+- [x] Run full infrastructure test set.
 
 Exit criteria:
 
-- [ ] `CommerceNodeDbContext.cs` is small and readable.
-- [ ] No moved mapping remains duplicated in `OnModelCreating`.
-- [ ] No pending model changes.
+- [x] `CommerceNodeDbContext.cs` is small and readable.
+- [x] No moved mapping remains duplicated in `OnModelCreating`.
+- [x] No pending model changes.
+
+Phase 8 evidence:
+
+- Added identity configuration files under `BlazorShop.Infrastructure/Data/CommerceNode/Configurations/Identity`.
+- Added task orchestration configuration files under `BlazorShop.Infrastructure/Data/CommerceNode/Configurations/Tasks`.
+- Added deployment configuration files under `BlazorShop.Infrastructure/Data/CommerceNode/Configurations/Deployment`.
+- Moved remaining small mappings into config files:
+  - `SeoRedirectStoreScopeConfiguration`.
+  - `NewsletterSubscriberConfiguration`.
+  - `OrderItemCheckoutConfiguration`.
+- Preserved identity login/token max lengths, role seed IDs/stamps/names, refresh token indexes, task table/check constraints, deployment relationship/index/check constraint and default `StorefrontDeploymentImage` seed.
+- `CommerceNodeDbContext.OnModelCreating` now only calls shared explicit configurations and `ApplyCommerceNodeConfigurations()`.
+- `CommerceNodeDbContext.cs` line count is now 146.
+- `modelBuilder.Entity` count dropped from 22 to 0.
+- Focused command passed 87/87 tests:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~Identity|FullyQualifiedName~RefreshToken|FullyQualifiedName~CommerceTask|FullyQualifiedName~Deployment|FullyQualifiedName~CommerceNodeDbContextModelTests|FullyQualifiedName~CommerceNodeMigrationModelConsistencyTests|FullyQualifiedName~Newsletter|FullyQualifiedName~SeoRedirect" --no-restore --nologo --verbosity minimal`
+- Infrastructure-focused command passed 305/305 tests:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~Infrastructure.CommerceNode|FullyQualifiedName~CommerceNodeDbContextModelTests|FullyQualifiedName~CommerceNodeMigrationModelConsistencyTests|FullyQualifiedName~CommerceNodeConfigurationBoundaryTests" --no-restore --nologo --verbosity minimal`
 
 ## Phase 9 - Final Verification And Release Gate
 
@@ -633,7 +651,7 @@ Safety boundary
 - [x] Phase 5 cart/checkout/customer/address complete.
 - [x] Phase 6 orders/fulfillment complete.
 - [x] Phase 7 catalog/media/content/imports complete.
-- [ ] Phase 8 identity/tasks/deployment cleanup complete.
+- [x] Phase 8 identity/tasks/deployment cleanup complete.
 - [ ] Phase 9 final verification complete.
 
 ## Not In Scope
