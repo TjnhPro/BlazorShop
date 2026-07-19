@@ -74,6 +74,21 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.DoesNotContain(propertyNames, name => name.Contains("settings", StringComparison.OrdinalIgnoreCase));
         }
 
+        [Fact]
+        public void CodDescriptor_MatchesOfflineCapturedOperationBehavior()
+        {
+            var provider = new CodStorefrontPaymentProvider();
+            var descriptor = provider.Descriptor;
+
+            Assert.Equal(PaymentMethodKeys.Cod, descriptor.SystemName);
+            Assert.Equal("Cash on Delivery", descriptor.DisplayName);
+            Assert.Equal(PaymentProviderMethodTypes.Offline, descriptor.MethodType);
+            Assert.Equal(10, descriptor.DefaultDisplayOrder);
+            Assert.True(descriptor.SupportsCapture);
+            Assert.False(descriptor.RequiresWebhookSignature);
+            Assert.True(descriptor.ActiveByDefault);
+        }
+
         private static PaymentProviderOperationRequest CreateOperationRequest()
         {
             return new PaymentProviderOperationRequest(

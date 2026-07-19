@@ -175,7 +175,7 @@ Phase 1 evidence:
 
 ## Phase 2 - Move COD And Stripe Capabilities Into Providers
 
-- [ ] Add descriptor to `CodStorefrontPaymentProvider`:
+- [x] Add descriptor to `CodStorefrontPaymentProvider`:
   - system name `cod`.
   - display name `Cash on Delivery`.
   - method type `offline`.
@@ -183,7 +183,7 @@ Phase 1 evidence:
   - supports capture `true`.
   - webhook signature `false`.
   - active by default `true`.
-- [ ] Add descriptor to `StripeStorefrontPaymentProvider`:
+- [x] Add descriptor to `StripeStorefrontPaymentProvider`:
   - system name `stripe`.
   - display name `Stripe`.
   - method type `redirect`.
@@ -191,17 +191,25 @@ Phase 1 evidence:
   - supports capture `true`.
   - webhook signature `true`.
   - active by default `false` or configured-state aware if existing pattern supports it.
-- [ ] Update fake/minimal provider classes in tests to expose descriptor.
-- [ ] Add provider descriptor tests:
+- [x] Update fake/minimal provider classes in tests to expose descriptor.
+- [x] Add provider descriptor tests:
   - COD descriptor matches COD operation behavior.
   - Stripe descriptor requires webhook signature.
   - descriptor system name matches provider key.
 
 Acceptance:
 
-- [ ] COD and Stripe capability data no longer needs registry helper methods.
-- [ ] Existing checkout/payment tests still pass.
-- [ ] No PayPal runtime behavior is introduced.
+- [x] COD and Stripe capability data no longer needs registry helper methods.
+- [x] Existing checkout/payment tests still pass.
+- [x] No PayPal runtime behavior is introduced.
+
+Phase 2 evidence:
+
+- COD descriptor now mirrors offline/captured behavior: `cod`, `Cash on Delivery`, `offline`, order `10`, capture supported, no webhook signature, active by default.
+- Stripe descriptor now mirrors redirect/webhook behavior: `stripe`, `Stripe`, `redirect`, order `20`, capture supported, webhook signature required, inactive by default.
+- No PayPal provider or PayPal runtime operation was added.
+- Focused command passed 80/80 tests:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~PaymentProviderOperationContractTests|FullyQualifiedName~StripeStorefrontPaymentProviderTests|FullyQualifiedName~StorefrontCheckoutServiceTests|FullyQualifiedName~PaymentAttemptServiceTests" --no-restore --nologo --verbosity minimal`
 
 ## Phase 3 - Refactor Capability Registry Into Aggregator
 

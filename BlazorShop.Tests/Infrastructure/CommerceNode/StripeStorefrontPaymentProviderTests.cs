@@ -18,6 +18,22 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
     public sealed class StripeStorefrontPaymentProviderTests
     {
         [Fact]
+        public void Descriptor_RequiresWebhookSignatureAndRedirectFlow()
+        {
+            var provider = CreateProvider(new FakeStripeCheckoutSessionService(), stripeSecret: "sk_test_123", clientBaseUrl: "https://shop.example.com");
+            var descriptor = provider.Descriptor;
+
+            Assert.Equal(PaymentMethodKeys.Stripe, descriptor.SystemName);
+            Assert.Equal(provider.ProviderKey, descriptor.SystemName);
+            Assert.Equal("Stripe", descriptor.DisplayName);
+            Assert.Equal(PaymentProviderMethodTypes.Redirect, descriptor.MethodType);
+            Assert.Equal(20, descriptor.DefaultDisplayOrder);
+            Assert.True(descriptor.SupportsCapture);
+            Assert.True(descriptor.RequiresWebhookSignature);
+            Assert.False(descriptor.ActiveByDefault);
+        }
+
+        [Fact]
         public async Task CreateHostedSessionAsync_SendsAmountCurrencyAndIdempotencyMetadata()
         {
             var checkout = new FakeStripeCheckoutSessionService();
