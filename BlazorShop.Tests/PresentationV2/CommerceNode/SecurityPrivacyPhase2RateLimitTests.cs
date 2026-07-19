@@ -65,7 +65,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         public void StorefrontLocalCartMutations_HaveRateLimitPolicyAndTypedResponse()
         {
             var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCartEndpoints.cs");
-            var support = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs");
+            var support = ReadStorefrontLocalEndpointSupportSource();
             var pipeline = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontApplicationBuilderExtensions.cs");
             var ratePolicies = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontRateLimitPolicies.cs");
             var options = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Options/StorefrontRateLimitingOptions.cs");
@@ -118,6 +118,31 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             yield return [typeof(StorefrontScopedPaymentsController), nameof(StorefrontScopedPaymentsController.HandleWebhook), StorefrontRateLimitPolicyNames.Checkout];
         }
 
+        private static string ReadStorefrontLocalEndpointSupportSource()
+        {
+            var root = FindStorefrontSupportRepositoryRoot();
+            var endpointDirectory = Path.Combine(root, "BlazorShop.PresentationV2", "BlazorShop.Storefront.V2", "Endpoints");
+            return string.Join(
+                Environment.NewLine,
+                Directory.EnumerateFiles(endpointDirectory, "StorefrontLocalEndpointSupport*.cs")
+                    .OrderBy(path => path, StringComparer.Ordinal)
+                    .Select(File.ReadAllText));
+        }
+        private static string FindStorefrontSupportRepositoryRoot()
+        {
+            var directory = new DirectoryInfo(AppContext.BaseDirectory);
+            while (directory is not null)
+            {
+                if (File.Exists(Path.Combine(directory.FullName, "BlazorShop.sln")))
+                {
+                    return directory.FullName;
+                }
+
+                directory = directory.Parent;
+            }
+
+            throw new InvalidOperationException("Unable to locate BlazorShop.sln from the test output directory.");
+        }
         private static string ReadRepositoryFile(string relativePath)
         {
             var directory = new DirectoryInfo(AppContext.BaseDirectory);

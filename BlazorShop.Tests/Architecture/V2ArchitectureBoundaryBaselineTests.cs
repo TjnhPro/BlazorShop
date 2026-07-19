@@ -239,10 +239,7 @@ namespace BlazorShop.Tests.Architecture
         [Fact]
         public void KnownHotspotFileSizes_MatchCurrentPhaseBaseline()
         {
-            var hotspots = new[]
-            {
-                new HotspotBaseline("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs", 813),
-            };
+            var hotspots = Array.Empty<HotspotBaseline>();
 
             foreach (var hotspot in hotspots)
             {
@@ -257,6 +254,23 @@ namespace BlazorShop.Tests.Architecture
                         Regex.Matches(source, "modelBuilder\\.Entity").Count);
                 }
             }
+        }
+
+        [Fact]
+        public void StorefrontLocalEndpointSupport_IsSplitByEndpointConcernAfterPhase7F()
+        {
+            var supportFiles = Directory
+                .EnumerateFiles(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints"), "StorefrontLocalEndpointSupport*.cs")
+                .Select(ToRepositoryRelativePath)
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Account.cs", supportFiles);
+            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Cart.cs", supportFiles);
+            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Checkout.cs", supportFiles);
+            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs", supportFiles);
+            Assert.All(supportFiles, file => Assert.True(File.ReadLines(RepositoryPath(file)).Count() <= 320));
+            Assert.All(supportFiles, file => Assert.Contains("internal static partial class StorefrontLocalEndpointSupport", ReadRepositoryFile(file), StringComparison.Ordinal));
         }
 
         [Fact]

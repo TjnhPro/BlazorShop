@@ -202,7 +202,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
             var accountEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontAccountEndpoints.cs");
-            var support = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs");
+            var support = ReadStorefrontLocalEndpointSupportSource();
 
             Assert.Contains("app.MapStorefrontAccountEndpoints();", program, StringComparison.Ordinal);
             Assert.Contains("app.MapGet(\"/api/account/profile\"", accountEndpoints, StringComparison.Ordinal);
@@ -254,7 +254,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
             var checkoutEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCheckoutEndpoints.cs");
-            var support = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs");
+            var support = ReadStorefrontLocalEndpointSupportSource();
             var apiClient = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Checkout.cs")
                 + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiTransport.cs");
 
@@ -321,6 +321,31 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             throw new DirectoryNotFoundException("Could not find repository root.");
         }
 
+        private static string ReadStorefrontLocalEndpointSupportSource()
+        {
+            var root = FindStorefrontSupportRepositoryRoot();
+            var endpointDirectory = Path.Combine(root, "BlazorShop.PresentationV2", "BlazorShop.Storefront.V2", "Endpoints");
+            return string.Join(
+                Environment.NewLine,
+                Directory.EnumerateFiles(endpointDirectory, "StorefrontLocalEndpointSupport*.cs")
+                    .OrderBy(path => path, StringComparer.Ordinal)
+                    .Select(File.ReadAllText));
+        }
+        private static string FindStorefrontSupportRepositoryRoot()
+        {
+            var directory = new DirectoryInfo(AppContext.BaseDirectory);
+            while (directory is not null)
+            {
+                if (File.Exists(Path.Combine(directory.FullName, "BlazorShop.sln")))
+                {
+                    return directory.FullName;
+                }
+
+                directory = directory.Parent;
+            }
+
+            throw new InvalidOperationException("Unable to locate BlazorShop.sln from the test output directory.");
+        }
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(

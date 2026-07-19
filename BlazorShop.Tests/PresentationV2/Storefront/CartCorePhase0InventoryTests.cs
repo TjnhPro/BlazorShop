@@ -106,7 +106,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void StorefrontV2_CartPageConsumesServerProjection()
         {
             var cartPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CartPage.razor.cs");
-            var support = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs");
+            var support = ReadStorefrontLocalEndpointSupportSource();
 
             Assert.DoesNotContain("GetProductByIdAsync", cartPage, StringComparison.Ordinal);
             Assert.DoesNotContain("LoadProductsAsync", cartPage, StringComparison.Ordinal);
@@ -185,6 +185,31 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             throw new InvalidOperationException($"Could not locate closing brace for marker '{marker}'.");
         }
 
+        private static string ReadStorefrontLocalEndpointSupportSource()
+        {
+            var root = FindStorefrontSupportRepositoryRoot();
+            var endpointDirectory = Path.Combine(root, "BlazorShop.PresentationV2", "BlazorShop.Storefront.V2", "Endpoints");
+            return string.Join(
+                Environment.NewLine,
+                Directory.EnumerateFiles(endpointDirectory, "StorefrontLocalEndpointSupport*.cs")
+                    .OrderBy(path => path, StringComparer.Ordinal)
+                    .Select(File.ReadAllText));
+        }
+        private static string FindStorefrontSupportRepositoryRoot()
+        {
+            var directory = new DirectoryInfo(AppContext.BaseDirectory);
+            while (directory is not null)
+            {
+                if (File.Exists(Path.Combine(directory.FullName, "BlazorShop.sln")))
+                {
+                    return directory.FullName;
+                }
+
+                directory = directory.Parent;
+            }
+
+            throw new InvalidOperationException("Unable to locate BlazorShop.sln from the test output directory.");
+        }
         private static string ReadRepositoryFile(string relativePath)
         {
             var directory = new DirectoryInfo(AppContext.BaseDirectory);

@@ -626,9 +626,14 @@ Phase 7E focused verification:
 
 ### Phase 7F - Storefront Local Endpoint Support
 
-- [ ] Split `StorefrontLocalEndpointSupport.cs` by account/cart/checkout/common formatting.
-- [ ] Keep local endpoint behavior and antiforgery flow unchanged.
-- [ ] Update security/privacy tests that read this file.
+- [x] Split `StorefrontLocalEndpointSupport.cs` by account/cart/checkout/common formatting.
+- [x] Keep local endpoint behavior and antiforgery flow unchanged.
+- [x] Update security/privacy tests that read this file.
+
+Phase 7F focused verification:
+
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~ArchitectureBoundary|FullyQualifiedName~StorefrontWasmRuntimeFoundation|FullyQualifiedName~SecurityPrivacyPhase1Csrf|FullyQualifiedName~SecurityPrivacyPhase2RateLimit|FullyQualifiedName~CartCorePhase0Inventory|FullyQualifiedName~AddressCorePhase0Inventory|FullyQualifiedName~StorefrontBrandingMarkup"` - Passed: 93, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, legacy Presentation Microsoft.OpenApi advisory, Browserslist stale.
 
 ### Verification
 
