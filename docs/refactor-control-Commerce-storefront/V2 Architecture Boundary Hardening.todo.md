@@ -566,11 +566,16 @@ Phase 7A focused verification:
 
 ### Phase 7B - Commerce Node Development Seeder
 
-- [ ] Introduce `ICommerceNodeDevelopmentSeedStep` or equivalent internal seed step abstraction.
-- [ ] Keep `CommerceNodeDevelopmentSeeder` as orchestrator only.
-- [ ] Split seed steps by store/config, catalog/products, media, content/navigation/SEO, account/order, email/settings.
-- [ ] Ensure each step is idempotent and does not overwrite runtime config after Control Plane edits.
-- [ ] Add tests or static assertions for no overwrite of logo/favicon/currency/culture/email/maintenance state after initial seed.
+- [x] Introduce `ICommerceNodeDevelopmentSeedStep` or equivalent internal seed step abstraction.
+- [x] Keep `CommerceNodeDevelopmentSeeder` as orchestrator only.
+- [x] Split seed steps by store/config, catalog/products, media, content/navigation/SEO, account/order, email/settings.
+- [x] Ensure each step is idempotent and does not overwrite runtime config after Control Plane edits.
+- [x] Add tests or static assertions for no overwrite of logo/favicon/currency/culture/email/maintenance state after initial seed.
+
+Phase 7B focused verification:
+
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~CommerceNodeDevelopmentSeeder|FullyQualifiedName~ArchitectureBoundary"` - Passed: 21, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
 
 ### Phase 7C - Control Plane DbContext Configuration
 

@@ -241,7 +241,6 @@ namespace BlazorShop.Tests.Architecture
         {
             var hotspots = new[]
             {
-                new HotspotBaseline("BlazorShop.Infrastructure/Data/CommerceNode/CommerceNodeDevelopmentSeeder.cs", 1787),
                 new HotspotBaseline("BlazorShop.Infrastructure/Data/ControlPlane/ControlPlaneDbContext.cs", 712, 27),
                 new HotspotBaseline("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/CommerceProducts.razor", 1691),
                 new HotspotBaseline("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs", 813),
@@ -260,6 +259,33 @@ namespace BlazorShop.Tests.Architecture
                         Regex.Matches(source, "modelBuilder\\.Entity").Count);
                 }
             }
+        }
+
+        [Fact]
+        public void CommerceNodeDevelopmentSeeder_IsSplitBySeedStepAfterPhase7B()
+        {
+            var seederDirectory = RepositoryPath("BlazorShop.Infrastructure/Data/CommerceNode");
+            var files = Directory.EnumerateFiles(seederDirectory, "CommerceNodeDevelopmentSeeder*.cs")
+                .Select(ToRepositoryRelativePath)
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.Contains("BlazorShop.Infrastructure/Data/CommerceNode/CommerceNodeDevelopmentSeeder.StoreSeed.cs", files);
+            Assert.Contains("BlazorShop.Infrastructure/Data/CommerceNode/CommerceNodeDevelopmentSeeder.SettingsSeed.cs", files);
+            Assert.Contains("BlazorShop.Infrastructure/Data/CommerceNode/CommerceNodeDevelopmentSeeder.CatalogSeed.cs", files);
+            Assert.Contains("BlazorShop.Infrastructure/Data/CommerceNode/CommerceNodeDevelopmentSeeder.MediaSeed.cs", files);
+            Assert.Contains("BlazorShop.Infrastructure/Data/CommerceNode/CommerceNodeDevelopmentSeeder.ContentNavigationSeed.cs", files);
+            Assert.Contains("BlazorShop.Infrastructure/Data/CommerceNode/CommerceNodeDevelopmentSeeder.AccountOrderSeed.cs", files);
+
+            Assert.Contains(
+                "ICommerceNodeDevelopmentSeedStep",
+                ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/CommerceNodeDevelopmentSeeder.cs"),
+                StringComparison.Ordinal);
+            Assert.All(
+                files,
+                file => Assert.True(
+                    File.ReadLines(RepositoryPath(file)).Count() <= 650,
+                    $"{file} should stay below the Phase 7B split threshold."));
         }
 
         [Fact]
