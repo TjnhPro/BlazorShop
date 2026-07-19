@@ -16,7 +16,7 @@ namespace BlazorShop.Tests.Architecture
                 .SelectMany(path => Regex.Matches(File.ReadAllText(path), "ControlPlaneCommerceCatalogResult<"))
                 .Count();
 
-            Assert.InRange(references, 60, 75);
+            Assert.InRange(references, 5, 15);
         }
 
         [Fact]
@@ -55,7 +55,7 @@ namespace BlazorShop.Tests.Architecture
         public void ControlPlaneProductGateway_IsSplitByCapability()
         {
             var source = ReadRepositoryFile("BlazorShop.Application/ControlPlane/CommerceGateway/Products/IControlPlaneProductGateway.cs");
-            var methodCount = Regex.Matches(source, "Task<ControlPlaneCommerceCatalogResult").Count;
+            var methodCount = Regex.Matches(source, "Task<ApplicationResult").Count;
 
             Assert.Equal(9, methodCount);
             Assert.Contains("ListVariantsAsync", source, StringComparison.Ordinal);
@@ -94,7 +94,7 @@ namespace BlazorShop.Tests.Architecture
             foreach (var capabilityInterface in capabilityInterfaces)
             {
                 var capabilitySource = ReadRepositoryFile(capabilityInterface);
-                Assert.InRange(Regex.Matches(capabilitySource, "Task<ControlPlaneCommerceCatalogResult").Count, 1, 15);
+                Assert.InRange(Regex.Matches(capabilitySource, "Task<ApplicationResult").Count, 1, 15);
             }
         }
 

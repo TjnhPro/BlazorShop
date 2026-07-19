@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using System.Globalization;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.ControlPlane.Catalog;
     using BlazorShop.Application.ControlPlane.CommerceGateway.Products;
     using BlazorShop.Application.DTOs.Seo;
@@ -13,12 +14,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<ProductSeoDto>> GetProductSeoAsync(
+        public Task<ApplicationResult<ProductSeoDto>> GetProductSeoAsync(
             Guid storePublicId,
             Guid productId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<ProductSeoDto>(
+            return this.SendApplicationAsync<ProductSeoDto>(
                 storePublicId,
                 HttpMethod.Get,
                 $"api/commerce/admin/products/{productId:D}/seo",
@@ -26,14 +27,14 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<ProductSeoDto>> UpdateProductSeoAsync(
+        public Task<ApplicationResult<ProductSeoDto>> UpdateProductSeoAsync(
             Guid storePublicId,
             Guid productId,
             UpdateProductSeoDto request,
             CancellationToken cancellationToken = default)
         {
             request.ProductId = productId;
-            return this.SendAsync<ProductSeoDto>(
+            return this.SendApplicationAsync<ProductSeoDto>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/products/{productId:D}/seo",
@@ -41,12 +42,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreSeoSlugPolicyResult>> GenerateSeoSlugAsync(
+        public Task<ApplicationResult<StoreSeoSlugPolicyResult>> GenerateSeoSlugAsync(
             Guid storePublicId,
             StoreSeoSlugGenerateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreSeoSlugPolicyResult>(
+            return this.SendApplicationAsync<StoreSeoSlugPolicyResult>(
                 storePublicId,
                 HttpMethod.Post,
                 "api/commerce/admin/seo/slugs/generate",
@@ -54,12 +55,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreSeoSlugPolicyResult>> ValidateSeoSlugAsync(
+        public Task<ApplicationResult<StoreSeoSlugPolicyResult>> ValidateSeoSlugAsync(
             Guid storePublicId,
             StoreSeoSlugValidateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreSeoSlugPolicyResult>(
+            return this.SendApplicationAsync<StoreSeoSlugPolicyResult>(
                 storePublicId,
                 HttpMethod.Post,
                 "api/commerce/admin/seo/slugs/validate",
@@ -67,12 +68,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreSeoSlugHistoryDto>>> ListSeoSlugHistoryAsync(
+        public Task<ApplicationResult<IReadOnlyList<StoreSeoSlugHistoryDto>>> ListSeoSlugHistoryAsync(
             Guid storePublicId,
             StoreSeoSlugHistoryQuery query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<StoreSeoSlugHistoryDto>>(
+            return this.SendApplicationAsync<IReadOnlyList<StoreSeoSlugHistoryDto>>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/seo/slugs/history" + BuildSeoSlugHistoryQuery(query),

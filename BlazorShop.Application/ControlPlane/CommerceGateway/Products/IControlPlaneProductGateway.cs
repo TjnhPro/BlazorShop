@@ -1,5 +1,6 @@
 namespace BlazorShop.Application.ControlPlane.CommerceGateway.Products
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -25,37 +26,37 @@ namespace BlazorShop.Application.ControlPlane.CommerceGateway.Products
     public interface IControlPlaneProductGateway
     {
         
-                Task<ControlPlaneCommerceCatalogResult<PagedResult<GetCatalogProduct>>> QueryProductsAsync(
+                Task<ApplicationResult<PagedResult<GetCatalogProduct>>> QueryProductsAsync(
                     Guid storePublicId,
                     ProductCatalogQuery query,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<GetProduct>> GetProductAsync(
+                Task<ApplicationResult<GetProduct>> GetProductAsync(
                     Guid storePublicId,
                     Guid productId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<object>> CreateProductAsync(
+                Task<ApplicationResult<object>> CreateProductAsync(
                     Guid storePublicId,
                     CreateProduct request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<object>> UpdateProductAsync(
+                Task<ApplicationResult<object>> UpdateProductAsync(
                     Guid storePublicId,
                     Guid productId,
                     UpdateProduct request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<object>> ArchiveProductAsync(
+                Task<ApplicationResult<object>> ArchiveProductAsync(
                     Guid storePublicId,
                     Guid productId,
                     CancellationToken cancellationToken = default);
 
-                Task<ControlPlaneCommerceCatalogResult<PagedResult<GetProductVariant>>> ListVariantsAsync(
+                Task<ApplicationResult<PagedResult<GetProductVariant>>> ListVariantsAsync(
                     Guid storePublicId,
                     Guid productId,
                     int pageNumber = 1,
@@ -63,14 +64,14 @@ namespace BlazorShop.Application.ControlPlane.CommerceGateway.Products
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<object>> CreateVariantAsync(
+                Task<ApplicationResult<object>> CreateVariantAsync(
                     Guid storePublicId,
                     Guid productId,
                     CreateProductVariant request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<object>> UpdateVariantAsync(
+                Task<ApplicationResult<object>> UpdateVariantAsync(
                     Guid storePublicId,
                     Guid productId,
                     Guid variantId,
@@ -78,7 +79,7 @@ namespace BlazorShop.Application.ControlPlane.CommerceGateway.Products
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<object>> DeleteVariantAsync(
+                Task<ApplicationResult<object>> DeleteVariantAsync(
                     Guid storePublicId,
                     Guid productId,
                     Guid variantId,

@@ -2,8 +2,8 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using System.Globalization;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.ControlPlane.Catalog;
-    using BlazorShop.Application.ControlPlane.CommerceGateway;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -32,12 +32,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<PagedResult<GetCatalogProduct>>> QueryProductsAsync(
+        public Task<ApplicationResult<PagedResult<GetCatalogProduct>>> QueryProductsAsync(
             Guid storePublicId,
             ProductCatalogQuery query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<PagedResult<GetCatalogProduct>>(
+            return this.SendApplicationAsync<PagedResult<GetCatalogProduct>>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/products/query" + BuildProductQuery(query),
@@ -45,12 +45,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<GetProduct>> GetProductAsync(
+        public Task<ApplicationResult<GetProduct>> GetProductAsync(
             Guid storePublicId,
             Guid productId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<GetProduct>(
+            return this.SendApplicationAsync<GetProduct>(
                 storePublicId,
                 HttpMethod.Get,
                 $"api/commerce/admin/products/{productId:D}",
@@ -58,12 +58,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<object>> CreateProductAsync(
+        public Task<ApplicationResult<object>> CreateProductAsync(
             Guid storePublicId,
             CreateProduct request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<object>(
+            return this.SendApplicationAsync<object>(
                 storePublicId,
                 HttpMethod.Post,
                 "api/commerce/admin/products",
@@ -71,14 +71,14 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<object>> UpdateProductAsync(
+        public Task<ApplicationResult<object>> UpdateProductAsync(
             Guid storePublicId,
             Guid productId,
             UpdateProduct request,
             CancellationToken cancellationToken = default)
         {
             request.Id = productId;
-            return this.SendAsync<object>(
+            return this.SendApplicationAsync<object>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/products/{productId:D}",
@@ -86,12 +86,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<object>> ArchiveProductAsync(
+        public Task<ApplicationResult<object>> ArchiveProductAsync(
             Guid storePublicId,
             Guid productId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<object>(
+            return this.SendApplicationAsync<object>(
                 storePublicId,
                 HttpMethod.Delete,
                 $"api/commerce/admin/products/{productId:D}",
@@ -99,14 +99,14 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<PagedResult<GetProductVariant>>> ListVariantsAsync(
+        public Task<ApplicationResult<PagedResult<GetProductVariant>>> ListVariantsAsync(
             Guid storePublicId,
             Guid productId,
             int pageNumber = 1,
             int pageSize = 25,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<PagedResult<GetProductVariant>>(
+            return this.SendApplicationAsync<PagedResult<GetProductVariant>>(
                 storePublicId,
                 HttpMethod.Get,
                 $"api/commerce/admin/products/{productId:D}/variants" + BuildPageQuery(pageNumber, pageSize),
@@ -114,14 +114,14 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<object>> CreateVariantAsync(
+        public Task<ApplicationResult<object>> CreateVariantAsync(
             Guid storePublicId,
             Guid productId,
             CreateProductVariant request,
             CancellationToken cancellationToken = default)
         {
             request.ProductId = productId;
-            return this.SendAsync<object>(
+            return this.SendApplicationAsync<object>(
                 storePublicId,
                 HttpMethod.Post,
                 $"api/commerce/admin/products/{productId:D}/variants",
@@ -129,7 +129,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<object>> UpdateVariantAsync(
+        public Task<ApplicationResult<object>> UpdateVariantAsync(
             Guid storePublicId,
             Guid productId,
             Guid variantId,
@@ -138,7 +138,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
             request.ProductId = productId;
             request.Id = variantId;
-            return this.SendAsync<object>(
+            return this.SendApplicationAsync<object>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/products/{productId:D}/variants/{variantId:D}",
@@ -146,13 +146,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<object>> DeleteVariantAsync(
+        public Task<ApplicationResult<object>> DeleteVariantAsync(
             Guid storePublicId,
             Guid productId,
             Guid variantId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<object>(
+            return this.SendApplicationAsync<object>(
                 storePublicId,
                 HttpMethod.Delete,
                 $"api/commerce/admin/products/{productId:D}/variants/{variantId:D}",

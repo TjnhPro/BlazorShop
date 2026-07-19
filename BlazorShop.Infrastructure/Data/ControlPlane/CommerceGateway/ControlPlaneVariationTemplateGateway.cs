@@ -3,6 +3,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using System.Globalization;
 
     using BlazorShop.Application.CommerceNode.VariationTemplates;
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.ControlPlane.Catalog;
     using BlazorShop.Application.ControlPlane.CommerceGateway.Products;
 
@@ -13,12 +14,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateListResponse>> ListVariationTemplatesAsync(
+        public Task<ApplicationResult<VariationTemplateListResponse>> ListVariationTemplatesAsync(
             Guid storePublicId,
             VariationTemplateListQuery query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<VariationTemplateListResponse>(
+            return this.SendApplicationAsync<VariationTemplateListResponse>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/variation-templates" + BuildPageQuery(query.PageNumber, query.PageSize),
@@ -26,12 +27,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> GetVariationTemplateAsync(
+        public Task<ApplicationResult<VariationTemplateDetailDto>> GetVariationTemplateAsync(
             Guid storePublicId,
             Guid templatePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<VariationTemplateDetailDto>(
+            return this.SendApplicationAsync<VariationTemplateDetailDto>(
                 storePublicId,
                 HttpMethod.Get,
                 $"api/commerce/admin/variation-templates/{templatePublicId:D}",
@@ -39,12 +40,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> CreateVariationTemplateAsync(
+        public Task<ApplicationResult<VariationTemplateDetailDto>> CreateVariationTemplateAsync(
             Guid storePublicId,
             CreateVariationTemplateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<VariationTemplateDetailDto>(
+            return this.SendApplicationAsync<VariationTemplateDetailDto>(
                 storePublicId,
                 HttpMethod.Post,
                 "api/commerce/admin/variation-templates",
@@ -52,13 +53,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> UpdateVariationTemplateAsync(
+        public Task<ApplicationResult<VariationTemplateDetailDto>> UpdateVariationTemplateAsync(
             Guid storePublicId,
             Guid templatePublicId,
             UpdateVariationTemplateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<VariationTemplateDetailDto>(
+            return this.SendApplicationAsync<VariationTemplateDetailDto>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/variation-templates/{templatePublicId:D}",
@@ -66,13 +67,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> CreateVariationTemplateOptionAsync(
+        public Task<ApplicationResult<VariationTemplateDetailDto>> CreateVariationTemplateOptionAsync(
             Guid storePublicId,
             Guid templatePublicId,
             CreateVariationTemplateOptionRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<VariationTemplateDetailDto>(
+            return this.SendApplicationAsync<VariationTemplateDetailDto>(
                 storePublicId,
                 HttpMethod.Post,
                 $"api/commerce/admin/variation-templates/{templatePublicId:D}/options",
@@ -80,14 +81,14 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> UpdateVariationTemplateOptionAsync(
+        public Task<ApplicationResult<VariationTemplateDetailDto>> UpdateVariationTemplateOptionAsync(
             Guid storePublicId,
             Guid templatePublicId,
             Guid optionPublicId,
             UpdateVariationTemplateOptionRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<VariationTemplateDetailDto>(
+            return this.SendApplicationAsync<VariationTemplateDetailDto>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/variation-templates/{templatePublicId:D}/options/{optionPublicId:D}",
@@ -95,14 +96,14 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> CreateVariationTemplateValueAsync(
+        public Task<ApplicationResult<VariationTemplateDetailDto>> CreateVariationTemplateValueAsync(
             Guid storePublicId,
             Guid templatePublicId,
             Guid optionPublicId,
             CreateVariationTemplateValueRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<VariationTemplateDetailDto>(
+            return this.SendApplicationAsync<VariationTemplateDetailDto>(
                 storePublicId,
                 HttpMethod.Post,
                 $"api/commerce/admin/variation-templates/{templatePublicId:D}/options/{optionPublicId:D}/values",
@@ -110,7 +111,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<VariationTemplateDetailDto>> UpdateVariationTemplateValueAsync(
+        public Task<ApplicationResult<VariationTemplateDetailDto>> UpdateVariationTemplateValueAsync(
             Guid storePublicId,
             Guid templatePublicId,
             Guid optionPublicId,
@@ -118,7 +119,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             UpdateVariationTemplateValueRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<VariationTemplateDetailDto>(
+            return this.SendApplicationAsync<VariationTemplateDetailDto>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/variation-templates/{templatePublicId:D}/options/{optionPublicId:D}/values/{valuePublicId:D}",

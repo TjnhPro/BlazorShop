@@ -3,6 +3,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using System.Globalization;
 
     using BlazorShop.Application.CommerceNode.ProductImports;
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.ControlPlane.Catalog;
     using BlazorShop.Application.ControlPlane.CommerceGateway.Products;
 
@@ -13,24 +14,24 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<ProductImportUploadResponse>> UploadProductImportAsync(
+        public Task<ApplicationResult<ProductImportUploadResponse>> UploadProductImportAsync(
             Guid storePublicId,
             ProductImportUploadRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendMultipartAsync<ProductImportUploadResponse>(
+            return this.SendMultipartApplicationAsync<ProductImportUploadResponse>(
                 storePublicId,
                 "api/commerce/admin/products/import",
                 request,
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<ProductImportJobListResponse>> ListProductImportsAsync(
+        public Task<ApplicationResult<ProductImportJobListResponse>> ListProductImportsAsync(
             Guid storePublicId,
             ProductImportJobListQuery query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<ProductImportJobListResponse>(
+            return this.SendApplicationAsync<ProductImportJobListResponse>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/products/imports" + BuildProductImportQuery(query),
@@ -38,12 +39,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<ProductImportJobDetailDto>> GetProductImportAsync(
+        public Task<ApplicationResult<ProductImportJobDetailDto>> GetProductImportAsync(
             Guid storePublicId,
             Guid jobPublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<ProductImportJobDetailDto>(
+            return this.SendApplicationAsync<ProductImportJobDetailDto>(
                 storePublicId,
                 HttpMethod.Get,
                 $"api/commerce/admin/products/imports/{jobPublicId:D}",
@@ -51,13 +52,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<ProductImportRowsResponse>> ListProductImportRowsAsync(
+        public Task<ApplicationResult<ProductImportRowsResponse>> ListProductImportRowsAsync(
             Guid storePublicId,
             Guid jobPublicId,
             ProductImportRowsQuery query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<ProductImportRowsResponse>(
+            return this.SendApplicationAsync<ProductImportRowsResponse>(
                 storePublicId,
                 HttpMethod.Get,
                 $"api/commerce/admin/products/imports/{jobPublicId:D}/rows" + BuildProductImportRowsQuery(query),

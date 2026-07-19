@@ -73,6 +73,20 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken));
         }
 
+        protected async Task<ApplicationResult<TPayload>> SendMultipartApplicationAsync<TPayload>(
+            Guid storePublicId,
+            string path,
+            ProductImportUploadRequest upload,
+            CancellationToken cancellationToken)
+        {
+            return CommerceNodeAdminGatewayApplicationResultMapper.ToApplicationResult(
+                await this.transport.SendProductImportMultipartAsync<TPayload>(
+                    storePublicId,
+                    path,
+                    upload,
+                    cancellationToken));
+        }
+
         protected async Task<ControlPlaneCommerceCatalogResult<TPayload>> SendMediaAssetMultipartAsync<TPayload>(
             Guid storePublicId,
             string path,

@@ -1,26 +1,27 @@
 namespace BlazorShop.Application.ControlPlane.CommerceGateway.Products
 {
     using BlazorShop.Application.CommerceNode.ProductImports;
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.ControlPlane.Catalog;
 
     public interface IControlPlaneProductImportGateway
     {
-        Task<ControlPlaneCommerceCatalogResult<ProductImportUploadResponse>> UploadProductImportAsync(
+        Task<ApplicationResult<ProductImportUploadResponse>> UploadProductImportAsync(
             Guid storePublicId,
             ProductImportUploadRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneCommerceCatalogResult<ProductImportJobListResponse>> ListProductImportsAsync(
+        Task<ApplicationResult<ProductImportJobListResponse>> ListProductImportsAsync(
             Guid storePublicId,
             ProductImportJobListQuery query,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneCommerceCatalogResult<ProductImportJobDetailDto>> GetProductImportAsync(
+        Task<ApplicationResult<ProductImportJobDetailDto>> GetProductImportAsync(
             Guid storePublicId,
             Guid jobPublicId,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneCommerceCatalogResult<ProductImportRowsResponse>> ListProductImportRowsAsync(
+        Task<ApplicationResult<ProductImportRowsResponse>> ListProductImportRowsAsync(
             Guid storePublicId,
             Guid jobPublicId,
             ProductImportRowsQuery query,

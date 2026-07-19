@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using System.Globalization;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.ControlPlane.Catalog;
     using BlazorShop.Application.ControlPlane.CommerceGateway.Products;
     using BlazorShop.Application.DTOs.Admin.Inventory;
@@ -14,12 +15,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<PagedResult<AdminInventoryItemDto>>> QueryInventoryAsync(
+        public Task<ApplicationResult<PagedResult<AdminInventoryItemDto>>> QueryInventoryAsync(
             Guid storePublicId,
             AdminInventoryQueryDto query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<PagedResult<AdminInventoryItemDto>>(
+            return this.SendApplicationAsync<PagedResult<AdminInventoryItemDto>>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/inventory" + BuildInventoryQuery(query),
@@ -27,13 +28,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<AdminInventoryItemDto>> UpdateProductStockAsync(
+        public Task<ApplicationResult<AdminInventoryItemDto>> UpdateProductStockAsync(
             Guid storePublicId,
             Guid productId,
             UpdateProductStockDto request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<AdminInventoryItemDto>(
+            return this.SendApplicationAsync<AdminInventoryItemDto>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/inventory/products/{productId:D}",
@@ -41,13 +42,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<AdminInventoryVariantDto>> UpdateVariantStockAsync(
+        public Task<ApplicationResult<AdminInventoryVariantDto>> UpdateVariantStockAsync(
             Guid storePublicId,
             Guid variantId,
             UpdateVariantStockDto request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<AdminInventoryVariantDto>(
+            return this.SendApplicationAsync<AdminInventoryVariantDto>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/inventory/variants/{variantId:D}",
