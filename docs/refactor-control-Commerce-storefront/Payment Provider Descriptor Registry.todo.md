@@ -318,21 +318,30 @@ Phase 5 evidence:
 
 ## Phase 6 - Storefront And Control Plane Contract Stability
 
-- [ ] Verify `StorefrontScopedPaymentsController.GetPaymentMethods` response remains safe public metadata only.
-- [ ] Verify `StorefrontScopedConfigurationController` public configuration projection still excludes settings/secret data.
-- [ ] Verify Control Plane payment method manager still receives:
+- [x] Verify `StorefrontScopedPaymentsController.GetPaymentMethods` response remains safe public metadata only.
+- [x] Verify `StorefrontScopedConfigurationController` public configuration projection still excludes settings/secret data.
+- [x] Verify Control Plane payment method manager still receives:
   - capability installed/active.
   - method type.
   - operation support flags.
   - settings configured status.
-- [ ] Update Swagger/OpenAPI snapshots only if generated schema changes due to descriptor contract leaking into public DTOs. Expected: no public schema change.
-- [ ] Add static test that descriptor is not returned directly from public Storefront API if it would expose internal metadata.
+- [x] Update Swagger/OpenAPI snapshots only if generated schema changes due to descriptor contract leaking into public DTOs. Expected: no public schema change.
+- [x] Add static test that descriptor is not returned directly from public Storefront API if it would expose internal metadata.
 
 Acceptance:
 
-- [ ] Storefront payment method API shape stays stable.
-- [ ] Control Plane payment manager behavior stays stable.
-- [ ] No provider secret or settings JSON appears in public responses.
+- [x] Storefront payment method API shape stays stable.
+- [x] Control Plane payment manager behavior stays stable.
+- [x] No provider secret or settings JSON appears in public responses.
+
+Phase 6 evidence:
+
+- Storefront payment/configuration controllers still map payment methods to Storefront contracts and do not return `PaymentProviderDescriptor`.
+- Control Plane manager still uses `StorePaymentMethodDto`, which includes capability installed/active, method type, operation flags, and settings configured status without raw settings JSON in response payload.
+- No Swagger/OpenAPI snapshot update was required because public DTO shapes used by Storefront payment/configuration endpoints did not change.
+- Added static contract guard to ensure Storefront payment/configuration controller and contract sources do not expose `PaymentProviderDescriptor` or `SettingsJson`.
+- Focused command passed 16/16 tests:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~CommerceNodeStorefrontPaymentContractTests|FullyQualifiedName~CommerceNodePaymentMethodSecretBoundaryTests|FullyQualifiedName~StorefrontScopedPaymentWebhookHardeningTests" --no-restore --nologo --verbosity minimal`
 
 ## Phase 7 - Focused Verification
 

@@ -37,6 +37,18 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Equal(HttpStatusCode.NotFound, get.StatusCode);
         }
 
+        [Fact]
+        public void StorefrontPaymentEndpoints_DoNotExposeProviderDescriptorsOrSettingsJson()
+        {
+            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/StorefrontScopedPaymentsController.cs")
+                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/StorefrontScopedConfigurationController.cs")
+                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Contracts/Storefront/PaymentContracts.cs")
+                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Contracts/Storefront/ConfigurationContracts.cs");
+
+            Assert.DoesNotContain("PaymentProviderDescriptor", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("SettingsJson", source, StringComparison.Ordinal);
+        }
+
         private HttpClient CreateClient()
         {
             var configuredFactory = this.factory.WithWebHostBuilder(builder =>
@@ -50,6 +62,17 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             {
                 AllowAutoRedirect = false,
             });
+        }
+
+        private static string ReadRepositoryFile(string relativePath)
+        {
+            return File.ReadAllText(Path.Combine(
+                AppContext.BaseDirectory,
+                "..",
+                "..",
+                "..",
+                "..",
+                relativePath.Replace('/', Path.DirectorySeparatorChar)));
         }
     }
 }
