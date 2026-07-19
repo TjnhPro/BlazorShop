@@ -202,28 +202,39 @@ Goal: them model chung ma chua doi service signatures.
 
 Tasks:
 
-- [ ] Add `BlazorShop.Application/Common/Results/ApplicationResult.cs`.
-- [ ] Add `ApplicationResult<TValue>` with static factory helpers:
-  - [ ] `Succeeded(value, message)`.
-  - [ ] `Failed(error)`.
-- [ ] Add non-generic `ApplicationResult` only if command-without-payload services need it.
-- [ ] Add `ApplicationError`.
-- [ ] Add `ApplicationErrorKind`.
-- [ ] Add common factory helpers for known errors:
-  - [ ] `ApplicationError.Validation(code, message)`.
-  - [ ] `ApplicationError.NotFound(code, message)`.
-  - [ ] `ApplicationError.Conflict(code, message)`.
-  - [ ] `ApplicationError.RemoteFailure(code, message)`.
-  - [ ] `ApplicationError.Failure(code, message)`.
-- [ ] Add unit tests for factories and invariants:
-  - [ ] Success must not require error.
-  - [ ] Failure must carry non-empty code and safe message.
-  - [ ] Metadata is optional and read-only.
+- [x] Add `BlazorShop.Application/Common/Results/ApplicationResult.cs`.
+- [x] Add `ApplicationResult<TValue>` with static factory helpers:
+  - [x] `Succeeded(value, message)`.
+  - [x] `Failed(error)`.
+- [x] Add non-generic `ApplicationResult` only if command-without-payload services need it.
+- [x] Add `ApplicationError`.
+- [x] Add `ApplicationErrorKind`.
+- [x] Add common factory helpers for known errors:
+  - [x] `ApplicationError.Validation(code, message)`.
+  - [x] `ApplicationError.NotFound(code, message)`.
+  - [x] `ApplicationError.Conflict(code, message)`.
+  - [x] `ApplicationError.RemoteFailure(code, message)`.
+  - [x] `ApplicationError.Failure(code, message)`.
+- [x] Add unit tests for factories and invariants:
+  - [x] Success must not require error.
+  - [x] Failure must carry non-empty code and safe message.
+  - [x] Metadata is optional and read-only.
 
 Exit criteria:
 
-- [ ] New model builds without changing existing service/controller behavior.
-- [ ] No public API schema changes.
+- [x] New model builds without changing existing service/controller behavior.
+- [x] No public API schema changes.
+
+Phase 1 evidence:
+
+- Added `BlazorShop.Application/Common/Results/ApplicationResult.cs`, `ApplicationError.cs`, and `ApplicationErrorKind.cs`.
+- Did not add non-generic `ApplicationResult` because no command-without-payload migration occurs in this phase.
+- Added factory helpers for validation, not found, conflict, unauthorized, forbidden, remote failure, and generic failure.
+- `ApplicationError` trims code/message, rejects blank code/message, and copies metadata into a read-only dictionary.
+- No existing service/controller signature was changed in this phase.
+- Focused command passed 19/19 tests and `BlazorShop.Application` build passed 0 warnings/0 errors:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~ApplicationResultTests|FullyQualifiedName~ApplicationResultStandardizationPhase0Tests" --no-restore --nologo --verbosity minimal`
+  - `dotnet build BlazorShop.Application/BlazorShop.Application.csproj --no-restore --nologo --verbosity minimal`
 
 ## Phase 2 - Add Boundary Mappers Without Changing Services
 
