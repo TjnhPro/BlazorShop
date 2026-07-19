@@ -79,7 +79,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             var result = await service.CreateAsync(node.PublicId);
 
             Assert.False(result.Success);
-            Assert.Equal(ControlPlaneCredentialOperationFailure.Validation, result.Failure);
+            Assert.Equal(ApplicationErrorKind.Validation, result.Failure);
         }
 
         private static async Task<ControlPlaneNodeDetail> CreateNodeAsync(ControlPlaneDbContext context)

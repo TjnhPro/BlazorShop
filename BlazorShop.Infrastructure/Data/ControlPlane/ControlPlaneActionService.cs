@@ -93,7 +93,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 ControlPlanePaging.GetTotalPages(totalCount, page.PageSize));
         }
 
-        public async Task<ControlPlaneActionOperationResult<ControlPlaneActionDetail>> GetByPublicIdAsync(
+        public async Task<ApplicationResult<ControlPlaneActionDetail>> GetByPublicIdAsync(
             Guid publicId,
             CancellationToken cancellationToken = default)
         {
@@ -101,7 +101,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return action is null ? NotFound("Control action was not found.") : Succeeded(MapDetail(action));
         }
 
-        public async Task<ControlPlaneActionOperationResult<ControlPlaneActionDetail>> EnqueueAsync(
+        public async Task<ApplicationResult<ControlPlaneActionDetail>> EnqueueAsync(
             EnqueueControlActionRequest request,
             CancellationToken cancellationToken = default)
         {
@@ -187,7 +187,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                     idempotencyKey,
                     existing.PublicId);
 
-                return new ControlPlaneActionOperationResult<ControlPlaneActionDetail>(
+                return new ApplicationResult<ControlPlaneActionDetail>(
                     true,
                     "Duplicate idempotency key matched an existing action.",
                     MapDetail(existing),
@@ -228,7 +228,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return Succeeded(MapDetail((await this.LoadActionAsync(action.PublicId, cancellationToken))!));
         }
 
-        public async Task<ControlPlaneActionOperationResult<ControlPlaneActionDetail>> RecordAttemptAsync(
+        public async Task<ApplicationResult<ControlPlaneActionDetail>> RecordAttemptAsync(
             Guid publicId,
             RecordControlActionAttemptRequest request,
             CancellationToken cancellationToken = default)
@@ -302,7 +302,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return Succeeded(MapDetail(action));
         }
 
-        public async Task<ControlPlaneActionOperationResult<ControlPlaneActionDetail>> CancelAsync(
+        public async Task<ApplicationResult<ControlPlaneActionDetail>> CancelAsync(
             Guid publicId,
             CancellationToken cancellationToken = default)
         {
@@ -530,24 +530,24 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             };
         }
 
-        private static ControlPlaneActionOperationResult<ControlPlaneActionDetail> Succeeded(ControlPlaneActionDetail payload)
+        private static ApplicationResult<ControlPlaneActionDetail> Succeeded(ControlPlaneActionDetail payload)
         {
-            return new ControlPlaneActionOperationResult<ControlPlaneActionDetail>(true, Payload: payload);
+            return new ApplicationResult<ControlPlaneActionDetail>(true, Payload: payload);
         }
 
-        private static ControlPlaneActionOperationResult<ControlPlaneActionDetail> ValidationFailed(string message)
+        private static ApplicationResult<ControlPlaneActionDetail> ValidationFailed(string message)
         {
-            return new ControlPlaneActionOperationResult<ControlPlaneActionDetail>(false, message, Failure: ControlPlaneActionOperationFailure.Validation);
+            return new ApplicationResult<ControlPlaneActionDetail>(false, message, Failure: ApplicationErrorKind.Validation);
         }
 
-        private static ControlPlaneActionOperationResult<ControlPlaneActionDetail> Conflict(string message)
+        private static ApplicationResult<ControlPlaneActionDetail> Conflict(string message)
         {
-            return new ControlPlaneActionOperationResult<ControlPlaneActionDetail>(false, message, Failure: ControlPlaneActionOperationFailure.Conflict);
+            return new ApplicationResult<ControlPlaneActionDetail>(false, message, Failure: ApplicationErrorKind.Conflict);
         }
 
-        private static ControlPlaneActionOperationResult<ControlPlaneActionDetail> NotFound(string message)
+        private static ApplicationResult<ControlPlaneActionDetail> NotFound(string message)
         {
-            return new ControlPlaneActionOperationResult<ControlPlaneActionDetail>(false, message, Failure: ControlPlaneActionOperationFailure.NotFound);
+            return new ApplicationResult<ControlPlaneActionDetail>(false, message, Failure: ApplicationErrorKind.NotFound);
         }
 
         private sealed record PayloadResult(bool Success, string? Payload, string? Message);

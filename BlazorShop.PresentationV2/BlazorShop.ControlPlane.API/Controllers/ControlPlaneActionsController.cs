@@ -86,7 +86,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             return ToActionResult(result);
         }
 
-        private IActionResult ToActionResult(ControlPlaneActionOperationResult<ControlPlaneActionDetail> result)
+        private IActionResult ToActionResult(ApplicationResult<ControlPlaneActionDetail> result)
         {
             if (result.Success)
             {
@@ -98,16 +98,16 @@ namespace BlazorShop.ControlPlane.API.Controllers
 
             return result.Failure switch
             {
-                ControlPlaneActionOperationFailure.NotFound => ControlPlaneApiResponseWriter.Failure<ControlPlaneActionDetail>(StatusCodes.Status404NotFound, result.Message),
-                ControlPlaneActionOperationFailure.Conflict => ControlPlaneApiResponseWriter.Failure<ControlPlaneActionDetail>(StatusCodes.Status409Conflict, result.Message),
-                ControlPlaneActionOperationFailure.Validation => ControlPlaneApiResponseWriter.Failure<ControlPlaneActionDetail>(StatusCodes.Status400BadRequest, result.Message),
+                ApplicationErrorKind.NotFound => ControlPlaneApiResponseWriter.Failure<ControlPlaneActionDetail>(StatusCodes.Status404NotFound, result.Message),
+                ApplicationErrorKind.Conflict => ControlPlaneApiResponseWriter.Failure<ControlPlaneActionDetail>(StatusCodes.Status409Conflict, result.Message),
+                ApplicationErrorKind.Validation => ControlPlaneApiResponseWriter.Failure<ControlPlaneActionDetail>(StatusCodes.Status400BadRequest, result.Message),
                 _ => ControlPlaneApiResponseWriter.Failure<ControlPlaneActionDetail>(StatusCodes.Status400BadRequest, result.Message)
             };
         }
 
         private async Task WriteActionAuditAsync(
             string action,
-            ControlPlaneActionOperationResult<ControlPlaneActionDetail> result,
+            ApplicationResult<ControlPlaneActionDetail> result,
             ControlPlaneActionDetail? controlAction,
             CancellationToken cancellationToken)
         {

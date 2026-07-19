@@ -83,7 +83,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 ControlPlanePaging.GetTotalPages(totalCount, page.PageSize));
         }
 
-        public async Task<ControlPlaneHealthOperationResult<ControlPlaneHealthDetail>> GetDetailAsync(
+        public async Task<ApplicationResult<ControlPlaneHealthDetail>> GetDetailAsync(
             Guid nodePublicId,
             CancellationToken cancellationToken = default)
         {
@@ -110,7 +110,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return Succeeded(MapDetail(node, latestHealth, currentCapability));
         }
 
-        public async Task<ControlPlaneHealthOperationResult<ControlPlaneHealthTimelineResponse>> GetTimelineAsync(
+        public async Task<ApplicationResult<ControlPlaneHealthTimelineResponse>> GetTimelineAsync(
             Guid nodePublicId,
             ControlPlaneHealthTimelineQuery query,
             CancellationToken cancellationToken = default)
@@ -147,7 +147,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 ControlPlanePaging.GetTotalPages(totalCount, page.PageSize)));
         }
 
-        public async Task<ControlPlaneHealthOperationResult<ControlPlaneProbeResult>> ProbeAsync(
+        public async Task<ApplicationResult<ControlPlaneProbeResult>> ProbeAsync(
             Guid nodePublicId,
             CancellationToken cancellationToken = default)
         {
@@ -363,19 +363,19 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
         }
 
-        private static ControlPlaneHealthOperationResult<TPayload> Succeeded<TPayload>(TPayload payload)
+        private static ApplicationResult<TPayload> Succeeded<TPayload>(TPayload payload)
         {
-            return new ControlPlaneHealthOperationResult<TPayload>(true, Payload: payload);
+            return new ApplicationResult<TPayload>(true, Payload: payload);
         }
 
-        private static ControlPlaneHealthOperationResult<TPayload> ValidationFailed<TPayload>(string message)
+        private static ApplicationResult<TPayload> ValidationFailed<TPayload>(string message)
         {
-            return new ControlPlaneHealthOperationResult<TPayload>(false, message, Failure: ControlPlaneHealthOperationFailure.Validation);
+            return new ApplicationResult<TPayload>(false, message, Failure: ApplicationErrorKind.Validation);
         }
 
-        private static ControlPlaneHealthOperationResult<TPayload> NotFound<TPayload>(string message)
+        private static ApplicationResult<TPayload> NotFound<TPayload>(string message)
         {
-            return new ControlPlaneHealthOperationResult<TPayload>(false, message, Failure: ControlPlaneHealthOperationFailure.NotFound);
+            return new ApplicationResult<TPayload>(false, message, Failure: ApplicationErrorKind.NotFound);
         }
     }
 }

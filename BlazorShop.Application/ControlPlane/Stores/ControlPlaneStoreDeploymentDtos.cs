@@ -10,39 +10,25 @@ namespace BlazorShop.Application.ControlPlane.Stores
         string DefaultCulture = "en-US",
         string? NetworkName = null);
 
-    public sealed record ControlPlaneStoreDeploymentOperationResult<TPayload>(
-        bool Success,
-        string? Message = null,
-        TPayload? Payload = default,
-        ControlPlaneStoreDeploymentOperationFailure? Failure = null);
-
-    public enum ControlPlaneStoreDeploymentOperationFailure
-    {
-        Validation,
-        NotFound,
-        Conflict,
-        RemoteFailure
-    }
-
     public interface IControlPlaneStoreDeploymentService
     {
-        Task<ControlPlaneStoreDeploymentOperationResult<CommerceTaskSummary>> ProvisionAsync(
+        Task<ApplicationResult<CommerceTaskSummary>> ProvisionAsync(
             Guid storePublicId,
             DeployControlPlaneStoreRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneStoreDeploymentOperationResult<CommerceTaskDetail>> GetTaskAsync(
+        Task<ApplicationResult<CommerceTaskDetail>> GetTaskAsync(
             Guid storePublicId,
             Guid taskPublicId,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneStoreDeploymentOperationResult<CommerceTaskDetail>> CancelTaskAsync(
+        Task<ApplicationResult<CommerceTaskDetail>> CancelTaskAsync(
             Guid storePublicId,
             Guid taskPublicId,
             CancelCommerceTaskRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneStoreDeploymentOperationResult<CommerceTaskDetail>> RetryTaskAsync(
+        Task<ApplicationResult<CommerceTaskDetail>> RetryTaskAsync(
             Guid storePublicId,
             Guid taskPublicId,
             RetryCommerceTaskRequest request,

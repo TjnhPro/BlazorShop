@@ -169,7 +169,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             return ToDeploymentActionResult(result);
         }
 
-        private IActionResult ToActionResult(ControlPlaneStoreOperationResult<ControlPlaneStoreDetail> result)
+        private IActionResult ToActionResult(ApplicationResult<ControlPlaneStoreDetail> result)
         {
             if (result.Success)
             {
@@ -181,15 +181,15 @@ namespace BlazorShop.ControlPlane.API.Controllers
 
             return result.Failure switch
             {
-                ControlPlaneStoreOperationFailure.NotFound => ControlPlaneApiResponseWriter.Failure<ControlPlaneStoreDetail>(StatusCodes.Status404NotFound, result.Message),
-                ControlPlaneStoreOperationFailure.Conflict => ControlPlaneApiResponseWriter.Failure<ControlPlaneStoreDetail>(StatusCodes.Status409Conflict, result.Message),
-                ControlPlaneStoreOperationFailure.Validation => ControlPlaneApiResponseWriter.Failure<ControlPlaneStoreDetail>(StatusCodes.Status400BadRequest, result.Message),
+                ApplicationErrorKind.NotFound => ControlPlaneApiResponseWriter.Failure<ControlPlaneStoreDetail>(StatusCodes.Status404NotFound, result.Message),
+                ApplicationErrorKind.Conflict => ControlPlaneApiResponseWriter.Failure<ControlPlaneStoreDetail>(StatusCodes.Status409Conflict, result.Message),
+                ApplicationErrorKind.Validation => ControlPlaneApiResponseWriter.Failure<ControlPlaneStoreDetail>(StatusCodes.Status400BadRequest, result.Message),
                 _ => ControlPlaneApiResponseWriter.Failure<ControlPlaneStoreDetail>(StatusCodes.Status400BadRequest, result.Message)
             };
         }
 
         private static IActionResult ToDeploymentActionResult<TPayload>(
-            ControlPlaneStoreDeploymentOperationResult<TPayload> result)
+            ApplicationResult<TPayload> result)
         {
             if (result.Success)
             {
@@ -201,17 +201,17 @@ namespace BlazorShop.ControlPlane.API.Controllers
 
             return result.Failure switch
             {
-                ControlPlaneStoreDeploymentOperationFailure.NotFound => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status404NotFound, result.Message, result.Payload),
-                ControlPlaneStoreDeploymentOperationFailure.Conflict => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status409Conflict, result.Message, result.Payload),
-                ControlPlaneStoreDeploymentOperationFailure.Validation => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message, result.Payload),
-                ControlPlaneStoreDeploymentOperationFailure.RemoteFailure => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status502BadGateway, result.Message, result.Payload),
+                ApplicationErrorKind.NotFound => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status404NotFound, result.Message, result.Payload),
+                ApplicationErrorKind.Conflict => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status409Conflict, result.Message, result.Payload),
+                ApplicationErrorKind.Validation => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message, result.Payload),
+                ApplicationErrorKind.RemoteFailure => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status502BadGateway, result.Message, result.Payload),
                 _ => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message, result.Payload)
             };
         }
 
         private async Task WriteStoreAuditAsync(
             string action,
-            ControlPlaneStoreOperationResult<ControlPlaneStoreDetail> result,
+            ApplicationResult<ControlPlaneStoreDetail> result,
             ControlPlaneStoreDetail? store,
             CancellationToken cancellationToken)
         {

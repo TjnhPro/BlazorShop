@@ -65,15 +65,4 @@ namespace BlazorShop.Application.ControlPlane.Health
         ControlPlaneCapabilitySnapshotDto? Capability,
         bool CapabilityChanged);
 
-    public sealed record ControlPlaneHealthOperationResult<TPayload>(
-        bool Success,
-        string? Message = null,
-        TPayload? Payload = default,
-        ControlPlaneHealthOperationFailure? Failure = null);
-
-    public enum ControlPlaneHealthOperationFailure
-    {
-        Validation,
-        NotFound
-    }
 }

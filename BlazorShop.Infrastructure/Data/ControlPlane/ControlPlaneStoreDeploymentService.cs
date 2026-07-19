@@ -26,7 +26,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             this.taskClient = taskClient;
         }
 
-        public async Task<ControlPlaneStoreDeploymentOperationResult<CommerceTaskSummary>> ProvisionAsync(
+        public async Task<ApplicationResult<CommerceTaskSummary>> ProvisionAsync(
             Guid storePublicId,
             DeployControlPlaneStoreRequest request,
             CancellationToken cancellationToken = default)
@@ -96,7 +96,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return result;
         }
 
-        public async Task<ControlPlaneStoreDeploymentOperationResult<CommerceTaskDetail>> GetTaskAsync(
+        public async Task<ApplicationResult<CommerceTaskDetail>> GetTaskAsync(
             Guid storePublicId,
             Guid taskPublicId,
             CancellationToken cancellationToken = default)
@@ -124,7 +124,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return result;
         }
 
-        public async Task<ControlPlaneStoreDeploymentOperationResult<CommerceTaskDetail>> CancelTaskAsync(
+        public async Task<ApplicationResult<CommerceTaskDetail>> CancelTaskAsync(
             Guid storePublicId,
             Guid taskPublicId,
             CancelCommerceTaskRequest request,
@@ -146,7 +146,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken));
         }
 
-        public async Task<ControlPlaneStoreDeploymentOperationResult<CommerceTaskDetail>> RetryTaskAsync(
+        public async Task<ApplicationResult<CommerceTaskDetail>> RetryTaskAsync(
             Guid storePublicId,
             Guid taskPublicId,
             RetryCommerceTaskRequest request,
@@ -203,27 +203,27 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
             if (store is null)
             {
-                return new StoreValidationFailure(ControlPlaneStoreDeploymentOperationFailure.NotFound, "Store was not found.");
+                return new StoreValidationFailure(ApplicationErrorKind.NotFound, "Store was not found.");
             }
 
             if (store.Status == ControlPlaneStoreStatuses.Archived)
             {
-                return new StoreValidationFailure(ControlPlaneStoreDeploymentOperationFailure.Validation, "Archived stores cannot be deployed.");
+                return new StoreValidationFailure(ApplicationErrorKind.Validation, "Archived stores cannot be deployed.");
             }
 
             if (store.Node is null || store.Node.Status == "disabled")
             {
-                return new StoreValidationFailure(ControlPlaneStoreDeploymentOperationFailure.Validation, "Store node is missing or disabled.");
+                return new StoreValidationFailure(ApplicationErrorKind.Validation, "Store node is missing or disabled.");
             }
 
             if (string.IsNullOrWhiteSpace(store.Node.NodeSecret))
             {
-                return new StoreValidationFailure(ControlPlaneStoreDeploymentOperationFailure.Validation, "Store node does not have a node secret configured.");
+                return new StoreValidationFailure(ApplicationErrorKind.Validation, "Store node does not have a node secret configured.");
             }
 
             if (string.IsNullOrWhiteSpace(GetControlApiUrl(store.Node)))
             {
-                return new StoreValidationFailure(ControlPlaneStoreDeploymentOperationFailure.Validation, "Store node does not have an active Control API endpoint.");
+                return new StoreValidationFailure(ApplicationErrorKind.Validation, "Store node does not have an active Control API endpoint.");
             }
 
             return null;
@@ -283,39 +283,39 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return normalized.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? normalized;
         }
 
-        private static ControlPlaneStoreDeploymentOperationResult<TPayload> FromClientResult<TPayload>(
+        private static ApplicationResult<TPayload> FromClientResult<TPayload>(
             CommerceNodeTaskClientResult<TPayload> clientResult)
         {
             if (clientResult.Success)
             {
-                return new ControlPlaneStoreDeploymentOperationResult<TPayload>(
+                return new ApplicationResult<TPayload>(
                     true,
                     clientResult.Message,
                     clientResult.Payload);
             }
 
-            return new ControlPlaneStoreDeploymentOperationResult<TPayload>(
+            return new ApplicationResult<TPayload>(
                 false,
                 clientResult.Message,
                 clientResult.Payload,
-                ControlPlaneStoreDeploymentOperationFailure.RemoteFailure);
+                ApplicationErrorKind.RemoteFailure);
         }
 
-        private static ControlPlaneStoreDeploymentOperationResult<TPayload> ValidationFailed<TPayload>(string message)
+        private static ApplicationResult<TPayload> ValidationFailed<TPayload>(string message)
         {
-            return new ControlPlaneStoreDeploymentOperationResult<TPayload>(
+            return new ApplicationResult<TPayload>(
                 false,
                 message,
-                Failure: ControlPlaneStoreDeploymentOperationFailure.Validation);
+                Failure: ApplicationErrorKind.Validation);
         }
 
         private sealed record StoreValidationFailure(
-            ControlPlaneStoreDeploymentOperationFailure Failure,
+            ApplicationErrorKind Failure,
             string Message)
         {
-            public ControlPlaneStoreDeploymentOperationResult<TPayload> ToResult<TPayload>()
+            public ApplicationResult<TPayload> ToResult<TPayload>()
             {
-                return new ControlPlaneStoreDeploymentOperationResult<TPayload>(
+                return new ApplicationResult<TPayload>(
                     false,
                     this.Message,
                     Failure: this.Failure);

@@ -66,16 +66,4 @@ namespace BlazorShop.Application.ControlPlane.Stores
         DateTimeOffset? VerifiedAt,
         DateTimeOffset? DisabledAt);
 
-    public sealed record ControlPlaneStoreOperationResult<TPayload>(
-        bool Success,
-        string? Message = null,
-        TPayload? Payload = default,
-        ControlPlaneStoreOperationFailure? Failure = null);
-
-    public enum ControlPlaneStoreOperationFailure
-    {
-        Validation,
-        NotFound,
-        Conflict
-    }
 }

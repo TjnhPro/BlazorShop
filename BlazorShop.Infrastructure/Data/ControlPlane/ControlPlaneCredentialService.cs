@@ -24,7 +24,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             this.dbContext = dbContext;
         }
 
-        public async Task<ControlPlaneCredentialOperationResult<ControlPlaneCredentialListResponse>> ListAsync(
+        public async Task<ApplicationResult<ControlPlaneCredentialListResponse>> ListAsync(
             Guid nodePublicId,
             ControlPlaneCredentialListQuery query,
             CancellationToken cancellationToken = default)
@@ -61,7 +61,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 ControlPlanePaging.GetTotalPages(totalCount, page.PageSize)));
         }
 
-        public async Task<ControlPlaneCredentialOperationResult<ControlPlaneCredentialSecretResult>> CreateAsync(
+        public async Task<ApplicationResult<ControlPlaneCredentialSecretResult>> CreateAsync(
             Guid nodePublicId,
             long? actorAdminUserId = null,
             CancellationToken cancellationToken = default)
@@ -84,7 +84,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return Succeeded(new ControlPlaneCredentialSecretResult(MapSummary(credential), rawSecret));
         }
 
-        public async Task<ControlPlaneCredentialOperationResult<ControlPlaneCredentialSummary>> RevokeAsync(
+        public async Task<ApplicationResult<ControlPlaneCredentialSummary>> RevokeAsync(
             Guid nodePublicId,
             string keyId,
             long? actorAdminUserId = null,
@@ -110,7 +110,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return Succeeded(MapSummary(credential));
         }
 
-        public async Task<ControlPlaneCredentialOperationResult<ControlPlaneCredentialSecretResult>> RotateAsync(
+        public async Task<ApplicationResult<ControlPlaneCredentialSecretResult>> RotateAsync(
             Guid nodePublicId,
             string keyId,
             long? actorAdminUserId = null,
@@ -234,24 +234,24 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 .Replace('/', '_');
         }
 
-        private static ControlPlaneCredentialOperationResult<TPayload> Succeeded<TPayload>(TPayload payload)
+        private static ApplicationResult<TPayload> Succeeded<TPayload>(TPayload payload)
         {
-            return new ControlPlaneCredentialOperationResult<TPayload>(true, Payload: payload);
+            return new ApplicationResult<TPayload>(true, Payload: payload);
         }
 
-        private static ControlPlaneCredentialOperationResult<TPayload> ValidationFailed<TPayload>(string message)
+        private static ApplicationResult<TPayload> ValidationFailed<TPayload>(string message)
         {
-            return new ControlPlaneCredentialOperationResult<TPayload>(false, message, Failure: ControlPlaneCredentialOperationFailure.Validation);
+            return new ApplicationResult<TPayload>(false, message, Failure: ApplicationErrorKind.Validation);
         }
 
-        private static ControlPlaneCredentialOperationResult<TPayload> Conflict<TPayload>(string message)
+        private static ApplicationResult<TPayload> Conflict<TPayload>(string message)
         {
-            return new ControlPlaneCredentialOperationResult<TPayload>(false, message, Failure: ControlPlaneCredentialOperationFailure.Conflict);
+            return new ApplicationResult<TPayload>(false, message, Failure: ApplicationErrorKind.Conflict);
         }
 
-        private static ControlPlaneCredentialOperationResult<TPayload> NotFound<TPayload>(string message)
+        private static ApplicationResult<TPayload> NotFound<TPayload>(string message)
         {
-            return new ControlPlaneCredentialOperationResult<TPayload>(false, message, Failure: ControlPlaneCredentialOperationFailure.NotFound);
+            return new ApplicationResult<TPayload>(false, message, Failure: ApplicationErrorKind.NotFound);
         }
     }
 }

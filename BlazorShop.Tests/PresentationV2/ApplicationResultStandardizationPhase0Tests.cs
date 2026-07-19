@@ -26,13 +26,6 @@ namespace BlazorShop.Tests.PresentationV2
     {
         private static readonly string[] ExpectedOperationResultTypes =
         [
-            "ControlPlaneActionOperationResult",
-            "ControlPlaneUserOperationResult",
-            "ControlPlaneHealthOperationResult",
-            "ControlPlaneStoreOperationResult",
-            "ControlPlaneStoreDeploymentOperationResult",
-            "ControlPlaneCredentialOperationResult",
-            "ControlPlaneNodeOperationResult",
             "PaymentProviderOperationResult",
         ];
 
@@ -43,6 +36,13 @@ namespace BlazorShop.Tests.PresentationV2
             "CategoryMedia" + "OperationResult",
             "CommerceStore" + "OperationResult",
             "CommerceTask" + "OperationResult",
+            "ControlPlaneAction" + "OperationResult",
+            "ControlPlaneUser" + "OperationResult",
+            "ControlPlaneHealth" + "OperationResult",
+            "ControlPlaneStore" + "OperationResult",
+            "ControlPlaneStoreDeployment" + "OperationResult",
+            "ControlPlaneCredential" + "OperationResult",
+            "ControlPlaneNode" + "OperationResult",
         ];
 
         [Fact]
@@ -100,21 +100,21 @@ namespace BlazorShop.Tests.PresentationV2
         }
 
         [Theory]
-        [InlineData(ControlPlaneStoreDeploymentOperationFailure.Validation, StatusCodes.Status400BadRequest)]
-        [InlineData(ControlPlaneStoreDeploymentOperationFailure.NotFound, StatusCodes.Status404NotFound)]
-        [InlineData(ControlPlaneStoreDeploymentOperationFailure.Conflict, StatusCodes.Status409Conflict)]
-        [InlineData(ControlPlaneStoreDeploymentOperationFailure.RemoteFailure, StatusCodes.Status502BadGateway)]
+        [InlineData(ApplicationErrorKind.Validation, StatusCodes.Status400BadRequest)]
+        [InlineData(ApplicationErrorKind.NotFound, StatusCodes.Status404NotFound)]
+        [InlineData(ApplicationErrorKind.Conflict, StatusCodes.Status409Conflict)]
+        [InlineData(ApplicationErrorKind.RemoteFailure, StatusCodes.Status502BadGateway)]
         public void ControlPlaneDeploymentMapper_PreservesStatusAndEnvelope(
-            ControlPlaneStoreDeploymentOperationFailure failure,
+            ApplicationErrorKind failure,
             int expectedStatusCode)
         {
-            var result = new ControlPlaneStoreDeploymentOperationResult<string>(
+            var result = new ApplicationResult<string>(
                 Success: false,
                 Message: "deployment failure",
                 Payload: "payload",
                 Failure: failure);
 
-            var action = InvokePrivateGenericMapper<ControlPlaneStoreDeploymentOperationResult<string>, ControlPlaneStoresController>(
+            var action = InvokePrivateGenericMapper<ApplicationResult<string>, ControlPlaneStoresController>(
                 "ToDeploymentActionResult",
                 result);
 
@@ -150,13 +150,13 @@ namespace BlazorShop.Tests.PresentationV2
         [Fact]
         public void ControlPlaneDeploymentMapper_WhenFailureIsUnknown_MapsToBadRequest()
         {
-            var result = new ControlPlaneStoreDeploymentOperationResult<string>(
+            var result = new ApplicationResult<string>(
                 Success: false,
                 Message: "deployment failure",
                 Payload: "payload",
                 Failure: null);
 
-            var action = InvokePrivateGenericMapper<ControlPlaneStoreDeploymentOperationResult<string>, ControlPlaneStoresController>(
+            var action = InvokePrivateGenericMapper<ApplicationResult<string>, ControlPlaneStoresController>(
                 "ToDeploymentActionResult",
                 result);
 

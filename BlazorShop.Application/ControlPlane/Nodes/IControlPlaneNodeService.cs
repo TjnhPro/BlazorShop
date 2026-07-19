@@ -6,20 +6,20 @@ namespace BlazorShop.Application.ControlPlane.Nodes
             ControlPlaneNodeListQuery query,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneNodeOperationResult<ControlPlaneNodeDetail>> GetByPublicIdAsync(
+        Task<ApplicationResult<ControlPlaneNodeDetail>> GetByPublicIdAsync(
             Guid publicId,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneNodeOperationResult<ControlPlaneNodeDetail>> CreateAsync(
+        Task<ApplicationResult<ControlPlaneNodeDetail>> CreateAsync(
             CreateControlPlaneNodeRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneNodeOperationResult<ControlPlaneNodeDetail>> UpdateAsync(
+        Task<ApplicationResult<ControlPlaneNodeDetail>> UpdateAsync(
             Guid publicId,
             UpdateControlPlaneNodeRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneNodeOperationResult<ControlPlaneNodeDetail>> DisableAsync(
+        Task<ApplicationResult<ControlPlaneNodeDetail>> DisableAsync(
             Guid publicId,
             CancellationToken cancellationToken = default);
     }

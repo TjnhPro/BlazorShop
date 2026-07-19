@@ -35,7 +35,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             var result = await service.CreateAsync(new CreateControlPlaneStoreRequest("main-store", "Main Store", node.PublicId, "{}"));
 
             Assert.False(result.Success);
-            Assert.Equal(ControlPlaneStoreOperationFailure.Validation, result.Failure);
+            Assert.Equal(ApplicationErrorKind.Validation, result.Failure);
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             var duplicate = await service.CreateAsync(new CreateControlPlaneStoreRequest("main-store", "Duplicate", node.PublicId, "{}"));
 
             Assert.False(duplicate.Success);
-            Assert.Equal(ControlPlaneStoreOperationFailure.Conflict, duplicate.Failure);
+            Assert.Equal(ApplicationErrorKind.Conflict, duplicate.Failure);
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             var duplicate = await service.AddDomainAsync(second.Payload!.PublicId, new CreateControlPlaneStoreDomainRequest("https://store.example.com/path"));
 
             Assert.False(duplicate.Success);
-            Assert.Equal(ControlPlaneStoreOperationFailure.Conflict, duplicate.Failure);
+            Assert.Equal(ApplicationErrorKind.Conflict, duplicate.Failure);
         }
 
         [Fact]

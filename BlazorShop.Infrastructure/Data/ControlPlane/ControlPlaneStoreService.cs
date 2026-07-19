@@ -64,7 +64,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 ControlPlanePaging.GetTotalPages(totalCount, page.PageSize));
         }
 
-        public async Task<ControlPlaneStoreOperationResult<ControlPlaneStoreDetail>> GetByPublicIdAsync(
+        public async Task<ApplicationResult<ControlPlaneStoreDetail>> GetByPublicIdAsync(
             Guid publicId,
             CancellationToken cancellationToken = default)
         {
@@ -72,7 +72,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return store is null ? NotFound("Store was not found.") : Succeeded(MapDetail(store));
         }
 
-        public async Task<ControlPlaneStoreOperationResult<ControlPlaneStoreDetail>> CreateAsync(
+        public async Task<ApplicationResult<ControlPlaneStoreDetail>> CreateAsync(
             CreateControlPlaneStoreRequest request,
             CancellationToken cancellationToken = default)
         {
@@ -106,7 +106,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return Succeeded(MapDetail((await this.LoadStoreAsync(store.PublicId, cancellationToken))!));
         }
 
-        public async Task<ControlPlaneStoreOperationResult<ControlPlaneStoreDetail>> UpdateAsync(
+        public async Task<ApplicationResult<ControlPlaneStoreDetail>> UpdateAsync(
             Guid publicId,
             UpdateControlPlaneStoreRequest request,
             CancellationToken cancellationToken = default)
@@ -144,7 +144,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return Succeeded(MapDetail(store));
         }
 
-        public async Task<ControlPlaneStoreOperationResult<ControlPlaneStoreDetail>> ArchiveAsync(
+        public async Task<ApplicationResult<ControlPlaneStoreDetail>> ArchiveAsync(
             Guid publicId,
             CancellationToken cancellationToken = default)
         {
@@ -166,7 +166,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return Succeeded(MapDetail(store));
         }
 
-        public async Task<ControlPlaneStoreOperationResult<ControlPlaneStoreDetail>> AddDomainAsync(
+        public async Task<ApplicationResult<ControlPlaneStoreDetail>> AddDomainAsync(
             Guid publicId,
             CreateControlPlaneStoreDomainRequest request,
             CancellationToken cancellationToken = default)
@@ -212,7 +212,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return Succeeded(MapDetail(store));
         }
 
-        public async Task<ControlPlaneStoreOperationResult<ControlPlaneStoreDetail>> VerifyDomainAsync(
+        public async Task<ApplicationResult<ControlPlaneStoreDetail>> VerifyDomainAsync(
             Guid publicId,
             long domainId,
             CancellationToken cancellationToken = default)
@@ -220,7 +220,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return await this.UpdateDomainAsync(publicId, domainId, verify: true, cancellationToken);
         }
 
-        public async Task<ControlPlaneStoreOperationResult<ControlPlaneStoreDetail>> DisableDomainAsync(
+        public async Task<ApplicationResult<ControlPlaneStoreDetail>> DisableDomainAsync(
             Guid publicId,
             long domainId,
             CancellationToken cancellationToken = default)
@@ -228,7 +228,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return await this.UpdateDomainAsync(publicId, domainId, verify: false, cancellationToken);
         }
 
-        private async Task<ControlPlaneStoreOperationResult<ControlPlaneStoreDetail>> UpdateDomainAsync(
+        private async Task<ApplicationResult<ControlPlaneStoreDetail>> UpdateDomainAsync(
             Guid publicId,
             long domainId,
             bool verify,
@@ -257,7 +257,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return Succeeded(MapDetail(store));
         }
 
-        private async Task<ControlPlaneStoreOperationResult<ControlPlaneStoreDetail>?> ValidateCreateRequestAsync(
+        private async Task<ApplicationResult<ControlPlaneStoreDetail>?> ValidateCreateRequestAsync(
             CreateControlPlaneStoreRequest? request,
             CancellationToken cancellationToken)
         {
@@ -396,24 +396,24 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                     .ToArray());
         }
 
-        private static ControlPlaneStoreOperationResult<ControlPlaneStoreDetail> Succeeded(ControlPlaneStoreDetail payload)
+        private static ApplicationResult<ControlPlaneStoreDetail> Succeeded(ControlPlaneStoreDetail payload)
         {
-            return new ControlPlaneStoreOperationResult<ControlPlaneStoreDetail>(true, Payload: payload);
+            return new ApplicationResult<ControlPlaneStoreDetail>(true, Payload: payload);
         }
 
-        private static ControlPlaneStoreOperationResult<ControlPlaneStoreDetail> ValidationFailed(string message)
+        private static ApplicationResult<ControlPlaneStoreDetail> ValidationFailed(string message)
         {
-            return new ControlPlaneStoreOperationResult<ControlPlaneStoreDetail>(false, message, Failure: ControlPlaneStoreOperationFailure.Validation);
+            return new ApplicationResult<ControlPlaneStoreDetail>(false, message, Failure: ApplicationErrorKind.Validation);
         }
 
-        private static ControlPlaneStoreOperationResult<ControlPlaneStoreDetail> Conflict(string message)
+        private static ApplicationResult<ControlPlaneStoreDetail> Conflict(string message)
         {
-            return new ControlPlaneStoreOperationResult<ControlPlaneStoreDetail>(false, message, Failure: ControlPlaneStoreOperationFailure.Conflict);
+            return new ApplicationResult<ControlPlaneStoreDetail>(false, message, Failure: ApplicationErrorKind.Conflict);
         }
 
-        private static ControlPlaneStoreOperationResult<ControlPlaneStoreDetail> NotFound(string message)
+        private static ApplicationResult<ControlPlaneStoreDetail> NotFound(string message)
         {
-            return new ControlPlaneStoreOperationResult<ControlPlaneStoreDetail>(false, message, Failure: ControlPlaneStoreOperationFailure.NotFound);
+            return new ApplicationResult<ControlPlaneStoreDetail>(false, message, Failure: ApplicationErrorKind.NotFound);
         }
 
         [GeneratedRegex("^[a-z0-9](?:[a-z0-9-]{1,62}[a-z0-9])$")]

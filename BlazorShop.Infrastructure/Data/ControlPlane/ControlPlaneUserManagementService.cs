@@ -90,7 +90,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 ControlPlanePaging.GetTotalPages(totalCount, page.PageSize));
         }
 
-        public async Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> GetAsync(
+        public async Task<ApplicationResult<ControlPlaneUserDetail>> GetAsync(
             Guid publicId,
             CancellationToken cancellationToken = default)
         {
@@ -109,7 +109,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return Succeeded(MapDetail(user, identityRoleLookup));
         }
 
-        public async Task<ControlPlaneUserOperationResult<CreateControlPlaneUserResponse>> CreateAsync(
+        public async Task<ApplicationResult<CreateControlPlaneUserResponse>> CreateAsync(
             CreateControlPlaneUserRequest request,
             ControlPlaneUserActor actor,
             CancellationToken cancellationToken = default)
@@ -117,7 +117,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             var validation = ValidateCreateRequest(request);
             if (validation is not null)
             {
-                return Failed<CreateControlPlaneUserResponse>(validation, ControlPlaneUserOperationFailure.Validation);
+                return Failed<CreateControlPlaneUserResponse>(validation, ApplicationErrorKind.Validation);
             }
 
             var normalizedEmail = request.Email.Trim().ToLowerInvariant();
@@ -130,25 +130,25 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
             if (!IsAllowedIdentityRole(identityRole) || !await this.roleManager.RoleExistsAsync(identityRole))
             {
-                return Failed<CreateControlPlaneUserResponse>("Identity role is invalid.", ControlPlaneUserOperationFailure.Validation);
+                return Failed<CreateControlPlaneUserResponse>("Identity role is invalid.", ApplicationErrorKind.Validation);
             }
 
             if (await this.userManager.FindByEmailAsync(normalizedEmail) is not null
                 || await this.dbContext.AdminUsers.AnyAsync(user => user.Email == normalizedEmail && user.DeletedAt == null, cancellationToken))
             {
-                return Failed<CreateControlPlaneUserResponse>("A Control Plane user with this email already exists.", ControlPlaneUserOperationFailure.Conflict);
+                return Failed<CreateControlPlaneUserResponse>("A Control Plane user with this email already exists.", ApplicationErrorKind.Conflict);
             }
 
             var roles = await LoadRolesByKeyAsync(controlPlaneRoleKeys, cancellationToken);
             if (roles.Count != controlPlaneRoleKeys.Count)
             {
-                return Failed<CreateControlPlaneUserResponse>("One or more Control Plane roles are invalid.", ControlPlaneUserOperationFailure.Validation);
+                return Failed<CreateControlPlaneUserResponse>("One or more Control Plane roles are invalid.", ApplicationErrorKind.Validation);
             }
 
             var permissions = await LoadPermissionsByKeyAsync(directPermissionKeys, cancellationToken);
             if (permissions.Count != directPermissionKeys.Count)
             {
-                return Failed<CreateControlPlaneUserResponse>("One or more Control Plane permissions are invalid.", ControlPlaneUserOperationFailure.Validation);
+                return Failed<CreateControlPlaneUserResponse>("One or more Control Plane permissions are invalid.", ApplicationErrorKind.Validation);
             }
 
             var actorAdminUserId = await ResolveActorAdminUserIdAsync(actor, cancellationToken);
@@ -178,7 +178,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 {
                     return Failed<CreateControlPlaneUserResponse>(
                         FormatIdentityErrors(createResult),
-                        ControlPlaneUserOperationFailure.Validation);
+                        ApplicationErrorKind.Validation);
                 }
 
                 var roleResult = await this.userManager.AddToRoleAsync(appUser, identityRole);
@@ -186,7 +186,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 {
                     return Failed<CreateControlPlaneUserResponse>(
                         FormatIdentityErrors(roleResult),
-                        ControlPlaneUserOperationFailure.Validation);
+                        ApplicationErrorKind.Validation);
                 }
 
                 var profile = new ControlPlaneAdminUser
@@ -225,11 +225,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 var created = await this.GetAsync(profile.PublicId, cancellationToken);
                 return created.Success && created.Payload is not null
                     ? Succeeded(new CreateControlPlaneUserResponse(created.Payload, string.IsNullOrWhiteSpace(request.TemporaryPassword) ? temporaryPassword : null))
-                    : Failed<CreateControlPlaneUserResponse>("Control Plane user was created but could not be loaded.", ControlPlaneUserOperationFailure.Conflict);
+                    : Failed<CreateControlPlaneUserResponse>("Control Plane user was created but could not be loaded.", ApplicationErrorKind.Conflict);
             });
         }
 
-        public async Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> UpdateAsync(
+        public async Task<ApplicationResult<ControlPlaneUserDetail>> UpdateAsync(
             Guid publicId,
             UpdateControlPlaneUserRequest request,
             ControlPlaneUserActor actor,
@@ -237,12 +237,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
             if (request is null || string.IsNullOrWhiteSpace(request.DisplayName))
             {
-                return Failed<ControlPlaneUserDetail>("Display name is required.", ControlPlaneUserOperationFailure.Validation);
+                return Failed<ControlPlaneUserDetail>("Display name is required.", ApplicationErrorKind.Validation);
             }
 
             if (request.DisplayName.Trim().Length > 160)
             {
-                return Failed<ControlPlaneUserDetail>("Display name must be 160 characters or fewer.", ControlPlaneUserOperationFailure.Validation);
+                return Failed<ControlPlaneUserDetail>("Display name must be 160 characters or fewer.", ApplicationErrorKind.Validation);
             }
 
             var user = await LoadUserForMutationAsync(publicId, cancellationToken);
@@ -264,7 +264,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 {
                     return Failed<ControlPlaneUserDetail>(
                         FormatIdentityErrors(updateResult),
-                        ControlPlaneUserOperationFailure.Validation);
+                        ApplicationErrorKind.Validation);
                 }
             }
 
@@ -272,7 +272,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return await ReloadDetailAsync(publicId, cancellationToken);
         }
 
-        public async Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> DisableAsync(
+        public async Task<ApplicationResult<ControlPlaneUserDetail>> DisableAsync(
             Guid publicId,
             ChangeControlPlaneUserStatusRequest request,
             ControlPlaneUserActor actor,
@@ -286,13 +286,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
             if (!string.IsNullOrWhiteSpace(actor.IdentityUserId) && user.IdentityUserId == actor.IdentityUserId)
             {
-                return Failed<ControlPlaneUserDetail>("You cannot disable your own Control Plane account.", ControlPlaneUserOperationFailure.Conflict);
+                return Failed<ControlPlaneUserDetail>("You cannot disable your own Control Plane account.", ApplicationErrorKind.Conflict);
             }
 
             if (user.Roles.Any(userRole => userRole.Role?.Key == PlatformOwnerRoleKey)
                 && await CountActivePlatformOwnersAsync(cancellationToken) <= 1)
             {
-                return Failed<ControlPlaneUserDetail>("Cannot disable the last active platform owner.", ControlPlaneUserOperationFailure.Conflict);
+                return Failed<ControlPlaneUserDetail>("Cannot disable the last active platform owner.", ApplicationErrorKind.Conflict);
             }
 
             if (user.Status == "disabled")
@@ -322,7 +322,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return await ReloadDetailAsync(publicId, cancellationToken);
         }
 
-        public async Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> EnableAsync(
+        public async Task<ApplicationResult<ControlPlaneUserDetail>> EnableAsync(
             Guid publicId,
             ChangeControlPlaneUserStatusRequest request,
             ControlPlaneUserActor actor,
@@ -351,7 +351,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return await ReloadDetailAsync(publicId, cancellationToken);
         }
 
-        public async Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> AssignRoleAsync(
+        public async Task<ApplicationResult<ControlPlaneUserDetail>> AssignRoleAsync(
             Guid publicId,
             AssignControlPlaneRoleRequest request,
             ControlPlaneUserActor actor,
@@ -359,7 +359,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
             if (request is null || string.IsNullOrWhiteSpace(request.RoleKey))
             {
-                return Failed<ControlPlaneUserDetail>("Role key is required.", ControlPlaneUserOperationFailure.Validation);
+                return Failed<ControlPlaneUserDetail>("Role key is required.", ApplicationErrorKind.Validation);
             }
 
             var roleKey = request.RoleKey.Trim().ToLowerInvariant();
@@ -374,7 +374,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
             if (role is null)
             {
-                return Failed<ControlPlaneUserDetail>("Control Plane role is invalid.", ControlPlaneUserOperationFailure.Validation);
+                return Failed<ControlPlaneUserDetail>("Control Plane role is invalid.", ApplicationErrorKind.Validation);
             }
 
             if (user.Roles.Any(userRole => userRole.RoleId == role.Id))
@@ -394,7 +394,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return await ReloadDetailAsync(publicId, cancellationToken);
         }
 
-        public async Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> RemoveRoleAsync(
+        public async Task<ApplicationResult<ControlPlaneUserDetail>> RemoveRoleAsync(
             Guid publicId,
             string roleKey,
             ControlPlaneUserActor actor,
@@ -402,7 +402,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
             if (string.IsNullOrWhiteSpace(roleKey))
             {
-                return Failed<ControlPlaneUserDetail>("Role key is required.", ControlPlaneUserOperationFailure.Validation);
+                return Failed<ControlPlaneUserDetail>("Role key is required.", ApplicationErrorKind.Validation);
             }
 
             var normalizedRoleKey = roleKey.Trim().ToLowerInvariant();
@@ -420,7 +420,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
             if (normalizedRoleKey == PlatformOwnerRoleKey && await CountActivePlatformOwnersAsync(cancellationToken) <= 1)
             {
-                return Failed<ControlPlaneUserDetail>("Cannot remove the last active platform owner.", ControlPlaneUserOperationFailure.Conflict);
+                return Failed<ControlPlaneUserDetail>("Cannot remove the last active platform owner.", ApplicationErrorKind.Conflict);
             }
 
             this.dbContext.Remove(userRole);
@@ -430,7 +430,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return await ReloadDetailAsync(publicId, cancellationToken);
         }
 
-        public async Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> AssignPermissionAsync(
+        public async Task<ApplicationResult<ControlPlaneUserDetail>> AssignPermissionAsync(
             Guid publicId,
             AssignControlPlanePermissionRequest request,
             ControlPlaneUserActor actor,
@@ -438,7 +438,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
             if (request is null || string.IsNullOrWhiteSpace(request.PermissionKey))
             {
-                return Failed<ControlPlaneUserDetail>("Permission key is required.", ControlPlaneUserOperationFailure.Validation);
+                return Failed<ControlPlaneUserDetail>("Permission key is required.", ApplicationErrorKind.Validation);
             }
 
             var permissionKey = request.PermissionKey.Trim().ToLowerInvariant();
@@ -453,7 +453,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
             if (permission is null)
             {
-                return Failed<ControlPlaneUserDetail>("Control Plane permission is invalid.", ControlPlaneUserOperationFailure.Validation);
+                return Failed<ControlPlaneUserDetail>("Control Plane permission is invalid.", ApplicationErrorKind.Validation);
             }
 
             if (user.DirectPermissions.Any(userPermission => userPermission.PermissionId == permission.Id))
@@ -475,7 +475,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return await ReloadDetailAsync(publicId, cancellationToken);
         }
 
-        public async Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> RemovePermissionAsync(
+        public async Task<ApplicationResult<ControlPlaneUserDetail>> RemovePermissionAsync(
             Guid publicId,
             string permissionKey,
             ControlPlaneUserActor actor,
@@ -483,7 +483,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
             if (string.IsNullOrWhiteSpace(permissionKey))
             {
-                return Failed<ControlPlaneUserDetail>("Permission key is required.", ControlPlaneUserOperationFailure.Validation);
+                return Failed<ControlPlaneUserDetail>("Permission key is required.", ApplicationErrorKind.Validation);
             }
 
             var normalizedPermissionKey = permissionKey.Trim().ToLowerInvariant();
@@ -505,7 +505,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             {
                 return Failed<ControlPlaneUserDetail>(
                     "Cannot remove your own final role or permission management access.",
-                    ControlPlaneUserOperationFailure.Conflict);
+                    ApplicationErrorKind.Conflict);
             }
 
             this.dbContext.Remove(directPermission);
@@ -550,7 +550,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return new ControlPlanePermissionCatalogResponse(permissions);
         }
 
-        private async Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> ReloadDetailAsync(
+        private async Task<ApplicationResult<ControlPlaneUserDetail>> ReloadDetailAsync(
             Guid publicId,
             CancellationToken cancellationToken)
         {
@@ -885,23 +885,23 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return identityRoleLookup.TryGetValue(identityUserId, out var roles) ? roles : [];
         }
 
-        private static ControlPlaneUserOperationResult<TPayload> Succeeded<TPayload>(TPayload payload)
+        private static ApplicationResult<TPayload> Succeeded<TPayload>(TPayload payload)
         {
-            return new ControlPlaneUserOperationResult<TPayload>(true, Payload: payload);
+            return new ApplicationResult<TPayload>(true, Payload: payload);
         }
 
-        private static ControlPlaneUserOperationResult<ControlPlaneUserDetail> NotFound()
+        private static ApplicationResult<ControlPlaneUserDetail> NotFound()
         {
             return Failed<ControlPlaneUserDetail>(
                 "Control Plane user was not found.",
-                ControlPlaneUserOperationFailure.NotFound);
+                ApplicationErrorKind.NotFound);
         }
 
-        private static ControlPlaneUserOperationResult<TPayload> Failed<TPayload>(
+        private static ApplicationResult<TPayload> Failed<TPayload>(
             string message,
-            ControlPlaneUserOperationFailure failure)
+            ApplicationErrorKind failure)
         {
-            return new ControlPlaneUserOperationResult<TPayload>(
+            return new ApplicationResult<TPayload>(
                 false,
                 message,
                 Failure: failure);

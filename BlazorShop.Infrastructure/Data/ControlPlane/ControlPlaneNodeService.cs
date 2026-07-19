@@ -60,7 +60,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 ControlPlanePaging.GetTotalPages(totalCount, page.PageSize));
         }
 
-        public async Task<ControlPlaneNodeOperationResult<ControlPlaneNodeDetail>> GetByPublicIdAsync(
+        public async Task<ApplicationResult<ControlPlaneNodeDetail>> GetByPublicIdAsync(
             Guid publicId,
             CancellationToken cancellationToken = default)
         {
@@ -71,7 +71,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 : Succeeded(MapDetail(node));
         }
 
-        public async Task<ControlPlaneNodeOperationResult<ControlPlaneNodeDetail>> CreateAsync(
+        public async Task<ApplicationResult<ControlPlaneNodeDetail>> CreateAsync(
             CreateControlPlaneNodeRequest request,
             CancellationToken cancellationToken = default)
         {
@@ -121,7 +121,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return Succeeded(MapDetail(node));
         }
 
-        public async Task<ControlPlaneNodeOperationResult<ControlPlaneNodeDetail>> UpdateAsync(
+        public async Task<ApplicationResult<ControlPlaneNodeDetail>> UpdateAsync(
             Guid publicId,
             UpdateControlPlaneNodeRequest request,
             CancellationToken cancellationToken = default)
@@ -181,7 +181,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return Succeeded(MapDetail(node));
         }
 
-        public async Task<ControlPlaneNodeOperationResult<ControlPlaneNodeDetail>> DisableAsync(
+        public async Task<ApplicationResult<ControlPlaneNodeDetail>> DisableAsync(
             Guid publicId,
             CancellationToken cancellationToken = default)
         {
@@ -340,24 +340,24 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
 
-        private static ControlPlaneNodeOperationResult<ControlPlaneNodeDetail> Succeeded(ControlPlaneNodeDetail payload)
+        private static ApplicationResult<ControlPlaneNodeDetail> Succeeded(ControlPlaneNodeDetail payload)
         {
-            return new ControlPlaneNodeOperationResult<ControlPlaneNodeDetail>(true, Payload: payload);
+            return new ApplicationResult<ControlPlaneNodeDetail>(true, Payload: payload);
         }
 
-        private static ControlPlaneNodeOperationResult<ControlPlaneNodeDetail> ValidationFailed(string message)
+        private static ApplicationResult<ControlPlaneNodeDetail> ValidationFailed(string message)
         {
-            return new ControlPlaneNodeOperationResult<ControlPlaneNodeDetail>(false, message, Failure: ControlPlaneNodeOperationFailure.Validation);
+            return new ApplicationResult<ControlPlaneNodeDetail>(false, message, Failure: ApplicationErrorKind.Validation);
         }
 
-        private static ControlPlaneNodeOperationResult<ControlPlaneNodeDetail> Conflict(string message)
+        private static ApplicationResult<ControlPlaneNodeDetail> Conflict(string message)
         {
-            return new ControlPlaneNodeOperationResult<ControlPlaneNodeDetail>(false, message, Failure: ControlPlaneNodeOperationFailure.Conflict);
+            return new ApplicationResult<ControlPlaneNodeDetail>(false, message, Failure: ApplicationErrorKind.Conflict);
         }
 
-        private static ControlPlaneNodeOperationResult<ControlPlaneNodeDetail> NotFound()
+        private static ApplicationResult<ControlPlaneNodeDetail> NotFound()
         {
-            return new ControlPlaneNodeOperationResult<ControlPlaneNodeDetail>(false, "Node was not found.", Failure: ControlPlaneNodeOperationFailure.NotFound);
+            return new ApplicationResult<ControlPlaneNodeDetail>(false, "Node was not found.", Failure: ApplicationErrorKind.NotFound);
         }
 
         [GeneratedRegex("^[a-z0-9](?:[a-z0-9-]{1,62}[a-z0-9])$")]

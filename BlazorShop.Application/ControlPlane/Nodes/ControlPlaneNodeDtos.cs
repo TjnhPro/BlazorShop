@@ -62,17 +62,4 @@ namespace BlazorShop.Application.ControlPlane.Nodes
         bool IsPrimary,
         DateTimeOffset? DisabledAt);
 
-    public sealed record ControlPlaneNodeOperationResult<TPayload>(
-        bool Success,
-        string? Message = null,
-        TPayload? Payload = default,
-        ControlPlaneNodeOperationFailure Failure = ControlPlaneNodeOperationFailure.None);
-
-    public enum ControlPlaneNodeOperationFailure
-    {
-        None,
-        Validation,
-        Conflict,
-        NotFound
-    }
 }

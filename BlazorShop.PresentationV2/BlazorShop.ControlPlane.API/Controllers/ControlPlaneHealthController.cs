@@ -83,7 +83,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             return ToActionResult(result);
         }
 
-        private IActionResult ToActionResult<TPayload>(ControlPlaneHealthOperationResult<TPayload> result)
+        private IActionResult ToActionResult<TPayload>(ApplicationResult<TPayload> result)
         {
             if (result.Success)
             {
@@ -95,8 +95,8 @@ namespace BlazorShop.ControlPlane.API.Controllers
 
             return result.Failure switch
             {
-                ControlPlaneHealthOperationFailure.NotFound => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status404NotFound, result.Message),
-                ControlPlaneHealthOperationFailure.Validation => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message),
+                ApplicationErrorKind.NotFound => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status404NotFound, result.Message),
+                ApplicationErrorKind.Validation => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message),
                 _ => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message)
             };
         }

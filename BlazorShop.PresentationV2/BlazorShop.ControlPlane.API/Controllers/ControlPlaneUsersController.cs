@@ -201,7 +201,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
                 "Control Plane permissions loaded.");
         }
 
-        private IActionResult ToActionResult(ControlPlaneUserOperationResult<ControlPlaneUserDetail> result)
+        private IActionResult ToActionResult(ApplicationResult<ControlPlaneUserDetail> result)
         {
             if (result.Success)
             {
@@ -214,13 +214,13 @@ namespace BlazorShop.ControlPlane.API.Controllers
             return ToFailureActionResult(result);
         }
 
-        private IActionResult ToFailureActionResult<TPayload>(ControlPlaneUserOperationResult<TPayload> result)
+        private IActionResult ToFailureActionResult<TPayload>(ApplicationResult<TPayload> result)
         {
             return result.Failure switch
             {
-                ControlPlaneUserOperationFailure.NotFound => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status404NotFound, result.Message),
-                ControlPlaneUserOperationFailure.Conflict => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status409Conflict, result.Message),
-                ControlPlaneUserOperationFailure.Validation => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message),
+                ApplicationErrorKind.NotFound => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status404NotFound, result.Message),
+                ApplicationErrorKind.Conflict => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status409Conflict, result.Message),
+                ApplicationErrorKind.Validation => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message),
                 _ => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message)
             };
         }

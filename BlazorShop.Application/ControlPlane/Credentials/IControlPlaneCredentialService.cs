@@ -2,23 +2,23 @@ namespace BlazorShop.Application.ControlPlane.Credentials
 {
     public interface IControlPlaneCredentialService
     {
-        Task<ControlPlaneCredentialOperationResult<ControlPlaneCredentialListResponse>> ListAsync(
+        Task<ApplicationResult<ControlPlaneCredentialListResponse>> ListAsync(
             Guid nodePublicId,
             ControlPlaneCredentialListQuery query,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneCredentialOperationResult<ControlPlaneCredentialSecretResult>> CreateAsync(
+        Task<ApplicationResult<ControlPlaneCredentialSecretResult>> CreateAsync(
             Guid nodePublicId,
             long? actorAdminUserId = null,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneCredentialOperationResult<ControlPlaneCredentialSummary>> RevokeAsync(
+        Task<ApplicationResult<ControlPlaneCredentialSummary>> RevokeAsync(
             Guid nodePublicId,
             string keyId,
             long? actorAdminUserId = null,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneCredentialOperationResult<ControlPlaneCredentialSecretResult>> RotateAsync(
+        Task<ApplicationResult<ControlPlaneCredentialSecretResult>> RotateAsync(
             Guid nodePublicId,
             string keyId,
             long? actorAdminUserId = null,

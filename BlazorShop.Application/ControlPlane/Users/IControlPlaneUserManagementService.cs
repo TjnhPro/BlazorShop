@@ -6,52 +6,52 @@ namespace BlazorShop.Application.ControlPlane.Users
             ControlPlaneUserListQuery query,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> GetAsync(
+        Task<ApplicationResult<ControlPlaneUserDetail>> GetAsync(
             Guid publicId,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneUserOperationResult<CreateControlPlaneUserResponse>> CreateAsync(
+        Task<ApplicationResult<CreateControlPlaneUserResponse>> CreateAsync(
             CreateControlPlaneUserRequest request,
             ControlPlaneUserActor actor,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> UpdateAsync(
+        Task<ApplicationResult<ControlPlaneUserDetail>> UpdateAsync(
             Guid publicId,
             UpdateControlPlaneUserRequest request,
             ControlPlaneUserActor actor,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> DisableAsync(
+        Task<ApplicationResult<ControlPlaneUserDetail>> DisableAsync(
             Guid publicId,
             ChangeControlPlaneUserStatusRequest request,
             ControlPlaneUserActor actor,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> EnableAsync(
+        Task<ApplicationResult<ControlPlaneUserDetail>> EnableAsync(
             Guid publicId,
             ChangeControlPlaneUserStatusRequest request,
             ControlPlaneUserActor actor,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> AssignRoleAsync(
+        Task<ApplicationResult<ControlPlaneUserDetail>> AssignRoleAsync(
             Guid publicId,
             AssignControlPlaneRoleRequest request,
             ControlPlaneUserActor actor,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> RemoveRoleAsync(
+        Task<ApplicationResult<ControlPlaneUserDetail>> RemoveRoleAsync(
             Guid publicId,
             string roleKey,
             ControlPlaneUserActor actor,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> AssignPermissionAsync(
+        Task<ApplicationResult<ControlPlaneUserDetail>> AssignPermissionAsync(
             Guid publicId,
             AssignControlPlanePermissionRequest request,
             ControlPlaneUserActor actor,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneUserOperationResult<ControlPlaneUserDetail>> RemovePermissionAsync(
+        Task<ApplicationResult<ControlPlaneUserDetail>> RemovePermissionAsync(
             Guid publicId,
             string permissionKey,
             ControlPlaneUserActor actor,

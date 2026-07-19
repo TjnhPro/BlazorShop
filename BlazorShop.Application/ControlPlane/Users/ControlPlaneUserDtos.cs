@@ -104,17 +104,4 @@ namespace BlazorShop.Application.ControlPlane.Users
         string Key,
         string? Description);
 
-    public sealed record ControlPlaneUserOperationResult<TPayload>(
-        bool Success,
-        string? Message = null,
-        TPayload? Payload = default,
-        ControlPlaneUserOperationFailure Failure = ControlPlaneUserOperationFailure.None);
-
-    public enum ControlPlaneUserOperationFailure
-    {
-        None,
-        Validation,
-        Conflict,
-        NotFound
-    }
 }

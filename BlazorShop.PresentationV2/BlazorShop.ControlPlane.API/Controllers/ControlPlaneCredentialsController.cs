@@ -101,7 +101,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             return ToActionResult(result);
         }
 
-        private IActionResult ToActionResult<TPayload>(ControlPlaneCredentialOperationResult<TPayload> result)
+        private IActionResult ToActionResult<TPayload>(ApplicationResult<TPayload> result)
         {
             if (result.Success)
             {
@@ -113,9 +113,9 @@ namespace BlazorShop.ControlPlane.API.Controllers
 
             return result.Failure switch
             {
-                ControlPlaneCredentialOperationFailure.NotFound => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status404NotFound, result.Message),
-                ControlPlaneCredentialOperationFailure.Conflict => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status409Conflict, result.Message),
-                ControlPlaneCredentialOperationFailure.Validation => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message),
+                ApplicationErrorKind.NotFound => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status404NotFound, result.Message),
+                ApplicationErrorKind.Conflict => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status409Conflict, result.Message),
+                ApplicationErrorKind.Validation => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message),
                 _ => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message)
             };
         }

@@ -18,7 +18,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             var result = await service.CreateAsync(new CreateControlPlaneNodeRequest("vn-main", "test-node-secret", "VN Main", null, "not-a-url"));
 
             Assert.False(result.Success);
-            Assert.Equal(ControlPlaneNodeOperationFailure.Validation, result.Failure);
+            Assert.Equal(ApplicationErrorKind.Validation, result.Failure);
         }
 
         [Fact]
@@ -32,7 +32,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
 
             Assert.True(first.Success);
             Assert.False(duplicate.Success);
-            Assert.Equal(ControlPlaneNodeOperationFailure.Conflict, duplicate.Failure);
+            Assert.Equal(ApplicationErrorKind.Conflict, duplicate.Failure);
         }
 
         [Fact]

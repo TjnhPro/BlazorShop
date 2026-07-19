@@ -6,20 +6,20 @@ namespace BlazorShop.Application.ControlPlane.Actions
             ControlPlaneActionListQuery query,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneActionOperationResult<ControlPlaneActionDetail>> GetByPublicIdAsync(
+        Task<ApplicationResult<ControlPlaneActionDetail>> GetByPublicIdAsync(
             Guid publicId,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneActionOperationResult<ControlPlaneActionDetail>> EnqueueAsync(
+        Task<ApplicationResult<ControlPlaneActionDetail>> EnqueueAsync(
             EnqueueControlActionRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneActionOperationResult<ControlPlaneActionDetail>> RecordAttemptAsync(
+        Task<ApplicationResult<ControlPlaneActionDetail>> RecordAttemptAsync(
             Guid publicId,
             RecordControlActionAttemptRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<ControlPlaneActionOperationResult<ControlPlaneActionDetail>> CancelAsync(
+        Task<ApplicationResult<ControlPlaneActionDetail>> CancelAsync(
             Guid publicId,
             CancellationToken cancellationToken = default);
     }

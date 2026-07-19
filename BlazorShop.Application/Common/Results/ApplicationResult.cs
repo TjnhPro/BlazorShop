@@ -12,7 +12,8 @@ namespace BlazorShop.Application.Common.Results
                 Success,
                 Payload,
                 ToError(Success, Failure, AlreadyExists, Message),
-                Message)
+                Message,
+                AlreadyExists)
         {
         }
 
@@ -20,7 +21,8 @@ namespace BlazorShop.Application.Common.Results
             bool success,
             TValue? value,
             ApplicationError? error,
-            string? message)
+            string? message,
+            bool alreadyExists = false)
         {
             if (success && error is not null)
             {
@@ -35,6 +37,7 @@ namespace BlazorShop.Application.Common.Results
             Success = success;
             Value = value;
             Error = error;
+            AlreadyExists = alreadyExists || string.Equals(error?.Code, "task.already_exists", StringComparison.Ordinal);
             Message = string.IsNullOrWhiteSpace(message)
                 ? error?.Message
                 : message.Trim();
@@ -50,7 +53,7 @@ namespace BlazorShop.Application.Common.Results
 
         public ApplicationErrorKind? Failure => Error?.Kind;
 
-        public bool AlreadyExists => string.Equals(Error?.Code, "task.already_exists", StringComparison.Ordinal);
+        public bool AlreadyExists { get; }
 
         public string? Message { get; }
 

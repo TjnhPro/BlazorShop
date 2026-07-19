@@ -98,7 +98,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             return ToActionResult(result);
         }
 
-        private IActionResult ToActionResult(ControlPlaneNodeOperationResult<ControlPlaneNodeDetail> result)
+        private IActionResult ToActionResult(ApplicationResult<ControlPlaneNodeDetail> result)
         {
             if (result.Success)
             {
@@ -110,9 +110,9 @@ namespace BlazorShop.ControlPlane.API.Controllers
 
             return result.Failure switch
             {
-                ControlPlaneNodeOperationFailure.NotFound => ControlPlaneApiResponseWriter.Failure<ControlPlaneNodeDetail>(StatusCodes.Status404NotFound, result.Message),
-                ControlPlaneNodeOperationFailure.Conflict => ControlPlaneApiResponseWriter.Failure<ControlPlaneNodeDetail>(StatusCodes.Status409Conflict, result.Message),
-                ControlPlaneNodeOperationFailure.Validation => ControlPlaneApiResponseWriter.Failure<ControlPlaneNodeDetail>(StatusCodes.Status400BadRequest, result.Message),
+                ApplicationErrorKind.NotFound => ControlPlaneApiResponseWriter.Failure<ControlPlaneNodeDetail>(StatusCodes.Status404NotFound, result.Message),
+                ApplicationErrorKind.Conflict => ControlPlaneApiResponseWriter.Failure<ControlPlaneNodeDetail>(StatusCodes.Status409Conflict, result.Message),
+                ApplicationErrorKind.Validation => ControlPlaneApiResponseWriter.Failure<ControlPlaneNodeDetail>(StatusCodes.Status400BadRequest, result.Message),
                 _ => ControlPlaneApiResponseWriter.Failure<ControlPlaneNodeDetail>(StatusCodes.Status400BadRequest, result.Message)
             };
         }

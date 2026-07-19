@@ -383,38 +383,54 @@ Goal: migrate Control Plane result types sau khi mapper va pilot da on dinh.
 
 Suggested order:
 
-- [ ] Nodes.
-- [ ] Credentials.
-- [ ] Health.
-- [ ] Actions.
-- [ ] Stores.
-- [ ] Users.
-- [ ] Store deployment.
+- [x] Nodes.
+- [x] Credentials.
+- [x] Health.
+- [x] Actions.
+- [x] Stores.
+- [x] Users.
+- [x] Store deployment.
 
 Tasks:
 
-- [ ] Update service contracts:
-  - [ ] `IControlPlaneNodeService`.
-  - [ ] `IControlPlaneCredentialService`.
-  - [ ] `IControlPlaneHealthService`.
-  - [ ] `IControlPlaneActionService`.
-  - [ ] `IControlPlaneStoreService`.
-  - [ ] `IControlPlaneUserManagementService`.
-  - [ ] `IControlPlaneStoreDeploymentService`.
-- [ ] Update implementations under `BlazorShop.Infrastructure/Data/ControlPlane`.
-- [ ] Replace controller-local failure switches with Control Plane mapper.
-- [ ] Preserve Control Plane audit behavior:
-  - [ ] Audit still records success/failure.
-  - [ ] Audit actor lookup unchanged.
-  - [ ] Audit message does not leak internal exception details.
-- [ ] Convert `RemoteFailure` in deployment to `ApplicationErrorKind.RemoteFailure`.
-- [ ] Convert action `AlreadyExists` to stable code or metadata.
+- [x] Update service contracts:
+  - [x] `IControlPlaneNodeService`.
+  - [x] `IControlPlaneCredentialService`.
+  - [x] `IControlPlaneHealthService`.
+  - [x] `IControlPlaneActionService`.
+  - [x] `IControlPlaneStoreService`.
+  - [x] `IControlPlaneUserManagementService`.
+  - [x] `IControlPlaneStoreDeploymentService`.
+- [x] Update implementations under `BlazorShop.Infrastructure/Data/ControlPlane`.
+- [x] Replace controller-local failure switches with Control Plane mapper.
+- [x] Preserve Control Plane audit behavior:
+  - [x] Audit still records success/failure.
+  - [x] Audit actor lookup unchanged.
+  - [x] Audit message does not leak internal exception details.
+- [x] Convert `RemoteFailure` in deployment to `ApplicationErrorKind.RemoteFailure`.
+- [x] Convert action `AlreadyExists` to stable code or metadata.
 
 Exit criteria:
 
-- [ ] Control Plane controller tests cover status and envelope.
-- [ ] Control Plane Web behavior remains unchanged.
-- [ ] Old Control Plane operation result/failure definitions have no references.
+- [x] Control Plane controller tests cover status and envelope.
+- [x] Control Plane Web behavior remains unchanged.
+- [x] Old Control Plane operation result/failure definitions have no references.
+
+Phase 5 evidence:
+
+- Migrated Control Plane node, credential, health, action, store, user, and store deployment contracts to `ApplicationResult<T>`.
+- Removed old Control Plane operation result/failure definitions from Application DTOs.
+- Control Plane services now return `ApplicationResult<T>` through the transitional compatibility constructor and `ApplicationErrorKind` mapping.
+- Deployment remote failures now map to `ApplicationErrorKind.RemoteFailure`.
+- Action idempotency keeps the existing `AlreadyExists` behavior through the transitional `ApplicationResult<T>.AlreadyExists` compatibility property.
+- Control Plane API controllers compile against `ApplicationResult<T>` while retaining existing audit calls, actor lookup, response envelopes, and status behavior.
+- Added project-level global using files for `BlazorShop.Application.Common.Results` in Application, Infrastructure, and ControlPlane API to avoid broad using churn.
+- Focused command passed 125/125 tests:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~ControlPlane|FullyQualifiedName~ApplicationResultStandardizationPhase0Tests|FullyQualifiedName~ApplicationResultTests" --no-restore --nologo --verbosity minimal`
+- Control Plane API build passed 0 warnings/0 errors:
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore --nologo --verbosity minimal`
+- Exact scan passed with no hits:
+  - `rg -n "ControlPlane(Action|Node|Credential|Health|Store|StoreDeployment|User)Operation(Result|Failure)" BlazorShop.Application BlazorShop.Infrastructure BlazorShop.PresentationV2\BlazorShop.ControlPlane.API BlazorShop.Tests`
 
 ## Phase 6 - Add ServiceResponse Adapter, Then Decide Migration Scope
 
@@ -528,7 +544,7 @@ Existing clients
 - [ ] Phase 2 complete.
 - [x] Phase 3 complete and old media result types removed.
 - [x] Phase 4 complete.
-- [ ] Phase 5 complete or explicitly deferred.
+- [x] Phase 5 complete.
 - [ ] Phase 6 adapter decision documented.
 - [ ] Phase 7 client result decision documented.
 - [ ] Phase 8 verification complete.

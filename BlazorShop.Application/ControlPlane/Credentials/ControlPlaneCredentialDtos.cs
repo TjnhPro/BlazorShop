@@ -25,16 +25,4 @@ namespace BlazorShop.Application.ControlPlane.Credentials
         ControlPlaneCredentialSummary Credential,
         string RawSecret);
 
-    public sealed record ControlPlaneCredentialOperationResult<TPayload>(
-        bool Success,
-        string? Message = null,
-        TPayload? Payload = default,
-        ControlPlaneCredentialOperationFailure? Failure = null);
-
-    public enum ControlPlaneCredentialOperationFailure
-    {
-        Validation,
-        NotFound,
-        Conflict
-    }
 }

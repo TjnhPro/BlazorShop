@@ -89,17 +89,4 @@ namespace BlazorShop.Application.ControlPlane.Actions
         DateTimeOffset StartedAt,
         DateTimeOffset? CompletedAt);
 
-    public sealed record ControlPlaneActionOperationResult<TPayload>(
-        bool Success,
-        string? Message = null,
-        TPayload? Payload = default,
-        ControlPlaneActionOperationFailure? Failure = null,
-        bool AlreadyExists = false);
-
-    public enum ControlPlaneActionOperationFailure
-    {
-        Validation,
-        NotFound,
-        Conflict
-    }
 }

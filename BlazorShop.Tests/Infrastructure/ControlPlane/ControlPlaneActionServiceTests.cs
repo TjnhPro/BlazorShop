@@ -48,7 +48,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             var result = await service.EnqueueAsync(new EnqueueControlActionRequest(node.PublicId, "probe_health"));
 
             Assert.False(result.Success);
-            Assert.Equal(ControlPlaneActionOperationFailure.Validation, result.Failure);
+            Assert.Equal(ApplicationErrorKind.Validation, result.Failure);
             Assert.Empty(context.Actions);
         }
 
@@ -127,7 +127,7 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             Assert.True(cancelled.Success);
             Assert.Equal("cancelled", cancelled.Payload!.Status);
             Assert.False(attempt.Success);
-            Assert.Equal(ControlPlaneActionOperationFailure.Conflict, attempt.Failure);
+            Assert.Equal(ApplicationErrorKind.Conflict, attempt.Failure);
         }
 
         private static async Task<ControlPlaneNodeDetail> CreateNodeAsync(ControlPlaneDbContext context, string nodeKey)
