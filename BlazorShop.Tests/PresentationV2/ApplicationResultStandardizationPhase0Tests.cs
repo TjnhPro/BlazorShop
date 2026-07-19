@@ -5,6 +5,7 @@ namespace BlazorShop.Tests.PresentationV2
 {
     using System.Reflection;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.ControlPlane.Stores;
 
@@ -14,7 +15,9 @@ namespace BlazorShop.Tests.PresentationV2
     using Xunit;
 
     using CommerceStoresController = CommerceNodeApi::BlazorShop.CommerceNode.API.Controllers.CommerceStoresController;
+    using CommerceNodeApplicationResultMapper = CommerceNodeApi::BlazorShop.CommerceNode.API.Responses.CommerceNodeApplicationResultMapper;
     using CommerceNodeApiResponseOfString = CommerceNodeApi::BlazorShop.CommerceNode.API.Responses.CommerceNodeApiResponse<string>;
+    using ControlPlaneApplicationResultMapper = ControlPlaneApi::BlazorShop.ControlPlane.API.Responses.ControlPlaneApplicationResultMapper;
     using ControlPlaneApiResponseOfString = ControlPlaneApi::BlazorShop.ControlPlane.API.Responses.ControlPlaneApiResponse<string>;
     using ControlPlaneApiResponseWriter = ControlPlaneApi::BlazorShop.ControlPlane.API.Responses.ControlPlaneApiResponseWriter;
     using ControlPlaneStoresController = ControlPlaneApi::BlazorShop.ControlPlane.API.Controllers.ControlPlaneStoresController;
@@ -160,6 +163,73 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.False(response.Success);
             Assert.Equal("The Control Plane request could not be completed.", response.Message);
             Assert.Equal("payload", response.Data);
+        }
+
+        [Theory]
+        [InlineData(ApplicationErrorKind.Validation, StatusCodes.Status400BadRequest)]
+        [InlineData(ApplicationErrorKind.NotFound, StatusCodes.Status404NotFound)]
+        [InlineData(ApplicationErrorKind.Conflict, StatusCodes.Status409Conflict)]
+        [InlineData(ApplicationErrorKind.Unauthorized, StatusCodes.Status401Unauthorized)]
+        [InlineData(ApplicationErrorKind.Forbidden, StatusCodes.Status403Forbidden)]
+        [InlineData(ApplicationErrorKind.RemoteFailure, StatusCodes.Status502BadGateway)]
+        [InlineData(ApplicationErrorKind.Failure, StatusCodes.Status400BadRequest)]
+        public void ControlPlaneApplicationResultMapper_MapsErrorKindsToCurrentStatuses(
+            ApplicationErrorKind kind,
+            int expectedStatusCode)
+        {
+            var result = ApplicationResult<string>.Failed(new ApplicationError(kind, "error.code", "Mapped failure."));
+
+            var action = ControlPlaneApplicationResultMapper.ToControlPlaneActionResult(result);
+
+            Assert.Equal(expectedStatusCode, action.StatusCode);
+            var response = Assert.IsType<ControlPlaneApiResponseOfString>(action.Value);
+            Assert.False(response.Success);
+            Assert.Equal("Mapped failure.", response.Message);
+            Assert.Null(response.Data);
+        }
+
+        [Theory]
+        [InlineData(ApplicationErrorKind.Validation, StatusCodes.Status400BadRequest)]
+        [InlineData(ApplicationErrorKind.NotFound, StatusCodes.Status404NotFound)]
+        [InlineData(ApplicationErrorKind.Conflict, StatusCodes.Status409Conflict)]
+        [InlineData(ApplicationErrorKind.Unauthorized, StatusCodes.Status401Unauthorized)]
+        [InlineData(ApplicationErrorKind.Forbidden, StatusCodes.Status403Forbidden)]
+        [InlineData(ApplicationErrorKind.RemoteFailure, StatusCodes.Status502BadGateway)]
+        [InlineData(ApplicationErrorKind.Failure, StatusCodes.Status500InternalServerError)]
+        public void CommerceNodeApplicationResultMapper_MapsErrorKindsToCurrentStatuses(
+            ApplicationErrorKind kind,
+            int expectedStatusCode)
+        {
+            var result = ApplicationResult<string>.Failed(new ApplicationError(kind, "error.code", "Mapped failure."));
+
+            var action = CommerceNodeApplicationResultMapper.ToCommerceNodeActionResult(result);
+
+            Assert.Equal(expectedStatusCode, action.StatusCode);
+            var response = Assert.IsType<CommerceNodeApiResponseOfString>(action.Value);
+            Assert.False(response.Success);
+            Assert.Equal("Mapped failure.", response.Message);
+            Assert.Null(response.Data);
+        }
+
+        [Fact]
+        public void ApplicationResultMappers_PreserveSuccessEnvelope()
+        {
+            var result = ApplicationResult<string>.Succeeded("payload", "Mapped success.");
+
+            var controlPlane = ControlPlaneApplicationResultMapper.ToControlPlaneActionResult(result, StatusCodes.Status201Created);
+            var commerceNode = CommerceNodeApplicationResultMapper.ToCommerceNodeActionResult(result, StatusCodes.Status201Created);
+
+            Assert.Equal(StatusCodes.Status201Created, controlPlane.StatusCode);
+            var controlPlaneResponse = Assert.IsType<ControlPlaneApiResponseOfString>(controlPlane.Value);
+            Assert.True(controlPlaneResponse.Success);
+            Assert.Equal("Mapped success.", controlPlaneResponse.Message);
+            Assert.Equal("payload", controlPlaneResponse.Data);
+
+            Assert.Equal(StatusCodes.Status201Created, commerceNode.StatusCode);
+            var commerceNodeResponse = Assert.IsType<CommerceNodeApiResponseOfString>(commerceNode.Value);
+            Assert.True(commerceNodeResponse.Success);
+            Assert.Equal("Mapped success.", commerceNodeResponse.Message);
+            Assert.Equal("payload", commerceNodeResponse.Data);
         }
 
         private static IActionResult InvokePrivateGenericMapper<TResult, TController>(

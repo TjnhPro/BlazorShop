@@ -242,29 +242,42 @@ Goal: Presentation co helper chung cho `ApplicationResult<T>`, nhung chua migrat
 
 Tasks:
 
-- [ ] Add Control Plane mapper close to existing response writer:
-  - [ ] Keep `ControlPlaneApiResponseWriter`.
-  - [ ] Add `ApplicationResult` extension/helper that returns `ObjectResult`.
-  - [ ] Map `ApplicationErrorKind` to current Control Plane status behavior.
-- [ ] Add Commerce Node mapper close to existing response writer/controller base:
-  - [ ] Keep `CommerceNodeApiResponseWriter`.
-  - [ ] Add `ApplicationResult` extension/helper for MVC controllers.
-  - [ ] Add minimal endpoint helper only if Storefront scoped minimal endpoints need it later.
-- [ ] Keep `ControlPlaneApiResponse<T>` and `CommerceNodeApiResponse<T>` response JSON unchanged.
-- [ ] Add mapper tests:
-  - [ ] `Validation -> 400`.
-  - [ ] `NotFound -> 404`.
-  - [ ] `Conflict -> 409`.
-  - [ ] `Forbidden -> 403`.
-  - [ ] `Unauthorized -> 401`.
-  - [ ] `RemoteFailure -> 502`.
-  - [ ] `Failure -> 500` for Commerce Node.
+- [x] Add Control Plane mapper close to existing response writer:
+  - [x] Keep `ControlPlaneApiResponseWriter`.
+  - [x] Add `ApplicationResult` extension/helper that returns `ObjectResult`.
+  - [x] Map `ApplicationErrorKind` to current Control Plane status behavior.
+- [x] Add Commerce Node mapper close to existing response writer/controller base:
+  - [x] Keep `CommerceNodeApiResponseWriter`.
+  - [x] Add `ApplicationResult` extension/helper for MVC controllers.
+  - [x] Add minimal endpoint helper only if Storefront scoped minimal endpoints need it later.
+- [x] Keep `ControlPlaneApiResponse<T>` and `CommerceNodeApiResponse<T>` response JSON unchanged.
+- [x] Add mapper tests:
+  - [x] `Validation -> 400`.
+  - [x] `NotFound -> 404`.
+  - [x] `Conflict -> 409`.
+  - [x] `Forbidden -> 403`.
+  - [x] `Unauthorized -> 401`.
+  - [x] `RemoteFailure -> 502`.
+  - [x] `Failure -> 500` for Commerce Node.
 
 Exit criteria:
 
-- [ ] New mapper can be used by migrated controllers.
-- [ ] Existing controllers still compile without migration.
-- [ ] Contract tests still pass.
+- [x] New mapper can be used by migrated controllers.
+- [x] Existing controllers still compile without migration.
+- [x] Contract tests still pass.
+
+Phase 2 evidence:
+
+- Added `ControlPlaneApplicationResultMapper` next to `ControlPlaneApiResponseWriter`.
+- Added `CommerceNodeApplicationResultMapper` next to `CommerceNodeApiResponseWriter`.
+- Existing response writers and public response envelopes were not changed.
+- No existing controller was migrated in this phase; mapper is available for later phases.
+- Minimal endpoint helper was not added because no migrated minimal endpoint needs it yet.
+- Mapper tests cover validation, not found, conflict, unauthorized, forbidden, remote failure, and generic failure behavior. Control Plane generic failure intentionally follows current Control Plane fallback behavior (`400`); Commerce Node generic failure maps to `500`.
+- Focused command passed 34/34 tests and both active API builds passed 0 warnings/0 errors:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~ApplicationResultStandardizationPhase0Tests|FullyQualifiedName~ApplicationResultTests" --no-restore --nologo --verbosity minimal`
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore --nologo --verbosity minimal`
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore --nologo --verbosity minimal`
 
 ## Phase 3 - Pilot Migration: Commerce Node Media
 
