@@ -18,6 +18,20 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.DoesNotContain("var metadataTask = this.publicCatalogService.GetPublishedProductFilterMetadataAsync", controller);
         }
 
+        [Fact]
+        public void ProductMapping_DoesNotResolveDisplayMoneyConcurrentlyOnScopedDbContext()
+        {
+            // Regression: catalog product mapping used Task.WhenAll while ResolveDisplayMoneyAsync depends on scoped EF services.
+            var controller = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/StorefrontScopedCatalogController.cs");
+
+            Assert.Contains("ToDisplayCatalogProductContractsAsync", controller);
+            Assert.Contains("ToSearchSuggestionContractsAsync", controller);
+            Assert.DoesNotContain("Task.WhenAll(products.Items.Select(product => this.ToDisplayCatalogProductContractAsync", controller);
+            Assert.DoesNotContain("Task.WhenAll(products.Select(product => this.ToDisplayCatalogProductContractAsync", controller);
+            Assert.DoesNotContain("Task.WhenAll(categoryPage.Products.Select(product => this.ToDisplayCatalogProductContractAsync", controller);
+            Assert.DoesNotContain("Task.WhenAll(suggestions.Select(product => this.ToSearchSuggestionContractAsync", controller);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath));

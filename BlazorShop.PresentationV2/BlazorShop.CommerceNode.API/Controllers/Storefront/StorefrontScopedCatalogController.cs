@@ -108,7 +108,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             var displayCurrency = await this.ResolveDisplayCurrencyAsync(currencyCode, cancellationToken);
             var mappedProducts = categoryPage is null
                 ? []
-                : await Task.WhenAll(categoryPage.Products.Select(product => this.ToDisplayCatalogProductContractAsync(product, displayCurrency, cancellationToken)));
+                : await this.ToDisplayCatalogProductContractsAsync(categoryPage.Products, displayCurrency, cancellationToken);
             return categoryPage is null
                 ? this.Failure<StorefrontCategoryPageResponse>(ServiceResponseType.NotFound, "Published category was not found.")
                 : this.Success(
@@ -137,7 +137,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
             var products = await this.publicCatalogService.GetPublishedProductsByCategoryAsync(categoryId);
             var displayCurrency = await this.ResolveDisplayCurrencyAsync(currencyCode, cancellationToken);
-            var mappedProducts = await Task.WhenAll(products.Select(product => this.ToDisplayCatalogProductContractAsync(product, displayCurrency, cancellationToken)));
+            var mappedProducts = await this.ToDisplayCatalogProductContractsAsync(products, displayCurrency, cancellationToken);
             return this.Success(
                 mappedProducts,
                 "Published category products loaded.");
@@ -235,10 +235,10 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 }, suggestionLimit);
             }
 
-            var mappedSuggestions = await Task.WhenAll(suggestions.Select(product => this.ToSearchSuggestionContractAsync(
-                product,
+            var mappedSuggestions = await this.ToSearchSuggestionContractsAsync(
+                suggestions,
                 displayCurrency,
-                cancellationToken)));
+                cancellationToken);
 
             return this.Success(
                 new StorefrontSearchSuggestionResponse(
@@ -256,7 +256,10 @@ namespace BlazorShop.CommerceNode.API.Controllers
         {
             var products = await this.publicCatalogService.GetPublishedCatalogPageAsync(query.ToApplicationQuery());
             var displayCurrency = await this.ResolveDisplayCurrencyAsync(query.CurrencyCode, cancellationToken);
-            var mappedProducts = await Task.WhenAll(products.Items.Select(product => this.ToDisplayCatalogProductContractAsync(product, displayCurrency, cancellationToken)));
+            var mappedProducts = await this.ToDisplayCatalogProductContractsAsync(
+                products.Items,
+                displayCurrency,
+                cancellationToken);
             return this.Success(
                 new StorefrontPagedResponse<StorefrontCatalogProductResponse>(
                     mappedProducts,
@@ -478,6 +481,23 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return product.ToStorefrontContract(displayMoney);
         }
 
+        private async Task<StorefrontCatalogProductResponse[]> ToDisplayCatalogProductContractsAsync(
+            IEnumerable<BlazorShop.Application.DTOs.Product.GetCatalogProduct> products,
+            StorefrontDisplayCurrency? displayCurrency,
+            CancellationToken cancellationToken)
+        {
+            var mappedProducts = new List<StorefrontCatalogProductResponse>();
+            foreach (var product in products)
+            {
+                mappedProducts.Add(await this.ToDisplayCatalogProductContractAsync(
+                    product,
+                    displayCurrency,
+                    cancellationToken));
+            }
+
+            return mappedProducts.ToArray();
+        }
+
         private async Task<StorefrontSearchSuggestionItemResponse> ToSearchSuggestionContractAsync(
             BlazorShop.Application.DTOs.Product.GetCatalogProduct product,
             StorefrontDisplayCurrency? displayCurrency,
@@ -502,6 +522,23 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 product.CategorySlug,
                 product.InStock,
                 string.IsNullOrWhiteSpace(slug) ? "/product" : $"/product/{Uri.EscapeDataString(slug)}");
+        }
+
+        private async Task<StorefrontSearchSuggestionItemResponse[]> ToSearchSuggestionContractsAsync(
+            IEnumerable<BlazorShop.Application.DTOs.Product.GetCatalogProduct> products,
+            StorefrontDisplayCurrency? displayCurrency,
+            CancellationToken cancellationToken)
+        {
+            var mappedSuggestions = new List<StorefrontSearchSuggestionItemResponse>();
+            foreach (var product in products)
+            {
+                mappedSuggestions.Add(await this.ToSearchSuggestionContractAsync(
+                    product,
+                    displayCurrency,
+                    cancellationToken));
+            }
+
+            return mappedSuggestions.ToArray();
         }
 
         private async Task<StorefrontProductResponse> ToDisplayProductContractAsync(
