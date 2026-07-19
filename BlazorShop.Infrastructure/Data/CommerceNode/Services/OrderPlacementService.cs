@@ -7,9 +7,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using BlazorShop.Application.CommerceNode.Carts;
     using BlazorShop.Application.CommerceNode.Checkout;
     using BlazorShop.Application.CommerceNode.Currencies;
-    using BlazorShop.Application.CommerceNode.ProductSelections;
     using BlazorShop.Application.DTOs;
-    using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Entities;
     using BlazorShop.Domain.Entities.CommerceNode;
     using BlazorShop.Domain.Entities.Payment;
@@ -22,23 +20,23 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private readonly CommerceNodeDbContext context;
         private readonly IMoneyRoundingService moneyRoundingService;
-        private readonly IProductSellabilityResolver sellabilityResolver;
+        private readonly CheckoutOrderLineResolver orderLineResolver;
         private readonly IOrderStockAdjustmentHook stockAdjustmentHook;
 
         public OrderPlacementService(
             CommerceNodeDbContext context,
             IMoneyRoundingService moneyRoundingService,
-            IProductSellabilityResolver sellabilityResolver,
+            CheckoutOrderLineResolver orderLineResolver,
             IOrderStockAdjustmentHook stockAdjustmentHook)
         {
             ArgumentNullException.ThrowIfNull(context);
             ArgumentNullException.ThrowIfNull(moneyRoundingService);
-            ArgumentNullException.ThrowIfNull(sellabilityResolver);
+            ArgumentNullException.ThrowIfNull(orderLineResolver);
             ArgumentNullException.ThrowIfNull(stockAdjustmentHook);
 
             this.context = context;
             this.moneyRoundingService = moneyRoundingService;
-            this.sellabilityResolver = sellabilityResolver;
+            this.orderLineResolver = orderLineResolver;
             this.stockAdjustmentHook = stockAdjustmentHook;
         }
 
@@ -71,7 +69,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return OrderPlacementResult.Failed(ServiceResponseType.Conflict, "Cart is empty.");
             }
 
-            var lines = await this.ResolveOrderLinesAsync(
+            var lines = await this.orderLineResolver.ResolveAsync(
                 request.StoreId,
                 cart.Lines,
                 request.Snapshot.CurrencyCode,
@@ -125,7 +123,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private Order CreateOrder(
             OrderPlacementRequest request,
-            IReadOnlyList<OrderLineSnapshot> lines,
+            IReadOnlyList<CheckoutOrderLineSnapshot> lines,
             CommerceStore? store,
             DateTimeOffset now)
         {
@@ -220,75 +218,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             };
         }
 
-        private async Task<OrderLineResolution> ResolveOrderLinesAsync(
-            Guid storeId,
-            IEnumerable<CartLine> cartLines,
-            string currencyCode,
-            CancellationToken cancellationToken)
-        {
-            var results = new List<OrderLineSnapshot>();
-
-            foreach (var cartLine in cartLines)
-            {
-                if (cartLine.Quantity < 1)
-                {
-                    return OrderLineResolution.Failed(ServiceResponseType.ValidationError, "Cart line quantity must be at least 1.");
-                }
-
-                var product = await this.context.Products
-                    .Include(item => item.Category)
-                    .Include(item => item.Variants)
-                    .FirstOrDefaultAsync(item => item.Id == cartLine.ProductId, cancellationToken);
-                if (product is null)
-                {
-                    return OrderLineResolution.Failed(ServiceResponseType.Conflict, "Product is not available for this store.");
-                }
-
-                var variant = cartLine.ProductVariantId.HasValue
-                    ? product.Variants.FirstOrDefault(candidate => candidate.Id == cartLine.ProductVariantId.Value)
-                    : null;
-                if (cartLine.ProductVariantId.HasValue && variant is null)
-                {
-                    return OrderLineResolution.Failed(ServiceResponseType.Conflict, "Selected product variant was not found.");
-                }
-
-                var sellability = this.sellabilityResolver.Resolve(new ProductSellabilityRequest(
-                    storeId,
-                    product,
-                    variant,
-                    cartLine.Quantity,
-                    Mode: ProductSellabilityMode.Storefront));
-                if (!sellability.Purchasable)
-                {
-                    return OrderLineResolution.Failed(
-                        ResolveOrderLineFailureResponseType(sellability.PurchaseBlockReasons),
-                        sellability.PurchaseBlockMessages.FirstOrDefault() ?? "Product cannot be purchased right now.");
-                }
-
-                var snapshotCurrency = NormalizeCurrency(cartLine.CurrencyCodeSnapshot);
-                if (snapshotCurrency is not null
-                    && !string.Equals(snapshotCurrency, currencyCode, StringComparison.Ordinal))
-                {
-                    return OrderLineResolution.Failed(ServiceResponseType.Conflict, "Cart line currency does not match checkout currency.");
-                }
-
-                if (!cartLine.UnitPriceSnapshot.HasValue)
-                {
-                    return OrderLineResolution.Failed(ServiceResponseType.ValidationError, "Cart line price is invalid.");
-                }
-
-                var unitPrice = this.moneyRoundingService.RoundUnitPrice(cartLine.UnitPriceSnapshot.Value, currencyCode);
-                if (unitPrice <= 0m)
-                {
-                    return OrderLineResolution.Failed(ServiceResponseType.ValidationError, "Cart line price is invalid.");
-                }
-
-                results.Add(new OrderLineSnapshot(cartLine, product, variant, unitPrice));
-            }
-
-            return OrderLineResolution.Succeeded(results);
-        }
-
         private static void CompleteCheckout(
             CheckoutSession checkout,
             CartSession cart,
@@ -343,17 +272,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
         }
 
-        private static ServiceResponseType ResolveOrderLineFailureResponseType(IReadOnlyList<string> reasons)
-        {
-            return reasons.Any(reason => reason is ProductPurchaseBlockReasons.BelowMinQuantity
-                    or ProductPurchaseBlockReasons.AboveMaxQuantity
-                    or ProductPurchaseBlockReasons.InvalidQuantityStep
-                    or ProductPurchaseBlockReasons.VariantRequired
-                    or ProductPurchaseBlockReasons.VariantInactive)
-                ? ServiceResponseType.ValidationError
-                : ServiceResponseType.Conflict;
-        }
-
         private static string? NormalizeCurrency(string? value)
         {
             var normalized = NormalizeNullable(value)?.ToUpperInvariant();
@@ -376,27 +294,5 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Convert.ToHexString(hash).ToLowerInvariant();
         }
 
-        private sealed record OrderLineSnapshot(
-            CartLine CartLine,
-            Product Product,
-            ProductVariant? Variant,
-            decimal UnitPrice);
-
-        private sealed record OrderLineResolution(
-            bool Success,
-            ServiceResponseType ResponseType,
-            string Message,
-            IReadOnlyList<OrderLineSnapshot> Lines)
-        {
-            public static OrderLineResolution Succeeded(IReadOnlyList<OrderLineSnapshot> lines)
-            {
-                return new OrderLineResolution(true, ServiceResponseType.Success, "Order lines resolved.", lines);
-            }
-
-            public static OrderLineResolution Failed(ServiceResponseType responseType, string message)
-            {
-                return new OrderLineResolution(false, responseType, message, []);
-            }
-        }
     }
 }

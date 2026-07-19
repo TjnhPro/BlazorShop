@@ -60,13 +60,13 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var constructor = Assert.Single(typeof(StorefrontCheckoutService).GetConstructors());
             var parameters = constructor.GetParameters().ToDictionary(parameter => parameter.Name!, StringComparer.Ordinal);
 
-            Assert.False(parameters["sellabilityResolver"].HasDefaultValue);
+            Assert.False(parameters["orderLineResolver"].HasDefaultValue);
             Assert.False(parameters["addressValidationService"].HasDefaultValue);
             Assert.False(parameters["shippingCalculator"].HasDefaultValue);
             Assert.False(parameters["shippingTaxCalculator"].HasDefaultValue);
             Assert.False(parameters["orderPlacementService"].HasDefaultValue);
             Assert.False(parameters["paymentCoordinator"].HasDefaultValue);
-            Assert.Equal(typeof(IProductSellabilityResolver), parameters["sellabilityResolver"].ParameterType);
+            Assert.Equal(typeof(CheckoutOrderLineResolver), parameters["orderLineResolver"].ParameterType);
             Assert.Equal(typeof(IAddressValidationService), parameters["addressValidationService"].ParameterType);
             Assert.Equal(typeof(IShippingCalculator), parameters["shippingCalculator"].ParameterType);
             Assert.Equal(typeof(IShippingTaxCalculator), parameters["shippingTaxCalculator"].ParameterType);
@@ -78,6 +78,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.DoesNotContain("IShippingTaxCalculator? shippingTaxCalculator = null", source, StringComparison.Ordinal);
             Assert.DoesNotContain("IOrderPlacementService? orderPlacementService = null", source, StringComparison.Ordinal);
             Assert.DoesNotContain("sellabilityResolver ?? new ProductSellabilityResolver()", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("orderLineResolver ?? new CheckoutOrderLineResolver", source, StringComparison.Ordinal);
             Assert.DoesNotContain("addressValidationService ?? new AddressValidationService()", source, StringComparison.Ordinal);
             Assert.DoesNotContain("shippingCalculator ?? new ShippingCalculator", source, StringComparison.Ordinal);
             Assert.DoesNotContain("shippingTaxCalculator ?? new ZeroShippingTaxCalculator()", source, StringComparison.Ordinal);
@@ -93,6 +94,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Contains("AddScoped<IProductSellabilityResolver, ProductSellabilityResolver>", source, StringComparison.Ordinal);
             Assert.Contains("AddScoped<IShippingCalculator, ShippingCalculator>", source, StringComparison.Ordinal);
             Assert.Contains("AddScoped<IShippingTaxCalculator, ZeroShippingTaxCalculator>", source, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<CheckoutOrderLineResolver>", source, StringComparison.Ordinal);
             Assert.Contains("AddScoped<CheckoutPricingCalculator>", source, StringComparison.Ordinal);
             Assert.Contains("AddScoped<CheckoutPaymentCoordinator>", source, StringComparison.Ordinal);
             Assert.Contains("AddScoped<IOrderPlacementService, OrderPlacementService>", source, StringComparison.Ordinal);
@@ -104,6 +106,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
         {
             var checkoutSource = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/Services/StorefrontCheckoutService.cs");
             var placementSource = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/Services/OrderPlacementService.cs");
+            var resolverSource = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/Services/CheckoutOrderLineResolver.cs");
             var sharedValidationMessages = new[]
             {
                 "Cart line quantity must be at least 1.",
@@ -116,12 +119,16 @@ namespace BlazorShop.Tests.Application.CommerceNode
 
             foreach (var message in sharedValidationMessages)
             {
-                Assert.Contains(message, checkoutSource, StringComparison.Ordinal);
-                Assert.Contains(message, placementSource, StringComparison.Ordinal);
+                Assert.Contains(message, resolverSource, StringComparison.Ordinal);
+                Assert.DoesNotContain(message, placementSource, StringComparison.Ordinal);
             }
 
-            Assert.Contains("var lineResolution = await this.ResolveOrderLinesAsync", checkoutSource, StringComparison.Ordinal);
-            Assert.Contains("var lines = await this.ResolveOrderLinesAsync", placementSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("private async Task<OrderLineResolution> ResolveOrderLinesAsync", checkoutSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("private async Task<OrderLineResolution> ResolveOrderLinesAsync", placementSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("private sealed record OrderLineResolution", checkoutSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("private sealed record OrderLineResolution", placementSource, StringComparison.Ordinal);
+            Assert.Contains("var lineResolution = await this.orderLineResolver.ResolveAsync", checkoutSource, StringComparison.Ordinal);
+            Assert.Contains("var lines = await this.orderLineResolver.ResolveAsync", placementSource, StringComparison.Ordinal);
             Assert.Contains("this.orderPlacementService.PlaceAsync", checkoutSource, StringComparison.Ordinal);
         }
 
@@ -2257,7 +2264,10 @@ namespace BlazorShop.Tests.Application.CommerceNode
             var placementService = new OrderPlacementService(
                 context,
                 new MoneyRoundingService(new CurrencyMetadataService()),
-                new ProductSellabilityResolver(),
+                new CheckoutOrderLineResolver(
+                    context,
+                    new MoneyRoundingService(new CurrencyMetadataService()),
+                    new ProductSellabilityResolver()),
                 new FailingOrderStockAdjustmentHook());
             var service = CreateCheckoutService(
                 context,
@@ -2638,7 +2648,10 @@ namespace BlazorShop.Tests.Application.CommerceNode
                     ?? new OrderPlacementService(
                         this.context,
                         this.moneyRoundingService,
-                        this.sellabilityResolver,
+                        new CheckoutOrderLineResolver(
+                            this.context,
+                            this.moneyRoundingService,
+                            this.sellabilityResolver),
                         new DefaultOrderStockAdjustmentHook());
                 var pricingCalculator = new CheckoutPricingCalculator(
                     this.context,
@@ -2660,11 +2673,14 @@ namespace BlazorShop.Tests.Application.CommerceNode
                     this.customerService,
                     new StubStoreFeatureStateService(this.checkoutEnabled),
                     paymentCoordinator,
-                    this.sellabilityResolver,
                     this.addressValidationService,
                     this.shippingCalculator,
                     this.shippingTaxCalculator,
                     placementService,
+                    new CheckoutOrderLineResolver(
+                        this.context,
+                        this.moneyRoundingService,
+                        this.sellabilityResolver),
                     pricingCalculator);
             }
         }

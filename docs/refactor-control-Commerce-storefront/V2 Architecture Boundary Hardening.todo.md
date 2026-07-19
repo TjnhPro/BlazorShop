@@ -420,32 +420,32 @@ Goal: use one internal path for resolving cart lines into checkout/order line sn
 
 ### Tasks
 
-- [ ] Add characterization tests around current `OrderPlacementService.ResolveOrderLinesAsync` behavior through public service methods.
-- [ ] Add characterization tests around current `StorefrontCheckoutService.ResolveOrderLinesAsync` behavior through review/place-order flows.
-- [ ] Cover quantity less than 1, missing product, missing variant, non-purchasable product, currency mismatch, missing price snapshot, zero/negative price, rounding, and successful variant line.
-- [ ] Introduce `internal sealed CheckoutOrderLineResolver` in CommerceNode Infrastructure services.
-- [ ] Keep it internal unless more than one test seam needs a public fake.
-- [ ] Move shared query and mapping logic from checkout/order placement into resolver.
-- [ ] Return a small internal result with `Success`, `ResponseType`, `Message`, and resolved line snapshots.
-- [ ] Inject resolver into `StorefrontCheckoutService` and `OrderPlacementService`.
-- [ ] Remove duplicate private `ResolveOrderLinesAsync` methods.
-- [ ] Reuse the existing `ProductSellabilityResolver` and `IMoneyRoundingService` behavior without changing sellability rules.
-- [ ] Make cart add/update use only `IProductSelectionResolver`.
-- [ ] Delete `StorefrontCartService.ResolveProductForCartAsync`, `CartProductResolution`, duplicate selected-attribute normalization, and dead helper records after tests prove no callers remain.
-- [ ] Keep line display mapping separate from selection validation; display can still parse selected attributes for projection.
+- [x] Add characterization tests around current `OrderPlacementService.ResolveOrderLinesAsync` behavior through public service methods.
+- [x] Add characterization tests around current `StorefrontCheckoutService.ResolveOrderLinesAsync` behavior through review/place-order flows.
+- [x] Cover quantity less than 1, missing product, missing variant, non-purchasable product, currency mismatch, missing price snapshot, zero/negative price, rounding, and successful variant line.
+- [x] Introduce `CheckoutOrderLineResolver` in CommerceNode Infrastructure services. The resolver type is public so public service constructors can accept it; its resolve method and result snapshots remain internal.
+- [x] Keep it internal unless more than one test seam needs a public fake.
+- [x] Move shared query and mapping logic from checkout/order placement into resolver.
+- [x] Return a small internal result with `Success`, `ResponseType`, `Message`, and resolved line snapshots.
+- [x] Inject resolver into `StorefrontCheckoutService` and `OrderPlacementService`.
+- [x] Remove duplicate private `ResolveOrderLinesAsync` methods.
+- [x] Reuse the existing `ProductSellabilityResolver` and `IMoneyRoundingService` behavior without changing sellability rules.
+- [x] Make cart add/update use only `IProductSelectionResolver`.
+- [x] Delete `StorefrontCartService.ResolveProductForCartAsync`, `CartProductResolution`, duplicate selected-attribute normalization, and dead helper records after tests prove no callers remain.
+- [x] Keep line display mapping separate from selection validation; display can still parse selected attributes for projection.
 
 ### Verification
 
-- [ ] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontCartService|FullyQualifiedName~StorefrontCheckoutService|FullyQualifiedName~OrderPlacementService|FullyQualifiedName~ProductSelectionResolver"`
-- [ ] Focused checkout/payment/order tests that placed COD order before must still pass.
-- [ ] Storefront Playwright release checklist does not need rerun in this phase unless browser behavior changes; if browser mutation behavior changes, run cart/checkout subset.
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontCartService|FullyQualifiedName~StorefrontCheckoutService|FullyQualifiedName~OrderPlacementService|FullyQualifiedName~ProductSelectionResolver"` - Passed: 97, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
+- [x] Focused checkout/payment/order tests that placed COD order before must still pass.
+- [x] Storefront Playwright release checklist does not need rerun in this phase because browser behavior did not change; this was backend refactor only.
 
 ### Done When
 
-- [ ] Checkout and order placement share one order-line resolver.
-- [ ] Cart product selection uses one resolver path.
-- [ ] No duplicated selected-attribute validation remains in cart outside display-only projection.
-- [ ] All existing cart/checkout/order behavior remains compatible.
+- [x] Checkout and order placement share one order-line resolver.
+- [x] Cart product selection uses one resolver path.
+- [x] No duplicated selected-attribute validation remains in cart outside display-only projection.
+- [x] All existing cart/checkout/order behavior remains compatible.
 
 ## Phase 5 - Store Scope Execution Context
 
@@ -720,7 +720,7 @@ Goal: prevent the same architecture issues from returning.
 - [ ] Phase 1D complete and committed.
 - [ ] Phase 2 complete and committed.
 - [x] Phase 3 complete and committed.
-- [ ] Phase 4 complete and committed.
+- [x] Phase 4 complete and committed.
 - [ ] Phase 5 complete and committed.
 - [ ] Phase 6A complete and committed.
 - [ ] Phase 6B/6C complete and committed.

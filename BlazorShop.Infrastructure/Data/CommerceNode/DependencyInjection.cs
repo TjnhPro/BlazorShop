@@ -215,6 +215,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IShippingProviderResolver, ShippingProviderResolver>();
             services.AddScoped<IShippingCalculator, ShippingCalculator>();
             services.AddScoped<IShippingTaxCalculator, ZeroShippingTaxCalculator>();
+            services.AddScoped<CheckoutOrderLineResolver>();
             services.AddScoped<CheckoutPricingCalculator>();
             services.AddScoped<CheckoutPaymentCoordinator>();
             services.AddScoped<IStorefrontCheckoutService, StorefrontCheckoutService>();

@@ -397,7 +397,10 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 ?? new OrderPlacementService(
                     context,
                     roundingService,
-                    new ProductSellabilityResolver(),
+                    new CheckoutOrderLineResolver(
+                        context,
+                        roundingService,
+                        new ProductSellabilityResolver()),
                     new DefaultOrderStockAdjustmentHook());
             var messageService = transactionalMessageService
                 ?? new Mock<ICommerceTransactionalMessageService>().Object;

@@ -10,7 +10,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using BlazorShop.Application.CommerceNode.Customers;
     using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Payments;
-    using BlazorShop.Application.CommerceNode.ProductSelections;
     using BlazorShop.Application.CommerceNode.Shipping;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Domain.Constants;
@@ -34,11 +33,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly IMoneyConversionService moneyConversionService;
         private readonly IStorefrontCustomerService customerService;
         private readonly IStoreFeatureStateService featureStateService;
-        private readonly IProductSellabilityResolver sellabilityResolver;
         private readonly IAddressValidationService addressValidationService;
         private readonly IShippingCalculator shippingCalculator;
         private readonly IShippingTaxCalculator shippingTaxCalculator;
         private readonly IOrderPlacementService orderPlacementService;
+        private readonly CheckoutOrderLineResolver orderLineResolver;
         private readonly CheckoutPricingCalculator pricingCalculator;
         private readonly CheckoutPaymentCoordinator paymentCoordinator;
 
@@ -51,11 +50,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             IStorefrontCustomerService customerService,
             IStoreFeatureStateService featureStateService,
             CheckoutPaymentCoordinator paymentCoordinator,
-            IProductSellabilityResolver sellabilityResolver,
             IAddressValidationService addressValidationService,
             IShippingCalculator shippingCalculator,
             IShippingTaxCalculator shippingTaxCalculator,
             IOrderPlacementService orderPlacementService,
+            CheckoutOrderLineResolver orderLineResolver,
             CheckoutPricingCalculator pricingCalculator)
         {
             ArgumentNullException.ThrowIfNull(context);
@@ -66,11 +65,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             ArgumentNullException.ThrowIfNull(customerService);
             ArgumentNullException.ThrowIfNull(featureStateService);
             ArgumentNullException.ThrowIfNull(paymentCoordinator);
-            ArgumentNullException.ThrowIfNull(sellabilityResolver);
             ArgumentNullException.ThrowIfNull(addressValidationService);
             ArgumentNullException.ThrowIfNull(shippingCalculator);
             ArgumentNullException.ThrowIfNull(shippingTaxCalculator);
             ArgumentNullException.ThrowIfNull(orderPlacementService);
+            ArgumentNullException.ThrowIfNull(orderLineResolver);
             ArgumentNullException.ThrowIfNull(pricingCalculator);
 
             this.context = context;
@@ -80,11 +79,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.moneyConversionService = moneyConversionService;
             this.customerService = customerService;
             this.featureStateService = featureStateService;
-            this.sellabilityResolver = sellabilityResolver;
             this.addressValidationService = addressValidationService;
             this.shippingCalculator = shippingCalculator;
             this.shippingTaxCalculator = shippingTaxCalculator;
             this.orderPlacementService = orderPlacementService;
+            this.orderLineResolver = orderLineResolver;
             this.pricingCalculator = pricingCalculator;
             this.paymentCoordinator = paymentCoordinator;
         }
@@ -1010,7 +1009,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             var currencyCode = NormalizeCurrency(session.CurrencyCode)
                 ?? await this.storeCurrencyResolver.ResolveDefaultCurrencyCodeAsync(request.StoreId, cancellationToken);
-            var lineResolution = await this.ResolveOrderLinesAsync(request.StoreId, cart.Lines, currencyCode, cancellationToken);
+            var lineResolution = await this.orderLineResolver.ResolveAsync(request.StoreId, cart.Lines, currencyCode, cancellationToken);
             if (!lineResolution.Success)
             {
                 return Failed<StorefrontPlaceOrderResult>(lineResolution.ResponseType, lineResolution.Message);
@@ -1682,75 +1681,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return ToPlaceOrderResult(session, session.Order, paymentAttemptId, idempotencyKey);
         }
 
-        private async Task<OrderLineResolution> ResolveOrderLinesAsync(
-            Guid storeId,
-            IEnumerable<CartLine> cartLines,
-            string currencyCode,
-            CancellationToken cancellationToken)
-        {
-            var results = new List<OrderLineSnapshot>();
-
-            foreach (var cartLine in cartLines)
-            {
-                if (cartLine.Quantity < 1)
-                {
-                    return OrderLineResolution.Failed(ServiceResponseType.ValidationError, "Cart line quantity must be at least 1.");
-                }
-
-                var product = await this.context.Products
-                    .Include(item => item.Category)
-                    .Include(item => item.Variants)
-                    .FirstOrDefaultAsync(item => item.Id == cartLine.ProductId, cancellationToken);
-                if (product is null)
-                {
-                    return OrderLineResolution.Failed(ServiceResponseType.Conflict, "Product is not available for this store.");
-                }
-
-                var variant = cartLine.ProductVariantId.HasValue
-                    ? product.Variants.FirstOrDefault(candidate => candidate.Id == cartLine.ProductVariantId.Value)
-                    : null;
-                if (cartLine.ProductVariantId.HasValue && variant is null)
-                {
-                    return OrderLineResolution.Failed(ServiceResponseType.Conflict, "Selected product variant was not found.");
-                }
-
-                var sellability = this.sellabilityResolver.Resolve(new ProductSellabilityRequest(
-                    storeId,
-                    product,
-                    variant,
-                    cartLine.Quantity,
-                    Mode: ProductSellabilityMode.Storefront));
-                if (!sellability.Purchasable)
-                {
-                    return OrderLineResolution.Failed(
-                        ResolveOrderLineFailureResponseType(sellability.PurchaseBlockReasons),
-                        sellability.PurchaseBlockMessages.FirstOrDefault() ?? "Product cannot be purchased right now.");
-                }
-
-                var snapshotCurrency = NormalizeCurrency(cartLine.CurrencyCodeSnapshot);
-                if (snapshotCurrency is not null
-                    && !string.Equals(snapshotCurrency, currencyCode, StringComparison.Ordinal))
-                {
-                    return OrderLineResolution.Failed(ServiceResponseType.Conflict, "Cart line currency does not match checkout currency.");
-                }
-
-                if (!cartLine.UnitPriceSnapshot.HasValue)
-                {
-                    return OrderLineResolution.Failed(ServiceResponseType.ValidationError, "Cart line price is invalid.");
-                }
-
-                var unitPrice = this.moneyRoundingService.RoundUnitPrice(cartLine.UnitPriceSnapshot.Value, currencyCode);
-                if (unitPrice <= 0m)
-                {
-                    return OrderLineResolution.Failed(ServiceResponseType.ValidationError, "Cart line price is invalid.");
-                }
-
-                results.Add(new OrderLineSnapshot(cartLine, product, variant, unitPrice));
-            }
-
-            return OrderLineResolution.Succeeded(results);
-        }
-
         private CurrencyRateSnapshot ResolveCurrencyRateSnapshot(
             IEnumerable<StorefrontCartLineDto> cartLines,
             string currencyCode,
@@ -1771,7 +1701,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         }
 
         private CurrencyRateSnapshot ResolveCurrencyRateSnapshot(
-            IEnumerable<OrderLineSnapshot> orderLines,
+            IEnumerable<CheckoutOrderLineSnapshot> orderLines,
             string currencyCode,
             decimal totalAmount)
         {
@@ -1845,30 +1775,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 first.Source,
                 first.EffectiveAtUtc,
                 first.ExpiresAtUtc);
-        }
-
-        private static bool IsStorefrontAvailable(Product product, Guid storeId)
-        {
-            return product.StoreId == storeId
-                && product.ArchivedAt is null
-                && product.IsPublished
-                && product.PublishedOn is not null
-                && !string.IsNullOrWhiteSpace(product.Slug)
-                && product.Category is not null
-                && product.Category.StoreId == product.StoreId
-                && product.Category.ArchivedAt is null
-                && product.Category.IsPublished;
-        }
-
-        private static ServiceResponseType ResolveOrderLineFailureResponseType(IReadOnlyList<string> reasons)
-        {
-            return reasons.Any(reason => reason is ProductPurchaseBlockReasons.BelowMinQuantity
-                    or ProductPurchaseBlockReasons.AboveMaxQuantity
-                    or ProductPurchaseBlockReasons.InvalidQuantityStep
-                    or ProductPurchaseBlockReasons.VariantRequired
-                    or ProductPurchaseBlockReasons.VariantInactive)
-                ? ServiceResponseType.ValidationError
-                : ServiceResponseType.Conflict;
         }
 
         private async Task<ShippingAddressResolution> ResolveShippingAddressAsync(
@@ -2179,7 +2085,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         }
 
         private static IReadOnlyList<CheckoutPaymentLineSnapshot> ToPaymentLines(
-            IEnumerable<OrderLineSnapshot> lines)
+            IEnumerable<CheckoutOrderLineSnapshot> lines)
         {
             return lines
                 .Select(line => new CheckoutPaymentLineSnapshot(
@@ -2242,29 +2148,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             {
                 ResponseType = responseType,
             };
-        }
-
-        private sealed record OrderLineSnapshot(
-            CartLine CartLine,
-            Product Product,
-            ProductVariant? Variant,
-            decimal UnitPrice);
-
-        private sealed record OrderLineResolution(
-            bool Success,
-            ServiceResponseType ResponseType,
-            string Message,
-            IReadOnlyList<OrderLineSnapshot> Lines)
-        {
-            public static OrderLineResolution Succeeded(IReadOnlyList<OrderLineSnapshot> lines)
-            {
-                return new OrderLineResolution(true, ServiceResponseType.Success, "Cart lines resolved.", lines);
-            }
-
-            public static OrderLineResolution Failed(ServiceResponseType responseType, string message)
-            {
-                return new OrderLineResolution(false, responseType, message, []);
-            }
         }
 
         private sealed record CurrencyRateLineSnapshot(

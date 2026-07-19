@@ -17,9 +17,6 @@ namespace BlazorShop.Application.CommerceNode.Carts
 
     public sealed class StorefrontCartService : IStorefrontCartService
     {
-        private const int MaxSelectedAttributes = 5;
-        private const int MaxSelectedAttributeNameLength = 100;
-        private const int MaxSelectedAttributeValueLength = 200;
         private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
         private readonly IStorefrontCartSessionService sessionService;
@@ -721,54 +718,6 @@ namespace BlazorShop.Application.CommerceNode.Carts
                 cancellationToken);
         }
 
-        private async Task<CartProductResolution> ResolveProductForCartAsync(
-            Guid storeId,
-            Guid productId,
-            Guid? productVariantId,
-            int quantity,
-            IReadOnlyList<SelectedAttributeDto>? selectedAttributes,
-            CancellationToken cancellationToken,
-            string? selectedAttributesJson = null)
-        {
-            if (storeId == Guid.Empty)
-            {
-                return CartProductResolution.Failed(ServiceResponseType.ValidationError, "Store is required.");
-            }
-
-            if (productId == Guid.Empty)
-            {
-                return CartProductResolution.Failed(ServiceResponseType.ValidationError, "Product is required.");
-            }
-
-            var product = await this.productReadRepository.GetPublishedProductDetailsByIdAsync(productId);
-            if (product is null || !IsStorefrontAvailable(product, storeId))
-            {
-                return CartProductResolution.Failed(ServiceResponseType.NotFound, "Product is not available for this store.");
-            }
-
-            var attributes = selectedAttributesJson is not null
-                ? SelectedAttributesResolution.Ok(selectedAttributesJson)
-                : NormalizeSelectedAttributes(product, selectedAttributes);
-            if (!attributes.Success)
-            {
-                return CartProductResolution.Failed(ServiceResponseType.ValidationError, attributes.ErrorMessage);
-            }
-
-            var variant = ResolveVariant(product, productVariantId);
-            if (!variant.Success)
-            {
-                return CartProductResolution.Failed(ServiceResponseType.ValidationError, variant.ErrorMessage);
-            }
-
-            var availableStock = variant.Value?.Stock ?? product.Quantity;
-            if (availableStock < quantity)
-            {
-                return CartProductResolution.Failed(ServiceResponseType.Conflict, "One or more cart items are out of stock.");
-            }
-
-            return CartProductResolution.Succeeded(product, variant.Value, attributes.AttributesJson);
-        }
-
         private async Task<UnitPriceResolution> ResolveUnitPriceAsync(
             Guid storeId,
             decimal baseUnitPrice,
@@ -877,154 +826,6 @@ namespace BlazorShop.Application.CommerceNode.Carts
                 && product.Category.IsPublished;
         }
 
-        private static VariantResolution ResolveVariant(Product product, Guid? productVariantId)
-        {
-            if (string.Equals(product.ProductType, ProductTypes.CustomVariations, StringComparison.OrdinalIgnoreCase))
-            {
-                return productVariantId.HasValue
-                    ? VariantResolution.Failed("Custom variation products do not accept product variant ids.")
-                    : VariantResolution.Succeeded(null);
-            }
-
-            var allVariants = product.Variants.ToArray();
-            var variants = allVariants.Where(candidate => candidate.IsActive).ToArray();
-            if (productVariantId.HasValue)
-            {
-                var variant = allVariants.FirstOrDefault(candidate => candidate.Id == productVariantId.Value);
-                if (variant is null)
-                {
-                    return VariantResolution.Failed("Selected product variant was not found.");
-                }
-
-                return variant.IsActive
-                    ? VariantResolution.Succeeded(variant)
-                    : VariantResolution.Failed("Selected product variant is not available.");
-            }
-
-            if (allVariants.Length == 0)
-            {
-                return VariantResolution.Succeeded(null);
-            }
-
-            if (variants.Length == 0)
-            {
-                return VariantResolution.Failed("Product variants are not available.");
-            }
-
-            var defaultVariants = variants.Where(candidate => candidate.IsDefault).ToArray();
-            return defaultVariants.Length == 1
-                ? VariantResolution.Succeeded(defaultVariants[0])
-                : VariantResolution.Failed("Please select a product variant before adding it to the cart.");
-        }
-
-        private static SelectedAttributesResolution NormalizeSelectedAttributes(
-            Product product,
-            IReadOnlyList<SelectedAttributeDto>? selectedAttributes)
-        {
-            var attributes = (selectedAttributes ?? [])
-                .Select(attribute => new SelectedAttributeDto(
-                    attribute.Name?.Trim() ?? string.Empty,
-                    attribute.Value?.Trim() ?? string.Empty))
-                .Where(attribute => !string.IsNullOrWhiteSpace(attribute.Name)
-                    || !string.IsNullOrWhiteSpace(attribute.Value))
-                .ToArray();
-
-            if (!string.Equals(product.ProductType, ProductTypes.CustomVariations, StringComparison.OrdinalIgnoreCase))
-            {
-                return attributes.Length == 0
-                    ? SelectedAttributesResolution.Ok(null)
-                    : SelectedAttributesResolution.Failed("Selected attributes are only allowed for custom variation products.");
-            }
-
-            if (attributes.Length > MaxSelectedAttributes)
-            {
-                return SelectedAttributesResolution.Failed("At most 5 selected attributes are allowed.");
-            }
-
-            foreach (var attribute in attributes)
-            {
-                if (string.IsNullOrWhiteSpace(attribute.Name))
-                {
-                    return SelectedAttributesResolution.Failed("Selected attribute name is required.");
-                }
-
-                if (string.IsNullOrWhiteSpace(attribute.Value))
-                {
-                    return SelectedAttributesResolution.Failed("Selected attribute value is required.");
-                }
-
-                if (attribute.Name.Length > MaxSelectedAttributeNameLength)
-                {
-                    return SelectedAttributesResolution.Failed("Selected attribute name must be 100 characters or fewer.");
-                }
-
-                if (attribute.Value.Length > MaxSelectedAttributeValueLength)
-                {
-                    return SelectedAttributesResolution.Failed("Selected attribute value must be 200 characters or fewer.");
-                }
-            }
-
-            var normalized = attributes
-                .GroupBy(attribute => attribute.Name, StringComparer.OrdinalIgnoreCase)
-                .Select(group => group.First())
-                .OrderBy(attribute => attribute.Name, StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-
-            var templateResult = ValidateTemplateAttributes(product, normalized);
-            if (!templateResult.Success)
-            {
-                return templateResult;
-            }
-
-            return SelectedAttributesResolution.Ok(normalized.Length == 0
-                ? null
-                : JsonSerializer.Serialize(normalized, SerializerOptions));
-        }
-
-        private static SelectedAttributesResolution ValidateTemplateAttributes(
-            Product product,
-            IReadOnlyList<SelectedAttributeDto> attributes)
-        {
-            var template = product.VariationTemplate;
-            if (template is null)
-            {
-                return SelectedAttributesResolution.Ok(null);
-            }
-
-            if (!template.IsActive)
-            {
-                return SelectedAttributesResolution.Failed("Selected attributes are not available for this product.");
-            }
-
-            var options = template.Options
-                .Where(option => option.IsActive)
-                .ToDictionary(option => option.Name, StringComparer.OrdinalIgnoreCase);
-            foreach (var option in options.Values.Where(option => option.IsRequired))
-            {
-                if (!attributes.Any(attribute => string.Equals(attribute.Name, option.Name, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return SelectedAttributesResolution.Failed($"Required selected attribute '{option.Name}' is missing.");
-                }
-            }
-
-            foreach (var attribute in attributes)
-            {
-                if (!options.TryGetValue(attribute.Name, out var option))
-                {
-                    return SelectedAttributesResolution.Failed("Selected attribute is not available for this product.");
-                }
-
-                var allowed = option.Values.Any(value =>
-                    value.IsActive && string.Equals(value.Value, attribute.Value, StringComparison.OrdinalIgnoreCase));
-                if (!allowed)
-                {
-                    return SelectedAttributesResolution.Failed("Selected attribute value is not available for this product.");
-                }
-            }
-
-            return SelectedAttributesResolution.Ok(null);
-        }
-
         private PersonalizationValidation ValidatePersonalization(
             string? personalizationHash,
             string? personalizationJson,
@@ -1122,51 +923,6 @@ namespace BlazorShop.Application.CommerceNode.Carts
             {
                 ResponseType = responseType,
             };
-        }
-
-        private sealed record CartProductResolution(
-            bool Success,
-            ServiceResponseType ResponseType,
-            string Message,
-            Product? Product,
-            ProductVariant? Variant,
-            string? SelectedAttributesJson)
-        {
-            public static CartProductResolution Succeeded(Product product, ProductVariant? variant, string? selectedAttributesJson)
-            {
-                return new CartProductResolution(true, ServiceResponseType.Success, "Product resolved.", product, variant, selectedAttributesJson);
-            }
-
-            public static CartProductResolution Failed(ServiceResponseType responseType, string message)
-            {
-                return new CartProductResolution(false, responseType, message, null, null, null);
-            }
-        }
-
-        private sealed record VariantResolution(bool Success, ProductVariant? Value, string ErrorMessage)
-        {
-            public static VariantResolution Succeeded(ProductVariant? variant)
-            {
-                return new VariantResolution(true, variant, string.Empty);
-            }
-
-            public static VariantResolution Failed(string message)
-            {
-                return new VariantResolution(false, null, message);
-            }
-        }
-
-        private sealed record SelectedAttributesResolution(bool Success, string? AttributesJson, string ErrorMessage)
-        {
-            public static SelectedAttributesResolution Ok(string? attributesJson)
-            {
-                return new SelectedAttributesResolution(true, attributesJson, string.Empty);
-            }
-
-            public static SelectedAttributesResolution Failed(string message)
-            {
-                return new SelectedAttributesResolution(false, null, message);
-            }
         }
 
         private sealed record PersonalizationValidation(bool Success, string Message)
