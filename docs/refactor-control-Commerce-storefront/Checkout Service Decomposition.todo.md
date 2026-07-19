@@ -353,37 +353,56 @@ Acceptance:
 
 ## Phase 8 - QA, Contracts, And Release Gate
 
-- [ ] Run focused service tests:
+- [x] Run focused service tests:
   - `StorefrontCheckoutServiceTests`.
   - `StorefrontCartServiceTests`.
   - `PaymentAttemptServiceTests`.
   - `StorefrontCustomerOrderServiceTests`.
   - `StorefrontGuestOrderServiceTests`.
-- [ ] Run focused Commerce Node contract/payment tests:
+- [x] Run focused Commerce Node contract/payment tests:
   - `CommerceNodeStorefrontOpenApiContractTests`.
   - `CommerceNodeStorefrontPaymentContractTests`.
   - `StorefrontScopedPaymentWebhookHardeningTests`.
-- [ ] Run active V2 builds:
+- [x] Run active V2 builds:
   - `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API`.
   - `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`.
   - `BlazorShop.PresentationV2/BlazorShop.Storefront.Components`.
   - `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM`.
-- [ ] Run browser Playwright checkout release subset when implementation phases touch place-order behavior:
+- [x] Run browser Playwright checkout release subset when implementation phases touch place-order behavior:
   - add product to cart.
   - checkout review.
   - place COD order.
   - account order list/detail/receipt.
   - browser network audit confirms no retired routes.
-- [ ] Update `QA-StorefrontV2.todo.md` if browser checkout behavior or verification commands change.
-- [ ] Update architecture docs only if public runtime boundary or API contract changes. Expected result: no architecture doc change required for internal service decomposition.
+- [x] Update `QA-StorefrontV2.todo.md` if browser checkout behavior or verification commands change.
+- [x] Update architecture docs only if public runtime boundary or API contract changes. Expected result: no architecture doc change required for internal service decomposition.
+
+Phase 8 notes:
+
+- Focused release-gate test command passed 146/146:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~StorefrontCheckoutServiceTests|FullyQualifiedName~StorefrontCartServiceTests|FullyQualifiedName~PaymentAttemptServiceTests|FullyQualifiedName~StorefrontCustomerOrderServiceTests|FullyQualifiedName~StorefrontGuestOrderServiceTests|FullyQualifiedName~CommerceNodeStorefrontOpenApiContractTests|FullyQualifiedName~CommerceNodeStorefrontPaymentContractTests|FullyQualifiedName~StorefrontScopedPaymentWebhookHardeningTests" --no-restore --nologo --verbosity minimal`
+- Active V2 builds passed with 0 warnings/errors for:
+  - CommerceNode API.
+  - Storefront V2.
+  - Storefront Components.
+  - Storefront WASM.
+- Started local V2 stack with `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser`.
+- Updated `scripts/qa/storefront-order-email-e2e.js` to support the current checkout form layout when `StorefrontCheckoutShell` runs with `ShowPanel=false`; the older debug shell path remains supported.
+- `node --check scripts/qa/storefront-order-email-e2e.js` passed.
+- Visible Chromium E2E passed with `.\scripts\qa\run-storefront-order-email-e2e.ps1`:
+  - Success COD order: `ORD-20260719-A52C96D2`.
+  - SMTP-outage COD order: `ORD-20260719-D3D31CF3`.
+  - Account order list/detail/receipt screenshots saved under `.gstack/qa-reports/order-email-e2e/`.
+  - Network summary: `requestCount=3308`, `response5xxCount=0`, `retiredFlowCallCount=0`.
+- Architecture docs were not updated because no public route, API contract, runtime boundary, or database ownership rule changed.
 
 Acceptance:
 
-- [ ] COD order placement creates one order.
-- [ ] Hosted payment redirect path remains recoverable.
-- [ ] Account order self-service still shows placed order.
-- [ ] Storefront OpenAPI snapshots do not change unless intentionally refreshed for unrelated metadata.
-- [ ] Browser network does not call retired compatibility routes.
+- [x] COD order placement creates one order.
+- [x] Hosted payment redirect path remains recoverable.
+- [x] Account order self-service still shows placed order.
+- [x] Storefront OpenAPI snapshots do not change unless intentionally refreshed for unrelated metadata.
+- [x] Browser network does not call retired compatibility routes.
 
 ## Not In Scope
 
@@ -433,7 +452,7 @@ Acceptance:
 - [x] Phase 5 complete.
 - [x] Phase 6 decision complete.
 - [x] Phase 7 decision complete.
-- [ ] Phase 8 release gate complete.
+- [x] Phase 8 release gate complete.
 
 ## Decision Audit Trail
 

@@ -178,45 +178,15 @@ async function placeCodOrder(page, label) {
   await addSimpleProductToCart(page);
   await page.goto(`${baseUrl}/checkout`, { waitUntil: "domcontentloaded" });
   await dismissConsentIfVisible(page);
-  await page.locator("[data-storefront-checkout-shell]").waitFor({ state: "visible", timeout: 20000 });
   await expectBodyContains(page, "Cash on Delivery");
   await expectBodyContains(page, "EUR 100.00");
 
-  const checkoutState = await readCheckoutState(page);
-  if (!checkoutState.body.checkoutSessionId || !checkoutState.body.cartVersion) {
-    throw new Error("Checkout state did not include checkoutSessionId and cartVersion.");
+  if (await page.locator("[data-storefront-checkout-shell]").count()) {
+    await placeOrderFromWasmPanel(page);
+  } else {
+    await placeOrderFromCheckoutForm(page);
   }
 
-  const selectedAddressId = await page.locator("[data-storefront-address-select]").inputValue();
-  if (!selectedAddressId) {
-    throw new Error("Checkout did not select a synthetic customer address.");
-  }
-
-  await postCheckoutJson(page, "/api/checkout/addresses", {
-    checkoutSessionId: checkoutState.body.checkoutSessionId,
-    expectedCartVersion: checkoutState.body.cartVersion,
-    shippingAddressId: selectedAddressId,
-    billingAddressId: selectedAddressId,
-    useShippingAddressAsBillingAddress: true,
-  });
-
-  await page.locator("[data-storefront-checkout-shell]").getByRole("button", { name: "Refresh" }).click();
-  await page.locator("[data-storefront-checkout-shell]").waitFor({ state: "visible", timeout: 10000 });
-
-  const shippingOptions = page.locator("input[name='wasmShippingOption']");
-  if (await shippingOptions.count()) {
-    await shippingOptions.first().check();
-  }
-
-  const paymentOptions = page.locator("input[name='wasmPaymentMethod']");
-  await paymentOptions.first().waitFor({ state: "visible", timeout: 10000 });
-  await paymentOptions.first().check();
-
-  await page.getByRole("button", { name: "Review latest checkout" }).click();
-  await expectBodyMatches(page, /review|ready|Place order/i);
-  const place = page.locator("[data-storefront-checkout-shell]").getByRole("button", { name: "Place order" });
-  await place.waitFor({ state: "visible", timeout: 10000 });
-  await place.dblclick();
   await page.waitForURL("**/checkout?orderReference=*", { timeout: 30000 });
   await expectBodyContains(page, "Thank you");
   const orderReference = new URL(page.url()).searchParams.get("orderReference");
@@ -245,6 +215,73 @@ async function placeCodOrder(page, label) {
   await page.screenshot({ path: orderReceiptScreenshot, fullPage: true });
 
   return { orderReference, confirmationScreenshot, orderListScreenshot, orderDetailScreenshot, orderReceiptScreenshot };
+}
+
+async function placeOrderFromWasmPanel(page) {
+  const shell = page.locator("[data-storefront-checkout-shell]");
+  await shell.waitFor({ state: "visible", timeout: 20000 });
+  const checkoutState = await readCheckoutState(page);
+  if (!checkoutState.body.checkoutSessionId || !checkoutState.body.cartVersion) {
+    throw new Error("Checkout state did not include checkoutSessionId and cartVersion.");
+  }
+
+  const selectedAddressId = await page.locator("[data-storefront-address-select]").inputValue();
+  if (!selectedAddressId) {
+    throw new Error("Checkout did not select a synthetic customer address.");
+  }
+
+  await postCheckoutJson(page, "/api/checkout/addresses", {
+    checkoutSessionId: checkoutState.body.checkoutSessionId,
+    expectedCartVersion: checkoutState.body.cartVersion,
+    shippingAddressId: selectedAddressId,
+    billingAddressId: selectedAddressId,
+    useShippingAddressAsBillingAddress: true,
+  });
+
+  await shell.getByRole("button", { name: "Refresh" }).click();
+  await shell.waitFor({ state: "visible", timeout: 10000 });
+
+  const shippingOptions = page.locator("input[name='wasmShippingOption']");
+  if (await shippingOptions.count()) {
+    await shippingOptions.first().check();
+  }
+
+  const paymentOptions = page.locator("input[name='wasmPaymentMethod']");
+  await paymentOptions.first().waitFor({ state: "visible", timeout: 10000 });
+  await paymentOptions.first().check();
+
+  await page.getByRole("button", { name: "Review latest checkout" }).click();
+  await expectBodyMatches(page, /review|ready|Place order/i);
+  const place = shell.getByRole("button", { name: "Place order" });
+  await place.waitFor({ state: "visible", timeout: 10000 });
+  await place.dblclick();
+}
+
+async function placeOrderFromCheckoutForm(page) {
+  await page.getByRole("heading", { name: "Checkout" }).waitFor({ state: "visible", timeout: 20000 });
+  const form = page.locator("form").filter({ has: page.locator("input[name='PaymentMethodKey']") }).first();
+  await form.waitFor({ state: "visible", timeout: 10000 });
+  await form.locator("input[name='CustomerEmail']").fill(customerEmail);
+  await form.locator("input[name='CustomerName']").fill("QA Customer");
+
+  const selectedAddress = form.locator("[data-storefront-address-select]");
+  if (await selectedAddress.count()) {
+    const selectedAddressId = await selectedAddress.inputValue();
+    if (!selectedAddressId) {
+      throw new Error("Checkout did not select a synthetic customer address.");
+    }
+  } else {
+    await form.locator("input[name='ShippingFullName']").fill("QA Customer");
+    await form.locator("input[name='ShippingEmail']").fill(customerEmail);
+    await form.locator("input[name='ShippingAddress1']").fill("1 QA Street");
+    await form.locator("input[name='ShippingCity']").fill("San Francisco");
+    await form.locator("input[name='ShippingPostalCode']").fill("94105");
+  }
+
+  const paymentOptions = form.locator("input[name='PaymentMethodKey']");
+  await paymentOptions.first().waitFor({ state: "visible", timeout: 10000 });
+  await paymentOptions.first().check();
+  await form.getByRole("button", { name: "Place order" }).click();
 }
 
 async function signIn(page, email, password) {
