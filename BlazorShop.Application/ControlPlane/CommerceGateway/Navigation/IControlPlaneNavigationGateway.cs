@@ -1,5 +1,6 @@
 namespace BlazorShop.Application.ControlPlane.CommerceGateway.Navigation
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -25,58 +26,58 @@ namespace BlazorShop.Application.ControlPlane.CommerceGateway.Navigation
     public interface IControlPlaneNavigationGateway
     {
         
-                Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreNavigationMenuSummaryDto>>> ListNavigationMenusAsync(
+                Task<ApplicationResult<IReadOnlyList<StoreNavigationMenuSummaryDto>>> ListNavigationMenusAsync(
                     Guid storePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> GetNavigationMenuAsync(
+                Task<ApplicationResult<StoreNavigationMenuDetailDto>> GetNavigationMenuAsync(
                     Guid storePublicId,
                     Guid menuPublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> CreateNavigationMenuAsync(
+                Task<ApplicationResult<StoreNavigationMenuDetailDto>> CreateNavigationMenuAsync(
                     Guid storePublicId,
                     CreateStoreNavigationMenuRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> UpdateNavigationMenuAsync(
+                Task<ApplicationResult<StoreNavigationMenuDetailDto>> UpdateNavigationMenuAsync(
                     Guid storePublicId,
                     Guid menuPublicId,
                     UpdateStoreNavigationMenuRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> CreateNavigationItemAsync(
+                Task<ApplicationResult<StoreNavigationMenuDetailDto>> CreateNavigationItemAsync(
                     Guid storePublicId,
                     Guid menuPublicId,
                     CreateStoreNavigationMenuItemRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> UpdateNavigationItemAsync(
+                Task<ApplicationResult<StoreNavigationMenuDetailDto>> UpdateNavigationItemAsync(
                     Guid storePublicId,
                     Guid itemPublicId,
                     UpdateStoreNavigationMenuItemRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> ArchiveNavigationItemAsync(
+                Task<ApplicationResult<StoreNavigationMenuDetailDto>> ArchiveNavigationItemAsync(
                     Guid storePublicId,
                     Guid itemPublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> UpdateNavigationItemOrderAsync(
+                Task<ApplicationResult<StoreNavigationMenuDetailDto>> UpdateNavigationItemOrderAsync(
                     Guid storePublicId,
                     Guid menuPublicId,
                     UpdateStoreNavigationMenuItemOrderRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreNavigationTargetOptionDto>>> ListNavigationSystemTargetsAsync(
+                Task<ApplicationResult<IReadOnlyList<StoreNavigationTargetOptionDto>>> ListNavigationSystemTargetsAsync(
                     Guid storePublicId,
                     CancellationToken cancellationToken = default);
     }

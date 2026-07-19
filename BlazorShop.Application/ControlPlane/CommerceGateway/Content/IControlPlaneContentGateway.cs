@@ -1,5 +1,6 @@
 namespace BlazorShop.Application.ControlPlane.CommerceGateway.Content
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -25,68 +26,68 @@ namespace BlazorShop.Application.ControlPlane.CommerceGateway.Content
     public interface IControlPlaneContentGateway
     {
         
-                Task<ControlPlaneCommerceCatalogResult<StorefrontPageListResponse>> ListStorefrontPagesAsync(
+                Task<ApplicationResult<StorefrontPageListResponse>> ListStorefrontPagesAsync(
                     Guid storePublicId,
                     StorefrontPageListQuery query,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StorefrontPageTemplateDefinitionDto>>> ListStorefrontPageTemplatesAsync(
+                Task<ApplicationResult<IReadOnlyList<StorefrontPageTemplateDefinitionDto>>> ListStorefrontPageTemplatesAsync(
                     Guid storePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StorefrontPageTemplateStatusDto>>> GetStorefrontPageTemplateStatusAsync(
+                Task<ApplicationResult<IReadOnlyList<StorefrontPageTemplateStatusDto>>> GetStorefrontPageTemplateStatusAsync(
                     Guid storePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> GetStorefrontPageAsync(
+                Task<ApplicationResult<StorefrontPageDetailDto>> GetStorefrontPageAsync(
                     Guid storePublicId,
                     Guid pagePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> CreateStorefrontPageAsync(
+                Task<ApplicationResult<StorefrontPageDetailDto>> CreateStorefrontPageAsync(
                     Guid storePublicId,
                     CreateStorefrontPageRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> UpdateStorefrontPageAsync(
+                Task<ApplicationResult<StorefrontPageDetailDto>> UpdateStorefrontPageAsync(
                     Guid storePublicId,
                     Guid pagePublicId,
                     UpdateStorefrontPageRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> ArchiveStorefrontPageAsync(
+                Task<ApplicationResult<StorefrontPageDetailDto>> ArchiveStorefrontPageAsync(
                     Guid storePublicId,
                     Guid pagePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> CreateStorefrontPageDraftFromTemplateAsync(
+                Task<ApplicationResult<StorefrontPageDetailDto>> CreateStorefrontPageDraftFromTemplateAsync(
                     Guid storePublicId,
                     string pageKey,
                     CreatePageFromTemplateRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> MapStorefrontPageTemplateAsync(
+                Task<ApplicationResult<StorefrontPageDetailDto>> MapStorefrontPageTemplateAsync(
                     Guid storePublicId,
                     Guid pagePublicId,
                     MapPageTemplateRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> ClearStorefrontPageTemplateAsync(
+                Task<ApplicationResult<StorefrontPageDetailDto>> ClearStorefrontPageTemplateAsync(
                     Guid storePublicId,
                     Guid pagePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> UpdateStorefrontPageNavigationAsync(
+                Task<ApplicationResult<StorefrontPageDetailDto>> UpdateStorefrontPageNavigationAsync(
                     Guid storePublicId,
                     Guid pagePublicId,
                     UpdatePageNavigationRequest request,

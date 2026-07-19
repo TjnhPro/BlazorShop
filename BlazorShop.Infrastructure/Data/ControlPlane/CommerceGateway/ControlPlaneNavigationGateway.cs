@@ -2,8 +2,8 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using System.Globalization;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.ControlPlane.Catalog;
-    using BlazorShop.Application.ControlPlane.CommerceGateway;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -32,11 +32,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreNavigationMenuSummaryDto>>> ListNavigationMenusAsync(
+        public Task<ApplicationResult<IReadOnlyList<StoreNavigationMenuSummaryDto>>> ListNavigationMenusAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<StoreNavigationMenuSummaryDto>>(
+            return this.SendApplicationAsync<IReadOnlyList<StoreNavigationMenuSummaryDto>>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/navigation/menus",
@@ -44,12 +44,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> GetNavigationMenuAsync(
+        public Task<ApplicationResult<StoreNavigationMenuDetailDto>> GetNavigationMenuAsync(
             Guid storePublicId,
             Guid menuPublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreNavigationMenuDetailDto>(
+            return this.SendApplicationAsync<StoreNavigationMenuDetailDto>(
                 storePublicId,
                 HttpMethod.Get,
                 $"api/commerce/admin/navigation/menus/{menuPublicId:D}",
@@ -57,12 +57,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> CreateNavigationMenuAsync(
+        public Task<ApplicationResult<StoreNavigationMenuDetailDto>> CreateNavigationMenuAsync(
             Guid storePublicId,
             CreateStoreNavigationMenuRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreNavigationMenuDetailDto>(
+            return this.SendApplicationAsync<StoreNavigationMenuDetailDto>(
                 storePublicId,
                 HttpMethod.Post,
                 "api/commerce/admin/navigation/menus",
@@ -70,13 +70,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> UpdateNavigationMenuAsync(
+        public Task<ApplicationResult<StoreNavigationMenuDetailDto>> UpdateNavigationMenuAsync(
             Guid storePublicId,
             Guid menuPublicId,
             UpdateStoreNavigationMenuRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreNavigationMenuDetailDto>(
+            return this.SendApplicationAsync<StoreNavigationMenuDetailDto>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/navigation/menus/{menuPublicId:D}",
@@ -84,13 +84,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> CreateNavigationItemAsync(
+        public Task<ApplicationResult<StoreNavigationMenuDetailDto>> CreateNavigationItemAsync(
             Guid storePublicId,
             Guid menuPublicId,
             CreateStoreNavigationMenuItemRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreNavigationMenuDetailDto>(
+            return this.SendApplicationAsync<StoreNavigationMenuDetailDto>(
                 storePublicId,
                 HttpMethod.Post,
                 $"api/commerce/admin/navigation/menus/{menuPublicId:D}/items",
@@ -98,13 +98,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> UpdateNavigationItemAsync(
+        public Task<ApplicationResult<StoreNavigationMenuDetailDto>> UpdateNavigationItemAsync(
             Guid storePublicId,
             Guid itemPublicId,
             UpdateStoreNavigationMenuItemRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreNavigationMenuDetailDto>(
+            return this.SendApplicationAsync<StoreNavigationMenuDetailDto>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/navigation/items/{itemPublicId:D}",
@@ -112,12 +112,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> ArchiveNavigationItemAsync(
+        public Task<ApplicationResult<StoreNavigationMenuDetailDto>> ArchiveNavigationItemAsync(
             Guid storePublicId,
             Guid itemPublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreNavigationMenuDetailDto>(
+            return this.SendApplicationAsync<StoreNavigationMenuDetailDto>(
                 storePublicId,
                 HttpMethod.Delete,
                 $"api/commerce/admin/navigation/items/{itemPublicId:D}",
@@ -125,13 +125,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreNavigationMenuDetailDto>> UpdateNavigationItemOrderAsync(
+        public Task<ApplicationResult<StoreNavigationMenuDetailDto>> UpdateNavigationItemOrderAsync(
             Guid storePublicId,
             Guid menuPublicId,
             UpdateStoreNavigationMenuItemOrderRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreNavigationMenuDetailDto>(
+            return this.SendApplicationAsync<StoreNavigationMenuDetailDto>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/navigation/menus/{menuPublicId:D}/items/order",
@@ -139,11 +139,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreNavigationTargetOptionDto>>> ListNavigationSystemTargetsAsync(
+        public Task<ApplicationResult<IReadOnlyList<StoreNavigationTargetOptionDto>>> ListNavigationSystemTargetsAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<StoreNavigationTargetOptionDto>>(
+            return this.SendApplicationAsync<IReadOnlyList<StoreNavigationTargetOptionDto>>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/navigation/system-targets",

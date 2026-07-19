@@ -2,8 +2,8 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using System.Globalization;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.ControlPlane.Catalog;
-    using BlazorShop.Application.ControlPlane.CommerceGateway;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -32,12 +32,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageListResponse>> ListStorefrontPagesAsync(
+        public Task<ApplicationResult<StorefrontPageListResponse>> ListStorefrontPagesAsync(
             Guid storePublicId,
             StorefrontPageListQuery query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorefrontPageListResponse>(
+            return this.SendApplicationAsync<StorefrontPageListResponse>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/pages" + BuildStorefrontPageQuery(query),
@@ -45,11 +45,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StorefrontPageTemplateDefinitionDto>>> ListStorefrontPageTemplatesAsync(
+        public Task<ApplicationResult<IReadOnlyList<StorefrontPageTemplateDefinitionDto>>> ListStorefrontPageTemplatesAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<StorefrontPageTemplateDefinitionDto>>(
+            return this.SendApplicationAsync<IReadOnlyList<StorefrontPageTemplateDefinitionDto>>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/pages/templates",
@@ -57,11 +57,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StorefrontPageTemplateStatusDto>>> GetStorefrontPageTemplateStatusAsync(
+        public Task<ApplicationResult<IReadOnlyList<StorefrontPageTemplateStatusDto>>> GetStorefrontPageTemplateStatusAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<StorefrontPageTemplateStatusDto>>(
+            return this.SendApplicationAsync<IReadOnlyList<StorefrontPageTemplateStatusDto>>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/pages/template-status",
@@ -69,12 +69,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> GetStorefrontPageAsync(
+        public Task<ApplicationResult<StorefrontPageDetailDto>> GetStorefrontPageAsync(
             Guid storePublicId,
             Guid pagePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorefrontPageDetailDto>(
+            return this.SendApplicationAsync<StorefrontPageDetailDto>(
                 storePublicId,
                 HttpMethod.Get,
                 $"api/commerce/admin/pages/{pagePublicId:D}",
@@ -82,12 +82,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> CreateStorefrontPageAsync(
+        public Task<ApplicationResult<StorefrontPageDetailDto>> CreateStorefrontPageAsync(
             Guid storePublicId,
             CreateStorefrontPageRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorefrontPageDetailDto>(
+            return this.SendApplicationAsync<StorefrontPageDetailDto>(
                 storePublicId,
                 HttpMethod.Post,
                 "api/commerce/admin/pages",
@@ -95,13 +95,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> UpdateStorefrontPageAsync(
+        public Task<ApplicationResult<StorefrontPageDetailDto>> UpdateStorefrontPageAsync(
             Guid storePublicId,
             Guid pagePublicId,
             UpdateStorefrontPageRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorefrontPageDetailDto>(
+            return this.SendApplicationAsync<StorefrontPageDetailDto>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/pages/{pagePublicId:D}",
@@ -109,12 +109,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> ArchiveStorefrontPageAsync(
+        public Task<ApplicationResult<StorefrontPageDetailDto>> ArchiveStorefrontPageAsync(
             Guid storePublicId,
             Guid pagePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorefrontPageDetailDto>(
+            return this.SendApplicationAsync<StorefrontPageDetailDto>(
                 storePublicId,
                 HttpMethod.Delete,
                 $"api/commerce/admin/pages/{pagePublicId:D}",
@@ -122,13 +122,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> CreateStorefrontPageDraftFromTemplateAsync(
+        public Task<ApplicationResult<StorefrontPageDetailDto>> CreateStorefrontPageDraftFromTemplateAsync(
             Guid storePublicId,
             string pageKey,
             CreatePageFromTemplateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorefrontPageDetailDto>(
+            return this.SendApplicationAsync<StorefrontPageDetailDto>(
                 storePublicId,
                 HttpMethod.Post,
                 $"api/commerce/admin/pages/templates/{Uri.EscapeDataString(pageKey)}/draft",
@@ -136,13 +136,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> MapStorefrontPageTemplateAsync(
+        public Task<ApplicationResult<StorefrontPageDetailDto>> MapStorefrontPageTemplateAsync(
             Guid storePublicId,
             Guid pagePublicId,
             MapPageTemplateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorefrontPageDetailDto>(
+            return this.SendApplicationAsync<StorefrontPageDetailDto>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/pages/{pagePublicId:D}/template",
@@ -150,12 +150,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> ClearStorefrontPageTemplateAsync(
+        public Task<ApplicationResult<StorefrontPageDetailDto>> ClearStorefrontPageTemplateAsync(
             Guid storePublicId,
             Guid pagePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorefrontPageDetailDto>(
+            return this.SendApplicationAsync<StorefrontPageDetailDto>(
                 storePublicId,
                 HttpMethod.Delete,
                 $"api/commerce/admin/pages/{pagePublicId:D}/template",
@@ -163,13 +163,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StorefrontPageDetailDto>> UpdateStorefrontPageNavigationAsync(
+        public Task<ApplicationResult<StorefrontPageDetailDto>> UpdateStorefrontPageNavigationAsync(
             Guid storePublicId,
             Guid pagePublicId,
             UpdatePageNavigationRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StorefrontPageDetailDto>(
+            return this.SendApplicationAsync<StorefrontPageDetailDto>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/pages/{pagePublicId:D}/navigation",

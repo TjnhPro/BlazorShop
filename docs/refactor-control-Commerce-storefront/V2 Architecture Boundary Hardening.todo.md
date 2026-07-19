@@ -32,7 +32,7 @@ This plan covers the architecture hardening issues verified against the current 
 ## Verified Current Evidence
 
 - [x] Phase 0 baseline: `BlazorShop.Application/ControlPlane/CommerceGateway/CommerceNodeAdminGatewayDtos.cs` contained `ICommerceNodeAdminGatewayTransport` with `HttpMethod`, HTTP path, and status-bearing result. Resolved in Phase 1B.
-- [x] `ControlPlaneCommerceCatalogResult<T>` had 236 generic references at Phase 0. After Store configuration, Security/privacy, Shipping, Payment, and Currency migrations in Phase 1C.1-1C.5, current migration baseline is 198 references.
+- [x] `ControlPlaneCommerceCatalogResult<T>` had 236 generic references at Phase 0. After Store configuration, Security/privacy, Shipping, Payment, Currency, Content, and Navigation migrations in Phase 1C.1-1C.6, current migration baseline is 158 references.
 - [x] `ApplicationResult<T>`, `ApplicationError`, and `ApplicationErrorKind.RemoteFailure` already exist under `BlazorShop.Application/Common/Results`.
 - [x] `IControlPlaneProductGateway` has 31 current methods spanning product CRUD, product SEO, product import, variation template, category media, variant, and inventory in one interface.
 - [x] `BlazorShop.Application/CommerceNode/Carts/StorefrontCartService.cs` still accepts nullable `IProductSelectionResolver` and falls back to `new ProductSelectionResolver(...)`.
@@ -149,7 +149,7 @@ Migrate in this order to limit blast radius:
 - [x] Shipping gateway.
 - [x] Payment gateway.
 - [x] Currency gateway.
-- [ ] Content/navigation gateway.
+- [x] Content/navigation gateway.
 - [ ] Order gateway.
 - [ ] Media gateway.
 - [ ] Product gateway after Phase 2 split or through temporary adapters.
@@ -213,6 +213,19 @@ Phase 1C.5 Currency:
 Phase 1C.5 focused verification:
 
 - [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~Currency|FullyQualifiedName~ControlPlaneCommerceGatewayStoreMapping|FullyQualifiedName~CommerceNodeAdminGatewayApplicationResultMapper|FullyQualifiedName~ApplicationResultStandardization|FullyQualifiedName~ArchitectureBoundary"` - Passed after updating expected migration baseline to 198 references. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors; Tailwind completed with existing Browserslist stale notice.
+
+Phase 1C.6 Content/navigation:
+
+- [x] Change Content and Navigation Application interface return types from `ControlPlaneCommerceCatalogResult<T>` to `ApplicationResult<T>`.
+- [x] Update Content and Navigation Infrastructure gateway implementations to use `SendApplicationAsync`.
+- [x] Control Plane API/Web route and response surface unchanged through the existing `ApplicationResult<T>` controller-base overload.
+- [x] Current `ControlPlaneCommerceCatalogResult<T>` migration baseline after this phase: 158 references.
+
+Phase 1C.6 focused verification:
+
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~Content|FullyQualifiedName~Navigation|FullyQualifiedName~ControlPlaneCommerceGatewayStoreMapping|FullyQualifiedName~CommerceNodeAdminGatewayApplicationResultMapper|FullyQualifiedName~ApplicationResultStandardization|FullyQualifiedName~ArchitectureBoundary"` - Passed: 117, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
 - [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
 - [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors; Tailwind completed with existing Browserslist stale notice.
 
