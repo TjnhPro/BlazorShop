@@ -179,26 +179,33 @@ Acceptance:
 
 ## Phase 3 - Extract Checkout Session State Rules
 
-- [ ] Create internal pure class, proposed name:
+- [x] Create internal pure class, proposed name:
   - `CheckoutSessionStateRules`
-- [ ] Move deterministic rules from `StorefrontCheckoutService`:
+- [x] Move deterministic rules from `StorefrontCheckoutService`:
   - active state check.
   - expired transition.
   - touch/version increment.
   - next required step resolution.
   - completed steps normalization if it remains pure.
-- [ ] Keep persistence in `StorefrontCheckoutService`; the state rules class should not call EF or services.
-- [ ] Add unit tests for:
+- [x] Keep persistence in `StorefrontCheckoutService`; the state rules class should not call EF or services.
+- [x] Add unit tests for:
   - active states: `Draft`, `Ready`, `OrderPending`.
   - expired checkout transition.
   - review allowed vs next required step.
   - version increment behavior.
 
+Phase 3 notes:
+
+- Added internal pure `CheckoutSessionStateRules` under Commerce Node services.
+- Added `InternalsVisibleTo("BlazorShop.Tests")` for Infrastructure so pure internal rules can be tested directly without DB setup.
+- `StorefrontCheckoutService` now delegates active-state checks, expired transition, touch/version increment, next-step resolution, and completed-step parsing to the rules class.
+- Persistence and EF save behavior remain in `StorefrontCheckoutService`.
+
 Acceptance:
 
-- [ ] State transition behavior remains unchanged.
-- [ ] `StorefrontCheckoutService` loses pure helper code without moving EF calls.
-- [ ] Tests cover state rules without database setup.
+- [x] State transition behavior remains unchanged.
+- [x] `StorefrontCheckoutService` loses pure helper code without moving EF calls.
+- [x] Tests cover state rules without database setup.
 
 ## Phase 4 - Extract Checkout Pricing Calculator
 
@@ -373,7 +380,7 @@ Acceptance:
 - [x] Phase 0 complete.
 - [x] Phase 1 complete.
 - [x] Phase 2 complete.
-- [ ] Phase 3 complete.
+- [x] Phase 3 complete.
 - [ ] Phase 4 complete.
 - [ ] Phase 5 complete.
 - [ ] Phase 6 decision complete.
@@ -396,7 +403,7 @@ Acceptance:
 - [x] `StorefrontCheckoutService` constructor has no nullable optional production dependencies.
 - [x] `StorefrontCheckoutService` source has no `new ProductSellabilityResolver`, `new AddressValidationService`, `new ShippingCalculator`, `new ZeroShippingTaxCalculator`, or `new OrderPlacementService`.
 - [x] Commerce Node DI registers all checkout dependencies.
-- [ ] Checkout state rules have pure unit tests.
+- [x] Checkout state rules have pure unit tests.
 - [ ] Pricing calculator has focused unit tests for shipping/tax/currency behavior.
 - [ ] Payment coordinator has focused unit tests for COD, hosted, provider failure, and idempotency.
 - [ ] `OrderPlacementService` remains order creation owner.

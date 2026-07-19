@@ -124,7 +124,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             {
                 if (activeSession.ExpiresAtUtc <= now)
                 {
-                    MarkExpired(activeSession, now);
+                    CheckoutSessionStateRules.MarkExpired(activeSession, now);
                     await this.context.SaveChangesAsync(cancellationToken);
                     return Failed<StorefrontCheckoutSessionResult>(ServiceResponseType.Conflict, "Checkout session has expired.");
                 }
@@ -198,7 +198,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failed<StorefrontCheckoutSessionResult>(resolution.ResponseType, resolution.Message);
             }
 
-            Touch(resolution.Session!, CheckoutSessionStates.Cancelled, CheckoutSteps.Entry, DateTimeOffset.UtcNow);
+            CheckoutSessionStateRules.Touch(resolution.Session!, CheckoutSessionStates.Cancelled, CheckoutSteps.Entry, DateTimeOffset.UtcNow);
             await this.context.SaveChangesAsync(cancellationToken);
 
             return Succeeded(
@@ -216,7 +216,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failed<StorefrontCheckoutSessionResult>(resolution.ResponseType, resolution.Message);
             }
 
-            MarkExpired(resolution.Session!, DateTimeOffset.UtcNow);
+            CheckoutSessionStateRules.MarkExpired(resolution.Session!, DateTimeOffset.UtcNow);
             await this.context.SaveChangesAsync(cancellationToken);
 
             return Succeeded(
@@ -347,7 +347,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     new[] { CheckoutSteps.Entry, CheckoutSteps.BillingAddress, CheckoutSteps.ShippingAddress },
                     JsonOptions);
                 session.NextAction = CheckoutSteps.ShippingMethod;
-                Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.ShippingMethod, DateTimeOffset.UtcNow);
+                CheckoutSessionStateRules.Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.ShippingMethod, DateTimeOffset.UtcNow);
             }
             else
             {
@@ -355,7 +355,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     new[] { CheckoutSteps.Entry, CheckoutSteps.BillingAddress, CheckoutSteps.ShippingAddress, CheckoutSteps.ShippingMethod },
                     JsonOptions);
                 session.NextAction = CheckoutSteps.PaymentMethod;
-                Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.PaymentMethod, DateTimeOffset.UtcNow);
+                CheckoutSessionStateRules.Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.PaymentMethod, DateTimeOffset.UtcNow);
             }
             await this.context.SaveChangesAsync(cancellationToken);
 
@@ -420,7 +420,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     new[] { CheckoutSteps.Entry, CheckoutSteps.BillingAddress, CheckoutSteps.ShippingAddress, CheckoutSteps.ShippingMethod },
                     JsonOptions);
                 session.NextAction = CheckoutSteps.PaymentMethod;
-                Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.PaymentMethod, DateTimeOffset.UtcNow);
+                CheckoutSessionStateRules.Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.PaymentMethod, DateTimeOffset.UtcNow);
                 await this.context.SaveChangesAsync(cancellationToken);
 
                 return Succeeded(
@@ -462,7 +462,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 new[] { CheckoutSteps.Entry, CheckoutSteps.BillingAddress, CheckoutSteps.ShippingAddress, CheckoutSteps.ShippingMethod },
                 JsonOptions);
             session.NextAction = CheckoutSteps.PaymentMethod;
-            Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.PaymentMethod, DateTimeOffset.UtcNow);
+            CheckoutSessionStateRules.Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.PaymentMethod, DateTimeOffset.UtcNow);
             await this.context.SaveChangesAsync(cancellationToken);
 
             return Succeeded(
@@ -515,7 +515,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 },
                 JsonOptions);
             session.NextAction = CheckoutSteps.Review;
-            Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.Review, DateTimeOffset.UtcNow);
+            CheckoutSessionStateRules.Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.Review, DateTimeOffset.UtcNow);
             await this.context.SaveChangesAsync(cancellationToken);
 
             return Succeeded(
@@ -607,7 +607,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 && selectedPaymentMethod is not null;
             var nextRequiredStep = placeOrderAllowed
                 ? CheckoutSteps.PlaceOrder
-                : ResolveNextRequiredStep(billingAddress, shippingOptions.ShippingRequired ? shippingAddress : null, selectedShippingOption, selectedPaymentMethod, shippingOptions.ShippingRequired);
+                : CheckoutSessionStateRules.ResolveNextRequiredStep(
+                    billingAddress is not null,
+                    shippingAddress is not null,
+                    selectedShippingOption is not null,
+                    selectedPaymentMethod is not null,
+                    shippingOptions.ShippingRequired);
             session.ValidationIssuesJson = distinctIssues.Count == 0 ? null : JsonSerializer.Serialize(distinctIssues, JsonOptions);
             session.CompletedStepsJson = JsonSerializer.Serialize(
                 placeOrderAllowed
@@ -619,10 +624,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                         CheckoutSteps.PaymentMethod,
                         CheckoutSteps.Review,
                     ]
-                    : ParseCompletedSteps(session.CompletedStepsJson),
+                    : CheckoutSessionStateRules.ParseCompletedSteps(session.CompletedStepsJson),
                 JsonOptions);
             session.NextAction = nextRequiredStep;
-            Touch(session, placeOrderAllowed ? CheckoutSessionStates.Ready : CheckoutSessionStates.Draft, CheckoutSteps.Review, DateTimeOffset.UtcNow);
+            CheckoutSessionStateRules.Touch(session, placeOrderAllowed ? CheckoutSessionStates.Ready : CheckoutSessionStates.Draft, CheckoutSteps.Review, DateTimeOffset.UtcNow);
             await this.context.SaveChangesAsync(cancellationToken);
 
             return Succeeded(
@@ -848,7 +853,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     session.LastValidatedCartVersion,
                     session.State,
                     session.CurrentStep,
-                    ParseCompletedSteps(session.CompletedStepsJson),
+                    CheckoutSessionStateRules.ParseCompletedSteps(session.CompletedStepsJson),
                     isValid,
                     session.NextAction,
                     session.CustomerEmail,
@@ -960,7 +965,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             if (session.ExpiresAtUtc <= DateTimeOffset.UtcNow)
             {
-                MarkExpired(session, DateTimeOffset.UtcNow);
+                CheckoutSessionStateRules.MarkExpired(session, DateTimeOffset.UtcNow);
                 await this.context.SaveChangesAsync(cancellationToken);
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Checkout session has expired.");
             }
@@ -1425,7 +1430,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 "Payment attempt requires provider action.",
                 providerSession.MetadataJson);
 
-            Touch(session, CheckoutSessionStates.OrderPending, CheckoutSteps.PlaceOrder, DateTimeOffset.UtcNow);
+            CheckoutSessionStateRules.Touch(session, CheckoutSessionStates.OrderPending, CheckoutSteps.PlaceOrder, DateTimeOffset.UtcNow);
             session.IdempotencyKey = idempotencyKey;
             session.NextAction = "paymentRedirect";
             session.BaseCurrencyCode = rateSnapshot.BaseCurrencyCode;
@@ -1545,7 +1550,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 },
                 JsonOptions);
             session.NextAction = "review";
-            Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.Entry, DateTimeOffset.UtcNow);
+            CheckoutSessionStateRules.Touch(session, CheckoutSessionStates.Draft, CheckoutSteps.Entry, DateTimeOffset.UtcNow);
             await this.context.SaveChangesAsync(cancellationToken);
         }
 
@@ -1563,12 +1568,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var now = DateTimeOffset.UtcNow;
             if (session.ExpiresAtUtc <= now)
             {
-                MarkExpired(session, now);
+                CheckoutSessionStateRules.MarkExpired(session, now);
                 await this.context.SaveChangesAsync(cancellationToken);
                 return CheckoutSessionResolution.Failed(ServiceResponseType.Conflict, "Checkout session has expired.");
             }
 
-            if (!IsActiveCheckoutState(session.State))
+            if (!CheckoutSessionStateRules.IsActive(session.State))
             {
                 return CheckoutSessionResolution.Failed(ServiceResponseType.Conflict, "Checkout session is not active.");
             }
@@ -1650,8 +1655,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 session.LastValidatedCartVersion,
                 session.State,
                 session.CurrentStep,
-                ParseCompletedSteps(session.CompletedStepsJson),
-                IsActiveCheckoutState(session.State) && session.ExpiresAtUtc > DateTimeOffset.UtcNow,
+                CheckoutSessionStateRules.ParseCompletedSteps(session.CompletedStepsJson),
+                CheckoutSessionStateRules.IsActive(session.State) && session.ExpiresAtUtc > DateTimeOffset.UtcNow,
                 session.NextAction,
                 session.CustomerEmail,
                 session.CustomerName,
@@ -1699,8 +1704,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 session.LastValidatedCartVersion,
                 session.State,
                 session.CurrentStep,
-                ParseCompletedSteps(session.CompletedStepsJson),
-                IsActiveCheckoutState(session.State) && session.ExpiresAtUtc > DateTimeOffset.UtcNow,
+                CheckoutSessionStateRules.ParseCompletedSteps(session.CompletedStepsJson),
+                CheckoutSessionStateRules.IsActive(session.State) && session.ExpiresAtUtc > DateTimeOffset.UtcNow,
                 session.NextAction,
                 session.CustomerEmail,
                 session.CustomerName,
@@ -1781,31 +1786,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 .ToArray();
         }
 
-        private static string ResolveNextRequiredStep(
-            StorefrontCheckoutShippingAddressDto? billingAddress,
-            StorefrontCheckoutShippingAddressDto? shippingAddress,
-            StorefrontCheckoutShippingOption? selectedShippingOption,
-            StorefrontCheckoutPaymentMethodOption? selectedPaymentMethod,
-            bool shippingRequired = true)
-        {
-            if (billingAddress is null)
-            {
-                return CheckoutSteps.BillingAddress;
-            }
-
-            if (shippingRequired && shippingAddress is null)
-            {
-                return CheckoutSteps.ShippingAddress;
-            }
-
-            if (shippingRequired && selectedShippingOption is null)
-            {
-                return CheckoutSteps.ShippingMethod;
-            }
-
-            return selectedPaymentMethod is null ? CheckoutSteps.PaymentMethod : CheckoutSteps.Review;
-        }
-
         private static void ClearTermsAcknowledgement(CheckoutSession session)
         {
             session.TermsAccepted = false;
@@ -1817,31 +1797,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         {
             var normalized = NormalizeNullable(value);
             return normalized is null || normalized.Length <= 64 ? normalized : normalized[..64];
-        }
-
-        private static void Touch(
-            CheckoutSession session,
-            string state,
-            string currentStep,
-            DateTimeOffset now)
-        {
-            session.State = state;
-            session.CurrentStep = currentStep;
-            session.CheckoutVersion = Math.Max(1, session.CheckoutVersion) + 1;
-            session.UpdatedAtUtc = now;
-        }
-
-        private static void MarkExpired(CheckoutSession session, DateTimeOffset now)
-        {
-            Touch(session, CheckoutSessionStates.Expired, CheckoutSteps.Entry, now);
-            session.NextAction = "expired";
-        }
-
-        private static bool IsActiveCheckoutState(string state)
-        {
-            return string.Equals(state, CheckoutSessionStates.Draft, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(state, CheckoutSessionStates.Ready, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(state, CheckoutSessionStates.OrderPending, StringComparison.OrdinalIgnoreCase);
         }
 
         private static ServiceResponseType ResolveEntryValidationResponseType(
@@ -2317,26 +2272,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             catch (JsonException)
             {
                 return null;
-            }
-        }
-
-        private static IReadOnlyList<string> ParseCompletedSteps(string? json)
-        {
-            if (string.IsNullOrWhiteSpace(json))
-            {
-                return [];
-            }
-
-            try
-            {
-                return JsonSerializer.Deserialize<IReadOnlyList<string>>(json, JsonOptions)
-                    ?.Where(step => CheckoutSteps.All.Contains(step))
-                    .Distinct(StringComparer.Ordinal)
-                    .ToArray() ?? [];
-            }
-            catch (JsonException)
-            {
-                return [];
             }
         }
 
