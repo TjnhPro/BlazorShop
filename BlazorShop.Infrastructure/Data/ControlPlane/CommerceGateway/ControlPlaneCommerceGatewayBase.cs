@@ -49,19 +49,15 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken));
         }
 
-        protected async Task<ControlPlaneCommerceMediaResult> SendMediaAsync(
+        protected async Task<ApplicationResult<ApplicationMediaContent>> SendMediaApplicationAsync(
             Guid storePublicId,
             string path,
+            string? fileName,
             CancellationToken cancellationToken)
         {
-            var result = await this.transport.SendMediaAsync(storePublicId, path, cancellationToken);
-            return new ControlPlaneCommerceMediaResult(
-                result.Success,
-                result.Message,
-                result.Content,
-                result.ContentType,
-                ToCatalogFailure(result.Failure),
-                result.HttpStatusCode);
+            return CommerceNodeAdminGatewayApplicationResultMapper.ToApplicationMediaResult(
+                await this.transport.SendMediaAsync(storePublicId, path, cancellationToken),
+                fileName);
         }
 
         protected async Task<ControlPlaneCommerceCatalogResult<TPayload>> SendMultipartAsync<TPayload>(
@@ -88,6 +84,20 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 path,
                 upload,
                 cancellationToken));
+        }
+
+        protected async Task<ApplicationResult<TPayload>> SendMediaAssetMultipartApplicationAsync<TPayload>(
+            Guid storePublicId,
+            string path,
+            CommerceMediaAssetUploadRequest upload,
+            CancellationToken cancellationToken)
+        {
+            return CommerceNodeAdminGatewayApplicationResultMapper.ToApplicationResult(
+                await this.transport.SendMediaAssetMultipartAsync<TPayload>(
+                    storePublicId,
+                    path,
+                    upload,
+                    cancellationToken));
         }
 
         protected async Task<ApplicationResult<TPayload>> SendApplicationAsync<TPayload>(

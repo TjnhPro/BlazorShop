@@ -43,14 +43,6 @@ namespace BlazorShop.Application.ControlPlane.Catalog
         string? Format = null,
         long? Version = null);
 
-    public sealed record ControlPlaneCommerceMediaResult(
-        bool Success,
-        string? Message = null,
-        byte[]? Content = null,
-        string? ContentType = null,
-        ControlPlaneCommerceCatalogFailure? Failure = null,
-        int? HttpStatusCode = null);
-
     public enum ControlPlaneCommerceCatalogFailure
     {
         Validation,

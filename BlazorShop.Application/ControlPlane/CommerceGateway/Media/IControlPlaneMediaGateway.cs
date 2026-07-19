@@ -1,5 +1,6 @@
 namespace BlazorShop.Application.ControlPlane.CommerceGateway.Media
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -25,94 +26,94 @@ namespace BlazorShop.Application.ControlPlane.CommerceGateway.Media
     public interface IControlPlaneMediaGateway
     {
         
-                Task<ControlPlaneCommerceCatalogResult<ProductMediaListResponse>> ListProductMediaAsync(
+                Task<ApplicationResult<ProductMediaListResponse>> ListProductMediaAsync(
                     Guid storePublicId,
                     Guid productId,
                     ProductMediaListQuery query,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetListResponse>> ListMediaAssetsAsync(
+                Task<ApplicationResult<CommerceMediaAssetListResponse>> ListMediaAssetsAsync(
                     Guid storePublicId,
                     CommerceMediaAssetListQuery query,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> GetMediaAssetAsync(
+                Task<ApplicationResult<CommerceMediaAssetDto>> GetMediaAssetAsync(
                     Guid storePublicId,
                     Guid assetPublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> UploadMediaAssetAsync(
+                Task<ApplicationResult<CommerceMediaAssetDto>> UploadMediaAssetAsync(
                     Guid storePublicId,
                     CommerceMediaAssetUploadRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> UpdateMediaAssetMetadataAsync(
+                Task<ApplicationResult<CommerceMediaAssetDto>> UpdateMediaAssetMetadataAsync(
                     Guid storePublicId,
                     Guid assetPublicId,
                     CommerceMediaAssetMetadataRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<CommerceMediaAssetDto>> ReplaceMediaAssetAsync(
+                Task<ApplicationResult<CommerceMediaAssetDto>> ReplaceMediaAssetAsync(
                     Guid storePublicId,
                     Guid assetPublicId,
                     CommerceMediaAssetUploadRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<object>> DeleteMediaAssetAsync(
+                Task<ApplicationResult<object>> DeleteMediaAssetAsync(
                     Guid storePublicId,
                     Guid assetPublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<ImportProductMediaResponse>> ImportProductMediaAsync(
+                Task<ApplicationResult<ImportProductMediaResponse>> ImportProductMediaAsync(
                     Guid storePublicId,
                     Guid productId,
                     ImportProductMediaRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<ProductMediaListResponse>> UpdateProductMediaOrderAsync(
+                Task<ApplicationResult<ProductMediaListResponse>> UpdateProductMediaOrderAsync(
                     Guid storePublicId,
                     Guid productId,
                     UpdateProductMediaOrderRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<ProductMediaDto>> SetPrimaryProductMediaAsync(
+                Task<ApplicationResult<ProductMediaDto>> SetPrimaryProductMediaAsync(
                     Guid storePublicId,
                     Guid productId,
                     Guid mediaPublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<ProductMediaListResponse>> DeleteProductMediaAsync(
+                Task<ApplicationResult<ProductMediaListResponse>> DeleteProductMediaAsync(
                     Guid storePublicId,
                     Guid productId,
                     Guid mediaPublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<ImportProductMediaResponse>> RetryProductMediaAsync(
+                Task<ApplicationResult<ImportProductMediaResponse>> RetryProductMediaAsync(
                     Guid storePublicId,
                     Guid productId,
                     Guid mediaPublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceMediaResult> GetProductMediaPreviewAsync(
+                Task<ApplicationResult<ApplicationMediaContent>> GetProductMediaPreviewAsync(
                     Guid storePublicId,
                     Guid mediaPublicId,
                     ProductMediaPreviewQuery query,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceMediaResult> GetMediaAssetPreviewAsync(
+                Task<ApplicationResult<ApplicationMediaContent>> GetMediaAssetPreviewAsync(
                     Guid storePublicId,
                     Guid assetPublicId,
                     string canonicalFileName,

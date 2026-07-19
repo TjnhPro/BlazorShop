@@ -32,7 +32,7 @@ This plan covers the architecture hardening issues verified against the current 
 ## Verified Current Evidence
 
 - [x] Phase 0 baseline: `BlazorShop.Application/ControlPlane/CommerceGateway/CommerceNodeAdminGatewayDtos.cs` contained `ICommerceNodeAdminGatewayTransport` with `HttpMethod`, HTTP path, and status-bearing result. Resolved in Phase 1B.
-- [x] `ControlPlaneCommerceCatalogResult<T>` had 236 generic references at Phase 0. After Store configuration, Security/privacy, Shipping, Payment, Currency, Content, Navigation, and Order migrations in Phase 1C.1-1C.7, current migration baseline is 142 references.
+- [x] `ControlPlaneCommerceCatalogResult<T>` had 236 generic references at Phase 0. After Store configuration, Security/privacy, Shipping, Payment, Currency, Content, Navigation, Order, and Media migrations in Phase 1C.1-1C.8, current migration baseline is 116 references.
 - [x] `ApplicationResult<T>`, `ApplicationError`, and `ApplicationErrorKind.RemoteFailure` already exist under `BlazorShop.Application/Common/Results`.
 - [x] `IControlPlaneProductGateway` has 31 current methods spanning product CRUD, product SEO, product import, variation template, category media, variant, and inventory in one interface.
 - [x] `BlazorShop.Application/CommerceNode/Carts/StorefrontCartService.cs` still accepts nullable `IProductSelectionResolver` and falls back to `new ProductSelectionResolver(...)`.
@@ -151,7 +151,7 @@ Migrate in this order to limit blast radius:
 - [x] Currency gateway.
 - [x] Content/navigation gateway.
 - [x] Order gateway.
-- [ ] Media gateway.
+- [x] Media gateway.
 - [ ] Product gateway after Phase 2 split or through temporary adapters.
 
 For each capability:
@@ -239,6 +239,20 @@ Phase 1C.7 Order:
 Phase 1C.7 focused verification:
 
 - [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~Order|FullyQualifiedName~ControlPlaneCommerceGatewayStoreMapping|FullyQualifiedName~CommerceNodeAdminGatewayApplicationResultMapper|FullyQualifiedName~ApplicationResultStandardization|FullyQualifiedName~ArchitectureBoundary"` - Passed: 166, Failed: 0, Skipped: 1 existing skipped CartService idempotency test. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors; Tailwind completed with existing Browserslist stale notice.
+
+Phase 1C.8 Media:
+
+- [x] Change Media Application interface JSON-returning methods from `ControlPlaneCommerceCatalogResult<T>` to `ApplicationResult<T>`.
+- [x] Change Media preview methods from `ControlPlaneCommerceMediaResult` to `ApplicationResult<ApplicationMediaContent>`.
+- [x] Update Media Infrastructure gateway implementation to use `SendApplicationAsync`, `SendMediaAssetMultipartApplicationAsync`, and `SendMediaApplicationAsync`.
+- [x] Control Plane API preview success still returns file content; failure now flows through the existing `ApplicationResult<T>` controller-base overload.
+- [x] Current `ControlPlaneCommerceCatalogResult<T>` migration baseline after this phase: 116 references.
+
+Phase 1C.8 focused verification:
+
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~Media|FullyQualifiedName~ControlPlaneCommerceGatewayStoreMapping|FullyQualifiedName~CommerceNodeAdminGatewayApplicationResultMapper|FullyQualifiedName~ApplicationResultStandardization|FullyQualifiedName~ArchitectureBoundary"` - Passed: 125, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
 - [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
 - [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors; Tailwind completed with existing Browserslist stale notice.
 

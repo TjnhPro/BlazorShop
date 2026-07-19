@@ -133,16 +133,12 @@ namespace BlazorShop.ControlPlane.API.Controllers
                 new ProductMediaPreviewQuery(width, height, fit, format, version),
                 cancellationToken);
 
-            if (!result.Success || result.Content is null)
+            if (!result.Success || result.Payload is null)
             {
-                return ToActionResult(new ControlPlaneCommerceCatalogResult<object>(
-                    false,
-                    result.Message,
-                    Failure: result.Failure,
-                    HttpStatusCode: result.HttpStatusCode));
+                return ToActionResult(result);
             }
 
-            return this.File(result.Content, result.ContentType ?? "application/octet-stream");
+            return this.File(result.Payload.Content, result.Payload.ContentType);
         }
 
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/media/assets")]
@@ -266,16 +262,12 @@ namespace BlazorShop.ControlPlane.API.Controllers
                 new MediaAssetPreviewQuery(width, height, fit, format, version),
                 cancellationToken);
 
-            if (!result.Success || result.Content is null)
+            if (!result.Success || result.Payload is null)
             {
-                return ToActionResult(new ControlPlaneCommerceCatalogResult<object>(
-                    false,
-                    result.Message,
-                    Failure: result.Failure,
-                    HttpStatusCode: result.HttpStatusCode));
+                return ToActionResult(result);
             }
 
-            return this.File(result.Content, result.ContentType ?? "application/octet-stream");
+            return this.File(result.Payload.Content, result.Payload.ContentType);
         }
     }
 }

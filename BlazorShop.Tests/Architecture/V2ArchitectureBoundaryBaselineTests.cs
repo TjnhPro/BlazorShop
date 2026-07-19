@@ -16,7 +16,7 @@ namespace BlazorShop.Tests.Architecture
                 .SelectMany(path => Regex.Matches(File.ReadAllText(path), "ControlPlaneCommerceCatalogResult<"))
                 .Count();
 
-            Assert.InRange(references, 135, 150);
+            Assert.InRange(references, 110, 125);
         }
 
         [Fact]
