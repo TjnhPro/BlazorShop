@@ -306,7 +306,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                     SupportsRefund: false,
                     SupportsPartialRefund: false,
                     RequiresWebhookSignature: true,
-                    ActiveByDefault: false);
+                    ActiveByDefault: true);
             }
 
             public string ProviderKey { get; }

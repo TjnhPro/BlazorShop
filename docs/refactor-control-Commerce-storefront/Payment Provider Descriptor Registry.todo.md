@@ -190,7 +190,7 @@ Phase 1 evidence:
   - default order `20`.
   - supports capture `true`.
   - webhook signature `true`.
-  - active by default `false` or configured-state aware if existing pattern supports it.
+  - active by default `true` to represent registered provider runtime support; store-level default enabled state remains separate and is handled in Phase 4.
 - [x] Update fake/minimal provider classes in tests to expose descriptor.
 - [x] Add provider descriptor tests:
   - COD descriptor matches COD operation behavior.
@@ -213,18 +213,18 @@ Phase 2 evidence:
 
 ## Phase 3 - Refactor Capability Registry Into Aggregator
 
-- [ ] Change `PaymentProviderCapabilityRegistry` to store descriptors from `IEnumerable<IStorefrontPaymentProvider>`.
-- [ ] `List()` returns provider descriptors mapped to `PaymentProviderCapabilityDto`.
-- [ ] `Get(systemName)` resolves only from provider descriptors.
-- [ ] Remove registry-owned hard-coded methods:
+- [x] Change `PaymentProviderCapabilityRegistry` to store descriptors from `IEnumerable<IStorefrontPaymentProvider>`.
+- [x] `List()` returns provider descriptors mapped to `PaymentProviderCapabilityDto`.
+- [x] `Get(systemName)` resolves only from provider descriptors.
+- [x] Remove registry-owned hard-coded methods:
   - `CreateCod`.
   - `CreateStripe`.
   - `CreatePayPalSkeleton`.
-- [ ] Define installed/active mapping clearly:
+- [x] Define installed/active mapping clearly:
   - `Installed = true` for registered provider descriptor.
   - `Active = descriptor.ActiveByDefault` unless a later phase adds runtime configuration health.
-- [ ] If provider list contains duplicate `SystemName`, fail clearly at startup/registry construction or pick deterministic failure in `Get/List`.
-- [ ] Add tests:
+- [x] If provider list contains duplicate `SystemName`, fail clearly at startup/registry construction or pick deterministic failure in `Get/List`.
+- [x] Add tests:
   - fake provider descriptor appears in `List()` without registry edit.
   - unknown provider returns validation failure.
   - duplicate provider keys are rejected.
@@ -232,9 +232,20 @@ Phase 2 evidence:
 
 Acceptance:
 
-- [ ] Adding a new `IStorefrontPaymentProvider` implementation plus DI registration is enough for registry discovery.
-- [ ] Registry source no longer names COD, Stripe, or PayPal.
-- [ ] Webhook signature verifier still reads signature requirement correctly through registry.
+- [x] Adding a new `IStorefrontPaymentProvider` implementation plus DI registration is enough for registry discovery.
+- [x] Registry source no longer names COD, Stripe, or PayPal.
+- [x] Webhook signature verifier still reads signature requirement correctly through registry.
+
+Phase 3 evidence:
+
+- Moved `PaymentProviderCapabilityRegistry` to its own file and removed registry-owned `CreateCod`, `CreateStripe`, and `CreatePayPalSkeleton` factories.
+- Registry now validates `ProviderKey == Descriptor.SystemName`, rejects duplicate descriptor keys, sorts by descriptor display order/name, and maps descriptor metadata into the existing `PaymentProviderCapabilityDto`.
+- PayPal is no longer synthesized by runtime discovery; existing store rows remain handled as unsupported by `CommerceNodePaymentMethodService`.
+- Active semantics are explicit for this phase: registered provider descriptor means `Installed = true`; capability `Active = descriptor.ActiveByDefault`. Stripe uses `ActiveByDefault = true` so configured stores can still enable/use Stripe, while store default enabled state remains separate.
+- Focused registry/payment method command passed 17/17 tests:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~PaymentProviderCapabilityRegistryTests|FullyQualifiedName~PaymentWebhookSignatureVerifierTests|FullyQualifiedName~CommerceNodePaymentMethodSecretBoundaryTests|FullyQualifiedName~CommerceNodePaymentMethodServiceCacheTests" --no-restore --nologo --verbosity minimal`
+- Focused checkout/payment command passed 80/80 tests:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~StorefrontCheckoutServiceTests|FullyQualifiedName~PaymentAttemptServiceTests|FullyQualifiedName~CommerceNodeStorefrontPaymentContractTests|FullyQualifiedName~StorefrontScopedPaymentWebhookHardeningTests|FullyQualifiedName~StripeStorefrontPaymentProviderTests" --no-restore --nologo --verbosity minimal`
 
 ## Phase 4 - Move Store Payment Defaults To Provider Descriptors
 

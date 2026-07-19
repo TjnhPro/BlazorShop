@@ -30,7 +30,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal(20, descriptor.DefaultDisplayOrder);
             Assert.True(descriptor.SupportsCapture);
             Assert.True(descriptor.RequiresWebhookSignature);
-            Assert.False(descriptor.ActiveByDefault);
+            Assert.True(descriptor.ActiveByDefault);
         }
 
         [Fact]

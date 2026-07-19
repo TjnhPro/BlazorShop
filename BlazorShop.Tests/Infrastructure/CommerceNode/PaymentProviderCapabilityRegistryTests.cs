@@ -10,29 +10,39 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
     public sealed class PaymentProviderCapabilityRegistryTests
     {
         [Fact]
-        public void List_ReturnsCodOfflineStripeRedirectAndPayPalSkeleton()
+        public void List_ReturnsCapabilitiesFromProviderDescriptors()
         {
-            var registry = new PaymentProviderCapabilityRegistry([new FakePaymentProvider(PaymentMethodKeys.Stripe)]);
+            var registry = new PaymentProviderCapabilityRegistry(
+            [
+                new FakePaymentProvider("bank_transfer", "Bank Transfer", PaymentProviderMethodTypes.Offline, 30, requiresWebhookSignature: false),
+                new FakePaymentProvider(PaymentMethodKeys.Stripe, "Stripe", PaymentProviderMethodTypes.Redirect, 20, requiresWebhookSignature: true),
+            ]);
 
             var capabilities = registry.List();
 
-            var cod = Assert.Single(capabilities, item => item.SystemName == PaymentMethodKeys.Cod);
-            Assert.True(cod.Installed);
-            Assert.True(cod.Active);
-            Assert.Equal(PaymentProviderMethodTypes.Offline, cod.MethodType);
-            Assert.False(cod.RequiresWebhookSignature);
+            Assert.Equal([PaymentMethodKeys.Stripe, "bank_transfer"], capabilities.Select(capability => capability.SystemName).ToArray());
+            var bankTransfer = Assert.Single(capabilities, item => item.SystemName == "bank_transfer");
+            Assert.True(bankTransfer.Installed);
+            Assert.True(bankTransfer.Active);
+            Assert.Equal("Bank Transfer", bankTransfer.DisplayName);
+            Assert.Equal(PaymentProviderMethodTypes.Offline, bankTransfer.MethodType);
+            Assert.False(bankTransfer.RequiresWebhookSignature);
 
             var stripe = Assert.Single(capabilities, item => item.SystemName == PaymentMethodKeys.Stripe);
             Assert.True(stripe.Installed);
             Assert.True(stripe.Active);
             Assert.Equal(PaymentProviderMethodTypes.Redirect, stripe.MethodType);
             Assert.True(stripe.RequiresWebhookSignature);
+        }
 
-            var paypal = Assert.Single(capabilities, item => item.SystemName == PaymentMethodKeys.PayPal);
-            Assert.False(paypal.Installed);
-            Assert.False(paypal.Active);
-            Assert.Equal(PaymentProviderMethodTypes.Redirect, paypal.MethodType);
-            Assert.True(paypal.RequiresWebhookSignature);
+        [Fact]
+        public void List_DoesNotReturnPayPalUnlessProviderIsRegistered()
+        {
+            var registry = new PaymentProviderCapabilityRegistry([new FakePaymentProvider(PaymentMethodKeys.Stripe)]);
+
+            var capabilities = registry.List();
+
+            Assert.DoesNotContain(capabilities, item => item.SystemName == PaymentMethodKeys.PayPal);
         }
 
         [Fact]
@@ -47,29 +57,79 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal("Payment provider is not supported.", result.Message);
         }
 
+        [Fact]
+        public void Constructor_WhenProviderKeysAreDuplicated_Throws()
+        {
+            Assert.Throws<InvalidOperationException>(() => new PaymentProviderCapabilityRegistry(
+            [
+                new FakePaymentProvider(PaymentMethodKeys.Stripe),
+                new FakePaymentProvider(PaymentMethodKeys.Stripe.ToUpperInvariant()),
+            ]));
+        }
+
+        [Fact]
+        public void Constructor_WhenProviderKeyDoesNotMatchDescriptor_Throws()
+        {
+            Assert.Throws<InvalidOperationException>(() => new PaymentProviderCapabilityRegistry(
+            [
+                new FakePaymentProvider(PaymentMethodKeys.Stripe, descriptorSystemName: "stripe_mismatch"),
+            ]));
+        }
+
+        [Fact]
+        public void RegistrySource_DoesNotContainProviderSpecificFactories()
+        {
+            var source = File.ReadAllText(Path.Combine(
+                AppContext.BaseDirectory,
+                "..",
+                "..",
+                "..",
+                "..",
+                "BlazorShop.Infrastructure",
+                "Data",
+                "CommerceNode",
+                "Services",
+                "PaymentProviderCapabilityRegistry.cs"));
+
+            Assert.DoesNotContain("CreateCod", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("CreateStripe", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("CreatePayPalSkeleton", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("PaymentMethodKeys.Cod", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("PaymentMethodKeys.Stripe", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("PaymentMethodKeys.PayPal", source, StringComparison.Ordinal);
+        }
+
         private sealed class FakePaymentProvider : IStorefrontPaymentProvider
         {
-            public FakePaymentProvider(string providerKey)
+            public FakePaymentProvider(
+                string providerKey,
+                string? displayName = null,
+                string methodType = PaymentProviderMethodTypes.Redirect,
+                int defaultDisplayOrder = 20,
+                bool requiresWebhookSignature = true,
+                bool activeByDefault = true,
+                string? descriptorSystemName = null)
             {
                 this.ProviderKey = providerKey;
                 this.Descriptor = new PaymentProviderDescriptor(
-                    providerKey,
-                    providerKey,
+                    descriptorSystemName ?? providerKey,
+                    displayName ?? providerKey,
                     Description: null,
                     IconUrl: null,
-                    DefaultDisplayOrder: 20,
+                    defaultDisplayOrder,
                     SupportedCurrencyCodes: [],
                     SupportedCountryCodes: [],
                     MinOrderTotal: null,
                     MaxOrderTotal: null,
-                    PaymentProviderMethodTypes.Redirect,
+                    methodType,
                     RecurringCapable: false,
                     SupportsAuthorize: false,
                     SupportsCapture: true,
                     SupportsVoid: false,
                     SupportsRefund: false,
                     SupportsPartialRefund: false,
-                    RequiresWebhookSignature: true);
+                    requiresWebhookSignature,
+                    activeByDefault);
             }
 
             public string ProviderKey { get; }

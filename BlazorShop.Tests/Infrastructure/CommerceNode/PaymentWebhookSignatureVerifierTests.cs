@@ -70,7 +70,11 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 .Build();
 
             return new PaymentWebhookSignatureVerifier(
-                new PaymentProviderCapabilityRegistry([new FakePaymentProvider(PaymentMethodKeys.Stripe)]),
+                new PaymentProviderCapabilityRegistry(
+                [
+                    new FakePaymentProvider(PaymentMethodKeys.Cod, requiresWebhookSignature: false),
+                    new FakePaymentProvider(PaymentMethodKeys.Stripe, requiresWebhookSignature: true),
+                ]),
                 configuration);
         }
 
@@ -82,7 +86,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
 
         private sealed class FakePaymentProvider : IStorefrontPaymentProvider
         {
-            public FakePaymentProvider(string providerKey)
+            public FakePaymentProvider(string providerKey, bool requiresWebhookSignature)
             {
                 this.ProviderKey = providerKey;
                 this.Descriptor = new PaymentProviderDescriptor(
@@ -102,7 +106,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                     SupportsVoid: false,
                     SupportsRefund: false,
                     SupportsPartialRefund: false,
-                    RequiresWebhookSignature: true);
+                    requiresWebhookSignature);
             }
 
             public string ProviderKey { get; }

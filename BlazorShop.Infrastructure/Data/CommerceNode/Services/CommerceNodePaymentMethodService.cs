@@ -115,24 +115,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             ArgumentNullException.ThrowIfNull(request);
 
             var key = NormalizeKey(paymentMethodKey);
-            var capabilityResult = this.capabilityRegistry.Get(key);
-            if (!capabilityResult.Success || capabilityResult.Payload is null)
-            {
-                return Failure("Payment method key is not supported.", ServiceResponseType.ValidationError);
-            }
-
-            var capability = capabilityResult.Payload;
-            if (request.Enabled && (!capability.Installed || !capability.Active))
-            {
-                return Failure("Payment provider is not installed or active.", ServiceResponseType.ValidationError);
-            }
-
-            var validationMessage = Validate(request);
-            if (validationMessage is not null)
-            {
-                return Failure(validationMessage, ServiceResponseType.ValidationError);
-            }
-
             var storeResult = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
             if (!storeResult.Success)
             {
@@ -144,6 +126,32 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 .FirstOrDefaultAsync(
                     candidate => candidate.StoreId == storeResult.Payload && candidate.PaymentMethodKey == key,
                     cancellationToken);
+
+            var capabilityResult = this.capabilityRegistry.Get(key);
+            if (!capabilityResult.Success || capabilityResult.Payload is null)
+            {
+                if (method is null)
+                {
+                    return Failure("Payment method key is not supported.", ServiceResponseType.ValidationError);
+                }
+
+                if (request.Enabled)
+                {
+                    return Failure("Payment provider is not installed or active.", ServiceResponseType.ValidationError);
+                }
+            }
+
+            var capability = capabilityResult.Payload ?? CreateUnsupportedCapability(key);
+            if (request.Enabled && (!capability.Installed || !capability.Active))
+            {
+                return Failure("Payment provider is not installed or active.", ServiceResponseType.ValidationError);
+            }
+
+            var validationMessage = Validate(request);
+            if (validationMessage is not null)
+            {
+                return Failure(validationMessage, ServiceResponseType.ValidationError);
+            }
 
             if (method is null)
             {
