@@ -637,16 +637,16 @@ Phase 7F focused verification:
 
 ### Verification
 
-- [ ] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~OpenApi|FullyQualifiedName~LayoutAssetFoundation|FullyQualifiedName~ControlPlane|FullyQualifiedName~SecurityPrivacy|FullyQualifiedName~CommerceNodeDbContextModel"`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore`
-- [ ] Check EF migration diff is empty for configuration-only DbContext split.
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~OpenApi|FullyQualifiedName~LayoutAssetFoundation|FullyQualifiedName~ControlPlane|FullyQualifiedName~SecurityPrivacy|FullyQualifiedName~CommerceNodeDbContextModel"` - Passed: 264, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, legacy Presentation Microsoft.OpenApi advisory, Browserslist stale.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors; Tailwind completed with existing Browserslist stale notice.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
+- [x] Check EF migration diff is empty for configuration-only DbContext split. Covered by `ControlPlaneDbContextModelTests.RuntimeModel_MatchesMigrationSnapshot`.
 
 ### Done When
 
-- [ ] Hotspot files are split by cohesion and no behavior changes are intended.
-- [ ] Existing OpenAPI snapshots and UI static tests remain stable.
-- [ ] Development seeding remains idempotent and non-destructive to runtime config.
+- [x] Hotspot files are split by cohesion and no behavior changes are intended.
+- [x] Existing OpenAPI snapshots and UI static tests remain stable.
+- [x] Development seeding remains idempotent and non-destructive to runtime config.
 
 ## Phase 8 - V2 Build And Test Isolation
 
@@ -763,6 +763,6 @@ Goal: prevent the same architecture issues from returning.
 - [ ] Phase 6A complete and committed.
 - [ ] Phase 6B/6C complete and committed.
 - [ ] Phase 6D decision made after generated-client readiness check.
-- [ ] Phase 7 complete by subphase and committed in small batches.
+- [x] Phase 7 complete by subphase and committed in small batches.
 - [ ] Phase 8 complete and committed.
 - [ ] Phase 9 complete and committed.
