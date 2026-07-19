@@ -579,10 +579,16 @@ Phase 7B focused verification:
 
 ### Phase 7C - Control Plane DbContext Configuration
 
-- [ ] Move `ControlPlaneDbContext` entity mapping to `IEntityTypeConfiguration<T>` classes grouped by aggregate.
-- [ ] Call `ApplyConfigurationsFromAssembly(...)`.
-- [ ] Ensure migrations do not change when only moving configuration.
-- [ ] Run model snapshot/model build tests.
+- [x] Move `ControlPlaneDbContext` entity mapping to `IEntityTypeConfiguration<T>` classes grouped by aggregate.
+- [x] Call `ApplyConfigurationsFromAssembly(...)`.
+- [x] Ensure migrations do not change when only moving configuration.
+- [x] Run model snapshot/model build tests.
+
+Phase 7C focused verification:
+
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~ControlPlaneDbContextModel|FullyQualifiedName~ArchitectureBoundary"` - Passed: 24, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
+- [x] EF migration diff is empty for Control Plane DbContext configuration-only split, covered by `ControlPlaneDbContextModelTests.RuntimeModel_MatchesMigrationSnapshot`.
 
 ### Phase 7D - Control Plane Product Page
 

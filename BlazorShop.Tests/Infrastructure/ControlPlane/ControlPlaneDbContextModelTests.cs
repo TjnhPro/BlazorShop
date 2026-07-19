@@ -4,7 +4,11 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
     using BlazorShop.Infrastructure.Data.ControlPlane;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Diagnostics;
+    using Microsoft.EntityFrameworkCore.Infrastructure;
     using Microsoft.EntityFrameworkCore.Metadata;
+    using Microsoft.EntityFrameworkCore.Migrations;
+    using Microsoft.Extensions.DependencyInjection;
 
     using Xunit;
 
@@ -60,6 +64,24 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
             Assert.Empty(rawSecretNames);
         }
 
+        [Fact]
+        public void RuntimeModel_MatchesMigrationSnapshot()
+        {
+            using var context = CreateContext();
+            var differ = context.GetService<IMigrationsModelDiffer>();
+            var modelRuntimeInitializer = context.GetService<IModelRuntimeInitializer>();
+            var validationLogger = context.GetService<IDiagnosticsLogger<DbLoggerCategory.Model.Validation>>();
+            var designTimeModel = context.GetService<IDesignTimeModel>().Model;
+            var snapshot = CreateSnapshot();
+            var snapshotModel = modelRuntimeInitializer.Initialize(snapshot.Model, designTime: true, validationLogger);
+
+            var operations = differ.GetDifferences(snapshotModel.GetRelationalModel(), designTimeModel.GetRelationalModel());
+
+            Assert.True(
+                operations.Count == 0,
+                $"Control Plane runtime model differs from migration snapshot: {string.Join(", ", operations.Select(operation => operation.GetType().Name))}");
+        }
+
         private static ControlPlaneDbContext CreateContext()
         {
             var options = new DbContextOptionsBuilder<ControlPlaneDbContext>()
@@ -73,6 +95,16 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
                 .Options;
 
             return new ControlPlaneDbContext(options);
+        }
+
+        private static ModelSnapshot CreateSnapshot()
+        {
+            var assembly = typeof(ControlPlaneDbContext).Assembly;
+            var snapshotType = assembly.GetType(
+                "BlazorShop.Infrastructure.Data.ControlPlane.Migrations.ControlPlaneDbContextModelSnapshot",
+                throwOnError: true)!;
+
+            return (ModelSnapshot)Activator.CreateInstance(snapshotType, nonPublic: true)!;
         }
 
         private static bool HasUsableIndex(IEntityType entityType, IProperty property)

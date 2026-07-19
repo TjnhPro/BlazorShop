@@ -241,7 +241,6 @@ namespace BlazorShop.Tests.Architecture
         {
             var hotspots = new[]
             {
-                new HotspotBaseline("BlazorShop.Infrastructure/Data/ControlPlane/ControlPlaneDbContext.cs", 712, 27),
                 new HotspotBaseline("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/CommerceProducts.razor", 1691),
                 new HotspotBaseline("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs", 813),
             };
@@ -259,6 +258,29 @@ namespace BlazorShop.Tests.Architecture
                         Regex.Matches(source, "modelBuilder\\.Entity").Count);
                 }
             }
+        }
+
+        [Fact]
+        public void ControlPlaneDbContext_UsesEntityTypeConfigurationsAfterPhase7C()
+        {
+            var dbContextSource = ReadRepositoryFile("BlazorShop.Infrastructure/Data/ControlPlane/ControlPlaneDbContext.cs");
+            var configurationFiles = Directory
+                .EnumerateFiles(RepositoryPath("BlazorShop.Infrastructure/Data/ControlPlane/Configurations"), "*.cs")
+                .Select(ToRepositoryRelativePath)
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.Contains("ApplyConfigurationsFromAssembly(", dbContextSource);
+            Assert.Contains("BlazorShop.Infrastructure.Data.ControlPlane.Configurations", dbContextSource);
+            Assert.True(File.ReadLines(RepositoryPath("BlazorShop.Infrastructure/Data/ControlPlane/ControlPlaneDbContext.cs")).Count() <= 220);
+            Assert.True(configurationFiles.Length >= 18);
+            Assert.All(
+                configurationFiles,
+                file => Assert.Contains(
+                    "IEntityTypeConfiguration<",
+                    ReadRepositoryFile(file),
+                    StringComparison.Ordinal));
+            Assert.Equal(3, Regex.Matches(dbContextSource, "modelBuilder\\.Entity").Count);
         }
 
         [Fact]
