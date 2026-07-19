@@ -197,27 +197,34 @@ Acceptance:
 
 ## Phase 2 - Move Shared Child Data Loaders Into Assembler
 
-- [ ] Move product name lookup into assembler:
+- [x] Move product name lookup into assembler:
   - collect product ids from order lines.
   - query `context.Products.AsNoTracking()`.
   - build product name dictionary.
-- [ ] Move payment attempt summary lookup into assembler:
+- [x] Move payment attempt summary lookup into assembler:
   - query latest `PaymentAttempts` by `UpdatedAtUtc`.
   - map to `GetOrderPaymentSummary`.
   - include/exclude public id/provider key based on options.
-- [ ] Move history lookup into assembler:
+- [x] Move history lookup into assembler:
   - all history for admin.
   - `VisibleToCustomer` only for customer/guest/internal current behavior.
-- [ ] Move tracking event lookup into assembler:
+- [x] Move tracking event lookup into assembler:
   - support include/exclude by options.
   - preserve existing order by `OccurredAtUtc`.
-- [ ] Keep all EF queries batched by `orderIds`, not per order.
+- [x] Keep all EF queries batched by `orderIds`, not per order.
+
+Phase 2 notes:
+
+- Added private batched child loaders inside `OrderReadModelAssembler` for product names, payment summaries, order history, and shipment tracking events.
+- Loader visibility is gated by `OrderReadModelOptions` so customer/guest/admin differences remain explicit before services migrate.
+- Loader methods stay private to avoid widening the runtime surface only for tests; `OrderReadModelOptionsTests` includes a source-shape guard for batching and option gates.
+- `BuildAsync` still returns immediately for empty input and still does not project non-empty orders until Phase 3.
 
 Acceptance:
 
-- [ ] Assembler can build lookup dictionaries for multiple orders with one query per child data type.
-- [ ] No N+1 query pattern introduced.
-- [ ] Empty order collection returns empty list without DB child queries.
+- [x] Assembler can build lookup dictionaries for multiple orders with one query per child data type.
+- [x] No N+1 query pattern introduced.
+- [x] Empty order collection returns empty list without DB child queries.
 
 ## Phase 3 - Move Core Order And Line Projection Into Assembler
 
