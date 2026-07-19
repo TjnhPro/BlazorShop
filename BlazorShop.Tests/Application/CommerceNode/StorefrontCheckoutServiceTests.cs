@@ -1,6 +1,7 @@
 namespace BlazorShop.Tests.Application.CommerceNode
 {
     using BlazorShop.Application.CommerceNode.Carts;
+    using BlazorShop.Application.CommerceNode.Addresses;
     using BlazorShop.Application.CommerceNode.Checkout;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Customers;
@@ -79,6 +80,34 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Contains("AddScoped<IShippingTaxCalculator, ZeroShippingTaxCalculator>", source, StringComparison.Ordinal);
             Assert.Contains("AddScoped<IOrderPlacementService, OrderPlacementService>", source, StringComparison.Ordinal);
             Assert.Contains("AddScoped<IStorefrontCheckoutService, StorefrontCheckoutService>", source, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void CheckoutServiceTestBuilder_CanOverrideShippingCalculator()
+        {
+            using var context = CreateContext();
+            var cartService = CreateCartService(context, new Mock<IProductReadRepository>());
+            var shippingCalculator = new FakeShippingCalculator(_ => new ShippingCalculationResult(false, [], [], []));
+
+            var service = new CheckoutServiceTestBuilder(context, cartService)
+                .WithShippingCalculator(shippingCalculator)
+                .Build();
+
+            Assert.Same(shippingCalculator, GetPrivateField<IShippingCalculator>(service, "shippingCalculator"));
+        }
+
+        [Fact]
+        public void CheckoutServiceTestBuilder_CanOverrideOrderPlacementService()
+        {
+            using var context = CreateContext();
+            var cartService = CreateCartService(context, new Mock<IProductReadRepository>());
+            var orderPlacementService = new FakeOrderPlacementService();
+
+            var service = new CheckoutServiceTestBuilder(context, cartService)
+                .WithOrderPlacementService(orderPlacementService)
+                .Build();
+
+            Assert.Same(orderPlacementService, GetPrivateField<IOrderPlacementService>(service, "orderPlacementService"));
         }
 
         [Fact]
@@ -2481,18 +2510,106 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 ? [new CodStorefrontPaymentProvider()]
                 : providers;
 
-            return new StorefrontCheckoutService(
-                context,
-                cartService,
-                new FixedStoreCurrencyResolver("USD"),
-                new MoneyRoundingService(new CurrencyMetadataService()),
-                moneyConversionService ?? new FakeMoneyConversionService(),
-                new StorefrontCustomerService(context),
-                new StubStoreFeatureStateService(checkoutEnabled),
-                new PaymentProviderCapabilityRegistry(providerList),
-                new StorefrontPaymentProviderResolver(providerList),
-                shippingCalculator: shippingCalculator,
-                orderPlacementService: orderPlacementService);
+            var builder = new CheckoutServiceTestBuilder(context, cartService)
+                .WithCheckoutEnabled(checkoutEnabled)
+                .WithProviders(providerList);
+            if (shippingCalculator is not null)
+            {
+                builder.WithShippingCalculator(shippingCalculator);
+            }
+
+            if (moneyConversionService is not null)
+            {
+                builder.WithMoneyConversionService(moneyConversionService);
+            }
+
+            if (orderPlacementService is not null)
+            {
+                builder.WithOrderPlacementService(orderPlacementService);
+            }
+
+            return builder.Build();
+        }
+
+        private sealed class CheckoutServiceTestBuilder
+        {
+            private readonly CommerceNodeDbContext context;
+            private readonly IStorefrontCartService cartService;
+            private bool checkoutEnabled = true;
+            private IStoreCurrencyResolver storeCurrencyResolver = new FixedStoreCurrencyResolver("USD");
+            private IMoneyRoundingService moneyRoundingService = new MoneyRoundingService(new CurrencyMetadataService());
+            private IMoneyConversionService moneyConversionService = new FakeMoneyConversionService();
+            private readonly IStorefrontCustomerService customerService;
+            private IStorefrontPaymentProvider[] providers = [new CodStorefrontPaymentProvider()];
+            private IProductSellabilityResolver sellabilityResolver = new ProductSellabilityResolver();
+            private IAddressValidationService addressValidationService = new AddressValidationService();
+            private IShippingCalculator shippingCalculator = new ShippingCalculator([new InternalFreeStandardShippingProvider()]);
+            private IShippingTaxCalculator shippingTaxCalculator = new ZeroShippingTaxCalculator();
+            private IOrderPlacementService? orderPlacementService;
+
+            public CheckoutServiceTestBuilder(
+                CommerceNodeDbContext context,
+                IStorefrontCartService cartService)
+            {
+                this.context = context;
+                this.cartService = cartService;
+                this.customerService = new StorefrontCustomerService(context);
+            }
+
+            public CheckoutServiceTestBuilder WithCheckoutEnabled(bool enabled)
+            {
+                this.checkoutEnabled = enabled;
+                return this;
+            }
+
+            public CheckoutServiceTestBuilder WithMoneyConversionService(IMoneyConversionService service)
+            {
+                this.moneyConversionService = service;
+                return this;
+            }
+
+            public CheckoutServiceTestBuilder WithShippingCalculator(IShippingCalculator service)
+            {
+                this.shippingCalculator = service;
+                return this;
+            }
+
+            public CheckoutServiceTestBuilder WithOrderPlacementService(IOrderPlacementService service)
+            {
+                this.orderPlacementService = service;
+                return this;
+            }
+
+            public CheckoutServiceTestBuilder WithProviders(params IStorefrontPaymentProvider[] paymentProviders)
+            {
+                this.providers = paymentProviders.Length == 0
+                    ? [new CodStorefrontPaymentProvider()]
+                    : paymentProviders;
+                return this;
+            }
+
+            public StorefrontCheckoutService Build()
+            {
+                var providerList = this.providers;
+                var placementService = this.orderPlacementService
+                    ?? new OrderPlacementService(this.context, this.moneyRoundingService, this.sellabilityResolver);
+
+                return new StorefrontCheckoutService(
+                    this.context,
+                    this.cartService,
+                    this.storeCurrencyResolver,
+                    this.moneyRoundingService,
+                    this.moneyConversionService,
+                    this.customerService,
+                    new StubStoreFeatureStateService(this.checkoutEnabled),
+                    new PaymentProviderCapabilityRegistry(providerList),
+                    new StorefrontPaymentProviderResolver(providerList),
+                    this.sellabilityResolver,
+                    this.addressValidationService,
+                    this.shippingCalculator,
+                    this.shippingTaxCalculator,
+                    placementService);
+            }
         }
 
         private static StorefrontCartService CreateCartService(
@@ -2769,6 +2886,18 @@ namespace BlazorShop.Tests.Application.CommerceNode
             }
         }
 
+        private sealed class FakeOrderPlacementService : IOrderPlacementService
+        {
+            public Task<OrderPlacementResult> PlaceAsync(
+                OrderPlacementRequest request,
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(OrderPlacementResult.Failed(
+                    ServiceResponseType.Conflict,
+                    "Injected placement failure."));
+            }
+        }
+
         private sealed class FakeShippingCalculator : IShippingCalculator
         {
             private readonly Func<ShippingOptionsRequest, ShippingCalculationResult> calculate;
@@ -2873,6 +3002,16 @@ namespace BlazorShop.Tests.Application.CommerceNode
                     ResponseType = ServiceResponseType.Success,
                 });
             }
+        }
+
+        private static T GetPrivateField<T>(object instance, string fieldName)
+        {
+            var field = instance.GetType().GetField(
+                fieldName,
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+            Assert.NotNull(field);
+            return Assert.IsAssignableFrom<T>(field.GetValue(instance));
         }
 
         private static string ReadRepositoryFile(string relativePath)

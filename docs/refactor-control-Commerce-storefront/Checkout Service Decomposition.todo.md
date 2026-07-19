@@ -120,8 +120,8 @@ Acceptance:
 
 ## Phase 1 - Test Builder And Constructor Preparation
 
-- [ ] Introduce a test-only builder/factory for `StorefrontCheckoutServiceTests`.
-- [ ] Builder must explicitly provide defaults for:
+- [x] Introduce a test-only builder/factory for `StorefrontCheckoutServiceTests`.
+- [x] Builder must explicitly provide defaults for:
   - `FixedStoreCurrencyResolver`.
   - `MoneyRoundingService`.
   - `FakeMoneyConversionService`.
@@ -134,15 +134,22 @@ Acceptance:
   - `ShippingCalculator` or fake shipping calculator.
   - `ZeroShippingTaxCalculator`.
   - `OrderPlacementService`.
-- [ ] Preserve overload ergonomics for tests, but implement them through explicit builder fields.
-- [ ] Add one test proving builder can override shipping calculator.
-- [ ] Add one test proving builder can override order placement service.
+- [x] Preserve overload ergonomics for tests, but implement them through explicit builder fields.
+- [x] Add one test proving builder can override shipping calculator.
+- [x] Add one test proving builder can override order placement service.
+
+Phase 1 notes:
+
+- Added `CheckoutServiceTestBuilder` inside `StorefrontCheckoutServiceTests`.
+- Existing `CreateCheckoutService(...)` overloads now delegate to the builder while preserving test call ergonomics.
+- Builder owns explicit defaults for currency, rounding, conversion, customer, feature state, payment capability/resolver, sellability, address validation, shipping, tax, and order placement services.
+- Added reflection-backed override tests for `IShippingCalculator` and `IOrderPlacementService`.
 
 Acceptance:
 
-- [ ] `StorefrontCheckoutServiceTests` no longer relies on production constructor defaults.
-- [ ] Existing checkout service tests stay green.
-- [ ] No production code changed except if needed for accessibility of concrete test inputs.
+- [x] `StorefrontCheckoutServiceTests` no longer relies on production constructor defaults.
+- [x] Existing checkout service tests stay green.
+- [x] No production code changed except if needed for accessibility of concrete test inputs.
 
 ## Phase 2 - Remove Production Dependency Fallbacks
 
@@ -357,7 +364,7 @@ Acceptance:
 ## Implementation Checklist
 
 - [x] Phase 0 complete.
-- [ ] Phase 1 complete.
+- [x] Phase 1 complete.
 - [ ] Phase 2 complete.
 - [ ] Phase 3 complete.
 - [ ] Phase 4 complete.
