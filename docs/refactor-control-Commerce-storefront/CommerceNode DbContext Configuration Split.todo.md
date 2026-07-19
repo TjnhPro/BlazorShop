@@ -340,38 +340,51 @@ Goal: tach store configuration groups da duoc them trong cac phase MVP-to-real-u
 
 Scope:
 
-- [ ] `CommerceStoreConfiguration`.
-- [ ] `CommerceStoreDomainConfiguration`.
-- [ ] `StoreFeatureStateConfiguration`.
-- [ ] `StoreCurrencyConfiguration`.
-- [ ] `StoreCurrencyExchangeRateConfiguration`.
-- [ ] `StorefrontConsentStateConfiguration`.
-- [ ] `StorefrontConsentEventConfiguration`.
-- [ ] `StoreSecurityPrivacySettingsConfiguration`.
-- [ ] `StoreShippingSettingsConfiguration`.
+- [x] `CommerceStoreConfiguration`.
+- [x] `CommerceStoreDomainConfiguration`.
+- [x] `StoreFeatureStateConfiguration`.
+- [x] `StoreCurrencyConfiguration`.
+- [x] `StoreCurrencyExchangeRateConfiguration`.
+- [x] `StorefrontConsentStateConfiguration`.
+- [x] `StorefrontConsentEventConfiguration`.
+- [x] `StoreSecurityPrivacySettingsConfiguration`.
+- [x] `StoreShippingSettingsConfiguration`.
 
 Tasks:
 
-- [ ] Move exact table names, column names, max lengths, defaults, indexes and check constraints.
-- [ ] Preserve check constraints:
-  - [ ] store status.
-  - [ ] default currency code length.
-  - [ ] consent/security settings where present.
-  - [ ] shipping surcharge policy where present.
-- [ ] Update tests that read `DbSet<StorefrontConsentState>` / `DbSet<StorefrontConsentEvent>` from `CommerceNodeDbContext.cs`; DbSet lines should remain, but if tests inspect mapping text, move to model metadata.
-- [ ] Run focused tests:
-  - [ ] `dotnet test BlazorShop.Tests --filter StoreFeatureState`.
-  - [ ] `dotnet test BlazorShop.Tests --filter StoreCurrency`.
-  - [ ] `dotnet test BlazorShop.Tests --filter SecurityPrivacy`.
-  - [ ] `dotnet test BlazorShop.Tests --filter StoreShippingSettings`.
+- [x] Move exact table names, column names, max lengths, defaults, indexes and check constraints.
+- [x] Preserve check constraints:
+  - [x] store status.
+  - [x] default currency code length.
+  - [x] consent/security settings where present.
+  - [x] shipping surcharge policy where present.
+- [x] Update tests that read `DbSet<StorefrontConsentState>` / `DbSet<StorefrontConsentEvent>` from `CommerceNodeDbContext.cs`; DbSet lines should remain, but if tests inspect mapping text, move to model metadata.
+- [x] Run focused tests:
+  - [x] `dotnet test BlazorShop.Tests --filter StoreFeatureState`.
+  - [x] `dotnet test BlazorShop.Tests --filter StoreCurrency`.
+  - [x] `dotnet test BlazorShop.Tests --filter SecurityPrivacy`.
+  - [x] `dotnet test BlazorShop.Tests --filter StoreShippingSettings`.
 
 Exit criteria:
 
-- [ ] Store lifecycle/readiness model unchanged.
-- [ ] Currency model unchanged.
-- [ ] Consent/security/privacy model unchanged.
-- [ ] Shipping settings model unchanged.
-- [ ] No pending model changes.
+- [x] Store lifecycle/readiness model unchanged.
+- [x] Currency model unchanged.
+- [x] Consent/security/privacy model unchanged.
+- [x] Shipping settings model unchanged.
+- [x] No pending model changes.
+
+Phase 4 evidence:
+
+- Added store runtime configuration files under `BlazorShop.Infrastructure/Data/CommerceNode/Configurations/Stores`.
+- Added consent/security configuration files under `BlazorShop.Infrastructure/Data/CommerceNode/Configurations/SecurityPrivacy`.
+- Added `StoreShippingSettingsConfiguration` under `BlazorShop.Infrastructure/Data/CommerceNode/Configurations/Shipping`.
+- Removed the moved store, currency, consent/security/privacy and shipping settings blocks from `CommerceNodeDbContext.OnModelCreating`; DbSet declarations remain.
+- Preserved existing check constraints for store status, store default currency code, feature key, currency code/rounding, exchange rate currency/rate/effective windows, and store domain status.
+- Consent/security and shipping settings had no existing check constraints for settings or surcharge policy in the source mapping, so this phase did not add new constraints.
+- `CommerceNodeDbContext.cs` line count is now 1761.
+- `modelBuilder.Entity` count dropped from 148 to 139.
+- Focused command passed 119/119 tests:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~StoreFeatureState|FullyQualifiedName~StoreCurrency|FullyQualifiedName~SecurityPrivacy|FullyQualifiedName~StoreShippingSettings|FullyQualifiedName~CommerceNodeDbContextModelTests|FullyQualifiedName~CommerceNodeMigrationModelConsistencyTests" --no-restore --nologo --verbosity minimal`
 
 ## Phase 5 - Cart, Checkout, Customer, Address
 
@@ -576,7 +589,7 @@ Safety boundary
 - [x] Phase 1 filtered configuration apply complete.
 - [x] Phase 2 payments pilot complete.
 - [x] Phase 3 messages/email complete.
-- [ ] Phase 4 store/currency/security/shipping complete.
+- [x] Phase 4 store/currency/security/shipping complete.
 - [ ] Phase 5 cart/checkout/customer/address complete.
 - [ ] Phase 6 orders/fulfillment complete.
 - [ ] Phase 7 catalog/media/content/imports complete.
