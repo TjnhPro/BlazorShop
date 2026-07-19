@@ -2,8 +2,8 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using System.Globalization;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.ControlPlane.Catalog;
-    using BlazorShop.Application.ControlPlane.CommerceGateway;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -32,11 +32,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreShippingSettingsDto>> GetShippingSettingsAsync(
+        public Task<ApplicationResult<StoreShippingSettingsDto>> GetShippingSettingsAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreShippingSettingsDto>(
+            return this.SendApplicationAsync<StoreShippingSettingsDto>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/shipping/settings",
@@ -44,12 +44,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreShippingSettingsDto>> UpdateShippingSettingsAsync(
+        public Task<ApplicationResult<StoreShippingSettingsDto>> UpdateShippingSettingsAsync(
             Guid storePublicId,
             UpdateStoreShippingSettingsRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreShippingSettingsDto>(
+            return this.SendApplicationAsync<StoreShippingSettingsDto>(
                 storePublicId,
                 HttpMethod.Put,
                 "api/commerce/admin/shipping/settings",

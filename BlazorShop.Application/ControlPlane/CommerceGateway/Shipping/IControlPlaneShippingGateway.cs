@@ -1,5 +1,6 @@
 namespace BlazorShop.Application.ControlPlane.CommerceGateway.Shipping
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -25,12 +26,12 @@ namespace BlazorShop.Application.ControlPlane.CommerceGateway.Shipping
     public interface IControlPlaneShippingGateway
     {
         
-                Task<ControlPlaneCommerceCatalogResult<StoreShippingSettingsDto>> GetShippingSettingsAsync(
+                Task<ApplicationResult<StoreShippingSettingsDto>> GetShippingSettingsAsync(
                     Guid storePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StoreShippingSettingsDto>> UpdateShippingSettingsAsync(
+                Task<ApplicationResult<StoreShippingSettingsDto>> UpdateShippingSettingsAsync(
                     Guid storePublicId,
                     UpdateStoreShippingSettingsRequest request,
                     CancellationToken cancellationToken = default);
