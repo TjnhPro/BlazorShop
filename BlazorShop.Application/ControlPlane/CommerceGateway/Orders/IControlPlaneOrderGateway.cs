@@ -1,5 +1,6 @@
 namespace BlazorShop.Application.ControlPlane.CommerceGateway.Orders
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -25,51 +26,51 @@ namespace BlazorShop.Application.ControlPlane.CommerceGateway.Orders
     public interface IControlPlaneOrderGateway
     {
         
-                Task<ControlPlaneCommerceCatalogResult<PagedResult<GetOrder>>> QueryOrdersAsync(
+                Task<ApplicationResult<PagedResult<GetOrder>>> QueryOrdersAsync(
                     Guid storePublicId,
                     AdminOrderQueryDto query,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<GetOrder>> GetOrderAsync(
+                Task<ApplicationResult<GetOrder>> GetOrderAsync(
                     Guid storePublicId,
                     Guid orderId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<GetOrder>> UpdateOrderAdminNoteAsync(
+                Task<ApplicationResult<GetOrder>> UpdateOrderAdminNoteAsync(
                     Guid storePublicId,
                     Guid orderId,
                     UpdateOrderAdminNoteRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<GetOrder>> UpdateOrderShippingStatusAsync(
+                Task<ApplicationResult<GetOrder>> UpdateOrderShippingStatusAsync(
                     Guid storePublicId,
                     Guid orderId,
                     UpdateShippingStatusRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<GetOrder>> CompleteOrderAsync(
+                Task<ApplicationResult<GetOrder>> CompleteOrderAsync(
                     Guid storePublicId,
                     Guid orderId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<GetOrder>> CancelOrderAsync(
+                Task<ApplicationResult<GetOrder>> CancelOrderAsync(
                     Guid storePublicId,
                     Guid orderId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<GetShipment>> GetShipmentAsync(
+                Task<ApplicationResult<GetShipment>> GetShipmentAsync(
                     Guid storePublicId,
                     Guid orderId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<GetShipment>> UpsertShipmentAsync(
+                Task<ApplicationResult<GetShipment>> UpsertShipmentAsync(
                     Guid storePublicId,
                     Guid orderId,
                     UpsertShipmentRequest request,

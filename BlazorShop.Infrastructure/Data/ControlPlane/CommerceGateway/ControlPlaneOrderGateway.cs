@@ -2,8 +2,8 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using System.Globalization;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.ControlPlane.Catalog;
-    using BlazorShop.Application.ControlPlane.CommerceGateway;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -32,12 +32,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<PagedResult<GetOrder>>> QueryOrdersAsync(
+        public Task<ApplicationResult<PagedResult<GetOrder>>> QueryOrdersAsync(
             Guid storePublicId,
             AdminOrderQueryDto query,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<PagedResult<GetOrder>>(
+            return this.SendApplicationAsync<PagedResult<GetOrder>>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/orders" + BuildOrderQuery(query),
@@ -45,12 +45,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<GetOrder>> GetOrderAsync(
+        public Task<ApplicationResult<GetOrder>> GetOrderAsync(
             Guid storePublicId,
             Guid orderId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<GetOrder>(
+            return this.SendApplicationAsync<GetOrder>(
                 storePublicId,
                 HttpMethod.Get,
                 $"api/commerce/admin/orders/{orderId:D}",
@@ -58,13 +58,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<GetOrder>> UpdateOrderAdminNoteAsync(
+        public Task<ApplicationResult<GetOrder>> UpdateOrderAdminNoteAsync(
             Guid storePublicId,
             Guid orderId,
             UpdateOrderAdminNoteRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<GetOrder>(
+            return this.SendApplicationAsync<GetOrder>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/orders/{orderId:D}/admin-note",
@@ -72,13 +72,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<GetOrder>> UpdateOrderShippingStatusAsync(
+        public Task<ApplicationResult<GetOrder>> UpdateOrderShippingStatusAsync(
             Guid storePublicId,
             Guid orderId,
             UpdateShippingStatusRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<GetOrder>(
+            return this.SendApplicationAsync<GetOrder>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/orders/{orderId:D}/shipping-status",
@@ -86,12 +86,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<GetOrder>> CompleteOrderAsync(
+        public Task<ApplicationResult<GetOrder>> CompleteOrderAsync(
             Guid storePublicId,
             Guid orderId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<GetOrder>(
+            return this.SendApplicationAsync<GetOrder>(
                 storePublicId,
                 HttpMethod.Post,
                 $"api/commerce/admin/orders/{orderId:D}/complete",
@@ -99,12 +99,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<GetOrder>> CancelOrderAsync(
+        public Task<ApplicationResult<GetOrder>> CancelOrderAsync(
             Guid storePublicId,
             Guid orderId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<GetOrder>(
+            return this.SendApplicationAsync<GetOrder>(
                 storePublicId,
                 HttpMethod.Post,
                 $"api/commerce/admin/orders/{orderId:D}/cancel",
@@ -112,12 +112,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<GetShipment>> GetShipmentAsync(
+        public Task<ApplicationResult<GetShipment>> GetShipmentAsync(
             Guid storePublicId,
             Guid orderId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<GetShipment>(
+            return this.SendApplicationAsync<GetShipment>(
                 storePublicId,
                 HttpMethod.Get,
                 $"api/commerce/admin/orders/{orderId:D}/shipment",
@@ -125,13 +125,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<GetShipment>> UpsertShipmentAsync(
+        public Task<ApplicationResult<GetShipment>> UpsertShipmentAsync(
             Guid storePublicId,
             Guid orderId,
             UpsertShipmentRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<GetShipment>(
+            return this.SendApplicationAsync<GetShipment>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/orders/{orderId:D}/shipment",
