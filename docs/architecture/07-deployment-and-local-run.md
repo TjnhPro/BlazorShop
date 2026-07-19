@@ -52,6 +52,19 @@ Stop the local V2 runtime with:
 .\scripts\stop-v2-local.ps1
 ```
 
+## Active V2 Build And Test
+
+Use the V2 solution filter for normal active architecture work:
+
+```powershell
+dotnet build BlazorShop.V2.slnf --no-restore
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore
+```
+
+`BlazorShop.V2.slnf` includes shared core, ServiceDefaults, active PresentationV2 projects, and `BlazorShop.Tests.V2`. It intentionally excludes legacy `BlazorShop.Presentation/*` projects. `BlazorShop.AppHost` is also excluded for now because the current AppHost still references legacy Presentation projects; `run-v2-local.ps1` is the active V2 local runtime entry point.
+
+`BlazorShop.Tests.V2` links active V2 architecture, Commerce Node, Control Plane, Storefront V2, and Storefront WASM/browser host tests from the mixed historical test project. The V2 test assembly disables test parallelization so WebApplicationFactory/browser-host smoke tests do not race each other.
+
 ## Control Plane Local Run
 
 Database:

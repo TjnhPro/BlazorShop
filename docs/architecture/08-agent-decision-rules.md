@@ -171,6 +171,15 @@ When behavior changes, update and run the relevant QA checklist:
 
 If browser behavior changes, use Playwright. If the user asks to observe, run with a visible browser.
 
+For active V2 build/test verification, prefer:
+
+```powershell
+dotnet build BlazorShop.V2.slnf --no-restore
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore
+```
+
+Use the mixed `BlazorShop.Tests` project only when the change intentionally touches legacy Presentation, a test has not yet been migrated into `BlazorShop.Tests.V2`, or a compatibility check explicitly needs the old mixed surface.
+
 ## Implementation Rule
 
 Prefer narrow phases:

@@ -407,13 +407,20 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void ActiveV2TestSurface_IsNotYetIsolatedFromLegacyAtPhase0()
+        public void ActiveV2BuildAndTestSurface_IsIsolatedFromLegacyAfterPhase8()
         {
-            var testProject = ReadRepositoryFile("BlazorShop.Tests/BlazorShop.Tests.csproj");
+            var mixedTestProject = ReadRepositoryFile("BlazorShop.Tests/BlazorShop.Tests.csproj");
+            var v2TestProject = ReadRepositoryFile("BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj");
+            var solutionFilter = ReadRepositoryFile("BlazorShop.V2.slnf")
+                .Replace(@"\\", "/", StringComparison.Ordinal)
+                .Replace('\\', '/');
 
-            Assert.Contains("BlazorShop.Presentation\\BlazorShop.API", testProject, StringComparison.Ordinal);
-            Assert.Contains("BlazorShop.PresentationV2\\BlazorShop.ControlPlane.API", testProject, StringComparison.Ordinal);
-            Assert.False(File.Exists(RepositoryPath("BlazorShop.V2.slnf")));
+            Assert.Contains("BlazorShop.Presentation\\BlazorShop.API", mixedTestProject, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.PresentationV2\\BlazorShop.ControlPlane.API", mixedTestProject, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Presentation\\", v2TestProject, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("BlazorShop.Presentation/", solutionFilter, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj", solutionFilter, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.PresentationV2\\BlazorShop.ControlPlane.API", v2TestProject, StringComparison.Ordinal);
         }
 
         private static IEnumerable<string> EnumerateSourceFiles(params string[] relativeRoots)

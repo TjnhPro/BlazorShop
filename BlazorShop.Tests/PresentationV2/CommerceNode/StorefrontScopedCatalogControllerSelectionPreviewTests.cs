@@ -6,6 +6,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
     using BlazorShop.Application.CommerceNode.ProductSelections;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Domain.Entities;

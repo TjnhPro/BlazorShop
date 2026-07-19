@@ -654,30 +654,38 @@ Goal: make active V2 development and CI independent from legacy Presentation whi
 
 ### Tasks
 
-- [ ] Create `BlazorShop.V2.slnf` including active V2 projects, shared core projects, AppHost if needed, ServiceDefaults, and V2 test projects once split exists.
-- [ ] Do not include legacy `BlazorShop.Presentation/*` projects in the V2 solution filter.
-- [ ] Split tests into at least:
+- [x] Create `BlazorShop.V2.slnf` including active V2 projects, shared core projects, AppHost if needed, ServiceDefaults, and V2 test projects once split exists.
+  - Created `BlazorShop.V2.slnf` with shared core, ServiceDefaults, active PresentationV2 projects, and `BlazorShop.Tests.V2`.
+  - `BlazorShop.AppHost` is excluded because current AppHost still references legacy Presentation projects; active V2 local runtime remains `scripts/run-v2-local.ps1`.
+- [x] Do not include legacy `BlazorShop.Presentation/*` projects in the V2 solution filter.
+- [x] Split tests into at least:
   - `BlazorShop.Tests.V2` for active V2 architecture, Commerce Node, Control Plane, Storefront V2, Application/Infrastructure V2 behavior.
   - Existing `BlazorShop.Tests` can remain mixed until migration is complete.
   - Optional later `BlazorShop.Tests.Legacy` for legacy Presentation tests.
-- [ ] Move V2-only static architecture tests first.
-- [ ] Move V2 Commerce Node OpenAPI and scoped Storefront tests.
-- [ ] Move V2 Control Plane tests.
-- [ ] Move V2 Storefront WASM/browser host tests.
-- [ ] Keep legacy tests compiling in existing project until a legacy test project is approved.
-- [ ] Update docs/architecture local run or contributor docs with the V2 solution filter command.
+- [x] Move V2-only static architecture tests first.
+- [x] Move V2 Commerce Node OpenAPI and scoped Storefront tests.
+  - Storefront auth contract fixture now stubs store resolution/security runtime settings so tests reach auth handlers after valid store scope resolution.
+- [x] Move V2 Control Plane tests.
+- [x] Move V2 Storefront WASM/browser host tests.
+  - `BlazorShop.Tests.V2` disables xUnit parallelization to keep WebApplicationFactory/browser-host smoke tests deterministic.
+- [x] Keep legacy tests compiling in existing project until a legacy test project is approved.
+- [x] Update docs/architecture local run or contributor docs with the V2 solution filter command.
+  - Updated `docs/architecture/07-deployment-and-local-run.md` and `docs/architecture/08-agent-decision-rules.md`.
 
 ### Verification
 
-- [ ] `dotnet build BlazorShop.V2.slnf --no-restore`
-- [ ] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore`
-- [ ] Existing `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore` still passes or is documented as legacy/mixed until split is complete.
+- [x] `dotnet build BlazorShop.V2.slnf --no-restore`
+  - Passed. Existing warnings: MessagePack vulnerability warnings and Browserslist stale notice.
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore`
+  - Passed: 439 passed, 0 failed, 0 skipped, duration 4 m 9 s. Existing warnings: MessagePack vulnerability warnings and Browserslist stale notice.
+- [x] Existing `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore` still passes or is documented as legacy/mixed until split is complete.
+  - Documented as legacy/mixed. Focused `CommerceNodeStorefrontAuthContractTests` passed in the mixed project after fixture hardening; full mixed project is no longer the active V2 gate.
 
 ### Done When
 
-- [ ] V2 build/test can run without legacy Presentation project references.
-- [ ] Legacy remains reference-only and does not block normal V2 architecture work.
-- [ ] CI/local docs identify V2 as the active target.
+- [x] V2 build/test can run without legacy Presentation project references.
+- [x] Legacy remains reference-only and does not block normal V2 architecture work.
+- [x] CI/local docs identify V2 as the active target.
 
 ## Phase 9 - Final Guardrails And QA Release Gate
 
@@ -764,5 +772,5 @@ Goal: prevent the same architecture issues from returning.
 - [ ] Phase 6B/6C complete and committed.
 - [ ] Phase 6D decision made after generated-client readiness check.
 - [x] Phase 7 complete by subphase and committed in small batches.
-- [ ] Phase 8 complete and committed.
+- [x] Phase 8 complete and committed.
 - [ ] Phase 9 complete and committed.
