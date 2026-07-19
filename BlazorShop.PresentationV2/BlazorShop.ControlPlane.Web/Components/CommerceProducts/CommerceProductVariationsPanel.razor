@@ -1,0 +1,117 @@
+<section class="rounded-md border border-ink-200 p-4">
+    <h2 class="text-sm font-semibold text-ink-900">Variations</h2>
+    @if (Product.VariationTemplate is not null)
+    {
+        <div class="mt-3 rounded-md border border-ink-200 bg-ink-50 p-3 text-sm">
+            <div class="font-semibold text-ink-900">@Product.VariationTemplate.Name</div>
+            <div class="mt-1 font-mono text-xs text-ink-500">@Product.VariationTemplate.Slug</div>
+            <div class="mt-3 grid gap-2">
+                @foreach (var option in Product.VariationTemplate.Options)
+                {
+                    <div class="rounded-md border border-ink-200 bg-white px-3 py-2 text-xs text-ink-700">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="font-semibold text-ink-900">@option.Name</span>
+                            <StatusBadge Text="@VariationControlLabel(option.ControlType)" Tone="neutral" />
+                            <StatusBadge Text="@(option.IsRequired ? "Required" : "Optional")" Tone="@(option.IsRequired ? "warning" : "neutral")" />
+                        </div>
+                        <div class="mt-2 flex flex-wrap gap-1">
+                            @foreach (var value in option.Values.OrderBy(value => value.Value))
+                            {
+                                <span class="rounded border border-ink-200 bg-ink-50 px-2 py-0.5 text-ink-700">
+                                    @if (!string.IsNullOrWhiteSpace(value.ColorHex))
+                                    {
+                                        <span class="mr-1 inline-block h-3 w-3 rounded-sm border border-ink-200 align-middle" style="@ColorSwatchStyle(value.ColorHex)"></span>
+                                    }
+                                    @value.Value
+                                </span>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    @if (Product.Variants.Any())
+    {
+        <div class="mt-3 divide-y divide-ink-100 rounded-md border border-ink-200">
+            @foreach (var variant in Product.Variants)
+            {
+                var variantWarnings = GetWorkflowWarnings(variant);
+                <div class="grid gap-3 p-3 text-sm md:grid-cols-[minmax(0,1fr)_170px_auto] md:items-center">
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="font-medium text-ink-900">@VariantName(variant)</span>
+                            @if (variant.IsDefault)
+                            {
+                                <StatusBadge Text="Default" Tone="success" />
+                            }
+                        </div>
+                        <div class="mt-1 font-mono text-xs text-ink-500">@variant.Sku</div>
+                        <div class="mt-1 text-xs text-ink-500">
+                            Combination signature:
+                            <span class="font-mono text-ink-700">@VariantSignatureText(variant)</span>
+                        </div>
+                        @if (variant.Attributes.Count > 0)
+                        {
+                            <div class="mt-2 flex flex-wrap gap-1">
+                                @foreach (var variantAttribute in variant.Attributes)
+                                {
+                                    <span class="rounded border border-ink-200 bg-ink-50 px-2 py-0.5 text-xs text-ink-700">@variantAttribute.Name: @variantAttribute.Value</span>
+                                }
+                            </div>
+                        }
+                        @if (variantWarnings.Count > 0)
+                        {
+                            <div class="mt-2 space-y-1">
+                                @foreach (var warning in variantWarnings)
+                                {
+                                    <div class="rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs text-amber-800">@warning</div>
+                                }
+                            </div>
+                        }
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <StatusBadge Text="@(variant.IsActive ? "Active" : "Inactive")" Tone="@(variant.IsActive ? "success" : "neutral")" />
+                        @if (variantWarnings.Count > 0)
+                        {
+                            <StatusBadge Text="Needs review" Tone="warning" />
+                        }
+                    </div>
+                    <button class="cp-button cp-button-secondary justify-center" disabled="@IsSaving" @onclick="() => SetVariantActive(variant, !variant.IsActive)">
+                        @(variant.IsActive ? "Disable" : "Enable")
+                    </button>
+                </div>
+            }
+        </div>
+    }
+    else if (Product.VariationTemplate is null)
+    {
+        <div class="mt-3 rounded-md border border-ink-200 p-4 text-center text-sm text-ink-500">No variation structure.</div>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public GetProduct Product { get; set; } = default!;
+
+    [Parameter]
+    public bool IsSaving { get; set; }
+
+    [Parameter, EditorRequired]
+    public Func<GetProductVariant, string> VariantName { get; set; } = _ => string.Empty;
+
+    [Parameter, EditorRequired]
+    public Func<GetProductVariant, string> VariantSignatureText { get; set; } = _ => string.Empty;
+
+    [Parameter, EditorRequired]
+    public Func<GetProductVariant, IReadOnlyList<string>> GetWorkflowWarnings { get; set; } = _ => Array.Empty<string>();
+
+    [Parameter, EditorRequired]
+    public Func<string?, string> VariationControlLabel { get; set; } = _ => string.Empty;
+
+    [Parameter, EditorRequired]
+    public Func<string?, string> ColorSwatchStyle { get; set; } = _ => string.Empty;
+
+    [Parameter, EditorRequired]
+    public Func<GetProductVariant, bool, Task> SetVariantActive { get; set; } = (_, _) => Task.CompletedTask;
+}

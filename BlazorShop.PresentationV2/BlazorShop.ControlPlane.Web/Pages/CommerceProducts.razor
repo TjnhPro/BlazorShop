@@ -175,425 +175,69 @@
     else
     {
         <div class="space-y-5">
-            <section class="rounded-md border border-ink-200 p-4">
-                <div class="mb-3 flex items-center justify-between">
-                    <h2 class="text-sm font-semibold text-ink-900">SEO</h2>
-                    <StatusBadge Text="@PublicationStatusLabel(selectedProduct)" Tone="@PublicationStatusTone(selectedProduct)" />
-                </div>
-                <div class="grid gap-3 text-sm md:grid-cols-2">
-                    <label class="space-y-1 md:col-span-2">
-                        <span class="font-medium text-ink-700">Slug</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 font-mono text-xs outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="seoForm.Slug" />
-                    </label>
-                    <div class="space-y-2 rounded-md border border-ink-200 bg-ink-50 p-3 md:col-span-2">
-                        <div class="flex flex-wrap gap-2">
-                            <button type="button" class="cp-button cp-button-secondary" disabled="@isSlugActionBusy" @onclick="GenerateProductSlugAsync">
-                                <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
-                                Generate
-                            </button>
-                            <button type="button" class="cp-button cp-button-secondary" disabled="@isSlugActionBusy" @onclick="ValidateProductSlugAsync">
-                                <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
-                                Validate
-                            </button>
-                        </div>
-                        <div class="grid gap-1 text-xs text-ink-600">
-                            <div>Normalized: <span class="font-mono">@SlugPreviewText(productSlugResult?.Slug)</span></div>
-                            <div>Public path: <span class="font-mono">@BuildSeoPublicPath("product", productSlugResult?.Slug ?? seoForm.Slug)</span></div>
-                            <div>Canonical preview: <span class="font-mono">@BuildSeoPublicPath("product", productSlugResult?.Slug ?? seoForm.Slug)</span></div>
-                            @if (productSlugResult is not null)
-                            {
-                                <div class="@(productSlugResult.Success ? "text-green-700" : "text-red-700")">@SlugPreviewMessage(productSlugResult)</div>
-                            }
-                        </div>
-                        @if (productSlugHistory.Count > 0)
-                        {
-                            <div class="border-t border-ink-200 pt-2">
-                                <div class="text-xs font-semibold uppercase text-ink-500">Slug history</div>
-                                <div class="mt-2 space-y-1">
-                                    @foreach (var item in productSlugHistory)
-                                    {
-                                        <div class="flex items-center justify-between gap-3 text-xs">
-                                            <span class="font-mono text-ink-700">@item.Slug</span>
-                                            <span class="text-ink-500">@(item.IsActive ? "active" : item.ReplacedAt?.ToLocalTime().ToString("yyyy-MM-dd"))</span>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                        }
-                    </div>
-                    <label class="space-y-1">
-                        <span class="font-medium text-ink-700">Meta title</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="seoForm.MetaTitle" />
-                    </label>
-                    <label class="space-y-1">
-                        <span class="font-medium text-ink-700">Canonical URL</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="seoForm.CanonicalUrl" />
-                    </label>
-                    <label class="space-y-1 md:col-span-2">
-                        <span class="font-medium text-ink-700">Meta description</span>
-                        <textarea class="min-h-20 w-full rounded-md border border-ink-300 px-3 py-2 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="seoForm.MetaDescription"></textarea>
-                    </label>
-                    <label class="flex items-center gap-2 text-ink-700">
-                        <input type="checkbox" @bind="seoForm.IsPublished" />
-                        Published
-                    </label>
-                    <label class="flex items-center gap-2 text-ink-700">
-                        <input type="checkbox" @bind="seoForm.RobotsIndex" />
-                        Robots index
-                    </label>
-                    <label class="flex items-center gap-2 text-ink-700">
-                        <input type="checkbox" @bind="seoForm.RobotsFollow" />
-                        Robots follow
-                    </label>
-                </div>
-                <button class="cp-button cp-button-primary mt-4 justify-center" disabled="@isSaving" @onclick="SaveSeoAsync">
-                    <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
-                    Save SEO
-                </button>
-            </section>
+            <CommerceProductSeoPanel
+                Product="selectedProduct"
+                SeoForm="seoForm"
+                SlugResult="productSlugResult"
+                SlugHistory="productSlugHistory"
+                IsSaving="isSaving"
+                IsSlugActionBusy="isSlugActionBusy"
+                PublicationStatusLabel="@((GetProduct product) => PublicationStatusLabel(product))"
+                PublicationStatusTone="@((GetProduct product) => PublicationStatusTone(product))"
+                SlugPreviewText="SlugPreviewText"
+                SlugPreviewMessage="SlugPreviewMessage"
+                BuildPublicPath="BuildSeoPublicPath"
+                GenerateSlug="GenerateProductSlugAsync"
+                ValidateSlug="ValidateProductSlugAsync"
+                SaveSeo="SaveSeoAsync" />
 
-            <section class="rounded-md border border-ink-200 p-4">
-                <h2 class="text-sm font-semibold text-ink-900">Basic info</h2>
-                <div class="mt-3 flex flex-wrap gap-2">
-                    <StatusBadge Text="@InventoryStatusLabel(selectedProduct)" Tone="@InventoryStatusTone(selectedProduct)" />
-                    <StatusBadge Text="@PurchaseStatusLabel(selectedProduct)" Tone="@PurchaseStatusTone(selectedProduct)" />
-                    @if (selectedProduct.HideWhenOutOfStock)
-                    {
-                        <StatusBadge Text="Hide when out of stock" Tone="neutral" />
-                    }
-                </div>
-                <div class="mt-3 grid gap-3 text-sm md:grid-cols-2">
-                    <label class="space-y-1 md:col-span-2">
-                        <span class="font-medium text-ink-700">Title</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="basicForm.Name" />
-                    </label>
-                    <label class="space-y-1 md:col-span-2">
-                        <span class="font-medium text-ink-700">Category</span>
-                        <select class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="basicCategoryId">
-                            <option value="">No category</option>
-                            @foreach (var category in categories.OrderBy(category => category.Name))
-                            {
-                                <option value="@category.Id">@category.Name</option>
-                            }
-                        </select>
-                    </label>
-                    <label class="space-y-1 md:col-span-2">
-                        <span class="font-medium text-ink-700">Short description</span>
-                        <textarea class="min-h-20 w-full rounded-md border border-ink-300 px-3 py-2 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="basicForm.ShortDescription"></textarea>
-                    </label>
-                    <label class="space-y-1 md:col-span-2">
-                        <span class="font-medium text-ink-700">Full description</span>
-                        <textarea class="min-h-28 w-full rounded-md border border-ink-300 px-3 py-2 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="basicForm.FullDescription"></textarea>
-                    </label>
-                    <label class="space-y-1">
-                        <span class="font-medium text-ink-700">Price</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" step="0.01" @bind="basicForm.Price" />
-                    </label>
-                    <label class="space-y-1">
-                        <span class="font-medium text-ink-700">Compare price</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" step="0.01" @bind="basicForm.ComparePrice" />
-                    </label>
-                    <label class="space-y-1">
-                        <span class="font-medium text-ink-700">Display order</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" @bind="basicForm.DisplayOrder" />
-                    </label>
-                    <label class="space-y-1">
-                        <span class="font-medium text-ink-700">Available start UTC</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="datetime-local" @bind="basicForm.AvailableStartUtc" />
-                    </label>
-                    <label class="space-y-1">
-                        <span class="font-medium text-ink-700">Available end UTC</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="datetime-local" @bind="basicForm.AvailableEndUtc" />
-                    </label>
-                    <div class="md:col-span-2 pt-2 text-xs font-semibold uppercase text-ink-500">Availability & purchase</div>
-                    <label class="space-y-1">
-                        <span class="font-medium text-ink-700">Minimum order quantity</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="1" @bind="basicForm.MinOrderQuantity" />
-                    </label>
-                    <label class="space-y-1">
-                        <span class="font-medium text-ink-700">Maximum order quantity</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="1" @bind="basicForm.MaxOrderQuantity" />
-                    </label>
-                    <label class="space-y-1">
-                        <span class="font-medium text-ink-700">Quantity step</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="1" @bind="basicForm.QuantityStep" />
-                    </label>
-                    <div class="flex flex-wrap gap-4 rounded-md border border-ink-200 bg-ink-50 p-3 md:col-span-2">
-                        <label class="flex items-center gap-2 text-ink-700">
-                            <input type="checkbox" @bind="basicForm.ManageStock" />
-                            Manage stock
-                        </label>
-                        <label class="flex items-center gap-2 text-ink-700">
-                            <input type="checkbox" @bind="basicForm.HideWhenOutOfStock" />
-                            Hide when out of stock
-                        </label>
-                        <label class="flex items-center gap-2 text-ink-700">
-                            <input type="checkbox" @bind="basicForm.PurchasingDisabled" />
-                            Pause purchasing
-                        </label>
-                        <label class="flex items-center gap-2 text-ink-700">
-                            <input type="checkbox" @bind="basicForm.ShippingRequired" />
-                            Shipping required
-                        </label>
-                        <label class="flex items-center gap-2 text-ink-700">
-                            <input type="checkbox" @bind="basicForm.FreeShipping" />
-                            Free shipping
-                        </label>
-                    </div>
-                    <label class="space-y-1 md:col-span-2">
-                        <span class="font-medium text-ink-700">Purchasing disabled reason</span>
-                        <textarea class="min-h-20 w-full rounded-md border border-ink-300 px-3 py-2 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" maxlength="@ProductPurchaseConstraints.PurchasingDisabledReasonMaxLength" @bind="basicForm.PurchasingDisabledReason"></textarea>
-                    </label>
-                    <label class="space-y-1 md:col-span-2">
-                        <span class="font-medium text-ink-700">Delivery estimate</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" maxlength="@ProductPurchaseConstraints.DeliveryEstimateTextMaxLength" @bind="basicForm.DeliveryEstimateText" />
-                    </label>
-                    <label class="space-y-1">
-                        <span class="font-medium text-ink-700">Shipping surcharge</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="0" step="0.01" @bind="basicForm.ShippingSurcharge" />
-                    </label>
-                    <div class="md:col-span-2 pt-2 text-xs font-semibold uppercase text-ink-500">Identity & shipping prep</div>
-                    <label class="space-y-1">
-                        <span class="font-medium text-ink-700">GTIN</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" maxlength="32" @bind="basicForm.Gtin" />
-                    </label>
-                    <label class="space-y-1">
-                        <span class="font-medium text-ink-700">Barcode</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" maxlength="64" @bind="basicForm.Barcode" />
-                    </label>
-                    <label class="space-y-1">
-                        <span class="font-medium text-ink-700">Manufacturer part number</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" maxlength="128" @bind="basicForm.ManufacturerPartNumber" />
-                    </label>
-                    <label class="space-y-1">
-                        <span class="font-medium text-ink-700">Condition</span>
-                        <select class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" @bind="basicForm.Condition">
-                            <option value="">Not set</option>
-                            <option value="new">New</option>
-                            <option value="used">Used</option>
-                            <option value="refurbished">Refurbished</option>
-                        </select>
-                    </label>
-                    <label class="space-y-1">
-                        <span class="font-medium text-ink-700">Weight</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="0" step="0.001" @bind="basicForm.Weight" />
-                    </label>
-                    <label class="space-y-1">
-                        <span class="font-medium text-ink-700">Length</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="0" step="0.001" @bind="basicForm.Length" />
-                    </label>
-                    <label class="space-y-1">
-                        <span class="font-medium text-ink-700">Width</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="0" step="0.001" @bind="basicForm.Width" />
-                    </label>
-                    <label class="space-y-1">
-                        <span class="font-medium text-ink-700">Height</span>
-                        <input class="min-h-10 w-full rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" min="0" step="0.001" @bind="basicForm.Height" />
-                    </label>
-                </div>
-                <div class="mt-3 rounded-md border border-ink-200 bg-ink-50 p-3 text-xs text-ink-600">
-                    Locked: SKU, product type, store id, and variation template are not editable here.
-                </div>
-                <button class="cp-button cp-button-primary mt-4 justify-center" disabled="@isSaving" @onclick="SaveBasicAsync">
-                    <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
-                    Save basic info
-                </button>
-            </section>
+            <CommerceProductBasicInfoPanel
+                Product="selectedProduct"
+                Form="basicForm"
+                Categories="categories"
+                @bind-CategoryId="basicCategoryId"
+                IsSaving="isSaving"
+                InventoryStatusLabel="@((GetProduct product) => InventoryStatusLabel(product))"
+                InventoryStatusTone="@((GetProduct product) => InventoryStatusTone(product))"
+                PurchaseStatusLabel="PurchaseStatusLabel"
+                PurchaseStatusTone="PurchaseStatusTone"
+                SaveBasic="SaveBasicAsync" />
 
-            <section class="rounded-md border border-ink-200 p-4">
-                <h2 class="text-sm font-semibold text-ink-900">Media</h2>
-                <textarea class="mt-3 min-h-24 w-full rounded-md border border-ink-300 px-3 py-2 text-sm outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" placeholder="Image source URLs, one per line" @bind="mediaSourceUrls"></textarea>
-                <button class="cp-button cp-button-secondary mt-3 justify-center" disabled="@isSaving" @onclick="ImportMediaAsync">
-                    <i class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></i>
-                    Import URLs
-                </button>
-                <div class="mt-4 grid gap-3 md:grid-cols-2">
-                    @foreach (var media in mediaItems.OrderBy(media => media.SortOrder))
-                    {
-                        <div class="rounded-md border border-ink-200 p-3">
-                            <div class="flex gap-3">
-                                <div class="h-16 w-16 shrink-0 overflow-hidden rounded-md border border-ink-200 bg-ink-50">
-                                    @if (mediaPreviewUrls.TryGetValue(media.PublicId, out var previewUrl))
-                                    {
-                                        <img src="@previewUrl" alt="@media.AltText" class="h-full w-full object-cover" loading="lazy" />
-                                    }
-                                    else
-                                    {
-                                        <div class="flex h-full w-full items-center justify-center text-ink-400">
-                                            <i class="fa-regular fa-image" aria-hidden="true"></i>
-                                        </div>
-                                    }
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <div class="flex flex-wrap items-center gap-2">
-                                        <StatusBadge Text="@media.Status" Tone="@MediaTone(media.Status)" />
-                                        @if (media.IsPrimary)
-                                        {
-                                            <StatusBadge Text="Primary" Tone="success" />
-                                        }
-                                    </div>
-                                    <div class="mt-1 truncate text-xs text-ink-500">@media.OriginalSourceUrl</div>
-                                    @if (!string.IsNullOrWhiteSpace(media.ErrorMessage))
-                                    {
-                                        <div class="mt-1 text-xs text-red-600">@media.ErrorMessage</div>
-                                    }
-                                </div>
-                            </div>
-                            <div class="mt-3 flex flex-wrap gap-2">
-                                <button class="cp-button cp-button-secondary" disabled="@isSaving" @onclick="() => SetPrimaryMediaAsync(media.PublicId)">
-                                    <i class="fa-solid fa-star" aria-hidden="true"></i>
-                                    Primary
-                                </button>
-                                @if (media.Status.Equals("failed", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    <button class="cp-button cp-button-secondary" disabled="@isSaving" @onclick="() => RetryMediaAsync(media.PublicId)">
-                                        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
-                                        Retry
-                                    </button>
-                                }
-                                <button class="cp-button cp-button-danger" disabled="@isSaving" @onclick="() => DeleteMediaAsync(media.PublicId)">
-                                    <i class="fa-solid fa-trash" aria-hidden="true"></i>
-                                </button>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </section>
+            <CommerceProductMediaPanel
+                MediaItems="mediaItems"
+                PreviewUrls="mediaPreviewUrls"
+                @bind-SourceUrls="mediaSourceUrls"
+                IsSaving="isSaving"
+                MediaTone="MediaTone"
+                ImportMedia="ImportMediaAsync"
+                SetPrimary="SetPrimaryMediaAsync"
+                Retry="RetryMediaAsync"
+                Delete="DeleteMediaAsync" />
 
-            <section class="rounded-md border border-ink-200 p-4">
-                <h2 class="text-sm font-semibold text-ink-900">Variations</h2>
-                @if (selectedProduct.VariationTemplate is not null)
-                {
-                    <div class="mt-3 rounded-md border border-ink-200 bg-ink-50 p-3 text-sm">
-                        <div class="font-semibold text-ink-900">@selectedProduct.VariationTemplate.Name</div>
-                        <div class="mt-1 font-mono text-xs text-ink-500">@selectedProduct.VariationTemplate.Slug</div>
-                        <div class="mt-3 grid gap-2">
-                            @foreach (var option in selectedProduct.VariationTemplate.Options)
-                            {
-                                <div class="rounded-md border border-ink-200 bg-white px-3 py-2 text-xs text-ink-700">
-                                    <div class="flex flex-wrap items-center gap-2">
-                                        <span class="font-semibold text-ink-900">@option.Name</span>
-                                        <StatusBadge Text="@VariationControlLabel(option.ControlType)" Tone="neutral" />
-                                        <StatusBadge Text="@(option.IsRequired ? "Required" : "Optional")" Tone="@(option.IsRequired ? "warning" : "neutral")" />
-                                    </div>
-                                    <div class="mt-2 flex flex-wrap gap-1">
-                                        @foreach (var value in option.Values.OrderBy(value => value.Value))
-                                        {
-                                            <span class="rounded border border-ink-200 bg-ink-50 px-2 py-0.5 text-ink-700">
-                                                @if (!string.IsNullOrWhiteSpace(value.ColorHex))
-                                                {
-                                                    <span class="mr-1 inline-block h-3 w-3 rounded-sm border border-ink-200 align-middle" style="@ColorSwatchStyle(value.ColorHex)"></span>
-                                                }
-                                                @value.Value
-                                            </span>
-                                        }
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                }
-                @if (selectedProduct.Variants.Any())
-                {
-                    <div class="mt-3 divide-y divide-ink-100 rounded-md border border-ink-200">
-                        @foreach (var variant in selectedProduct.Variants)
-                        {
-                            var variantWarnings = GetVariantWorkflowWarnings(variant);
-                            <div class="grid gap-3 p-3 text-sm md:grid-cols-[minmax(0,1fr)_170px_auto] md:items-center">
-                                <div>
-                                    <div class="flex flex-wrap items-center gap-2">
-                                        <span class="font-medium text-ink-900">@VariantName(variant)</span>
-                                        @if (variant.IsDefault)
-                                        {
-                                            <StatusBadge Text="Default" Tone="success" />
-                                        }
-                                    </div>
-                                    <div class="mt-1 font-mono text-xs text-ink-500">@variant.Sku</div>
-                                    <div class="mt-1 text-xs text-ink-500">
-                                        Combination signature:
-                                        <span class="font-mono text-ink-700">@VariantSignatureText(variant)</span>
-                                    </div>
-                                    @if (variant.Attributes.Count > 0)
-                                    {
-                                        <div class="mt-2 flex flex-wrap gap-1">
-                                            @foreach (var variantAttribute in variant.Attributes)
-                                            {
-                                                <span class="rounded border border-ink-200 bg-ink-50 px-2 py-0.5 text-xs text-ink-700">@variantAttribute.Name: @variantAttribute.Value</span>
-                                            }
-                                        </div>
-                                    }
-                                    @if (variantWarnings.Count > 0)
-                                    {
-                                        <div class="mt-2 space-y-1">
-                                            @foreach (var warning in variantWarnings)
-                                            {
-                                                <div class="rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs text-amber-800">@warning</div>
-                                            }
-                                        </div>
-                                    }
-                                </div>
-                                <div class="flex flex-wrap gap-2">
-                                    <StatusBadge Text="@(variant.IsActive ? "Active" : "Inactive")" Tone="@(variant.IsActive ? "success" : "neutral")" />
-                                    @if (variantWarnings.Count > 0)
-                                    {
-                                        <StatusBadge Text="Needs review" Tone="warning" />
-                                    }
-                                </div>
-                                <button class="cp-button cp-button-secondary justify-center" disabled="@isSaving" @onclick="() => SetVariantActiveAsync(variant, !variant.IsActive)">
-                                    @(variant.IsActive ? "Disable" : "Enable")
-                                </button>
-                            </div>
-                        }
-                    </div>
-                }
-                else if (selectedProduct.VariationTemplate is null)
-                {
-                    <div class="mt-3 rounded-md border border-ink-200 p-4 text-center text-sm text-ink-500">No variation structure.</div>
-                }
-            </section>
+            <CommerceProductVariationsPanel
+                Product="selectedProduct"
+                IsSaving="isSaving"
+                VariantName="@((GetProductVariant variant) => VariantName(variant))"
+                VariantSignatureText="VariantSignatureText"
+                GetWorkflowWarnings="GetVariantWorkflowWarnings"
+                VariationControlLabel="VariationControlLabel"
+                ColorSwatchStyle="ColorSwatchStyle"
+                SetVariantActive="SetVariantActiveAsync" />
 
-            <section class="rounded-md border border-ink-200 p-4">
-                <h2 class="text-sm font-semibold text-ink-900">Inventory</h2>
-                <div class="mt-3 flex flex-wrap gap-2">
-                    <StatusBadge Text="@InventoryStatusLabel(inventoryItem, selectedProduct)" Tone="@InventoryStatusTone(inventoryItem, selectedProduct)" />
-                    <StatusBadge Text="@(selectedProduct.ManageStock ? "Managed stock" : "Stock unmanaged")" Tone="@(selectedProduct.ManageStock ? "neutral" : "warning")" />
-                    @if (selectedProduct.PurchasingDisabled)
-                    {
-                        <StatusBadge Text="Purchase paused" Tone="warning" />
-                    }
-                    @if (selectedProduct.HideWhenOutOfStock)
-                    {
-                        <StatusBadge Text="Hide when out" Tone="neutral" />
-                    }
-                </div>
-                @if (selectedProduct.PurchasingDisabled && !string.IsNullOrWhiteSpace(selectedProduct.PurchasingDisabledReason))
-                {
-                    <div class="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">@selectedProduct.PurchasingDisabledReason</div>
-                }
-                <div class="mt-3 grid gap-3 text-sm md:grid-cols-[180px_auto]">
-                    <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" @bind="productQuantity" />
-                    <button class="cp-button cp-button-secondary justify-center" disabled="@isSaving" @onclick="SaveProductInventoryAsync">Update product quantity</button>
-                </div>
-                @if (inventoryItem?.Variants.Count > 0)
-                {
-                    <div class="mt-4 divide-y divide-ink-100 rounded-md border border-ink-200">
-                        @foreach (var variant in inventoryItem.Variants)
-                        {
-                            <div class="grid gap-3 p-3 text-sm md:grid-cols-[minmax(0,1fr)_120px_auto] md:items-center">
-                                <div>
-                                    <div class="font-medium text-ink-900">@VariantName(variant)</div>
-                                    <div class="font-mono text-xs text-ink-500">@variant.Sku</div>
-                                    <div class="mt-2 flex flex-wrap gap-2">
-                                        <StatusBadge Text="@InventoryStatusLabel(variant)" Tone="@InventoryStatusTone(variant)" />
-                                    </div>
-                                </div>
-                                <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" value="@GetVariantStock(variant.VariantId)" @onchange="args => SetVariantStock(variant.VariantId, args.Value?.ToString())" />
-                                <button class="cp-button cp-button-secondary justify-center" disabled="@isSaving" @onclick="() => SaveVariantInventoryAsync(variant.VariantId)">Update stock</button>
-                            </div>
-                        }
-                    </div>
-                }
-            </section>
+            <CommerceProductInventoryPanel
+                Product="selectedProduct"
+                InventoryItem="inventoryItem"
+                @bind-ProductQuantity="productQuantity"
+                IsSaving="isSaving"
+                InventoryItemStatusLabel="@((AdminInventoryItemDto? item, GetProduct product) => InventoryStatusLabel(item, product))"
+                InventoryItemStatusTone="@((AdminInventoryItemDto? item, GetProduct product) => InventoryStatusTone(item, product))"
+                VariantName="@((AdminInventoryVariantDto variant) => VariantName(variant))"
+                VariantStatusLabel="@((AdminInventoryVariantDto variant) => InventoryStatusLabel(variant))"
+                VariantStatusTone="@((AdminInventoryVariantDto variant) => InventoryStatusTone(variant))"
+                GetVariantStock="GetVariantStock"
+                SetVariantStock="SetVariantStock"
+                SaveProductInventory="SaveProductInventoryAsync"
+                SaveVariantInventory="SaveVariantInventoryAsync" />
         </div>
     }
 </RightDrawer>

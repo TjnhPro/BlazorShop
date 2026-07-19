@@ -264,13 +264,25 @@ namespace BlazorShop.Tests.Architecture
         {
             var markupPath = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/CommerceProducts.razor");
             var codeBehindPath = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/CommerceProducts.razor.cs");
+            var componentDirectory = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Components/CommerceProducts");
             var markup = File.ReadAllText(markupPath);
             var codeBehind = File.ReadAllText(codeBehindPath);
+            var componentFiles = Directory
+                .EnumerateFiles(componentDirectory, "*.razor")
+                .Select(ToRepositoryRelativePath)
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
 
             Assert.DoesNotContain("@code", markup, StringComparison.Ordinal);
             Assert.Contains("public partial class CommerceProducts", codeBehind, StringComparison.Ordinal);
-            Assert.True(File.ReadLines(markupPath).Count() <= 650);
-            Assert.True(File.ReadLines(codeBehindPath).Count() <= 1150);
+            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Components/CommerceProducts/CommerceProductBasicInfoPanel.razor", componentFiles);
+            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Components/CommerceProducts/CommerceProductInventoryPanel.razor", componentFiles);
+            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Components/CommerceProducts/CommerceProductMediaPanel.razor", componentFiles);
+            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Components/CommerceProducts/CommerceProductSeoPanel.razor", componentFiles);
+            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Components/CommerceProducts/CommerceProductVariationsPanel.razor", componentFiles);
+            Assert.True(File.ReadLines(markupPath).Count() <= 300);
+            Assert.True(File.ReadLines(codeBehindPath).Count() <= 1050);
+            Assert.All(componentFiles, file => Assert.True(File.ReadLines(RepositoryPath(file)).Count() <= 240));
         }
 
         [Fact]

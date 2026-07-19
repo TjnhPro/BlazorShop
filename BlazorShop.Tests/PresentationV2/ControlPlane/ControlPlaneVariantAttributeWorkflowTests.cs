@@ -36,16 +36,16 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
             var pageSource = ReadCommerceProductsSource();
 
             Assert.Contains("Availability & purchase", pageSource, StringComparison.Ordinal);
-            Assert.Contains("@bind=\"basicForm.MinOrderQuantity\"", pageSource, StringComparison.Ordinal);
-            Assert.Contains("@bind=\"basicForm.MaxOrderQuantity\"", pageSource, StringComparison.Ordinal);
-            Assert.Contains("@bind=\"basicForm.QuantityStep\"", pageSource, StringComparison.Ordinal);
-            Assert.Contains("@bind=\"basicForm.PurchasingDisabled\"", pageSource, StringComparison.Ordinal);
-            Assert.Contains("@bind=\"basicForm.PurchasingDisabledReason\"", pageSource, StringComparison.Ordinal);
-            Assert.Contains("@bind=\"basicForm.ManageStock\"", pageSource, StringComparison.Ordinal);
-            Assert.Contains("@bind=\"basicForm.HideWhenOutOfStock\"", pageSource, StringComparison.Ordinal);
-            Assert.Contains("@bind=\"basicForm.ShippingRequired\"", pageSource, StringComparison.Ordinal);
-            Assert.Contains("@bind=\"basicForm.FreeShipping\"", pageSource, StringComparison.Ordinal);
-            Assert.Contains("@bind=\"basicForm.DeliveryEstimateText\"", pageSource, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"Form.MinOrderQuantity\"", pageSource, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"Form.MaxOrderQuantity\"", pageSource, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"Form.QuantityStep\"", pageSource, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"Form.PurchasingDisabled\"", pageSource, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"Form.PurchasingDisabledReason\"", pageSource, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"Form.ManageStock\"", pageSource, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"Form.HideWhenOutOfStock\"", pageSource, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"Form.ShippingRequired\"", pageSource, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"Form.FreeShipping\"", pageSource, StringComparison.Ordinal);
+            Assert.Contains("@bind=\"Form.DeliveryEstimateText\"", pageSource, StringComparison.Ordinal);
             Assert.Contains("MinOrderQuantity = basicForm.MinOrderQuantity", pageSource, StringComparison.Ordinal);
             Assert.Contains("PurchasingDisabled = basicForm.PurchasingDisabled", pageSource, StringComparison.Ordinal);
             Assert.Contains("DeliveryEstimateText = basicForm.DeliveryEstimateText", pageSource, StringComparison.Ordinal);
@@ -105,9 +105,18 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
 
         private static string ReadCommerceProductsSource()
         {
-            return ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/CommerceProducts.razor")
-                + Environment.NewLine
-                + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/CommerceProducts.razor.cs");
+            var root = FindRepositoryRoot();
+            var files = new List<string>
+            {
+                Path.Combine(root.FullName, "BlazorShop.PresentationV2", "BlazorShop.ControlPlane.Web", "Pages", "CommerceProducts.razor"),
+                Path.Combine(root.FullName, "BlazorShop.PresentationV2", "BlazorShop.ControlPlane.Web", "Pages", "CommerceProducts.razor.cs"),
+            };
+
+            files.AddRange(Directory.EnumerateFiles(
+                Path.Combine(root.FullName, "BlazorShop.PresentationV2", "BlazorShop.ControlPlane.Web", "Components", "CommerceProducts"),
+                "*.razor"));
+
+            return string.Join(Environment.NewLine, files.OrderBy(path => path, StringComparer.Ordinal).Select(File.ReadAllText));
         }
 
         private static string ReadRepositoryFile(string relativePath)

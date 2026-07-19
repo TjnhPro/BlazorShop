@@ -1,0 +1,101 @@
+<section class="rounded-md border border-ink-200 p-4">
+    <h2 class="text-sm font-semibold text-ink-900">Inventory</h2>
+    <div class="mt-3 flex flex-wrap gap-2">
+        <StatusBadge Text="@InventoryItemStatusLabel(InventoryItem, Product)" Tone="@InventoryItemStatusTone(InventoryItem, Product)" />
+        <StatusBadge Text="@(Product.ManageStock ? "Managed stock" : "Stock unmanaged")" Tone="@(Product.ManageStock ? "neutral" : "warning")" />
+        @if (Product.PurchasingDisabled)
+        {
+            <StatusBadge Text="Purchase paused" Tone="warning" />
+        }
+        @if (Product.HideWhenOutOfStock)
+        {
+            <StatusBadge Text="Hide when out" Tone="neutral" />
+        }
+    </div>
+    @if (Product.PurchasingDisabled && !string.IsNullOrWhiteSpace(Product.PurchasingDisabledReason))
+    {
+        <div class="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">@Product.PurchasingDisabledReason</div>
+    }
+    <div class="mt-3 grid gap-3 text-sm md:grid-cols-[180px_auto]">
+        <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" @bind="BoundProductQuantity" />
+        <button class="cp-button cp-button-secondary justify-center" disabled="@IsSaving" @onclick="SaveProductInventory">Update product quantity</button>
+    </div>
+    @if (InventoryItem?.Variants.Count > 0)
+    {
+        <div class="mt-4 divide-y divide-ink-100 rounded-md border border-ink-200">
+            @foreach (var variant in InventoryItem.Variants)
+            {
+                <div class="grid gap-3 p-3 text-sm md:grid-cols-[minmax(0,1fr)_120px_auto] md:items-center">
+                    <div>
+                        <div class="font-medium text-ink-900">@VariantName(variant)</div>
+                        <div class="font-mono text-xs text-ink-500">@variant.Sku</div>
+                        <div class="mt-2 flex flex-wrap gap-2">
+                            <StatusBadge Text="@VariantStatusLabel(variant)" Tone="@VariantStatusTone(variant)" />
+                        </div>
+                    </div>
+                    <input class="min-h-10 rounded-md border border-ink-300 px-3 outline-none focus:border-control-500 focus:ring-2 focus:ring-control-100" type="number" value="@GetVariantStock(variant.VariantId)" @onchange="args => SetVariantStock(variant.VariantId, args.Value?.ToString())" />
+                    <button class="cp-button cp-button-secondary justify-center" disabled="@IsSaving" @onclick="() => SaveVariantInventory.InvokeAsync(variant.VariantId)">Update stock</button>
+                </div>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public GetProduct Product { get; set; } = default!;
+
+    [Parameter]
+    public AdminInventoryItemDto? InventoryItem { get; set; }
+
+    [Parameter]
+    public int ProductQuantity { get; set; }
+
+    [Parameter]
+    public EventCallback<int> ProductQuantityChanged { get; set; }
+
+    [Parameter]
+    public bool IsSaving { get; set; }
+
+    [Parameter, EditorRequired]
+    public Func<AdminInventoryItemDto?, GetProduct, string> InventoryItemStatusLabel { get; set; } = (_, _) => string.Empty;
+
+    [Parameter, EditorRequired]
+    public Func<AdminInventoryItemDto?, GetProduct, string> InventoryItemStatusTone { get; set; } = (_, _) => "neutral";
+
+    [Parameter, EditorRequired]
+    public Func<AdminInventoryVariantDto, string> VariantName { get; set; } = _ => string.Empty;
+
+    [Parameter, EditorRequired]
+    public Func<AdminInventoryVariantDto, string> VariantStatusLabel { get; set; } = _ => string.Empty;
+
+    [Parameter, EditorRequired]
+    public Func<AdminInventoryVariantDto, string> VariantStatusTone { get; set; } = _ => "neutral";
+
+    [Parameter, EditorRequired]
+    public Func<Guid, string> GetVariantStock { get; set; } = _ => "0";
+
+    [Parameter, EditorRequired]
+    public Action<Guid, string?> SetVariantStock { get; set; } = (_, _) => { };
+
+    [Parameter]
+    public EventCallback SaveProductInventory { get; set; }
+
+    [Parameter]
+    public EventCallback<Guid> SaveVariantInventory { get; set; }
+
+    private int BoundProductQuantity
+    {
+        get => this.ProductQuantity;
+        set
+        {
+            if (this.ProductQuantity == value)
+            {
+                return;
+            }
+
+            this.ProductQuantity = value;
+            _ = this.ProductQuantityChanged.InvokeAsync(value);
+        }
+    }
+}
