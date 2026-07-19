@@ -13,6 +13,26 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         public string ProviderKey => PaymentMethodKeys.Cod;
 
+        public PaymentProviderDescriptor Descriptor { get; } = new(
+            PaymentMethodKeys.Cod,
+            "Cash on Delivery",
+            "Offline payment collected when the order is delivered.",
+            IconUrl: null,
+            DefaultDisplayOrder: 10,
+            SupportedCurrencyCodes: [],
+            SupportedCountryCodes: [],
+            MinOrderTotal: null,
+            MaxOrderTotal: null,
+            PaymentProviderMethodTypes.Offline,
+            RecurringCapable: false,
+            SupportsAuthorize: false,
+            SupportsCapture: true,
+            SupportsVoid: false,
+            SupportsRefund: false,
+            SupportsPartialRefund: false,
+            RequiresWebhookSignature: false,
+            ActiveByDefault: true);
+
         public Task<ServiceResponse<PaymentProviderOperationResult>> ValidateInputAsync(
             PaymentProviderOperationRequest request,
             CancellationToken cancellationToken = default)

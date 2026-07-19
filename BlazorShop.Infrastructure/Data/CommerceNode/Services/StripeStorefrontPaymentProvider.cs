@@ -38,6 +38,26 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         public string ProviderKey => PaymentMethodKeys.Stripe;
 
+        public PaymentProviderDescriptor Descriptor { get; } = new(
+            PaymentMethodKeys.Stripe,
+            "Stripe",
+            "Hosted card payments through Stripe Checkout.",
+            IconUrl: null,
+            DefaultDisplayOrder: 20,
+            SupportedCurrencyCodes: [],
+            SupportedCountryCodes: [],
+            MinOrderTotal: null,
+            MaxOrderTotal: null,
+            PaymentProviderMethodTypes.Redirect,
+            RecurringCapable: false,
+            SupportsAuthorize: false,
+            SupportsCapture: true,
+            SupportsVoid: false,
+            SupportsRefund: false,
+            SupportsPartialRefund: false,
+            RequiresWebhookSignature: true,
+            ActiveByDefault: false);
+
         public async Task<ServiceResponse<PaymentProviderOperationResult>> CreatePaymentSessionAsync(
             CreatePaymentProviderSessionRequest request,
             CancellationToken cancellationToken = default)

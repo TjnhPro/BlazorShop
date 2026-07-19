@@ -45,6 +45,35 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal(ServiceResponseType.ValidationError, result.ResponseType);
         }
 
+        [Fact]
+        public void ProviderDescriptor_SystemNameMatchesProviderKey()
+        {
+            IStorefrontPaymentProvider[] providers =
+            [
+                new CodStorefrontPaymentProvider(),
+                new MinimalProvider(),
+            ];
+
+            foreach (var provider in providers)
+            {
+                Assert.Equal(provider.ProviderKey, provider.Descriptor.SystemName);
+            }
+        }
+
+        [Fact]
+        public void ProviderDescriptor_DoesNotExposeSecretOrCredentialProperties()
+        {
+            var propertyNames = typeof(PaymentProviderDescriptor)
+                .GetProperties()
+                .Select(property => property.Name)
+                .ToArray();
+
+            Assert.DoesNotContain(propertyNames, name => name.Contains("secret", StringComparison.OrdinalIgnoreCase));
+            Assert.DoesNotContain(propertyNames, name => name.Contains("password", StringComparison.OrdinalIgnoreCase));
+            Assert.DoesNotContain(propertyNames, name => name.Contains("credential", StringComparison.OrdinalIgnoreCase));
+            Assert.DoesNotContain(propertyNames, name => name.Contains("settings", StringComparison.OrdinalIgnoreCase));
+        }
+
         private static PaymentProviderOperationRequest CreateOperationRequest()
         {
             return new PaymentProviderOperationRequest(
@@ -75,6 +104,25 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         private sealed class MinimalProvider : IStorefrontPaymentProvider
         {
             public string ProviderKey => "minimal";
+
+            public PaymentProviderDescriptor Descriptor { get; } = new(
+                "minimal",
+                "Minimal",
+                Description: null,
+                IconUrl: null,
+                DefaultDisplayOrder: 100,
+                SupportedCurrencyCodes: [],
+                SupportedCountryCodes: [],
+                MinOrderTotal: null,
+                MaxOrderTotal: null,
+                PaymentProviderMethodTypes.Redirect,
+                RecurringCapable: false,
+                SupportsAuthorize: false,
+                SupportsCapture: false,
+                SupportsVoid: false,
+                SupportsRefund: false,
+                SupportsPartialRefund: false,
+                RequiresWebhookSignature: false);
 
             public Task<ServiceResponse<PaymentProviderSessionResult>> CreateHostedSessionAsync(
                 CreatePaymentProviderSessionRequest request,

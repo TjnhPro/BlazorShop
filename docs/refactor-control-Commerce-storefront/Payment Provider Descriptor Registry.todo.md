@@ -129,8 +129,8 @@ Phase 0 evidence:
 
 ## Phase 1 - Add Provider Descriptor Contract
 
-- [ ] Add provider-level descriptor contract in `BlazorShop.Application/CommerceNode/Payments/CommerceNodePaymentDtos.cs`.
-- [ ] Proposed shape:
+- [x] Add provider-level descriptor contract in `BlazorShop.Application/CommerceNode/Payments/CommerceNodePaymentDtos.cs`.
+- [x] Proposed shape:
 
 ```csharp
 public sealed record PaymentProviderDescriptor(
@@ -154,16 +154,24 @@ public sealed record PaymentProviderDescriptor(
     bool ActiveByDefault = true);
 ```
 
-- [ ] Add `PaymentProviderDescriptor Descriptor { get; }` to `IStorefrontPaymentProvider`.
-- [ ] Keep `ProviderKey` for resolver compatibility, but add test that `ProviderKey == Descriptor.SystemName`.
-- [ ] Do not add secret/config values to descriptor.
-- [ ] Do not change existing public DTOs or API contracts yet.
+- [x] Add `PaymentProviderDescriptor Descriptor { get; }` to `IStorefrontPaymentProvider`.
+- [x] Keep `ProviderKey` for resolver compatibility, but add test that `ProviderKey == Descriptor.SystemName`.
+- [x] Do not add secret/config values to descriptor.
+- [x] Do not change existing public DTOs or API contracts yet.
 
 Acceptance:
 
-- [ ] All provider implementations and test fake providers compile with descriptor.
-- [ ] Descriptor is provider metadata only, not store config and not secret config.
-- [ ] Existing payment operation contracts remain unchanged.
+- [x] All provider implementations and test fake providers compile with descriptor.
+- [x] Descriptor is provider metadata only, not store config and not secret config.
+- [x] Existing payment operation contracts remain unchanged.
+
+Phase 1 evidence:
+
+- Added `PaymentProviderDescriptor` and `IStorefrontPaymentProvider.Descriptor`; existing `PaymentProviderCapabilityDto` and public API DTOs were not changed.
+- Updated COD/Stripe providers and all active fake/minimal providers to expose descriptors.
+- Added operation contract tests for `ProviderKey == Descriptor.SystemName` and descriptor property names avoiding secret/password/credential/settings metadata.
+- Focused command passed 71/71 tests:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~PaymentProviderOperationContractTests|FullyQualifiedName~PaymentProviderCapabilityRegistryTests|FullyQualifiedName~PaymentWebhookSignatureVerifierTests|FullyQualifiedName~StorefrontCheckoutServiceTests" --no-restore --nologo --verbosity minimal`
 
 ## Phase 2 - Move COD And Stripe Capabilities Into Providers
 

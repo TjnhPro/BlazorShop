@@ -194,6 +194,26 @@ namespace BlazorShop.Application.CommerceNode.Payments
         public const string Immediate = "immediate";
     }
 
+    public sealed record PaymentProviderDescriptor(
+        string SystemName,
+        string DisplayName,
+        string? Description,
+        string? IconUrl,
+        int DefaultDisplayOrder,
+        IReadOnlyList<string> SupportedCurrencyCodes,
+        IReadOnlyList<string> SupportedCountryCodes,
+        decimal? MinOrderTotal,
+        decimal? MaxOrderTotal,
+        string MethodType,
+        bool RecurringCapable,
+        bool SupportsAuthorize,
+        bool SupportsCapture,
+        bool SupportsVoid,
+        bool SupportsRefund,
+        bool SupportsPartialRefund,
+        bool RequiresWebhookSignature,
+        bool ActiveByDefault = true);
+
     public sealed record PaymentProviderCapabilityDto(
         string SystemName,
         bool Installed,
@@ -266,6 +286,8 @@ namespace BlazorShop.Application.CommerceNode.Payments
     public interface IStorefrontPaymentProvider
     {
         string ProviderKey { get; }
+
+        PaymentProviderDescriptor Descriptor { get; }
 
         Task<ServiceResponse<PaymentProviderOperationResult>> ValidateInputAsync(
             PaymentProviderOperationRequest request,

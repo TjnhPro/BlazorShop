@@ -2888,9 +2888,30 @@ namespace BlazorShop.Tests.Application.CommerceNode
             {
                 this.ProviderKey = providerKey;
                 this.createSession = createSession;
+                this.Descriptor = new PaymentProviderDescriptor(
+                    providerKey,
+                    providerKey,
+                    Description: null,
+                    IconUrl: null,
+                    DefaultDisplayOrder: 20,
+                    SupportedCurrencyCodes: [],
+                    SupportedCountryCodes: [],
+                    MinOrderTotal: null,
+                    MaxOrderTotal: null,
+                    PaymentProviderMethodTypes.Redirect,
+                    RecurringCapable: false,
+                    SupportsAuthorize: false,
+                    SupportsCapture: true,
+                    SupportsVoid: false,
+                    SupportsRefund: false,
+                    SupportsPartialRefund: false,
+                    RequiresWebhookSignature: true,
+                    ActiveByDefault: false);
             }
 
             public string ProviderKey { get; }
+
+            public PaymentProviderDescriptor Descriptor { get; }
 
             public Task<ServiceResponse<PaymentProviderOperationResult>> CreatePaymentSessionAsync(
                 CreatePaymentProviderSessionRequest request,
