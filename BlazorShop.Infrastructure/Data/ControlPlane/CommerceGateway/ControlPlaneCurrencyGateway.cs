@@ -2,8 +2,8 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using System.Globalization;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.ControlPlane.Catalog;
-    using BlazorShop.Application.ControlPlane.CommerceGateway;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -32,11 +32,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreCurrencyDto>>> ListCurrenciesAsync(
+        public Task<ApplicationResult<IReadOnlyList<StoreCurrencyDto>>> ListCurrenciesAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<StoreCurrencyDto>>(
+            return this.SendApplicationAsync<IReadOnlyList<StoreCurrencyDto>>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/currencies",
@@ -44,13 +44,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreCurrencyDto>> UpdateCurrencyAsync(
+        public Task<ApplicationResult<StoreCurrencyDto>> UpdateCurrencyAsync(
             Guid storePublicId,
             string currencyCode,
             UpdateStoreCurrencyRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreCurrencyDto>(
+            return this.SendApplicationAsync<StoreCurrencyDto>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/currencies/{Uri.EscapeDataString(currencyCode)}",
@@ -58,11 +58,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreCurrencyExchangeRateDto>>> ListExchangeRatesAsync(
+        public Task<ApplicationResult<IReadOnlyList<StoreCurrencyExchangeRateDto>>> ListExchangeRatesAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<StoreCurrencyExchangeRateDto>>(
+            return this.SendApplicationAsync<IReadOnlyList<StoreCurrencyExchangeRateDto>>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/currencies/exchange-rates",
@@ -70,11 +70,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreCurrencyExchangeRateProviderDto>>> ListExchangeRateProvidersAsync(
+        public Task<ApplicationResult<IReadOnlyList<StoreCurrencyExchangeRateProviderDto>>> ListExchangeRateProvidersAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<StoreCurrencyExchangeRateProviderDto>>(
+            return this.SendApplicationAsync<IReadOnlyList<StoreCurrencyExchangeRateProviderDto>>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/currencies/exchange-rate-providers",
@@ -82,12 +82,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreCurrencyExchangeRateProviderFetchResult>> FetchExchangeRatesAsync(
+        public Task<ApplicationResult<StoreCurrencyExchangeRateProviderFetchResult>> FetchExchangeRatesAsync(
             Guid storePublicId,
             FetchStoreCurrencyExchangeRatesRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreCurrencyExchangeRateProviderFetchResult>(
+            return this.SendApplicationAsync<StoreCurrencyExchangeRateProviderFetchResult>(
                 storePublicId,
                 HttpMethod.Post,
                 "api/commerce/admin/currencies/exchange-rates/fetch",
@@ -95,12 +95,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CommerceTaskSummary>> QueueExchangeRateUpdateAsync(
+        public Task<ApplicationResult<CommerceTaskSummary>> QueueExchangeRateUpdateAsync(
             Guid storePublicId,
             QueueStoreCurrencyExchangeRateUpdateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<CommerceTaskSummary>(
+            return this.SendApplicationAsync<CommerceTaskSummary>(
                 storePublicId,
                 HttpMethod.Post,
                 "api/commerce/admin/currencies/exchange-rates/update-tasks",
@@ -108,13 +108,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreCurrencyExchangeRateDto>> UpsertExchangeRateAsync(
+        public Task<ApplicationResult<StoreCurrencyExchangeRateDto>> UpsertExchangeRateAsync(
             Guid storePublicId,
             string targetCurrencyCode,
             UpsertStoreCurrencyExchangeRateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreCurrencyExchangeRateDto>(
+            return this.SendApplicationAsync<StoreCurrencyExchangeRateDto>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/currencies/exchange-rates/{Uri.EscapeDataString(targetCurrencyCode)}",
@@ -122,12 +122,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreCurrencyExchangeRateDto>> DisableExchangeRateAsync(
+        public Task<ApplicationResult<StoreCurrencyExchangeRateDto>> DisableExchangeRateAsync(
             Guid storePublicId,
             string targetCurrencyCode,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreCurrencyExchangeRateDto>(
+            return this.SendApplicationAsync<StoreCurrencyExchangeRateDto>(
                 storePublicId,
                 HttpMethod.Post,
                 $"api/commerce/admin/currencies/exchange-rates/{Uri.EscapeDataString(targetCurrencyCode)}/disable",

@@ -1,5 +1,6 @@
 namespace BlazorShop.Application.ControlPlane.CommerceGateway.Currencies
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -25,48 +26,48 @@ namespace BlazorShop.Application.ControlPlane.CommerceGateway.Currencies
     public interface IControlPlaneCurrencyGateway
     {
         
-                Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreCurrencyDto>>> ListCurrenciesAsync(
+                Task<ApplicationResult<IReadOnlyList<StoreCurrencyDto>>> ListCurrenciesAsync(
                     Guid storePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StoreCurrencyDto>> UpdateCurrencyAsync(
+                Task<ApplicationResult<StoreCurrencyDto>> UpdateCurrencyAsync(
                     Guid storePublicId,
                     string currencyCode,
                     UpdateStoreCurrencyRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreCurrencyExchangeRateDto>>> ListExchangeRatesAsync(
+                Task<ApplicationResult<IReadOnlyList<StoreCurrencyExchangeRateDto>>> ListExchangeRatesAsync(
                     Guid storePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<StoreCurrencyExchangeRateProviderDto>>> ListExchangeRateProvidersAsync(
+                Task<ApplicationResult<IReadOnlyList<StoreCurrencyExchangeRateProviderDto>>> ListExchangeRateProvidersAsync(
                     Guid storePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StoreCurrencyExchangeRateProviderFetchResult>> FetchExchangeRatesAsync(
+                Task<ApplicationResult<StoreCurrencyExchangeRateProviderFetchResult>> FetchExchangeRatesAsync(
                     Guid storePublicId,
                     FetchStoreCurrencyExchangeRatesRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<CommerceTaskSummary>> QueueExchangeRateUpdateAsync(
+                Task<ApplicationResult<CommerceTaskSummary>> QueueExchangeRateUpdateAsync(
                     Guid storePublicId,
                     QueueStoreCurrencyExchangeRateUpdateRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StoreCurrencyExchangeRateDto>> UpsertExchangeRateAsync(
+                Task<ApplicationResult<StoreCurrencyExchangeRateDto>> UpsertExchangeRateAsync(
                     Guid storePublicId,
                     string targetCurrencyCode,
                     UpsertStoreCurrencyExchangeRateRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StoreCurrencyExchangeRateDto>> DisableExchangeRateAsync(
+                Task<ApplicationResult<StoreCurrencyExchangeRateDto>> DisableExchangeRateAsync(
                     Guid storePublicId,
                     string targetCurrencyCode,
                     CancellationToken cancellationToken = default);
