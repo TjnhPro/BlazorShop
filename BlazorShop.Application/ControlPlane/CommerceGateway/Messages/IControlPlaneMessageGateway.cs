@@ -1,5 +1,6 @@
 namespace BlazorShop.Application.ControlPlane.CommerceGateway.Messages
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -25,65 +26,65 @@ namespace BlazorShop.Application.ControlPlane.CommerceGateway.Messages
     public interface IControlPlaneMessageGateway
     {
         
-                Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> GetEmailSettingsAsync(
+                Task<ApplicationResult<StoreEmailSettingsResponse>> GetEmailSettingsAsync(
                     Guid storePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> UpdateEmailSettingsAsync(
+                Task<ApplicationResult<StoreEmailSettingsResponse>> UpdateEmailSettingsAsync(
                     Guid storePublicId,
                     UpdateStoreEmailSettingsRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> RotateEmailPasswordAsync(
+                Task<ApplicationResult<StoreEmailSettingsResponse>> RotateEmailPasswordAsync(
                     Guid storePublicId,
                     RotateStoreEmailPasswordRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> ClearEmailPasswordAsync(
+                Task<ApplicationResult<StoreEmailSettingsResponse>> ClearEmailPasswordAsync(
                     Guid storePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<SendStoreEmailTestResponse>> SendEmailTestAsync(
+                Task<ApplicationResult<SendStoreEmailTestResponse>> SendEmailTestAsync(
                     Guid storePublicId,
                     SendStoreEmailTestRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<MessageTemplateAdminSummary>>> ListMessageTemplatesAsync(
+                Task<ApplicationResult<IReadOnlyList<MessageTemplateAdminSummary>>> ListMessageTemplatesAsync(
                     Guid storePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<MessageTemplateAdminDetail>> GetMessageTemplateAsync(
+                Task<ApplicationResult<MessageTemplateAdminDetail>> GetMessageTemplateAsync(
                     Guid storePublicId,
                     Guid templatePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<MessageTemplateAdminDetail>> UpdateMessageTemplateAsync(
+                Task<ApplicationResult<MessageTemplateAdminDetail>> UpdateMessageTemplateAsync(
                     Guid storePublicId,
                     Guid templatePublicId,
                     UpdateMessageTemplateRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<MessageTemplateAdminDetail>> ResetMessageTemplateAsync(
+                Task<ApplicationResult<MessageTemplateAdminDetail>> ResetMessageTemplateAsync(
                     Guid storePublicId,
                     Guid templatePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<MessageTemplatePreviewResponse>> PreviewMessageTemplateAsync(
+                Task<ApplicationResult<MessageTemplatePreviewResponse>> PreviewMessageTemplateAsync(
                     Guid storePublicId,
                     PreviewMessageTemplateRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminListResponse>> ListQueuedMessagesAsync(
+                Task<ApplicationResult<QueuedMessageAdminListResponse>> ListQueuedMessagesAsync(
                     Guid storePublicId,
                     string? status = null,
                     string? templateSystemName = null,
@@ -92,19 +93,19 @@ namespace BlazorShop.Application.ControlPlane.CommerceGateway.Messages
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminDetail>> GetQueuedMessageAsync(
+                Task<ApplicationResult<QueuedMessageAdminDetail>> GetQueuedMessageAsync(
                     Guid storePublicId,
                     Guid queuedMessagePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminDetail>> RetryQueuedMessageAsync(
+                Task<ApplicationResult<QueuedMessageAdminDetail>> RetryQueuedMessageAsync(
                     Guid storePublicId,
                     Guid queuedMessagePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminDetail>> CancelQueuedMessageAsync(
+                Task<ApplicationResult<QueuedMessageAdminDetail>> CancelQueuedMessageAsync(
                     Guid storePublicId,
                     Guid queuedMessagePublicId,
                     CancellationToken cancellationToken = default);

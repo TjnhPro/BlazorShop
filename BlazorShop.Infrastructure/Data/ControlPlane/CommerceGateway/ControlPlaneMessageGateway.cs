@@ -2,8 +2,8 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using System.Globalization;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.ControlPlane.Catalog;
-    using BlazorShop.Application.ControlPlane.CommerceGateway;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -32,11 +32,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> GetEmailSettingsAsync(
+        public Task<ApplicationResult<StoreEmailSettingsResponse>> GetEmailSettingsAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreEmailSettingsResponse>(
+            return this.SendApplicationAsync<StoreEmailSettingsResponse>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/email-settings",
@@ -44,12 +44,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> UpdateEmailSettingsAsync(
+        public Task<ApplicationResult<StoreEmailSettingsResponse>> UpdateEmailSettingsAsync(
             Guid storePublicId,
             UpdateStoreEmailSettingsRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreEmailSettingsResponse>(
+            return this.SendApplicationAsync<StoreEmailSettingsResponse>(
                 storePublicId,
                 HttpMethod.Put,
                 "api/commerce/admin/email-settings",
@@ -57,12 +57,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> RotateEmailPasswordAsync(
+        public Task<ApplicationResult<StoreEmailSettingsResponse>> RotateEmailPasswordAsync(
             Guid storePublicId,
             RotateStoreEmailPasswordRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreEmailSettingsResponse>(
+            return this.SendApplicationAsync<StoreEmailSettingsResponse>(
                 storePublicId,
                 HttpMethod.Post,
                 "api/commerce/admin/email-settings/password/rotate",
@@ -70,11 +70,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreEmailSettingsResponse>> ClearEmailPasswordAsync(
+        public Task<ApplicationResult<StoreEmailSettingsResponse>> ClearEmailPasswordAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreEmailSettingsResponse>(
+            return this.SendApplicationAsync<StoreEmailSettingsResponse>(
                 storePublicId,
                 HttpMethod.Post,
                 "api/commerce/admin/email-settings/password/clear",
@@ -82,12 +82,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<SendStoreEmailTestResponse>> SendEmailTestAsync(
+        public Task<ApplicationResult<SendStoreEmailTestResponse>> SendEmailTestAsync(
             Guid storePublicId,
             SendStoreEmailTestRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<SendStoreEmailTestResponse>(
+            return this.SendApplicationAsync<SendStoreEmailTestResponse>(
                 storePublicId,
                 HttpMethod.Post,
                 "api/commerce/admin/email-settings/test-send",
@@ -95,11 +95,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<MessageTemplateAdminSummary>>> ListMessageTemplatesAsync(
+        public Task<ApplicationResult<IReadOnlyList<MessageTemplateAdminSummary>>> ListMessageTemplatesAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<MessageTemplateAdminSummary>>(
+            return this.SendApplicationAsync<IReadOnlyList<MessageTemplateAdminSummary>>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/message-templates",
@@ -107,12 +107,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<MessageTemplateAdminDetail>> GetMessageTemplateAsync(
+        public Task<ApplicationResult<MessageTemplateAdminDetail>> GetMessageTemplateAsync(
             Guid storePublicId,
             Guid templatePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<MessageTemplateAdminDetail>(
+            return this.SendApplicationAsync<MessageTemplateAdminDetail>(
                 storePublicId,
                 HttpMethod.Get,
                 $"api/commerce/admin/message-templates/{templatePublicId:D}",
@@ -120,13 +120,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<MessageTemplateAdminDetail>> UpdateMessageTemplateAsync(
+        public Task<ApplicationResult<MessageTemplateAdminDetail>> UpdateMessageTemplateAsync(
             Guid storePublicId,
             Guid templatePublicId,
             UpdateMessageTemplateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<MessageTemplateAdminDetail>(
+            return this.SendApplicationAsync<MessageTemplateAdminDetail>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/message-templates/{templatePublicId:D}",
@@ -134,12 +134,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<MessageTemplateAdminDetail>> ResetMessageTemplateAsync(
+        public Task<ApplicationResult<MessageTemplateAdminDetail>> ResetMessageTemplateAsync(
             Guid storePublicId,
             Guid templatePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<MessageTemplateAdminDetail>(
+            return this.SendApplicationAsync<MessageTemplateAdminDetail>(
                 storePublicId,
                 HttpMethod.Post,
                 $"api/commerce/admin/message-templates/{templatePublicId:D}/reset",
@@ -147,12 +147,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<MessageTemplatePreviewResponse>> PreviewMessageTemplateAsync(
+        public Task<ApplicationResult<MessageTemplatePreviewResponse>> PreviewMessageTemplateAsync(
             Guid storePublicId,
             PreviewMessageTemplateRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<MessageTemplatePreviewResponse>(
+            return this.SendApplicationAsync<MessageTemplatePreviewResponse>(
                 storePublicId,
                 HttpMethod.Post,
                 "api/commerce/admin/message-templates/preview",
@@ -160,7 +160,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminListResponse>> ListQueuedMessagesAsync(
+        public Task<ApplicationResult<QueuedMessageAdminListResponse>> ListQueuedMessagesAsync(
             Guid storePublicId,
             string? status = null,
             string? templateSystemName = null,
@@ -168,7 +168,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             int take = 25,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<QueuedMessageAdminListResponse>(
+            return this.SendApplicationAsync<QueuedMessageAdminListResponse>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/queued-messages" + BuildQueuedMessageQuery(status, templateSystemName, skip, take),
@@ -176,12 +176,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminDetail>> GetQueuedMessageAsync(
+        public Task<ApplicationResult<QueuedMessageAdminDetail>> GetQueuedMessageAsync(
             Guid storePublicId,
             Guid queuedMessagePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<QueuedMessageAdminDetail>(
+            return this.SendApplicationAsync<QueuedMessageAdminDetail>(
                 storePublicId,
                 HttpMethod.Get,
                 $"api/commerce/admin/queued-messages/{queuedMessagePublicId:D}",
@@ -189,12 +189,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminDetail>> RetryQueuedMessageAsync(
+        public Task<ApplicationResult<QueuedMessageAdminDetail>> RetryQueuedMessageAsync(
             Guid storePublicId,
             Guid queuedMessagePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<QueuedMessageAdminDetail>(
+            return this.SendApplicationAsync<QueuedMessageAdminDetail>(
                 storePublicId,
                 HttpMethod.Post,
                 $"api/commerce/admin/queued-messages/{queuedMessagePublicId:D}/retry",
@@ -202,12 +202,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<QueuedMessageAdminDetail>> CancelQueuedMessageAsync(
+        public Task<ApplicationResult<QueuedMessageAdminDetail>> CancelQueuedMessageAsync(
             Guid storePublicId,
             Guid queuedMessagePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<QueuedMessageAdminDetail>(
+            return this.SendApplicationAsync<QueuedMessageAdminDetail>(
                 storePublicId,
                 HttpMethod.Post,
                 $"api/commerce/admin/queued-messages/{queuedMessagePublicId:D}/cancel",
