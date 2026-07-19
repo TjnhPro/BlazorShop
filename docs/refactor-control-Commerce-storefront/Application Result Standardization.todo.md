@@ -438,23 +438,43 @@ Goal: xu ly `ServiceResponse<T>` theo huong an toan, khong xoa dot ngot.
 
 Tasks:
 
-- [ ] Add extension helpers:
-  - [ ] `ServiceResponse<T>.ToApplicationResult(defaultCode)`.
-  - [ ] `ApplicationResult<T>.ToServiceResponse()` only if needed for transitional compatibility.
-- [ ] Define `ServiceResponseType -> ApplicationErrorKind` mapping:
-  - [ ] `ValidationError -> Validation`.
-  - [ ] `NotFound -> NotFound`.
-  - [ ] `Conflict -> Conflict`.
-  - [ ] `Failure -> Failure`.
-- [ ] Do not migrate checkout/cart/payment in this phase unless a later plan explicitly targets them.
-- [ ] Do not remove `ServiceResponse<T>` while legacy/shared tests still depend on it.
-- [ ] Identify services where `ServiceResponse<T>` is still appropriate because they are HTTP-client/service-client projection, not application use-case result.
+- [x] Add extension helpers:
+  - [x] `ServiceResponse<T>.ToApplicationResult(defaultCode)`.
+  - [x] `ApplicationResult<T>.ToServiceResponse()` only if needed for transitional compatibility.
+- [x] Define `ServiceResponseType -> ApplicationErrorKind` mapping:
+  - [x] `ValidationError -> Validation`.
+  - [x] `NotFound -> NotFound`.
+  - [x] `Conflict -> Conflict`.
+  - [x] `Failure -> Failure`.
+- [x] Do not migrate checkout/cart/payment in this phase unless a later plan explicitly targets them.
+- [x] Do not remove `ServiceResponse<T>` while legacy/shared tests still depend on it.
+- [x] Identify services where `ServiceResponse<T>` is still appropriate because they are HTTP-client/service-client projection, not application use-case result.
 
 Exit criteria:
 
-- [ ] Adapters exist for future migrations.
-- [ ] No behavior change in checkout/cart/payment.
-- [ ] A follow-up inventory shows remaining `ServiceResponse<T>` use by category.
+- [x] Adapters exist for future migrations.
+- [x] No behavior change in checkout/cart/payment.
+- [x] A follow-up inventory shows remaining `ServiceResponse<T>` use by category.
+
+Phase 6 evidence:
+
+- Added `ServiceResponseApplicationResultExtensions` in `BlazorShop.Application/Common/Results`.
+- Added safe bidirectional adapters:
+  - `ServiceResponse<T>.ToApplicationResult(errorCodePrefix)`.
+  - `ApplicationResult<T>.ToServiceResponse()`.
+  - `ServiceResponseType -> ApplicationErrorKind`.
+  - `ApplicationErrorKind -> ServiceResponseType`.
+- Kept `ServiceResponse<T>` in place for:
+  - Legacy/admin service projections.
+  - Storefront scoped controller response helpers.
+  - Checkout/cart/payment flows that still use `ServiceResponse<T>`.
+  - Web.SharedV2 client transport DTOs.
+- Did not migrate checkout/cart/payment in this phase.
+- Focused command passed 20/20 tests:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~ServiceResponseApplicationResultExtensionsTests|FullyQualifiedName~ApplicationResultTests" --no-restore --nologo --verbosity minimal`
+- Application build passed 0 warnings/0 errors after clearing the build server lock:
+  - `dotnet build-server shutdown`
+  - `dotnet build BlazorShop.Application/BlazorShop.Application.csproj --no-restore --nologo --verbosity minimal`
 
 ## Phase 7 - Web Shared V2 Client Result Cleanup
 
@@ -545,7 +565,7 @@ Existing clients
 - [x] Phase 3 complete and old media result types removed.
 - [x] Phase 4 complete.
 - [x] Phase 5 complete.
-- [ ] Phase 6 adapter decision documented.
+- [x] Phase 6 adapter decision documented.
 - [ ] Phase 7 client result decision documented.
 - [ ] Phase 8 verification complete.
 
