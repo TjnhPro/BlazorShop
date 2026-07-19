@@ -263,28 +263,38 @@ Goal: tach mot aggregate co mapping ro rang nhung khong qua lon.
 
 Scope:
 
-- [ ] `PaymentAttemptConfiguration`.
-- [ ] `PaymentProviderEventConfiguration`.
-- [ ] `PaymentAttemptAuditLogConfiguration`.
-- [ ] `PaymentMethodConfiguration`.
-- [ ] `StorePaymentMethodConfiguration`.
+- [x] `PaymentAttemptConfiguration`.
+- [x] `PaymentProviderEventConfiguration`.
+- [x] `PaymentAttemptAuditLogConfiguration`.
+- [x] `PaymentMethodConfiguration`.
+- [x] `StorePaymentMethodConfiguration`.
 
 Tasks:
 
-- [ ] Move exact fluent API from `CommerceNodeDbContext` into the new configuration files.
-- [ ] Move `PaymentMethod.HasData(...)` seed into `PaymentMethodConfiguration` or `Seed/CommerceNodeSeedData.cs`.
-- [ ] Keep existing seed IDs, display order, provider system names, active flags and timestamps exactly.
-- [ ] Remove moved payment blocks from `OnModelCreating`.
-- [ ] Run focused tests:
-  - [ ] `dotnet test BlazorShop.Tests --filter Payment`.
-  - [ ] `dotnet test BlazorShop.Tests --filter CommerceNodeDbContextModelTests`.
-  - [ ] Commerce Node migration consistency test.
+- [x] Move exact fluent API from `CommerceNodeDbContext` into the new configuration files.
+- [x] Move `PaymentMethod.HasData(...)` seed into `PaymentMethodConfiguration` or `Seed/CommerceNodeSeedData.cs`.
+- [x] Keep existing seed IDs, display order, provider system names, active flags and timestamps exactly.
+- [x] Remove moved payment blocks from `OnModelCreating`.
+- [x] Run focused tests:
+  - [x] `dotnet test BlazorShop.Tests --filter Payment`.
+  - [x] `dotnet test BlazorShop.Tests --filter CommerceNodeDbContextModelTests`.
+  - [x] Commerce Node migration consistency test.
 
 Exit criteria:
 
-- [ ] `PaymentAttempt`, `PaymentProviderEvent`, `PaymentAttemptAuditLog`, `PaymentMethod`, `StorePaymentMethod` model metadata unchanged.
-- [ ] No pending model changes.
-- [ ] `CommerceNodeDbContext` line count drops.
+- [x] `PaymentAttempt`, `PaymentProviderEvent`, `PaymentAttemptAuditLog`, `PaymentMethod`, `StorePaymentMethod` model metadata unchanged.
+- [x] No pending model changes.
+- [x] `CommerceNodeDbContext` line count drops.
+
+Phase 2 evidence:
+
+- Added payment configuration files under `BlazorShop.Infrastructure/Data/CommerceNode/Configurations/Payments`.
+- Moved `PaymentMethod` seed into `PaymentMethodConfiguration` with the existing IDs/keys/names/descriptions/default flags/sort order unchanged.
+- Removed payment blocks from `CommerceNodeDbContext.OnModelCreating` while keeping DbSet declarations.
+- `CommerceNodeDbContext.cs` line count dropped from 2164 to 1975.
+- `modelBuilder.Entity` count dropped from 157 to 151.
+- Focused command passed 139/141 with 2 existing skips:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~Payment|FullyQualifiedName~CommerceNodeDbContextModelTests|FullyQualifiedName~CommerceNodeMigrationModelConsistencyTests" --no-restore --nologo --verbosity minimal`
 
 ## Phase 3 - Messages And Email Settings
 
@@ -552,7 +562,7 @@ Safety boundary
 
 - [x] Phase 0 guardrails complete.
 - [x] Phase 1 filtered configuration apply complete.
-- [ ] Phase 2 payments pilot complete.
+- [x] Phase 2 payments pilot complete.
 - [ ] Phase 3 messages/email complete.
 - [ ] Phase 4 store/currency/security/shipping complete.
 - [ ] Phase 5 cart/checkout/customer/address complete.
