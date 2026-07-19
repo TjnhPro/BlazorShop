@@ -289,23 +289,32 @@ Phase 4 evidence:
 
 ## Phase 5 - Optional PayPal Placeholder Decision
 
-- [ ] Decide whether Control Plane should show PayPal as future/unavailable before a real PayPal provider exists.
-- [ ] If yes, create explicit `PayPalPlaceholderStorefrontPaymentProvider`:
+- [x] Decide whether Control Plane should show PayPal as future/unavailable before a real PayPal provider exists.
+- [x] If yes, create explicit `PayPalPlaceholderStorefrontPaymentProvider` - not chosen for this phase:
   - registered as `IStorefrontPaymentProvider`.
   - descriptor says `ActiveByDefault = false`.
   - operations return unsupported/not configured.
   - no provider secrets or PayPal API calls.
-- [ ] If no, remove PayPal skeleton from runtime discovery:
+- [x] If no, remove PayPal skeleton from runtime discovery:
   - existing DB rows remain.
   - new stores only get registered provider defaults.
   - manager sees unsupported state for old PayPal rows.
-- [ ] Do not implement real PayPal create/capture/refund behavior in this phase.
+- [x] Do not implement real PayPal create/capture/refund behavior in this phase.
 
 Acceptance:
 
-- [ ] There is no hidden PayPal hard-code in registry.
-- [ ] PayPal visibility is an explicit provider registration decision.
-- [ ] Future real PayPal provider can replace placeholder by DI registration and descriptor/operations without registry edit.
+- [x] There is no hidden PayPal hard-code in registry.
+- [x] PayPal visibility is an explicit provider registration decision.
+- [x] Future real PayPal provider can replace placeholder by DI registration and descriptor/operations without registry edit.
+
+Phase 5 evidence:
+
+- Decision: do not add `PayPalPlaceholderStorefrontPaymentProvider` in this phase. PayPal should only appear as a provider-backed capability after an explicit provider registration exists.
+- Removed PayPal skeleton from development store payment method defaults so new seeded stores no longer receive a PayPal store method from local seeding.
+- Kept `CommerceNodeDbContext` `PaymentMethods` catalog seed and existing rows untouched; older PayPal `StorePaymentMethod` rows still map unsupported and cannot be enabled.
+- `rg` confirmed no `PayPalStorefrontPaymentProvider`, no `PayPalPlaceholderStorefrontPaymentProvider`, and no `CreatePayPalSkeleton` runtime discovery remains.
+- Focused command passed 76/76 tests:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~PaymentProviderCapabilityRegistryTests|FullyQualifiedName~CommerceNodePaymentMethodSecretBoundaryTests|FullyQualifiedName~StorefrontCheckoutServiceTests" --no-restore --nologo --verbosity minimal`
 
 ## Phase 6 - Storefront And Control Plane Contract Stability
 

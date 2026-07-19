@@ -367,15 +367,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                     Description = "Card payments through Stripe.",
                     DisplayOrder = 20,
                 },
-                new StorePaymentMethod
-                {
-                    StoreId = storeId,
-                    PaymentMethodKey = PaymentMethodKeys.PayPal,
-                    Enabled = false,
-                    DisplayName = "PayPal",
-                    Description = "PayPal payment skeleton.",
-                    DisplayOrder = 30,
-                },
             };
 
             foreach (var method in methods)
