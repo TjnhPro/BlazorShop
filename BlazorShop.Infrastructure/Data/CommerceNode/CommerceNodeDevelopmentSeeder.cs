@@ -104,6 +104,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
         public async Task SeedAsync(CancellationToken cancellationToken = default)
         {
+            if (await this.HasRequiredQaSeedDataAsync(cancellationToken))
+            {
+                return;
+            }
+
             var store = await this.EnsureStoreAsync(cancellationToken);
             var isolationStore = await this.EnsureAuxiliaryStoresAsync(cancellationToken);
             await this.EnsureStorePaymentMethodsAsync(store.Id, cancellationToken);
@@ -152,6 +157,23 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             await this.EnsureSampleOrderAsync(isolationStore, isolationCustomer, cancellationToken);
         }
 
+        private async Task<bool> HasRequiredQaSeedDataAsync(CancellationToken cancellationToken)
+        {
+            var defaultStoreExists = await this.dbContext.CommerceStores
+                .AnyAsync(store => store.StoreKey == DefaultStoreKey, cancellationToken);
+            if (!defaultStoreExists)
+            {
+                return false;
+            }
+
+            var coreCatalogExists = await this.dbContext.Categories
+                .AnyAsync(category => category.Id == ApparelCategoryId, cancellationToken)
+                && await this.dbContext.Products
+                    .AnyAsync(product => product.Id == SimpleProductId, cancellationToken);
+
+            return coreCatalogExists;
+        }
+
         private async Task<CommerceStore> EnsureStoreAsync(CancellationToken cancellationToken)
         {
             var now = DateTimeOffset.UtcNow;
@@ -161,26 +183,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
             if (store is not null)
             {
-                store.Name = "Default QA Store";
-                store.Status = CommerceStoreStatuses.Active;
-                store.BaseUrl = "http://localhost:18598";
-                store.ForceHttps = false;
-                store.SslEnabled = false;
-                store.LogoUrl = "/images/banner-bg.jpg";
-                store.FaviconUrl = "/favicon.ico";
-                store.PngIconUrl = "/icon-192.png";
-                store.DefaultCurrencyCode = "EUR";
-                store.DefaultCulture = "en-US";
-                store.SupportEmail = "support@example.local";
-                store.SupportPhone = "+1 555 0100";
-                store.CompanyName = "Default QA Store Ltd";
-                store.CompanyEmail = "support@example.local";
-                store.CompanyPhone = "+1 555 0100";
-                store.CompanyAddress = "1 QA Street, QA City, US";
-                store.MaintenanceModeEnabled = false;
-                store.MaintenanceMessage = null;
-                store.UpdatedAt = now;
-
                 var primaryDomain = store.Domains.FirstOrDefault(domain => domain.IsPrimary && domain.DisabledAt == null);
                 if (primaryDomain is null)
                 {
@@ -194,9 +196,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                         UpdatedAt = now,
                         VerifiedAt = now,
                     });
+
+                    store.UpdatedAt = now;
+                    await this.dbContext.SaveChangesAsync(cancellationToken);
                 }
 
-                await this.dbContext.SaveChangesAsync(cancellationToken);
                 return store;
             }
 
@@ -299,27 +303,26 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 {
                     Id = storeId,
                     StoreKey = storeKey,
+                    Name = name,
+                    Status = status,
+                    BaseUrl = baseUrl,
+                    ForceHttps = false,
+                    SslEnabled = false,
+                    DefaultCurrencyCode = "EUR",
+                    DefaultCulture = "en-US",
+                    SupportEmail = "support@example.local",
+                    LogoUrl = "/images/banner-bg.jpg",
+                    FaviconUrl = "/favicon.ico",
+                    PngIconUrl = "/icon-192.png",
+                    CompanyName = $"{name} Ltd",
+                    CompanyEmail = "support@example.local",
+                    MaintenanceModeEnabled = maintenanceModeEnabled,
+                    MaintenanceMessage = maintenanceMessage,
                     CreatedAt = now,
+                    UpdatedAt = now,
                 };
                 this.dbContext.CommerceStores.Add(store);
             }
-
-            store.Name = name;
-            store.Status = status;
-            store.BaseUrl = baseUrl;
-            store.ForceHttps = false;
-            store.SslEnabled = false;
-            store.DefaultCurrencyCode = "EUR";
-            store.DefaultCulture = "en-US";
-            store.SupportEmail = "support@example.local";
-            store.LogoUrl = "/images/banner-bg.jpg";
-            store.FaviconUrl = "/favicon.ico";
-            store.PngIconUrl = "/icon-192.png";
-            store.CompanyName = $"{name} Ltd";
-            store.CompanyEmail = "support@example.local";
-            store.MaintenanceModeEnabled = maintenanceModeEnabled;
-            store.MaintenanceMessage = maintenanceMessage;
-            store.UpdatedAt = now;
 
             if (store.Domains.All(domain => !string.Equals(domain.NormalizedDomain, domainName, StringComparison.OrdinalIgnoreCase)))
             {
@@ -402,12 +405,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                         Reason = "Development QA seed",
                     });
                 }
-                else
-                {
-                    feature.Enabled = true;
-                    feature.Reason = "Development QA seed";
-                    feature.UpdatedAt = DateTime.UtcNow;
-                }
             }
 
             await this.EnsureStoreCurrencyAsync(storeId, "EUR", isDefault: true, displayOrder: 10, "de-DE", "€", cancellationToken);
@@ -445,12 +442,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 return;
             }
 
-            currency.IsEnabled = true;
-            currency.IsDefaultDisplayCurrency = isDefault;
-            currency.DisplayOrder = displayOrder;
-            currency.CultureName = cultureName;
-            currency.Symbol = symbol;
-            currency.UpdatedAt = DateTimeOffset.UtcNow;
+            return;
         }
 
         private async Task EnsureExchangeRateAsync(
@@ -484,28 +476,24 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 return;
             }
 
-            exchangeRate.Rate = rate;
-            exchangeRate.Source = "development-qa-seed";
-            exchangeRate.EffectiveAt = DateTimeOffset.UtcNow.AddDays(-1);
-            exchangeRate.ExpiresAt = DateTimeOffset.UtcNow.AddDays(30);
-            exchangeRate.IsManual = true;
-            exchangeRate.IsEnabled = true;
-            exchangeRate.UpdatedAt = DateTimeOffset.UtcNow;
+            return;
         }
 
         private async Task EnsureShippingSettingsAsync(Guid storeId, CancellationToken cancellationToken)
         {
             var settings = await this.dbContext.StoreShippingSettings
                 .FirstOrDefaultAsync(item => item.StoreId == storeId, cancellationToken);
-            if (settings is null)
+            if (settings is not null)
             {
-                settings = new StoreShippingSettings
-                {
-                    StoreId = storeId,
-                    CreatedAt = DateTimeOffset.UtcNow,
-                };
-                this.dbContext.StoreShippingSettings.Add(settings);
+                return;
             }
+
+            settings = new StoreShippingSettings
+            {
+                StoreId = storeId,
+                CreatedAt = DateTimeOffset.UtcNow,
+            };
+            this.dbContext.StoreShippingSettings.Add(settings);
 
             settings.OriginFullName = "Default QA Store Fulfillment";
             settings.OriginCompany = "Default QA Store Ltd";
@@ -530,15 +518,17 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
         {
             var settings = await this.dbContext.StoreEmailSettings
                 .FirstOrDefaultAsync(item => item.StoreId == storeId, cancellationToken);
-            if (settings is null)
+            if (settings is not null)
             {
-                settings = new StoreEmailSettings
-                {
-                    StoreId = storeId,
-                    CreatedAtUtc = DateTimeOffset.UtcNow,
-                };
-                this.dbContext.StoreEmailSettings.Add(settings);
+                return;
             }
+
+            settings = new StoreEmailSettings
+            {
+                StoreId = storeId,
+                CreatedAtUtc = DateTimeOffset.UtcNow,
+            };
+            this.dbContext.StoreEmailSettings.Add(settings);
 
             settings.Enabled = true;
             settings.DeliveryMode = StoreEmailDeliveryModes.Capture;
@@ -560,15 +550,17 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
         {
             var settings = await this.dbContext.StoreSecurityPrivacySettings
                 .FirstOrDefaultAsync(item => item.StoreId == storeId, cancellationToken);
-            if (settings is null)
+            if (settings is not null)
             {
-                settings = new StoreSecurityPrivacySettings
-                {
-                    StoreId = storeId,
-                    CreatedAt = DateTimeOffset.UtcNow,
-                };
-                this.dbContext.StoreSecurityPrivacySettings.Add(settings);
+                return;
             }
+
+            settings = new StoreSecurityPrivacySettings
+            {
+                StoreId = storeId,
+                CreatedAt = DateTimeOffset.UtcNow,
+            };
+            this.dbContext.StoreSecurityPrivacySettings.Add(settings);
 
             settings.ConsentEnabled = true;
             settings.ConsentVersion = "2026-07-qa";
