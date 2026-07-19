@@ -297,24 +297,33 @@ Acceptance:
 
 ## Phase 6 - Reduce Duplicate Order Line Resolution Safely
 
-- [ ] Compare checkout order-line resolution with `OrderPlacementService.ResolveOrderLinesAsync`.
-- [ ] Decide whether to:
+- [x] Compare checkout order-line resolution with `OrderPlacementService.ResolveOrderLinesAsync`.
+- [x] Decide whether to:
   - keep duplication temporarily because checkout needs pre-placement validation and payment line data.
   - or extract shared internal `OrderLineSnapshotResolver`.
-- [ ] Only extract if it reduces duplication without changing transaction ownership.
-- [ ] If extracted, keep it internal to Commerce Node services and inject required dependencies explicitly.
-- [ ] Add tests for:
+- [x] Only extract if it reduces duplication without changing transaction ownership.
+- [x] If extracted, keep it internal to Commerce Node services and inject required dependencies explicitly.
+- [x] Add tests for:
   - product not found.
   - variant not found.
   - product not purchasable.
   - invalid cart line currency.
   - invalid unit price.
 
+Phase 6 notes:
+
+- Compared `StorefrontCheckoutService.ResolveOrderLinesAsync` with `OrderPlacementService.ResolveOrderLinesAsync`; the rule set is intentionally aligned for quantity, product missing, variant missing, sellability, currency mismatch, and invalid unit price.
+- Decision: keep duplication for now. Checkout still needs pre-placement validation before payment provider calls and payment session creation. `OrderPlacementService` must validate again inside the placement path because it owns the final order transaction, cart close, stock hook, lifecycle events, and outbox task.
+- Did not extract `OrderLineSnapshotResolver` in this phase because it would require introducing shared snapshot types across pre-payment and in-transaction placement without reducing behavior risk.
+- Added guard test `CheckoutAndOrderPlacement_OrderLineValidationRulesStayAlignedWhileValidationRunsTwice` to keep the duplicated validation messages and two validation call sites visible.
+- Verification:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~StorefrontCheckoutServiceTests" --no-restore --nologo --verbosity minimal` passed 60/60.
+
 Acceptance:
 
-- [ ] No order snapshot field changes.
-- [ ] `OrderPlacementService` remains the only owner of creating and completing an order.
-- [ ] Checkout pre-validation and placement validation still both run.
+- [x] No order snapshot field changes.
+- [x] `OrderPlacementService` remains the only owner of creating and completing an order.
+- [x] Checkout pre-validation and placement validation still both run.
 
 ## Phase 7 - Optional Follow-up: PaymentAttemptService And OrderPlacementService Fallbacks
 
@@ -411,7 +420,7 @@ Acceptance:
 - [x] Phase 3 complete.
 - [x] Phase 4 complete.
 - [x] Phase 5 complete.
-- [ ] Phase 6 decision complete.
+- [x] Phase 6 decision complete.
 - [ ] Phase 7 decision complete.
 - [ ] Phase 8 release gate complete.
 

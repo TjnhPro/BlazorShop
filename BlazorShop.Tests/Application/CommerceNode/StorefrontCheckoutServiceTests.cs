@@ -99,6 +99,32 @@ namespace BlazorShop.Tests.Application.CommerceNode
         }
 
         [Fact]
+        public void CheckoutAndOrderPlacement_OrderLineValidationRulesStayAlignedWhileValidationRunsTwice()
+        {
+            var checkoutSource = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/Services/StorefrontCheckoutService.cs");
+            var placementSource = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/Services/OrderPlacementService.cs");
+            var sharedValidationMessages = new[]
+            {
+                "Cart line quantity must be at least 1.",
+                "Product is not available for this store.",
+                "Selected product variant was not found.",
+                "Product cannot be purchased right now.",
+                "Cart line currency does not match checkout currency.",
+                "Cart line price is invalid.",
+            };
+
+            foreach (var message in sharedValidationMessages)
+            {
+                Assert.Contains(message, checkoutSource, StringComparison.Ordinal);
+                Assert.Contains(message, placementSource, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("var lineResolution = await this.ResolveOrderLinesAsync", checkoutSource, StringComparison.Ordinal);
+            Assert.Contains("var lines = await this.ResolveOrderLinesAsync", placementSource, StringComparison.Ordinal);
+            Assert.Contains("this.orderPlacementService.PlaceAsync", checkoutSource, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void CheckoutServiceTestBuilder_CanOverrideShippingCalculator()
         {
             using var context = CreateContext();
