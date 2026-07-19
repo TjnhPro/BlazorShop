@@ -44,7 +44,10 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 CustomerName = customer.FullName,
             });
             await context.SaveChangesAsync();
-            var service = new CommerceNodeOrderQueryService(context, new FixedStoreContext(storeId));
+            var service = new CommerceNodeOrderQueryService(
+                context,
+                new FixedStoreContext(storeId),
+                new OrderReadModelAssembler(context));
 
             var orders = (await service.GetOrdersForUserAsync("app-user-1")).ToArray();
 

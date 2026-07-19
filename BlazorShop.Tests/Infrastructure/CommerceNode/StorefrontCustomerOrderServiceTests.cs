@@ -92,7 +92,10 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
 
         private static StorefrontCustomerOrderService CreateService(CommerceNodeDbContext context, Guid storeId)
         {
-            return new StorefrontCustomerOrderService(context, new FixedStoreContext(storeId));
+            return new StorefrontCustomerOrderService(
+                context,
+                new FixedStoreContext(storeId),
+                new OrderReadModelAssembler(context));
         }
 
         private static CommerceCustomer SeedCustomer(

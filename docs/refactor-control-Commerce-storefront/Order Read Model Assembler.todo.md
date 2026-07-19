@@ -259,21 +259,28 @@ Acceptance:
 
 These two have the largest duplicate block and lowest admin mutation risk.
 
-- [ ] Inject `OrderReadModelAssembler` into `StorefrontCustomerOrderService`.
-- [ ] Replace private `MapOrdersAsync` with assembler call using `OrderReadModelOptions.Customer()`.
-- [ ] Remove duplicate `CreatePaymentSummary` from customer service.
-- [ ] Inject `OrderReadModelAssembler` into `CommerceNodeOrderQueryService`.
-- [ ] Replace private `MapOrdersAsync` with assembler call using selected `Internal()` or documented visibility.
-- [ ] Remove duplicate `CreatePaymentSummary` from query service.
-- [ ] Keep `CreateOwnedOrderQuery`, customer scope resolution and store scope logic unchanged.
-- [ ] Keep `GetCurrentStoreOrdersAsync` logic unchanged.
+- [x] Inject `OrderReadModelAssembler` into `StorefrontCustomerOrderService`.
+- [x] Replace private `MapOrdersAsync` with assembler call using `OrderReadModelOptions.Customer()`.
+- [x] Remove duplicate `CreatePaymentSummary` from customer service.
+- [x] Inject `OrderReadModelAssembler` into `CommerceNodeOrderQueryService`.
+- [x] Replace private `MapOrdersAsync` with assembler call using selected `Internal()` or documented visibility.
+- [x] Remove duplicate `CreatePaymentSummary` from query service.
+- [x] Keep `CreateOwnedOrderQuery`, customer scope resolution and store scope logic unchanged.
+- [x] Keep `GetCurrentStoreOrdersAsync` logic unchanged.
+
+Phase 4 notes:
+
+- `StorefrontCustomerOrderService` now delegates read-model projection to `OrderReadModelAssembler` with `OrderReadModelOptions.Customer()`.
+- `CommerceNodeOrderQueryService` now delegates read-model projection to `OrderReadModelAssembler` with `OrderReadModelOptions.Internal()` to preserve the current legacy/internal-reference visibility.
+- Tests that construct the services directly now pass the registered concrete assembler dependency.
+- Initial parallel build attempt hit a transient `VBCSCompiler` file lock; after `dotnet build-server shutdown`, CommerceNode API build passed.
 
 Acceptance:
 
-- [ ] `StorefrontCustomerOrderServiceTests` pass.
-- [ ] `CommerceNodeOrderQueryServiceTests` pass.
-- [ ] Customer still cannot see admin note.
-- [ ] Store scoping remains in service query, not assembler.
+- [x] `StorefrontCustomerOrderServiceTests` pass.
+- [x] `CommerceNodeOrderQueryServiceTests` pass.
+- [x] Customer still cannot see admin note.
+- [x] Store scoping remains in service query, not assembler.
 
 ## Phase 5 - Migrate Guest Service
 

@@ -57,7 +57,10 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var storeId = Guid.NewGuid();
             await using var context = CreateContext();
             var order = SeedOrderGraph(context, storeId);
-            var service = new StorefrontCustomerOrderService(context, new FixedStoreContext(storeId));
+            var service = new StorefrontCustomerOrderService(
+                context,
+                new FixedStoreContext(storeId),
+                new OrderReadModelAssembler(context));
 
             var result = await service.GetReceiptAsync(new StorefrontCustomerOrderLookupRequest(AppUserId, order.Reference));
 
@@ -104,7 +107,10 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var storeId = Guid.NewGuid();
             await using var context = CreateContext();
             var order = SeedOrderGraph(context, storeId);
-            var service = new CommerceNodeOrderQueryService(context, new FixedStoreContext(storeId));
+            var service = new CommerceNodeOrderQueryService(
+                context,
+                new FixedStoreContext(storeId),
+                new OrderReadModelAssembler(context));
 
             var result = (await service.GetOrdersForUserAsync(AppUserId)).ToArray();
 

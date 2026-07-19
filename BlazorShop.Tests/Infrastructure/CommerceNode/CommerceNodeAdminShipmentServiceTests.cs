@@ -260,7 +260,10 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var shipmentService = CreateService(context, storeId);
             await shipmentService.UpsertShipmentAsync(order.Id, CreateRequest());
             context.ChangeTracker.Clear();
-            var orderQueryService = new CommerceNodeOrderQueryService(context, new StubCommerceStoreContext(storeId));
+            var orderQueryService = new CommerceNodeOrderQueryService(
+                context,
+                new StubCommerceStoreContext(storeId),
+                new OrderReadModelAssembler(context));
 
             var orders = (await orderQueryService.GetOrdersForUserAsync("customer-1")).ToArray();
 
