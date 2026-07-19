@@ -111,12 +111,18 @@ Goal: remove generic HTTP transport shape from Application and make Control Plan
 
 ### Phase 1A - Add Transitional Mapping Layer
 
-- [ ] Add a small mapping helper near Control Plane gateway infrastructure to convert `CommerceNodeAdminGatewayResult<T>` into `ApplicationResult<T>`.
-- [ ] Map `Validation`, `NotFound`, and `RemoteFailure` to `ApplicationError.Validation`, `ApplicationError.NotFound`, and `ApplicationError.RemoteFailure`.
-- [ ] Preserve upstream status as `ApplicationError.Metadata["upstreamStatusCode"]` when present.
-- [ ] Preserve operator-safe upstream messages but do not expose raw exception details.
-- [ ] Add `MediaContent` or equivalent Application-safe value for binary responses with `Content`, `ContentType`, optional `FileName`, and optional metadata.
-- [ ] Add tests for mapper behavior: success, validation, not found, remote failure, upstream status metadata, null/empty payload, binary media.
+- [x] Add a small mapping helper near Control Plane gateway infrastructure to convert `CommerceNodeAdminGatewayResult<T>` into `ApplicationResult<T>`.
+- [x] Map `Validation`, `NotFound`, and `RemoteFailure` to `ApplicationError.Validation`, `ApplicationError.NotFound`, and `ApplicationError.RemoteFailure`.
+- [x] Preserve upstream status as `ApplicationError.Metadata["upstreamStatusCode"]` when present.
+- [x] Preserve operator-safe upstream messages but do not expose raw exception details.
+- [x] Add `ApplicationMediaContent` as the Application-safe value for binary responses with `Content`, `ContentType`, optional `FileName`, and optional metadata.
+- [x] Add tests for mapper behavior: success, validation, not found, remote failure, upstream status metadata, null/empty payload, binary media.
+
+Phase 1A focused verification:
+
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~CommerceNodeAdminGatewayApplicationResultMapper|FullyQualifiedName~ApplicationResultStandardization|FullyQualifiedName~ArchitectureBoundary"` - Passed: 53, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors; Tailwind completed with existing Browserslist stale notice.
 
 ### Phase 1B - Move Generic Transport Contract Out Of Application
 
