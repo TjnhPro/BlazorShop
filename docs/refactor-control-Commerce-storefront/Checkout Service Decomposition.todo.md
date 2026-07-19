@@ -209,9 +209,9 @@ Acceptance:
 
 ## Phase 4 - Extract Checkout Pricing Calculator
 
-- [ ] Create internal service, proposed name:
+- [x] Create internal service, proposed name:
   - `CheckoutPricingCalculator`
-- [ ] Move pricing/shipping/tax/currency snapshot responsibility:
+- [x] Move pricing/shipping/tax/currency snapshot responsibility:
   - subtotal calculation from cart lines/order line snapshots.
   - shipping rate currency resolution.
   - shipping option calculation and Storefront option mapping.
@@ -219,21 +219,32 @@ Acceptance:
   - zero tax calculation through existing `IShippingTaxCalculator`.
   - total comparison data used by review/place-order.
   - currency rate snapshot validation if it is pricing-specific.
-- [ ] Keep product sellability/order-line product loading out of calculator unless a narrow DTO is already available.
-- [ ] Keep tax behavior as current `ZeroShippingTaxCalculator`; do not add tax settings, tax tables, or tax UI.
-- [ ] Register calculator in Commerce Node DI as scoped if it uses `CommerceNodeDbContext`.
-- [ ] Add tests for:
+- [x] Keep product sellability/order-line product loading out of calculator unless a narrow DTO is already available.
+- [x] Keep tax behavior as current `ZeroShippingTaxCalculator`; do not add tax settings, tax tables, or tax UI.
+- [x] Register calculator in Commerce Node DI as scoped if it uses `CommerceNodeDbContext`.
+- [x] Add tests for:
   - no-shipping cart returns shipping-not-required totals.
   - physical cart returns selected shipping total.
   - shipping provider error becomes checkout validation issue.
   - converted currency shipping total is rounded consistently.
   - tax total remains `0`.
 
+Phase 4 notes:
+
+- Added `CheckoutPricingCalculator` under Commerce Node services and registered it as scoped in Commerce Node DI.
+- `StorefrontCheckoutService` now delegates shipping option resolution, shipping package line construction, shipping rate currency selection, shipping total mapping, shipping issue mapping, and shipping tax calculation to the calculator.
+- Product sellability and order-line product loading remain in the checkout facade/order placement path; the calculator only reads product shipping metadata needed to build shipping package lines.
+- Tax behavior remains the existing zero-tax policy through `IShippingTaxCalculator` / `ZeroShippingTaxCalculator`; no tax settings, schema, or UI were added.
+- Added focused `CheckoutPricingCalculatorTests` for no-shipping carts, physical selected shipping, provider failure mapping, converted shipping rounding, and zero tax.
+- Verification:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~CheckoutPricingCalculatorTests|FullyQualifiedName~StorefrontCheckoutServiceTests" --no-restore --nologo --verbosity minimal` passed 64/64.
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore --nologo --verbosity minimal` passed.
+
 Acceptance:
 
-- [ ] `StorefrontCheckoutService` delegates pricing/shipping/tax calculation.
-- [ ] Existing shipping core checkout tests still pass.
-- [ ] No public checkout DTO or API route changes.
+- [x] `StorefrontCheckoutService` delegates pricing/shipping/tax calculation.
+- [x] Existing shipping core checkout tests still pass.
+- [x] No public checkout DTO or API route changes.
 
 ## Phase 5 - Extract Checkout Payment Coordinator
 
@@ -381,7 +392,7 @@ Acceptance:
 - [x] Phase 1 complete.
 - [x] Phase 2 complete.
 - [x] Phase 3 complete.
-- [ ] Phase 4 complete.
+- [x] Phase 4 complete.
 - [ ] Phase 5 complete.
 - [ ] Phase 6 decision complete.
 - [ ] Phase 7 decision complete.

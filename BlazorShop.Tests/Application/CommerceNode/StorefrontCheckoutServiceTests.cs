@@ -90,6 +90,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Contains("AddScoped<IProductSellabilityResolver, ProductSellabilityResolver>", source, StringComparison.Ordinal);
             Assert.Contains("AddScoped<IShippingCalculator, ShippingCalculator>", source, StringComparison.Ordinal);
             Assert.Contains("AddScoped<IShippingTaxCalculator, ZeroShippingTaxCalculator>", source, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<CheckoutPricingCalculator>", source, StringComparison.Ordinal);
             Assert.Contains("AddScoped<IOrderPlacementService, OrderPlacementService>", source, StringComparison.Ordinal);
             Assert.Contains("AddScoped<IStorefrontCheckoutService, StorefrontCheckoutService>", source, StringComparison.Ordinal);
         }
@@ -2605,6 +2606,12 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 var providerList = this.providers;
                 var placementService = this.orderPlacementService
                     ?? new OrderPlacementService(this.context, this.moneyRoundingService, this.sellabilityResolver);
+                var pricingCalculator = new CheckoutPricingCalculator(
+                    this.context,
+                    this.moneyRoundingService,
+                    this.moneyConversionService,
+                    this.shippingCalculator,
+                    this.shippingTaxCalculator);
 
                 return new StorefrontCheckoutService(
                     this.context,
@@ -2620,7 +2627,8 @@ namespace BlazorShop.Tests.Application.CommerceNode
                     this.addressValidationService,
                     this.shippingCalculator,
                     this.shippingTaxCalculator,
-                    placementService);
+                    placementService,
+                    pricingCalculator);
             }
         }
 
