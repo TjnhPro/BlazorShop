@@ -16,14 +16,14 @@ namespace BlazorShop.Application.Services
         private readonly IMapper _mapper;
         private readonly IProductReadRepository? _productReadRepository;
         private readonly ICommerceStoreContext? _storeContext;
-        private readonly ICatalogQueryCache? _catalogQueryCache;
+        private readonly ICatalogQueryCache _catalogQueryCache;
 
         public ProductVariantService(
             IGenericRepository<ProductVariant> variantRepository,
             IMapper mapper,
+            ICatalogQueryCache catalogQueryCache,
             IProductReadRepository? productReadRepository = null,
-            ICommerceStoreContext? storeContext = null,
-            ICatalogQueryCache? catalogQueryCache = null)
+            ICommerceStoreContext? storeContext = null)
         {
             _variantRepository = variantRepository;
             _mapper = mapper;
@@ -278,7 +278,7 @@ namespace BlazorShop.Application.Services
 
         private async Task InvalidateCatalogAsync(Guid? storeId)
         {
-            if (_catalogQueryCache is null || !storeId.HasValue || storeId.Value == Guid.Empty)
+            if (!storeId.HasValue || storeId.Value == Guid.Empty)
             {
                 return;
             }

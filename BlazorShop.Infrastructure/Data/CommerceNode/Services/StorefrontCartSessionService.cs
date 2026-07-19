@@ -19,10 +19,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         public StorefrontCartSessionService(
             CommerceNodeDbContext context,
-            IOptions<StorefrontCartOptions>? cartOptions = null)
+            IOptions<StorefrontCartOptions> cartOptions)
         {
             this.context = context;
-            this.cartOptions = cartOptions?.Value ?? new StorefrontCartOptions();
+            this.cartOptions = cartOptions.Value;
         }
 
         public async Task<ServiceResponse<StorefrontCartSessionCreated>> CreateAsync(

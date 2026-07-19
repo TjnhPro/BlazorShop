@@ -22,6 +22,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
     using BlazorShop.Infrastructure.Data.CommerceNode.Services;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Options;
 
     using Moq;
     using Xunit;
@@ -2585,7 +2586,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             private IStorefrontPaymentProvider[] providers = [new CodStorefrontPaymentProvider()];
             private IProductSellabilityResolver sellabilityResolver = new ProductSellabilityResolver();
             private IAddressValidationService addressValidationService = new AddressValidationService();
-            private IShippingCalculator shippingCalculator = new ShippingCalculator([new InternalFreeStandardShippingProvider()]);
+            private IShippingCalculator shippingCalculator = new ShippingCalculator([new InternalFreeStandardShippingProvider(new StubStoreShippingSettingsService())]);
             private IShippingTaxCalculator shippingTaxCalculator = new ZeroShippingTaxCalculator();
             private IOrderPlacementService? orderPlacementService;
 
@@ -2675,13 +2676,55 @@ namespace BlazorShop.Tests.Application.CommerceNode
             string? conversionTargetCurrencyCode = null,
             decimal conversionRate = 1m)
         {
+            var moneyConversionService = new FakeMoneyConversionService(conversionTargetCurrencyCode, conversionRate);
+            var moneyRoundingService = new MoneyRoundingService(new CurrencyMetadataService());
+            var workingCurrencyResolver = new FixedWorkingCurrencyResolver(workingCurrencyCode, "USD");
             return new StorefrontCartService(
-                new StorefrontCartSessionService(context),
+                new StorefrontCartSessionService(context, Options.Create(new StorefrontCartOptions())),
                 productRepository.Object,
                 new FixedStoreCurrencyResolver("USD"),
-                new FixedWorkingCurrencyResolver(workingCurrencyCode, "USD"),
-                new FakeMoneyConversionService(conversionTargetCurrencyCode, conversionRate),
-                new MoneyRoundingService(new CurrencyMetadataService()));
+                workingCurrencyResolver,
+                moneyConversionService,
+                moneyRoundingService,
+                new ProductSelectionResolver(
+                    productRepository.Object,
+                    workingCurrencyResolver,
+                    moneyConversionService,
+                    moneyRoundingService),
+                Options.Create(new StorefrontCartOptions()));
+        }
+
+        private sealed class StubStoreShippingSettingsService : IStoreShippingSettingsService
+        {
+            public Task<ServiceResponse<StoreShippingSettingsDto>> GetAsync(CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(new ServiceResponse<StoreShippingSettingsDto>(true, "Settings loaded.")
+                {
+                    Payload = new StoreShippingSettingsDto(Guid.Empty, new StoreShippingOriginDto(null, null, null, null, null, null, null, null), [], null, null, StoreShippingSurchargePolicies.Sum, null, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, null),
+                    ResponseType = ServiceResponseType.Success,
+                });
+            }
+
+            public Task<ServiceResponse<StoreShippingSettingsDto>> UpdateAsync(UpdateStoreShippingSettingsRequest request, CancellationToken cancellationToken = default)
+            {
+                return GetAsync(cancellationToken);
+            }
+
+            public Task<StoreShippingRuntimeSettings> ResolveAsync(Guid storeId, CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(new StoreShippingRuntimeSettings(
+                    new StoreShippingOriginDto(null, null, null, null, null, null, null, null),
+                    [],
+                    null,
+                    null,
+                    StoreShippingSurchargePolicies.Sum,
+                    null));
+            }
+
+            public Task<StoreShippingRuntimeSettings> ResolveCurrentAsync(CancellationToken cancellationToken = default)
+            {
+                return ResolveAsync(Guid.Empty, cancellationToken);
+            }
         }
 
         private static StorefrontCheckoutPreviewRequest CreateRequest(

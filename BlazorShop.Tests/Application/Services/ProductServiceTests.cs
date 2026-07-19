@@ -33,7 +33,9 @@ namespace BlazorShop.Tests.Application.Services
             this._productService = new ProductService(
                 this._mockProductReadRepository.Object,
                 this._mockProductRepository.Object,
-                this._mockMapper.Object);
+                this._mockMapper.Object,
+                new NoopCatalogQueryCache(),
+                new NoopStorefrontNavigationCache());
         }
 
         [Fact]
@@ -505,7 +507,8 @@ namespace BlazorShop.Tests.Application.Services
                 this._mockProductReadRepository.Object,
                 this._mockProductRepository.Object,
                 this._mockMapper.Object,
-                navigationCache: navigationCache.Object);
+                new NoopCatalogQueryCache(),
+                navigationCache.Object);
             this._mockProductRepository.Setup(repo => repo.GetByIdAsync(product.Id))
                 .ReturnsAsync(existingProduct);
             this._mockMapper.Setup(mapper => mapper.Map(product, existingProduct))
@@ -650,6 +653,8 @@ namespace BlazorShop.Tests.Application.Services
                 this._mockProductReadRepository.Object,
                 this._mockProductRepository.Object,
                 this._mockMapper.Object,
+                new NoopCatalogQueryCache(),
+                new NoopStorefrontNavigationCache(),
                 storeContext: new FixedStoreContext(currentStoreId));
 
             this._mockProductRepository
@@ -675,6 +680,8 @@ namespace BlazorShop.Tests.Application.Services
                 this._mockProductReadRepository.Object,
                 this._mockProductRepository.Object,
                 this._mockMapper.Object,
+                new NoopCatalogQueryCache(),
+                new NoopStorefrontNavigationCache(),
                 storeContext: new FixedStoreContext(currentStoreId));
 
             this._mockProductRepository
@@ -700,6 +707,8 @@ namespace BlazorShop.Tests.Application.Services
                 this._mockProductReadRepository.Object,
                 this._mockProductRepository.Object,
                 this._mockMapper.Object,
+                new NoopCatalogQueryCache(),
+                new NoopStorefrontNavigationCache(),
                 storeContext: new FixedStoreContext(currentStoreId),
                 categoryRepository: categoryRepository.Object);
 

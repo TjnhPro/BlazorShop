@@ -24,21 +24,21 @@ namespace BlazorShop.Application.Services
         private static readonly TimeSpan CatalogPageCacheTtl = TimeSpan.FromSeconds(45);
 
         private readonly ICategoryRepository _categoryRepository;
-        private readonly ICatalogQueryCache? _catalogQueryCache;
+        private readonly ICatalogQueryCache _catalogQueryCache;
         private readonly ICommerceStoreContext? _commerceStoreContext;
         private readonly IMapper _mapper;
         private readonly IProductReadRepository _productReadRepository;
         private readonly ISlugService _slugService;
-        private readonly IStorefrontPageService? _storefrontPageService;
+        private readonly IStorefrontPageService _storefrontPageService;
 
         public PublicCatalogService(
             ICategoryRepository categoryRepository,
             IMapper mapper,
             IProductReadRepository productReadRepository,
             ISlugService slugService,
-            ICatalogQueryCache? catalogQueryCache = null,
-            ICommerceStoreContext? commerceStoreContext = null,
-            IStorefrontPageService? storefrontPageService = null)
+            ICatalogQueryCache catalogQueryCache,
+            IStorefrontPageService storefrontPageService,
+            ICommerceStoreContext? commerceStoreContext = null)
         {
             _categoryRepository = categoryRepository;
             _catalogQueryCache = catalogQueryCache;
@@ -59,7 +59,7 @@ namespace BlazorShop.Application.Services
         {
             var storeId = await ResolveCurrentStoreIdAsync();
             var cacheKey = storeId.HasValue ? BuildCategoryTreeCacheKey(storeId.Value) : null;
-            if (_catalogQueryCache is not null && cacheKey is not null)
+            if (cacheKey is not null)
             {
                 var cached = await _catalogQueryCache.GetAsync<IReadOnlyList<GetCategoryTreeNode>>(cacheKey);
                 if (cached is not null)
@@ -76,7 +76,7 @@ namespace BlazorShop.Application.Services
                 .ToArray();
 
             var tree = BuildTree(publishedCategories);
-            if (_catalogQueryCache is not null && cacheKey is not null)
+            if (cacheKey is not null)
             {
                 await _catalogQueryCache.SetAsync(cacheKey, tree, CategoryTreeCacheTtl);
             }
@@ -117,13 +117,8 @@ namespace BlazorShop.Application.Services
         }
 
         private static async Task<IReadOnlyList<StorefrontPageSitemapEntryDto>> GetPublishedPageSitemapEntriesAsync(
-            IStorefrontPageService? storefrontPageService)
+            IStorefrontPageService storefrontPageService)
         {
-            if (storefrontPageService is null)
-            {
-                return [];
-            }
-
             var result = await storefrontPageService.ListSitemapEntriesAsync();
             return result.Success && result.Payload is not null ? result.Payload : [];
         }
@@ -132,7 +127,7 @@ namespace BlazorShop.Application.Services
         {
             var storeId = await ResolveCurrentStoreIdAsync();
             var cacheKey = storeId.HasValue ? BuildCatalogPageCacheKey(storeId.Value, query) : null;
-            if (_catalogQueryCache is not null && cacheKey is not null)
+            if (cacheKey is not null)
             {
                 var cached = await _catalogQueryCache.GetAsync<PagedResult<GetCatalogProduct>>(cacheKey);
                 if (cached is not null)
@@ -152,7 +147,7 @@ namespace BlazorShop.Application.Services
                 TotalCount = result.TotalCount,
             };
 
-            if (_catalogQueryCache is not null && cacheKey is not null)
+            if (cacheKey is not null)
             {
                 await _catalogQueryCache.SetAsync(cacheKey, page, CatalogPageCacheTtl);
             }

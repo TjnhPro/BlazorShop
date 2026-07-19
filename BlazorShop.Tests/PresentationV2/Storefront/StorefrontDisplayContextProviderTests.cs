@@ -19,8 +19,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public async Task GetAsync_WhenCurrentStoreIsUnavailable_ReturnsFallbackContext()
         {
-            var provider = new StorefrontDisplayContextProvider(
-                new StubCurrentStoreProvider(StorefrontCurrentStoreResolution.NotFound()));
+            var provider = CreateProvider(StorefrontCurrentStoreResolution.NotFound());
 
             var context = await provider.GetAsync();
 
@@ -36,9 +35,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [InlineData("en-US", "en")]
         public async Task GetAsync_DerivesLanguageCodeFromDefaultCulture(string cultureName, string languageCode)
         {
-            var provider = new StorefrontDisplayContextProvider(
-                new StubCurrentStoreProvider(StorefrontCurrentStoreResolution.Succeeded(
-                    CreateStore(defaultCulture: cultureName))));
+            var provider = CreateProvider(StorefrontCurrentStoreResolution.Succeeded(
+                CreateStore(defaultCulture: cultureName)));
 
             var context = await provider.GetAsync();
 
@@ -49,9 +47,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public async Task GetAsync_WhenCultureAndCurrencyAreInvalid_UsesFallbacks()
         {
-            var provider = new StorefrontDisplayContextProvider(
-                new StubCurrentStoreProvider(StorefrontCurrentStoreResolution.Succeeded(
-                    CreateStore(defaultCulture: "invalid-culture", defaultCurrencyCode: "USDO"))));
+            var provider = CreateProvider(StorefrontCurrentStoreResolution.Succeeded(
+                CreateStore(defaultCulture: "invalid-culture", defaultCurrencyCode: "USDO")));
 
             var context = await provider.GetAsync();
 
@@ -63,14 +60,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public async Task GetAsync_NormalizesStoreBrandingAndContactFields()
         {
-            var provider = new StorefrontDisplayContextProvider(
-                new StubCurrentStoreProvider(StorefrontCurrentStoreResolution.Succeeded(
-                    CreateStore(
-                        name: " Demo Store ",
-                        defaultCurrencyCode: "eur",
-                        logoUrl: " /media/logo.png ",
-                        companyName: " Demo Co ",
-                        supportEmail: " support@example.test "))));
+            var provider = CreateProvider(StorefrontCurrentStoreResolution.Succeeded(
+                CreateStore(
+                    name: " Demo Store ",
+                    defaultCurrencyCode: "eur",
+                    logoUrl: " /media/logo.png ",
+                    companyName: " Demo Co ",
+                    supportEmail: " support@example.test ")));
 
             var context = await provider.GetAsync();
 
@@ -205,6 +201,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 HtmlBodyId: null);
         }
 
+        private static StorefrontDisplayContextProvider CreateProvider(
+            StorefrontCurrentStoreResolution resolution,
+            IStorefrontStoreConfigurationClient? apiClient = null,
+            IHttpContextAccessor? httpContextAccessor = null)
+        {
+            return new StorefrontDisplayContextProvider(
+                new StubCurrentStoreProvider(resolution),
+                apiClient ?? new StubStoreConfigurationClient(),
+                httpContextAccessor ?? new HttpContextAccessor());
+        }
+
         private sealed class StubCurrentStoreProvider : IStorefrontCurrentStoreProvider
         {
             private readonly StorefrontCurrentStoreResolution _resolution;
@@ -217,6 +224,26 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             public Task<StorefrontCurrentStoreResolution> ResolveAsync(CancellationToken cancellationToken = default)
             {
                 return Task.FromResult(_resolution);
+            }
+        }
+
+        private sealed class StubStoreConfigurationClient : IStorefrontStoreConfigurationClient
+        {
+            public Task<StorefrontApiResult<StorefrontCurrentStore>> GetCurrentStoreAsync(CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(StorefrontApiResult<StorefrontCurrentStore>.ServiceUnavailable());
+            }
+
+            public Task<StorefrontApiResult<StorefrontPublicConfiguration>> GetPublicConfigurationAsync(CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(StorefrontApiResult<StorefrontPublicConfiguration>.ServiceUnavailable());
+            }
+
+            public Task<StorefrontSubmitResult<StorefrontCurrencyPreferenceResponse>> SetCurrencyPreferenceAsync(
+                StorefrontCurrencyPreferenceRequest request,
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(StorefrontSubmitResult<StorefrontCurrencyPreferenceResponse>.Failed("Configuration unavailable."));
             }
         }
 

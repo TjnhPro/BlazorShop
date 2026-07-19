@@ -26,20 +26,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly ICommerceStoreContext storeContext;
         private readonly ISlugService slugService;
         private readonly IAdminAuditService auditService;
-        private readonly IStorefrontNavigationCache? navigationCache;
-        private readonly IStoreSeoSlugPolicyService? slugPolicyService;
-        private readonly IStoreSeoSlugHistoryService? slugHistoryService;
-        private readonly ISeoRedirectAutomationService? seoRedirectAutomationService;
+        private readonly IStorefrontNavigationCache navigationCache;
+        private readonly IStoreSeoSlugPolicyService slugPolicyService;
+        private readonly IStoreSeoSlugHistoryService slugHistoryService;
+        private readonly ISeoRedirectAutomationService seoRedirectAutomationService;
 
         public StorefrontPageService(
             CommerceNodeDbContext context,
             ICommerceStoreContext storeContext,
             ISlugService slugService,
             IAdminAuditService auditService,
-            IStorefrontNavigationCache? navigationCache = null,
-            IStoreSeoSlugPolicyService? slugPolicyService = null,
-            IStoreSeoSlugHistoryService? slugHistoryService = null,
-            ISeoRedirectAutomationService? seoRedirectAutomationService = null)
+            IStorefrontNavigationCache navigationCache,
+            IStoreSeoSlugPolicyService slugPolicyService,
+            IStoreSeoSlugHistoryService slugHistoryService,
+            ISeoRedirectAutomationService seoRedirectAutomationService)
         {
             this.context = context;
             this.storeContext = storeContext;
@@ -134,17 +134,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             normalized = normalized with { Slug = slugResult.Slug };
 
-            if (this.slugPolicyService is null)
-            {
-                var duplicate = await this.context.StorefrontPages.AnyAsync(
-                    page => page.StoreId == storeId && page.Slug == normalized.Slug,
-                    cancellationToken);
-                if (duplicate)
-                {
-                    return Failure<StorefrontPageDetailDto>("Storefront page slug already exists for this store.", ServiceResponseType.Conflict);
-                }
-            }
-
             if (!string.IsNullOrWhiteSpace(normalized.PageKey))
             {
                 var duplicatePageKey = await this.context.StorefrontPages.AnyAsync(
@@ -193,7 +182,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             await this.context.SaveChangesAsync(cancellationToken);
-            this.navigationCache?.Invalidate(page.StoreId);
+            this.navigationCache.Invalidate(page.StoreId);
             var legacyRedirectResult = await this.EnsureApprovedLegacyPageRedirectAsync(page);
             if (!legacyRedirectResult.Success)
             {
@@ -228,17 +217,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             if (!slugResult.Success)
             {
                 return Failure<StorefrontPageDetailDto>(slugResult.Message!, slugResult.ResponseType);
-            }
-
-            if (this.slugPolicyService is null)
-            {
-                var duplicate = await this.context.StorefrontPages.AnyAsync(
-                    item => item.StoreId == page.StoreId && item.Slug == normalized.Slug && item.Id != page.Id,
-                    cancellationToken);
-                if (duplicate)
-                {
-                    return Failure<StorefrontPageDetailDto>("Storefront page slug already exists for this store.", ServiceResponseType.Conflict);
-                }
             }
 
             if (!string.IsNullOrWhiteSpace(normalized.PageKey))
@@ -293,7 +271,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             await this.context.SaveChangesAsync(cancellationToken);
-            this.navigationCache?.Invalidate(page.StoreId);
+            this.navigationCache.Invalidate(page.StoreId);
             var legacyRedirectResult = await this.EnsureApprovedLegacyPageRedirectAsync(page);
             if (!legacyRedirectResult.Success)
             {
@@ -321,7 +299,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             page.UpdatedAt = now;
 
             await this.context.SaveChangesAsync(cancellationToken);
-            this.navigationCache?.Invalidate(page.StoreId);
+            this.navigationCache.Invalidate(page.StoreId);
             await this.LogAsync("StorefrontPage.Archived", page.Id, "Storefront page archived.", new { page.Title, page.Slug }, cancellationToken);
 
             return Success(MapDetail(page), "Storefront page archived.");
@@ -542,11 +520,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             Guid storeId,
             CancellationToken cancellationToken)
         {
-            if (this.slugPolicyService is null)
-            {
-                return SlugPolicyOutcome.Succeeded(normalized.Slug!);
-            }
-
             var result = string.IsNullOrWhiteSpace(requestedSlug)
                 ? await this.slugPolicyService.GenerateSlugAsync(SeoSlugEntityTypes.Page, normalized.Title, storeId, excludedEntityId: null, cancellationToken: cancellationToken)
                 : await this.slugPolicyService.ValidateSlugAsync(SeoSlugEntityTypes.Page, normalized.Slug, storeId, excludedEntityId: null, cancellationToken: cancellationToken);
@@ -560,11 +533,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             Guid pageId,
             CancellationToken cancellationToken)
         {
-            if (this.slugPolicyService is null)
-            {
-                return SlugPolicyOutcome.Succeeded(slug);
-            }
-
             return ToPageSlugOutcome(await this.slugPolicyService.ValidateSlugAsync(
                 SeoSlugEntityTypes.Page,
                 slug,
@@ -580,11 +548,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             string newSlug,
             CancellationToken cancellationToken)
         {
-            if (this.slugHistoryService is null)
-            {
-                return SlugPolicyOutcome.Succeeded(newSlug);
-            }
-
             var active = await this.slugHistoryService.GetActiveSlugAsync(SeoSlugEntityTypes.Page, pageId, storeId, cancellationToken: cancellationToken);
             if (active is null && !string.IsNullOrWhiteSpace(oldSlug))
             {
@@ -618,8 +581,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private async Task<SlugPolicyOutcome> EnsureRedirectAsync(string? oldPublicPath, string? newPublicPath)
         {
-            if (this.seoRedirectAutomationService is null ||
-                string.IsNullOrWhiteSpace(oldPublicPath) ||
+            if (string.IsNullOrWhiteSpace(oldPublicPath) ||
                 string.IsNullOrWhiteSpace(newPublicPath) ||
                 PathsEqual(oldPublicPath, newPublicPath))
             {
@@ -634,7 +596,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private async Task<SlugPolicyOutcome> EnsureApprovedLegacyPageRedirectAsync(StorefrontPage page)
         {
-            if (this.seoRedirectAutomationService is null || !page.IsPublished || page.ArchivedAt is not null)
+            if (!page.IsPublished || page.ArchivedAt is not null)
             {
                 return SlugPolicyOutcome.Succeeded(page.Slug);
             }

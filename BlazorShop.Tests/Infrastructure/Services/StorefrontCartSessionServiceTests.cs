@@ -17,7 +17,7 @@ namespace BlazorShop.Tests.Infrastructure.Services
         public async Task CreateAsync_ReturnsOpaqueToken_AndStoresOnlyHash()
         {
             await using var context = CreateContext();
-            var service = new StorefrontCartSessionService(context);
+            var service = CreateService(context);
             var storeId = Guid.NewGuid();
 
             var result = await service.CreateAsync(new StorefrontCartSessionCreateRequest(storeId));
@@ -56,7 +56,7 @@ namespace BlazorShop.Tests.Infrastructure.Services
         public async Task ResolveAsync_ReturnsNotFound_WhenTokenBelongsToDifferentStore()
         {
             await using var context = CreateContext();
-            var service = new StorefrontCartSessionService(context);
+            var service = CreateService(context);
             var created = await service.CreateAsync(new StorefrontCartSessionCreateRequest(Guid.NewGuid()));
 
             var result = await service.ResolveAsync(Guid.NewGuid(), created.Payload!.Token);
@@ -69,7 +69,7 @@ namespace BlazorShop.Tests.Infrastructure.Services
         public async Task AddOrUpdateLineAsync_MergesMatchingLine_AndIncrementsVersion()
         {
             await using var context = CreateContext();
-            var service = new StorefrontCartSessionService(context);
+            var service = CreateService(context);
             var storeId = Guid.NewGuid();
             var productId = Guid.NewGuid();
             var created = await service.CreateAsync(new StorefrontCartSessionCreateRequest(storeId));
@@ -103,7 +103,7 @@ namespace BlazorShop.Tests.Infrastructure.Services
         public async Task UpdateLineSnapshotsAsync_IncrementsVersionOnlyWhenSnapshotsChange()
         {
             await using var context = CreateContext();
-            var service = new StorefrontCartSessionService(context);
+            var service = CreateService(context);
             var storeId = Guid.NewGuid();
             var productId = Guid.NewGuid();
             var created = await service.CreateAsync(new StorefrontCartSessionCreateRequest(storeId));
@@ -169,7 +169,7 @@ namespace BlazorShop.Tests.Infrastructure.Services
         public async Task AttachOrMergeCurrentCustomerAsync_WhenNoCustomerCart_AttachesCurrentTokenCart()
         {
             await using var context = CreateContext();
-            var service = new StorefrontCartSessionService(context);
+            var service = CreateService(context);
             var storeId = Guid.NewGuid();
             var created = await service.CreateAsync(new StorefrontCartSessionCreateRequest(storeId));
 
@@ -189,7 +189,7 @@ namespace BlazorShop.Tests.Infrastructure.Services
         public async Task AttachOrMergeCurrentCustomerAsync_WhenCustomerCartExists_MergesIntoCurrentTokenCart()
         {
             await using var context = CreateContext();
-            var service = new StorefrontCartSessionService(context);
+            var service = CreateService(context);
             var storeId = Guid.NewGuid();
             var sameProductId = Guid.NewGuid();
             var guest = await service.CreateAsync(new StorefrontCartSessionCreateRequest(storeId));
@@ -241,7 +241,7 @@ namespace BlazorShop.Tests.Infrastructure.Services
         public async Task AttachOrMergeCurrentCustomerAsync_WhenTokenBelongsToAnotherCustomer_ReturnsConflict()
         {
             await using var context = CreateContext();
-            var service = new StorefrontCartSessionService(context);
+            var service = CreateService(context);
             var storeId = Guid.NewGuid();
             var cart = await service.CreateAsync(new StorefrontCartSessionCreateRequest(storeId, AppUserId: "user-1"));
 
@@ -260,7 +260,7 @@ namespace BlazorShop.Tests.Infrastructure.Services
         public async Task UpdateAndRemoveLineAsync_MutateLine_AndIncrementVersion()
         {
             await using var context = CreateContext();
-            var service = new StorefrontCartSessionService(context);
+            var service = CreateService(context);
             var storeId = Guid.NewGuid();
             var created = await service.CreateAsync(new StorefrontCartSessionCreateRequest(storeId));
             var withLine = await service.AddOrUpdateLineAsync(new StorefrontCartLineMutationRequest(
@@ -286,7 +286,7 @@ namespace BlazorShop.Tests.Infrastructure.Services
         public async Task AddOrUpdateLineAsync_RejectsExpiredCart_AndMarksSessionExpired()
         {
             await using var context = CreateContext();
-            var service = new StorefrontCartSessionService(context);
+            var service = CreateService(context);
             var storeId = Guid.NewGuid();
             var created = await service.CreateAsync(new StorefrontCartSessionCreateRequest(storeId));
             var session = await context.CartSessions.SingleAsync();
@@ -309,7 +309,7 @@ namespace BlazorShop.Tests.Infrastructure.Services
         public async Task ExpireStaleActiveSessionsAsync_ExpiresOnlyMatchingActiveExpiredSessions()
         {
             await using var context = CreateContext();
-            var service = new StorefrontCartSessionService(context);
+            var service = CreateService(context);
             var storeId = Guid.NewGuid();
             var otherStoreId = Guid.NewGuid();
             var now = DateTimeOffset.Parse("2026-07-16T00:00:00Z");
@@ -363,6 +363,15 @@ namespace BlazorShop.Tests.Infrastructure.Services
                 .Options;
 
             return new CommerceNodeDbContext(options);
+        }
+
+        private static StorefrontCartSessionService CreateService(
+            CommerceNodeDbContext context,
+            StorefrontCartOptions? options = null)
+        {
+            return new StorefrontCartSessionService(
+                context,
+                Options.Create(options ?? new StorefrontCartOptions()));
         }
 
         private static CartSession CreateStoredSession(Guid storeId, string state, DateTimeOffset expiresAtUtc)

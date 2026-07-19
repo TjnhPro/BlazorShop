@@ -28,7 +28,12 @@ namespace BlazorShop.Tests.Application.Services
             this._mockGenericRepository = new Mock<IGenericRepository<Category>>();
             this._mockMapper = new Mock<IMapper>();
             this._mockCategoryRepository = new Mock<ICategoryRepository>();
-            this._categoryService = new CategoryService(this._mockGenericRepository.Object, this._mockMapper.Object, this._mockCategoryRepository.Object);
+            this._categoryService = new CategoryService(
+                this._mockGenericRepository.Object,
+                this._mockMapper.Object,
+                this._mockCategoryRepository.Object,
+                new NoopCatalogQueryCache(),
+                new NoopStorefrontNavigationCache());
         }
 
         [Fact]
@@ -91,7 +96,9 @@ namespace BlazorShop.Tests.Application.Services
             var service = new CategoryService(
                 this._mockGenericRepository.Object,
                 AutoMapperTestFactory.CreateMapper(),
-                this._mockCategoryRepository.Object);
+                this._mockCategoryRepository.Object,
+                new NoopCatalogQueryCache(),
+                new NoopStorefrontNavigationCache());
 
             this._mockGenericRepository
                 .Setup(repo => repo.AddAsync(It.IsAny<Category>()))
@@ -126,7 +133,8 @@ namespace BlazorShop.Tests.Application.Services
                 this._mockGenericRepository.Object,
                 this._mockMapper.Object,
                 this._mockCategoryRepository.Object,
-                navigationCache: navigationCache.Object);
+                new NoopCatalogQueryCache(),
+                navigationCache.Object);
             this._mockGenericRepository.Setup(repo => repo.GetByIdAsync(updateCategory.Id)).ReturnsAsync(existingCategory);
             this._mockGenericRepository.Setup(repo => repo.UpdateAsync(existingCategory)).ReturnsAsync(1);
             this._mockMapper.Setup(m => m.Map(updateCategory, existingCategory))
@@ -166,7 +174,9 @@ namespace BlazorShop.Tests.Application.Services
             var service = new CategoryService(
                 this._mockGenericRepository.Object,
                 AutoMapperTestFactory.CreateMapper(),
-                this._mockCategoryRepository.Object);
+                this._mockCategoryRepository.Object,
+                new NoopCatalogQueryCache(),
+                new NoopStorefrontNavigationCache());
 
             this._mockGenericRepository
                 .Setup(repo => repo.GetByIdAsync(updateCategory.Id))
@@ -231,6 +241,8 @@ namespace BlazorShop.Tests.Application.Services
                 this._mockGenericRepository.Object,
                 this._mockMapper.Object,
                 this._mockCategoryRepository.Object,
+                new NoopCatalogQueryCache(),
+                new NoopStorefrontNavigationCache(),
                 storeContext: new FixedStoreContext(currentStoreId));
 
             this._mockGenericRepository
@@ -256,6 +268,8 @@ namespace BlazorShop.Tests.Application.Services
                 this._mockGenericRepository.Object,
                 this._mockMapper.Object,
                 this._mockCategoryRepository.Object,
+                new NoopCatalogQueryCache(),
+                new NoopStorefrontNavigationCache(),
                 storeContext: new FixedStoreContext(currentStoreId));
 
             this._mockGenericRepository
@@ -282,6 +296,8 @@ namespace BlazorShop.Tests.Application.Services
                 this._mockGenericRepository.Object,
                 this._mockMapper.Object,
                 this._mockCategoryRepository.Object,
+                new NoopCatalogQueryCache(),
+                new NoopStorefrontNavigationCache(),
                 storeContext: new FixedStoreContext(storeId));
 
             this._mockGenericRepository

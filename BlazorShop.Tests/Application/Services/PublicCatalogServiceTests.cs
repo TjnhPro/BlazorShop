@@ -297,7 +297,9 @@ namespace BlazorShop.Tests.Application.Services
                 _categoryRepository.Object,
                 _mapper.Object,
                 _productReadRepository.Object,
-                _slugService.Object);
+                _slugService.Object,
+                new NoopCatalogQueryCache(),
+                new NoopStorefrontPageService());
         }
     }
 }

@@ -5,6 +5,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
     using BlazorShop.Application.DTOs.Payment;
+    using BlazorShop.Application.Services;
     using BlazorShop.Application.Services.Contracts.Admin;
     using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Contracts;
@@ -300,7 +301,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 context,
                 auditService ?? new CapturingAdminAuditService(),
                 new StubCommerceStoreContext(storeId),
-                transactionalMessageService);
+                transactionalMessageService ?? new NoopCommerceTransactionalMessageService());
         }
 
         private static CommerceNodeAdminOrderService CreateOrderService(
@@ -311,7 +312,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var storeContext = new StubCommerceStoreContext(storeId);
             return new CommerceNodeAdminOrderService(
                 context,
-                new CommerceNodeOrderTrackingService(context, storeContext),
+                new CommerceNodeOrderTrackingService(context, storeContext, new NoopCommerceTransactionalMessageService()),
                 auditService,
                 storeContext,
                 new OrderReadModelAssembler(context));

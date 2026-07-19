@@ -184,7 +184,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             redirects
                 .Setup(service => service.EnsurePermanentRedirectAsync("/about-us", "/pages/about-us"))
                 .ReturnsAsync(SuccessfulRedirect("/about-us", "/pages/about-us"));
-            var service = CreateService(context, storeA, navigationCache: null, redirectAutomationService: redirects.Object);
+            var service = CreateService(context, storeA, navigationCache: new NoopStorefrontNavigationCache(), redirectAutomationService: redirects.Object);
 
             var result = await service.CreateAsync(new CreateStorefrontPageRequest(
                 "about-us",
@@ -205,7 +205,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var storeA = Guid.NewGuid();
             await using var context = CreateContext();
             var redirects = new Mock<ISeoRedirectAutomationService>();
-            var service = CreateService(context, storeA, navigationCache: null, redirectAutomationService: redirects.Object);
+            var service = CreateService(context, storeA, navigationCache: new NoopStorefrontNavigationCache(), redirectAutomationService: redirects.Object);
 
             var result = await service.CreateAsync(new CreateStorefrontPageRequest(
                 "about-us",
@@ -226,7 +226,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var storeA = Guid.NewGuid();
             await using var context = CreateContext();
             var redirects = new Mock<ISeoRedirectAutomationService>();
-            var service = CreateService(context, storeA, navigationCache: null, redirectAutomationService: redirects.Object);
+            var service = CreateService(context, storeA, navigationCache: new NoopStorefrontNavigationCache(), redirectAutomationService: redirects.Object);
 
             var result = await service.CreateAsync(new CreateStorefrontPageRequest(
                 "custom-page",
@@ -270,7 +270,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         {
             var storeA = Guid.NewGuid();
             await using var context = CreateContext();
-            var service = CreateService(context, storeA, navigationCache: null, enableSlugLifecycle: true);
+            var service = CreateService(context, storeA, navigationCache: new NoopStorefrontNavigationCache(), enableSlugLifecycle: true);
 
             var result = await service.CreateAsync(new CreateStorefrontPageRequest(
                 null,
@@ -303,7 +303,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var service = CreateService(
                 context,
                 storeA,
-                navigationCache: null,
+                navigationCache: new NoopStorefrontNavigationCache(),
                 enableSlugLifecycle: true,
                 redirectAutomationService: redirects.Object);
 
@@ -409,13 +409,13 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
 
         private static StorefrontPageService CreateService(CommerceNodeDbContext context, Guid storeId)
         {
-            return CreateService(context, storeId, navigationCache: null);
+            return CreateService(context, storeId, navigationCache: new NoopStorefrontNavigationCache());
         }
 
         private static StorefrontPageService CreateService(
             CommerceNodeDbContext context,
             Guid storeId,
-            IStorefrontNavigationCache? navigationCache,
+            IStorefrontNavigationCache navigationCache,
             bool enableSlugLifecycle = false,
             ISeoRedirectAutomationService? redirectAutomationService = null)
         {
@@ -428,14 +428,12 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 });
 
             var slugService = new SlugService();
-            IStoreSeoSlugPolicyService? slugPolicy = enableSlugLifecycle
-                ? new StoreSeoSlugPolicyService(
-                    slugService,
-                    new IStoreSeoSlugCollisionChecker[] { new CommerceNodeStoreSeoSlugCollisionChecker(context) })
-                : null;
-            IStoreSeoSlugHistoryService? slugHistory = enableSlugLifecycle
+            IStoreSeoSlugPolicyService slugPolicy = new StoreSeoSlugPolicyService(
+                slugService,
+                new IStoreSeoSlugCollisionChecker[] { new CommerceNodeStoreSeoSlugCollisionChecker(context) });
+            IStoreSeoSlugHistoryService slugHistory = enableSlugLifecycle
                 ? new StoreSeoSlugHistoryService(context)
-                : null;
+                : new NoopStoreSeoSlugHistoryService();
 
             return new StorefrontPageService(
                 context,
@@ -445,7 +443,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 navigationCache,
                 slugPolicy,
                 slugHistory,
-                redirectAutomationService);
+                redirectAutomationService ?? new NoopSeoRedirectAutomationService());
         }
 
         private static ServiceResponse<BlazorShop.Application.DTOs.Seo.SeoRedirectDto> SuccessfulRedirect(

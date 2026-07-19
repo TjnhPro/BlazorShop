@@ -9,6 +9,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
     using BlazorShop.Application.DTOs.Admin.Audit;
     using BlazorShop.Application.DTOs.Admin.Orders;
     using BlazorShop.Application.DTOs.Payment;
+    using BlazorShop.Application.Services;
     using BlazorShop.Application.Services.Contracts.Admin;
     using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Contracts;
@@ -35,7 +36,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var order = SeedOrderGraph(context, storeId);
             var service = new CommerceNodeAdminOrderService(
                 context,
-                new CommerceNodeOrderTrackingService(context, new FixedStoreContext(storeId)),
+                new CommerceNodeOrderTrackingService(context, new FixedStoreContext(storeId), new NoopCommerceTransactionalMessageService()),
                 new NoopAdminAuditService(),
                 new FixedStoreContext(storeId),
                 new OrderReadModelAssembler(context));

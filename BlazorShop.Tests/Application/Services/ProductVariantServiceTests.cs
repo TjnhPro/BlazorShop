@@ -2,6 +2,7 @@ namespace BlazorShop.Tests.Application.Services
 {
     using AutoMapper;
 
+    using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.DTOs.Product.ProductVariant;
     using BlazorShop.Application.Services;
     using BlazorShop.Domain.Constants;
@@ -25,6 +26,7 @@ namespace BlazorShop.Tests.Application.Services
             this.service = new ProductVariantService(
                 this.variantRepository.Object,
                 this.mapper.Object,
+                new NoopCatalogQueryCache(),
                 this.productReadRepository.Object);
         }
 

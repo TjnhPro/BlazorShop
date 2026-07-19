@@ -193,16 +193,25 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 IsEnabled = true,
             });
             await context.SaveChangesAsync();
+            var moneyConversionService = new FakeMoneyConversionService();
+            var moneyRoundingService = new MoneyRoundingService(new CurrencyMetadataService());
+            var workingCurrencyResolver = new StorefrontWorkingCurrencyResolver(
+                context,
+                new StoreCurrencyResolver(context),
+                moneyConversionService);
             var service = new StorefrontCartService(
-                new StorefrontCartSessionService(context),
+                new StorefrontCartSessionService(context, Options.Create(new StorefrontCartOptions())),
                 productRepository.Object,
                 new StoreCurrencyResolver(context),
-                new StorefrontWorkingCurrencyResolver(
-                    context,
-                    new StoreCurrencyResolver(context),
-                    new FakeMoneyConversionService()),
-                new FakeMoneyConversionService(),
-                new MoneyRoundingService(new CurrencyMetadataService()));
+                workingCurrencyResolver,
+                moneyConversionService,
+                moneyRoundingService,
+                new ProductSelectionResolver(
+                    productRepository.Object,
+                    workingCurrencyResolver,
+                    moneyConversionService,
+                    moneyRoundingService),
+                Options.Create(new StorefrontCartOptions()));
             var product = CreatePublishedProduct(storeId, price: 12.50m, stock: 10);
             productRepository
                 .Setup(repository => repository.GetPublishedProductDetailsByIdAsync(product.Id))
@@ -923,13 +932,21 @@ namespace BlazorShop.Tests.Application.CommerceNode
             decimal conversionRate = 1m,
             StorefrontCartOptions? cartOptions = null)
         {
+            var moneyConversionService = new FakeMoneyConversionService(conversionTargetCurrencyCode, conversionRate);
+            var moneyRoundingService = new MoneyRoundingService(new CurrencyMetadataService());
+            var workingCurrencyResolver = new FixedWorkingCurrencyResolver(workingCurrencyCode ?? defaultCurrencyCode, defaultCurrencyCode);
             return new StorefrontCartService(
-                new StorefrontCartSessionService(context),
+                new StorefrontCartSessionService(context, Options.Create(cartOptions ?? new StorefrontCartOptions())),
                 productRepository.Object,
                 new FixedStoreCurrencyResolver(defaultCurrencyCode),
-                new FixedWorkingCurrencyResolver(workingCurrencyCode ?? defaultCurrencyCode, defaultCurrencyCode),
-                new FakeMoneyConversionService(conversionTargetCurrencyCode, conversionRate),
-                new MoneyRoundingService(new CurrencyMetadataService()),
+                workingCurrencyResolver,
+                moneyConversionService,
+                moneyRoundingService,
+                new ProductSelectionResolver(
+                    productRepository.Object,
+                    workingCurrencyResolver,
+                    moneyConversionService,
+                    moneyRoundingService),
                 cartOptions: Options.Create(cartOptions ?? new StorefrontCartOptions()));
         }
 

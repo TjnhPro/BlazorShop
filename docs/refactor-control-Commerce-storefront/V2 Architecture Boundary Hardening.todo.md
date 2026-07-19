@@ -373,46 +373,46 @@ Goal: production services must not silently change behavior when a dependency is
 
 ### Target Offenders
 
-- [ ] `StorefrontCartService`.
-- [ ] `StorefrontPageService`.
-- [ ] `CommerceNodeAdminShipmentService`.
-- [ ] `InternalFreeStandardShippingProvider`.
-- [ ] `StorefrontDisplayContextProvider`.
-- [ ] `VariationTemplateService` nullable cache if still present.
-- [ ] `PublicCatalogService` optional storefront page dependency if it remains active V2 relevant.
+- [x] `StorefrontCartService`.
+- [x] `StorefrontPageService`.
+- [x] `CommerceNodeAdminShipmentService`.
+- [x] `InternalFreeStandardShippingProvider`.
+- [x] `StorefrontDisplayContextProvider`.
+- [x] `VariationTemplateService` nullable cache if still present.
+- [x] `PublicCatalogService` optional storefront page dependency if it remains active V2 relevant.
 
 ### Tasks
 
-- [ ] Add a production-constructor guardrail test that rejects nullable interface dependencies with default `null` in active V2 production service constructors.
-- [ ] Allow explicit exceptions only for DTOs/options/cancellation/factory test helpers, not production service collaborators.
-- [ ] Replace `StorefrontCartService` nullable `IProductSelectionResolver` with required dependency.
-- [ ] Remove `new ProductSelectionResolver(...)` fallback.
-- [ ] Replace nullable `IOptions<StorefrontCartOptions>` with required `IOptions<StorefrontCartOptions>` or `IOptionsMonitor<StorefrontCartOptions>`.
-- [ ] Update cart tests to use a service factory/builder instead of depending on nullable defaults.
-- [ ] Make `StorefrontPageService` navigation cache, slug policy, slug history, and SEO redirect automation explicit required dependencies, or register Noop implementations if behavior must be optional.
-- [ ] Make `CommerceNodeAdminShipmentService` transactional message dependency explicit; if email hook can be disabled, register `NoopCommerceTransactionalMessageService`.
-- [ ] Make `InternalFreeStandardShippingProvider` settings dependency explicit; if fallback settings are required for local tests, register `DefaultStoreShippingSettingsService` explicitly in tests only.
-- [ ] Make `StorefrontDisplayContextProvider` require `IStorefrontStoreConfigurationClient` and `IHttpContextAccessor`; remove `new HttpContextAccessor()`.
-- [ ] Add test factories for services currently instantiated directly in unit tests.
-- [ ] Update DI registrations in `BlazorShop.Infrastructure/Data/CommerceNode/DependencyInjection.cs` and Storefront V2 service registration.
+- [x] Add a production-constructor guardrail test that rejects nullable interface dependencies with default `null` in active V2 production service constructors.
+- [x] Allow explicit exceptions only for DTOs/options/cancellation/factory test helpers, not production service collaborators.
+- [x] Replace `StorefrontCartService` nullable `IProductSelectionResolver` with required dependency.
+- [x] Remove `new ProductSelectionResolver(...)` fallback.
+- [x] Replace nullable `IOptions<StorefrontCartOptions>` with required `IOptions<StorefrontCartOptions>` or `IOptionsMonitor<StorefrontCartOptions>`.
+- [x] Update cart tests to use a service factory/builder instead of depending on nullable defaults.
+- [x] Make `StorefrontPageService` navigation cache, slug policy, slug history, and SEO redirect automation explicit required dependencies, or register Noop implementations if behavior must be optional.
+- [x] Make `CommerceNodeAdminShipmentService` transactional message dependency explicit; if email hook can be disabled, register `NoopCommerceTransactionalMessageService`.
+- [x] Make `InternalFreeStandardShippingProvider` settings dependency explicit; if fallback settings are required for local tests, register `DefaultStoreShippingSettingsService` explicitly in tests only.
+- [x] Make `StorefrontDisplayContextProvider` require `IStorefrontStoreConfigurationClient` and `IHttpContextAccessor`; remove `new HttpContextAccessor()`.
+- [x] Add test factories for services currently instantiated directly in unit tests.
+- [x] Update DI registrations in `BlazorShop.Infrastructure/Data/CommerceNode/DependencyInjection.cs` and Storefront V2 service registration.
 
 ### Noop Rules
 
-- [ ] Noop implementation names must start with `Noop` and live near the capability contract or Infrastructure implementation.
-- [ ] Noop behavior must be explicit and logged/observable where operator-facing behavior is skipped.
-- [ ] Noop must never be the hidden fallback of a nullable constructor parameter.
+- [x] Noop implementation names must start with `Noop` and live near the capability contract or Infrastructure implementation.
+- [x] Noop behavior must be explicit and logged/observable where operator-facing behavior is skipped.
+- [x] Noop must never be the hidden fallback of a nullable constructor parameter.
 
 ### Verification
 
-- [ ] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontCartService|FullyQualifiedName~StorefrontPageService|FullyQualifiedName~Shipment|FullyQualifiedName~StorefrontDisplayContextProvider|FullyQualifiedName~ArchitectureBoundary"`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore`
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontCartService|FullyQualifiedName~StorefrontPageService|FullyQualifiedName~Shipment|FullyQualifiedName~StorefrontDisplayContextProvider|FullyQualifiedName~ArchitectureBoundary"` - Passed: 81, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
 
 ### Done When
 
-- [ ] Active V2 production constructors do not use nullable service dependencies as mode switches.
-- [ ] Test setup uses builders/fakes explicitly.
-- [ ] Missing DI dependency fails startup/tests instead of silently changing runtime behavior.
+- [x] Active V2 production constructors do not use nullable service dependencies as mode switches.
+- [x] Test setup uses builders/fakes explicitly.
+- [x] Missing DI dependency fails startup/tests instead of silently changing runtime behavior.
 
 ## Phase 4 - Cart, Checkout, And Order Line Dedupe
 
@@ -719,7 +719,7 @@ Goal: prevent the same architecture issues from returning.
 - [ ] Phase 1C complete per capability and committed in small batches.
 - [ ] Phase 1D complete and committed.
 - [ ] Phase 2 complete and committed.
-- [ ] Phase 3 complete and committed.
+- [x] Phase 3 complete and committed.
 - [ ] Phase 4 complete and committed.
 - [ ] Phase 5 complete and committed.
 - [ ] Phase 6A complete and committed.

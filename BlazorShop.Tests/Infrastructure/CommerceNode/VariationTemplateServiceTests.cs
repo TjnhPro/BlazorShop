@@ -122,7 +122,8 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 context,
                 new StubCommerceStoreContext(storeId),
                 new SlugService(),
-                new NoopAdminAuditService());
+                new NoopAdminAuditService(),
+                new NoopCatalogQueryCache());
         }
 
         private static async Task<VariationTemplate> SeedTemplateAsync(

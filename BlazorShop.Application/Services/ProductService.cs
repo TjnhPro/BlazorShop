@@ -25,8 +25,8 @@ namespace BlazorShop.Application.Services
         private readonly IMapper _mapper;
         private readonly IAdminAuditService? _auditService;
         private readonly ICommerceStoreContext? _storeContext;
-        private readonly ICatalogQueryCache? _catalogQueryCache;
-        private readonly IStorefrontNavigationCache? _navigationCache;
+        private readonly ICatalogQueryCache _catalogQueryCache;
+        private readonly IStorefrontNavigationCache _navigationCache;
         private readonly IVariationTemplateLookupService? _variationTemplateLookupService;
         private readonly ICategoryRepository? _categoryRepository;
 
@@ -34,12 +34,12 @@ namespace BlazorShop.Application.Services
             IProductReadRepository productReadRepository,
             IGenericRepository<Product> productRepository,
             IMapper mapper,
+            ICatalogQueryCache catalogQueryCache,
+            IStorefrontNavigationCache navigationCache,
             IAdminAuditService? auditService = null,
             ICommerceStoreContext? storeContext = null,
-            ICatalogQueryCache? catalogQueryCache = null,
             IVariationTemplateLookupService? variationTemplateLookupService = null,
-            ICategoryRepository? categoryRepository = null,
-            IStorefrontNavigationCache? navigationCache = null)
+            ICategoryRepository? categoryRepository = null)
         {
             _productReadRepository = productReadRepository;
             _productRepository = productRepository;
@@ -458,12 +458,8 @@ namespace BlazorShop.Application.Services
                 return;
             }
 
-            if (_catalogQueryCache is not null)
-            {
-                await _catalogQueryCache.InvalidateStoreCatalogAsync(storeId.Value);
-            }
-
-            _navigationCache?.Invalidate(storeId.Value);
+            await _catalogQueryCache.InvalidateStoreCatalogAsync(storeId.Value);
+            _navigationCache.Invalidate(storeId.Value);
         }
 
         private GetProduct MapProductDetails(Product product)

@@ -30,8 +30,8 @@ namespace BlazorShop.Application.Services
         private readonly IValidator<UpdateCategorySeoDto> _validator;
         private readonly IAdminAuditService? _auditService;
         private readonly ICommerceStoreContext? _storeContext;
-        private readonly IStoreSeoSlugPolicyService? _slugPolicyService;
-        private readonly IStoreSeoSlugHistoryService? _slugHistoryService;
+        private readonly IStoreSeoSlugPolicyService _slugPolicyService;
+        private readonly IStoreSeoSlugHistoryService _slugHistoryService;
 
         public CategorySeoService(
             IGenericRepository<Category> categoryRepository,
@@ -42,10 +42,10 @@ namespace BlazorShop.Application.Services
             ISeoRedirectAutomationService seoRedirectAutomationService,
             IValidationService validationService,
             IValidator<UpdateCategorySeoDto> validator,
+            IStoreSeoSlugPolicyService slugPolicyService,
+            IStoreSeoSlugHistoryService slugHistoryService,
             IAdminAuditService? auditService = null,
-            ICommerceStoreContext? storeContext = null,
-            IStoreSeoSlugPolicyService? slugPolicyService = null,
-            IStoreSeoSlugHistoryService? slugHistoryService = null)
+            ICommerceStoreContext? storeContext = null)
         {
             _categoryRepository = categoryRepository;
             _categoryReadRepository = categoryReadRepository;
@@ -186,7 +186,7 @@ namespace BlazorShop.Application.Services
 
         private async Task<ServiceResponse<CategorySeoDto>?> ValidateCategorySlugAsync(string slug, Guid? storeId, Guid categoryId)
         {
-            if (_slugPolicyService is not null && _storeContext is not null && storeId.HasValue)
+            if (_storeContext is not null && storeId.HasValue)
             {
                 var result = await _slugPolicyService.ValidateSlugAsync(SeoSlugEntityTypes.Category, slug, storeId.Value, excludedEntityId: categoryId);
                 if (result.Success)
@@ -271,7 +271,7 @@ namespace BlazorShop.Application.Services
 
         private async Task EnsureSlugHistoryAsync(Guid? storeId, Guid categoryId, string? oldSlug, string? newSlug)
         {
-            if (_slugHistoryService is null || !storeId.HasValue || string.IsNullOrWhiteSpace(newSlug))
+            if (!storeId.HasValue || string.IsNullOrWhiteSpace(newSlug))
             {
                 return;
             }

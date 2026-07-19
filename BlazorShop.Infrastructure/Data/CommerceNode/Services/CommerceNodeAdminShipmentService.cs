@@ -19,13 +19,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly CommerceNodeDbContext context;
         private readonly IAdminAuditService auditService;
         private readonly ICommerceStoreContext storeContext;
-        private readonly ICommerceTransactionalMessageService? transactionalMessageService;
+        private readonly ICommerceTransactionalMessageService transactionalMessageService;
 
         public CommerceNodeAdminShipmentService(
             CommerceNodeDbContext context,
             IAdminAuditService auditService,
             ICommerceStoreContext storeContext,
-            ICommerceTransactionalMessageService? transactionalMessageService = null)
+            ICommerceTransactionalMessageService transactionalMessageService)
         {
             this.context = context;
             this.auditService = auditService;
@@ -250,11 +250,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private async Task TryQueueFulfillmentStatusChangedAsync(Guid storeId, Guid orderId)
         {
-            if (this.transactionalMessageService is null)
-            {
-                return;
-            }
-
             try
             {
                 await this.transactionalMessageService.QueueFulfillmentStatusChangedAsync(storeId, orderId);

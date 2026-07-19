@@ -99,7 +99,7 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void NullableProductionDependencyInventory_IsExplicitlyAllowlistedAtPhase0()
+        public void ActiveV2ProductionConstructors_DoNotUseNullableDependencyFallbacks()
         {
             var offenderPatterns = new[]
             {
@@ -131,24 +131,7 @@ namespace BlazorShop.Tests.Architecture
                 .OrderBy(path => path, StringComparer.Ordinal)
                 .ToArray();
 
-            Assert.Equal(
-                [
-                    "BlazorShop.Application/CommerceNode/Carts/StorefrontCartService.cs",
-                    "BlazorShop.Application/Services/CategorySeoService.cs",
-                    "BlazorShop.Application/Services/CategoryService.cs",
-                    "BlazorShop.Application/Services/ProductSeoService.cs",
-                    "BlazorShop.Application/Services/ProductService.cs",
-                    "BlazorShop.Application/Services/ProductVariantService.cs",
-                    "BlazorShop.Application/Services/PublicCatalogService.cs",
-                    "BlazorShop.Infrastructure/Data/CommerceNode/Services/CommerceNodeAdminShipmentService.cs",
-                    "BlazorShop.Infrastructure/Data/CommerceNode/Services/CommerceNodeOrderTrackingService.cs",
-                    "BlazorShop.Infrastructure/Data/CommerceNode/Services/ShippingProviders.cs",
-                    "BlazorShop.Infrastructure/Data/CommerceNode/Services/StorefrontCartSessionService.cs",
-                    "BlazorShop.Infrastructure/Data/CommerceNode/Services/StorefrontPageService.cs",
-                    "BlazorShop.Infrastructure/Data/CommerceNode/Services/VariationTemplateService.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontDisplayContextProvider.cs",
-                ],
-                offenders);
+            Assert.Empty(offenders);
         }
 
         [Fact]

@@ -5,6 +5,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
     using BlazorShop.Application.Services;
+    using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Application.Services.Contracts.Admin;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Domain.Entities.CommerceNode;
@@ -129,7 +130,16 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         private static StorefrontPageTemplateService CreateTemplateService(CommerceNodeDbContext context, Guid storeId)
         {
             var audit = CreateAuditService();
-            var pageService = new StorefrontPageService(context, new FixedStoreContext(storeId), new SlugService(), audit.Object);
+            var slugService = new SlugService();
+            var pageService = new StorefrontPageService(
+                context,
+                new FixedStoreContext(storeId),
+                slugService,
+                audit.Object,
+                new NoopStorefrontNavigationCache(),
+                new StoreSeoSlugPolicyService(slugService, new IStoreSeoSlugCollisionChecker[] { new CommerceNodeStoreSeoSlugCollisionChecker(context) }),
+                new NoopStoreSeoSlugHistoryService(),
+                new NoopSeoRedirectAutomationService());
             return new StorefrontPageTemplateService(context, new FixedStoreContext(storeId), pageService, audit.Object);
         }
 

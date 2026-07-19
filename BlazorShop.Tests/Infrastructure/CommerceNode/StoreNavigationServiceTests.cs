@@ -6,6 +6,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Admin.Audit;
     using BlazorShop.Application.Services;
+    using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Application.Services.Contracts.Admin;
     using BlazorShop.Domain.Entities;
     using BlazorShop.Domain.Entities.CommerceNode;
@@ -165,12 +166,16 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
 
             var cache = new StorefrontNavigationCache(new MemoryCache(new MemoryCacheOptions()));
             var navigation = CreateService(context, storeId, cache);
+            var slugService = new SlugService();
             var pages = new StorefrontPageService(
                 context,
                 new FixedStoreContext(storeId),
-                new SlugService(),
+                slugService,
                 CreateAuditService().Object,
-                cache);
+                cache,
+                new StoreSeoSlugPolicyService(slugService, new IStoreSeoSlugCollisionChecker[] { new CommerceNodeStoreSeoSlugCollisionChecker(context) }),
+                new NoopStoreSeoSlugHistoryService(),
+                new NoopSeoRedirectAutomationService());
 
             var before = await navigation.GetPublicMenuAsync(StoreNavigationMenuNames.Main);
             var updated = await pages.UpdateAsync(

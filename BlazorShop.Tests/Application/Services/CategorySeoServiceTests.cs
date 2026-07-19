@@ -44,7 +44,9 @@ namespace BlazorShop.Tests.Application.Services
                 _transactionManager.Object,
                 _seoRedirectAutomationService.Object,
                 new ValidationService(),
-                new UpdateCategorySeoDtoValidator(slugService));
+                new UpdateCategorySeoDtoValidator(slugService),
+                new StoreSeoSlugPolicyService(slugService, []),
+                new NoopStoreSeoSlugHistoryService());
         }
 
         [Fact]
@@ -377,9 +379,9 @@ namespace BlazorShop.Tests.Application.Services
                 _seoRedirectAutomationService.Object,
                 new ValidationService(),
                 new UpdateCategorySeoDtoValidator(slugService),
-                storeContext: new FixedStoreContext(storeId),
-                slugPolicyService: slugPolicyService,
-                slugHistoryService: slugHistoryService);
+                slugPolicyService ?? new StoreSeoSlugPolicyService(slugService, []),
+                slugHistoryService ?? new NoopStoreSeoSlugHistoryService(),
+                storeContext: new FixedStoreContext(storeId));
         }
 
         private static ServiceResponse<StoreSeoSlugHistoryDto> SlugHistorySuccess(

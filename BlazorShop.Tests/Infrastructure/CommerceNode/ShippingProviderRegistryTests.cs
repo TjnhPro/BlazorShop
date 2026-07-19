@@ -11,7 +11,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         [Fact]
         public async Task FreeStandardProvider_ReturnsOption_WhenShippingIsRequired()
         {
-            var provider = new InternalFreeStandardShippingProvider();
+            var provider = CreateFreeProvider();
 
             var result = await provider.GetOptionsAsync(CreateRequest(shippingRequired: true));
 
@@ -29,7 +29,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         [Fact]
         public async Task Calculator_ReturnsNoShippingRequired_WhenNoPackageLinesNeedShipping()
         {
-            var calculator = new ShippingCalculator([new InternalFreeStandardShippingProvider()]);
+            var calculator = new ShippingCalculator([CreateFreeProvider()]);
 
             var result = await calculator.GetOptionsAsync(CreateRequest(shippingRequired: false));
 
@@ -45,7 +45,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         [Fact]
         public void Resolver_RejectsUnknownProvider()
         {
-            var resolver = new ShippingProviderResolver([new InternalFreeStandardShippingProvider()]);
+            var resolver = new ShippingProviderResolver([CreateFreeProvider()]);
 
             var result = resolver.Resolve("unknown_provider");
 
@@ -72,7 +72,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         [Fact]
         public async Task FreeStandardProvider_AddsProductSurchargeAndExcludesFreeShippingLines()
         {
-            var provider = new InternalFreeStandardShippingProvider();
+            var provider = CreateFreeProvider();
 
             var result = await provider.GetOptionsAsync(CreateRequest(
                 shippingRequired: true,
@@ -191,6 +191,14 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 Width: 5m,
                 Height: 2m,
                 Surcharge: surcharge);
+        }
+
+        private static InternalFreeStandardShippingProvider CreateFreeProvider()
+        {
+            return new InternalFreeStandardShippingProvider(new StubStoreShippingSettingsService(
+                defaultFlatRate: null,
+                freeShippingThreshold: null,
+                StoreShippingSurchargePolicies.Sum));
         }
 
         private sealed class StubStoreShippingSettingsService : IStoreShippingSettingsService

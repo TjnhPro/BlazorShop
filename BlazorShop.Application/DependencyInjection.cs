@@ -3,6 +3,9 @@
     using System;
 
     using BlazorShop.Application.CommerceNode.Addresses;
+    using BlazorShop.Application.CommerceNode.Catalog;
+    using BlazorShop.Application.CommerceNode.Navigation;
+    using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.Mapping;
     using BlazorShop.Application.Options;
     using BlazorShop.Application.Services;
@@ -26,6 +29,10 @@
             services.AddAutoMapper(cfg => cfg.AddProfile<MappingConfig>());
             services.AddSingleton<ISlugService, SlugService>();
             services.AddScoped<IStoreSeoSlugPolicyService, StoreSeoSlugPolicyService>();
+            services.AddScoped<IStoreSeoSlugHistoryService, NoopStoreSeoSlugHistoryService>();
+            services.AddSingleton<ICatalogQueryCache, NoopCatalogQueryCache>();
+            services.AddSingleton<IStorefrontNavigationCache, NoopStorefrontNavigationCache>();
+            services.AddScoped<IStorefrontPageService, NoopStorefrontPageService>();
             services.AddSingleton<ISeoMetadataBuilder, SeoMetadataBuilder>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ICategoryService, CategoryService>();

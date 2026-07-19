@@ -14,17 +14,17 @@ namespace BlazorShop.Storefront.Services
         private const string DefaultCurrencyCode = "USD";
 
         private readonly IStorefrontCurrentStoreProvider _currentStoreProvider;
-        private readonly IStorefrontStoreConfigurationClient? _apiClient;
+        private readonly IStorefrontStoreConfigurationClient _apiClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public StorefrontDisplayContextProvider(
             IStorefrontCurrentStoreProvider currentStoreProvider,
-            IStorefrontStoreConfigurationClient? apiClient = null,
-            IHttpContextAccessor? httpContextAccessor = null)
+            IStorefrontStoreConfigurationClient apiClient,
+            IHttpContextAccessor httpContextAccessor)
         {
             _currentStoreProvider = currentStoreProvider;
             _apiClient = apiClient;
-            _httpContextAccessor = httpContextAccessor ?? new HttpContextAccessor();
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<StorefrontDisplayContext> GetAsync(CancellationToken cancellationToken = default)
@@ -73,11 +73,6 @@ namespace BlazorShop.Storefront.Services
             string defaultCurrencyCode,
             CancellationToken cancellationToken)
         {
-            if (_apiClient is null)
-            {
-                return [defaultCurrencyCode];
-            }
-
             var result = await _apiClient.GetPublicConfigurationAsync(cancellationToken);
             var configuredCodes = result.IsSuccess
                 ? result.Value?.CurrencyOptions.SupportedCurrencyCodes

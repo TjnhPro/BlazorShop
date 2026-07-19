@@ -7,9 +7,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     {
         public const string SystemName = "free_standard";
         public const string MethodCode = "standard";
-        private readonly IStoreShippingSettingsService? settingsService;
+        private readonly IStoreShippingSettingsService settingsService;
 
-        public InternalFreeStandardShippingProvider(IStoreShippingSettingsService? settingsService = null)
+        public InternalFreeStandardShippingProvider(IStoreShippingSettingsService settingsService)
         {
             this.settingsService = settingsService;
         }
@@ -57,9 +57,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private async Task<StoreShippingRuntimeSettings> ResolveSettingsAsync(Guid storeId, CancellationToken cancellationToken)
         {
-            return this.settingsService is null
-                ? new StoreShippingRuntimeSettings(new StoreShippingOriginDto(null, null, null, null, null, null, null, null), [], null, null, StoreShippingSurchargePolicies.Sum, null)
-                : await this.settingsService.ResolveAsync(storeId, cancellationToken);
+            return await this.settingsService.ResolveAsync(storeId, cancellationToken);
         }
 
         private static string NormalizeCurrency(string? value)

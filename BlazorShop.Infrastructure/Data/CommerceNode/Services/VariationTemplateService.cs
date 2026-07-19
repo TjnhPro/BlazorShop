@@ -25,14 +25,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly ICommerceStoreContext storeContext;
         private readonly ISlugService slugService;
         private readonly IAdminAuditService auditService;
-        private readonly ICatalogQueryCache? catalogQueryCache;
+        private readonly ICatalogQueryCache catalogQueryCache;
 
         public VariationTemplateService(
             CommerceNodeDbContext context,
             ICommerceStoreContext storeContext,
             ISlugService slugService,
             IAdminAuditService auditService,
-            ICatalogQueryCache? catalogQueryCache = null)
+            ICatalogQueryCache catalogQueryCache)
         {
             this.context = context;
             this.storeContext = storeContext;
@@ -494,10 +494,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private async Task InvalidateCatalogAsync(Guid storeId)
         {
-            if (this.catalogQueryCache is not null)
-            {
-                await this.catalogQueryCache.InvalidateStoreCatalogAsync(storeId);
-            }
+            await this.catalogQueryCache.InvalidateStoreCatalogAsync(storeId);
         }
 
         private async Task LogAsync(string action, Guid entityId, string summary, object metadata, CancellationToken cancellationToken)

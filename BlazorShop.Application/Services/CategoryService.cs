@@ -24,17 +24,17 @@ namespace BlazorShop.Application.Services
         private readonly ICategoryRepository _categoryRepository;
         private readonly IAdminAuditService? _auditService;
         private readonly ICommerceStoreContext? _storeContext;
-        private readonly ICatalogQueryCache? _catalogQueryCache;
-        private readonly IStorefrontNavigationCache? _navigationCache;
+        private readonly ICatalogQueryCache _catalogQueryCache;
+        private readonly IStorefrontNavigationCache _navigationCache;
 
         public CategoryService(
             IGenericRepository<Category> genericRepository,
             IMapper mapper,
             ICategoryRepository categoryRepository,
+            ICatalogQueryCache catalogQueryCache,
+            IStorefrontNavigationCache navigationCache,
             IAdminAuditService? auditService = null,
-            ICommerceStoreContext? storeContext = null,
-            ICatalogQueryCache? catalogQueryCache = null,
-            IStorefrontNavigationCache? navigationCache = null)
+            ICommerceStoreContext? storeContext = null)
         {
             _genericRepository = genericRepository;
             _mapper = mapper;
@@ -222,12 +222,8 @@ namespace BlazorShop.Application.Services
                 return;
             }
 
-            if (_catalogQueryCache is not null)
-            {
-                await _catalogQueryCache.InvalidateStoreCatalogAsync(storeId.Value);
-            }
-
-            _navigationCache?.Invalidate(storeId.Value);
+            await _catalogQueryCache.InvalidateStoreCatalogAsync(storeId.Value);
+            _navigationCache.Invalidate(storeId.Value);
         }
 
         private async Task<bool> CategoryBelongsToCurrentStoreAsync(Category category)

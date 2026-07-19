@@ -29,8 +29,8 @@ namespace BlazorShop.Application.Services
         private readonly IValidator<UpdateProductSeoDto> _validator;
         private readonly IAdminAuditService? _auditService;
         private readonly ICommerceStoreContext? _storeContext;
-        private readonly IStoreSeoSlugPolicyService? _slugPolicyService;
-        private readonly IStoreSeoSlugHistoryService? _slugHistoryService;
+        private readonly IStoreSeoSlugPolicyService _slugPolicyService;
+        private readonly IStoreSeoSlugHistoryService _slugHistoryService;
 
         public ProductSeoService(
             IGenericRepository<Product> productRepository,
@@ -41,10 +41,10 @@ namespace BlazorShop.Application.Services
             ISeoRedirectAutomationService seoRedirectAutomationService,
             IValidationService validationService,
             IValidator<UpdateProductSeoDto> validator,
+            IStoreSeoSlugPolicyService slugPolicyService,
+            IStoreSeoSlugHistoryService slugHistoryService,
             IAdminAuditService? auditService = null,
-            ICommerceStoreContext? storeContext = null,
-            IStoreSeoSlugPolicyService? slugPolicyService = null,
-            IStoreSeoSlugHistoryService? slugHistoryService = null)
+            ICommerceStoreContext? storeContext = null)
         {
             _productRepository = productRepository;
             _productReadRepository = productReadRepository;
@@ -200,7 +200,7 @@ namespace BlazorShop.Application.Services
 
         private async Task<ServiceResponse<ProductSeoDto>?> ValidateProductSlugAsync(string slug, Guid? storeId, Guid productId)
         {
-            if (_slugPolicyService is not null && _storeContext is not null && storeId.HasValue)
+            if (_storeContext is not null && storeId.HasValue)
             {
                 var result = await _slugPolicyService.ValidateSlugAsync(SeoSlugEntityTypes.Product, slug, storeId.Value, excludedEntityId: productId);
                 if (result.Success)
@@ -286,7 +286,7 @@ namespace BlazorShop.Application.Services
 
         private async Task EnsureSlugHistoryAsync(Guid? storeId, Guid productId, string? oldSlug, string? newSlug)
         {
-            if (_slugHistoryService is null || !storeId.HasValue || string.IsNullOrWhiteSpace(newSlug))
+            if (!storeId.HasValue || string.IsNullOrWhiteSpace(newSlug))
             {
                 return;
             }

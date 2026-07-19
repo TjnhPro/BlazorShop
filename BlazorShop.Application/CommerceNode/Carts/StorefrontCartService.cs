@@ -38,8 +38,8 @@ namespace BlazorShop.Application.CommerceNode.Carts
             IStorefrontWorkingCurrencyResolver workingCurrencyResolver,
             IMoneyConversionService moneyConversionService,
             IMoneyRoundingService moneyRoundingService,
-            IProductSelectionResolver? productSelectionResolver = null,
-            IOptions<StorefrontCartOptions>? cartOptions = null)
+            IProductSelectionResolver productSelectionResolver,
+            IOptions<StorefrontCartOptions> cartOptions)
         {
             this.sessionService = sessionService;
             this.productReadRepository = productReadRepository;
@@ -47,13 +47,8 @@ namespace BlazorShop.Application.CommerceNode.Carts
             this.workingCurrencyResolver = workingCurrencyResolver;
             this.moneyConversionService = moneyConversionService;
             this.moneyRoundingService = moneyRoundingService;
-            this.cartOptions = cartOptions?.Value ?? new StorefrontCartOptions();
-            this.productSelectionResolver = productSelectionResolver
-                ?? new ProductSelectionResolver(
-                    productReadRepository,
-                    workingCurrencyResolver,
-                    moneyConversionService,
-                    moneyRoundingService);
+            this.productSelectionResolver = productSelectionResolver;
+            this.cartOptions = cartOptions.Value;
         }
 
         public async Task<ServiceResponse<StorefrontCartResult>> CreateOrResumeAsync(
