@@ -228,10 +228,10 @@ Acceptance:
 
 ## Phase 3 - Move Core Order And Line Projection Into Assembler
 
-- [ ] Move common `new GetOrder` mapping into assembler.
-- [ ] Move `CreatePaymentSummary` into assembler.
-- [ ] Move `GetOrderLine` mapping into assembler.
-- [ ] Preserve existing fields:
+- [x] Move common `new GetOrder` mapping into assembler.
+- [x] Move `CreatePaymentSummary` into assembler.
+- [x] Move `GetOrderLine` mapping into assembler.
+- [x] Preserve existing fields:
   - currency and base currency values.
   - totals and base totals.
   - exchange rate metadata.
@@ -239,14 +239,21 @@ Acceptance:
   - shipping method snapshot.
   - completed/cancelled timestamps.
   - variant attributes via `ProductVariantAttributeNormalizer.Deserialize`.
-- [ ] Preserve admin/customer/guest differences through options.
-- [ ] Keep line money fields behavior identical per caller until a later behavior correction phase.
+- [x] Preserve admin/customer/guest differences through options.
+- [x] Keep line money fields behavior identical per caller until a later behavior correction phase.
+
+Phase 3 notes:
+
+- `OrderReadModelAssembler.BuildAsync` now projects non-empty order collections to `GetOrder`.
+- Added `IncludeUserId` to `OrderReadModelOptions` so admin/internal projections keep current `UserId` behavior while customer/guest projections stay hidden.
+- Projection tests cover admin, customer, guest, and internal option shapes directly against the assembler.
+- Services still use their old private mapping methods until migration phases 4-6.
 
 Acceptance:
 
-- [ ] Unit tests compare assembler output to existing service behavior for representative admin/customer/guest orders.
-- [ ] Mapping remains deterministic for order of lines, history and tracking events.
-- [ ] No public DTO shape changes.
+- [x] Unit tests compare assembler output to existing service behavior for representative admin/customer/guest orders.
+- [x] Mapping remains deterministic for order of lines, history and tracking events.
+- [x] No public DTO shape changes.
 
 ## Phase 4 - Migrate Customer And Query Services First
 

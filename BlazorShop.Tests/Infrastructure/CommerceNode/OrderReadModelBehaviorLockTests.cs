@@ -119,6 +119,91 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal("Fallback Product", Assert.Single(item.Lines).ProductName);
         }
 
+        [Fact]
+        public async Task AssemblerAdminOptions_PreserveAdminProjectionShape()
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            var order = SeedOrderGraph(context, storeId);
+            var assembler = new OrderReadModelAssembler(context);
+
+            var item = Assert.Single(await assembler.BuildAsync([order], OrderReadModelOptions.Admin()));
+            var line = Assert.Single(item.Lines);
+
+            Assert.Equal(AppUserId, item.UserId);
+            Assert.Equal("Manager-only note", item.AdminNote);
+            Assert.Equal(["public.event", "private.event"], item.HistoryEntries.Select(entry => entry.EventType).ToArray());
+            Assert.Empty(item.TrackingEvents);
+            Assert.NotNull(item.PaymentSummary!.PaymentAttemptPublicId);
+            Assert.Equal(PaymentMethodKeys.Cod, item.PaymentSummary.ProviderKey);
+            Assert.Equal("Fallback Product", line.ProductName);
+            Assert.Null(line.CurrencyCode);
+            Assert.Null(line.PersistedLineTotal);
+        }
+
+        [Fact]
+        public async Task AssemblerCustomerOptions_PreserveCustomerProjectionShape()
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            var order = SeedOrderGraph(context, storeId);
+            var assembler = new OrderReadModelAssembler(context);
+
+            var item = Assert.Single(await assembler.BuildAsync([order], OrderReadModelOptions.Customer()));
+            var line = Assert.Single(item.Lines);
+
+            Assert.Null(item.UserId);
+            Assert.Null(item.AdminNote);
+            Assert.Equal(["public.event"], item.HistoryEntries.Select(entry => entry.EventType).ToArray());
+            Assert.Equal("shipped", Assert.Single(item.TrackingEvents).Status);
+            Assert.Null(item.PaymentSummary!.PaymentAttemptPublicId);
+            Assert.Null(item.PaymentSummary.ProviderKey);
+            Assert.Equal("Fallback Product", line.ProductName);
+            Assert.Equal("USD", line.CurrencyCode);
+            Assert.Equal(25m, line.PersistedLineTotal);
+        }
+
+        [Fact]
+        public async Task AssemblerGuestOptions_PreserveGuestProjectionShape()
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            var order = SeedOrderGraph(context, storeId);
+            var assembler = new OrderReadModelAssembler(context);
+
+            var item = Assert.Single(await assembler.BuildAsync([order], OrderReadModelOptions.Guest()));
+            var line = Assert.Single(item.Lines);
+
+            Assert.Null(item.UserId);
+            Assert.Null(item.AdminNote);
+            Assert.Equal(["public.event"], item.HistoryEntries.Select(entry => entry.EventType).ToArray());
+            Assert.Empty(item.TrackingEvents);
+            Assert.NotNull(item.PaymentSummary!.PaymentAttemptPublicId);
+            Assert.Equal(PaymentMethodKeys.Cod, item.PaymentSummary.ProviderKey);
+            Assert.Null(line.ProductName);
+            Assert.Equal("USD", line.CurrencyCode);
+            Assert.Equal(25m, line.PersistedLineTotal);
+        }
+
+        [Fact]
+        public async Task AssemblerInternalOptions_PreserveLegacyQueryProjectionShape()
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            var order = SeedOrderGraph(context, storeId);
+            var assembler = new OrderReadModelAssembler(context);
+
+            var item = Assert.Single(await assembler.BuildAsync([order], OrderReadModelOptions.Internal()));
+
+            Assert.Equal(AppUserId, item.UserId);
+            Assert.Equal("Manager-only note", item.AdminNote);
+            Assert.Equal(["public.event"], item.HistoryEntries.Select(entry => entry.EventType).ToArray());
+            Assert.Equal("shipped", Assert.Single(item.TrackingEvents).Status);
+            Assert.NotNull(item.PaymentSummary!.PaymentAttemptPublicId);
+            Assert.Equal(PaymentMethodKeys.Cod, item.PaymentSummary.ProviderKey);
+            Assert.Equal("Fallback Product", Assert.Single(item.Lines).ProductName);
+        }
+
         private static Order SeedOrderGraph(CommerceNodeDbContext context, Guid storeId)
         {
             var customer = new CommerceCustomer

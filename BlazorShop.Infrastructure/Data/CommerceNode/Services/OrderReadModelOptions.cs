@@ -5,6 +5,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         bool IncludeTrackingEvents,
         bool IncludePaymentAttemptPublicReference,
         bool IncludeAdminNote,
+        bool IncludeUserId,
         bool IncludeAllHistory,
         bool UseProductNameFallback,
         bool IncludeLineMoneyDetails)
@@ -16,6 +17,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 IncludeTrackingEvents: false,
                 IncludePaymentAttemptPublicReference: true,
                 IncludeAdminNote: true,
+                IncludeUserId: true,
                 IncludeAllHistory: true,
                 UseProductNameFallback: true,
                 IncludeLineMoneyDetails: false);
@@ -28,6 +30,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 IncludeTrackingEvents: true,
                 IncludePaymentAttemptPublicReference: false,
                 IncludeAdminNote: false,
+                IncludeUserId: false,
                 IncludeAllHistory: false,
                 UseProductNameFallback: true,
                 IncludeLineMoneyDetails: true);
@@ -40,6 +43,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 IncludeTrackingEvents: false,
                 IncludePaymentAttemptPublicReference: true,
                 IncludeAdminNote: false,
+                IncludeUserId: false,
                 IncludeAllHistory: false,
                 UseProductNameFallback: false,
                 IncludeLineMoneyDetails: true);
@@ -52,6 +56,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 IncludeTrackingEvents: true,
                 IncludePaymentAttemptPublicReference: true,
                 IncludeAdminNote: true,
+                IncludeUserId: true,
                 IncludeAllHistory: false,
                 UseProductNameFallback: true,
                 IncludeLineMoneyDetails: true);

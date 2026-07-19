@@ -1,6 +1,7 @@
 namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 {
     using BlazorShop.Application.DTOs.Payment;
+    using BlazorShop.Application.Services;
     using BlazorShop.Domain.Entities.Payment;
 
     using Microsoft.EntityFrameworkCore;
@@ -36,8 +37,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             OrderReadModelOptions options,
             CancellationToken cancellationToken)
         {
-            _ = await this.LoadChildDataAsync(orders, options, cancellationToken);
-            throw new NotSupportedException("Order read model projection is introduced in the next assembler phase.");
+            var childData = await this.LoadChildDataAsync(orders, options, cancellationToken);
+            return orders.Select(order => this.MapOrder(order, childData, options)).ToArray();
         }
 
         private async Task<OrderReadModelChildData> LoadChildDataAsync(
@@ -174,6 +175,133 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return trackingEvents
                 .GroupBy(item => item.OrderId)
                 .ToDictionary(group => group.Key, group => group.Select(item => item.Event).ToArray());
+        }
+
+        private GetOrder MapOrder(
+            Order order,
+            OrderReadModelChildData childData,
+            OrderReadModelOptions options)
+        {
+            return new GetOrder
+            {
+                Id = order.Id,
+                Reference = order.Reference,
+                Status = order.OrderStatus,
+                OrderStatus = order.OrderStatus,
+                PaymentStatus = order.PaymentStatus,
+                PaymentMethodKey = order.PaymentMethodKey,
+                PaymentAt = order.PaymentAt,
+                PaymentSummary = CreatePaymentSummary(
+                    order,
+                    childData.PaymentSummaries.TryGetValue(order.Id, out var paymentSummary) ? paymentSummary : null),
+                StoreSnapshot = OrderSnapshotProjection.ToStoreSnapshot(order),
+                CurrencyCode = order.CurrencyCode,
+                TotalAmount = order.TotalAmount,
+                TotalBreakdown = OrderSnapshotProjection.ToTotalBreakdown(
+                    order.SubtotalAmount,
+                    order.ShippingTotalAmount,
+                    order.TaxTotalAmount,
+                    order.DiscountTotalAmount,
+                    order.GrandTotalAmount),
+                BaseCurrencyCode = order.BaseCurrencyCode,
+                BaseTotalAmount = order.BaseTotalAmount,
+                BaseTotalBreakdown = OrderSnapshotProjection.ToTotalBreakdown(
+                    order.BaseSubtotalAmount,
+                    order.BaseShippingTotalAmount,
+                    order.BaseTaxTotalAmount,
+                    order.BaseDiscountTotalAmount,
+                    order.BaseGrandTotalAmount),
+                ExchangeRate = order.ExchangeRate,
+                ExchangeRateProviderKey = order.ExchangeRateProviderKey,
+                ExchangeRateSource = order.ExchangeRateSource,
+                ExchangeRateEffectiveAtUtc = order.ExchangeRateEffectiveAtUtc,
+                ExchangeRateExpiresAtUtc = order.ExchangeRateExpiresAtUtc,
+                CreatedOn = order.CreatedOn,
+                ShippingStatus = order.ShippingStatus,
+                ShippingCarrier = order.ShippingCarrier,
+                TrackingNumber = order.TrackingNumber,
+                TrackingUrl = order.TrackingUrl,
+                ShippedOn = order.ShippedOn,
+                DeliveredOn = order.DeliveredOn,
+                UserId = options.IncludeUserId ? order.UserId : null,
+                CustomerName = order.CustomerName,
+                CustomerEmail = order.CustomerEmail,
+                BillingAddress = OrderSnapshotProjection.ToAddress(order.BillingAddressSnapshotJson),
+                ShippingAddressSnapshot = OrderSnapshotProjection.ToShippingAddressSnapshot(order),
+                ShippingFullName = order.ShippingFullName,
+                ShippingEmail = order.ShippingEmail,
+                ShippingPhone = order.ShippingPhone,
+                ShippingAddress1 = order.ShippingAddress1,
+                ShippingAddress2 = order.ShippingAddress2,
+                ShippingCity = order.ShippingCity,
+                ShippingState = order.ShippingState,
+                ShippingPostalCode = order.ShippingPostalCode,
+                ShippingCountryCode = order.ShippingCountryCode,
+                ShippingMethod = OrderSnapshotProjection.ToShippingMethod(order),
+                CompletedAt = order.CompletedAt,
+                CancelledAt = order.CancelledAt,
+                AdminNote = options.IncludeAdminNote ? order.AdminNote : null,
+                TrackingEvents = childData.TrackingEvents.TryGetValue(order.Id, out var trackingEvents) ? trackingEvents : [],
+                HistoryEntries = childData.HistoryEntries.TryGetValue(order.Id, out var history) ? history : [],
+                Lines = order.Lines.Select(line => MapLine(line, childData.ProductNames, options)).ToArray(),
+            };
+        }
+
+        private static GetOrderLine MapLine(
+            OrderLine line,
+            IReadOnlyDictionary<Guid, string> productNames,
+            OrderReadModelOptions options)
+        {
+            return new GetOrderLine
+            {
+                ProductId = line.ProductId,
+                Quantity = line.Quantity,
+                UnitPrice = line.UnitPrice,
+                CurrencyCode = options.IncludeLineMoneyDetails ? line.CurrencyCode : null,
+                BaseUnitPrice = options.IncludeLineMoneyDetails ? line.BaseUnitPrice : null,
+                ConvertedUnitPrice = options.IncludeLineMoneyDetails ? line.ConvertedUnitPrice : null,
+                PersistedLineTotal = options.IncludeLineMoneyDetails ? line.LineTotal : null,
+                BaseLineTotal = options.IncludeLineMoneyDetails ? line.BaseLineTotal : null,
+                ProductName = ResolveProductName(line, productNames, options),
+                Sku = line.Sku,
+                Image = line.Image,
+                ProductVariantId = line.ProductVariantId,
+                VariantAttributes = ProductVariantAttributeNormalizer.Deserialize(line.VariantAttributesJson),
+            };
+        }
+
+        private static string? ResolveProductName(
+            OrderLine line,
+            IReadOnlyDictionary<Guid, string> productNames,
+            OrderReadModelOptions options)
+        {
+            if (line.ProductName is not null)
+            {
+                return line.ProductName;
+            }
+
+            if (!options.UseProductNameFallback)
+            {
+                return null;
+            }
+
+            return productNames.TryGetValue(line.ProductId, out var productName) ? productName : string.Empty;
+        }
+
+        private static GetOrderPaymentSummary CreatePaymentSummary(Order order, GetOrderPaymentSummary? paymentAttempt)
+        {
+            return new GetOrderPaymentSummary
+            {
+                PaymentAttemptPublicId = paymentAttempt?.PaymentAttemptPublicId,
+                ProviderKey = paymentAttempt?.ProviderKey,
+                PaymentStatus = order.PaymentStatus,
+                PaymentMethodKey = order.PaymentMethodKey,
+                AttemptState = paymentAttempt?.AttemptState,
+                Amount = paymentAttempt?.Amount,
+                CurrencyCode = paymentAttempt?.CurrencyCode,
+                PaymentAt = order.PaymentAt,
+                UpdatedAtUtc = paymentAttempt?.UpdatedAtUtc,
+            };
         }
 
         private sealed record OrderReadModelChildData(

@@ -22,6 +22,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.False(admin.IncludeTrackingEvents);
             Assert.True(admin.IncludePaymentAttemptPublicReference);
             Assert.True(admin.IncludeAdminNote);
+            Assert.True(admin.IncludeUserId);
             Assert.True(admin.IncludeAllHistory);
             Assert.True(admin.UseProductNameFallback);
             Assert.False(admin.IncludeLineMoneyDetails);
@@ -30,6 +31,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.True(customer.IncludeTrackingEvents);
             Assert.False(customer.IncludePaymentAttemptPublicReference);
             Assert.False(customer.IncludeAdminNote);
+            Assert.False(customer.IncludeUserId);
             Assert.False(customer.IncludeAllHistory);
             Assert.True(customer.UseProductNameFallback);
             Assert.True(customer.IncludeLineMoneyDetails);
@@ -38,6 +40,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.False(guest.IncludeTrackingEvents);
             Assert.True(guest.IncludePaymentAttemptPublicReference);
             Assert.False(guest.IncludeAdminNote);
+            Assert.False(guest.IncludeUserId);
             Assert.False(guest.IncludeAllHistory);
             Assert.False(guest.UseProductNameFallback);
             Assert.True(guest.IncludeLineMoneyDetails);
@@ -46,6 +49,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.True(internalQuery.IncludeTrackingEvents);
             Assert.True(internalQuery.IncludePaymentAttemptPublicReference);
             Assert.True(internalQuery.IncludeAdminNote);
+            Assert.True(internalQuery.IncludeUserId);
             Assert.False(internalQuery.IncludeAllHistory);
             Assert.True(internalQuery.UseProductNameFallback);
             Assert.True(internalQuery.IncludeLineMoneyDetails);
