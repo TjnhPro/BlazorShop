@@ -434,32 +434,45 @@ Goal: tach order placement/read model persistence mapping.
 
 Scope:
 
-- [ ] `OrderCommerceNodeConfiguration`.
-- [ ] `OrderLineConfiguration`.
-- [ ] `OrderHistoryEntryConfiguration`.
-- [ ] `ShipmentConfiguration`.
-- [ ] `ShipmentItemConfiguration`.
-- [ ] `ShipmentTrackingEventConfiguration`.
+- [x] `OrderCommerceNodeConfiguration`.
+- [x] `OrderLineConfiguration`.
+- [x] `OrderHistoryEntryConfiguration`.
+- [x] `ShipmentConfiguration`.
+- [x] `ShipmentItemConfiguration`.
+- [x] `ShipmentTrackingEventConfiguration`.
 
 Tasks:
 
-- [ ] Preserve existing legacy table casing where present:
-  - [ ] `Shipments`.
-  - [ ] `ShipmentItems`.
-  - [ ] `ShipmentTrackingEvents`.
-- [ ] Preserve order snapshot columns and precision.
-- [ ] Preserve guest access token/reference fields and indexes.
-- [ ] Preserve order history customer visibility defaults.
-- [ ] Run focused tests:
-  - [ ] `dotnet test BlazorShop.Tests --filter Order`.
-  - [ ] `dotnet test BlazorShop.Tests --filter Shipment`.
-  - [ ] Commerce Node migration consistency test.
+- [x] Preserve existing legacy table casing where present:
+  - [x] `Shipments`.
+  - [x] `ShipmentItems`.
+  - [x] `ShipmentTrackingEvents`.
+- [x] Preserve order snapshot columns and precision.
+- [x] Preserve guest access token/reference fields and indexes.
+- [x] Preserve order history customer visibility defaults.
+- [x] Run focused tests:
+  - [x] `dotnet test BlazorShop.Tests --filter Order`.
+  - [x] `dotnet test BlazorShop.Tests --filter Shipment`.
+  - [x] Commerce Node migration consistency test.
 
 Exit criteria:
 
-- [ ] Order placement/query tests pass.
-- [ ] Shipment tests pass.
-- [ ] No pending model changes.
+- [x] Order placement/query tests pass.
+- [x] Shipment tests pass.
+- [x] No pending model changes.
+
+Phase 6 evidence:
+
+- Added order configuration files under `BlazorShop.Infrastructure/Data/CommerceNode/Configurations/Orders`.
+- Added shipment configuration files under `BlazorShop.Infrastructure/Data/CommerceNode/Configurations/Shipping`.
+- Removed moved order, order line, order history, shipment, shipment item and shipment tracking event blocks from `CommerceNodeDbContext.OnModelCreating`; DbSet declarations remain.
+- Preserved legacy shipment table casing: `Shipments`, `ShipmentItems`, `ShipmentTrackingEvents`.
+- Preserved order status/payment status/payment method check constraints, reference and guest access token unique indexes, order snapshot columns, money precision, order line JSON columns and product variant relationship.
+- Left `OrderItem` legacy index in `CommerceNodeDbContext` because it is outside the Phase 6 active scope.
+- `CommerceNodeDbContext.cs` line count is now 942.
+- `modelBuilder.Entity` count dropped from 134 to 47.
+- Focused command passed 133/134 with 1 existing skip:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~Order|FullyQualifiedName~Shipment|FullyQualifiedName~CommerceNodeDbContextModelTests|FullyQualifiedName~CommerceNodeMigrationModelConsistencyTests" --no-restore --nologo --verbosity minimal`
 
 ## Phase 7 - Catalog, Media, Content, Imports
 
@@ -603,7 +616,7 @@ Safety boundary
 - [x] Phase 3 messages/email complete.
 - [x] Phase 4 store/currency/security/shipping complete.
 - [x] Phase 5 cart/checkout/customer/address complete.
-- [ ] Phase 6 orders/fulfillment complete.
+- [x] Phase 6 orders/fulfillment complete.
 - [ ] Phase 7 catalog/media/content/imports complete.
 - [ ] Phase 8 identity/tasks/deployment cleanup complete.
 - [ ] Phase 9 final verification complete.
