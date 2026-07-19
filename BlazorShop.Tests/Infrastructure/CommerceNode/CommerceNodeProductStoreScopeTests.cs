@@ -449,7 +449,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 this.storeId = storeId;
             }
 
-            public Task<CommerceStoreOperationResult<CommerceCurrentStore>> GetCurrentStoreAsync(CancellationToken cancellationToken = default)
+            public Task<ApplicationResult<CommerceCurrentStore>> GetCurrentStoreAsync(CancellationToken cancellationToken = default)
             {
                 var currentStore = new CommerceCurrentStore(
                     this.storeId,
@@ -478,12 +478,12 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                     null,
                     null);
 
-                return Task.FromResult(new CommerceStoreOperationResult<CommerceCurrentStore>(true, "Current store resolved.", currentStore));
+                return Task.FromResult(new ApplicationResult<CommerceCurrentStore>(true, "Current store resolved.", currentStore));
             }
 
-            public Task<CommerceStoreOperationResult<Guid>> GetCurrentStoreIdAsync(CancellationToken cancellationToken = default)
+            public Task<ApplicationResult<Guid>> GetCurrentStoreIdAsync(CancellationToken cancellationToken = default)
             {
-                return Task.FromResult(new CommerceStoreOperationResult<Guid>(true, "Current store resolved.", this.storeId));
+                return Task.FromResult(new ApplicationResult<Guid>(true, "Current store resolved.", this.storeId));
             }
         }
     }

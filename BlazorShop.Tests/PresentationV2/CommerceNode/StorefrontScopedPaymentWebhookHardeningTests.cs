@@ -291,7 +291,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             var storeContext = new Mock<ICommerceStoreContext>();
             storeContext
                 .Setup(context => context.GetCurrentStoreIdAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new CommerceStoreOperationResult<Guid>(true, "Store resolved.", storeId));
+                .ReturnsAsync(new ApplicationResult<Guid>(true, "Store resolved.", storeId));
 
             return new StorefrontScopedPaymentsController(
                 storeContext.Object,

@@ -276,7 +276,7 @@ namespace BlazorShop.Application.Services
             }
 
             var result = await _commerceStoreContext.GetCurrentStoreIdAsync();
-            return result.Success && result.Payload != Guid.Empty ? result.Payload : null;
+            return result.Success && result.Value != Guid.Empty ? result.Value : null;
         }
 
         private static string BuildCategoryTreeCacheKey(Guid storeId)

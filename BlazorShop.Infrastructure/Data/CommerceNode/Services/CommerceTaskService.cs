@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 {
     using System.Text.Json;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Tasks;
     using BlazorShop.Domain.Entities.CommerceNode;
 
@@ -19,14 +20,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.context = context;
         }
 
-        public async Task<CommerceTaskOperationResult<CommerceTaskSummary>> EnqueueAsync(
+        public async Task<ApplicationResult<CommerceTaskSummary>> EnqueueAsync(
             EnqueueCommerceTaskRequest request,
             CancellationToken cancellationToken = default)
         {
             var validationError = ValidateEnqueueRequest(request);
             if (validationError is not null)
             {
-                return Failure<CommerceTaskSummary>(CommerceTaskOperationFailure.Validation, validationError);
+                return Failure<CommerceTaskSummary>(ApplicationErrorKind.Validation, validationError);
             }
 
             if (!string.IsNullOrWhiteSpace(request.IdempotencyKey))
@@ -39,11 +40,15 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
                 if (existing is not null)
                 {
-                    return new CommerceTaskOperationResult<CommerceTaskSummary>(
-                        true,
-                        "Task already exists for this idempotency key.",
-                        MapSummary(existing),
-                        AlreadyExists: true);
+                    return ApplicationResult<CommerceTaskSummary>.Failed(
+                        ApplicationError.Conflict(
+                            "task.already_exists",
+                            "Task already exists for this idempotency key.",
+                            new Dictionary<string, string>(StringComparer.Ordinal)
+                            {
+                                ["taskPublicId"] = existing.PublicId.ToString("D"),
+                            }),
+                        MapSummary(existing));
                 }
             }
 
@@ -71,13 +76,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.context.CommerceTasks.Add(taskEntity);
             await this.context.SaveChangesAsync(cancellationToken);
 
-            return new CommerceTaskOperationResult<CommerceTaskSummary>(
-                true,
-                "Task queued.",
-                MapSummary(taskEntity));
+            return ApplicationResult<CommerceTaskSummary>.Succeeded(MapSummary(taskEntity), "Task queued.");
         }
 
-        public async Task<CommerceTaskOperationResult<CommerceTaskListResponse>> ListAsync(
+        public async Task<ApplicationResult<CommerceTaskListResponse>> ListAsync(
             CommerceTaskListQuery query,
             CancellationToken cancellationToken = default)
         {
@@ -117,13 +119,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 .Select(task => MapSummary(task))
                 .ToListAsync(cancellationToken);
 
-            return new CommerceTaskOperationResult<CommerceTaskListResponse>(
-                true,
-                "Tasks retrieved.",
-                new CommerceTaskListResponse(items, totalCount, skip, take));
+            return ApplicationResult<CommerceTaskListResponse>.Succeeded(
+                new CommerceTaskListResponse(items, totalCount, skip, take),
+                "Tasks retrieved.");
         }
 
-        public async Task<CommerceTaskOperationResult<CommerceTaskDetail>> GetByPublicIdAsync(
+        public async Task<ApplicationResult<CommerceTaskDetail>> GetByPublicIdAsync(
             Guid publicId,
             CancellationToken cancellationToken = default)
         {
@@ -132,16 +133,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             if (task is null)
             {
-                return Failure<CommerceTaskDetail>(CommerceTaskOperationFailure.NotFound, "Task was not found.");
+                return Failure<CommerceTaskDetail>(ApplicationErrorKind.NotFound, "Task was not found.");
             }
 
-            return new CommerceTaskOperationResult<CommerceTaskDetail>(
-                true,
-                "Task retrieved.",
-                MapDetail(task));
+            return ApplicationResult<CommerceTaskDetail>.Succeeded(MapDetail(task), "Task retrieved.");
         }
 
-        public async Task<CommerceTaskOperationResult<CommerceTaskDetail>> CancelAsync(
+        public async Task<ApplicationResult<CommerceTaskDetail>> CancelAsync(
             Guid publicId,
             CancelCommerceTaskRequest request,
             CancellationToken cancellationToken = default)
@@ -152,13 +150,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             if (task is null)
             {
-                return Failure<CommerceTaskDetail>(CommerceTaskOperationFailure.NotFound, "Task was not found.");
+                return Failure<CommerceTaskDetail>(ApplicationErrorKind.NotFound, "Task was not found.");
             }
 
             if (task.Status is CommerceTaskStatuses.Succeeded or CommerceTaskStatuses.Cancelled)
             {
                 return Failure<CommerceTaskDetail>(
-                    CommerceTaskOperationFailure.Conflict,
+                    ApplicationErrorKind.Conflict,
                     "Task cannot be cancelled because it is already terminal.");
             }
 
@@ -175,13 +173,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             await this.context.SaveChangesAsync(cancellationToken);
 
-            return new CommerceTaskOperationResult<CommerceTaskDetail>(
-                true,
-                task.Status == CommerceTaskStatuses.Cancelled ? "Task cancelled." : "Task cancellation requested.",
-                MapDetail(task));
+            return ApplicationResult<CommerceTaskDetail>.Succeeded(
+                MapDetail(task),
+                task.Status == CommerceTaskStatuses.Cancelled ? "Task cancelled." : "Task cancellation requested.");
         }
 
-        public async Task<CommerceTaskOperationResult<CommerceTaskDetail>> RetryAsync(
+        public async Task<ApplicationResult<CommerceTaskDetail>> RetryAsync(
             Guid publicId,
             RetryCommerceTaskRequest request,
             CancellationToken cancellationToken = default)
@@ -192,13 +189,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             if (task is null)
             {
-                return Failure<CommerceTaskDetail>(CommerceTaskOperationFailure.NotFound, "Task was not found.");
+                return Failure<CommerceTaskDetail>(ApplicationErrorKind.NotFound, "Task was not found.");
             }
 
             if (task.Status is not (CommerceTaskStatuses.Failed or CommerceTaskStatuses.Dead))
             {
                 return Failure<CommerceTaskDetail>(
-                    CommerceTaskOperationFailure.Conflict,
+                    ApplicationErrorKind.Conflict,
                     "Only failed or dead tasks can be retried.");
             }
 
@@ -216,10 +213,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             await this.context.SaveChangesAsync(cancellationToken);
 
-            return new CommerceTaskOperationResult<CommerceTaskDetail>(
-                true,
-                "Task queued for retry.",
-                MapDetail(task));
+            return ApplicationResult<CommerceTaskDetail>.Succeeded(MapDetail(task), "Task queued for retry.");
         }
 
         private IQueryable<CommerceTask> LoadDetailQuery()
@@ -274,11 +268,22 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
 
-        private static CommerceTaskOperationResult<TPayload> Failure<TPayload>(
-            CommerceTaskOperationFailure failure,
+        private static ApplicationResult<TPayload> Failure<TPayload>(
+            ApplicationErrorKind failure,
             string message)
         {
-            return new CommerceTaskOperationResult<TPayload>(false, message, Failure: failure);
+            return ApplicationResult<TPayload>.Failed(ToError(failure, message));
+        }
+
+        private static ApplicationError ToError(ApplicationErrorKind failure, string message)
+        {
+            return failure switch
+            {
+                ApplicationErrorKind.Validation => ApplicationError.Validation("task.validation", message),
+                ApplicationErrorKind.NotFound => ApplicationError.NotFound("task.not_found", message),
+                ApplicationErrorKind.Conflict => ApplicationError.Conflict("task.conflict", message),
+                _ => ApplicationError.Failure("task.failure", message),
+            };
         }
 
         private static CommerceTaskSummary MapSummary(CommerceTask task)

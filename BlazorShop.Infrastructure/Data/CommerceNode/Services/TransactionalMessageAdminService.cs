@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 {
     using System.Text.Json;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Messages;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
@@ -433,7 +434,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 cancellationToken);
         }
 
-        private async Task<CommerceStoreOperationResult<Guid>> ResolveStoreIdAsync(CancellationToken cancellationToken)
+        private async Task<ApplicationResult<Guid>> ResolveStoreIdAsync(CancellationToken cancellationToken)
         {
             return await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
         }

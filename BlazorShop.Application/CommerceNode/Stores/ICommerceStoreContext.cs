@@ -1,11 +1,13 @@
 namespace BlazorShop.Application.CommerceNode.Stores
 {
+    using BlazorShop.Application.Common.Results;
+
     public interface ICommerceStoreContext
     {
-        Task<CommerceStoreOperationResult<CommerceCurrentStore>> GetCurrentStoreAsync(
+        Task<ApplicationResult<CommerceCurrentStore>> GetCurrentStoreAsync(
             CancellationToken cancellationToken = default);
 
-        Task<CommerceStoreOperationResult<Guid>> GetCurrentStoreIdAsync(
+        Task<ApplicationResult<Guid>> GetCurrentStoreIdAsync(
             CancellationToken cancellationToken = default);
     }
 }

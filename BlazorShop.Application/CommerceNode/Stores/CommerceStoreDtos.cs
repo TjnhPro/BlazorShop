@@ -159,16 +159,4 @@ namespace BlazorShop.Application.CommerceNode.Stores
         string? MaintenanceMessage,
         string? HtmlBodyId);
 
-    public sealed record CommerceStoreOperationResult<TPayload>(
-        bool Success,
-        string Message,
-        TPayload? Payload = default,
-        CommerceStoreOperationFailure? Failure = null);
-
-    public enum CommerceStoreOperationFailure
-    {
-        Validation,
-        NotFound,
-        Conflict
-    }
 }

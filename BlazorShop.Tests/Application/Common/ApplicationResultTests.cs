@@ -30,6 +30,20 @@ namespace BlazorShop.Tests.Application.Common
             Assert.Equal("Store was not found.", result.Message);
         }
 
+        [Fact]
+        public void Failed_CanCarryTransitionalPayloadAndFailureAlias()
+        {
+            var error = ApplicationError.Conflict("task.already_exists", "Task already exists.");
+
+            var result = ApplicationResult<string>.Failed(error, "task-summary");
+
+            Assert.False(result.Success);
+            Assert.Equal("task-summary", result.Value);
+            Assert.Equal("task-summary", result.Payload);
+            Assert.Equal(ApplicationErrorKind.Conflict, result.Failure);
+            Assert.True(result.AlreadyExists);
+        }
+
         [Theory]
         [InlineData("")]
         [InlineData(" ")]

@@ -548,7 +548,7 @@ namespace BlazorShop.Application.Services.Payment
             }
 
             var result = await _storeContext.GetCurrentStoreIdAsync();
-            return result.Success ? result.Payload : null;
+            return result.Success ? result.Value : null;
         }
 
         private async Task<string?> ResolveCurrentCurrencyCodeAsync()
@@ -559,7 +559,7 @@ namespace BlazorShop.Application.Services.Payment
             }
 
             var result = await _storeContext.GetCurrentStoreAsync();
-            return result.Success ? result.Payload?.DefaultCurrencyCode : null;
+            return result.Success ? result.Value?.DefaultCurrencyCode : null;
         }
 
         private async Task<CartLineResolution> ResolveCartLinesAsync(IEnumerable<ProcessCart> carts)

@@ -3,6 +3,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using System.ComponentModel.DataAnnotations;
     using System.Security.Claims;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Addresses;
     using BlazorShop.Application.CommerceNode.Captcha;
     using ApplicationStorefrontCheckoutResult = BlazorShop.Application.DTOs.Payment.StorefrontCheckoutResult;
@@ -62,13 +63,13 @@ namespace BlazorShop.CommerceNode.API.Controllers
         public async Task<IActionResult> Current(CancellationToken cancellationToken)
         {
             var result = await this.storeContext.GetCurrentStoreAsync(cancellationToken);
-            if (!result.Success || result.Payload is null)
+            if (!result.Success || result.Value is null)
             {
                 return this.ToActionResult(result);
             }
 
             return this.Ok(CommerceNodeApiResponse<StorefrontCurrentStoreResponse>.Succeeded(
-                result.Payload.ToStorefrontContract(),
+                result.Value.ToStorefrontContract(),
                 "Current store resolved."));
         }
 
@@ -76,53 +77,53 @@ namespace BlazorShop.CommerceNode.API.Controllers
         public async Task<IActionResult> Maintenance(CancellationToken cancellationToken)
         {
             var result = await this.storeContext.GetCurrentStoreAsync(cancellationToken);
-            if (!result.Success || result.Payload is null)
+            if (!result.Success || result.Value is null)
             {
                 return this.ToActionResult(result);
             }
 
             return this.Ok(CommerceNodeApiResponse<StorefrontMaintenanceResponse>.Succeeded(
-                result.Payload.ToStorefrontMaintenanceContract(),
+                result.Value.ToStorefrontMaintenanceContract(),
                 "Store maintenance state retrieved."));
         }
 
-        private IActionResult ToActionResult<TPayload>(CommerceStoreOperationResult<TPayload> result)
+        private IActionResult ToActionResult<TPayload>(ApplicationResult<TPayload> result)
         {
             if (!result.Success)
             {
                 return this.StatusCode(
-                    ToStatusCode(result.Failure),
+                    ToStatusCode(result.Error?.Kind),
                     new CommerceNodeApiErrorResponse(
                         false,
-                        ToErrorCode(result.Failure),
+                        ToErrorCode(result.Error?.Kind),
                         NormalizeMessage(result.Message),
                         this.HttpContext.TraceIdentifier));
             }
 
-            return new ObjectResult(CommerceNodeApiResponse<TPayload>.Succeeded(result.Payload, NormalizeMessage(result.Message)))
+            return new ObjectResult(CommerceNodeApiResponse<TPayload>.Succeeded(result.Value, NormalizeMessage(result.Message)))
             {
                 StatusCode = StatusCodes.Status200OK,
             };
         }
 
-        private static int ToStatusCode(CommerceStoreOperationFailure? failure)
+        private static int ToStatusCode(ApplicationErrorKind? failure)
         {
             return failure switch
             {
-                CommerceStoreOperationFailure.Validation => StatusCodes.Status400BadRequest,
-                CommerceStoreOperationFailure.NotFound => StatusCodes.Status404NotFound,
-                CommerceStoreOperationFailure.Conflict => StatusCodes.Status409Conflict,
+                ApplicationErrorKind.Validation => StatusCodes.Status400BadRequest,
+                ApplicationErrorKind.NotFound => StatusCodes.Status404NotFound,
+                ApplicationErrorKind.Conflict => StatusCodes.Status409Conflict,
                 _ => StatusCodes.Status500InternalServerError,
             };
         }
 
-        private static string ToErrorCode(CommerceStoreOperationFailure? failure)
+        private static string ToErrorCode(ApplicationErrorKind? failure)
         {
             return failure switch
             {
-                CommerceStoreOperationFailure.Validation => "validation_error",
-                CommerceStoreOperationFailure.NotFound => "not_found",
-                CommerceStoreOperationFailure.Conflict => "conflict",
+                ApplicationErrorKind.Validation => "validation_error",
+                ApplicationErrorKind.NotFound => "not_found",
+                ApplicationErrorKind.Conflict => "conflict",
                 _ => "internal_error",
             };
         }

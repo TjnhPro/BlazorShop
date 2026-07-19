@@ -33,8 +33,6 @@ namespace BlazorShop.Tests.PresentationV2
             "ControlPlaneStoreDeploymentOperationResult",
             "ControlPlaneCredentialOperationResult",
             "ControlPlaneNodeOperationResult",
-            "CommerceTaskOperationResult",
-            "CommerceStoreOperationResult",
             "PaymentProviderOperationResult",
         ];
 
@@ -43,6 +41,8 @@ namespace BlazorShop.Tests.PresentationV2
             "ProductMedia" + "OperationResult",
             "CommerceMediaAsset" + "OperationResult",
             "CategoryMedia" + "OperationResult",
+            "CommerceStore" + "OperationResult",
+            "CommerceTask" + "OperationResult",
         ];
 
         [Fact]
@@ -74,20 +74,20 @@ namespace BlazorShop.Tests.PresentationV2
         }
 
         [Theory]
-        [InlineData(CommerceStoreOperationFailure.Validation, StatusCodes.Status400BadRequest)]
-        [InlineData(CommerceStoreOperationFailure.NotFound, StatusCodes.Status404NotFound)]
-        [InlineData(CommerceStoreOperationFailure.Conflict, StatusCodes.Status409Conflict)]
+        [InlineData(ApplicationErrorKind.Validation, StatusCodes.Status400BadRequest)]
+        [InlineData(ApplicationErrorKind.NotFound, StatusCodes.Status404NotFound)]
+        [InlineData(ApplicationErrorKind.Conflict, StatusCodes.Status409Conflict)]
         public void CommerceStoreMapper_PreservesStatusAndEnvelope(
-            CommerceStoreOperationFailure failure,
+            ApplicationErrorKind failure,
             int expectedStatusCode)
         {
-            var result = new CommerceStoreOperationResult<string>(
+            var result = new ApplicationResult<string>(
                 Success: false,
                 Message: "store failure",
                 Payload: "payload",
                 Failure: failure);
 
-            var action = InvokePrivateGenericMapper<CommerceStoreOperationResult<string>, CommerceStoresController>(
+            var action = InvokePrivateGenericMapper<ApplicationResult<string>, CommerceStoresController>(
                 "ToActionResult",
                 result);
 
@@ -129,13 +129,13 @@ namespace BlazorShop.Tests.PresentationV2
         [Fact]
         public void CommerceStoreMapper_WhenFailureIsUnknown_MapsToInternalServerError()
         {
-            var result = new CommerceStoreOperationResult<string>(
+            var result = new ApplicationResult<string>(
                 Success: false,
                 Message: "store failure",
                 Payload: "payload",
                 Failure: null);
 
-            var action = InvokePrivateGenericMapper<CommerceStoreOperationResult<string>, CommerceStoresController>(
+            var action = InvokePrivateGenericMapper<ApplicationResult<string>, CommerceStoresController>(
                 "ToActionResult",
                 result);
 

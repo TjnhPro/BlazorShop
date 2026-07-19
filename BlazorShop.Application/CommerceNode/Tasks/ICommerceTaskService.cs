@@ -1,25 +1,27 @@
 namespace BlazorShop.Application.CommerceNode.Tasks
 {
+    using BlazorShop.Application.Common.Results;
+
     public interface ICommerceTaskService
     {
-        Task<CommerceTaskOperationResult<CommerceTaskSummary>> EnqueueAsync(
+        Task<ApplicationResult<CommerceTaskSummary>> EnqueueAsync(
             EnqueueCommerceTaskRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceTaskOperationResult<CommerceTaskListResponse>> ListAsync(
+        Task<ApplicationResult<CommerceTaskListResponse>> ListAsync(
             CommerceTaskListQuery query,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceTaskOperationResult<CommerceTaskDetail>> GetByPublicIdAsync(
+        Task<ApplicationResult<CommerceTaskDetail>> GetByPublicIdAsync(
             Guid publicId,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceTaskOperationResult<CommerceTaskDetail>> CancelAsync(
+        Task<ApplicationResult<CommerceTaskDetail>> CancelAsync(
             Guid publicId,
             CancelCommerceTaskRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceTaskOperationResult<CommerceTaskDetail>> RetryAsync(
+        Task<ApplicationResult<CommerceTaskDetail>> RetryAsync(
             Guid publicId,
             RetryCommerceTaskRequest request,
             CancellationToken cancellationToken = default);

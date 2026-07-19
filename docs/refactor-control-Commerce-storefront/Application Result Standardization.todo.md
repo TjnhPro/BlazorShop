@@ -336,26 +336,46 @@ Goal: migrate Commerce Node store/task results, including special behavior.
 
 Tasks:
 
-- [ ] Migrate `CommerceStoreOperationResult<TPayload>`:
-  - [ ] Store validation -> `ApplicationErrorKind.Validation`.
-  - [ ] Store not found -> `ApplicationErrorKind.NotFound`.
-  - [ ] Store conflict -> `ApplicationErrorKind.Conflict`.
-  - [ ] Storefront store readiness/public configuration controllers keep existing error code behavior.
-- [ ] Migrate `CommerceTaskOperationResult<TPayload>`:
-  - [ ] Replace `AlreadyExists` with `ApplicationError.Code = "task.already_exists"` or metadata if the API currently exposes this state.
-  - [ ] Keep task response envelope unchanged.
-  - [ ] Preserve enqueue idempotency behavior.
-- [ ] Update controllers:
-  - [ ] `CommerceStoresController`.
-  - [ ] `CommerceTasksController`.
-  - [ ] Storefront scoped store/configuration controllers if they consume store result.
-- [ ] Update tests and fake current-store resolvers.
+- [x] Migrate `CommerceStoreOperationResult<TPayload>`:
+  - [x] Store validation -> `ApplicationErrorKind.Validation`.
+  - [x] Store not found -> `ApplicationErrorKind.NotFound`.
+  - [x] Store conflict -> `ApplicationErrorKind.Conflict`.
+  - [x] Storefront store readiness/public configuration controllers keep existing error code behavior.
+- [x] Migrate `CommerceTaskOperationResult<TPayload>`:
+  - [x] Replace `AlreadyExists` with `ApplicationError.Code = "task.already_exists"` or metadata if the API currently exposes this state.
+  - [x] Keep task response envelope unchanged.
+  - [x] Preserve enqueue idempotency behavior.
+- [x] Update controllers:
+  - [x] `CommerceStoresController`.
+  - [x] `CommerceTasksController`.
+  - [x] Storefront scoped store/configuration controllers if they consume store result.
+- [x] Update tests and fake current-store resolvers.
 
 Exit criteria:
 
-- [ ] Store lifecycle/store readiness behavior unchanged.
-- [ ] Task enqueue/cancel/retry behavior unchanged.
-- [ ] `AlreadyExists` semantics are still test-covered.
+- [x] Store lifecycle/store readiness behavior unchanged.
+- [x] Task enqueue/cancel/retry behavior unchanged.
+- [x] `AlreadyExists` semantics are still test-covered.
+
+Phase 4 evidence:
+
+- Migrated `ICommerceStoreService`, `ICommerceStoreDomainResolver`, `ICommerceStoreContext`, and `ICommerceTaskService` to `ApplicationResult<T>`.
+- Removed `CommerceStoreOperationResult<TPayload>`, `CommerceStoreOperationFailure`, `CommerceTaskOperationResult<TPayload>`, and `CommerceTaskOperationFailure` definitions.
+- Store/domain/context services now emit `ApplicationErrorKind` with stable store error codes:
+  - `store.validation`, `store.not_found`, `store.conflict`, `store.failure`.
+- Task service now emits `task.validation`, `task.not_found`, `task.conflict`, `task.failure`, and `task.already_exists`.
+- `CommerceTasksController` maps `task.already_exists` back to the previous idempotent `200 OK` success envelope when a payload is available.
+- Added transitional aliases on `ApplicationResult<T>` for existing caller compatibility while concrete result types are removed:
+  - `Payload => Value`.
+  - `Failure => Error?.Kind`.
+  - `AlreadyExists => Error.Code == "task.already_exists"`.
+- Updated store/task fakes in tests through `ApplicationResult<T>` and added `BlazorShop.Tests/GlobalUsings.cs` for test-only result references.
+- Focused command passed 57/57 tests:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~CommerceStore|FullyQualifiedName~CommerceTask|FullyQualifiedName~StorefrontScopedStore|FullyQualifiedName~StorefrontScopedConfiguration|FullyQualifiedName~ApplicationResultStandardizationPhase0Tests|FullyQualifiedName~ApplicationResultTests" --no-restore --nologo --verbosity minimal`
+- Commerce Node API build passed 0 warnings/0 errors:
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore --nologo --verbosity minimal`
+- Exact scan passed with no hits:
+  - `rg -n "CommerceStoreOperationResult|CommerceTaskOperationResult|CommerceStoreOperationFailure|CommerceTaskOperationFailure" BlazorShop.Application BlazorShop.Infrastructure BlazorShop.PresentationV2 BlazorShop.Tests`
 
 ## Phase 5 - Migrate Control Plane Operation Results
 
@@ -507,7 +527,7 @@ Existing clients
 - [ ] Phase 1 complete.
 - [ ] Phase 2 complete.
 - [x] Phase 3 complete and old media result types removed.
-- [ ] Phase 4 complete or explicitly deferred.
+- [x] Phase 4 complete.
 - [ ] Phase 5 complete or explicitly deferred.
 - [ ] Phase 6 adapter decision documented.
 - [ ] Phase 7 client result decision documented.

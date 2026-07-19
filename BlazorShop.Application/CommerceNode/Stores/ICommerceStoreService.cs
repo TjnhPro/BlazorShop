@@ -1,49 +1,51 @@
 namespace BlazorShop.Application.CommerceNode.Stores
 {
+    using BlazorShop.Application.Common.Results;
+
     public interface ICommerceStoreService
     {
-        Task<CommerceStoreOperationResult<CommerceStoreListResponse>> ListAsync(
+        Task<ApplicationResult<CommerceStoreListResponse>> ListAsync(
             CommerceStoreListQuery query,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceStoreOperationResult<CommerceStoreDetail>> GetByPublicIdAsync(
+        Task<ApplicationResult<CommerceStoreDetail>> GetByPublicIdAsync(
             Guid publicId,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceStoreOperationResult<CommerceStoreDetail>> CreateAsync(
+        Task<ApplicationResult<CommerceStoreDetail>> CreateAsync(
             CreateCommerceStoreRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceStoreOperationResult<CommerceStoreDetail>> UpdateAsync(
+        Task<ApplicationResult<CommerceStoreDetail>> UpdateAsync(
             Guid publicId,
             UpdateCommerceStoreRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceStoreOperationResult<CommerceStoreDetail>> SetStatusAsync(
+        Task<ApplicationResult<CommerceStoreDetail>> SetStatusAsync(
             Guid publicId,
             string status,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceStoreOperationResult<CommerceStoreDetail>> ArchiveAsync(
+        Task<ApplicationResult<CommerceStoreDetail>> ArchiveAsync(
             Guid publicId,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceStoreOperationResult<CommerceStoreDetail>> AddDomainAsync(
+        Task<ApplicationResult<CommerceStoreDetail>> AddDomainAsync(
             Guid publicId,
             CreateCommerceStoreDomainRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceStoreOperationResult<CommerceStoreDetail>> VerifyDomainAsync(
+        Task<ApplicationResult<CommerceStoreDetail>> VerifyDomainAsync(
             Guid publicId,
             Guid domainId,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceStoreOperationResult<CommerceStoreDetail>> DisableDomainAsync(
+        Task<ApplicationResult<CommerceStoreDetail>> DisableDomainAsync(
             Guid publicId,
             Guid domainId,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceStoreOperationResult<CommerceStoreDetail>> SetPrimaryDomainAsync(
+        Task<ApplicationResult<CommerceStoreDetail>> SetPrimaryDomainAsync(
             Guid publicId,
             Guid domainId,
             CancellationToken cancellationToken = default);

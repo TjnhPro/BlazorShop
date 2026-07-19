@@ -1,4 +1,4 @@
-﻿namespace BlazorShop.Tests.Application.Services
+namespace BlazorShop.Tests.Application.Services
 {
     using AutoMapper;
 
@@ -726,14 +726,14 @@
                 this.storeId = storeId;
             }
 
-            public Task<CommerceStoreOperationResult<CommerceCurrentStore>> GetCurrentStoreAsync(CancellationToken cancellationToken = default)
+            public Task<ApplicationResult<CommerceCurrentStore>> GetCurrentStoreAsync(CancellationToken cancellationToken = default)
             {
                 throw new NotSupportedException();
             }
 
-            public Task<CommerceStoreOperationResult<Guid>> GetCurrentStoreIdAsync(CancellationToken cancellationToken = default)
+            public Task<ApplicationResult<Guid>> GetCurrentStoreIdAsync(CancellationToken cancellationToken = default)
             {
-                return Task.FromResult(new CommerceStoreOperationResult<Guid>(true, "Current store resolved.", this.storeId));
+                return Task.FromResult(new ApplicationResult<Guid>(true, "Current store resolved.", this.storeId));
             }
         }
     }

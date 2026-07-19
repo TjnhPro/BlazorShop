@@ -229,41 +229,41 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 this.storeId = storeId;
             }
 
-            public Task<CommerceStoreOperationResult<CommerceCurrentStore>> GetCurrentStoreAsync(CancellationToken cancellationToken = default)
+            public Task<ApplicationResult<CommerceCurrentStore>> GetCurrentStoreAsync(CancellationToken cancellationToken = default)
             {
                 throw new NotSupportedException();
             }
 
-            public Task<CommerceStoreOperationResult<Guid>> GetCurrentStoreIdAsync(CancellationToken cancellationToken = default)
+            public Task<ApplicationResult<Guid>> GetCurrentStoreIdAsync(CancellationToken cancellationToken = default)
             {
-                return Task.FromResult(new CommerceStoreOperationResult<Guid>(true, "Store resolved.", this.storeId));
+                return Task.FromResult(new ApplicationResult<Guid>(true, "Store resolved.", this.storeId));
             }
         }
 
         private sealed class ThrowingCommerceTaskService : ICommerceTaskService
         {
-            public Task<CommerceTaskOperationResult<CommerceTaskSummary>> EnqueueAsync(
+            public Task<ApplicationResult<CommerceTaskSummary>> EnqueueAsync(
                 EnqueueCommerceTaskRequest request,
                 CancellationToken cancellationToken = default)
             {
                 throw new NotSupportedException();
             }
 
-            public Task<CommerceTaskOperationResult<CommerceTaskListResponse>> ListAsync(
+            public Task<ApplicationResult<CommerceTaskListResponse>> ListAsync(
                 CommerceTaskListQuery query,
                 CancellationToken cancellationToken = default)
             {
                 throw new NotSupportedException();
             }
 
-            public Task<CommerceTaskOperationResult<CommerceTaskDetail>> GetByPublicIdAsync(
+            public Task<ApplicationResult<CommerceTaskDetail>> GetByPublicIdAsync(
                 Guid publicId,
                 CancellationToken cancellationToken = default)
             {
                 throw new NotSupportedException();
             }
 
-            public Task<CommerceTaskOperationResult<CommerceTaskDetail>> CancelAsync(
+            public Task<ApplicationResult<CommerceTaskDetail>> CancelAsync(
                 Guid publicId,
                 CancelCommerceTaskRequest request,
                 CancellationToken cancellationToken = default)
@@ -271,7 +271,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 throw new NotSupportedException();
             }
 
-            public Task<CommerceTaskOperationResult<CommerceTaskDetail>> RetryAsync(
+            public Task<ApplicationResult<CommerceTaskDetail>> RetryAsync(
                 Guid publicId,
                 RetryCommerceTaskRequest request,
                 CancellationToken cancellationToken = default)

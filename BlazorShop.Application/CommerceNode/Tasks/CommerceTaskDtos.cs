@@ -87,17 +87,4 @@ namespace BlazorShop.Application.CommerceNode.Tasks
         DateTimeOffset? StartedAt,
         DateTimeOffset? CompletedAt);
 
-    public sealed record CommerceTaskOperationResult<TPayload>(
-        bool Success,
-        string? Message = null,
-        TPayload? Payload = default,
-        CommerceTaskOperationFailure? Failure = null,
-        bool AlreadyExists = false);
-
-    public enum CommerceTaskOperationFailure
-    {
-        Validation,
-        NotFound,
-        Conflict
-    }
 }

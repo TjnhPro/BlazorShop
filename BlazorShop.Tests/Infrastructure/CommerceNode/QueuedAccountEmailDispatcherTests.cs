@@ -93,10 +93,10 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var storeContext = new Mock<ICommerceStoreContext>();
             storeContext
                 .Setup(context => context.GetCurrentStoreAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new CommerceStoreOperationResult<CommerceCurrentStore>(
+                .ReturnsAsync(new ApplicationResult<CommerceCurrentStore>(
                     false,
                     "Store request context is required.",
-                    Failure: CommerceStoreOperationFailure.Validation));
+                    Failure: ApplicationErrorKind.Validation));
 
             var queueService = new Mock<IMessageQueueService>();
             var dispatcher = new QueuedAccountEmailDispatcher(
@@ -154,13 +154,13 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var storeContext = new Mock<ICommerceStoreContext>();
             storeContext
                 .Setup(context => context.GetCurrentStoreAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new CommerceStoreOperationResult<CommerceCurrentStore>(
+                .ReturnsAsync(new ApplicationResult<CommerceCurrentStore>(
                     true,
                     "Current store resolved.",
                     store));
             storeContext
                 .Setup(context => context.GetCurrentStoreIdAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new CommerceStoreOperationResult<Guid>(
+                .ReturnsAsync(new ApplicationResult<Guid>(
                     true,
                     "Current store resolved.",
                     storeId));

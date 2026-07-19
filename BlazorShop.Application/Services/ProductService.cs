@@ -1,4 +1,4 @@
-﻿namespace BlazorShop.Application.Services
+namespace BlazorShop.Application.Services
 {
     using System.Text.Json;
 
@@ -408,7 +408,7 @@
             }
 
             var storeResult = await _storeContext.GetCurrentStoreIdAsync();
-            return storeResult.Success && product.StoreId == storeResult.Payload;
+            return storeResult.Success && product.StoreId == storeResult.Value;
         }
 
         private static string NormalizeProductType(string? productType)
@@ -448,7 +448,7 @@
             }
 
             var result = await _storeContext.GetCurrentStoreIdAsync();
-            return result.Success ? result.Payload : null;
+            return result.Success ? result.Value : null;
         }
 
         private async Task InvalidateCatalogAsync(Guid? storeId)

@@ -105,7 +105,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 this.companyEmail = companyEmail;
             }
 
-            public Task<CommerceStoreOperationResult<CommerceCurrentStore>> GetCurrentStoreAsync(
+            public Task<ApplicationResult<CommerceCurrentStore>> GetCurrentStoreAsync(
                 CancellationToken cancellationToken = default)
             {
                 var store = new CommerceCurrentStore(
@@ -135,16 +135,16 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                     null,
                     null);
 
-                return Task.FromResult(new CommerceStoreOperationResult<CommerceCurrentStore>(
+                return Task.FromResult(new ApplicationResult<CommerceCurrentStore>(
                     true,
                     "Store resolved.",
                     store));
             }
 
-            public Task<CommerceStoreOperationResult<Guid>> GetCurrentStoreIdAsync(
+            public Task<ApplicationResult<Guid>> GetCurrentStoreIdAsync(
                 CancellationToken cancellationToken = default)
             {
-                return Task.FromResult(new CommerceStoreOperationResult<Guid>(
+                return Task.FromResult(new ApplicationResult<Guid>(
                     true,
                     "Store resolved.",
                     this.storeId));

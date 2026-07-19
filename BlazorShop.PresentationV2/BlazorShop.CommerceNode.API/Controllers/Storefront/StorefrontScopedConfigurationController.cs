@@ -3,6 +3,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
     using System.ComponentModel.DataAnnotations;
     using System.Security.Claims;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Addresses;
     using BlazorShop.Application.CommerceNode.Captcha;
     using ApplicationStorefrontCheckoutResult = BlazorShop.Application.DTOs.Payment.StorefrontCheckoutResult;
@@ -81,13 +82,13 @@ namespace BlazorShop.CommerceNode.API.Controllers
         public async Task<IActionResult> Get(CancellationToken cancellationToken)
         {
             var storeResult = await this.storeContext.GetCurrentStoreAsync(cancellationToken);
-            if (!storeResult.Success || storeResult.Payload is null)
+            if (!storeResult.Success || storeResult.Value is null)
             {
                 return this.ToActionResult(storeResult);
             }
 
             if (this.publicConfigurationCache.TryGet<StorefrontPublicConfigurationResponse>(
-                storeResult.Payload.StoreKey,
+                storeResult.Value.StoreKey,
                 out var cachedConfiguration) && cachedConfiguration is not null)
             {
                 return this.Success(cachedConfiguration, "Storefront configuration loaded.");
@@ -103,12 +104,12 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 .Select(method => method.ToStorefrontContract())
                 .ToArray();
             var supportedCurrencyCodes = await this.currencyService.ResolveSupportedCurrencyCodesAsync(
-                storeIdResult.Payload,
+                storeIdResult.Value,
                 cancellationToken);
             var seoDefaults = await this.seoSettingsService.ResolveAsync(cancellationToken);
-            var featureStates = await this.featureStateService.ResolveAsync(storeIdResult.Payload, cancellationToken);
+            var featureStates = await this.featureStateService.ResolveAsync(storeIdResult.Value, cancellationToken);
             var securityPrivacySettings = await this.securityPrivacySettingsService.ResolveCurrentAsync(cancellationToken);
-            var configuration = storeResult.Payload.ToPublicConfigurationContract(
+            var configuration = storeResult.Value.ToPublicConfigurationContract(
                 paymentMethods,
                 seoDefaults,
                 featureStates,
@@ -116,22 +117,22 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 securityPrivacySettings.Captcha,
                 supportedCurrencyCodes);
 
-            this.publicConfigurationCache.Set(storeResult.Payload.StoreKey, configuration);
+            this.publicConfigurationCache.Set(storeResult.Value.StoreKey, configuration);
 
             return this.Success(
                 configuration,
                 "Storefront configuration loaded.");
         }
 
-        private IActionResult ToActionResult<TPayload>(CommerceStoreOperationResult<TPayload> result)
+        private IActionResult ToActionResult<TPayload>(ApplicationResult<TPayload> result)
         {
             if (!result.Success)
             {
                 return this.StatusCode(
-                    ToStatusCode(result.Failure),
+                    ToStatusCode(result.Error?.Kind),
                     new CommerceNodeApiErrorResponse(
                         false,
-                        ToErrorCode(result.Failure),
+                        ToErrorCode(result.Error?.Kind),
                         NormalizeMessage(result.Message),
                         this.HttpContext.TraceIdentifier));
             }
@@ -145,24 +146,24 @@ namespace BlazorShop.CommerceNode.API.Controllers
                     this.HttpContext.TraceIdentifier));
         }
 
-        private static int ToStatusCode(CommerceStoreOperationFailure? failure)
+        private static int ToStatusCode(ApplicationErrorKind? failure)
         {
             return failure switch
             {
-                CommerceStoreOperationFailure.Validation => StatusCodes.Status400BadRequest,
-                CommerceStoreOperationFailure.NotFound => StatusCodes.Status404NotFound,
-                CommerceStoreOperationFailure.Conflict => StatusCodes.Status409Conflict,
+                ApplicationErrorKind.Validation => StatusCodes.Status400BadRequest,
+                ApplicationErrorKind.NotFound => StatusCodes.Status404NotFound,
+                ApplicationErrorKind.Conflict => StatusCodes.Status409Conflict,
                 _ => StatusCodes.Status500InternalServerError,
             };
         }
 
-        private static string ToErrorCode(CommerceStoreOperationFailure? failure)
+        private static string ToErrorCode(ApplicationErrorKind? failure)
         {
             return failure switch
             {
-                CommerceStoreOperationFailure.Validation => "store.validation_error",
-                CommerceStoreOperationFailure.NotFound => "store.not_found",
-                CommerceStoreOperationFailure.Conflict => "store.conflict",
+                ApplicationErrorKind.Validation => "store.validation_error",
+                ApplicationErrorKind.NotFound => "store.not_found",
+                ApplicationErrorKind.Conflict => "store.conflict",
                 _ => "store.unavailable",
             };
         }

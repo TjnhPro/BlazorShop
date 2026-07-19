@@ -1,4 +1,4 @@
-﻿namespace BlazorShop.Application.Services
+namespace BlazorShop.Application.Services
 {
     using System.Text.Json;
 
@@ -212,7 +212,7 @@
             }
 
             var result = await _storeContext.GetCurrentStoreIdAsync();
-            return result.Success ? result.Payload : null;
+            return result.Success ? result.Value : null;
         }
 
         private async Task InvalidateCatalogAsync(Guid? storeId)
@@ -238,7 +238,7 @@
             }
 
             var storeResult = await _storeContext.GetCurrentStoreIdAsync();
-            return storeResult.Success && category.StoreId == storeResult.Payload;
+            return storeResult.Success && category.StoreId == storeResult.Value;
         }
 
         private async Task<ServiceResponse> ValidateParentAsync(Guid categoryId, Guid? parentCategoryId, Guid? storeId)

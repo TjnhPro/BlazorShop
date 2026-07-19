@@ -57,11 +57,11 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var storeResult = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
             if (!storeResult.Success)
             {
-                return Failure(storeResult.Message);
+                return Failure(storeResult.Message ?? "Store could not be resolved.");
             }
 
-            var settings = await this.LoadAsync(storeResult.Payload, cancellationToken);
-            return Success(this.Map(settings, storeResult.Payload), "Security and privacy settings loaded.");
+            var settings = await this.LoadAsync(storeResult.Value, cancellationToken);
+            return Success(this.Map(settings, storeResult.Value), "Security and privacy settings loaded.");
         }
 
         public async Task<ServiceResponse<StoreSecurityPrivacySettingsDto>> UpdateAsync(
@@ -79,14 +79,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var storeResult = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
             if (!storeResult.Success)
             {
-                return Failure(storeResult.Message);
+                return Failure(storeResult.Message ?? "Store could not be resolved.");
             }
 
             var now = DateTimeOffset.UtcNow;
-            var settings = await this.LoadAsync(storeResult.Payload, cancellationToken);
+            var settings = await this.LoadAsync(storeResult.Value, cancellationToken);
             if (settings is null)
             {
-                settings = CreateDefaultEntity(storeResult.Payload, now);
+                settings = CreateDefaultEntity(storeResult.Value, now);
                 this.context.StoreSecurityPrivacySettings.Add(settings);
             }
 

@@ -1,5 +1,6 @@
 namespace BlazorShop.CommerceNode.API.Controllers
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Tasks;
     using BlazorShop.CommerceNode.API.Responses;
 
@@ -79,27 +80,23 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return ToActionResult(result);
         }
 
-        private static IActionResult ToActionResult<TPayload>(CommerceTaskOperationResult<TPayload> result)
+        private static IActionResult ToActionResult<TPayload>(ApplicationResult<TPayload> result)
         {
-            var response = result.Success
-                ? CommerceNodeApiResponse<TPayload>.Succeeded(result.Payload, NormalizeMessage(result.Message))
-                : CommerceNodeApiResponse<TPayload>.Failed(NormalizeMessage(result.Message), result.Payload);
-
-            return new ObjectResult(response)
+            if (IsAlreadyExists(result) && result.Value is not null)
             {
-                StatusCode = result.Success ? StatusCodes.Status200OK : ToStatusCode(result.Failure),
-            };
+                return new ObjectResult(CommerceNodeApiResponse<TPayload>.Succeeded(result.Value, NormalizeMessage(result.Message)))
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                };
+            }
+
+            return result.ToCommerceNodeActionResult();
         }
 
-        private static int ToStatusCode(CommerceTaskOperationFailure? failure)
+        private static bool IsAlreadyExists<TPayload>(ApplicationResult<TPayload> result)
         {
-            return failure switch
-            {
-                CommerceTaskOperationFailure.Validation => StatusCodes.Status400BadRequest,
-                CommerceTaskOperationFailure.NotFound => StatusCodes.Status404NotFound,
-                CommerceTaskOperationFailure.Conflict => StatusCodes.Status409Conflict,
-                _ => StatusCodes.Status500InternalServerError,
-            };
+            return !result.Success
+                && string.Equals(result.Error?.Code, "task.already_exists", StringComparison.Ordinal);
         }
 
         private static string NormalizeMessage(string? message)

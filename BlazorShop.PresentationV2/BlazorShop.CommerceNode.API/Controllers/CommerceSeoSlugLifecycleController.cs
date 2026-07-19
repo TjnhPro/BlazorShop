@@ -1,5 +1,6 @@
 namespace BlazorShop.CommerceNode.API.Controllers
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs.Seo;
     using BlazorShop.Application.Services.Contracts;
@@ -42,7 +43,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             var result = await this.policyService.GenerateSlugAsync(
                 request.EntityType ?? string.Empty,
                 request.SourceName,
-                storeResult.Payload,
+                storeResult.Value,
                 request.LanguageCode,
                 request.ExcludedEntityId,
                 cancellationToken);
@@ -67,7 +68,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
             var result = await this.policyService.ValidateSlugAsync(
                 request.EntityType ?? string.Empty,
                 request.Slug,
-                storeResult.Payload,
+                storeResult.Value,
                 request.LanguageCode,
                 request.ExcludedEntityId,
                 cancellationToken);
@@ -92,25 +93,25 @@ namespace BlazorShop.CommerceNode.API.Controllers
             var history = await this.historyService.ListHistoryAsync(
                 query.EntityType ?? string.Empty,
                 query.EntityId,
-                storeResult.Payload,
+                storeResult.Value,
                 query.LanguageCode,
                 cancellationToken);
 
             return this.Success(history, "SEO slug history retrieved.");
         }
 
-        private IActionResult StoreScopeFailure<TPayload>(CommerceStoreOperationResult<Guid> storeResult)
+        private IActionResult StoreScopeFailure<TPayload>(ApplicationResult<Guid> storeResult)
         {
-            var statusCode = storeResult.Failure switch
+            var statusCode = storeResult.Error?.Kind switch
             {
-                CommerceStoreOperationFailure.NotFound => StatusCodes.Status404NotFound,
-                CommerceStoreOperationFailure.Conflict => StatusCodes.Status409Conflict,
+                ApplicationErrorKind.NotFound => StatusCodes.Status404NotFound,
+                ApplicationErrorKind.Conflict => StatusCodes.Status409Conflict,
                 _ => StatusCodes.Status400BadRequest,
             };
 
             return this.StatusCode(
                 statusCode,
-                CommerceNodeApiResponse<TPayload>.Failed(storeResult.Message));
+                CommerceNodeApiResponse<TPayload>.Failed(storeResult.Message ?? "Store could not be resolved."));
         }
     }
 }

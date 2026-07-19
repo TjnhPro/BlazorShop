@@ -4,6 +4,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using System.Text.Json;
     using System.Text.RegularExpressions;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Settings;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Domain.Entities.CommerceNode;
@@ -36,7 +37,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.publicConfigurationCache = publicConfigurationCache;
         }
 
-        public async Task<CommerceStoreOperationResult<CommerceStoreListResponse>> ListAsync(
+        public async Task<ApplicationResult<CommerceStoreListResponse>> ListAsync(
             CommerceStoreListQuery query,
             CancellationToken cancellationToken = default)
         {
@@ -68,24 +69,24 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 new CommerceStoreListResponse(items, totalCount, skip, take));
         }
 
-        public async Task<CommerceStoreOperationResult<CommerceStoreDetail>> GetByPublicIdAsync(
+        public async Task<ApplicationResult<CommerceStoreDetail>> GetByPublicIdAsync(
             Guid publicId,
             CancellationToken cancellationToken = default)
         {
             var store = await this.LoadStoreAsync(publicId, asTracking: false, cancellationToken);
             return store is null
-                ? Failed<CommerceStoreDetail>(CommerceStoreOperationFailure.NotFound, "Store was not found.")
+                ? Failed<CommerceStoreDetail>(ApplicationErrorKind.NotFound, "Store was not found.")
                 : Succeeded("Store retrieved.", MapDetail(store));
         }
 
-        public async Task<CommerceStoreOperationResult<CommerceStoreDetail>> CreateAsync(
+        public async Task<ApplicationResult<CommerceStoreDetail>> CreateAsync(
             CreateCommerceStoreRequest request,
             CancellationToken cancellationToken = default)
         {
             var validationError = ValidateCreateRequest(request);
             if (validationError is not null)
             {
-                return Failed<CommerceStoreDetail>(CommerceStoreOperationFailure.Validation, validationError);
+                return Failed<CommerceStoreDetail>(ApplicationErrorKind.Validation, validationError);
             }
 
             var storeKey = request.StoreKey.Trim().ToLowerInvariant();
@@ -94,7 +95,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 cancellationToken);
             if (exists)
             {
-                return Failed<CommerceStoreDetail>(CommerceStoreOperationFailure.Conflict, "Store key already exists.");
+                return Failed<CommerceStoreDetail>(ApplicationErrorKind.Conflict, "Store key already exists.");
             }
 
             var now = DateTimeOffset.UtcNow;
@@ -113,7 +114,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 var domainResult = await this.CreateDomainAsync(store, request.PrimaryDomain, isPrimary: true, now, cancellationToken);
                 if (!domainResult.Success)
                 {
-                    return Failed<CommerceStoreDetail>(domainResult.Failure!.Value, domainResult.Message);
+                    return Failed<CommerceStoreDetail>(
+                        domainResult.Error!.Kind,
+                        domainResult.Message ?? "Domain could not be added.");
                 }
             }
 
@@ -124,7 +127,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Succeeded("Store created.", MapDetail(store));
         }
 
-        public async Task<CommerceStoreOperationResult<CommerceStoreDetail>> UpdateAsync(
+        public async Task<ApplicationResult<CommerceStoreDetail>> UpdateAsync(
             Guid publicId,
             UpdateCommerceStoreRequest request,
             CancellationToken cancellationToken = default)
@@ -132,13 +135,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var validationError = ValidateUpdateRequest(request);
             if (validationError is not null)
             {
-                return Failed<CommerceStoreDetail>(CommerceStoreOperationFailure.Validation, validationError);
+                return Failed<CommerceStoreDetail>(ApplicationErrorKind.Validation, validationError);
             }
 
             var store = await this.LoadStoreAsync(publicId, asTracking: true, cancellationToken);
             if (store is null)
             {
-                return Failed<CommerceStoreDetail>(CommerceStoreOperationFailure.NotFound, "Store was not found.");
+                return Failed<CommerceStoreDetail>(ApplicationErrorKind.NotFound, "Store was not found.");
             }
 
             if (!string.IsNullOrWhiteSpace(request.Status) &&
@@ -147,7 +150,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     CommerceStoreStatuses.Disabled or
                     CommerceStoreStatuses.Provisioning))
             {
-                return Failed<CommerceStoreDetail>(CommerceStoreOperationFailure.Validation, "Store status is invalid.");
+                return Failed<CommerceStoreDetail>(ApplicationErrorKind.Validation, "Store status is invalid.");
             }
 
             ApplyStoreValues(store, request, DateTimeOffset.UtcNow);
@@ -161,14 +164,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Succeeded("Store updated.", MapDetail(store));
         }
 
-        public async Task<CommerceStoreOperationResult<CommerceStoreDetail>> ArchiveAsync(
+        public async Task<ApplicationResult<CommerceStoreDetail>> ArchiveAsync(
             Guid publicId,
             CancellationToken cancellationToken = default)
         {
             var store = await this.LoadStoreAsync(publicId, asTracking: true, cancellationToken);
             if (store is null)
             {
-                return Failed<CommerceStoreDetail>(CommerceStoreOperationFailure.NotFound, "Store was not found.");
+                return Failed<CommerceStoreDetail>(ApplicationErrorKind.NotFound, "Store was not found.");
             }
 
             var now = DateTimeOffset.UtcNow;
@@ -189,7 +192,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Succeeded("Store archived.", MapDetail(store));
         }
 
-        public async Task<CommerceStoreOperationResult<CommerceStoreDetail>> SetStatusAsync(
+        public async Task<ApplicationResult<CommerceStoreDetail>> SetStatusAsync(
             Guid publicId,
             string status,
             CancellationToken cancellationToken = default)
@@ -197,13 +200,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var normalizedStatus = status?.Trim().ToLowerInvariant();
             if (normalizedStatus is not (CommerceStoreStatuses.Active or CommerceStoreStatuses.Disabled or CommerceStoreStatuses.Provisioning))
             {
-                return Failed<CommerceStoreDetail>(CommerceStoreOperationFailure.Validation, "Store status is invalid.");
+                return Failed<CommerceStoreDetail>(ApplicationErrorKind.Validation, "Store status is invalid.");
             }
 
             var store = await this.LoadStoreAsync(publicId, asTracking: true, cancellationToken);
             if (store is null)
             {
-                return Failed<CommerceStoreDetail>(CommerceStoreOperationFailure.NotFound, "Store was not found.");
+                return Failed<CommerceStoreDetail>(ApplicationErrorKind.NotFound, "Store was not found.");
             }
 
             store.Status = normalizedStatus;
@@ -213,7 +216,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Succeeded("Store status updated.", MapDetail(store));
         }
 
-        public async Task<CommerceStoreOperationResult<CommerceStoreDetail>> AddDomainAsync(
+        public async Task<ApplicationResult<CommerceStoreDetail>> AddDomainAsync(
             Guid publicId,
             CreateCommerceStoreDomainRequest request,
             CancellationToken cancellationToken = default)
@@ -221,13 +224,15 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var store = await this.LoadStoreAsync(publicId, asTracking: true, cancellationToken);
             if (store is null)
             {
-                return Failed<CommerceStoreDetail>(CommerceStoreOperationFailure.NotFound, "Store was not found.");
+                return Failed<CommerceStoreDetail>(ApplicationErrorKind.NotFound, "Store was not found.");
             }
 
             var result = await this.CreateDomainAsync(store, request.Domain, request.IsPrimary, DateTimeOffset.UtcNow, cancellationToken);
             if (!result.Success)
             {
-                return Failed<CommerceStoreDetail>(result.Failure!.Value, result.Message);
+                return Failed<CommerceStoreDetail>(
+                    result.Error!.Kind,
+                    result.Message ?? "Domain could not be added.");
             }
 
             await this.context.SaveChangesAsync(cancellationToken);
@@ -235,7 +240,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Succeeded("Domain added.", MapDetail(store));
         }
 
-        public async Task<CommerceStoreOperationResult<CommerceStoreDetail>> VerifyDomainAsync(
+        public async Task<ApplicationResult<CommerceStoreDetail>> VerifyDomainAsync(
             Guid publicId,
             Guid domainId,
             CancellationToken cancellationToken = default)
@@ -254,7 +259,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return result;
         }
 
-        public async Task<CommerceStoreOperationResult<CommerceStoreDetail>> DisableDomainAsync(
+        public async Task<ApplicationResult<CommerceStoreDetail>> DisableDomainAsync(
             Guid publicId,
             Guid domainId,
             CancellationToken cancellationToken = default)
@@ -274,7 +279,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return result;
         }
 
-        public async Task<CommerceStoreOperationResult<CommerceStoreDetail>> SetPrimaryDomainAsync(
+        public async Task<ApplicationResult<CommerceStoreDetail>> SetPrimaryDomainAsync(
             Guid publicId,
             Guid domainId,
             CancellationToken cancellationToken = default)
@@ -282,13 +287,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var store = await this.LoadStoreAsync(publicId, asTracking: true, cancellationToken);
             if (store is null)
             {
-                return Failed<CommerceStoreDetail>(CommerceStoreOperationFailure.NotFound, "Store was not found.");
+                return Failed<CommerceStoreDetail>(ApplicationErrorKind.NotFound, "Store was not found.");
             }
 
             var domain = store.Domains.FirstOrDefault(item => item.Id == domainId && item.DisabledAt == null);
             if (domain is null)
             {
-                return Failed<CommerceStoreDetail>(CommerceStoreOperationFailure.NotFound, "Domain was not found.");
+                return Failed<CommerceStoreDetail>(ApplicationErrorKind.NotFound, "Domain was not found.");
             }
 
             var now = DateTimeOffset.UtcNow;
@@ -307,7 +312,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Succeeded("Primary domain updated.", MapDetail(store));
         }
 
-        private async Task<CommerceStoreOperationResult<CommerceStoreDomain>> CreateDomainAsync(
+        private async Task<ApplicationResult<CommerceStoreDomain>> CreateDomainAsync(
             CommerceStore store,
             string? domainValue,
             bool isPrimary,
@@ -316,13 +321,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         {
             if (string.IsNullOrWhiteSpace(domainValue))
             {
-                return Failed<CommerceStoreDomain>(CommerceStoreOperationFailure.Validation, "Domain is required.");
+                return Failed<CommerceStoreDomain>(ApplicationErrorKind.Validation, "Domain is required.");
             }
 
             var normalizedDomain = NormalizeDomain(domainValue);
             if (normalizedDomain is null)
             {
-                return Failed<CommerceStoreDomain>(CommerceStoreOperationFailure.Validation, "Domain is invalid.");
+                return Failed<CommerceStoreDomain>(ApplicationErrorKind.Validation, "Domain is invalid.");
             }
 
             var exists = await this.context.CommerceStoreDomains.AnyAsync(
@@ -330,7 +335,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 cancellationToken);
             if (exists)
             {
-                return Failed<CommerceStoreDomain>(CommerceStoreOperationFailure.Conflict, "Domain already exists.");
+                return Failed<CommerceStoreDomain>(ApplicationErrorKind.Conflict, "Domain already exists.");
             }
 
             if (isPrimary)
@@ -360,7 +365,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Succeeded("Domain created.", domain);
         }
 
-        private async Task<CommerceStoreOperationResult<CommerceStoreDetail>> MutateDomainAsync(
+        private async Task<ApplicationResult<CommerceStoreDetail>> MutateDomainAsync(
             Guid publicId,
             Guid domainId,
             Action<CommerceStoreDomain> mutation,
@@ -370,13 +375,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var store = await this.LoadStoreAsync(publicId, asTracking: true, cancellationToken);
             if (store is null)
             {
-                return Failed<CommerceStoreDetail>(CommerceStoreOperationFailure.NotFound, "Store was not found.");
+                return Failed<CommerceStoreDetail>(ApplicationErrorKind.NotFound, "Store was not found.");
             }
 
             var domain = store.Domains.FirstOrDefault(item => item.Id == domainId);
             if (domain is null)
             {
-                return Failed<CommerceStoreDetail>(CommerceStoreOperationFailure.NotFound, "Domain was not found.");
+                return Failed<CommerceStoreDetail>(ApplicationErrorKind.NotFound, "Domain was not found.");
             }
 
             mutation(domain);
@@ -684,18 +689,29 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 domain.DisabledAt);
         }
 
-        private static CommerceStoreOperationResult<TPayload> Succeeded<TPayload>(
+        private static ApplicationResult<TPayload> Succeeded<TPayload>(
             string message,
             TPayload payload)
         {
-            return new CommerceStoreOperationResult<TPayload>(true, message, payload);
+            return ApplicationResult<TPayload>.Succeeded(payload, message);
         }
 
-        private static CommerceStoreOperationResult<TPayload> Failed<TPayload>(
-            CommerceStoreOperationFailure failure,
+        private static ApplicationResult<TPayload> Failed<TPayload>(
+            ApplicationErrorKind failure,
             string message)
         {
-            return new CommerceStoreOperationResult<TPayload>(false, message, Failure: failure);
+            return ApplicationResult<TPayload>.Failed(ToError(failure, message));
+        }
+
+        private static ApplicationError ToError(ApplicationErrorKind failure, string message)
+        {
+            return failure switch
+            {
+                ApplicationErrorKind.Validation => ApplicationError.Validation("store.validation", message),
+                ApplicationErrorKind.NotFound => ApplicationError.NotFound("store.not_found", message),
+                ApplicationErrorKind.Conflict => ApplicationError.Conflict("store.conflict", message),
+                _ => ApplicationError.Failure("store.failure", message),
+            };
         }
 
         private static string? NormalizeOptional(string? value)

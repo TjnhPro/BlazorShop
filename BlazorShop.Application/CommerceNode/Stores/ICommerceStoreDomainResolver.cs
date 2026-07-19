@@ -1,18 +1,20 @@
 namespace BlazorShop.Application.CommerceNode.Stores
 {
+    using BlazorShop.Application.Common.Results;
+
     public interface ICommerceStoreDomainResolver
     {
-        Task<CommerceStoreOperationResult<CommerceCurrentStore>> ResolveAsync(
+        Task<ApplicationResult<CommerceCurrentStore>> ResolveAsync(
             string? storeKey = null,
             string? host = null,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceStoreOperationResult<CommerceCurrentStore>> ResolveForReadinessAsync(
+        Task<ApplicationResult<CommerceCurrentStore>> ResolveForReadinessAsync(
             string? storeKey = null,
             string? host = null,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceStoreOperationResult<Guid>> ResolveStoreIdAsync(
+        Task<ApplicationResult<Guid>> ResolveStoreIdAsync(
             string? storeKey = null,
             string? host = null,
             CancellationToken cancellationToken = default);

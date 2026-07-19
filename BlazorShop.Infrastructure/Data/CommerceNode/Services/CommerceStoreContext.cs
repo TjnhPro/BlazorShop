@@ -1,5 +1,6 @@
 namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Stores;
 
     using Microsoft.AspNetCore.Http;
@@ -17,7 +18,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.resolver = resolver;
         }
 
-        public Task<CommerceStoreOperationResult<CommerceCurrentStore>> GetCurrentStoreAsync(
+        public Task<ApplicationResult<CommerceCurrentStore>> GetCurrentStoreAsync(
             CancellationToken cancellationToken = default)
         {
             var hints = this.ResolveRequestStoreHints();
@@ -29,7 +30,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return this.resolver.ResolveForReadinessAsync(hints.StoreKey, hints.Host, cancellationToken);
         }
 
-        public Task<CommerceStoreOperationResult<Guid>> GetCurrentStoreIdAsync(
+        public Task<ApplicationResult<Guid>> GetCurrentStoreIdAsync(
             CancellationToken cancellationToken = default)
         {
             var hints = this.ResolveRequestStoreHints();
@@ -90,12 +91,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 : null;
         }
 
-        private static CommerceStoreOperationResult<TPayload> Failed<TPayload>(string message)
+        private static ApplicationResult<TPayload> Failed<TPayload>(string message)
         {
-            return new CommerceStoreOperationResult<TPayload>(
-                false,
-                message,
-                Failure: CommerceStoreOperationFailure.Validation);
+            return ApplicationResult<TPayload>.Failed(ApplicationError.Validation("store.validation", message));
         }
 
         private sealed record StoreScopeHints(string? StoreKey, string? Host, string? FailureMessage);

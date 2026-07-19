@@ -70,7 +70,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             {
                 return AccountEmailDispatchResult.Failed(
                     "account_email.store_unavailable",
-                    currentStoreResult.Message);
+                    currentStoreResult.Message ?? "Store could not be resolved.");
             }
 
             var storeIdResult = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
@@ -78,7 +78,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             {
                 return AccountEmailDispatchResult.Failed(
                     "account_email.store_unavailable",
-                    storeIdResult.Message);
+                    storeIdResult.Message ?? "Store could not be resolved.");
             }
 
             var store = currentStoreResult.Payload;

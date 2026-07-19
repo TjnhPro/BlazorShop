@@ -74,7 +74,7 @@ namespace BlazorShop.Application.Services
             }
 
             var result = await _storeContext.GetCurrentStoreIdAsync();
-            return result.Success ? result.Payload : null;
+            return result.Success ? result.Value : null;
         }
     }
 }

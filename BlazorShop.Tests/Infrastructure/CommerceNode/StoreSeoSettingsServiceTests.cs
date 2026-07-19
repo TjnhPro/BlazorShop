@@ -148,16 +148,16 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 this.storeId = storeId;
             }
 
-            public Task<CommerceStoreOperationResult<CommerceCurrentStore>> GetCurrentStoreAsync(
+            public Task<ApplicationResult<CommerceCurrentStore>> GetCurrentStoreAsync(
                 CancellationToken cancellationToken = default)
             {
                 throw new NotSupportedException();
             }
 
-            public Task<CommerceStoreOperationResult<Guid>> GetCurrentStoreIdAsync(
+            public Task<ApplicationResult<Guid>> GetCurrentStoreIdAsync(
                 CancellationToken cancellationToken = default)
             {
-                return Task.FromResult(new CommerceStoreOperationResult<Guid>(true, "Store resolved.", this.storeId));
+                return Task.FromResult(new ApplicationResult<Guid>(true, "Store resolved.", this.storeId));
             }
         }
 

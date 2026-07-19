@@ -113,8 +113,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             storeContext
                 .Setup(context => context.GetCurrentStoreIdAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(storeId.HasValue
-                    ? new CommerceStoreOperationResult<Guid>(true, "Store resolved.", storeId.Value)
-                    : new CommerceStoreOperationResult<Guid>(false, "Store not found.", Failure: CommerceStoreOperationFailure.NotFound));
+                    ? new ApplicationResult<Guid>(true, "Store resolved.", storeId.Value)
+                    : new ApplicationResult<Guid>(false, "Store not found.", Failure: ApplicationErrorKind.NotFound));
 
             return new StorefrontScopedCatalogController(
                 new Mock<IPublicCatalogService>().Object,

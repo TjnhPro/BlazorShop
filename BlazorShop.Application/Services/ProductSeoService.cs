@@ -226,7 +226,7 @@ namespace BlazorShop.Application.Services
             }
 
             var storeResult = await _storeContext.GetCurrentStoreIdAsync();
-            return storeResult.Success && product.StoreId == storeResult.Payload;
+            return storeResult.Success && product.StoreId == storeResult.Value;
         }
 
         private static UpdateProductSeoDto CopyRequest(Guid productId, UpdateProductSeoDto request)

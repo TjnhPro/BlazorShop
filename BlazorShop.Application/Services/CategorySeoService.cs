@@ -212,7 +212,7 @@ namespace BlazorShop.Application.Services
             }
 
             var storeResult = await _storeContext.GetCurrentStoreIdAsync();
-            return storeResult.Success && category.StoreId == storeResult.Payload;
+            return storeResult.Success && category.StoreId == storeResult.Value;
         }
 
         private static UpdateCategorySeoDto CopyRequest(Guid categoryId, UpdateCategorySeoDto request)

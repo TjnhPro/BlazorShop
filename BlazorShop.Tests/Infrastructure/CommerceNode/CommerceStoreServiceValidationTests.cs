@@ -47,7 +47,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var result = await service.CreateAsync(CreateRequest(logoUrl: logoUrl));
 
             Assert.False(result.Success);
-            Assert.Equal(CommerceStoreOperationFailure.Validation, result.Failure);
+            Assert.Equal(ApplicationErrorKind.Validation, result.Failure);
             Assert.Contains("Logo URL", result.Message);
         }
 
@@ -65,7 +65,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var result = await service.CreateAsync(CreateRequest(msTileColor: msTileColor));
 
             Assert.False(result.Success);
-            Assert.Equal(CommerceStoreOperationFailure.Validation, result.Failure);
+            Assert.Equal(ApplicationErrorKind.Validation, result.Failure);
             Assert.Contains("MS tile color", result.Message);
         }
 
@@ -83,7 +83,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var result = await service.CreateAsync(CreateRequest(cdnHost: cdnHost));
 
             Assert.False(result.Success);
-            Assert.Equal(CommerceStoreOperationFailure.Validation, result.Failure);
+            Assert.Equal(ApplicationErrorKind.Validation, result.Failure);
             Assert.Contains("CDN host", result.Message);
         }
 

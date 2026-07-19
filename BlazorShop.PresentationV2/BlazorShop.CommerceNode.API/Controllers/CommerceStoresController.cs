@@ -1,5 +1,6 @@
 namespace BlazorShop.CommerceNode.API.Controllers
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.CommerceNode.API.Responses;
 
@@ -121,34 +122,9 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return ToActionResult(result);
         }
 
-        private static IActionResult ToActionResult<TPayload>(CommerceStoreOperationResult<TPayload> result)
+        private static IActionResult ToActionResult<TPayload>(ApplicationResult<TPayload> result)
         {
-            var response = result.Success
-                ? CommerceNodeApiResponse<TPayload>.Succeeded(result.Payload, NormalizeMessage(result.Message))
-                : CommerceNodeApiResponse<TPayload>.Failed(NormalizeMessage(result.Message), result.Payload);
-
-            return new ObjectResult(response)
-            {
-                StatusCode = result.Success ? StatusCodes.Status200OK : ToStatusCode(result.Failure),
-            };
-        }
-
-        private static int ToStatusCode(CommerceStoreOperationFailure? failure)
-        {
-            return failure switch
-            {
-                CommerceStoreOperationFailure.Validation => StatusCodes.Status400BadRequest,
-                CommerceStoreOperationFailure.NotFound => StatusCodes.Status404NotFound,
-                CommerceStoreOperationFailure.Conflict => StatusCodes.Status409Conflict,
-                _ => StatusCodes.Status500InternalServerError,
-            };
-        }
-
-        private static string NormalizeMessage(string? message)
-        {
-            return string.IsNullOrWhiteSpace(message)
-                ? "The Commerce Store request could not be completed."
-                : message;
+            return result.ToCommerceNodeActionResult();
         }
     }
 }
