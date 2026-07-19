@@ -139,6 +139,33 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 null,
                 cancellationToken);
         }
+
+        public Task<ApplicationResult<CategoryMediaAssignmentDto>> SetCategoryPrimaryMediaAsync(
+            Guid storePublicId,
+            Guid categoryId,
+            SetCategoryPrimaryMediaRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendApplicationAsync<CategoryMediaAssignmentDto>(
+                storePublicId,
+                HttpMethod.Put,
+                $"api/commerce/admin/categories/{categoryId:D}/media/primary",
+                request,
+                cancellationToken);
+        }
+
+        public Task<ApplicationResult<CategoryMediaAssignmentDto>> ClearCategoryPrimaryMediaAsync(
+            Guid storePublicId,
+            Guid categoryId,
+            CancellationToken cancellationToken = default)
+        {
+            return this.SendApplicationAsync<CategoryMediaAssignmentDto>(
+                storePublicId,
+                HttpMethod.Delete,
+                $"api/commerce/admin/categories/{categoryId:D}/media/primary",
+                null,
+                cancellationToken);
+        }
     }
 }
 

@@ -32,7 +32,7 @@ This plan covers the architecture hardening issues verified against the current 
 ## Verified Current Evidence
 
 - [x] Phase 0 baseline: `BlazorShop.Application/ControlPlane/CommerceGateway/CommerceNodeAdminGatewayDtos.cs` contained `ICommerceNodeAdminGatewayTransport` with `HttpMethod`, HTTP path, and status-bearing result. Resolved in Phase 1B.
-- [x] `ControlPlaneCommerceCatalogResult<T>` had 236 generic references at Phase 0. After Store configuration, Security/privacy, Shipping, Payment, Currency, Content, Navigation, Order, Media, Category, and Message migrations in Phase 1C.1-1C.10, current migration baseline is 72 references.
+- [x] `ControlPlaneCommerceCatalogResult<T>` had 236 generic references at Phase 0. After Store configuration, Security/privacy, Shipping, Payment, Currency, Content, Navigation, Order, Media, Category, Message, and Product gateway split in Phase 2, current migration baseline is 68 references.
 - [x] `ApplicationResult<T>`, `ApplicationError`, and `ApplicationErrorKind.RemoteFailure` already exist under `BlazorShop.Application/Common/Results`.
 - [x] `IControlPlaneProductGateway` has 31 current methods spanning product CRUD, product SEO, product import, variation template, category media, variant, and inventory in one interface.
 - [x] `BlazorShop.Application/CommerceNode/Carts/StorefrontCartService.cs` still accepts nullable `IProductSelectionResolver` and falls back to `new ProductSelectionResolver(...)`.
@@ -316,42 +316,42 @@ Goal: split `IControlPlaneProductGateway` into actual capability boundaries with
 
 ### Target Interfaces
 
-- [ ] `IControlPlaneProductGateway`: product query/get/create/update/archive and product variant CRUD if variant remains product-owned for now.
-- [ ] `IControlPlaneProductSeoGateway`: product SEO and SEO slug lifecycle operations.
-- [ ] `IControlPlaneProductImportGateway`: upload/list/get/import rows.
-- [ ] `IControlPlaneVariationTemplateGateway`: template/options/values CRUD.
-- [ ] `IControlPlaneInventoryGateway`: inventory query, product stock update, variant stock update.
-- [ ] Category primary media operations move to `IControlPlaneCategoryGateway` or `IControlPlaneMediaGateway`; choose one owner and document it in the interface comment.
+- [x] `IControlPlaneProductGateway`: product query/get/create/update/archive and product variant CRUD if variant remains product-owned for now.
+- [x] `IControlPlaneProductSeoGateway`: product SEO and SEO slug lifecycle operations.
+- [x] `IControlPlaneProductImportGateway`: upload/list/get/import rows.
+- [x] `IControlPlaneVariationTemplateGateway`: template/options/values CRUD.
+- [x] `IControlPlaneInventoryGateway`: inventory query, product stock update, variant stock update.
+- [x] Category primary media operations moved to `IControlPlaneCategoryGateway` because the routes and upstream API are category-owned.
 
 ### Tasks
 
-- [ ] Add new interfaces under existing `BlazorShop.Application/ControlPlane/CommerceGateway/*` capability folders.
-- [ ] Split `ControlPlaneProductGateway` implementation mechanically into multiple classes, preserving route paths and DTOs.
-- [ ] Keep existing `ControlPlaneCommerceProductsController` routes stable initially.
-- [ ] Inject the specific capability gateway into controller action groups.
-- [ ] If one controller becomes too mixed, split controller files by route group only after tests pass.
-- [ ] Update Control Plane API DI registrations.
-- [ ] Update Control Plane Web commerce clients only if they currently call a product-only API wrapper that now maps to a different controller.
-- [ ] Move category media methods from product gateway and update all call sites.
-- [ ] Add tests that each capability interface stays under a documented method-count threshold, default maximum 15 methods unless exception comment exists.
+- [x] Add new interfaces under existing `BlazorShop.Application/ControlPlane/CommerceGateway/*` capability folders.
+- [x] Split `ControlPlaneProductGateway` implementation mechanically into multiple classes, preserving route paths and DTOs.
+- [x] Keep existing `ControlPlaneCommerceProductsController` routes stable initially.
+- [x] Inject the specific capability gateway into controller action groups.
+- [x] Controller file split deferred because route-stable multi-gateway injection passed tests and keeps this phase mechanical.
+- [x] Update Control Plane API DI registrations.
+- [x] Control Plane Web commerce clients unchanged because the Control Plane API route surface did not change.
+- [x] Move category media methods from product gateway and update all call sites.
+- [x] Add tests that each capability interface stays under a documented method-count threshold, default maximum 15 methods unless exception comment exists.
 
 ### Controller Migration Strategy
 
-- [ ] First keep `ControlPlaneCommerceProductsController` as a stable route owner with multiple injected gateways.
-- [ ] After compile/test, optionally split into `Products`, `ProductSeo`, `ProductImports`, `VariationTemplates`, and `Inventory` controllers while keeping route prefixes and operation IDs stable.
-- [ ] Do not change Control Plane Web page behavior in this phase.
+- [x] First keep `ControlPlaneCommerceProductsController` as a stable route owner with multiple injected gateways.
+- [x] Controller split into `Products`, `ProductSeo`, `ProductImports`, `VariationTemplates`, and `Inventory` controllers deferred to avoid route/operation metadata churn in this mechanical split.
+- [x] Do not change Control Plane Web page behavior in this phase.
 
 ### Verification
 
-- [ ] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~ControlPlaneCommerceProduct|FullyQualifiedName~ControlPlaneVariant|FullyQualifiedName~Inventory|FullyQualifiedName~CommerceNodeAdminStoreOpenApiMetadata"`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore`
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~Product|FullyQualifiedName~Inventory|FullyQualifiedName~VariationTemplate|FullyQualifiedName~ControlPlaneCommerceGatewayStoreMapping|FullyQualifiedName~ArchitectureBoundary"` - Passed: 285, Failed: 0, Skipped: 2 existing skipped Product/CartService tests. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors; Tailwind completed with existing Browserslist stale notice.
 
 ### Done When
 
-- [ ] Product gateway no longer owns SEO, import, variation templates, category media, or inventory.
-- [ ] Control Plane product/import/variation/inventory UI still builds.
-- [ ] Route and OpenAPI metadata remain stable or are intentionally snapshot-updated.
+- [x] Product gateway no longer owns SEO, import, variation templates, category media, or inventory.
+- [x] Control Plane product/import/variation/inventory UI still builds.
+- [x] Route metadata remains stable because controller routes were not changed; OpenAPI snapshot update deferred because operation methods stayed in the same controller.
 
 ## Phase 3 - Deterministic Production DI
 

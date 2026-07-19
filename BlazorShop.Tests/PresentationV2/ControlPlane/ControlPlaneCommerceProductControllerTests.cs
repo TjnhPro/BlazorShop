@@ -17,7 +17,7 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
         [Fact]
         public void DownloadProductImportTemplate_ReturnsCanonicalParserHeader()
         {
-            var controller = new ControlPlaneCommerceProductsController(new Mock<IControlPlaneProductGateway>().Object);
+            var controller = CreateController();
 
             var result = Assert.IsType<FileContentResult>(controller.DownloadProductImportTemplate());
             var content = Encoding.UTF8.GetString(result.FileContents);
@@ -42,6 +42,17 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
                 .ToArray();
 
             Assert.Contains("~/api/controlplane/commerce/product-imports/template", routes);
+        }
+
+        private static ControlPlaneCommerceProductsController CreateController()
+        {
+            return new ControlPlaneCommerceProductsController(
+                new Mock<IControlPlaneProductGateway>().Object,
+                new Mock<IControlPlaneProductSeoGateway>().Object,
+                new Mock<IControlPlaneProductImportGateway>().Object,
+                new Mock<BlazorShop.Application.ControlPlane.CommerceGateway.Categories.IControlPlaneCategoryGateway>().Object,
+                new Mock<IControlPlaneVariationTemplateGateway>().Object,
+                new Mock<IControlPlaneInventoryGateway>().Object);
         }
 
     }

@@ -35,11 +35,27 @@ namespace BlazorShop.ControlPlane.API.Controllers
     [Authorize(Policy = ControlPlanePolicyNames.StoresRead)]
     public sealed class ControlPlaneCommerceProductsController : ControlPlaneCommerceGatewayControllerBase
     {
-        private readonly BlazorShop.Application.ControlPlane.CommerceGateway.Products.IControlPlaneProductGateway gateway;
+        private readonly BlazorShop.Application.ControlPlane.CommerceGateway.Products.IControlPlaneProductGateway productGateway;
+        private readonly BlazorShop.Application.ControlPlane.CommerceGateway.Products.IControlPlaneProductSeoGateway productSeoGateway;
+        private readonly BlazorShop.Application.ControlPlane.CommerceGateway.Products.IControlPlaneProductImportGateway productImportGateway;
+        private readonly BlazorShop.Application.ControlPlane.CommerceGateway.Categories.IControlPlaneCategoryGateway categoryGateway;
+        private readonly BlazorShop.Application.ControlPlane.CommerceGateway.Products.IControlPlaneVariationTemplateGateway variationTemplateGateway;
+        private readonly BlazorShop.Application.ControlPlane.CommerceGateway.Products.IControlPlaneInventoryGateway inventoryGateway;
 
-        public ControlPlaneCommerceProductsController(BlazorShop.Application.ControlPlane.CommerceGateway.Products.IControlPlaneProductGateway gateway)
+        public ControlPlaneCommerceProductsController(
+            BlazorShop.Application.ControlPlane.CommerceGateway.Products.IControlPlaneProductGateway productGateway,
+            BlazorShop.Application.ControlPlane.CommerceGateway.Products.IControlPlaneProductSeoGateway productSeoGateway,
+            BlazorShop.Application.ControlPlane.CommerceGateway.Products.IControlPlaneProductImportGateway productImportGateway,
+            BlazorShop.Application.ControlPlane.CommerceGateway.Categories.IControlPlaneCategoryGateway categoryGateway,
+            BlazorShop.Application.ControlPlane.CommerceGateway.Products.IControlPlaneVariationTemplateGateway variationTemplateGateway,
+            BlazorShop.Application.ControlPlane.CommerceGateway.Products.IControlPlaneInventoryGateway inventoryGateway)
         {
-            this.gateway = gateway;
+            this.productGateway = productGateway;
+            this.productSeoGateway = productSeoGateway;
+            this.productImportGateway = productImportGateway;
+            this.categoryGateway = categoryGateway;
+            this.variationTemplateGateway = variationTemplateGateway;
+            this.inventoryGateway = inventoryGateway;
         }
 
         [HttpGet("products")]
@@ -49,14 +65,14 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromQuery] ProductCatalogQuery query,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.QueryProductsAsync(storePublicId, query, cancellationToken));
+            return ToActionResult(await this.productGateway.QueryProductsAsync(storePublicId, query, cancellationToken));
         }
 
         [HttpGet("products/{productId:guid}")]
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/products/{productId:guid}")]
         public async Task<IActionResult> GetProduct(Guid storePublicId, Guid productId, CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.GetProductAsync(storePublicId, productId, cancellationToken));
+            return ToActionResult(await this.productGateway.GetProductAsync(storePublicId, productId, cancellationToken));
         }
 
         [HttpPost("products")]
@@ -67,7 +83,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromBody] CreateProduct request,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.CreateProductAsync(storePublicId, request, cancellationToken));
+            return ToActionResult(await this.productGateway.CreateProductAsync(storePublicId, request, cancellationToken));
         }
 
         [HttpPut("products/{productId:guid}")]
@@ -79,7 +95,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromBody] UpdateProduct request,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.UpdateProductAsync(storePublicId, productId, request, cancellationToken));
+            return ToActionResult(await this.productGateway.UpdateProductAsync(storePublicId, productId, request, cancellationToken));
         }
 
         [HttpDelete("products/{productId:guid}")]
@@ -87,13 +103,13 @@ namespace BlazorShop.ControlPlane.API.Controllers
         [Authorize(Policy = ControlPlanePolicyNames.StoresWrite)]
         public async Task<IActionResult> ArchiveProduct(Guid storePublicId, Guid productId, CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.ArchiveProductAsync(storePublicId, productId, cancellationToken));
+            return ToActionResult(await this.productGateway.ArchiveProductAsync(storePublicId, productId, cancellationToken));
         }
 
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/products/{productId:guid}/seo")]
         public async Task<IActionResult> GetProductSeo(Guid storePublicId, Guid productId, CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.GetProductSeoAsync(storePublicId, productId, cancellationToken));
+            return ToActionResult(await this.productSeoGateway.GetProductSeoAsync(storePublicId, productId, cancellationToken));
         }
 
         [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/products/{productId:guid}/seo")]
@@ -104,7 +120,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromBody] UpdateProductSeoDto request,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.UpdateProductSeoAsync(storePublicId, productId, request, cancellationToken));
+            return ToActionResult(await this.productSeoGateway.UpdateProductSeoAsync(storePublicId, productId, request, cancellationToken));
         }
 
         [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/seo/slugs/generate")]
@@ -113,7 +129,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromBody] StoreSeoSlugGenerateRequest request,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.GenerateSeoSlugAsync(storePublicId, request, cancellationToken));
+            return ToActionResult(await this.productSeoGateway.GenerateSeoSlugAsync(storePublicId, request, cancellationToken));
         }
 
         [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/seo/slugs/validate")]
@@ -122,7 +138,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromBody] StoreSeoSlugValidateRequest request,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.ValidateSeoSlugAsync(storePublicId, request, cancellationToken));
+            return ToActionResult(await this.productSeoGateway.ValidateSeoSlugAsync(storePublicId, request, cancellationToken));
         }
 
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/seo/slugs/history")]
@@ -131,7 +147,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromQuery] StoreSeoSlugHistoryQuery query,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.ListSeoSlugHistoryAsync(storePublicId, query, cancellationToken));
+            return ToActionResult(await this.productSeoGateway.ListSeoSlugHistoryAsync(storePublicId, query, cancellationToken));
         }
 
         [HttpGet("~/api/controlplane/commerce/product-imports/template")]
@@ -156,7 +172,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             CancellationToken cancellationToken)
         {
             await using var stream = file.OpenReadStream();
-            return ToActionResult(await this.gateway.UploadProductImportAsync(
+            return ToActionResult(await this.productImportGateway.UploadProductImportAsync(
                 storePublicId,
                 new ProductImportUploadRequest(file.FileName, mode, stream, file.Length, this.User.Identity?.Name),
                 cancellationToken));
@@ -169,7 +185,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromQuery] ProductImportJobListQuery query,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.ListProductImportsAsync(storePublicId, query, cancellationToken));
+            return ToActionResult(await this.productImportGateway.ListProductImportsAsync(storePublicId, query, cancellationToken));
         }
 
         [HttpGet("products/imports/{jobPublicId:guid}")]
@@ -179,7 +195,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             Guid jobPublicId,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.GetProductImportAsync(storePublicId, jobPublicId, cancellationToken));
+            return ToActionResult(await this.productImportGateway.GetProductImportAsync(storePublicId, jobPublicId, cancellationToken));
         }
 
         [HttpGet("products/imports/{jobPublicId:guid}/rows")]
@@ -190,7 +206,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromQuery] ProductImportRowsQuery query,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.ListProductImportRowsAsync(storePublicId, jobPublicId, query, cancellationToken));
+            return ToActionResult(await this.productImportGateway.ListProductImportRowsAsync(storePublicId, jobPublicId, query, cancellationToken));
         }
 
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/product-imports/{jobPublicId:guid}/errors.csv")]
@@ -199,13 +215,13 @@ namespace BlazorShop.ControlPlane.API.Controllers
             Guid jobPublicId,
             CancellationToken cancellationToken)
         {
-            var jobResult = await this.gateway.GetProductImportAsync(storePublicId, jobPublicId, cancellationToken);
+            var jobResult = await this.productImportGateway.GetProductImportAsync(storePublicId, jobPublicId, cancellationToken);
             if (!jobResult.Success || jobResult.Payload is null)
             {
                 return ToActionResult(jobResult);
             }
 
-            var result = await this.gateway.ListProductImportRowsAsync(
+            var result = await this.productImportGateway.ListProductImportRowsAsync(
                 storePublicId,
                 jobPublicId,
                 new ProductImportRowsQuery("failed", PageNumber: 1, PageSize: 100),
@@ -232,7 +248,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromBody] SetCategoryPrimaryMediaRequest request,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.SetCategoryPrimaryMediaAsync(storePublicId, categoryId, request, cancellationToken));
+            return ToActionResult(await this.categoryGateway.SetCategoryPrimaryMediaAsync(storePublicId, categoryId, request, cancellationToken));
         }
 
         [HttpDelete("categories/{categoryId:guid}/media/primary")]
@@ -243,7 +259,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             Guid categoryId,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.ClearCategoryPrimaryMediaAsync(storePublicId, categoryId, cancellationToken));
+            return ToActionResult(await this.categoryGateway.ClearCategoryPrimaryMediaAsync(storePublicId, categoryId, cancellationToken));
         }
 
         [HttpGet("products/{productId:guid}/variants")]
@@ -255,7 +271,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromQuery] int pageSize = 25,
             CancellationToken cancellationToken = default)
         {
-            return ToActionResult(await this.gateway.ListVariantsAsync(storePublicId, productId, pageNumber, pageSize, cancellationToken));
+            return ToActionResult(await this.productGateway.ListVariantsAsync(storePublicId, productId, pageNumber, pageSize, cancellationToken));
         }
 
         [HttpPost("products/{productId:guid}/variants")]
@@ -267,7 +283,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromBody] CreateProductVariant request,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.CreateVariantAsync(storePublicId, productId, request, cancellationToken));
+            return ToActionResult(await this.productGateway.CreateVariantAsync(storePublicId, productId, request, cancellationToken));
         }
 
         [HttpPut("products/{productId:guid}/variants/{variantId:guid}")]
@@ -280,7 +296,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromBody] UpdateProductVariant request,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.UpdateVariantAsync(storePublicId, productId, variantId, request, cancellationToken));
+            return ToActionResult(await this.productGateway.UpdateVariantAsync(storePublicId, productId, variantId, request, cancellationToken));
         }
 
         [HttpDelete("products/{productId:guid}/variants/{variantId:guid}")]
@@ -292,7 +308,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             Guid variantId,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.DeleteVariantAsync(storePublicId, productId, variantId, cancellationToken));
+            return ToActionResult(await this.productGateway.DeleteVariantAsync(storePublicId, productId, variantId, cancellationToken));
         }
 
         [HttpGet("inventory")]
@@ -302,7 +318,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromQuery] AdminInventoryQueryDto query,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.QueryInventoryAsync(storePublicId, query, cancellationToken));
+            return ToActionResult(await this.inventoryGateway.QueryInventoryAsync(storePublicId, query, cancellationToken));
         }
 
         [HttpPut("inventory/products/{productId:guid}")]
@@ -314,7 +330,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromBody] UpdateProductStockDto request,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.UpdateProductStockAsync(storePublicId, productId, request, cancellationToken));
+            return ToActionResult(await this.inventoryGateway.UpdateProductStockAsync(storePublicId, productId, request, cancellationToken));
         }
 
         [HttpPut("inventory/variants/{variantId:guid}")]
@@ -329,7 +345,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             CancellationToken cancellationToken)
         {
             _ = productId;
-            return ToActionResult(await this.gateway.UpdateVariantStockAsync(storePublicId, variantId, request, cancellationToken));
+            return ToActionResult(await this.inventoryGateway.UpdateVariantStockAsync(storePublicId, variantId, request, cancellationToken));
         }
 
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/variation-templates")]
@@ -339,7 +355,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromQuery] int pageSize = 25,
             CancellationToken cancellationToken = default)
         {
-            return ToActionResult(await this.gateway.ListVariationTemplatesAsync(storePublicId, new VariationTemplateListQuery(pageNumber, pageSize), cancellationToken));
+            return ToActionResult(await this.variationTemplateGateway.ListVariationTemplatesAsync(storePublicId, new VariationTemplateListQuery(pageNumber, pageSize), cancellationToken));
         }
 
         [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/variation-templates")]
@@ -349,7 +365,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromBody] CreateVariationTemplateRequest request,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.CreateVariationTemplateAsync(storePublicId, request, cancellationToken));
+            return ToActionResult(await this.variationTemplateGateway.CreateVariationTemplateAsync(storePublicId, request, cancellationToken));
         }
 
         [HttpGet("~/api/controlplane/commerce/stores/{storePublicId:guid}/variation-templates/{templatePublicId:guid}")]
@@ -358,7 +374,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             Guid templatePublicId,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.GetVariationTemplateAsync(storePublicId, templatePublicId, cancellationToken));
+            return ToActionResult(await this.variationTemplateGateway.GetVariationTemplateAsync(storePublicId, templatePublicId, cancellationToken));
         }
 
         [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/variation-templates/{templatePublicId:guid}")]
@@ -369,7 +385,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromBody] UpdateVariationTemplateRequest request,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.UpdateVariationTemplateAsync(storePublicId, templatePublicId, request, cancellationToken));
+            return ToActionResult(await this.variationTemplateGateway.UpdateVariationTemplateAsync(storePublicId, templatePublicId, request, cancellationToken));
         }
 
         [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/variation-templates/{templatePublicId:guid}/options")]
@@ -380,7 +396,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromBody] CreateVariationTemplateOptionRequest request,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.CreateVariationTemplateOptionAsync(storePublicId, templatePublicId, request, cancellationToken));
+            return ToActionResult(await this.variationTemplateGateway.CreateVariationTemplateOptionAsync(storePublicId, templatePublicId, request, cancellationToken));
         }
 
         [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/variation-templates/{templatePublicId:guid}/options/{optionPublicId:guid}")]
@@ -392,7 +408,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromBody] UpdateVariationTemplateOptionRequest request,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.UpdateVariationTemplateOptionAsync(storePublicId, templatePublicId, optionPublicId, request, cancellationToken));
+            return ToActionResult(await this.variationTemplateGateway.UpdateVariationTemplateOptionAsync(storePublicId, templatePublicId, optionPublicId, request, cancellationToken));
         }
 
         [HttpPost("~/api/controlplane/commerce/stores/{storePublicId:guid}/variation-templates/{templatePublicId:guid}/options/{optionPublicId:guid}/values")]
@@ -404,7 +420,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromBody] CreateVariationTemplateValueRequest request,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.CreateVariationTemplateValueAsync(storePublicId, templatePublicId, optionPublicId, request, cancellationToken));
+            return ToActionResult(await this.variationTemplateGateway.CreateVariationTemplateValueAsync(storePublicId, templatePublicId, optionPublicId, request, cancellationToken));
         }
 
         [HttpPut("~/api/controlplane/commerce/stores/{storePublicId:guid}/variation-templates/{templatePublicId:guid}/options/{optionPublicId:guid}/values/{valuePublicId:guid}")]
@@ -417,7 +433,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
             [FromBody] UpdateVariationTemplateValueRequest request,
             CancellationToken cancellationToken)
         {
-            return ToActionResult(await this.gateway.UpdateVariationTemplateValueAsync(storePublicId, templatePublicId, optionPublicId, valuePublicId, request, cancellationToken));
+            return ToActionResult(await this.variationTemplateGateway.UpdateVariationTemplateValueAsync(storePublicId, templatePublicId, optionPublicId, valuePublicId, request, cancellationToken));
         }
     }
 }

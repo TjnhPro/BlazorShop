@@ -74,6 +74,17 @@ namespace BlazorShop.Application.ControlPlane.CommerceGateway.Categories
                     Guid storePublicId,
                     Guid categoryId,
                     CancellationToken cancellationToken = default);
+
+                Task<ApplicationResult<CategoryMediaAssignmentDto>> SetCategoryPrimaryMediaAsync(
+                    Guid storePublicId,
+                    Guid categoryId,
+                    SetCategoryPrimaryMediaRequest request,
+                    CancellationToken cancellationToken = default);
+
+                Task<ApplicationResult<CategoryMediaAssignmentDto>> ClearCategoryPrimaryMediaAsync(
+                    Guid storePublicId,
+                    Guid categoryId,
+                    CancellationToken cancellationToken = default);
     }
 }
 

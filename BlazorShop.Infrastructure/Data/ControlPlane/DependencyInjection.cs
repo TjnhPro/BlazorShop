@@ -75,6 +75,10 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
             services.AddScoped<IControlPlaneStoreDeploymentService, ControlPlaneStoreDeploymentService>();
             services.AddScoped<IControlPlaneUserManagementService, ControlPlaneUserManagementService>();
             services.AddScoped<IControlPlaneProductGateway, ControlPlaneProductGateway>();
+            services.AddScoped<IControlPlaneProductSeoGateway, ControlPlaneProductSeoGateway>();
+            services.AddScoped<IControlPlaneProductImportGateway, ControlPlaneProductImportGateway>();
+            services.AddScoped<IControlPlaneVariationTemplateGateway, ControlPlaneVariationTemplateGateway>();
+            services.AddScoped<IControlPlaneInventoryGateway, ControlPlaneInventoryGateway>();
             services.AddScoped<IControlPlaneCategoryGateway, ControlPlaneCategoryGateway>();
             services.AddScoped<IControlPlaneMediaGateway, ControlPlaneMediaGateway>();
             services.AddScoped<IControlPlaneOrderGateway, ControlPlaneOrderGateway>();

@@ -16,7 +16,7 @@ namespace BlazorShop.Tests.Architecture
                 .SelectMany(path => Regex.Matches(File.ReadAllText(path), "ControlPlaneCommerceCatalogResult<"))
                 .Count();
 
-            Assert.InRange(references, 65, 80);
+            Assert.InRange(references, 60, 75);
         }
 
         [Fact]
@@ -52,17 +52,50 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void ControlPlaneProductGateway_BaselineStillContainsMixedCapabilities()
+        public void ControlPlaneProductGateway_IsSplitByCapability()
         {
             var source = ReadRepositoryFile("BlazorShop.Application/ControlPlane/CommerceGateway/Products/IControlPlaneProductGateway.cs");
             var methodCount = Regex.Matches(source, "Task<ControlPlaneCommerceCatalogResult").Count;
 
-            Assert.Equal(31, methodCount);
-            Assert.Contains("GetProductSeoAsync", source, StringComparison.Ordinal);
-            Assert.Contains("UploadProductImportAsync", source, StringComparison.Ordinal);
-            Assert.Contains("ListVariationTemplatesAsync", source, StringComparison.Ordinal);
-            Assert.Contains("SetCategoryPrimaryMediaAsync", source, StringComparison.Ordinal);
-            Assert.Contains("QueryInventoryAsync", source, StringComparison.Ordinal);
+            Assert.Equal(9, methodCount);
+            Assert.Contains("ListVariantsAsync", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("GetProductSeoAsync", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("UploadProductImportAsync", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("ListVariationTemplatesAsync", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("SetCategoryPrimaryMediaAsync", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("QueryInventoryAsync", source, StringComparison.Ordinal);
+
+            Assert.Contains(
+                "interface IControlPlaneProductSeoGateway",
+                ReadRepositoryFile("BlazorShop.Application/ControlPlane/CommerceGateway/Products/IControlPlaneProductSeoGateway.cs"),
+                StringComparison.Ordinal);
+            Assert.Contains(
+                "interface IControlPlaneProductImportGateway",
+                ReadRepositoryFile("BlazorShop.Application/ControlPlane/CommerceGateway/Products/IControlPlaneProductImportGateway.cs"),
+                StringComparison.Ordinal);
+            Assert.Contains(
+                "interface IControlPlaneVariationTemplateGateway",
+                ReadRepositoryFile("BlazorShop.Application/ControlPlane/CommerceGateway/Products/IControlPlaneVariationTemplateGateway.cs"),
+                StringComparison.Ordinal);
+            Assert.Contains(
+                "interface IControlPlaneInventoryGateway",
+                ReadRepositoryFile("BlazorShop.Application/ControlPlane/CommerceGateway/Products/IControlPlaneInventoryGateway.cs"),
+                StringComparison.Ordinal);
+
+            var capabilityInterfaces = new[]
+            {
+                "BlazorShop.Application/ControlPlane/CommerceGateway/Products/IControlPlaneProductGateway.cs",
+                "BlazorShop.Application/ControlPlane/CommerceGateway/Products/IControlPlaneProductSeoGateway.cs",
+                "BlazorShop.Application/ControlPlane/CommerceGateway/Products/IControlPlaneProductImportGateway.cs",
+                "BlazorShop.Application/ControlPlane/CommerceGateway/Products/IControlPlaneVariationTemplateGateway.cs",
+                "BlazorShop.Application/ControlPlane/CommerceGateway/Products/IControlPlaneInventoryGateway.cs",
+            };
+
+            foreach (var capabilityInterface in capabilityInterfaces)
+            {
+                var capabilitySource = ReadRepositoryFile(capabilityInterface);
+                Assert.InRange(Regex.Matches(capabilitySource, "Task<ControlPlaneCommerceCatalogResult").Count, 1, 15);
+            }
         }
 
         [Fact]
