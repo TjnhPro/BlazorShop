@@ -1,5 +1,6 @@
 namespace BlazorShop.Tests.Infrastructure.CommerceNode
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Domain.Entities;
@@ -39,7 +40,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var result = await service.ListAsync(new CommerceMediaAssetListQuery(UsageType: CommerceMediaAssetUsageTypes.Category));
 
             Assert.True(result.Success);
-            var item = Assert.Single(result.Payload!.Items);
+            var item = Assert.Single(result.Value!.Items);
             Assert.Equal(CommerceMediaAssetUsageTypes.Category, item.UsageType);
             Assert.Equal("category.jpg", item.CanonicalFileName);
         }
@@ -59,7 +60,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 new CommerceMediaAssetMetadataRequest("Logo", "Logo alt", null, "BRANDING"));
 
             Assert.True(result.Success);
-            Assert.Equal(CommerceMediaAssetUsageTypes.Branding, result.Payload!.UsageType);
+            Assert.Equal(CommerceMediaAssetUsageTypes.Branding, result.Value!.UsageType);
         }
 
         [Fact]
@@ -77,7 +78,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 new CommerceMediaAssetMetadataRequest("Bad", "Bad alt", null, "unknown"));
 
             Assert.False(result.Success);
-            Assert.Equal(CommerceMediaAssetOperationFailure.Validation, result.Failure);
+            Assert.Equal(ApplicationErrorKind.Validation, result.Error!.Kind);
         }
 
         [Fact]
@@ -112,7 +113,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var result = await service.DeleteAsync(assetPublicId);
 
             Assert.False(result.Success);
-            Assert.Equal(CommerceMediaAssetOperationFailure.Conflict, result.Failure);
+            Assert.Equal(ApplicationErrorKind.Conflict, result.Error!.Kind);
             Assert.True(await context.CommerceMediaAssets.AnyAsync(media => media.PublicId == assetPublicId));
         }
 

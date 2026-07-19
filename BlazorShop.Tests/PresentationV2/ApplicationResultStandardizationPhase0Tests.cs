@@ -34,11 +34,15 @@ namespace BlazorShop.Tests.PresentationV2
             "ControlPlaneCredentialOperationResult",
             "ControlPlaneNodeOperationResult",
             "CommerceTaskOperationResult",
-            "ProductMediaOperationResult",
             "CommerceStoreOperationResult",
-            "CommerceMediaAssetOperationResult",
-            "CategoryMediaOperationResult",
             "PaymentProviderOperationResult",
+        ];
+
+        private static readonly string[] MigratedMediaResultTypes =
+        [
+            "ProductMedia" + "OperationResult",
+            "CommerceMediaAsset" + "OperationResult",
+            "CategoryMedia" + "OperationResult",
         ];
 
         [Fact]
@@ -52,6 +56,20 @@ namespace BlazorShop.Tests.PresentationV2
             foreach (var expected in ExpectedOperationResultTypes)
             {
                 Assert.Contains(expected, source, StringComparison.Ordinal);
+            }
+        }
+
+        [Fact]
+        public void Inventory_MediaOperationResultTypesAreMigratedToApplicationResult()
+        {
+            var source = string.Join(
+                Environment.NewLine,
+                Directory.GetFiles(RepositoryPath("BlazorShop.Application"), "*.cs", SearchOption.AllDirectories)
+                    .Select(File.ReadAllText));
+
+            foreach (var migrated in MigratedMediaResultTypes)
+            {
+                Assert.DoesNotContain(migrated, source, StringComparison.Ordinal);
             }
         }
 

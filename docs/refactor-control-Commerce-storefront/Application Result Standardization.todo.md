@@ -285,35 +285,50 @@ Goal: migrate mot cum it rui ro de chung minh model dung voi codebase.
 
 Suggested order:
 
-- [ ] `CommerceMediaAssetOperationResult<TPayload>`.
-- [ ] `CategoryMediaOperationResult<TPayload>`.
-- [ ] `ProductMediaOperationResult<TPayload>`.
+- [x] `CommerceMediaAssetOperationResult<TPayload>`.
+- [x] `CategoryMediaOperationResult<TPayload>`.
+- [x] `ProductMediaOperationResult<TPayload>`.
 
 Tasks:
 
-- [ ] Update service contracts:
-  - [ ] `ICommerceMediaAssetService`.
-  - [ ] `ICategoryMediaService`.
-  - [ ] `IProductMediaService`.
-- [ ] Update implementations:
-  - [ ] `CommerceMediaAssetService`.
-  - [ ] `CategoryMediaService`.
-  - [ ] `ProductMediaService`.
-- [ ] Replace controller-specific failure enum mapping with shared `ApplicationResult` mapper.
-- [ ] Convert failure codes:
-  - [ ] `media.validation`.
-  - [ ] `media.not_found`.
-  - [ ] `media.conflict`.
-  - [ ] `product_media.validation`.
-  - [ ] `category_media.not_found`.
-- [ ] Remove old media operation result/failure definitions only after all references are gone.
-- [ ] Update tests that construct old media result types.
+- [x] Update service contracts:
+  - [x] `ICommerceMediaAssetService`.
+  - [x] `ICategoryMediaService`.
+  - [x] `IProductMediaService`.
+- [x] Update implementations:
+  - [x] `CommerceMediaAssetService`.
+  - [x] `CategoryMediaService`.
+  - [x] `ProductMediaService`.
+- [x] Replace controller-specific failure enum mapping with shared `ApplicationResult` mapper.
+- [x] Convert failure codes:
+  - [x] `media.validation`.
+  - [x] `media.not_found`.
+  - [x] `media.conflict`.
+  - [x] `product_media.validation`.
+  - [x] `category_media.not_found`.
+- [x] Remove old media operation result/failure definitions only after all references are gone.
+- [x] Update tests that construct old media result types.
 
 Exit criteria:
 
-- [ ] Media service tests pass.
-- [ ] Media controller tests prove status codes and envelopes unchanged.
-- [ ] `rg` shows old media operation result types no longer referenced.
+- [x] Media service tests pass.
+- [x] Media controller tests prove status codes and envelopes unchanged.
+- [x] `rg` shows old media operation result types no longer referenced.
+
+Phase 3 evidence:
+
+- Migrated `ICommerceMediaAssetService`, `ICategoryMediaService`, and `IProductMediaService` to `ApplicationResult<T>`.
+- Removed the old media-specific operation result/failure definitions from media DTO files.
+- Converted media services to `ApplicationErrorKind` and stable error codes:
+  - `media.validation`, `media.not_found`, `media.conflict`, `media.failure`.
+  - `category_media.validation`, `category_media.not_found`, `category_media.conflict`, `category_media.failure`.
+  - `product_media.validation`, `product_media.not_found`, `product_media.conflict`, `product_media.failure`.
+- Migrated Commerce Node media controllers to `CommerceNodeApplicationResultMapper` so HTTP response envelope stays `CommerceNodeApiResponse<T>`.
+- Updated product import task caller and media tests from `Payload/Failure` to `Value/Error`.
+- Focused command passed 56/56 tests:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~CommerceMedia|FullyQualifiedName~ProductMedia|FullyQualifiedName~CategoryMedia|FullyQualifiedName~ApplicationResultStandardizationPhase0Tests|FullyQualifiedName~ApplicationResultTests" --no-restore --nologo --verbosity minimal`
+- Commerce Node API build passed 0 warnings/0 errors:
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore --nologo --verbosity minimal`
 
 ## Phase 4 - Migrate Commerce Store And Task Results
 
@@ -491,7 +506,7 @@ Existing clients
 - [ ] Phase 0 complete.
 - [ ] Phase 1 complete.
 - [ ] Phase 2 complete.
-- [ ] Phase 3 complete and old media result types removed.
+- [x] Phase 3 complete and old media result types removed.
 - [ ] Phase 4 complete or explicitly deferred.
 - [ ] Phase 5 complete or explicitly deferred.
 - [ ] Phase 6 adapter decision documented.

@@ -1,17 +1,19 @@
 namespace BlazorShop.Application.CommerceNode.Media
 {
+    using BlazorShop.Application.Common.Results;
+
     public interface ICategoryMediaService
     {
-        Task<CategoryMediaOperationResult<CategoryMediaAssignmentDto>> GetPrimaryAsync(
+        Task<ApplicationResult<CategoryMediaAssignmentDto>> GetPrimaryAsync(
             Guid categoryId,
             CancellationToken cancellationToken = default);
 
-        Task<CategoryMediaOperationResult<CategoryMediaAssignmentDto>> SetPrimaryAsync(
+        Task<ApplicationResult<CategoryMediaAssignmentDto>> SetPrimaryAsync(
             Guid categoryId,
             SetCategoryPrimaryMediaRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<CategoryMediaOperationResult<CategoryMediaAssignmentDto>> ClearPrimaryAsync(
+        Task<ApplicationResult<CategoryMediaAssignmentDto>> ClearPrimaryAsync(
             Guid categoryId,
             CancellationToken cancellationToken = default);
     }

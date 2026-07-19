@@ -66,16 +66,4 @@ namespace BlazorShop.Application.CommerceNode.ProductMedia
         bool IsPrimary,
         string? AltText);
 
-    public sealed record ProductMediaOperationResult<TPayload>(
-        bool Success,
-        string? Message = null,
-        TPayload? Payload = default,
-        ProductMediaOperationFailure? Failure = null);
-
-    public enum ProductMediaOperationFailure
-    {
-        Validation,
-        NotFound,
-        Conflict
-    }
 }

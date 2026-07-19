@@ -188,9 +188,9 @@ namespace BlazorShop.CommerceNode.API.Tasks
                     job.PublicId.ToString("D"),
                     cancellationToken);
 
-                if (mediaResult.Success && mediaResult.Payload is not null)
+                if (mediaResult.Success && mediaResult.Value is not null)
                 {
-                    mediaTaskPublicId = mediaResult.Payload.TaskPublicId;
+                    mediaTaskPublicId = mediaResult.Value.TaskPublicId;
                     mediaStatus = ProductImportMediaStatuses.Queued;
                 }
                 else

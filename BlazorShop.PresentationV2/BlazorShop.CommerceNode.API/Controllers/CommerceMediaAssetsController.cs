@@ -1,7 +1,8 @@
 namespace BlazorShop.CommerceNode.API.Controllers
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Media;
-    using BlazorShop.Application.DTOs;
+    using BlazorShop.CommerceNode.API.Responses;
 
     using Microsoft.AspNetCore.Mvc;
 
@@ -47,9 +48,9 @@ namespace BlazorShop.CommerceNode.API.Controllers
         {
             if (file is null)
             {
-                return this.Failure<CommerceMediaAssetDto>(
-                    ServiceResponseType.ValidationError,
-                    "Image file is required.");
+                return ApplicationResult<CommerceMediaAssetDto>
+                    .Failed(ApplicationError.Validation("media.validation", "Image file is required."))
+                    .ToCommerceNodeActionResult();
             }
 
             await using var stream = file.OpenReadStream();
@@ -78,9 +79,9 @@ namespace BlazorShop.CommerceNode.API.Controllers
         {
             if (file is null)
             {
-                return this.Failure<CommerceMediaAssetDto>(
-                    ServiceResponseType.ValidationError,
-                    "Image file is required.");
+                return ApplicationResult<CommerceMediaAssetDto>
+                    .Failed(ApplicationError.Validation("media.validation", "Image file is required."))
+                    .ToCommerceNodeActionResult();
             }
 
             await using var stream = file.OpenReadStream();
@@ -100,28 +101,9 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return this.FromMediaAssetResult(result);
         }
 
-        private IActionResult FromMediaAssetResult<TPayload>(CommerceMediaAssetOperationResult<TPayload> result)
+        private IActionResult FromMediaAssetResult<TPayload>(ApplicationResult<TPayload> result)
         {
-            if (result.Success)
-            {
-                return this.Success(result.Payload, result.Message ?? "Media asset request completed.");
-            }
-
-            return this.Failure<TPayload>(
-                ToServiceResponseType(result.Failure),
-                result.Message ?? "Media asset request could not be completed.",
-                result.Payload);
-        }
-
-        private static ServiceResponseType ToServiceResponseType(CommerceMediaAssetOperationFailure? failure)
-        {
-            return failure switch
-            {
-                CommerceMediaAssetOperationFailure.Validation => ServiceResponseType.ValidationError,
-                CommerceMediaAssetOperationFailure.NotFound => ServiceResponseType.NotFound,
-                CommerceMediaAssetOperationFailure.Conflict => ServiceResponseType.Conflict,
-                _ => ServiceResponseType.Failure,
-            };
+            return result.ToCommerceNodeActionResult();
         }
     }
 }

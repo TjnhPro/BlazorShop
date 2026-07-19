@@ -1,7 +1,8 @@
 namespace BlazorShop.CommerceNode.API.Controllers
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Media;
-    using BlazorShop.Application.DTOs;
+    using BlazorShop.CommerceNode.API.Responses;
 
     using Microsoft.AspNetCore.Mvc;
 
@@ -44,28 +45,9 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return this.FromCategoryMediaResult(result);
         }
 
-        private IActionResult FromCategoryMediaResult<TPayload>(CategoryMediaOperationResult<TPayload> result)
+        private IActionResult FromCategoryMediaResult<TPayload>(ApplicationResult<TPayload> result)
         {
-            if (result.Success)
-            {
-                return this.Success(result.Payload, result.Message ?? "Category media request completed.");
-            }
-
-            return this.Failure<TPayload>(
-                ToServiceResponseType(result.Failure),
-                result.Message ?? "Category media request could not be completed.",
-                result.Payload);
-        }
-
-        private static ServiceResponseType ToServiceResponseType(CategoryMediaOperationFailure? failure)
-        {
-            return failure switch
-            {
-                CategoryMediaOperationFailure.Validation => ServiceResponseType.ValidationError,
-                CategoryMediaOperationFailure.NotFound => ServiceResponseType.NotFound,
-                CategoryMediaOperationFailure.Conflict => ServiceResponseType.Conflict,
-                _ => ServiceResponseType.Failure,
-            };
+            return result.ToCommerceNodeActionResult();
         }
     }
 }

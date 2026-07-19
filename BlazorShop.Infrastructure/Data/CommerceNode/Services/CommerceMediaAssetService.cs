@@ -4,6 +4,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using System.Security.Cryptography;
     using System.Text.RegularExpressions;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Domain.Entities.CommerceNode;
@@ -39,7 +40,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.urlBuilder = urlBuilder;
         }
 
-        public async Task<CommerceMediaAssetOperationResult<CommerceMediaAssetListResponse>> ListAsync(
+        public async Task<ApplicationResult<CommerceMediaAssetListResponse>> ListAsync(
             CommerceMediaAssetListQuery query,
             CancellationToken cancellationToken = default)
         {
@@ -72,7 +73,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 if (!CommerceMediaAssetUsageTypes.IsValid(usageType))
                 {
                     return Failed<CommerceMediaAssetListResponse>(
-                        CommerceMediaAssetOperationFailure.Validation,
+                        ApplicationErrorKind.Validation,
                         "Media asset usage type is not supported.");
                 }
 
@@ -97,17 +98,17 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     CalculateTotalPages(totalCount, pageSize)));
         }
 
-        public async Task<CommerceMediaAssetOperationResult<CommerceMediaAssetDto>> GetAsync(
+        public async Task<ApplicationResult<CommerceMediaAssetDto>> GetAsync(
             Guid assetPublicId,
             CancellationToken cancellationToken = default)
         {
             var asset = await this.GetScopedAssetAsync(assetPublicId, cancellationToken);
             return asset is null
-                ? Failed<CommerceMediaAssetDto>(CommerceMediaAssetOperationFailure.NotFound, "Media asset was not found.")
+                ? Failed<CommerceMediaAssetDto>(ApplicationErrorKind.NotFound, "Media asset was not found.")
                 : Succeeded(this.ToDto(asset));
         }
 
-        public async Task<CommerceMediaAssetOperationResult<CommerceMediaAssetDto>> UploadAsync(
+        public async Task<ApplicationResult<CommerceMediaAssetDto>> UploadAsync(
             CommerceMediaAssetUploadRequest request,
             CancellationToken cancellationToken = default)
         {
@@ -120,7 +121,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var validation = await ReadValidatedFileAsync(request, this.options.MaxUploadBytes, cancellationToken);
             if (!validation.Success)
             {
-                return Failed<CommerceMediaAssetDto>(CommerceMediaAssetOperationFailure.Validation, validation.Message);
+                return Failed<CommerceMediaAssetDto>(ApplicationErrorKind.Validation, validation.Message);
             }
 
             var file = validation.File!;
@@ -163,7 +164,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Succeeded(this.ToDto(asset), "Media asset uploaded.");
         }
 
-        public async Task<CommerceMediaAssetOperationResult<CommerceMediaAssetDto>> UpdateMetadataAsync(
+        public async Task<ApplicationResult<CommerceMediaAssetDto>> UpdateMetadataAsync(
             Guid assetPublicId,
             CommerceMediaAssetMetadataRequest request,
             CancellationToken cancellationToken = default)
@@ -171,13 +172,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var asset = await this.GetScopedAssetAsync(assetPublicId, cancellationToken);
             if (asset is null)
             {
-                return Failed<CommerceMediaAssetDto>(CommerceMediaAssetOperationFailure.NotFound, "Media asset was not found.");
+                return Failed<CommerceMediaAssetDto>(ApplicationErrorKind.NotFound, "Media asset was not found.");
             }
 
             var displayName = request.DisplayName?.Trim();
             if (string.IsNullOrWhiteSpace(displayName))
             {
-                return Failed<CommerceMediaAssetDto>(CommerceMediaAssetOperationFailure.Validation, "Display name is required.");
+                return Failed<CommerceMediaAssetDto>(ApplicationErrorKind.Validation, "Display name is required.");
             }
 
             asset.DisplayName = displayName;
@@ -189,7 +190,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 if (!CommerceMediaAssetUsageTypes.IsValid(usageType))
                 {
                     return Failed<CommerceMediaAssetDto>(
-                        CommerceMediaAssetOperationFailure.Validation,
+                        ApplicationErrorKind.Validation,
                         "Media asset usage type is not supported.");
                 }
 
@@ -202,7 +203,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Succeeded(this.ToDto(asset), "Media asset updated.");
         }
 
-        public async Task<CommerceMediaAssetOperationResult<CommerceMediaAssetDto>> ReplaceAsync(
+        public async Task<ApplicationResult<CommerceMediaAssetDto>> ReplaceAsync(
             Guid assetPublicId,
             CommerceMediaAssetUploadRequest request,
             CancellationToken cancellationToken = default)
@@ -210,13 +211,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var asset = await this.GetScopedAssetAsync(assetPublicId, cancellationToken);
             if (asset is null)
             {
-                return Failed<CommerceMediaAssetDto>(CommerceMediaAssetOperationFailure.NotFound, "Media asset was not found.");
+                return Failed<CommerceMediaAssetDto>(ApplicationErrorKind.NotFound, "Media asset was not found.");
             }
 
             var validation = await ReadValidatedFileAsync(request, this.options.MaxUploadBytes, cancellationToken);
             if (!validation.Success)
             {
-                return Failed<CommerceMediaAssetDto>(CommerceMediaAssetOperationFailure.Validation, validation.Message);
+                return Failed<CommerceMediaAssetDto>(ApplicationErrorKind.Validation, validation.Message);
             }
 
             var file = validation.File!;
@@ -250,14 +251,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Succeeded(this.ToDto(asset), "Media asset replaced.");
         }
 
-        public async Task<CommerceMediaAssetOperationResult<object>> DeleteAsync(
+        public async Task<ApplicationResult<object>> DeleteAsync(
             Guid assetPublicId,
             CancellationToken cancellationToken = default)
         {
             var asset = await this.GetScopedAssetAsync(assetPublicId, cancellationToken);
             if (asset is null)
             {
-                return Failed<object>(CommerceMediaAssetOperationFailure.NotFound, "Media asset was not found.");
+                return Failed<object>(ApplicationErrorKind.NotFound, "Media asset was not found.");
             }
 
             var isAssignedToCategory = await this.context.CategoryMediaAssignments
@@ -268,7 +269,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             if (isAssignedToCategory)
             {
                 return Failed<object>(
-                    CommerceMediaAssetOperationFailure.Conflict,
+                    ApplicationErrorKind.Conflict,
                     "Media asset is assigned to a category and cannot be deleted until the assignment is cleared.");
             }
 
@@ -306,7 +307,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     false,
                     Guid.Empty,
                     "Store scope could not be resolved.",
-                    CommerceMediaAssetOperationFailure.Validation);
+                    ApplicationErrorKind.Validation);
             }
 
             return new StoreScopeResult(true, storeResult.Payload);
@@ -444,25 +445,39 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return totalCount == 0 ? 0 : (int)Math.Ceiling(totalCount / (double)pageSize);
         }
 
-        private static CommerceMediaAssetOperationResult<TPayload> Succeeded<TPayload>(
+        private static ApplicationResult<TPayload> Succeeded<TPayload>(
             TPayload payload,
             string? message = null)
         {
-            return new CommerceMediaAssetOperationResult<TPayload>(true, message, payload);
+            return ApplicationResult<TPayload>.Succeeded(payload, message ?? "Media asset request completed.");
         }
 
-        private static CommerceMediaAssetOperationResult<TPayload> Failed<TPayload>(
-            CommerceMediaAssetOperationFailure failure,
+        private static ApplicationResult<TPayload> Failed<TPayload>(
+            ApplicationErrorKind failure,
             string? message)
         {
-            return new CommerceMediaAssetOperationResult<TPayload>(false, message, default, failure);
+            return ApplicationResult<TPayload>.Failed(ToError(failure, message));
+        }
+
+        private static ApplicationError ToError(ApplicationErrorKind failure, string? message)
+        {
+            var safeMessage = string.IsNullOrWhiteSpace(message)
+                ? "Media asset request could not be completed."
+                : message;
+            return failure switch
+            {
+                ApplicationErrorKind.Validation => ApplicationError.Validation("media.validation", safeMessage),
+                ApplicationErrorKind.NotFound => ApplicationError.NotFound("media.not_found", safeMessage),
+                ApplicationErrorKind.Conflict => ApplicationError.Conflict("media.conflict", safeMessage),
+                _ => ApplicationError.Failure("media.failure", safeMessage),
+            };
         }
 
         private sealed record StoreScopeResult(
             bool Success,
             Guid StoreId,
             string? Message = null,
-            CommerceMediaAssetOperationFailure? Failure = null);
+            ApplicationErrorKind? Failure = null);
 
         private sealed record FileValidationResult(bool Success, ValidatedImageFile? File = null, string? Message = null)
         {

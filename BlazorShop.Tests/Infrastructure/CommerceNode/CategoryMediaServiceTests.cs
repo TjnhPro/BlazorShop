@@ -1,5 +1,6 @@
 namespace BlazorShop.Tests.Infrastructure.CommerceNode
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Stores;
@@ -28,9 +29,9 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var result = await service.GetPrimaryAsync(categoryId);
 
             Assert.True(result.Success);
-            Assert.Null(result.Payload!.MediaAssetPublicId);
-            Assert.Null(result.Payload.PublicUrl);
-            Assert.False(result.Payload.IsPrimary);
+            Assert.Null(result.Value!.MediaAssetPublicId);
+            Assert.Null(result.Value.PublicUrl);
+            Assert.False(result.Value.IsPrimary);
         }
 
         [Fact]
@@ -52,8 +53,8 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 new SetCategoryPrimaryMediaRequest(assetPublicId, "Category tile"));
 
             Assert.True(result.Success);
-            Assert.Equal(assetPublicId, result.Payload!.MediaAssetPublicId);
-            Assert.Equal("Category tile", result.Payload.AltText);
+            Assert.Equal(assetPublicId, result.Value!.MediaAssetPublicId);
+            Assert.Equal("Category tile", result.Value.AltText);
             Assert.Contains("/media/assets/cccccccc-cccc-cccc-cccc-cccccccccccc/category.jpg?w=600&h=400&fit=cover&format=webp&v=", category.Image);
             Assert.Equal([storeId], cache.InvalidatedStoreIds);
             Assert.Single(context.CategoryMediaAssignments);
@@ -78,7 +79,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 new SetCategoryPrimaryMediaRequest(assetPublicId));
 
             Assert.False(result.Success);
-            Assert.Equal(CategoryMediaOperationFailure.NotFound, result.Failure);
+            Assert.Equal(ApplicationErrorKind.NotFound, result.Error!.Kind);
             Assert.Empty(context.CategoryMediaAssignments);
         }
 

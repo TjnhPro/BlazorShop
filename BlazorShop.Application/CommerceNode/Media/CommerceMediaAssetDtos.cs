@@ -44,16 +44,4 @@ namespace BlazorShop.Application.CommerceNode.Media
         string? ContentType,
         long FileSizeBytes);
 
-    public sealed record CommerceMediaAssetOperationResult<TPayload>(
-        bool Success,
-        string? Message = null,
-        TPayload? Payload = default,
-        CommerceMediaAssetOperationFailure? Failure = null);
-
-    public enum CommerceMediaAssetOperationFailure
-    {
-        Validation,
-        NotFound,
-        Conflict
-    }
 }

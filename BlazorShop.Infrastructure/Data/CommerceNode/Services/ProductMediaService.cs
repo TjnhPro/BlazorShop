@@ -4,6 +4,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     using System.Text;
     using System.Text.Json;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.CommerceNode.Stores;
@@ -38,7 +39,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.urlBuilder = urlBuilder;
         }
 
-        public async Task<ProductMediaOperationResult<ProductMediaListResponse>> ListAsync(
+        public async Task<ApplicationResult<ProductMediaListResponse>> ListAsync(
             Guid productId,
             ProductMediaListQuery query,
             CancellationToken cancellationToken = default)
@@ -75,7 +76,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     totalCount <= 0 ? 0 : (int)Math.Ceiling(totalCount / (double)pageSize)));
         }
 
-        public async Task<ProductMediaOperationResult<ImportProductMediaResponse>> ImportAsync(
+        public async Task<ApplicationResult<ImportProductMediaResponse>> ImportAsync(
             Guid productId,
             ImportProductMediaRequest request,
             string? createdBy = null,
@@ -97,7 +98,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 cancellationToken);
         }
 
-        public async Task<ProductMediaOperationResult<ImportProductMediaResponse>> ImportForStoreAsync(
+        public async Task<ApplicationResult<ImportProductMediaResponse>> ImportForStoreAsync(
             Guid storeId,
             Guid productId,
             ImportProductMediaRequest request,
@@ -107,7 +108,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         {
             if (storeId == Guid.Empty)
             {
-                return Failed<ImportProductMediaResponse>(ProductMediaOperationFailure.Validation, "Store id is required.");
+                return Failed<ImportProductMediaResponse>(ApplicationErrorKind.Validation, "Store id is required.");
             }
 
             var productExists = await this.context.Products
@@ -117,7 +118,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     cancellationToken);
             if (!productExists)
             {
-                return Failed<ImportProductMediaResponse>(ProductMediaOperationFailure.NotFound, "Product was not found for the current store.");
+                return Failed<ImportProductMediaResponse>(ApplicationErrorKind.NotFound, "Product was not found for the current store.");
             }
 
             return await this.ImportScopedAsync(
@@ -129,7 +130,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 cancellationToken);
         }
 
-        private async Task<ProductMediaOperationResult<ImportProductMediaResponse>> ImportScopedAsync(
+        private async Task<ApplicationResult<ImportProductMediaResponse>> ImportScopedAsync(
             Guid storeId,
             Guid productId,
             ImportProductMediaRequest request,
@@ -140,7 +141,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var validationError = ValidateImportRequest(request);
             if (validationError is not null)
             {
-                return Failed<ImportProductMediaResponse>(ProductMediaOperationFailure.Validation, validationError);
+                return Failed<ImportProductMediaResponse>(ApplicationErrorKind.Validation, validationError);
             }
 
             var now = DateTimeOffset.UtcNow;
@@ -212,7 +213,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             if (!taskResult.Success || taskResult.Payload is null)
             {
                 return Failed<ImportProductMediaResponse>(
-                    ProductMediaOperationFailure.Conflict,
+                    ApplicationErrorKind.Conflict,
                     taskResult.Message ?? "Product media import task could not be queued.");
             }
 
@@ -223,7 +224,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Succeeded("Product media import queued.", response);
         }
 
-        public async Task<ProductMediaOperationResult<ProductMediaDto>> SetPrimaryAsync(
+        public async Task<ApplicationResult<ProductMediaDto>> SetPrimaryAsync(
             Guid productId,
             Guid mediaPublicId,
             CancellationToken cancellationToken = default)
@@ -245,12 +246,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             if (media is null)
             {
-                return Failed<ProductMediaDto>(ProductMediaOperationFailure.NotFound, "Product media was not found.");
+                return Failed<ProductMediaDto>(ApplicationErrorKind.NotFound, "Product media was not found.");
             }
 
             if (media.Status != ProductMediaStatuses.Stored)
             {
-                return Failed<ProductMediaDto>(ProductMediaOperationFailure.Conflict, "Only stored media can be primary.");
+                return Failed<ProductMediaDto>(ApplicationErrorKind.Conflict, "Only stored media can be primary.");
             }
 
             await this.SetPrimaryMediaAsync(scope.Product!, media, DateTimeOffset.UtcNow, cancellationToken);
@@ -258,14 +259,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Succeeded("Primary product media updated.", this.Map(media));
         }
 
-        public async Task<ProductMediaOperationResult<ProductMediaListResponse>> UpdateOrderAsync(
+        public async Task<ApplicationResult<ProductMediaListResponse>> UpdateOrderAsync(
             Guid productId,
             UpdateProductMediaOrderRequest request,
             CancellationToken cancellationToken = default)
         {
             if (request.Items.Count == 0)
             {
-                return Failed<ProductMediaListResponse>(ProductMediaOperationFailure.Validation, "At least one media order item is required.");
+                return Failed<ProductMediaListResponse>(ApplicationErrorKind.Validation, "At least one media order item is required.");
             }
 
             var scope = await this.ResolveProductScopeAsync(productId, asTracking: false, cancellationToken);
@@ -284,7 +285,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             {
                 if (!rowsByPublicId.TryGetValue(item.MediaPublicId, out var media))
                 {
-                    return Failed<ProductMediaListResponse>(ProductMediaOperationFailure.NotFound, "One or more media items were not found.");
+                    return Failed<ProductMediaListResponse>(ApplicationErrorKind.NotFound, "One or more media items were not found.");
                 }
 
                 media.SortOrder = Math.Max(0, item.SortOrder);
@@ -296,7 +297,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return await this.ListAsync(productId, new ProductMediaListQuery(PageSize: 100), cancellationToken);
         }
 
-        public async Task<ProductMediaOperationResult<ProductMediaListResponse>> DeleteAsync(
+        public async Task<ApplicationResult<ProductMediaListResponse>> DeleteAsync(
             Guid productId,
             Guid mediaPublicId,
             CancellationToken cancellationToken = default)
@@ -318,7 +319,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             if (media is null)
             {
-                return Failed<ProductMediaListResponse>(ProductMediaOperationFailure.NotFound, "Product media was not found.");
+                return Failed<ProductMediaListResponse>(ApplicationErrorKind.NotFound, "Product media was not found.");
             }
 
             var now = DateTimeOffset.UtcNow;
@@ -339,7 +340,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return await this.ListAsync(productId, new ProductMediaListQuery(PageSize: 100), cancellationToken);
         }
 
-        public async Task<ProductMediaOperationResult<ImportProductMediaResponse>> RetryAsync(
+        public async Task<ApplicationResult<ImportProductMediaResponse>> RetryAsync(
             Guid productId,
             Guid mediaPublicId,
             string? createdBy = null,
@@ -363,12 +364,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             if (media is null)
             {
-                return Failed<ImportProductMediaResponse>(ProductMediaOperationFailure.NotFound, "Product media was not found.");
+                return Failed<ImportProductMediaResponse>(ApplicationErrorKind.NotFound, "Product media was not found.");
             }
 
             if (string.IsNullOrWhiteSpace(media.OriginalSourceUrl))
             {
-                return Failed<ImportProductMediaResponse>(ProductMediaOperationFailure.Conflict, "Product media has no source URL to retry.");
+                return Failed<ImportProductMediaResponse>(ApplicationErrorKind.Conflict, "Product media has no source URL to retry.");
             }
 
             media.Status = ProductMediaStatuses.Pending;
@@ -405,7 +406,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             if (!taskResult.Success || taskResult.Payload is null)
             {
                 return Failed<ImportProductMediaResponse>(
-                    ProductMediaOperationFailure.Conflict,
+                    ApplicationErrorKind.Conflict,
                     taskResult.Message ?? "Product media retry task could not be queued.");
             }
 
@@ -422,7 +423,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var storeResult = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
             if (!storeResult.Success || storeResult.Payload == Guid.Empty)
             {
-                return ProductScopeResult.Failed(ProductMediaOperationFailure.Validation, storeResult.Message ?? "Current store could not be resolved.");
+                return ProductScopeResult.Failed(ApplicationErrorKind.Validation, storeResult.Message ?? "Current store could not be resolved.");
             }
 
             var storeId = storeResult.Payload;
@@ -432,7 +433,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 cancellationToken);
 
             return product is null
-                ? ProductScopeResult.Failed(ProductMediaOperationFailure.NotFound, "Product was not found for the current store.")
+                ? ProductScopeResult.Failed(ApplicationErrorKind.NotFound, "Product was not found for the current store.")
                 : ProductScopeResult.Succeeded(storeId, product);
         }
 
@@ -619,26 +620,37 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
 
-        private static ProductMediaOperationResult<TPayload> Succeeded<TPayload>(string message, TPayload payload)
+        private static ApplicationResult<TPayload> Succeeded<TPayload>(string message, TPayload payload)
         {
-            return new ProductMediaOperationResult<TPayload>(true, message, payload);
+            return ApplicationResult<TPayload>.Succeeded(payload, message);
         }
 
-        private static ProductMediaOperationResult<TPayload> Failed<TPayload>(
-            ProductMediaOperationFailure failure,
+        private static ApplicationResult<TPayload> Failed<TPayload>(
+            ApplicationErrorKind failure,
             string? message)
         {
-            return new ProductMediaOperationResult<TPayload>(
-                false,
-                string.IsNullOrWhiteSpace(message) ? "Product media request could not be completed." : message,
-                Failure: failure);
+            return ApplicationResult<TPayload>.Failed(ToError(failure, message));
+        }
+
+        private static ApplicationError ToError(ApplicationErrorKind failure, string? message)
+        {
+            var safeMessage = string.IsNullOrWhiteSpace(message)
+                ? "Product media request could not be completed."
+                : message;
+            return failure switch
+            {
+                ApplicationErrorKind.Validation => ApplicationError.Validation("product_media.validation", safeMessage),
+                ApplicationErrorKind.NotFound => ApplicationError.NotFound("product_media.not_found", safeMessage),
+                ApplicationErrorKind.Conflict => ApplicationError.Conflict("product_media.conflict", safeMessage),
+                _ => ApplicationError.Failure("product_media.failure", safeMessage),
+            };
         }
 
         private sealed record ProductScopeResult(
             bool Success,
             Guid StoreId,
             Product? Product,
-            ProductMediaOperationFailure? Failure = null,
+            ApplicationErrorKind? Failure = null,
             string? Message = null)
         {
             public static ProductScopeResult Succeeded(Guid storeId, Product product)
@@ -646,7 +658,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return new ProductScopeResult(true, storeId, product);
             }
 
-            public static ProductScopeResult Failed(ProductMediaOperationFailure failure, string message)
+            public static ProductScopeResult Failed(ApplicationErrorKind failure, string message)
             {
                 return new ProductScopeResult(false, Guid.Empty, null, failure, message);
             }

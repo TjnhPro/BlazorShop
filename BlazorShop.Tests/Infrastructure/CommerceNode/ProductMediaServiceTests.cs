@@ -129,7 +129,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var result = await service.ListAsync(productId, new ProductMediaListQuery());
 
             Assert.True(result.Success);
-            Assert.Equal("Lifestyle hero", Assert.Single(result.Payload!.Items).AltText);
+            Assert.Equal("Lifestyle hero", Assert.Single(result.Value!.Items).AltText);
         }
 
         private static ProductMediaService CreateService(

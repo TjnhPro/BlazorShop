@@ -1,30 +1,32 @@
 namespace BlazorShop.Application.CommerceNode.Media
 {
+    using BlazorShop.Application.Common.Results;
+
     public interface ICommerceMediaAssetService
     {
-        Task<CommerceMediaAssetOperationResult<CommerceMediaAssetListResponse>> ListAsync(
+        Task<ApplicationResult<CommerceMediaAssetListResponse>> ListAsync(
             CommerceMediaAssetListQuery query,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceMediaAssetOperationResult<CommerceMediaAssetDto>> GetAsync(
+        Task<ApplicationResult<CommerceMediaAssetDto>> GetAsync(
             Guid assetPublicId,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceMediaAssetOperationResult<CommerceMediaAssetDto>> UploadAsync(
+        Task<ApplicationResult<CommerceMediaAssetDto>> UploadAsync(
             CommerceMediaAssetUploadRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceMediaAssetOperationResult<CommerceMediaAssetDto>> UpdateMetadataAsync(
+        Task<ApplicationResult<CommerceMediaAssetDto>> UpdateMetadataAsync(
             Guid assetPublicId,
             CommerceMediaAssetMetadataRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceMediaAssetOperationResult<CommerceMediaAssetDto>> ReplaceAsync(
+        Task<ApplicationResult<CommerceMediaAssetDto>> ReplaceAsync(
             Guid assetPublicId,
             CommerceMediaAssetUploadRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<CommerceMediaAssetOperationResult<object>> DeleteAsync(
+        Task<ApplicationResult<object>> DeleteAsync(
             Guid assetPublicId,
             CancellationToken cancellationToken = default);
     }

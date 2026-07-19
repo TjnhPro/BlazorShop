@@ -13,16 +13,4 @@ namespace BlazorShop.Application.CommerceNode.Media
         Guid MediaAssetPublicId,
         string? AltText = null);
 
-    public sealed record CategoryMediaOperationResult<TPayload>(
-        bool Success,
-        string? Message = null,
-        TPayload? Payload = default,
-        CategoryMediaOperationFailure? Failure = null);
-
-    public enum CategoryMediaOperationFailure
-    {
-        Validation,
-        NotFound,
-        Conflict
-    }
 }

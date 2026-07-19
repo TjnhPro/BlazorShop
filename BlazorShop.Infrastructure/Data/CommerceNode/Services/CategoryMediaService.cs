@@ -1,5 +1,6 @@
 namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Catalog;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Stores;
@@ -27,7 +28,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.catalogQueryCache = catalogQueryCache;
         }
 
-        public async Task<CategoryMediaOperationResult<CategoryMediaAssignmentDto>> GetPrimaryAsync(
+        public async Task<ApplicationResult<CategoryMediaAssignmentDto>> GetPrimaryAsync(
             Guid categoryId,
             CancellationToken cancellationToken = default)
         {
@@ -44,14 +45,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Succeeded("Category media retrieved.", this.ToDto(categoryId, assignment));
         }
 
-        public async Task<CategoryMediaOperationResult<CategoryMediaAssignmentDto>> SetPrimaryAsync(
+        public async Task<ApplicationResult<CategoryMediaAssignmentDto>> SetPrimaryAsync(
             Guid categoryId,
             SetCategoryPrimaryMediaRequest request,
             CancellationToken cancellationToken = default)
         {
             if (request is null || request.MediaAssetPublicId == Guid.Empty)
             {
-                return Failed(CategoryMediaOperationFailure.Validation, "Media asset public id is required.");
+                return Failed(ApplicationErrorKind.Validation, "Media asset public id is required.");
             }
 
             var scope = await this.ResolveCategoryScopeAsync(categoryId, asTracking: true, cancellationToken);
@@ -66,7 +67,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     cancellationToken);
             if (asset is null)
             {
-                return Failed(CategoryMediaOperationFailure.NotFound, "Media asset was not found for the current store.");
+                return Failed(ApplicationErrorKind.NotFound, "Media asset was not found for the current store.");
             }
 
             var now = DateTimeOffset.UtcNow;
@@ -107,7 +108,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return Succeeded("Category primary media updated.", this.ToDto(categoryId, assignment));
         }
 
-        public async Task<CategoryMediaOperationResult<CategoryMediaAssignmentDto>> ClearPrimaryAsync(
+        public async Task<ApplicationResult<CategoryMediaAssignmentDto>> ClearPrimaryAsync(
             Guid categoryId,
             CancellationToken cancellationToken = default)
         {
@@ -151,7 +152,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var storeResult = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
             if (!storeResult.Success || storeResult.Payload == Guid.Empty)
             {
-                return CategoryScopeResult.Failed(CategoryMediaOperationFailure.Validation, storeResult.Message ?? "Current store could not be resolved.");
+                return CategoryScopeResult.Failed(ApplicationErrorKind.Validation, storeResult.Message ?? "Current store could not be resolved.");
             }
 
             var storeId = storeResult.Payload;
@@ -161,7 +162,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 cancellationToken);
 
             return category is null
-                ? CategoryScopeResult.Failed(CategoryMediaOperationFailure.NotFound, "Category was not found for the current store.")
+                ? CategoryScopeResult.Failed(ApplicationErrorKind.NotFound, "Category was not found for the current store.")
                 : CategoryScopeResult.Succeeded(storeId, category);
         }
 
@@ -202,28 +203,39 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
 
-        private static CategoryMediaOperationResult<CategoryMediaAssignmentDto> Succeeded(
+        private static ApplicationResult<CategoryMediaAssignmentDto> Succeeded(
             string message,
             CategoryMediaAssignmentDto payload)
         {
-            return new CategoryMediaOperationResult<CategoryMediaAssignmentDto>(true, message, payload);
+            return ApplicationResult<CategoryMediaAssignmentDto>.Succeeded(payload, message);
         }
 
-        private static CategoryMediaOperationResult<CategoryMediaAssignmentDto> Failed(
-            CategoryMediaOperationFailure failure,
+        private static ApplicationResult<CategoryMediaAssignmentDto> Failed(
+            ApplicationErrorKind failure,
             string? message)
         {
-            return new CategoryMediaOperationResult<CategoryMediaAssignmentDto>(
-                false,
-                string.IsNullOrWhiteSpace(message) ? "Category media request could not be completed." : message,
-                Failure: failure);
+            return ApplicationResult<CategoryMediaAssignmentDto>.Failed(ToError(failure, message));
+        }
+
+        private static ApplicationError ToError(ApplicationErrorKind failure, string? message)
+        {
+            var safeMessage = string.IsNullOrWhiteSpace(message)
+                ? "Category media request could not be completed."
+                : message;
+            return failure switch
+            {
+                ApplicationErrorKind.Validation => ApplicationError.Validation("category_media.validation", safeMessage),
+                ApplicationErrorKind.NotFound => ApplicationError.NotFound("category_media.not_found", safeMessage),
+                ApplicationErrorKind.Conflict => ApplicationError.Conflict("category_media.conflict", safeMessage),
+                _ => ApplicationError.Failure("category_media.failure", safeMessage),
+            };
         }
 
         private sealed record CategoryScopeResult(
             bool Success,
             Guid StoreId,
             Category? Category,
-            CategoryMediaOperationFailure? Failure = null,
+            ApplicationErrorKind? Failure = null,
             string? Message = null)
         {
             public static CategoryScopeResult Succeeded(Guid storeId, Category category)
@@ -231,7 +243,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return new CategoryScopeResult(true, storeId, category);
             }
 
-            public static CategoryScopeResult Failed(CategoryMediaOperationFailure failure, string message)
+            public static CategoryScopeResult Failed(ApplicationErrorKind failure, string message)
             {
                 return new CategoryScopeResult(false, Guid.Empty, null, failure, message);
             }
