@@ -61,7 +61,7 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
         [Fact]
         public void CommerceNodeSwagger_DefinesStoreEmailOperationMetadata()
         {
-            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwaggerExtensions.cs");
+            var source = ReadCommerceNodeSwaggerSource();
 
             foreach (var operationId in new[]
             {
@@ -82,6 +82,21 @@ namespace BlazorShop.Tests.PresentationV2.ControlPlane
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath.Replace('/', Path.DirectorySeparatorChar)));
+        }
+
+        private static string ReadCommerceNodeSwaggerSource()
+        {
+            var swaggerDirectory = Path.Combine(
+                FindRepositoryRoot(),
+                "BlazorShop.PresentationV2",
+                "BlazorShop.CommerceNode.API",
+                "Swagger");
+
+            return string.Join(
+                Environment.NewLine,
+                Directory.EnumerateFiles(swaggerDirectory, "*.cs")
+                    .OrderBy(path => path, StringComparer.Ordinal)
+                    .Select(File.ReadAllText));
         }
 
         private static string FindRepositoryRoot()

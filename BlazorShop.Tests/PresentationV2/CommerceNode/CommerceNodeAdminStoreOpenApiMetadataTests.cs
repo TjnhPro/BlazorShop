@@ -7,7 +7,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         [Fact]
         public void CommerceStoreAdminSwaggerFilter_DefinesStableOperationMetadata()
         {
-            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwaggerExtensions.cs");
+            var source = ReadCommerceNodeSwaggerSource();
 
             var operationIds = new[]
             {
@@ -38,7 +38,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         [Fact]
         public void CommerceStoreAdminSwagger_DocumentsNodeCredentialHeaders()
         {
-            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwaggerExtensions.cs");
+            var source = ReadCommerceNodeSwaggerSource();
 
             Assert.Contains("CommerceNodeAdminCredentialHeaderOperationFilter", source);
             Assert.Contains("CommerceNodeCredentialMiddleware.NodeKeyHeaderName", source);
@@ -48,7 +48,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         [Fact]
         public void CommerceCurrencyAdminSwaggerFilter_DefinesStableOperationMetadata()
         {
-            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwaggerExtensions.cs");
+            var source = ReadCommerceNodeSwaggerSource();
 
             var operationIds = new[]
             {
@@ -77,7 +77,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         [Fact]
         public void CommerceSeoSlugAdminSwaggerFilter_DefinesStableOperationMetadata()
         {
-            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwaggerExtensions.cs");
+            var source = ReadCommerceNodeSwaggerSource();
 
             var operationIds = new[]
             {
@@ -100,7 +100,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         [Fact]
         public void CommerceCategoryMediaAdminSwaggerFilter_DefinesStableOperationMetadata()
         {
-            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwaggerExtensions.cs");
+            var source = ReadCommerceNodeSwaggerSource();
 
             var operationIds = new[]
             {
@@ -122,7 +122,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         [Fact]
         public void CommerceShippingSettingsAdminSwaggerFilter_DefinesStableOperationMetadata()
         {
-            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwaggerExtensions.cs");
+            var source = ReadCommerceNodeSwaggerSource();
 
             var operationIds = new[]
             {
@@ -144,7 +144,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         [Fact]
         public void CommerceTransactionalMessageAdminSwaggerFilter_DefinesStableOperationMetadata()
         {
-            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwaggerExtensions.cs");
+            var source = ReadCommerceNodeSwaggerSource();
 
             var operationIds = new[]
             {
@@ -171,9 +171,19 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("requestBody.Required = true", source);
         }
 
-        private static string ReadRepositoryFile(string relativePath)
+        private static string ReadCommerceNodeSwaggerSource()
         {
-            return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath));
+            var swaggerDirectory = Path.Combine(
+                FindRepositoryRoot(),
+                "BlazorShop.PresentationV2",
+                "BlazorShop.CommerceNode.API",
+                "Swagger");
+
+            return string.Join(
+                Environment.NewLine,
+                Directory.EnumerateFiles(swaggerDirectory, "*.cs")
+                    .OrderBy(path => path, StringComparer.Ordinal)
+                    .Select(File.ReadAllText));
         }
 
         private static string FindRepositoryRoot()

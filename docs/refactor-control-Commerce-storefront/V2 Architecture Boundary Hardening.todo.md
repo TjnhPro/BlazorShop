@@ -554,10 +554,15 @@ Goal: split large files mechanically by responsibility without behavior changes.
 
 ### Phase 7A - Commerce Node Swagger Extensions
 
-- [ ] Split `CommerceNodeSwaggerExtensions.cs` into one operation metadata filter per feature group.
-- [ ] Keep shared helper methods in a small internal helper file.
-- [ ] Preserve operation IDs, summaries, security schemes, and response schemas.
-- [ ] Add/keep tests that compare OpenAPI path and operation snapshots before and after split.
+- [x] Split `CommerceNodeSwaggerExtensions.cs` into one operation metadata filter per feature group.
+- [x] Keep shared helper methods in a small internal helper file.
+- [x] Preserve operation IDs, summaries, security schemes, and response schemas.
+- [x] Add/keep tests that compare OpenAPI path and operation snapshots before and after split.
+
+Phase 7A focused verification:
+
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~OpenApi|FullyQualifiedName~ArchitectureBoundary|FullyQualifiedName~EmailSmtp"` - Passed: 70, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
 
 ### Phase 7B - Commerce Node Development Seeder
 

@@ -237,11 +237,10 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void KnownHotspotFileSizes_MatchPhase0Baseline()
+        public void KnownHotspotFileSizes_MatchCurrentPhaseBaseline()
         {
             var hotspots = new[]
             {
-                new HotspotBaseline("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwaggerExtensions.cs", 1675),
                 new HotspotBaseline("BlazorShop.Infrastructure/Data/CommerceNode/CommerceNodeDevelopmentSeeder.cs", 1787),
                 new HotspotBaseline("BlazorShop.Infrastructure/Data/ControlPlane/ControlPlaneDbContext.cs", 712, 27),
                 new HotspotBaseline("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/CommerceProducts.razor", 1691),
@@ -261,6 +260,34 @@ namespace BlazorShop.Tests.Architecture
                         Regex.Matches(source, "modelBuilder\\.Entity").Count);
                 }
             }
+        }
+
+        [Fact]
+        public void CommerceNodeSwaggerExtensions_IsSplitByFeatureAfterPhase7A()
+        {
+            var swaggerDirectory = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger");
+            var files = Directory.EnumerateFiles(swaggerDirectory, "CommerceNodeSwagger*.cs")
+                .Select(ToRepositoryRelativePath)
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.Contains(
+                "BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwagger.StoreAdminOperationMetadataFilter.cs",
+                files);
+            Assert.Contains(
+                "BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwagger.StorefrontOperationMetadataFilter.cs",
+                files);
+            Assert.Contains(
+                "BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwaggerResponseHelpers.cs",
+                files);
+
+            Assert.True(
+                File.ReadLines(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/CommerceNodeSwaggerExtensions.cs")).Count() <= 250);
+            Assert.All(
+                files,
+                file => Assert.True(
+                    File.ReadLines(RepositoryPath(file)).Count() <= 650,
+                    $"{file} should stay below the Phase 7A split threshold."));
         }
 
         [Fact]
