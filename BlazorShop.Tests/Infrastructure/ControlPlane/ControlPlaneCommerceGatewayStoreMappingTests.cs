@@ -7,7 +7,6 @@ namespace BlazorShop.Tests.Infrastructure.ControlPlane
     using BlazorShop.Application.CommerceNode.Shipping;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.ControlPlane.Nodes;
-    using BlazorShop.Application.ControlPlane.CommerceGateway;
     using BlazorShop.Application.ControlPlane.Stores;
     using BlazorShop.Domain.Contracts;
     using BlazorShop.Infrastructure.Data.ControlPlane;

@@ -6,7 +6,6 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.ProductImports;
-    using BlazorShop.Application.ControlPlane.CommerceGateway;
     using BlazorShop.Domain.Entities.ControlPlane;
 
     using Microsoft.EntityFrameworkCore;

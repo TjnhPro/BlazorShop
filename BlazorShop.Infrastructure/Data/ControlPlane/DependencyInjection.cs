@@ -3,7 +3,6 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using BlazorShop.Application.ControlPlane.Audit;
     using BlazorShop.Application.ControlPlane.Actions;
     using BlazorShop.Application.ControlPlane.Catalog;
-    using BlazorShop.Application.ControlPlane.CommerceGateway;
     using BlazorShop.Application.ControlPlane.CommerceGateway.Categories;
     using BlazorShop.Application.ControlPlane.CommerceGateway.Content;
     using BlazorShop.Application.ControlPlane.CommerceGateway.Currencies;

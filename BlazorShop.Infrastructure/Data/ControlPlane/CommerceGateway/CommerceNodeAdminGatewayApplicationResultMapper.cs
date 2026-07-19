@@ -1,7 +1,6 @@
 namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using BlazorShop.Application.Common.Results;
-    using BlazorShop.Application.ControlPlane.CommerceGateway;
 
     public static class CommerceNodeAdminGatewayApplicationResultMapper
     {

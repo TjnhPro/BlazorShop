@@ -20,7 +20,7 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void ApplicationGatewayTransportPrimitives_AreStillIsolatedToAdminGatewayTransportBaseline()
+        public void ApplicationGatewayContracts_DoNotExposeHttpTransportPrimitives()
         {
             var offenders = EnumerateSourceFiles("BlazorShop.Application/ControlPlane/CommerceGateway")
                 .Where(path =>
@@ -34,17 +34,8 @@ namespace BlazorShop.Tests.Architecture
                 .OrderBy(path => path, StringComparer.Ordinal)
                 .ToArray();
 
-            Assert.Equal(
-                [
-                    "BlazorShop.Application/ControlPlane/CommerceGateway/CommerceNodeAdminGatewayDtos.cs",
-                ],
-                offenders);
-
-            var transport = ReadRepositoryFile("BlazorShop.Application/ControlPlane/CommerceGateway/CommerceNodeAdminGatewayDtos.cs");
-            Assert.Contains("interface ICommerceNodeAdminGatewayTransport", transport, StringComparison.Ordinal);
-            Assert.Contains("HttpMethod method", transport, StringComparison.Ordinal);
-            Assert.Contains("string path", transport, StringComparison.Ordinal);
-            Assert.Contains("int? HttpStatusCode", transport, StringComparison.Ordinal);
+            Assert.Empty(offenders);
+            Assert.False(File.Exists(RepositoryPath("BlazorShop.Application/ControlPlane/CommerceGateway/CommerceNodeAdminGatewayDtos.cs")));
         }
 
         [Fact]

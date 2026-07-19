@@ -31,7 +31,7 @@ This plan covers the architecture hardening issues verified against the current 
 
 ## Verified Current Evidence
 
-- [x] `BlazorShop.Application/ControlPlane/CommerceGateway/CommerceNodeAdminGatewayDtos.cs` contains `ICommerceNodeAdminGatewayTransport` with `HttpMethod`, HTTP path, and status-bearing result.
+- [x] Phase 0 baseline: `BlazorShop.Application/ControlPlane/CommerceGateway/CommerceNodeAdminGatewayDtos.cs` contained `ICommerceNodeAdminGatewayTransport` with `HttpMethod`, HTTP path, and status-bearing result. Resolved in Phase 1B.
 - [x] `ControlPlaneCommerceCatalogResult<T>` has 236 current generic references across Application, Infrastructure, and PresentationV2.
 - [x] `ApplicationResult<T>`, `ApplicationError`, and `ApplicationErrorKind.RemoteFailure` already exist under `BlazorShop.Application/Common/Results`.
 - [x] `IControlPlaneProductGateway` has 31 current methods spanning product CRUD, product SEO, product import, variation template, category media, variant, and inventory in one interface.
@@ -126,13 +126,19 @@ Phase 1A focused verification:
 
 ### Phase 1B - Move Generic Transport Contract Out Of Application
 
-- [ ] Create an internal Infrastructure transport contract under `BlazorShop.Infrastructure/Data/ControlPlane`, for example `ICommerceNodeAdminGatewayTransport`.
-- [ ] Move `CommerceNodeAdminGatewayResult<T>`, media transport result, and transport failure enum into Infrastructure if they are only transport concerns.
-- [ ] Keep capability interfaces in `BlazorShop.Application/ControlPlane/CommerceGateway/*`.
-- [ ] Update `CommerceNodeAdminGatewayTransport` and `ControlPlaneCommerceGatewayBase` to use the internal Infrastructure transport contract.
-- [ ] Update `DependencyInjection.cs` registration to register the concrete transport internally without exposing it through Application.
-- [ ] Remove Application-level `ICommerceNodeAdminGatewayTransport` after all compile errors are resolved.
-- [ ] Add architecture test: `BlazorShop.Application/ControlPlane/CommerceGateway` must not contain `HttpMethod`, `HttpStatusCode`, `HttpClient`, or transport path strings in public interfaces.
+- [x] Create an Infrastructure transport contract under `BlazorShop.Infrastructure/Data/ControlPlane/CommerceGateway`.
+- [x] Move `CommerceNodeAdminGatewayResult<T>`, media transport result, and transport failure enum into Infrastructure transport contracts.
+- [x] Keep capability interfaces in `BlazorShop.Application/ControlPlane/CommerceGateway/*`.
+- [x] Update `CommerceNodeAdminGatewayTransport` and `ControlPlaneCommerceGatewayBase` to use the Infrastructure transport contract.
+- [x] Update `DependencyInjection.cs` registration to register the concrete transport without exposing it through Application.
+- [x] Remove Application-level `ICommerceNodeAdminGatewayTransport` after all compile errors are resolved.
+- [x] Add architecture test: `BlazorShop.Application/ControlPlane/CommerceGateway` must not contain `HttpMethod`, `HttpStatusCode`, or `HttpClient` transport primitives.
+
+Phase 1B focused verification:
+
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~ControlPlaneCommerceGatewayStoreMapping|FullyQualifiedName~CommerceNodeAdminGatewayApplicationResultMapper|FullyQualifiedName~ArchitectureBoundary"` - Passed: 44, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors; Tailwind completed with existing Browserslist stale notice.
 
 ### Phase 1C - Migrate Gateway Return Types By Capability
 

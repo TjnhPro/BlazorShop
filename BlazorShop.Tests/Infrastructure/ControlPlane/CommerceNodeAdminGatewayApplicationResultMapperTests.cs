@@ -1,7 +1,6 @@
 namespace BlazorShop.Tests.Infrastructure.ControlPlane
 {
     using BlazorShop.Application.Common.Results;
-    using BlazorShop.Application.ControlPlane.CommerceGateway;
     using BlazorShop.Infrastructure.Data.ControlPlane;
 
     using Xunit;

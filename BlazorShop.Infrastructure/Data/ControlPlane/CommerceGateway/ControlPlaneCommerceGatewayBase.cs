@@ -3,7 +3,6 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
     using System.Globalization;
 
     using BlazorShop.Application.ControlPlane.Catalog;
-    using BlazorShop.Application.ControlPlane.CommerceGateway;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;

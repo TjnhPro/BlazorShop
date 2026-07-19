@@ -1,4 +1,4 @@
-namespace BlazorShop.Application.ControlPlane.CommerceGateway
+namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.ProductImports;
