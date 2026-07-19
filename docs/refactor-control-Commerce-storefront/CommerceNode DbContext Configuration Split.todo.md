@@ -302,25 +302,37 @@ Goal: tach transactional message/email mapping va sua test text-based dang doc D
 
 Scope:
 
-- [ ] `MessageTemplateConfiguration`.
-- [ ] `QueuedMessageConfiguration`.
-- [ ] `StoreEmailSettingsConfiguration`.
-- [ ] `CommerceNodeSeedData` for default message templates.
+- [x] `MessageTemplateConfiguration`.
+- [x] `QueuedMessageConfiguration`.
+- [x] `StoreEmailSettingsConfiguration`.
+- [x] `CommerceNodeSeedData` for default message templates.
 
 Tasks:
 
-- [ ] Move `CreateDefaultMessageTemplates` and `CreateMessageTemplate` into seed helper.
-- [ ] Preserve default template IDs, public IDs, system names, subjects, bodies, created/updated timestamps.
-- [ ] Preserve `Order.DetailUrl` seed token.
-- [ ] Update tests that search `Order.DetailUrl` in `CommerceNodeDbContext.cs` to read model seed data or the new seed helper file.
-- [ ] Verify `MessageTemplate_HasTransactionalTemplateMappingAndSeeds`.
-- [ ] Verify `StoreEmailSettings_HasOneSettingsRowPerStoreAndSecretSafeColumns`.
+- [x] Move `CreateDefaultMessageTemplates` and `CreateMessageTemplate` into seed helper.
+- [x] Preserve default template IDs, public IDs, system names, subjects, bodies, created/updated timestamps.
+- [x] Preserve `Order.DetailUrl` seed token.
+- [x] Update tests that search `Order.DetailUrl` in `CommerceNodeDbContext.cs` to read model seed data or the new seed helper file.
+- [x] Verify `MessageTemplate_HasTransactionalTemplateMappingAndSeeds`.
+- [x] Verify `StoreEmailSettings_HasOneSettingsRowPerStoreAndSecretSafeColumns`.
 
 Exit criteria:
 
-- [ ] Message/email model metadata unchanged.
-- [ ] Default template seed data unchanged.
-- [ ] No test depends on message seed text being inside `CommerceNodeDbContext.cs`.
+- [x] Message/email model metadata unchanged.
+- [x] Default template seed data unchanged.
+- [x] No test depends on message seed text being inside `CommerceNodeDbContext.cs`.
+
+Phase 3 evidence:
+
+- Added message/email config files under `BlazorShop.Infrastructure/Data/CommerceNode/Configurations/Messages`.
+- Added `CommerceNodeSeedData` under `Configurations/Seed` for default transactional message templates.
+- Preserved default template IDs, public IDs, system names, subject/body text, descriptions, and `2026-07-17T00:00:00Z` timestamps.
+- Preserved `{{Order.DetailUrl}}` in the order placed template body.
+- `StorefrontOrderEmailE2ERunnerTests` already reads design-time seed data after Phase 0 and no longer depends on seed text being in `CommerceNodeDbContext.cs`.
+- `CommerceNodeDbContext.cs` line count dropped from 1975 to 1760.
+- `modelBuilder.Entity` count dropped from 151 to 148.
+- Focused command passed 150/150 tests:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~Message|FullyQualifiedName~Email|FullyQualifiedName~CommerceNodeDbContextModelTests|FullyQualifiedName~CommerceNodeMigrationModelConsistencyTests" --no-restore --nologo --verbosity minimal`
 
 ## Phase 4 - Store Runtime, Currency, Security, Shipping
 
@@ -563,7 +575,7 @@ Safety boundary
 - [x] Phase 0 guardrails complete.
 - [x] Phase 1 filtered configuration apply complete.
 - [x] Phase 2 payments pilot complete.
-- [ ] Phase 3 messages/email complete.
+- [x] Phase 3 messages/email complete.
 - [ ] Phase 4 store/currency/security/shipping complete.
 - [ ] Phase 5 cart/checkout/customer/address complete.
 - [ ] Phase 6 orders/fulfillment complete.
