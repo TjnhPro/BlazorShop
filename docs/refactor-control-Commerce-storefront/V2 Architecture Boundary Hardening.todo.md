@@ -511,42 +511,42 @@ Goal: stop using `Web.SharedV2` as a business DTO bucket and make Storefront end
 
 ### Phase 6B - Contracts Ownership Inventory
 
-- [ ] Inventory all `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/Models/*` business models and current consumers.
-- [ ] Classify each model:
+- [x] Inventory all `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/Models/*` business models and current consumers.
+- [x] Classify each model:
   - Move to Storefront V2 contracts.
   - Move to Control Plane Web contracts.
   - Replace with generated client model later.
   - Delete because no active consumer remains.
-- [ ] Add guardrail test that allows current folders only during migration and fails when new business folders are added.
+- [x] Add guardrail test that allows current folders only during migration and fails when new business folders are added.
 
 ### Phase 6C - Interim Storefront Contracts
 
-- [ ] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts` models or a small `BlazorShop.Storefront.Contracts` project only if sharing with WASM/components requires it.
-- [ ] Do not put Control Plane admin DTOs into Storefront contracts.
-- [ ] Move Storefront-only catalog/cart/checkout/account/payment/page/SEO contracts out of `Web.SharedV2` incrementally.
-- [ ] Update using aliases and client serialization tests.
-- [ ] Keep public API DTOs in Commerce Node API contract layer and Application use-case DTOs separate.
+- [x] Create `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts` models or a small `BlazorShop.Storefront.Contracts` project only if sharing with WASM/components requires it.
+- [x] Do not put Control Plane admin DTOs into Storefront contracts.
+- [x] Move Storefront-only catalog/cart/checkout/account/payment/page/SEO contracts out of `Web.SharedV2` incrementally.
+- [x] Update using aliases and client serialization tests.
+- [x] Keep public API DTOs in Commerce Node API contract layer and Application use-case DTOs separate.
 
 ### Phase 6D - Generated Client Preparation
 
-- [ ] Confirm Storefront OpenAPI snapshots are current.
-- [ ] Confirm operation IDs are stable for all Storefront operations used by Storefront V2.
-- [ ] Add a generated-client smoke command/test if current tests only validate schema generation partially.
-- [ ] Decide generated client target after contracts are clean: Storefront only first, then Control Plane if useful.
-- [ ] Do not introduce generation into the same phase as moving all models; keep it as a later reversible step.
+- [x] Confirm Storefront OpenAPI snapshots are current.
+- [x] Confirm operation IDs are stable for all Storefront operations used by Storefront V2.
+- [x] Add a generated-client smoke command/test if current tests only validate schema generation partially.
+- [x] Decide generated client target after contracts are clean: Storefront only first, then Control Plane if useful.
+- [x] Do not introduce generation into the same phase as moving all models; keep it as a later reversible step.
 
 ### Verification
 
-- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontApiClient|FullyQualifiedName~StorefrontEndpointDependencyBoundary|FullyQualifiedName~StorefrontWasmRuntimeFoundation|FullyQualifiedName~ControlPlaneArchitectureBoundary|FullyQualifiedName~CommerceNodeStorefrontOpenApiContract"` - Passed: 64, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~StorefrontApiClient|FullyQualifiedName~StorefrontEndpointDependencyBoundary|FullyQualifiedName~StorefrontWasmRuntimeFoundation|FullyQualifiedName~ControlPlaneArchitectureBoundary|FullyQualifiedName~CommerceNodeStorefrontOpenApiContract|FullyQualifiedName~ArchitectureBoundary"` - Passed: 76, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
 - [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
 - [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
 - [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
 
 ### Done When
 
-- [ ] Storefront endpoints depend on feature interfaces, not concrete `StorefrontApiClient`.
-- [ ] `Web.SharedV2` stops accepting new business DTOs.
-- [ ] Storefront contract ownership is documented and guarded by tests.
+- [x] Storefront endpoints depend on feature interfaces, not concrete `StorefrontApiClient`.
+- [x] `Web.SharedV2` stops accepting new business DTOs.
+- [x] Storefront contract ownership is documented and guarded by tests.
 
 ## Phase 7 - Cohesion Splits For Hotspot Files
 

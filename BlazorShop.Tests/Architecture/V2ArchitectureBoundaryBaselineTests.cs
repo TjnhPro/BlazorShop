@@ -135,7 +135,7 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void StorefrontConcreteApiClientUsage_IsExplicitlyAllowlistedAtPhase0()
+        public void StorefrontConcreteApiClientUsage_IsAllowlistedOutsideEndpointMappings()
         {
             var concreteUsages = EnumerateSourceFiles("BlazorShop.PresentationV2/BlazorShop.Storefront.V2")
                 .Where(path =>
@@ -151,12 +151,6 @@ namespace BlazorShop.Tests.Architecture
             Assert.Equal(
                 [
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontHeader.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontAccountEndpoints.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontAuthFormEndpoints.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCartEndpoints.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCheckoutEndpoints.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontConsentEndpoints.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountAddressesPage.razor",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountOrderDetailPage.razor",
                     "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountOrdersPage.razor",
@@ -177,7 +171,7 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void WebSharedV2BusinessModelFolders_AreExplicitlyAllowlistedAtPhase0()
+        public void WebSharedV2BusinessModelFolders_AreFrozenDuringContractMigration()
         {
             var modelRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/Models");
             var folders = Directory.EnumerateDirectories(modelRoot)

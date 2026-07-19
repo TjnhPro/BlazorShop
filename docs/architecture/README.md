@@ -13,6 +13,7 @@ Read these documents before planning or implementing new work:
 7. [Deployment And Local Run](07-deployment-and-local-run.md)
 8. [Agent Decision Rules](08-agent-decision-rules.md)
 9. [API Contract Standards](09-api-contract-standards.md)
+10. [V2 Contract Ownership](10-v2-contract-ownership.md)
 
 Historical implementation plans and QA checklists are tracked under [docs/refactor-control-Commerce-storefront](../refactor-control-Commerce-storefront/). This folder is the current architecture source of truth; do not rely on older plan files when they conflict with these pages.
 

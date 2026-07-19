@@ -23,6 +23,7 @@ Architecture docs:
 - `docs/architecture/07-deployment-and-local-run.md`
 - `docs/architecture/08-agent-decision-rules.md`
 - `docs/architecture/09-api-contract-standards.md`
+- `docs/architecture/10-v2-contract-ownership.md`
 
 ## Project Shape
 
@@ -95,6 +96,7 @@ Route ownership:
 ## API Contract Standards
 
 Every new or changed active V2 API must satisfy `docs/architecture/09-api-contract-standards.md`.
+Storefront/Control Plane DTO ownership must satisfy `docs/architecture/10-v2-contract-ownership.md`.
 
 Minimum bar:
 
