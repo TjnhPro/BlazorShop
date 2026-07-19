@@ -223,6 +223,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Contains("<StorefrontCheckoutShell", page, StringComparison.Ordinal);
             Assert.Contains("InitialState=\"CheckoutState\"", page, StringComparison.Ordinal);
+            Assert.Contains("ShowPanel=\"false\"", page, StringComparison.Ordinal);
             Assert.Contains("@rendermode=\"InteractiveWebAssembly\"", page, StringComparison.Ordinal);
             Assert.Contains("StorefrontBrowserCheckoutState", codeBehind, StringComparison.Ordinal);
             Assert.Contains("ToBrowserCheckoutState(checkoutSession)", codeBehind, StringComparison.Ordinal);
@@ -239,6 +240,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("\"/api/checkout/payment-method\"", component, StringComparison.Ordinal);
             Assert.Contains("\"/api/checkout/review\"", component, StringComparison.Ordinal);
             Assert.Contains("\"/api/checkout/place-order\"", component, StringComparison.Ordinal);
+            Assert.Contains("public bool ShowPanel { get; set; } = true;", component, StringComparison.Ordinal);
+            Assert.Contains("if (ShowPanel && firstRender && OperatingSystem.IsBrowser())", component, StringComparison.Ordinal);
             Assert.Contains("data-storefront-checkout-shell", component, StringComparison.Ordinal);
             Assert.Contains("data-storefront-checkout-cart-version", component, StringComparison.Ordinal);
             Assert.DoesNotContain("api/storefront/stores", component, StringComparison.OrdinalIgnoreCase);
