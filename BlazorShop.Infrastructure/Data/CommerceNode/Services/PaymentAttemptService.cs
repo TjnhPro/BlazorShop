@@ -50,15 +50,19 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private readonly CommerceNodeDbContext context;
         private readonly IOrderPlacementService orderPlacementService;
-        private readonly ICommerceTransactionalMessageService? transactionalMessageService;
+        private readonly ICommerceTransactionalMessageService transactionalMessageService;
 
         public PaymentAttemptService(
             CommerceNodeDbContext context,
-            IOrderPlacementService? orderPlacementService = null,
-            ICommerceTransactionalMessageService? transactionalMessageService = null)
+            IOrderPlacementService orderPlacementService,
+            ICommerceTransactionalMessageService transactionalMessageService)
         {
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(orderPlacementService);
+            ArgumentNullException.ThrowIfNull(transactionalMessageService);
+
             this.context = context;
-            this.orderPlacementService = orderPlacementService ?? new OrderPlacementService(context);
+            this.orderPlacementService = orderPlacementService;
             this.transactionalMessageService = transactionalMessageService;
         }
 

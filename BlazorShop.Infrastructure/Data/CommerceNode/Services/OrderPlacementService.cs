@@ -27,14 +27,19 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         public OrderPlacementService(
             CommerceNodeDbContext context,
-            IMoneyRoundingService? moneyRoundingService = null,
-            IProductSellabilityResolver? sellabilityResolver = null,
-            IOrderStockAdjustmentHook? stockAdjustmentHook = null)
+            IMoneyRoundingService moneyRoundingService,
+            IProductSellabilityResolver sellabilityResolver,
+            IOrderStockAdjustmentHook stockAdjustmentHook)
         {
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(moneyRoundingService);
+            ArgumentNullException.ThrowIfNull(sellabilityResolver);
+            ArgumentNullException.ThrowIfNull(stockAdjustmentHook);
+
             this.context = context;
-            this.moneyRoundingService = moneyRoundingService ?? new MoneyRoundingService(new CurrencyMetadataService());
-            this.sellabilityResolver = sellabilityResolver ?? new ProductSellabilityResolver();
-            this.stockAdjustmentHook = stockAdjustmentHook ?? new DefaultOrderStockAdjustmentHook();
+            this.moneyRoundingService = moneyRoundingService;
+            this.sellabilityResolver = sellabilityResolver;
+            this.stockAdjustmentHook = stockAdjustmentHook;
         }
 
         public async Task<OrderPlacementResult> PlaceAsync(

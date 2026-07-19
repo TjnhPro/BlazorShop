@@ -2634,7 +2634,11 @@ namespace BlazorShop.Tests.Application.CommerceNode
             {
                 var providerList = this.providers;
                 var placementService = this.orderPlacementService
-                    ?? new OrderPlacementService(this.context, this.moneyRoundingService, this.sellabilityResolver);
+                    ?? new OrderPlacementService(
+                        this.context,
+                        this.moneyRoundingService,
+                        this.sellabilityResolver,
+                        new DefaultOrderStockAdjustmentHook());
                 var pricingCalculator = new CheckoutPricingCalculator(
                     this.context,
                     this.moneyRoundingService,

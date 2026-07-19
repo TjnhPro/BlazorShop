@@ -2,6 +2,8 @@ namespace BlazorShop.Tests.Application.CommerceNode
 {
     using BlazorShop.Application.CommerceNode.Messages;
     using BlazorShop.Application.CommerceNode.Payments;
+    using BlazorShop.Application.CommerceNode.Currencies;
+    using BlazorShop.Application.CommerceNode.ProductSelections;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Domain.Constants;
     using BlazorShop.Domain.Entities;
@@ -19,10 +21,42 @@ namespace BlazorShop.Tests.Application.CommerceNode
     public sealed class PaymentAttemptServiceTests
     {
         [Fact]
+        public void PaymentAndOrderPlacement_ConstructorsRequireDiAndDoNotBuildFallbackDependencies()
+        {
+            var paymentSource = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/Services/PaymentAttemptService.cs");
+            var placementSource = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/Services/OrderPlacementService.cs");
+            var paymentConstructor = Assert.Single(typeof(PaymentAttemptService).GetConstructors());
+            var paymentParameters = paymentConstructor.GetParameters().ToDictionary(parameter => parameter.Name!, StringComparer.Ordinal);
+            var placementConstructor = Assert.Single(typeof(OrderPlacementService).GetConstructors());
+            var placementParameters = placementConstructor.GetParameters().ToDictionary(parameter => parameter.Name!, StringComparer.Ordinal);
+
+            Assert.False(paymentParameters["orderPlacementService"].HasDefaultValue);
+            Assert.False(paymentParameters["transactionalMessageService"].HasDefaultValue);
+            Assert.Equal(typeof(IOrderPlacementService), paymentParameters["orderPlacementService"].ParameterType);
+            Assert.Equal(typeof(ICommerceTransactionalMessageService), paymentParameters["transactionalMessageService"].ParameterType);
+            Assert.DoesNotContain("IOrderPlacementService? orderPlacementService = null", paymentSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("ICommerceTransactionalMessageService? transactionalMessageService = null", paymentSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("orderPlacementService ?? new OrderPlacementService", paymentSource, StringComparison.Ordinal);
+
+            Assert.False(placementParameters["moneyRoundingService"].HasDefaultValue);
+            Assert.False(placementParameters["sellabilityResolver"].HasDefaultValue);
+            Assert.False(placementParameters["stockAdjustmentHook"].HasDefaultValue);
+            Assert.Equal(typeof(IMoneyRoundingService), placementParameters["moneyRoundingService"].ParameterType);
+            Assert.Equal(typeof(IProductSellabilityResolver), placementParameters["sellabilityResolver"].ParameterType);
+            Assert.Equal(typeof(IOrderStockAdjustmentHook), placementParameters["stockAdjustmentHook"].ParameterType);
+            Assert.DoesNotContain("IMoneyRoundingService? moneyRoundingService = null", placementSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("IProductSellabilityResolver? sellabilityResolver = null", placementSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("IOrderStockAdjustmentHook? stockAdjustmentHook = null", placementSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("moneyRoundingService ?? new MoneyRoundingService", placementSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("sellabilityResolver ?? new ProductSellabilityResolver", placementSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("stockAdjustmentHook ?? new DefaultOrderStockAdjustmentHook", placementSource, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public async Task CreateAsync_DuplicateIdempotencyKey_ReturnsSameAttempt()
         {
             using var context = CreateContext();
-            var service = new PaymentAttemptService(context);
+            var service = CreateService(context);
             var request = CreateAttemptRequest(idempotencyKey: "same-key");
 
             var first = await service.CreateAsync(request);
@@ -42,7 +76,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
         public async Task GetAsync_ReturnsNamedAttemptState()
         {
             using var context = CreateContext();
-            var service = new PaymentAttemptService(context);
+            var service = CreateService(context);
             var created = await service.CreateAsync(CreateAttemptRequest(idempotencyKey: "poll-key"));
 
             var loaded = await service.GetAsync(created.Payload!.StoreId, created.Payload.Id);
@@ -56,7 +90,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
         public async Task TransitionAsync_AllowsForwardState_AndRejectsTerminalTransition()
         {
             using var context = CreateContext();
-            var service = new PaymentAttemptService(context);
+            var service = CreateService(context);
             var created = await service.CreateAsync(CreateAttemptRequest(idempotencyKey: "transition-key"));
 
             var failed = await service.TransitionAsync(new TransitionPaymentAttemptRequest(
@@ -87,7 +121,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
         public async Task TransitionAsync_FailedProviderResultStoresSafeFailureDetails()
         {
             using var context = CreateContext();
-            var service = new PaymentAttemptService(context);
+            var service = CreateService(context);
             var created = await service.CreateAsync(CreateAttemptRequest(idempotencyKey: "failure-key"));
 
             var failed = await service.TransitionAsync(new TransitionPaymentAttemptRequest(
@@ -132,7 +166,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
                     orderId,
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new QueuedMessageResult(false, ErrorCode: "message_queue.failed", Message: "Queue unavailable."));
-            var service = new PaymentAttemptService(context, transactionalMessageService: notificationService.Object);
+            var service = CreateService(context, transactionalMessageService: notificationService.Object);
             var created = await service.CreateAsync(new CreatePaymentAttemptRequest(
                 storeId,
                 Guid.NewGuid(),
@@ -226,7 +260,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             context.CheckoutSessions.Add(checkout);
             context.PaymentAttempts.Add(attempt);
             context.SaveChanges();
-            var service = new PaymentAttemptService(context);
+            var service = CreateService(context);
 
             var first = await service.TransitionAsync(new TransitionPaymentAttemptRequest(
                 storeId,
@@ -278,7 +312,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
         public async Task RecordProviderEventAsync_DeduplicatesByProviderEventId()
         {
             using var context = CreateContext();
-            var service = new PaymentAttemptService(context);
+            var service = CreateService(context);
             var request = new RecordPaymentProviderEventRequest(
                 Guid.NewGuid(),
                 PaymentAttemptId: null,
@@ -323,7 +357,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             };
             context.PaymentAttempts.Add(attempt);
             await context.SaveChangesAsync();
-            var service = new PaymentAttemptService(context);
+            var service = CreateService(context);
 
             var result = await service.RecordProviderEventAsync(new RecordPaymentProviderEventRequest(
                 storeId,
@@ -351,6 +385,24 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 "usd",
                 idempotencyKey,
                 MetadataJson: "{\"mode\":\"test\"}");
+        }
+
+        private static PaymentAttemptService CreateService(
+            CommerceNodeDbContext context,
+            ICommerceTransactionalMessageService? transactionalMessageService = null,
+            IOrderPlacementService? orderPlacementService = null)
+        {
+            var roundingService = new MoneyRoundingService(new CurrencyMetadataService());
+            var placementService = orderPlacementService
+                ?? new OrderPlacementService(
+                    context,
+                    roundingService,
+                    new ProductSellabilityResolver(),
+                    new DefaultOrderStockAdjustmentHook());
+            var messageService = transactionalMessageService
+                ?? new Mock<ICommerceTransactionalMessageService>().Object;
+
+            return new PaymentAttemptService(context, placementService, messageService);
         }
 
         private static Product CreatePublishedProduct(Guid storeId, decimal price, int stock)
@@ -386,6 +438,17 @@ namespace BlazorShop.Tests.Application.CommerceNode
                 .Options;
 
             return new CommerceNodeDbContext(options);
+        }
+
+        private static string ReadRepositoryFile(string relativePath)
+        {
+            var root = Directory.GetCurrentDirectory();
+            while (!string.IsNullOrEmpty(root) && !File.Exists(Path.Combine(root, "BlazorShop.sln")))
+            {
+                root = Directory.GetParent(root)?.FullName ?? string.Empty;
+            }
+
+            return File.ReadAllText(Path.Combine(root, relativePath.Replace('/', Path.DirectorySeparatorChar)));
         }
     }
 }

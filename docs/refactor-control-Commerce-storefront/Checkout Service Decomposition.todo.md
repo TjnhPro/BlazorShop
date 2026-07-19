@@ -327,18 +327,29 @@ Acceptance:
 
 ## Phase 7 - Optional Follow-up: PaymentAttemptService And OrderPlacementService Fallbacks
 
-- [ ] Investigate nullable fallback constructors in:
+- [x] Investigate nullable fallback constructors in:
   - `OrderPlacementService`.
   - `PaymentAttemptService`.
-- [ ] Decide whether to apply the same required-DI policy after checkout service is stable.
-- [ ] Do not combine this with Phase 2 unless focused tests are already green and diff remains small.
-- [ ] If implemented, add test builders for affected tests first.
+- [x] Decide whether to apply the same required-DI policy after checkout service is stable.
+- [x] Do not combine this with Phase 2 unless focused tests are already green and diff remains small.
+- [x] If implemented, add test builders for affected tests first.
+
+Phase 7 notes:
+
+- `OrderPlacementService` no longer creates fallback `MoneyRoundingService`, `ProductSellabilityResolver`, or `DefaultOrderStockAdjustmentHook` inside its production constructor.
+- `PaymentAttemptService` no longer creates fallback `OrderPlacementService` and now requires `ICommerceTransactionalMessageService` explicitly.
+- Commerce Node DI already registers all required dependencies, so runtime construction stays explicit.
+- Updated `StorefrontCheckoutServiceTests` builder and `PaymentAttemptServiceTests` helper factory so tests own their defaults.
+- Added constructor guard test `PaymentAndOrderPlacement_ConstructorsRequireDiAndDoNotBuildFallbackDependencies`.
+- Verification:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~PaymentAttemptServiceTests|FullyQualifiedName~StorefrontCheckoutServiceTests" --no-restore --nologo --verbosity minimal` passed 69/69.
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore --nologo --verbosity minimal` passed.
 
 Acceptance:
 
-- [ ] Production services do not silently build substitute dependency graphs.
-- [ ] Tests own their defaults.
-- [ ] No broad service rewrite.
+- [x] Production services do not silently build substitute dependency graphs.
+- [x] Tests own their defaults.
+- [x] No broad service rewrite.
 
 ## Phase 8 - QA, Contracts, And Release Gate
 
@@ -421,7 +432,7 @@ Acceptance:
 - [x] Phase 4 complete.
 - [x] Phase 5 complete.
 - [x] Phase 6 decision complete.
-- [ ] Phase 7 decision complete.
+- [x] Phase 7 decision complete.
 - [ ] Phase 8 release gate complete.
 
 ## Decision Audit Trail
