@@ -590,24 +590,26 @@ Goal: prove refactor did not change schema, migration snapshot, runtime behavior
 
 Verification:
 
-- [ ] `dotnet test BlazorShop.Tests --filter CommerceNodeDbContextModelTests`.
-- [ ] `dotnet test BlazorShop.Tests --filter MigrationModelConsistencyTests` after Commerce Node consistency tests are added.
-- [ ] `dotnet test BlazorShop.Tests --filter CommerceNode`.
-- [ ] Full `dotnet test` before final commit.
-- [ ] Optional manual check:
-  - [ ] Run `dotnet ef migrations add CommerceNodeConfigurationSplitCheck --context CommerceNodeDbContext --project BlazorShop.Infrastructure --startup-project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API`.
-  - [ ] Confirm generated migration is empty.
-  - [ ] Delete the check migration before commit.
+- [x] `dotnet test BlazorShop.Tests --filter CommerceNodeDbContextModelTests`.
+  - Evidence: `Passed: 33, Skipped: 0, Total: 33`.
+- [x] `dotnet test BlazorShop.Tests --filter MigrationModelConsistencyTests` after Commerce Node consistency tests are added.
+  - Evidence: `Passed: 5, Skipped: 0, Total: 5`.
+- [x] `dotnet test BlazorShop.Tests --filter CommerceNode`.
+  - Evidence: `Passed: 654, Skipped: 0, Total: 654`.
+- [x] Full `dotnet test` before final commit.
+  - Evidence: `Passed: 1497, Skipped: 12, Total: 1509`.
+- [x] Optional manual EF empty migration check reviewed.
+  - Evidence: no Commerce Node migration files changed; migration consistency tests prove runtime model and snapshot remain aligned, so no check migration was created.
 
 Release gate:
 
-- [ ] No real migration committed for this refactor.
-- [ ] `CommerceNodeDbContextModelSnapshot.cs` unchanged.
-- [ ] Runtime relational model equals snapshot model.
-- [ ] `AppDbContext` model unchanged.
-- [ ] `CommerceNodeDbContext` still owns all DbSet declarations.
-- [ ] New configuration files are internal and under Commerce Node namespace.
-- [ ] No feature behavior changes.
+- [x] No real migration committed for this refactor.
+- [x] `CommerceNodeDbContextModelSnapshot.cs` unchanged.
+- [x] Runtime relational model equals snapshot model.
+- [x] `AppDbContext` model unchanged.
+- [x] `CommerceNodeDbContext` still owns all DbSet declarations.
+- [x] New configuration files are internal and under Commerce Node namespace.
+- [x] No feature behavior changes.
 
 ## Failure Modes Registry
 
@@ -652,7 +654,7 @@ Safety boundary
 - [x] Phase 6 orders/fulfillment complete.
 - [x] Phase 7 catalog/media/content/imports complete.
 - [x] Phase 8 identity/tasks/deployment cleanup complete.
-- [ ] Phase 9 final verification complete.
+- [x] Phase 9 final verification complete.
 
 ## Not In Scope
 
