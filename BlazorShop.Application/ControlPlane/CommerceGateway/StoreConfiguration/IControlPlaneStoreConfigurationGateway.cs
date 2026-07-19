@@ -1,5 +1,6 @@
 namespace BlazorShop.Application.ControlPlane.CommerceGateway.StoreConfiguration
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -25,25 +26,25 @@ namespace BlazorShop.Application.ControlPlane.CommerceGateway.StoreConfiguration
     public interface IControlPlaneStoreConfigurationGateway
     {
         
-                Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> GetRuntimeStoreAsync(
+                Task<ApplicationResult<CommerceStoreDetail>> GetRuntimeStoreAsync(
                     Guid storePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> UpdateRuntimeStoreAsync(
+                Task<ApplicationResult<CommerceStoreDetail>> UpdateRuntimeStoreAsync(
                     Guid storePublicId,
                     Guid runtimeStorePublicId,
                     UpdateCommerceStoreRequest request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> ActivateRuntimeStoreAsync(
+                Task<ApplicationResult<CommerceStoreDetail>> ActivateRuntimeStoreAsync(
                     Guid storePublicId,
                     Guid runtimeStorePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> DeactivateRuntimeStoreAsync(
+                Task<ApplicationResult<CommerceStoreDetail>> DeactivateRuntimeStoreAsync(
                     Guid storePublicId,
                     Guid runtimeStorePublicId,
                     CancellationToken cancellationToken = default);

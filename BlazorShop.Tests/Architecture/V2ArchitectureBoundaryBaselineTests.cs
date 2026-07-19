@@ -7,7 +7,7 @@ namespace BlazorShop.Tests.Architecture
     public sealed class V2ArchitectureBoundaryBaselineTests
     {
         [Fact]
-        public void ControlPlaneCommerceCatalogResult_ReferenceCountMatchesPhase0Baseline()
+        public void ControlPlaneCommerceCatalogResult_ReferenceCountMatchesCurrentMigrationBaseline()
         {
             var references = EnumerateSourceFiles(
                     "BlazorShop.Application",
@@ -16,7 +16,7 @@ namespace BlazorShop.Tests.Architecture
                 .SelectMany(path => Regex.Matches(File.ReadAllText(path), "ControlPlaneCommerceCatalogResult<"))
                 .Count();
 
-            Assert.InRange(references, 230, 240);
+            Assert.InRange(references, 220, 230);
         }
 
         [Fact]

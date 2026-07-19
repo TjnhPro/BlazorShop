@@ -4,6 +4,7 @@ namespace BlazorShop.ControlPlane.API.Controllers
     using System.Text;
     using System.Text.Json;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Messages;
     using BlazorShop.Application.CommerceNode.Navigation;
@@ -51,6 +52,11 @@ namespace BlazorShop.ControlPlane.API.Controllers
                 ControlPlaneCommerceCatalogFailure.Validation => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message, result.Payload),
                 _ => ControlPlaneApiResponseWriter.Failure<TPayload>(StatusCodes.Status400BadRequest, result.Message, result.Payload),
             };
+        }
+
+        protected static IActionResult ToActionResult<TPayload>(ApplicationResult<TPayload> result)
+        {
+            return result.ToControlPlaneActionResult();
         }
 
         protected static string BuildProductImportErrorCsv(ProductImportJobDto job, IReadOnlyList<ProductImportRowDto> rows)

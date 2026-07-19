@@ -2,6 +2,7 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using System.Globalization;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.ControlPlane.Catalog;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
@@ -89,11 +90,35 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken));
         }
 
+        protected async Task<ApplicationResult<TPayload>> SendApplicationAsync<TPayload>(
+            Guid storePublicId,
+            HttpMethod method,
+            string path,
+            object? body,
+            CancellationToken cancellationToken)
+        {
+            return CommerceNodeAdminGatewayApplicationResultMapper.ToApplicationResult(
+                await this.transport.SendAsync<TPayload>(
+                    storePublicId,
+                    method,
+                    path,
+                    body,
+                    cancellationToken));
+        }
+
         protected async Task<ControlPlaneCommerceCatalogResult<string>> ResolveStoreKeyAsync(
             Guid storePublicId,
             CancellationToken cancellationToken)
         {
             return ToCatalogResult(await this.transport.ResolveStoreKeyAsync(storePublicId, cancellationToken));
+        }
+
+        protected async Task<ApplicationResult<string>> ResolveStoreKeyApplicationAsync(
+            Guid storePublicId,
+            CancellationToken cancellationToken)
+        {
+            return CommerceNodeAdminGatewayApplicationResultMapper.ToApplicationResult(
+                await this.transport.ResolveStoreKeyAsync(storePublicId, cancellationToken));
         }
 
         protected static ControlPlaneCommerceCatalogResult<TPayload> ToCatalogResult<TPayload>(

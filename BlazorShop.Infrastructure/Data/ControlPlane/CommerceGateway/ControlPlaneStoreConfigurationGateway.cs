@@ -2,8 +2,8 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using System.Globalization;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.ControlPlane.Catalog;
-    using BlazorShop.Application.ControlPlane.CommerceGateway;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -32,21 +32,17 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
         }
 
-        public async Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> GetRuntimeStoreAsync(
+        public async Task<ApplicationResult<CommerceStoreDetail>> GetRuntimeStoreAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            var storeKey = await this.ResolveStoreKeyAsync(storePublicId, cancellationToken);
+            var storeKey = await this.ResolveStoreKeyApplicationAsync(storePublicId, cancellationToken);
             if (!storeKey.Success)
             {
-                return new ControlPlaneCommerceCatalogResult<CommerceStoreDetail>(
-                    false,
-                    storeKey.Message,
-                    Failure: storeKey.Failure,
-                    HttpStatusCode: storeKey.HttpStatusCode);
+                return ApplicationResult<CommerceStoreDetail>.Failed(storeKey.Error!);
             }
 
-            var result = await this.SendAsync<CommerceStoreListResponse>(
+            var result = await this.SendApplicationAsync<CommerceStoreListResponse>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/stores",
@@ -55,21 +51,20 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 
             if (!result.Success)
             {
-                return new ControlPlaneCommerceCatalogResult<CommerceStoreDetail>(
-                    false,
-                    result.Message,
-                    Failure: result.Failure,
-                    HttpStatusCode: result.HttpStatusCode);
+                return ApplicationResult<CommerceStoreDetail>.Failed(result.Error!);
             }
 
-            var runtimeStore = result.Payload?.Items.FirstOrDefault(item =>
-                string.Equals(item.StoreKey, storeKey.Payload, StringComparison.OrdinalIgnoreCase));
+            var runtimeStore = result.Value?.Items.FirstOrDefault(item =>
+                string.Equals(item.StoreKey, storeKey.Value, StringComparison.OrdinalIgnoreCase));
             if (runtimeStore is null)
             {
-                return Failure<CommerceStoreDetail>("Runtime store was not found.", ControlPlaneCommerceCatalogFailure.NotFound);
+                return ApplicationResult<CommerceStoreDetail>.Failed(
+                    ApplicationError.NotFound(
+                        "commerce_node.runtime_store_not_found",
+                        "Runtime store was not found."));
             }
 
-            return await this.SendAsync<CommerceStoreDetail>(
+            return await this.SendApplicationAsync<CommerceStoreDetail>(
                 storePublicId,
                 HttpMethod.Get,
                 $"api/commerce/admin/stores/{runtimeStore.PublicId:D}",
@@ -77,13 +72,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> UpdateRuntimeStoreAsync(
+        public Task<ApplicationResult<CommerceStoreDetail>> UpdateRuntimeStoreAsync(
             Guid storePublicId,
             Guid runtimeStorePublicId,
             UpdateCommerceStoreRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<CommerceStoreDetail>(
+            return this.SendApplicationAsync<CommerceStoreDetail>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/stores/{runtimeStorePublicId:D}",
@@ -91,12 +86,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> ActivateRuntimeStoreAsync(
+        public Task<ApplicationResult<CommerceStoreDetail>> ActivateRuntimeStoreAsync(
             Guid storePublicId,
             Guid runtimeStorePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<CommerceStoreDetail>(
+            return this.SendApplicationAsync<CommerceStoreDetail>(
                 storePublicId,
                 HttpMethod.Post,
                 $"api/commerce/admin/stores/{runtimeStorePublicId:D}/activate",
@@ -104,12 +99,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CommerceStoreDetail>> DeactivateRuntimeStoreAsync(
+        public Task<ApplicationResult<CommerceStoreDetail>> DeactivateRuntimeStoreAsync(
             Guid storePublicId,
             Guid runtimeStorePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<CommerceStoreDetail>(
+            return this.SendApplicationAsync<CommerceStoreDetail>(
                 storePublicId,
                 HttpMethod.Post,
                 $"api/commerce/admin/stores/{runtimeStorePublicId:D}/deactivate",

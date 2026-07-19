@@ -32,7 +32,7 @@ This plan covers the architecture hardening issues verified against the current 
 ## Verified Current Evidence
 
 - [x] Phase 0 baseline: `BlazorShop.Application/ControlPlane/CommerceGateway/CommerceNodeAdminGatewayDtos.cs` contained `ICommerceNodeAdminGatewayTransport` with `HttpMethod`, HTTP path, and status-bearing result. Resolved in Phase 1B.
-- [x] `ControlPlaneCommerceCatalogResult<T>` has 236 current generic references across Application, Infrastructure, and PresentationV2.
+- [x] `ControlPlaneCommerceCatalogResult<T>` had 236 generic references at Phase 0. After Store configuration migration in Phase 1C.1, current migration baseline is 226 references.
 - [x] `ApplicationResult<T>`, `ApplicationError`, and `ApplicationErrorKind.RemoteFailure` already exist under `BlazorShop.Application/Common/Results`.
 - [x] `IControlPlaneProductGateway` has 31 current methods spanning product CRUD, product SEO, product import, variation template, category media, variant, and inventory in one interface.
 - [x] `BlazorShop.Application/CommerceNode/Carts/StorefrontCartService.cs` still accepts nullable `IProductSelectionResolver` and falls back to `new ProductSelectionResolver(...)`.
@@ -144,7 +144,7 @@ Phase 1B focused verification:
 
 Migrate in this order to limit blast radius:
 
-- [ ] Store configuration gateway.
+- [x] Store configuration gateway.
 - [ ] Security/privacy gateway.
 - [ ] Shipping gateway.
 - [ ] Payment gateway.
@@ -156,12 +156,19 @@ Migrate in this order to limit blast radius:
 
 For each capability:
 
-- [ ] Change Application interface return type from `ControlPlaneCommerceCatalogResult<T>` to `ApplicationResult<T>`.
-- [ ] Update Infrastructure gateway implementation.
-- [ ] Update Control Plane API controller mapping to continue returning the same Control Plane API envelope and HTTP statuses.
+- [x] Change Store configuration Application interface return type from `ControlPlaneCommerceCatalogResult<T>` to `ApplicationResult<T>`.
+- [x] Update Store configuration Infrastructure gateway implementation.
+- [x] Update Control Plane API controller mapping to continue returning the same Control Plane API envelope and HTTP statuses through an `ApplicationResult<T>` overload.
 - [ ] Update Control Plane Web client only if API surface changes; expected outcome is no Web API contract change.
-- [ ] Update focused controller tests and static contract tests.
-- [ ] Delete migrated `ControlPlaneCommerceCatalogResult<T>` references for that capability.
+- [x] Control Plane Web client unchanged because API surface did not change.
+- [x] Update focused gateway/static tests for Store configuration migration.
+- [x] Delete migrated `ControlPlaneCommerceCatalogResult<T>` references for Store configuration capability.
+
+Phase 1C.1 focused verification:
+
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~ControlPlaneCommerceGatewayStoreMapping|FullyQualifiedName~CommerceNodeAdminGatewayApplicationResultMapper|FullyQualifiedName~ApplicationResultStandardization|FullyQualifiedName~ArchitectureBoundary"` - Passed: 71, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors; Tailwind completed with existing Browserslist stale notice.
 
 ### Phase 1D - Retire Catalog-Named Result
 
