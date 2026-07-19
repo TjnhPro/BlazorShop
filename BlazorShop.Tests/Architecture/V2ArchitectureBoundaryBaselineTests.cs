@@ -241,7 +241,6 @@ namespace BlazorShop.Tests.Architecture
         {
             var hotspots = new[]
             {
-                new HotspotBaseline("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/CommerceProducts.razor", 1691),
                 new HotspotBaseline("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.cs", 813),
             };
 
@@ -258,6 +257,20 @@ namespace BlazorShop.Tests.Architecture
                         Regex.Matches(source, "modelBuilder\\.Entity").Count);
                 }
             }
+        }
+
+        [Fact]
+        public void CommerceProductsPage_IsSplitIntoMarkupAndCodeBehindAfterPhase7D()
+        {
+            var markupPath = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/CommerceProducts.razor");
+            var codeBehindPath = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Pages/CommerceProducts.razor.cs");
+            var markup = File.ReadAllText(markupPath);
+            var codeBehind = File.ReadAllText(codeBehindPath);
+
+            Assert.DoesNotContain("@code", markup, StringComparison.Ordinal);
+            Assert.Contains("public partial class CommerceProducts", codeBehind, StringComparison.Ordinal);
+            Assert.True(File.ReadLines(markupPath).Count() <= 650);
+            Assert.True(File.ReadLines(codeBehindPath).Count() <= 1150);
         }
 
         [Fact]

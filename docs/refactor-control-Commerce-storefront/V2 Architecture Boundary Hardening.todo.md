@@ -592,7 +592,7 @@ Phase 7C focused verification:
 
 ### Phase 7D - Control Plane Product Page
 
-- [ ] Split `CommerceProducts.razor` into `.razor` + `.razor.cs` first.
+- [x] Split `CommerceProducts.razor` into `.razor` + `.razor.cs` first.
 - [ ] Extract components only after code-behind split passes:
   - Product basic editor.
   - Product SEO editor.
@@ -602,6 +602,11 @@ Phase 7C focused verification:
   - Product import actions if currently embedded.
 - [ ] Do not introduce page-state interfaces unless a second consumer appears.
 - [ ] Preserve route, permissions, forms, validation, and service calls.
+
+Phase 7D.1 focused verification:
+
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors; Tailwind completed with existing Browserslist stale notice.
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~ControlPlaneVariantAttributeWorkflow|FullyQualifiedName~ArchitectureBoundary"` - Passed: 27, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, legacy Presentation Microsoft.OpenApi advisory, Browserslist stale.
 
 ### Phase 7E - Other Control Plane Pages
 
