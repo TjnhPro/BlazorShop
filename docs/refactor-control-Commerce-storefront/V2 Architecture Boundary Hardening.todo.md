@@ -32,7 +32,7 @@ This plan covers the architecture hardening issues verified against the current 
 ## Verified Current Evidence
 
 - [x] Phase 0 baseline: `BlazorShop.Application/ControlPlane/CommerceGateway/CommerceNodeAdminGatewayDtos.cs` contained `ICommerceNodeAdminGatewayTransport` with `HttpMethod`, HTTP path, and status-bearing result. Resolved in Phase 1B.
-- [x] `ControlPlaneCommerceCatalogResult<T>` had 236 generic references at Phase 0. After Store configuration migration in Phase 1C.1, current migration baseline is 226 references.
+- [x] `ControlPlaneCommerceCatalogResult<T>` had 236 generic references at Phase 0. After Store configuration and Security/privacy migrations in Phase 1C.1-1C.2, current migration baseline is 222 references.
 - [x] `ApplicationResult<T>`, `ApplicationError`, and `ApplicationErrorKind.RemoteFailure` already exist under `BlazorShop.Application/Common/Results`.
 - [x] `IControlPlaneProductGateway` has 31 current methods spanning product CRUD, product SEO, product import, variation template, category media, variant, and inventory in one interface.
 - [x] `BlazorShop.Application/CommerceNode/Carts/StorefrontCartService.cs` still accepts nullable `IProductSelectionResolver` and falls back to `new ProductSelectionResolver(...)`.
@@ -145,7 +145,7 @@ Phase 1B focused verification:
 Migrate in this order to limit blast radius:
 
 - [x] Store configuration gateway.
-- [ ] Security/privacy gateway.
+- [x] Security/privacy gateway.
 - [ ] Shipping gateway.
 - [ ] Payment gateway.
 - [ ] Currency gateway.
@@ -163,6 +163,19 @@ For each capability:
 - [x] Control Plane Web client unchanged because API surface did not change.
 - [x] Update focused gateway/static tests for Store configuration migration.
 - [x] Delete migrated `ControlPlaneCommerceCatalogResult<T>` references for Store configuration capability.
+
+Phase 1C.2 Security/privacy:
+
+- [x] Change Security/privacy Application interface return type from `ControlPlaneCommerceCatalogResult<T>` to `ApplicationResult<T>`.
+- [x] Update Security/privacy Infrastructure gateway implementation to use `SendApplicationAsync`.
+- [x] Control Plane API/Web route and response surface unchanged through the existing `ApplicationResult<T>` controller-base overload.
+- [x] Current `ControlPlaneCommerceCatalogResult<T>` migration baseline after this phase: 222 references.
+
+Phase 1C.2 focused verification:
+
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~SecurityPrivacy|FullyQualifiedName~CommerceNodeAdminGatewayApplicationResultMapper|FullyQualifiedName~ApplicationResultStandardization|FullyQualifiedName~ArchitectureBoundary"` - Passed: 114, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors; Tailwind completed with existing Browserslist stale notice.
 
 Phase 1C.1 focused verification:
 

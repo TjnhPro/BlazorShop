@@ -1,5 +1,6 @@
 namespace BlazorShop.Application.ControlPlane.CommerceGateway.SecurityPrivacy
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -25,12 +26,12 @@ namespace BlazorShop.Application.ControlPlane.CommerceGateway.SecurityPrivacy
     public interface IControlPlaneSecurityPrivacyGateway
     {
         
-                Task<ControlPlaneCommerceCatalogResult<StoreSecurityPrivacySettingsDto>> GetSecurityPrivacySettingsAsync(
+                Task<ApplicationResult<StoreSecurityPrivacySettingsDto>> GetSecurityPrivacySettingsAsync(
                     Guid storePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<StoreSecurityPrivacySettingsDto>> UpdateSecurityPrivacySettingsAsync(
+                Task<ApplicationResult<StoreSecurityPrivacySettingsDto>> UpdateSecurityPrivacySettingsAsync(
                     Guid storePublicId,
                     UpdateStoreSecurityPrivacySettingsRequest request,
                     CancellationToken cancellationToken = default);

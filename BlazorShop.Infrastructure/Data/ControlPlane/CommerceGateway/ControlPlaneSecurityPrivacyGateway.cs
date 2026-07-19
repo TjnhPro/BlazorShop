@@ -2,8 +2,8 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using System.Globalization;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.ControlPlane.Catalog;
-    using BlazorShop.Application.ControlPlane.CommerceGateway;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -32,11 +32,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreSecurityPrivacySettingsDto>> GetSecurityPrivacySettingsAsync(
+        public Task<ApplicationResult<StoreSecurityPrivacySettingsDto>> GetSecurityPrivacySettingsAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreSecurityPrivacySettingsDto>(
+            return this.SendApplicationAsync<StoreSecurityPrivacySettingsDto>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/security-privacy",
@@ -44,12 +44,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<StoreSecurityPrivacySettingsDto>> UpdateSecurityPrivacySettingsAsync(
+        public Task<ApplicationResult<StoreSecurityPrivacySettingsDto>> UpdateSecurityPrivacySettingsAsync(
             Guid storePublicId,
             UpdateStoreSecurityPrivacySettingsRequest request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<StoreSecurityPrivacySettingsDto>(
+            return this.SendApplicationAsync<StoreSecurityPrivacySettingsDto>(
                 storePublicId,
                 HttpMethod.Put,
                 "api/commerce/admin/security-privacy",
