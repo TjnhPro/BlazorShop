@@ -201,33 +201,45 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void StorefrontScopedResolveStoreIdDuplication_IsExplicitlyAllowlistedAtPhase0()
+        public void StorefrontScopedResolveStoreIdDuplication_IsCentralizedAfterPhase5()
         {
             var controllers = EnumerateSourceFiles("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront")
-                .Where(path => File.ReadAllText(path).Contains("ResolveStoreIdAsync", StringComparison.Ordinal))
+                .Where(path => File.ReadAllText(path).Contains("private async Task<Guid?> ResolveStoreIdAsync", StringComparison.Ordinal))
                 .Select(ToRepositoryRelativePath)
                 .OrderBy(path => path, StringComparer.Ordinal)
                 .ToArray();
 
-            Assert.Equal(
-                [
-                    "BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/StorefrontScopedAddressController.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/StorefrontScopedCartController.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/StorefrontScopedCheckoutController.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/StorefrontScopedConsentController.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/StorefrontScopedCustomerAddressesController.cs",
-                    "BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/StorefrontScopedPaymentsController.cs",
-                ],
-                controllers);
+            Assert.Empty(controllers);
+            Assert.Contains(
+                "protected async Task<Guid?> ResolveStoreIdAsync",
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/StorefrontApiControllerBase.cs"),
+                StringComparison.Ordinal);
         }
 
         [Fact]
-        public void InfrastructureStoreContext_StillReadsAmbientHttpContextAtPhase0()
+        public void InfrastructureStoreContext_ReadsExecutionContextOnlyAfterPhase5()
         {
             var source = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/Services/CommerceStoreContext.cs");
 
-            Assert.Contains("IHttpContextAccessor", source, StringComparison.Ordinal);
-            Assert.Contains("request.RouteValues[\"storeKey\"]", source, StringComparison.Ordinal);
+            Assert.Contains("IStoreExecutionContextAccessor", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("IHttpContextAccessor", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("Microsoft.AspNetCore.Http", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("RouteValues", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("Request.Query", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("Headers", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("HttpRequest", source, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void InfrastructureServices_DoNotKeepPrivateStoreScopeResolutionHelpersAfterPhase5()
+        {
+            var offenders = EnumerateSourceFiles("BlazorShop.Infrastructure/Data/CommerceNode/Services")
+                .Where(path => File.ReadAllText(path).Contains("private async Task<Guid?> ResolveStoreIdAsync", StringComparison.Ordinal))
+                .Select(ToRepositoryRelativePath)
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.Empty(offenders);
         }
 
         [Fact]

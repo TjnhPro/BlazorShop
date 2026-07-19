@@ -186,6 +186,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddSingleton<IStorefrontNavigationCache, StorefrontNavigationCache>();
             services.AddSingleton<ICatalogQueryCache, MemoryCatalogQueryCache>();
             services.AddScoped<ICommerceStoreService, CommerceStoreService>();
+            services.AddScoped<IStoreExecutionContextAccessor, StoreExecutionContextAccessor>();
             services.AddScoped<ICommerceStoreContext, CommerceStoreContext>();
             services.AddScoped<ICommerceStoreDomainResolver, CommerceStoreDomainResolver>();
             services.AddScoped<IStoreCurrencyResolver, StoreCurrencyResolver>();

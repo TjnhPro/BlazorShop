@@ -79,6 +79,7 @@ Security:
 - Node secret.
 - Allowed IP behavior where configured.
 - Store scope through required query `storeKey` for store-scoped Commerce Admin endpoints.
+- Store-scoped Commerce Admin requests resolve `storeKey` in Commerce Node API middleware into a scoped `StoreExecutionContext` before Application/Infrastructure services run.
 
 Responsibilities:
 
@@ -99,6 +100,7 @@ Caller:
 Security:
 
 - Store scope comes from the route value `{storeKey}`.
+- Commerce Node API resolves `{storeKey}` once per request into a scoped `StoreExecutionContext`; Infrastructure services consume that resolved context instead of reading HTTP route values, query strings, headers, or hosts.
 - Storefront/customer session behavior where needed.
 - No node key or node secret.
 - No `X-Store-Key` header.
@@ -175,6 +177,7 @@ Resolution rules:
 
 - Commerce Node Nginx keeps an explicit default/catch-all server returning `403` for unmatched hosts.
 - Production/storefront traffic should resolve the store through Nginx/domain/rewrite behavior.
+- Commerce Node API public media middleware may resolve clean media URLs from trusted host/forwarded-host data into `StoreExecutionContext`; this host compatibility path is limited to `/media/products/*` and `/media/assets/*`.
 - Local admin/debug media QA should use Commerce Admin media debug endpoints with `storeKey` query.
 - A plain `localhost:5180/media/products/{mediaId}` request can return `404` when the Commerce Node database has multiple active stores, because `localhost` is not enough store identity.
 - Store A media must not resolve from Store B host or store key.

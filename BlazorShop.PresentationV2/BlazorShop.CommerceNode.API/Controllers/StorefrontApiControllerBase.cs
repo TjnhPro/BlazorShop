@@ -1,5 +1,6 @@
 namespace BlazorShop.CommerceNode.API.Controllers
 {
+    using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.CommerceNode.API.Responses;
 
@@ -7,6 +8,28 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
     public abstract class StorefrontApiControllerBase : ControllerBase
     {
+        private readonly ICommerceStoreContext? storeContext;
+
+        protected StorefrontApiControllerBase()
+        {
+        }
+
+        protected StorefrontApiControllerBase(ICommerceStoreContext storeContext)
+        {
+            this.storeContext = storeContext;
+        }
+
+        protected async Task<Guid?> ResolveStoreIdAsync(CancellationToken cancellationToken)
+        {
+            if (this.storeContext is null)
+            {
+                throw new InvalidOperationException("Store context is required for this Storefront controller.");
+            }
+
+            var result = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
+            return result.Success ? result.Payload : null;
+        }
+
         protected IActionResult Success<TData>(TData? data, string message)
         {
             return this.Ok(CommerceNodeApiResponse<TData>.Succeeded(data, NormalizeMessage(message)));

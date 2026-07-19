@@ -40,6 +40,7 @@ Use:
 
 - `api/commerce/*` for Control Plane/API admin-control calls. Store-scoped Commerce Admin endpoints must use query `storeKey`; do not use `X-Store-Key`.
 - `api/storefront/stores/{storeKey}/*` for Storefront V2 calls. Store scope must come from route value `{storeKey}`; do not use `X-Store-Key`.
+- Commerce Node API middleware must resolve Storefront route scope and Commerce Admin query scope into `StoreExecutionContext` before services run. Infrastructure must consume `IStoreExecutionContextAccessor` through `ICommerceStoreContext`, not inspect `HttpContext`, route values, query strings, headers, or hosts.
 - `api/internal/*` has been removed from the active V2 Commerce Node runtime. Do not add compatibility routes there.
 - `CommerceNodeDbContext` for ecommerce node data.
 - Existing `CommerceTaskWorker` and `commerce_task` for asynchronous node-local work unless a separate worker has been explicitly approved.

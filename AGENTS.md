@@ -78,6 +78,7 @@ Rules:
 - Commerce Node API owns ecommerce node runtime, commerce admin/control APIs, scoped Storefront APIs, task orchestration, and node-local deployment.
 - Storefront V2 calls Commerce Node Storefront APIs at `api/storefront/stores/{storeKey}/*` and stays store-scoped through the route path.
 - Storefront V2 must resolve the configured current store before reading catalog, settings, customer, cart, checkout, SEO, or media data. Missing, disabled, unavailable, or misconfigured stores must fail clearly and never fall back to another store.
+- Commerce Node API must resolve Storefront route scope and Commerce Admin query scope into `StoreExecutionContext` at the Presentation boundary before services run. Infrastructure must not parse HTTP route values, query strings, headers, or hosts for normal store scope.
 - Public product media URLs are store-scoped too. Storefront-facing media URLs stay clean (`/media/products/{mediaId}` and `/media/assets/{assetId}`); store scope is handled by Nginx/domain/rewrite behavior. Commerce Admin media debug endpoints use `storeKey` query.
 - Commerce Node Nginx must keep a catch-all/default server that returns `403` for unmatched hosts so an unknown domain cannot land on a random storefront.
 - Storefront public absolute URLs must prefer configured `PublicUrl:BaseUrl`; request-host fallback may use forwarded scheme/host only through configured trusted forwarded headers.

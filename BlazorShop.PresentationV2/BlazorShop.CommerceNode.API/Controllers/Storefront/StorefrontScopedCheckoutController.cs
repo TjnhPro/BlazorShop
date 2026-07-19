@@ -55,14 +55,13 @@ namespace BlazorShop.CommerceNode.API.Controllers
         private const string CartTokenHeaderName = "X-Cart-Token";
 
         private readonly IStorefrontCheckoutService checkoutService;
-        private readonly ICommerceStoreContext storeContext;
 
         public StorefrontScopedCheckoutController(
             IStorefrontCheckoutService checkoutService,
             ICommerceStoreContext storeContext)
+            : base(storeContext)
         {
             this.checkoutService = checkoutService;
-            this.storeContext = storeContext;
         }
 
         [HttpPost("start")]
@@ -282,12 +281,6 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 payload => payload is ApplicationStorefrontPlaceOrderResult order
                     ? order.ToStorefrontContract()
                     : null);
-        }
-
-        private async Task<Guid?> ResolveStoreIdAsync(CancellationToken cancellationToken)
-        {
-            var result = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
-            return result.Success ? result.Payload : null;
         }
 
         private string? GetCurrentCustomerId()

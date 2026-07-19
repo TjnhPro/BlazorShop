@@ -38,7 +38,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         public async Task<ServiceResponse<IReadOnlyList<StorefrontPageTemplateStatusDto>>> GetStatusAsync(
             CancellationToken cancellationToken = default)
         {
-            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            var storeId = await this.storeContext.GetCurrentStoreIdOrDefaultAsync(cancellationToken);
             if (!storeId.HasValue)
             {
                 return Failure<IReadOnlyList<StorefrontPageTemplateStatusDto>>("Store context was not resolved.", ServiceResponseType.NotFound);
@@ -196,7 +196,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         public async Task<ServiceResponse<IReadOnlyList<StorefrontPageNavigationLinkDto>>> ListNavigationLinksAsync(
             CancellationToken cancellationToken = default)
         {
-            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            var storeId = await this.storeContext.GetCurrentStoreIdOrDefaultAsync(cancellationToken);
             if (!storeId.HasValue)
             {
                 return Failure<IReadOnlyList<StorefrontPageNavigationLinkDto>>("Store context was not resolved.", ServiceResponseType.NotFound);
@@ -227,7 +227,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private async Task<StorefrontPage?> LoadPageAsync(Guid pagePublicId, CancellationToken cancellationToken)
         {
-            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            var storeId = await this.storeContext.GetCurrentStoreIdOrDefaultAsync(cancellationToken);
             if (!storeId.HasValue || pagePublicId == Guid.Empty)
             {
                 return null;
@@ -239,12 +239,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     (page.PublicId == pagePublicId || page.Id == pagePublicId) &&
                     page.ArchivedAt == null,
                 cancellationToken);
-        }
-
-        private async Task<Guid?> ResolveStoreIdAsync(CancellationToken cancellationToken)
-        {
-            var result = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
-            return result.Success && result.Payload != Guid.Empty ? result.Payload : null;
         }
 
         private static StorefrontPageTemplateStatusDto BuildStatus(

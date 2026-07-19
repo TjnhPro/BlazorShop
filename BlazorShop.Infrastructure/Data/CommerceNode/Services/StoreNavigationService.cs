@@ -63,7 +63,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         public async Task<ServiceResponse<IReadOnlyList<StoreNavigationMenuSummaryDto>>> ListMenusAsync(
             CancellationToken cancellationToken = default)
         {
-            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            var storeId = await this.storeContext.GetCurrentStoreIdOrDefaultAsync(cancellationToken);
             if (!storeId.HasValue)
             {
                 return Failure<IReadOnlyList<StoreNavigationMenuSummaryDto>>("Store context was not resolved.", ServiceResponseType.NotFound);
@@ -101,7 +101,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         {
             ArgumentNullException.ThrowIfNull(request);
 
-            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            var storeId = await this.storeContext.GetCurrentStoreIdOrDefaultAsync(cancellationToken);
             if (!storeId.HasValue)
             {
                 return Failure<StoreNavigationMenuDetailDto>("Store context was not resolved.", ServiceResponseType.NotFound);
@@ -374,7 +374,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             string systemName,
             CancellationToken cancellationToken = default)
         {
-            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            var storeId = await this.storeContext.GetCurrentStoreIdOrDefaultAsync(cancellationToken);
             var normalizedSystemName = NormalizeSystemName(systemName);
             if (!storeId.HasValue || normalizedSystemName is null)
             {
@@ -595,7 +595,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             bool asTracking,
             CancellationToken cancellationToken)
         {
-            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            var storeId = await this.storeContext.GetCurrentStoreIdOrDefaultAsync(cancellationToken);
             if (!storeId.HasValue || publicId == Guid.Empty)
             {
                 return null;
@@ -609,7 +609,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private async Task<StoreNavigationMenuItem?> LoadItemAsync(Guid publicId, CancellationToken cancellationToken)
         {
-            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            var storeId = await this.storeContext.GetCurrentStoreIdOrDefaultAsync(cancellationToken);
             if (!storeId.HasValue || publicId == Guid.Empty)
             {
                 return null;
@@ -649,12 +649,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             return ParentResolution.Valid(parent.Id);
-        }
-
-        private async Task<Guid?> ResolveStoreIdAsync(CancellationToken cancellationToken)
-        {
-            var result = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
-            return result.Success && result.Payload != Guid.Empty ? result.Payload : null;
         }
 
         private static bool CreatesCycle(IReadOnlyList<StoreNavigationMenuItem> items, Guid currentItemId, Guid parentItemId)

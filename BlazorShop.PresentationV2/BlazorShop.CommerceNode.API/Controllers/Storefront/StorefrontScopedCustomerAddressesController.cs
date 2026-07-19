@@ -53,14 +53,13 @@ namespace BlazorShop.CommerceNode.API.Controllers
     public sealed class StorefrontScopedCustomerAddressesController : StorefrontApiControllerBase
     {
         private readonly IStorefrontCustomerAddressService addressService;
-        private readonly ICommerceStoreContext storeContext;
 
         public StorefrontScopedCustomerAddressesController(
             IStorefrontCustomerAddressService addressService,
             ICommerceStoreContext storeContext)
+            : base(storeContext)
         {
             this.addressService = addressService;
-            this.storeContext = storeContext;
         }
 
         [HttpGet]
@@ -170,11 +169,6 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return (new StorefrontCustomerAddressContext(storeId.Value, userId, email, fullName), null);
         }
 
-        private async Task<Guid?> ResolveStoreIdAsync(CancellationToken cancellationToken)
-        {
-            var result = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
-            return result.Success ? result.Payload : null;
-        }
     }
 
 }

@@ -53,14 +53,13 @@ namespace BlazorShop.CommerceNode.API.Controllers
     {
         private const string ConsentVisitorHeaderName = "X-Consent-Visitor";
 
-        private readonly ICommerceStoreContext storeContext;
         private readonly IStorefrontConsentService consentService;
 
         public StorefrontScopedConsentController(
             ICommerceStoreContext storeContext,
             IStorefrontConsentService consentService)
+            : base(storeContext)
         {
-            this.storeContext = storeContext;
             this.consentService = consentService;
         }
 
@@ -119,11 +118,6 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return this.FromServiceResponse(result, snapshot => snapshot?.ToStorefrontContract());
         }
 
-        private async Task<Guid?> ResolveStoreIdAsync(CancellationToken cancellationToken)
-        {
-            var result = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
-            return result.Success ? result.Payload : null;
-        }
     }
 
 }

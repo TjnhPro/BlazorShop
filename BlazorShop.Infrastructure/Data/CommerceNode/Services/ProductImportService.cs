@@ -40,7 +40,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         {
             ArgumentNullException.ThrowIfNull(request);
 
-            var storeId = await this.ResolveStoreIdAsync();
+            var storeId = await this.storeContext.GetCurrentStoreIdOrDefaultAsync();
             if (!storeId.HasValue)
             {
                 return Failure<ProductImportUploadResponse>("Store context was not resolved.", ServiceResponseType.NotFound);
@@ -135,7 +135,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             ProductImportJobListQuery query,
             CancellationToken cancellationToken = default)
         {
-            var storeId = await this.ResolveStoreIdAsync();
+            var storeId = await this.storeContext.GetCurrentStoreIdOrDefaultAsync();
             if (!storeId.HasValue)
             {
                 return Failure<ProductImportJobListResponse>("Store context was not resolved.", ServiceResponseType.NotFound);
@@ -203,7 +203,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private async Task<ProductImportJob?> LoadJobAsync(Guid publicId, CancellationToken cancellationToken)
         {
-            var storeId = await this.ResolveStoreIdAsync();
+            var storeId = await this.storeContext.GetCurrentStoreIdOrDefaultAsync();
             if (!storeId.HasValue || publicId == Guid.Empty)
             {
                 return null;
@@ -212,12 +212,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return await this.context.ProductImportJobs
                 .AsNoTracking()
                 .FirstOrDefaultAsync(job => job.StoreId == storeId && job.PublicId == publicId, cancellationToken);
-        }
-
-        private async Task<Guid?> ResolveStoreIdAsync()
-        {
-            var result = await this.storeContext.GetCurrentStoreIdAsync();
-            return result.Success && result.Payload != Guid.Empty ? result.Payload : null;
         }
 
         private static string BuildStoredFilePath(Guid jobPublicId)

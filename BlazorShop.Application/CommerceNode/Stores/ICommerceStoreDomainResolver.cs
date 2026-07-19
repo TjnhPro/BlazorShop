@@ -14,6 +14,12 @@ namespace BlazorShop.Application.CommerceNode.Stores
             string? host = null,
             CancellationToken cancellationToken = default);
 
+        Task<ApplicationResult<StoreExecutionContext>> ResolveExecutionContextAsync(
+            string? storeKey = null,
+            string? host = null,
+            string source = StoreExecutionContextSources.Unknown,
+            CancellationToken cancellationToken = default);
+
         Task<ApplicationResult<Guid>> ResolveStoreIdAsync(
             string? storeKey = null,
             string? host = null,

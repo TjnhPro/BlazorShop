@@ -129,6 +129,9 @@ app.UseStaticFiles(CreateUploadsStaticFileOptions(uploadsPath));
 
 app.MapGet("/", () => Results.Redirect("/swagger"));
 app.UseWhen(
+    context => StorefrontStoreScopeMiddleware.IsStorefrontOrPublicMediaPath(context.Request.Path),
+    branch => branch.UseMiddleware<StorefrontStoreScopeMiddleware>());
+app.UseWhen(
     context => context.Request.Path.StartsWithSegments("/api/commerce"),
     branch => branch.UseMiddleware<CommerceNodeCredentialMiddleware>());
 app.UseWhen(

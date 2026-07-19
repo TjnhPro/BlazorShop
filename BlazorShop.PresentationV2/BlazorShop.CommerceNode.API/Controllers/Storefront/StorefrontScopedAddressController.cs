@@ -52,14 +52,13 @@ namespace BlazorShop.CommerceNode.API.Controllers
     public sealed class StorefrontScopedAddressController : StorefrontApiControllerBase
     {
         private readonly IAddressLookupService addressLookupService;
-        private readonly ICommerceStoreContext storeContext;
 
         public StorefrontScopedAddressController(
             IAddressLookupService addressLookupService,
             ICommerceStoreContext storeContext)
+            : base(storeContext)
         {
             this.addressLookupService = addressLookupService;
-            this.storeContext = storeContext;
         }
 
         [HttpGet("countries")]
@@ -108,11 +107,6 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return this.Success(configuration.ToStorefrontContract(), "Address field configuration resolved.");
         }
 
-        private async Task<Guid?> ResolveStoreIdAsync(CancellationToken cancellationToken)
-        {
-            var result = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
-            return result.Success ? result.Payload : null;
-        }
     }
 
 }

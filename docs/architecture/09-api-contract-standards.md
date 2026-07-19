@@ -56,6 +56,7 @@ Store scope must match the route ownership:
 - Control Plane API owns `api/control-plane/*`.
 - Commerce Admin/control owns `api/commerce/*`; store-scoped admin endpoints use required query `storeKey`.
 - Storefront owns `api/storefront/stores/{storeKey}/*`; store scope comes from the route value.
+- In Commerce Node API, the Presentation boundary resolves store scope into `StoreExecutionContext` before Application/Infrastructure services run. Infrastructure must not parse public HTTP route/query/header/host details to infer normal store scope.
 
 Do not use `X-Store-Key` for active V2 Storefront APIs. Do not require node credentials on Storefront endpoints.
 

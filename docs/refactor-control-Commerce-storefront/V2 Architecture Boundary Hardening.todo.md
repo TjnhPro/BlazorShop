@@ -453,45 +453,47 @@ Goal: resolve store scope once in Presentation and stop Infrastructure from inte
 
 ### Target Model
 
-- [ ] Add `StoreExecutionContext` or equivalent scoped Application-safe type with `StoreId`, `StoreKey`, optional `Host`, readiness fields if needed, and source metadata.
-- [ ] Add `IStoreExecutionContextAccessor` or scoped context holder in Application if services must read ambient store.
-- [ ] Presentation middleware/filter resolves store hints from route/query/host and writes the scoped context.
-- [ ] Infrastructure services read resolved store id from the context, not `HttpContext`.
+- [x] Add `StoreExecutionContext` or equivalent scoped Application-safe type with `StoreId`, `StoreKey`, optional `Host`, readiness fields if needed, and source metadata.
+- [x] Add `IStoreExecutionContextAccessor` or scoped context holder in Application if services must read ambient store.
+- [x] Presentation middleware/filter resolves store hints from route/query/host and writes the scoped context.
+- [x] Infrastructure services read resolved store id from the context, not `HttpContext`.
 
 ### Tasks
 
-- [ ] Add tests for current Storefront route store resolution: route `storeKey`, missing route, wrong store, disabled/maintenance store, unknown host, public media behavior.
-- [ ] Add tests for Commerce Admin store-scoped query `storeKey` and no `X-Store-Key`.
-- [ ] Add `StoreExecutionContext` in Application CommerceNode store/context namespace.
-- [ ] Add Commerce Node API middleware or endpoint filter for `api/storefront/stores/{storeKey}/*`.
-- [ ] Add Commerce Admin middleware/filter for `api/commerce/admin/*` query `storeKey`.
-- [ ] Preserve public media resolution behavior separately because clean media URLs may use host/rewrite instead of route.
-- [ ] Change `CommerceStoreContext` to read from `StoreExecutionContext` first.
-- [ ] Keep a temporary compatibility path for public media/host resolution only, with tests and a TODO to remove when media is explicitly handled.
-- [ ] Replace repeated controller `ResolveStoreIdAsync` methods with a shared base helper or direct context access.
-- [ ] Move service-level `ResolveStoreIdAsync` duplication into one helper where explicit store id has not yet been threaded through commands.
-- [ ] Long-term task: update high-value commands/queries to accept `StoreId` explicitly and remove ambient usage from those services.
+- [x] Add tests for current Storefront route store resolution: route `storeKey`, missing route, wrong store, disabled/maintenance store, unknown host, public media behavior.
+- [x] Add tests for Commerce Admin store-scoped query `storeKey` and no `X-Store-Key`.
+- [x] Add `StoreExecutionContext` in Application CommerceNode store/context namespace.
+- [x] Add Commerce Node API middleware or endpoint filter for `api/storefront/stores/{storeKey}/*`.
+- [x] Add Commerce Admin middleware/filter for `api/commerce/admin/*` query `storeKey`.
+- [x] Preserve public media resolution behavior separately because clean media URLs may use host/rewrite instead of route.
+- [x] Change `CommerceStoreContext` to read from `StoreExecutionContext` first.
+- [x] Keep a temporary compatibility path for public media/host resolution only, with tests and a TODO to remove when media is explicitly handled.
+- [x] Replace repeated controller `ResolveStoreIdAsync` methods with a shared base helper or direct context access.
+- [x] Move service-level `ResolveStoreIdAsync` duplication into one helper where explicit store id has not yet been threaded through commands.
+- [x] Long-term task: update high-value commands/queries to accept `StoreId` explicitly and remove ambient usage from those services.
 
 ### Migration Order
 
-- [ ] Storefront scoped controllers: address, cart, checkout, consent, customer addresses, payments.
-- [ ] Storefront read-only controllers: catalog, configuration, currency, store, pages, navigation, SEO.
-- [ ] Commerce Admin controllers that use `ICommerceStoreContext`.
-- [ ] Infrastructure services with private `ResolveStoreIdAsync`.
-- [ ] Public media controllers and media services last.
+- [x] Storefront scoped controllers: address, cart, checkout, consent, customer addresses, payments.
+- [x] Storefront read-only controllers: catalog, configuration, currency, store, pages, navigation, SEO.
+- [x] Commerce Admin controllers that use `ICommerceStoreContext`.
+- [x] Infrastructure services with private `ResolveStoreIdAsync`.
+- [x] Public media controllers and media services last.
 
 ### Verification
 
-- [ ] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~StoreScope|FullyQualifiedName~StorefrontScoped|FullyQualifiedName~CommerceNodeProductStoreScope|FullyQualifiedName~Media"`
-- [ ] `GET /swagger/storefront/swagger.json` still contains `api/storefront/stores/{storeKey}/*`.
-- [ ] `GET /swagger/commerce-admin/swagger.json` still shows required `storeKey` query for admin store-scoped endpoints.
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~CommerceStoreContext|FullyQualifiedName~StoreExecutionContextMiddleware|FullyQualifiedName~StorefrontScoped|FullyQualifiedName~StoreMapping|FullyQualifiedName~ArchitectureBoundary|FullyQualifiedName~StoreScope|FullyQualifiedName~CommerceNodeProductStoreScope|FullyQualifiedName~Media"` - Passed: 173, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~CommerceNodeStorefrontOpenApiContract|FullyQualifiedName~CommerceNodeAdminStoreOpenApiMetadata|FullyQualifiedName~StoreExecutionContextMiddleware|FullyQualifiedName~CommerceStoreContext|FullyQualifiedName~ArchitectureBoundary"` - Passed: 72, Failed: 0. Existing warnings: MessagePack/Microsoft.OpenApi advisories, Browserslist stale.
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore` - Build succeeded, 0 warnings, 0 errors.
+- [x] `GET /swagger/storefront/swagger.json` still contains `api/storefront/stores/{storeKey}/*` - covered by Commerce Node Storefront OpenAPI contract tests in focused verification.
+- [x] `GET /swagger/commerce-admin/swagger.json` still shows required `storeKey` query for admin store-scoped endpoints - covered by Commerce Node Admin OpenAPI metadata tests and route/query middleware tests.
 
 ### Done When
 
-- [ ] Storefront route scope is resolved once per request.
-- [ ] Commerce Admin query scope is resolved once per request.
-- [ ] Infrastructure no longer parses route/query/header/host for normal store-scoped operations.
-- [ ] Public media host/rewrite behavior remains protected by tests.
+- [x] Storefront route scope is resolved once per request.
+- [x] Commerce Admin query scope is resolved once per request.
+- [x] Infrastructure no longer parses route/query/header/host for normal store-scoped operations.
+- [x] Public media host/rewrite behavior remains protected by tests.
 
 ## Phase 6 - Storefront Frontend Contract Boundary
 

@@ -39,7 +39,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         public async Task<ServiceResponse<IReadOnlyList<MessageTemplateAdminSummary>>> ListTemplatesAsync(
             CancellationToken cancellationToken = default)
         {
-            var store = await this.ResolveStoreIdAsync(cancellationToken);
+            var store = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
             if (!store.Success)
             {
                 return Failure<IReadOnlyList<MessageTemplateAdminSummary>>(store.Message, ServiceResponseType.ValidationError);
@@ -74,7 +74,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             Guid publicId,
             CancellationToken cancellationToken = default)
         {
-            var store = await this.ResolveStoreIdAsync(cancellationToken);
+            var store = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
             if (!store.Success)
             {
                 return Failure<MessageTemplateAdminDetail>(store.Message, ServiceResponseType.ValidationError);
@@ -99,7 +99,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failure<MessageTemplateAdminDetail>(validation, ServiceResponseType.ValidationError);
             }
 
-            var store = await this.ResolveStoreIdAsync(cancellationToken);
+            var store = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
             if (!store.Success)
             {
                 return Failure<MessageTemplateAdminDetail>(store.Message, ServiceResponseType.ValidationError);
@@ -170,7 +170,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             Guid publicId,
             CancellationToken cancellationToken = default)
         {
-            var store = await this.ResolveStoreIdAsync(cancellationToken);
+            var store = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
             if (!store.Success)
             {
                 return Failure<MessageTemplateAdminDetail>(store.Message, ServiceResponseType.ValidationError);
@@ -226,7 +226,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failure<MessageTemplatePreviewResponse>("Template system name is required.", ServiceResponseType.ValidationError);
             }
 
-            var store = await this.ResolveStoreIdAsync(cancellationToken);
+            var store = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
             if (!store.Success)
             {
                 return Failure<MessageTemplatePreviewResponse>(store.Message, ServiceResponseType.ValidationError);
@@ -254,7 +254,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             int take,
             CancellationToken cancellationToken = default)
         {
-            var store = await this.ResolveStoreIdAsync(cancellationToken);
+            var store = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
             if (!store.Success)
             {
                 return Failure<QueuedMessageAdminListResponse>(store.Message, ServiceResponseType.ValidationError);
@@ -305,7 +305,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             Guid publicId,
             CancellationToken cancellationToken = default)
         {
-            var store = await this.ResolveStoreIdAsync(cancellationToken);
+            var store = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
             if (!store.Success)
             {
                 return Failure<QueuedMessageAdminDetail>(store.Message, ServiceResponseType.ValidationError);
@@ -321,7 +321,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             Guid publicId,
             CancellationToken cancellationToken = default)
         {
-            var store = await this.ResolveStoreIdAsync(cancellationToken);
+            var store = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
             if (!store.Success)
             {
                 return Failure<QueuedMessageAdminDetail>(store.Message, ServiceResponseType.ValidationError);
@@ -353,7 +353,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             Guid publicId,
             CancellationToken cancellationToken = default)
         {
-            var store = await this.ResolveStoreIdAsync(cancellationToken);
+            var store = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
             if (!store.Success)
             {
                 return Failure<QueuedMessageAdminDetail>(store.Message, ServiceResponseType.ValidationError);
@@ -432,11 +432,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return await query.FirstOrDefaultAsync(
                 message => message.PublicId == publicId && message.StoreId == storeId,
                 cancellationToken);
-        }
-
-        private async Task<ApplicationResult<Guid>> ResolveStoreIdAsync(CancellationToken cancellationToken)
-        {
-            return await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
         }
 
         private async Task LogAsync(string action, string entityType, Guid publicId, object metadata)

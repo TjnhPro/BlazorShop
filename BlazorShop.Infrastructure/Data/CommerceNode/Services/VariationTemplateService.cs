@@ -47,7 +47,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         {
             ArgumentNullException.ThrowIfNull(query);
 
-            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            var storeId = await this.storeContext.GetCurrentStoreIdOrDefaultAsync(cancellationToken);
             if (!storeId.HasValue)
             {
                 return Failure<VariationTemplateListResponse>("Store context was not resolved.", ServiceResponseType.NotFound);
@@ -100,7 +100,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         {
             ArgumentNullException.ThrowIfNull(request);
 
-            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            var storeId = await this.storeContext.GetCurrentStoreIdOrDefaultAsync(cancellationToken);
             if (!storeId.HasValue)
             {
                 return Failure<VariationTemplateDetailDto>("Store context was not resolved.", ServiceResponseType.NotFound);
@@ -460,7 +460,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private async Task<VariationTemplate?> LoadTemplateAsync(Guid id, bool asTracking, CancellationToken cancellationToken)
         {
-            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            var storeId = await this.storeContext.GetCurrentStoreIdOrDefaultAsync(cancellationToken);
             if (!storeId.HasValue || id == Guid.Empty)
             {
                 return null;
@@ -477,12 +477,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             return await query.FirstOrDefaultAsync(cancellationToken);
-        }
-
-        private async Task<Guid?> ResolveStoreIdAsync(CancellationToken cancellationToken)
-        {
-            var result = await this.storeContext.GetCurrentStoreIdAsync();
-            return result.Success && result.Payload != Guid.Empty ? result.Payload : null;
         }
 
         private string? NormalizeSlug(string? slug, string fallbackName)

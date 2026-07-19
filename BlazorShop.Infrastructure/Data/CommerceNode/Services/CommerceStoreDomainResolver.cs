@@ -62,51 +62,35 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             string? host = null,
             CancellationToken cancellationToken = default)
         {
-            if (!string.IsNullOrWhiteSpace(storeKey))
-            {
-                var normalizedStoreKey = storeKey.Trim().ToLowerInvariant();
-                var store = await this.StoreReadinessQuery()
-                    .FirstOrDefaultAsync(entity => entity.StoreKey == normalizedStoreKey, cancellationToken);
+            var storeResult = await this.ResolveReadinessStoreAsync(storeKey, host, cancellationToken);
+            return storeResult.Success && storeResult.Value is not null
+                ? Succeeded(MapCurrentStore(storeResult.Value))
+                : ApplicationResult<CommerceCurrentStore>.Failed(storeResult.Error!);
+        }
 
-                return store is null
-                    ? Failed(ApplicationErrorKind.NotFound, "Store was not found.")
-                    : Succeeded(MapCurrentStore(store));
+        public async Task<ApplicationResult<StoreExecutionContext>> ResolveExecutionContextAsync(
+            string? storeKey = null,
+            string? host = null,
+            string source = StoreExecutionContextSources.Unknown,
+            CancellationToken cancellationToken = default)
+        {
+            var storeResult = await this.ResolveReadinessStoreAsync(storeKey, host, cancellationToken);
+            if (!storeResult.Success || storeResult.Value is null)
+            {
+                return ApplicationResult<StoreExecutionContext>.Failed(storeResult.Error!);
             }
 
-            if (!string.IsNullOrWhiteSpace(host))
-            {
-                var normalizedHost = CommerceStoreService.NormalizeDomain(host);
-                if (normalizedHost is null)
-                {
-                    return Failed(ApplicationErrorKind.Validation, "Store host is invalid.");
-                }
-
-                var store = await this.StoreReadinessQuery()
-                    .FirstOrDefaultAsync(
-                        entity => entity.Domains.Any(
-                            domain =>
-                                domain.NormalizedDomain == normalizedHost &&
-                                domain.DisabledAt == null &&
-                                domain.Status == CommerceStoreDomainStatuses.Verified),
-                        cancellationToken);
-
-                return store is null
-                    ? Failed(ApplicationErrorKind.NotFound, "Store host was not found.")
-                    : Succeeded(MapCurrentStore(store));
-            }
-
-            var stores = await this.StoreReadinessQuery()
-                .OrderBy(store => store.DisplayOrder)
-                .ThenBy(store => store.Name)
-                .Take(2)
-                .ToListAsync(cancellationToken);
-
-            return stores.Count switch
-            {
-                1 => Succeeded(MapCurrentStore(stores[0])),
-                0 => Failed(ApplicationErrorKind.NotFound, "No store is configured."),
-                _ => Failed(ApplicationErrorKind.Conflict, "Multiple stores require an explicit store key or host."),
-            };
+            var store = storeResult.Value;
+            return ApplicationResult<StoreExecutionContext>.Succeeded(
+                new StoreExecutionContext(
+                    store.Id,
+                    store.StoreKey,
+                    string.IsNullOrWhiteSpace(host) ? null : host.Trim(),
+                    string.IsNullOrWhiteSpace(source) ? StoreExecutionContextSources.Unknown : source.Trim(),
+                    store.Status,
+                    string.Equals(store.Status, CommerceStoreStatuses.Active, StringComparison.OrdinalIgnoreCase),
+                    MapCurrentStore(store)),
+                "Store execution context resolved.");
         }
 
         private async Task<ApplicationResult<CommerceCurrentStore>> ResolveByStoreKeyAsync(
@@ -310,6 +294,58 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 ApplicationErrorKind.NotFound => ApplicationError.NotFound("store.not_found", message),
                 ApplicationErrorKind.Conflict => ApplicationError.Conflict("store.conflict", message),
                 _ => ApplicationError.Failure("store.failure", message),
+            };
+        }
+
+        private async Task<ApplicationResult<CommerceStore>> ResolveReadinessStoreAsync(
+            string? storeKey,
+            string? host,
+            CancellationToken cancellationToken)
+        {
+            if (!string.IsNullOrWhiteSpace(storeKey))
+            {
+                var normalizedStoreKey = storeKey.Trim().ToLowerInvariant();
+                var store = await this.StoreReadinessQuery()
+                    .FirstOrDefaultAsync(entity => entity.StoreKey == normalizedStoreKey, cancellationToken);
+
+                return store is null
+                    ? FailedStore(ApplicationErrorKind.NotFound, "Store was not found.")
+                    : SucceededStore(store);
+            }
+
+            if (!string.IsNullOrWhiteSpace(host))
+            {
+                var normalizedHost = CommerceStoreService.NormalizeDomain(host);
+                if (normalizedHost is null)
+                {
+                    return FailedStore(ApplicationErrorKind.Validation, "Store host is invalid.");
+                }
+
+                var store = await this.StoreReadinessQuery()
+                    .FirstOrDefaultAsync(
+                        entity => entity.Domains.Any(
+                            domain =>
+                                domain.NormalizedDomain == normalizedHost &&
+                                domain.DisabledAt == null &&
+                                domain.Status == CommerceStoreDomainStatuses.Verified),
+                        cancellationToken);
+
+                return store is null
+                    ? FailedStore(ApplicationErrorKind.NotFound, "Store host was not found.")
+                    : SucceededStore(store);
+            }
+
+            var stores = await this.StoreReadinessQuery()
+                .OrderBy(store => store.DisplayOrder)
+                .ThenBy(store => store.Name)
+                .Take(2)
+                .ToListAsync(cancellationToken);
+
+            return stores.Count switch
+            {
+                1 => SucceededStore(stores[0]),
+                0 => FailedStore(ApplicationErrorKind.NotFound, "No store is configured."),
+                _ => FailedStore(ApplicationErrorKind.Conflict, "Multiple stores require an explicit store key or host."),
             };
         }
     }

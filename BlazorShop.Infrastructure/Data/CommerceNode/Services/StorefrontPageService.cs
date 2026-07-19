@@ -57,7 +57,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         {
             ArgumentNullException.ThrowIfNull(query);
 
-            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            var storeId = await this.storeContext.GetCurrentStoreIdOrDefaultAsync(cancellationToken);
             if (!storeId.HasValue)
             {
                 return Failure<StorefrontPageListResponse>("Store context was not resolved.", ServiceResponseType.NotFound);
@@ -114,7 +114,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         {
             ArgumentNullException.ThrowIfNull(request);
 
-            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            var storeId = await this.storeContext.GetCurrentStoreIdOrDefaultAsync(cancellationToken);
             if (!storeId.HasValue)
             {
                 return Failure<StorefrontPageDetailDto>("Store context was not resolved.", ServiceResponseType.NotFound);
@@ -309,7 +309,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             string slug,
             CancellationToken cancellationToken = default)
         {
-            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            var storeId = await this.storeContext.GetCurrentStoreIdOrDefaultAsync(cancellationToken);
             var normalizedSlug = this.NormalizeSlug(slug);
             if (!storeId.HasValue || normalizedSlug is null)
             {
@@ -334,7 +334,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         public async Task<ServiceResponse<IReadOnlyList<StorefrontPageSitemapEntryDto>>> ListSitemapEntriesAsync(
             CancellationToken cancellationToken = default)
         {
-            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            var storeId = await this.storeContext.GetCurrentStoreIdOrDefaultAsync(cancellationToken);
             if (!storeId.HasValue)
             {
                 return Failure<IReadOnlyList<StorefrontPageSitemapEntryDto>>("Store context was not resolved.", ServiceResponseType.NotFound);
@@ -360,7 +360,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             bool includeArchived,
             CancellationToken cancellationToken)
         {
-            var storeId = await this.ResolveStoreIdAsync(cancellationToken);
+            var storeId = await this.storeContext.GetCurrentStoreIdOrDefaultAsync(cancellationToken);
             if (!storeId.HasValue || id == Guid.Empty)
             {
                 return null;
@@ -373,12 +373,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     (page.Id == id || page.PublicId == id) &&
                     (includeArchived || page.ArchivedAt == null),
                 cancellationToken);
-        }
-
-        private async Task<Guid?> ResolveStoreIdAsync(CancellationToken cancellationToken)
-        {
-            var result = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
-            return result.Success && result.Payload != Guid.Empty ? result.Payload : null;
         }
 
         private NormalizedStorefrontPage NormalizeCreate(CreateStorefrontPageRequest request)

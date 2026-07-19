@@ -51,7 +51,6 @@ namespace BlazorShop.CommerceNode.API.Controllers
     [Route("api/storefront/stores/{storeKey}/payments")]
     public sealed class StorefrontScopedPaymentsController : StorefrontApiControllerBase
     {
-        private readonly ICommerceStoreContext storeContext;
         private readonly IPaymentAttemptService paymentAttemptService;
         private readonly IPaymentWebhookSignatureVerifier paymentWebhookSignatureVerifier;
         private readonly IStorefrontPaymentProviderResolver paymentProviderResolver;
@@ -63,8 +62,8 @@ namespace BlazorShop.CommerceNode.API.Controllers
             IPaymentWebhookSignatureVerifier paymentWebhookSignatureVerifier,
             IStorefrontPaymentProviderResolver paymentProviderResolver,
             IPaymentMethodService paymentMethodService)
+            : base(storeContext)
         {
-            this.storeContext = storeContext;
             this.paymentAttemptService = paymentAttemptService;
             this.paymentWebhookSignatureVerifier = paymentWebhookSignatureVerifier;
             this.paymentProviderResolver = paymentProviderResolver;
@@ -323,11 +322,6 @@ namespace BlazorShop.CommerceNode.API.Controllers
             return transition.Success ? null : this.FromServiceResponse(transition);
         }
 
-        private async Task<Guid?> ResolveStoreIdAsync(CancellationToken cancellationToken)
-        {
-            var result = await this.storeContext.GetCurrentStoreIdAsync(cancellationToken);
-            return result.Success ? result.Payload : null;
-        }
     }
 
 }
