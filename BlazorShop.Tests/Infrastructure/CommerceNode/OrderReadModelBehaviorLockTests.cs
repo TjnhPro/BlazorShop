@@ -80,8 +80,14 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var storeId = Guid.NewGuid();
             await using var context = CreateContext();
             var order = SeedOrderGraph(context, storeId);
-            var service = new StorefrontGuestOrderService(context, new FixedStoreContext(storeId));
-            var wrongStore = new StorefrontGuestOrderService(context, new FixedStoreContext(Guid.NewGuid()));
+            var service = new StorefrontGuestOrderService(
+                context,
+                new FixedStoreContext(storeId),
+                new OrderReadModelAssembler(context));
+            var wrongStore = new StorefrontGuestOrderService(
+                context,
+                new FixedStoreContext(Guid.NewGuid()),
+                new OrderReadModelAssembler(context));
 
             var result = await service.GetAsync(new StorefrontGuestOrderLookupRequest(order.Reference, GuestAccessToken));
             var invalidToken = await service.GetAsync(new StorefrontGuestOrderLookupRequest(order.Reference, "wrong-token"));

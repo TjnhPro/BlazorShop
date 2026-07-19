@@ -16,7 +16,10 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         public async Task GetAsync_WithoutToken_ReturnsValidationError()
         {
             await using var context = CreateContext();
-            var service = new StorefrontGuestOrderService(context, new FixedStoreContext(Guid.NewGuid()));
+            var service = new StorefrontGuestOrderService(
+                context,
+                new FixedStoreContext(Guid.NewGuid()),
+                new OrderReadModelAssembler(context));
 
             var result = await service.GetAsync(new StorefrontGuestOrderLookupRequest("ORD-1", string.Empty));
 

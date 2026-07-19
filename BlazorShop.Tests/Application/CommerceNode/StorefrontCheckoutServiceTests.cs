@@ -871,14 +871,21 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Contains("\"address1\":\"100 Main St\"", persistedOrder.BillingAddressSnapshotJson);
             Assert.Contains("\"address1\":\"100 Main St\"", persistedOrder.ShippingAddressSnapshotJson);
 
-            var guestOrderService = new StorefrontGuestOrderService(context, new FixedStoreContext(storeId));
+            var guestOrderService = new StorefrontGuestOrderService(
+                context,
+                new FixedStoreContext(storeId),
+                new OrderReadModelAssembler(context));
             var lookup = await guestOrderService.GetAsync(new BlazorShop.Application.CommerceNode.Orders.StorefrontGuestOrderLookupRequest(
                 persistedOrder.Reference,
                 result.Payload.GuestAccessToken));
             var wrongToken = await guestOrderService.GetAsync(new BlazorShop.Application.CommerceNode.Orders.StorefrontGuestOrderLookupRequest(
                 persistedOrder.Reference,
                 "wrong-token"));
-            var wrongStore = await new StorefrontGuestOrderService(context, new FixedStoreContext(Guid.NewGuid())).GetAsync(
+            var wrongStore = await new StorefrontGuestOrderService(
+                    context,
+                    new FixedStoreContext(Guid.NewGuid()),
+                    new OrderReadModelAssembler(context))
+                .GetAsync(
                 new BlazorShop.Application.CommerceNode.Orders.StorefrontGuestOrderLookupRequest(
                     persistedOrder.Reference,
                     result.Payload.GuestAccessToken));

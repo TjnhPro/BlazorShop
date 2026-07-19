@@ -284,23 +284,29 @@ Acceptance:
 
 ## Phase 5 - Migrate Guest Service
 
-- [ ] Inject `OrderReadModelAssembler` into `StorefrontGuestOrderService`.
-- [ ] Keep guest access token validation exactly where it is.
-- [ ] Replace private `MapAsync` with assembler call using `OrderReadModelOptions.Guest()`.
-- [ ] Preserve current guest behavior:
+- [x] Inject `OrderReadModelAssembler` into `StorefrontGuestOrderService`.
+- [x] Keep guest access token validation exactly where it is.
+- [x] Replace private `MapAsync` with assembler call using `OrderReadModelOptions.Guest()`.
+- [x] Preserve current guest behavior:
   - valid access token required.
   - current store required.
   - only customer-visible history.
   - payment attempt public id/provider key retained if current tests rely on it.
   - tracking events not added unless separately approved.
-- [ ] Remove duplicate guest payment/history/line mapping.
+- [x] Remove duplicate guest payment/history/line mapping.
+
+Phase 5 notes:
+
+- `StorefrontGuestOrderService` still performs reference, access token hash, token expiry, and current-store checks before projection.
+- The authorized order is now projected through `OrderReadModelAssembler` with `OrderReadModelOptions.Guest()`.
+- Checkout snapshot tests were updated for the new direct service constructor dependency and continue to validate guest lookup/wrong-token/wrong-store behavior.
 
 Acceptance:
 
-- [ ] `StorefrontGuestOrderServiceTests` pass.
-- [ ] `StorefrontCheckoutServiceTests` guest lookup/order snapshot cases pass.
-- [ ] Invalid token and wrong store still return not found.
-- [ ] Guest does not gain admin-only data.
+- [x] `StorefrontGuestOrderServiceTests` pass.
+- [x] `StorefrontCheckoutServiceTests` guest lookup/order snapshot cases pass.
+- [x] Invalid token and wrong store still return not found.
+- [x] Guest does not gain admin-only data.
 
 ## Phase 6 - Migrate Admin Service
 

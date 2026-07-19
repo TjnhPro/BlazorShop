@@ -16,13 +16,16 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
     {
         private readonly CommerceNodeDbContext context;
         private readonly ICommerceStoreContext storeContext;
+        private readonly OrderReadModelAssembler orderReadModelAssembler;
 
         public StorefrontGuestOrderService(
             CommerceNodeDbContext context,
-            ICommerceStoreContext storeContext)
+            ICommerceStoreContext storeContext,
+            OrderReadModelAssembler orderReadModelAssembler)
         {
             this.context = context;
             this.storeContext = storeContext;
+            this.orderReadModelAssembler = orderReadModelAssembler;
         }
 
         public async Task<ServiceResponse<GetOrder>> GetAsync(
@@ -69,124 +72,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
         private async Task<GetOrder> MapAsync(Order order, CancellationToken cancellationToken)
         {
-            var historyEntries = await this.context.OrderHistoryEntries
-                .AsNoTracking()
-                .Where(entry => entry.OrderId == order.Id && entry.VisibleToCustomer)
-                .OrderBy(entry => entry.CreatedAtUtc)
-                .Select(entry => new GetOrderHistoryEntry
-                {
-                    Id = entry.Id,
-                    EventType = entry.EventType,
-                    OldValue = entry.OldValue,
-                    NewValue = entry.NewValue,
-                    Message = entry.Message,
-                    VisibleToCustomer = entry.VisibleToCustomer,
-                    CreatedAtUtc = entry.CreatedAtUtc,
-                    Source = entry.Source,
-                })
-                .ToArrayAsync(cancellationToken);
-
-            var paymentAttempt = await this.context.PaymentAttempts
-                .AsNoTracking()
-                .Where(attempt => attempt.OrderId == order.Id)
-                .OrderByDescending(attempt => attempt.UpdatedAtUtc)
-                .Select(attempt => new GetOrderPaymentSummary
-                {
-                    PaymentAttemptPublicId = attempt.PublicId,
-                    ProviderKey = attempt.ProviderKey,
-                    PaymentStatus = attempt.State,
-                    PaymentMethodKey = attempt.PaymentMethodKey,
-                    AttemptState = attempt.State,
-                    Amount = attempt.Amount,
-                    CurrencyCode = attempt.CurrencyCode,
-                    UpdatedAtUtc = attempt.UpdatedAtUtc,
-                })
-                .FirstOrDefaultAsync(cancellationToken);
-
-            return new GetOrder
-            {
-                Id = order.Id,
-                Reference = order.Reference,
-                Status = order.OrderStatus,
-                OrderStatus = order.OrderStatus,
-                PaymentStatus = order.PaymentStatus,
-                PaymentMethodKey = order.PaymentMethodKey,
-                PaymentAt = order.PaymentAt,
-                PaymentSummary = new GetOrderPaymentSummary
-                {
-                    PaymentAttemptPublicId = paymentAttempt?.PaymentAttemptPublicId,
-                    ProviderKey = paymentAttempt?.ProviderKey,
-                    PaymentStatus = order.PaymentStatus,
-                    PaymentMethodKey = order.PaymentMethodKey,
-                    AttemptState = paymentAttempt?.AttemptState,
-                    Amount = paymentAttempt?.Amount,
-                    CurrencyCode = paymentAttempt?.CurrencyCode,
-                    PaymentAt = order.PaymentAt,
-                    UpdatedAtUtc = paymentAttempt?.UpdatedAtUtc,
-                },
-                StoreSnapshot = OrderSnapshotProjection.ToStoreSnapshot(order),
-                CurrencyCode = order.CurrencyCode,
-                TotalAmount = order.TotalAmount,
-                TotalBreakdown = OrderSnapshotProjection.ToTotalBreakdown(
-                    order.SubtotalAmount,
-                    order.ShippingTotalAmount,
-                    order.TaxTotalAmount,
-                    order.DiscountTotalAmount,
-                    order.GrandTotalAmount),
-                BaseCurrencyCode = order.BaseCurrencyCode,
-                BaseTotalAmount = order.BaseTotalAmount,
-                BaseTotalBreakdown = OrderSnapshotProjection.ToTotalBreakdown(
-                    order.BaseSubtotalAmount,
-                    order.BaseShippingTotalAmount,
-                    order.BaseTaxTotalAmount,
-                    order.BaseDiscountTotalAmount,
-                    order.BaseGrandTotalAmount),
-                ExchangeRate = order.ExchangeRate,
-                ExchangeRateProviderKey = order.ExchangeRateProviderKey,
-                ExchangeRateSource = order.ExchangeRateSource,
-                ExchangeRateEffectiveAtUtc = order.ExchangeRateEffectiveAtUtc,
-                ExchangeRateExpiresAtUtc = order.ExchangeRateExpiresAtUtc,
-                CreatedOn = order.CreatedOn,
-                ShippingStatus = order.ShippingStatus,
-                ShippingCarrier = order.ShippingCarrier,
-                TrackingNumber = order.TrackingNumber,
-                TrackingUrl = order.TrackingUrl,
-                ShippedOn = order.ShippedOn,
-                DeliveredOn = order.DeliveredOn,
-                CustomerName = order.CustomerName,
-                CustomerEmail = order.CustomerEmail,
-                BillingAddress = OrderSnapshotProjection.ToAddress(order.BillingAddressSnapshotJson),
-                ShippingAddressSnapshot = OrderSnapshotProjection.ToShippingAddressSnapshot(order),
-                ShippingFullName = order.ShippingFullName,
-                ShippingEmail = order.ShippingEmail,
-                ShippingPhone = order.ShippingPhone,
-                ShippingAddress1 = order.ShippingAddress1,
-                ShippingAddress2 = order.ShippingAddress2,
-                ShippingCity = order.ShippingCity,
-                ShippingState = order.ShippingState,
-                ShippingPostalCode = order.ShippingPostalCode,
-                ShippingCountryCode = order.ShippingCountryCode,
-                ShippingMethod = OrderSnapshotProjection.ToShippingMethod(order),
-                CompletedAt = order.CompletedAt,
-                CancelledAt = order.CancelledAt,
-                HistoryEntries = historyEntries,
-                Lines = order.Lines.Select(line => new GetOrderLine
-                {
-                    ProductId = line.ProductId,
-                    Quantity = line.Quantity,
-                    UnitPrice = line.UnitPrice,
-                    CurrencyCode = line.CurrencyCode,
-                    BaseUnitPrice = line.BaseUnitPrice,
-                    ConvertedUnitPrice = line.ConvertedUnitPrice,
-                    PersistedLineTotal = line.LineTotal,
-                    BaseLineTotal = line.BaseLineTotal,
-                    ProductName = line.ProductName,
-                    Sku = line.Sku,
-                    Image = line.Image,
-                    ProductVariantId = line.ProductVariantId,
-                    VariantAttributes = ProductVariantAttributeNormalizer.Deserialize(line.VariantAttributesJson),
-                }).ToArray(),
-            };
+            return (await this.orderReadModelAssembler.BuildAsync(
+                [order],
+                OrderReadModelOptions.Guest(),
+                cancellationToken)).Single();
         }
 
         private static ServiceResponse<GetOrder> Failed(string message, ServiceResponseType responseType)
