@@ -61,7 +61,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             {
                 Payload = new PagedResult<GetOrder>
                 {
-                    Items = await this.MapOrdersAsync(orders, cancellationToken),
+                    Items = await this.orderReadModelAssembler.BuildAsync(
+                        orders,
+                        OrderReadModelOptions.Customer(),
+                        cancellationToken),
                     PageNumber = pageNumber,
                     PageSize = pageSize,
                     TotalCount = totalCount,
@@ -118,7 +121,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             return new ServiceResponse<GetOrder>(true, receiptMode ? "Customer order receipt loaded." : "Customer order loaded.")
             {
-                Payload = (await this.MapOrdersAsync([order], cancellationToken)).Single(),
+                Payload = (await this.orderReadModelAssembler.BuildAsync(
+                    [order],
+                    OrderReadModelOptions.Customer(),
+                    cancellationToken)).Single(),
                 ResponseType = ServiceResponseType.Success,
             };
         }
@@ -173,16 +179,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 Payload = new CustomerOrderScope(storeResult.Payload, customer),
                 ResponseType = ServiceResponseType.Success,
             };
-        }
-
-        private async Task<IReadOnlyList<GetOrder>> MapOrdersAsync(
-            IReadOnlyCollection<Order> orders,
-            CancellationToken cancellationToken)
-        {
-            return await this.orderReadModelAssembler.BuildAsync(
-                orders,
-                OrderReadModelOptions.Customer(),
-                cancellationToken);
         }
 
         private static ServiceResponse<T> Failed<T>(string message, ServiceResponseType responseType)

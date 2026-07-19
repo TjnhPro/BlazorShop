@@ -92,7 +92,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             return new PagedResult<GetOrder>
             {
-                Items = await this.MapOrdersAsync(page),
+                Items = await this.orderReadModelAssembler.BuildAsync(page, OrderReadModelOptions.Admin()),
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 TotalCount = total,
@@ -104,7 +104,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var order = await this.GetOrderEntityAsync(id);
             return order is null
                 ? Failure("Order not found.", ServiceResponseType.NotFound)
-                : Success((await this.MapOrdersAsync(new[] { order })).Single(), "Order retrieved successfully.");
+                : Success((await this.orderReadModelAssembler.BuildAsync([order], OrderReadModelOptions.Admin())).Single(), "Order retrieved successfully.");
         }
 
         public async Task<ServiceResponse<GetOrder>> UpdateTrackingAsync(Guid id, UpdateTrackingRequest request)
@@ -129,7 +129,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             var order = await this.GetOrderEntityAsync(id);
             await this.LogAsync("Order.TrackingUpdated", id, "Order tracking updated.", request);
-            return Success((await this.MapOrdersAsync(new[] { order! })).Single(), "Order tracking updated successfully.");
+            return Success((await this.orderReadModelAssembler.BuildAsync([order!], OrderReadModelOptions.Admin())).Single(), "Order tracking updated successfully.");
         }
 
         public async Task<ServiceResponse<GetOrder>> UpdateShippingStatusAsync(Guid id, UpdateShippingStatusRequest request)
@@ -159,7 +159,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             var order = await this.GetOrderEntityAsync(id);
             await this.LogAsync("Order.ShippingStatusUpdated", id, "Order shipping status updated.", request);
-            return Success((await this.MapOrdersAsync(new[] { order! })).Single(), "Order shipping status updated successfully.");
+            return Success((await this.orderReadModelAssembler.BuildAsync([order!], OrderReadModelOptions.Admin())).Single(), "Order shipping status updated successfully.");
         }
 
         public async Task<ServiceResponse<GetOrder>> UpdateAdminNoteAsync(Guid id, UpdateOrderAdminNoteRequest request)
@@ -188,7 +188,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             await this.context.SaveChangesAsync();
             await this.LogAsync("Order.AdminNoteUpdated", id, "Order admin note updated.", new { HasNote = !string.IsNullOrWhiteSpace(order.AdminNote) });
 
-            return Success((await this.MapOrdersAsync(new[] { order })).Single(), "Order admin note updated successfully.");
+            return Success((await this.orderReadModelAssembler.BuildAsync([order], OrderReadModelOptions.Admin())).Single(), "Order admin note updated successfully.");
         }
 
         public async Task<ServiceResponse<GetOrder>> CompleteAsync(Guid id)
@@ -207,7 +207,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             if (string.Equals(order.OrderStatus, OrderStatuses.Complete, StringComparison.OrdinalIgnoreCase))
             {
-                return Success((await this.MapOrdersAsync(new[] { order })).Single(), "Order is already complete.");
+                return Success((await this.orderReadModelAssembler.BuildAsync([order], OrderReadModelOptions.Admin())).Single(), "Order is already complete.");
             }
 
             if (!string.Equals(order.PaymentStatus, PaymentStatuses.Paid, StringComparison.OrdinalIgnoreCase))
@@ -229,7 +229,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 order.ShippingStatus,
             });
 
-            return Success((await this.MapOrdersAsync(new[] { order })).Single(), "Order marked complete successfully.");
+            return Success((await this.orderReadModelAssembler.BuildAsync([order], OrderReadModelOptions.Admin())).Single(), "Order marked complete successfully.");
         }
 
         public async Task<ServiceResponse<GetOrder>> CancelAsync(Guid id)
@@ -253,7 +253,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             if (string.Equals(order.OrderStatus, OrderStatuses.Cancelled, StringComparison.OrdinalIgnoreCase))
             {
-                return Success((await this.MapOrdersAsync(new[] { order })).Single(), "Order is already cancelled.");
+                return Success((await this.orderReadModelAssembler.BuildAsync([order], OrderReadModelOptions.Admin())).Single(), "Order is already cancelled.");
             }
 
             OrderLifecycleTransitionHelper.MarkCancelled(this.context, order, DateTime.UtcNow, source: "admin");
@@ -265,7 +265,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 order.ShippingStatus,
             });
 
-            return Success((await this.MapOrdersAsync(new[] { order })).Single(), "Order cancelled successfully.");
+            return Success((await this.orderReadModelAssembler.BuildAsync([order], OrderReadModelOptions.Admin())).Single(), "Order cancelled successfully.");
         }
 
         private async Task<Order?> GetOrderEntityAsync(Guid id)
@@ -287,11 +287,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return result.Success
                 ? orders.Include(order => order.Lines).Where(order => order.StoreId == result.Payload)
                 : orders.Where(order => false);
-        }
-
-        private async Task<IReadOnlyList<GetOrder>> MapOrdersAsync(IReadOnlyCollection<Order> orders)
-        {
-            return await this.orderReadModelAssembler.BuildAsync(orders, OrderReadModelOptions.Admin());
         }
 
         private async Task LogAsync(string action, Guid orderId, string summary, object metadata)

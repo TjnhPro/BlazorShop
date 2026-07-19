@@ -37,7 +37,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 .OrderByDescending(order => order.CreatedOn)
                 .ToListAsync();
 
-            return await this.MapOrdersAsync(orders);
+            return await this.orderReadModelAssembler.BuildAsync(orders, OrderReadModelOptions.Internal());
         }
 
         public async Task<IEnumerable<GetOrder>> GetAllAsync()
@@ -47,7 +47,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 .OrderByDescending(order => order.CreatedOn)
                 .ToListAsync();
 
-            return await this.MapOrdersAsync(orders);
+            return await this.orderReadModelAssembler.BuildAsync(orders, OrderReadModelOptions.Internal());
         }
 
         private async Task<IQueryable<Order>> GetCurrentStoreOrdersAsync()
@@ -59,11 +59,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     .Include(order => order.Lines)
                     .Where(order => order.StoreId == storeId.Value)
                 : this.context.Orders.AsNoTracking().Where(order => false);
-        }
-
-        private async Task<IReadOnlyList<GetOrder>> MapOrdersAsync(IReadOnlyCollection<Order> orders)
-        {
-            return await this.orderReadModelAssembler.BuildAsync(orders, OrderReadModelOptions.Internal());
         }
 
         private async Task<Guid?> ResolveCurrentStoreIdAsync()

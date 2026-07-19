@@ -84,6 +84,31 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Contains("if (!options.UseProductNameFallback)", source, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void ActiveOrderReadServices_DoNotOwnReadModelProjectionCopies()
+        {
+            var servicePaths = new[]
+            {
+                "BlazorShop.Infrastructure/Data/CommerceNode/Services/CommerceNodeAdminOrderService.cs",
+                "BlazorShop.Infrastructure/Data/CommerceNode/Services/StorefrontCustomerOrderService.cs",
+                "BlazorShop.Infrastructure/Data/CommerceNode/Services/StorefrontGuestOrderService.cs",
+                "BlazorShop.Infrastructure/Data/CommerceNode/Services/CommerceNodeOrderQueryService.cs",
+            };
+
+            foreach (var path in servicePaths)
+            {
+                var source = ReadRepositoryFile(path);
+
+                Assert.DoesNotContain("new GetOrder", source, StringComparison.Ordinal);
+                Assert.DoesNotContain("new GetOrderLine", source, StringComparison.Ordinal);
+                Assert.DoesNotContain("new GetOrderPaymentSummary", source, StringComparison.Ordinal);
+                Assert.DoesNotContain("CreatePaymentSummary", source, StringComparison.Ordinal);
+                Assert.DoesNotContain("MapOrdersAsync", source, StringComparison.Ordinal);
+                Assert.DoesNotContain("MapAsync(Order", source, StringComparison.Ordinal);
+                Assert.Contains("OrderReadModelAssembler", source, StringComparison.Ordinal);
+            }
+        }
+
         private static CommerceNodeDbContext CreateContext()
         {
             var options = new DbContextOptionsBuilder<CommerceNodeDbContext>()

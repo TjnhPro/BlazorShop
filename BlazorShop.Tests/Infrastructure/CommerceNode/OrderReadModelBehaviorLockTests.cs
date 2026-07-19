@@ -152,6 +152,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal("Fallback Product", line.ProductName);
             Assert.Null(line.CurrencyCode);
             Assert.Null(line.PersistedLineTotal);
+            Assert.Equal("Blue", Assert.Single(line.VariantAttributes).Value);
         }
 
         [Fact]
@@ -174,6 +175,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal("Fallback Product", line.ProductName);
             Assert.Equal("USD", line.CurrencyCode);
             Assert.Equal(25m, line.PersistedLineTotal);
+            Assert.Equal("Blue", Assert.Single(line.VariantAttributes).Value);
         }
 
         [Fact]
@@ -196,6 +198,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Null(line.ProductName);
             Assert.Equal("USD", line.CurrencyCode);
             Assert.Equal(25m, line.PersistedLineTotal);
+            Assert.Equal("Blue", Assert.Single(line.VariantAttributes).Value);
         }
 
         [Fact]
@@ -215,6 +218,22 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.NotNull(item.PaymentSummary!.PaymentAttemptPublicId);
             Assert.Equal(PaymentMethodKeys.Cod, item.PaymentSummary.ProviderKey);
             Assert.Equal("Fallback Product", Assert.Single(item.Lines).ProductName);
+        }
+
+        [Fact]
+        public async Task AssemblerProjection_PreservesInputOrderForMultipleOrders()
+        {
+            var storeId = Guid.NewGuid();
+            await using var context = CreateContext();
+            var first = SeedOrderGraph(context, storeId);
+            var second = SeedOrderGraph(context, storeId);
+            var assembler = new OrderReadModelAssembler(context);
+
+            var result = await assembler.BuildAsync([second, first], OrderReadModelOptions.Customer());
+
+            Assert.Equal([second.Id, first.Id], result.Select(order => order.Id).ToArray());
+            Assert.All(result, order => Assert.Equal(["public.event"], order.HistoryEntries.Select(entry => entry.EventType).ToArray()));
+            Assert.All(result, order => Assert.Equal("shipped", Assert.Single(order.TrackingEvents).Status));
         }
 
         private static Order SeedOrderGraph(CommerceNodeDbContext context, Guid storeId)
@@ -276,6 +295,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                         UnitPrice = 12.5m,
                         CurrencyCode = "USD",
                         LineTotal = 25m,
+                        VariantAttributesJson = """[{"name":"Color","value":"Blue"}]""",
                     },
                 ],
             };

@@ -65,17 +65,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
             return new ServiceResponse<GetOrder>(true, "Guest order loaded.", order.Id)
             {
-                Payload = await this.MapAsync(order, cancellationToken),
+                Payload = (await this.orderReadModelAssembler.BuildAsync(
+                    [order],
+                    OrderReadModelOptions.Guest(),
+                    cancellationToken)).Single(),
                 ResponseType = ServiceResponseType.Success,
             };
-        }
-
-        private async Task<GetOrder> MapAsync(Order order, CancellationToken cancellationToken)
-        {
-            return (await this.orderReadModelAssembler.BuildAsync(
-                [order],
-                OrderReadModelOptions.Guest(),
-                cancellationToken)).Single();
         }
 
         private static ServiceResponse<GetOrder> Failed(string message, ServiceResponseType responseType)

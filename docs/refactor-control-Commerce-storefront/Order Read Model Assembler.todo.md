@@ -340,9 +340,9 @@ Acceptance:
 
 ## Phase 7 - Remove Duplicate Mapping And Lock The Pattern
 
-- [ ] Remove old private mapping methods from migrated services.
-- [ ] Add static/code-shape tests or focused unit tests to prevent new `MapOrdersAsync` copies in these services.
-- [ ] Add assembler tests for:
+- [x] Remove old private mapping methods from migrated services.
+- [x] Add static/code-shape tests or focused unit tests to prevent new `MapOrdersAsync` copies in these services.
+- [x] Add assembler tests for:
   - empty input.
   - multi-order batched projection.
   - all/customer-visible history filtering.
@@ -350,13 +350,20 @@ Acceptance:
   - admin note visibility.
   - product name fallback.
   - variant attribute deserialization.
-- [ ] Document in tests or comments that authorization must stay in calling services.
+- [x] Document in tests or comments that authorization must stay in calling services.
+
+Phase 7 notes:
+
+- Removed the remaining `MapOrdersAsync`/`MapAsync(Order...)` wrapper methods from the four migrated services.
+- Added `ActiveOrderReadServices_DoNotOwnReadModelProjectionCopies` to block `new GetOrder`, `new GetOrderLine`, `new GetOrderPaymentSummary`, `CreatePaymentSummary`, and old mapping method names from returning to the service classes.
+- Extended assembler behavior tests to cover variant attribute deserialization and multi-order input order preservation.
+- Authorization remains in service tests: customer ownership, guest token/store checks, admin current-store scope, and legacy/internal query user-id scope are still exercised outside the assembler.
 
 Acceptance:
 
-- [ ] No duplicate `Order -> GetOrder` projection remains in the four active Commerce Node V2 services.
-- [ ] A new order read consumer can use assembler without copying projection logic.
-- [ ] Security-sensitive ownership checks remain outside assembler.
+- [x] No duplicate `Order -> GetOrder` projection remains in the four active Commerce Node V2 services.
+- [x] A new order read consumer can use assembler without copying projection logic.
+- [x] Security-sensitive ownership checks remain outside assembler.
 
 ## Phase 8 - Optional Behavior Corrections After Mechanical Refactor
 
