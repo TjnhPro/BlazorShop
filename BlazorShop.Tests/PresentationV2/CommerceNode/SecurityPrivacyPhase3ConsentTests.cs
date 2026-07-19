@@ -3,6 +3,11 @@ extern alias StorefrontV2;
 
 namespace BlazorShop.Tests.PresentationV2.CommerceNode
 {
+    using BlazorShop.Domain.Entities.CommerceNode;
+    using BlazorShop.Infrastructure.Data.CommerceNode;
+
+    using Microsoft.EntityFrameworkCore;
+
     using Xunit;
 
     using CommerceNodeApi::BlazorShop.CommerceNode.API.Contracts.Storefront;
@@ -24,11 +29,24 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         [Fact]
         public void ConsentCore_IsStoreScopedAndMigrated()
         {
-            var dbContext = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/CommerceNodeDbContext.cs");
+            using var context = CreateContext();
+            var contextProperties = typeof(CommerceNodeDbContext)
+                .GetProperties()
+                .Select(property => property.PropertyType)
+                .ToArray();
+            var stateEntity = context.Model.FindEntityType(typeof(StorefrontConsentState));
+            var eventEntity = context.Model.FindEntityType(typeof(StorefrontConsentEvent));
             var migration = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/Migrations");
 
-            Assert.Contains("DbSet<StorefrontConsentState>", dbContext, StringComparison.Ordinal);
-            Assert.Contains("DbSet<StorefrontConsentEvent>", dbContext, StringComparison.Ordinal);
+            Assert.Contains(typeof(DbSet<StorefrontConsentState>), contextProperties);
+            Assert.Contains(typeof(DbSet<StorefrontConsentEvent>), contextProperties);
+            Assert.NotNull(stateEntity);
+            Assert.NotNull(eventEntity);
+            Assert.Equal("storefront_consent_state", stateEntity!.GetTableName());
+            Assert.Equal("storefront_consent_event", eventEntity!.GetTableName());
+            Assert.NotNull(stateEntity.FindProperty(nameof(StorefrontConsentState.StoreId)));
+            Assert.NotNull(eventEntity.FindProperty(nameof(StorefrontConsentEvent.StoreId)));
+            Assert.NotNull(stateEntity.FindProperty(nameof(StorefrontConsentState.VisitorKeyHash)));
             Assert.Contains("storefront_consent_state", migration, StringComparison.Ordinal);
             Assert.Contains("storefront_consent_event", migration, StringComparison.Ordinal);
             Assert.Contains("store_id", migration, StringComparison.Ordinal);
@@ -95,6 +113,21 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             }
 
             throw new FileNotFoundException($"Could not locate repository file '{relativePath}'.");
+        }
+
+        private static CommerceNodeDbContext CreateContext()
+        {
+            var options = new DbContextOptionsBuilder<CommerceNodeDbContext>()
+                .UseNpgsql(
+                    "Host=localhost;Port=5434;Database=blazorshop_commerce_node;Username=blazorshop_commerce_node;Password=blazorshop_commerce_node_dev",
+                    npgsqlOptions =>
+                    {
+                        npgsqlOptions.MigrationsAssembly(typeof(CommerceNodeDbContext).Assembly.FullName);
+                        npgsqlOptions.EnableRetryOnFailure();
+                    })
+                .Options;
+
+            return new CommerceNodeDbContext(options);
         }
     }
 }

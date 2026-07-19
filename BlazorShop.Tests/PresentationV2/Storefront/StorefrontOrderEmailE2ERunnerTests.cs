@@ -1,5 +1,13 @@
 namespace BlazorShop.Tests.PresentationV2.Storefront
 {
+    using BlazorShop.Application.CommerceNode.Messages;
+    using BlazorShop.Domain.Entities.CommerceNode;
+    using BlazorShop.Infrastructure.Data.CommerceNode;
+
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Infrastructure;
+    using Microsoft.EntityFrameworkCore.Metadata;
+
     using Xunit;
 
     public sealed class StorefrontOrderEmailE2ERunnerTests
@@ -14,7 +22,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("order.created", source, StringComparison.Ordinal);
             Assert.Contains("order.placed", source, StringComparison.Ordinal);
             Assert.Contains("exactly-one", source, StringComparison.Ordinal);
-            Assert.Contains("Order.DetailUrl", ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/CommerceNodeDbContext.cs"), StringComparison.Ordinal);
+
+            using var context = CreateContext();
+            var designEntity = context.GetService<IDesignTimeModel>().Model.FindEntityType(typeof(MessageTemplate));
+            var orderPlacedSeed = designEntity!.GetSeedData()
+                .Single(seed => string.Equals(
+                    Assert.IsType<string>(seed[nameof(MessageTemplate.SystemName)]),
+                    TransactionalMessageTemplateSystemNames.OrderPlaced,
+                    StringComparison.Ordinal));
+            var orderPlacedBody = Assert.IsType<string>(orderPlacedSeed[nameof(MessageTemplate.BodyHtmlTemplate)]);
+
+            Assert.Contains("{{Order.DetailUrl}}", orderPlacedBody, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -34,6 +52,21 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(Path.Combine(FindRepositoryRoot(), relativePath.Replace('/', Path.DirectorySeparatorChar)));
+        }
+
+        private static CommerceNodeDbContext CreateContext()
+        {
+            var options = new DbContextOptionsBuilder<CommerceNodeDbContext>()
+                .UseNpgsql(
+                    "Host=localhost;Port=5434;Database=blazorshop_commerce_node;Username=blazorshop_commerce_node;Password=blazorshop_commerce_node_dev",
+                    npgsqlOptions =>
+                    {
+                        npgsqlOptions.MigrationsAssembly(typeof(CommerceNodeDbContext).Assembly.FullName);
+                        npgsqlOptions.EnableRetryOnFailure();
+                    })
+                .Options;
+
+            return new CommerceNodeDbContext(options);
         }
 
         private static string FindRepositoryRoot()

@@ -1,0 +1,573 @@
+# CommerceNode DbContext Configuration Split
+
+Status: in-progress
+Date: 2026-07-19
+Purpose: tach EF Core mapping cua `CommerceNodeDbContext` ra cac `IEntityTypeConfiguration<T>` theo aggregate, giu nguyen runtime model va migration snapshot, khong doi schema.
+
+## Codebase Baseline
+
+- `BlazorShop.Infrastructure/Data/CommerceNode/CommerceNodeDbContext.cs` hien dai khoang 2,524 dong.
+- `CommerceNodeDbContext.OnModelCreating` bat dau tai `CommerceNodeDbContext.cs` va co khoang 157 lenh `modelBuilder.Entity...`.
+- `CommerceNodeDbContext` dang own active V2 ecommerce persistence theo `docs/architecture/04-data-ownership.md`.
+- Repo da co pattern `IEntityTypeConfiguration<T>`:
+  - `BlazorShop.Infrastructure/Data/Configurations/ProductConfiguration.cs`.
+  - `BlazorShop.Infrastructure/Data/Configurations/CategoryConfiguration.cs`.
+  - `BlazorShop.Infrastructure/Data/Configurations/SeoRedirectConfiguration.cs`.
+  - `BlazorShop.Infrastructure/Data/Configurations/Admin/*`.
+- `CommerceNodeDbContext` hien dang apply mot so shared/legacy configurations bang explicit calls:
+  - `CategoryConfiguration`.
+  - `ProductConfiguration`.
+  - `SeoRedirectConfiguration`.
+  - `SeoSettingsConfiguration`.
+  - `StoreSeoSettingsConfiguration`.
+  - `AdminAuditLogConfiguration`.
+  - `AdminSettingsConfiguration`.
+- `AppDbContext` hien dang goi `ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly)`. Day la rui ro neu them Commerce Node configs cung assembly ma khong loc namespace.
+- `CommerceNodeDbContextModelTests` da co nhieu model metadata tests cho table, index, FK, check constraints va seed data.
+- `MigrationModelConsistencyTests` hien chi check legacy `AppDbContext`; Commerce Node can co gate tuong tu de dam bao refactor khong sinh pending model changes.
+- Mot so tests dang doc text truc tiep tu `CommerceNodeDbContext.cs`, vi du:
+  - Check `Order.DetailUrl` trong default message template seed.
+  - Check `DbSet<StorefrontConsentState>` / `DbSet<StorefrontConsentEvent>`.
+
+## Problem
+
+`CommerceNodeDbContext` dang la god mapping file. Moi phase ecommerce them feature moi lai them mapping, seed, index, check constraint vao cung mot file:
+
+```text
+CommerceNodeDbContext
+  DbSet declarations
+  OnModelCreating
+    shared config calls
+    catalog overrides
+    customers
+    cart
+    checkout
+    payment
+    orders
+    shipment
+    store
+    media
+    messages
+    consent/security
+    shipping
+    seed data
+    helpers
+```
+
+He qua:
+
+- Migration review kho vi thay doi nho nam trong file lon.
+- Merge conflict cao khi nhieu phase cung them mapping.
+- Mapping theo aggregate kho doc va kho test rieng.
+- `AppDbContext` assembly scan co the apply nham Commerce Node configs neu tach khong co filter.
+
+## Target Shape
+
+```text
+BlazorShop.Infrastructure/Data/CommerceNode/
+  CommerceNodeDbContext.cs
+  Configurations/
+    Catalog/
+      ProductCommerceNodeConfiguration.cs
+      ProductVariantConfiguration.cs
+      CategoryStoreScopeConfiguration.cs
+      VariationTemplateConfiguration.cs
+      VariationTemplateOptionConfiguration.cs
+      VariationTemplateValueConfiguration.cs
+    Customers/
+      CommerceCustomerConfiguration.cs
+      CommerceCustomerAddressConfiguration.cs
+    Cart/
+      CartSessionConfiguration.cs
+      CartLineConfiguration.cs
+    Checkout/
+      CheckoutSessionConfiguration.cs
+    Payments/
+      PaymentAttemptConfiguration.cs
+      PaymentProviderEventConfiguration.cs
+      PaymentAttemptAuditLogConfiguration.cs
+      PaymentMethodConfiguration.cs
+      StorePaymentMethodConfiguration.cs
+    Orders/
+      OrderCommerceNodeConfiguration.cs
+      OrderLineConfiguration.cs
+      OrderHistoryEntryConfiguration.cs
+    Shipping/
+      ShipmentConfiguration.cs
+      ShipmentItemConfiguration.cs
+      ShipmentTrackingEventConfiguration.cs
+      StoreShippingSettingsConfiguration.cs
+    Stores/
+      CommerceStoreConfiguration.cs
+      CommerceStoreDomainConfiguration.cs
+      StoreFeatureStateConfiguration.cs
+      StoreCurrencyConfiguration.cs
+      StoreCurrencyExchangeRateConfiguration.cs
+    Media/
+      ProductMediaConfiguration.cs
+      CommerceMediaAssetConfiguration.cs
+      CategoryMediaAssignmentConfiguration.cs
+    Content/
+      StorefrontPageConfiguration.cs
+      StoreSeoSlugHistoryConfiguration.cs
+      StoreNavigationMenuConfiguration.cs
+      StoreNavigationMenuItemConfiguration.cs
+    ProductImports/
+      ProductImportJobConfiguration.cs
+      ProductImportRowConfiguration.cs
+    Messages/
+      MessageTemplateConfiguration.cs
+      QueuedMessageConfiguration.cs
+      StoreEmailSettingsConfiguration.cs
+    SecurityPrivacy/
+      StorefrontConsentStateConfiguration.cs
+      StorefrontConsentEventConfiguration.cs
+      StoreSecurityPrivacySettingsConfiguration.cs
+    Tasks/
+      CommerceTaskConfiguration.cs
+      CommerceTaskStepConfiguration.cs
+    Deployment/
+      StoreDeploymentConfiguration.cs
+      StorefrontDeploymentImageConfiguration.cs
+    Identity/
+      CommerceNodeIdentityConfiguration.cs
+    Seed/
+      CommerceNodeSeedData.cs
+    CommerceNodeModelBuilderExtensions.cs
+```
+
+`CommerceNodeDbContext.OnModelCreating` should become:
+
+```csharp
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    base.OnModelCreating(modelBuilder);
+    modelBuilder.ApplyCommerceNodeConfigurations();
+}
+```
+
+Suggested extension:
+
+```csharp
+internal static class CommerceNodeModelBuilderExtensions
+{
+    public static ModelBuilder ApplyCommerceNodeConfigurations(this ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(
+            typeof(CommerceNodeDbContext).Assembly,
+            type => type.Namespace?.StartsWith(
+                "BlazorShop.Infrastructure.Data.CommerceNode.Configurations",
+                StringComparison.Ordinal) == true);
+
+        return modelBuilder;
+    }
+}
+```
+
+Important: do not let `AppDbContext` discover Commerce Node configurations.
+
+## Autoplan Decisions
+
+| Decision | Chon | Ly do |
+| --- | --- | --- |
+| Refactor type | Mechanical mapping extraction | Goal la maintainability, khong doi schema/behavior. |
+| Folder owner | `BlazorShop.Infrastructure/Data/CommerceNode/Configurations` | Commerce Node owns active V2 ecommerce persistence. |
+| Apply style | Filtered `ApplyConfigurationsFromAssembly` behind extension | Tranh `AppDbContext` apply nham configs cung assembly. |
+| DbSet declarations | Giu trong `CommerceNodeDbContext` | DbContext van la public persistence surface cho repositories/tests. |
+| First phase | Guardrails + one small aggregate pilot | Chung minh snapshot khong doi truoc khi tach rong. |
+| Seed data | Tach sau, giu literal IDs/timestamps | Seed data de sinh migration neu thay doi nho. |
+| Migration output | Khong tao migration moi | Refactor dung la runtime model == snapshot. |
+| Tests | Model/snapshot tests, khong Playwright | Day la persistence mapping refactor, khong doi browser behavior. |
+
+## Phase 0 - Guardrails Before Extraction
+
+Goal: them gate de biet refactor co doi EF model hay khong.
+
+Tasks:
+
+- [x] Add Commerce Node migration consistency tests tuong tu `MigrationModelConsistencyTests`:
+  - [x] Create `CommerceNodeDbContext`.
+  - [x] Resolve `IMigrationsModelDiffer`.
+  - [x] Resolve `IDesignTimeModel`.
+  - [x] Load `BlazorShop.Infrastructure.Data.CommerceNode.Migrations.CommerceNodeDbContextModelSnapshot`.
+  - [x] Compare snapshot relational model with design-time relational model.
+  - [x] Assert no operations.
+- [x] Add a specific test for `context.Database.HasPendingModelChanges()` for `CommerceNodeDbContext` if provider/test setup supports it.
+- [x] Record current counts:
+  - [x] `CommerceNodeDbContext.cs` line count.
+  - [x] `modelBuilder.Entity` count.
+  - [x] list of entity groups to migrate.
+- [x] Identify text-based tests reading `CommerceNodeDbContext.cs`.
+- [x] Convert text-based tests to model metadata tests where possible before moving content.
+
+Exit criteria:
+
+- [x] Commerce Node model consistency test passes before extraction.
+- [x] Existing `CommerceNodeDbContextModelTests` pass.
+- [x] No code mapping has moved yet except test guardrails.
+
+Phase 0 evidence:
+
+- Added `CommerceNodeMigrationModelConsistencyTests` for:
+  - `CommerceNodeDbContext.Database.HasPendingModelChanges()`.
+  - Runtime relational model versus `CommerceNodeDbContextModelSnapshot`.
+- Baseline inventory:
+  - `CommerceNodeDbContext.cs` line count: 2164.
+  - `modelBuilder.Entity` count: 157.
+  - Planned migration groups remain the phase scopes in this file: payments, messages/email, store/currency/security/shipping, cart/checkout/customer/address, orders/fulfillment, catalog/media/content/imports, identity/tasks/deployment.
+- Text-based test dependencies found:
+  - `StorefrontOrderEmailE2ERunnerTests` looked for `Order.DetailUrl` inside `CommerceNodeDbContext.cs`.
+  - `SecurityPrivacyPhase3ConsentTests` looked for `DbSet<StorefrontConsentState>` and `DbSet<StorefrontConsentEvent>` inside `CommerceNodeDbContext.cs`.
+- Converted those tests to EF design-time seed/model metadata and `CommerceNodeDbContext` DbSet reflection.
+- Focused command passed 41/41 tests:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~CommerceNodeMigrationModelConsistencyTests|FullyQualifiedName~CommerceNodeDbContextModelTests|FullyQualifiedName~StorefrontOrderEmailE2ERunnerTests|FullyQualifiedName~SecurityPrivacyPhase3ConsentTests" --no-restore --nologo --verbosity minimal`
+
+## Phase 1 - Infrastructure For Filtered Configuration Apply
+
+Goal: them folder/config apply mechanism ma chua move nhieu mapping.
+
+Tasks:
+
+- [ ] Add `BlazorShop.Infrastructure/Data/CommerceNode/Configurations/CommerceNodeModelBuilderExtensions.cs`.
+- [ ] Implement filtered namespace scan for only `BlazorShop.Infrastructure.Data.CommerceNode.Configurations`.
+- [ ] Update `CommerceNodeDbContext.OnModelCreating` to call extension only after pilot configs exist.
+- [ ] Keep explicit existing shared config calls temporarily:
+  - [ ] `CategoryConfiguration`.
+  - [ ] `ProductConfiguration`.
+  - [ ] `SeoRedirectConfiguration`.
+  - [ ] `SeoSettingsConfiguration`.
+  - [ ] `StoreSeoSettingsConfiguration`.
+  - [ ] `AdminAuditLogConfiguration`.
+  - [ ] `AdminSettingsConfiguration`.
+- [ ] Add a test proving `AppDbContext` model does not include Commerce Node-only table names from new configs.
+- [ ] Do not change `AppDbContext` unless this test shows assembly scan risk.
+
+Exit criteria:
+
+- [ ] `AppDbContext` legacy model unchanged.
+- [ ] `CommerceNodeDbContext` model unchanged.
+- [ ] No migration generated by EF due to this phase.
+
+## Phase 2 - Pilot Aggregate: Payments
+
+Goal: tach mot aggregate co mapping ro rang nhung khong qua lon.
+
+Scope:
+
+- [ ] `PaymentAttemptConfiguration`.
+- [ ] `PaymentProviderEventConfiguration`.
+- [ ] `PaymentAttemptAuditLogConfiguration`.
+- [ ] `PaymentMethodConfiguration`.
+- [ ] `StorePaymentMethodConfiguration`.
+
+Tasks:
+
+- [ ] Move exact fluent API from `CommerceNodeDbContext` into the new configuration files.
+- [ ] Move `PaymentMethod.HasData(...)` seed into `PaymentMethodConfiguration` or `Seed/CommerceNodeSeedData.cs`.
+- [ ] Keep existing seed IDs, display order, provider system names, active flags and timestamps exactly.
+- [ ] Remove moved payment blocks from `OnModelCreating`.
+- [ ] Run focused tests:
+  - [ ] `dotnet test BlazorShop.Tests --filter Payment`.
+  - [ ] `dotnet test BlazorShop.Tests --filter CommerceNodeDbContextModelTests`.
+  - [ ] Commerce Node migration consistency test.
+
+Exit criteria:
+
+- [ ] `PaymentAttempt`, `PaymentProviderEvent`, `PaymentAttemptAuditLog`, `PaymentMethod`, `StorePaymentMethod` model metadata unchanged.
+- [ ] No pending model changes.
+- [ ] `CommerceNodeDbContext` line count drops.
+
+## Phase 3 - Messages And Email Settings
+
+Goal: tach transactional message/email mapping va sua test text-based dang doc DbContext.
+
+Scope:
+
+- [ ] `MessageTemplateConfiguration`.
+- [ ] `QueuedMessageConfiguration`.
+- [ ] `StoreEmailSettingsConfiguration`.
+- [ ] `CommerceNodeSeedData` for default message templates.
+
+Tasks:
+
+- [ ] Move `CreateDefaultMessageTemplates` and `CreateMessageTemplate` into seed helper.
+- [ ] Preserve default template IDs, public IDs, system names, subjects, bodies, created/updated timestamps.
+- [ ] Preserve `Order.DetailUrl` seed token.
+- [ ] Update tests that search `Order.DetailUrl` in `CommerceNodeDbContext.cs` to read model seed data or the new seed helper file.
+- [ ] Verify `MessageTemplate_HasTransactionalTemplateMappingAndSeeds`.
+- [ ] Verify `StoreEmailSettings_HasOneSettingsRowPerStoreAndSecretSafeColumns`.
+
+Exit criteria:
+
+- [ ] Message/email model metadata unchanged.
+- [ ] Default template seed data unchanged.
+- [ ] No test depends on message seed text being inside `CommerceNodeDbContext.cs`.
+
+## Phase 4 - Store Runtime, Currency, Security, Shipping
+
+Goal: tach store configuration groups da duoc them trong cac phase MVP-to-real-use gan day.
+
+Scope:
+
+- [ ] `CommerceStoreConfiguration`.
+- [ ] `CommerceStoreDomainConfiguration`.
+- [ ] `StoreFeatureStateConfiguration`.
+- [ ] `StoreCurrencyConfiguration`.
+- [ ] `StoreCurrencyExchangeRateConfiguration`.
+- [ ] `StorefrontConsentStateConfiguration`.
+- [ ] `StorefrontConsentEventConfiguration`.
+- [ ] `StoreSecurityPrivacySettingsConfiguration`.
+- [ ] `StoreShippingSettingsConfiguration`.
+
+Tasks:
+
+- [ ] Move exact table names, column names, max lengths, defaults, indexes and check constraints.
+- [ ] Preserve check constraints:
+  - [ ] store status.
+  - [ ] default currency code length.
+  - [ ] consent/security settings where present.
+  - [ ] shipping surcharge policy where present.
+- [ ] Update tests that read `DbSet<StorefrontConsentState>` / `DbSet<StorefrontConsentEvent>` from `CommerceNodeDbContext.cs`; DbSet lines should remain, but if tests inspect mapping text, move to model metadata.
+- [ ] Run focused tests:
+  - [ ] `dotnet test BlazorShop.Tests --filter StoreFeatureState`.
+  - [ ] `dotnet test BlazorShop.Tests --filter StoreCurrency`.
+  - [ ] `dotnet test BlazorShop.Tests --filter SecurityPrivacy`.
+  - [ ] `dotnet test BlazorShop.Tests --filter StoreShippingSettings`.
+
+Exit criteria:
+
+- [ ] Store lifecycle/readiness model unchanged.
+- [ ] Currency model unchanged.
+- [ ] Consent/security/privacy model unchanged.
+- [ ] Shipping settings model unchanged.
+- [ ] No pending model changes.
+
+## Phase 5 - Cart, Checkout, Customer, Address
+
+Goal: tach customer/cart/checkout tables theo runtime flow V2.
+
+Scope:
+
+- [ ] `CommerceCustomerConfiguration`.
+- [ ] `CommerceCustomerAddressConfiguration`.
+- [ ] `CartSessionConfiguration`.
+- [ ] `CartLineConfiguration`.
+- [ ] `CheckoutSessionConfiguration`.
+
+Tasks:
+
+- [ ] Move exact mapping blocks.
+- [ ] Preserve token hash indexes and cart uniqueness.
+- [ ] Preserve checkout `jsonb` columns and default JSON SQL.
+- [ ] Preserve cart/customer FK delete behaviors.
+- [ ] Run focused tests:
+  - [ ] `dotnet test BlazorShop.Tests --filter StorefrontCart`.
+  - [ ] `dotnet test BlazorShop.Tests --filter StorefrontCheckout`.
+  - [ ] `dotnet test BlazorShop.Tests --filter StorefrontCustomer`.
+  - [ ] `dotnet test BlazorShop.Tests --filter Address`.
+
+Exit criteria:
+
+- [ ] Cart/checkout/customer tests pass.
+- [ ] No schema diff.
+- [ ] No change to V2 cart/checkout runtime APIs.
+
+## Phase 6 - Orders And Fulfillment
+
+Goal: tach order placement/read model persistence mapping.
+
+Scope:
+
+- [ ] `OrderCommerceNodeConfiguration`.
+- [ ] `OrderLineConfiguration`.
+- [ ] `OrderHistoryEntryConfiguration`.
+- [ ] `ShipmentConfiguration`.
+- [ ] `ShipmentItemConfiguration`.
+- [ ] `ShipmentTrackingEventConfiguration`.
+
+Tasks:
+
+- [ ] Preserve existing legacy table casing where present:
+  - [ ] `Shipments`.
+  - [ ] `ShipmentItems`.
+  - [ ] `ShipmentTrackingEvents`.
+- [ ] Preserve order snapshot columns and precision.
+- [ ] Preserve guest access token/reference fields and indexes.
+- [ ] Preserve order history customer visibility defaults.
+- [ ] Run focused tests:
+  - [ ] `dotnet test BlazorShop.Tests --filter Order`.
+  - [ ] `dotnet test BlazorShop.Tests --filter Shipment`.
+  - [ ] Commerce Node migration consistency test.
+
+Exit criteria:
+
+- [ ] Order placement/query tests pass.
+- [ ] Shipment tests pass.
+- [ ] No pending model changes.
+
+## Phase 7 - Catalog, Media, Content, Imports
+
+Goal: tach cac cum con lai co nhieu index/constraint lien quan storefront catalog.
+
+Scope:
+
+- [ ] `ProductCommerceNodeConfiguration`.
+- [ ] `ProductVariantConfiguration`.
+- [ ] `CategoryStoreScopeConfiguration`.
+- [ ] `VariationTemplateConfiguration`.
+- [ ] `VariationTemplateOptionConfiguration`.
+- [ ] `VariationTemplateValueConfiguration`.
+- [ ] `ProductMediaConfiguration`.
+- [ ] `CommerceMediaAssetConfiguration`.
+- [ ] `CategoryMediaAssignmentConfiguration`.
+- [ ] `StorefrontPageConfiguration`.
+- [ ] `StoreSeoSlugHistoryConfiguration`.
+- [ ] `StoreNavigationMenuConfiguration`.
+- [ ] `StoreNavigationMenuItemConfiguration`.
+- [ ] `ProductImportJobConfiguration`.
+- [ ] `ProductImportRowConfiguration`.
+
+Tasks:
+
+- [ ] Merge Product mapping carefully because `ProductConfiguration` already exists and Commerce Node adds overrides.
+- [ ] Decide one of:
+  - [ ] Keep shared `ProductConfiguration` then add `ProductCommerceNodeConfiguration` for Commerce Node-only additions.
+  - [ ] Move all Commerce Node product mapping into a single Commerce Node config and stop applying shared `ProductConfiguration` from Commerce Node.
+- [ ] Avoid duplicate indexes when shared and Commerce Node configs both configure Product.
+- [ ] Preserve media usage table names and unique indexes.
+- [ ] Preserve storefront page slug/template/navigation mapping.
+- [ ] Preserve product import indexes/check constraints.
+- [ ] Run focused tests:
+  - [ ] `dotnet test BlazorShop.Tests --filter Product`.
+  - [ ] `dotnet test BlazorShop.Tests --filter Category`.
+  - [ ] `dotnet test BlazorShop.Tests --filter Media`.
+  - [ ] `dotnet test BlazorShop.Tests --filter StorefrontPage`.
+  - [ ] `dotnet test BlazorShop.Tests --filter Navigation`.
+
+Exit criteria:
+
+- [ ] Catalog model metadata unchanged.
+- [ ] Media/content/import tests pass.
+- [ ] No duplicate index or conflicting default warnings.
+
+## Phase 8 - Identity, Tasks, Deployment, And Cleanup
+
+Goal: tach infrastructure support mappings va don sach DbContext.
+
+Scope:
+
+- [ ] `CommerceNodeIdentityConfiguration`.
+- [ ] `RefreshTokenConfiguration`.
+- [ ] `CommerceTaskConfiguration`.
+- [ ] `CommerceTaskStepConfiguration`.
+- [ ] `StoreDeploymentConfiguration`.
+- [ ] `StorefrontDeploymentImageConfiguration`.
+
+Tasks:
+
+- [ ] Preserve Identity column max lengths for login/token providers.
+- [ ] Preserve refresh token indexes and columns.
+- [ ] Preserve task table names/check constraints/task step mapping.
+- [ ] Preserve default `StorefrontDeploymentImage` seed.
+- [ ] Remove unused `using` statements from `CommerceNodeDbContext`.
+- [ ] Ensure `CommerceNodeDbContext` contains mostly:
+  - [ ] constructor.
+  - [ ] DbSet declarations.
+  - [ ] short `OnModelCreating`.
+- [ ] Run full infrastructure test set.
+
+Exit criteria:
+
+- [ ] `CommerceNodeDbContext.cs` is small and readable.
+- [ ] No moved mapping remains duplicated in `OnModelCreating`.
+- [ ] No pending model changes.
+
+## Phase 9 - Final Verification And Release Gate
+
+Goal: prove refactor did not change schema, migration snapshot, runtime behavior, or tests.
+
+Verification:
+
+- [ ] `dotnet test BlazorShop.Tests --filter CommerceNodeDbContextModelTests`.
+- [ ] `dotnet test BlazorShop.Tests --filter MigrationModelConsistencyTests` after Commerce Node consistency tests are added.
+- [ ] `dotnet test BlazorShop.Tests --filter CommerceNode`.
+- [ ] Full `dotnet test` before final commit.
+- [ ] Optional manual check:
+  - [ ] Run `dotnet ef migrations add CommerceNodeConfigurationSplitCheck --context CommerceNodeDbContext --project BlazorShop.Infrastructure --startup-project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API`.
+  - [ ] Confirm generated migration is empty.
+  - [ ] Delete the check migration before commit.
+
+Release gate:
+
+- [ ] No real migration committed for this refactor.
+- [ ] `CommerceNodeDbContextModelSnapshot.cs` unchanged.
+- [ ] Runtime relational model equals snapshot model.
+- [ ] `AppDbContext` model unchanged.
+- [ ] `CommerceNodeDbContext` still owns all DbSet declarations.
+- [ ] New configuration files are internal and under Commerce Node namespace.
+- [ ] No feature behavior changes.
+
+## Failure Modes Registry
+
+| Risk | Symptom | Prevention |
+| --- | --- | --- |
+| `AppDbContext` applies Commerce Node configs | Legacy model gets new tables/indexes or pending model changes | Use namespace-filtered apply for Commerce Node and test AppDbContext model remains unchanged. |
+| EF model changes accidentally | Empty refactor generates migration operations | Add Commerce Node migration consistency test before moving mappings. |
+| Seed data changes | EF generates UpdateData/DeleteData/InsertData | Keep literal IDs/timestamps/system names exact; verify design-time seed data. |
+| Product config order changes | Duplicate/missing indexes or default values | Treat Product as a special phase; avoid broad scan until behavior is locked. |
+| Text-based tests fail | Tests look for moved strings in old DbContext file | Convert to model metadata or new seed/config file checks. |
+| Check constraints lost | Database accepts invalid status/mode values | Model tests assert design-time check constraints by name. |
+| Table casing changes | Runtime queries/migrations target wrong table | Preserve exact `ToTable` names including legacy PascalCase shipment tables. |
+| Too-large mechanical PR | Review becomes as hard as the old file | Split by aggregate phases and verify after each phase. |
+
+## Test Diagram
+
+```text
+CommerceNodeDbContext
+  -> ApplyCommerceNodeConfigurations()
+      -> filtered namespace scan
+      -> aggregate IEntityTypeConfiguration<T>
+      -> seed helper
+
+Verification
+  -> CommerceNodeDbContextModelTests
+  -> Commerce Node model snapshot consistency
+  -> focused aggregate tests
+  -> no generated migration
+
+Safety boundary
+  -> AppDbContext does not apply Commerce Node configs
+```
+
+## Implementation Checklist
+
+- [x] Phase 0 guardrails complete.
+- [ ] Phase 1 filtered configuration apply complete.
+- [ ] Phase 2 payments pilot complete.
+- [ ] Phase 3 messages/email complete.
+- [ ] Phase 4 store/currency/security/shipping complete.
+- [ ] Phase 5 cart/checkout/customer/address complete.
+- [ ] Phase 6 orders/fulfillment complete.
+- [ ] Phase 7 catalog/media/content/imports complete.
+- [ ] Phase 8 identity/tasks/deployment cleanup complete.
+- [ ] Phase 9 final verification complete.
+
+## Not In Scope
+
+- [ ] Do not change domain entity properties.
+- [ ] Do not change table names, column names, indexes, constraints, defaults, precision, FK delete behavior, or seed values.
+- [ ] Do not generate or commit a real migration.
+- [ ] Do not move Commerce Node persistence to another DbContext.
+- [ ] Do not touch legacy `AppDbContext` behavior except to protect it from accidental config scan if needed.
+- [ ] Do not refactor repositories/services while moving EF mapping.
+- [ ] Do not combine this with feature work.
+- [ ] Do not run Playwright for this refactor unless a later phase changes visible UI behavior.
+
+## Decision Audit Trail
+
+- Mechanical extraction is approved because the current file is a maintainability bottleneck.
+- Namespace-filtered configuration discovery is required because `AppDbContext` scans the same assembly.
+- `DbSet<>` declarations stay in `CommerceNodeDbContext` to preserve repository/test ergonomics.
+- Seed data moves only after model consistency tests exist.
+- Product mapping is deferred because shared `ProductConfiguration` and Commerce Node overrides currently both configure `Product`.
+- Migration snapshot must remain unchanged throughout the refactor.
