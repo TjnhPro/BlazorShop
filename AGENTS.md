@@ -198,6 +198,8 @@ Preferred V2 local runner:
 
 This script reads `scripts/env/v2-local.env`, starts Control Plane and Commerce Node Docker dependencies, runs the active V2 API/Web/Storefront projects, waits for health endpoints, and bootstraps the local Control Plane node/store registry. Stop the local V2 processes with `.\scripts\stop-v2-local.ps1`.
 
+Commerce Node Development seeding is a QA fixture bootstrap, not a reset mechanism. It may create missing fixture rows on a fresh Commerce Node database, but it must not overwrite existing store runtime configuration such as logo/favicon URLs, default currency/culture, email settings, or maintenance state after Control Plane edits.
+
 Control Plane database:
 
 ```powershell

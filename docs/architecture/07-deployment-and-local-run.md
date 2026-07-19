@@ -94,6 +94,14 @@ Commerce Node API defaults to `CommerceNodeConnection` on port `5434`.
 
 Commerce Node API applies pending `CommerceNodeDbContext` EF Core migrations on startup when `CommerceNode:Database:MigrateOnStartup=true`. Development enables this by default.
 
+Development startup also runs `CommerceNodeDevelopmentSeeder` after a successful migration. The seeder is a QA fixture bootstrapper, not a runtime reset path:
+
+- On a fresh local Commerce Node database, it creates the `default` store, auxiliary QA stores, catalog/page/navigation/customer/order fixtures, store payment methods, store email capture settings, shipping settings, feature states, and currency fixtures required by local QA.
+- When the `default` store and core QA catalog fixture already exist, it exits without reseeding.
+- Existing store runtime profile values edited through Control Plane, such as logo/favicon/icon URLs, default currency, default culture, contact/company fields, and maintenance state, must survive API restarts.
+- Existing store-scoped settings rows are not overwritten by startup seeding; the seeder only fills missing bootstrap rows.
+- To rebuild the full QA fixture set from scratch, use a clean Commerce Node database or a purpose-specific reseed operation. Restarting `run-v2-local.ps1` is not a data reset mechanism.
+
 The Commerce Node compose file includes:
 
 - PostgreSQL.

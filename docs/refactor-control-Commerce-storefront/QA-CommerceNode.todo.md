@@ -360,7 +360,7 @@ Plan: `Cart Core.todo.md`.
 ## Startup Database Migration
 
 - [x] Clean `CommerceNodeConnection` database is created/migrated by `BlazorShop.CommerceNode.API` startup when `CommerceNode:Database:MigrateOnStartup=true`. 2026-07-11: startup smoke passed against disposable DB `blazorshop_commerce_node_startup_qa_20260711`.
-- [ ] Existing migrated Commerce Node database restarts without duplicate migration or seed side effects.
+- [x] Existing migrated Commerce Node database restarts without duplicate migration or seed side effects. 2026-07-19: `CommerceNodeDevelopmentSeeder` now exits when `default` store and core QA catalog fixture already exist, and existing store-scoped setting rows are create-missing only. Regression `CommerceNodeDevelopmentSeederTests.SeedAsync_WhenQaSeedAlreadyExists_DoesNotResetStoreRuntimeProfile` passed; focused `FullyQualifiedName~CommerceNode` run passed `655/655`.
 - [x] Startup migration logs context name, connection name, applied count, pending count, and pending migration names. 2026-07-11: verified in `.gstack/startup-migration-qa/commercenode-startup-migration.log`.
 - [x] Startup migration logs do not expose passwords or raw connection strings. 2026-07-11: smoke assertion checked logs did not contain `Password=`.
 - [ ] Invalid `CommerceNodeConnection` fails API startup when `CommerceNode:Database:FailStartupOnMigrationError=true`.

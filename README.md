@@ -95,6 +95,8 @@ docker compose -f compose.commercenode.yml up -d
 
 V2 API projects can apply their own EF Core migrations on startup when their `MigrateOnStartup` option is enabled. Do not use `AppDbContext` for new V2 work.
 
+Development seeding is only for local QA fixture bootstrap. Commerce Node startup must not reset store runtime configuration that was edited through Control Plane; use a clean Commerce Node database when you intentionally need a full QA fixture rebuild.
+
 ## API And OpenAPI
 
 Active V2 route ownership:

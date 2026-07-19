@@ -156,7 +156,7 @@ Local capture setup:
 1. Start V2 locally with `.\scripts\run-v2-local.ps1 -StopExisting`.
 2. Confirm `compose.commercenode.yml` started Mailpit on SMTP port `1025` and inbox/API port `8025`.
 3. Open `http://localhost:8025` or use Mailpit API `http://localhost:8025/api/v1/messages`.
-4. Development seed configures `default` and `qa-s2` store email settings in capture mode with different sender addresses.
+4. On a fresh local Commerce Node database, development seed configures `default` and `qa-s2` store email settings in capture mode with different sender addresses. After the core QA fixture exists, startup seeding exits without overwriting existing store runtime or store email settings; use a clean database when a full fixture reset is required.
 5. Run `.\scripts\qa\run-storefront-email-recovery-e2e.ps1` and `.\scripts\qa\run-storefront-order-email-e2e.ps1` before public release checks that depend on email.
 
 Staging capture setup:

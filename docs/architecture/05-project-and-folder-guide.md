@@ -130,7 +130,7 @@ Important folders:
 - `Workers/` - background task worker.
 - `runtime/` - generated/runtime Nginx config and logs. Treat as runtime state, not source-of-truth business logic.
 - `uploads/` - local upload storage.
-- `CommerceNodeDatabaseBootstrapper.cs` - startup migration and Development seeding for `CommerceNodeDbContext`.
+- `CommerceNodeDatabaseBootstrapper.cs` - startup migration and Development QA fixture bootstrap for `CommerceNodeDbContext`; it must not reset existing store runtime configuration on restart.
 
 Use for:
 
