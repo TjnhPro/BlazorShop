@@ -1,5 +1,6 @@
 namespace BlazorShop.Application.ControlPlane.CommerceGateway.Categories
 {
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -25,51 +26,51 @@ namespace BlazorShop.Application.ControlPlane.CommerceGateway.Categories
     public interface IControlPlaneCategoryGateway
     {
         
-                Task<ControlPlaneCommerceCatalogResult<CategorySeoDto>> GetCategorySeoAsync(
+                Task<ApplicationResult<CategorySeoDto>> GetCategorySeoAsync(
                     Guid storePublicId,
                     Guid categoryId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<CategorySeoDto>> UpdateCategorySeoAsync(
+                Task<ApplicationResult<CategorySeoDto>> UpdateCategorySeoAsync(
                     Guid storePublicId,
                     Guid categoryId,
                     UpdateCategorySeoDto request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<PagedResult<GetCategory>>> ListCategoriesAsync(
+                Task<ApplicationResult<PagedResult<GetCategory>>> ListCategoriesAsync(
                     Guid storePublicId,
                     int pageNumber = 1,
                     int pageSize = 25,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<GetCategoryTreeNode>>> GetCategoryTreeAsync(
+                Task<ApplicationResult<IReadOnlyList<GetCategoryTreeNode>>> GetCategoryTreeAsync(
                     Guid storePublicId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<object>> CreateCategoryAsync(
+                Task<ApplicationResult<object>> CreateCategoryAsync(
                     Guid storePublicId,
                     CreateCategory request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<object>> UpdateCategoryAsync(
+                Task<ApplicationResult<object>> UpdateCategoryAsync(
                     Guid storePublicId,
                     Guid categoryId,
                     UpdateCategory request,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<object>> ArchiveCategoryAsync(
+                Task<ApplicationResult<object>> ArchiveCategoryAsync(
                     Guid storePublicId,
                     Guid categoryId,
                     CancellationToken cancellationToken = default);
 
         
-                Task<ControlPlaneCommerceCatalogResult<CategoryMediaAssignmentDto>> GetCategoryMediaAsync(
+                Task<ApplicationResult<CategoryMediaAssignmentDto>> GetCategoryMediaAsync(
                     Guid storePublicId,
                     Guid categoryId,
                     CancellationToken cancellationToken = default);

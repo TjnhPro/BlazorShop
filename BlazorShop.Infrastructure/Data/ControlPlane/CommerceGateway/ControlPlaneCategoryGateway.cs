@@ -2,8 +2,8 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
 {
     using System.Globalization;
 
+    using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.ControlPlane.Catalog;
-    using BlazorShop.Application.ControlPlane.CommerceGateway;
     using BlazorShop.Application.CommerceNode.Currencies;
     using BlazorShop.Application.CommerceNode.Media;
     using BlazorShop.Application.CommerceNode.Messages;
@@ -32,12 +32,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
         {
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CategorySeoDto>> GetCategorySeoAsync(
+        public Task<ApplicationResult<CategorySeoDto>> GetCategorySeoAsync(
             Guid storePublicId,
             Guid categoryId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<CategorySeoDto>(
+            return this.SendApplicationAsync<CategorySeoDto>(
                 storePublicId,
                 HttpMethod.Get,
                 $"api/commerce/admin/categories/{categoryId:D}/seo",
@@ -45,14 +45,14 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CategorySeoDto>> UpdateCategorySeoAsync(
+        public Task<ApplicationResult<CategorySeoDto>> UpdateCategorySeoAsync(
             Guid storePublicId,
             Guid categoryId,
             UpdateCategorySeoDto request,
             CancellationToken cancellationToken = default)
         {
             request.CategoryId = categoryId;
-            return this.SendAsync<CategorySeoDto>(
+            return this.SendApplicationAsync<CategorySeoDto>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/categories/{categoryId:D}/seo",
@@ -60,13 +60,13 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<PagedResult<GetCategory>>> ListCategoriesAsync(
+        public Task<ApplicationResult<PagedResult<GetCategory>>> ListCategoriesAsync(
             Guid storePublicId,
             int pageNumber = 1,
             int pageSize = 25,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<PagedResult<GetCategory>>(
+            return this.SendApplicationAsync<PagedResult<GetCategory>>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/categories" + BuildPageQuery(pageNumber, pageSize),
@@ -74,11 +74,11 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<IReadOnlyList<GetCategoryTreeNode>>> GetCategoryTreeAsync(
+        public Task<ApplicationResult<IReadOnlyList<GetCategoryTreeNode>>> GetCategoryTreeAsync(
             Guid storePublicId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<IReadOnlyList<GetCategoryTreeNode>>(
+            return this.SendApplicationAsync<IReadOnlyList<GetCategoryTreeNode>>(
                 storePublicId,
                 HttpMethod.Get,
                 "api/commerce/admin/categories/tree",
@@ -86,12 +86,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<object>> CreateCategoryAsync(
+        public Task<ApplicationResult<object>> CreateCategoryAsync(
             Guid storePublicId,
             CreateCategory request,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<object>(
+            return this.SendApplicationAsync<object>(
                 storePublicId,
                 HttpMethod.Post,
                 "api/commerce/admin/categories",
@@ -99,14 +99,14 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<object>> UpdateCategoryAsync(
+        public Task<ApplicationResult<object>> UpdateCategoryAsync(
             Guid storePublicId,
             Guid categoryId,
             UpdateCategory request,
             CancellationToken cancellationToken = default)
         {
             request.Id = categoryId;
-            return this.SendAsync<object>(
+            return this.SendApplicationAsync<object>(
                 storePublicId,
                 HttpMethod.Put,
                 $"api/commerce/admin/categories/{categoryId:D}",
@@ -114,12 +114,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<object>> ArchiveCategoryAsync(
+        public Task<ApplicationResult<object>> ArchiveCategoryAsync(
             Guid storePublicId,
             Guid categoryId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<object>(
+            return this.SendApplicationAsync<object>(
                 storePublicId,
                 HttpMethod.Delete,
                 $"api/commerce/admin/categories/{categoryId:D}",
@@ -127,12 +127,12 @@ namespace BlazorShop.Infrastructure.Data.ControlPlane
                 cancellationToken);
         }
 
-        public Task<ControlPlaneCommerceCatalogResult<CategoryMediaAssignmentDto>> GetCategoryMediaAsync(
+        public Task<ApplicationResult<CategoryMediaAssignmentDto>> GetCategoryMediaAsync(
             Guid storePublicId,
             Guid categoryId,
             CancellationToken cancellationToken = default)
         {
-            return this.SendAsync<CategoryMediaAssignmentDto>(
+            return this.SendApplicationAsync<CategoryMediaAssignmentDto>(
                 storePublicId,
                 HttpMethod.Get,
                 $"api/commerce/admin/categories/{categoryId:D}/media",
