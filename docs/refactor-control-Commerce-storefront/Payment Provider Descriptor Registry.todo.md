@@ -345,33 +345,51 @@ Phase 6 evidence:
 
 ## Phase 7 - Focused Verification
 
-- [ ] Run focused provider/core tests:
+- [x] Run focused provider/core tests:
   - `PaymentProviderCapabilityRegistryTests`.
   - `PaymentProviderOperationContractTests`.
   - `PaymentWebhookSignatureVerifierTests`.
   - `StripeStorefrontPaymentProviderTests`.
   - `CommerceNodePaymentMethodSecretBoundaryTests`.
-- [ ] Run focused checkout/payment tests:
+- [x] Run focused checkout/payment tests:
   - `StorefrontCheckoutServiceTests`.
   - `PaymentAttemptServiceTests`.
   - `CommerceNodeStorefrontPaymentContractTests`.
   - `StorefrontScopedPaymentWebhookHardeningTests`.
-- [ ] Run active V2 build:
+- [x] Run active V2 build:
   - `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API`.
   - `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`.
   - `BlazorShop.PresentationV2/BlazorShop.ControlPlane.API`.
   - `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web`.
-- [ ] Run Playwright only if payment method visibility/checkout UI changes:
+- [x] Run Playwright only if payment method visibility/checkout UI changes:
   - Storefront checkout still lists COD.
   - COD order can still be placed.
   - Control Plane payment methods page still opens and shows capability state.
 
 Acceptance:
 
-- [ ] New provider descriptor fake test proves no registry edit is required for provider discovery.
-- [ ] COD checkout remains green.
-- [ ] Stripe hosted provider behavior remains green.
-- [ ] PayPal compatibility capture route remains retired.
+- [x] New provider descriptor fake test proves no registry edit is required for provider discovery.
+- [x] COD checkout remains green.
+- [x] Stripe hosted provider behavior remains green.
+- [x] PayPal compatibility capture route remains retired.
+
+Phase 7 evidence:
+
+- Provider/core tests passed 31/31:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~PaymentProviderCapabilityRegistryTests|FullyQualifiedName~PaymentProviderOperationContractTests|FullyQualifiedName~PaymentWebhookSignatureVerifierTests|FullyQualifiedName~StripeStorefrontPaymentProviderTests|FullyQualifiedName~CommerceNodePaymentMethodSecretBoundaryTests" --no-restore --nologo --verbosity minimal`
+- Checkout/payment tests passed 76/76:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~StorefrontCheckoutServiceTests|FullyQualifiedName~PaymentAttemptServiceTests|FullyQualifiedName~CommerceNodeStorefrontPaymentContractTests|FullyQualifiedName~StorefrontScopedPaymentWebhookHardeningTests" --no-restore --nologo --verbosity minimal`
+- Active V2 builds passed with 0 warnings and 0 errors:
+  - `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj`
+  - `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj`
+  - `BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/BlazorShop.ControlPlane.API.csproj`
+  - `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/BlazorShop.ControlPlane.Web.csproj`
+- Headed checkout/order E2E passed:
+  - `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser`
+  - `.\scripts\qa\run-storefront-order-email-e2e.ps1`
+  - Result artifact: `.gstack/qa-reports/order-email-e2e/result.json`.
+  - Success COD order: `ORD-20260719-FFC6BF28`.
+  - Network guardrails: `requestCount=3310`, `response5xxCount=0`, `retiredFlowCallCount=0`.
 
 ## Not In Scope
 
@@ -411,14 +429,14 @@ Acceptance:
 
 ## Implementation Checklist
 
-- [ ] Phase 0 complete.
-- [ ] Phase 1 complete.
-- [ ] Phase 2 complete.
-- [ ] Phase 3 complete.
-- [ ] Phase 4 complete.
-- [ ] Phase 5 decision complete.
-- [ ] Phase 6 complete.
-- [ ] Phase 7 release gate complete.
+- [x] Phase 0 complete.
+- [x] Phase 1 complete.
+- [x] Phase 2 complete.
+- [x] Phase 3 complete.
+- [x] Phase 4 complete.
+- [x] Phase 5 decision complete.
+- [x] Phase 6 complete.
+- [x] Phase 7 release gate complete.
 
 ## Decision Audit Trail
 
@@ -433,12 +451,12 @@ Acceptance:
 
 ## Release Gate
 
-- [ ] `IStorefrontPaymentProvider` exposes descriptor.
-- [ ] COD and Stripe providers expose correct descriptors.
-- [ ] `PaymentProviderCapabilityRegistry` contains no provider-specific factory methods.
-- [ ] Registry discovers fake/new provider through `IEnumerable<IStorefrontPaymentProvider>`.
-- [ ] Store payment defaults are sourced from descriptors, not a hard-coded array.
-- [ ] Existing PayPal rows are not deleted and cannot be enabled without active provider support.
-- [ ] Public Storefront configuration/payment method responses contain no secrets/settings JSON.
-- [ ] Focused provider/payment/checkout tests pass.
-- [ ] Active V2 builds pass.
+- [x] `IStorefrontPaymentProvider` exposes descriptor.
+- [x] COD and Stripe providers expose correct descriptors.
+- [x] `PaymentProviderCapabilityRegistry` contains no provider-specific factory methods.
+- [x] Registry discovers fake/new provider through `IEnumerable<IStorefrontPaymentProvider>`.
+- [x] Store payment defaults are sourced from descriptors, not a hard-coded array.
+- [x] Existing PayPal rows are not deleted and cannot be enabled without active provider support.
+- [x] Public Storefront configuration/payment method responses contain no secrets/settings JSON.
+- [x] Focused provider/payment/checkout tests pass.
+- [x] Active V2 builds pass.
