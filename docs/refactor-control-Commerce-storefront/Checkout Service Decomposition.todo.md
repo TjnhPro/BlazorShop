@@ -248,9 +248,9 @@ Acceptance:
 
 ## Phase 5 - Extract Checkout Payment Coordinator
 
-- [ ] Create internal service, proposed name:
+- [x] Create internal service, proposed name:
   - `CheckoutPaymentCoordinator`
-- [ ] Move payment orchestration from `StorefrontCheckoutService`:
+- [x] Move payment orchestration from `StorefrontCheckoutService`:
   - payment method availability query/filter.
   - next action kind resolution.
   - idempotent existing attempt lookup for checkout placement.
@@ -258,25 +258,42 @@ Acceptance:
   - provider resolve and `CreatePaymentSessionAsync`.
   - safe failure mapping.
   - payment attempt audit append or delegation.
-- [ ] Align with existing `IPaymentAttemptService`:
+- [x] Align with existing `IPaymentAttemptService`:
   - Prefer calling `IPaymentAttemptService.CreateAsync` / `TransitionAsync` where it preserves current behavior.
   - If direct EF is still needed for transaction coupling, isolate it in coordinator and document why.
-- [ ] Keep `OrderPlacementService` as order creation owner.
-- [ ] Preserve two current payment paths:
+- [x] Keep `OrderPlacementService` as order creation owner.
+- [x] Preserve two current payment paths:
   - COD/captured immediate placement creates order in the same execution strategy/transaction.
   - Hosted/redirect payment creates attempt, marks checkout `OrderPending`, and waits for provider callback/webhook.
-- [ ] Add tests for:
+- [x] Add tests for:
   - duplicate idempotency key returns same order/payment attempt.
   - hosted duplicate idempotency key returns same payment session.
   - provider failure records failed attempt safely.
   - inactive/unavailable provider blocks place order.
   - payment attempt audit is still written.
 
+Phase 5 notes:
+
+- Added `CheckoutPaymentCoordinator` under Commerce Node services and registered it as scoped in Commerce Node DI.
+- `StorefrontCheckoutService` now delegates payment method filtering, next-action resolution, payment method availability checks, provider capability checks, provider session creation, failed attempt mapping, online idempotent attempt lookup, and payment audit append to the coordinator.
+- The online/redirect path direct EF writes moved into the coordinator because the attempt, checkout session state, and cart activity update must remain idempotent and persisted together before provider redirect recovery.
+- The COD/immediate captured path still performs order placement inside the existing EF execution strategy/transaction and still calls `OrderPlacementService` as the only owner of order creation. The coordinator creates the payment attempt object, calls the provider, maps failure, and appends attempt audit entries.
+- Existing service-level tests already cover the Phase 5 contract cases:
+  - `PlaceOrderAsync_DuplicateIdempotencyKey_ReturnsSameOrder`.
+  - `PlaceOrderAsync_StripeCreatesRedirectAttemptWithoutOrder`.
+  - `PlaceOrderAsync_StripeProviderFailureReturnsConflictWithoutOrder`.
+  - `PlaceOrderAsync_WhenProviderCapabilityInactive_RejectsBeforeOrder`.
+  - captured and failed `payment_attempt.*` audit assertions.
+- Verification:
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~StorefrontCheckoutServiceTests" --no-restore --nologo --verbosity minimal` passed 59/59.
+  - `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --filter "FullyQualifiedName~PaymentAttemptServiceTests|FullyQualifiedName~StorefrontScopedPaymentWebhookHardeningTests" --no-restore --nologo --verbosity minimal` passed 13/13.
+  - `dotnet build BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/BlazorShop.CommerceNode.API.csproj --no-restore --nologo --verbosity minimal` passed.
+
 Acceptance:
 
-- [ ] `StorefrontCheckoutService.PlaceOrderAsync` reads as facade orchestration, not direct payment implementation.
-- [ ] Payment callback/webhook tests remain green.
-- [ ] No `IPaymentHandler` or direct PayPal compatibility dependency is reintroduced.
+- [x] `StorefrontCheckoutService.PlaceOrderAsync` reads as facade orchestration, not direct payment implementation.
+- [x] Payment callback/webhook tests remain green.
+- [x] No `IPaymentHandler` or direct PayPal compatibility dependency is reintroduced.
 
 ## Phase 6 - Reduce Duplicate Order Line Resolution Safely
 
@@ -393,7 +410,7 @@ Acceptance:
 - [x] Phase 2 complete.
 - [x] Phase 3 complete.
 - [x] Phase 4 complete.
-- [ ] Phase 5 complete.
+- [x] Phase 5 complete.
 - [ ] Phase 6 decision complete.
 - [ ] Phase 7 decision complete.
 - [ ] Phase 8 release gate complete.

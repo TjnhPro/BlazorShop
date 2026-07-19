@@ -34,14 +34,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
         private readonly IMoneyConversionService moneyConversionService;
         private readonly IStorefrontCustomerService customerService;
         private readonly IStoreFeatureStateService featureStateService;
-        private readonly IPaymentProviderCapabilityRegistry paymentProviderCapabilityRegistry;
-        private readonly IStorefrontPaymentProviderResolver paymentProviderResolver;
         private readonly IProductSellabilityResolver sellabilityResolver;
         private readonly IAddressValidationService addressValidationService;
         private readonly IShippingCalculator shippingCalculator;
         private readonly IShippingTaxCalculator shippingTaxCalculator;
         private readonly IOrderPlacementService orderPlacementService;
         private readonly CheckoutPricingCalculator pricingCalculator;
+        private readonly CheckoutPaymentCoordinator paymentCoordinator;
 
         public StorefrontCheckoutService(
             CommerceNodeDbContext context,
@@ -51,8 +50,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             IMoneyConversionService moneyConversionService,
             IStorefrontCustomerService customerService,
             IStoreFeatureStateService featureStateService,
-            IPaymentProviderCapabilityRegistry paymentProviderCapabilityRegistry,
-            IStorefrontPaymentProviderResolver paymentProviderResolver,
+            CheckoutPaymentCoordinator paymentCoordinator,
             IProductSellabilityResolver sellabilityResolver,
             IAddressValidationService addressValidationService,
             IShippingCalculator shippingCalculator,
@@ -67,8 +65,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             ArgumentNullException.ThrowIfNull(moneyConversionService);
             ArgumentNullException.ThrowIfNull(customerService);
             ArgumentNullException.ThrowIfNull(featureStateService);
-            ArgumentNullException.ThrowIfNull(paymentProviderCapabilityRegistry);
-            ArgumentNullException.ThrowIfNull(paymentProviderResolver);
+            ArgumentNullException.ThrowIfNull(paymentCoordinator);
             ArgumentNullException.ThrowIfNull(sellabilityResolver);
             ArgumentNullException.ThrowIfNull(addressValidationService);
             ArgumentNullException.ThrowIfNull(shippingCalculator);
@@ -83,14 +80,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             this.moneyConversionService = moneyConversionService;
             this.customerService = customerService;
             this.featureStateService = featureStateService;
-            this.paymentProviderCapabilityRegistry = paymentProviderCapabilityRegistry;
-            this.paymentProviderResolver = paymentProviderResolver;
             this.sellabilityResolver = sellabilityResolver;
             this.addressValidationService = addressValidationService;
             this.shippingCalculator = shippingCalculator;
             this.shippingTaxCalculator = shippingTaxCalculator;
             this.orderPlacementService = orderPlacementService;
             this.pricingCalculator = pricingCalculator;
+            this.paymentCoordinator = paymentCoordinator;
         }
 
         public async Task<ServiceResponse<StorefrontCheckoutSessionResult>> StartAsync(
@@ -498,7 +494,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var paymentMethodKey = NormalizeKey(request.PaymentMethodKey);
-            var methods = await this.ResolvePaymentMethodOptionsAsync(session, paymentMethodKey, cancellationToken);
+            var methods = await this.paymentCoordinator.ResolvePaymentMethodOptionsAsync(session, paymentMethodKey, cancellationToken);
             var selected = methods.FirstOrDefault(method => string.Equals(method.Key, paymentMethodKey, StringComparison.OrdinalIgnoreCase));
             if (selected is null)
             {
@@ -550,7 +546,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             selectedShippingOption = shippingOptions.Options.FirstOrDefault(option => option.Selected);
             var paymentMethods = shippingOptions.ShippingRequired && selectedShippingOption is null
                 ? []
-                : await this.ResolvePaymentMethodOptionsAsync(session, session.PaymentMethodKey, cancellationToken);
+                : await this.paymentCoordinator.ResolvePaymentMethodOptionsAsync(session, session.PaymentMethodKey, cancellationToken);
             var selectedPaymentMethod = paymentMethods.FirstOrDefault(method => method.Selected);
             var billingAddress = ParseBillingAddress(session.BillingAddressSnapshotJson);
             var shippingAddress = CreateShippingAddress(session);
@@ -762,7 +758,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                     "shippingOptionKey"));
             }
 
-            if (!await this.IsPaymentMethodAvailableAsync(
+            if (!await this.paymentCoordinator.IsPaymentMethodAvailableAsync(
                 request.StoreId,
                 paymentMethodKey,
                 currencyCode,
@@ -953,7 +949,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                         cancellationToken);
                 if (existingAttempt is not null)
                 {
-                    return Succeeded("Payment session already exists.", ToOnlinePlaceOrderResult(session, existingAttempt, idempotencyKey));
+                    return Succeeded("Payment session already exists.", CheckoutPaymentCoordinator.ToOnlinePlaceOrderResult(session, existingAttempt, idempotencyKey));
                 }
             }
 
@@ -1004,17 +1000,13 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var paymentMethodKey = NormalizeKey(session.PaymentMethodKey);
-            var capabilityResult = this.paymentProviderCapabilityRegistry.Get(paymentMethodKey);
+            var capabilityResult = this.paymentCoordinator.ResolveActiveCapability(paymentMethodKey);
             if (!capabilityResult.Success || capabilityResult.Payload is null)
             {
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Payment provider is not available for order placement.");
             }
 
-            var capability = capabilityResult.Payload;
-            if (!capability.Installed || !capability.Active)
-            {
-                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Payment provider is not available for order placement.");
-            }
+            var capability = capabilityResult.Payload!;
 
             var currencyCode = NormalizeCurrency(session.CurrencyCode)
                 ?? await this.storeCurrencyResolver.ResolveDefaultCurrencyCodeAsync(request.StoreId, cancellationToken);
@@ -1089,7 +1081,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             }
 
             var paymentAmount = this.moneyRoundingService.RoundPaymentAmount(totalAmount, currencyCode);
-            if (!await this.IsPaymentMethodAvailableAsync(
+            if (!await this.paymentCoordinator.IsPaymentMethodAvailableAsync(
                 request.StoreId,
                 paymentMethodKey,
                 currencyCode,
@@ -1100,83 +1092,58 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, "Payment method is not available.");
             }
 
-            if (IsAsyncPaymentMethod(capability.MethodType))
+            if (CheckoutPaymentCoordinator.IsAsyncPaymentMethod(capability.MethodType))
             {
-                return await this.CreateOnlinePaymentSessionAsync(
-                    request,
+                return await this.paymentCoordinator.CreateOnlinePaymentSessionAsync(
+                    request.StoreId,
                     session,
                     cart,
-                    lines,
+                    ToPaymentLines(lines),
                     paymentAmount,
                     currencyCode,
-                    rateSnapshot,
+                    ToPaymentRateSnapshot(rateSnapshot),
                     idempotencyKey,
                     cancellationToken);
             }
 
             var now = DateTimeOffset.UtcNow;
-            var paymentAttempt = new PaymentAttempt
-            {
-                Id = Guid.NewGuid(),
-                PublicId = Guid.NewGuid(),
-                StoreId = request.StoreId,
-                CheckoutSessionId = session.Id,
-                PaymentMethodKey = paymentMethodKey,
-                ProviderKey = capability.SystemName,
-                State = PaymentAttemptStates.Created,
-                Amount = paymentAmount,
-                CurrencyCode = currencyCode,
-                BaseCurrencyCode = rateSnapshot.BaseCurrencyCode,
-                BaseAmount = rateSnapshot.BaseTotalAmount,
-                ExchangeRate = rateSnapshot.ExchangeRate,
-                ExchangeRateProviderKey = rateSnapshot.ExchangeRateProviderKey,
-                ExchangeRateSource = rateSnapshot.ExchangeRateSource,
-                ExchangeRateEffectiveAtUtc = rateSnapshot.ExchangeRateEffectiveAtUtc,
-                ExchangeRateExpiresAtUtc = rateSnapshot.ExchangeRateExpiresAtUtc,
-                IdempotencyKey = idempotencyKey,
-                ExpiresAtUtc = now.AddMinutes(30),
-                CreatedAtUtc = now,
-                UpdatedAtUtc = now,
-            };
+            var paymentAttempt = this.paymentCoordinator.CreatePaymentAttempt(new CheckoutPaymentAttemptDraft(
+                request.StoreId,
+                session.Id,
+                paymentMethodKey,
+                capability.SystemName,
+                paymentAmount,
+                currencyCode,
+                idempotencyKey,
+                ToPaymentRateSnapshot(rateSnapshot)));
 
-            ServiceResponse<PaymentProviderOperationResult> paymentResult;
-            try
-            {
-                var provider = this.paymentProviderResolver.Resolve(paymentAttempt.ProviderKey);
-                paymentResult = await provider.CreatePaymentSessionAsync(
-                    new CreatePaymentProviderSessionRequest(
-                        request.StoreId,
-                        session.PublicId,
-                        paymentAttempt.PublicId,
-                        paymentMethodKey,
-                        paymentAttempt.ProviderKey,
-                        paymentAmount,
-                        currencyCode,
-                        idempotencyKey,
-                        lines.Select(line => new PaymentProviderSessionLine(
-                            line.Product.Id,
-                            line.Product.Name ?? "Product",
-                            line.CartLine.Quantity,
-                            line.UnitPrice)).ToArray()),
-                    cancellationToken);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Failed<StorefrontPlaceOrderResult>(ServiceResponseType.Conflict, ex.Message);
-            }
+            var paymentResult = await this.paymentCoordinator.CreateProviderPaymentSessionAsync(
+                new CreatePaymentProviderSessionRequest(
+                    request.StoreId,
+                    session.PublicId,
+                    paymentAttempt.PublicId,
+                    paymentMethodKey,
+                    paymentAttempt.ProviderKey,
+                    paymentAmount,
+                    currencyCode,
+                    idempotencyKey,
+                    ToPaymentLines(lines)
+                        .Select(line => new PaymentProviderSessionLine(
+                            line.ProductId,
+                            line.Name,
+                            line.Quantity,
+                            line.UnitPrice))
+                        .ToArray()),
+                cancellationToken);
 
             if (!paymentResult.Success || paymentResult.Payload is null)
             {
-                paymentAttempt.State = PaymentAttemptStates.Failed;
-                paymentAttempt.FailureCode = paymentResult.Payload?.SafeFailureCode ?? "provider_session_failed";
-                paymentAttempt.FailureMessage = paymentResult.Payload?.SafeFailureMessage
-                    ?? paymentResult.Message
-                    ?? "Payment provider session could not be created.";
                 this.context.PaymentAttempts.Add(paymentAttempt);
+                this.paymentCoordinator.MarkAttemptFailed(paymentAttempt, paymentResult, DateTimeOffset.UtcNow);
                 await this.context.SaveChangesAsync(cancellationToken);
                 return Failed<StorefrontPlaceOrderResult>(
                     paymentResult.ResponseType is ServiceResponseType.Success ? ServiceResponseType.Conflict : paymentResult.ResponseType,
-                    paymentAttempt.FailureMessage);
+                    paymentAttempt.FailureMessage ?? "Payment provider session could not be created.");
             }
 
             var operation = paymentResult.Payload;
@@ -1233,7 +1200,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
                 var order = placement.Order;
                 this.context.PaymentAttempts.Add(paymentAttempt);
-                this.AppendPaymentAudit(
+                this.paymentCoordinator.AppendPaymentAudit(
                     paymentAttempt,
                     oldState: null,
                     PaymentAttemptStates.Created,
@@ -1257,7 +1224,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 paymentAttempt.NextActionUrl = operation.ActionUrl;
                 paymentAttempt.MetadataJson = operation.MetadataJson;
                 paymentAttempt.UpdatedAtUtc = now;
-                this.AppendPaymentAudit(
+                this.paymentCoordinator.AppendPaymentAudit(
                     paymentAttempt,
                     PaymentAttemptStates.Created,
                     PaymentAttemptStates.Captured,
@@ -1291,165 +1258,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
 
                 return Succeeded("Order placed successfully.", ToPlaceOrderResult(session, order, paymentAttempt.PublicId, idempotencyKey, placement.GuestAccessToken));
             });
-        }
-
-        private async Task<ServiceResponse<StorefrontPlaceOrderResult>> CreateOnlinePaymentSessionAsync(
-            StorefrontPlaceOrderRequest request,
-            CheckoutSession session,
-            CartSession cart,
-            IReadOnlyList<OrderLineSnapshot> lines,
-            decimal totalAmount,
-            string currencyCode,
-            CurrencyRateSnapshot rateSnapshot,
-            string idempotencyKey,
-            CancellationToken cancellationToken)
-        {
-            var existingAttempt = await this.context.PaymentAttempts
-                .AsNoTracking()
-                .FirstOrDefaultAsync(
-                    attempt => attempt.StoreId == request.StoreId
-                        && attempt.IdempotencyKey == idempotencyKey,
-                    cancellationToken);
-            if (existingAttempt is not null)
-            {
-                return Succeeded("Payment session already exists.", ToOnlinePlaceOrderResult(session, existingAttempt, idempotencyKey));
-            }
-
-            var now = DateTimeOffset.UtcNow;
-            var paymentAttempt = new PaymentAttempt
-            {
-                Id = Guid.NewGuid(),
-                PublicId = Guid.NewGuid(),
-                StoreId = request.StoreId,
-                CheckoutSessionId = session.Id,
-                PaymentMethodKey = session.PaymentMethodKey,
-                ProviderKey = session.PaymentMethodKey,
-                State = PaymentAttemptStates.Created,
-                Amount = totalAmount,
-                CurrencyCode = currencyCode,
-                BaseCurrencyCode = rateSnapshot.BaseCurrencyCode,
-                BaseAmount = rateSnapshot.BaseTotalAmount,
-                ExchangeRate = rateSnapshot.ExchangeRate,
-                ExchangeRateProviderKey = rateSnapshot.ExchangeRateProviderKey,
-                ExchangeRateSource = rateSnapshot.ExchangeRateSource,
-                ExchangeRateEffectiveAtUtc = rateSnapshot.ExchangeRateEffectiveAtUtc,
-                ExchangeRateExpiresAtUtc = rateSnapshot.ExchangeRateExpiresAtUtc,
-                IdempotencyKey = idempotencyKey,
-                ExpiresAtUtc = now.AddMinutes(30),
-                CreatedAtUtc = now,
-                UpdatedAtUtc = now,
-            };
-
-            this.context.PaymentAttempts.Add(paymentAttempt);
-            this.AppendPaymentAudit(
-                paymentAttempt,
-                oldState: null,
-                PaymentAttemptStates.Created,
-                "payment_attempt.created",
-                "Payment attempt created.",
-                providerMetadataJson: null);
-            try
-            {
-                await this.context.SaveChangesAsync(cancellationToken);
-            }
-            catch (DbUpdateException)
-            {
-                var duplicate = await this.context.PaymentAttempts
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(
-                        attempt => attempt.StoreId == request.StoreId
-                            && attempt.IdempotencyKey == idempotencyKey,
-                        cancellationToken);
-                if (duplicate is not null)
-                {
-                    return Succeeded("Payment session already exists.", ToOnlinePlaceOrderResult(session, duplicate, idempotencyKey));
-                }
-
-                throw;
-            }
-
-            ServiceResponse<PaymentProviderOperationResult> providerResult;
-            try
-            {
-                var provider = this.paymentProviderResolver.Resolve(paymentAttempt.ProviderKey);
-                providerResult = await provider.CreatePaymentSessionAsync(
-                    new CreatePaymentProviderSessionRequest(
-                        request.StoreId,
-                        session.PublicId,
-                        paymentAttempt.PublicId,
-                        paymentAttempt.PaymentMethodKey,
-                        paymentAttempt.ProviderKey,
-                        totalAmount,
-                        currencyCode,
-                        idempotencyKey,
-                        lines.Select(line => new PaymentProviderSessionLine(
-                            line.Product.Id,
-                            line.Product.Name ?? "Product",
-                            line.CartLine.Quantity,
-                            line.UnitPrice)).ToArray()),
-                    cancellationToken);
-            }
-            catch (InvalidOperationException ex)
-            {
-                providerResult = new ServiceResponse<PaymentProviderOperationResult>(false, ex.Message)
-                {
-                    ResponseType = ServiceResponseType.Conflict,
-                };
-            }
-
-            if (!providerResult.Success || providerResult.Payload is null)
-            {
-                paymentAttempt.State = PaymentAttemptStates.Failed;
-                paymentAttempt.FailureCode = providerResult.Payload?.SafeFailureCode ?? "provider_session_failed";
-                paymentAttempt.FailureMessage = providerResult.Payload?.SafeFailureMessage
-                    ?? providerResult.Message
-                    ?? "Payment provider session could not be created.";
-                paymentAttempt.UpdatedAtUtc = DateTimeOffset.UtcNow;
-                this.AppendPaymentAudit(
-                    paymentAttempt,
-                    PaymentAttemptStates.Created,
-                    PaymentAttemptStates.Failed,
-                    "payment_attempt.failed",
-                    paymentAttempt.FailureMessage,
-                    providerResult.Payload?.MetadataJson);
-                await this.context.SaveChangesAsync(cancellationToken);
-                return Failed<StorefrontPlaceOrderResult>(
-                    providerResult.ResponseType is ServiceResponseType.Success ? ServiceResponseType.Conflict : providerResult.ResponseType,
-                    paymentAttempt.FailureMessage);
-            }
-
-            var providerSession = providerResult.Payload;
-            paymentAttempt.State = NormalizeNullable(providerSession.RecommendedState) ?? PaymentAttemptStates.RequiresAction;
-            paymentAttempt.ProviderSessionId = providerSession.ProviderSessionId;
-            paymentAttempt.ProviderReference = providerSession.ProviderReference;
-            paymentAttempt.NextActionType = providerSession.ActionType;
-            paymentAttempt.NextActionUrl = providerSession.ActionUrl;
-            paymentAttempt.MetadataJson = providerSession.MetadataJson;
-            paymentAttempt.UpdatedAtUtc = DateTimeOffset.UtcNow;
-            this.AppendPaymentAudit(
-                paymentAttempt,
-                PaymentAttemptStates.Created,
-                paymentAttempt.State,
-                $"payment_attempt.{paymentAttempt.State}",
-                "Payment attempt requires provider action.",
-                providerSession.MetadataJson);
-
-            CheckoutSessionStateRules.Touch(session, CheckoutSessionStates.OrderPending, CheckoutSteps.PlaceOrder, DateTimeOffset.UtcNow);
-            session.IdempotencyKey = idempotencyKey;
-            session.NextAction = "paymentRedirect";
-            session.BaseCurrencyCode = rateSnapshot.BaseCurrencyCode;
-            session.BaseSubtotal = rateSnapshot.BaseTotalAmount;
-            session.BaseGrandTotal = rateSnapshot.BaseTotalAmount;
-            session.ExchangeRate = rateSnapshot.ExchangeRate;
-            session.ExchangeRateProviderKey = rateSnapshot.ExchangeRateProviderKey;
-            session.ExchangeRateSource = rateSnapshot.ExchangeRateSource;
-            session.ExchangeRateEffectiveAtUtc = rateSnapshot.ExchangeRateEffectiveAtUtc;
-            session.ExchangeRateExpiresAtUtc = rateSnapshot.ExchangeRateExpiresAtUtc;
-            cart.LastActivityAtUtc = DateTimeOffset.UtcNow;
-            cart.UpdatedAtUtc = DateTimeOffset.UtcNow;
-
-            await this.context.SaveChangesAsync(cancellationToken);
-            return Succeeded("Payment session created.", ToOnlinePlaceOrderResult(session, paymentAttempt, idempotencyKey));
         }
 
         private async Task<ServiceResponse<StorefrontCartSessionDto>> ResolveStartCartAsync(
@@ -1635,7 +1443,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             var resolvedPaymentMethods = paymentMethods
                 ?? (shippingOptions.ShippingRequired && selectedShippingOption is null
                     ? []
-                    : await this.ResolvePaymentMethodOptionsAsync(session, session.PaymentMethodKey, cancellationToken));
+                    : await this.paymentCoordinator.ResolvePaymentMethodOptionsAsync(session, session.PaymentMethodKey, cancellationToken));
 
             return ToSessionResult(session, cart, shippingOptions.ShippingRequired, selectedShippingOption, shippingOptions.Options, resolvedPaymentMethods);
         }
@@ -1649,7 +1457,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             IReadOnlyList<StorefrontCheckoutPaymentMethodOption> paymentMethods)
         {
             var selectedPaymentMethod = paymentMethods.FirstOrDefault(method => method.Selected)
-                ?? CreateSelectedPaymentMethod(session.PaymentMethodKey);
+                ?? this.paymentCoordinator.CreateSelectedPaymentMethod(session.PaymentMethodKey);
 
             return new StorefrontCheckoutSessionResult(
                 session.PublicId,
@@ -1811,120 +1619,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 : ServiceResponseType.ValidationError;
         }
 
-        private async Task<IReadOnlyList<StorefrontCheckoutPaymentMethodOption>> ResolvePaymentMethodOptionsAsync(
-            CheckoutSession session,
-            string selectedKey,
-            CancellationToken cancellationToken)
-        {
-            var currencyCode = NormalizeCurrency(session.CurrencyCode) ?? DefaultCurrencyCode;
-            var countryCode = NormalizeCountry(session.ShippingCountryCode);
-            var orderTotal = session.GrandTotal;
-            var methods = await this.context.StorePaymentMethods
-                .AsNoTracking()
-                .Where(method => method.StoreId == session.StoreId && method.Enabled)
-                .OrderBy(method => method.DisplayOrder)
-                .ThenBy(method => method.DisplayName)
-                .ToArrayAsync(cancellationToken);
-
-            return methods
-                .Where(method =>
-                    SupportsValue(ParseCodes(method.SupportedCurrencyCodesJson), currencyCode)
-                    && SupportsValue(ParseCodes(method.SupportedCountryCodesJson), countryCode)
-                    && (!method.MinOrderTotal.HasValue || orderTotal >= method.MinOrderTotal.Value)
-                    && (!method.MaxOrderTotal.HasValue || orderTotal <= method.MaxOrderTotal.Value))
-                .Select(method => new StorefrontCheckoutPaymentMethodOption(
-                    NormalizeKey(method.PaymentMethodKey),
-                    method.DisplayName,
-                    method.Description,
-                    method.ShortDisplayText,
-                    method.IconUrl,
-                    NormalizeKey(method.PaymentMethodKey),
-                    this.ResolvePaymentNextActionKind(method.PaymentMethodKey),
-                    string.Equals(method.PaymentMethodKey, selectedKey, StringComparison.OrdinalIgnoreCase)))
-                .ToArray();
-        }
-
-        private StorefrontCheckoutPaymentMethodOption? CreateSelectedPaymentMethod(string? paymentMethodKey)
-        {
-            var key = NormalizeKey(paymentMethodKey);
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                return null;
-            }
-
-            return new StorefrontCheckoutPaymentMethodOption(
-                key,
-                key,
-                null,
-                null,
-                null,
-                key,
-                this.ResolvePaymentNextActionKind(key),
-                Selected: true);
-        }
-
-        private static bool SupportsValue(IReadOnlyList<string> supportedValues, string? value)
-        {
-            return supportedValues.Count == 0
-                || (value is not null && supportedValues.Contains(value, StringComparer.OrdinalIgnoreCase));
-        }
-
-        private void AppendPaymentAudit(
-            PaymentAttempt attempt,
-            string? oldState,
-            string newState,
-            string eventType,
-            string message,
-            string? providerMetadataJson)
-        {
-            var normalizedMessage = NormalizeNullable(message) ?? "Payment attempt updated.";
-            this.context.PaymentAttemptAuditLogs.Add(new PaymentAttemptAuditLog
-            {
-                Id = Guid.NewGuid(),
-                StoreId = attempt.StoreId,
-                OrderId = attempt.OrderId,
-                PaymentAttemptId = attempt.Id,
-                ProviderKey = attempt.ProviderKey,
-                EventType = NormalizeNullable(eventType) is { Length: <= 128 } normalizedEventType
-                    ? normalizedEventType
-                    : "payment_attempt.updated",
-                OldState = NormalizeKey(oldState),
-                NewState = NormalizeKey(newState) ?? PaymentAttemptStates.Created,
-                Message = normalizedMessage.Length > 512 ? normalizedMessage[..512] : normalizedMessage,
-                MetadataJson = BuildPaymentAuditMetadataJson(attempt, providerMetadataJson),
-                CreatedAtUtc = DateTimeOffset.UtcNow,
-            });
-        }
-
-        private static string BuildPaymentAuditMetadataJson(PaymentAttempt attempt, string? providerMetadataJson)
-        {
-            return JsonSerializer.Serialize(new
-            {
-                providerReference = NormalizeNullable(attempt.ProviderReference),
-                providerSessionId = NormalizeNullable(attempt.ProviderSessionId),
-                failureCode = NormalizeNullable(attempt.FailureCode),
-                hasProviderMetadata = !string.IsNullOrWhiteSpace(providerMetadataJson),
-            }, JsonOptions);
-        }
-
-        private string ResolvePaymentNextActionKind(string paymentMethodKey)
-        {
-            var capability = this.paymentProviderCapabilityRegistry.Get(paymentMethodKey);
-            if (!capability.Success || capability.Payload is null)
-            {
-                return PaymentProviderActionTypes.None;
-            }
-
-            return IsAsyncPaymentMethod(capability.Payload.MethodType)
-                ? PaymentProviderActionTypes.Redirect
-                : PaymentProviderActionTypes.None;
-        }
-
-        private static bool IsAsyncPaymentMethod(string methodType)
-        {
-            return string.Equals(methodType, PaymentProviderMethodTypes.Redirect, StringComparison.OrdinalIgnoreCase);
-        }
-
         private static StorefrontCheckoutShippingOption? ParseSelectedShippingOption(string? json)
         {
             if (string.IsNullOrWhiteSpace(json))
@@ -1957,60 +1651,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             {
                 return [];
             }
-        }
-
-        private async Task<bool> IsPaymentMethodAvailableAsync(
-            Guid storeId,
-            string paymentMethodKey,
-            string? currencyCode,
-            string? countryCode,
-            decimal orderTotal,
-            CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrWhiteSpace(paymentMethodKey))
-            {
-                return false;
-            }
-
-            var method = await this.context.StorePaymentMethods
-                .AsNoTracking()
-                .FirstOrDefaultAsync(
-                    method => method.StoreId == storeId
-                        && method.PaymentMethodKey == paymentMethodKey,
-                    cancellationToken);
-
-            if (method is null || !method.Enabled)
-            {
-                return false;
-            }
-
-            var currencyCodes = ParseCodes(method.SupportedCurrencyCodesJson);
-            var normalizedCurrency = NormalizeCurrency(currencyCode);
-            if (currencyCodes.Count > 0
-                && (normalizedCurrency is null || !currencyCodes.Contains(normalizedCurrency, StringComparer.Ordinal)))
-            {
-                return false;
-            }
-
-            var countryCodes = ParseCodes(method.SupportedCountryCodesJson);
-            var normalizedCountry = NormalizeCountry(countryCode);
-            if (countryCodes.Count > 0
-                && (normalizedCountry is null || !countryCodes.Contains(normalizedCountry, StringComparer.Ordinal)))
-            {
-                return false;
-            }
-
-            if (method.MinOrderTotal.HasValue && orderTotal < method.MinOrderTotal.Value)
-            {
-                return false;
-            }
-
-            if (method.MaxOrderTotal.HasValue && orderTotal > method.MaxOrderTotal.Value)
-            {
-                return false;
-            }
-
-            return true;
         }
 
         private async Task<StorefrontPlaceOrderResult?> FindCompletedByIdempotencyKeyAsync(
@@ -2516,27 +2156,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
             return normalized is null ? null : normalized.ToUpperInvariant();
         }
 
-        private static IReadOnlyList<string> ParseCodes(string? json)
-        {
-            if (string.IsNullOrWhiteSpace(json))
-            {
-                return [];
-            }
-
-            try
-            {
-                return JsonSerializer.Deserialize<IReadOnlyList<string>>(json)
-                    ?.Select(NormalizeCountry)
-                    .Where(code => code is not null)
-                    .Select(code => code!)
-                    .ToArray() ?? [];
-            }
-            catch (JsonException)
-            {
-                return [];
-            }
-        }
-
         private static StorefrontPlaceOrderResult ToPlaceOrderResult(
             CheckoutSession session,
             Order order,
@@ -2559,26 +2178,28 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 guestAccessToken);
         }
 
-        private static StorefrontPlaceOrderResult ToOnlinePlaceOrderResult(
-            CheckoutSession session,
-            PaymentAttempt paymentAttempt,
-            string idempotencyKey)
+        private static IReadOnlyList<CheckoutPaymentLineSnapshot> ToPaymentLines(
+            IEnumerable<OrderLineSnapshot> lines)
         {
-            return new StorefrontPlaceOrderResult(
-                session.PublicId,
-                paymentAttempt.PublicId,
-                paymentAttempt.OrderId,
-                null,
-                null,
-                PaymentStatuses.Pending,
-                paymentAttempt.PaymentMethodKey,
-                paymentAttempt.Amount,
-                NormalizeCurrency(paymentAttempt.CurrencyCode) ?? DefaultCurrencyCode,
-                idempotencyKey,
-                paymentAttempt.CreatedAtUtc.UtcDateTime,
-                GuestAccessToken: null,
-                NextActionType: paymentAttempt.NextActionType,
-                NextActionUrl: paymentAttempt.NextActionUrl);
+            return lines
+                .Select(line => new CheckoutPaymentLineSnapshot(
+                    line.Product.Id,
+                    line.Product.Name ?? "Product",
+                    line.CartLine.Quantity,
+                    line.UnitPrice))
+                .ToArray();
+        }
+
+        private static CheckoutPaymentRateSnapshot ToPaymentRateSnapshot(CurrencyRateSnapshot rateSnapshot)
+        {
+            return new CheckoutPaymentRateSnapshot(
+                rateSnapshot.BaseCurrencyCode,
+                rateSnapshot.BaseTotalAmount,
+                rateSnapshot.ExchangeRate,
+                rateSnapshot.ExchangeRateProviderKey,
+                rateSnapshot.ExchangeRateSource,
+                rateSnapshot.ExchangeRateEffectiveAtUtc,
+                rateSnapshot.ExchangeRateExpiresAtUtc);
         }
 
         private static ServiceResponse<StorefrontCheckoutPreviewResult> Succeeded(

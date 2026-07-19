@@ -64,11 +64,13 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.False(parameters["shippingCalculator"].HasDefaultValue);
             Assert.False(parameters["shippingTaxCalculator"].HasDefaultValue);
             Assert.False(parameters["orderPlacementService"].HasDefaultValue);
+            Assert.False(parameters["paymentCoordinator"].HasDefaultValue);
             Assert.Equal(typeof(IProductSellabilityResolver), parameters["sellabilityResolver"].ParameterType);
             Assert.Equal(typeof(IAddressValidationService), parameters["addressValidationService"].ParameterType);
             Assert.Equal(typeof(IShippingCalculator), parameters["shippingCalculator"].ParameterType);
             Assert.Equal(typeof(IShippingTaxCalculator), parameters["shippingTaxCalculator"].ParameterType);
             Assert.Equal(typeof(IOrderPlacementService), parameters["orderPlacementService"].ParameterType);
+            Assert.Equal(typeof(CheckoutPaymentCoordinator), parameters["paymentCoordinator"].ParameterType);
             Assert.DoesNotContain("IProductSellabilityResolver? sellabilityResolver = null", source, StringComparison.Ordinal);
             Assert.DoesNotContain("IAddressValidationService? addressValidationService = null", source, StringComparison.Ordinal);
             Assert.DoesNotContain("IShippingCalculator? shippingCalculator = null", source, StringComparison.Ordinal);
@@ -91,6 +93,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Contains("AddScoped<IShippingCalculator, ShippingCalculator>", source, StringComparison.Ordinal);
             Assert.Contains("AddScoped<IShippingTaxCalculator, ZeroShippingTaxCalculator>", source, StringComparison.Ordinal);
             Assert.Contains("AddScoped<CheckoutPricingCalculator>", source, StringComparison.Ordinal);
+            Assert.Contains("AddScoped<CheckoutPaymentCoordinator>", source, StringComparison.Ordinal);
             Assert.Contains("AddScoped<IOrderPlacementService, OrderPlacementService>", source, StringComparison.Ordinal);
             Assert.Contains("AddScoped<IStorefrontCheckoutService, StorefrontCheckoutService>", source, StringComparison.Ordinal);
         }
@@ -2612,6 +2615,10 @@ namespace BlazorShop.Tests.Application.CommerceNode
                     this.moneyConversionService,
                     this.shippingCalculator,
                     this.shippingTaxCalculator);
+                var paymentCoordinator = new CheckoutPaymentCoordinator(
+                    this.context,
+                    new PaymentProviderCapabilityRegistry(providerList),
+                    new StorefrontPaymentProviderResolver(providerList));
 
                 return new StorefrontCheckoutService(
                     this.context,
@@ -2621,8 +2628,7 @@ namespace BlazorShop.Tests.Application.CommerceNode
                     this.moneyConversionService,
                     this.customerService,
                     new StubStoreFeatureStateService(this.checkoutEnabled),
-                    new PaymentProviderCapabilityRegistry(providerList),
-                    new StorefrontPaymentProviderResolver(providerList),
+                    paymentCoordinator,
                     this.sellabilityResolver,
                     this.addressValidationService,
                     this.shippingCalculator,
