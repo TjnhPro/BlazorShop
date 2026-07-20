@@ -192,6 +192,12 @@ Seed source: `BlazorShop.Infrastructure/Data/CommerceNode/CommerceNodeDevelopmen
 - [x] `PRD-007 P1` - DevTools chỉnh selected attributes hoặc quantity sai bị server reject.
 - [x] `PRD-008 P1` - Double click add-to-cart không tạo duplicate ngoài merge rule.
 - [x] `PRD-009 P1` - Product media gallery/image URL đúng store và alt text an toàn.
+- [ ] `PRD-009A P1` - Product detail seeded gallery có ít nhất 3 thumbnails, main image và thumbnails đều là khung 1:1.
+- [ ] `PRD-009B P1` - Click/tap thumbnail thứ 2 đổi main image đúng URL/alt, không console error, không request spam.
+- [ ] `PRD-009C P1` - Mobile viewport thumbnail strip không overlap price, variant controls, quantity hoặc add-to-cart.
+- [ ] `PRD-009D P1` - Product chỉ có legacy `Image` nhưng không có `ProductMedia` vẫn render một ảnh vuông.
+- [ ] `PRD-009E P1` - Product không có ảnh render placeholder vuông, không hiện broken image.
+- [ ] `PRD-009F P1` - Gallery media URLs trả 200 hoặc fallback hợp lệ, không có visible broken image.
 - [x] `PRD-010 P1` - Product name/attribute payload HTML được escape trong product/cart/order.
 
 ## Auth, Recovery, Account WASM Browser Flow

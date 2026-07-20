@@ -58,6 +58,40 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             });
         }
 
+        [Fact]
+        public void DevelopmentSeeder_KeepsIncrementalThreeImageGalleryFixture()
+        {
+            var repositoryRoot = FindRepositoryRoot();
+            var seederSource = File.ReadAllText(Path.Combine(
+                repositoryRoot,
+                "BlazorShop.Infrastructure",
+                "Data",
+                "CommerceNode",
+                "CommerceNodeDevelopmentSeeder.cs"));
+            var storeSeedSource = File.ReadAllText(Path.Combine(
+                repositoryRoot,
+                "BlazorShop.Infrastructure",
+                "Data",
+                "CommerceNode",
+                "CommerceNodeDevelopmentSeeder.StoreSeed.cs"));
+            var mediaSeedSource = File.ReadAllText(Path.Combine(
+                repositoryRoot,
+                "BlazorShop.Infrastructure",
+                "Data",
+                "CommerceNode",
+                "CommerceNodeDevelopmentSeeder.MediaSeed.cs"));
+
+            Assert.Contains("EnsureIncrementalQaSeedDataAsync", seederSource);
+            Assert.Contains("SeoMediaProductGallerySecondMediaPublicId", seederSource);
+            Assert.Contains("SeoMediaProductGalleryThirdMediaPublicId", seederSource);
+            Assert.Contains("defaultGalleryCount >= 3", storeSeedSource);
+            Assert.Contains("qa-fixtures/default/seo-media-product-alt-1.png", mediaSeedSource);
+            Assert.Contains("qa-fixtures/default/seo-media-product-alt-2.png", mediaSeedSource);
+            Assert.Contains("sortOrder: 10", mediaSeedSource);
+            Assert.Contains("sortOrder: 20", mediaSeedSource);
+            Assert.Contains("isPrimary: false", mediaSeedSource);
+        }
+
         private static CommerceNodeDbContext CreateContext()
         {
             var options = new DbContextOptionsBuilder<CommerceNodeDbContext>()
@@ -65,6 +99,22 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 .Options;
 
             return new CommerceNodeDbContext(options);
+        }
+
+        private static string FindRepositoryRoot()
+        {
+            var current = new DirectoryInfo(AppContext.BaseDirectory);
+            while (current is not null)
+            {
+                if (File.Exists(Path.Combine(current.FullName, "BlazorShop.V2.slnf")))
+                {
+                    return current.FullName;
+                }
+
+                current = current.Parent;
+            }
+
+            throw new DirectoryNotFoundException("Could not locate BlazorShop repository root.");
         }
 
         private static ProductMedia CreateMedia(

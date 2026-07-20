@@ -112,15 +112,15 @@ Muc tieu cua phase nay la nang product detail tu 1 anh dai dien sang danh sach a
 
 ## Phase 5 - QA and Playwright browser coverage
 
-- [ ] Cap nhat `QA-StorefrontV2.todo.md` voi case product gallery.
-- [ ] Cap nhat `Storefront Playwright E2E Release.todo.md` voi case release browser that.
-- [ ] Tao/seed fixture product co it nhat 3 anh stored, 1 anh primary, co `SortOrder` khac nhau.
-- [ ] Playwright case: product detail hien main image 1:1 va thumbnail list.
-- [ ] Playwright case: click thumbnail thu 2 thi main image doi dung URL/alt.
-- [ ] Playwright case: mobile viewport thumbnail strip khong overlap thong tin gia/add-to-cart.
-- [ ] Playwright case: product chi co `Image` legacy nhung khong co `ProductMedia` van hien 1 anh.
-- [ ] Playwright case: product khong co anh hien placeholder square.
-- [ ] Playwright case: media URL tra 200 hoac fallback hop le, khong co broken image visible.
+- [x] Cap nhat `QA-StorefrontV2.todo.md` voi case product gallery.
+- [x] Cap nhat `Storefront Playwright E2E Release.todo.md` voi case release browser that.
+- [x] Tao/seed fixture product co it nhat 3 anh stored, 1 anh primary, co `SortOrder` khac nhau.
+- [~] Playwright case: product detail hien main image 1:1 va thumbnail list. Case da them vao release checklist `PRD-009A`; headed browser run pending vi Docker Desktop engine khong available ngay 2026-07-20.
+- [~] Playwright case: click thumbnail thu 2 thi main image doi dung URL/alt. Case da them vao release checklist `PRD-009B`; headed browser run pending vi Docker Desktop engine khong available ngay 2026-07-20.
+- [~] Playwright case: mobile viewport thumbnail strip khong overlap thong tin gia/add-to-cart. Case da them vao release checklist `PRD-009C`; headed browser run pending vi Docker Desktop engine khong available ngay 2026-07-20.
+- [~] Playwright case: product chi co `Image` legacy nhung khong co `ProductMedia` van hien 1 anh. Case da them vao release checklist `PRD-009D`; automated markup fallback da co trong `ProductImageGallery.razor`.
+- [~] Playwright case: product khong co anh hien placeholder square. Case da them vao release checklist `PRD-009E`; automated CSS guard cover placeholder square.
+- [~] Playwright case: media URL tra 200 hoac fallback hop le, khong co broken image visible. Case da them vao release checklist `PRD-009F`; headed browser run pending vi Docker Desktop engine khong available ngay 2026-07-20.
 
 ## Phase 6 - Cleanup and future backlog
 

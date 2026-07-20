@@ -26,6 +26,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 cancellationToken);
             await this.EnsureMediaFixtureFileAsync(
                 ProductMediaRootPath,
+                "qa-fixtures/default/seo-media-product-alt-1.png",
+                cancellationToken);
+            await this.EnsureMediaFixtureFileAsync(
+                ProductMediaRootPath,
+                "qa-fixtures/default/seo-media-product-alt-2.png",
+                cancellationToken);
+            await this.EnsureMediaFixtureFileAsync(
+                ProductMediaRootPath,
                 "qa-fixtures/qa-s2/isolation-product.png",
                 cancellationToken);
             await this.EnsureMediaFixtureFileAsync(
@@ -74,7 +82,9 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                     "qa-s2-isolation-product.png",
                     "QA S2 isolation product image",
                     "qa-fixture-product-media-s2",
-                    cancellationToken);
+                    sortOrder: 0,
+                    isPrimary: true,
+                    cancellationToken: cancellationToken);
                 await this.EnsureCommerceMediaAssetAsync(
                     QaS2ContentMediaAssetId,
                     QaS2ContentMediaAssetPublicId,
@@ -97,7 +107,33 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 "qa-seo-media-product.png",
                 "QA SEO media product image",
                 "qa-fixture-product-media-default",
-                cancellationToken);
+                sortOrder: 0,
+                isPrimary: true,
+                cancellationToken: cancellationToken);
+            await this.EnsurePrimaryProductMediaAsync(
+                SeoMediaProductGallerySecondMediaId,
+                SeoMediaProductGallerySecondMediaPublicId,
+                storeId,
+                SeoMediaProductId,
+                "qa-fixtures/default/seo-media-product-alt-1.png",
+                "qa-seo-media-product-alt-1.png",
+                "QA SEO media product alternate image 1",
+                "qa-fixture-product-media-default-alt-1",
+                sortOrder: 10,
+                isPrimary: false,
+                cancellationToken: cancellationToken);
+            await this.EnsurePrimaryProductMediaAsync(
+                SeoMediaProductGalleryThirdMediaId,
+                SeoMediaProductGalleryThirdMediaPublicId,
+                storeId,
+                SeoMediaProductId,
+                "qa-fixtures/default/seo-media-product-alt-2.png",
+                "qa-seo-media-product-alt-2.png",
+                "QA SEO media product alternate image 2",
+                "qa-fixture-product-media-default-alt-2",
+                sortOrder: 20,
+                isPrimary: false,
+                cancellationToken: cancellationToken);
             await this.EnsureCommerceMediaAssetAsync(
                 DefaultContentMediaAssetId,
                 DefaultContentMediaAssetPublicId,
@@ -119,6 +155,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             string fileName,
             string altText,
             string contentHash,
+            int sortOrder,
+            bool isPrimary,
             CancellationToken cancellationToken)
         {
             var product = await this.dbContext.Products.FirstOrDefaultAsync(item => item.Id == productId, cancellationToken);
@@ -127,17 +165,20 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 return;
             }
 
-            var otherPrimaryMedia = await this.dbContext.ProductMedia
-                .Where(media => media.StoreId == storeId
-                    && media.ProductId == productId
-                    && media.Id != id
-                    && media.IsPrimary
-                    && media.DeletedAt == null)
-                .ToListAsync(cancellationToken);
-            foreach (var existingPrimary in otherPrimaryMedia)
+            if (isPrimary)
             {
-                existingPrimary.IsPrimary = false;
-                existingPrimary.UpdatedAt = DateTimeOffset.UtcNow;
+                var otherPrimaryMedia = await this.dbContext.ProductMedia
+                    .Where(media => media.StoreId == storeId
+                        && media.ProductId == productId
+                        && media.Id != id
+                        && media.IsPrimary
+                        && media.DeletedAt == null)
+                    .ToListAsync(cancellationToken);
+                foreach (var existingPrimary in otherPrimaryMedia)
+                {
+                    existingPrimary.IsPrimary = false;
+                    existingPrimary.UpdatedAt = DateTimeOffset.UtcNow;
+                }
             }
 
             var media = await this.dbContext.ProductMedia.FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
@@ -158,8 +199,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             media.Width = 1;
             media.Height = 1;
             media.FileSizeBytes = QaFixturePngBytes.Length;
-            media.SortOrder = 0;
-            media.IsPrimary = true;
+            media.SortOrder = sortOrder;
+            media.IsPrimary = isPrimary;
             media.AltText = altText;
             media.Status = ProductMediaStatuses.Stored;
             media.ErrorMessage = null;
@@ -168,8 +209,12 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             media.DeletedAt = null;
             media.UpdatedAt = DateTimeOffset.UtcNow;
 
-            product.Image = $"/media/products/{publicId:D}?w=640&fit=contain&format=webp&v=1";
-            product.UpdatedAt = DateTime.UtcNow;
+            if (isPrimary)
+            {
+                product.Image = $"/media/products/{publicId:D}?w=640&fit=contain&format=webp&v=1";
+                product.UpdatedAt = DateTime.UtcNow;
+            }
+
             await this.dbContext.SaveChangesAsync(cancellationToken);
         }
 

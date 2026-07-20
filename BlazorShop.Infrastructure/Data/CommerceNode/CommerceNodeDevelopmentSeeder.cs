@@ -70,6 +70,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
         private static readonly Guid QaS2CustomerAddressId = Guid.Parse("5e111111-1111-4111-8111-111111111402");
         private static readonly Guid SeoMediaProductMediaId = Guid.Parse("6f111111-1111-4111-8111-111111111113");
         private static readonly Guid SeoMediaProductMediaPublicId = Guid.Parse("6f111111-1111-4111-8111-111111111213");
+        private static readonly Guid SeoMediaProductGallerySecondMediaId = Guid.Parse("6f111111-1111-4111-8111-111111111114");
+        private static readonly Guid SeoMediaProductGallerySecondMediaPublicId = Guid.Parse("6f111111-1111-4111-8111-111111111214");
+        private static readonly Guid SeoMediaProductGalleryThirdMediaId = Guid.Parse("6f111111-1111-4111-8111-111111111115");
+        private static readonly Guid SeoMediaProductGalleryThirdMediaPublicId = Guid.Parse("6f111111-1111-4111-8111-111111111215");
         private static readonly Guid QaS2ProductMediaId = Guid.Parse("6f111111-1111-4111-8111-111111111202");
         private static readonly Guid QaS2ProductMediaPublicId = Guid.Parse("6f111111-1111-4111-8111-111111111302");
         private static readonly Guid DefaultContentMediaAssetId = Guid.Parse("7a111111-1111-4111-8111-111111111101");
@@ -106,6 +110,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
         {
             if (await this.HasRequiredQaSeedDataAsync(cancellationToken))
             {
+                await this.EnsureIncrementalQaSeedDataAsync(cancellationToken);
                 return;
             }
 

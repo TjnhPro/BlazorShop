@@ -35,6 +35,34 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             return coreCatalogExists;
         }
 
+        private async Task EnsureIncrementalQaSeedDataAsync(CancellationToken cancellationToken)
+        {
+            var defaultStoreId = await this.dbContext.CommerceStores
+                .Where(store => store.StoreKey == DefaultStoreKey)
+                .Select(store => (Guid?)store.Id)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (!defaultStoreId.HasValue)
+            {
+                return;
+            }
+
+            var defaultGalleryCount = await this.dbContext.ProductMedia
+                .CountAsync(media => media.StoreId == defaultStoreId.Value
+                    && media.ProductId == SeoMediaProductId
+                    && media.Status == ProductMediaStatuses.Stored
+                    && media.DeletedAt == null,
+                    cancellationToken);
+
+            if (defaultGalleryCount >= 3)
+            {
+                return;
+            }
+
+            await this.EnsureMediaFixtureFilesAsync(cancellationToken);
+            await this.EnsureProductMediaFixturesAsync(defaultStoreId.Value, cancellationToken);
+        }
+
         private async Task<CommerceStore> EnsureStoreAsync(CancellationToken cancellationToken)
         {
             var now = DateTimeOffset.UtcNow;
