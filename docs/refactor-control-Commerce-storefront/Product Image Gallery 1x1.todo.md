@@ -51,7 +51,7 @@ Muc tieu cua phase nay la nang product detail tu 1 anh dai dien sang danh sach a
 ## Phase 1 - Public gallery read model
 
 - [x] Tao DTO nho cho gallery, vi du `ProductGalleryImageDto`.
-- [ ] Field de xuat:
+- [x] Field de xuat:
   - [x] `Guid PublicId`.
   - [x] `string ImageUrl`.
   - [x] `string? ThumbnailUrl`.
@@ -64,7 +64,7 @@ Muc tieu cua phase nay la nang product detail tu 1 anh dai dien sang danh sach a
   - [x] `int Version`.
 - [x] Them `IReadOnlyList<ProductGalleryImageDto> MediaGallery` vao `GetProduct` voi default empty list de backward-compatible.
 - [x] Load gallery tu `CommerceNodeDbContext.ProductMedia` bang query rieng trong Application/Infrastructure read path, tranh thay doi lon EF include graph cua product detail.
-- [ ] Filter bat buoc:
+- [x] Filter bat buoc:
   - [x] `ProductId == product.Id`.
   - [x] `StoreId == current store id`.
   - [x] `DeletedAt == null`.
@@ -84,20 +84,20 @@ Muc tieu cua phase nay la nang product detail tu 1 anh dai dien sang danh sach a
 ## Phase 3 - Storefront product detail UI
 
 - [x] Tach logic hien anh trong `ProductPage.razor` thanh mot block/component gallery nho neu giup file de doc hon.
-- [ ] Main image:
+- [x] Main image:
   - [x] Khung co `aspect-ratio: 1 / 1`.
   - [x] `object-fit: cover` hoac `contain` can duoc chon ro; uu tien `cover` neu product media da duoc crop/thumbnail 1:1, uu tien `contain` neu can tranh cat mat san pham.
   - [x] Khong lam layout shift khi anh load cham.
-- [ ] Thumbnail:
+- [x] Thumbnail:
   - [x] Moi thumbnail la khung 1:1.
   - [x] Desktop hien grid/rail ngan ben duoi hoac ben trai main image.
   - [x] Mobile hien horizontal scroll thumbnail strip.
   - [x] Thumbnail dang chon co active state ro rang nhung khong lam thay doi kich thuoc layout.
-- [ ] Interaction:
+- [x] Interaction:
   - [x] Click/tap thumbnail doi main image.
   - [x] Keyboard focus duoc tren thumbnail button.
   - [x] `alt` lay tu `AltText`, fallback product name.
-- [ ] Fallback:
+- [x] Fallback:
   - [x] Co gallery thi dung gallery.
   - [x] Khong co gallery nhung co `_product.Image` thi tao 1 item fallback.
   - [x] Khong co anh thi hien placeholder 1:1 nhu hien tai nhung khong pha layout.
@@ -124,43 +124,51 @@ Muc tieu cua phase nay la nang product detail tu 1 anh dai dien sang danh sach a
 
 ## Phase 6 - Cleanup and future backlog
 
-- [ ] Ghi chu future task cho variant-specific image khi `ProductVariantAttribute`/combination selection da on dinh.
-- [ ] Ghi chu future task cho lightbox/zoom neu can merchandising cao hon.
-- [ ] Ghi chu future task cho structured data `image` array trong SEO phase neu can.
-- [ ] Ghi chu future task cho admin validation/crop hint 1:1, khong chen vao phase nay.
-- [ ] Sau khi tat ca public consumer dung gallery/read model moi, moi xem xet giam phu thuoc vao `Product.Image`.
+- [x] Ghi chu future task cho variant-specific image khi `ProductVariantAttribute`/combination selection da on dinh.
+- [x] Ghi chu future task cho lightbox/zoom neu can merchandising cao hon.
+- [x] Ghi chu future task cho structured data `image` array trong SEO phase neu can.
+- [x] Ghi chu future task cho admin validation/crop hint 1:1, khong chen vao phase nay.
+- [x] Sau khi tat ca public consumer dung gallery/read model moi, moi xem xet giam phu thuoc vao `Product.Image`.
+
+### Future backlog records
+
+- Variant-specific image mapping: chi nen lam sau khi variant/combination selection da co contract on dinh giua Storefront product detail, selection preview va cart line snapshot. Scope sau nay can map selected variant/attribute combination sang primary media item ma khong thay doi behavior listing/search.
+- Lightbox/zoom: chi nen them khi merchandising can xem chi tiet anh lon. Neu lam, uu tien progressive enhancement tren gallery hien co, khong thay doi API contract tru khi can anh full-size/preset moi.
+- SEO structured data image array: SEO phase sau co the dung `MediaGallery.ImageUrl` de sinh `image` array cho JSON-LD product. Can giu URL public/store-scoped va khong dua thumbnail-only URL vao structured data neu search engine can anh lon.
+- Admin 1:1 crop hint/validation: khong ep upload 1:1 trong phase nay. Phase sau co the them crop-hint UI, warning ve ti le anh va preset preview ma khong reject media hien co.
+- `Product.Image` deprecation: chi xem xet giam phu thuoc sau khi product list/search/cart/checkout/order/SEO da co read model rieng cho primary image. Den luc do van can migration/compatibility note vi public API hien con field `Image`.
 
 ## Acceptance criteria
 
-- [ ] Product detail Storefront V2 co the hien nhieu anh product theo thu tu quan tri.
-- [ ] Anh main va thumbnail luon nam trong khung 1:1 tren desktop/mobile.
-- [ ] Product cu chi co `Image` khong bi mat anh.
-- [ ] Product listing/search/cart/checkout/order projection khong doi behavior.
-- [ ] API khong tra storage path, internal error, private media metadata.
-- [ ] Store scope cua media gallery duoc filter theo store hien tai.
-- [ ] Playwright browser test pass cho gallery, fallback va mobile layout.
+- [x] Product detail Storefront V2 co the hien nhieu anh product theo thu tu quan tri.
+- [x] Anh main va thumbnail luon nam trong khung 1:1 tren desktop/mobile.
+- [x] Product cu chi co `Image` khong bi mat anh.
+- [x] Product listing/search/cart/checkout/order projection khong doi behavior.
+- [x] API khong tra storage path, internal error, private media metadata.
+- [x] Store scope cua media gallery duoc filter theo store hien tai.
+- [~] Playwright browser test pass cho gallery, fallback va mobile layout. Release cases da duoc them, nhung headed browser run pending vi Docker Desktop engine khong available ngay 2026-07-20.
 
 ## Expected files to touch
 
-- [ ] `BlazorShop.Application/DTOs/Product/GetProduct.cs`
-- [ ] `BlazorShop.Application/DTOs/Product/ProductGalleryImageDto.cs` hoac vi tri DTO tuong duong.
-- [ ] `BlazorShop.Application/Services/PublicCatalogService.cs`
-- [ ] `BlazorShop.Application/Interfaces/IProductReadRepository.cs` neu can them contract read gallery.
-- [ ] `BlazorShop.Infrastructure/Data/CommerceNode/Repositories/CommerceNodeProductReadRepository.cs`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Contracts/Storefront/CatalogContracts.cs`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Contracts/Storefront/CatalogMappings.cs`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/ProductPage.razor`
-- [ ] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot` CSS/JS file neu can.
-- [ ] `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`
-- [ ] `docs/refactor-control-Commerce-storefront/Storefront Playwright E2E Release.todo.md`
+- [x] `BlazorShop.Application/DTOs/Product/GetProduct.cs`
+- [x] `BlazorShop.Application/DTOs/Product/ProductGalleryImageDto.cs` hoac vi tri DTO tuong duong.
+- [x] `BlazorShop.Application/Services/PublicCatalogService.cs`
+- [n/a] `BlazorShop.Application/Interfaces/IProductReadRepository.cs` neu can them contract read gallery.
+- [n/a] `BlazorShop.Infrastructure/Data/CommerceNode/Repositories/CommerceNodeProductReadRepository.cs`
+- [x] `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Contracts/Storefront/CatalogContracts.cs`
+- [x] `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Contracts/Storefront/CatalogMappings.cs`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/ProductPage.razor`
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot` CSS/JS file neu can.
+- [x] `docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md`
+- [x] `docs/refactor-control-Commerce-storefront/Storefront Playwright E2E Release.todo.md`
 
 ## Risk controls
 
-- [ ] Them field moi vao response thay vi doi/xoa field cu.
-- [ ] Khong thay doi schema database neu `ProductMedia` hien tai da dap ung.
-- [ ] Khong doi media URL public contract.
-- [ ] Khong thay doi product search/listing query de tranh anh huong performance catalog list.
-- [ ] Neu gallery query fail, endpoint phai fail ro rang trong test/dev thay vi im lang tra sai store media.
+- [x] Them field moi vao response thay vi doi/xoa field cu.
+- [x] Khong thay doi schema database neu `ProductMedia` hien tai da dap ung.
+- [x] Khong doi media URL public contract.
+- [x] Khong thay doi product search/listing query de tranh anh huong performance catalog list.
+- [x] Neu gallery query fail, endpoint phai fail ro rang trong test/dev thay vi im lang tra sai store media.
 
 ## Autoplan review
 
