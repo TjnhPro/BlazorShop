@@ -193,12 +193,28 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 product.VariationTemplate,
                 product.CreatedOn,
                 product.UpdatedAt,
+                product.MediaGallery.Select(media => media.ToStorefrontContract()).ToArray(),
                 product.Variants.Select(variant => mapVariant is null
                     ? variant.ToStorefrontContract(product: product)
                     : mapVariant(variant, product)).ToArray(),
                 displayMoney?.Price,
                 displayMoney?.ComparePrice,
                 displayMoney?.CurrencyCode);
+        }
+        public static StorefrontProductGalleryImageResponse ToStorefrontContract(
+            this ProductGalleryImageDto media)
+        {
+            return new StorefrontProductGalleryImageResponse(
+                media.PublicId,
+                media.ImageUrl,
+                media.ThumbnailUrl,
+                media.FullSizeUrl,
+                media.AltText,
+                media.SortOrder,
+                media.IsPrimary,
+                media.Width,
+                media.Height,
+                media.Version);
         }
         public static StorefrontProductVariantResponse ToStorefrontContract(
             this GetProductVariant variant,

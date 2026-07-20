@@ -281,10 +281,25 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         StorefrontVariationTemplateDto? VariationTemplate,
         DateTime CreatedOn,
         DateTime UpdatedAt,
+        [property: Required]
+        IReadOnlyList<StorefrontProductGalleryImageResponse> MediaGallery,
+        [property: Required]
         IReadOnlyList<StorefrontProductVariantResponse> Variants,
         decimal? DisplayPrice = null,
         decimal? DisplayComparePrice = null,
         string? DisplayCurrencyCode = null);
+
+    public sealed record StorefrontProductGalleryImageResponse(
+        Guid PublicId,
+        string ImageUrl,
+        string? ThumbnailUrl,
+        string? FullSizeUrl,
+        string? AltText,
+        int SortOrder,
+        bool IsPrimary,
+        int? Width,
+        int? Height,
+        int Version);
 
     public sealed record StorefrontProductVariantResponse(
         Guid Id,

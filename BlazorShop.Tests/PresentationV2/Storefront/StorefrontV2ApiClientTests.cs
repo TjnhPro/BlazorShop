@@ -315,6 +315,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                         "displayOrder": 1,
                         "inStock": true,
                         "productType": "simple",
+                        "mediaGallery": [
+                          {
+                            "publicId": "00000000-0000-0000-0000-000000000010",
+                            "imageUrl": "/media/products/00000000-0000-0000-0000-000000000010?w=1000&h=1000&fit=contain&format=webp&v=2",
+                            "thumbnailUrl": "/media/products/00000000-0000-0000-0000-000000000010?w=600&h=600&fit=contain&format=webp&v=2",
+                            "fullSizeUrl": "/media/products/00000000-0000-0000-0000-000000000010?w=1000&h=1000&fit=contain&format=webp&v=2",
+                            "altText": "Primary product angle",
+                            "sortOrder": 0,
+                            "isPrimary": true,
+                            "width": 1200,
+                            "height": 900,
+                            "version": 2
+                          }
+                        ],
                         "variationTemplate": {
                           "name": "Size",
                           "slug": "size",
@@ -372,6 +386,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.True(result.Value.ShippingRequired);
             Assert.True(result.Value.FreeShipping);
             Assert.Equal("Ships in 2 days", result.Value.DeliveryEstimateText);
+            var galleryImage = Assert.Single(result.Value.MediaGallery);
+            Assert.Equal(Guid.Parse("00000000-0000-0000-0000-000000000010"), galleryImage.PublicId);
+            Assert.True(galleryImage.IsPrimary);
+            Assert.Equal("Primary product angle", galleryImage.AltText);
+            Assert.Contains("/media/products/", galleryImage.ImageUrl, StringComparison.Ordinal);
+            Assert.Equal(2, galleryImage.Version);
             var variant = Assert.Single(result.Value.Variants);
             Assert.Equal("TEST-1-M", variant.Sku);
             Assert.Equal("Medium", variant.DisplayName);

@@ -74,12 +74,12 @@ Muc tieu cua phase nay la nang product detail tu 1 anh dai dien sang danh sach a
 
 ## Phase 2 - Storefront API contract extension
 
-- [ ] Them gallery vao `StorefrontProductResponse` neu endpoint Storefront API dang map qua contract nay.
-- [ ] Cap nhat `CatalogMappings` de map gallery tu `GetProduct`.
-- [ ] Giu `Image` trong response de client cu khong vo.
-- [ ] Neu `StorefrontApiClient` Storefront V2 van deserialize truc tiep ve `GetProduct`, dam bao JSON property moi khong lam hong client hien co.
-- [ ] Cap nhat OpenAPI/contract test cho product detail response schema co gallery, nhung `MediaGallery` khong bat buoc phai co item.
-- [ ] Khong de public response lo storage path noi bo, file system path, provider bucket/key rieng, error message internal.
+- [x] Them gallery vao `StorefrontProductResponse` neu endpoint Storefront API dang map qua contract nay.
+- [x] Cap nhat `CatalogMappings` de map gallery tu `GetProduct`.
+- [x] Giu `Image` trong response de client cu khong vo.
+- [x] Neu `StorefrontApiClient` Storefront V2 van deserialize truc tiep ve `GetProduct`, dam bao JSON property moi khong lam hong client hien co.
+- [x] Cap nhat OpenAPI/contract test cho product detail response schema co gallery, nhung `MediaGallery` khong bat buoc phai co item.
+- [x] Khong de public response lo storage path noi bo, file system path, provider bucket/key rieng, error message internal.
 
 ## Phase 3 - Storefront product detail UI
 

@@ -69,6 +69,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             ("StorefrontCategoryTreeNodeResponse", "children"),
             ("StorefrontCategoryPageResponse", "breadcrumbs"),
             ("StorefrontCategoryPageResponse", "products"),
+            ("StorefrontProductResponse", "mediaGallery"),
             ("StorefrontProductResponse", "variants"),
             ("StorefrontProductVariantResponse", "attributes"),
             ("StorefrontProductSelectionPreviewResponse", "validationMessages"),
@@ -667,6 +668,41 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("stockStatus", variantProperties);
             Assert.Contains("availableQuantity", variantProperties);
             Assert.Contains("stock", variantProperties);
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_ProductGalleryHasGeneratorSafeContract()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var product = schemas["StorefrontProductResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontProductResponse schema was not found.");
+            var gallery = schemas["StorefrontProductGalleryImageResponse"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontProductGalleryImageResponse schema was not found.");
+
+            var productProperties = GetPropertyNames(product).ToArray();
+            Assert.Contains("image", productProperties);
+            Assert.Contains("mediaGallery", productProperties);
+            Assert.Contains("mediaGallery", GetRequiredProperties(product));
+
+            var galleryProperties = GetPropertyNames(gallery).ToArray();
+            Assert.Contains("publicId", galleryProperties);
+            Assert.Contains("imageUrl", galleryProperties);
+            Assert.Contains("thumbnailUrl", galleryProperties);
+            Assert.Contains("fullSizeUrl", galleryProperties);
+            Assert.Contains("altText", galleryProperties);
+            Assert.Contains("sortOrder", galleryProperties);
+            Assert.Contains("isPrimary", galleryProperties);
+            Assert.Contains("width", galleryProperties);
+            Assert.Contains("height", galleryProperties);
+            Assert.Contains("version", galleryProperties);
+
+            var serialized = gallery.ToJsonString();
+            Assert.DoesNotContain("originalStoragePath", serialized, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("storagePath", serialized, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("bucket", serialized, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("contentHash", serialized, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("errorMessage", serialized, StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]

@@ -10403,6 +10403,53 @@
         },
         "additionalProperties": false
       },
+      "StorefrontProductGalleryImageResponse": {
+        "type": "object",
+        "properties": {
+          "publicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "fullSizeUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "altText": {
+            "type": "string",
+            "nullable": true
+          },
+          "sortOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isPrimary": {
+            "type": "boolean"
+          },
+          "width": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "height": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontProductRecommendationResponse": {
         "type": "object",
         "properties": {
@@ -10451,6 +10498,7 @@
       },
       "StorefrontProductResponse": {
         "required": [
+          "mediaGallery",
           "variants"
         ],
         "type": "object",
@@ -10638,6 +10686,12 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "mediaGallery": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontProductGalleryImageResponse"
+            }
           },
           "variants": {
             "type": "array",

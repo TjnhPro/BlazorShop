@@ -39,8 +39,22 @@ namespace BlazorShop.Web.SharedV2.Models.Product
 
         public bool IsNew => DateTime.UtcNow.Subtract(this.CreatedOn).TotalDays <= 7;
 
+        public IReadOnlyList<ProductGalleryImageDto> MediaGallery { get; set; } = Array.Empty<ProductGalleryImageDto>();
+
         public IEnumerable<GetProductVariant> Variants { get; set; } = Array.Empty<GetProductVariant>();
     }
+
+    public sealed record ProductGalleryImageDto(
+        Guid PublicId,
+        string? ImageUrl,
+        string? ThumbnailUrl,
+        string? FullSizeUrl,
+        string? AltText,
+        int SortOrder,
+        bool IsPrimary,
+        int? Width,
+        int? Height,
+        int Version);
 
     public sealed record StorefrontVariationTemplateDto(
         string? Name,
