@@ -25,6 +25,21 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("return 403;", config, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void GeneratedStoreProxyConfig_ClearsUnsafeStoreHostHeader()
+        {
+            var serviceSource = File.ReadAllText(Path.Combine(
+                FindRepositoryRoot(),
+                "BlazorShop.PresentationV2",
+                "BlazorShop.CommerceNode.API",
+                "Deployment",
+                "NginxDeploymentService.cs"));
+
+            Assert.Contains("proxy_set_header Host $host;", serviceSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("proxy_set_header X-Store-Host $", serviceSource, StringComparison.Ordinal);
+            Assert.Equal(3, serviceSource.Split("proxy_set_header X-Store-Host \\\"\\\";", StringSplitOptions.None).Length - 1);
+        }
+
         private static string FindRepositoryRoot()
         {
             var current = new DirectoryInfo(AppContext.BaseDirectory);

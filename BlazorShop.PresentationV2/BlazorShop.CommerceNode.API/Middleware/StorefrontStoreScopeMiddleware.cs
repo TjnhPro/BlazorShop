@@ -41,9 +41,7 @@ namespace BlazorShop.CommerceNode.API.Middleware
             }
             else if (IsPublicMediaPath(path))
             {
-                var host = FirstHeaderValue(context.Request, "X-Store-Host")
-                           ?? FirstHeaderValue(context.Request, "X-Forwarded-Host")
-                           ?? context.Request.Host.Value;
+                var host = context.Request.Host.Value;
                 if (string.IsNullOrWhiteSpace(host))
                 {
                     await WriteFailureAsync(context, StatusCodes.Status404NotFound, "Store host is required.");
@@ -92,13 +90,6 @@ namespace BlazorShop.CommerceNode.API.Middleware
                    && string.Equals(segments[1], "storefront", StringComparison.OrdinalIgnoreCase)
                    && string.Equals(segments[2], "stores", StringComparison.OrdinalIgnoreCase)
                 ? segments[3]
-                : null;
-        }
-
-        private static string? FirstHeaderValue(HttpRequest request, string headerName)
-        {
-            return request.Headers.TryGetValue(headerName, out var values)
-                ? values.FirstOrDefault()
                 : null;
         }
 

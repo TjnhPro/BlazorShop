@@ -15,6 +15,7 @@ using BlazorShop.Application.CommerceNode.Tasks;
 using BlazorShop.Infrastructure.Data.CommerceNode;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.StaticFiles;
@@ -34,6 +35,7 @@ builder.Services.AddOptions<CommerceNodeOptions>()
 builder.Services.AddSingleton<IValidateOptions<CommerceNodeOptions>, CommerceNodeOptionsValidator>();
 builder.Services.AddOptions<CommerceNodeRuntimeOptions>()
     .Bind(builder.Configuration.GetSection(CommerceNodeRuntimeOptions.SectionName));
+builder.Services.ConfigureOptions<CommerceNodeForwardedHeadersOptionsSetup>();
 builder.Services.AddOptions<CommerceTaskWorkerOptions>()
     .Bind(builder.Configuration.GetSection(CommerceTaskWorkerOptions.SectionName));
 builder.Services.AddOptions<StorefrontDeploymentOptions>()
@@ -121,6 +123,7 @@ if (app.Environment.IsDevelopment())
     app.UseCommerceNodeSwaggerUi();
 }
 
+app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 
 var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");

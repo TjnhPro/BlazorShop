@@ -2,12 +2,18 @@ extern alias CommerceNodeApi;
 
 namespace BlazorShop.Tests.PresentationV2.CommerceNode
 {
+    using System.Net;
+
     using BlazorShop.Application.Common.Results;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Domain.Entities.CommerceNode;
 
+    using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.HttpOverrides;
+    using Microsoft.Extensions.Configuration;
 
+    using CommerceNodeApi::BlazorShop.CommerceNode.API.Configuration;
     using Xunit;
 
     using CommerceNodeApi::BlazorShop.CommerceNode.API.Middleware;
@@ -86,13 +92,14 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         }
 
         [Fact]
-        public async Task StorefrontMiddleware_ResolvesPublicMediaFromForwardedHost()
+        public async Task StorefrontMiddleware_ResolvesPublicMediaFromRequestHostAfterForwardedHeaders()
         {
             var accessor = new StoreExecutionContextAccessor();
             var resolver = new CapturingResolver(CreateExecutionContext(Guid.NewGuid(), CommerceStoreStatuses.Active));
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Path = "/media/products/9a50f55b-5b9d-4de8-b716-cc62f23c39bb";
-            httpContext.Request.Headers["X-Forwarded-Host"] = "qa.example.test";
+            httpContext.Request.Host = new HostString("qa.example.test");
+            httpContext.Request.Headers["X-Forwarded-Host"] = "forged.example.test";
             var nextCalled = false;
 
             var middleware = new StorefrontStoreScopeMiddleware(_ =>
@@ -107,6 +114,84 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.True(nextCalled);
             Assert.Null(resolver.CapturedStoreKey);
             Assert.Equal("qa.example.test", resolver.CapturedHost);
+        }
+
+        [Fact]
+        public async Task StorefrontMiddleware_PublicMediaIgnoresForgedStoreHostHeader()
+        {
+            var accessor = new StoreExecutionContextAccessor();
+            var resolver = new CapturingResolver(CreateExecutionContext(Guid.NewGuid(), CommerceStoreStatuses.Active));
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Path = "/media/products/9a50f55b-5b9d-4de8-b716-cc62f23c39bb";
+            httpContext.Request.Host = new HostString("store-a.example.test");
+            httpContext.Request.Headers["X-Store-Host"] = "store-b.example.test";
+            var nextCalled = false;
+
+            var middleware = new StorefrontStoreScopeMiddleware(_ =>
+            {
+                nextCalled = true;
+                return Task.CompletedTask;
+            });
+
+            await middleware.InvokeAsync(httpContext, resolver, accessor);
+
+            Assert.True(nextCalled);
+            Assert.Null(resolver.CapturedStoreKey);
+            Assert.Equal("store-a.example.test", resolver.CapturedHost);
+        }
+
+        [Fact]
+        public void CommerceNodeForwardedHeadersOptions_ReadTrustedProxyConfiguration()
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["Runtime:ForwardedHeaders:KnownProxies:0"] = "10.0.0.20",
+                    ["Runtime:ForwardedHeaders:KnownNetworks:0"] = "10.0.1.0/24",
+                    ["Runtime:ForwardedHeaders:ForwardLimit"] = "1",
+                })
+                .Build();
+            var options = new ForwardedHeadersOptions();
+
+            new CommerceNodeForwardedHeadersOptionsSetup(configuration).Configure(options);
+
+            Assert.True(options.ForwardedHeaders.HasFlag(ForwardedHeaders.XForwardedFor));
+            Assert.True(options.ForwardedHeaders.HasFlag(ForwardedHeaders.XForwardedProto));
+            Assert.True(options.ForwardedHeaders.HasFlag(ForwardedHeaders.XForwardedHost));
+            Assert.Equal(1, options.ForwardLimit);
+            Assert.Contains(IPAddress.Parse("10.0.0.20"), options.KnownProxies);
+            Assert.Contains(options.KnownIPNetworks, network => network.PrefixLength == 24);
+        }
+
+        [Fact]
+        public void CommerceNodeProgram_RunsForwardedHeadersBeforeStorefrontStoreScopeMiddleware()
+        {
+            var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Program.cs");
+            var middleware = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Middleware/StorefrontStoreScopeMiddleware.cs");
+
+            Assert.Contains("ConfigureOptions<CommerceNodeForwardedHeadersOptionsSetup>", program, StringComparison.Ordinal);
+            Assert.True(
+                program.IndexOf("app.UseForwardedHeaders();", StringComparison.Ordinal)
+                < program.IndexOf("StorefrontStoreScopeMiddleware.IsStorefrontOrPublicMediaPath", StringComparison.Ordinal));
+            Assert.DoesNotContain("X-Store-Host", middleware, StringComparison.Ordinal);
+            Assert.DoesNotContain("X-Forwarded-Host", middleware, StringComparison.Ordinal);
+        }
+
+        private static string ReadRepositoryFile(string relativePath)
+        {
+            var current = new DirectoryInfo(AppContext.BaseDirectory);
+            while (current is not null)
+            {
+                var candidate = Path.Combine(current.FullName, relativePath.Replace('/', Path.DirectorySeparatorChar));
+                if (File.Exists(candidate))
+                {
+                    return File.ReadAllText(candidate);
+                }
+
+                current = current.Parent;
+            }
+
+            throw new FileNotFoundException($"Could not locate repository file '{relativePath}'.");
         }
 
         [Fact]

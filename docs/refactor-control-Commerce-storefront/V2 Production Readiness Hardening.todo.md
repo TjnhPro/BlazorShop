@@ -24,15 +24,15 @@ Chuyen release gate tu legacy sang V2 that su:
 - [ ] Khong them provider moi cho payment/shipping/tax trong phase nay.
 - [ ] Khong thay `ServiceResponse<T>`/`ApplicationResult<T>` bang mot big-bang refactor.
 
-## Verified current evidence
+## Verified Phase 0 baseline evidence
 
 - [x] `.github/workflows/ci.yml` van restore/build `BlazorShop.sln`, test `BlazorShop.Tests`, build Dockerfile legacy trong `BlazorShop.Presentation/*`.
 - [x] `compose.production.yml` van dung legacy `BlazorShop.Presentation/BlazorShop.API`, `BlazorShop.Presentation/BlazorShop.Storefront`, `BlazorShop.Presentation/BlazorShop.Web`.
 - [x] `docs/architecture/07-deployment-and-local-run.md` xac dinh active V2 commands la `dotnet build BlazorShop.V2.slnf` va `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj`.
 - [x] `BlazorShop.Tests.V2.csproj` hien chi link `Architecture/**` va `PresentationV2/**`; nhieu tests `Application/**` va `Infrastructure/**` lien quan V2 core chua nam trong gate nay.
-- [x] `StorefrontStoreScopeMiddleware` uu tien `X-Store-Host` va `X-Forwarded-Host` cho public media paths.
-- [x] `NginxDeploymentService` set `Host`, `X-Real-IP`, `X-Forwarded-For`, `X-Forwarded-Proto`, nhung khong set/clear `X-Store-Host`.
-- [x] CommerceNode Program khong cau hinh `UseForwardedHeaders` cho trusted proxy truoc khi Storefront store scope middleware chay.
+- [x] Phase 0 baseline: `StorefrontStoreScopeMiddleware` uu tien `X-Store-Host` va `X-Forwarded-Host` cho public media paths. Phase 1 da sua de chi dung `Request.Host` sau trusted forwarded headers.
+- [x] Phase 0 baseline: `NginxDeploymentService` set `Host`, `X-Real-IP`, `X-Forwarded-For`, `X-Forwarded-Proto`, nhung khong set/clear `X-Store-Host`. Phase 1 da clear `X-Store-Host`.
+- [x] Phase 0 baseline: CommerceNode Program khong cau hinh `UseForwardedHeaders` cho trusted proxy truoc khi Storefront store scope middleware chay. Phase 1 da them `Runtime:ForwardedHeaders` va pipeline order guard.
 - [x] CommerceNode rate limit partition dung authenticated user id neu co, con guest fallback theo `RemoteIpAddress`.
 - [x] Storefront local cart rate limit cung partition theo `RemoteIpAddress`.
 - [x] `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_CanGenerateTypeScriptClientSmoke` dung generator tu viet, return `Promise<unknown>`, chua chay NSwag/Kiota/OpenAPI Generator that.
@@ -112,35 +112,41 @@ Goal: public media store context khong bi client gia header lam resolve sai stor
 
 ### Tasks
 
-- [ ] Sua `StorefrontStoreScopeMiddleware` cho public media path de khong doc raw `X-Store-Host`.
-- [ ] Chon source host canonical:
-  - [ ] Dung `context.Request.Host.Value` sau ASP.NET Core forwarded headers da xu ly.
-  - [ ] Chi tin `X-Forwarded-Host` thong qua `UseForwardedHeaders` voi `KnownProxies`/`KnownNetworks`.
-  - [ ] Neu CommerceNode khong chay sau trusted proxy, forwarded host khong duoc anh huong `Request.Host`.
-- [ ] Them CommerceNode forwarded-header options rieng neu hien chua co:
-  - [ ] `CommerceNode:ForwardedHeaders:KnownProxies`.
-  - [ ] `CommerceNode:ForwardedHeaders:KnownNetworks`.
-  - [ ] `ForwardLimit`.
-- [ ] Goi `UseForwardedHeaders()` truoc `StorefrontStoreScopeMiddleware` neu forwarded headers duoc enable/configured.
-- [ ] Cap nhat `NginxDeploymentService` de tiep tuc set `Host $host` va khong chuyen tiep `X-Store-Host`.
-- [ ] Neu can, clear header unsafe o Nginx:
-  - [ ] `proxy_set_header X-Store-Host "";` hoac bo hoan toan neu Nginx khong gui.
-  - [ ] Khong dua `X-Store-Host` vao contract production.
-- [ ] Cap nhat test hien tai dang ky vong `X-Forwarded-Host` raw duoc dung cho public media.
-- [ ] Them test forged header:
-  - [ ] `Request.Host = store-a.example`.
-  - [ ] Client gui `X-Store-Host = store-b.example`.
-  - [ ] Middleware van resolve store A hoac reject neu host A invalid, khong bao gio resolve store B.
-- [ ] Them test trusted proxy:
-  - [ ] Khi request den tu known proxy va framework forwarded headers da set `Request.Host`, media resolve theo forwarded host hop le.
-- [ ] Cap nhat docs local media note neu truoc day noi direct localhost dung header custom.
+- [x] Sua `StorefrontStoreScopeMiddleware` cho public media path de khong doc raw `X-Store-Host`.
+- [x] Chon source host canonical:
+  - [x] Dung `context.Request.Host.Value` sau ASP.NET Core forwarded headers da xu ly.
+  - [x] Chi tin `X-Forwarded-Host` thong qua `UseForwardedHeaders` voi `KnownProxies`/`KnownNetworks`.
+  - [x] Neu CommerceNode khong chay sau trusted proxy, forwarded host khong duoc anh huong `Request.Host`.
+- [x] Them CommerceNode forwarded-header options rieng neu hien chua co:
+  - [x] `Runtime:ForwardedHeaders:KnownProxies`.
+  - [x] `Runtime:ForwardedHeaders:KnownNetworks`.
+  - [x] `ForwardLimit`.
+- [x] Goi `UseForwardedHeaders()` truoc `StorefrontStoreScopeMiddleware` neu forwarded headers duoc enable/configured.
+- [x] Cap nhat `NginxDeploymentService` de tiep tuc set `Host $host` va khong chuyen tiep `X-Store-Host`.
+- [x] Neu can, clear header unsafe o Nginx:
+  - [x] `proxy_set_header X-Store-Host "";` hoac bo hoan toan neu Nginx khong gui.
+  - [x] Khong dua `X-Store-Host` vao contract production.
+- [x] Cap nhat test hien tai dang ky vong `X-Forwarded-Host` raw duoc dung cho public media.
+- [x] Them test forged header:
+  - [x] `Request.Host = store-a.example`.
+  - [x] Client gui `X-Store-Host = store-b.example`.
+  - [x] Middleware van resolve store A hoac reject neu host A invalid, khong bao gio resolve store B.
+- [x] Them test trusted proxy:
+  - [x] Khi request den tu known proxy va framework forwarded headers da set `Request.Host`, media resolve theo forwarded host hop le.
+- [x] Cap nhat docs local media note neu truoc day noi direct localhost dung header custom.
+
+### Phase 1 implementation notes - 2026-07-20
+
+- CommerceNode forwarded-header config dung `Runtime:ForwardedHeaders` de khop voi docs/env hien co (`Runtime__ForwardedHeaders__KnownProxies__0`, `Runtime__ForwardedHeaders__ForwardLimit`).
+- `StorefrontStoreScopeMiddleware` khong doc `X-Store-Host`/`X-Forwarded-Host`; no chi nhan `Request.Host` sau khi framework forwarded headers middleware da xu ly trusted proxy.
+- Generated Nginx store proxy config clear `X-Store-Host` trong product media, asset media va root proxy locations.
 
 ### Acceptance criteria
 
-- [ ] Public media endpoint khong tin `X-Store-Host` tu client.
-- [ ] Forged host header khong the doi store context.
-- [ ] Nginx generated config khong vo public media proxy.
-- [ ] Storefront scoped APIs van lay store tu route `{storeKey}`, khong bi anh huong boi thay doi nay.
+- [x] Public media endpoint khong tin `X-Store-Host` tu client.
+- [x] Forged host header khong the doi store context.
+- [x] Nginx generated config khong vo public media proxy.
+- [x] Storefront scoped APIs van lay store tu route `{storeKey}`, khong bi anh huong boi thay doi nay.
 
 ## Phase 2 - Guest/client rate-limit identity
 

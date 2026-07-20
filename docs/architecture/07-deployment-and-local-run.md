@@ -161,7 +161,8 @@ Product media local QA notes:
 
 - Admin media APIs use `api/commerce/admin/products/{productId}/media/*` with node credentials and `storeKey` query.
 - Public media URLs use `/media/products/{mediaPublicId}`.
-- Direct local calls to `localhost:5180/media/products/{mediaId}` may need `X-Store-Key` because `localhost` is not a real store domain in a multi-store database.
+- Direct local calls to `localhost:5180/media/products/{mediaId}` may return `404` when `localhost` does not map to exactly the target store host. Public media host scope comes from `Request.Host` after trusted forwarded headers have run; do not use `X-Store-Host` or raw browser-supplied forwarded headers for local QA.
+- For local/admin media debugging, prefer Commerce Admin media endpoints with node credentials and `storeKey` query instead of forging public media headers.
 - Production/storefront traffic should resolve the store from the request host/domain through Nginx.
 
 In deployment environments where Commerce Node manages Docker containers, it may require:
