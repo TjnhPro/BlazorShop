@@ -171,6 +171,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             services.AddScoped<IAccountEmailDispatcher, QueuedAccountEmailDispatcher>();
             services.AddScoped<IStorefrontContactMessageService, StorefrontContactMessageService>();
             services.AddScoped<IProductMediaService, ProductMediaService>();
+            services.AddScoped<IProductGalleryReadService, CommerceNodeProductGalleryReadService>();
             services.AddScoped<ICommerceMediaAssetService, CommerceMediaAssetService>();
             services.AddScoped<ICategoryMediaService, CategoryMediaService>();
             services.AddScoped<IProductMediaUrlBuilder, ProductMediaUrlBuilder>();

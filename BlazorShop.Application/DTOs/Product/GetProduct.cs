@@ -39,6 +39,8 @@
 
         public DateTime UpdatedAt { get; set; }
 
+        public IReadOnlyList<ProductGalleryImageDto> MediaGallery { get; set; } = Array.Empty<ProductGalleryImageDto>();
+
         public IEnumerable<GetProductVariant> Variants { get; set; } = Array.Empty<GetProductVariant>();
     }
 }

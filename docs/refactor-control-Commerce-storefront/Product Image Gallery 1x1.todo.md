@@ -50,27 +50,27 @@ Muc tieu cua phase nay la nang product detail tu 1 anh dai dien sang danh sach a
 
 ## Phase 1 - Public gallery read model
 
-- [ ] Tao DTO nho cho gallery, vi du `ProductGalleryImageDto`.
+- [x] Tao DTO nho cho gallery, vi du `ProductGalleryImageDto`.
 - [ ] Field de xuat:
-  - [ ] `Guid PublicId`.
-  - [ ] `string ImageUrl`.
-  - [ ] `string? ThumbnailUrl`.
-  - [ ] `string? FullSizeUrl`.
-  - [ ] `string? AltText`.
-  - [ ] `int SortOrder`.
-  - [ ] `bool IsPrimary`.
-  - [ ] `int? Width`.
-  - [ ] `int? Height`.
-  - [ ] `int Version`.
-- [ ] Them `IReadOnlyList<ProductGalleryImageDto> MediaGallery` vao `GetProduct` voi default empty list de backward-compatible.
-- [ ] Load gallery tu `CommerceNodeDbContext.ProductMedia` bang query rieng trong Application/Infrastructure read path, tranh thay doi lon EF include graph cua product detail.
+  - [x] `Guid PublicId`.
+  - [x] `string ImageUrl`.
+  - [x] `string? ThumbnailUrl`.
+  - [x] `string? FullSizeUrl`.
+  - [x] `string? AltText`.
+  - [x] `int SortOrder`.
+  - [x] `bool IsPrimary`.
+  - [x] `int? Width`.
+  - [x] `int? Height`.
+  - [x] `int Version`.
+- [x] Them `IReadOnlyList<ProductGalleryImageDto> MediaGallery` vao `GetProduct` voi default empty list de backward-compatible.
+- [x] Load gallery tu `CommerceNodeDbContext.ProductMedia` bang query rieng trong Application/Infrastructure read path, tranh thay doi lon EF include graph cua product detail.
 - [ ] Filter bat buoc:
-  - [ ] `ProductId == product.Id`.
-  - [ ] `StoreId == current store id`.
-  - [ ] `DeletedAt == null`.
-  - [ ] `Status == Stored`.
-- [ ] Map URL bang media URL contract hien co, uu tien public URL dang duoc `ProductMediaService` su dung.
-- [ ] Dam bao primary media trong gallery khop voi `Product.Image` khi co du lieu; neu lech thi khong tu sua data trong read path.
+  - [x] `ProductId == product.Id`.
+  - [x] `StoreId == current store id`.
+  - [x] `DeletedAt == null`.
+  - [x] `Status == Stored`.
+- [x] Map URL bang media URL contract hien co, uu tien public URL dang duoc `ProductMediaService` su dung.
+- [x] Dam bao primary media trong gallery khop voi `Product.Image` khi co du lieu; neu lech thi khong tu sua data trong read path.
 
 ## Phase 2 - Storefront API contract extension
 

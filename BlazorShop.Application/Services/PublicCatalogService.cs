@@ -6,6 +6,7 @@ namespace BlazorShop.Application.Services
     using AutoMapper;
 
     using BlazorShop.Application.CommerceNode.Catalog;
+    using BlazorShop.Application.CommerceNode.ProductMedia;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.CommerceNode.StorefrontPages;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
@@ -27,6 +28,7 @@ namespace BlazorShop.Application.Services
         private readonly ICatalogQueryCache _catalogQueryCache;
         private readonly ICommerceStoreContext? _commerceStoreContext;
         private readonly IMapper _mapper;
+        private readonly IProductGalleryReadService? _productGalleryReadService;
         private readonly IProductReadRepository _productReadRepository;
         private readonly ISlugService _slugService;
         private readonly IStorefrontPageService _storefrontPageService;
@@ -38,12 +40,14 @@ namespace BlazorShop.Application.Services
             ISlugService slugService,
             ICatalogQueryCache catalogQueryCache,
             IStorefrontPageService storefrontPageService,
-            ICommerceStoreContext? commerceStoreContext = null)
+            ICommerceStoreContext? commerceStoreContext = null,
+            IProductGalleryReadService? productGalleryReadService = null)
         {
             _categoryRepository = categoryRepository;
             _catalogQueryCache = catalogQueryCache;
             _commerceStoreContext = commerceStoreContext;
             _mapper = mapper;
+            _productGalleryReadService = productGalleryReadService;
             _productReadRepository = productReadRepository;
             _slugService = slugService;
             _storefrontPageService = storefrontPageService;
@@ -185,7 +189,7 @@ namespace BlazorShop.Application.Services
             }
 
             var product = await _productReadRepository.GetPublishedProductDetailsByIdAsync(id);
-            return product is null ? null : MapProductDetails(product);
+            return product is null ? null : await MapProductDetailsAsync(product);
         }
 
         public async Task<GetProduct?> GetPublishedProductBySlugAsync(string slug)
@@ -197,7 +201,7 @@ namespace BlazorShop.Application.Services
             }
 
             var product = await _productReadRepository.GetPublishedProductBySlugAsync(normalizedSlug);
-            return product is null ? null : MapProductDetails(product);
+            return product is null ? null : await MapProductDetailsAsync(product);
         }
 
         public async Task<GetCategory?> GetPublishedCategoryByIdAsync(Guid id)
@@ -303,7 +307,7 @@ namespace BlazorShop.Application.Services
                 : Uri.EscapeDataString(value.Trim().ToLowerInvariant());
         }
 
-        private GetProduct MapProductDetails(Product product)
+        private async Task<GetProduct> MapProductDetailsAsync(Product product)
         {
             var mapped = _mapper.Map<GetProduct>(product);
             mapped.Variants = mapped.Variants
@@ -315,8 +319,25 @@ namespace BlazorShop.Application.Services
                 })
                 .ToArray();
             mapped.VariationTemplate = MapStorefrontVariationTemplate(product);
+            mapped.MediaGallery = await GetMediaGalleryAsync(product);
 
             return mapped;
+        }
+
+        private async Task<IReadOnlyList<ProductGalleryImageDto>> GetMediaGalleryAsync(Product product)
+        {
+            if (_productGalleryReadService is null || product.Id == Guid.Empty)
+            {
+                return [];
+            }
+
+            var storeId = await ResolveCurrentStoreIdAsync();
+            if (!storeId.HasValue)
+            {
+                return [];
+            }
+
+            return await _productGalleryReadService.GetStoredProductGalleryAsync(storeId.Value, product.Id);
         }
 
         private static StorefrontVariationTemplateDto? MapStorefrontVariationTemplate(Product product)
