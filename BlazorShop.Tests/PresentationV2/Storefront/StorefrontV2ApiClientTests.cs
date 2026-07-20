@@ -315,11 +315,44 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                         "displayOrder": 1,
                         "inStock": true,
                         "productType": "simple",
+                        "variationTemplate": {
+                          "name": "Size",
+                          "slug": "size",
+                          "options": [
+                            {
+                              "name": "Size",
+                              "controlType": "radio",
+                              "isRequired": true,
+                              "values": [
+                                { "value": "M", "colorHex": null }
+                              ]
+                            }
+                          ]
+                        },
                         "robotsIndex": true,
                         "robotsFollow": true,
                         "createdOn": "2026-07-16T00:00:00Z",
                         "updatedAt": "2026-07-16T00:00:00Z",
-                        "variants": []
+                        "variants": [
+                          {
+                            "id": "00000000-0000-0000-0000-000000000002",
+                            "productId": "00000000-0000-0000-0000-000000000001",
+                            "sku": "TEST-1-M",
+                            "attributes": [
+                              { "name": "Size", "value": "M" }
+                            ],
+                            "attributeSignature": "size:m",
+                            "displayName": "Medium",
+                            "sizeScale": 1,
+                            "sizeValue": "M",
+                            "price": 13.50,
+                            "effectivePrice": 13.50,
+                            "stock": 3,
+                            "color": null,
+                            "isActive": true,
+                            "isDefault": true
+                          }
+                        ]
                       }
                     }
                     """);
@@ -335,9 +368,24 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(10.5m, result.Value.Length);
             Assert.Equal(5.25m, result.Value.Width);
             Assert.Equal(2.75m, result.Value.Height);
+            Assert.Equal("/images/test.png", result.Value.Image);
             Assert.True(result.Value.ShippingRequired);
             Assert.True(result.Value.FreeShipping);
             Assert.Equal("Ships in 2 days", result.Value.DeliveryEstimateText);
+            var variant = Assert.Single(result.Value.Variants);
+            Assert.Equal("TEST-1-M", variant.Sku);
+            Assert.Equal("Medium", variant.DisplayName);
+            Assert.True(variant.IsDefault);
+            var attribute = Assert.Single(variant.Attributes);
+            Assert.Equal("Size", attribute.Name);
+            Assert.Equal("M", attribute.Value);
+            Assert.NotNull(result.Value.VariationTemplate);
+            Assert.Equal("Size", result.Value.VariationTemplate!.Name);
+            var option = Assert.Single(result.Value.VariationTemplate.Options);
+            Assert.Equal("radio", option.ControlType);
+            Assert.True(option.IsRequired);
+            var value = Assert.Single(option.Values);
+            Assert.Equal("M", value.Value);
             Assert.Equal(["/api/storefront/stores/default/catalog/products/slug/test-product"], handler.RequestPaths);
         }
 
