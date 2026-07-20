@@ -185,6 +185,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("<ProductImageGallery Product=\"_product\" />", page);
             Assert.DoesNotContain("aspect-[4/3]", page, StringComparison.Ordinal);
             Assert.Contains("product.MediaGallery", gallery);
+            Assert.Contains("bs-product-gallery__main", gallery);
+            Assert.Contains("bs-product-gallery__thumb", gallery);
             Assert.Contains("aspect-square", gallery);
             Assert.Contains("data-storefront-product-gallery", gallery);
             Assert.Contains("data-storefront-gallery-main-image", gallery);
@@ -195,6 +197,19 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("selectGalleryThumbnail", script);
             Assert.Contains("galleryThumbnailSelector", script);
             Assert.Contains("mainImage.src = imageUrl", script);
+        }
+
+        [Fact]
+        public void ProductGalleryCss_EnforcesSquareImageFrames()
+        {
+            var styles = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/css/storefront.css");
+
+            Assert.Contains(".bs-product-gallery__main", styles);
+            Assert.Contains(".bs-product-gallery__thumb", styles);
+            Assert.Contains("aspect-ratio: 1 / 1;", styles);
+            Assert.Contains("object-fit: contain;", styles);
+            Assert.Contains("overscroll-behavior-x: contain;", styles);
+            Assert.Contains(".bs-product-gallery__thumb[data-selected=\"true\"]", styles);
         }
 
         [Fact]

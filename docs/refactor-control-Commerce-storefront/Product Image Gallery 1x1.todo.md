@@ -105,10 +105,10 @@ Muc tieu cua phase nay la nang product detail tu 1 anh dai dien sang danh sach a
 
 ## Phase 4 - Square image policy
 
-- [ ] Chuan hoa CSS cua product detail de main image va thumbnail luon 1:1 bat ke source image doc/ngang.
-- [ ] Kiem tra desktop, tablet, mobile khong bi overflow, overlap hoac crop qua muc.
-- [ ] Neu can crop server-side sau nay, ghi thanh future task cho media processing; phase nay chi bat buoc UI frame 1:1.
-- [ ] Khong ep admin upload anh 1:1 trong phase nay vi se tao friction va co the pha media hien co.
+- [x] Chuan hoa CSS cua product detail de main image va thumbnail luon 1:1 bat ke source image doc/ngang.
+- [x] Kiem tra desktop, tablet, mobile khong bi overflow, overlap hoac crop qua muc.
+- [x] Neu can crop server-side sau nay, ghi thanh future task cho media processing; phase nay chi bat buoc UI frame 1:1.
+- [x] Khong ep admin upload anh 1:1 trong phase nay vi se tao friction va co the pha media hien co.
 
 ## Phase 5 - QA and Playwright browser coverage
 

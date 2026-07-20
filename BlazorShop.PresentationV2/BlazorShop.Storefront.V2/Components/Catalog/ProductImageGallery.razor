@@ -1,25 +1,25 @@
 @if (GalleryItems.Count > 0)
 {
     var main = GalleryItems[0];
-    <div class="grid gap-4" data-storefront-product-gallery>
-        <div class="relative aspect-square overflow-hidden rounded-2xl bg-neutral-50" data-storefront-gallery-main>
+    <div class="bs-product-gallery grid gap-4" data-storefront-product-gallery>
+        <div class="bs-product-gallery__main relative aspect-square overflow-hidden rounded-2xl bg-neutral-50" data-storefront-gallery-main>
             <img src="@main.ImageUrl"
                  alt="@main.AltText"
-                 class="absolute inset-0 h-full w-full object-contain"
+                 class="bs-product-gallery__image absolute inset-0 h-full w-full object-contain"
                  loading="eager"
                  data-storefront-gallery-main-image />
         </div>
 
         @if (GalleryItems.Count > 1)
         {
-            <div class="flex gap-3 overflow-x-auto pb-1 sm:grid sm:grid-cols-5 sm:overflow-visible sm:pb-0"
+            <div class="bs-product-gallery__thumbs flex gap-3 overflow-x-auto pb-1 sm:grid sm:grid-cols-5 sm:overflow-visible sm:pb-0"
                  role="list"
                  aria-label="Product images">
                 @for (var index = 0; index < GalleryItems.Count; index++)
                 {
                     var item = GalleryItems[index];
                     <button type="button"
-                            class="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50 p-0 ring-0 transition hover:border-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-900 data-[selected=true]:border-neutral-900 data-[selected=true]:ring-2 data-[selected=true]:ring-neutral-900 sm:h-auto sm:w-auto sm:aspect-square"
+                            class="bs-product-gallery__thumb relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50 p-0 ring-0 transition hover:border-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-900 data-[selected=true]:border-neutral-900 data-[selected=true]:ring-2 data-[selected=true]:ring-neutral-900 sm:h-auto sm:w-auto sm:aspect-square"
                             aria-label="@($"Show product image {index + 1}")"
                             aria-current="@(index == 0 ? "true" : "false")"
                             data-selected="@(index == 0 ? "true" : "false")"
@@ -28,7 +28,7 @@
                             data-alt="@item.AltText">
                         <img src="@item.ThumbnailUrl"
                              alt=""
-                             class="absolute inset-0 h-full w-full object-contain"
+                             class="bs-product-gallery__image absolute inset-0 h-full w-full object-contain"
                              loading="lazy" />
                     </button>
                 }
@@ -38,8 +38,8 @@
 }
 else
 {
-    <div class="relative aspect-square overflow-hidden rounded-2xl bg-neutral-50" data-storefront-product-gallery>
-        <div class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-100 px-6 text-center text-sm font-semibold text-neutral-500"
+    <div class="bs-product-gallery__main relative aspect-square overflow-hidden rounded-2xl bg-neutral-50" data-storefront-product-gallery>
+        <div class="bs-product-gallery__placeholder absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-100 px-6 text-center text-sm font-semibold text-neutral-500"
              role="img"
              aria-label="@($"Image unavailable for {Product?.Name ?? "product"}")"
              data-storefront-gallery-placeholder>
