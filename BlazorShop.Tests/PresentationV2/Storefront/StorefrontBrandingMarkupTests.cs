@@ -176,6 +176,28 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void ProductPage_RendersProductImageGalleryComponent()
+        {
+            var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/ProductPage.razor");
+            var gallery = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/ProductImageGallery.razor");
+            var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
+
+            Assert.Contains("<ProductImageGallery Product=\"_product\" />", page);
+            Assert.DoesNotContain("aspect-[4/3]", page, StringComparison.Ordinal);
+            Assert.Contains("product.MediaGallery", gallery);
+            Assert.Contains("aspect-square", gallery);
+            Assert.Contains("data-storefront-product-gallery", gallery);
+            Assert.Contains("data-storefront-gallery-main-image", gallery);
+            Assert.Contains("data-storefront-gallery-thumbnail", gallery);
+            Assert.Contains("data-[selected=true]:ring-2", gallery);
+            Assert.Contains("product.Image", gallery);
+            Assert.Contains("Image unavailable", gallery);
+            Assert.Contains("selectGalleryThumbnail", script);
+            Assert.Contains("galleryThumbnailSelector", script);
+            Assert.Contains("mainImage.src = imageUrl", script);
+        }
+
+        [Fact]
         public void CheckoutPage_RendersAddressLookupAndSavedAddressSelection()
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CheckoutPage.razor");

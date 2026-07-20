@@ -83,25 +83,25 @@ Muc tieu cua phase nay la nang product detail tu 1 anh dai dien sang danh sach a
 
 ## Phase 3 - Storefront product detail UI
 
-- [ ] Tach logic hien anh trong `ProductPage.razor` thanh mot block/component gallery nho neu giup file de doc hon.
+- [x] Tach logic hien anh trong `ProductPage.razor` thanh mot block/component gallery nho neu giup file de doc hon.
 - [ ] Main image:
-  - [ ] Khung co `aspect-ratio: 1 / 1`.
-  - [ ] `object-fit: cover` hoac `contain` can duoc chon ro; uu tien `cover` neu product media da duoc crop/thumbnail 1:1, uu tien `contain` neu can tranh cat mat san pham.
-  - [ ] Khong lam layout shift khi anh load cham.
+  - [x] Khung co `aspect-ratio: 1 / 1`.
+  - [x] `object-fit: cover` hoac `contain` can duoc chon ro; uu tien `cover` neu product media da duoc crop/thumbnail 1:1, uu tien `contain` neu can tranh cat mat san pham.
+  - [x] Khong lam layout shift khi anh load cham.
 - [ ] Thumbnail:
-  - [ ] Moi thumbnail la khung 1:1.
-  - [ ] Desktop hien grid/rail ngan ben duoi hoac ben trai main image.
-  - [ ] Mobile hien horizontal scroll thumbnail strip.
-  - [ ] Thumbnail dang chon co active state ro rang nhung khong lam thay doi kich thuoc layout.
+  - [x] Moi thumbnail la khung 1:1.
+  - [x] Desktop hien grid/rail ngan ben duoi hoac ben trai main image.
+  - [x] Mobile hien horizontal scroll thumbnail strip.
+  - [x] Thumbnail dang chon co active state ro rang nhung khong lam thay doi kich thuoc layout.
 - [ ] Interaction:
-  - [ ] Click/tap thumbnail doi main image.
-  - [ ] Keyboard focus duoc tren thumbnail button.
-  - [ ] `alt` lay tu `AltText`, fallback product name.
+  - [x] Click/tap thumbnail doi main image.
+  - [x] Keyboard focus duoc tren thumbnail button.
+  - [x] `alt` lay tu `AltText`, fallback product name.
 - [ ] Fallback:
-  - [ ] Co gallery thi dung gallery.
-  - [ ] Khong co gallery nhung co `_product.Image` thi tao 1 item fallback.
-  - [ ] Khong co anh thi hien placeholder 1:1 nhu hien tai nhung khong pha layout.
-- [ ] Khong thay doi add-to-cart, variant selection, cart endpoint, checkout flow trong phase nay.
+  - [x] Co gallery thi dung gallery.
+  - [x] Khong co gallery nhung co `_product.Image` thi tao 1 item fallback.
+  - [x] Khong co anh thi hien placeholder 1:1 nhu hien tai nhung khong pha layout.
+- [x] Khong thay doi add-to-cart, variant selection, cart endpoint, checkout flow trong phase nay.
 
 ## Phase 4 - Square image policy
 

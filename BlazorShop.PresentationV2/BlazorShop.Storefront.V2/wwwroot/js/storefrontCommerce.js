@@ -8,6 +8,9 @@
   const addressSelectSelector = "[data-storefront-address-select]";
   const manualAddressSelector = "[data-storefront-manual-address]";
   const manualAddressFieldSelector = "[data-storefront-manual-address-field]";
+  const productGallerySelector = "[data-storefront-product-gallery]";
+  const galleryThumbnailSelector = "[data-storefront-gallery-thumbnail]";
+  const galleryMainImageSelector = "[data-storefront-gallery-main-image]";
   const toastRegionSelector = "[data-storefront-toast-region]";
   const toastTemplateSelector = "[data-storefront-toast-template]";
   const antiforgeryTokenSelector = 'meta[name="blazorshop-antiforgery-token"]';
@@ -611,7 +614,41 @@
     }
   }
 
+  function selectGalleryThumbnail(button) {
+    const gallery = button.closest(productGallerySelector);
+    if (!(gallery instanceof HTMLElement)) {
+      return;
+    }
+
+    const mainImage = gallery.querySelector(galleryMainImageSelector);
+    if (!(mainImage instanceof HTMLImageElement)) {
+      return;
+    }
+
+    const imageUrl = button.dataset.imageUrl;
+    if (!imageUrl) {
+      return;
+    }
+
+    mainImage.src = imageUrl;
+    mainImage.alt = button.dataset.alt || mainImage.alt || "Product image";
+    gallery.querySelectorAll(galleryThumbnailSelector).forEach((thumbnail) => {
+      if (thumbnail instanceof HTMLElement) {
+        const selected = thumbnail === button;
+        thumbnail.dataset.selected = selected ? "true" : "false";
+        thumbnail.setAttribute("aria-current", selected ? "true" : "false");
+      }
+    });
+  }
+
   function handleClick(event) {
+    const thumbnail = event.target.closest(galleryThumbnailSelector);
+    if (thumbnail instanceof HTMLButtonElement) {
+      event.preventDefault();
+      selectGalleryThumbnail(thumbnail);
+      return;
+    }
+
     const button = event.target.closest(buttonSelector);
     if (!(button instanceof HTMLButtonElement)) {
       return;
