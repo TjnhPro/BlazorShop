@@ -8,7 +8,8 @@ This document records the current development deployment model. It is not a prod
 | --- | --- |
 | `compose.controlplane.yml` | Runs Control Plane PostgreSQL on host port `5433`. |
 | `compose.commercenode.yml` | Runs Commerce Node PostgreSQL on host port `5434`, Nginx on host port `8088`, imgproxy on host port `8089`, and Mailpit SMTP capture on ports `1025`/`8025`. |
-| `compose.production.yml` | Production-oriented compose file. Check before using because V2 architecture is evolving. |
+| `compose.v2.production.yml` | Active V2 production-oriented topology for Control Plane API/Web, Commerce Node API, Commerce Node PostgreSQL, Control Plane PostgreSQL, Nginx, imgproxy, and a Storefront V2 sample container. |
+| `compose.production.yml` | Legacy production-oriented compose file. Do not use it as proof that V2 can release. |
 
 ## Local Ports
 
@@ -66,6 +67,13 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore
 `BlazorShop.Tests.V2` links active V2 architecture, Commerce Node, Control Plane, Storefront V2, and Storefront WASM/browser host tests from the mixed historical test project. The V2 test assembly disables test parallelization so WebApplicationFactory/browser-host smoke tests do not race each other.
 
 GitHub Actions uses `ci-v2` as the active release gate. That job restores/builds `BlazorShop.V2.slnf` and runs `BlazorShop.Tests.V2`. The historical `BlazorShop.sln`/`BlazorShop.Tests` path is kept as `legacy-compatibility` and must not be treated as proof that V2 is production-ready.
+
+`ci-v2` also validates `compose.v2.production.yml` and builds the active V2 Dockerfiles:
+
+- `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Dockerfile`
+- `BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/Dockerfile`
+- `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Dockerfile`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile`
 
 ## Control Plane Local Run
 
@@ -250,6 +258,23 @@ Production operation:
 5. If startup fails, inspect logs, then restore the database backup or roll back the app image manually.
 
 Long data migrations need manual review before release because they can block readiness while the API starts.
+
+## V2 Production Compose
+
+Use `compose.v2.production.yml` for V2 production-like validation. It intentionally uses separate database services and connection strings:
+
+- `ConnectionStrings__ControlPlaneConnection` for Control Plane API.
+- `ConnectionStrings__CommerceNodeConnection` for Commerce Node API.
+- No `ConnectionStrings__DefaultConnection` in the V2 topology.
+
+Required operator-provided values include:
+
+- Control Plane database password and JWT key.
+- Commerce Node database password, JWT key, node key, and node secret.
+- Public base URLs for Control Plane API/Web, Commerce Node API, and Storefront V2.
+- Storefront store key for the sample Storefront V2 container.
+
+Production health endpoints are exposed only when `Runtime__Health__ExposeInProduction=true`; the V2 compose sets this for container healthchecks. The Commerce Node Nginx service mounts `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/nginx/conf.d`, which must keep `00-default-deny.conf` so unknown hosts return `403`.
 
 ## QA Run Notes
 

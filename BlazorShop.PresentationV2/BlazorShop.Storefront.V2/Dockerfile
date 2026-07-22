@@ -9,6 +9,8 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj BlazorShop.PresentationV2/BlazorShop.Storefront.V2/
+COPY BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj BlazorShop.PresentationV2/BlazorShop.Storefront.Components/
+COPY BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/
 COPY BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/BlazorShop.Web.SharedV2.csproj BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/
 COPY BlazorShop.Application/BlazorShop.Application.csproj BlazorShop.Application/
 COPY BlazorShop.Domain/BlazorShop.Domain.csproj BlazorShop.Domain/
@@ -20,6 +22,8 @@ COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package.json BlazorShop.
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package-lock.json BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package-lock.json
 
 COPY BlazorShop.PresentationV2/BlazorShop.Storefront.V2/ BlazorShop.PresentationV2/BlazorShop.Storefront.V2/
+COPY BlazorShop.PresentationV2/BlazorShop.Storefront.Components/ BlazorShop.PresentationV2/BlazorShop.Storefront.Components/
+COPY BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/ BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/
 COPY BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/ BlazorShop.PresentationV2/BlazorShop.Web.SharedV2/
 COPY BlazorShop.Application/ BlazorShop.Application/
 COPY BlazorShop.Domain/ BlazorShop.Domain/
@@ -40,6 +44,10 @@ RUN dotnet publish BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop
 
 FROM ${DOTNET_ASPNET_IMAGE} AS final
 WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app/publish .
 

@@ -39,6 +39,33 @@ jobs:
       - name: Test
         run: dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --configuration Release --no-build --verbosity normal
 
+      - name: Validate V2 production compose config
+        env:
+          BLAZORSHOP_CONTROLPLANE_DB_PASSWORD: ci-controlplane-db-password
+          BLAZORSHOP_COMMERCENODE_DB_PASSWORD: ci-commercenode-db-password
+          BLAZORSHOP_CONTROLPLANE_JWT_KEY: ci-controlplane-jwt-signing-key-which-is-long-enough
+          BLAZORSHOP_COMMERCENODE_JWT_KEY: ci-commercenode-jwt-signing-key-which-is-long-enough
+          BLAZORSHOP_CONTROLPLANE_API_BASE_URL: https://controlplane-api.shop.example.com
+          BLAZORSHOP_CONTROLPLANE_WEB_BASE_URL: https://controlplane.shop.example.com
+          BLAZORSHOP_COMMERCENODE_API_BASE_URL: https://commerce-node.shop.example.com
+          BLAZORSHOP_COMMERCENODE_NODE_KEY: ci-node
+          BLAZORSHOP_COMMERCENODE_NODE_SECRET: ci-node-secret-which-is-long-enough
+          BLAZORSHOP_STOREFRONT_BASE_URL: https://shop.example.com
+          BLAZORSHOP_STOREFRONT_STORE_KEY: default
+        run: docker compose -f compose.v2.production.yml config
+
+      - name: Build Commerce Node API V2 container image
+        run: docker build -f BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Dockerfile -t blazorshop-commercenode-api:v2-ci .
+
+      - name: Build Control Plane API V2 container image
+        run: docker build -f BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/Dockerfile -t blazorshop-controlplane-api:v2-ci .
+
+      - name: Build Control Plane Web V2 container image
+        run: docker build -f BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Dockerfile -t blazorshop-controlplane-web:v2-ci .
+
+      - name: Build Storefront V2 container image
+        run: docker build -f BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile -t blazorshop-storefront-v2:ci .
+
   legacy-compatibility:
     runs-on: ubuntu-latest
     continue-on-error: true

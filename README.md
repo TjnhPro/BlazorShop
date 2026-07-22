@@ -128,6 +128,18 @@ Legacy compatibility verification is still available, but it is not the primary 
 dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj -c Release
 ```
 
+V2 production artifact validation uses the V2 compose and Dockerfiles:
+
+```powershell
+docker compose -f compose.v2.production.yml config
+docker build -f BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Dockerfile -t blazorshop-commercenode-api:v2-ci .
+docker build -f BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/Dockerfile -t blazorshop-controlplane-api:v2-ci .
+docker build -f BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Dockerfile -t blazorshop-controlplane-web:v2-ci .
+docker build -f BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile -t blazorshop-storefront-v2:ci .
+```
+
+Use `compose.v2.production.yml` for V2 production topology. The older `compose.production.yml` remains a legacy compatibility artifact.
+
 Feature QA checklists live in [docs/refactor-control-Commerce-storefront](docs/refactor-control-Commerce-storefront):
 
 - [QA-ControlPlane.todo.md](docs/refactor-control-Commerce-storefront/QA-ControlPlane.todo.md)

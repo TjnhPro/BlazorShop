@@ -1,0 +1,201 @@
+services:
+  controlplane-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: blazorshop_controlplane
+      POSTGRES_USER: blazorshop_controlplane
+      POSTGRES_PASSWORD: ${BLAZORSHOP_CONTROLPLANE_DB_PASSWORD:?BLAZORSHOP_CONTROLPLANE_DB_PASSWORD is required}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U blazorshop_controlplane -d blazorshop_controlplane"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - controlplane_postgres_data:/var/lib/postgresql/data
+    networks:
+      - blazorshop-v2-production
+
+  commercenode-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: blazorshop_commerce_node
+      POSTGRES_USER: blazorshop_commerce_node
+      POSTGRES_PASSWORD: ${BLAZORSHOP_COMMERCENODE_DB_PASSWORD:?BLAZORSHOP_COMMERCENODE_DB_PASSWORD is required}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U blazorshop_commerce_node -d blazorshop_commerce_node"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - commercenode_postgres_data:/var/lib/postgresql/data
+    networks:
+      - blazorshop-v2-production
+
+  controlplane-api:
+    build:
+      context: .
+      dockerfile: BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__ControlPlaneConnection: Host=controlplane-postgres;Port=5432;Database=blazorshop_controlplane;Username=blazorshop_controlplane;Password=${BLAZORSHOP_CONTROLPLANE_DB_PASSWORD:?BLAZORSHOP_CONTROLPLANE_DB_PASSWORD is required}
+      JWT__Key: ${BLAZORSHOP_CONTROLPLANE_JWT_KEY:?BLAZORSHOP_CONTROLPLANE_JWT_KEY is required}
+      JWT__Issuer: ${BLAZORSHOP_CONTROLPLANE_API_BASE_URL:?BLAZORSHOP_CONTROLPLANE_API_BASE_URL is required}
+      JWT__Audience: ${BLAZORSHOP_CONTROLPLANE_API_BASE_URL:?BLAZORSHOP_CONTROLPLANE_API_BASE_URL is required}
+      ClientApp__BaseUrl: ${BLAZORSHOP_CONTROLPLANE_WEB_BASE_URL:?BLAZORSHOP_CONTROLPLANE_WEB_BASE_URL is required}
+      ControlPlane__Database__MigrateOnStartup: ${BLAZORSHOP_CONTROLPLANE_MIGRATE_ON_STARTUP:-false}
+      ControlPlane__Database__FailStartupOnMigrationError: "true"
+      ControlPlane__Database__LogMigrationState: "true"
+      ControlPlane__Cors__AllowedOrigins__0: ${BLAZORSHOP_CONTROLPLANE_WEB_BASE_URL:?BLAZORSHOP_CONTROLPLANE_WEB_BASE_URL is required}
+      Runtime__Health__ExposeInProduction: "true"
+      AllowedHosts: "${BLAZORSHOP_CONTROLPLANE_API_HOST:-*}"
+    depends_on:
+      controlplane-postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "${BLAZORSHOP_CONTROLPLANE_API_PORT:-8082}:8080"
+    networks:
+      - blazorshop-v2-production
+
+  controlplane-web:
+    build:
+      context: .
+      dockerfile: BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Dockerfile
+    environment:
+      CONTROLPLANE_API_BASE_URL: ${BLAZORSHOP_CONTROLPLANE_API_BASE_URL:?BLAZORSHOP_CONTROLPLANE_API_BASE_URL is required}
+    depends_on:
+      controlplane-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost/health >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "${BLAZORSHOP_CONTROLPLANE_WEB_PORT:-8081}:80"
+    networks:
+      - blazorshop-v2-production
+
+  commercenode-api:
+    build:
+      context: .
+      dockerfile: BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__CommerceNodeConnection: Host=commercenode-postgres;Port=5432;Database=blazorshop_commerce_node;Username=blazorshop_commerce_node;Password=${BLAZORSHOP_COMMERCENODE_DB_PASSWORD:?BLAZORSHOP_COMMERCENODE_DB_PASSWORD is required}
+      JWT__Key: ${BLAZORSHOP_COMMERCENODE_JWT_KEY:?BLAZORSHOP_COMMERCENODE_JWT_KEY is required}
+      JWT__Issuer: ${BLAZORSHOP_COMMERCENODE_API_BASE_URL:?BLAZORSHOP_COMMERCENODE_API_BASE_URL is required}
+      JWT__Audience: ${BLAZORSHOP_COMMERCENODE_API_BASE_URL:?BLAZORSHOP_COMMERCENODE_API_BASE_URL is required}
+      ClientApp__BaseUrl: ${BLAZORSHOP_STOREFRONT_BASE_URL:?BLAZORSHOP_STOREFRONT_BASE_URL is required}
+      CommerceNode__NodeKey: ${BLAZORSHOP_COMMERCENODE_NODE_KEY:?BLAZORSHOP_COMMERCENODE_NODE_KEY is required}
+      CommerceNode__NodeSecret: ${BLAZORSHOP_COMMERCENODE_NODE_SECRET:?BLAZORSHOP_COMMERCENODE_NODE_SECRET is required}
+      CommerceNode__Database__MigrateOnStartup: ${BLAZORSHOP_COMMERCENODE_MIGRATE_ON_STARTUP:-false}
+      CommerceNode__Database__FailStartupOnMigrationError: "true"
+      CommerceNode__Database__LogMigrationState: "true"
+      CommerceNode__EmailTransport__AllowGlobalEmailSettingsFallback: "false"
+      CommerceNode__EmailTransport__CaptureModeAllowed: "false"
+      StorefrontDeployment__NetworkName: blazorshop-v2-production
+      StorefrontDeployment__StorefrontApiBaseUrl: http://commercenode-api:8080/api/
+      StorefrontDeployment__AllowedImages__0: blazorshop-storefront-v2:latest
+      NginxDeployment__UseDockerExec: "true"
+      NginxDeployment__ContainerName: blazorshop-commercenode-nginx
+      NginxDeployment__ConfigDirectory: runtime/nginx/conf.d
+      NginxDeployment__MediaUpstreamUrl: http://commercenode-api:8080
+      Runtime__Health__ExposeInProduction: "true"
+      Runtime__ForwardedHeaders__ForwardLimit: "1"
+      Runtime__RateLimiting__Enabled: "true"
+      AllowedHosts: "${BLAZORSHOP_COMMERCENODE_API_HOST:-*}"
+    depends_on:
+      commercenode-postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "${BLAZORSHOP_COMMERCENODE_API_PORT:-8083}:8080"
+    volumes:
+      - commercenode_uploads:/app/uploads
+      - commercenode_media:/app/runtime/media
+      - ./BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/nginx/conf.d:/app/runtime/nginx/conf.d
+      - ./BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/nginx/logs:/app/runtime/nginx/logs
+    networks:
+      - blazorshop-v2-production
+
+  commercenode-nginx:
+    image: nginx:1.27-alpine
+    container_name: blazorshop-commercenode-nginx
+    volumes:
+      - ./BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/nginx/logs:/var/log/nginx
+      - commercenode_nginx_cache:/var/cache/nginx
+    healthcheck:
+      test: ["CMD-SHELL", "nginx -t"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "${BLAZORSHOP_COMMERCENODE_NGINX_PORT:-8088}:80"
+    depends_on:
+      commercenode-api:
+        condition: service_healthy
+    networks:
+      - blazorshop-v2-production
+
+  commercenode-imgproxy:
+    image: darthsim/imgproxy:v3
+    environment:
+      IMGPROXY_LOCAL_FILESYSTEM_ROOT: /var/blazorshop/media
+      IMGPROXY_USE_ETAG: "true"
+      IMGPROXY_AUTO_WEBP: "true"
+    volumes:
+      - commercenode_media:/var/blazorshop/media:ro
+    ports:
+      - "${BLAZORSHOP_COMMERCENODE_IMGPROXY_PORT:-8089}:8080"
+    networks:
+      - blazorshop-v2-production
+
+  storefront-v2:
+    build:
+      context: .
+      dockerfile: BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      Api__BaseUrl: http://commercenode-api:8080/api/
+      Api__StoreKey: ${BLAZORSHOP_STOREFRONT_STORE_KEY:-default}
+      StoreKey: ${BLAZORSHOP_STOREFRONT_STORE_KEY:-default}
+      StoreResolution__RequireCurrentStore: "true"
+      ClientApp__BaseUrl: ${BLAZORSHOP_STOREFRONT_BASE_URL:?BLAZORSHOP_STOREFRONT_BASE_URL is required}
+      PublicUrl__BaseUrl: ${BLAZORSHOP_STOREFRONT_BASE_URL:?BLAZORSHOP_STOREFRONT_BASE_URL is required}
+      Runtime__Health__ExposeInProduction: "true"
+    depends_on:
+      commercenode-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "${BLAZORSHOP_STOREFRONT_PORT:-8080}:8080"
+    networks:
+      - blazorshop-v2-production
+
+volumes:
+  controlplane_postgres_data:
+  commercenode_postgres_data:
+  commercenode_uploads:
+  commercenode_media:
+  commercenode_nginx_cache:
+
+networks:
+  blazorshop-v2-production:
+    name: blazorshop-v2-production

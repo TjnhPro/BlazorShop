@@ -239,48 +239,56 @@ Goal: production artifacts chay dung active V2 topology.
 
 ### Tasks
 
-- [ ] Tao Dockerfile V2 con thieu:
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Dockerfile`.
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/Dockerfile`.
-  - [ ] `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Dockerfile`.
-  - [ ] Storefront V2 Dockerfile da ton tai, review lai config production.
-- [ ] Tao `compose.v2.production.yml` thay vi sua ngay `compose.production.yml` neu can giai doan song song.
-- [ ] Compose V2 service de xuat:
-  - [ ] `controlplane-postgres`.
-  - [ ] `commercenode-postgres`.
-  - [ ] `controlplane-api`.
-  - [ ] `controlplane-web`.
-  - [ ] `commercenode-api`.
-  - [ ] `commercenode-nginx`.
-  - [ ] `commercenode-imgproxy` neu media delivery can.
-  - [ ] `storefront-v2` template/image path neu production single-store runtime can boot static store, hoac document deploy task flow neu Storefront containers duoc tao qua CommerceNode tasks.
-- [ ] Dung dung connection strings:
-  - [ ] `ControlPlaneConnection` cho ControlPlane API.
-  - [ ] `CommerceNodeConnection` cho CommerceNode API.
-  - [ ] Khong dung `DefaultConnection` legacy trong V2 compose.
-- [ ] Cau hinh startup migration theo docs:
-  - [ ] `ControlPlane__Database__MigrateOnStartup`.
-  - [ ] `CommerceNode__Database__MigrateOnStartup`.
-- [ ] Cau hinh secrets:
-  - [ ] Node key/secret chi o ControlPlane API va CommerceNode API.
-  - [ ] Storefront V2 chi co CommerceNode Storefront API base URL va store key/runtime public settings.
-  - [ ] SMTP per-store khong nam trong Storefront env.
-- [ ] Health checks:
-  - [ ] ControlPlane API health.
-  - [ ] CommerceNode API health.
-  - [ ] ControlPlane Web HTTP 200.
-  - [ ] Storefront V2 current store/page HTTP 200 hoac maintenance expected.
-  - [ ] Swagger JSON fetch cho CommerceAdmin/Storefront neu production health mode cho phep.
-- [ ] CI build Docker images tu V2 Dockerfiles.
-- [ ] CI chay `docker compose -f compose.v2.production.yml config`.
-- [ ] Optional sau khi V2 compose pass: bien `compose.production.yml` thanh alias/copy cua V2 hoac document legacy compose la deprecated.
+- [x] Tao Dockerfile V2 con thieu:
+  - [x] `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Dockerfile`.
+  - [x] `BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/Dockerfile`.
+  - [x] `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Dockerfile`.
+  - [x] Storefront V2 Dockerfile da ton tai, review lai config production.
+- [x] Tao `compose.v2.production.yml` thay vi sua ngay `compose.production.yml` neu can giai doan song song.
+- [x] Compose V2 service de xuat:
+  - [x] `controlplane-postgres`.
+  - [x] `commercenode-postgres`.
+  - [x] `controlplane-api`.
+  - [x] `controlplane-web`.
+  - [x] `commercenode-api`.
+  - [x] `commercenode-nginx`.
+  - [x] `commercenode-imgproxy` neu media delivery can.
+  - [x] `storefront-v2` template/image path neu production single-store runtime can boot static store, hoac document deploy task flow neu Storefront containers duoc tao qua CommerceNode tasks.
+- [x] Dung dung connection strings:
+  - [x] `ControlPlaneConnection` cho ControlPlane API.
+  - [x] `CommerceNodeConnection` cho CommerceNode API.
+  - [x] Khong dung `DefaultConnection` legacy trong V2 compose.
+- [x] Cau hinh startup migration theo docs:
+  - [x] `ControlPlane__Database__MigrateOnStartup`.
+  - [x] `CommerceNode__Database__MigrateOnStartup`.
+- [x] Cau hinh secrets:
+  - [x] Node key/secret chi o ControlPlane API va CommerceNode API.
+  - [x] Storefront V2 chi co CommerceNode Storefront API base URL va store key/runtime public settings.
+  - [x] SMTP per-store khong nam trong Storefront env.
+- [x] Health checks:
+  - [x] ControlPlane API health.
+  - [x] CommerceNode API health.
+  - [x] ControlPlane Web HTTP 200.
+  - [x] Storefront V2 current store/page HTTP 200 hoac maintenance expected.
+  - [x] Swagger JSON fetch cho CommerceAdmin/Storefront neu production health mode cho phep.
+- [x] CI build Docker images tu V2 Dockerfiles.
+- [x] CI chay `docker compose -f compose.v2.production.yml config`.
+- [x] Optional sau khi V2 compose pass: bien `compose.production.yml` thanh alias/copy cua V2 hoac document legacy compose la deprecated.
+
+### Phase 4 implementation notes - 2026-07-22
+
+- Added V2 Dockerfiles for Commerce Node API, Control Plane API, Control Plane Web, and fixed Storefront V2 Dockerfile project references for Components/WASM.
+- Added `compose.v2.production.yml` as the active V2 production topology while leaving legacy `compose.production.yml` as compatibility.
+- ServiceDefaults can expose `/health` outside Development only when `Runtime:Health:ExposeInProduction=true`; compose uses that only for container healthchecks.
+- Control Plane Web Nginx image writes `wwwroot/appsettings.json` from `CONTROLPLANE_API_BASE_URL` at startup, avoiding baked localhost API URLs.
+- CI `ci-v2` validates compose config and builds all four V2 images.
 
 ### Acceptance criteria
 
-- [ ] Khong production file nao mac dinh deploy legacy API/Web/Storefront khi release V2.
-- [ ] Compose V2 boot duoc voi env mau khong chua secret that.
-- [ ] Health/smoke checks chay trong CI.
-- [ ] Unknown host qua Nginx van tra 403.
+- [x] Khong production file nao mac dinh deploy legacy API/Web/Storefront khi release V2.
+- [x] Compose V2 boot duoc voi env mau khong chua secret that.
+- [x] Health/smoke checks chay trong CI.
+- [x] Unknown host qua Nginx van tra 403.
 
 ## Phase 5 - Real OpenAPI generator gate
 
@@ -422,11 +430,11 @@ Goal: ghi lai viec can lam sau P0/P1, khong chen vao release gate dau tien.
 - [ ] `dotnet restore BlazorShop.V2.slnf`
 - [ ] `dotnet build BlazorShop.V2.slnf --configuration Release --no-restore`
 - [ ] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --configuration Release --no-build --verbosity normal`
-- [ ] `docker compose -f compose.v2.production.yml config`
-- [ ] `docker build -f BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Dockerfile -t blazorshop-commercenode-api:v2-ci .`
-- [ ] `docker build -f BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/Dockerfile -t blazorshop-controlplane-api:v2-ci .`
-- [ ] `docker build -f BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Dockerfile -t blazorshop-controlplane-web:v2-ci .`
-- [ ] `docker build -f BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile -t blazorshop-storefront-v2:ci .`
+- [x] `docker compose -f compose.v2.production.yml config`
+- [x] `docker build -f BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Dockerfile -t blazorshop-commercenode-api:v2-ci .`
+- [x] `docker build -f BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/Dockerfile -t blazorshop-controlplane-api:v2-ci .`
+- [x] `docker build -f BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Dockerfile -t blazorshop-controlplane-web:v2-ci .`
+- [x] `docker build -f BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile -t blazorshop-storefront-v2:ci .`
 - [ ] Run real OpenAPI generator and compile generated client.
 - [ ] `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser`
 - [ ] Visible Playwright release checklist from `Storefront Playwright E2E Release.todo.md`.

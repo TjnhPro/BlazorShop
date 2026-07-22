@@ -67,6 +67,68 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void Phase4_V2ProductionDockerfiles_ExistForActiveRuntime()
+        {
+            var commerceNodeDockerfile = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Dockerfile");
+            var controlPlaneApiDockerfile = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/Dockerfile");
+            var controlPlaneWebDockerfile = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Dockerfile");
+            var controlPlaneWebEntrypoint = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/docker-entrypoint.d/10-controlplane-config.sh");
+            var storefrontDockerfile = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile");
+            var serviceDefaults = ReadRepositoryFile("BlazorShop.ServiceDefaults/Extensions.cs");
+
+            Assert.Contains("BlazorShop.CommerceNode.API.dll", commerceNodeDockerfile, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.ControlPlane.API.dll", controlPlaneApiDockerfile, StringComparison.Ordinal);
+            Assert.Contains("COPY --from=build /app/publish/wwwroot /usr/share/nginx/html", controlPlaneWebDockerfile, StringComparison.Ordinal);
+            Assert.Contains("CONTROLPLANE_API_BASE_URL", controlPlaneWebEntrypoint, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.Components.csproj", storefrontDockerfile, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.WASM.csproj", storefrontDockerfile, StringComparison.Ordinal);
+            Assert.Contains("curl", commerceNodeDockerfile, StringComparison.Ordinal);
+            Assert.Contains("curl", controlPlaneApiDockerfile, StringComparison.Ordinal);
+            Assert.Contains("curl", storefrontDockerfile, StringComparison.Ordinal);
+            Assert.Contains("Runtime:Health:ExposeInProduction", serviceDefaults, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Phase4_V2ProductionCompose_TargetsActiveTopology()
+        {
+            var compose = ReadRepositoryFile("compose.v2.production.yml")
+                .Replace('\\', '/');
+
+            Assert.Contains("controlplane-postgres:", compose, StringComparison.Ordinal);
+            Assert.Contains("commercenode-postgres:", compose, StringComparison.Ordinal);
+            Assert.Contains("controlplane-api:", compose, StringComparison.Ordinal);
+            Assert.Contains("controlplane-web:", compose, StringComparison.Ordinal);
+            Assert.Contains("commercenode-api:", compose, StringComparison.Ordinal);
+            Assert.Contains("commercenode-nginx:", compose, StringComparison.Ordinal);
+            Assert.Contains("commercenode-imgproxy:", compose, StringComparison.Ordinal);
+            Assert.Contains("storefront-v2:", compose, StringComparison.Ordinal);
+            Assert.Contains("ConnectionStrings__ControlPlaneConnection", compose, StringComparison.Ordinal);
+            Assert.Contains("ConnectionStrings__CommerceNodeConnection", compose, StringComparison.Ordinal);
+            Assert.Contains("ControlPlane__Database__MigrateOnStartup", compose, StringComparison.Ordinal);
+            Assert.Contains("CommerceNode__Database__MigrateOnStartup", compose, StringComparison.Ordinal);
+            Assert.Contains("Runtime__Health__ExposeInProduction", compose, StringComparison.Ordinal);
+            Assert.Contains("Api__StoreKey", compose, StringComparison.Ordinal);
+            Assert.Contains("PublicUrl__BaseUrl", compose, StringComparison.Ordinal);
+            Assert.Contains("StorefrontDeployment__AllowedImages__0: blazorshop-storefront-v2:latest", compose, StringComparison.Ordinal);
+            Assert.DoesNotContain("ConnectionStrings__DefaultConnection", compose, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Presentation/", compose, StringComparison.Ordinal);
+            Assert.DoesNotContain("SMTP", compose, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void Phase4_CiWorkflow_BuildsV2ImagesAndValidatesV2Compose()
+        {
+            var workflow = ReadRepositoryFile(".github/workflows/ci.yml");
+
+            Assert.Matches(
+                new Regex("ci-v2:[\\s\\S]*docker compose -f compose\\.v2\\.production\\.yml config[\\s\\S]*BlazorShop\\.PresentationV2/BlazorShop\\.CommerceNode\\.API/Dockerfile[\\s\\S]*BlazorShop\\.PresentationV2/BlazorShop\\.ControlPlane\\.API/Dockerfile[\\s\\S]*BlazorShop\\.PresentationV2/BlazorShop\\.ControlPlane\\.Web/Dockerfile[\\s\\S]*BlazorShop\\.PresentationV2/BlazorShop\\.Storefront\\.V2/Dockerfile", RegexOptions.CultureInvariant),
+                workflow);
+            Assert.Contains("BLAZORSHOP_CONTROLPLANE_JWT_KEY", workflow, StringComparison.Ordinal);
+            Assert.Contains("BLAZORSHOP_COMMERCENODE_NODE_SECRET", workflow, StringComparison.Ordinal);
+            Assert.Contains("BLAZORSHOP_STOREFRONT_STORE_KEY", workflow, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void Phase0_StorefrontConcreteApiClientInjectionInventory_MatchesCurrentBaseline()
         {
             var concreteUsages = EnumerateFiles("BlazorShop.PresentationV2/BlazorShop.Storefront.V2", "*.*")
