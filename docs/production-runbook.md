@@ -352,7 +352,7 @@ The test project now includes a live-storefront SEO smoke suite tagged with `Cat
 Run it with:
 
 ```powershell
-dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj -c Release --filter "Category=SeoSmoke"
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --filter "Category=SeoSmoke"
 ```
 
 Required environment variable:
@@ -380,7 +380,7 @@ Local example:
 ```powershell
 $env:BLAZORSHOP_SEO_SMOKE_BASE_URL = "https://localhost:18597/"
 $env:BLAZORSHOP_SEO_SMOKE_ALLOW_INVALID_CERTIFICATE = "true"
-dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj -c Release --filter "Category=SeoSmoke"
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --filter "Category=SeoSmoke"
 ```
 
 Deployed-environment example:
@@ -393,7 +393,7 @@ $env:BLAZORSHOP_SEO_SMOKE_PRODUCT_PATH = "/product/metro-runner"
 $env:BLAZORSHOP_SEO_SMOKE_MISSING_PATH = "/product/missing-product"
 $env:BLAZORSHOP_SEO_SMOKE_REDIRECT_SOURCE_PATH = "/product/legacy-runner"
 $env:BLAZORSHOP_SEO_SMOKE_REDIRECT_TARGET_PATH = "/product/metro-runner"
-dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj -c Release --filter "Category=SeoSmoke"
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --filter "Category=SeoSmoke"
 ```
 
 Smoke checks currently verify:
@@ -416,7 +416,7 @@ The test project also includes a legacy live auth smoke suite tagged with `Categ
 Run it with:
 
 ```powershell
-dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj -c Release --filter "Category=AuthSmoke"
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --filter "Category=AuthSmoke"
 ```
 
 Required environment variables:
@@ -438,7 +438,7 @@ $env:BLAZORSHOP_AUTH_SMOKE_API_BASE_URL = "https://legacy-api.example.local/"
 $env:BLAZORSHOP_AUTH_SMOKE_STOREFRONT_BASE_URL = "https://legacy-storefront.example.local/"
 $env:BLAZORSHOP_AUTH_SMOKE_CLIENT_APP_BASE_URL = "https://legacy-web.example.local/"
 $env:BLAZORSHOP_AUTH_SMOKE_ALLOW_INVALID_CERTIFICATE = "true"
-dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj -c Release --filter "Category=AuthSmoke"
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --filter "Category=AuthSmoke"
 ```
 
 Auth smoke checks currently verify:
@@ -456,7 +456,7 @@ Safety note:
 Run this checklist before promoting a release candidate.
 
 1. Run `dotnet test BlazorShop.sln -c Release`.
-2. Run `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj -c Release --filter "Category=SeoSmoke"` against the actual running storefront environment with `BLAZORSHOP_SEO_SMOKE_BASE_URL` and any required route overrides set.
+2. Run `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --filter "Category=SeoSmoke"` against the actual running storefront environment with `BLAZORSHOP_SEO_SMOKE_BASE_URL` and any required route overrides set.
 3. Run `docker compose -f compose.production.yml config` with the production-required environment variables available.
 4. Run `docker compose -f compose.production.yml build controlplane-api controlplane-web commercenode-api storefront-v2`.
 5. Apply database migrations before opening traffic. For V2, the standard MVP runtime path applies migrations on API startup when the relevant `MigrateOnStartup` flag is true; backup the DB first and run one API instance during migration.

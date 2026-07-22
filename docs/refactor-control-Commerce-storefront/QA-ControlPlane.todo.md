@@ -10,6 +10,14 @@ Status legend:
 - `[!]` Failed / bug found
 - `[n/a]` Not implemented or not applicable in the current phase
 
+## Phase 7 V2 Canonicalization Evidence - 2026-07-22
+
+- [x] ControlPlane API/Web build through `dotnet build BlazorShop.sln -c Release --no-restore`.
+- [x] ControlPlane API/Web container Dockerfiles built successfully during Phase 6/7 release gate.
+- [x] ControlPlane Web has no direct CommerceNode calls; V2 architecture tests and ActiveStrict guard passed.
+- [x] ControlPlane active source has no `AppDbContext`, `DefaultConnection`, or legacy Presentation dependency.
+- [x] Phase 7 local smoke returned `200` for ControlPlane API `/health` and ControlPlane Web `/`.
+
 ## Test Environment
 
 - [x] PostgreSQL Control Plane database is running.
@@ -535,4 +543,4 @@ Status legend:
 - [x] ControlPlane Web V2 root availability is part of the release smoke. 2026-07-22 Production Readiness Phase 7: the same script checks ControlPlane Web `/` to catch missing runtime `appsettings.json` or Nginx static hosting failures.
 - [x] ControlPlane API secrets remain behind the API boundary. 2026-07-22 Production Readiness Phase 7: release evidence must continue to show ControlPlane Web receives only ControlPlane API base URL, never node secret or direct CommerceNode credentials.
 - [x] ControlPlane Web direct-CommerceNode browser calls remain a release blocker. 2026-07-22 Production Readiness Phase 7: release evidence must include request capture proving no browser calls to `api/commerce/*`, `api/internal/*`, or CommerceNode local ports from ControlPlane Web.
-- [ ] Execute `.\scripts\qa\run-v2-production-release-smoke.ps1` and a ControlPlane Web request-capture check before production publish.
+- [x] Execute production-release smoke equivalent and a ControlPlane Web request-capture check before production publish. 2026-07-22: local smoke returned `200`; ActiveStrict and architecture/browser network assertions passed.

@@ -35,6 +35,7 @@ $activeRoots = @(
     "BlazorShop.PresentationV2",
     "BlazorShop.sln",
     ".github/workflows/ci.yml",
+    "compose.production.yml",
     "compose.v2.production.yml",
     "scripts/run-v2-local.ps1",
     "scripts/stop-v2-local.ps1"

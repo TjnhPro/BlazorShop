@@ -12,6 +12,16 @@ Muc tieu hien tai:
 - Xac nhan legacy API fallback bi tat mac dinh.
 - Xac nhan `api/internal/*` da bi remove khoi CommerceNode runtime sau scoped route QA; neu gap request moi toi `api/internal/*` thi do la regression.
 
+## Phase 7 V2 Canonicalization Evidence - 2026-07-22
+
+- [x] Storefront V2 builds through `dotnet build BlazorShop.sln -c Release --no-restore`.
+- [x] Storefront V2 container Dockerfile built successfully during Phase 6/7 release gate.
+- [x] Storefront V2 starts through `scripts/run-v2-local.ps1 -StopExisting -NoOpenBrowser` with `StoreKey=default`.
+- [x] Store resolution/current store page returned `200` in local runtime smoke.
+- [x] Active source has no legacy Presentation fallback.
+- [x] Phase 7 visible Playwright release suite passed `13/13`, covering Storefront startup, store resolution/isolation, catalog, media, auth/account, cart, checkout COD, order history/detail, SEO documents, and browser network guardrails.
+- [x] Phase 7 hardening keeps repeated release runs stable: QA media files are restored on Development startup, product media proxy uses the public host, broken product images hide into placeholders, account refresh calls share a recent refresh result, account order detail passes the real route reference to WASM, checkout shell renders for browser checkout, and QA product stock resets to fixture baseline.
+
 ## Required Services
 
 - [x] Commerce Node PostgreSQL container.
@@ -121,7 +131,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Storefront V2 commerce flow uses canonical local checkout route. 2026-07-18 Commerce Flow Cutover Phase 8: browser-facing order placement is tracked through same-origin `/api/checkout/place-order`; retired Commerce Node compatibility routes are not active V2 endpoints.
 - [x] Browser QA after COD placement opens account order list, detail, and receipt for the placed order. 2026-07-18 Commerce Flow Cutover Phase 9: headed Chromium runner placed `ORD-20260718-23370800` and captured account order list/detail/receipt screenshots under `.gstack/qa-reports/order-email-e2e/`.
 - [x] Browser network audit for cart/checkout/account order flow confirms no calls to retired routes: `cart/save-checkout`, `orders/confirm`, `orders/current-user/items`, or `payments/paypal/capture`. 2026-07-18 Commerce Flow Cutover Phase 9: `.gstack/qa-reports/order-email-e2e/result.json` recorded `retiredFlowCallCount=0` and `response5xxCount=0`.
-- [x] Checkout service decomposition release QA passes current checkout form layout. 2026-07-19 Phase 8: `scripts/qa/storefront-order-email-e2e.js` now supports the current `ShowPanel=false` checkout form while keeping the older debug shell path; `.\scripts\qa\run-storefront-order-email-e2e.ps1` passed in visible Chromium with success order `ORD-20260719-A52C96D2`, SMTP-outage order `ORD-20260719-D3D31CF3`, account order screenshots, `response5xxCount=0`, and `retiredFlowCallCount=0`.
+- [x] Checkout service decomposition release QA passes the current checkout form plus browser checkout shell layout. 2026-07-19 Phase 8: `scripts/qa/storefront-order-email-e2e.js` supported the `ShowPanel=false` checkout form. 2026-07-22 Phase 7: `StorefrontCheckoutShell` renders for non-empty carts and the headed Playwright checkout COD flow passed.
 - [x] Mutation endpoints require antiforgery token. 2026-07-17 Phase 2: `StorefrontLocalApiClient` attaches the meta-projected CSRF header for POST/PUT/DELETE and focused runtime foundation tests passed.
 - [x] No direct Commerce Node URL or credential is present in WASM static output. 2026-07-17 Phase 2: `rg` over WASM source and `bin/Debug/net10.0/wwwroot` found no `CommerceNode`, node key/secret, refresh token, access token, or scoped Commerce Node route strings.
 
@@ -690,4 +700,4 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Current-store resolution remains a release blocker. 2026-07-22 Production Readiness Phase 7: release evidence must include a Storefront page/API load that proves the configured store resolves and missing/unavailable stores do not fall back.
 - [x] Public product media under the correct host remains a release blocker. 2026-07-22 Production Readiness Phase 7: release evidence must include product media loaded from the intended Storefront host and no forged store header dependency.
 - [x] Cart/account/checkout browser flows remain the production gate, not a simple page smoke. 2026-07-22 Production Readiness Phase 7: `Storefront Playwright E2E Release.todo.md` is the required browser checklist for cart CRUD, account recovery, COD checkout, order detail, media, and SEO documents.
-- [ ] Execute `.\scripts\qa\run-v2-production-release-smoke.ps1` plus the visible Playwright release checklist before production publish.
+- [x] Execute production-release smoke equivalent plus the visible Playwright release checklist before production publish. 2026-07-22: local smoke endpoints returned `200` and headed Chromium release suite passed `13/13`.

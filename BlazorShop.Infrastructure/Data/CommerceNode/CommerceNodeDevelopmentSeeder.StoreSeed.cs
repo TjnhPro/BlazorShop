@@ -47,6 +47,10 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 return;
             }
 
+            await this.EnsureCategoriesAsync(defaultStoreId.Value, cancellationToken);
+            await this.EnsureProductsAsync(defaultStoreId.Value, cancellationToken);
+            await this.EnsureMediaFixtureFilesAsync(cancellationToken);
+
             var defaultGalleryCount = await this.dbContext.ProductMedia
                 .CountAsync(media => media.StoreId == defaultStoreId.Value
                     && media.ProductId == SeoMediaProductId
@@ -59,7 +63,6 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 return;
             }
 
-            await this.EnsureMediaFixtureFilesAsync(cancellationToken);
             await this.EnsureProductMediaFixturesAsync(defaultStoreId.Value, cancellationToken);
         }
 

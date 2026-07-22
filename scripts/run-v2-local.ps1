@@ -153,7 +153,13 @@ function Get-V2RuntimeProcesses {
 
     $repo = $repoRoot.ProviderPath
     return Get-Process -Name $names -ErrorAction SilentlyContinue |
-        Where-Object { -not [string]::IsNullOrWhiteSpace($_.Path) -and $_.Path.StartsWith($repo, [StringComparison]::OrdinalIgnoreCase) }
+        Where-Object {
+            if ([string]::IsNullOrWhiteSpace($_.Path)) {
+                return $false
+            }
+
+            return $_.Path.StartsWith($repo, [StringComparison]::OrdinalIgnoreCase)
+        }
 }
 
 function Stop-V2RuntimeProcesses {

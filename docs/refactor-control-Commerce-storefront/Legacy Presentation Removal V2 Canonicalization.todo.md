@@ -1,28 +1,27 @@
 # Legacy Presentation Removal V2 Canonicalization.todo.md
 
-Status: phase 6 physical Presentation removal complete; phase 7 final docs/QA/release gate next
+Status: all phases complete; Phase 7 docs, QA, and release gate verified on 2026-07-22
 Source: investigate review of legacy Presentation removal blockers  
 Purpose: remove `BlazorShop.Presentation` and make V2 the canonical repository lifecycle target without breaking active V2 runtime, CI, Docker, deployment, tests, or docs.
 
 ## Current investigation status - 2026-07-22
 
-Root cause hypothesis: this plan started as a proposed legacy-removal/canonicalization plan, but several Phase 1 packaging and CI tasks were already completed by `V2 Production Readiness Hardening.todo.md`. Phases 0-6 have now established guardrails, made `BlazorShop.sln` V2 canonical, moved V2 tests to owned sources, removed legacy `BlazorShop.AppHost`, purged `AppDbContext`/`DefaultConnection` from active source, and physically removed `BlazorShop.Presentation`. The remaining work is final docs/QA cleanup and release-gate verification.
+Root cause hypothesis: this plan started as a proposed legacy-removal/canonicalization plan, but several Phase 1 packaging and CI tasks were already completed by `V2 Production Readiness Hardening.todo.md`. Phases 0-7 have now established guardrails, made `BlazorShop.sln` V2 canonical, moved V2 tests to owned sources, removed legacy `BlazorShop.AppHost`, purged `AppDbContext`/`DefaultConnection` from active source, physically removed `BlazorShop.Presentation`, updated docs/QA, and passed the final release gate.
 
 Evidence checked:
 
-- Working tree was clean before this investigation edit.
-- `scripts/verify-no-active-legacy-reference.ps1` does not exist.
-- `docs/refactor-control-Commerce-storefront/legacy-removal-allowlist.json` does not exist.
+- `scripts/verify-no-active-legacy-reference.ps1` exists and `-Mode ActiveStrict` passed on 2026-07-22.
+- `docs/refactor-control-Commerce-storefront/legacy-removal-allowlist.json` exists for migration inventory/guardrail context.
 - `BlazorShop.Presentation` has been removed from the active branch; `legacy-presentation-final` tags the pre-removal history point.
 - `BlazorShop.sln` is V2 canonical and excludes legacy `BlazorShop.Presentation/*`, `BlazorShop.AppHost`, and old `BlazorShop.Tests`.
 - `BlazorShop.sln` is now the V2 canonical solution; the temporary `BlazorShop.V2.slnf` transition file has been removed.
-- `BlazorShop.Tests.V2.csproj` still links source and snapshots from `..\BlazorShop.Tests\...`; V2 test source ownership is not independent yet.
-- `.github/workflows/ci.yml` has blocking `ci-v2`, validates `compose.v2.production.yml`, builds four V2 images, and no longer carries the old `legacy-compatibility` job.
+- `BlazorShop.Tests.V2` owns active V2 source and snapshots directly; it no longer links source from `..\BlazorShop.Tests\...`.
+- `.github/workflows/ci.yml` has blocking `ci-v2`, validates canonical `compose.production.yml`, builds four V2 images, and no longer carries the old `legacy-compatibility` job.
 - `compose.production.yml` is now V2 canonical; `compose.v2.production.yml` remains as a transition alias while CI/downstream scripts are updated.
 - V2 Dockerfiles exist for ControlPlane API, CommerceNode API, ControlPlane Web, and Storefront V2. Storefront V2 Dockerfile now copies Components/WASM/Web.SharedV2 projects before restore and source before publish.
-- `BlazorShop.AppHost` is being removed in Phase 4; it previously referenced legacy API/Web/Storefront and used Aspire database name `DefaultConnection`.
+- `BlazorShop.AppHost` has been removed; `scripts/run-v2-local.ps1` is the active local orchestration entrypoint.
 - `BlazorShop.Infrastructure` no longer contains `AppDbContext`, legacy root migrations, `AddInfrastructure`, `AddSharedAuthenticationInfrastructure`, `UseInfrastructure`, or AppDbContext-bound legacy repository/service implementations.
-- Focused verification passed on 2026-07-22: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~V2ProductionReadiness|FullyQualifiedName~V2ArchitectureBoundary" --verbosity minimal` returned `Passed: 30, Failed: 0`.
+- Final verification passed on 2026-07-22: `dotnet restore BlazorShop.sln`; `dotnet build BlazorShop.sln -c Release --no-restore`; `dotnet test BlazorShop.sln -c Release --no-build`; ActiveStrict; active legacy-token grep; `docker compose -f compose.production.yml config`; four V2 Docker image builds; six local smoke endpoints; headed Playwright release suite `13 passed (4.2m)`.
 - Existing warnings remain non-blocking for this investigation: MessagePack NU1902/NU1903 advisories and Browserslist stale notice.
 
 Phase status summary:
@@ -38,7 +37,7 @@ Phase status summary:
 | 4 Remove legacy AppHost and operational entrypoints | Done | `BlazorShop.AppHost` tracked files and ignored build artifacts removed; `run-v2-local.ps1 -StopExisting -NoOpenBrowser` and four endpoint smoke checks passed |
 | 5 Purge dead legacy Infrastructure/AppDbContext | Done | Active source grep is clean for `AppDbContext`, `DefaultConnection`, and legacy DI methods; build/full V2 tests/migration model tests passed |
 | 6 Physically remove BlazorShop.Presentation | Done | `git rm -r BlazorShop.Presentation` plus ignored artifact cleanup completed; restore/build/solution tests, four V2 Docker builds, production compose config, and ActiveStrict passed |
-| 7 Docs, QA, clean verification, release gate | Not started | Docs still describe legacy as present/reference; final canonical V2 verification has not run |
+| 7 Docs, QA, clean verification, release gate | Done | Docs/QA updated; restore/build/test, ActiveStrict, active grep, runtime smoke, 4 V2 Docker builds, production compose config, and headed Playwright release suite passed |
 
 ## Goal
 
@@ -65,17 +64,17 @@ Xoa hoan toan legacy Presentation khoi active repository lifecycle:
 
 - [x] V2 project graph khong reference `BlazorShop.Presentation`.
 - [x] `BlazorShop.sln` gom core, ServiceDefaults, PresentationV2 va `BlazorShop.Tests.V2`; khong gom legacy Presentation/AppHost.
-- [x] `BlazorShop.sln` van gom `BlazorShop.Presentation` projects, `BlazorShop.AppHost`, va `BlazorShop.Tests`.
-- [x] `BlazorShop.Tests.csproj` van reference AppHost va cac legacy projects.
-- [x] `BlazorShop.Tests.V2.csproj` van link source tu `BlazorShop.Tests/Architecture/**` va `BlazorShop.Tests/PresentationV2/**`.
-- [x] `BlazorShop.AppHost` reference legacy API/Web/Storefront va Program dung `DefaultConnection`.
+- [x] `BlazorShop.sln` khong con `BlazorShop.Presentation` projects, `BlazorShop.AppHost`, old mixed `BlazorShop.Tests`, hoac temporary `BlazorShop.V2.slnf`.
+- [x] Old mixed `BlazorShop.Tests.csproj` da retire.
+- [x] `BlazorShop.Tests.V2.csproj` khong link source tu `BlazorShop.Tests/Architecture/**` hoac `BlazorShop.Tests/PresentationV2/**`.
+- [x] `BlazorShop.AppHost` folder da xoa; local orchestration dung `scripts/run-v2-local.ps1`.
 - [x] CI hien co blocking `ci-v2` restore/build/test V2 va build Dockerfile V2; old `legacy-compatibility` job da duoc xoa khi old mixed test project retire.
-- [x] `compose.production.yml` hien la topology legacy voi `DefaultConnection`.
+- [x] `compose.production.yml` hien la V2 canonical topology va khong dung `DefaultConnection`.
 - [x] V2 Dockerfile da co cho `BlazorShop.Storefront.V2`, ControlPlane API, ControlPlane Web, va CommerceNode API.
 - [x] Storefront V2 Dockerfile da copy `Storefront.Components.csproj`, `Storefront.WASM.csproj`, va source cua cac project nay truoc publish.
-- [x] `BlazorShop.Infrastructure/DependencyInjection.cs` van co `AddInfrastructure`, `AddSharedAuthenticationInfrastructure`, `AppDbContext`, `DefaultConnection`.
-- [x] `BlazorShop.Infrastructure/Data/AppDbContext.cs` va legacy migrations van ton tai.
-- [x] Co `BlazorShop.Tests/Architecture/V2ProductionReadinessTests.cs` dang la baseline/inventory test nhung file nay van nam trong mixed old test tree.
+- [x] `BlazorShop.Infrastructure/DependencyInjection.cs` khong con `AddInfrastructure`, `AddSharedAuthenticationInfrastructure`, `AppDbContext`, hoac `DefaultConnection`.
+- [x] `BlazorShop.Infrastructure/Data/AppDbContext.cs` va legacy root migrations da xoa.
+- [x] `V2ProductionReadinessTests` va legacy-removal guardrails nam trong `BlazorShop.Tests.V2`.
 
 ## Strategy
 
@@ -427,71 +426,71 @@ Goal: dong phase bang bang chung build/test/container/browser production-ready.
 
 ### Docs updates
 
-- [ ] `README.md`: V2 la canonical, khong con "legacy remains for reference".
-- [ ] `AGENTS.md`: xoa rule legacy-reference neu source da bi xoa; giu note git history/tag neu can.
-- [ ] `docs/architecture/01-system-map.md`: xoa hoac archive legacy runtime rows.
-- [ ] `docs/architecture/02-layered-architecture.md`: remove legacy project family section hoac chuyen archive.
-- [ ] `docs/architecture/03-runtime-boundaries.md`: remove "legacy remains in solution".
-- [ ] `docs/architecture/04-data-ownership.md`: remove `AppDbContext` active table row.
-- [ ] `docs/architecture/05-project-and-folder-guide.md`: remove `BlazorShop.Presentation` active guide.
-- [ ] `docs/architecture/07-deployment-and-local-run.md`: commands dung `BlazorShop.sln`, production compose V2.
-- [ ] `docs/production-runbook.md`: replace legacy sections bang V2 topology.
-- [ ] Archive historical legacy deployment notes under `docs/archive/legacy/` neu can.
+- [x] `README.md`: V2 la canonical, khong con "legacy remains for reference".
+- [x] `AGENTS.md`: xoa rule legacy-reference neu source da bi xoa; giu note git history/tag neu can.
+- [x] `docs/architecture/01-system-map.md`: xoa hoac archive legacy runtime rows.
+- [x] `docs/architecture/02-layered-architecture.md`: remove legacy project family section hoac chuyen archive.
+- [x] `docs/architecture/03-runtime-boundaries.md`: remove "legacy remains in solution".
+- [x] `docs/architecture/04-data-ownership.md`: remove `AppDbContext` active table row.
+- [x] `docs/architecture/05-project-and-folder-guide.md`: remove `BlazorShop.Presentation` active guide.
+- [x] `docs/architecture/07-deployment-and-local-run.md`: commands dung `BlazorShop.sln`, production compose V2.
+- [x] `docs/production-runbook.md`: replace legacy sections bang V2 topology.
+- [x] Archive historical legacy deployment notes under `docs/archive/legacy/` neu can. Current reference path is git history/tag `legacy-presentation-final`; no active legacy source is kept.
 
 ### QA updates
 
-- [ ] `QA-ControlPlane.todo.md`:
-  - [ ] ControlPlane API/Web build/container.
-  - [ ] No direct CommerceNode calls from Web.
-  - [ ] No AppDbContext.
-- [ ] `QA-CommerceNode.todo.md`:
-  - [ ] CommerceNode API build/container.
-  - [ ] CommerceNodeConnection only.
-  - [ ] Swagger docs.
-  - [ ] Storefront scoped APIs.
-- [ ] `QA-StorefrontV2.todo.md`:
-  - [ ] Storefront V2 build/container.
-  - [ ] Storefront startup with `STORE_KEY`.
-  - [ ] Store resolution, maintenance, catalog, media.
-- [ ] `Storefront Playwright E2E Release.todo.md`:
-  - [ ] Home/category/product.
-  - [ ] Account login/register/recovery.
-  - [ ] Cart.
-  - [ ] Checkout COD place order in test store.
-  - [ ] Customer order history.
-  - [ ] Browser network rejects direct `api/commerce/*`, `api/control-plane/*`, `api/internal/*`.
+- [x] `QA-ControlPlane.todo.md`:
+  - [x] ControlPlane API/Web build/container.
+  - [x] No direct CommerceNode calls from Web.
+  - [x] No AppDbContext.
+- [x] `QA-CommerceNode.todo.md`:
+  - [x] CommerceNode API build/container.
+  - [x] CommerceNodeConnection only.
+  - [x] Swagger docs.
+  - [x] Storefront scoped APIs.
+- [x] `QA-StorefrontV2.todo.md`:
+  - [x] Storefront V2 build/container.
+  - [x] Storefront startup with `STORE_KEY`.
+  - [x] Store resolution, maintenance, catalog, media.
+- [x] `Storefront Playwright E2E Release.todo.md`:
+  - [x] Home/category/product.
+  - [x] Account login/register/recovery.
+  - [x] Cart.
+  - [x] Checkout COD place order in test store.
+  - [x] Customer order history.
+  - [x] Browser network rejects direct `api/commerce/*`, `api/control-plane/*`, `api/internal/*`.
 
 ### Final verification
 
-- [ ] Clean checkout restore:
-  - [ ] `dotnet restore BlazorShop.sln`.
-- [ ] Build:
-  - [ ] `dotnet build BlazorShop.sln -c Release --no-restore`.
-- [ ] Test:
-  - [ ] `dotnet test BlazorShop.sln -c Release --no-build`.
-- [ ] Static guard:
-  - [ ] `powershell -ExecutionPolicy Bypass -File scripts/verify-no-active-legacy-reference.ps1 -Mode ActiveStrict`.
-  - [ ] Inventory mode has no source/CI/script/compose hits except `docs/archive/legacy`.
-- [ ] Runtime:
-  - [ ] `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser`.
-  - [ ] ControlPlane API health.
-  - [ ] CommerceNode API health.
-  - [ ] Storefront V2 current store page.
-  - [ ] Swagger CommerceAdmin and Storefront docs.
-- [ ] Containers:
-  - [ ] Build ControlPlane API image.
-  - [ ] Build CommerceNode API image.
-  - [ ] Build ControlPlane Web image.
-  - [ ] Build Storefront V2 image.
-  - [ ] `docker compose -f compose.production.yml config`.
-- [ ] Browser:
-  - [ ] Visible Playwright release checklist P0 pass.
+- [x] Clean checkout restore:
+  - [x] `dotnet restore BlazorShop.sln`.
+- [x] Build:
+  - [x] `dotnet build BlazorShop.sln -c Release --no-restore`.
+- [x] Test:
+  - [x] `dotnet test BlazorShop.sln -c Release --no-build`.
+- [x] Static guard:
+  - [x] `powershell -ExecutionPolicy Bypass -File scripts/verify-no-active-legacy-reference.ps1 -Mode ActiveStrict`.
+  - [x] Active source/CI/script/compose grep has no legacy runtime tokens; remaining legacy mentions are docs/history notes and the `legacy-presentation-final` tag reference.
+- [x] Runtime:
+  - [x] `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser`.
+  - [x] ControlPlane API health.
+  - [x] CommerceNode API health.
+  - [x] Storefront V2 current store page.
+  - [x] Swagger CommerceAdmin and Storefront docs.
+- [x] Containers:
+  - [x] Build ControlPlane API image.
+  - [x] Build CommerceNode API image.
+  - [x] Build ControlPlane Web image.
+  - [x] Build Storefront V2 image.
+  - [x] `docker compose -f compose.production.yml config`.
+- [x] Browser:
+  - [x] Visible Playwright release checklist P0 pass.
 
 ### Done when
 
-- [ ] Repository, build, test, CI, Docker, compose, docs va QA deu V2 canonical.
-- [ ] `BlazorShop.Presentation` va `BlazorShop.AppHost` khong con active.
-- [ ] Production publish co bang chung container + browser e2e pass.
+- [x] Repository, build, test, CI, Docker, compose, docs va QA deu V2 canonical.
+- [x] `BlazorShop.Presentation` va `BlazorShop.AppHost` khong con active.
+- [x] Production publish co bang chung container + browser e2e pass.
 
 ## Risk register
 
@@ -515,10 +514,10 @@ Goal: dong phase bang bang chung build/test/container/browser production-ready.
 - [x] Phase 3A V2 test source move complete and committed.
 - [x] Phase 3B V2 core test migration complete and committed.
 - [x] Phase 3C old mixed test retirement complete and committed.
-- [ ] Phase 4 AppHost removal complete and committed.
-- [ ] Phase 5 legacy Infrastructure purge complete by consumer group and committed.
+- [x] Phase 4 AppHost removal complete and committed.
+- [x] Phase 5 legacy Infrastructure purge complete by consumer group and committed.
 - [x] Phase 6 physical `BlazorShop.Presentation` removal complete and committed.
-- [ ] Phase 7 docs/QA/final release verification complete and committed.
+- [x] Phase 7 docs/QA/final release verification complete and committed.
 
 ## GSTACK REVIEW REPORT
 

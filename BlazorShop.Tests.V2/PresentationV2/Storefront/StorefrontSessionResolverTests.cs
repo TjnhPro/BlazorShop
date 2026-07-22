@@ -17,7 +17,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public async Task GetCurrentUserAsync_CachesRefreshWithinHttpRequest()
         {
-            var handler = new RefreshTokenHandler(CreateAccessToken());
+            var handler = new RefreshTokenHandler(CreateAccessToken(), "__Host-blazorshop-refresh=initial%252Brefresh%252Ftoken");
             using var httpClient = new HttpClient(handler)
             {
                 BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/default/"),
@@ -42,6 +42,41 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Single(httpContext.Response.Headers.SetCookie);
         }
 
+        [Fact]
+        public async Task GetCurrentUserAsync_ReusesRecentRefreshAcrossConcurrentRequests()
+        {
+            var refreshCookie = $"__Host-blazorshop-refresh=concurrent-{Guid.NewGuid():N}";
+            var handler = new RefreshTokenHandler(CreateAccessToken(), refreshCookie);
+            using var httpClient = new HttpClient(handler)
+            {
+                BaseAddress = new Uri("https://commerce-node.example/api/storefront/stores/default/"),
+            };
+            var configuration = new ConfigurationBuilder().Build();
+            var firstContext = new DefaultHttpContext();
+            var secondContext = new DefaultHttpContext();
+            firstContext.Request.Headers.Cookie = refreshCookie;
+            secondContext.Request.Headers.Cookie = refreshCookie;
+
+            var firstResolver = new StorefrontSessionResolver(
+                httpClient,
+                new HttpContextAccessor { HttpContext = firstContext },
+                configuration);
+            var secondResolver = new StorefrontSessionResolver(
+                httpClient,
+                new HttpContextAccessor { HttpContext = secondContext },
+                configuration);
+
+            var sessions = await Task.WhenAll(
+                firstResolver.GetCurrentUserAsync(),
+                secondResolver.GetCurrentUserAsync());
+
+            Assert.All(sessions, session => Assert.True(session.IsAuthenticated));
+            Assert.Equal(1, handler.RequestCount);
+            Assert.Equal(
+                1,
+                firstContext.Response.Headers.SetCookie.Count + secondContext.Response.Headers.SetCookie.Count);
+        }
+
         private static string CreateAccessToken()
         {
             var payload = JsonSerializer.Serialize(new
@@ -64,10 +99,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         private sealed class RefreshTokenHandler : HttpMessageHandler
         {
             private readonly string _accessToken;
+            private readonly string _expectedCookieHeader;
 
-            public RefreshTokenHandler(string accessToken)
+            public RefreshTokenHandler(string accessToken, string expectedCookieHeader)
             {
                 _accessToken = accessToken;
+                _expectedCookieHeader = expectedCookieHeader;
             }
 
             public int RequestCount { get; private set; }
@@ -80,7 +117,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 var cookieHeader = request.Headers.GetValues("Cookie").Single();
                 Assert.DoesNotContain("%25252B", cookieHeader);
                 Assert.DoesNotContain("%25252F", cookieHeader);
-                Assert.Contains("__Host-blazorshop-refresh=initial%252Brefresh%252Ftoken", cookieHeader);
+                Assert.Contains(_expectedCookieHeader, cookieHeader);
 
                 await Task.Delay(25, cancellationToken);
 

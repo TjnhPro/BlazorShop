@@ -121,7 +121,7 @@ namespace BlazorShop.Tests.Architecture
             var workflow = ReadRepositoryFile(".github/workflows/ci.yml");
 
             Assert.Matches(
-                new Regex("ci-v2:[\\s\\S]*docker compose -f compose\\.v2\\.production\\.yml config[\\s\\S]*BlazorShop\\.PresentationV2/BlazorShop\\.CommerceNode\\.API/Dockerfile[\\s\\S]*BlazorShop\\.PresentationV2/BlazorShop\\.ControlPlane\\.API/Dockerfile[\\s\\S]*BlazorShop\\.PresentationV2/BlazorShop\\.ControlPlane\\.Web/Dockerfile[\\s\\S]*BlazorShop\\.PresentationV2/BlazorShop\\.Storefront\\.V2/Dockerfile", RegexOptions.CultureInvariant),
+                new Regex("ci-v2:[\\s\\S]*docker compose -f compose\\.production\\.yml config[\\s\\S]*BlazorShop\\.PresentationV2/BlazorShop\\.CommerceNode\\.API/Dockerfile[\\s\\S]*BlazorShop\\.PresentationV2/BlazorShop\\.ControlPlane\\.API/Dockerfile[\\s\\S]*BlazorShop\\.PresentationV2/BlazorShop\\.ControlPlane\\.Web/Dockerfile[\\s\\S]*BlazorShop\\.PresentationV2/BlazorShop\\.Storefront\\.V2/Dockerfile", RegexOptions.CultureInvariant),
                 workflow);
             Assert.Contains("BLAZORSHOP_CONTROLPLANE_JWT_KEY", workflow, StringComparison.Ordinal);
             Assert.Contains("BLAZORSHOP_COMMERCENODE_NODE_SECRET", workflow, StringComparison.Ordinal);

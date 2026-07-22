@@ -16,11 +16,31 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         }
 
         [Fact]
+        public void ProductMediaController_ReturnsNotFoundBeforeImgproxyWhenOriginalFileIsMissing()
+        {
+            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/ProductMediaController.cs");
+
+            Assert.True(
+                source.IndexOf("this.storageProvider.FileExists", StringComparison.Ordinal)
+                < source.IndexOf("BuildImgproxyUrl", StringComparison.Ordinal));
+            Assert.Contains("return this.NotFound();", source);
+        }
+
+        [Fact]
         public void StorefrontMediaProxy_CopiesNoSniffHeader()
         {
             var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Media/StorefrontMediaProxyService.cs");
 
             Assert.Contains("CopyHeaderIfPresent(response, httpContext.Response, \"X-Content-Type-Options\")", source);
+        }
+
+        [Fact]
+        public void StorefrontMediaProxy_ForwardsPublicHostForMediaScope()
+        {
+            var source = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Media/StorefrontMediaProxyService.cs");
+
+            Assert.Contains("request.Headers.Host = publicHost", source);
+            Assert.DoesNotContain("X-Store-Key", source);
         }
 
         private static string ReadRepositoryFile(string relativePath)

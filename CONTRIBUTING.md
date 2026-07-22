@@ -47,7 +47,7 @@ Data ownership:
 
 - Use `ControlPlaneDbContext` for platform auth, users, permissions, node/store registry, credentials, actions, health, and audit.
 - Use `CommerceNodeDbContext` for ecommerce stores, catalog, customers, carts, checkout, orders, payments, media, SEO, tasks, messages, and deployment state.
-- Do not add new V2 migrations to legacy `AppDbContext`.
+- Do not recreate the removed legacy `AppDbContext`/`DefaultConnection` path.
 
 ## API Contract Rules
 

@@ -46,7 +46,7 @@ jobs:
       - name: Test
         run: dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --configuration Release --no-build --verbosity normal
 
-      - name: Validate V2 production compose config
+      - name: Validate production compose config
         env:
           BLAZORSHOP_CONTROLPLANE_DB_PASSWORD: ci-controlplane-db-password
           BLAZORSHOP_COMMERCENODE_DB_PASSWORD: ci-commercenode-db-password
@@ -59,7 +59,7 @@ jobs:
           BLAZORSHOP_COMMERCENODE_NODE_SECRET: ci-node-secret-which-is-long-enough
           BLAZORSHOP_STOREFRONT_BASE_URL: https://shop.example.com
           BLAZORSHOP_STOREFRONT_STORE_KEY: default
-        run: docker compose -f compose.v2.production.yml config
+        run: docker compose -f compose.production.yml config
 
       - name: Validate V2 production release smoke script
         shell: pwsh

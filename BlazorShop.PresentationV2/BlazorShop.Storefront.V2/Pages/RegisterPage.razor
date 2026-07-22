@@ -34,7 +34,7 @@
                 }
                 else
                 {
-                    <form method="post" action="@PostAction" class="max-w-xl space-y-5">
+                    <form method="post" action="@PostAction" class="max-w-xl space-y-5" data-storefront-register-form>
                         <AntiforgeryToken />
                         <input type="hidden" name="ReturnUrl" value="@SafeReturnUrl" />
                         <input type="hidden" name="CaptchaToken" data-storefront-captcha-token="registration" />

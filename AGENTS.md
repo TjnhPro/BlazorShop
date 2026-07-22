@@ -211,7 +211,6 @@ Important local ports:
 
 - Control Plane PostgreSQL: `5433`
 - Commerce Node PostgreSQL: `5434`
-- Legacy/default PostgreSQL: `5432`
 - Commerce Node Nginx: `8088`
 - Commerce Node imgproxy: `8089`
 

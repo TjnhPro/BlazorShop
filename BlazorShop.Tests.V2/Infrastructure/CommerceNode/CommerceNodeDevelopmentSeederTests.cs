@@ -17,6 +17,7 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
     {
         private static readonly Guid ApparelCategoryId = Guid.Parse("8d4830f9-a21f-4f4a-96d7-83d1e6dc0201");
         private static readonly Guid SimpleProductId = Guid.Parse("2b111111-1111-4111-8111-111111111101");
+        private static readonly Guid SeoMediaProductId = Guid.Parse("2b111111-1111-4111-8111-111111111113");
 
         [Fact]
         public async Task SeedAsync_WhenQaSeedAlreadyExists_DoesNotResetStoreRuntimeProfile()
@@ -84,6 +85,66 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.True(persisted.MaintenanceModeEnabled);
             Assert.Equal("Operator maintenance message.", persisted.MaintenanceMessage);
             Assert.Empty(context.StorePaymentMethods);
+
+            var qaProduct = await context.Products.SingleAsync(candidate => candidate.Id == SimpleProductId);
+            Assert.Equal("QA Simple Product 100", qaProduct.Name);
+            Assert.Equal("qa-simple-product-100", qaProduct.Slug);
+            Assert.Equal(20, qaProduct.Quantity);
+        }
+
+        [Fact]
+        public async Task SeedAsync_WhenQaMediaRowsAlreadyExist_RestoresMissingFixtureFiles()
+        {
+            await using var context = CreateDbContext();
+            var storeId = Guid.NewGuid();
+            context.CommerceStores.Add(new CommerceStore
+            {
+                Id = storeId,
+                StoreKey = "default",
+                Name = "Existing QA Store",
+                Status = CommerceStoreStatuses.Active,
+            });
+            context.Categories.Add(new Category
+            {
+                Id = ApparelCategoryId,
+                StoreId = storeId,
+                Name = "Existing QA Category",
+                Slug = "existing-qa-category",
+            });
+            context.Products.Add(new Product
+            {
+                Id = SimpleProductId,
+                StoreId = storeId,
+                CategoryId = ApparelCategoryId,
+                Name = "Existing QA Product",
+                Slug = "existing-qa-product",
+                Price = 12.34m,
+                Quantity = 5,
+            });
+            context.ProductMedia.AddRange(
+                CreateStoredProductMedia(storeId, "6f111111-1111-4111-8111-111111111113"),
+                CreateStoredProductMedia(storeId, "6f111111-1111-4111-8111-111111111114"),
+                CreateStoredProductMedia(storeId, "6f111111-1111-4111-8111-111111111115"));
+            await context.SaveChangesAsync();
+
+            var mediaRoot = Path.Combine(Path.GetTempPath(), "blazorshop-seeder-media", Guid.NewGuid().ToString("N"));
+            var seeder = new CommerceNodeDevelopmentSeeder(
+                context,
+                userManager: null!,
+                new FakeHostEnvironment(mediaRoot),
+                new LocalMediaStorageProvider(),
+                Options.Create(new CommerceMediaStorageOptions
+                {
+                    RootPath = "runtime/media/assets",
+                }));
+
+            await seeder.SeedAsync();
+
+            Assert.True(File.Exists(Path.Combine(mediaRoot, "runtime", "media", "qa-fixtures", "default", "seo-media-product.png")));
+            Assert.True(File.Exists(Path.Combine(mediaRoot, "runtime", "media", "qa-fixtures", "default", "seo-media-product-alt-1.png")));
+            Assert.True(File.Exists(Path.Combine(mediaRoot, "runtime", "media", "qa-fixtures", "default", "seo-media-product-alt-2.png")));
+            Assert.True(File.Exists(Path.Combine(mediaRoot, "runtime", "media", "assets", "qa-fixtures", "default", "content-fixture.png")));
+            Assert.True(File.Exists(Path.Combine(mediaRoot, "runtime", "media", "stores", "default", "products", "6f111111-1111-4111-8111-111111111113", "original.jpg")));
         }
 
         private static CommerceNodeDbContext CreateDbContext()
@@ -93,6 +154,20 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 .Options;
 
             return new CommerceNodeDbContext(options);
+        }
+
+        private static ProductMedia CreateStoredProductMedia(Guid storeId, string mediaId)
+        {
+            return new ProductMedia
+            {
+                Id = Guid.Parse(mediaId),
+                PublicId = Guid.NewGuid(),
+                StoreId = storeId,
+                ProductId = SeoMediaProductId,
+                OriginalStoragePath = $"stores/default/products/{mediaId}/original.jpg",
+                MimeType = "image/jpeg",
+                Status = ProductMediaStatuses.Stored,
+            };
         }
 
         private sealed class FakeHostEnvironment : IHostEnvironment

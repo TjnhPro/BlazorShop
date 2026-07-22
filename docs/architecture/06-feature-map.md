@@ -184,8 +184,8 @@ Decision rule:
 Projects/files:
 
 - `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger`
-- `BlazorShop.Tests/PresentationV2/CommerceNode`
-- `BlazorShop.Tests/PresentationV2/CommerceNode/Snapshots`
+- `BlazorShop.Tests.V2/PresentationV2/CommerceNode`
+- `BlazorShop.Tests.V2/PresentationV2/CommerceNode/Snapshots`
 - `docs/refactor-control-Commerce-storefront/QA-*.todo.md`
 
 Capabilities:

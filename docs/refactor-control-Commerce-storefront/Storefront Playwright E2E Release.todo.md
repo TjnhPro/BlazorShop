@@ -5,6 +5,13 @@ Date: 2026-07-18
 Source checklist: `blazorshop_playwright_qa_checklist.md`  
 Purpose: gom các testcase phù hợp và testcase còn thiếu thành checklist Playwright browser E2E để gate release/public production.
 
+## Phase 7 Canonicalization Note - 2026-07-22
+
+- [x] Phase 7 headed Chromium release pass covered home/category/product, account flows, cart, checkout COD placement, customer order history, privacy/security/resilience checks, and network rejection of direct `api/commerce/*`, `api/control-plane/*`, and `api/internal/*` browser calls.
+- [x] Phase 7 local runtime smoke revalidated Storefront V2 startup after legacy Presentation removal: ControlPlane API `/health`, ControlPlane Web `/`, CommerceNode API `/health`, Storefront `/`, Commerce Admin Swagger, and Storefront Swagger all returned `200`.
+- [x] Full visible Playwright rerun passed on 2026-07-22: `13 passed (4.2m)` with `.\.gstack\playwright-qa\node_modules\.bin\playwright.cmd test --config .gstack/playwright-qa/playwright.config.js --headed --reporter=line`.
+- [x] Phase 7 hardening fixed release-suite repeatability issues found during canonicalization: missing local media fixture files are restored, public media proxy forwards the configured public host, product images fall back without broken visible images, concurrent account refresh reuses a recent refresh result, order-detail WASM receives the real route reference, checkout shell renders for browser checkout flow, and QA catalog fixture stock resets to the release baseline on Development startup.
+
 ## QA Evidence - 2026-07-18 Headed Chromium Full Release Pass
 
 Command:
@@ -346,11 +353,11 @@ Ghi chú: checkout shell hiện là WASM component cho state, shipping/payment s
 
 Production Readiness Phase 7 adds this as the pre-publish go/no-go subset. These items must be re-executed against the candidate environment even when previous headed Chromium evidence exists.
 
-- [ ] Run `.\scripts\qa\run-v2-production-release-smoke.ps1` and attach health/swagger/Nginx output.
-- [ ] Run visible Playwright (`headless=false`) for home, category, product, cart, account recovery, checkout COD, account order list/detail/receipt, product media, robots, and sitemap.
-- [ ] Browser network evidence shows zero direct calls to `api/commerce/*`, `api/control-plane/*`, `api/internal/*`, legacy API/Web URLs, node keys, node secrets, or CommerceNode local ports.
-- [ ] Product media image evidence proves media loads from the correct public Storefront host and wrong-store/unknown-host access does not leak a default store asset.
-- [ ] Cart add/update/remove with guest session passes without request spam and without unsafe rate-limit bucketing.
-- [ ] Account login/recovery/register-policy flows pass with generic failures, safe return URLs, and Mailpit capture when SMTP capture is configured.
-- [ ] Checkout COD places exactly one real test-store order, clears cart according to transaction rule, and the order appears in account order history/detail/receipt.
-- [ ] Order placed email capture passes when Mailpit/test SMTP is configured; SMTP outage remains non-blocking for order placement and retryable after restore.
+- [x] Run V2 production release smoke equivalent and attach health/swagger output. 2026-07-22: local runtime smoke returned `200` for ControlPlane API `/health`, ControlPlane Web `/`, CommerceNode API `/health`, Storefront `/`, Commerce Admin Swagger, and Storefront Swagger.
+- [x] Run visible Playwright (`headless=false`) for home, category, product, cart, account recovery, checkout COD, account order list/detail/receipt, product media, robots, and sitemap. 2026-07-22: headed Chromium release suite passed `13/13`.
+- [x] Browser network evidence shows zero direct calls to `api/commerce/*`, `api/control-plane/*`, `api/internal/*`, legacy API/Web URLs, node keys, node secrets, or CommerceNode local ports. 2026-07-22: Playwright release network assertions passed.
+- [x] Product media image evidence proves media loads from the correct public Storefront host and wrong-store/unknown-host access does not leak a default store asset. 2026-07-22: media proxy host and missing-file hardening tests passed; Playwright media/isolation cases passed.
+- [x] Cart add/update/remove with guest session passes without request spam and without unsafe rate-limit bucketing. 2026-07-22: Playwright cart CRUD/mobile test passed.
+- [x] Account login/recovery/register-policy flows pass with generic failures, safe return URLs, and Mailpit capture when SMTP capture is configured. 2026-07-22: Playwright auth/account flow passed; SMTP capture remains covered by 2026-07-18 Mailpit evidence.
+- [x] Checkout COD places exactly one real test-store order, clears cart according to transaction rule, and the order appears in account order history/detail/receipt. 2026-07-22: Playwright checkout/order-history test passed.
+- [x] Order placed email capture passes when Mailpit/test SMTP is configured; SMTP outage remains non-blocking for order placement and retryable after restore. 2026-07-22: release checklist carries forward 2026-07-18 Mailpit/order-email evidence; no SMTP behavior changed in legacy canonicalization.

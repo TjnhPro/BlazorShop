@@ -23,7 +23,7 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("activeStrictIgnoreFiles", script, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.PresentationV2", script, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.sln", script, StringComparison.Ordinal);
-            Assert.Contains("compose.v2.production.yml", script, StringComparison.Ordinal);
+            Assert.Contains("compose.production.yml", script, StringComparison.Ordinal);
             Assert.Contains("scripts/run-v2-local.ps1", script, StringComparison.Ordinal);
             Assert.Contains("Inventory is intentionally noisy", allowList, StringComparison.Ordinal);
 

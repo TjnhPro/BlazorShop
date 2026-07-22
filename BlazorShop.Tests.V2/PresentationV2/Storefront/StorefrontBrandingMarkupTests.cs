@@ -154,6 +154,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("\"purchase_disabled\" => \"Purchasing is paused.\"", markup);
             Assert.Contains("\"below_min_quantity\" => $\"Minimum order quantity is {Product.MinOrderQuantity}.\"", markup);
             Assert.Contains("View Product", markup);
+            Assert.Contains("BrokenImageFallbackScript", markup);
+            Assert.Contains("data:image/svg+xml", markup);
         }
 
         [Fact]
@@ -194,6 +196,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("data-[selected=true]:ring-2", gallery);
             Assert.Contains("product.Image", gallery);
             Assert.Contains("Image unavailable", gallery);
+            Assert.Contains("BrokenImageFallbackScript", gallery);
+            Assert.Contains("onerror=\"@BrokenImageFallbackScript\"", gallery);
             Assert.Contains("selectGalleryThumbnail", script);
             Assert.Contains("galleryThumbnailSelector", script);
             Assert.Contains("mainImage.src = imageUrl", script);
@@ -210,6 +214,15 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("object-fit: contain;", styles);
             Assert.Contains("overscroll-behavior-x: contain;", styles);
             Assert.Contains(".bs-product-gallery__thumb[data-selected=\"true\"]", styles);
+        }
+
+        [Fact]
+        public void AccountOrderDetailPage_PassesRouteReferenceToBrowserComponent()
+        {
+            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountOrderDetailPage.razor");
+
+            Assert.Contains("OrderReference=\"@OrderReference\"", markup);
+            Assert.DoesNotContain("OrderReference=\"OrderReference\"", markup, StringComparison.Ordinal);
         }
 
         [Fact]

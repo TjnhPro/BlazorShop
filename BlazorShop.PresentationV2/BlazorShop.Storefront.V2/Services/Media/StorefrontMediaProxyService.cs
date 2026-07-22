@@ -30,7 +30,11 @@ namespace BlazorShop.Storefront.Services.Media
                 $"{mediaPath}{httpContext.Request.QueryString}");
 
             using var request = new HttpRequestMessage(HttpMethod.Get, targetUri);
-            request.Headers.TryAddWithoutValidation("X-Store-Key", storeKey);
+            var publicHost = ResolvePublicHost(this.configuration, httpContext);
+            if (!string.IsNullOrWhiteSpace(publicHost))
+            {
+                request.Headers.Host = publicHost;
+            }
 
             using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
             if (!response.IsSuccessStatusCode)
@@ -46,6 +50,21 @@ namespace BlazorShop.Storefront.Services.Media
             var content = await response.Content.ReadAsByteArrayAsync(cancellationToken);
             var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
             return Results.File(content, contentType);
+        }
+
+        private static string? ResolvePublicHost(IConfiguration configuration, HttpContext httpContext)
+        {
+            var configuredBaseUrl = configuration["PublicUrl:BaseUrl"] ?? configuration["ClientApp:BaseUrl"];
+            if (!string.IsNullOrWhiteSpace(configuredBaseUrl)
+                && Uri.TryCreate(configuredBaseUrl, UriKind.Absolute, out var configuredUri)
+                && !string.IsNullOrWhiteSpace(configuredUri.Host))
+            {
+                return configuredUri.Host;
+            }
+
+            return string.IsNullOrWhiteSpace(httpContext.Request.Host.Host)
+                ? null
+                : httpContext.Request.Host.Host;
         }
 
         private static void CopyHeaderIfPresent(HttpResponseMessage source, HttpResponse destination, string headerName)

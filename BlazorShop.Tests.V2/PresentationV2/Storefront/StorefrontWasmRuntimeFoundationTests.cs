@@ -224,6 +224,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("<StorefrontCheckoutShell", page, StringComparison.Ordinal);
             Assert.Contains("InitialState=\"CheckoutState\"", page, StringComparison.Ordinal);
             Assert.Contains("ShowPanel=\"false\"", page, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontCheckoutShell InitialState=\"CheckoutState\" @rendermode=\"InteractiveWebAssembly\" />", page, StringComparison.Ordinal);
             Assert.Contains("@rendermode=\"InteractiveWebAssembly\"", page, StringComparison.Ordinal);
             Assert.Contains("StorefrontBrowserCheckoutState", codeBehind, StringComparison.Ordinal);
             Assert.Contains("ToBrowserCheckoutState(checkoutSession)", codeBehind, StringComparison.Ordinal);

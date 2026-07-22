@@ -1,5 +1,6 @@
 namespace BlazorShop.Storefront.Services
 {
+    using System.Collections.Concurrent;
     using System.Net.Http.Json;
     using System.Security.Claims;
     using System.Text;
@@ -14,6 +15,8 @@ namespace BlazorShop.Storefront.Services
     public sealed class StorefrontSessionResolver : IStorefrontSessionResolver
     {
         private static readonly object CurrentUserCacheKey = new();
+        private static readonly ConcurrentDictionary<string, Lazy<Task<CachedRefreshSession>>> RefreshSessionCache = new(StringComparer.Ordinal);
+        private static readonly TimeSpan RefreshReuseWindow = TimeSpan.FromSeconds(5);
 
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -62,30 +65,10 @@ namespace BlazorShop.Storefront.Services
                 return StorefrontSessionInfo.Anonymous;
             }
 
-            using var request = new HttpRequestMessage(HttpMethod.Post, GetRefreshTokenRoute());
-            request.Headers.TryAddWithoutValidation("Cookie", cookieHeader);
-
             var userAgent = httpContext.Request.Headers.UserAgent.ToString();
-            if (!string.IsNullOrWhiteSpace(userAgent))
-            {
-                request.Headers.TryAddWithoutValidation("User-Agent", userAgent);
-            }
-
-            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-            CopySetCookieHeaders(response, httpContext.Response);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return StorefrontSessionInfo.Anonymous;
-            }
-
-            var payload = await ReadTokenResponseAsync(response, cancellationToken);
-            if (payload is null || string.IsNullOrWhiteSpace(payload.AccessToken))
-            {
-                return StorefrontSessionInfo.Anonymous;
-            }
-
-            return ParseSession(payload.AccessToken);
+            var cached = await ResolveRefreshSessionAsync(cookieHeader, userAgent, cancellationToken);
+            CopySetCookieHeaders(cached.SetCookieHeaders, httpContext.Response);
+            return cached.Session;
         }
 
         private string GetRefreshTokenCookieName()
@@ -100,17 +83,73 @@ namespace BlazorShop.Storefront.Services
                 : _configuration["Api:RefreshTokenRoute"]!;
         }
 
-        private static void CopySetCookieHeaders(HttpResponseMessage response, HttpResponse storefrontResponse)
+        private Task<CachedRefreshSession> ResolveRefreshSessionAsync(
+            string cookieHeader,
+            string? userAgent,
+            CancellationToken cancellationToken)
         {
-            if (!response.Headers.TryGetValues("Set-Cookie", out var values))
+            var cacheKey = $"{cookieHeader}|{userAgent}";
+            var lazy = RefreshSessionCache.GetOrAdd(
+                cacheKey,
+                key =>
+                {
+                    _ = Task.Delay(RefreshReuseWindow).ContinueWith(
+                        _ =>
+                        {
+                            RefreshSessionCache.TryRemove(key, out var removed);
+                        },
+                        TaskScheduler.Default);
+                    return new Lazy<Task<CachedRefreshSession>>(
+                        () => this.ResolveRefreshSessionFromApiAsync(cookieHeader, userAgent, cancellationToken),
+                        LazyThreadSafetyMode.ExecutionAndPublication);
+                });
+
+            return lazy.Value;
+        }
+
+        private async Task<CachedRefreshSession> ResolveRefreshSessionFromApiAsync(
+            string cookieHeader,
+            string? userAgent,
+            CancellationToken cancellationToken)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, GetRefreshTokenRoute());
+            request.Headers.TryAddWithoutValidation("Cookie", cookieHeader);
+
+            if (!string.IsNullOrWhiteSpace(userAgent))
             {
-                return;
+                request.Headers.TryAddWithoutValidation("User-Agent", userAgent);
             }
 
+            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            var setCookieHeaders = ReadSetCookieHeaders(response);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new CachedRefreshSession(StorefrontSessionInfo.Anonymous, setCookieHeaders);
+            }
+
+            var payload = await ReadTokenResponseAsync(response, cancellationToken);
+            if (payload is null || string.IsNullOrWhiteSpace(payload.AccessToken))
+            {
+                return new CachedRefreshSession(StorefrontSessionInfo.Anonymous, setCookieHeaders);
+            }
+
+            return new CachedRefreshSession(ParseSession(payload.AccessToken), setCookieHeaders);
+        }
+
+        private static void CopySetCookieHeaders(IReadOnlyList<string> values, HttpResponse storefrontResponse)
+        {
             foreach (var value in values)
             {
                 storefrontResponse.Headers.Append("Set-Cookie", value);
             }
+        }
+
+        private static IReadOnlyList<string> ReadSetCookieHeaders(HttpResponseMessage response)
+        {
+            return response.Headers.TryGetValues("Set-Cookie", out var values)
+                ? values.ToArray()
+                : [];
         }
 
         private static StorefrontSessionInfo ParseSession(string token)
@@ -205,5 +244,7 @@ namespace BlazorShop.Storefront.Services
 
             return document.RootElement.Deserialize<StorefrontTokenResponse>(new JsonSerializerOptions(JsonSerializerDefaults.Web));
         }
+
+        private sealed record CachedRefreshSession(StorefrontSessionInfo Session, IReadOnlyList<string> SetCookieHeaders);
     }
 }

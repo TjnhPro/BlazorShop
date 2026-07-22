@@ -64,11 +64,11 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore
 
 `BlazorShop.sln` is now the V2 canonical solution. It includes shared core, ServiceDefaults, active PresentationV2 projects, and `BlazorShop.Tests.V2`. Legacy `BlazorShop.Presentation/*`, `BlazorShop.AppHost`, the old mixed `BlazorShop.Tests` project, and the temporary `BlazorShop.V2.slnf` transition file have been removed.
 
-`BlazorShop.Tests.V2` links active V2 architecture, Commerce Node, Control Plane, Storefront V2, and Storefront WASM/browser host tests from the mixed historical test project. The V2 test assembly disables test parallelization so WebApplicationFactory/browser-host smoke tests do not race each other.
+`BlazorShop.Tests.V2` owns the active V2 architecture, Commerce Node, Control Plane, Storefront V2, and Storefront WASM/browser host tests directly. The V2 test assembly disables test parallelization so WebApplicationFactory/browser-host smoke tests do not race each other.
 
-GitHub Actions uses `ci-v2` as the active release gate. That job restores/builds `BlazorShop.sln`, runs `BlazorShop.Tests.V2`, validates the V2 production compose file, and builds the V2 container images. The old mixed `BlazorShop.Tests` project has been retired.
+GitHub Actions uses `ci-v2` as the active release gate. That job restores/builds `BlazorShop.sln`, runs `BlazorShop.Tests.V2`, validates the canonical production compose file, and builds the V2 container images. The old mixed `BlazorShop.Tests` project has been retired.
 
-`ci-v2` also validates `compose.v2.production.yml` and builds the active V2 Dockerfiles:
+`ci-v2` also validates `compose.production.yml` and builds the active V2 Dockerfiles:
 
 - `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Dockerfile`
 - `BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/Dockerfile`
@@ -262,7 +262,7 @@ Long data migrations need manual review before release because they can block re
 
 ## V2 Production Compose
 
-Use `compose.v2.production.yml` for V2 production-like validation. It intentionally uses separate database services and connection strings:
+Use `compose.production.yml` for V2 production-like validation. It intentionally uses separate database services and connection strings:
 
 - `ConnectionStrings__ControlPlaneConnection` for Control Plane API.
 - `ConnectionStrings__CommerceNodeConnection` for Commerce Node API.

@@ -78,6 +78,14 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
             this.SetCacheHeaders(media, query.Value, v);
 
+            if (!this.storageProvider.FileExists(
+                this.environment.ContentRootPath,
+                this.options.RootPath,
+                media.OriginalStoragePath!))
+            {
+                return this.NotFound();
+            }
+
             if (!this.options.UseImgproxy || string.IsNullOrWhiteSpace(this.options.ImgproxyBaseUrl))
             {
                 return this.ServeOriginal(media);
@@ -97,14 +105,6 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
         private IActionResult ServeOriginal(Domain.Entities.CommerceNode.ProductMedia media)
         {
-            if (!this.storageProvider.FileExists(
-                this.environment.ContentRootPath,
-                this.options.RootPath,
-                media.OriginalStoragePath!))
-            {
-                return this.NotFound();
-            }
-
             var physicalPath = this.storageProvider.ResolvePhysicalPath(
                 this.environment.ContentRootPath,
                 this.options.RootPath,

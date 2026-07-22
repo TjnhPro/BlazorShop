@@ -189,6 +189,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Contains("Create account", content, StringComparison.Ordinal);
             Assert.Contains("method=\"post\"", content, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("data-storefront-register-form", content, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -211,7 +212,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Contains("Customer registration is disabled.", content, StringComparison.Ordinal);
-            Assert.DoesNotContain("method=\"post\"", content, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("data-storefront-register-form", content, StringComparison.Ordinal);
             Assert.DoesNotContain("name=\"FullName\"", content, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("data-storefront-captcha-token=\"registration\"", content, StringComparison.Ordinal);
         }

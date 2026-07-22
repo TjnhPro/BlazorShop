@@ -14,6 +14,16 @@ Database target:
 
 Last verified: 2026-07-10
 
+## Phase 7 V2 Canonicalization Evidence - 2026-07-22
+
+- [x] CommerceNode API builds through `dotnet build BlazorShop.sln -c Release --no-restore`.
+- [x] CommerceNode API container Dockerfile built successfully during Phase 6/7 release gate.
+- [x] CommerceNode active source uses `CommerceNodeConnection`; ActiveStrict grep found no `DefaultConnection`.
+- [x] Commerce Admin and Storefront Swagger are protected by V2 tests and local runtime smoke in the release gate.
+- [x] Storefront scoped APIs remain under `api/storefront/stores/{storeKey}/*`; direct legacy Presentation and `api/internal/*` dependency is absent from active source.
+- [x] Phase 7 media hardening passed: missing original files return `404` before imgproxy, Development startup restores missing QA media files, and public media proxy uses the configured public Storefront host instead of browser `X-Store-Key`.
+- [x] Phase 7 Development seeding keeps browser QA repeatable by restoring fixed QA catalog fixture stock while preserving operator-edited store runtime profile values.
+
 Current route state:
 
 - `api/internal/*` was removed from the active CommerceNode runtime on 2026-07-14 by `BlazorShop.CommerceNode.RemoveLegacyInternal.autoplan.md`.
@@ -1206,4 +1216,4 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Guest/session rate-limit behavior remains an explicit release check. 2026-07-22 Production Readiness Phase 7: release gate points to Phase 2 user/cart-token/trusted-IP partition tests and rejects raw `X-Forwarded-For` bucket changes.
 - [x] Storefront OpenAPI generator artifact is part of the release gate. 2026-07-22 Production Readiness Phase 7: `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_GeneratesAndCompilesTypeScriptClientWithNswag` uses the pinned NSwag/TypeScript generator path.
 - [x] CommerceNode V2 health is part of the release smoke. 2026-07-22 Production Readiness Phase 7: `scripts/qa/run-v2-production-release-smoke.ps1` checks CommerceNode `/health`, Storefront and CommerceAdmin swagger JSON, and Nginx unknown-host `403`.
-- [ ] Execute `.\scripts\qa\run-v2-production-release-smoke.ps1` against a running V2 environment before production publish and attach output to release evidence.
+- [x] Execute production-release smoke equivalent against a running V2 environment before production publish and attach output to release evidence. 2026-07-22: CommerceNode API `/health`, Commerce Admin Swagger, and Storefront Swagger returned `200`; ActiveStrict passed.

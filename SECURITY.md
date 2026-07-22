@@ -8,7 +8,7 @@ BlazorShop is still evolving toward the active V2 architecture. Until the first 
 | --- | --- |
 | Active V2 projects under `BlazorShop.PresentationV2` | Supported for current development. |
 | Shared core projects: `Domain`, `Application`, `Infrastructure`, `ServiceDefaults` | Supported when used by active V2 runtime paths. |
-| Legacy projects under `BlazorShop.Presentation` | Migration/reference only unless a vulnerability is reachable from an active V2 path or the maintainer explicitly supports that legacy deployment. |
+| Removed legacy Presentation history | Not supported as an active runtime surface. |
 | `Smartstore/` reference source | Not part of BlazorShop runtime support. |
 
 ## Reporting A Vulnerability

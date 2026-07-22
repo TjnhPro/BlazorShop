@@ -44,6 +44,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 this.commerceMediaStorageOptions.RootPath,
                 "qa-fixtures/qa-s2/content-fixture.png",
                 cancellationToken);
+            await this.EnsureMissingStoredMediaFilesAsync(cancellationToken);
         }
 
         private async Task EnsureMediaFixtureFileAsync(
@@ -62,6 +63,40 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 storagePath,
                 QaFixturePngBytes,
                 cancellationToken);
+        }
+
+        private async Task EnsureMissingStoredMediaFilesAsync(CancellationToken cancellationToken)
+        {
+            var productMediaPaths = await this.dbContext.ProductMedia
+                .AsNoTracking()
+                .Where(media =>
+                    media.Status == ProductMediaStatuses.Stored &&
+                    media.DeletedAt == null &&
+                    !string.IsNullOrWhiteSpace(media.OriginalStoragePath))
+                .Select(media => media.OriginalStoragePath!)
+                .ToArrayAsync(cancellationToken);
+
+            foreach (var storagePath in productMediaPaths.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                await this.EnsureMediaFixtureFileAsync(
+                    ProductMediaRootPath,
+                    storagePath,
+                    cancellationToken);
+            }
+
+            var assetPaths = await this.dbContext.CommerceMediaAssets
+                .AsNoTracking()
+                .Where(asset => !string.IsNullOrWhiteSpace(asset.OriginalStoragePath))
+                .Select(asset => asset.OriginalStoragePath)
+                .ToArrayAsync(cancellationToken);
+
+            foreach (var storagePath in assetPaths.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                await this.EnsureMediaFixtureFileAsync(
+                    this.commerceMediaStorageOptions.RootPath,
+                    storagePath,
+                    cancellationToken);
+            }
         }
 
         private async Task EnsureProductMediaFixturesAsync(Guid storeId, CancellationToken cancellationToken)

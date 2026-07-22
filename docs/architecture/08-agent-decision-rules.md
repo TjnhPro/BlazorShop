@@ -177,7 +177,7 @@ dotnet build BlazorShop.sln --no-restore
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore
 ```
 
-Use the mixed `BlazorShop.Tests` project only when the change intentionally touches legacy Presentation, a test has not yet been migrated into `BlazorShop.Tests.V2`, or a compatibility check explicitly needs the old mixed surface.
+Do not recreate or rely on the retired mixed `BlazorShop.Tests` project. Add active verification to `BlazorShop.Tests.V2`.
 
 ## Implementation Rule
 

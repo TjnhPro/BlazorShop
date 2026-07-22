@@ -187,17 +187,27 @@
             builder.AddAttribute(1, "src", Product.Image);
             builder.AddAttribute(2, "alt", Product.Name);
             builder.AddAttribute(3, "class", "absolute inset-0 h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-105");
+            builder.AddAttribute(4, "onerror", BrokenImageFallbackScript);
             builder.CloseElement();
+            BuildImagePlaceholder(builder, 5, hidden: true);
             return;
         }
 
-        builder.OpenElement(4, "div");
-        builder.AddAttribute(5, "class", "absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-100 px-4 text-center text-sm font-semibold text-neutral-500");
-        builder.AddAttribute(6, "role", "img");
-        builder.AddAttribute(7, "aria-label", $"Image unavailable for {Product.Name}");
-        builder.AddContent(8, "Image unavailable");
-        builder.CloseElement();
+        BuildImagePlaceholder(builder, 10, hidden: false);
     };
+
+    private const string BrokenImageFallbackScript = "this.onerror=null;this.hidden=true;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221%22 height=%221%22/%3E';if(this.nextElementSibling){this.nextElementSibling.hidden=false;}";
+
+    private void BuildImagePlaceholder(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder, int sequence, bool hidden)
+    {
+        builder.OpenElement(sequence, "div");
+        builder.AddAttribute(sequence + 1, "class", "absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-100 px-4 text-center text-sm font-semibold text-neutral-500");
+        builder.AddAttribute(sequence + 2, "role", "img");
+        builder.AddAttribute(sequence + 3, "aria-label", $"Image unavailable for {Product.Name}");
+        builder.AddAttribute(sequence + 4, "hidden", hidden);
+        builder.AddContent(sequence + 5, "Image unavailable");
+        builder.CloseElement();
+    }
 
     protected override async Task OnInitializedAsync()
     {
