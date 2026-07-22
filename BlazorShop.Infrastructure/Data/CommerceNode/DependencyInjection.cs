@@ -82,7 +82,15 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                     }));
 
             services.AddHttpContextAccessor();
-            services.AddDataProtection();
+            var dataProtectionBuilder = services.AddDataProtection()
+                .SetApplicationName("BlazorShop.CommerceNode");
+            var dataProtectionKeyRingPath = configuration["CommerceNode:DataProtection:KeyRingPath"];
+            if (!string.IsNullOrWhiteSpace(dataProtectionKeyRingPath))
+            {
+                Directory.CreateDirectory(dataProtectionKeyRingPath);
+                dataProtectionBuilder.PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeyRingPath));
+            }
+
             services.AddAutoMapper(cfg => cfg.AddProfile<MappingConfig>());
             services.AddValidatorsFromAssemblyContaining<SeoRedirectDtoValidator>();
             services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();

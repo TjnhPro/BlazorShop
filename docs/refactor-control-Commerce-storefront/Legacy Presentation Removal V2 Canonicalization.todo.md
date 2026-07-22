@@ -1,6 +1,6 @@
 # Legacy Presentation Removal V2 Canonicalization.todo.md
 
-Status: phase 0 guardrail implemented; legacy removal not started
+Status: phase 1 production packaging gate complete; phase 2 main solution canonicalization next
 Source: investigate review of legacy Presentation removal blockers  
 Purpose: remove `BlazorShop.Presentation` and make V2 the canonical repository lifecycle target without breaking active V2 runtime, CI, Docker, deployment, tests, or docs.
 
@@ -31,8 +31,8 @@ Phase status summary:
 |---|---|---|
 | 0 Baseline inventory and guardrail modes | Done | `scripts/verify-no-active-legacy-reference.ps1`, allowlist file, and architecture tests exist |
 | 1A Dockerfile V2 | Done | All four V2 Dockerfiles exist; Storefront V2 Dockerfile includes Components/WASM project/source copy |
-| 1B V2 production compose | Mostly done | `compose.v2.production.yml` exists and uses V2 topology; persistent Data Protection key-ring wiring is not present in compose; `compose.production.yml` is still legacy |
-| 1C CI V2 blocking | Done except optional full boot smoke | `ci-v2` restores/builds/tests V2, validates compose config, and builds four V2 images; legacy job is non-blocking |
+| 1B V2 production compose | Done | `compose.v2.production.yml` uses V2 topology, has CommerceNode media volume, and now persists CommerceNode Data Protection keys at `/app/runtime/data-protection-keys`; `compose.production.yml` canonical swap is intentionally deferred to Phase 2 |
+| 1C CI V2 blocking | Done | `ci-v2` restores/builds/tests V2, validates compose config, builds four V2 images, and keeps legacy under non-blocking `legacy-compatibility` |
 | 2 Main solution becomes V2 canonical | Not started | `BlazorShop.sln` still includes legacy Presentation, AppHost, and old mixed tests |
 | 3 V2 test source ownership | Not started | `BlazorShop.Tests.V2.csproj` still links `..\BlazorShop.Tests\...` source/snapshots |
 | 4 Remove legacy AppHost and operational entrypoints | Not started | `BlazorShop.AppHost` exists and references legacy projects/`DefaultConnection` |
@@ -155,73 +155,73 @@ Goal: truoc khi xoa legacy, V2 phai co du artifact build/deploy that.
 
 ### Phase 1A - Dockerfile V2
 
-- [ ] Tao Dockerfile cho `BlazorShop.PresentationV2/BlazorShop.ControlPlane.API`.
-- [ ] Tao Dockerfile cho `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API`.
-- [ ] Tao Dockerfile cho `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web`.
-- [ ] Sua Dockerfile `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile`:
-  - [ ] Copy `BlazorShop.Storefront.Components.csproj` truoc `dotnet restore`.
-  - [ ] Copy `BlazorShop.Storefront.WASM.csproj` truoc `dotnet restore`.
-  - [ ] Copy source cua `Storefront.Components` va `Storefront.WASM` truoc publish.
-  - [ ] Dung SDK/runtime phu hop `global.json` va project target.
-- [ ] ControlPlane Web Dockerfile:
-  - [ ] Publish Blazor WASM static assets.
-  - [ ] Serve bang Nginx/static server.
-  - [ ] Co SPA fallback.
-  - [ ] Khong bake API secret/node secret vao client image.
-- [ ] CommerceNode API image:
-  - [ ] Khong can legacy `DefaultConnection`.
-  - [ ] Dung `CommerceNodeConnection`.
-  - [ ] Co persistent media/data-protection volume points documented.
-- [ ] ControlPlane API image:
-  - [ ] Dung `ControlPlaneConnection`.
-  - [ ] Khong co Commerce Node secret trong Web image.
+- [x] Tao Dockerfile cho `BlazorShop.PresentationV2/BlazorShop.ControlPlane.API`.
+- [x] Tao Dockerfile cho `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API`.
+- [x] Tao Dockerfile cho `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web`.
+- [x] Sua Dockerfile `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile`:
+  - [x] Copy `BlazorShop.Storefront.Components.csproj` truoc `dotnet restore`.
+  - [x] Copy `BlazorShop.Storefront.WASM.csproj` truoc `dotnet restore`.
+  - [x] Copy source cua `Storefront.Components` va `Storefront.WASM` truoc publish.
+  - [x] Dung SDK/runtime phu hop `global.json` va project target.
+- [x] ControlPlane Web Dockerfile:
+  - [x] Publish Blazor WASM static assets.
+  - [x] Serve bang Nginx/static server.
+  - [x] Co SPA fallback.
+  - [x] Khong bake API secret/node secret vao client image.
+- [x] CommerceNode API image:
+  - [x] Khong can legacy `DefaultConnection`.
+  - [x] Dung `CommerceNodeConnection`.
+  - [x] Co persistent media/data-protection volume points documented.
+- [x] ControlPlane API image:
+  - [x] Dung `ControlPlaneConnection`.
+  - [x] Khong co Commerce Node secret trong Web image.
 
 ### Phase 1B - V2 production compose
 
-- [ ] Tao `compose.v2.production.yml` trong transition.
-- [ ] Services toi thieu:
-  - [ ] `controlplane-postgres`.
-  - [ ] `commercenode-postgres`.
-  - [ ] `controlplane-api`.
-  - [ ] `controlplane-web`.
-  - [ ] `commercenode-api`.
-  - [ ] `commercenode-nginx`.
-  - [ ] `commercenode-imgproxy`.
-  - [ ] `storefront-v2` hoac document ro store deployment task se tao container theo store.
-- [ ] Config bat buoc:
-  - [ ] `ConnectionStrings__ControlPlaneConnection`.
-  - [ ] `ConnectionStrings__CommerceNodeConnection`.
-  - [ ] Khong co `ConnectionStrings__DefaultConnection`.
-  - [ ] `ControlPlane__Database__MigrateOnStartup`.
-  - [ ] `CommerceNode__Database__MigrateOnStartup`.
-  - [ ] Data Protection key ring persistent cho CommerceNode.
-  - [ ] Media storage persistent cho CommerceNode.
-  - [ ] Storefront env chi co `Api__BaseUrl`, `STORE_KEY`/`StoreKey`, public URL config can thiet.
-- [ ] Khi `compose.v2.production.yml` pass, quyet dinh doi `compose.production.yml` thanh V2 canonical trong phase nay hoac Phase 2.
+- [x] Tao `compose.v2.production.yml` trong transition.
+- [x] Services toi thieu:
+  - [x] `controlplane-postgres`.
+  - [x] `commercenode-postgres`.
+  - [x] `controlplane-api`.
+  - [x] `controlplane-web`.
+  - [x] `commercenode-api`.
+  - [x] `commercenode-nginx`.
+  - [x] `commercenode-imgproxy`.
+  - [x] `storefront-v2` hoac document ro store deployment task se tao container theo store.
+- [x] Config bat buoc:
+  - [x] `ConnectionStrings__ControlPlaneConnection`.
+  - [x] `ConnectionStrings__CommerceNodeConnection`.
+  - [x] Khong co `ConnectionStrings__DefaultConnection`.
+  - [x] `ControlPlane__Database__MigrateOnStartup`.
+  - [x] `CommerceNode__Database__MigrateOnStartup`.
+  - [x] Data Protection key ring persistent cho CommerceNode.
+  - [x] Media storage persistent cho CommerceNode.
+  - [x] Storefront env chi co `Api__BaseUrl`, `STORE_KEY`/`StoreKey`, public URL config can thiet.
+- [x] Khi `compose.v2.production.yml` pass, quyet dinh doi `compose.production.yml` thanh V2 canonical trong phase nay hoac Phase 2. Decision: defer canonical `compose.production.yml` swap to Phase 2 after `BlazorShop.sln` becomes V2 canonical.
 
 ### Phase 1C - CI V2 blocking
 
-- [ ] Tao job `ci-v2`.
-- [ ] `ci-v2` run:
-  - [ ] `dotnet restore BlazorShop.V2.slnf`.
-  - [ ] `dotnet build BlazorShop.V2.slnf --configuration Release --no-restore`.
-  - [ ] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --configuration Release --no-build --verbosity normal`.
-- [ ] Build 4 Docker images V2 trong CI.
-- [ ] Run `docker compose -f compose.v2.production.yml config`.
-- [ ] Optional boot compose smoke neu runtime cost chap nhan:
-  - [ ] ControlPlane API health.
-  - [ ] CommerceNode API health.
-  - [ ] ControlPlane Web HTTP 200.
-  - [ ] Storefront V2 HTTP 200/maintenance expected.
-- [ ] Chuyen legacy job thanh `legacy-compatibility` tam thoi, khong la release blocker.
-- [ ] Sua npm cache path khong tro vao `BlazorShop.Presentation/BlazorShop.Web/package-lock.json`.
+- [x] Tao job `ci-v2`.
+- [x] `ci-v2` run:
+  - [x] `dotnet restore BlazorShop.V2.slnf`.
+  - [x] `dotnet build BlazorShop.V2.slnf --configuration Release --no-restore`.
+  - [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --configuration Release --no-build --verbosity normal`.
+- [x] Build 4 Docker images V2 trong CI.
+- [x] Run `docker compose -f compose.v2.production.yml config`.
+- [x] Optional boot compose smoke neu runtime cost chap nhan. Decision: defer full boot/runtime smoke to Phase 7 release gate.
+  - [x] ControlPlane API health covered by Phase 7 release smoke script.
+  - [x] CommerceNode API health covered by Phase 7 release smoke script.
+  - [x] ControlPlane Web HTTP 200 covered by Phase 7 release smoke script.
+  - [x] Storefront V2 HTTP 200/maintenance expected covered by Phase 7 release smoke script.
+- [x] Chuyen legacy job thanh `legacy-compatibility` tam thoi, khong la release blocker.
+- [x] Sua npm cache path khong tro vao `BlazorShop.Presentation/BlazorShop.Web/package-lock.json`.
 
 ### Done when
 
-- [ ] V2 image build tu clean checkout.
-- [ ] V2 compose config pass.
-- [ ] CI V2 la required release signal.
-- [ ] Legacy CI khong con tao cam giac production dang deploy V2.
+- [x] V2 image build tu clean checkout.
+- [x] V2 compose config pass.
+- [x] CI V2 la required release signal.
+- [x] Legacy CI khong con tao cam giac production dang deploy V2.
 
 ## Phase 2 - Main solution becomes V2 canonical
 
@@ -507,9 +507,9 @@ Goal: dong phase bang bang chung build/test/container/browser production-ready.
 
 ## Implementation order checklist
 
-- [ ] Phase 0 complete and committed.
+- [x] Phase 0 complete and committed.
 - [x] Phase 1A Dockerfiles complete and committed through V2 production-readiness work.
-- [ ] Phase 1B compose V2 complete and committed. Mostly done through V2 production-readiness work; persistent Data Protection key-ring wiring and `compose.production.yml` canonical decision remain pending.
+- [x] Phase 1B compose V2 complete and committed. Data Protection key-ring wiring is complete; `compose.production.yml` canonical swap is deferred to Phase 2.
 - [x] Phase 1C CI V2 blocking complete and committed through V2 production-readiness work.
 - [ ] Phase 2 main solution V2 canonical complete and committed.
 - [ ] Phase 3A V2 test source move complete and committed.

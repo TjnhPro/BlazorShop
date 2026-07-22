@@ -98,6 +98,7 @@ services:
       CommerceNode__Database__MigrateOnStartup: ${BLAZORSHOP_COMMERCENODE_MIGRATE_ON_STARTUP:-false}
       CommerceNode__Database__FailStartupOnMigrationError: "true"
       CommerceNode__Database__LogMigrationState: "true"
+      CommerceNode__DataProtection__KeyRingPath: /app/runtime/data-protection-keys
       CommerceNode__EmailTransport__AllowGlobalEmailSettingsFallback: "false"
       CommerceNode__EmailTransport__CaptureModeAllowed: "false"
       StorefrontDeployment__NetworkName: blazorshop-v2-production
@@ -124,6 +125,7 @@ services:
     volumes:
       - commercenode_uploads:/app/uploads
       - commercenode_media:/app/runtime/media
+      - commercenode_data_protection_keys:/app/runtime/data-protection-keys
       - ./BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/nginx/conf.d:/app/runtime/nginx/conf.d
       - ./BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/nginx/logs:/app/runtime/nginx/logs
     networks:
@@ -194,6 +196,7 @@ volumes:
   commercenode_postgres_data:
   commercenode_uploads:
   commercenode_media:
+  commercenode_data_protection_keys:
   commercenode_nginx_cache:
 
 networks:

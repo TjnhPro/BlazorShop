@@ -106,6 +106,8 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("ConnectionStrings__CommerceNodeConnection", compose, StringComparison.Ordinal);
             Assert.Contains("ControlPlane__Database__MigrateOnStartup", compose, StringComparison.Ordinal);
             Assert.Contains("CommerceNode__Database__MigrateOnStartup", compose, StringComparison.Ordinal);
+            Assert.Contains("CommerceNode__DataProtection__KeyRingPath: /app/runtime/data-protection-keys", compose, StringComparison.Ordinal);
+            Assert.Contains("commercenode_data_protection_keys:/app/runtime/data-protection-keys", compose, StringComparison.Ordinal);
             Assert.Contains("Runtime__Health__ExposeInProduction", compose, StringComparison.Ordinal);
             Assert.Contains("Api__StoreKey", compose, StringComparison.Ordinal);
             Assert.Contains("PublicUrl__BaseUrl", compose, StringComparison.Ordinal);

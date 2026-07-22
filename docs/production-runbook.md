@@ -169,6 +169,7 @@ Staging capture setup:
 Production secret protection:
 
 - Persist ASP.NET Core Data Protection keys for `BlazorShop.CommerceNode.API` outside the database and outside checked-in config.
+- Set `CommerceNode:DataProtection:KeyRingPath` or `CommerceNode__DataProtection__KeyRingPath` to the mounted key-ring directory; the V2 production compose uses `/app/runtime/data-protection-keys`.
 - Protect the key ring with the platform secret store or encrypted volume controls.
 - Do not rotate or delete Data Protection keys until all encrypted store SMTP password values that depend on old keys have been rotated.
 - In multi-instance production, all Commerce Node API instances that read the same Commerce Node database must share the same protected key ring.

@@ -143,6 +143,7 @@ Local email capture:
 - `CommerceNode:EmailTransport:CaptureModeAllowed=true` is development/local only. Production examples keep capture disabled and require per-store SMTP setup through Control Plane once the management UI is enabled.
 - `CommerceNode:EmailTransport:AllowGlobalEmailSettingsFallback=false` keeps production multi-store email from silently falling back to global `EmailSettings`.
 - Store SMTP passwords are protected with ASP.NET Core Data Protection before they are stored in Commerce Node PostgreSQL. Production operators must persist and protect the Data Protection key ring outside the database and outside storefront/runtime env files so API restarts or multiple API instances can decrypt existing store SMTP secrets safely.
+- Configure the production key ring path with `CommerceNode:DataProtection:KeyRingPath` or `CommerceNode__DataProtection__KeyRingPath`; `compose.v2.production.yml` mounts a named volume at `/app/runtime/data-protection-keys` for this purpose.
 
 Email capture QA commands:
 
@@ -274,7 +275,7 @@ Required operator-provided values include:
 - Public base URLs for Control Plane API/Web, Commerce Node API, and Storefront V2.
 - Storefront store key for the sample Storefront V2 container.
 
-Production health endpoints are exposed only when `Runtime__Health__ExposeInProduction=true`; the V2 compose sets this for container healthchecks. The Commerce Node Nginx service mounts `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/nginx/conf.d`, which must keep `00-default-deny.conf` so unknown hosts return `403`.
+Production health endpoints are exposed only when `Runtime__Health__ExposeInProduction=true`; the V2 compose sets this for container healthchecks. Commerce Node persists product media and its ASP.NET Core Data Protection key ring through named volumes so store SMTP secrets remain decryptable across container replacement. The Commerce Node Nginx service mounts `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/nginx/conf.d`, which must keep `00-default-deny.conf` so unknown hosts return `403`.
 
 ## QA Run Notes
 
