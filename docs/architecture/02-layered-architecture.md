@@ -60,13 +60,12 @@ Rules:
 
 ## Presentation Layer
 
-Legacy project family: `BlazorShop.Presentation`
+Removed legacy project family: `BlazorShop.Presentation`
 
 Status:
 
-- Legacy only.
-- Do not extend for new V2 features unless explicitly requested.
-- Safe for comparison during migration and QA.
+- Removed from the active branch.
+- Use git history or the `legacy-presentation-final` tag for comparison.
 
 Active project family: `BlazorShop.PresentationV2`
 

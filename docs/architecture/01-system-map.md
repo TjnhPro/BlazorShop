@@ -2,7 +2,7 @@
 
 ## Solution Projects
 
-`BlazorShop.sln` is the V2 canonical solution. It contains shared core projects, active V2 projects, ServiceDefaults, and `BlazorShop.Tests.V2`. Legacy Presentation source may remain on disk temporarily for comparison during removal work, but it is no longer part of the main solution. The legacy `BlazorShop.AppHost` project has been removed; use `scripts/run-v2-local.ps1` for local V2 orchestration.
+`BlazorShop.sln` is the V2 canonical solution. It contains shared core projects, active V2 projects, ServiceDefaults, and `BlazorShop.Tests.V2`. Legacy Presentation and AppHost projects have been removed from the active branch; use `scripts/run-v2-local.ps1` for local V2 orchestration.
 
 | Area | Project | Status | Responsibility |
 | --- | --- | --- | --- |
@@ -10,10 +10,6 @@
 | Core | `BlazorShop.Application` | Active shared core | DTOs, validation, application services, service contracts, Control Plane interfaces, Commerce Node interfaces. |
 | Core | `BlazorShop.Infrastructure` | Active shared infrastructure | EF contexts, repositories, migrations, infrastructure services, auth adapters, seeders, transaction managers. |
 | Runtime | `BlazorShop.ServiceDefaults` | Active shared runtime | Common .NET hosting/service defaults. |
-| Legacy | `BlazorShop.Presentation/BlazorShop.API` | Legacy, not in main solution | Original commerce API with mixed admin and storefront concerns. |
-| Legacy | `BlazorShop.Presentation/BlazorShop.Web` | Legacy, not in main solution | Original admin/account/customer Blazor Web UI. |
-| Legacy | `BlazorShop.Presentation/BlazorShop.Storefront` | Legacy, not in main solution | Original public storefront. |
-| Legacy | `BlazorShop.Presentation/BlazorShop.Web.Shared` | Legacy, not in main solution | Original Web shared helpers. |
 | V2 | `BlazorShop.PresentationV2/BlazorShop.ControlPlane.API` | Active | Platform API for auth, users, permissions, nodes, stores, credentials, health, actions, audit, Commerce Node gateway calls, and startup migration for `ControlPlaneDbContext`. |
 | V2 | `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web` | Active | Blazor WASM Control Plane UI. Calls only Control Plane API. |
 | V2 | `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API` | Active | Node-local ecommerce API, admin/control endpoints, scoped Storefront endpoints, task orchestration, deployment support, and startup migration for `CommerceNodeDbContext`. |

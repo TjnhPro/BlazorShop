@@ -228,14 +228,9 @@ Do not:
 
 ## Legacy Presentation
 
-`BlazorShop.Presentation` contains:
+`BlazorShop.Presentation` has been removed from the active branch.
 
-- `BlazorShop.API` - legacy API.
-- `BlazorShop.Web` - legacy admin/account/customer UI.
-- `BlazorShop.Storefront` - legacy storefront.
-- `BlazorShop.Web.Shared` - legacy shared Web helpers.
-
-Use legacy code for:
+Use git history or the `legacy-presentation-final` tag for:
 
 - Behavior comparison.
 - Migration reference.

@@ -13,7 +13,7 @@ Storefront.V2
   -> CommerceNode.API api/storefront/stores/{storeKey}/*
 ```
 
-The repository still contains the original `BlazorShop.Presentation` source temporarily for reference and migration comparison, but the main solution is V2 canonical. New feature work targets `BlazorShop.PresentationV2` unless a task explicitly says otherwise.
+The original `BlazorShop.Presentation` source has been removed from the active branch. New feature work targets `BlazorShop.PresentationV2` unless a task explicitly says otherwise.
 
 ## What Is Active
 
@@ -158,7 +158,7 @@ Start here:
 
 ## Legacy And Reference Code
 
-- `BlazorShop.Presentation/*` remains temporarily for comparison and migration reference, but is no longer part of the main solution.
+- `BlazorShop.Presentation/*` has been removed from the active branch. Use git history or the `legacy-presentation-final` tag for comparison.
 - `BlazorShop.AppHost` has been removed. Use `scripts/run-v2-local.ps1` for local V2 orchestration.
 - `Smartstore/` is reference source only. Study it for ecommerce concepts and workflows, but do not copy implementation code or add runtime references.
 

@@ -1,19 +1,19 @@
 # Legacy Presentation Removal V2 Canonicalization.todo.md
 
-Status: phase 5 legacy Infrastructure/AppDbContext purge complete; phase 6 physical Presentation removal next
+Status: phase 6 physical Presentation removal complete; phase 7 final docs/QA/release gate next
 Source: investigate review of legacy Presentation removal blockers  
 Purpose: remove `BlazorShop.Presentation` and make V2 the canonical repository lifecycle target without breaking active V2 runtime, CI, Docker, deployment, tests, or docs.
 
 ## Current investigation status - 2026-07-22
 
-Root cause hypothesis: this plan started as a proposed legacy-removal/canonicalization plan, but several Phase 1 packaging and CI tasks were already completed by `V2 Production Readiness Hardening.todo.md`. Phases 0-5 have now established guardrails, made `BlazorShop.sln` V2 canonical, moved V2 tests to owned sources, removed legacy `BlazorShop.AppHost`, and purged `AppDbContext`/`DefaultConnection` from active source. The remaining blocker is physical legacy `BlazorShop.Presentation` source and final docs/QA cleanup.
+Root cause hypothesis: this plan started as a proposed legacy-removal/canonicalization plan, but several Phase 1 packaging and CI tasks were already completed by `V2 Production Readiness Hardening.todo.md`. Phases 0-6 have now established guardrails, made `BlazorShop.sln` V2 canonical, moved V2 tests to owned sources, removed legacy `BlazorShop.AppHost`, purged `AppDbContext`/`DefaultConnection` from active source, and physically removed `BlazorShop.Presentation`. The remaining work is final docs/QA cleanup and release-gate verification.
 
 Evidence checked:
 
 - Working tree was clean before this investigation edit.
 - `scripts/verify-no-active-legacy-reference.ps1` does not exist.
 - `docs/refactor-control-Commerce-storefront/legacy-removal-allowlist.json` does not exist.
-- `BlazorShop.Presentation` still exists as legacy reference source.
+- `BlazorShop.Presentation` has been removed from the active branch; `legacy-presentation-final` tags the pre-removal history point.
 - `BlazorShop.sln` is V2 canonical and excludes legacy `BlazorShop.Presentation/*`, `BlazorShop.AppHost`, and old `BlazorShop.Tests`.
 - `BlazorShop.sln` is now the V2 canonical solution; the temporary `BlazorShop.V2.slnf` transition file has been removed.
 - `BlazorShop.Tests.V2.csproj` still links source and snapshots from `..\BlazorShop.Tests\...`; V2 test source ownership is not independent yet.
@@ -37,7 +37,7 @@ Phase status summary:
 | 3 V2 test source ownership | Done | `BlazorShop.Tests.V2` now owns Architecture, PresentationV2, CommerceNode, ControlPlane, shared Application/Domain, and non-legacy Infrastructure tests directly; old mixed `BlazorShop.Tests` project was retired |
 | 4 Remove legacy AppHost and operational entrypoints | Done | `BlazorShop.AppHost` tracked files and ignored build artifacts removed; `run-v2-local.ps1 -StopExisting -NoOpenBrowser` and four endpoint smoke checks passed |
 | 5 Purge dead legacy Infrastructure/AppDbContext | Done | Active source grep is clean for `AppDbContext`, `DefaultConnection`, and legacy DI methods; build/full V2 tests/migration model tests passed |
-| 6 Physically remove BlazorShop.Presentation | Not started | `BlazorShop.Presentation` folder exists and is referenced by solution, AppHost, old tests, legacy CI job, and legacy compose |
+| 6 Physically remove BlazorShop.Presentation | Done | `git rm -r BlazorShop.Presentation` plus ignored artifact cleanup completed; restore/build/solution tests, four V2 Docker builds, production compose config, and ActiveStrict passed |
 | 7 Docs, QA, clean verification, release gate | Not started | Docs still describe legacy as present/reference; final canonical V2 verification has not run |
 
 ## Goal
@@ -397,29 +397,29 @@ Goal: xoa legacy source folder khoi active branch.
 
 ### Tasks
 
-- [ ] Tao tag truoc khi xoa neu can history reference: `legacy-presentation-final`.
-- [ ] `git rm -r BlazorShop.Presentation`.
-- [ ] Remove remaining legacy project entries neu con.
-- [ ] Remove legacy Dockerfile references.
-- [ ] Remove legacy static asset references.
-- [ ] Remove legacy appsettings/run profile references.
-- [ ] Remove or archive docs huong dan legacy runtime.
-- [ ] Update guardrail allowlist: `BlazorShop.Presentation` khong con la allowed source hit.
+- [x] Tao tag truoc khi xoa neu can history reference: `legacy-presentation-final`.
+- [x] `git rm -r BlazorShop.Presentation`.
+- [x] Remove remaining legacy project entries neu con.
+- [x] Remove legacy Dockerfile references.
+- [x] Remove legacy static asset references.
+- [x] Remove legacy appsettings/run profile references.
+- [x] Remove or archive docs huong dan legacy runtime.
+- [x] Update guardrail allowlist: `BlazorShop.Presentation` khong con la allowed source hit.
 
 ### Verification
 
-- [ ] `Test-Path BlazorShop.Presentation` returns false.
-- [ ] `rg "BlazorShop\\.Presentation" --glob '!docs/archive/**'` returns no active source/CI/script hits.
-- [ ] `dotnet restore BlazorShop.sln`.
-- [ ] `dotnet build BlazorShop.sln -c Release --no-restore`.
-- [ ] `dotnet test BlazorShop.sln -c Release --no-build`.
-- [ ] 4 V2 Docker images build.
-- [ ] Production compose config pass.
+- [x] `Test-Path BlazorShop.Presentation` returns false.
+- [x] `rg "BlazorShop\\.Presentation" --glob '!docs/archive/**'` returns no active source/CI/script hits.
+- [x] `dotnet restore BlazorShop.sln`.
+- [x] `dotnet build BlazorShop.sln -c Release --no-restore`.
+- [x] `dotnet test BlazorShop.sln -c Release --no-build`.
+- [x] 4 V2 Docker images build.
+- [x] Production compose config pass.
 
 ### Done when
 
-- [ ] Folder legacy da xoa vat ly.
-- [ ] Main solution/test/CI/container khong can folder legacy.
+- [x] Folder legacy da xoa vat ly.
+- [x] Main solution/test/CI/container khong can folder legacy.
 
 ## Phase 7 - Docs, QA, clean verification, release gate
 
@@ -517,7 +517,7 @@ Goal: dong phase bang bang chung build/test/container/browser production-ready.
 - [x] Phase 3C old mixed test retirement complete and committed.
 - [ ] Phase 4 AppHost removal complete and committed.
 - [ ] Phase 5 legacy Infrastructure purge complete by consumer group and committed.
-- [ ] Phase 6 physical `BlazorShop.Presentation` removal complete and committed.
+- [x] Phase 6 physical `BlazorShop.Presentation` removal complete and committed.
 - [ ] Phase 7 docs/QA/final release verification complete and committed.
 
 ## GSTACK REVIEW REPORT

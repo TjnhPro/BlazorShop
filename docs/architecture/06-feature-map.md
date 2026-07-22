@@ -202,12 +202,7 @@ Decision rule:
 
 ## Legacy
 
-Projects:
-
-- `BlazorShop.Presentation/BlazorShop.API`
-- `BlazorShop.Presentation/BlazorShop.Web`
-- `BlazorShop.Presentation/BlazorShop.Storefront`
-- `BlazorShop.Presentation/BlazorShop.Web.Shared`
+Status: removed from the active branch. Use git history or the `legacy-presentation-final` tag for comparison.
 
 Capabilities:
 

@@ -42,8 +42,7 @@ namespace BlazorShop.Tests.Architecture
                 repositoryRoot);
 
             Assert.Equal(0, inventory.ExitCode);
-            Assert.Contains("Inventory: legacy references found.", inventory.StandardOutput, StringComparison.Ordinal);
-            Assert.Contains("BlazorShop.Presentation", inventory.StandardOutput, StringComparison.Ordinal);
+            Assert.StartsWith("Inventory:", inventory.StandardOutput, StringComparison.Ordinal);
 
             var activeStrict = RunProcess(
                 "powershell",

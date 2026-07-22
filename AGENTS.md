@@ -46,14 +46,7 @@ Active V2 presentation/runtime:
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM`
 - `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2`
 
-Legacy presentation:
-
-- `BlazorShop.Presentation/BlazorShop.API`
-- `BlazorShop.Presentation/BlazorShop.Web`
-- `BlazorShop.Presentation/BlazorShop.Storefront`
-- `BlazorShop.Presentation/BlazorShop.Web.Shared`
-
-Legacy projects may remain on disk temporarily for comparison and migration reference during removal work, but they are not active V2 targets. Do not extend them for V2 work unless the user explicitly asks.
+Legacy presentation projects have been removed from the active branch. Use git history or the `legacy-presentation-final` tag for comparison and migration reference.
 
 ## Runtime Boundaries
 

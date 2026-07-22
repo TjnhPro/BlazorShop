@@ -445,6 +445,7 @@ namespace BlazorShop.Tests.Architecture
 
             Assert.False(File.Exists(RepositoryPath("BlazorShop.Tests/BlazorShop.Tests.csproj")));
             Assert.False(File.Exists(RepositoryPath("BlazorShop.V2.slnf")));
+            Assert.False(Directory.Exists(RepositoryPath("BlazorShop.Presentation")));
             Assert.False(Directory.Exists(RepositoryPath("BlazorShop.AppHost")));
             Assert.DoesNotContain("BlazorShop.Presentation\\", v2TestProject, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain(@"..\BlazorShop.Tests\", v2TestProject, StringComparison.OrdinalIgnoreCase);

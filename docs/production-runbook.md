@@ -173,13 +173,9 @@ Actionable SMTP errors:
 | `message_delivery.store_not_found` | Queued message references a deleted or unavailable store. | Investigate store lifecycle and queue data before retrying; do not fallback to another store sender. |
 | `message_delivery.template_missing` | Required transactional template is missing or disabled. | Reset the template to default or restore a valid store override, preview it, then retry. |
 
-## Legacy Web Runtime Config
+## Web Runtime Config
 
-The legacy WebAssembly client keeps its checked-in production `wwwroot/appsettings.json` empty. That prevents a published legacy production build from silently falling back to the old local API URL when it is deployed away from the local dev topology.
-
-- Standard container deployment: leave the file empty and use the built-in same-origin `/api/` proxy from the Web nginx container.
-- Split-origin static deployment: provide a deployment-specific `wwwroot/appsettings.json` with `Api:DirectBaseUrl` pointing at the real API base URL before publishing the client.
-- Local development still uses `wwwroot/appsettings.Development.json` for the localhost direct API fallback.
+Control Plane Web receives `CONTROLPLANE_API_BASE_URL` through its container entrypoint. Storefront V2 receives `Api:BaseUrl`, `Api:StoreKey`, and `PublicUrl:BaseUrl` through appsettings or environment variables. Do not rely on legacy WebAssembly appsettings from removed Presentation projects.
 
 ## Edge TLS and HSTS Ownership
 
@@ -194,30 +190,33 @@ The repository's standard container stack is designed around a public HTTPS edge
 
 Use `Runtime__Security__RefreshTokenCookieSameSite=Strict` for the standard same-site deployment model shown in this repository, including `shop.example.com` and `api.shop.example.com`. Only relax it to `None` if the browser frontend truly lives on a different site and must send the refresh cookie cross-site; if you do that, keep HTTPS and browser credentials enabled end to end.
 
-The provided [BlazorShop.Presentation/BlazorShop.Web/nginx.conf](../BlazorShop.Presentation/BlazorShop.Web/nginx.conf) is intentionally HTTP-only for the internal hop and should not be treated as the public TLS endpoint.
+## V2 Standard Container Deployment
 
-## Legacy Standard Container Deployment
-
-If you want a conventional deployment path for the legacy container stack outside Aspire AppHost, use the repository Dockerfiles together with `compose.production.yml`. Do not assume this deploys the active V2 Control Plane/Commerce Node/Storefront topology.
+Use the repository V2 Dockerfiles together with `compose.production.yml`.
 
 Required environment variables before startup:
 
-- `BLAZORSHOP_DB_PASSWORD`
-- `BLAZORSHOP_JWT_KEY`
-- `BLAZORSHOP_STRIPE_SECRET_KEY`
-- `BLAZORSHOP_API_BASE_URL`
-- `BLAZORSHOP_CLIENT_APP_BASE_URL`
+- `BLAZORSHOP_CONTROLPLANE_DB_PASSWORD`
+- `BLAZORSHOP_COMMERCENODE_DB_PASSWORD`
+- `BLAZORSHOP_CONTROLPLANE_JWT_KEY`
+- `BLAZORSHOP_COMMERCENODE_JWT_KEY`
+- `BLAZORSHOP_CONTROLPLANE_API_BASE_URL`
+- `BLAZORSHOP_CONTROLPLANE_WEB_BASE_URL`
+- `BLAZORSHOP_COMMERCENODE_API_BASE_URL`
+- `BLAZORSHOP_COMMERCENODE_NODE_KEY`
+- `BLAZORSHOP_COMMERCENODE_NODE_SECRET`
 - `BLAZORSHOP_STOREFRONT_BASE_URL`
-- `BLAZORSHOP_EMAIL_FROM`
-- `BLAZORSHOP_EMAIL_SMTP_SERVER`
-- `BLAZORSHOP_EMAIL_USERNAME`
-- `BLAZORSHOP_EMAIL_PASSWORD`
+- `BLAZORSHOP_STOREFRONT_STORE_KEY`
 
 Optional compose overrides:
 
-- `BLAZORSHOP_EMAIL_DISPLAY_NAME`
-- `BLAZORSHOP_EMAIL_SMTP_PORT`
-- `BLAZORSHOP_EMAIL_USE_SSL`
+- `BLAZORSHOP_CONTROLPLANE_API_PORT`
+- `BLAZORSHOP_CONTROLPLANE_WEB_PORT`
+- `BLAZORSHOP_COMMERCENODE_API_PORT`
+- `BLAZORSHOP_COMMERCENODE_NGINX_PORT`
+- `BLAZORSHOP_STOREFRONT_PORT`
+- `BLAZORSHOP_CONTROLPLANE_MIGRATE_ON_STARTUP`
+- `BLAZORSHOP_COMMERCENODE_MIGRATE_ON_STARTUP`
 
 Start the stack with:
 
@@ -225,19 +224,15 @@ Start the stack with:
 docker compose -f compose.production.yml up -d --build
 ```
 
-The production compose file now uses required-variable expansion for the SMTP sender settings. That means `docker compose -f compose.production.yml config` and `docker compose -f compose.production.yml up` fail immediately if any required SMTP environment variable is unset or blank.
+The production compose file uses required-variable expansion. `docker compose -f compose.production.yml config` and `docker compose -f compose.production.yml up` fail immediately if any required secret or public URL variable is unset or blank.
 
 Notes:
 
-- The compose stack now runs three public-facing services: `storefront` on host port `8080`, `web` on host port `8081`, and `api` only on the private Docker network.
-- The `storefront` container is the public SSR shopping surface. Its `PublicUrl:BaseUrl` must match the real public storefront origin and its `ClientApp:BaseUrl` must match the authenticated client origin.
-- The Web container fronts the API under its own origin and proxies `/api` and `/uploads` to the API container.
-- `compose.production.yml` mounts a named volume at `/app/uploads`, so uploaded files survive API container replacement.
-- The API resolves uploads under `<content-root>/uploads`; in the production API image the content root is `/app`, so the runtime upload path is exactly `/app/uploads`.
-- The bundled Web container is intentionally HTTP-only inside the private Docker network; put TLS termination, HSTS, and port 80 to 443 redirects on the public edge in front of it.
-- The compose example fixes the trusted proxy to the Web container IP `172.30.0.10`.
-- `Runtime__ForwardedHeaders__KnownProxies__0` and the Web service `ipv4_address` must stay aligned. If you change one, change the other in the same deployment change.
-- The compose example also sets `Runtime__ForwardedHeaders__ForwardLimit=1`; keep that value unless you intentionally add another trusted proxy hop directly in front of the API.
+- The compose stack runs Control Plane API/Web, Commerce Node API, Commerce Node Nginx/imgproxy, Storefront V2, and separate Control Plane/Commerce Node PostgreSQL databases.
+- Storefront V2 is the public SSR shopping surface. Its `PublicUrl:BaseUrl` must match the real public storefront origin.
+- Control Plane Web calls only Control Plane API.
+- Storefront-facing media is served through Commerce Node Nginx/imgproxy and Commerce Node API.
+- Commerce Node Data Protection keys persist in `commercenode_data_protection_keys`.
 - The compose example disables API-level HSTS and HTTPS redirection because the API sits behind the Web proxy. If you expose the API directly over HTTPS instead, re-enable both.
 - PayPal is intentionally disabled in this build until a real provider integration and capture flow are implemented.
 
@@ -277,7 +272,7 @@ Review long or data-heavy migrations before release. Startup migration is accept
 
 ## Logging and Failure Visibility
 
-- Legacy API startup/runtime logs go to console and to `BlazorShop.Presentation/BlazorShop.API/log/log*.txt` by default.
+- V2 API startup/runtime logs go to container stdout/stderr by default.
 - Storefront runtime signals for discovery, redirect, and public catalog failures are emitted as structured log event names such as `public.discovery.sitemap_failure`, `public.redirect.invalid_target_blocked`, and `public.product.service_unavailable`.
 - SMTP failures are logged with the exception details and no longer fail silently in confirmation-required auth paths.
 - If storefront handoff routes start returning `503`, check `ClientApp:BaseUrl` on the storefront host first. That is the explicit failure mode when neither standalone config nor service discovery can resolve the authenticated client origin.
@@ -308,7 +303,7 @@ The production Dockerfiles and compose file pin exact image tags so base-image u
 
 - Review the pinned .NET, nginx, and PostgreSQL tags at least monthly.
 - Review them immediately after vendor security advisories or when CI/container scanning flags a base-image issue.
-- Update the pinned tags in `compose.production.yml`, `BlazorShop.Presentation/BlazorShop.API/Dockerfile`, and `BlazorShop.Presentation/BlazorShop.Web/Dockerfile` in the same change when maintaining the legacy production container path.
+- Update the pinned tags in `compose.production.yml` and the active V2 Dockerfiles in the same change.
 - Re-run the full release verification after every image bump, even when the application code is unchanged.
 
 Current pinned images in this repository:
@@ -463,7 +458,7 @@ Run this checklist before promoting a release candidate.
 1. Run `dotnet test BlazorShop.sln -c Release`.
 2. Run `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj -c Release --filter "Category=SeoSmoke"` against the actual running storefront environment with `BLAZORSHOP_SEO_SMOKE_BASE_URL` and any required route overrides set.
 3. Run `docker compose -f compose.production.yml config` with the production-required environment variables available.
-4. Run `docker compose -f compose.production.yml build api web`.
+4. Run `docker compose -f compose.production.yml build controlplane-api controlplane-web commercenode-api storefront-v2`.
 5. Apply database migrations before opening traffic. For V2, the standard MVP runtime path applies migrations on API startup when the relevant `MigrateOnStartup` flag is true; backup the DB first and run one API instance during migration.
 6. Smoke test login, refresh, logout, and upload persistence against the deployed environment.
 

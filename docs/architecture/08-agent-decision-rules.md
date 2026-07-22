@@ -12,9 +12,9 @@ Read this before planning or editing code.
 
 ## Legacy Rule
 
-`BlazorShop.Presentation` is legacy.
+Legacy `BlazorShop.Presentation` projects have been removed from the active branch.
 
-Do not extend it for V2 work unless the user explicitly asks. If behavior must be preserved, inspect legacy code, then migrate/adapt the behavior into the active V2 boundary.
+Do not recreate them for V2 work. If behavior must be preserved, inspect git history or the `legacy-presentation-final` tag, then migrate/adapt the behavior into the active V2 boundary.
 
 ## Control Plane Rule
 

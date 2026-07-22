@@ -185,7 +185,7 @@ Resolution rules:
 
 ## Legacy Boundary
 
-`BlazorShop.Presentation` may remain on disk temporarily for legacy support and migration comparison, but it is no longer part of the V2 canonical main solution.
+`BlazorShop.Presentation` has been removed from the active branch. Use git history or the `legacy-presentation-final` tag for legacy behavior comparison.
 
 Legacy route groups include:
 

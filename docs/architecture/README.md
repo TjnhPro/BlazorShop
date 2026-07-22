@@ -19,9 +19,9 @@ Historical implementation plans and QA checklists are tracked under [docs/refact
 
 ## Current State
 
-BlazorShop is a single ecommerce product with shared core layers and two presentation generations:
+BlazorShop is a single ecommerce product with shared core layers and an active V2 presentation/runtime family:
 
-- `BlazorShop.Presentation` is legacy. Do not extend it unless the user explicitly asks for legacy work.
+- Legacy `BlazorShop.Presentation` projects have been removed from the active branch. Use git history or the `legacy-presentation-final` tag for comparison.
 - `BlazorShop.PresentationV2` is the active direction. New Control Plane, Commerce Node, Storefront V2, Storefront component/WASM, and shared Web V2 work belongs here.
 - `BlazorShop.Domain`, `BlazorShop.Application`, and `BlazorShop.Infrastructure` are shared core layers used by active V2 projects.
 - `Smartstore/` is reference source for ecommerce business research only. Do not copy Smartstore implementation code into BlazorShop and do not add runtime references to Smartstore projects.
