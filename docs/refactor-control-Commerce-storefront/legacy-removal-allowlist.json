@@ -1,0 +1,9 @@
+{
+  "activeStrictIgnoreFiles": [
+    ".github/workflows/ci.yml"
+  ],
+  "notes": [
+    "ActiveStrict only scans active runtime and deployment surfaces.",
+    "Inventory is intentionally noisy and reports repository-wide legacy references."
+  ]
+}

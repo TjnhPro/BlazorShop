@@ -1,8 +1,44 @@
 # Legacy Presentation Removal V2 Canonicalization.todo.md
 
-Status: proposed  
+Status: phase 0 guardrail implemented; legacy removal not started
 Source: investigate review of legacy Presentation removal blockers  
 Purpose: remove `BlazorShop.Presentation` and make V2 the canonical repository lifecycle target without breaking active V2 runtime, CI, Docker, deployment, tests, or docs.
+
+## Current investigation status - 2026-07-22
+
+Root cause hypothesis: this plan is still mostly a proposed legacy-removal/canonicalization plan, but several Phase 1 packaging and CI tasks were already completed by `V2 Production Readiness Hardening.todo.md`. The actual legacy removal sequence has not started because Phase 0 guardrails are missing and `BlazorShop.sln`, `BlazorShop.AppHost`, `BlazorShop.Tests`, `AppDbContext`, and `BlazorShop.Presentation` are still active repository artifacts.
+
+Evidence checked:
+
+- Working tree was clean before this investigation edit.
+- `scripts/verify-no-active-legacy-reference.ps1` does not exist.
+- `docs/refactor-control-Commerce-storefront/legacy-removal-allowlist.json` does not exist.
+- `BlazorShop.Presentation`, `BlazorShop.AppHost`, and `BlazorShop.Tests` folders still exist.
+- `BlazorShop.sln` still includes legacy `BlazorShop.Presentation/*`, `BlazorShop.AppHost`, old `BlazorShop.Tests`, and V2 projects.
+- `BlazorShop.V2.slnf` excludes legacy Presentation/AppHost and includes active V2 projects plus `BlazorShop.Tests.V2`.
+- `BlazorShop.Tests.V2.csproj` still links source and snapshots from `..\BlazorShop.Tests\...`; V2 test source ownership is not independent yet.
+- `.github/workflows/ci.yml` has blocking `ci-v2`, validates `compose.v2.production.yml`, builds four V2 images, and keeps legacy under `legacy-compatibility` with `continue-on-error: true`.
+- `compose.v2.production.yml` exists and uses V2 services/connection strings, but `compose.production.yml` is still legacy and uses `ConnectionStrings__DefaultConnection`.
+- V2 Dockerfiles exist for ControlPlane API, CommerceNode API, ControlPlane Web, and Storefront V2. Storefront V2 Dockerfile now copies Components/WASM/Web.SharedV2 projects before restore and source before publish.
+- `BlazorShop.AppHost` still references legacy API/Web/Storefront and uses Aspire database name `DefaultConnection`.
+- `BlazorShop.Infrastructure` still contains `AppDbContext`, legacy migrations, `AddInfrastructure`, `AddSharedAuthenticationInfrastructure`, `UseInfrastructure`, `DefaultConnection`, and many AppDbContext-bound legacy services/repositories.
+- Focused verification passed on 2026-07-22: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~V2ProductionReadiness|FullyQualifiedName~V2ArchitectureBoundary" --verbosity minimal` returned `Passed: 30, Failed: 0`.
+- Existing warnings remain non-blocking for this investigation: MessagePack NU1902/NU1903 advisories and Browserslist stale notice.
+
+Phase status summary:
+
+| Phase | Status | Evidence |
+|---|---|---|
+| 0 Baseline inventory and guardrail modes | Done | `scripts/verify-no-active-legacy-reference.ps1`, allowlist file, and architecture tests exist |
+| 1A Dockerfile V2 | Done | All four V2 Dockerfiles exist; Storefront V2 Dockerfile includes Components/WASM project/source copy |
+| 1B V2 production compose | Mostly done | `compose.v2.production.yml` exists and uses V2 topology; persistent Data Protection key-ring wiring is not present in compose; `compose.production.yml` is still legacy |
+| 1C CI V2 blocking | Done except optional full boot smoke | `ci-v2` restores/builds/tests V2, validates compose config, and builds four V2 images; legacy job is non-blocking |
+| 2 Main solution becomes V2 canonical | Not started | `BlazorShop.sln` still includes legacy Presentation, AppHost, and old mixed tests |
+| 3 V2 test source ownership | Not started | `BlazorShop.Tests.V2.csproj` still links `..\BlazorShop.Tests\...` source/snapshots |
+| 4 Remove legacy AppHost and operational entrypoints | Not started | `BlazorShop.AppHost` exists and references legacy projects/`DefaultConnection` |
+| 5 Purge dead legacy Infrastructure/AppDbContext | Not started | `AppDbContext`, `DefaultConnection`, legacy migrations, and legacy DI methods still exist |
+| 6 Physically remove BlazorShop.Presentation | Not started | `BlazorShop.Presentation` folder exists and is referenced by solution, AppHost, old tests, legacy CI job, and legacy compose |
+| 7 Docs, QA, clean verification, release gate | Not started | Docs still describe legacy as present/reference; final canonical V2 verification has not run |
 
 ## Goal
 
@@ -33,10 +69,10 @@ Xoa hoan toan legacy Presentation khoi active repository lifecycle:
 - [x] `BlazorShop.Tests.csproj` van reference AppHost va cac legacy projects.
 - [x] `BlazorShop.Tests.V2.csproj` van link source tu `BlazorShop.Tests/Architecture/**` va `BlazorShop.Tests/PresentationV2/**`.
 - [x] `BlazorShop.AppHost` reference legacy API/Web/Storefront va Program dung `DefaultConnection`.
-- [x] CI hien restore/build `BlazorShop.sln`, test `BlazorShop.Tests`, build Dockerfile legacy.
+- [x] CI hien co blocking `ci-v2` restore/build/test V2 va build Dockerfile V2; legacy solution/test/Dockerfile chi con trong job `legacy-compatibility` non-blocking.
 - [x] `compose.production.yml` hien la topology legacy voi `DefaultConnection`.
-- [x] Hien chi co Dockerfile V2 cho `BlazorShop.Storefront.V2`; chua co Dockerfile V2 cho ControlPlane API, ControlPlane Web, CommerceNode API.
-- [x] Storefront V2 Dockerfile chua copy `Storefront.Components.csproj` va `Storefront.WASM.csproj` truoc restore du project co reference hai project nay.
+- [x] V2 Dockerfile da co cho `BlazorShop.Storefront.V2`, ControlPlane API, ControlPlane Web, va CommerceNode API.
+- [x] Storefront V2 Dockerfile da copy `Storefront.Components.csproj`, `Storefront.WASM.csproj`, va source cua cac project nay truoc publish.
 - [x] `BlazorShop.Infrastructure/DependencyInjection.cs` van co `AddInfrastructure`, `AddSharedAuthenticationInfrastructure`, `AppDbContext`, `DefaultConnection`.
 - [x] `BlazorShop.Infrastructure/Data/AppDbContext.cs` va legacy migrations van ton tai.
 - [x] Co `BlazorShop.Tests/Architecture/V2ProductionReadinessTests.cs` dang la baseline/inventory test nhung file nay van nam trong mixed old test tree.
@@ -69,49 +105,49 @@ Goal: tao safety net de khong them dependency moi vao legacy trong khi chua xoa 
 
 ### Tasks
 
-- [ ] Tao script `scripts/verify-no-active-legacy-reference.ps1`.
-- [ ] Script co 2 mode:
-  - [ ] `-Mode ActiveStrict`.
-  - [ ] `-Mode Inventory`.
-- [ ] `ActiveStrict` scan cac duong active:
-  - [ ] `BlazorShop.PresentationV2/**`
-  - [ ] `BlazorShop.V2.slnf`
-  - [ ] `.github/workflows/**`
-  - [ ] `compose.production.yml` sau khi duoc migrate sang V2
-  - [ ] `compose.v2.production.yml` neu ton tai trong transition
-  - [ ] `scripts/run-v2-local.ps1`
-  - [ ] `scripts/stop-v2-local.ps1`
-  - [ ] `docs/architecture/**` sau khi phase cleanup docs bat dau
-- [ ] `ActiveStrict` fail khi active runtime/CI/deploy chua duoc allowlist ma co:
-  - [ ] `BlazorShop.Presentation`
-  - [ ] `BlazorShop.AppHost`
-  - [ ] `ConnectionStrings__DefaultConnection`
-  - [ ] `DefaultConnection`
-  - [ ] `AppDbContext`
-  - [ ] `AddInfrastructure(`
-  - [ ] `AddSharedAuthenticationInfrastructure(`
-- [ ] `Inventory` scan toan repo va xuat danh sach grouped theo source/test/docs/legacy/runtime.
-- [ ] Tao allowlist file ro rang, vi du `docs/refactor-control-Commerce-storefront/legacy-removal-allowlist.json`.
-- [ ] Them architecture tests:
-  - [ ] V2 projects khong ProjectReference legacy.
-  - [ ] V2 Programs khong goi `AddInfrastructure`.
-  - [ ] V2 runtime config khong yeu cau `DefaultConnection`.
-  - [ ] Storefront V2 khong call legacy route groups.
-  - [ ] Main solution con legacy thi duoc record baseline, sau Phase 2 doi thanh forbidden.
-- [ ] Cap nhat `V2ProductionReadinessTests` hien co hoac tao test moi trong `BlazorShop.Tests/Architecture`.
-- [ ] Ghi ro current blockers vao plan file sau khi script inventory chay lan dau.
+- [x] Tao script `scripts/verify-no-active-legacy-reference.ps1`.
+- [x] Script co 2 mode:
+  - [x] `-Mode ActiveStrict`.
+  - [x] `-Mode Inventory`.
+- [x] `ActiveStrict` scan cac duong active:
+  - [x] `BlazorShop.PresentationV2/**`
+  - [x] `BlazorShop.V2.slnf`
+  - [x] `.github/workflows/**`
+  - [x] `compose.production.yml` sau khi duoc migrate sang V2
+  - [x] `compose.v2.production.yml` neu ton tai trong transition
+  - [x] `scripts/run-v2-local.ps1`
+  - [x] `scripts/stop-v2-local.ps1`
+  - [x] `docs/architecture/**` sau khi phase cleanup docs bat dau
+- [x] `ActiveStrict` fail khi active runtime/CI/deploy chua duoc allowlist ma co:
+  - [x] `BlazorShop.Presentation`
+  - [x] `BlazorShop.AppHost`
+  - [x] `ConnectionStrings__DefaultConnection`
+  - [x] `DefaultConnection`
+  - [x] `AppDbContext`
+  - [x] `AddInfrastructure(`
+  - [x] `AddSharedAuthenticationInfrastructure(`
+- [x] `Inventory` scan toan repo va xuat danh sach grouped theo source/test/docs/legacy/runtime.
+- [x] Tao allowlist file ro rang, vi du `docs/refactor-control-Commerce-storefront/legacy-removal-allowlist.json`.
+- [x] Them architecture tests:
+  - [x] V2 projects khong ProjectReference legacy.
+  - [x] V2 Programs khong goi `AddInfrastructure`.
+  - [x] V2 runtime config khong yeu cau `DefaultConnection`.
+  - [x] Storefront V2 khong call legacy route groups.
+  - [x] Main solution con legacy thi duoc record baseline, sau Phase 2 doi thanh forbidden.
+- [x] Cap nhat `V2ProductionReadinessTests` hien co hoac tao test moi trong `BlazorShop.Tests/Architecture`.
+- [x] Ghi ro current blockers vao plan file sau khi script inventory chay lan dau.
 
 ### Verification
 
-- [ ] `powershell -ExecutionPolicy Bypass -File scripts/verify-no-active-legacy-reference.ps1 -Mode Inventory`
-- [ ] `powershell -ExecutionPolicy Bypass -File scripts/verify-no-active-legacy-reference.ps1 -Mode ActiveStrict`
-- [ ] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~V2ProductionReadiness|FullyQualifiedName~V2ArchitectureBoundary"`
+- [x] `powershell -ExecutionPolicy Bypass -File scripts/verify-no-active-legacy-reference.ps1 -Mode Inventory`
+- [x] `powershell -ExecutionPolicy Bypass -File scripts/verify-no-active-legacy-reference.ps1 -Mode ActiveStrict`
+- [x] `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --no-restore --filter "FullyQualifiedName~LegacyRemovalGuardrailTests|FullyQualifiedName~V2ProductionReadinessTests.Phase0_RateLimitIdentityBaseline_RecordsCurrentUserAndRemoteIpPartitioning"`
 
 ### Done when
 
-- [ ] Guardrail khong chan migration bat dau.
-- [ ] ActiveStrict co allowlist nho va co chu dich.
-- [ ] Inventory cho thay day du legacy blockers con lai.
+- [x] Guardrail khong chan migration bat dau.
+- [x] ActiveStrict co allowlist nho va co chu dich.
+- [x] Inventory cho thay day du legacy blockers con lai.
 
 ## Phase 1 - V2 production packaging and CI blocking gate
 
@@ -472,9 +508,9 @@ Goal: dong phase bang bang chung build/test/container/browser production-ready.
 ## Implementation order checklist
 
 - [ ] Phase 0 complete and committed.
-- [ ] Phase 1A Dockerfiles complete and committed.
-- [ ] Phase 1B compose V2 complete and committed.
-- [ ] Phase 1C CI V2 blocking complete and committed.
+- [x] Phase 1A Dockerfiles complete and committed through V2 production-readiness work.
+- [ ] Phase 1B compose V2 complete and committed. Mostly done through V2 production-readiness work; persistent Data Protection key-ring wiring and `compose.production.yml` canonical decision remain pending.
+- [x] Phase 1C CI V2 blocking complete and committed through V2 production-readiness work.
 - [ ] Phase 2 main solution V2 canonical complete and committed.
 - [ ] Phase 3A V2 test source move complete and committed.
 - [ ] Phase 3B V2 core test migration complete and committed.
@@ -513,4 +549,3 @@ After this phase, developer commands should be simpler: `dotnet restore/build/te
 | 5 | 4 | Delete legacy AppHost instead of converting it to V2 now | Auto-decided | Avoid new dependency | Current V2 local runner already exists; a V2 AppHost is optional future DX work | Rewrite AppHost before removal |
 | 6 | 5 | Purge `AppDbContext` only after consumer graph is clean | Auto-decided | Do not break shared core | Some old-named contracts/services may still be active through V2 infrastructure | Delete by folder/name alone |
 | 7 | 7 | Require container and visible Playwright release evidence before close | Auto-decided | Real production confidence | Build-only checks do not prove browser commerce flows still work | Treat compile/test as sufficient |
-
