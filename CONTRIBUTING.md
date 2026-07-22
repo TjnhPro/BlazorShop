@@ -92,7 +92,7 @@ Stop it with:
 Run focused tests when possible:
 
 ```powershell
-dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj -c Release
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release
 ```
 
 Run full solution verification before broad changes or release work:
@@ -120,7 +120,7 @@ Before opening a PR:
 - API contract metadata and tests are updated for changed endpoints.
 - QA checklist items are added or updated for changed behavior.
 - Docs are updated when architecture, configuration, features, scripts, routes, or operator behavior changes.
-- `dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj -c Release` passes, or the PR explains why it was not run.
+- `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release` passes, or the PR explains why it was not run.
 
 ## Code Of Conduct
 

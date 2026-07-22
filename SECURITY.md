@@ -51,7 +51,7 @@ This repository does not publish a guaranteed response SLA yet. If you need a co
 Recommended focused checks before committing auth, payment, checkout, admin, or configuration changes:
 
 ```powershell
-dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj -c Release
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release
 ```
 
 For API contract changes, verify the active Swagger documents still expose response schemas, error schemas, security requirements, and generator-safe operation IDs:

@@ -8,15 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\BlazorShop.Tests\GlobalUsings.cs" Link="GlobalUsings.cs" />
-    <Compile Include="..\BlazorShop.Tests\Architecture\**\*.cs" Link="Architecture\%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="..\BlazorShop.Tests\Application\CommerceNode\**\*.cs" Link="Application\CommerceNode\%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="..\BlazorShop.Tests\Infrastructure\CommerceNode\**\*.cs" Link="Infrastructure\CommerceNode\%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="..\BlazorShop.Tests\Infrastructure\ControlPlane\**\*.cs" Link="Infrastructure\ControlPlane\%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="..\BlazorShop.Tests\PresentationV2\**\*.cs" Link="PresentationV2\%(RecursiveDir)%(Filename)%(Extension)" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Aspire.Hosting.Testing" Version="13.2.2" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.5" />
@@ -47,8 +38,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\BlazorShop.Tests\PresentationV2\CommerceNode\Snapshots\*.txt" Link="PresentationV2\CommerceNode\Snapshots\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\BlazorShop.Tests\PresentationV2\CommerceNode\Snapshots\*.json" Link="PresentationV2\CommerceNode\Snapshots\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="PresentationV2\CommerceNode\Snapshots\*.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="PresentationV2\CommerceNode\Snapshots\*.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

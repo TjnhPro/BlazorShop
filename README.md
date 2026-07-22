@@ -122,12 +122,6 @@ dotnet build BlazorShop.sln -c Release --no-restore
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build --verbosity normal
 ```
 
-Legacy compatibility verification is still available directly through the old mixed test project while the legacy source remains on disk, but it is not the primary V2 release signal:
-
-```powershell
-dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj -c Release
-```
-
 V2 production artifact validation uses the V2 compose and Dockerfiles:
 
 ```powershell
