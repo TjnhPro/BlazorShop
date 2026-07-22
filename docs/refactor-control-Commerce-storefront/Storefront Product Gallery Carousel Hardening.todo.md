@@ -154,6 +154,8 @@ git commit -m "feat(storefront): add product gallery navigation markup"
 
 ## Phase 2 - Fixed Gallery Layout
 
+Status: Complete - 2026-07-22.
+
 Goal: Make gallery dimensions independent from image count.
 
 Files likely touched:
@@ -163,15 +165,17 @@ Files likely touched:
 
 Checklist:
 
-- [ ] Keep `.bs-product-gallery__main` square and width-stable.
-- [ ] Add a thumbnail viewport/strip wrapper that does not resize main gallery.
-- [ ] Set thumbnail item dimensions explicitly, for example `5rem x 5rem`.
-- [ ] Use `flex: 0 0 5rem` for horizontal scrolling.
-- [ ] Keep thumbnail images `object-fit: contain`.
-- [ ] Add responsive constraints for mobile, tablet, and desktop.
-- [ ] Avoid grid column counts that shrink thumbnails as images increase.
-- [ ] Ensure `[hidden]` fallback placeholders remain hidden even when display utility classes exist.
-- [ ] Add CSS guard tests for fixed thumbnail dimensions and no count-driven grid shrink behavior.
+- [x] Keep `.bs-product-gallery__main` square and width-stable.
+- [x] Add a thumbnail viewport/strip wrapper that does not resize main gallery.
+- [x] Set thumbnail item dimensions explicitly, for example `5rem x 5rem`.
+- [x] Use `flex: 0 0 5rem` for horizontal scrolling.
+- [x] Keep thumbnail images `object-fit: contain`.
+- [x] Add responsive constraints for mobile, tablet, and desktop.
+  - 2026-07-22: layout uses a fixed-size horizontal strip across breakpoints instead of desktop grid shrinking.
+- [x] Avoid grid column counts that shrink thumbnails as images increase.
+- [x] Ensure `[hidden]` fallback placeholders remain hidden even when display utility classes exist.
+- [x] Add CSS guard tests for fixed thumbnail dimensions and no count-driven grid shrink behavior.
+  - 2026-07-22: focused `ProductPage_RendersProductImageGalleryComponent|ProductGalleryCss_EnforcesSquareImageFrames` run passed.
 
 Acceptance criteria:
 
@@ -493,7 +497,7 @@ DX target:
 
 - [x] Phase 0 - Baseline And Guardrails
 - [x] Phase 1 - Markup Contract
-- [ ] Phase 2 - Fixed Gallery Layout
+- [x] Phase 2 - Fixed Gallery Layout
 - [ ] Phase 3 - Client Interaction
 - [ ] Phase 4 - Accessibility And Error States
 - [ ] Phase 5 - Browser QA

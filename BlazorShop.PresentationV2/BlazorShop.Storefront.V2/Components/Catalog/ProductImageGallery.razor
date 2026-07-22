@@ -46,7 +46,7 @@
 
         @if (GalleryItems.Count > 1)
         {
-            <div class="bs-product-gallery__thumbs flex gap-3 overflow-x-auto pb-1 sm:grid sm:grid-cols-5 sm:overflow-visible sm:pb-0"
+            <div class="bs-product-gallery__thumbs flex gap-3 overflow-x-auto pb-1"
                  data-storefront-gallery-thumb-viewport
                  role="list"
                  aria-label="Product images">
@@ -54,7 +54,7 @@
                 {
                     var item = GalleryItems[index];
                     <button type="button"
-                            class="bs-product-gallery__thumb relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50 p-0 ring-0 transition hover:border-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-900 data-[selected=true]:border-neutral-900 data-[selected=true]:ring-2 data-[selected=true]:ring-neutral-900 sm:h-auto sm:w-auto sm:aspect-square"
+                            class="bs-product-gallery__thumb relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50 p-0 ring-0 transition hover:border-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-900 data-[selected=true]:border-neutral-900 data-[selected=true]:ring-2 data-[selected=true]:ring-neutral-900"
                             aria-label="@($"Show product image {index + 1}")"
                             aria-current="@(index == 0 ? "true" : "false")"
                             aria-selected="@(index == 0 ? "true" : "false")"

@@ -202,6 +202,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("aria-selected=\"@(index == 0 ? \"true\" : \"false\")\"", gallery);
             Assert.Contains("aria-disabled=\"true\"", gallery);
             Assert.Contains("disabled>", gallery);
+            Assert.DoesNotContain("sm:grid", gallery, StringComparison.Ordinal);
+            Assert.DoesNotContain("sm:grid-cols", gallery, StringComparison.Ordinal);
             Assert.Contains("data-[selected=true]:ring-2", gallery);
             Assert.Contains("product.Image", gallery);
             Assert.Contains("Image unavailable", gallery);
@@ -217,9 +219,19 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var styles = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/css/storefront.css");
 
+            Assert.Contains(".bs-storefront-shell [hidden]:not([hidden=\"until-found\"])", styles);
+            Assert.Contains("display: none !important;", styles);
             Assert.Contains(".bs-product-gallery__main", styles);
+            Assert.Contains(".bs-product-gallery__controls", styles);
+            Assert.Contains(".bs-product-gallery__nav", styles);
             Assert.Contains(".bs-product-gallery__thumb", styles);
+            Assert.Contains("display: flex;", styles);
             Assert.Contains("aspect-ratio: 1 / 1;", styles);
+            Assert.Contains("width: 5rem;", styles);
+            Assert.Contains("height: 5rem;", styles);
+            Assert.Contains("flex: 0 0 5rem;", styles);
+            Assert.Contains("max-width: 5rem;", styles);
+            Assert.DoesNotContain("flex: initial;", styles, StringComparison.Ordinal);
             Assert.Contains("object-fit: contain;", styles);
             Assert.Contains("overscroll-behavior-x: contain;", styles);
             Assert.Contains(".bs-product-gallery__thumb[data-selected=\"true\"]", styles);
