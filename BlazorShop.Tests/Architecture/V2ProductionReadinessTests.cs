@@ -99,13 +99,19 @@ namespace BlazorShop.Tests.Architecture
         public void Phase0_RateLimitIdentityBaseline_RecordsCurrentUserAndRemoteIpPartitioning()
         {
             var commerceNodeProgram = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Program.cs");
+            var commerceNodeIdentity = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Configuration/StorefrontRateLimitIdentity.cs");
             var storefrontPolicy = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontRateLimitPolicies.cs");
+            var storefrontIdentity = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Configuration/StorefrontRateLimitIdentity.cs");
 
-            Assert.Contains("ClaimTypes.NameIdentifier", commerceNodeProgram, StringComparison.Ordinal);
-            Assert.Contains("httpContext.Connection.RemoteIpAddress", commerceNodeProgram, StringComparison.Ordinal);
-            Assert.Contains("httpContext.Connection.RemoteIpAddress", storefrontPolicy, StringComparison.Ordinal);
-            Assert.DoesNotContain("X-Forwarded-For", commerceNodeProgram, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("StorefrontRateLimitIdentity.ResolveActor(httpContext)", commerceNodeProgram, StringComparison.Ordinal);
+            Assert.Contains("ClaimTypes.NameIdentifier", commerceNodeIdentity, StringComparison.Ordinal);
+            Assert.Contains("CartTokenHeaderName = \"X-Cart-Token\"", commerceNodeIdentity, StringComparison.Ordinal);
+            Assert.Contains("httpContext.Connection.RemoteIpAddress", commerceNodeIdentity, StringComparison.Ordinal);
+            Assert.Contains("StorefrontRateLimitIdentity.ResolveLocalCartActor(httpContext)", storefrontPolicy, StringComparison.Ordinal);
+            Assert.Contains("httpContext.Connection.RemoteIpAddress", storefrontIdentity, StringComparison.Ordinal);
+            Assert.DoesNotContain("X-Forwarded-For", commerceNodeIdentity, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("X-Forwarded-For", storefrontPolicy, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("X-Forwarded-For", storefrontIdentity, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("StorefrontRateLimitPolicyNames.AuthStrict", commerceNodeProgram, StringComparison.Ordinal);
             Assert.Contains("StorefrontRateLimitPolicyNames.Cart", commerceNodeProgram, StringComparison.Ordinal);
             Assert.Contains("StorefrontRateLimitPolicyNames.Checkout", commerceNodeProgram, StringComparison.Ordinal);

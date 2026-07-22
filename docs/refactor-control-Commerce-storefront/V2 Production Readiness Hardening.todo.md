@@ -154,28 +154,35 @@ Goal: rate limit khong gom tat ca guest di qua Storefront/proxy vao cung bucket 
 
 ### Tasks
 
-- [ ] Giu authenticated bucket theo user id nhu hien co trong CommerceNode.
-- [ ] Cho guest CommerceNode, uu tien signed cart/session identity khi endpoint co cart/session token hop le.
-- [ ] Cho endpoint auth/recovery/newsletter/contact chua co cart session, dung trusted client IP sau forwarded headers da config, hoac fallback IP neu khong co trusted proxy.
-- [ ] Khong doc truc tiep raw `X-Forwarded-For` trong rate limiter.
-- [ ] Neu Storefront V2 proxy server-to-server toi CommerceNode, xem xet them signed proxy identity header noi bo:
-  - [ ] Header chi Storefront server set.
-  - [ ] CommerceNode verify signature/secret hoac chi chap nhan tu trusted network.
-  - [ ] Khong public cho browser.
-- [ ] Storefront local cart endpoints:
-  - [ ] Neu request co cart session cookie/token, partition theo store + route + cart session.
-  - [ ] Neu khong co cart session, fallback trusted client IP.
-- [ ] Them tests:
-  - [ ] Hai guest khac cart session nhung cung proxy IP khong chung cart bucket.
-  - [ ] Same guest/session bi rate-limit dung.
-  - [ ] Authenticated user dung user bucket, khong bi cart session bucket override.
-  - [ ] Raw `X-Forwarded-For` khong doi bucket neu proxy khong trusted.
+- [x] Giu authenticated bucket theo user id nhu hien co trong CommerceNode.
+- [x] Cho guest CommerceNode, uu tien signed cart/session identity khi endpoint co cart/session token hop le.
+- [x] Cho endpoint auth/recovery/newsletter/contact chua co cart session, dung trusted client IP sau forwarded headers da config, hoac fallback IP neu khong co trusted proxy.
+- [x] Khong doc truc tiep raw `X-Forwarded-For` trong rate limiter.
+- [x] Neu Storefront V2 proxy server-to-server toi CommerceNode, xem xet them signed proxy identity header noi bo:
+  - [x] Khong them public proxy identity header moi trong phase nay.
+  - [x] CommerceNode dung `X-Cart-Token` hien co cho cart/checkout bucket; cac endpoint khong co cart token fallback `RemoteIpAddress` sau trusted forwarded-header middleware.
+  - [x] Khong public header identity moi cho browser.
+- [x] Storefront local cart endpoints:
+  - [x] Neu request co cart session cookie/token, partition theo store + route + cart session.
+  - [x] Neu khong co cart session, fallback trusted client IP.
+- [x] Them tests:
+  - [x] Hai guest khac cart session nhung cung proxy IP khong chung cart bucket.
+  - [x] Same guest/session bi rate-limit dung.
+  - [x] Authenticated user dung user bucket, khong bi cart session bucket override.
+  - [x] Raw `X-Forwarded-For` khong doi bucket neu proxy khong trusted.
+
+### Phase 2 implementation notes - 2026-07-22
+
+- CommerceNode rate limiter lay actor qua `StorefrontRateLimitIdentity.ResolveActor`: authenticated user id wins, cart/checkout guest dung hashed `X-Cart-Token`, endpoint con lai fallback `RemoteIpAddress` sau middleware trusted forwarded headers.
+- Storefront local cart limiter lay actor qua `StorefrontRateLimitIdentity.ResolveLocalCartActor`: hashed cart cookie wins, fallback `RemoteIpAddress`.
+- Storefront proxy `place-order` tiep tuc gui `X-Cart-Token` sang CommerceNode de checkout bucket khong gom tat ca guest theo IP cua Storefront server.
+- Khong mo them signed internal identity header trong phase nay vi `X-Cart-Token` da la session identity dang co cho cart/checkout, va them header moi se mo them secret/trust boundary chua can cho MVP production hardening.
 
 ### Acceptance criteria
 
-- [ ] Guest cart/checkout requests khong bi 429 hang loat chi vi chung Storefront/proxy IP.
-- [ ] Rate limit identity khong tao trust boundary moi tu browser header.
-- [ ] Policy van du don gian cho MVP, khong can distributed limiter neu chua co multi-instance requirement.
+- [x] Guest cart/checkout requests khong bi 429 hang loat chi vi chung Storefront/proxy IP.
+- [x] Rate limit identity khong tao trust boundary moi tu browser header.
+- [x] Policy van du don gian cho MVP, khong can distributed limiter neu chua co multi-instance requirement.
 
 ## Phase 3 - V2 CI blocking gate
 

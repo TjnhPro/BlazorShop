@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using System.Threading.RateLimiting;
 
 using BlazorShop.CommerceNode.API.Configuration;
@@ -250,10 +249,7 @@ static RateLimitPartition<string> CreateStorefrontRateLimitPartition(
     var route = httpContext.GetEndpoint()?.DisplayName
         ?? httpContext.Request.Path.Value
         ?? "unknown-route";
-    var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-    var actor = httpContext.User.Identity?.IsAuthenticated == true && !string.IsNullOrWhiteSpace(userId)
-        ? $"user:{userId}"
-        : $"ip:{httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
+    var actor = StorefrontRateLimitIdentity.ResolveActor(httpContext);
     var partitionKey = string.Join(
         '|',
         string.IsNullOrWhiteSpace(storeKey) ? "unknown-store" : storeKey,

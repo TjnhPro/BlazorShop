@@ -412,6 +412,7 @@ namespace BlazorShop.Storefront.Endpoints
                             ? Guid.NewGuid().ToString("N")
                             : form.IdempotencyKey.Trim(),
                     },
+                    cartToken,
                     cancellationToken);
                 if (!placeOrderResult.Success || placeOrderResult.Data is null)
                 {

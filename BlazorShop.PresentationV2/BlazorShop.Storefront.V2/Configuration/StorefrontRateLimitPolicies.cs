@@ -49,7 +49,7 @@ namespace BlazorShop.Storefront.Configuration
             var route = httpContext.GetEndpoint()?.DisplayName
                 ?? httpContext.Request.Path.Value
                 ?? "unknown-route";
-            var actor = $"ip:{httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
+            var actor = StorefrontRateLimitIdentity.ResolveLocalCartActor(httpContext);
             var partitionKey = string.Join('|', storeKey, route, actor);
 
             return RateLimitPartition.GetFixedWindowLimiter(

@@ -670,6 +670,43 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task PlaceOrderAsync_WhenCartTokenProvided_SendsCartTokenHeader()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal(HttpMethod.Post, request.Method);
+                Assert.Equal("/api/storefront/stores/default/checkout/place-order", request.RequestUri?.AbsolutePath);
+                Assert.True(request.Headers.TryGetValues("X-Cart-Token", out var values));
+                Assert.Equal("cart-token", Assert.Single(values));
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    """
+                    {
+                      "success": true,
+                      "message": "ok",
+                      "data": null
+                    }
+                    """);
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var result = await apiClient.PlaceOrderAsync(
+                new StorefrontPlaceOrderRequest
+                {
+                    CheckoutSessionId = Guid.Parse("11111111-1111-4111-8111-111111111111"),
+                    ExpectedCartVersion = 1,
+                    ExpectedCheckoutVersion = 1,
+                    IdempotencyKey = "idem-key",
+                },
+                "cart-token");
+
+            Assert.True(result.Success);
+            Assert.Equal(["/api/storefront/stores/default/checkout/place-order"], handler.RequestPaths);
+        }
+
+        [Fact]
         public async Task GetAddressCountriesAsync_ReadsStoreScopedLookup()
         {
             var handler = new RecordingHandler(request =>

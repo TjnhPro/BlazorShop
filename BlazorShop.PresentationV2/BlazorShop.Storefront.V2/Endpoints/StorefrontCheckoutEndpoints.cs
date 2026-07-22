@@ -181,6 +181,7 @@ namespace BlazorShop.Storefront.Endpoints
                             ? Guid.NewGuid().ToString("N")
                             : request.IdempotencyKey.Trim(),
                     },
+                    guard.CartToken,
                     cancellationToken);
                 if (!result.Success || result.Data is null)
                 {

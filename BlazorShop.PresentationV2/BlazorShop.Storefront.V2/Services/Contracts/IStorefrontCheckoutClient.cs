@@ -66,6 +66,7 @@ namespace BlazorShop.Storefront.Services.Contracts
 
         Task<StorefrontSubmitResult<StorefrontPlaceOrderResponse>> PlaceOrderAsync(
                     StorefrontPlaceOrderRequest request,
+                    string? cartToken = null,
                     CancellationToken cancellationToken = default);
     }
 }

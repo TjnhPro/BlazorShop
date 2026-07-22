@@ -147,8 +147,20 @@ namespace BlazorShop.Storefront.Services
         }
         public Task<StorefrontSubmitResult<StorefrontPlaceOrderResponse>> PlaceOrderAsync(
             StorefrontPlaceOrderRequest request,
+            string? cartToken = null,
             CancellationToken cancellationToken = default)
         {
+            if (!string.IsNullOrWhiteSpace(cartToken))
+            {
+                return SendCartAsync<StorefrontPlaceOrderResponse>(
+                    HttpMethod.Post,
+                    StorefrontPlaceOrderRoute,
+                    cartToken,
+                    request,
+                    "Unable to place order right now.",
+                    cancellationToken);
+            }
+
             return PostAsync<StorefrontPlaceOrderRequest, StorefrontPlaceOrderResponse>(
                 StorefrontPlaceOrderRoute,
                 request,
