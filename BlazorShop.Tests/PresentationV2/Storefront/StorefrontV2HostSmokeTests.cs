@@ -980,13 +980,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     builder.UseSetting("Storefront:RateLimiting:Cart:QueueLimit", "0");
                 });
 
-            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.SignIn);
+            var (token, cookieHeader) = await ReadAntiforgeryAsync(client, StorefrontRoutes.SignIn, "bs-cart-token=server-token");
             using var firstRequest = CreateJsonRequest(
                 HttpMethod.Post,
                 "/api/cart/lines",
                 new { ProductId = productId, Quantity = 1 },
                 token,
-                cookieHeader);
+                AppendCookie(cookieHeader, "bs-cart-token=server-token"));
             using var firstResponse = await client.SendAsync(firstRequest);
 
             using var secondRequest = CreateJsonRequest(
@@ -994,7 +994,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 "/api/cart/lines",
                 new { ProductId = productId, Quantity = 1 },
                 token,
-                cookieHeader);
+                AppendCookie(cookieHeader, "bs-cart-token=server-token"));
             using var secondResponse = await client.SendAsync(secondRequest);
             var content = await secondResponse.Content.ReadAsStringAsync();
 

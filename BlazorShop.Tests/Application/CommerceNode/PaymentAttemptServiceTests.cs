@@ -39,16 +39,16 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.DoesNotContain("orderPlacementService ?? new OrderPlacementService", paymentSource, StringComparison.Ordinal);
 
             Assert.False(placementParameters["moneyRoundingService"].HasDefaultValue);
-            Assert.False(placementParameters["sellabilityResolver"].HasDefaultValue);
+            Assert.False(placementParameters["orderLineResolver"].HasDefaultValue);
             Assert.False(placementParameters["stockAdjustmentHook"].HasDefaultValue);
             Assert.Equal(typeof(IMoneyRoundingService), placementParameters["moneyRoundingService"].ParameterType);
-            Assert.Equal(typeof(IProductSellabilityResolver), placementParameters["sellabilityResolver"].ParameterType);
+            Assert.Equal(typeof(CheckoutOrderLineResolver), placementParameters["orderLineResolver"].ParameterType);
             Assert.Equal(typeof(IOrderStockAdjustmentHook), placementParameters["stockAdjustmentHook"].ParameterType);
             Assert.DoesNotContain("IMoneyRoundingService? moneyRoundingService = null", placementSource, StringComparison.Ordinal);
-            Assert.DoesNotContain("IProductSellabilityResolver? sellabilityResolver = null", placementSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("CheckoutOrderLineResolver? orderLineResolver = null", placementSource, StringComparison.Ordinal);
             Assert.DoesNotContain("IOrderStockAdjustmentHook? stockAdjustmentHook = null", placementSource, StringComparison.Ordinal);
             Assert.DoesNotContain("moneyRoundingService ?? new MoneyRoundingService", placementSource, StringComparison.Ordinal);
-            Assert.DoesNotContain("sellabilityResolver ?? new ProductSellabilityResolver", placementSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("orderLineResolver ?? new CheckoutOrderLineResolver", placementSource, StringComparison.Ordinal);
             Assert.DoesNotContain("stockAdjustmentHook ?? new DefaultOrderStockAdjustmentHook", placementSource, StringComparison.Ordinal);
         }
 

@@ -7,19 +7,21 @@ namespace BlazorShop.Tests.Architecture
     public sealed class V2ProductionReadinessTests
     {
         [Fact]
-        public void Phase0_CiBaseline_RecordsLegacyReleaseGateGap()
+        public void Phase3_CiWorkflow_UsesV2ReleaseGateAndLegacyCompatibility()
         {
             var workflow = ReadRepositoryFile(".github/workflows/ci.yml");
 
-            Assert.Contains("dotnet restore BlazorShop.sln", workflow, StringComparison.Ordinal);
-            Assert.Contains("dotnet build BlazorShop.sln --configuration Release --no-restore", workflow, StringComparison.Ordinal);
-            Assert.Contains("dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --configuration Release --no-build", workflow, StringComparison.Ordinal);
-            Assert.Contains("BlazorShop.Presentation/BlazorShop.API/Dockerfile", workflow, StringComparison.Ordinal);
-            Assert.Contains("BlazorShop.Presentation/BlazorShop.Storefront/Dockerfile", workflow, StringComparison.Ordinal);
-            Assert.Contains("BlazorShop.Presentation/BlazorShop.Web/Dockerfile", workflow, StringComparison.Ordinal);
-            Assert.DoesNotContain("ci-v2", workflow, StringComparison.Ordinal);
-            Assert.DoesNotContain("BlazorShop.V2.slnf", workflow, StringComparison.Ordinal);
-            Assert.DoesNotContain("BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj", workflow, StringComparison.Ordinal);
+            Assert.Contains("ci-v2:", workflow, StringComparison.Ordinal);
+            Assert.Contains("legacy-compatibility:", workflow, StringComparison.Ordinal);
+            Assert.Contains("continue-on-error: true", workflow, StringComparison.Ordinal);
+            Assert.Matches(
+                new Regex("ci-v2:[\\s\\S]*dotnet restore BlazorShop\\.V2\\.slnf[\\s\\S]*dotnet build BlazorShop\\.V2\\.slnf --configuration Release --no-restore[\\s\\S]*dotnet test BlazorShop\\.Tests\\.V2/BlazorShop\\.Tests\\.V2\\.csproj --configuration Release --no-build", RegexOptions.CultureInvariant),
+                workflow);
+            Assert.Matches(
+                new Regex("legacy-compatibility:[\\s\\S]*dotnet restore BlazorShop\\.sln[\\s\\S]*dotnet build BlazorShop\\.sln --configuration Release --no-restore[\\s\\S]*dotnet test BlazorShop\\.Tests/BlazorShop\\.Tests\\.csproj --configuration Release --no-build", RegexOptions.CultureInvariant),
+                workflow);
+            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/package-lock.json", workflow, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package-lock.json", workflow, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -38,24 +40,30 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void Phase0_V2TestProjectBaseline_RecordsCoreCommerceTestsMissingFromGate()
+        public void Phase3_V2TestProject_IncludesCoreCommerceAndControlPlaneTests()
         {
             var v2TestProject = ReadRepositoryFile("BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj");
             var applicationCommerceNodeTests = EnumerateFiles("BlazorShop.Tests/Application/CommerceNode", "*.cs").ToArray();
             var infrastructureCommerceNodeTests = EnumerateFiles("BlazorShop.Tests/Infrastructure/CommerceNode", "*.cs").ToArray();
+            var infrastructureControlPlaneTests = EnumerateFiles("BlazorShop.Tests/Infrastructure/ControlPlane", "*.cs").ToArray();
 
             Assert.Contains(@"..\BlazorShop.Tests\Architecture\**\*.cs", v2TestProject, StringComparison.Ordinal);
+            Assert.Contains(@"..\BlazorShop.Tests\Application\CommerceNode\**\*.cs", v2TestProject, StringComparison.Ordinal);
+            Assert.Contains(@"..\BlazorShop.Tests\Infrastructure\CommerceNode\**\*.cs", v2TestProject, StringComparison.Ordinal);
+            Assert.Contains(@"..\BlazorShop.Tests\Infrastructure\ControlPlane\**\*.cs", v2TestProject, StringComparison.Ordinal);
             Assert.Contains(@"..\BlazorShop.Tests\PresentationV2\**\*.cs", v2TestProject, StringComparison.Ordinal);
-            Assert.DoesNotContain(@"..\BlazorShop.Tests\Application\**\*.cs", v2TestProject, StringComparison.Ordinal);
-            Assert.DoesNotContain(@"..\BlazorShop.Tests\Infrastructure\**\*.cs", v2TestProject, StringComparison.Ordinal);
             Assert.True(applicationCommerceNodeTests.Length >= 10);
             Assert.True(infrastructureCommerceNodeTests.Length >= 20);
+            Assert.True(infrastructureControlPlaneTests.Length >= 5);
             Assert.Contains(
                 "BlazorShop.Tests/Application/CommerceNode/StorefrontCheckoutServiceTests.cs",
                 applicationCommerceNodeTests.Select(ToRepositoryRelativePath));
             Assert.Contains(
                 "BlazorShop.Tests/Infrastructure/CommerceNode/CommerceNodeDbContextModelTests.cs",
                 infrastructureCommerceNodeTests.Select(ToRepositoryRelativePath));
+            Assert.Contains(
+                "BlazorShop.Tests/Infrastructure/ControlPlane/ControlPlaneDbContextModelTests.cs",
+                infrastructureControlPlaneTests.Select(ToRepositoryRelativePath));
         }
 
         [Fact]

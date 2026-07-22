@@ -9,8 +9,39 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-test:
+  ci-v2:
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/package-lock.json
+            BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package-lock.json
+
+      - name: Restore
+        run: dotnet restore BlazorShop.V2.slnf
+
+      - name: Build
+        run: dotnet build BlazorShop.V2.slnf --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --configuration Release --no-build --verbosity normal
+
+  legacy-compatibility:
+    runs-on: ubuntu-latest
+    continue-on-error: true
 
     steps:
       - name: Checkout
@@ -28,13 +59,13 @@ jobs:
           cache: npm
           cache-dependency-path: BlazorShop.Presentation/BlazorShop.Web/package-lock.json
 
-      - name: Restore
+      - name: Restore legacy solution
         run: dotnet restore BlazorShop.sln
 
-      - name: Build
+      - name: Build legacy solution
         run: dotnet build BlazorShop.sln --configuration Release --no-restore
 
-      - name: Test
+      - name: Test legacy suite
         run: dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --configuration Release --no-build --verbosity normal
 
       - name: Validate production compose config

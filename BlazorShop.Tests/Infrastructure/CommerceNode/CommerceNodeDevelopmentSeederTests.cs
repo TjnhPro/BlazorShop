@@ -4,8 +4,11 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
     using BlazorShop.Domain.Entities;
     using BlazorShop.Domain.Entities.CommerceNode;
     using BlazorShop.Infrastructure.Data.CommerceNode;
+    using BlazorShop.Infrastructure.Data.CommerceNode.Services;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.FileProviders;
+    using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Options;
 
     using Xunit;
@@ -56,13 +59,17 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 Quantity = 5,
             });
             await context.SaveChangesAsync();
+            var mediaRoot = Path.Combine(Path.GetTempPath(), "blazorshop-seeder-media", Guid.NewGuid().ToString("N"));
 
             var seeder = new CommerceNodeDevelopmentSeeder(
                 context,
                 userManager: null!,
-                hostEnvironment: null!,
-                mediaStorageProvider: null!,
-                Options.Create(new CommerceMediaStorageOptions()));
+                new FakeHostEnvironment(mediaRoot),
+                new LocalMediaStorageProvider(),
+                Options.Create(new CommerceMediaStorageOptions
+                {
+                    RootPath = "runtime/media/assets",
+                }));
 
             await seeder.SeedAsync();
 
@@ -86,6 +93,24 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
                 .Options;
 
             return new CommerceNodeDbContext(options);
+        }
+
+        private sealed class FakeHostEnvironment : IHostEnvironment
+        {
+            public FakeHostEnvironment(string contentRootPath)
+            {
+                Directory.CreateDirectory(contentRootPath);
+                this.ContentRootPath = contentRootPath;
+                this.ContentRootFileProvider = new PhysicalFileProvider(contentRootPath);
+            }
+
+            public string ApplicationName { get; set; } = "BlazorShop.Tests.V2";
+
+            public IFileProvider ContentRootFileProvider { get; set; }
+
+            public string ContentRootPath { get; set; }
+
+            public string EnvironmentName { get; set; } = Environments.Development;
         }
     }
 }

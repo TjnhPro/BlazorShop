@@ -32,12 +32,12 @@ namespace BlazorShop.Tests.Application.CommerceNode
         public void DevelopmentSeeder_ConfiguresStoreScopedMailpitCaptureSenders()
         {
             var root = FindRepositoryRoot();
-            var seeder = File.ReadAllText(Path.Combine(
-                root,
-                "BlazorShop.Infrastructure",
-                "Data",
-                "CommerceNode",
-                "CommerceNodeDevelopmentSeeder.cs"));
+            var seederDirectory = Path.Combine(root, "BlazorShop.Infrastructure", "Data", "CommerceNode");
+            var seeder = string.Join(
+                Environment.NewLine,
+                Directory.EnumerateFiles(seederDirectory, "CommerceNodeDevelopmentSeeder*.cs")
+                    .OrderBy(path => path, StringComparer.Ordinal)
+                    .Select(File.ReadAllText));
 
             Assert.Contains("EnsureStoreEmailSettingsAsync", seeder, StringComparison.Ordinal);
             Assert.Contains("StoreEmailDeliveryModes.Capture", seeder, StringComparison.Ordinal);

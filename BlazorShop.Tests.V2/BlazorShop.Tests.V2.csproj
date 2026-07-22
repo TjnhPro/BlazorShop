@@ -8,7 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\BlazorShop.Tests\GlobalUsings.cs" Link="GlobalUsings.cs" />
     <Compile Include="..\BlazorShop.Tests\Architecture\**\*.cs" Link="Architecture\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\BlazorShop.Tests\Application\CommerceNode\**\*.cs" Link="Application\CommerceNode\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\BlazorShop.Tests\Infrastructure\CommerceNode\**\*.cs" Link="Infrastructure\CommerceNode\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\BlazorShop.Tests\Infrastructure\ControlPlane\**\*.cs" Link="Infrastructure\ControlPlane\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\BlazorShop.Tests\PresentationV2\**\*.cs" Link="PresentationV2\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 

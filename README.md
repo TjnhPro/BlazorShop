@@ -114,16 +114,18 @@ Every new or changed active V2 endpoint must follow [docs/architecture/09-api-co
 
 ## Tests And QA
 
-Fast project test command:
+Active V2 release-gate commands:
+
+```powershell
+dotnet restore BlazorShop.V2.slnf
+dotnet build BlazorShop.V2.slnf -c Release --no-restore
+dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build --verbosity normal
+```
+
+Legacy compatibility verification is still available, but it is not the primary V2 release signal:
 
 ```powershell
 dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj -c Release
-```
-
-Full solution verification:
-
-```powershell
-dotnet test BlazorShop.sln -c Release
 ```
 
 Feature QA checklists live in [docs/refactor-control-Commerce-storefront](docs/refactor-control-Commerce-storefront):

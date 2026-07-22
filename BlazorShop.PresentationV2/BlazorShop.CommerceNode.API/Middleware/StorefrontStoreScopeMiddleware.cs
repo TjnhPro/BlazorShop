@@ -4,6 +4,8 @@ namespace BlazorShop.CommerceNode.API.Middleware
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.CommerceNode.API.Responses;
 
+    using Microsoft.AspNetCore.Http.Features;
+
     public sealed class StorefrontStoreScopeMiddleware
     {
         private readonly RequestDelegate next;
@@ -23,6 +25,12 @@ namespace BlazorShop.CommerceNode.API.Middleware
             var path = NormalizePath(context.Request.Path.Value);
             if (path.StartsWith("api/storefront/stores/", StringComparison.OrdinalIgnoreCase))
             {
+                if (IsUnmatchedEndpointRoute(context))
+                {
+                    await WriteFailureAsync(context, StatusCodes.Status404NotFound, "Storefront endpoint was not found.");
+                    return;
+                }
+
                 var storeKey = ExtractStorefrontStoreKey(path);
                 if (string.IsNullOrWhiteSpace(storeKey))
                 {
@@ -59,6 +67,12 @@ namespace BlazorShop.CommerceNode.API.Middleware
             }
 
             await this.next(context);
+        }
+
+        private static bool IsUnmatchedEndpointRoute(HttpContext context)
+        {
+            var endpointFeature = context.Features.Get<IEndpointFeature>();
+            return endpointFeature is not null && endpointFeature.Endpoint is null;
         }
 
         public static bool IsStorefrontOrPublicMediaPath(PathString path)

@@ -173,6 +173,10 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.True(
                 program.IndexOf("app.UseForwardedHeaders();", StringComparison.Ordinal)
                 < program.IndexOf("StorefrontStoreScopeMiddleware.IsStorefrontOrPublicMediaPath", StringComparison.Ordinal));
+            Assert.True(
+                program.IndexOf("app.UseRouting();", StringComparison.Ordinal)
+                < program.IndexOf("StorefrontStoreScopeMiddleware.IsStorefrontOrPublicMediaPath", StringComparison.Ordinal));
+            Assert.Contains("IsUnmatchedEndpointRoute", middleware, StringComparison.Ordinal);
             Assert.DoesNotContain("X-Store-Host", middleware, StringComparison.Ordinal);
             Assert.DoesNotContain("X-Forwarded-Host", middleware, StringComparison.Ordinal);
         }

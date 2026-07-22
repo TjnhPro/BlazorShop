@@ -5,8 +5,14 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
     using System.Net;
     using System.Text;
 
+    using BlazorShop.Application.Common.Results;
+    using BlazorShop.Application.CommerceNode.Stores;
+    using BlazorShop.Domain.Entities.CommerceNode;
+
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Mvc.Testing;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.DependencyInjection.Extensions;
 
     using Xunit;
 
@@ -56,6 +62,11 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 builder.UseEnvironment("Development");
                 builder.UseSetting("CommerceNode:Database:MigrateOnStartup", "false");
                 builder.UseSetting("CommerceTaskWorker:Enabled", "false");
+                builder.ConfigureServices(services =>
+                {
+                    services.RemoveAll<ICommerceStoreDomainResolver>();
+                    services.AddScoped<ICommerceStoreDomainResolver, StubCommerceStoreDomainResolver>();
+                });
             });
 
             return configuredFactory.CreateClient(new WebApplicationFactoryClientOptions
@@ -73,6 +84,83 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 "..",
                 "..",
                 relativePath.Replace('/', Path.DirectorySeparatorChar)));
+        }
+
+        private sealed class StubCommerceStoreDomainResolver : ICommerceStoreDomainResolver
+        {
+            private static readonly Guid StoreId = Guid.NewGuid();
+
+            public Task<ApplicationResult<CommerceCurrentStore>> ResolveAsync(
+                string? storeKey = null,
+                string? host = null,
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(ApplicationResult<CommerceCurrentStore>.Succeeded(CreateCurrentStore()));
+            }
+
+            public Task<ApplicationResult<CommerceCurrentStore>> ResolveForReadinessAsync(
+                string? storeKey = null,
+                string? host = null,
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(ApplicationResult<CommerceCurrentStore>.Succeeded(CreateCurrentStore()));
+            }
+
+            public Task<ApplicationResult<StoreExecutionContext>> ResolveExecutionContextAsync(
+                string? storeKey = null,
+                string? host = null,
+                string source = StoreExecutionContextSources.Unknown,
+                CancellationToken cancellationToken = default)
+            {
+                var currentStore = CreateCurrentStore();
+                return Task.FromResult(ApplicationResult<StoreExecutionContext>.Succeeded(
+                    new StoreExecutionContext(
+                        StoreId,
+                        currentStore.StoreKey,
+                        host,
+                        source,
+                        currentStore.Status,
+                        true,
+                        currentStore)));
+            }
+
+            public Task<ApplicationResult<Guid>> ResolveStoreIdAsync(
+                string? storeKey = null,
+                string? host = null,
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(ApplicationResult<Guid>.Succeeded(StoreId));
+            }
+
+            private static CommerceCurrentStore CreateCurrentStore()
+            {
+                return new CommerceCurrentStore(
+                    StoreId,
+                    "test-store",
+                    "Test Store",
+                    CommerceStoreStatuses.Active,
+                    "https://test-store.example",
+                    "test-store.example",
+                    true,
+                    null,
+                    null,
+                    "Test Store",
+                    "support@test-store.example",
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "USD",
+                    "en-US",
+                    "support@test-store.example",
+                    null,
+                    false,
+                    null,
+                    null);
+            }
         }
     }
 }

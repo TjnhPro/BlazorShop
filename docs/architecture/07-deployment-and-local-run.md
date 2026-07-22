@@ -65,6 +65,8 @@ dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore
 
 `BlazorShop.Tests.V2` links active V2 architecture, Commerce Node, Control Plane, Storefront V2, and Storefront WASM/browser host tests from the mixed historical test project. The V2 test assembly disables test parallelization so WebApplicationFactory/browser-host smoke tests do not race each other.
 
+GitHub Actions uses `ci-v2` as the active release gate. That job restores/builds `BlazorShop.V2.slnf` and runs `BlazorShop.Tests.V2`. The historical `BlazorShop.sln`/`BlazorShop.Tests` path is kept as `legacy-compatibility` and must not be treated as proof that V2 is production-ready.
+
 ## Control Plane Local Run
 
 Database:

@@ -130,6 +130,7 @@ Directory.CreateDirectory(uploadsPath);
 app.UseStaticFiles(CreateUploadsStaticFileOptions(uploadsPath));
 
 app.MapGet("/", () => Results.Redirect("/swagger"));
+app.UseRouting();
 app.UseWhen(
     context => StorefrontStoreScopeMiddleware.IsStorefrontOrPublicMediaPath(context.Request.Path),
     branch => branch.UseMiddleware<StorefrontStoreScopeMiddleware>());

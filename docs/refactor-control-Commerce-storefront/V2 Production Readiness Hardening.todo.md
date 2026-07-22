@@ -190,41 +190,48 @@ Goal: CI bat buoc build/test active V2, legacy khong con la tin hieu release chi
 
 ### Tasks
 
-- [ ] Tao job `ci-v2` trong `.github/workflows/ci.yml`.
-- [ ] `ci-v2` commands:
-  - [ ] `dotnet restore BlazorShop.V2.slnf`.
-  - [ ] `dotnet build BlazorShop.V2.slnf --configuration Release --no-restore`.
-  - [ ] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --configuration Release --no-build --verbosity normal`.
-- [ ] Chuyen legacy build/test thanh job `legacy-compatibility`.
-- [ ] Quyet dinh legacy job:
-  - [ ] Khong blocking release neu V2 la production target.
-  - [ ] Co the chay `continue-on-error` tam thoi neu legacy warnings/deps can xu ly rieng.
-- [ ] Sua Node cache path neu CI V2 khong can `BlazorShop.Presentation/BlazorShop.Web/package-lock.json`.
-- [ ] Them CI check ngan workflow quay lai chi build `BlazorShop.sln` ma khong build `BlazorShop.V2.slnf`.
-- [ ] Cap nhat README/docs release command neu CI doi.
+- [x] Tao job `ci-v2` trong `.github/workflows/ci.yml`.
+- [x] `ci-v2` commands:
+  - [x] `dotnet restore BlazorShop.V2.slnf`.
+  - [x] `dotnet build BlazorShop.V2.slnf --configuration Release --no-restore`.
+  - [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --configuration Release --no-build --verbosity normal`.
+- [x] Chuyen legacy build/test thanh job `legacy-compatibility`.
+- [x] Quyet dinh legacy job:
+  - [x] Khong blocking release neu V2 la production target.
+  - [x] Co the chay `continue-on-error` tam thoi neu legacy warnings/deps can xu ly rieng.
+- [x] Sua Node cache path neu CI V2 khong can `BlazorShop.Presentation/BlazorShop.Web/package-lock.json`.
+- [x] Them CI check ngan workflow quay lai chi build `BlazorShop.sln` ma khong build `BlazorShop.V2.slnf`.
+- [x] Cap nhat README/docs release command neu CI doi.
 
 ### V2 test migration tasks
 
-- [ ] Dua V2-relevant Application tests vao `BlazorShop.Tests.V2`.
-- [ ] Dua V2-relevant Infrastructure CommerceNode tests vao `BlazorShop.Tests.V2`.
-- [ ] Uu tien nhom:
-  - [ ] Cart/session/sellability.
-  - [ ] Checkout/pricing/payment attempt/order placement.
-  - [ ] Currency/rounding.
-  - [ ] Navigation/pages/SEO.
-  - [ ] CommerceNodeDbContext model/migration.
-  - [ ] Seeder idempotency.
-  - [ ] Store SMTP/message queue.
-  - [ ] Webhook/payment callback safety.
-- [ ] Uu tien move file sang structure V2 neu tests thuc su thuoc V2; chi link tam thoi neu can giam blast radius.
-- [ ] Them guardrail test dem so luong hoac namespace expected de V2 tests khong bi rot khoi project.
+- [x] Dua V2-relevant Application tests vao `BlazorShop.Tests.V2`.
+- [x] Dua V2-relevant Infrastructure CommerceNode tests vao `BlazorShop.Tests.V2`.
+- [x] Uu tien nhom:
+  - [x] Cart/session/sellability.
+  - [x] Checkout/pricing/payment attempt/order placement.
+  - [x] Currency/rounding.
+  - [x] Navigation/pages/SEO.
+  - [x] CommerceNodeDbContext model/migration.
+  - [x] Seeder idempotency.
+  - [x] Store SMTP/message queue.
+  - [x] Webhook/payment callback safety.
+- [x] Uu tien move file sang structure V2 neu tests thuc su thuoc V2; chi link tam thoi neu can giam blast radius.
+- [x] Them guardrail test dem so luong hoac namespace expected de V2 tests khong bi rot khoi project.
+
+### Phase 3 implementation notes - 2026-07-22
+
+- `.github/workflows/ci.yml` co job `ci-v2` lam release gate: restore/build `BlazorShop.V2.slnf`, test `BlazorShop.Tests.V2`.
+- Legacy solution/test/Docker/compose checks duoc giu trong `legacy-compatibility` voi `continue-on-error: true` de khong tao tin hieu sai cho V2 release.
+- `BlazorShop.Tests.V2` link Application CommerceNode, Infrastructure CommerceNode va Infrastructure ControlPlane tests; chua copy/move file vat ly de giam churn.
+- README va deployment doc da cap nhat lệnh release-gate V2.
 
 ### Acceptance criteria
 
-- [ ] Required status check moi la `ci-v2`.
-- [ ] CI V2 fail neu V2 build/test fail.
-- [ ] Legacy compatibility khong tao ao giac V2 da deploy duoc.
-- [ ] `BlazorShop.Tests.V2` bao gom core commerce tests can cho production readiness.
+- [x] Required status check moi la `ci-v2`.
+- [x] CI V2 fail neu V2 build/test fail.
+- [x] Legacy compatibility khong tao ao giac V2 da deploy duoc.
+- [x] `BlazorShop.Tests.V2` bao gom core commerce tests can cho production readiness.
 
 ## Phase 4 - V2 production Docker and compose
 
