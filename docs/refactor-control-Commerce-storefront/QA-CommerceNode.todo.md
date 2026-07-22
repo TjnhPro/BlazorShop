@@ -1198,3 +1198,12 @@ Latest startup migration QA result: 2026-07-11 CommerceNode API build passed, `r
 - [x] Commerce Node services consume `ICommerceStoreContext`/execution context instead of parsing HTTP route/query/header/host inside infrastructure. 2026-07-19 Phase 9: `InfrastructureStoreContext_ReadsExecutionContextOnlyAfterPhase5` and `InfrastructureServices_DoNotKeepPrivateStoreScopeResolutionHelpersAfterPhase5` remain in the V2 architecture suite.
 - [x] Development seeding remains idempotent and does not overwrite runtime store profile/config values after API restart. 2026-07-19 Phase 7/9: seeder split guardrails stay in `CommerceNodeDevelopmentSeeder_IsSplitBySeedStepAfterPhase7B`; runtime no-overwrite policy is documented in local run docs.
 - [x] Active Commerce Node production services do not use optional DI collaborator fallbacks for store public configuration cache. 2026-07-19 Phase 9: `CommerceStoreService` now requires `IStorefrontPublicConfigurationCache` and invalidates it explicitly after store changes.
+
+## V2 Production Readiness Release Gate
+
+- [x] Forged public media store headers remain an explicit release check. 2026-07-22 Production Readiness Phase 7: release gate points to Phase 1 tests for forged `X-Store-Host`/`X-Forwarded-Host` behavior and requires no fallback to another store.
+- [x] Trusted forwarded-header behavior remains an explicit release check. 2026-07-22 Production Readiness Phase 7: release gate requires `Runtime:ForwardedHeaders` known proxy/network config before relying on forwarded host/scheme in production.
+- [x] Guest/session rate-limit behavior remains an explicit release check. 2026-07-22 Production Readiness Phase 7: release gate points to Phase 2 user/cart-token/trusted-IP partition tests and rejects raw `X-Forwarded-For` bucket changes.
+- [x] Storefront OpenAPI generator artifact is part of the release gate. 2026-07-22 Production Readiness Phase 7: `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_GeneratesAndCompilesTypeScriptClientWithNswag` uses the pinned NSwag/TypeScript generator path.
+- [x] CommerceNode V2 health is part of the release smoke. 2026-07-22 Production Readiness Phase 7: `scripts/qa/run-v2-production-release-smoke.ps1` checks CommerceNode `/health`, Storefront and CommerceAdmin swagger JSON, and Nginx unknown-host `403`.
+- [ ] Execute `.\scripts\qa\run-v2-production-release-smoke.ps1` against a running V2 environment before production publish and attach output to release evidence.

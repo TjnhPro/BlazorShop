@@ -61,6 +61,10 @@ jobs:
           BLAZORSHOP_STOREFRONT_STORE_KEY: default
         run: docker compose -f compose.v2.production.yml config
 
+      - name: Validate V2 production release smoke script
+        shell: pwsh
+        run: ./scripts/qa/run-v2-production-release-smoke.ps1 -Describe
+
       - name: Build Commerce Node API V2 container image
         run: docker build -f BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Dockerfile -t blazorshop-commercenode-api:v2-ci .
 

@@ -528,3 +528,11 @@ Status legend:
 - [x] Capability gateway interfaces stay below the documented method-count threshold so gateway responsibilities remain split by feature. 2026-07-19 Phase 9: `ControlPlaneCommerceGatewayInterfaces_UseApplicationResultCapabilities` asserts each capability has 1-15 `ApplicationResult<T>` operations.
 - [x] Active Control Plane services do not rely on nullable logger constructor fallbacks. 2026-07-19 Phase 9: `ControlPlaneActionService` and `ControlPlaneHealthService` require DI-provided loggers; mixed infrastructure tests pass with explicit `NullLogger`.
 - [x] Active V2 build/test target is the V2 solution filter, not the legacy/mixed solution. 2026-07-19 Phase 8/9: `dotnet build BlazorShop.V2.slnf --no-restore` and `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore` are documented in architecture rules.
+
+## V2 Production Readiness Release Gate
+
+- [x] ControlPlane API V2 health is part of the release smoke. 2026-07-22 Production Readiness Phase 7: `scripts/qa/run-v2-production-release-smoke.ps1` checks ControlPlane API `/health`.
+- [x] ControlPlane Web V2 root availability is part of the release smoke. 2026-07-22 Production Readiness Phase 7: the same script checks ControlPlane Web `/` to catch missing runtime `appsettings.json` or Nginx static hosting failures.
+- [x] ControlPlane API secrets remain behind the API boundary. 2026-07-22 Production Readiness Phase 7: release evidence must continue to show ControlPlane Web receives only ControlPlane API base URL, never node secret or direct CommerceNode credentials.
+- [x] ControlPlane Web direct-CommerceNode browser calls remain a release blocker. 2026-07-22 Production Readiness Phase 7: release evidence must include request capture proving no browser calls to `api/commerce/*`, `api/internal/*`, or CommerceNode local ports from ControlPlane Web.
+- [ ] Execute `.\scripts\qa\run-v2-production-release-smoke.ps1` and a ControlPlane Web request-capture check before production publish.

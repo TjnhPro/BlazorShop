@@ -683,3 +683,11 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Storefront browser/network release checklist continues to reject direct calls to Commerce Admin, Control Plane, legacy API/Web, and `api/internal/*`. 2026-07-19 Phase 9: existing `Storefront Playwright E2E Release.todo.md` keeps `RUN-010` and per-route network evidence requirements; no browser route behavior changed in this phase.
 - [x] Storefront V2 host smoke is included in the active V2 test project and serialized to avoid WebApplicationFactory races. 2026-07-19 Phase 8/9: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore` passed 439/439 including `StorefrontV2HostSmokeTests`.
 - [x] Storefront public schemas and shared model migration exceptions remain explicitly guarded. 2026-07-19 Phase 9: `WebSharedV2BusinessModelFolders_AreFrozenDuringContractMigration` freezes the remaining shared business-model folders until generated-client migration removes them.
+
+## V2 Production Readiness Release Gate
+
+- [x] Storefront V2 compose/runtime boot is part of the release smoke. 2026-07-22 Production Readiness Phase 7: `scripts/qa/run-v2-production-release-smoke.ps1` checks Storefront `/health`.
+- [x] Current-store resolution remains a release blocker. 2026-07-22 Production Readiness Phase 7: release evidence must include a Storefront page/API load that proves the configured store resolves and missing/unavailable stores do not fall back.
+- [x] Public product media under the correct host remains a release blocker. 2026-07-22 Production Readiness Phase 7: release evidence must include product media loaded from the intended Storefront host and no forged store header dependency.
+- [x] Cart/account/checkout browser flows remain the production gate, not a simple page smoke. 2026-07-22 Production Readiness Phase 7: `Storefront Playwright E2E Release.todo.md` is the required browser checklist for cart CRUD, account recovery, COD checkout, order detail, media, and SEO documents.
+- [ ] Execute `.\scripts\qa\run-v2-production-release-smoke.ps1` plus the visible Playwright release checklist before production publish.

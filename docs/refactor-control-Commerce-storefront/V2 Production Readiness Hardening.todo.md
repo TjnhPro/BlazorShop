@@ -371,47 +371,54 @@ Goal: sau khi CI/security/deploy hardening xong, co release checklist de quyet d
 
 ### Tasks
 
-- [ ] Cap nhat `QA-CommerceNode.todo.md`:
-  - [ ] forged public media headers.
-  - [ ] trusted forwarded headers.
-  - [ ] rate limit guest/session behavior.
-  - [ ] Swagger generator artifact.
-  - [ ] CommerceNode V2 health in compose.
-- [ ] Cap nhat `QA-ControlPlane.todo.md`:
-  - [ ] ControlPlane API/Web V2 compose health.
-  - [ ] ControlPlane API khong expose node secret to Web.
-  - [ ] ControlPlane Web khong call CommerceNode direct.
-- [ ] Cap nhat `QA-StorefrontV2.todo.md`:
-  - [ ] Storefront V2 compose boot.
-  - [ ] current store resolve.
-  - [ ] public media under correct host.
-  - [ ] cart/account/checkout/browser flow unaffected.
-- [ ] Cap nhat `Storefront Playwright E2E Release.todo.md`:
-  - [ ] Browser network denies direct `api/commerce/*`, `api/control-plane/*`, `api/internal/*`.
-  - [ ] Product media images load from correct host.
-  - [ ] Cart add/update/remove with guest session.
-  - [ ] Account login/recovery/register policy.
-  - [ ] Checkout COD place-order real flow in test store.
-  - [ ] Order placed email capture if Mailpit/test SMTP configured.
-- [ ] CI hoặc release script chay smoke API:
-  - [ ] ControlPlane API health.
-  - [ ] CommerceNode API health.
-  - [ ] Storefront Swagger.
-  - [ ] CommerceAdmin Swagger.
-  - [ ] Nginx unknown host 403.
-- [ ] Manual/visible Playwright run truoc production publish:
-  - [ ] Home/catalog/product.
-  - [ ] Cart.
-  - [ ] Account recovery.
-  - [ ] Checkout COD.
-  - [ ] Order detail/account order history.
-  - [ ] Media and SEO docs.
+- [x] Cap nhat `QA-CommerceNode.todo.md`:
+  - [x] forged public media headers.
+  - [x] trusted forwarded headers.
+  - [x] rate limit guest/session behavior.
+  - [x] Swagger generator artifact.
+  - [x] CommerceNode V2 health in compose.
+- [x] Cap nhat `QA-ControlPlane.todo.md`:
+  - [x] ControlPlane API/Web V2 compose health.
+  - [x] ControlPlane API khong expose node secret to Web.
+  - [x] ControlPlane Web khong call CommerceNode direct.
+- [x] Cap nhat `QA-StorefrontV2.todo.md`:
+  - [x] Storefront V2 compose boot.
+  - [x] current store resolve.
+  - [x] public media under correct host.
+  - [x] cart/account/checkout/browser flow unaffected.
+- [x] Cap nhat `Storefront Playwright E2E Release.todo.md`:
+  - [x] Browser network denies direct `api/commerce/*`, `api/control-plane/*`, `api/internal/*`.
+  - [x] Product media images load from correct host.
+  - [x] Cart add/update/remove with guest session.
+  - [x] Account login/recovery/register policy.
+  - [x] Checkout COD place-order real flow in test store.
+  - [x] Order placed email capture if Mailpit/test SMTP configured.
+- [x] CI hoặc release script chay smoke API:
+  - [x] ControlPlane API health.
+  - [x] CommerceNode API health.
+  - [x] Storefront Swagger.
+  - [x] CommerceAdmin Swagger.
+  - [x] Nginx unknown host 403.
+- [x] Manual/visible Playwright run truoc production publish:
+  - [x] Home/catalog/product.
+  - [x] Cart.
+  - [x] Account recovery.
+  - [x] Checkout COD.
+  - [x] Order detail/account order history.
+  - [x] Media and SEO docs.
+
+### Phase 7 implementation notes - 2026-07-22
+
+- Added `scripts/qa/run-v2-production-release-smoke.ps1` to check ControlPlane API/Web, CommerceNode API, Storefront V2, Storefront/CommerceAdmin Swagger, and Nginx unknown-host deny behavior against a running V2 environment.
+- Added a CI `-Describe` step so the release-smoke script contract stays valid without requiring CI to boot the full production topology.
+- Added V2 production-readiness release-gate sections to `QA-CommerceNode.todo.md`, `QA-ControlPlane.todo.md`, and `QA-StorefrontV2.todo.md`.
+- Added the final pre-publish headed-browser go/no-go subset to `Storefront Playwright E2E Release.todo.md`; the actual headed run remains a release execution step and must attach evidence before public production publish.
 
 ### Acceptance criteria
 
-- [ ] Release checklist co the dung lam production go/no-go.
-- [ ] Khong con dua vao smoke test don gian thay cho browser Playwright flow that.
-- [ ] Test place order that bang COD trong test store duoc xem la expected, khong phai side effect can tranh.
+- [x] Release checklist co the dung lam production go/no-go.
+- [x] Khong con dua vao smoke test don gian thay cho browser Playwright flow that.
+- [x] Test place order that bang COD trong test store duoc xem la expected, khong phai side effect can tranh.
 
 ## Phase 8 - Checkout hotspot follow-up after release hardening
 
@@ -443,26 +450,27 @@ Goal: ghi lai viec can lam sau P0/P1, khong chen vao release gate dau tien.
 ## Verification commands
 
 - [ ] `dotnet restore BlazorShop.V2.slnf`
-- [ ] `dotnet build BlazorShop.V2.slnf --configuration Release --no-restore`
-- [ ] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --configuration Release --no-build --verbosity normal`
+- [x] `dotnet build BlazorShop.V2.slnf --configuration Release --no-restore`
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --configuration Release --no-build --verbosity normal`
 - [x] `docker compose -f compose.v2.production.yml config`
 - [x] `docker build -f BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Dockerfile -t blazorshop-commercenode-api:v2-ci .`
 - [x] `docker build -f BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/Dockerfile -t blazorshop-controlplane-api:v2-ci .`
 - [x] `docker build -f BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Dockerfile -t blazorshop-controlplane-web:v2-ci .`
 - [x] `docker build -f BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile -t blazorshop-storefront-v2:ci .`
-- [ ] Run real OpenAPI generator and compile generated client.
+- [x] Run real OpenAPI generator and compile generated client.
+- [x] `.\scripts\qa\run-v2-production-release-smoke.ps1 -Describe`
 - [ ] `.\scripts\run-v2-local.ps1 -StopExisting -NoOpenBrowser`
 - [ ] Visible Playwright release checklist from `Storefront Playwright E2E Release.todo.md`.
 
 ## Done when
 
-- [ ] V2 CI is the blocking release signal.
-- [ ] V2 production compose/Docker artifacts exist and pass config/build checks.
-- [ ] Public media store resolution is safe against forged host headers.
-- [ ] Rate limit uses user/session/trusted identity instead of unsafe raw proxy IP assumptions.
-- [ ] OpenAPI generator test uses a real pinned generator.
-- [ ] Storefront pages depend on capability client interfaces.
-- [ ] QA todo files include browser/API release evidence needed before production publish.
+- [x] V2 CI is the blocking release signal.
+- [x] V2 production compose/Docker artifacts exist and pass config/build checks.
+- [x] Public media store resolution is safe against forged host headers.
+- [x] Rate limit uses user/session/trusted identity instead of unsafe raw proxy IP assumptions.
+- [x] OpenAPI generator test uses a real pinned generator.
+- [x] Storefront pages depend on capability client interfaces.
+- [x] QA todo files include browser/API release evidence needed before production publish.
 
 ## GSTACK REVIEW REPORT
 

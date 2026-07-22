@@ -341,3 +341,16 @@ Ghi chú: checkout shell hiện là WASM component cho state, shipping/payment s
 - [x] SEO canonical/robots/sitemap/private noindex pass.
 - [x] Không có unexpected console error, page error hoặc 5xx.
 - [x] Mọi failure có Playwright trace/screenshot/video và bug report gắn test ID.
+
+## V2 Production Readiness Final Release Checklist
+
+Production Readiness Phase 7 adds this as the pre-publish go/no-go subset. These items must be re-executed against the candidate environment even when previous headed Chromium evidence exists.
+
+- [ ] Run `.\scripts\qa\run-v2-production-release-smoke.ps1` and attach health/swagger/Nginx output.
+- [ ] Run visible Playwright (`headless=false`) for home, category, product, cart, account recovery, checkout COD, account order list/detail/receipt, product media, robots, and sitemap.
+- [ ] Browser network evidence shows zero direct calls to `api/commerce/*`, `api/control-plane/*`, `api/internal/*`, legacy API/Web URLs, node keys, node secrets, or CommerceNode local ports.
+- [ ] Product media image evidence proves media loads from the correct public Storefront host and wrong-store/unknown-host access does not leak a default store asset.
+- [ ] Cart add/update/remove with guest session passes without request spam and without unsafe rate-limit bucketing.
+- [ ] Account login/recovery/register-policy flows pass with generic failures, safe return URLs, and Mailpit capture when SMTP capture is configured.
+- [ ] Checkout COD places exactly one real test-store order, clears cart according to transaction rule, and the order appears in account order history/detail/receipt.
+- [ ] Order placed email capture passes when Mailpit/test SMTP is configured; SMTP outage remains non-blocking for order placement and retryable after restore.

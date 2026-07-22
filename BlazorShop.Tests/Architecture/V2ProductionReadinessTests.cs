@@ -189,6 +189,39 @@ namespace BlazorShop.Tests.Architecture
             Assert.False(File.Exists(RepositoryPath("package.json")));
         }
 
+        [Fact]
+        public void Phase7_ReleaseSmokeScript_CoversProductionReadinessEndpoints()
+        {
+            var script = ReadRepositoryFile("scripts/qa/run-v2-production-release-smoke.ps1");
+            var workflow = ReadRepositoryFile(".github/workflows/ci.yml");
+            var commerceNodeQa = ReadRepositoryFile("docs/refactor-control-Commerce-storefront/QA-CommerceNode.todo.md");
+            var controlPlaneQa = ReadRepositoryFile("docs/refactor-control-Commerce-storefront/QA-ControlPlane.todo.md");
+            var storefrontQa = ReadRepositoryFile("docs/refactor-control-Commerce-storefront/QA-StorefrontV2.todo.md");
+            var storefrontReleaseQa = ReadRepositoryFile("docs/refactor-control-Commerce-storefront/Storefront Playwright E2E Release.todo.md");
+
+            Assert.Contains("ControlPlane API health", script, StringComparison.Ordinal);
+            Assert.Contains("/health", script, StringComparison.Ordinal);
+            Assert.Contains("ControlPlane Web root", script, StringComparison.Ordinal);
+            Assert.Contains("CommerceNode API health", script, StringComparison.Ordinal);
+            Assert.Contains("Storefront V2 health", script, StringComparison.Ordinal);
+            Assert.Contains("/swagger/storefront/swagger.json", script, StringComparison.Ordinal);
+            Assert.Contains("/swagger/commerce-admin/swagger.json", script, StringComparison.Ordinal);
+            Assert.Contains("CommerceNode Nginx unknown host deny", script, StringComparison.Ordinal);
+            Assert.Contains("unknown.invalid", script, StringComparison.Ordinal);
+            Assert.Contains("ExpectedStatus = 403", script, StringComparison.Ordinal);
+            Assert.Contains("run-v2-production-release-smoke.ps1 -Describe", workflow, StringComparison.Ordinal);
+            Assert.Contains("## V2 Production Readiness Release Gate", commerceNodeQa, StringComparison.Ordinal);
+            Assert.Contains("forged `X-Store-Host`", commerceNodeQa, StringComparison.Ordinal);
+            Assert.Contains("Storefront OpenAPI generator artifact", commerceNodeQa, StringComparison.Ordinal);
+            Assert.Contains("## V2 Production Readiness Release Gate", controlPlaneQa, StringComparison.Ordinal);
+            Assert.Contains("ControlPlane Web direct-CommerceNode browser calls", controlPlaneQa, StringComparison.Ordinal);
+            Assert.Contains("## V2 Production Readiness Release Gate", storefrontQa, StringComparison.Ordinal);
+            Assert.Contains("Cart/account/checkout browser flows remain the production gate", storefrontQa, StringComparison.Ordinal);
+            Assert.Contains("## V2 Production Readiness Final Release Checklist", storefrontReleaseQa, StringComparison.Ordinal);
+            Assert.Contains("visible Playwright (`headless=false`)", storefrontReleaseQa, StringComparison.Ordinal);
+            Assert.Contains("Checkout COD places exactly one real test-store order", storefrontReleaseQa, StringComparison.Ordinal);
+        }
+
         private static IEnumerable<string> EnumerateFiles(string relativeRoot, string searchPattern)
         {
             var root = RepositoryPath(relativeRoot);
