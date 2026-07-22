@@ -160,7 +160,7 @@ Start here:
 ## Legacy And Reference Code
 
 - `BlazorShop.Presentation/*` remains temporarily for comparison and migration reference, but is no longer part of the main solution.
-- `BlazorShop.AppHost` is legacy-oriented, no longer part of the main solution, and must not be treated as the active V2 orchestrator.
+- `BlazorShop.AppHost` has been removed. Use `scripts/run-v2-local.ps1` for local V2 orchestration.
 - `Smartstore/` is reference source only. Study it for ecommerce concepts and workflows, but do not copy implementation code or add runtime references.
 
 ## Contributing

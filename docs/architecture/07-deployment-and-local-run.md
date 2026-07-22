@@ -55,7 +55,7 @@ Stop the local V2 runtime with:
 
 ## Active V2 Build And Test
 
-Use the V2 solution filter for normal active architecture work:
+Use the main solution for normal active architecture work:
 
 ```powershell
 dotnet restore BlazorShop.sln
@@ -63,7 +63,7 @@ dotnet build BlazorShop.sln --no-restore
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore
 ```
 
-`BlazorShop.sln` is now the V2 canonical solution. It includes shared core, ServiceDefaults, active PresentationV2 projects, and `BlazorShop.Tests.V2`. It excludes legacy `BlazorShop.Presentation/*`, `BlazorShop.AppHost`, and the old mixed `BlazorShop.Tests` project. The temporary `BlazorShop.V2.slnf` transition file has been removed.
+`BlazorShop.sln` is now the V2 canonical solution. It includes shared core, ServiceDefaults, active PresentationV2 projects, and `BlazorShop.Tests.V2`. It excludes legacy `BlazorShop.Presentation/*` and the old mixed `BlazorShop.Tests` project. The legacy `BlazorShop.AppHost` project and temporary `BlazorShop.V2.slnf` transition file have been removed.
 
 `BlazorShop.Tests.V2` links active V2 architecture, Commerce Node, Control Plane, Storefront V2, and Storefront WASM/browser host tests from the mixed historical test project. The V2 test assembly disables test parallelization so WebApplicationFactory/browser-host smoke tests do not race each other.
 
