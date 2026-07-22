@@ -11,6 +11,9 @@
   const productGallerySelector = "[data-storefront-product-gallery]";
   const galleryThumbnailSelector = "[data-storefront-gallery-thumbnail]";
   const galleryMainImageSelector = "[data-storefront-gallery-main-image]";
+  const galleryPreviousSelector = "[data-storefront-gallery-prev]";
+  const galleryNextSelector = "[data-storefront-gallery-next]";
+  const galleryStatusSelector = "[data-storefront-gallery-status]";
   const toastRegionSelector = "[data-storefront-toast-region]";
   const toastTemplateSelector = "[data-storefront-toast-template]";
   const antiforgeryTokenSelector = 'meta[name="blazorshop-antiforgery-token"]';
@@ -614,8 +617,37 @@
     }
   }
 
-  function selectGalleryThumbnail(button) {
-    const gallery = button.closest(productGallerySelector);
+  function resolveGalleryThumbnails(gallery) {
+    return [...gallery.querySelectorAll(galleryThumbnailSelector)]
+      .filter((thumbnail) => thumbnail instanceof HTMLButtonElement)
+      .sort((left, right) => parseInteger(left.dataset.galleryIndex, 0) - parseInteger(right.dataset.galleryIndex, 0));
+  }
+
+  function resolveSelectedGalleryIndex(gallery, thumbnails = resolveGalleryThumbnails(gallery)) {
+    const selected = thumbnails.find((thumbnail) => thumbnail.dataset.selected === "true");
+    return selected ? Math.max(0, thumbnails.indexOf(selected)) : 0;
+  }
+
+  function setGalleryButtonState(button, disabled) {
+    if (!(button instanceof HTMLButtonElement)) {
+      return;
+    }
+
+    button.disabled = disabled;
+    button.setAttribute("aria-disabled", disabled ? "true" : "false");
+  }
+
+  function updateGalleryControls(gallery, selectedIndex, itemCount) {
+    setGalleryButtonState(gallery.querySelector(galleryPreviousSelector), selectedIndex <= 0);
+    setGalleryButtonState(gallery.querySelector(galleryNextSelector), selectedIndex >= itemCount - 1);
+
+    const status = gallery.querySelector(galleryStatusSelector);
+    if (status instanceof HTMLElement) {
+      status.textContent = `Image ${selectedIndex + 1} of ${itemCount}`;
+    }
+  }
+
+  function selectGalleryIndex(gallery, index) {
     if (!(gallery instanceof HTMLElement)) {
       return;
     }
@@ -625,24 +657,74 @@
       return;
     }
 
-    const imageUrl = button.dataset.imageUrl;
+    const thumbnails = resolveGalleryThumbnails(gallery);
+    if (thumbnails.length === 0) {
+      return;
+    }
+
+    const selectedIndex = Math.min(Math.max(parseInteger(index, 0), 0), thumbnails.length - 1);
+    const selectedThumbnail = thumbnails[selectedIndex];
+    const imageUrl = selectedThumbnail.dataset.imageUrl;
     if (!imageUrl) {
       return;
     }
 
     mainImage.src = imageUrl;
-    mainImage.alt = button.dataset.alt || mainImage.alt || "Product image";
-    gallery.querySelectorAll(galleryThumbnailSelector).forEach((thumbnail) => {
-      if (thumbnail instanceof HTMLElement) {
-        const selected = thumbnail === button;
-        thumbnail.dataset.selected = selected ? "true" : "false";
-        thumbnail.setAttribute("aria-current", selected ? "true" : "false");
-      }
+    mainImage.alt = selectedThumbnail.dataset.alt || mainImage.alt || "Product image";
+    thumbnails.forEach((thumbnail, thumbnailIndex) => {
+      const selected = thumbnailIndex === selectedIndex;
+      thumbnail.dataset.selected = selected ? "true" : "false";
+      thumbnail.setAttribute("aria-current", selected ? "true" : "false");
+      thumbnail.setAttribute("aria-selected", selected ? "true" : "false");
     });
+
+    updateGalleryControls(gallery, selectedIndex, thumbnails.length);
+    selectedThumbnail.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }
+
+  function selectGalleryThumbnail(button) {
+    const gallery = button.closest(productGallerySelector);
+    if (!(gallery instanceof HTMLElement)) {
+      return;
+    }
+
+    selectGalleryIndex(gallery, parseInteger(button.dataset.galleryIndex, resolveSelectedGalleryIndex(gallery)));
+  }
+
+  function moveGallery(gallery, step) {
+    if (!(gallery instanceof HTMLElement)) {
+      return;
+    }
+
+    const thumbnails = resolveGalleryThumbnails(gallery);
+    if (thumbnails.length === 0) {
+      return;
+    }
+
+    selectGalleryIndex(gallery, resolveSelectedGalleryIndex(gallery, thumbnails) + step);
   }
 
   function handleClick(event) {
-    const thumbnail = event.target.closest(galleryThumbnailSelector);
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+
+    const previous = target.closest(galleryPreviousSelector);
+    if (previous instanceof HTMLButtonElement) {
+      event.preventDefault();
+      moveGallery(previous.closest(productGallerySelector), -1);
+      return;
+    }
+
+    const next = target.closest(galleryNextSelector);
+    if (next instanceof HTMLButtonElement) {
+      event.preventDefault();
+      moveGallery(next.closest(productGallerySelector), 1);
+      return;
+    }
+
+    const thumbnail = target.closest(galleryThumbnailSelector);
     if (thumbnail instanceof HTMLButtonElement) {
       event.preventDefault();
       selectGalleryThumbnail(thumbnail);
@@ -656,6 +738,31 @@
 
     event.preventDefault();
     addToCart(button);
+  }
+
+  function handleKeyDown(event) {
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+
+    const thumbnail = target.closest(galleryThumbnailSelector);
+    if (!(thumbnail instanceof HTMLButtonElement)) {
+      return;
+    }
+
+    const gallery = thumbnail.closest(productGallerySelector);
+    if (!(gallery instanceof HTMLElement)) {
+      return;
+    }
+
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      moveGallery(gallery, -1);
+    } else if (event.key === "ArrowRight") {
+      event.preventDefault();
+      moveGallery(gallery, 1);
+    }
   }
 
   function handleChange(event) {
@@ -700,6 +807,7 @@
       }
     });
     document.addEventListener("click", handleClick);
+    document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("change", handleChange);
     document.addEventListener("input", handleInput);
   }

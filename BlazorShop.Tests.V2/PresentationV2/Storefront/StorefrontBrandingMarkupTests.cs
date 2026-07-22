@@ -210,8 +210,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("BrokenImageFallbackScript", gallery);
             Assert.Contains("onerror=\"@BrokenImageFallbackScript\"", gallery);
             Assert.Contains("selectGalleryThumbnail", script);
+            Assert.Contains("selectGalleryIndex", script);
+            Assert.Contains("resolveSelectedGalleryIndex", script);
+            Assert.Contains("galleryPreviousSelector", script);
+            Assert.Contains("galleryNextSelector", script);
+            Assert.Contains("galleryStatusSelector", script);
             Assert.Contains("galleryThumbnailSelector", script);
             Assert.Contains("mainImage.src = imageUrl", script);
+            Assert.Contains("mainImage.alt = selectedThumbnail.dataset.alt", script);
+            Assert.Contains("thumbnail.setAttribute(\"aria-selected\"", script);
+            Assert.Contains("setGalleryButtonState", script);
+            Assert.Contains("selectedThumbnail.scrollIntoView({ block: \"nearest\", inline: \"nearest\" })", script);
+            Assert.Contains("event.key === \"ArrowLeft\"", script);
+            Assert.Contains("event.key === \"ArrowRight\"", script);
+            Assert.Contains("document.addEventListener(\"keydown\", handleKeyDown)", script);
         }
 
         [Fact]

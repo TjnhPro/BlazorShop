@@ -192,6 +192,8 @@ git commit -m "fix(storefront): stabilize product gallery layout"
 
 ## Phase 3 - Client Interaction
 
+Status: Complete - 2026-07-22.
+
 Goal: Add previous/next behavior while preserving existing thumbnail click behavior.
 
 Files likely touched:
@@ -201,20 +203,21 @@ Files likely touched:
 
 Checklist:
 
-- [ ] Refactor current `selectGalleryThumbnail` into index-based gallery selection.
-- [ ] Add `selectGalleryIndex(gallery, index)` helper.
-- [ ] Add previous button click handling.
-- [ ] Add next button click handling.
-- [ ] Update main image `src` and `alt`.
-- [ ] Update thumbnail selected state.
-- [ ] Update `aria-current` or `aria-selected`.
-- [ ] Disable previous at index `0`.
-- [ ] Disable next at the last index.
-- [ ] Scroll selected thumbnail into view with `scrollIntoView({ block: "nearest", inline: "nearest" })`.
-- [ ] Support keyboard navigation on thumbnails: ArrowLeft/ArrowRight at minimum.
-- [ ] Keep behavior no-op when markup is incomplete.
-- [ ] Avoid global state shared across galleries; derive state per gallery root.
-- [ ] Add static JS guard tests for prev/next selectors, index selection, disabled state, and scroll synchronization.
+- [x] Refactor current `selectGalleryThumbnail` into index-based gallery selection.
+- [x] Add `selectGalleryIndex(gallery, index)` helper.
+- [x] Add previous button click handling.
+- [x] Add next button click handling.
+- [x] Update main image `src` and `alt`.
+- [x] Update thumbnail selected state.
+- [x] Update `aria-current` or `aria-selected`.
+- [x] Disable previous at index `0`.
+- [x] Disable next at the last index.
+- [x] Scroll selected thumbnail into view with `scrollIntoView({ block: "nearest", inline: "nearest" })`.
+- [x] Support keyboard navigation on thumbnails: ArrowLeft/ArrowRight at minimum.
+- [x] Keep behavior no-op when markup is incomplete.
+- [x] Avoid global state shared across galleries; derive state per gallery root.
+- [x] Add static JS guard tests for prev/next selectors, index selection, disabled state, and scroll synchronization.
+  - 2026-07-22: `node --check storefrontCommerce.js` passed and `StorefrontBrandingMarkupTests.ProductPage_RendersProductImageGalleryComponent` passed.
 
 Acceptance criteria:
 
@@ -498,7 +501,7 @@ DX target:
 - [x] Phase 0 - Baseline And Guardrails
 - [x] Phase 1 - Markup Contract
 - [x] Phase 2 - Fixed Gallery Layout
-- [ ] Phase 3 - Client Interaction
+- [x] Phase 3 - Client Interaction
 - [ ] Phase 4 - Accessibility And Error States
 - [ ] Phase 5 - Browser QA
 - [ ] Phase 6 - Release Gate
