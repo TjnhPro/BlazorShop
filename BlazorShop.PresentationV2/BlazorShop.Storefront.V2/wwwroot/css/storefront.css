@@ -86,14 +86,12 @@
 .bs-product-gallery__controls {
     position: absolute;
     inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 0.75rem;
     pointer-events: none;
 }
 
 .bs-product-gallery__nav {
+    position: absolute;
+    top: 50%;
     pointer-events: auto;
     display: inline-flex;
     width: 2.75rem;
@@ -104,9 +102,26 @@
     border-radius: 9999px;
     background: rgba(255, 255, 255, 0.92);
     color: #171717;
-    font-size: 2rem;
-    line-height: 1;
+    transform: translateY(-50%);
     box-shadow: 0 10px 28px rgba(23, 23, 23, 0.16);
+}
+
+.bs-product-gallery__nav--prev {
+    left: 0.75rem;
+}
+
+.bs-product-gallery__nav--next {
+    right: 0.75rem;
+}
+
+.bs-product-gallery__nav-icon {
+    width: 1.45rem;
+    height: 1.45rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.35;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 .bs-product-gallery__nav:hover:not(:disabled) {

@@ -26,20 +26,25 @@
                             aria-disabled="true"
                             data-storefront-gallery-prev
                             disabled>
-                        <span aria-hidden="true">&lsaquo;</span>
+                        <svg class="bs-product-gallery__nav-icon"
+                             aria-hidden="true"
+                             viewBox="0 0 24 24"
+                             focusable="false">
+                            <path d="M15 18 9 12l6-6" />
+                        </svg>
                     </button>
                     <button type="button"
                             class="bs-product-gallery__nav bs-product-gallery__nav--next"
                             aria-label="Show next product image"
                             aria-disabled="false"
                             data-storefront-gallery-next>
-                        <span aria-hidden="true">&rsaquo;</span>
+                        <svg class="bs-product-gallery__nav-icon"
+                             aria-hidden="true"
+                             viewBox="0 0 24 24"
+                             focusable="false">
+                            <path d="m9 18 6-6-6-6" />
+                        </svg>
                     </button>
-                    <span class="sr-only"
-                          aria-live="polite"
-                          data-storefront-gallery-status>
-                        Image 1 of @GalleryItems.Count
-                    </span>
                 </div>
             }
         </div>

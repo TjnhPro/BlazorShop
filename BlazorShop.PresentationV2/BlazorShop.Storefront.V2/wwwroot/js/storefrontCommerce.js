@@ -14,7 +14,6 @@
   const galleryPlaceholderSelector = "[data-storefront-gallery-placeholder]";
   const galleryPreviousSelector = "[data-storefront-gallery-prev]";
   const galleryNextSelector = "[data-storefront-gallery-next]";
-  const galleryStatusSelector = "[data-storefront-gallery-status]";
   const toastRegionSelector = "[data-storefront-toast-region]";
   const toastTemplateSelector = "[data-storefront-toast-template]";
   const antiforgeryTokenSelector = 'meta[name="blazorshop-antiforgery-token"]';
@@ -641,11 +640,6 @@
   function updateGalleryControls(gallery, selectedIndex, itemCount) {
     setGalleryButtonState(gallery.querySelector(galleryPreviousSelector), selectedIndex <= 0);
     setGalleryButtonState(gallery.querySelector(galleryNextSelector), selectedIndex >= itemCount - 1);
-
-    const status = gallery.querySelector(galleryStatusSelector);
-    if (status instanceof HTMLElement) {
-      status.textContent = `Image ${selectedIndex + 1} of ${itemCount}`;
-    }
   }
 
   function selectGalleryIndex(gallery, index) {
