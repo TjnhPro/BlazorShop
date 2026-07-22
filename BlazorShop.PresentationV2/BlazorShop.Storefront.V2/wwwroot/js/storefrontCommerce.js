@@ -689,6 +689,25 @@
     selectedThumbnail.scrollIntoView({ block: "nearest", inline: "nearest" });
   }
 
+  function showGalleryImageFallback(image) {
+    if (!(image instanceof HTMLImageElement)) {
+      return;
+    }
+
+    const gallery = image.closest(productGallerySelector);
+    if (!(gallery instanceof HTMLElement)) {
+      return;
+    }
+
+    image.hidden = true;
+    image.src = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221%22 height=%221%22/%3E";
+
+    const fallback = image.nextElementSibling;
+    if (fallback instanceof HTMLElement) {
+      fallback.hidden = false;
+    }
+  }
+
   function selectGalleryThumbnail(button) {
     const gallery = button.closest(productGallerySelector);
     if (!(gallery instanceof HTMLElement)) {
@@ -772,6 +791,10 @@
     }
   }
 
+  function handleGalleryImageError(event) {
+    showGalleryImageFallback(event.target);
+  }
+
   function handleChange(event) {
     const target = event.target;
     if (target instanceof HTMLElement && target.matches(attributeControlSelector)) {
@@ -815,6 +838,7 @@
     });
     document.addEventListener("click", handleClick);
     document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("error", handleGalleryImageError, true);
     document.addEventListener("change", handleChange);
     document.addEventListener("input", handleInput);
   }

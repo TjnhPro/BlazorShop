@@ -259,7 +259,8 @@ Checklist:
 - [x] No in-app instructional copy is added.
 - [x] Reduced-motion users do not get forced animation.
 - [x] Static tests cover accessibility hooks.
-  - 2026-07-22: `node --check storefrontCommerce.js` passed and focused gallery markup/CSS tests passed.
+- 2026-07-22: `node --check storefrontCommerce.js` passed and focused gallery markup/CSS tests passed.
+- 2026-07-22 post-review: added a capture-phase gallery image error handler so repeated broken main-image selections still show fallback after the inline SSR fallback has set `onerror=null`.
 
 Acceptance criteria:
 
@@ -303,7 +304,9 @@ Evidence:
 - 2026-07-22: desktop Playwright measured main frame `542x542`, 14 thumbnails at `80x80`, last-image selection with `nextDisabled=true`, first-image selection with `previousDisabled=true`, middle-thumbnail selection with both controls enabled, and selected thumbnail inside the overflow viewport.
 - 2026-07-22: mobile Playwright measured main frame `308x308`, 14 thumbnails at `80x80`, same boundary behavior, and selected thumbnail inside the overflow viewport.
 - 2026-07-22: keyboard QA confirmed ArrowRight moved selected thumbnail from index `0` to `1`; ArrowLeft returned to index `0`.
+- 2026-07-22 post-review: broken-image Playwright QA confirmed main fallback displayed for two consecutive broken main image URLs with a valid carousel selection between them, and broken thumbnail fallback displayed while keeping the cell at `80x80`.
 - Artifacts: `output/playwright/storefront-product-gallery-phase5-desktop.json`, `output/playwright/storefront-product-gallery-phase5-desktop.png`, `output/playwright/storefront-product-gallery-phase5-mobile.json`, `output/playwright/storefront-product-gallery-phase5-mobile.png`.
+- Post-review artifacts: `output/playwright/storefront-product-gallery-broken-fallback.json`, `output/playwright/storefront-product-gallery-broken-fallback.png`.
 
 Suggested browser measurements:
 
@@ -335,7 +338,8 @@ Checklist:
 - [x] Run full `BlazorShop.Tests.V2`.
   - 2026-07-22: full `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --logger "console;verbosity=minimal"` passed `1267`, skipped `2`.
 - [x] Run browser QA from Phase 5 after tests pass.
-  - 2026-07-22: release browser rerun saved `output/playwright/storefront-product-gallery-phase6-release-desktop.json` and `output/playwright/storefront-product-gallery-phase6-release-mobile.json`; desktop and mobile still kept thumbnails at `80x80`, disabled next at the last image, kept selected thumbnail in viewport, and kept placeholder `display:none`.
+- 2026-07-22: release browser rerun saved `output/playwright/storefront-product-gallery-phase6-release-desktop.json` and `output/playwright/storefront-product-gallery-phase6-release-mobile.json`; desktop and mobile still kept thumbnails at `80x80`, disabled next at the last image, kept selected thumbnail in viewport, and kept placeholder `display:none`.
+- 2026-07-22 post-review: repeated broken-image fallback fix passed `node --check`, focused `StorefrontBrandingMarkupTests.ProductPage_RendersProductImageGalleryComponent`, full `BlazorShop.Tests.V2` (`1267` passed, `2` skipped), and Playwright broken-image QA.
 - [x] Confirm `git status --short` only has expected files before committing.
 - [x] Commit any remaining intentional changes.
 - [x] Document known warnings separately from regressions.
@@ -418,8 +422,8 @@ fallback placeholder: hidden must display none
 | Two images | Prev disabled at first, next enabled, next changes image | [ ] | [ ] |
 | Six images | Thumbnail cells fixed, no collapse | [ ] | [ ] |
 | More than six images | Strip scrolls, selected thumbnail scrolls into view | [x] | [x] |
-| Broken main image | Main fallback visible, layout stable | [ ] | [ ] |
-| Broken thumbnail | Thumbnail fallback visible, cell stable | [ ] | [ ] |
+| Broken main image | Main fallback visible, layout stable | [x] | [x] |
+| Broken thumbnail | Thumbnail fallback visible, cell stable | [x] | [x] |
 | Keyboard ArrowRight | Moves to next image when focus is in gallery/thumbs | [x] | [x] |
 | Keyboard ArrowLeft | Moves to previous image when focus is in gallery/thumbs | [x] | [x] |
 | Mobile viewport | Main image stable, controls tappable, strip scrolls | [x] | [x] |
@@ -534,6 +538,8 @@ DX target:
 | Design | Issues captured in plan | Fixed-size image cells, familiar prev/next controls, no instructional copy. |
 | Engineering | Issues captured in plan | Avoid Slick/jQuery; keep dimensions in app CSS; scope JS per gallery root. |
 | DX | Clean with checklist additions | Plan includes file list, commands, test matrix, and QA evidence requirements. |
+| Post-implementation standards review | Clean with judgement call | No hard violations; noted `storefrontCommerce.js` remains broad, matching current Storefront V2 app-owned JS pattern. |
+| Post-implementation spec review | Fixed | Review found repeated broken main-image fallback and broken-image QA gaps; capture-phase image error handler and Playwright broken-image QA now cover both. |
 
 VERDICT: APPROVED FOR IMPLEMENTATION PLAN
 

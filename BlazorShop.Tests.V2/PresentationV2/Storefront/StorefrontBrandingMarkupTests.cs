@@ -225,6 +225,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("mainImage.alt = selectedThumbnail.dataset.alt", script);
             Assert.Contains("thumbnail.setAttribute(\"aria-selected\"", script);
             Assert.Contains("setGalleryButtonState", script);
+            Assert.Contains("showGalleryImageFallback", script);
+            Assert.Contains("handleGalleryImageError", script);
+            Assert.Contains("document.addEventListener(\"error\", handleGalleryImageError, true)", script);
             Assert.Contains("selectedThumbnail.scrollIntoView({ block: \"nearest\", inline: \"nearest\" })", script);
             Assert.Contains("event.key === \"ArrowLeft\"", script);
             Assert.Contains("event.key === \"ArrowRight\"", script);
