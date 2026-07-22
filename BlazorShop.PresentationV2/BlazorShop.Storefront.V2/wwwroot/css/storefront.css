@@ -114,6 +114,11 @@
     background: #ffffff;
 }
 
+.bs-product-gallery__nav:focus-visible {
+    outline: 2px solid #171717;
+    outline-offset: 3px;
+}
+
 .bs-product-gallery__nav:disabled {
     cursor: not-allowed;
     opacity: 0.45;
@@ -142,6 +147,18 @@
 .bs-product-gallery__thumb[data-selected="true"] {
     border-color: #171717;
     box-shadow: 0 0 0 2px #171717;
+}
+
+.bs-product-gallery__thumb-fallback {
+    position: absolute;
+    inset: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bs-product-gallery__nav,
+    .bs-product-gallery__thumb {
+        transition: none;
+    }
 }
 
 @media (min-width: 1024px) {

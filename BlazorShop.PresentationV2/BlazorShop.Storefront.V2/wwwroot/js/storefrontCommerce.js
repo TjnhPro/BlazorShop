@@ -11,6 +11,7 @@
   const productGallerySelector = "[data-storefront-product-gallery]";
   const galleryThumbnailSelector = "[data-storefront-gallery-thumbnail]";
   const galleryMainImageSelector = "[data-storefront-gallery-main-image]";
+  const galleryPlaceholderSelector = "[data-storefront-gallery-placeholder]";
   const galleryPreviousSelector = "[data-storefront-gallery-prev]";
   const galleryNextSelector = "[data-storefront-gallery-next]";
   const galleryStatusSelector = "[data-storefront-gallery-status]";
@@ -667,6 +668,12 @@
     const imageUrl = selectedThumbnail.dataset.imageUrl;
     if (!imageUrl) {
       return;
+    }
+
+    const placeholder = gallery.querySelector(galleryPlaceholderSelector);
+    mainImage.hidden = false;
+    if (placeholder instanceof HTMLElement) {
+      placeholder.hidden = true;
     }
 
     mainImage.src = imageUrl;

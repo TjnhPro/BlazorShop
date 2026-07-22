@@ -236,6 +236,8 @@ git commit -m "feat(storefront): add product gallery carousel controls"
 
 ## Phase 4 - Accessibility And Error States
 
+Status: Complete - 2026-07-22.
+
 Goal: Make the gallery usable with keyboard, screen readers, slow images, and broken images.
 
 Files likely touched:
@@ -247,16 +249,17 @@ Files likely touched:
 
 Checklist:
 
-- [ ] Buttons have clear accessible names.
-- [ ] Disabled navigation uses both `disabled` and `aria-disabled` where appropriate.
-- [ ] Selected thumbnail is announced with a stable selected/current attribute.
-- [ ] Keyboard focus ring remains visible.
-- [ ] Main image fallback does not cover valid loaded images.
-- [ ] Thumbnail fallback does not collapse the thumbnail cell.
-- [ ] Broken thumbnail still keeps cell dimensions stable.
-- [ ] No in-app instructional copy is added.
-- [ ] Reduced-motion users do not get forced animation.
-- [ ] Static tests cover accessibility hooks.
+- [x] Buttons have clear accessible names.
+- [x] Disabled navigation uses both `disabled` and `aria-disabled` where appropriate.
+- [x] Selected thumbnail is announced with a stable selected/current attribute.
+- [x] Keyboard focus ring remains visible.
+- [x] Main image fallback does not cover valid loaded images.
+- [x] Thumbnail fallback does not collapse the thumbnail cell.
+- [x] Broken thumbnail still keeps cell dimensions stable.
+- [x] No in-app instructional copy is added.
+- [x] Reduced-motion users do not get forced animation.
+- [x] Static tests cover accessibility hooks.
+  - 2026-07-22: `node --check storefrontCommerce.js` passed and focused gallery markup/CSS tests passed.
 
 Acceptance criteria:
 
@@ -502,7 +505,7 @@ DX target:
 - [x] Phase 1 - Markup Contract
 - [x] Phase 2 - Fixed Gallery Layout
 - [x] Phase 3 - Client Interaction
-- [ ] Phase 4 - Accessibility And Error States
+- [x] Phase 4 - Accessibility And Error States
 - [ ] Phase 5 - Browser QA
 - [ ] Phase 6 - Release Gate
 

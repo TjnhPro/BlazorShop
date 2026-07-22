@@ -198,6 +198,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("data-storefront-gallery-status", gallery);
             Assert.Contains("data-storefront-gallery-thumb-viewport", gallery);
             Assert.Contains("data-storefront-gallery-thumbnail", gallery);
+            Assert.Contains("bs-product-gallery__thumb-fallback", gallery);
+            Assert.Contains("data-storefront-gallery-thumb-fallback", gallery);
             Assert.Contains("data-gallery-index=\"@index\"", gallery);
             Assert.Contains("aria-selected=\"@(index == 0 ? \"true\" : \"false\")\"", gallery);
             Assert.Contains("aria-disabled=\"true\"", gallery);
@@ -215,7 +217,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("galleryPreviousSelector", script);
             Assert.Contains("galleryNextSelector", script);
             Assert.Contains("galleryStatusSelector", script);
+            Assert.Contains("galleryPlaceholderSelector", script);
             Assert.Contains("galleryThumbnailSelector", script);
+            Assert.Contains("mainImage.hidden = false", script);
+            Assert.Contains("placeholder.hidden = true", script);
             Assert.Contains("mainImage.src = imageUrl", script);
             Assert.Contains("mainImage.alt = selectedThumbnail.dataset.alt", script);
             Assert.Contains("thumbnail.setAttribute(\"aria-selected\"", script);
@@ -236,7 +241,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains(".bs-product-gallery__main", styles);
             Assert.Contains(".bs-product-gallery__controls", styles);
             Assert.Contains(".bs-product-gallery__nav", styles);
+            Assert.Contains(".bs-product-gallery__nav:focus-visible", styles);
             Assert.Contains(".bs-product-gallery__thumb", styles);
+            Assert.Contains(".bs-product-gallery__thumb-fallback", styles);
             Assert.Contains("display: flex;", styles);
             Assert.Contains("aspect-ratio: 1 / 1;", styles);
             Assert.Contains("width: 5rem;", styles);
@@ -247,6 +254,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("object-fit: contain;", styles);
             Assert.Contains("overscroll-behavior-x: contain;", styles);
             Assert.Contains(".bs-product-gallery__thumb[data-selected=\"true\"]", styles);
+            Assert.Contains("@media (prefers-reduced-motion: reduce)", styles);
         }
 
         [Fact]
