@@ -15,10 +15,10 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("legacy-compatibility:", workflow, StringComparison.Ordinal);
             Assert.Contains("continue-on-error: true", workflow, StringComparison.Ordinal);
             Assert.Matches(
-                new Regex("ci-v2:[\\s\\S]*dotnet restore BlazorShop\\.V2\\.slnf[\\s\\S]*dotnet build BlazorShop\\.V2\\.slnf --configuration Release --no-restore[\\s\\S]*dotnet test BlazorShop\\.Tests\\.V2/BlazorShop\\.Tests\\.V2\\.csproj --configuration Release --no-build", RegexOptions.CultureInvariant),
+                new Regex("ci-v2:[\\s\\S]*dotnet restore BlazorShop\\.sln[\\s\\S]*dotnet build BlazorShop\\.sln --configuration Release --no-restore[\\s\\S]*dotnet test BlazorShop\\.Tests\\.V2/BlazorShop\\.Tests\\.V2\\.csproj --configuration Release --no-build", RegexOptions.CultureInvariant),
                 workflow);
             Assert.Matches(
-                new Regex("legacy-compatibility:[\\s\\S]*dotnet restore BlazorShop\\.sln[\\s\\S]*dotnet build BlazorShop\\.sln --configuration Release --no-restore[\\s\\S]*dotnet test BlazorShop\\.Tests/BlazorShop\\.Tests\\.csproj --configuration Release --no-build", RegexOptions.CultureInvariant),
+                new Regex("legacy-compatibility:[\\s\\S]*dotnet restore BlazorShop\\.Tests/BlazorShop\\.Tests\\.csproj[\\s\\S]*dotnet build BlazorShop\\.Tests/BlazorShop\\.Tests\\.csproj --configuration Release --no-restore[\\s\\S]*dotnet test BlazorShop\\.Tests/BlazorShop\\.Tests\\.csproj --configuration Release --no-build", RegexOptions.CultureInvariant),
                 workflow);
             Assert.Contains("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/package-lock.json", workflow, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package-lock.json", workflow, StringComparison.Ordinal);

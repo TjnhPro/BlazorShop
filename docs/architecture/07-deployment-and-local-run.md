@@ -58,15 +58,16 @@ Stop the local V2 runtime with:
 Use the V2 solution filter for normal active architecture work:
 
 ```powershell
-dotnet build BlazorShop.V2.slnf --no-restore
+dotnet restore BlazorShop.sln
+dotnet build BlazorShop.sln --no-restore
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore
 ```
 
-`BlazorShop.V2.slnf` includes shared core, ServiceDefaults, active PresentationV2 projects, and `BlazorShop.Tests.V2`. It intentionally excludes legacy `BlazorShop.Presentation/*` projects. `BlazorShop.AppHost` is also excluded for now because the current AppHost still references legacy Presentation projects; `run-v2-local.ps1` is the active V2 local runtime entry point.
+`BlazorShop.sln` is now the V2 canonical solution. It includes shared core, ServiceDefaults, active PresentationV2 projects, and `BlazorShop.Tests.V2`. It excludes legacy `BlazorShop.Presentation/*`, `BlazorShop.AppHost`, and the old mixed `BlazorShop.Tests` project. `BlazorShop.V2.slnf` remains temporarily as a transition file until V2 test source ownership is complete.
 
 `BlazorShop.Tests.V2` links active V2 architecture, Commerce Node, Control Plane, Storefront V2, and Storefront WASM/browser host tests from the mixed historical test project. The V2 test assembly disables test parallelization so WebApplicationFactory/browser-host smoke tests do not race each other.
 
-GitHub Actions uses `ci-v2` as the active release gate. That job restores/builds `BlazorShop.V2.slnf` and runs `BlazorShop.Tests.V2`. The historical `BlazorShop.sln`/`BlazorShop.Tests` path is kept as `legacy-compatibility` and must not be treated as proof that V2 is production-ready.
+GitHub Actions uses `ci-v2` as the active release gate. That job restores/builds `BlazorShop.sln` and runs `BlazorShop.Tests.V2`. The old mixed `BlazorShop.Tests` path is kept temporarily as non-blocking `legacy-compatibility` and must not be treated as proof that V2 is production-ready.
 
 `ci-v2` also validates `compose.v2.production.yml` and builds the active V2 Dockerfiles:
 

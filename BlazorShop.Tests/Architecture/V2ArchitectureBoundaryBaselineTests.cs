@@ -440,6 +440,9 @@ namespace BlazorShop.Tests.Architecture
         {
             var mixedTestProject = ReadRepositoryFile("BlazorShop.Tests/BlazorShop.Tests.csproj");
             var v2TestProject = ReadRepositoryFile("BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj");
+            var solution = ReadRepositoryFile("BlazorShop.sln")
+                .Replace(@"\\", "/", StringComparison.Ordinal)
+                .Replace('\\', '/');
             var solutionFilter = ReadRepositoryFile("BlazorShop.V2.slnf")
                 .Replace(@"\\", "/", StringComparison.Ordinal)
                 .Replace('\\', '/');
@@ -447,7 +450,11 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("BlazorShop.Presentation\\BlazorShop.API", mixedTestProject, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.PresentationV2\\BlazorShop.ControlPlane.API", mixedTestProject, StringComparison.Ordinal);
             Assert.DoesNotContain("BlazorShop.Presentation\\", v2TestProject, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("BlazorShop.Presentation/", solution, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("BlazorShop.AppHost", solution, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("BlazorShop.Tests/BlazorShop.Tests.csproj", solution, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("BlazorShop.Presentation/", solutionFilter, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj", solution, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj", solutionFilter, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.PresentationV2\\BlazorShop.ControlPlane.API", v2TestProject, StringComparison.Ordinal);
         }

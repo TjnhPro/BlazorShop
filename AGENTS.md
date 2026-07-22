@@ -53,7 +53,7 @@ Legacy presentation:
 - `BlazorShop.Presentation/BlazorShop.Storefront`
 - `BlazorShop.Presentation/BlazorShop.Web.Shared`
 
-Legacy projects remain in the solution for comparison and migration reference. Do not extend them for V2 work unless the user explicitly asks.
+Legacy projects may remain on disk temporarily for comparison and migration reference during removal work, but they are not active V2 targets. Do not extend them for V2 work unless the user explicitly asks.
 
 ## Runtime Boundaries
 

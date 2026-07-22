@@ -185,7 +185,7 @@ Resolution rules:
 
 ## Legacy Boundary
 
-`BlazorShop.Presentation` remains in the solution for legacy support and migration comparison.
+`BlazorShop.Presentation` may remain on disk temporarily for legacy support and migration comparison, but it is no longer part of the V2 canonical main solution.
 
 Legacy route groups include:
 

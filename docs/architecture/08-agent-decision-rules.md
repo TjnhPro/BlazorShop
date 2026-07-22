@@ -174,7 +174,7 @@ If browser behavior changes, use Playwright. If the user asks to observe, run wi
 For active V2 build/test verification, prefer:
 
 ```powershell
-dotnet build BlazorShop.V2.slnf --no-restore
+dotnet build BlazorShop.sln --no-restore
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore
 ```
 

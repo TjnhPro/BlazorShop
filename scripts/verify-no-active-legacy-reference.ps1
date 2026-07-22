@@ -33,6 +33,7 @@ $forbiddenPatterns = @(
 )
 $activeRoots = @(
     "BlazorShop.PresentationV2",
+    "BlazorShop.sln",
     "BlazorShop.V2.slnf",
     ".github/workflows/ci.yml",
     "compose.v2.production.yml",

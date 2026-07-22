@@ -38,10 +38,10 @@ jobs:
         run: npm ci --prefix tools/openapi-generator-smoke
 
       - name: Restore
-        run: dotnet restore BlazorShop.V2.slnf
+        run: dotnet restore BlazorShop.sln
 
       - name: Build
-        run: dotnet build BlazorShop.V2.slnf --configuration Release --no-restore
+        run: dotnet build BlazorShop.sln --configuration Release --no-restore
 
       - name: Test
         run: dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --configuration Release --no-build --verbosity normal
@@ -97,11 +97,11 @@ jobs:
           cache: npm
           cache-dependency-path: BlazorShop.Presentation/BlazorShop.Web/package-lock.json
 
-      - name: Restore legacy solution
-        run: dotnet restore BlazorShop.sln
+      - name: Restore legacy test project
+        run: dotnet restore BlazorShop.Tests/BlazorShop.Tests.csproj
 
-      - name: Build legacy solution
-        run: dotnet build BlazorShop.sln --configuration Release --no-restore
+      - name: Build legacy test project
+        run: dotnet build BlazorShop.Tests/BlazorShop.Tests.csproj --configuration Release --no-restore
 
       - name: Test legacy suite
         run: dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj --configuration Release --no-build --verbosity normal

@@ -13,7 +13,7 @@ Storefront.V2
   -> CommerceNode.API api/storefront/stores/{storeKey}/*
 ```
 
-The repository still contains the original `BlazorShop.Presentation` projects for reference and migration comparison. New feature work targets `BlazorShop.PresentationV2` unless a task explicitly says otherwise.
+The repository still contains the original `BlazorShop.Presentation` source temporarily for reference and migration comparison, but the main solution is V2 canonical. New feature work targets `BlazorShop.PresentationV2` unless a task explicitly says otherwise.
 
 ## What Is Active
 
@@ -30,7 +30,7 @@ The repository still contains the original `BlazorShop.Presentation` projects fo
 | Storefront components | `BlazorShop.PresentationV2/BlazorShop.Storefront.Components` | Reusable Razor components for the Storefront V2 render modes. |
 | Storefront WASM | `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM` | Interactive WebAssembly assembly used by Storefront V2. |
 | Shared Web V2 | `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2` | Shared browser storage, cookie storage, auth session sync, API helpers, and toast utilities. |
-| Tests | `BlazorShop.Tests` | Unit, integration, contract, snapshot, and selected smoke tests. |
+| Tests | `BlazorShop.Tests.V2` | Active V2 unit, integration, contract, snapshot, and selected smoke tests. |
 
 ## Feature Surface
 
@@ -117,12 +117,12 @@ Every new or changed active V2 endpoint must follow [docs/architecture/09-api-co
 Active V2 release-gate commands:
 
 ```powershell
-dotnet restore BlazorShop.V2.slnf
-dotnet build BlazorShop.V2.slnf -c Release --no-restore
+dotnet restore BlazorShop.sln
+dotnet build BlazorShop.sln -c Release --no-restore
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build --verbosity normal
 ```
 
-Legacy compatibility verification is still available, but it is not the primary V2 release signal:
+Legacy compatibility verification is still available directly through the old mixed test project while the legacy source remains on disk, but it is not the primary V2 release signal:
 
 ```powershell
 dotnet test BlazorShop.Tests/BlazorShop.Tests.csproj -c Release
@@ -138,7 +138,7 @@ docker build -f BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Dockerfile
 docker build -f BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile -t blazorshop-storefront-v2:ci .
 ```
 
-Use `compose.v2.production.yml` for V2 production topology. The older `compose.production.yml` remains a legacy compatibility artifact.
+Use `compose.v2.production.yml` for V2 production topology until the canonical compose swap lands in the legacy-removal plan. The older `compose.production.yml` remains a legacy compatibility artifact.
 
 Feature QA checklists live in [docs/refactor-control-Commerce-storefront](docs/refactor-control-Commerce-storefront):
 
@@ -165,8 +165,8 @@ Start here:
 
 ## Legacy And Reference Code
 
-- `BlazorShop.Presentation/*` remains for comparison and migration reference.
-- `BlazorShop.AppHost` is legacy-oriented and must not be treated as the active V2 orchestrator.
+- `BlazorShop.Presentation/*` remains temporarily for comparison and migration reference, but is no longer part of the main solution.
+- `BlazorShop.AppHost` is legacy-oriented, no longer part of the main solution, and must not be treated as the active V2 orchestrator.
 - `Smartstore/` is reference source only. Study it for ecommerce concepts and workflows, but do not copy implementation code or add runtime references.
 
 ## Contributing

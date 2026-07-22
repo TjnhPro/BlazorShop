@@ -1,6 +1,6 @@
 # Legacy Presentation Removal V2 Canonicalization.todo.md
 
-Status: phase 1 production packaging gate complete; phase 2 main solution canonicalization next
+Status: phase 2 main solution canonicalization complete; phase 3 V2 test source ownership next
 Source: investigate review of legacy Presentation removal blockers  
 Purpose: remove `BlazorShop.Presentation` and make V2 the canonical repository lifecycle target without breaking active V2 runtime, CI, Docker, deployment, tests, or docs.
 
@@ -33,7 +33,7 @@ Phase status summary:
 | 1A Dockerfile V2 | Done | All four V2 Dockerfiles exist; Storefront V2 Dockerfile includes Components/WASM project/source copy |
 | 1B V2 production compose | Done | `compose.v2.production.yml` uses V2 topology, has CommerceNode media volume, and now persists CommerceNode Data Protection keys at `/app/runtime/data-protection-keys`; `compose.production.yml` canonical swap is intentionally deferred to Phase 2 |
 | 1C CI V2 blocking | Done | `ci-v2` restores/builds/tests V2, validates compose config, builds four V2 images, and keeps legacy under non-blocking `legacy-compatibility` |
-| 2 Main solution becomes V2 canonical | Not started | `BlazorShop.sln` still includes legacy Presentation, AppHost, and old mixed tests |
+| 2 Main solution becomes V2 canonical | Done | `BlazorShop.sln` now includes shared core, ServiceDefaults, active PresentationV2 projects, and `BlazorShop.Tests.V2`; legacy Presentation, AppHost, and old mixed tests are removed from the main solution |
 | 3 V2 test source ownership | Not started | `BlazorShop.Tests.V2.csproj` still links `..\BlazorShop.Tests\...` source/snapshots |
 | 4 Remove legacy AppHost and operational entrypoints | Not started | `BlazorShop.AppHost` exists and references legacy projects/`DefaultConnection` |
 | 5 Purge dead legacy Infrastructure/AppDbContext | Not started | `AppDbContext`, `DefaultConnection`, legacy migrations, and legacy DI methods still exist |
@@ -229,37 +229,37 @@ Goal: `BlazorShop.sln` tro thanh main solution active, khong can solution filter
 
 ### Tasks
 
-- [ ] Remove legacy projects khoi `BlazorShop.sln`:
-  - [ ] `BlazorShop.Presentation/BlazorShop.API`.
-  - [ ] `BlazorShop.Presentation/BlazorShop.Web`.
-  - [ ] `BlazorShop.Presentation/BlazorShop.Web.Shared`.
-  - [ ] `BlazorShop.Presentation/BlazorShop.Storefront`.
-  - [ ] `BlazorShop.AppHost`.
-  - [ ] `BlazorShop.Tests` old mixed project sau khi Phase 3 san sang; neu Phase 3 chua xong, defer remove old tests khoi solution den Phase 3.
-- [ ] Giu trong solution:
-  - [ ] `BlazorShop.Domain`.
-  - [ ] `BlazorShop.Application`.
-  - [ ] `BlazorShop.Infrastructure`.
-  - [ ] `BlazorShop.ServiceDefaults`.
-  - [ ] Tat ca `BlazorShop.PresentationV2/*`.
-  - [ ] `BlazorShop.Tests.V2`.
-- [ ] Sau khi `BlazorShop.sln` da sach:
-  - [ ] Cap nhat CI dung `BlazorShop.sln` thay cho `BlazorShop.V2.slnf`.
-  - [ ] Cap nhat README/docs active build commands.
-  - [ ] Xoa `BlazorShop.V2.slnf` chi khi no khong con can cho transition.
-- [ ] Update guardrail: main solution khong duoc co `BlazorShop.Presentation` hoac `BlazorShop.AppHost`.
+- [x] Remove legacy projects khoi `BlazorShop.sln`:
+  - [x] `BlazorShop.Presentation/BlazorShop.API`.
+  - [x] `BlazorShop.Presentation/BlazorShop.Web`.
+  - [x] `BlazorShop.Presentation/BlazorShop.Web.Shared`.
+  - [x] `BlazorShop.Presentation/BlazorShop.Storefront`.
+  - [x] `BlazorShop.AppHost`.
+  - [x] `BlazorShop.Tests` old mixed project removed from solution now; source/project files stay on disk for Phase 3 source migration and legacy compatibility until later cleanup.
+- [x] Giu trong solution:
+  - [x] `BlazorShop.Domain`.
+  - [x] `BlazorShop.Application`.
+  - [x] `BlazorShop.Infrastructure`.
+  - [x] `BlazorShop.ServiceDefaults`.
+  - [x] Tat ca `BlazorShop.PresentationV2/*`.
+  - [x] `BlazorShop.Tests.V2`.
+- [x] Sau khi `BlazorShop.sln` da sach:
+  - [x] Cap nhat CI dung `BlazorShop.sln` thay cho `BlazorShop.V2.slnf`.
+  - [x] Cap nhat README/docs active build commands.
+  - [x] Xoa `BlazorShop.V2.slnf` chi khi no khong con can cho transition. Decision: keep temporarily until Phase 3 removes `BlazorShop.Tests.V2` source links.
+- [x] Update guardrail: main solution khong duoc co `BlazorShop.Presentation` hoac `BlazorShop.AppHost`.
 
 ### Verification
 
-- [ ] `dotnet restore BlazorShop.sln`
-- [ ] `dotnet build BlazorShop.sln -c Release --no-restore`
-- [ ] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build`
-- [ ] `rg "BlazorShop\\.Presentation|BlazorShop\\.AppHost" BlazorShop.sln` returns no active project entries.
+- [x] `dotnet restore BlazorShop.sln`
+- [x] `dotnet build BlazorShop.sln -c Release --no-restore`
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build`
+- [x] `rg "BlazorShop\\.Presentation|BlazorShop\\.AppHost" BlazorShop.sln` returns no legacy project entries. `BlazorShop.PresentationV2` remains expected.
 
 ### Done when
 
-- [ ] Main solution build duoc khong can legacy project folders.
-- [ ] `BlazorShop.V2.slnf` hoac da xoa, hoac chi con duoc ghi ro la temporary until Phase 3.
+- [x] Main solution build duoc khong can legacy project folders.
+- [x] `BlazorShop.V2.slnf` hoac da xoa, hoac chi con duoc ghi ro la temporary until Phase 3.
 
 ## Phase 3 - V2 test source ownership
 
@@ -511,7 +511,7 @@ Goal: dong phase bang bang chung build/test/container/browser production-ready.
 - [x] Phase 1A Dockerfiles complete and committed through V2 production-readiness work.
 - [x] Phase 1B compose V2 complete and committed. Data Protection key-ring wiring is complete; `compose.production.yml` canonical swap is deferred to Phase 2.
 - [x] Phase 1C CI V2 blocking complete and committed through V2 production-readiness work.
-- [ ] Phase 2 main solution V2 canonical complete and committed.
+- [x] Phase 2 main solution V2 canonical complete and committed.
 - [ ] Phase 3A V2 test source move complete and committed.
 - [ ] Phase 3B V2 core test migration complete and committed.
 - [ ] Phase 3C old mixed test retirement complete and committed.
