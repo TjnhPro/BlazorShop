@@ -192,7 +192,16 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("aspect-square", gallery);
             Assert.Contains("data-storefront-product-gallery", gallery);
             Assert.Contains("data-storefront-gallery-main-image", gallery);
+            Assert.Contains("data-storefront-gallery-controls", gallery);
+            Assert.Contains("data-storefront-gallery-prev", gallery);
+            Assert.Contains("data-storefront-gallery-next", gallery);
+            Assert.Contains("data-storefront-gallery-status", gallery);
+            Assert.Contains("data-storefront-gallery-thumb-viewport", gallery);
             Assert.Contains("data-storefront-gallery-thumbnail", gallery);
+            Assert.Contains("data-gallery-index=\"@index\"", gallery);
+            Assert.Contains("aria-selected=\"@(index == 0 ? \"true\" : \"false\")\"", gallery);
+            Assert.Contains("aria-disabled=\"true\"", gallery);
+            Assert.Contains("disabled>", gallery);
             Assert.Contains("data-[selected=true]:ring-2", gallery);
             Assert.Contains("product.Image", gallery);
             Assert.Contains("Image unavailable", gallery);

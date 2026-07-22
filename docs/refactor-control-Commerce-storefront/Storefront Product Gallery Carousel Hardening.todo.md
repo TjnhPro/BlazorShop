@@ -112,6 +112,8 @@ Commit rule:
 
 ## Phase 1 - Markup Contract
 
+Status: Complete - 2026-07-22.
+
 Goal: Give the gallery explicit carousel controls and stable data hooks.
 
 Files likely touched:
@@ -121,18 +123,21 @@ Files likely touched:
 
 Checklist:
 
-- [ ] Keep first image SSR-visible without JavaScript.
-- [ ] Add previous button with `data-storefront-gallery-prev`.
-- [ ] Add next button with `data-storefront-gallery-next`.
-- [ ] Add a stable current index label or counter only if it improves accessibility without visual clutter.
-- [ ] Add `data-gallery-index` to each thumbnail button.
-- [ ] Keep `data-image-url` and `data-alt` on thumbnail buttons.
-- [ ] Preserve `aria-current` or `aria-selected` on the selected thumbnail.
-- [ ] Disable previous on the first item during SSR.
-- [ ] Disable next when only one gallery item exists.
-- [ ] Do not render navigation buttons when `GalleryItems.Count <= 1`, unless a consistent disabled UI is explicitly preferred.
-- [ ] Keep no-image fallback behavior unchanged.
-- [ ] Add static markup tests for prev/next controls and gallery index data.
+- [x] Keep first image SSR-visible without JavaScript.
+- [x] Add previous button with `data-storefront-gallery-prev`.
+- [x] Add next button with `data-storefront-gallery-next`.
+- [x] Add a stable current index label or counter only if it improves accessibility without visual clutter.
+  - 2026-07-22: added an `sr-only` polite status label so visual layout stays unchanged.
+- [x] Add `data-gallery-index` to each thumbnail button.
+- [x] Keep `data-image-url` and `data-alt` on thumbnail buttons.
+- [x] Preserve `aria-current` or `aria-selected` on the selected thumbnail.
+- [x] Disable previous on the first item during SSR.
+- [x] Disable next when only one gallery item exists.
+  - 2026-07-22: carousel controls render only when `GalleryItems.Count > 1`.
+- [x] Do not render navigation buttons when `GalleryItems.Count <= 1`, unless a consistent disabled UI is explicitly preferred.
+- [x] Keep no-image fallback behavior unchanged.
+- [x] Add static markup tests for prev/next controls and gallery index data.
+  - 2026-07-22: `StorefrontBrandingMarkupTests.ProductPage_RendersProductImageGalleryComponent` passed.
 
 Acceptance criteria:
 
@@ -487,7 +492,7 @@ DX target:
 ## Phase Checklist
 
 - [x] Phase 0 - Baseline And Guardrails
-- [ ] Phase 1 - Markup Contract
+- [x] Phase 1 - Markup Contract
 - [ ] Phase 2 - Fixed Gallery Layout
 - [ ] Phase 3 - Client Interaction
 - [ ] Phase 4 - Accessibility And Error States
