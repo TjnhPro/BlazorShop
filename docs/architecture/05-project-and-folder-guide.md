@@ -49,12 +49,10 @@ Avoid:
 
 Typical folders:
 
-- `Data/AppDbContext.cs` - legacy context.
 - `Data/ControlPlane/` - Control Plane EF context, migrations, services, seeders.
 - `Data/CommerceNode/` - Commerce Node EF context, migrations, repositories, services, seeders.
-- `Repositories/` - legacy/general repository implementations.
+- `Repositories/Authentication/AppRoleManager.cs` - shared Identity role adapter used by active Control Plane and Commerce Node auth infrastructure.
 - `Services/` - infrastructure service implementations.
-- `Migrations/` - legacy `AppDbContext` migrations.
 
 Use for:
 
@@ -93,7 +91,7 @@ Do not:
 
 - Put Commerce Node credentials in Web clients.
 - Store commerce catalog/order/customer data directly here.
-- Migrate `CommerceNodeDbContext` or legacy `AppDbContext` from this runtime.
+- Migrate `CommerceNodeDbContext` from this runtime.
 
 ### `BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web`
 
@@ -143,7 +141,7 @@ Do not:
 
 - Add Control Plane UI logic.
 - Persist platform-level users/permissions/credentials here.
-- Migrate `ControlPlaneDbContext` or legacy `AppDbContext` from this runtime.
+- Migrate `ControlPlaneDbContext` from this runtime.
 
 ### `BlazorShop.PresentationV2/BlazorShop.Storefront.V2`
 

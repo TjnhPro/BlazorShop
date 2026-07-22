@@ -91,9 +91,8 @@ docker compose -f compose.commercenode.yml up -d
 | --- | --- | --- | --- |
 | `ControlPlaneDbContext` | `ControlPlaneConnection` | `5433` | Platform auth, permissions, nodes, stores, credentials, actions, health, and audit. |
 | `CommerceNodeDbContext` | `CommerceNodeConnection` | `5434` | Ecommerce stores, catalog, variants, media, inventory, cart, checkout, orders, payments, customers, SEO, messages, tasks, and deployment state. |
-| `AppDbContext` | `DefaultConnection` | `5432` | Legacy commerce/storefront schema only. |
 
-V2 API projects can apply their own EF Core migrations on startup when their `MigrateOnStartup` option is enabled. Do not use `AppDbContext` for new V2 work.
+V2 API projects can apply their own EF Core migrations on startup when their `MigrateOnStartup` option is enabled. The legacy `AppDbContext`/`DefaultConnection` path has been removed from active Infrastructure.
 
 Development seeding is only for local QA fixture bootstrap. Commerce Node startup must not reset store runtime configuration that was edited through Control Plane; use a clean Commerce Node database when you intentionally need a full QA fixture rebuild.
 
@@ -122,17 +121,17 @@ dotnet build BlazorShop.sln -c Release --no-restore
 dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build --verbosity normal
 ```
 
-V2 production artifact validation uses the V2 compose and Dockerfiles:
+V2 production artifact validation uses the canonical production compose and Dockerfiles:
 
 ```powershell
-docker compose -f compose.v2.production.yml config
+docker compose -f compose.production.yml config
 docker build -f BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Dockerfile -t blazorshop-commercenode-api:v2-ci .
 docker build -f BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/Dockerfile -t blazorshop-controlplane-api:v2-ci .
 docker build -f BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Dockerfile -t blazorshop-controlplane-web:v2-ci .
 docker build -f BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile -t blazorshop-storefront-v2:ci .
 ```
 
-Use `compose.v2.production.yml` for V2 production topology until the canonical compose swap lands in the legacy-removal plan. The older `compose.production.yml` remains a legacy compatibility artifact.
+`compose.production.yml` is the V2 canonical production topology. `compose.v2.production.yml` remains as a transition alias while CI and downstream scripts are updated.
 
 Feature QA checklists live in [docs/refactor-control-Commerce-storefront](docs/refactor-control-Commerce-storefront):
 

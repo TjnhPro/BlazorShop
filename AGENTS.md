@@ -118,7 +118,6 @@ Use the DbContext that matches the product boundary:
 
 - `ControlPlaneDbContext` with `ControlPlaneConnection`, local PostgreSQL port `5433`, owns platform auth, users, roles, permissions, nodes, credentials, store registry, actions, health snapshots, and audit.
 - `CommerceNodeDbContext` with `CommerceNodeConnection`, local PostgreSQL port `5434`, owns ecommerce node data: commerce stores, storefront auth, catalog, variants, product media, inventory, carts, orders, payments, SEO, newsletters, deployment images, deployments, and task orchestration.
-- `AppDbContext` with `DefaultConnection`, local legacy/default port `5432`, belongs to legacy commerce/storefront. Do not add new V2 features or migrations there.
 
 Do not merge contexts just to simplify implementation. Cross-boundary behavior should go through APIs.
 

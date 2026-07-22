@@ -1,12 +1,12 @@
 # Legacy Presentation Removal V2 Canonicalization.todo.md
 
-Status: phase 4 legacy AppHost removal complete; phase 5 legacy Infrastructure/AppDbContext purge next
+Status: phase 5 legacy Infrastructure/AppDbContext purge complete; phase 6 physical Presentation removal next
 Source: investigate review of legacy Presentation removal blockers  
 Purpose: remove `BlazorShop.Presentation` and make V2 the canonical repository lifecycle target without breaking active V2 runtime, CI, Docker, deployment, tests, or docs.
 
 ## Current investigation status - 2026-07-22
 
-Root cause hypothesis: this plan started as a proposed legacy-removal/canonicalization plan, but several Phase 1 packaging and CI tasks were already completed by `V2 Production Readiness Hardening.todo.md`. Phases 0-3 have now established guardrails, made `BlazorShop.sln` V2 canonical, and moved V2 tests to owned sources. Phase 4 is removing the legacy `BlazorShop.AppHost`; remaining blockers are `AppDbContext`, `DefaultConnection`, and physical legacy `BlazorShop.Presentation` source.
+Root cause hypothesis: this plan started as a proposed legacy-removal/canonicalization plan, but several Phase 1 packaging and CI tasks were already completed by `V2 Production Readiness Hardening.todo.md`. Phases 0-5 have now established guardrails, made `BlazorShop.sln` V2 canonical, moved V2 tests to owned sources, removed legacy `BlazorShop.AppHost`, and purged `AppDbContext`/`DefaultConnection` from active source. The remaining blocker is physical legacy `BlazorShop.Presentation` source and final docs/QA cleanup.
 
 Evidence checked:
 
@@ -18,10 +18,10 @@ Evidence checked:
 - `BlazorShop.sln` is now the V2 canonical solution; the temporary `BlazorShop.V2.slnf` transition file has been removed.
 - `BlazorShop.Tests.V2.csproj` still links source and snapshots from `..\BlazorShop.Tests\...`; V2 test source ownership is not independent yet.
 - `.github/workflows/ci.yml` has blocking `ci-v2`, validates `compose.v2.production.yml`, builds four V2 images, and no longer carries the old `legacy-compatibility` job.
-- `compose.v2.production.yml` exists and uses V2 services/connection strings, but `compose.production.yml` is still legacy and uses `ConnectionStrings__DefaultConnection`.
+- `compose.production.yml` is now V2 canonical; `compose.v2.production.yml` remains as a transition alias while CI/downstream scripts are updated.
 - V2 Dockerfiles exist for ControlPlane API, CommerceNode API, ControlPlane Web, and Storefront V2. Storefront V2 Dockerfile now copies Components/WASM/Web.SharedV2 projects before restore and source before publish.
 - `BlazorShop.AppHost` is being removed in Phase 4; it previously referenced legacy API/Web/Storefront and used Aspire database name `DefaultConnection`.
-- `BlazorShop.Infrastructure` still contains `AppDbContext`, legacy migrations, `AddInfrastructure`, `AddSharedAuthenticationInfrastructure`, `UseInfrastructure`, `DefaultConnection`, and many AppDbContext-bound legacy services/repositories.
+- `BlazorShop.Infrastructure` no longer contains `AppDbContext`, legacy root migrations, `AddInfrastructure`, `AddSharedAuthenticationInfrastructure`, `UseInfrastructure`, or AppDbContext-bound legacy repository/service implementations.
 - Focused verification passed on 2026-07-22: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~V2ProductionReadiness|FullyQualifiedName~V2ArchitectureBoundary" --verbosity minimal` returned `Passed: 30, Failed: 0`.
 - Existing warnings remain non-blocking for this investigation: MessagePack NU1902/NU1903 advisories and Browserslist stale notice.
 
@@ -36,7 +36,7 @@ Phase status summary:
 | 2 Main solution becomes V2 canonical | Done | `BlazorShop.sln` now includes shared core, ServiceDefaults, active PresentationV2 projects, and `BlazorShop.Tests.V2`; legacy Presentation, AppHost, and old mixed tests are removed from the main solution |
 | 3 V2 test source ownership | Done | `BlazorShop.Tests.V2` now owns Architecture, PresentationV2, CommerceNode, ControlPlane, shared Application/Domain, and non-legacy Infrastructure tests directly; old mixed `BlazorShop.Tests` project was retired |
 | 4 Remove legacy AppHost and operational entrypoints | Done | `BlazorShop.AppHost` tracked files and ignored build artifacts removed; `run-v2-local.ps1 -StopExisting -NoOpenBrowser` and four endpoint smoke checks passed |
-| 5 Purge dead legacy Infrastructure/AppDbContext | Not started | `AppDbContext`, `DefaultConnection`, legacy migrations, and legacy DI methods still exist |
+| 5 Purge dead legacy Infrastructure/AppDbContext | Done | Active source grep is clean for `AppDbContext`, `DefaultConnection`, and legacy DI methods; build/full V2 tests/migration model tests passed |
 | 6 Physically remove BlazorShop.Presentation | Not started | `BlazorShop.Presentation` folder exists and is referenced by solution, AppHost, old tests, legacy CI job, and legacy compose |
 | 7 Docs, QA, clean verification, release gate | Not started | Docs still describe legacy as present/reference; final canonical V2 verification has not run |
 
@@ -350,46 +350,46 @@ Goal: xoa persistence/runtime code chi con phuc vu legacy sau khi legacy consume
 
 ### Preconditions
 
-- [ ] `BlazorShop.Presentation` khong con trong solution/CI active.
+- [x] `BlazorShop.Presentation` khong con trong solution/CI active.
 - [x] `BlazorShop.AppHost` da xoa.
-- [ ] `BlazorShop.Tests.V2` khong link source tu old tests.
-- [ ] Inventory script cho thay remaining `AppDbContext` consumers chi nam trong legacy/dead areas.
+- [x] `BlazorShop.Tests.V2` khong link source tu old tests.
+- [x] Inventory script cho thay remaining `AppDbContext` consumers chi nam trong legacy/dead areas.
 
 ### Tasks
 
-- [ ] Build consumer graph cho:
-  - [ ] `AppDbContext`.
-  - [ ] `AddInfrastructure`.
-  - [ ] `AddSharedAuthenticationInfrastructure`.
-  - [ ] `UseInfrastructure`.
-  - [ ] `DefaultConnection`.
-  - [ ] Legacy repositories under `BlazorShop.Infrastructure/Repositories`.
-  - [ ] Legacy admin services under `BlazorShop.Infrastructure/Services/Admin`.
-  - [ ] Legacy payment/cart/order repositories that bind to `AppDbContext`.
-- [ ] Delete `BlazorShop.Infrastructure/Data/AppDbContext.cs`.
-- [ ] Delete `BlazorShop.Infrastructure/Data/AppDbContextFactory.cs`.
-- [ ] Delete `BlazorShop.Infrastructure/Migrations/**` for AppDbContext.
-- [ ] Delete `AddInfrastructure`, `AddSharedAuthenticationInfrastructure`, `UseInfrastructure` if no consumer.
-- [ ] Delete health checks, seeders, repositories, services chi con dung `AppDbContext`.
-- [ ] Remove `DefaultConnection` from active appsettings, examples, scripts, compose.
-- [ ] Keep shared Application/Domain contracts only if active V2 still consumes them through ControlPlane/CommerceNode paths.
-- [ ] If a V2 service still depends on legacy repository contract:
-  - [ ] Replace with CommerceNode/ControlPlane implementation first.
-  - [ ] Add focused test before deleting old implementation.
-- [ ] Update architecture docs: `AppDbContext` no longer exists in active repo.
+- [x] Build consumer graph cho:
+  - [x] `AppDbContext`.
+  - [x] `AddInfrastructure`.
+  - [x] `AddSharedAuthenticationInfrastructure`.
+  - [x] `UseInfrastructure`.
+  - [x] `DefaultConnection`.
+  - [x] Legacy repositories under `BlazorShop.Infrastructure/Repositories`.
+  - [x] Legacy admin services under `BlazorShop.Infrastructure/Services/Admin`.
+  - [x] Legacy payment/cart/order repositories that bind to `AppDbContext`.
+- [x] Delete `BlazorShop.Infrastructure/Data/AppDbContext.cs`.
+- [x] Delete `BlazorShop.Infrastructure/Data/AppDbContextFactory.cs`.
+- [x] Delete `BlazorShop.Infrastructure/Migrations/**` for AppDbContext.
+- [x] Delete `AddInfrastructure`, `AddSharedAuthenticationInfrastructure`, `UseInfrastructure` if no consumer.
+- [x] Delete health checks, seeders, repositories, services chi con dung `AppDbContext`.
+- [x] Remove `DefaultConnection` from active appsettings, examples, scripts, compose.
+- [x] Keep shared Application/Domain contracts only if active V2 still consumes them through ControlPlane/CommerceNode paths.
+- [x] If a V2 service still depends on legacy repository contract:
+  - [x] Replace with CommerceNode/ControlPlane implementation first.
+  - [x] Add focused test before deleting old implementation.
+- [x] Update architecture docs: `AppDbContext` no longer exists in active repo.
 
 ### Verification
 
-- [ ] `rg "AppDbContext|DefaultConnection|AddInfrastructure\\(|AddSharedAuthenticationInfrastructure\\(|UseInfrastructure\\(" BlazorShop.Application BlazorShop.Infrastructure BlazorShop.PresentationV2 scripts .github compose*.yml`
-- [ ] `dotnet build BlazorShop.sln -c Release --no-restore`
-- [ ] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build`
-- [ ] EF migration/model tests for `ControlPlaneDbContext` and `CommerceNodeDbContext` pass.
+- [x] `rg "AppDbContext|DefaultConnection|AddInfrastructure\\(|AddSharedAuthenticationInfrastructure\\(|UseInfrastructure\\(" BlazorShop.Application BlazorShop.Infrastructure BlazorShop.PresentationV2 scripts .github compose*.yml`
+- [x] `dotnet build BlazorShop.sln -c Release --no-restore`
+- [x] `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj -c Release --no-build`
+- [x] EF migration/model tests for `ControlPlaneDbContext` and `CommerceNodeDbContext` pass.
 
 ### Done when
 
-- [ ] Active source khong con AppDbContext legacy.
-- [ ] V2 startup khong bao gio can `DefaultConnection`.
-- [ ] Purge dua tren consumer graph, khong phai ten file.
+- [x] Active source khong con AppDbContext legacy.
+- [x] V2 startup khong bao gio can `DefaultConnection`.
+- [x] Purge dua tren consumer graph, khong phai ten file.
 
 ## Phase 6 - Physically remove BlazorShop.Presentation
 

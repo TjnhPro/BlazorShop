@@ -52,13 +52,11 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         public void TokenManagers_UseSanitizerBeforePersistingIpAndUserAgent()
         {
             var commerceTokenManager = ReadRepositoryFile("BlazorShop.Infrastructure/Data/CommerceNode/Repositories/CommerceNodeAppTokenManager.cs");
-            var legacyTokenManager = ReadRepositoryFile("BlazorShop.Infrastructure/Repositories/Authentication/AppTokenManager.cs");
 
             Assert.Contains("PrivacyDataSanitizer.NormalizeIpAddress(createdByIp)", commerceTokenManager, StringComparison.Ordinal);
             Assert.Contains("PrivacyDataSanitizer.NormalizeUserAgent(userAgent)", commerceTokenManager, StringComparison.Ordinal);
             Assert.Contains("PrivacyDataSanitizer.NormalizeIpAddress(revokedByIp)", commerceTokenManager, StringComparison.Ordinal);
-            Assert.Contains("PrivacyDataSanitizer.NormalizeIpAddress(createdByIp)", legacyTokenManager, StringComparison.Ordinal);
-            Assert.Contains("PrivacyDataSanitizer.NormalizeUserAgent(userAgent)", legacyTokenManager, StringComparison.Ordinal);
+            Assert.False(RepositoryFileExists("BlazorShop.Infrastructure/Repositories/Authentication/AppTokenManager.cs"));
         }
 
         [Fact]
@@ -87,6 +85,23 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             }
 
             throw new FileNotFoundException($"Could not locate repository file '{relativePath}'.");
+        }
+
+        private static bool RepositoryFileExists(string relativePath)
+        {
+            var directory = new DirectoryInfo(AppContext.BaseDirectory);
+            while (directory is not null)
+            {
+                var candidate = Path.Combine(directory.FullName, relativePath.Replace('/', Path.DirectorySeparatorChar));
+                if (File.Exists(candidate))
+                {
+                    return true;
+                }
+
+                directory = directory.Parent;
+            }
+
+            return false;
         }
     }
 }

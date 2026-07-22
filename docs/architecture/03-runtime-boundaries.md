@@ -58,7 +58,7 @@ Examples:
 
 Commerce Node is the ecommerce runtime boundary. It owns node-local commerce data, node-local admin/control endpoints, scoped Storefront APIs, and local deployment tasks.
 
-Commerce Node API also owns startup EF Core migration for `CommerceNodeDbContext` only. It must not migrate `ControlPlaneDbContext` or legacy `AppDbContext`.
+Commerce Node API also owns startup EF Core migration for `CommerceNodeDbContext` only. It must not migrate `ControlPlaneDbContext`.
 
 Main route groups:
 
@@ -195,7 +195,7 @@ Legacy route groups include:
 
 Do not use legacy APIs as a dependency for V2 features. If behavior must be migrated, copy the behavior intentionally into the active V2 boundary and adapt it to `CommerceNodeDbContext` or `ControlPlaneDbContext` as appropriate.
 
-Legacy `AppDbContext` migrations are not part of the V2 startup migration flow.
+The legacy `AppDbContext` migration path has been removed from active Infrastructure. V2 startup migration flow is limited to `ControlPlaneDbContext` and `CommerceNodeDbContext`.
 
 ## API Response Pattern
 

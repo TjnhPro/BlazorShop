@@ -37,7 +37,6 @@ namespace BlazorShop.Tests.Application.CommerceNode
                     "BlazorShop.Application/Services/Payment/CartService.cs",
                     "BlazorShop.Domain/Contracts/IEmailService.cs",
                     "BlazorShop.Infrastructure/Services/EmailService.cs",
-                    "BlazorShop.Infrastructure/Services/OrderTrackingService.cs",
                 ],
                 callSites);
         }
@@ -128,8 +127,8 @@ namespace BlazorShop.Tests.Application.CommerceNode
             Assert.Contains("CaptureModeAllowed", commerceNodeDevelopmentSettings, StringComparison.Ordinal);
             Assert.Contains("COMMERCENODE_API__CommerceNode__EmailTransport__AllowGlobalEmailSettingsFallback=false", localEnv, StringComparison.Ordinal);
             Assert.Contains("mailpit", commerceNodeCompose, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("EmailSettings__SmtpServer", productionCompose, StringComparison.Ordinal);
-            Assert.Contains("EmailSettings__Password", productionCompose, StringComparison.Ordinal);
+            Assert.Contains("CommerceNode__EmailTransport__AllowGlobalEmailSettingsFallback: \"false\"", productionCompose, StringComparison.Ordinal);
+            Assert.Contains("CommerceNode__EmailTransport__CaptureModeAllowed: \"false\"", productionCompose, StringComparison.Ordinal);
         }
 
         private static string FindRepositoryRoot()

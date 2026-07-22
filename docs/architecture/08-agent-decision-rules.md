@@ -130,9 +130,8 @@ Use the correct context:
 
 - Platform data: `ControlPlaneDbContext`.
 - Ecommerce node data: `CommerceNodeDbContext`.
-- Legacy comparison only: `AppDbContext`.
 
-Do not add new V2 migrations to `AppDbContext`.
+The legacy `AppDbContext`/`DefaultConnection` infrastructure path has been removed. Use git history for legacy comparison when needed.
 
 V2 database upgrades use startup EF Core migrations for MVP:
 

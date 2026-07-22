@@ -4,7 +4,7 @@
 
 Use this runbook together with the architecture docs before promoting BlazorShop to a real production environment.
 
-Important current-state note: this file still contains legacy production deployment guidance for `BlazorShop.Presentation/*` and `compose.production.yml`. Active V2 runtime work lives under `BlazorShop.PresentationV2/*` and follows the boundaries in [docs/architecture](architecture/README.md). Treat the legacy container sections below as historical/container reference unless you intentionally deploy that legacy surface.
+Important current-state note: production deployment is V2 canonical. Active runtime work lives under `BlazorShop.PresentationV2/*` and follows the boundaries in [docs/architecture](architecture/README.md).
 
 Active V2 has these deployable surfaces with different configuration ownership:
 
@@ -13,7 +13,7 @@ Active V2 has these deployable surfaces with different configuration ownership:
 - Commerce Node API: node-local ecommerce admin/control APIs, Storefront APIs, task orchestration, media, deployment support, and Commerce Node database migration.
 - Storefront V2: server-side public storefront, public canonical/discovery origin, account/cart/checkout forms, media proxy routes, and storefront-to-Commerce Node Storefront API calls.
 
-Use [docs/production.appsettings.example.json](production.appsettings.example.json) and [docs/storefront.production.appsettings.example.json](storefront.production.appsettings.example.json) as legacy/transition examples. Verify any production config against [Deployment And Local Run](architecture/07-deployment-and-local-run.md), [Runtime Boundaries](architecture/03-runtime-boundaries.md), and [Data Ownership](architecture/04-data-ownership.md) before release.
+Use the active V2 example files under `BlazorShop.PresentationV2/*/appsettings.Production.example.json` and verify production config against [Deployment And Local Run](architecture/07-deployment-and-local-run.md), [Runtime Boundaries](architecture/03-runtime-boundaries.md), and [Data Ownership](architecture/04-data-ownership.md) before release.
 
 ## Replace the placeholders
 
@@ -77,37 +77,19 @@ Do not trust broad public ranges. Only trust the exact proxy IPs or CIDR blocks 
 Use these names if your platform injects configuration via environment variables instead of an appsettings file.
 
 ```text
-ConnectionStrings__DefaultConnection=Host=db.internal;Port=5432;Database=blazorshop;Username=blazorshop;Password=<secret>
-Jwt__Key=<secret>
-Jwt__Issuer=https://api.shop.example.com
-Jwt__Audience=https://api.shop.example.com
+ConnectionStrings__ControlPlaneConnection=Host=controlplane-postgres;Port=5432;Database=blazorshop_controlplane;Username=blazorshop_controlplane;Password=<secret>
+ConnectionStrings__CommerceNodeConnection=Host=commercenode-postgres;Port=5432;Database=blazorshop_commerce_node;Username=blazorshop_commerce_node;Password=<secret>
+JWT__Key=<secret>
+JWT__Issuer=https://api.shop.example.com
+JWT__Audience=https://api.shop.example.com
 ClientApp__BaseUrl=https://account.shop.example.com
-Identity__RequireConfirmedAccount=true
-Identity__RequireConfirmedEmail=true
-Stripe__SecretKey=<secret>
-EmailSettings__From=shop@example.com
-EmailSettings__DisplayName=BlazorShop
-EmailSettings__SmtpServer=smtp.example.com
-EmailSettings__Port=587
-EmailSettings__UseSsl=true
-EmailSettings__Username=<secret>
-EmailSettings__Password=<secret>
-Runtime__Cors__AllowedOrigins__0=https://account.shop.example.com
-Runtime__ForwardedHeaders__Enabled=true
-Runtime__ForwardedHeaders__KnownProxies__0=10.0.0.10
-Runtime__ForwardedHeaders__ForwardLimit=1
-Runtime__Health__ExposeInProduction=false
-Runtime__Health__ReadyPath=/health
-Runtime__Health__LivePath=/alive
-Runtime__Security__EnableHsts=true
-Runtime__Security__EnableHttpsRedirection=true
-Runtime__Security__RefreshTokenCookieName=__Host-blazorshop-refresh
-Runtime__Security__RefreshTokenCookieSameSite=Strict
-Runtime__Security__RefreshTokenLifetimeDays=14
-Runtime__RateLimiting__Enabled=true
-Runtime__RateLimiting__PermitLimit=60
-Runtime__RateLimiting__WindowSeconds=60
-Runtime__RateLimiting__QueueLimit=0
+ControlPlane__Database__MigrateOnStartup=false
+CommerceNode__Database__MigrateOnStartup=false
+CommerceNode__DataProtection__KeyRingPath=/app/runtime/data-protection-keys
+Runtime__Health__ExposeInProduction=true
+Api__BaseUrl=https://commerce-api.shop.example.com/api/
+Api__StoreKey=default
+PublicUrl__BaseUrl=https://shop.example.com/
 Runtime__RateLimiting__Auth__PermitLimit=5
 Runtime__RateLimiting__Auth__WindowSeconds=60
 Runtime__RateLimiting__Auth__QueueLimit=0
@@ -497,7 +479,7 @@ The GitHub Actions workflow `ci` runs the `build-test` job, which already covers
 ## Deployment Checklist
 
 1. Put all secrets in the platform secret store or injected environment variables.
-2. Apply `docs/production.appsettings.example.json` as a deployment-only override file or convert it to environment variables.
+2. Apply the V2 production example settings for each runtime or convert them to environment variables.
 3. Remove any extra `AllowedOrigins` entries you do not actually serve in production.
 4. Leave forwarded headers disabled unless a reverse proxy or ingress is really in front of the API.
 5. If forwarded headers are enabled, trust only the exact proxy IPs or CIDR blocks that should be allowed to set `X-Forwarded-*` headers.

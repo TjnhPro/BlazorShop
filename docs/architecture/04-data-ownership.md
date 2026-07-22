@@ -1,6 +1,6 @@
 # Data Ownership
 
-BlazorShop currently has three EF context families. Pick the context by product boundary, not by convenience.
+BlazorShop currently has two active EF context families. Pick the context by product boundary, not by convenience.
 
 ## Context Summary
 
@@ -8,7 +8,6 @@ BlazorShop currently has three EF context families. Pick the context by product 
 | --- | --- | --- | --- | --- |
 | `ControlPlaneDbContext` | `ControlPlaneConnection` | `5433` | Control Plane | Active V2 platform database. |
 | `CommerceNodeDbContext` | `CommerceNodeConnection` | `5434` | Commerce Node | Active V2 ecommerce node database. |
-| `AppDbContext` | `DefaultConnection` | `5432` | Legacy commerce/storefront | Legacy. Do not use for new V2 features. |
 
 ## ControlPlaneDbContext
 
@@ -102,36 +101,6 @@ Current ProductMedia ownership:
 
 Do not store Control Plane platform users, node credentials, or platform permissions here.
 
-## AppDbContext
-
-Location:
-
-```text
-BlazorShop.Infrastructure/Data/AppDbContext.cs
-```
-
-Connection:
-
-```text
-ConnectionStrings:DefaultConnection
-```
-
-Local development default:
-
-```text
-Host=localhost;Port=5432;Database=blazorshop
-```
-
-Owns:
-
-- Legacy commerce/admin/storefront schema.
-
-Rules:
-
-- Do not add new V2 migrations to `AppDbContext`.
-- Do not use `AppDbContext` to solve Control Plane or Commerce Node features.
-- Only read or compare it when preserving/migrating legacy behavior.
-
 ## Identity Separation
 
 Control Plane and Commerce Node may share identity entity classes such as `AppUser`, but they are separate databases and separate auth boundaries.
@@ -150,6 +119,5 @@ V2 database migration follows the startup migration decision captured in `docs/r
 
 - `BlazorShop.ControlPlane.API` may run EF Core migrations for `ControlPlaneDbContext` when `ControlPlane:Database:MigrateOnStartup=true`.
 - `BlazorShop.CommerceNode.API` may run EF Core migrations for `CommerceNodeDbContext` when `CommerceNode:Database:MigrateOnStartup=true`.
-- `AppDbContext` remains legacy and is not part of the V2 startup migration flow.
 - A runtime must fail startup if its own database migration fails.
 - Production deploys must backup the database first and avoid starting multiple API instances against the same database while migration is running.

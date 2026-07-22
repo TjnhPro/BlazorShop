@@ -56,7 +56,6 @@ Rules:
 
 - New Control Plane persistence belongs in `ControlPlaneDbContext`.
 - New Commerce Node persistence belongs in `CommerceNodeDbContext`.
-- Do not add new V2 persistence to legacy `AppDbContext`.
 - Use context-specific repositories/services when a behavior must be scoped to Control Plane or Commerce Node.
 
 ## Presentation Layer

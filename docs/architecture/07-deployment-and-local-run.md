@@ -8,8 +8,8 @@ This document records the current development deployment model. It is not a prod
 | --- | --- |
 | `compose.controlplane.yml` | Runs Control Plane PostgreSQL on host port `5433`. |
 | `compose.commercenode.yml` | Runs Commerce Node PostgreSQL on host port `5434`, Nginx on host port `8088`, imgproxy on host port `8089`, and Mailpit SMTP capture on ports `1025`/`8025`. |
-| `compose.v2.production.yml` | Active V2 production-oriented topology for Control Plane API/Web, Commerce Node API, Commerce Node PostgreSQL, Control Plane PostgreSQL, Nginx, imgproxy, and a Storefront V2 sample container. |
-| `compose.production.yml` | Legacy production-oriented compose file. Do not use it as proof that V2 can release. |
+| `compose.production.yml` | Canonical V2 production-oriented topology for Control Plane API/Web, Commerce Node API, Commerce Node PostgreSQL, Control Plane PostgreSQL, Nginx, imgproxy, and a Storefront V2 sample container. |
+| `compose.v2.production.yml` | Transition alias for the same V2 production topology while CI and downstream scripts are updated. |
 
 ## Local Ports
 
@@ -17,7 +17,6 @@ This document records the current development deployment model. It is not a prod
 | --- | --- | --- |
 | Control Plane PostgreSQL | `5433 -> 5432` | Database `blazorshop_controlplane`. |
 | Commerce Node PostgreSQL | `5434 -> 5432` | Database `blazorshop_commerce_node`. |
-| Legacy/default PostgreSQL | `5432` | Used by legacy `AppDbContext` if running legacy. |
 | Commerce Node Nginx | `8088 -> 80` | Reverse proxy/runtime config for deployed storefront containers. |
 | Commerce Node imgproxy | `8089 -> 8080` | Local image resize/format service for product media. |
 | Commerce Node Mailpit SMTP | `1025 -> 1025` | Local/staging-style SMTP capture target for store email settings. |

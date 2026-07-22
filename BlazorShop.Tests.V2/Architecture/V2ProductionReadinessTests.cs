@@ -24,18 +24,19 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void Phase0_ProductionComposeBaseline_RecordsLegacyProductionTargetGap()
+        public void Phase5_ProductionComposeTargetsV2CanonicalTopology()
         {
             var compose = ReadRepositoryFile("compose.production.yml")
                 .Replace('\\', '/');
 
-            Assert.Contains("BlazorShop.Presentation/BlazorShop.API/Dockerfile", compose, StringComparison.Ordinal);
-            Assert.Contains("BlazorShop.Presentation/BlazorShop.Storefront/Dockerfile", compose, StringComparison.Ordinal);
-            Assert.Contains("BlazorShop.Presentation/BlazorShop.Web/Dockerfile", compose, StringComparison.Ordinal);
-            Assert.Contains("ConnectionStrings__DefaultConnection", compose, StringComparison.Ordinal);
-            Assert.DoesNotContain("BlazorShop.PresentationV2/", compose, StringComparison.Ordinal);
-            Assert.DoesNotContain("ConnectionStrings__ControlPlaneConnection", compose, StringComparison.Ordinal);
-            Assert.DoesNotContain("ConnectionStrings__CommerceNodeConnection", compose, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/Dockerfile", compose, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/Dockerfile", compose, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Dockerfile", compose, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile", compose, StringComparison.Ordinal);
+            Assert.Contains("ConnectionStrings__ControlPlaneConnection", compose, StringComparison.Ordinal);
+            Assert.Contains("ConnectionStrings__CommerceNodeConnection", compose, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Presentation/", compose, StringComparison.Ordinal);
+            Assert.DoesNotContain("ConnectionStrings__DefaultConnection", compose, StringComparison.Ordinal);
         }
 
         [Fact]
