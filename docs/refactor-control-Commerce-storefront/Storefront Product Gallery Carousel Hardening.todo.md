@@ -322,17 +322,24 @@ git commit -m "docs(storefront): record product gallery carousel QA"
 
 ## Phase 6 - Release Gate
 
+Status: Complete - 2026-07-22.
+
 Goal: Prove the change is ready to merge without breaking Storefront V2.
 
 Checklist:
 
-- [ ] Run focused Storefront branding/static tests.
-- [ ] Run focused Storefront host tests if local test runtime is stable.
-- [ ] Run full `BlazorShop.Tests.V2`.
-- [ ] Run browser QA from Phase 5 after tests pass.
-- [ ] Confirm `git status --short` only has expected files before committing.
-- [ ] Commit any remaining intentional changes.
-- [ ] Document known warnings separately from regressions.
+- [x] Run focused Storefront branding/static tests.
+  - 2026-07-22: focused gallery markup/CSS tests passed during Phases 1-4.
+- [x] Run focused Storefront host tests if local test runtime is stable.
+  - 2026-07-22: `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~PresentationV2.Storefront" --logger "console;verbosity=minimal"` passed `217/217`.
+- [x] Run full `BlazorShop.Tests.V2`.
+  - 2026-07-22: full `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --logger "console;verbosity=minimal"` passed `1267`, skipped `2`.
+- [x] Run browser QA from Phase 5 after tests pass.
+  - 2026-07-22: release browser rerun saved `output/playwright/storefront-product-gallery-phase6-release-desktop.json` and `output/playwright/storefront-product-gallery-phase6-release-mobile.json`; desktop and mobile still kept thumbnails at `80x80`, disabled next at the last image, kept selected thumbnail in viewport, and kept placeholder `display:none`.
+- [x] Confirm `git status --short` only has expected files before committing.
+- [x] Commit any remaining intentional changes.
+- [x] Document known warnings separately from regressions.
+  - 2026-07-22: existing MessagePack NU1902/NU1903 warnings and Browserslist update notices remain known non-gallery warnings. No new gallery warnings were introduced.
 
 Commands:
 
@@ -517,7 +524,7 @@ DX target:
 - [x] Phase 3 - Client Interaction
 - [x] Phase 4 - Accessibility And Error States
 - [x] Phase 5 - Browser QA
-- [ ] Phase 6 - Release Gate
+- [x] Phase 6 - Release Gate
 
 ## GSTACK REVIEW REPORT
 
