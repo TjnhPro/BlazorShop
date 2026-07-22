@@ -296,27 +296,35 @@ Goal: Swagger contract phai generator-safe bang tool that, khong chi smoke strin
 
 ### Tasks
 
-- [ ] Chon generator:
-  - [ ] NSwag TypeScript client neu phu hop .NET ecosystem.
-  - [ ] Hoac Kiota/OpenAPI Generator neu repo muon generator trung lap voi future client.
-- [ ] Pin generator version trong repo:
-  - [ ] `dotnet tool manifest` hoac package/dev dependency.
-  - [ ] Khong dung version floating trong CI.
-- [ ] Test pipeline:
-  - [ ] Start/factory CommerceNode API hoac export Swagger JSON tu test host.
-  - [ ] Ghi Swagger JSON tam thoi vao test artifacts.
-  - [ ] Chay generator CLI that.
-  - [ ] Compile generated client bang TypeScript project nho hoac C# compile smoke.
-  - [ ] Assert operation names/schema khong collision.
-- [ ] Giu test hien tai ve metadata/operationId/security/error schemas.
-- [ ] Thay `GenerateTypeScriptClient` tu viet bang helper chi dung de doc/compare neu van can snapshot, khong goi la generator safety.
-- [ ] Them CI artifact khi generator fail: swagger json + generator stderr.
+- [x] Chon generator:
+  - [x] NSwag TypeScript client neu phu hop .NET ecosystem.
+  - [x] Hoac Kiota/OpenAPI Generator neu repo muon generator trung lap voi future client.
+- [x] Pin generator version trong repo:
+  - [x] `dotnet tool manifest` hoac package/dev dependency.
+  - [x] Khong dung version floating trong CI.
+- [x] Test pipeline:
+  - [x] Start/factory CommerceNode API hoac export Swagger JSON tu test host.
+  - [x] Ghi Swagger JSON tam thoi vao test artifacts.
+  - [x] Chay generator CLI that.
+  - [x] Compile generated client bang TypeScript project nho hoac C# compile smoke.
+  - [x] Assert operation names/schema khong collision.
+- [x] Giu test hien tai ve metadata/operationId/security/error schemas.
+- [x] Thay `GenerateTypeScriptClient` tu viet bang helper chi dung de doc/compare neu van can snapshot, khong goi la generator safety.
+- [x] Them CI artifact khi generator fail: swagger json + generator stderr.
+
+### Phase 5 implementation notes - 2026-07-22
+
+- Added pinned local tool manifest `.config/dotnet-tools.json` with `NSwag.ConsoleCore` 14.7.1.
+- Added `tools/openapi-generator-smoke` with pinned TypeScript 7.0.2 and CI restore step.
+- Replaced handwritten TS smoke with real NSwag generation and TypeScript compilation.
+- Fixed generator-breaking `maximum: 1.7976931348623157E+308` contract on storefront catalog price filters by switching to bounded decimal ranges.
+- Updated storefront OpenAPI snapshot after the bounded price-range contract change.
 
 ### Acceptance criteria
 
-- [ ] OpenAPI test fail neu generator that khong tao/compile duoc client.
-- [ ] Storefront contract thay doi co snapshot/generator signal ro.
-- [ ] Day la tien de truoc khi migrate Storefront V2 sang generated client.
+- [x] OpenAPI test fail neu generator that khong tao/compile duoc client.
+- [x] Storefront contract thay doi co snapshot/generator signal ro.
+- [x] Day la tien de truoc khi migrate Storefront V2 sang generated client.
 
 ## Phase 6 - Storefront client contract cleanup
 

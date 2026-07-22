@@ -189,14 +189,22 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void Phase0_OpenApiGeneratorBaseline_RecordsHandWrittenSmokeOnly()
+        public void Phase5_OpenApiGeneratorGate_UsesPinnedNswagAndTypeScriptCompiler()
         {
             var storefrontOpenApiTests = ReadRepositoryFile("BlazorShop.Tests/PresentationV2/CommerceNode/CommerceNodeStorefrontOpenApiContractTests.cs");
+            var toolManifest = ReadRepositoryFile(".config/dotnet-tools.json");
+            var generatorPackage = ReadRepositoryFile("tools/openapi-generator-smoke/package.json");
+            var workflow = ReadRepositoryFile(".github/workflows/ci.yml");
 
-            Assert.Contains("StorefrontSwagger_CanGenerateTypeScriptClientSmoke", storefrontOpenApiTests, StringComparison.Ordinal);
-            Assert.Contains("GenerateTypeScriptClient", storefrontOpenApiTests, StringComparison.Ordinal);
-            Assert.Contains("Promise<unknown>", storefrontOpenApiTests, StringComparison.Ordinal);
-            Assert.False(File.Exists(RepositoryPath(".config/dotnet-tools.json")));
+            Assert.Contains("StorefrontSwagger_GeneratesAndCompilesTypeScriptClientWithNswag", storefrontOpenApiTests, StringComparison.Ordinal);
+            Assert.Contains("\"nswag.consolecore\"", toolManifest, StringComparison.Ordinal);
+            Assert.Contains("\"version\": \"14.7.1\"", toolManifest, StringComparison.Ordinal);
+            Assert.Contains("\"typescript\": \"7.0.2\"", generatorPackage, StringComparison.Ordinal);
+            Assert.Contains("dotnet tool restore", workflow, StringComparison.Ordinal);
+            Assert.Contains("npm ci --prefix tools/openapi-generator-smoke", workflow, StringComparison.Ordinal);
+            Assert.Contains("tools/openapi-generator-smoke/package-lock.json", workflow, StringComparison.Ordinal);
+            Assert.DoesNotContain("GenerateTypeScriptClient", storefrontOpenApiTests, StringComparison.Ordinal);
+            Assert.DoesNotContain("Promise<unknown>", storefrontOpenApiTests, StringComparison.Ordinal);
             Assert.False(File.Exists(RepositoryPath("package.json")));
         }
 

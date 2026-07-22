@@ -2225,7 +2225,7 @@
             "name": "MinPrice",
             "in": "query",
             "schema": {
-              "maximum": 1.7976931348623157E+308,
+              "maximum": 1000000000,
               "minimum": 0,
               "type": "number",
               "format": "double"
@@ -2235,7 +2235,7 @@
             "name": "MaxPrice",
             "in": "query",
             "schema": {
-              "maximum": 1.7976931348623157E+308,
+              "maximum": 1000000000,
               "minimum": 0,
               "type": "number",
               "format": "double"

@@ -2,8 +2,8 @@ extern alias CommerceNodeApi;
 
 namespace BlazorShop.Tests.PresentationV2.CommerceNode
 {
+    using System.Diagnostics;
     using System.Net;
-    using System.Text;
     using System.Text.Json;
     using System.Text.Json.Nodes;
 
@@ -874,35 +874,64 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         }
 
         [Fact]
-        public async Task StorefrontSwagger_CanGenerateTypeScriptClientSmoke()
+        public async Task StorefrontSwagger_GeneratesAndCompilesTypeScriptClientWithNswag()
         {
-            var swagger = await this.GetStorefrontSwaggerAsync();
-            var client = GenerateTypeScriptClient(swagger);
+            var swagger = await this.GetStorefrontSwaggerTextAsync();
+            var repositoryRoot = FindRepositoryRoot().FullName;
+            var artifactRoot = Path.Combine(Path.GetTempPath(), "BlazorShopOpenApiGenerator", Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(artifactRoot);
 
-            Assert.Contains("export class StorefrontApiClient", client, StringComparison.Ordinal);
-            Assert.Contains("StorefrontCatalog_QueryProducts", client, StringComparison.Ordinal);
-            Assert.Contains("StorefrontCatalog_GetProductFilterMetadata", client, StringComparison.Ordinal);
-            Assert.Contains("StorefrontCatalog_GetSearchSuggestions", client, StringComparison.Ordinal);
-            Assert.Contains("StorefrontCart_CreateSession", client, StringComparison.Ordinal);
-            Assert.Contains("StorefrontCart_AddLine", client, StringComparison.Ordinal);
-            Assert.Contains("StorefrontCart_Recalculate", client, StringComparison.Ordinal);
-            Assert.Contains("StorefrontCart_MergeCurrentCustomer", client, StringComparison.Ordinal);
-            Assert.Contains("StorefrontCheckout_Start", client, StringComparison.Ordinal);
-            Assert.Contains("StorefrontCheckout_Load", client, StringComparison.Ordinal);
-            Assert.Contains("StorefrontCheckout_Cancel", client, StringComparison.Ordinal);
-            Assert.Contains("StorefrontCheckout_UpdateAddresses", client, StringComparison.Ordinal);
-            Assert.Contains("StorefrontCheckout_SelectShippingMethod", client, StringComparison.Ordinal);
-            Assert.Contains("StorefrontCheckout_SelectPaymentMethod", client, StringComparison.Ordinal);
-            Assert.Contains("StorefrontCheckout_Review", client, StringComparison.Ordinal);
-            Assert.Contains("StorefrontOrders_ListCurrentUserOrders", client, StringComparison.Ordinal);
-            Assert.Contains("StorefrontOrders_GetCurrentUserOrder", client, StringComparison.Ordinal);
-            Assert.Contains("StorefrontOrders_GetCurrentUserOrderReceipt", client, StringComparison.Ordinal);
-            Assert.DoesNotContain("any /* missing operationId */", client, StringComparison.Ordinal);
-            Assert.DoesNotContain("Promise<any>", client, StringComparison.Ordinal);
-            Assert.DoesNotContain("StorefrontCart_SaveCheckout", client, StringComparison.Ordinal);
-            Assert.DoesNotContain("StorefrontOrders_Confirm", client, StringComparison.Ordinal);
-            Assert.DoesNotContain("StorefrontOrders_ListCurrentUserOrderItems", client, StringComparison.Ordinal);
-            Assert.DoesNotContain("StorefrontPayments_CapturePayPal", client, StringComparison.Ordinal);
+            var swaggerPath = Path.Combine(artifactRoot, "storefront.swagger.json");
+            var generatedClientPath = Path.Combine(artifactRoot, "storefront.generated.ts");
+            var tsconfigPath = Path.Combine(artifactRoot, "tsconfig.json");
+
+            await File.WriteAllTextAsync(swaggerPath, swagger);
+            await File.WriteAllTextAsync(
+                tsconfigPath,
+                """
+                {
+                  "compilerOptions": {
+                    "target": "ES2020",
+                    "module": "ES2020",
+                    "lib": ["ES2020", "DOM"],
+                    "strict": false,
+                    "skipLibCheck": true,
+                    "noEmit": true
+                  },
+                  "files": ["storefront.generated.ts"]
+                }
+                """);
+
+            var generator = RunProcess(
+                "dotnet",
+                [
+                    "nswag",
+                    "openapi2tsclient",
+                    $"/input:{swaggerPath}",
+                    $"/output:{generatedClientPath}",
+                    "/template:Fetch",
+                    "/className:{controller}Client",
+                    "/generateClientInterfaces:true",
+                ],
+                repositoryRoot);
+
+            Assert.True(generator.ExitCode == 0, FormatProcessFailure("NSwag TypeScript generation failed.", generator, artifactRoot));
+            Assert.True(File.Exists(generatedClientPath), $"NSwag did not create {generatedClientPath}.");
+
+            var generatedClient = await File.ReadAllTextAsync(generatedClientPath);
+            Assert.Contains("StorefrontCatalogClient", generatedClient, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCheckoutClient", generatedClient, StringComparison.Ordinal);
+            Assert.Contains("queryProducts(", generatedClient, StringComparison.Ordinal);
+            Assert.Contains("placeOrder(", generatedClient, StringComparison.Ordinal);
+            Assert.DoesNotContain("confirm(", generatedClient, StringComparison.Ordinal);
+            Assert.DoesNotContain("capturePayPal(", generatedClient, StringComparison.Ordinal);
+
+            EnsureTypeScriptCompilerRestored(repositoryRoot);
+            var compiler = RunProcess(ResolveTypeScriptCompilerPath(repositoryRoot), ["--project", tsconfigPath], repositoryRoot);
+
+            Assert.True(compiler.ExitCode == 0, FormatProcessFailure("Generated Storefront TypeScript client did not compile.", compiler, artifactRoot));
+
+            Directory.Delete(artifactRoot, recursive: true);
         }
 
         [Fact]
@@ -1621,36 +1650,6 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 ?? throw new InvalidOperationException($"Parameter '{name}' was not found.");
         }
 
-        private static string GenerateTypeScriptClient(JsonObject swagger)
-        {
-            var builder = new StringBuilder();
-            builder.AppendLine("export class StorefrontApiClient {");
-            builder.AppendLine("  constructor(private readonly baseUrl: string, private readonly fetcher: typeof fetch = fetch) {}");
-
-            foreach (var operation in GetOperations(swagger))
-            {
-                var operationId = operation.Value["operationId"]?.GetValue<string>();
-                if (string.IsNullOrWhiteSpace(operationId))
-                {
-                    builder.AppendLine("  any /* missing operationId */");
-                    continue;
-                }
-
-                builder.Append("  async ");
-                builder.Append(operationId);
-                builder.AppendLine("(request?: unknown): Promise<unknown> {");
-                builder.Append("    return this.fetcher(`${this.baseUrl}");
-                builder.Append(operation.Path);
-                builder.Append("`, { method: '");
-                builder.Append(operation.Method.ToUpperInvariant());
-                builder.AppendLine("', body: request ? JSON.stringify(request) : undefined });");
-                builder.AppendLine("  }");
-            }
-
-            builder.AppendLine("}");
-            return builder.ToString();
-        }
-
         private static void VisitReferences(JsonNode? node, Action<string> visit)
         {
             switch (node)
@@ -1693,6 +1692,18 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             return Path.Combine(AppContext.BaseDirectory, snapshotPath);
         }
 
+        private static DirectoryInfo FindRepositoryRoot()
+        {
+            var current = new DirectoryInfo(AppContext.BaseDirectory);
+            while (current is not null && !File.Exists(Path.Combine(current.FullName, "BlazorShop.sln")))
+            {
+                current = current.Parent;
+            }
+
+            Assert.NotNull(current);
+            return current!;
+        }
+
         private static string NormalizeJson(string json)
         {
             var node = JsonNode.Parse(json)
@@ -1704,5 +1715,66 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         {
             return value.Replace("\r\n", "\n", StringComparison.Ordinal).Replace("\n", Environment.NewLine, StringComparison.Ordinal);
         }
+
+        private static void EnsureTypeScriptCompilerRestored(string repositoryRoot)
+        {
+            if (File.Exists(ResolveTypeScriptCompilerPath(repositoryRoot)))
+            {
+                return;
+            }
+
+            var result = RunProcess(
+                "npm",
+                ["ci", "--prefix", Path.Combine(repositoryRoot, "tools", "openapi-generator-smoke")],
+                repositoryRoot);
+
+            Assert.True(result.ExitCode == 0, FormatProcessFailure("Failed to restore OpenAPI generator smoke npm dependencies.", result, repositoryRoot));
+        }
+
+        private static string ResolveTypeScriptCompilerPath(string repositoryRoot)
+        {
+            var executableName = OperatingSystem.IsWindows() ? "tsc.cmd" : "tsc";
+            return Path.Combine(repositoryRoot, "tools", "openapi-generator-smoke", "node_modules", ".bin", executableName);
+        }
+
+        private static ProcessResult RunProcess(string fileName, IReadOnlyList<string> arguments, string workingDirectory)
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = fileName,
+                WorkingDirectory = workingDirectory,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+            };
+
+            foreach (var argument in arguments)
+            {
+                startInfo.ArgumentList.Add(argument);
+            }
+
+            using var process = Process.Start(startInfo)
+                ?? throw new InvalidOperationException($"Failed to start process '{fileName}'.");
+            var standardOutput = process.StandardOutput.ReadToEnd();
+            var standardError = process.StandardError.ReadToEnd();
+            process.WaitForExit();
+
+            return new ProcessResult(process.ExitCode, standardOutput, standardError);
+        }
+
+        private static string FormatProcessFailure(string message, ProcessResult result, string artifactRoot)
+        {
+            return string.Join(
+                Environment.NewLine,
+                message,
+                $"Exit code: {result.ExitCode}",
+                $"Artifacts: {artifactRoot}",
+                "stdout:",
+                result.StandardOutput,
+                "stderr:",
+                result.StandardError);
+        }
+
+        private sealed record ProcessResult(int ExitCode, string StandardOutput, string StandardError);
     }
 }

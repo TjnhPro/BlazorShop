@@ -27,8 +27,15 @@ jobs:
           node-version: 20
           cache: npm
           cache-dependency-path: |
+            tools/openapi-generator-smoke/package-lock.json
             BlazorShop.PresentationV2/BlazorShop.ControlPlane.Web/package-lock.json
             BlazorShop.PresentationV2/BlazorShop.Storefront.V2/package-lock.json
+
+      - name: Restore local .NET tools
+        run: dotnet tool restore
+
+      - name: Restore OpenAPI generator smoke dependencies
+        run: npm ci --prefix tools/openapi-generator-smoke
 
       - name: Restore
         run: dotnet restore BlazorShop.V2.slnf

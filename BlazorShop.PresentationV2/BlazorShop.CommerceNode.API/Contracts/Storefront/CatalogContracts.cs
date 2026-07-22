@@ -25,10 +25,10 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
         [MaxLength(256)]
         public string? SearchTerm { get; init; }
 
-        [Range(0, double.MaxValue)]
+        [Range(typeof(decimal), "0", "1000000000")]
         public decimal? MinPrice { get; init; }
 
-        [Range(0, double.MaxValue)]
+        [Range(typeof(decimal), "0", "1000000000")]
         public decimal? MaxPrice { get; init; }
 
         public bool? InStock { get; init; }
