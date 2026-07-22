@@ -1,5 +1,6 @@
 @page "/"
-@inject StorefrontApiClient ApiClient
+@inject IStorefrontCatalogClient ApiClient
+@inject IStorefrontContentClient ContentClient
 @inject IStorefrontSeoComposer SeoComposer
 @inject IStorefrontStructuredDataComposer StructuredDataComposer
 @inject IStorefrontDisplayContextProvider DisplayContextProvider
@@ -99,7 +100,7 @@ else
         const string fallbackDescription = "Discover published products, featured categories, and route-based SEO-ready pages across the BlazorShop storefront.";
         var displayContext = await DisplayContextProvider.GetAsync();
 
-        var homeMetadataPageTask = ApiClient.GetPublishedPageBySlugAsync(StorefrontRoutes.HomeMetadataSlug);
+        var homeMetadataPageTask = ContentClient.GetPublishedPageBySlugAsync(StorefrontRoutes.HomeMetadataSlug);
         var structuredDataTask = StructuredDataComposer.ComposeHomePageAsync();
         var categoriesTask = ApiClient.GetPublishedCategoriesAsync();
         var latestProductsTask = ApiClient.GetPublishedCatalogPageAsync(new ProductCatalogQuery

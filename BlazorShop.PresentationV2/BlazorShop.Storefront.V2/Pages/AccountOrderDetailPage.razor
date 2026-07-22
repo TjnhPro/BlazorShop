@@ -2,7 +2,7 @@
 @page "/account/orders/{OrderReference}/receipt"
 @using System.Globalization
 @inject IStorefrontSessionResolver SessionResolver
-@inject StorefrontApiClient ApiClient
+@inject IStorefrontCustomerClient ApiClient
 @inject NavigationManager NavigationManager
 
 <PageTitle>Order detail</PageTitle>

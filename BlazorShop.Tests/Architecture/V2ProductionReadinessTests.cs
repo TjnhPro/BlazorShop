@@ -129,11 +129,10 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void Phase0_StorefrontConcreteApiClientInjectionInventory_MatchesCurrentBaseline()
+        public void Phase6_StorefrontConcreteApiClientInjectionInventory_IsEmpty()
         {
-            var concreteUsages = EnumerateFiles("BlazorShop.PresentationV2/BlazorShop.Storefront.V2", "*.*")
-                .Where(path => path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase)
-                               || path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+            var concreteUsages = EnumerateFiles("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages", "*.razor")
+                .Concat(EnumerateFiles("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components", "*.razor"))
                 .Where(path =>
                 {
                     var source = File.ReadAllText(path);
@@ -144,25 +143,7 @@ namespace BlazorShop.Tests.Architecture
                 .OrderBy(path => path, StringComparer.Ordinal)
                 .ToArray();
 
-            Assert.Equal(
-                [
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontHeader.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountAddressesPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountOrderDetailPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountOrdersPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountProfilePage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CategoryPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CheckoutPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Home.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/NewReleases.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/PaymentCancelPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/PaymentSuccessPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/ProductPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/SearchPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/StorefrontPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/TodaysDeals.razor",
-                ],
-                concreteUsages);
+            Assert.Empty(concreteUsages);
         }
 
         [Fact]

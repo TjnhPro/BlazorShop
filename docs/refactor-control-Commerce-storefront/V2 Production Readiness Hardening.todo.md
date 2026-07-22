@@ -333,30 +333,37 @@ Goal: giam phu thuoc concrete `StorefrontApiClient` va san sang adapter generate
 ### Tasks
 
 - [ ] Giu existing capability interfaces:
-  - [ ] `IStorefrontCatalogClient`.
-  - [ ] `IStorefrontCartClient`.
-  - [ ] `IStorefrontCheckoutClient`.
-  - [ ] `IStorefrontCustomerClient`.
-  - [ ] `IStorefrontPaymentClient`.
-  - [ ] `IStorefrontContentClient`.
-  - [ ] `IStorefrontAddressClient`.
-  - [ ] `IStorefrontConsentClient`.
-  - [ ] `IStorefrontStoreConfigurationClient`.
-- [ ] Chuyen pages/components dang inject concrete `StorefrontApiClient` sang interface nho nhat can dung.
-- [ ] Neu mot page can nhieu capability, inject tung interface can thiet thay vi concrete all-in-one.
-- [ ] Them architecture test: pages/components khong inject `StorefrontApiClient` truc tiep, allowlist bang 0.
-- [ ] Giu `StorefrontApiClient` lam internal/manual adapter tam thoi.
-- [ ] Khong sinh generated client vao production code cho den khi Phase 5 pass on dinh.
+  - [x] `IStorefrontCatalogClient`.
+  - [x] `IStorefrontCartClient`.
+  - [x] `IStorefrontCheckoutClient`.
+  - [x] `IStorefrontCustomerClient`.
+  - [x] `IStorefrontPaymentClient`.
+  - [x] `IStorefrontContentClient`.
+  - [x] `IStorefrontAddressClient`.
+  - [x] `IStorefrontConsentClient`.
+  - [x] `IStorefrontStoreConfigurationClient`.
+- [x] Chuyen pages/components dang inject concrete `StorefrontApiClient` sang interface nho nhat can dung.
+- [x] Neu mot page can nhieu capability, inject tung interface can thiet thay vi concrete all-in-one.
+- [x] Them architecture test: pages/components khong inject `StorefrontApiClient` truc tiep, allowlist bang 0.
+- [x] Giu `StorefrontApiClient` lam internal/manual adapter tam thoi.
+- [x] Khong sinh generated client vao production code cho den khi Phase 5 pass on dinh.
 - [ ] Doi voi DTO duplicate:
-  - [ ] Chi dedupe DTO o boundary ro rang.
-  - [ ] Khong move public API contracts vao `Web.SharedV2` neu architecture doc noi presentation boundary owns contract.
-  - [ ] Uu tien generated client lam source cho transport DTO ve sau.
+  - [x] Chi dedupe DTO o boundary ro rang.
+  - [x] Khong move public API contracts vao `Web.SharedV2` neu architecture doc noi presentation boundary owns contract.
+  - [x] Uu tien generated client lam source cho transport DTO ve sau.
+
+### Phase 6 implementation notes - 2026-07-22
+
+- Storefront page/component injections no longer depend on `StorefrontApiClient` directly; each UI surface now asks for the narrow capability it uses.
+- `Home` splits content metadata lookup and catalog lookup across `IStorefrontContentClient` and `IStorefrontCatalogClient`.
+- `CheckoutPage` resolves checkout, payment, catalog, address, and customer data through separate capability clients in the code-behind.
+- Architecture baseline tests now enforce zero concrete `StorefrontApiClient` usage in active page/component UI.
 
 ### Acceptance criteria
 
-- [ ] Storefront UI phu thuoc capability interfaces.
-- [ ] Concrete `StorefrontApiClient` chi la implementation detail trong DI/Services.
-- [ ] Generated client migration sau nay co adapter seam ro, khong can sua tat ca pages.
+- [x] Storefront UI phu thuoc capability interfaces.
+- [x] Concrete `StorefrontApiClient` chi la implementation detail trong DI/Services.
+- [x] Generated client migration sau nay co adapter seam ro, khong can sua tat ca pages.
 
 ## Phase 7 - Browser/API production release verification
 

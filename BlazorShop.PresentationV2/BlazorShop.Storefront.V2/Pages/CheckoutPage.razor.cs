@@ -87,6 +87,21 @@ namespace BlazorShop.Storefront.Pages
         [Inject]
         private IStorefrontSessionResolver SessionResolver { get; set; } = default!;
 
+        [Inject]
+        private IStorefrontCheckoutClient CheckoutClient { get; set; } = default!;
+
+        [Inject]
+        private IStorefrontPaymentClient PaymentClient { get; set; } = default!;
+
+        [Inject]
+        private IStorefrontCatalogClient CatalogClient { get; set; } = default!;
+
+        [Inject]
+        private IStorefrontAddressClient AddressClient { get; set; } = default!;
+
+        [Inject]
+        private IStorefrontCustomerClient CustomerClient { get; set; } = default!;
+
         protected override async Task OnParametersSetAsync()
         {
             StorefrontResponseHeaders.ApplyPrivatePage(HttpContext);
@@ -117,7 +132,7 @@ namespace BlazorShop.Storefront.Pages
             checkoutSession = null;
             if (!string.IsNullOrWhiteSpace(cartResolution.CartToken) && cartItems.Count > 0)
             {
-                var checkoutResult = await ApiClient.StartCheckoutAsync(cartResolution.CartToken);
+                var checkoutResult = await CheckoutClient.StartCheckoutAsync(cartResolution.CartToken);
                 if (checkoutResult.Success && checkoutResult.Data is not null)
                 {
                     checkoutSession = checkoutResult.Data;
@@ -142,7 +157,7 @@ namespace BlazorShop.Storefront.Pages
             }
             else
             {
-                var paymentResult = await ApiClient.GetPaymentMethodsAsync();
+                var paymentResult = await PaymentClient.GetPaymentMethodsAsync();
                 paymentMethods = paymentResult.IsSuccess && paymentResult.Value is not null
                     ? paymentResult.Value
                         .Where(method => SupportsCurrency(method, GrandTotalCurrencyCode))
@@ -167,7 +182,7 @@ namespace BlazorShop.Storefront.Pages
                 return [];
             }
 
-            var results = await Task.WhenAll(productIds.Select(id => ApiClient.GetProductByIdAsync(id)));
+            var results = await Task.WhenAll(productIds.Select(id => CatalogClient.GetProductByIdAsync(id)));
             var productsById = new Dictionary<Guid, GetProduct>();
 
             for (var index = 0; index < productIds.Length; index++)
@@ -215,12 +230,12 @@ namespace BlazorShop.Storefront.Pages
 
         private async Task LoadAddressMetadataAsync()
         {
-            var countriesResult = await ApiClient.GetAddressCountriesAsync();
+            var countriesResult = await AddressClient.GetAddressCountriesAsync();
             addressCountries = countriesResult.IsSuccess && countriesResult.Value is not null
                 ? countriesResult.Value
                 : [];
 
-            var configurationResult = await ApiClient.GetAddressConfigurationAsync();
+            var configurationResult = await AddressClient.GetAddressConfigurationAsync();
             addressConfiguration = configurationResult.IsSuccess
                 ? configurationResult.Value
                 : null;
@@ -230,7 +245,7 @@ namespace BlazorShop.Storefront.Pages
             var session = await SessionResolver.GetCurrentUserAsync();
             if (session.IsAuthenticated && !string.IsNullOrWhiteSpace(session.AccessToken))
             {
-                var addressesResult = await ApiClient.GetCustomerAddressesAsync(session.AccessToken);
+                var addressesResult = await CustomerClient.GetCustomerAddressesAsync(session.AccessToken);
                 customerAddresses = addressesResult.Success && addressesResult.Data is not null
                     ? addressesResult.Data
                     : [];
@@ -238,7 +253,7 @@ namespace BlazorShop.Storefront.Pages
                     ?? customerAddresses.FirstOrDefault();
             }
 
-            var statesResult = await ApiClient.GetAddressStatesAsync(DefaultShippingCountryCode);
+            var statesResult = await AddressClient.GetAddressStatesAsync(DefaultShippingCountryCode);
             addressStates = statesResult.IsSuccess && statesResult.Value is not null
                 ? statesResult.Value
                 : [];

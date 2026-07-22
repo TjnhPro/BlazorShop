@@ -181,9 +181,11 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void StorefrontConcreteApiClientUsage_IsAllowlistedOutsideEndpointMappings()
+        public void StorefrontConcreteApiClientUsage_IsEliminatedInActivePresentation()
         {
-            var concreteUsages = EnumerateSourceFiles("BlazorShop.PresentationV2/BlazorShop.Storefront.V2")
+            var concreteUsages = EnumerateSourceFiles(
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components")
                 .Where(path =>
                 {
                     var source = File.ReadAllText(path);
@@ -194,26 +196,7 @@ namespace BlazorShop.Tests.Architecture
                 .OrderBy(path => path, StringComparer.Ordinal)
                 .ToArray();
 
-            Assert.Equal(
-                [
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Layout/StorefrontHeader.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountAddressesPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountOrderDetailPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountOrdersPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountProfilePage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CategoryPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CheckoutPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Home.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/NewReleases.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/PaymentCancelPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/PaymentSuccessPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/ProductPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/SearchPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/StorefrontPage.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/TodaysDeals.razor",
-                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.cs",
-                ],
-                concreteUsages);
+            Assert.Empty(concreteUsages);
         }
 
         [Fact]
