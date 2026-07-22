@@ -276,24 +276,34 @@ git commit -m "test(storefront): harden product gallery accessibility states"
 
 ## Phase 5 - Browser QA
 
+Status: Complete - 2026-07-22.
+
 Goal: Verify the exact user-facing behavior in Chromium.
 
 Checklist:
 
-- [ ] Start local V2 runtime if not already running.
-- [ ] Open the reported product detail URL.
-- [ ] Verify main image renders and is not covered by placeholder.
-- [ ] Verify thumbnail cells stay fixed with all images present.
-- [ ] Click next until the last image.
-- [ ] Verify next disables at the last image.
-- [ ] Click previous until the first image.
-- [ ] Verify previous disables at the first image.
-- [ ] Click a middle thumbnail and confirm main image changes.
-- [ ] Verify selected thumbnail scrolls into view when the strip overflows.
-- [ ] Run desktop viewport check.
-- [ ] Run mobile viewport check.
-- [ ] Capture screenshots under `output/playwright/`.
-- [ ] Update `QA-StorefrontV2.todo.md` with exact evidence.
+- [x] Start local V2 runtime if not already running.
+- [x] Open the reported product detail URL.
+- [x] Verify main image renders and is not covered by placeholder.
+- [x] Verify thumbnail cells stay fixed with all images present.
+- [x] Click next until the last image.
+- [x] Verify next disables at the last image.
+- [x] Click previous until the first image.
+- [x] Verify previous disables at the first image.
+- [x] Click a middle thumbnail and confirm main image changes.
+- [x] Verify selected thumbnail scrolls into view when the strip overflows.
+- [x] Run desktop viewport check.
+- [x] Run mobile viewport check.
+- [x] Capture screenshots under `output/playwright/`.
+- [x] Update `QA-StorefrontV2.todo.md` with exact evidence.
+
+Evidence:
+
+- 2026-07-22: local runtime health passed for Storefront and Commerce Node.
+- 2026-07-22: desktop Playwright measured main frame `542x542`, 14 thumbnails at `80x80`, last-image selection with `nextDisabled=true`, first-image selection with `previousDisabled=true`, middle-thumbnail selection with both controls enabled, and selected thumbnail inside the overflow viewport.
+- 2026-07-22: mobile Playwright measured main frame `308x308`, 14 thumbnails at `80x80`, same boundary behavior, and selected thumbnail inside the overflow viewport.
+- 2026-07-22: keyboard QA confirmed ArrowRight moved selected thumbnail from index `0` to `1`; ArrowLeft returned to index `0`.
+- Artifacts: `output/playwright/storefront-product-gallery-phase5-desktop.json`, `output/playwright/storefront-product-gallery-phase5-desktop.png`, `output/playwright/storefront-product-gallery-phase5-mobile.json`, `output/playwright/storefront-product-gallery-phase5-mobile.png`.
 
 Suggested browser measurements:
 
@@ -400,13 +410,13 @@ fallback placeholder: hidden must display none
 | One image | Main image visible, no active carousel controls required | [ ] | [ ] |
 | Two images | Prev disabled at first, next enabled, next changes image | [ ] | [ ] |
 | Six images | Thumbnail cells fixed, no collapse | [ ] | [ ] |
-| More than six images | Strip scrolls, selected thumbnail scrolls into view | [ ] | [ ] |
+| More than six images | Strip scrolls, selected thumbnail scrolls into view | [x] | [x] |
 | Broken main image | Main fallback visible, layout stable | [ ] | [ ] |
 | Broken thumbnail | Thumbnail fallback visible, cell stable | [ ] | [ ] |
-| Keyboard ArrowRight | Moves to next image when focus is in gallery/thumbs | [ ] | [ ] |
-| Keyboard ArrowLeft | Moves to previous image when focus is in gallery/thumbs | [ ] | [ ] |
-| Mobile viewport | Main image stable, controls tappable, strip scrolls | [ ] | [ ] |
-| Desktop viewport | Main image stable, controls positioned cleanly | [ ] | [ ] |
+| Keyboard ArrowRight | Moves to next image when focus is in gallery/thumbs | [x] | [x] |
+| Keyboard ArrowLeft | Moves to previous image when focus is in gallery/thumbs | [x] | [x] |
+| Mobile viewport | Main image stable, controls tappable, strip scrolls | [x] | [x] |
+| Desktop viewport | Main image stable, controls positioned cleanly | [x] | [x] |
 
 ## Autoplan Review Summary
 
@@ -506,7 +516,7 @@ DX target:
 - [x] Phase 2 - Fixed Gallery Layout
 - [x] Phase 3 - Client Interaction
 - [x] Phase 4 - Accessibility And Error States
-- [ ] Phase 5 - Browser QA
+- [x] Phase 5 - Browser QA
 - [ ] Phase 6 - Release Gate
 
 ## GSTACK REVIEW REPORT
