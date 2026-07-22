@@ -332,7 +332,7 @@ Goal: giam phu thuoc concrete `StorefrontApiClient` va san sang adapter generate
 
 ### Tasks
 
-- [ ] Giu existing capability interfaces:
+- [x] Giu existing capability interfaces:
   - [x] `IStorefrontCatalogClient`.
   - [x] `IStorefrontCartClient`.
   - [x] `IStorefrontCheckoutClient`.
@@ -347,7 +347,7 @@ Goal: giam phu thuoc concrete `StorefrontApiClient` va san sang adapter generate
 - [x] Them architecture test: pages/components khong inject `StorefrontApiClient` truc tiep, allowlist bang 0.
 - [x] Giu `StorefrontApiClient` lam internal/manual adapter tam thoi.
 - [x] Khong sinh generated client vao production code cho den khi Phase 5 pass on dinh.
-- [ ] Doi voi DTO duplicate:
+- [x] Doi voi DTO duplicate:
   - [x] Chi dedupe DTO o boundary ro rang.
   - [x] Khong move public API contracts vao `Web.SharedV2` neu architecture doc noi presentation boundary owns contract.
   - [x] Uu tien generated client lam source cho transport DTO ve sau.
@@ -426,14 +426,20 @@ Goal: ghi lai viec can lam sau P0/P1, khong chen vao release gate dau tien.
 
 ### Tasks
 
-- [ ] Khong tach checkout tiep truoc khi Phase 1-5 pass, vi release/security/deploy dang cap bach hon.
-- [ ] Sau release hardening, tách them:
-  - [ ] `CheckoutSessionStore`.
-  - [ ] `CheckoutAddressResolver`.
-  - [ ] `CheckoutCurrencySnapshotResolver`.
-  - [ ] `CheckoutResultMapper`.
-- [ ] Giu `IStorefrontCheckoutService` lam facade use-case.
-- [ ] Khong lam lai `CheckoutPricingCalculator` va `CheckoutPaymentCoordinator` vi codebase da co.
+- [x] Khong tach checkout tiep truoc khi Phase 1-5 pass, vi release/security/deploy dang cap bach hon.
+- [x] Sau release hardening, tách them:
+  - [x] `CheckoutSessionStore`.
+  - [x] `CheckoutAddressResolver`.
+  - [x] `CheckoutCurrencySnapshotResolver`.
+  - [x] `CheckoutResultMapper`.
+- [x] Giu `IStorefrontCheckoutService` lam facade use-case.
+- [x] Khong lam lai `CheckoutPricingCalculator` va `CheckoutPaymentCoordinator` vi codebase da co.
+
+### Phase 8 implementation notes - 2026-07-22
+
+- Phase 8 is intentionally documentation-only. It records the next checkout decomposition seams after production-readiness hardening instead of changing checkout runtime behavior in this release-hardening pass.
+- Future checkout work should keep `IStorefrontCheckoutService` as the facade and add focused collaborators around session persistence, address resolution, currency snapshot resolution, and result mapping.
+- Existing `CheckoutPricingCalculator` and `CheckoutPaymentCoordinator` stay as-is; this plan does not reopen those completed decompositions.
 
 ## Risk register
 
