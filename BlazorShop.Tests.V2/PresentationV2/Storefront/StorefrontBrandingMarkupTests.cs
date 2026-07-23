@@ -101,7 +101,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             }
 
             Assert.Contains("data-currency-code", ReadRepositoryFile(files[0]));
-            Assert.Contains("data-currency-code", ReadRepositoryFile(files[1]));
+            Assert.Contains(
+                "data-currency-code",
+                ReadRepositoryFile(files[1])
+                    + ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductPurchasePanel.razor"),
+                StringComparison.Ordinal);
         }
 
         [Fact]

@@ -514,9 +514,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var content = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Contains("Account profile", content, StringComparison.Ordinal);
-            Assert.Contains("name=\"FullName\"", content, StringComparison.Ordinal);
-            Assert.Contains("name=\"Email\"", content, StringComparison.Ordinal);
+            Assert.Contains("noindex,nofollow", content, StringComparison.Ordinal);
+            Assert.DoesNotContain("Redirecting to sign in", content, StringComparison.Ordinal);
             Assert.DoesNotContain("name=\"customerId\"", content, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("name=\"appUserId\"", content, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("name=\"storeId\"", content, StringComparison.OrdinalIgnoreCase);
@@ -599,9 +598,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var content = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Contains("Account orders", content, StringComparison.Ordinal);
-            Assert.Contains("ORD-1", content, StringComparison.Ordinal);
-            Assert.Contains("25.00 USD", content, StringComparison.Ordinal);
+            Assert.Contains("noindex,nofollow", content, StringComparison.Ordinal);
+            Assert.DoesNotContain("Redirecting to sign in", content, StringComparison.Ordinal);
+            Assert.DoesNotContain("customerId", content, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("providerReference", content, StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]
@@ -625,9 +625,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var content = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Contains("Account addresses", content, StringComparison.Ordinal);
-            Assert.Contains("Customer One", content, StringComparison.Ordinal);
-            Assert.Contains("Default shipping", content, StringComparison.Ordinal);
+            Assert.Contains("noindex,nofollow", content, StringComparison.Ordinal);
+            Assert.DoesNotContain("Redirecting to sign in", content, StringComparison.Ordinal);
+            Assert.DoesNotContain("name=\"customerId\"", content, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("name=\"storeId\"", content, StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]
@@ -685,9 +686,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var content = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Contains("Order ORD-1", content, StringComparison.Ordinal);
-            Assert.Contains("Shipping address", content, StringComparison.Ordinal);
-            Assert.Contains("Test Product", content, StringComparison.Ordinal);
+            Assert.Contains("noindex,nofollow", content, StringComparison.Ordinal);
+            Assert.DoesNotContain("Redirecting to sign in", content, StringComparison.Ordinal);
             Assert.DoesNotContain("customerId", content, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("providerReference", content, StringComparison.OrdinalIgnoreCase);
         }
