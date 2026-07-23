@@ -100,6 +100,13 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Real WASM route shells replace probe-based verification. 2026-07-23: cart/account/checkout WASM components remain covered by focused Storefront runtime foundation tests and browser QA evidence; no standalone probe button is required.
 - [x] `storefrontCommerce.js` still initializes cart/toast behavior. 2026-07-13: `/signin` HTML still included `js/storefrontCommerce.js`; no browser console errors beyond Blazor debug hotkey info.
 
+## Storefront Rendering And Feature Components
+
+- [x] Phase 0 baseline records current page inventory before render-ownership folder moves. 2026-07-23: `StorefrontPageCompositionGuardrailTests.PageInventory_RecordsCurrentRenderingOwnershipBaseline` covers current `Catalog`, `Content`, `Commerce`, `Auth`, `Account`, and `System` pages.
+- [x] Phase 0 route guardrails include public, commerce, account, auth, content, payment, maintenance, and catch-all route declarations before any file move. 2026-07-23: `StorefrontPageCompositionGuardrailTests.RoutePages_KeepExpectedRouteDeclarations` covers account deep links in addition to existing Storefront route checks.
+- [x] Phase 0 browser project dependency boundary is guarded. 2026-07-23: `StorefrontPageCompositionGuardrailTests.StorefrontBrowserProjects_KeepPortableDependencyBoundary` asserts `Storefront.Components` and `Storefront.WASM` do not reference Application, Domain, Infrastructure, Control Plane, or Commerce Node API projects, and that WASM references Components.
+- [x] Phase 0 made no runtime behavior changes; only tests and QA/planning docs changed.
+
 ## Storefront Account Recovery And WASM Migration
 
 - [x] Phase 0 baseline inventory confirms current account/cart/checkout routes before migration: `/signin`, `/register`, `/my-cart`, `/checkout`, `/account/profile`, `/account/addresses`, `/account/orders`, and `/account/change-password`. 2026-07-17: source review of Storefront V2 pages and `StorefrontRoutes`.

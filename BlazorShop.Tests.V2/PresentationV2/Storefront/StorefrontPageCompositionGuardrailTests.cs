@@ -40,6 +40,13 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [InlineData("ResetPasswordPage.razor", "@page \"/reset-password\"")]
         [InlineData("PaymentSuccessPage.razor", "@page \"/payment-success\"")]
         [InlineData("PaymentCancelPage.razor", "@page \"/payment-cancel\"")]
+        [InlineData("AccountProfilePage.razor", "@page \"/account\"")]
+        [InlineData("AccountProfilePage.razor", "@page \"/account/profile\"")]
+        [InlineData("AccountAddressesPage.razor", "@page \"/account/addresses\"")]
+        [InlineData("AccountOrdersPage.razor", "@page \"/account/orders\"")]
+        [InlineData("AccountOrderDetailPage.razor", "@page \"/account/orders/{OrderReference}\"")]
+        [InlineData("AccountOrderDetailPage.razor", "@page \"/account/orders/{OrderReference}/receipt\"")]
+        [InlineData("AccountChangePasswordPage.razor", "@page \"/account/change-password\"")]
         [InlineData("MaintenancePage.razor", "@page \"/maintenance\"")]
         public void RoutePages_KeepExpectedRouteDeclarations(string fileName, string routeDeclaration)
         {
@@ -47,6 +54,69 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             Assert.NotNull(pagePath);
             Assert.Contains(routeDeclaration, File.ReadAllText(pagePath!), StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void PageInventory_RecordsCurrentRenderingOwnershipBaseline()
+        {
+            var expected = new[]
+            {
+                new PageInventoryItem("Pages/Catalog/Home.razor", "/", RenderOwnership.Hybrid),
+                new PageInventoryItem("Pages/Catalog/CategoryPage.razor", "/category/{Slug}", RenderOwnership.Hybrid),
+                new PageInventoryItem("Pages/Catalog/ProductPage.razor", "/product/{Slug}", RenderOwnership.Hybrid),
+                new PageInventoryItem("Pages/Catalog/SearchPage.razor", "/search", RenderOwnership.Hybrid),
+                new PageInventoryItem("Pages/Catalog/NewReleases.razor", "/new-releases", RenderOwnership.Hybrid),
+                new PageInventoryItem("Pages/Catalog/TodaysDeals.razor", "/todays-deals", RenderOwnership.Hybrid),
+                new PageInventoryItem("Pages/Content/StorefrontPage.razor", "/pages/{Slug}", RenderOwnership.Ssr),
+                new PageInventoryItem("Pages/Commerce/CartPage.razor", "/my-cart", RenderOwnership.Hybrid),
+                new PageInventoryItem("Pages/Commerce/CheckoutPage.razor", "/checkout", RenderOwnership.Hybrid),
+                new PageInventoryItem("Pages/Commerce/PaymentSuccessPage.razor", "/payment-success", RenderOwnership.Hybrid),
+                new PageInventoryItem("Pages/Commerce/PaymentCancelPage.razor", "/payment-cancel", RenderOwnership.Hybrid),
+                new PageInventoryItem("Pages/Auth/SignInPage.razor", "/signin", RenderOwnership.Ssr),
+                new PageInventoryItem("Pages/Auth/RegisterPage.razor", "/register", RenderOwnership.Ssr),
+                new PageInventoryItem("Pages/Auth/ForgotPasswordPage.razor", "/forgot-password", RenderOwnership.Ssr),
+                new PageInventoryItem("Pages/Auth/ResetPasswordPage.razor", "/reset-password", RenderOwnership.Ssr),
+                new PageInventoryItem("Pages/Account/AccountProfilePage.razor", "/account", RenderOwnership.WasmHost),
+                new PageInventoryItem("Pages/Account/AccountProfilePage.razor", "/account/profile", RenderOwnership.WasmHost),
+                new PageInventoryItem("Pages/Account/AccountAddressesPage.razor", "/account/addresses", RenderOwnership.WasmHost),
+                new PageInventoryItem("Pages/Account/AccountOrdersPage.razor", "/account/orders", RenderOwnership.WasmHost),
+                new PageInventoryItem("Pages/Account/AccountOrderDetailPage.razor", "/account/orders/{OrderReference}", RenderOwnership.WasmHost),
+                new PageInventoryItem("Pages/Account/AccountOrderDetailPage.razor", "/account/orders/{OrderReference}/receipt", RenderOwnership.WasmHost),
+                new PageInventoryItem("Pages/Account/AccountChangePasswordPage.razor", "/account/change-password", RenderOwnership.WasmHost),
+                new PageInventoryItem("Pages/System/MaintenancePage.razor", "/maintenance", RenderOwnership.Ssr),
+                new PageInventoryItem("Pages/System/NotFoundPage.razor", "/{*Path:nonfile}", RenderOwnership.Ssr),
+            };
+
+            var pageRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2");
+
+            foreach (var item in expected)
+            {
+                var pagePath = Path.Combine(pageRoot, item.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+                Assert.True(File.Exists(pagePath), $"{item.RelativePath} must remain in the baseline inventory.");
+
+                var markup = File.ReadAllText(pagePath);
+                Assert.Contains($"@page \"{item.Route}\"", markup, StringComparison.Ordinal);
+            }
+
+            Assert.Equal(
+                [RenderOwnership.Hybrid, RenderOwnership.Ssr, RenderOwnership.WasmHost],
+                expected.Select(item => item.Ownership).Distinct().OrderBy(item => item.ToString()).ToArray());
+        }
+
+        [Fact]
+        public void StorefrontBrowserProjects_KeepPortableDependencyBoundary()
+        {
+            var componentReferences = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj");
+            var wasmReferences = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj");
+
+            Assert.DoesNotContain(componentReferences, IsForbiddenStorefrontBrowserReference);
+            Assert.DoesNotContain(wasmReferences, IsForbiddenStorefrontBrowserReference);
+
+            Assert.Contains(
+                wasmReferences,
+                reference => reference.EndsWith(
+                    "BlazorShop.Storefront.Components/BlazorShop.Storefront.Components.csproj",
+                    StringComparison.OrdinalIgnoreCase));
         }
 
         [Theory]
@@ -129,6 +199,33 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 .ToList();
         }
 
+        private static IReadOnlyList<string> ReadProjectReferences(string relativeProjectPath)
+        {
+            var projectPath = RepositoryPath(relativeProjectPath);
+            var projectDirectory = Path.GetDirectoryName(projectPath)
+                ?? throw new DirectoryNotFoundException($"Could not resolve project directory for {relativeProjectPath}.");
+            var document = System.Xml.Linq.XDocument.Load(projectPath);
+
+            return document.Descendants("ProjectReference")
+                .Select(element => element.Attribute("Include")?.Value)
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .Select(value => Path.GetFullPath(Path.Combine(projectDirectory, value!)))
+                .Select(path => Path.GetRelativePath(FindRepositoryRoot(), path).Replace('\\', '/'))
+                .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        private static bool IsForbiddenStorefrontBrowserReference(string reference)
+        {
+            var normalized = reference.Replace('\\', '/');
+
+            return normalized.Contains("/BlazorShop.Application/", StringComparison.OrdinalIgnoreCase)
+                || normalized.Contains("/BlazorShop.Domain/", StringComparison.OrdinalIgnoreCase)
+                || normalized.Contains("/BlazorShop.Infrastructure/", StringComparison.OrdinalIgnoreCase)
+                || normalized.Contains("/BlazorShop.ControlPlane.", StringComparison.OrdinalIgnoreCase)
+                || normalized.Contains("/BlazorShop.CommerceNode.API/", StringComparison.OrdinalIgnoreCase);
+        }
+
         private static string RepositoryPath(string relativePath)
         {
             return Path.Combine(FindRepositoryRoot(), relativePath.Replace('/', Path.DirectorySeparatorChar));
@@ -144,5 +241,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 
             return directory?.FullName ?? throw new DirectoryNotFoundException("Could not locate repository root.");
         }
+
+        private enum RenderOwnership
+        {
+            Hybrid,
+            Ssr,
+            WasmHost
+        }
+
+        private sealed record PageInventoryItem(string RelativePath, string Route, RenderOwnership Ownership);
     }
 }
