@@ -133,6 +133,83 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Empty(unexpectedDirectories);
         }
 
+        [Fact]
+        public void StorefrontComponentFeatures_DoNotDependOnBackendOrRouteContracts()
+        {
+            var featureRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features");
+            var forbiddenTokens = new[]
+            {
+                "BlazorShop.Web.SharedV2",
+                "BlazorShop.Application",
+                "BlazorShop.Domain",
+                "BlazorShop.Infrastructure",
+                "BlazorShop.ControlPlane",
+                "BlazorShop.CommerceNode",
+                "BlazorShop.Storefront.Services",
+                "StorefrontRoutes",
+                "IStorefrontCatalogClient",
+                "GetCatalogProduct",
+                "GetProduct",
+                "StorefrontProduct",
+            };
+
+            var violations = Directory
+                .EnumerateFiles(featureRoot, "*.*", SearchOption.AllDirectories)
+                .Where(path => path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+                .Select(path => new
+                {
+                    RelativePath = Path.GetRelativePath(FindRepositoryRoot(), path).Replace('\\', '/'),
+                    Source = File.ReadAllText(path),
+                })
+                .SelectMany(file => forbiddenTokens
+                    .Where(token => file.Source.Contains(token, StringComparison.Ordinal))
+                    .Select(token => $"{file.RelativePath}: {token}"))
+                .OrderBy(item => item, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            Assert.Empty(violations);
+        }
+
+        [Fact]
+        public void StorefrontComponentFeatureModels_DoNotExposeAdminOwnedFields()
+        {
+            var featureRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features");
+            var forbiddenFieldTokens = new[]
+            {
+                "StoreId",
+                "StoreKey",
+                "TenantId",
+                "UserId",
+                "IsPublished",
+                "CostPrice",
+                "Admin",
+                "Password",
+                "AccessToken",
+                "RefreshToken",
+                "Secret",
+            };
+
+            var modelFiles = Directory
+                .EnumerateFiles(featureRoot, "*.cs", SearchOption.AllDirectories)
+                .Where(path => Path.GetFileNameWithoutExtension(path).Contains("Model", StringComparison.OrdinalIgnoreCase)
+                    || Path.GetFileNameWithoutExtension(path).Contains("Item", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            var violations = modelFiles
+                .Select(path => new
+                {
+                    RelativePath = Path.GetRelativePath(FindRepositoryRoot(), path).Replace('\\', '/'),
+                    Source = File.ReadAllText(path),
+                })
+                .SelectMany(file => forbiddenFieldTokens
+                    .Where(token => file.Source.Contains(token, StringComparison.Ordinal))
+                    .Select(token => $"{file.RelativePath}: {token}"))
+                .OrderBy(item => item, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            Assert.Empty(violations);
+        }
+
         [Theory]
         [InlineData(nameof(StorefrontRoutes.About), "/pages/about-us")]
         [InlineData(nameof(StorefrontRoutes.Faq), "/pages/faq")]

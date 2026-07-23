@@ -185,10 +185,14 @@ Use for:
 
 - Reusable Storefront Razor components that can be shared between Storefront V2 server rendering and its interactive WebAssembly assembly.
 - Presentation-only component behavior that belongs to the public Storefront experience.
+- `Features/*` capability components such as account, cart, checkout, deals, catalog summaries, and product gallery/purchase panels.
+- Component-facing presentation models that contain only render/input state and are mapped by the Storefront V2 host from API DTOs or local endpoint contracts.
 
 Do not:
 
 - Put Commerce Node clients, Control Plane clients, credentials, EF logic, or product business services here.
+- Reference `Web.SharedV2`, Storefront route helpers, Storefront API clients, Application, Domain, Infrastructure, Control Plane, or Commerce Node runtime projects from `Features/*`.
+- Add public API DTOs, admin request models, store ownership fields, credentials, or server-owned fields to component-facing models.
 - Use this as a general design system for Control Plane.
 
 ### `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM`

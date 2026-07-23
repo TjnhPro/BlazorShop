@@ -529,26 +529,26 @@ Goal: make feature components portable without forcing a big-bang OpenAPI migrat
 
 ### Tasks
 
-- [ ] Inventory models used by Storefront pages/components:
-  - [ ] account.
-  - [ ] cart.
-  - [ ] checkout.
-  - [ ] catalog product summary.
-  - [ ] deals/new releases.
-  - [ ] product detail/gallery.
-  - [ ] SEO/navigation.
-- [ ] Keep Storefront browser/local endpoint contracts under `BlazorShop.Storefront.V2/Services/Contracts`.
-- [ ] Keep component-facing browser models under `Storefront.Components/Browser` or a new `Storefront.Components/Features/*/*Models.cs` where they are presentation-only.
-- [ ] Do not add new business DTO folders to `Web.SharedV2/Models`.
+- [x] Inventory models used by Storefront pages/components:
+  - [x] account.
+  - [x] cart.
+  - [x] checkout.
+  - [x] catalog product summary.
+  - [x] deals/new releases.
+  - [x] product detail/gallery.
+  - [x] SEO/navigation.
+- [x] Keep Storefront browser/local endpoint contracts under `BlazorShop.Storefront.V2/Services/Contracts`.
+- [x] Keep component-facing browser models under `Storefront.Components/Browser` or a new `Storefront.Components/Features/*/*Models.cs` where they are presentation-only.
+- [x] Do not add new business DTO folders to `Web.SharedV2/Models`.
 - [ ] Where server page and WASM component need the same model, choose one of:
-  - [ ] move a presentation-only model into `Storefront.Components`.
-  - [ ] add a narrow Storefront-local contract in `Storefront.V2/Services/Contracts`.
-  - [ ] defer to generated Storefront OpenAPI client when the API boundary is ready.
-- [ ] Avoid leaking admin-only fields to public/component contracts.
-- [ ] Add tests covering contract boundaries:
-  - [ ] public schemas do not contain admin fields.
-  - [ ] components project dependency stays clean.
-  - [ ] Web.SharedV2 business model freeze stays intact.
+  - [x] move a presentation-only model into `Storefront.Components`.
+  - [x] add a narrow Storefront-local contract in `Storefront.V2/Services/Contracts`.
+  - [x] defer to generated Storefront OpenAPI client when the API boundary is ready.
+- [x] Avoid leaking admin-only fields to public/component contracts.
+- [x] Add tests covering contract boundaries:
+  - [x] public schemas do not contain admin fields.
+  - [x] components project dependency stays clean.
+  - [x] Web.SharedV2 business model freeze stays intact.
 
 ### Verification
 
@@ -558,9 +558,9 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done when
 
-- [ ] Component portability does not depend on backend/domain DTOs.
-- [ ] Storefront contract ownership remains aligned with architecture docs.
-- [ ] OpenAPI migration remains possible without blocking this phase.
+- [x] Component portability does not depend on backend/domain DTOs.
+- [x] Storefront contract ownership remains aligned with architecture docs.
+- [x] OpenAPI migration remains possible without blocking this phase.
 
 ## Phase 8 - Playwright And Release QA
 
@@ -626,7 +626,7 @@ Use the repository's current Playwright command/config if it differs.
 - [x] Commit 5: `Features/*` component convention and move existing components.
 - [x] Commit 6: deals/new releases portable component extraction.
 - [x] Commit 7: catalog/product portable component extraction.
-- [ ] Commit 8: contract boundary cleanup and architecture docs.
+- [x] Commit 8: contract boundary cleanup and architecture docs.
 - [ ] Commit 9: Playwright QA evidence and release checklist updates.
 
 Each commit should build independently. Mechanical moves should not be mixed with behavior changes.

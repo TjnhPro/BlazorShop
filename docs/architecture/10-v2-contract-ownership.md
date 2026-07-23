@@ -6,6 +6,7 @@ This page records the current contract ownership boundary while Storefront V2 mo
 
 - Public HTTP contracts live at the API boundary that exposes them.
 - Storefront browser/local endpoint contracts live in `BlazorShop.Storefront.V2/Services/Contracts`.
+- Storefront portable feature component models live with the component feature under `BlazorShop.Storefront.Components/Features/*` when they are presentation-only.
 - `Web.SharedV2` may keep browser helpers and transitional model folders during migration, but new business model folders are not allowed.
 - Generated Storefront clients should target Commerce Node Storefront OpenAPI first. Control Plane generation is a later decision.
 
@@ -37,8 +38,18 @@ This page records the current contract ownership boundary while Storefront V2 mo
 
 No new project is needed while these contracts are only consumed by Storefront V2. A separate contracts project should be introduced only if Storefront WASM/components need the same DTOs as a compiled dependency.
 
+## Portable Component Models
+
+`BlazorShop.Storefront.Components/Features/*` may define small render-facing models such as product summary cards, product gallery items, and purchase panel snapshots.
+
+These models are not public HTTP contracts. The Storefront V2 host maps API DTOs or local endpoint contracts into them before composition. They must not reference `Web.SharedV2`, `Application`, `Domain`, `Infrastructure`, Control Plane, Commerce Node runtime projects, Storefront API clients, or Storefront route helpers.
+
+Do not add admin-owned fields, store ownership fields, credentials, tokens, passwords, server-owned publication flags, or cost/internal accounting fields to these component models.
+
 ## Guardrails
 
 - `V2ArchitectureBoundaryBaselineTests.WebSharedV2BusinessModelFolders_AreFrozenDuringContractMigration` freezes the allowed `Web.SharedV2/Models` folders.
+- `StorefrontPageCompositionGuardrailTests.StorefrontComponentFeatures_DoNotDependOnBackendOrRouteContracts` keeps portable feature components presentation-only.
+- `StorefrontPageCompositionGuardrailTests.StorefrontComponentFeatureModels_DoNotExposeAdminOwnedFields` blocks admin-owned/server-owned fields from component-facing models.
 - `StorefrontEndpointDependencyBoundaryTests.StorefrontLocalEndpointMappings_DoNotInjectConcreteStorefrontApiClient` keeps endpoint mappings behind capability interfaces.
 - `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_CanGenerateTypeScriptClientSmoke` proves Storefront OpenAPI remains generator-safe enough for the future client cutover.
