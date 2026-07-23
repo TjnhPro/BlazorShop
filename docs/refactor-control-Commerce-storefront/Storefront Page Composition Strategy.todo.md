@@ -307,28 +307,28 @@ Account pages already follow the desired SSR shell + WASM component model, but p
 
 ### Tasks
 
-- [ ] Add `Components/Account/AccountPageShell.razor` or `Components/Account/AccountRouteShell.razor`.
-- [ ] Shell responsibilities:
-  - [ ] consistent account layout grid.
-  - [ ] account navigation.
-  - [ ] active item selection.
-  - [ ] title/eyebrow/header area.
-  - [ ] child content slot.
-- [ ] Keep each page responsible for:
-  - [ ] route declaration.
-  - [ ] `noindex,nofollow`.
-  - [ ] session guard.
-  - [ ] antiforgery token creation where needed.
-  - [ ] initial API data load.
-  - [ ] rendering the correct WASM component.
-- [ ] Do not move API calls into the shell in this phase.
-- [ ] Do not change account endpoint routes.
-- [ ] Do not change account WASM component contracts except if markup tests require passing active route/title.
-- [ ] Add tests:
-  - [ ] account pages still include noindex.
-  - [ ] account pages still render WASM component markers.
-  - [ ] account navigation includes profile, orders, addresses, password where appropriate.
-  - [ ] unauthenticated users still redirect to sign-in with safe return URL.
+- [x] Add `Components/Account/AccountPageShell.razor` or `Components/Account/AccountRouteShell.razor`.
+- [x] Shell responsibilities:
+  - [x] consistent account layout grid.
+  - [x] account navigation.
+  - [x] active item selection.
+  - [x] title/eyebrow/header area.
+  - [x] child content slot.
+- [x] Keep each page responsible for:
+  - [x] route declaration.
+  - [x] `noindex,nofollow`.
+  - [x] session guard.
+  - [x] antiforgery token creation where needed.
+  - [x] initial API data load.
+  - [x] rendering the correct WASM component.
+- [x] Do not move API calls into the shell in this phase.
+- [x] Do not change account endpoint routes.
+- [x] Do not change account WASM component contracts except if markup tests require passing active route/title.
+- [x] Add tests:
+  - [x] account pages still include noindex.
+  - [x] account pages still render WASM component markers.
+  - [x] account navigation includes profile, orders, addresses, password where appropriate.
+  - [x] unauthenticated users still redirect to sign-in with safe return URL.
 
 ### Files likely touched
 
@@ -348,9 +348,9 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done when
 
-- [ ] Account pages have the same behavior and route shape.
-- [ ] Navigation/layout duplication is removed.
-- [ ] WASM account components remain the interaction surface.
+- [x] Account pages have the same behavior and route shape.
+- [x] Navigation/layout duplication is removed.
+- [x] WASM account components remain the interaction surface.
 
 ## Phase 5 - Optional Mechanical Page Folder Reorganization
 
@@ -509,7 +509,7 @@ Use the repository's actual Playwright command/config if it differs from the gen
 - [x] Commit 2: public page contract exposes `PageKey` and tests.
 - [x] Commit 3: template catalog/rules add `faq` and `customer_service`.
 - [x] Commit 4: StorefrontPage template-aware SEO/structured data rendering.
-- [ ] Commit 5: account page shell deduplication.
+- [x] Commit 5: account page shell deduplication.
 - [ ] Commit 6: optional mechanical folder reorganization.
 - [ ] Commit 7: QA evidence/docs updates.
 

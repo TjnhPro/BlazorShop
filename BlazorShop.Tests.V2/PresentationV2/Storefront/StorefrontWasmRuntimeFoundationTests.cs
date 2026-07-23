@@ -172,6 +172,35 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void AccountRoutePages_UseSharedShellWhileKeepingPageOwnedGuards()
+        {
+            var shell = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/AccountPageShell.razor");
+            var accountPages = new[]
+            {
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountProfilePage.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountAddressesPage.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountOrdersPage.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountOrderDetailPage.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountChangePasswordPage.razor"),
+            };
+
+            Assert.Contains("aria-label=\"Account navigation\"", shell, StringComparison.Ordinal);
+            Assert.Contains("StorefrontRoutes.AccountProfile", shell, StringComparison.Ordinal);
+            Assert.Contains("StorefrontRoutes.AccountOrders", shell, StringComparison.Ordinal);
+            Assert.Contains("StorefrontRoutes.AccountAddresses", shell, StringComparison.Ordinal);
+            Assert.Contains("StorefrontRoutes.AccountChangePassword", shell, StringComparison.Ordinal);
+
+            foreach (var page in accountPages)
+            {
+                Assert.Contains("<AccountPageShell", page, StringComparison.Ordinal);
+                Assert.Contains("<meta name=\"robots\" content=\"noindex,nofollow\" />", page, StringComparison.Ordinal);
+                Assert.Contains("SessionResolver.GetCurrentUserAsync()", page, StringComparison.Ordinal);
+                Assert.Contains("StorefrontReturnUrl.BuildSignInUrl", page, StringComparison.Ordinal);
+                Assert.DoesNotContain("aria-label=\"Account navigation\"", page, StringComparison.Ordinal);
+            }
+        }
+
+        [Fact]
         public void AccountWasmComponents_UseSameOriginLocalAccountEndpoints()
         {
             var profileComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Account/AccountProfileEditor.razor");
