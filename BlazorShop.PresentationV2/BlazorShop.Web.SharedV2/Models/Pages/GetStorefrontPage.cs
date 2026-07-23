@@ -13,5 +13,7 @@ namespace BlazorShop.Web.SharedV2.Models.Pages
         public StorefrontPageSeo Seo { get; set; } = new();
 
         public DateTimeOffset UpdatedAt { get; set; }
+
+        public string? PageKey { get; set; }
     }
 }

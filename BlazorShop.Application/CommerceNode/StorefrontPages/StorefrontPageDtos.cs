@@ -91,7 +91,8 @@ namespace BlazorShop.Application.CommerceNode.StorefrontPages
         string? Intro,
         string BodyHtml,
         StorefrontPageSeoDto Seo,
-        DateTimeOffset UpdatedAt);
+        DateTimeOffset UpdatedAt,
+        string? PageKey = null);
 
     public sealed record StorefrontPageSitemapEntryDto(
         string Slug,

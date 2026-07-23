@@ -283,6 +283,40 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         }
 
         [Fact]
+        public async Task StorefrontSwagger_PublicPageSchemaExposesTemplateIdentityOnly()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var pageSchema = schemas["StorefrontPagePublicDto"]?.AsObject()
+                ?? throw new InvalidOperationException("StorefrontPagePublicDto schema was not found.");
+            var propertyNames = GetPropertyNames(pageSchema).ToArray();
+
+            Assert.Contains("pageKey", propertyNames);
+            Assert.Contains("slug", propertyNames);
+            Assert.Contains("title", propertyNames);
+            Assert.Contains("bodyHtml", propertyNames);
+            Assert.Contains("seo", propertyNames);
+            Assert.Contains("updatedAt", propertyNames);
+
+            foreach (var forbidden in new[]
+            {
+                "id",
+                "publicId",
+                "storeId",
+                "isPublished",
+                "includeInSitemap",
+                "displayOrder",
+                "includeInNavigation",
+                "navigationLocation",
+                "archivedAt",
+                "createdAt",
+            })
+            {
+                Assert.DoesNotContain(forbidden, propertyNames, StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
+        [Fact]
         public async Task StorefrontSwagger_PublicConfigurationSchemasDoNotExposeSecretsOrInternalFields()
         {
             var swagger = await this.GetStorefrontSwaggerAsync();

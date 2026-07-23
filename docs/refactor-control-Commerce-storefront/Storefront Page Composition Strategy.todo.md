@@ -135,16 +135,16 @@ Reason:
 
 ### Tasks
 
-- [ ] Extend `StorefrontPagePublicDto` to include:
-  - [ ] `string? PageKey`
-  - [ ] `int DisplayOrder` only if the public renderer or navigation needs it directly; otherwise keep display ordering in menu/sitemap/admin flows.
-  - [ ] `bool IncludeInNavigation` only if the public renderer needs it directly; otherwise do not expose extra fields.
-- [ ] Update Commerce Node Storefront page mapping in `StorefrontPageService.GetPublishedBySlugAsync`.
-- [ ] Update Storefront V2 local/page contract models if they mirror `StorefrontPagePublicDto`.
-- [ ] Update `IStorefrontContentClient.GetPublishedPageBySlugAsync` deserialization model.
-- [ ] Update Swagger/OpenAPI tests for the public page response schema.
-- [ ] Keep backward-compatible JSON shape for existing fields.
-- [ ] Do not expose admin-only fields, archived state, internal IDs, or unpublished preview data through the public endpoint.
+- [x] Extend `StorefrontPagePublicDto` to include:
+  - [x] `string? PageKey`
+  - [x] `int DisplayOrder` only if the public renderer or navigation needs it directly; otherwise keep display ordering in menu/sitemap/admin flows.
+  - [x] `bool IncludeInNavigation` only if the public renderer needs it directly; otherwise do not expose extra fields.
+- [x] Update Commerce Node Storefront page mapping in `StorefrontPageService.GetPublishedBySlugAsync`.
+- [x] Update Storefront V2 local/page contract models if they mirror `StorefrontPagePublicDto`.
+- [x] Update `IStorefrontContentClient.GetPublishedPageBySlugAsync` deserialization model.
+- [x] Update Swagger/OpenAPI tests for the public page response schema.
+- [x] Keep backward-compatible JSON shape for existing fields.
+- [x] Do not expose admin-only fields, archived state, internal IDs, or unpublished preview data through the public endpoint.
 
 ### Files likely touched
 
@@ -163,9 +163,9 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done when
 
-- [ ] Published page API returns `PageKey`.
-- [ ] Storefront renderer can branch by `PageKey`.
-- [ ] Public contract tests prove no private/admin fields leak.
+- [x] Published page API returns `PageKey`.
+- [x] Storefront renderer can branch by `PageKey`.
+- [x] Public contract tests prove no private/admin fields leak.
 
 ## Phase 2 - Complete Content Page Template Catalog
 
@@ -506,7 +506,7 @@ Use the repository's actual Playwright command/config if it differs from the gen
 ## Implementation Order And Commit Plan
 
 - [x] Commit 1: baseline guardrails and QA checklist updates.
-- [ ] Commit 2: public page contract exposes `PageKey` and tests.
+- [x] Commit 2: public page contract exposes `PageKey` and tests.
 - [ ] Commit 3: template catalog/rules add `faq` and `customer_service`.
 - [ ] Commit 4: StorefrontPage template-aware SEO/structured data rendering.
 - [ ] Commit 5: account page shell deduplication.

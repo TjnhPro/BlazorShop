@@ -814,7 +814,8 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode.Services
                 page.Intro,
                 page.BodyHtml,
                 MapSeo(page),
-                page.UpdatedAt);
+                page.UpdatedAt,
+                page.PageKey);
         }
 
         private static StorefrontPageSeoDto MapSeo(StorefrontPage page)

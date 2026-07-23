@@ -111,6 +111,29 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
         }
 
         [Fact]
+        public async Task GetPublishedBySlugAsync_ReturnsPublicPageKeyWithoutAdminFields()
+        {
+            var storeA = Guid.NewGuid();
+            await using var context = CreateContext();
+            context.StorefrontPages.Add(CreatePage(
+                storeA,
+                "privacy",
+                "Privacy policy",
+                includeInSitemap: true,
+                new DateTimeOffset(2026, 7, 23, 0, 0, 0, TimeSpan.Zero),
+                pageKey: "privacy_policy"));
+            await context.SaveChangesAsync();
+            var service = CreateService(context, storeA);
+
+            var result = await service.GetPublishedBySlugAsync("privacy");
+
+            Assert.True(result.Success);
+            Assert.Equal("privacy_policy", result.Payload!.PageKey);
+            Assert.Equal("privacy", result.Payload.Slug);
+            Assert.Equal("Privacy policy", result.Payload.Title);
+        }
+
+        [Fact]
         public async Task ListSitemapEntriesAsync_ReturnsOnlyCurrentStoreIncludedPages()
         {
             var storeA = Guid.NewGuid();

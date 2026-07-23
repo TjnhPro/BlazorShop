@@ -511,6 +511,52 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public async Task GetPublishedPageBySlugAsync_ReadsPageKey()
+        {
+            var handler = new RecordingHandler(request =>
+            {
+                Assert.Equal("/api/storefront/stores/default/pages/privacy", request.RequestUri?.AbsolutePath);
+
+                return JsonResponse(
+                    HttpStatusCode.OK,
+                    """
+                    {
+                      "success": true,
+                      "message": "ok",
+                      "data": {
+                        "slug": "privacy",
+                        "title": "Privacy policy",
+                        "intro": "How we handle data.",
+                        "bodyHtml": "<p>Privacy body</p>",
+                        "seo": {
+                          "metaTitle": "Privacy SEO",
+                          "metaDescription": "Privacy description",
+                          "canonicalUrl": null,
+                          "ogTitle": null,
+                          "ogDescription": null,
+                          "ogImage": null,
+                          "robotsIndex": true,
+                          "robotsFollow": true
+                        },
+                        "updatedAt": "2026-07-23T00:00:00Z",
+                        "pageKey": "privacy_policy"
+                      }
+                    }
+                    """);
+            });
+            using var client = CreateClient(handler);
+            var apiClient = CreateApiClient(client);
+
+            var result = await apiClient.GetPublishedPageBySlugAsync("privacy");
+
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Equal("privacy_policy", result.Value!.PageKey);
+            Assert.Equal("Privacy policy", result.Value.Title);
+            Assert.Equal(["/api/storefront/stores/default/pages/privacy"], handler.RequestPaths);
+        }
+
+        [Fact]
         public async Task GetPageNavigationLinksAsync_ReadsPublishedContentNavigation()
         {
             var handler = new RecordingHandler(request =>
