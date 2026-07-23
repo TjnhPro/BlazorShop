@@ -3,6 +3,7 @@
 @inject IStorefrontSeoComposer SeoComposer
 @inject IStorefrontStructuredDataComposer StructuredDataComposer
 @inject IStorefrontDisplayContextProvider DisplayContextProvider
+@inject IStorefrontPriceFormatter PriceFormatter
 
 <SeoHead Metadata="_metadata" StructuredData="_structuredData" />
 
@@ -27,18 +28,19 @@
     }
     else
     {
-        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 class="text-2xl font-extrabold tracking-tight text-neutral-900">Featured Picks</h2>
-            <span class="inline-flex items-center rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-neutral-700 shadow">@_products.Count deals</span>
-        </div>
-
-        <ProductGrid Products="_products" EmptyMessage="No deal selections are available right now." />
+        <DealsBlock Placement="DealsPlacement.DedicatedPage"
+                    Items="_productSummaries"
+                    Eyebrow="Today's Deals"
+                    Title="Featured Picks"
+                    EmptyMessage="No deal selections are available right now."
+                    ShowHeader="true" />
     }
 </section>
 
 @code {
     private bool _isServiceUnavailable;
     private IReadOnlyList<GetCatalogProduct> _products = [];
+    private IReadOnlyList<ProductSummaryItem> _productSummaries = [];
     private SeoMetadataDto _metadata = new();
     private StorefrontStructuredDataDocument _structuredData = StorefrontStructuredDataDocument.Empty;
 
@@ -69,6 +71,7 @@
         {
             _isServiceUnavailable = true;
             _products = [];
+            _productSummaries = [];
             _structuredData = StorefrontStructuredDataDocument.Empty;
             StorefrontResponseHeaders.ApplyServiceUnavailable(HttpContext);
             _metadata = await SeoComposer.ComposeServiceUnavailablePageAsync(
@@ -81,6 +84,70 @@
 
         _isServiceUnavailable = false;
         _products = result.Value?.Items ?? [];
+        _productSummaries = _products.Select(product => ToProductSummary(product, displayContext)).ToArray();
         _structuredData = await structuredDataTask;
+    }
+
+    private ProductSummaryItem ToProductSummary(GetCatalogProduct product, StorefrontDisplayContext displayContext)
+    {
+        var productUrl = string.IsNullOrWhiteSpace(product.Slug) ? null : StorefrontRoutes.Product(product.Slug);
+        var categoryUrl = string.IsNullOrWhiteSpace(product.CategorySlug) ? null : StorefrontRoutes.Category(product.CategorySlug);
+        var displayCurrencyCode = NormalizeCurrencyCode(product.DisplayCurrencyCode) ?? displayContext.DefaultCurrencyCode;
+        var displayPrice = product.DisplayPrice ?? product.Price;
+        var comparePrice = product.DisplayComparePrice ?? product.ComparePrice;
+        var canAddDirectly = !product.HasVariants && product.Purchasable && QuantityOneAllowed(product);
+        var directAddStockValue = product.ManageStock ? Math.Max(0, product.AvailableQuantity ?? product.Quantity) : 999999;
+
+        return new ProductSummaryItem(
+            product.Id,
+            string.IsNullOrWhiteSpace(product.Name) ? "Product" : product.Name,
+            productUrl,
+            product.CategoryName,
+            categoryUrl,
+            product.Image,
+            Truncate(string.IsNullOrWhiteSpace(product.ShortDescription) ? product.Description ?? string.Empty : product.ShortDescription, 110),
+            PriceFormatter.Format(displayPrice, displayContext with { CurrencyCode = displayCurrencyCode }),
+            comparePrice is not null && comparePrice > displayPrice
+                ? PriceFormatter.Format(comparePrice.Value, displayContext with { CurrencyCode = displayCurrencyCode })
+                : null,
+            product.HasVariants,
+            product.InStock,
+            DateTime.UtcNow.Subtract(product.CreatedOn).TotalDays <= 7,
+            product.Purchasable,
+            productUrl is null ? null : $"{productUrl}#purchase",
+            canAddDirectly,
+            displayPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture),
+            displayCurrencyCode,
+            directAddStockValue,
+            PurchaseBlockMessage(product));
+    }
+
+    private static string? NormalizeCurrencyCode(string? currencyCode)
+    {
+        var normalized = currencyCode?.Trim().ToUpperInvariant();
+        return normalized is { Length: 3 } && normalized.All(char.IsLetter) ? normalized : null;
+    }
+
+    private static bool QuantityOneAllowed(GetCatalogProduct product)
+    {
+        return product.MinOrderQuantity <= 1
+            && (!product.MaxOrderQuantity.HasValue || product.MaxOrderQuantity.Value >= 1)
+            && product.QuantityStep <= 1;
+    }
+
+    private static string PurchaseBlockMessage(GetCatalogProduct product)
+    {
+        return product.PurchaseBlockReasons.FirstOrDefault() switch
+        {
+            "purchase_disabled" => "Purchasing is paused.",
+            "below_min_quantity" => $"Minimum order quantity is {product.MinOrderQuantity}.",
+            "out_of_stock" => "Currently out of stock.",
+            _ => "Currently unavailable.",
+        };
+    }
+
+    private static string Truncate(string value, int maxLength)
+    {
+        return value.Length <= maxLength ? value : string.Concat(value[..maxLength].TrimEnd(), "...");
     }
 }

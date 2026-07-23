@@ -445,23 +445,23 @@ Features/Catalog/
 
 ### Tasks
 
-- [ ] Extract product summary card/list markup from catalog pages into `Features/Catalog`.
-- [ ] Extract today's deals rendering into `Features/Deals`.
-- [ ] Keep `TodaysDeals.razor` as a route page under `Pages/Hybrid/Catalog`; it should compose `DealsBlock` instead of duplicating grid logic.
-- [ ] Add `DealsPlacement` enum or equivalent model:
-  - [ ] `Home`
-  - [ ] `DedicatedPage`
-  - [ ] `ProductDetailFooter`
-  - [ ] `CategorySidebar` only if already needed.
-- [ ] Support `InitialData` for SSR route pages.
-- [ ] Support browser fetch only when the component is placed without initial data.
-- [ ] Do not add a new Commerce Node API unless existing storefront catalog endpoints cannot support the needed data.
-- [ ] If a new endpoint is required, make it store-scoped under `api/storefront/stores/{storeKey}/*` and comply with V2 API contract standards.
-- [ ] Add tests proving:
-  - [ ] home can render a deals block.
+- [x] Extract product summary card/list markup from catalog pages into `Features/Catalog`.
+- [x] Extract today's deals rendering into `Features/Deals`.
+- [x] Keep `TodaysDeals.razor` as a route page under `Pages/Hybrid/Catalog`; it should compose `DealsBlock` instead of duplicating grid logic.
+- [x] Add `DealsPlacement` enum or equivalent model:
+  - [x] `Home`
+  - [x] `DedicatedPage`
+  - [x] `ProductDetailFooter`
+  - [n/a] `CategorySidebar` only if already needed; not used in this phase.
+- [x] Support `InitialData` for SSR route pages.
+- [x] Support browser fetch only when the component is placed without initial data.
+- [x] Do not add a new Commerce Node API unless existing storefront catalog endpoints cannot support the needed data.
+- [x] If a new endpoint is required, make it store-scoped under `api/storefront/stores/{storeKey}/*` and comply with V2 API contract standards.
+- [x] Add tests proving:
+  - [x] home can render a deals block.
   - [ ] product page can render a deals block.
-  - [ ] dedicated deals page still renders products and SEO metadata.
-  - [ ] component does not require a specific route.
+  - [x] dedicated deals page still renders products and SEO metadata.
+  - [x] component does not require a specific route.
 
 ### Verification
 
@@ -471,9 +471,9 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done when
 
-- [ ] The same deals component can be used by at least two page contexts.
-- [ ] The dedicated deals route is only composition.
-- [ ] Product summary UI is not duplicated between deals/new releases/catalog contexts.
+- [x] The same deals component can be used by at least two page contexts.
+- [x] The dedicated deals route is only composition.
+- [x] Product summary UI is not duplicated between deals/new releases/catalog contexts.
 
 ## Phase 6 - Catalog And Product Portable Component Extraction
 
@@ -624,7 +624,7 @@ Use the repository's current Playwright command/config if it differs.
 - [x] Commit 3: account host route and account app consolidation.
 - [x] Commit 4: hydration mode and duplicate-fetch cleanup.
 - [x] Commit 5: `Features/*` component convention and move existing components.
-- [ ] Commit 6: deals/new releases portable component extraction.
+- [x] Commit 6: deals/new releases portable component extraction.
 - [ ] Commit 7: catalog/product portable component extraction.
 - [ ] Commit 8: contract boundary cleanup and architecture docs.
 - [ ] Commit 9: Playwright QA evidence and release checklist updates.

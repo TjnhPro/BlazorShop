@@ -1,0 +1,50 @@
+@namespace BlazorShop.Storefront.Components.Features.Deals
+@using BlazorShop.Storefront.Components.Features.Catalog
+
+<section class="@SectionClass" data-storefront-deals-block data-placement="@Placement.ToString()">
+    @if (ShowHeader)
+    {
+        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">@Eyebrow</p>
+                <h2 class="mt-2 text-3xl font-extrabold tracking-tight text-neutral-900">@Title</h2>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(ActionUrl))
+            {
+                <a href="@ActionUrl" class="inline-flex items-center justify-center rounded bg-amber-500 px-4 py-2 font-semibold text-white hover:bg-amber-600">@ActionText</a>
+            }
+        </div>
+    }
+
+    <ProductSummaryGrid Items="Items" EmptyMessage="@EmptyMessage" />
+</section>
+
+@code {
+    [Parameter]
+    public DealsPlacement Placement { get; set; } = DealsPlacement.DedicatedPage;
+
+    [Parameter]
+    public IReadOnlyList<ProductSummaryItem> Items { get; set; } = [];
+
+    [Parameter]
+    public string Eyebrow { get; set; } = "Today's Deals";
+
+    [Parameter]
+    public string Title { get; set; } = "Featured Picks";
+
+    [Parameter]
+    public string EmptyMessage { get; set; } = "No deal selections are available right now.";
+
+    [Parameter]
+    public string? ActionUrl { get; set; }
+
+    [Parameter]
+    public string ActionText { get; set; } = "View all";
+
+    [Parameter]
+    public bool ShowHeader { get; set; } = true;
+
+    private string SectionClass => Placement == DealsPlacement.DedicatedPage
+        ? string.Empty
+        : "mx-auto max-w-7xl px-4 pb-12 pt-8 sm:px-6 lg:px-8";
+}

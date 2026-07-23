@@ -271,6 +271,34 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void DealsAndNewReleases_ComposePortableFeatureComponents()
+        {
+            var home = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/Home.razor");
+            var dealsPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/TodaysDeals.razor");
+            var newReleasesPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/NewReleases.razor");
+            var dealsBlock = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Deals/DealsBlock.razor");
+            var productGrid = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Catalog/ProductSummaryGrid.razor");
+            var productCard = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Catalog/ProductSummaryCard.razor");
+            var dealsPlacement = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Deals/DealsPlacement.cs");
+
+            Assert.Contains("<DealsBlock Placement=\"DealsPlacement.Home\"", home, StringComparison.Ordinal);
+            Assert.Contains("<DealsBlock Placement=\"DealsPlacement.DedicatedPage\"", dealsPage, StringComparison.Ordinal);
+            Assert.Contains("<ProductSummaryGrid Items=\"_productSummaries\"", newReleasesPage, StringComparison.Ordinal);
+            Assert.DoesNotContain("<ProductGrid Products=\"_products\"", dealsPage + newReleasesPage, StringComparison.Ordinal);
+
+            Assert.Contains("data-storefront-deals-block", dealsBlock, StringComparison.Ordinal);
+            Assert.Contains("<ProductSummaryGrid Items=\"Items\"", dealsBlock, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-product-summary-grid", productGrid, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-product-summary-card", productCard, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-add-to-cart", productCard, StringComparison.Ordinal);
+            Assert.Contains("data-unit-price=\"@Item.UnitPriceValue\"", productCard, StringComparison.Ordinal);
+            Assert.Contains("data-currency-code=\"@Item.CurrencyCode\"", productCard, StringComparison.Ordinal);
+            Assert.Contains("ProductDetailFooter", dealsPlacement, StringComparison.Ordinal);
+            Assert.DoesNotContain("IStorefront", dealsBlock + productGrid + productCard, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontRoutes", dealsBlock + productGrid + productCard, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void AccountOrderDetailPage_PassesRouteReferenceToBrowserComponent()
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountApp.razor");

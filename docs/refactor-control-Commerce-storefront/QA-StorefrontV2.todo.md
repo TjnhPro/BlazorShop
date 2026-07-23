@@ -116,6 +116,8 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Phase 3 verification passed: Components build 0 warnings and focused Storefront WASM/static guardrails passed 77/77.
 - [x] Phase 4 establishes the `Storefront.Components/Features/*` convention. 2026-07-23: account, cart, and checkout feature components live under `Features/Account`, `Features/Cart`, and `Features/Checkout`; `Features/README.md` documents placement rules.
 - [x] Phase 4 guardrails block new root-level Storefront business component folders outside `Features` unless explicitly approved. 2026-07-23: focused component/Storefront guardrails passed 69/69.
+- [x] Phase 5 extracts portable catalog/deals display components without a new API. 2026-07-23: `Features/Catalog/ProductSummaryGrid`, `ProductSummaryCard`, and `Features/Deals/DealsBlock` render presentation-only `ProductSummaryItem` data mapped by Storefront V2 pages.
+- [x] Phase 5 reuses the same deals/product summary components from Home, Today's Deals, and New Releases. 2026-07-23: focused Deals/Product/Home tests passed 241 with 1 skipped; Storefront V2 build passed with 0 warnings.
 
 ## Storefront Account Recovery And WASM Migration
 

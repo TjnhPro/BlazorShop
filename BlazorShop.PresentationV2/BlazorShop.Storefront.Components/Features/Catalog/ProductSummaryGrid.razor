@@ -1,0 +1,27 @@
+@namespace BlazorShop.Storefront.Components.Features.Catalog
+
+@if (Items.Count > 0)
+{
+    <ul class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3" data-storefront-product-summary-grid>
+        @foreach (var item in Items)
+        {
+            <li class="h-full" @key="item.Id">
+                <ProductSummaryCard Item="item" />
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <div class="rounded-md bg-blue-50 px-6 py-5 text-center text-sm text-blue-800 shadow" data-storefront-product-summary-empty>
+        @EmptyMessage
+    </div>
+}
+
+@code {
+    [Parameter]
+    public IReadOnlyList<ProductSummaryItem> Items { get; set; } = [];
+
+    [Parameter]
+    public string EmptyMessage { get; set; } = "No products are available right now.";
+}

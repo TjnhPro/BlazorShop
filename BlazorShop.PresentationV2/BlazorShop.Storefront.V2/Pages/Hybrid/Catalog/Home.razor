@@ -4,6 +4,7 @@
 @inject IStorefrontSeoComposer SeoComposer
 @inject IStorefrontStructuredDataComposer StructuredDataComposer
 @inject IStorefrontDisplayContextProvider DisplayContextProvider
+@inject IStorefrontPriceFormatter PriceFormatter
 
 <SeoHead Metadata="_metadata" StructuredData="_structuredData" />
 
@@ -62,19 +63,13 @@ else
 
     <section id="latest" class="relative z-[1]">
         <div class="mx-auto max-w-7xl px-4 pb-12 pt-8 sm:px-6 lg:px-8">
-            <div class="text-center">
-                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">Published Catalog</p>
-                <h2 class="mt-2 text-3xl font-extrabold tracking-tight text-neutral-900">Latest Products</h2>
-                <p class="mx-auto mt-4 max-w-2xl text-base leading-7 text-neutral-700">Fresh products, clear prices, and direct links into the catalog.</p>
-            </div>
-
-            <div class="mt-8">
-                <ProductGrid Products="_latestProducts" EmptyMessage="No published products are available yet." />
-            </div>
-
-            <div class="mt-8 flex justify-center">
-                <a href="@StorefrontRoutes.NewReleases" class="inline-flex items-center rounded bg-amber-500 px-4 py-2 font-semibold text-white hover:bg-amber-600">See All New Releases</a>
-            </div>
+            <DealsBlock Placement="DealsPlacement.Home"
+                        Items="_latestProductSummaries"
+                        Eyebrow="Published Catalog"
+                        Title="Latest Products"
+                        EmptyMessage="No published products are available yet."
+                        ActionUrl="@StorefrontRoutes.NewReleases"
+                        ActionText="See All New Releases" />
         </div>
     </section>
 }
@@ -83,6 +78,7 @@ else
     private IReadOnlyList<GetCategory> _categories = [];
     private bool _isServiceUnavailable;
     private IReadOnlyList<GetCatalogProduct> _latestProducts = [];
+    private IReadOnlyList<ProductSummaryItem> _latestProductSummaries = [];
     private SeoMetadataDto _metadata = new();
     private StorefrontStructuredDataDocument _structuredData = StorefrontStructuredDataDocument.Empty;
 
@@ -126,6 +122,7 @@ else
             _isServiceUnavailable = true;
             _categories = [];
             _latestProducts = [];
+            _latestProductSummaries = [];
             _structuredData = StorefrontStructuredDataDocument.Empty;
             StorefrontResponseHeaders.ApplyServiceUnavailable(HttpContext);
             _metadata = await SeoComposer.ComposeServiceUnavailablePageAsync(
@@ -139,6 +136,7 @@ else
         _isServiceUnavailable = false;
         _categories = categoriesResult.Value ?? [];
         _latestProducts = latestProductsResult.Value?.Items ?? [];
+        _latestProductSummaries = _latestProducts.Select(product => ToProductSummary(product, displayContext)).ToArray();
         _structuredData = await structuredDataTask;
     }
 
@@ -171,5 +169,63 @@ else
         }
 
         return string.Concat(value[..maxLength].TrimEnd(), "...");
+    }
+
+    private ProductSummaryItem ToProductSummary(GetCatalogProduct product, StorefrontDisplayContext displayContext)
+    {
+        var productUrl = string.IsNullOrWhiteSpace(product.Slug) ? null : StorefrontRoutes.Product(product.Slug);
+        var categoryUrl = string.IsNullOrWhiteSpace(product.CategorySlug) ? null : StorefrontRoutes.Category(product.CategorySlug);
+        var displayCurrencyCode = NormalizeCurrencyCode(product.DisplayCurrencyCode) ?? displayContext.DefaultCurrencyCode;
+        var displayPrice = product.DisplayPrice ?? product.Price;
+        var comparePrice = product.DisplayComparePrice ?? product.ComparePrice;
+        var canAddDirectly = !product.HasVariants && product.Purchasable && QuantityOneAllowed(product);
+        var directAddStockValue = product.ManageStock ? Math.Max(0, product.AvailableQuantity ?? product.Quantity) : 999999;
+
+        return new ProductSummaryItem(
+            product.Id,
+            string.IsNullOrWhiteSpace(product.Name) ? "Product" : product.Name,
+            productUrl,
+            product.CategoryName,
+            categoryUrl,
+            product.Image,
+            Truncate(string.IsNullOrWhiteSpace(product.ShortDescription) ? product.Description ?? string.Empty : product.ShortDescription, 110),
+            PriceFormatter.Format(displayPrice, displayContext with { CurrencyCode = displayCurrencyCode }),
+            comparePrice is not null && comparePrice > displayPrice
+                ? PriceFormatter.Format(comparePrice.Value, displayContext with { CurrencyCode = displayCurrencyCode })
+                : null,
+            product.HasVariants,
+            product.InStock,
+            DateTime.UtcNow.Subtract(product.CreatedOn).TotalDays <= 7,
+            product.Purchasable,
+            productUrl is null ? null : $"{productUrl}#purchase",
+            canAddDirectly,
+            displayPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture),
+            displayCurrencyCode,
+            directAddStockValue,
+            PurchaseBlockMessage(product));
+    }
+
+    private static string? NormalizeCurrencyCode(string? currencyCode)
+    {
+        var normalized = currencyCode?.Trim().ToUpperInvariant();
+        return normalized is { Length: 3 } && normalized.All(char.IsLetter) ? normalized : null;
+    }
+
+    private static bool QuantityOneAllowed(GetCatalogProduct product)
+    {
+        return product.MinOrderQuantity <= 1
+            && (!product.MaxOrderQuantity.HasValue || product.MaxOrderQuantity.Value >= 1)
+            && product.QuantityStep <= 1;
+    }
+
+    private static string PurchaseBlockMessage(GetCatalogProduct product)
+    {
+        return product.PurchaseBlockReasons.FirstOrDefault() switch
+        {
+            "purchase_disabled" => "Purchasing is paused.",
+            "below_min_quantity" => $"Minimum order quantity is {product.MinOrderQuantity}.",
+            "out_of_stock" => "Currently out of stock.",
+            _ => "Currently unavailable.",
+        };
     }
 }

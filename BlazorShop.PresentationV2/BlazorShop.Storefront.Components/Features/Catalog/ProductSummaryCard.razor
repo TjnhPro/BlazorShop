@@ -1,0 +1,157 @@
+@namespace BlazorShop.Storefront.Components.Features.Catalog
+
+<article class="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200/70 bg-white/95 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl" data-storefront-product-summary-card>
+    <div class="p-6">
+        <div class="flex items-start justify-between gap-3">
+            <div>
+                @if (!string.IsNullOrWhiteSpace(Item.CategoryName))
+                {
+                    if (!string.IsNullOrWhiteSpace(Item.CategoryUrl))
+                    {
+                        <a href="@Item.CategoryUrl" class="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500 hover:text-neutral-900">@Item.CategoryName</a>
+                    }
+                    else
+                    {
+                        <span class="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">@Item.CategoryName</span>
+                    }
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Item.ProductUrl))
+                {
+                    <a href="@Item.ProductUrl" class="block">
+                        <h2 class="mt-2 text-lg font-extrabold text-neutral-900 transition-colors group-hover:text-neutral-950">@Item.Name</h2>
+                    </a>
+                }
+                else
+                {
+                    <h2 class="mt-2 text-lg font-extrabold text-neutral-900">@Item.Name</h2>
+                }
+            </div>
+
+            <div class="flex flex-wrap justify-end gap-2 text-[10px] font-semibold uppercase tracking-[0.18em]">
+                @if (Item.IsNewArrival)
+                {
+                    <span class="inline-block rounded bg-green-600/90 px-2 py-0.5 text-white">New</span>
+                }
+                @if (Item.HasVariants)
+                {
+                    <span class="inline-block rounded bg-amber-100 px-2 py-0.5 text-amber-800">Variants</span>
+                }
+                @if (!Item.InStock)
+                {
+                    <span class="inline-block rounded bg-rose-100 px-2 py-0.5 text-rose-800">Out</span>
+                }
+            </div>
+        </div>
+
+        <p class="mt-2 text-[15px]">
+            <span class="font-semibold text-rose-600">@(Item.HasVariants ? "From" : "Price")</span>
+            <span class="font-semibold">@Item.PriceDisplay</span>
+            @if (!string.IsNullOrWhiteSpace(Item.ComparePriceDisplay))
+            {
+                <span class="ml-2 text-sm font-semibold text-neutral-400 line-through">@Item.ComparePriceDisplay</span>
+            }
+        </p>
+
+        @if (!string.IsNullOrWhiteSpace(Item.ProductUrl))
+        {
+            <a href="@Item.ProductUrl" aria-label="View @Item.Name" class="mt-4 block">
+                <div class="relative aspect-[4/3] overflow-hidden rounded-xl bg-neutral-50">
+                    @ProductImageContent
+                </div>
+            </a>
+        }
+        else
+        {
+            <div class="mt-4 relative aspect-[4/3] overflow-hidden rounded-xl bg-neutral-50">
+                @ProductImageContent
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Item.Description))
+        {
+            <p class="mt-4 text-sm leading-6 text-neutral-700">@Item.Description</p>
+        }
+    </div>
+
+    <div class="mt-auto border-t border-neutral-100 px-6 py-4 text-sm">
+        <div class="flex flex-wrap gap-2">
+            @if (Item.CanAddDirectly)
+            {
+                <button type="button"
+                        class="inline-flex items-center justify-center rounded-md bg-amber-500 px-4 py-2 font-semibold text-white transition hover:bg-amber-600"
+                        data-storefront-add-to-cart
+                        data-default-label="Add to Cart"
+                        data-success-label="Added"
+                        data-product-id="@Item.Id"
+                        data-product-name="@Item.Name"
+                        data-unit-price="@Item.UnitPriceValue"
+                        data-currency-code="@Item.CurrencyCode"
+                        data-stock="@Item.DirectAddStockValue">
+                    Add to Cart
+                </button>
+            }
+            else if (Item.HasVariants && !string.IsNullOrWhiteSpace(Item.PurchaseUrl))
+            {
+                <a href="@Item.PurchaseUrl" class="inline-flex items-center justify-center rounded-md bg-amber-500 px-4 py-2 font-semibold text-white transition hover:bg-amber-600">
+                    Add to Cart
+                </a>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Item.ProductUrl))
+            {
+                <a href="@Item.ProductUrl" class="inline-flex items-center justify-center rounded-md bg-neutral-900 px-4 py-2 font-medium text-white hover:bg-neutral-800">
+                    View Product
+                </a>
+            }
+        </div>
+
+        @if (Item.HasVariants)
+        {
+            <p class="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-neutral-500">Select variant on the product page before adding.</p>
+        }
+        else if (!Item.InStock)
+        {
+            <p class="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-rose-600">Currently out of stock.</p>
+        }
+        else if (!Item.Purchasable)
+        {
+            <p class="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-neutral-600">@(Item.PurchaseBlockMessage ?? "Currently unavailable.")</p>
+        }
+    </div>
+</article>
+
+@code {
+    [Parameter, EditorRequired]
+    public ProductSummaryItem Item { get; set; } = default!;
+
+    private RenderFragment ProductImageContent => builder =>
+    {
+        if (!string.IsNullOrWhiteSpace(Item.ImageUrl))
+        {
+            builder.OpenElement(0, "img");
+            builder.AddAttribute(1, "src", Item.ImageUrl);
+            builder.AddAttribute(2, "alt", Item.Name);
+            builder.AddAttribute(3, "class", "absolute inset-0 h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-105");
+            builder.AddAttribute(4, "onerror", BrokenImageFallbackScript);
+            builder.CloseElement();
+            BuildImagePlaceholder(builder, 5, hidden: true);
+            return;
+        }
+
+        BuildImagePlaceholder(builder, 10, hidden: false);
+    };
+
+    private const string BrokenImageFallbackScript = "this.onerror=null;this.hidden=true;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221%22 height=%221%22/%3E';if(this.nextElementSibling){this.nextElementSibling.hidden=false;}";
+
+    private void BuildImagePlaceholder(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder, int sequence, bool hidden)
+    {
+        builder.OpenElement(sequence, "div");
+        builder.AddAttribute(sequence + 1, "class", "absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-100 px-4 text-center text-sm font-semibold text-neutral-500");
+        builder.AddAttribute(sequence + 2, "role", "img");
+        builder.AddAttribute(sequence + 3, "aria-label", $"Image unavailable for {Item.Name}");
+        builder.AddAttribute(sequence + 4, "hidden", hidden);
+        builder.AddContent(sequence + 5, "Image unavailable");
+        builder.CloseElement();
+    }
+}
