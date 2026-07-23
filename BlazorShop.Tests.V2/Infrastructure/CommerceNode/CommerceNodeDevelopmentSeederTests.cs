@@ -90,6 +90,16 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             Assert.Equal("QA Simple Product 100", qaProduct.Name);
             Assert.Equal("qa-simple-product-100", qaProduct.Slug);
             Assert.Equal(20, qaProduct.Quantity);
+
+            var faqPage = await context.StorefrontPages.SingleAsync(candidate => candidate.Slug == "faq");
+            Assert.Equal("faq", faqPage.PageKey);
+            Assert.True(faqPage.IsPublished);
+            Assert.True(faqPage.IncludeInSitemap);
+
+            var customerServicePage = await context.StorefrontPages.SingleAsync(candidate => candidate.Slug == "customer-service");
+            Assert.Equal("customer_service", customerServicePage.PageKey);
+            Assert.True(customerServicePage.IsPublished);
+            Assert.True(customerServicePage.IncludeInSitemap);
         }
 
         [Fact]

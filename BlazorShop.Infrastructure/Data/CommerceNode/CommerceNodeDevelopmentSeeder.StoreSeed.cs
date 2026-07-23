@@ -49,6 +49,7 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
 
             await this.EnsureCategoriesAsync(defaultStoreId.Value, cancellationToken);
             await this.EnsureProductsAsync(defaultStoreId.Value, cancellationToken);
+            await this.EnsureStorefrontPagesAsync(defaultStoreId.Value, cancellationToken);
             await this.EnsureMediaFixtureFilesAsync(cancellationToken);
 
             var defaultGalleryCount = await this.dbContext.ProductMedia

@@ -429,62 +429,72 @@ Goal: prove the page model works in browser and API-level tests before productio
 
 ### Automated test checklist
 
-- [ ] Published DB page:
-  - [ ] `/pages/qa-legal` returns 200.
-  - [ ] page title/body render.
-  - [ ] SEO meta title/description render.
-  - [ ] sitemap includes the page when `IncludeInSitemap=true`.
-- [ ] Unpublished DB page:
-  - [ ] `/pages/qa-unpublished-page` returns 404 behavior.
-  - [ ] response has noindex behavior.
-  - [ ] sitemap excludes it.
-- [ ] Missing DB page:
-  - [ ] `/pages/not-a-real-page` returns 404 behavior.
-  - [ ] no alternate store fallback occurs.
-- [ ] FAQ page:
-  - [ ] `/pages/faq` resolves when seeded/created.
-  - [ ] HTML content renders.
-  - [ ] structured FAQ JSON-LD appears only when structured FAQ entries exist.
-- [ ] Customer service page:
-  - [ ] `/pages/customer-service` resolves when seeded/created.
-  - [ ] it does not require/contact-form-check any WASM contact component.
-- [ ] Commerce SSR pages:
-  - [ ] `/` renders categories/products before WASM.
-  - [ ] `/category/{slug}` renders product list, SEO, and structured data.
-  - [ ] `/product/{slug}` renders product details, gallery, SEO, and structured data.
-  - [ ] `/new-releases` renders product grid and collection structured data.
-  - [ ] `/todays-deals` renders product grid and collection structured data.
-- [ ] Search:
-  - [ ] `/search?q=...` renders GET results.
-  - [ ] search page has `noindex,follow`.
-  - [ ] search URL is excluded from sitemap.
-- [ ] WASM route shells:
-  - [ ] `/my-cart` renders cart WASM root and has noindex.
-  - [ ] `/checkout` renders checkout WASM root and has noindex.
-  - [ ] `/account/profile`, `/account/addresses`, `/account/orders`, `/account/change-password` render expected account WASM components and have noindex.
-- [ ] System pages:
-  - [ ] `/maintenance?reason=maintenance` returns 503 and `X-Robots-Tag: noindex, nofollow`.
-  - [ ] unknown route returns 404 and noindex.
-  - [ ] auth/payment result pages remain noindex.
+- [x] Published DB page:
+  - [x] `/pages/qa-legal` returns 200.
+  - [x] page title/body render.
+  - [x] SEO meta title/description render.
+  - [x] sitemap includes the page when `IncludeInSitemap=true`.
+- [x] Unpublished DB page:
+  - [x] `/pages/qa-unpublished-page` returns 404 behavior.
+  - [x] response has noindex behavior.
+  - [x] sitemap excludes it.
+- [x] Missing DB page:
+  - [x] `/pages/not-a-real-page` returns 404 behavior.
+  - [x] no alternate store fallback occurs.
+- [x] FAQ page:
+  - [x] `/pages/faq` resolves when seeded/created.
+  - [x] HTML content renders.
+  - [x] structured FAQ JSON-LD appears only when structured FAQ entries exist.
+- [x] Customer service page:
+  - [x] `/pages/customer-service` resolves when seeded/created.
+  - [x] it does not require/contact-form-check any WASM contact component.
+- [x] Commerce SSR pages:
+  - [x] `/` renders categories/products before WASM.
+  - [x] `/category/{slug}` renders product list, SEO, and structured data.
+  - [x] `/product/{slug}` renders product details, gallery, SEO, and structured data.
+  - [x] `/new-releases` renders product grid and collection structured data.
+  - [x] `/todays-deals` renders product grid and collection structured data.
+- [x] Search:
+  - [x] `/search?q=...` renders GET results.
+  - [x] search page has `noindex,follow`.
+  - [x] search URL is excluded from sitemap.
+- [x] WASM route shells:
+  - [x] `/my-cart` renders cart WASM root and has noindex.
+  - [x] `/checkout` renders checkout WASM root and has noindex.
+  - [x] `/account/profile`, `/account/addresses`, `/account/orders`, `/account/change-password` render expected account WASM components and have noindex.
+- [x] System pages:
+  - [x] `/maintenance?reason=maintenance` returns 503 and `X-Robots-Tag: noindex, nofollow` when the current store is in maintenance; default recovered store redirects home.
+  - [x] unknown route returns 404 and noindex.
+  - [x] auth/payment result pages remain noindex.
+
+Phase 6 evidence:
+
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~Storefront"` passed 562/562, skipped 2.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~CommerceNodeDevelopmentSeederTests"` passed 2/2 after adding the incremental seeding regression.
+- `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontV2HostSmokeTests.Maintenance_WhenCurrentStoreStillInMaintenance_RendersAutoRefresh|FullyQualifiedName~StorefrontV2HostSmokeTests.Maintenance_WhenCurrentStoreRecovered_RedirectsHome|FullyQualifiedName~StorefrontV2HostSmokeTests.UnknownRoute"` passed 2/2 for the matched maintenance cases.
+- Full `dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore` passed 1326 tests and skipped 2, but failed 1 legacy-removal guardrail because three unrelated legacy-removal files were already deleted in the worktree before this phase.
+- Playwright evidence: `output/playwright/storefront-page-composition-phase6-evidence.json` passed 29/29 route/SEO/browser checks.
+- Supplemental Playwright evidence: `output/playwright/storefront-page-composition-phase6-supplemental-evidence.json` passed 11/11 collection/account/auth/payment checks.
+- Root cause fixed during Phase 6: existing local QA databases skipped new FAQ/customer-service fixtures because `EnsureIncrementalQaSeedDataAsync` did not call `EnsureStorefrontPagesAsync`.
 
 ### Browser QA with Playwright
 
-- [ ] Run Playwright against the local V2 runner, not static HTML.
-- [ ] Validate rendered browser DOM, not only HTTP smoke.
-- [ ] Capture desktop and mobile screenshots for:
-  - [ ] home.
-  - [ ] product detail.
-  - [ ] category listing.
-  - [ ] generic content page.
-  - [ ] FAQ content page if present.
-  - [ ] cart.
-  - [ ] checkout.
-  - [ ] account profile after login.
-  - [ ] maintenance.
-  - [ ] not found.
-- [ ] Confirm no visible layout overlap after account shell refactor.
-- [ ] Confirm content pages are usable without WASM.
-- [ ] Confirm cart/account/checkout interaction still hydrates under WASM.
+- [x] Run Playwright against the local V2 runner, not static HTML.
+- [x] Validate rendered browser DOM, not only HTTP smoke.
+- [x] Capture desktop and mobile screenshots for:
+  - [x] home.
+  - [x] product detail.
+  - [x] category listing.
+  - [x] generic content page.
+  - [x] FAQ content page if present.
+  - [x] cart.
+  - [x] checkout.
+  - [x] account profile after login.
+  - [x] maintenance/recovered-store redirect.
+  - [x] not found.
+- [x] Confirm no visible layout overlap after account shell refactor.
+- [x] Confirm content pages are usable without WASM.
+- [x] Confirm cart/account/checkout interaction still hydrates under WASM.
 
 ### Suggested commands
 
@@ -498,10 +508,10 @@ Use the repository's actual Playwright command/config if it differs from the gen
 
 ### Done when
 
-- [ ] Focused Storefront tests pass.
-- [ ] Browser QA confirms SSR content pages, commerce pages, and WASM route shells.
-- [ ] `QA-StorefrontV2.todo.md` is updated with pass/fail evidence.
-- [ ] No dedicated Razor static content pages were reintroduced.
+- [x] Focused Storefront tests pass.
+- [x] Browser QA confirms SSR content pages, commerce pages, and WASM route shells.
+- [x] `QA-StorefrontV2.todo.md` is updated with pass/fail evidence.
+- [x] No dedicated Razor static content pages were reintroduced.
 
 ## Implementation Order And Commit Plan
 
@@ -511,19 +521,19 @@ Use the repository's actual Playwright command/config if it differs from the gen
 - [x] Commit 4: StorefrontPage template-aware SEO/structured data rendering.
 - [x] Commit 5: account page shell deduplication.
 - [x] Commit 6: optional mechanical folder reorganization.
-- [ ] Commit 7: QA evidence/docs updates.
+- [x] Commit 7: QA evidence/docs updates.
 
 Each commit should be independently buildable. If Phase 5 folder reorganization is skipped, do not block Phases 1-4.
 
 ## Risk Controls
 
-- [ ] Public DTO changes must not expose internal/admin fields.
-- [ ] Storefront page body remains controlled HTML; do not parse arbitrary scripts or add public script/style injection.
-- [ ] Do not rely on WASM for SEO pages.
-- [ ] Do not remove server POST fallback for checkout.
-- [ ] Do not make search indexable.
-- [ ] Do not overwrite store-edited page content from Development seeding.
-- [ ] Keep all route URLs stable unless a separate redirect/slug migration phase is approved.
+- [x] Public DTO changes must not expose internal/admin fields.
+- [x] Storefront page body remains controlled HTML; do not parse arbitrary scripts or add public script/style injection.
+- [x] Do not rely on WASM for SEO pages.
+- [x] Do not remove server POST fallback for checkout.
+- [x] Do not make search indexable.
+- [x] Do not overwrite store-edited page content from Development seeding.
+- [x] Keep all route URLs stable unless a separate redirect/slug migration phase is approved.
 
 ## Autoplan Decision Audit Trail
 
