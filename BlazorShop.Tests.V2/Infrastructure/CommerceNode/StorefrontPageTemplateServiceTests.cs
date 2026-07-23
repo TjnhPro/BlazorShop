@@ -26,8 +26,26 @@ namespace BlazorShop.Tests.Infrastructure.CommerceNode
             var definitions = StorefrontPageTemplateCatalog.ListDefinitions();
 
             Assert.Contains(definitions, definition => definition.PageKey == "about" && definition.RequiredForReadiness);
+            Assert.Contains(definitions, definition => definition.PageKey == "faq" && definition.DefaultSlug == "faq" && definition.DefaultNavigationLocation == StorefrontPageContentRules.FooterSupport);
+            Assert.Contains(definitions, definition => definition.PageKey == "customer_service" && definition.DefaultSlug == "customer-service" && definition.DefaultNavigationLocation == StorefrontPageContentRules.FooterSupport);
             Assert.Contains(definitions, definition => definition.PageKey == "terms_conditions" && definition.RequiredForReadiness);
-            Assert.DoesNotContain(definitions, definition => definition.PageKey is "generic" or "contact" or "cart" or "checkout" or "account" or "not_found");
+            Assert.Contains("faq", StorefrontPageContentRules.PageKeys);
+            Assert.Contains("customer_service", StorefrontPageContentRules.PageKeys);
+            Assert.DoesNotContain(definitions, definition => definition.PageKey is "generic" or "contact" or "contact_form" or "cart" or "checkout" or "account" or "not_found");
+        }
+
+        [Fact]
+        public void TemplateCatalog_ContentDefinitionsResolveUnderDynamicPageRoutes()
+        {
+            var definitions = StorefrontPageTemplateCatalog.ListDefinitions()
+                .Where(definition => definition.PageKey is "about" or "faq" or "customer_service" or "terms_conditions" or "privacy_policy")
+                .ToDictionary(definition => definition.PageKey, StringComparer.Ordinal);
+
+            Assert.Equal("/pages/about-us", $"/pages/{definitions["about"].DefaultSlug}");
+            Assert.Equal("/pages/faq", $"/pages/{definitions["faq"].DefaultSlug}");
+            Assert.Equal("/pages/customer-service", $"/pages/{definitions["customer_service"].DefaultSlug}");
+            Assert.Equal("/pages/terms", $"/pages/{definitions["terms_conditions"].DefaultSlug}");
+            Assert.Equal("/pages/privacy", $"/pages/{definitions["privacy_policy"].DefaultSlug}");
         }
 
         [Fact]

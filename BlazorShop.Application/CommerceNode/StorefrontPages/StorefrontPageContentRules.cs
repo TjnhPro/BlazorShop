@@ -10,6 +10,8 @@ namespace BlazorShop.Application.CommerceNode.StorefrontPages
         public static readonly IReadOnlySet<string> PageKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "about",
+            "faq",
+            "customer_service",
             "shipping_information",
             "payment_information",
             "terms_conditions",

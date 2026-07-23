@@ -46,6 +46,36 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
                 StorefrontPageContentRules.FooterLegal,
                 pageKey: "cookie_information",
                 cancellationToken);
+            await this.EnsureMissingStorefrontPageAsync(
+                FaqPageId,
+                FaqPagePublicId,
+                storeId,
+                "faq",
+                "FAQ",
+                "Common questions for Storefront release QA.",
+                "<h2>Storefront FAQ</h2><p>FAQ content for development QA.</p>",
+                isPublished: true,
+                includeInSitemap: true,
+                includeInNavigation: true,
+                StorefrontPageContentRules.FooterSupport,
+                pageKey: "faq",
+                displayOrder: 230,
+                cancellationToken);
+            await this.EnsureMissingStorefrontPageAsync(
+                CustomerServicePageId,
+                CustomerServicePagePublicId,
+                storeId,
+                "customer-service",
+                "Customer service",
+                "Support information for Storefront release QA.",
+                "<h2>Customer service</h2><p>Support content for development QA.</p>",
+                isPublished: true,
+                includeInSitemap: true,
+                includeInNavigation: true,
+                StorefrontPageContentRules.FooterSupport,
+                pageKey: "customer_service",
+                displayOrder: 240,
+                cancellationToken);
             await this.EnsureStorefrontPageAsync(
                 DraftPageId,
                 storeId,
@@ -136,6 +166,63 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
             page.RobotsFollow = isPublished;
             page.ArchivedAt = null;
             page.UpdatedAt = DateTimeOffset.UtcNow;
+
+            await this.dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        private async Task EnsureMissingStorefrontPageAsync(
+            Guid id,
+            Guid publicId,
+            Guid storeId,
+            string slug,
+            string title,
+            string intro,
+            string bodyHtml,
+            bool isPublished,
+            bool includeInSitemap,
+            bool includeInNavigation,
+            string? navigationLocation,
+            string? pageKey,
+            int displayOrder,
+            CancellationToken cancellationToken)
+        {
+            var exists = await this.dbContext.StorefrontPages
+                .AnyAsync(
+                    item =>
+                        item.StoreId == storeId &&
+                        item.ArchivedAt == null &&
+                        (item.Id == id || item.PublicId == publicId || item.Slug == slug || item.PageKey == pageKey),
+                    cancellationToken);
+            if (exists)
+            {
+                return;
+            }
+
+            var now = DateTimeOffset.UtcNow;
+            this.dbContext.StorefrontPages.Add(new StorefrontPage
+            {
+                Id = id,
+                PublicId = publicId,
+                StoreId = storeId,
+                Slug = slug,
+                Title = title,
+                Intro = intro,
+                BodyHtml = bodyHtml,
+                IsPublished = isPublished,
+                IncludeInSitemap = includeInSitemap,
+                IncludeInNavigation = includeInNavigation,
+                NavigationLocation = navigationLocation,
+                PageKey = pageKey,
+                DisplayOrder = displayOrder,
+                MetaTitle = title,
+                MetaDescription = intro,
+                OgTitle = title,
+                OgDescription = intro,
+                RobotsIndex = isPublished,
+                RobotsFollow = isPublished,
+                CreatedAt = now,
+                UpdatedAt = now,
+            });
 
             await this.dbContext.SaveChangesAsync(cancellationToken);
         }

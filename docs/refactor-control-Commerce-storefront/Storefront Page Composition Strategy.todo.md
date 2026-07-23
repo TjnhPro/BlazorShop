@@ -173,26 +173,26 @@ Goal: make Control Plane/admin page-template completeness match the Storefront r
 
 ### Tasks
 
-- [ ] Add missing page keys to `StorefrontPageContentRules.PageKeys`:
-  - [ ] `faq`
-  - [ ] `customer_service`
-- [ ] Add matching definitions to `StorefrontPageTemplateCatalog`:
-  - [ ] `faq` with slug `faq`, title `FAQ`, include in sitemap true, navigation location likely `footer_support`.
-  - [ ] `customer_service` with slug `customer-service`, title `Customer service`, include in sitemap true, navigation location likely `footer_support`.
-- [ ] Review current template slugs for consistency with `StorefrontRoutes`:
-  - [ ] `about` currently template slug `about-us` and route `/pages/about-us` match.
-  - [ ] `terms_conditions` currently slug `terms` and route `/pages/terms` match.
-  - [ ] `privacy_policy` currently slug `privacy` and route `/pages/privacy` match.
-  - [ ] `cookie_information` currently slug `cookies`; consent default uses `/pages/cookies`.
-- [ ] Decide whether existing `shipping_information`, `payment_information`, and `return_refund_policy` slugs should remain short (`shipping`, `payment`, `returns`) or change to longer route names.
-  - [ ] Recommended: keep existing short slugs to avoid unnecessary data churn unless public nav already promised longer URLs.
-- [ ] Do not add a `generic` template. Pages without known `PageKey` already behave as standard content.
-- [ ] Do not add a `contact_form` page key in this phase.
-- [ ] Add/update tests for:
-  - [ ] known page key validation.
-  - [ ] template catalog contains every required content template.
-  - [ ] template definitions do not point to dedicated Razor routes for content pages.
-- [ ] Update Development seeding only to create missing QA fixtures if needed; do not overwrite store-edited page content on restart.
+- [x] Add missing page keys to `StorefrontPageContentRules.PageKeys`:
+  - [x] `faq`
+  - [x] `customer_service`
+- [x] Add matching definitions to `StorefrontPageTemplateCatalog`:
+  - [x] `faq` with slug `faq`, title `FAQ`, include in sitemap true, navigation location likely `footer_support`.
+  - [x] `customer_service` with slug `customer-service`, title `Customer service`, include in sitemap true, navigation location likely `footer_support`.
+- [x] Review current template slugs for consistency with `StorefrontRoutes`:
+  - [x] `about` currently template slug `about-us` and route `/pages/about-us` match.
+  - [x] `terms_conditions` currently slug `terms` and route `/pages/terms` match.
+  - [x] `privacy_policy` currently slug `privacy` and route `/pages/privacy` match.
+  - [x] `cookie_information` currently slug `cookies`; consent default uses `/pages/cookies`.
+- [x] Decide whether existing `shipping_information`, `payment_information`, and `return_refund_policy` slugs should remain short (`shipping`, `payment`, `returns`) or change to longer route names.
+  - [x] Recommended: keep existing short slugs to avoid unnecessary data churn unless public nav already promised longer URLs.
+- [x] Do not add a `generic` template. Pages without known `PageKey` already behave as standard content.
+- [x] Do not add a `contact_form` page key in this phase.
+- [x] Add/update tests for:
+  - [x] known page key validation.
+  - [x] template catalog contains every required content template.
+  - [x] template definitions do not point to dedicated Razor routes for content pages.
+- [x] Update Development seeding only to create missing QA fixtures if needed; do not overwrite store-edited page content on restart.
 
 ### Files likely touched
 
@@ -210,9 +210,9 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done when
 
-- [ ] Admin/template completeness can detect missing FAQ and customer-service pages.
-- [ ] Public Storefront routes and template catalog are aligned.
-- [ ] No contact form behavior was introduced.
+- [x] Admin/template completeness can detect missing FAQ and customer-service pages.
+- [x] Public Storefront routes and template catalog are aligned.
+- [x] No contact form behavior was introduced.
 
 ## Phase 3 - Template-aware StorefrontPage Rendering And Structured Data
 
@@ -507,7 +507,7 @@ Use the repository's actual Playwright command/config if it differs from the gen
 
 - [x] Commit 1: baseline guardrails and QA checklist updates.
 - [x] Commit 2: public page contract exposes `PageKey` and tests.
-- [ ] Commit 3: template catalog/rules add `faq` and `customer_service`.
+- [x] Commit 3: template catalog/rules add `faq` and `customer_service`.
 - [ ] Commit 4: StorefrontPage template-aware SEO/structured data rendering.
 - [ ] Commit 5: account page shell deduplication.
 - [ ] Commit 6: optional mechanical folder reorganization.

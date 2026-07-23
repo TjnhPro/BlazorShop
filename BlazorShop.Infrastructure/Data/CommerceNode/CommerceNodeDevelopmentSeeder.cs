@@ -37,10 +37,14 @@ namespace BlazorShop.Infrastructure.Data.CommerceNode
         private static readonly Guid CookiePageId = Guid.Parse("1a111111-1111-4111-8111-111111111112");
         private static readonly Guid DraftPageId = Guid.Parse("1a111111-1111-4111-8111-111111111113");
         private static readonly Guid EscapingPageId = Guid.Parse("1a111111-1111-4111-8111-111111111114");
+        private static readonly Guid FaqPageId = Guid.Parse("1a111111-1111-4111-8111-111111111115");
+        private static readonly Guid CustomerServicePageId = Guid.Parse("1a111111-1111-4111-8111-111111111116");
         private static readonly Guid LegalPagePublicId = Guid.Parse("1a111111-1111-4111-8111-111111111211");
         private static readonly Guid CookiePagePublicId = Guid.Parse("1a111111-1111-4111-8111-111111111212");
         private static readonly Guid DraftPagePublicId = Guid.Parse("1a111111-1111-4111-8111-111111111213");
         private static readonly Guid EscapingPagePublicId = Guid.Parse("1a111111-1111-4111-8111-111111111214");
+        private static readonly Guid FaqPagePublicId = Guid.Parse("1a111111-1111-4111-8111-111111111215");
+        private static readonly Guid CustomerServicePagePublicId = Guid.Parse("1a111111-1111-4111-8111-111111111216");
         private static readonly Guid TshirtProductId = Guid.Parse("68ba3d10-4d13-46c4-8c8d-4a53b37cf201");
         private static readonly Guid LowStockProductId = Guid.Parse("e9f21b8f-7b2d-4a08-8971-c0dfe037fc1a");
         private static readonly Guid SimpleProductId = Guid.Parse("2b111111-1111-4111-8111-111111111101");
