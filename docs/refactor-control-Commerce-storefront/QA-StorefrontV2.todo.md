@@ -111,6 +111,9 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Phase 2 consolidates account route shells into one server host. 2026-07-23: `AccountHostPage.razor` declares `/account` and `/account/{*Path}`, emits noindex, resolves session, redirects unauthenticated requests through `StorefrontReturnUrl`, creates antiforgery tokens, and renders `AccountApp` with `InteractiveWebAssembly`.
 - [x] Phase 2 moves account navigation/shell responsibility into portable Storefront components. 2026-07-23: `Storefront.Components/Features/Account/AccountApp.razor` and `AccountNavigation.razor` own profile, addresses, orders, order detail/receipt, and change-password sub-routes while reusing the existing account feature panels.
 - [x] Phase 2 removes duplicate account route pages and obsolete `AccountPageShell`; focused account/static guardrails passed 52/52.
+- [x] Phase 3 makes interactive feature hydration explicit. 2026-07-23: `StorefrontFeatureDataMode` defines `InitialSnapshot`, `BrowserFetch`, and `RefreshAfterHydration`; account uses `BrowserFetch`, while cart and checkout pages pass `InitialSnapshot`.
+- [x] Phase 3 removes duplicate first-load fetches for server snapshots. 2026-07-23: `StorefrontCartView` and `StorefrontCheckoutShell` skip initial browser GET when `DataMode=InitialSnapshot`; account panels can also skip GET when an initial snapshot is explicitly supplied.
+- [x] Phase 3 verification passed: Components build 0 warnings and focused Storefront WASM/static guardrails passed 77/77.
 
 ## Storefront Account Recovery And WASM Migration
 

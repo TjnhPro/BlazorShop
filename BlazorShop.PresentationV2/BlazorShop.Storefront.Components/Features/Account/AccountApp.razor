@@ -66,6 +66,7 @@
                 builder.AddAttribute(3, nameof(AccountProfileEditor.FormAction), AccountRoutes.Profile);
                 builder.AddAttribute(4, nameof(AccountProfileEditor.AntiforgeryFieldName), AntiforgeryFieldName);
                 builder.AddAttribute(5, nameof(AccountProfileEditor.AntiforgeryRequestToken), AntiforgeryRequestToken);
+                builder.AddAttribute(6, nameof(AccountProfileEditor.DataMode), StorefrontFeatureDataMode.BrowserFetch);
                 builder.CloseComponent();
                 break;
 
@@ -76,6 +77,7 @@
                 builder.AddAttribute(13, nameof(AccountAddressBook.FormAction), AccountRoutes.Addresses);
                 builder.AddAttribute(14, nameof(AccountAddressBook.AntiforgeryFieldName), AntiforgeryFieldName);
                 builder.AddAttribute(15, nameof(AccountAddressBook.AntiforgeryRequestToken), AntiforgeryRequestToken);
+                builder.AddAttribute(16, nameof(AccountAddressBook.DataMode), StorefrontFeatureDataMode.BrowserFetch);
                 builder.CloseComponent();
                 break;
 
@@ -83,6 +85,7 @@
                 builder.OpenComponent<AccountOrderList>(20);
                 builder.AddAttribute(21, nameof(AccountOrderList.InitialError), Error);
                 builder.AddAttribute(22, nameof(AccountOrderList.PageNumber), Math.Max(1, PageNumber));
+                builder.AddAttribute(23, nameof(AccountOrderList.DataMode), StorefrontFeatureDataMode.BrowserFetch);
                 builder.CloseComponent();
                 break;
 
@@ -91,6 +94,7 @@
                 builder.AddAttribute(31, nameof(AccountOrderDetail.InitialError), Error);
                 builder.AddAttribute(32, nameof(AccountOrderDetail.OrderReference), ActiveRoute.OrderReference);
                 builder.AddAttribute(33, nameof(AccountOrderDetail.ReceiptMode), ActiveRoute.ReceiptMode);
+                builder.AddAttribute(34, nameof(AccountOrderDetail.DataMode), StorefrontFeatureDataMode.BrowserFetch);
                 builder.CloseComponent();
                 break;
 
@@ -101,6 +105,7 @@
                 builder.AddAttribute(43, nameof(AccountChangePasswordForm.FormAction), AccountRoutes.ChangePassword);
                 builder.AddAttribute(44, nameof(AccountChangePasswordForm.AntiforgeryFieldName), AntiforgeryFieldName);
                 builder.AddAttribute(45, nameof(AccountChangePasswordForm.AntiforgeryRequestToken), AntiforgeryRequestToken);
+                builder.AddAttribute(46, nameof(AccountChangePasswordForm.DataMode), StorefrontFeatureDataMode.BrowserFetch);
                 builder.CloseComponent();
                 break;
 

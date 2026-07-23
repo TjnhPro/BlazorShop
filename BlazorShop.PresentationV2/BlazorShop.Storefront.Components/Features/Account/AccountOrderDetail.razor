@@ -75,6 +75,9 @@
     [Parameter]
     public string? InitialError { get; set; }
 
+    [Parameter]
+    public StorefrontFeatureDataMode DataMode { get; set; } = StorefrontFeatureDataMode.BrowserFetch;
+
     private StorefrontBrowserAccountOrderDetail? _order;
     private string? _error;
 
@@ -86,7 +89,10 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender || !OperatingSystem.IsBrowser() || string.IsNullOrWhiteSpace(OrderReference))
+        if (!firstRender
+            || !OperatingSystem.IsBrowser()
+            || DataMode == StorefrontFeatureDataMode.InitialSnapshot
+            || string.IsNullOrWhiteSpace(OrderReference))
         {
             return;
         }

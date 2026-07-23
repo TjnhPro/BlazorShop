@@ -123,6 +123,9 @@
     [Parameter]
     public bool ShowPanel { get; set; } = true;
 
+    [Parameter]
+    public StorefrontFeatureDataMode DataMode { get; set; } = StorefrontFeatureDataMode.BrowserFetch;
+
     private StorefrontBrowserCheckoutState _state = EmptyState("Checkout is not available yet.");
     private string? _error;
     private bool _loading;
@@ -137,7 +140,10 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (ShowPanel && firstRender && OperatingSystem.IsBrowser())
+        if (ShowPanel
+            && firstRender
+            && OperatingSystem.IsBrowser()
+            && DataMode != StorefrontFeatureDataMode.InitialSnapshot)
         {
             await RefreshAsync();
         }

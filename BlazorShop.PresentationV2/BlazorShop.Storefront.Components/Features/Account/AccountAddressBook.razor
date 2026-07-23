@@ -98,6 +98,9 @@
     [Parameter]
     public string? AntiforgeryRequestToken { get; set; }
 
+    [Parameter]
+    public StorefrontFeatureDataMode DataMode { get; set; } = StorefrontFeatureDataMode.BrowserFetch;
+
     private IReadOnlyList<StorefrontBrowserCustomerAddress> _addresses = [];
     private readonly Dictionary<Guid, StorefrontBrowserCustomerAddressRequest> _forms = [];
     private StorefrontBrowserCustomerAddressRequest _newAddress = new();
@@ -115,7 +118,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender || !OperatingSystem.IsBrowser())
+        if (!firstRender || !OperatingSystem.IsBrowser() || DataMode == StorefrontFeatureDataMode.InitialSnapshot)
         {
             return;
         }

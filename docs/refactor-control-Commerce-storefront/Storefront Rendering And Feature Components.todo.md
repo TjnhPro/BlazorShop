@@ -351,23 +351,23 @@ Every interactive feature component must use one explicit data mode:
 
 ### Tasks
 
-- [ ] Add a small shared enum/model in `Storefront.Components` for feature data mode if useful.
-- [ ] Audit current interactive components:
-  - [ ] `AccountProfileEditor`
-  - [ ] `AccountAddressBook`
-  - [ ] `AccountOrderList`
-  - [ ] `AccountOrderDetail`
-  - [ ] `AccountChangePasswordForm`
-  - [ ] `StorefrontCartView`
-  - [ ] `StorefrontCheckoutShell`
-- [ ] Change components that receive complete `Initial*` data to skip first-render refetch.
-- [ ] Keep manual refresh/retry actions where useful.
-- [ ] For account after Phase 2, prefer `BrowserFetch` because server host should only bootstrap the account app, not load each account screen.
-- [ ] For cart, keep `InitialSnapshot` when SSR page already has cart state.
-- [ ] For checkout, decide per screen:
-  - [ ] use `InitialSnapshot` for initial review state.
-  - [ ] use explicit refresh only after cart/address/shipping/payment changes.
-- [ ] Add tests that fail if a component performs a browser GET despite a complete initial snapshot.
+- [x] Add a small shared enum/model in `Storefront.Components` for feature data mode if useful.
+- [x] Audit current interactive components:
+  - [x] `AccountProfileEditor`
+  - [x] `AccountAddressBook`
+  - [x] `AccountOrderList`
+  - [x] `AccountOrderDetail`
+  - [x] `AccountChangePasswordForm`
+  - [x] `StorefrontCartView`
+  - [x] `StorefrontCheckoutShell`
+- [x] Change components that receive complete `Initial*` data to skip first-render refetch.
+- [x] Keep manual refresh/retry actions where useful.
+- [x] For account after Phase 2, prefer `BrowserFetch` because server host should only bootstrap the account app, not load each account screen.
+- [x] For cart, keep `InitialSnapshot` when SSR page already has cart state.
+- [x] For checkout, decide per screen:
+  - [x] use `InitialSnapshot` for initial review state.
+  - [x] use explicit refresh only after cart/address/shipping/payment changes.
+- [x] Add tests that fail if a component performs a browser GET despite a complete initial snapshot.
 - [ ] Add Playwright network assertions for at least account profile, cart, and checkout.
 
 ### Verification
@@ -378,9 +378,9 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done when
 
-- [ ] Hydration behavior is explicit.
-- [ ] Duplicate first-render fetches are removed or intentionally documented.
-- [ ] Loading/empty/error/ready states are visible in tests.
+- [x] Hydration behavior is explicit.
+- [x] Duplicate first-render fetches are removed or intentionally documented.
+- [x] Loading/empty/error/ready states are visible in tests.
 
 ## Phase 4 - Feature Component Foundation
 
@@ -622,7 +622,7 @@ Use the repository's current Playwright command/config if it differs.
 - [x] Commit 1: baseline inventory, route/render ownership guardrails, QA checklist updates.
 - [x] Commit 2: mechanical folder move to `Ssr`, `Hybrid`, and `WasmHost`.
 - [x] Commit 3: account host route and account app consolidation.
-- [ ] Commit 4: hydration mode and duplicate-fetch cleanup.
+- [x] Commit 4: hydration mode and duplicate-fetch cleanup.
 - [ ] Commit 5: `Features/*` component convention and move existing components.
 - [ ] Commit 6: deals/new releases portable component extraction.
 - [ ] Commit 7: catalog/product portable component extraction.

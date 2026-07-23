@@ -79,6 +79,9 @@
     [Parameter]
     public string? AntiforgeryRequestToken { get; set; }
 
+    [Parameter]
+    public StorefrontFeatureDataMode DataMode { get; set; } = StorefrontFeatureDataMode.BrowserFetch;
+
     private StorefrontBrowserCustomerProfile? _profile;
     private StorefrontBrowserCustomerProfileUpdateRequest _form = new();
     private string? _error;
@@ -108,7 +111,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender || !OperatingSystem.IsBrowser())
+        if (!firstRender || !OperatingSystem.IsBrowser() || DataMode == StorefrontFeatureDataMode.InitialSnapshot)
         {
             return;
         }

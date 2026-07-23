@@ -200,6 +200,9 @@
     public IReadOnlyList<StorefrontBrowserCartAlert> InitialAlerts { get; set; } = [];
 
     [Parameter]
+    public StorefrontFeatureDataMode DataMode { get; set; } = StorefrontFeatureDataMode.BrowserFetch;
+
+    [Parameter]
     public string CheckoutUrl { get; set; } = "/checkout";
 
     [Parameter]
@@ -241,17 +244,28 @@
                 JS.InvokeAsync<IJSObjectReference>(
                     "import",
                     "./_content/BlazorShop.Storefront.Components/js/storefrontWasmInterop.js").AsTask());
-            if (_cart is null)
+            if (ShouldFetchAfterHydration())
             {
                 await LoadCartAsync();
             }
-            else
+            else if (_cart is not null)
             {
                 await PublishCartChangedAsync(_cart.Count);
             }
 
             StateHasChanged();
         }
+    }
+
+    private bool ShouldFetchAfterHydration()
+    {
+        return DataMode switch
+        {
+            StorefrontFeatureDataMode.InitialSnapshot => false,
+            StorefrontFeatureDataMode.BrowserFetch => _cart is null,
+            StorefrontFeatureDataMode.RefreshAfterHydration => true,
+            _ => _cart is null
+        };
     }
 
     private async Task LoadCartAsync()
