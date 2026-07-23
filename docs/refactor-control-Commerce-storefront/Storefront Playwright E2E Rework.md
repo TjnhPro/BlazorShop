@@ -9,12 +9,12 @@ Purpose: gom các testcase chưa phù hợp hoặc cần chỉnh để checklist
 
 - `BlazorShop.Storefront.V2/Program.cs` có WASM runtime host: `AddInteractiveWebAssemblyComponents()`, `AddInteractiveWebAssemblyRenderMode()`.
 - `BlazorShop.Storefront.Components` có cart, account và checkout WASM component:
-  - `Cart/StorefrontCartView.razor`
+  - `Cart/CartView.razor`
   - `Account/AccountProfileEditor.razor`, `AccountAddressBook.razor`, `AccountOrderList.razor`, `AccountOrderDetail.razor`, `AccountChangePasswordForm.razor`
-  - `Checkout/StorefrontCheckoutShell.razor`
-- `/my-cart` host `StorefrontCartView` với `@rendermode="InteractiveWebAssembly"`.
+  - `Checkout/CheckoutShell.razor`
+- `/my-cart` host `CartView` với `@rendermode="InteractiveWebAssembly"`.
 - Account pages host các component account bằng `@rendermode="InteractiveWebAssembly"` và component gọi same-origin local API `/api/account/*`.
-- Checkout page host `StorefrontCheckoutShell` bằng `@rendermode="InteractiveWebAssembly"`. Shell gọi same-origin local API `/api/checkout`, `/api/checkout/shipping-method`, `/api/checkout/payment-method`, `/api/checkout/review`, `/api/checkout/place-order`.
+- Checkout page host `CheckoutShell` bằng `@rendermode="InteractiveWebAssembly"`. Shell gọi same-origin local API `/api/checkout`, `/api/checkout/shipping-method`, `/api/checkout/payment-method`, `/api/checkout/review`, `/api/checkout/place-order`.
 - Checkout contact/address input vẫn nằm trong page-level SSR form/fallback ở `CheckoutPage.razor`; đây là phần chưa nên viết expectation như một WASM address-step component hoàn chỉnh.
 - Checkout và order detail đang render dòng Tax trong UI, nhưng tax core không thuộc phase và hiện mặc định 0. Test không nên fail vì thiếu tax core.
 

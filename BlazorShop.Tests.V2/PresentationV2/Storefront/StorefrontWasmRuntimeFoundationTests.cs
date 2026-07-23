@@ -93,7 +93,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor");
 
-            Assert.Contains("<StorefrontCartView", page, StringComparison.Ordinal);
+            Assert.Contains("<CartView", page, StringComparison.Ordinal);
             Assert.Contains("InitialCart=\"_cart\"", page, StringComparison.Ordinal);
             Assert.Contains("InitialAlerts=\"_alerts\"", page, StringComparison.Ordinal);
             Assert.Contains("DataMode=\"StorefrontFeatureDataMode.InitialSnapshot\"", page, StringComparison.Ordinal);
@@ -103,7 +103,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void CartWasmComponent_UsesSameOriginLocalCartEndpoints()
         {
-            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Cart/StorefrontCartView.razor");
+            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Cart/CartView.razor");
 
             Assert.Contains("GetAsync<StorefrontBrowserCart>(\"/api/cart\")", component, StringComparison.Ordinal);
             Assert.Contains("ShouldFetchAfterHydration()", component, StringComparison.Ordinal);
@@ -259,11 +259,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor");
             var codeBehind = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor.cs");
 
-            Assert.Contains("<StorefrontCheckoutShell", page, StringComparison.Ordinal);
+            Assert.Contains("<CheckoutShell", page, StringComparison.Ordinal);
             Assert.Contains("InitialState=\"CheckoutState\"", page, StringComparison.Ordinal);
             Assert.Contains("DataMode=\"StorefrontFeatureDataMode.InitialSnapshot\"", page, StringComparison.Ordinal);
             Assert.Contains("ShowPanel=\"false\"", page, StringComparison.Ordinal);
-            Assert.Contains("<StorefrontCheckoutShell InitialState=\"CheckoutState\" DataMode=\"StorefrontFeatureDataMode.InitialSnapshot\" @rendermode=\"InteractiveWebAssembly\" />", page, StringComparison.Ordinal);
+            Assert.Contains("<CheckoutShell InitialState=\"CheckoutState\" DataMode=\"StorefrontFeatureDataMode.InitialSnapshot\" @rendermode=\"InteractiveWebAssembly\" />", page, StringComparison.Ordinal);
             Assert.Contains("@rendermode=\"InteractiveWebAssembly\"", page, StringComparison.Ordinal);
             Assert.Contains("StorefrontBrowserCheckoutState", codeBehind, StringComparison.Ordinal);
             Assert.Contains("ToBrowserCheckoutState(checkoutSession)", codeBehind, StringComparison.Ordinal);
@@ -272,7 +272,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void CheckoutWasmShell_UsesSameOriginLocalCheckoutEndpoints()
         {
-            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Checkout/StorefrontCheckoutShell.razor");
+            var component = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Checkout/CheckoutShell.razor");
 
             Assert.Contains("GetAsync<StorefrontBrowserCheckoutState>(\"/api/checkout\")", component, StringComparison.Ordinal);
             Assert.Contains("PostJsonAsync<StorefrontBrowserCheckoutSelectionRequest, StorefrontBrowserCheckoutState>", component, StringComparison.Ordinal);

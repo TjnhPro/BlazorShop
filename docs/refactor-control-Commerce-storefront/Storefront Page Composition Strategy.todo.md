@@ -12,9 +12,9 @@ Purpose: clarify which Storefront V2 pages stay as SSR route pages, which pages 
 - [x] `Home.razor` keeps route `/`, renders catalog/category/product content SSR, and already reads the DB page slug `home` through `StorefrontRoutes.HomeMetadataSlug`.
 - [x] `CategoryPage.razor`, `ProductPage.razor`, `NewReleases.razor`, and `TodaysDeals.razor` have route-specific SSR catalog queries, SEO metadata, and structured data.
 - [x] `SearchPage.razor` is SSR GET with query parameters and applies search noindex metadata through `StorefrontIndexingPolicy.ApplySearchMetadata`.
-- [x] `CartPage.razor` is an SSR route shell for `/my-cart` and renders `StorefrontCartView` with `InteractiveWebAssembly`.
+- [x] `CartPage.razor` is an SSR route shell for `/my-cart` and renders `CartView` with `InteractiveWebAssembly`.
 - [x] Account pages render WASM components (`AccountProfileEditor`, `AccountAddressBook`, `AccountOrderList`, `AccountOrderDetail`, `AccountChangePasswordForm`) and set `noindex,nofollow`.
-- [x] `CheckoutPage.razor` renders `StorefrontCheckoutShell` with `InteractiveWebAssembly`, while server endpoints still own antiforgery, cart version validation, idempotency, checkout review, place order, and payment redirect.
+- [x] `CheckoutPage.razor` renders `CheckoutShell` with `InteractiveWebAssembly`, while server endpoints still own antiforgery, cart version validation, idempotency, checkout review, place order, and payment redirect.
 - [x] `StorefrontStructuredDataComposer` already has `ComposeFaqPageAsync`, but `StorefrontPage.razor` does not currently pass structured data to `SeoHead`.
 - [x] `StorefrontPagePublicDto` does not expose `PageKey`, so the public page renderer cannot currently choose FAQ/policy/customer-service behavior from the DB page identity.
 - [x] `StorefrontPageContentRules.PageKeys` and `StorefrontPageTemplateCatalog` do not include `faq` or `customer_service`.

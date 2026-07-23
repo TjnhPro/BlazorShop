@@ -109,6 +109,30 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     StringComparison.OrdinalIgnoreCase));
         }
 
+        [Fact]
+        public void StorefrontComponents_BusinessFeatureFoldersStayUnderFeatures()
+        {
+            var componentRoot = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Components");
+            var allowedRootDirectories = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Browser",
+                "Features",
+                "wwwroot",
+                "bin",
+                "obj",
+            };
+
+            var unexpectedDirectories = Directory.GetDirectories(componentRoot)
+                .Select(Path.GetFileName)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Where(name => !allowedRootDirectories.Contains(name!))
+                .Where(name => Directory.EnumerateFileSystemEntries(Path.Combine(componentRoot, name!)).Any())
+                .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            Assert.Empty(unexpectedDirectories);
+        }
+
         [Theory]
         [InlineData(nameof(StorefrontRoutes.About), "/pages/about-us")]
         [InlineData(nameof(StorefrontRoutes.Faq), "/pages/faq")]

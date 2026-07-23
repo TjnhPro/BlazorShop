@@ -110,9 +110,9 @@ Not covered in this run:
 Kết luận theo code hiện tại:
 
 - Storefront V2 đã bật interactive WASM runtime qua `AddInteractiveWebAssemblyComponents()` và `AddInteractiveWebAssemblyRenderMode()` trong `BlazorShop.Storefront.V2/Program.cs`.
-- Cart đã có component WASM thật: `BlazorShop.Storefront.Components/Cart/StorefrontCartView.razor`, host tại `/my-cart` với `@rendermode="InteractiveWebAssembly"`.
+- Cart đã có component WASM thật: `BlazorShop.Storefront.Components/Features/Cart/CartView.razor`, host tại `/my-cart` với `@rendermode="InteractiveWebAssembly"`.
 - Account đã có component WASM thật trong `BlazorShop.Storefront.Components/Account/*`, host bằng `@rendermode="InteractiveWebAssembly"` cho profile, address book, orders, order detail/receipt và change password. Browser component gọi same-origin local API `/api/account/*`.
-- Checkout đã có `BlazorShop.Storefront.Components/Checkout/StorefrontCheckoutShell.razor`, host tại `/checkout` bằng `@rendermode="InteractiveWebAssembly"`. Shell gọi same-origin local API `/api/checkout`, `/api/checkout/shipping-method`, `/api/checkout/payment-method`, `/api/checkout/review`, `/api/checkout/place-order`.
+- Checkout đã có `BlazorShop.Storefront.Components/Features/Checkout/CheckoutShell.razor`, host tại `/checkout` bằng `@rendermode="InteractiveWebAssembly"`. Shell gọi same-origin local API `/api/checkout`, `/api/checkout/shipping-method`, `/api/checkout/payment-method`, `/api/checkout/review`, `/api/checkout/place-order`.
 - Checkout address/contact input hiện vẫn nằm trong page-level SSR form/fallback ở `CheckoutPage.razor` và có local API `/api/checkout/addresses`; E2E phải cover đúng trạng thái lai này cho tới khi address/contact được chuyển hẳn vào component.
 - Product detail vẫn dùng `storefrontCommerce.js` cho selection preview/add-to-cart browser behavior.
 - Tax core chưa nằm trong scope; hiện tax mặc định 0. Browser test phải kiểm tra tổng tiền không bị cộng tax sai. Việc ẩn/hiện label `Tax 0.00` là UI policy, không phải tax-core gate.

@@ -19,8 +19,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             {
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs"),
                 ReadStorefrontApiClientSources(),
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Checkout/StorefrontCheckoutShell.razor"),
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Cart/StorefrontCartView.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Checkout/CheckoutShell.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Cart/CartView.razor"),
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountOrderList.razor"),
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountOrderDetail.razor"),
             };
@@ -39,7 +39,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var apiClient = ReadStorefrontApiClientSources();
             var checkoutEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCheckoutEndpoints.cs");
-            var checkoutShell = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Checkout/StorefrontCheckoutShell.razor");
+            var checkoutShell = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Checkout/CheckoutShell.razor");
 
             Assert.Contains("StorefrontCartSessionRoute = StorefrontCartRoute + \"/session\"", apiClient, StringComparison.Ordinal);
             Assert.Contains("checkout/start", apiClient, StringComparison.Ordinal);

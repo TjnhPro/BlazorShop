@@ -358,8 +358,8 @@ Every interactive feature component must use one explicit data mode:
   - [x] `AccountOrderList`
   - [x] `AccountOrderDetail`
   - [x] `AccountChangePasswordForm`
-  - [x] `StorefrontCartView`
-  - [x] `StorefrontCheckoutShell`
+  - [x] `CartView`
+  - [x] `CheckoutShell`
 - [x] Change components that receive complete `Initial*` data to skip first-render refetch.
 - [x] Keep manual refresh/retry actions where useful.
 - [x] For account after Phase 2, prefer `BrowserFetch` because server host should only bootstrap the account app, not load each account screen.
@@ -388,20 +388,20 @@ Goal: introduce a reusable `Features/*` convention before extracting larger cata
 
 ### Tasks
 
-- [ ] Create `Storefront.Components/Features`.
-- [ ] Move existing component folders into the new convention with minimal behavior change:
-  - [ ] `Account/*` -> `Features/Account/*` during or after Phase 2.
-  - [ ] `Cart/StorefrontCartView.razor` -> `Features/Cart/CartView.razor` with compatibility wrapper if needed.
-  - [ ] `Checkout/StorefrontCheckoutShell.razor` -> `Features/Checkout/CheckoutShell.razor` with compatibility wrapper if needed.
-- [ ] Add `Features/README.md` or architecture doc guidance:
-  - [ ] feature components are reusable storefront capability blocks.
-  - [ ] page files compose features.
-  - [ ] no EF/Application/Domain/Control Plane dependencies.
-  - [ ] no hidden route assumptions.
-- [ ] Add or update `_Imports.razor` for clean namespaces.
-- [ ] Keep old component names temporarily through thin wrappers if route pages/tests depend on them.
-- [ ] Remove wrappers only after all call sites are migrated.
-- [ ] Add architecture tests to block new root-level business component folders outside `Features` unless explicitly approved.
+- [x] Create `Storefront.Components/Features`.
+- [x] Move existing component folders into the new convention with minimal behavior change:
+  - [x] `Account/*` -> `Features/Account/*` during or after Phase 2.
+  - [x] `Cart/CartView.razor` -> `Features/Cart/CartView.razor` with compatibility wrapper if needed.
+  - [x] `Checkout/CheckoutShell.razor` -> `Features/Checkout/CheckoutShell.razor` with compatibility wrapper if needed.
+- [x] Add `Features/README.md` or architecture doc guidance:
+  - [x] feature components are reusable storefront capability blocks.
+  - [x] page files compose features.
+  - [x] no EF/Application/Domain/Control Plane dependencies.
+  - [x] no hidden route assumptions.
+- [x] Add or update `_Imports.razor` for clean namespaces.
+- [x] Keep old component names temporarily through thin wrappers if route pages/tests depend on them.
+- [x] Remove wrappers only after all call sites are migrated.
+- [x] Add architecture tests to block new root-level business component folders outside `Features` unless explicitly approved.
 
 ### Verification
 
@@ -413,9 +413,9 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done when
 
-- [ ] The component tree communicates feature ownership.
-- [ ] Existing pages still compile and render.
-- [ ] New reusable features have a clear home.
+- [x] The component tree communicates feature ownership.
+- [x] Existing pages still compile and render.
+- [x] New reusable features have a clear home.
 
 ## Phase 5 - Deals And New Releases Portable Feature Extraction
 
@@ -623,7 +623,7 @@ Use the repository's current Playwright command/config if it differs.
 - [x] Commit 2: mechanical folder move to `Ssr`, `Hybrid`, and `WasmHost`.
 - [x] Commit 3: account host route and account app consolidation.
 - [x] Commit 4: hydration mode and duplicate-fetch cleanup.
-- [ ] Commit 5: `Features/*` component convention and move existing components.
+- [x] Commit 5: `Features/*` component convention and move existing components.
 - [ ] Commit 6: deals/new releases portable component extraction.
 - [ ] Commit 7: catalog/product portable component extraction.
 - [ ] Commit 8: contract boundary cleanup and architecture docs.
