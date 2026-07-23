@@ -40,6 +40,9 @@ namespace BlazorShop.Tests.PresentationV2
             Assert.Contains("<StorefrontFooter />", layoutMarkup);
             Assert.Equal(1, CountOccurrences(layoutMarkup, "data-storefront-toast-region"));
             Assert.DoesNotContain("<HeadContent>", layoutMarkup, StringComparison.Ordinal);
+            Assert.DoesNotContain("WasmProbe", layoutMarkup, StringComparison.Ordinal);
+            Assert.DoesNotContain("data-wasm-probe", layoutMarkup, StringComparison.Ordinal);
+            Assert.DoesNotContain("HostEnvironment.IsDevelopment()", layoutMarkup, StringComparison.Ordinal);
             Assert.DoesNotContain("<HeadContent>", brandHeadMarkup, StringComparison.Ordinal);
             Assert.DoesNotContain("<main", pageShellMarkup, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("<HeadContent>", pageShellMarkup, StringComparison.Ordinal);

@@ -1,5 +1,4 @@
 @inherits LayoutComponentBase
-@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment HostEnvironment
 
 <div class="bs-storefront-shell">
     <StorefrontHeader />
@@ -31,11 +30,6 @@
     <main class="bs-storefront-main flex-1">
         @Body
     </main>
-
-    @if (HostEnvironment.IsDevelopment())
-    {
-        <WasmProbe @rendermode="InteractiveWebAssembly" />
-    }
 
     <StorefrontFooter />
     <StorefrontConsentBanner />

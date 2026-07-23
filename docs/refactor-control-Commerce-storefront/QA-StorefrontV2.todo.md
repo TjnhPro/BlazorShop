@@ -93,11 +93,11 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.WASM/BlazorShop.Storefront.WASM.csproj`. 2026-07-13: passed.
 - [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj`. 2026-07-13: passed after adding `MapStaticAssets()`.
 - [x] `dotnet build BlazorShop.sln`. 2026-07-13: passed with existing package vulnerability warnings.
-- [x] Existing SSR Storefront route returns HTML before hydration. 2026-07-13: `GET http://localhost:18598/signin` returned 200 and included `data-wasm-probe`.
+- [x] Existing SSR Storefront route returns HTML before hydration. 2026-07-13: `GET http://localhost:18598/signin` returned 200 before hydration. 2026-07-23: Development-only `WasmProbe` was retired, so SSR proof must not depend on `data-wasm-probe`.
 - [x] `_framework/blazor.web.js` loads from Storefront V2. 2026-07-13: returned HTTP 200 after adding `MapStaticAssets()`.
 - [x] WASM boot resources load from Storefront V2. 2026-07-13: server log showed `_framework/BlazorShop.Storefront.Components.*.wasm` and resource collection assets returned 200.
-- [x] Development-only `WasmProbe` renders on an existing route. 2026-07-13: Playwright MCP found `WASM active` on `/signin`.
-- [x] `WasmProbe` button increments without a full page reload. 2026-07-13: Playwright MCP clicked the probe button and verified `Count 1`.
+- [x] Development-only `WasmProbe` is retired. 2026-07-23: `MainLayout` no longer renders the overlay and `LayoutAssetFoundationTests.StorefrontLayout_KeepsSingleToastRegionAndGlobalShell` guards against `WasmProbe`/`data-wasm-probe` returning.
+- [x] Real WASM route shells replace probe-based verification. 2026-07-23: cart/account/checkout WASM components remain covered by focused Storefront runtime foundation tests and browser QA evidence; no standalone probe button is required.
 - [x] `storefrontCommerce.js` still initializes cart/toast behavior. 2026-07-13: `/signin` HTML still included `js/storefrontCommerce.js`; no browser console errors beyond Blazor debug hotkey info.
 
 ## Storefront Account Recovery And WASM Migration
