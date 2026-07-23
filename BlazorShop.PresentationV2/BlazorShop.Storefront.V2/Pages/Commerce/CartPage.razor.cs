@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Pages
+namespace BlazorShop.Storefront.Pages.Commerce
 {
     using BlazorShop.Storefront.Components.Browser;
     using BlazorShop.Storefront.Services;

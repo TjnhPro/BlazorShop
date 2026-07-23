@@ -148,7 +148,13 @@ Do not:
 Important folders:
 
 - `Components/` - Razor components.
-- `Pages/` - server-side storefront pages.
+- `Pages/` - server-side storefront pages, grouped by route ownership:
+  - `Pages/Catalog/` - home, category, product, search, new releases, and today's deals SSR catalog pages.
+  - `Pages/Content/` - DB-driven content page renderer for `/pages/{slug}`.
+  - `Pages/Commerce/` - cart, checkout, and payment result pages.
+  - `Pages/Auth/` - sign-in, registration, and password recovery pages.
+  - `Pages/Account/` - customer account route shells.
+  - `Pages/System/` - maintenance and not-found pages.
 - `Services/` - Storefront API clients, SEO, sitemap, robots, auth form handlers.
 - `Options/` - Storefront API/public URL options.
 - `Configuration/` - options validators.

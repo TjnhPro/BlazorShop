@@ -6,7 +6,7 @@ Purpose: clarify which Storefront V2 pages stay as SSR route pages, which pages 
 
 ## Current Verified Evidence
 
-- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/StorefrontPage.razor` owns route `/pages/{Slug}` and loads a published page through `IStorefrontContentClient.GetPublishedPageBySlugAsync`.
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Content/StorefrontPage.razor` owns route `/pages/{Slug}` and loads a published page through `IStorefrontContentClient.GetPublishedPageBySlugAsync`.
 - [x] `StorefrontPage.razor` currently renders `BodyHtml` with `MarkupString` and composes SEO with `IStorefrontSeoComposer.ComposeStorefrontPageAsync`.
 - [x] `StorefrontRoutes` maps `About`, `Faq`, `Privacy`, `Terms`, and `CustomerService` to `/pages/...`; there are no dedicated `About.razor`, `FAQ.razor`, `Privacy.razor`, `Terms.razor`, or `CustomerService.razor` files under Storefront V2 `Pages`.
 - [x] `Home.razor` keeps route `/`, renders catalog/category/product content SSR, and already reads the DB page slug `home` through `StorefrontRoutes.HomeMetadataSlug`.
@@ -78,13 +78,13 @@ Goal: freeze current behavior before adding template-aware rendering.
 ### Tasks
 
 - [x] Record current Storefront V2 page inventory:
-  - [x] `Pages/Home.razor`
-  - [x] `Pages/CategoryPage.razor`
-  - [x] `Pages/ProductPage.razor`
-  - [x] `Pages/NewReleases.razor`
-  - [x] `Pages/TodaysDeals.razor`
-  - [x] `Pages/SearchPage.razor`
-  - [x] `Pages/StorefrontPage.razor`
+  - [x] `Pages/Catalog/Home.razor`
+  - [x] `Pages/Catalog/CategoryPage.razor`
+  - [x] `Pages/Catalog/ProductPage.razor`
+  - [x] `Pages/Catalog/NewReleases.razor`
+  - [x] `Pages/Catalog/TodaysDeals.razor`
+  - [x] `Pages/Catalog/SearchPage.razor`
+  - [x] `Pages/Content/StorefrontPage.razor`
   - [x] cart/account/checkout/auth/payment/system pages.
 - [x] Add or update architecture guardrail tests proving content pages do not reappear as dedicated Razor route files:
   - [x] No `About.razor`.
@@ -273,7 +273,7 @@ StorefrontPage.razor
 
 ### Files likely touched
 
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/StorefrontPage.razor`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Content/StorefrontPage.razor`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/*StorefrontPagePresentation*`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/*Pages*`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Seo/*`
@@ -333,11 +333,11 @@ Account pages already follow the desired SSR shell + WASM component model, but p
 ### Files likely touched
 
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/AccountPageShell.razor`
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountProfilePage.razor`
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountChangePasswordPage.razor`
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountAddressesPage.razor`
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountOrdersPage.razor`
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountOrderDetailPage.razor`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountProfilePage.razor`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountChangePasswordPage.razor`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountAddressesPage.razor`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountOrdersPage.razor`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountOrderDetailPage.razor`
 - `BlazorShop.Tests.V2/PresentationV2/Storefront/*`
 
 ### Verification
@@ -396,12 +396,12 @@ Pages/
 
 ### Tasks
 
-- [ ] Move files without changing route declarations.
-- [ ] Update namespaces/partial class namespaces where needed.
-- [ ] Update tests/source references affected by file moves.
-- [ ] Avoid broad namespace rewrites outside Storefront V2.
-- [ ] Confirm Razor routing still discovers all pages.
-- [ ] Update architecture folder guide if this structure becomes canonical.
+- [x] Move files without changing route declarations.
+- [x] Update namespaces/partial class namespaces where needed.
+- [x] Update tests/source references affected by file moves.
+- [x] Avoid broad namespace rewrites outside Storefront V2.
+- [x] Confirm Razor routing still discovers all pages.
+- [x] Update architecture folder guide if this structure becomes canonical.
 
 ### Files likely touched
 
@@ -419,9 +419,9 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done when
 
-- [ ] Page folder structure communicates intent.
-- [ ] Route URLs are unchanged.
-- [ ] No behavior changes are mixed into the move commit.
+- [x] Page folder structure communicates intent.
+- [x] Route URLs are unchanged.
+- [x] No behavior changes are mixed into the move commit.
 
 ## Phase 6 - QA, SEO, And Release Verification
 
@@ -510,7 +510,7 @@ Use the repository's actual Playwright command/config if it differs from the gen
 - [x] Commit 3: template catalog/rules add `faq` and `customer_service`.
 - [x] Commit 4: StorefrontPage template-aware SEO/structured data rendering.
 - [x] Commit 5: account page shell deduplication.
-- [ ] Commit 6: optional mechanical folder reorganization.
+- [x] Commit 6: optional mechanical folder reorganization.
 - [ ] Commit 7: QA evidence/docs updates.
 
 Each commit should be independently buildable. If Phase 5 folder reorganization is skipped, do not block Phases 1-4.

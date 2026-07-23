@@ -87,9 +87,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var files = new[]
             {
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/ProductCard.razor",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/ProductPage.razor",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CartPage.razor",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CheckoutPage.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Catalog/ProductPage.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Commerce/CartPage.razor",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Commerce/CheckoutPage.razor",
             };
 
             foreach (var relativePath in files)
@@ -120,7 +120,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void ProductPage_UsesBackendSelectionPreviewForVariantAttributes()
         {
-            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/ProductPage.razor");
+            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Catalog/ProductPage.razor");
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
             var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCartEndpoints.cs");
 
@@ -161,7 +161,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void ProductPage_RendersSellabilityAndQuantityMetadata()
         {
-            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/ProductPage.razor");
+            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Catalog/ProductPage.razor");
 
             Assert.Contains("min=\"@_product.MinOrderQuantity\"", markup);
             Assert.Contains("max=\"@_product.MaxOrderQuantity\"", markup);
@@ -180,7 +180,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void ProductPage_RendersProductImageGalleryComponent()
         {
-            var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/ProductPage.razor");
+            var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Catalog/ProductPage.razor");
             var gallery = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/ProductImageGallery.razor");
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
 
@@ -273,7 +273,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void AccountOrderDetailPage_PassesRouteReferenceToBrowserComponent()
         {
-            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountOrderDetailPage.razor");
+            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountOrderDetailPage.razor");
 
             Assert.Contains("OrderReference=\"@OrderReference\"", markup);
             Assert.DoesNotContain("OrderReference=\"OrderReference\"", markup, StringComparison.Ordinal);
@@ -282,8 +282,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void CheckoutPage_RendersAddressLookupAndSavedAddressSelection()
         {
-            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CheckoutPage.razor");
-            var codeBehind = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CheckoutPage.razor.cs");
+            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Commerce/CheckoutPage.razor");
+            var codeBehind = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Commerce/CheckoutPage.razor.cs");
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
             var apiRoutes = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiRoutes.cs");
 

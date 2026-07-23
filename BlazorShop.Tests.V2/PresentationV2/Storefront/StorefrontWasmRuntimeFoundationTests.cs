@@ -91,7 +91,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void CartPage_HostsInteractiveWasmCartViewWithServerSnapshot()
         {
-            var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CartPage.razor");
+            var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Commerce/CartPage.razor");
 
             Assert.Contains("<StorefrontCartView", page, StringComparison.Ordinal);
             Assert.Contains("InitialCart=\"_cart\"", page, StringComparison.Ordinal);
@@ -146,11 +146,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void AccountPages_HostInteractiveWasmAccountComponentsWithServerSnapshots()
         {
-            var profilePage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountProfilePage.razor");
-            var addressesPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountAddressesPage.razor");
-            var ordersPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountOrdersPage.razor");
-            var orderDetailPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountOrderDetailPage.razor");
-            var passwordPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountChangePasswordPage.razor");
+            var profilePage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountProfilePage.razor");
+            var addressesPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountAddressesPage.razor");
+            var ordersPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountOrdersPage.razor");
+            var orderDetailPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountOrderDetailPage.razor");
+            var passwordPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountChangePasswordPage.razor");
 
             Assert.Contains("<AccountProfileEditor", profilePage, StringComparison.Ordinal);
             Assert.Contains("InitialProfile=\"_profile\"", profilePage, StringComparison.Ordinal);
@@ -177,11 +177,11 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var shell = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/AccountPageShell.razor");
             var accountPages = new[]
             {
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountProfilePage.razor"),
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountAddressesPage.razor"),
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountOrdersPage.razor"),
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountOrderDetailPage.razor"),
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/AccountChangePasswordPage.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountProfilePage.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountAddressesPage.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountOrdersPage.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountOrderDetailPage.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountChangePasswordPage.razor"),
             };
 
             Assert.Contains("aria-label=\"Account navigation\"", shell, StringComparison.Ordinal);
@@ -247,8 +247,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void CheckoutPage_HostsInteractiveWasmCheckoutShellWithServerSnapshot()
         {
-            var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CheckoutPage.razor");
-            var codeBehind = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/CheckoutPage.razor.cs");
+            var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Commerce/CheckoutPage.razor");
+            var codeBehind = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Commerce/CheckoutPage.razor.cs");
 
             Assert.Contains("<StorefrontCheckoutShell", page, StringComparison.Ordinal);
             Assert.Contains("InitialState=\"CheckoutState\"", page, StringComparison.Ordinal);
