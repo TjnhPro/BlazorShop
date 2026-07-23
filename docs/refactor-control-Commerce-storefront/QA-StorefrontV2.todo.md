@@ -221,6 +221,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 
 ## Dynamic Storefront Pages
 
+- [x] Storefront page composition boundary is guarded before template-aware rendering. 2026-07-23 Phase 0: `StorefrontPageCompositionGuardrailTests` records the current route-page inventory, blocks dedicated Razor content pages (`About`, `FAQ`, `Privacy`, `Terms`, `CustomerService`), proves content route constants stay under `/pages/...`, and keeps private/search routes out of sitemap static routes.
 - [x] Storefront V2 builds after dynamic StorefrontPage rendering changes. 2026-07-11: `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj --no-restore` passed.
 - [x] `/pages/{slug}` renders published page title. 2026-07-12: Playwright MCP visible browser rendered `QA Dynamic Page 20260712034014` at `/pages/qa-dynamic-page-20260712034014`.
 - [x] `/pages/{slug}` renders intro. 2026-07-12: Playwright MCP visible browser rendered `QA intro marker 20260712034014`.
