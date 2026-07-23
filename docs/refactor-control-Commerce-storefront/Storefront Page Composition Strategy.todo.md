@@ -19,7 +19,7 @@ Purpose: clarify which Storefront V2 pages stay as SSR route pages, which pages 
 - [x] `StorefrontPagePublicDto` does not expose `PageKey`, so the public page renderer cannot currently choose FAQ/policy/customer-service behavior from the DB page identity.
 - [x] `StorefrontPageContentRules.PageKeys` and `StorefrontPageTemplateCatalog` do not include `faq` or `customer_service`.
 - [x] `MaintenancePage.razor` does not emit a direct `<meta name="robots">`, but `StorefrontResponseHeaders.ApplyServiceUnavailable` sets `X-Robots-Tag: noindex, nofollow` for 503 responses.
-- [x] Product detail already uses `ProductImageGallery`; product media is not part of this phase.
+- [x] Product detail uses portable `Features/Product/ProductGallery`; product media behavior was handled outside this phase.
 
 ## Goal
 

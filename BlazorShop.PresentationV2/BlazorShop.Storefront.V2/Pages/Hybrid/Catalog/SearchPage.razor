@@ -4,6 +4,7 @@
 @inject IStorefrontCatalogClient ApiClient
 @inject IStorefrontSeoComposer SeoComposer
 @inject IStorefrontDisplayContextProvider DisplayContextProvider
+@inject IStorefrontPriceFormatter PriceFormatter
 
 <SeoHead Metadata="_metadata" />
 
@@ -62,7 +63,7 @@
             </div>
         }
 
-        <ProductGrid Products="_products" EmptyMessage="No products found" />
+        <ProductSummaryGrid Items="_productSummaries" EmptyMessage="No products found" />
 
         @if (_totalPages > 1)
         {
@@ -88,6 +89,7 @@
     private int _totalCount;
     private int _totalPages;
     private IReadOnlyList<GetCatalogProduct> _products = [];
+    private IReadOnlyList<ProductSummaryItem> _productSummaries = [];
     private IReadOnlyList<CatalogFilterCategoryOption> _searchCategories = [];
     private SeoMetadataDto _metadata = new();
 
@@ -169,6 +171,7 @@
         {
             _isServiceUnavailable = false;
             _products = [];
+            _productSummaries = [];
             _pageNumber = 1;
             _totalCount = 0;
             _totalPages = 0;
@@ -180,6 +183,7 @@
         {
             _isServiceUnavailable = true;
             _products = [];
+            _productSummaries = [];
             _pageNumber = 1;
             _totalCount = 0;
             _totalPages = 0;
@@ -193,6 +197,9 @@
 
         _isServiceUnavailable = false;
         _products = products.Value?.Items ?? [];
+        _productSummaries = _products
+            .Select(product => StorefrontProductSummaryMapper.ToProductSummary(product, displayContext, PriceFormatter))
+            .ToArray();
         _pageNumber = products.Value?.PageNumber ?? Math.Max(1, Page);
         _pageSize = products.Value?.PageSize ?? _pageSize;
         _totalCount = products.Value?.TotalCount ?? _products.Count;

@@ -121,13 +121,20 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void ProductPage_UsesBackendSelectionPreviewForVariantAttributes()
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/ProductPage.razor");
+            var purchasePanel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductPurchasePanel.razor");
+            var purchaseModels = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductPurchasePanelModels.cs");
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
             var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCartEndpoints.cs");
 
-            Assert.Contains("data-storefront-selection-preview", markup);
-            Assert.Contains("data-preview-route=\"/api/product-selection-preview\"", markup);
-            Assert.Contains("data-storefront-attribute-control", markup);
-            Assert.Contains("data-storefront-selection-quantity", markup);
+            Assert.Contains("<ProductPurchasePanel Model=\"_purchasePanel\" />", markup);
+            Assert.Contains("BuildPurchasePanel", markup, StringComparison.Ordinal);
+            Assert.Contains("ProductPurchasePanelModel", purchaseModels, StringComparison.Ordinal);
+            Assert.DoesNotContain("GetProduct", purchasePanel + purchaseModels, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontRoutes", purchasePanel + purchaseModels, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-selection-preview", purchasePanel);
+            Assert.Contains("data-preview-route=\"/api/product-selection-preview\"", purchasePanel);
+            Assert.Contains("data-storefront-attribute-control", purchasePanel);
+            Assert.Contains("data-storefront-selection-quantity", purchasePanel);
             Assert.Contains("data-storefront-selection-price", markup);
             Assert.Contains("data-storefront-selection-stock", markup);
 
@@ -162,15 +169,17 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void ProductPage_RendersSellabilityAndQuantityMetadata()
         {
             var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/ProductPage.razor");
+            var purchasePanel = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductPurchasePanel.razor");
 
-            Assert.Contains("min=\"@_product.MinOrderQuantity\"", markup);
-            Assert.Contains("max=\"@_product.MaxOrderQuantity\"", markup);
-            Assert.Contains("step=\"@_product.QuantityStep\"", markup);
-            Assert.Contains("value=\"@_product.MinOrderQuantity\"", markup);
-            Assert.Contains("disabled=\"@(!CanSubmitInitialPurchase)\"", markup);
-            Assert.Contains("data-stock=\"@InitialStockValue\"", markup);
-            Assert.Contains("Free shipping", markup);
-            Assert.Contains("@_product.DeliveryEstimateText", markup);
+            Assert.Contains("min=\"@Model.MinOrderQuantity\"", purchasePanel);
+            Assert.Contains("max=\"@Model.MaxOrderQuantity\"", purchasePanel);
+            Assert.Contains("step=\"@Model.QuantityStep\"", purchasePanel);
+            Assert.Contains("value=\"@Model.MinOrderQuantity\"", purchasePanel);
+            Assert.Contains("disabled=\"@(!Model.CanSubmitInitialPurchase)\"", purchasePanel);
+            Assert.Contains("data-stock=\"@Model.InitialStockValue\"", purchasePanel);
+            Assert.Contains("Free shipping", purchasePanel);
+            Assert.Contains("@Model.DeliveryEstimateText", purchasePanel);
+            Assert.Contains("BuildPurchasePanel", markup);
             Assert.Contains("IsInitialPurchaseHardBlock", markup);
             Assert.Contains("or \"purchase_disabled\"", markup);
             Assert.Contains("or \"out_of_stock\"", markup);
@@ -181,12 +190,16 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void ProductPage_RendersProductImageGalleryComponent()
         {
             var page = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/ProductPage.razor");
-            var gallery = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Catalog/ProductImageGallery.razor");
+            var gallery = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductGallery.razor");
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
 
-            Assert.Contains("<ProductImageGallery Product=\"_product\" />", page);
+            Assert.Contains("<ProductGallery Items=\"_galleryItems\" ProductName=\"_product.Name\" />", page);
             Assert.DoesNotContain("aspect-[4/3]", page, StringComparison.Ordinal);
-            Assert.Contains("product.MediaGallery", gallery);
+            Assert.Contains("BuildGalleryItems", page, StringComparison.Ordinal);
+            Assert.Contains("product.MediaGallery", page, StringComparison.Ordinal);
+            Assert.Contains("ProductGalleryItem", gallery, StringComparison.Ordinal);
+            Assert.DoesNotContain("GetProduct", gallery, StringComparison.Ordinal);
+            Assert.DoesNotContain("product.MediaGallery", gallery, StringComparison.Ordinal);
             Assert.Contains("bs-product-gallery__main", gallery);
             Assert.Contains("bs-product-gallery__thumb", gallery);
             Assert.Contains("aspect-square", gallery);
@@ -210,7 +223,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.DoesNotContain("sm:grid", gallery, StringComparison.Ordinal);
             Assert.DoesNotContain("sm:grid-cols", gallery, StringComparison.Ordinal);
             Assert.Contains("data-[selected=true]:ring-2", gallery);
-            Assert.Contains("product.Image", gallery);
+            Assert.Contains("product.Image", page);
             Assert.Contains("Image unavailable", gallery);
             Assert.Contains("BrokenImageFallbackScript", gallery);
             Assert.Contains("onerror=\"@BrokenImageFallbackScript\"", gallery);
@@ -274,6 +287,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         public void DealsAndNewReleases_ComposePortableFeatureComponents()
         {
             var home = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/Home.razor");
+            var categoryPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor");
+            var searchPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor");
             var dealsPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/TodaysDeals.razor");
             var newReleasesPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/NewReleases.razor");
             var dealsBlock = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Deals/DealsBlock.razor");
@@ -284,7 +299,10 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Contains("<DealsBlock Placement=\"DealsPlacement.Home\"", home, StringComparison.Ordinal);
             Assert.Contains("<DealsBlock Placement=\"DealsPlacement.DedicatedPage\"", dealsPage, StringComparison.Ordinal);
             Assert.Contains("<ProductSummaryGrid Items=\"_productSummaries\"", newReleasesPage, StringComparison.Ordinal);
-            Assert.DoesNotContain("<ProductGrid Products=\"_products\"", dealsPage + newReleasesPage, StringComparison.Ordinal);
+            Assert.Contains("<ProductSummaryGrid Items=\"_productSummaries\"", categoryPage, StringComparison.Ordinal);
+            Assert.Contains("<ProductSummaryGrid Items=\"_productSummaries\"", searchPage, StringComparison.Ordinal);
+            Assert.DoesNotContain("<ProductGrid Products=\"_products\"", categoryPage + searchPage + dealsPage + newReleasesPage, StringComparison.Ordinal);
+            Assert.Contains("StorefrontProductSummaryMapper.ToProductSummary", home + categoryPage + searchPage + dealsPage + newReleasesPage, StringComparison.Ordinal);
 
             Assert.Contains("data-storefront-deals-block", dealsBlock, StringComparison.Ordinal);
             Assert.Contains("<ProductSummaryGrid Items=\"Items\"", dealsBlock, StringComparison.Ordinal);

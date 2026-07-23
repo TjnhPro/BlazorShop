@@ -5,6 +5,7 @@
 @inject IStorefrontSeoComposer SeoComposer
 @inject IStorefrontStructuredDataComposer StructuredDataComposer
 @inject IStorefrontDisplayContextProvider DisplayContextProvider
+@inject IStorefrontPriceFormatter PriceFormatter
 @inject ILogger<CategoryPage> Logger
 
 <SeoHead Metadata="_metadata" StructuredData="_structuredData" />
@@ -63,8 +64,8 @@ else if (_categoryPage is not null)
     </StorefrontPageShell>
 
     <section class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
-        <ProductGrid Products="_displayProducts"
-                     EmptyMessage="No products are available in this category right now." />
+        <ProductSummaryGrid Items="_productSummaries"
+                            EmptyMessage="No products are available in this category right now." />
 
         @if (_totalPages > 1)
         {
@@ -93,6 +94,7 @@ else if (_categoryPage is not null)
     private SeoMetadataDto _metadata = new();
     private IReadOnlyList<StorefrontBreadcrumbItem> _breadcrumbs = [];
     private IReadOnlyList<GetCatalogProduct> _displayProducts = [];
+    private IReadOnlyList<ProductSummaryItem> _productSummaries = [];
     private int _pageNumber = 1;
     private int _pageSize = 24;
     private int _totalCount;
@@ -147,6 +149,7 @@ else if (_categoryPage is not null)
             _isServiceUnavailable = true;
             _breadcrumbs = [];
             _displayProducts = [];
+            _productSummaries = [];
             _pageNumber = 1;
             _totalCount = 0;
             _totalPages = 0;
@@ -169,6 +172,7 @@ else if (_categoryPage is not null)
             _isServiceUnavailable = false;
             _breadcrumbs = [];
             _displayProducts = [];
+            _productSummaries = [];
             _pageNumber = 1;
             _totalCount = 0;
             _totalPages = 0;
@@ -217,6 +221,9 @@ else if (_categoryPage is not null)
         if (filteredResult.IsSuccess && filteredResult.Value is not null)
         {
             _displayProducts = filteredResult.Value.Items;
+            _productSummaries = _displayProducts
+                .Select(product => StorefrontProductSummaryMapper.ToProductSummary(product, _displayContext, PriceFormatter))
+                .ToArray();
             _pageNumber = filteredResult.Value.PageNumber;
             _pageSize = filteredResult.Value.PageSize;
             _totalCount = filteredResult.Value.TotalCount;
@@ -225,6 +232,9 @@ else if (_categoryPage is not null)
         }
 
         _displayProducts = categoryPage.Products;
+        _productSummaries = _displayProducts
+            .Select(product => StorefrontProductSummaryMapper.ToProductSummary(product, _displayContext, PriceFormatter))
+            .ToArray();
         _pageNumber = 1;
         _totalCount = categoryPage.DirectProductCount;
         _totalPages = 0;

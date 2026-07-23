@@ -481,35 +481,35 @@ Goal: continue reducing page-level UI logic without weakening SSR SEO behavior.
 
 ### Candidate components
 
-- [ ] `Features/Product/ProductGallery`
-- [ ] `Features/Product/ProductPurchasePanel`
-- [ ] `Features/Product/ProductPricePanel`
-- [ ] `Features/Product/ProductAvailabilityPanel`
-- [ ] `Features/Catalog/ProductSummaryGrid`
-- [ ] `Features/Catalog/CatalogPager`
-- [ ] `Features/Catalog/CatalogSortSelector`
-- [ ] `Features/Navigation/BreadcrumbTrail`
+- [x] `Features/Product/ProductGallery`
+- [x] `Features/Product/ProductPurchasePanel`
+- [n/a] `Features/Product/ProductPricePanel` remains page-owned in this phase because the SSR product header owns SEO-critical title/price composition.
+- [n/a] `Features/Product/ProductAvailabilityPanel` remains split between the SSR product header status and the portable purchase panel sellability state.
+- [x] `Features/Catalog/ProductSummaryGrid`
+- [n/a] `Features/Catalog/CatalogPager` remains page-owned because it builds route-specific query URLs for category/search.
+- [n/a] `Features/Catalog/CatalogSortSelector` remains inside `CatalogFilterPanel` because sort state is route-query-owned.
+- [n/a] `Features/Navigation/BreadcrumbTrail` remains out of this phase because current breadcrumbs use resolved server navigation items and no duplicate breadcrumb markup was introduced.
 
 ### Tasks
 
-- [ ] Keep product/category/search/home route pages responsible for route parameters, SEO, structured data, status handling, and initial query.
-- [ ] Move reusable markup/state into feature components one group at a time.
-- [ ] Product gallery:
-  - [ ] keep 1x1 image ratio requirement.
-  - [ ] support product detail main image + thumbnail list.
-  - [ ] avoid product-page-only assumptions.
-- [ ] Product purchase panel:
-  - [ ] receive product/variant/sellability snapshot.
-  - [ ] support WASM interaction for variant selection and add-to-cart when available.
-  - [ ] keep server validation as source of truth.
-- [ ] Catalog grid:
-  - [ ] support category, search, new releases, and deals product summaries.
-  - [ ] support empty state.
-  - [ ] support paging/sorting inputs without owning route query parsing.
-- [ ] Breadcrumb component:
-  - [ ] accept resolved breadcrumb items.
-  - [ ] do not call backend by itself unless explicitly placed in browser-fetch mode.
-- [ ] Add tests for each extracted component before deleting duplicated page markup.
+- [x] Keep product/category/search/home route pages responsible for route parameters, SEO, structured data, status handling, and initial query.
+- [x] Move reusable markup/state into feature components one group at a time.
+- [x] Product gallery:
+  - [x] keep 1x1 image ratio requirement.
+  - [x] support product detail main image + thumbnail list.
+  - [x] avoid product-page-only assumptions.
+- [x] Product purchase panel:
+  - [x] receive product/variant/sellability snapshot.
+  - [x] support WASM interaction for variant selection and add-to-cart when available.
+  - [x] keep server validation as source of truth.
+- [x] Catalog grid:
+  - [x] support category, search, new releases, and deals product summaries.
+  - [x] support empty state.
+  - [x] support paging/sorting inputs without owning route query parsing.
+- [n/a] Breadcrumb component:
+  - [n/a] accept resolved breadcrumb items.
+  - [n/a] do not call backend by itself unless explicitly placed in browser-fetch mode.
+- [x] Add tests for each extracted component before deleting duplicated page markup.
 
 ### Verification
 
@@ -519,9 +519,9 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done when
 
-- [ ] Catalog/product pages are easier to scan.
-- [ ] Reusable components can be placed in multiple page contexts.
-- [ ] SEO-critical SSR output remains intact.
+- [x] Catalog/product pages are easier to scan.
+- [x] Reusable components can be placed in multiple page contexts.
+- [x] SEO-critical SSR output remains intact.
 
 ## Phase 7 - Contract Boundary Cleanup For Portable Components
 
@@ -625,7 +625,7 @@ Use the repository's current Playwright command/config if it differs.
 - [x] Commit 4: hydration mode and duplicate-fetch cleanup.
 - [x] Commit 5: `Features/*` component convention and move existing components.
 - [x] Commit 6: deals/new releases portable component extraction.
-- [ ] Commit 7: catalog/product portable component extraction.
+- [x] Commit 7: catalog/product portable component extraction.
 - [ ] Commit 8: contract boundary cleanup and architecture docs.
 - [ ] Commit 9: Playwright QA evidence and release checklist updates.
 

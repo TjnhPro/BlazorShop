@@ -1,6 +1,8 @@
-@if (GalleryItems.Count > 0)
+@namespace BlazorShop.Storefront.Components.Features.Product
+
+@if (Items.Count > 0)
 {
-    var main = GalleryItems[0];
+    var main = Items[0];
     <div class="bs-product-gallery grid gap-4" data-storefront-product-gallery>
         <div class="bs-product-gallery__main relative aspect-square overflow-hidden rounded-2xl bg-neutral-50" data-storefront-gallery-main>
             <img src="@main.ImageUrl"
@@ -11,13 +13,13 @@
                  data-storefront-gallery-main-image />
             <div class="bs-product-gallery__placeholder absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-100 px-6 text-center text-sm font-semibold text-neutral-500"
                  role="img"
-                 aria-label="@($"Image unavailable for {Product?.Name ?? "product"}")"
+                 aria-label="@($"Image unavailable for {DisplayProductName}")"
                  data-storefront-gallery-placeholder
                  hidden>
                 Image unavailable
             </div>
 
-            @if (GalleryItems.Count > 1)
+            @if (Items.Count > 1)
             {
                 <div class="bs-product-gallery__controls" data-storefront-gallery-controls>
                     <button type="button"
@@ -49,15 +51,15 @@
             }
         </div>
 
-        @if (GalleryItems.Count > 1)
+        @if (Items.Count > 1)
         {
             <div class="bs-product-gallery__thumbs flex gap-3 overflow-x-auto pb-1"
                  data-storefront-gallery-thumb-viewport
                  role="list"
                  aria-label="Product images">
-                @for (var index = 0; index < GalleryItems.Count; index++)
+                @for (var index = 0; index < Items.Count; index++)
                 {
-                    var item = GalleryItems[index];
+                    var item = Items[index];
                     <button type="button"
                             class="bs-product-gallery__thumb relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50 p-0 ring-0 transition hover:border-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-900 data-[selected=true]:border-neutral-900 data-[selected=true]:ring-2 data-[selected=true]:ring-neutral-900"
                             aria-label="@($"Show product image {index + 1}")"
@@ -89,7 +91,7 @@ else
     <div class="bs-product-gallery__main relative aspect-square overflow-hidden rounded-2xl bg-neutral-50" data-storefront-product-gallery>
         <div class="bs-product-gallery__placeholder absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-100 px-6 text-center text-sm font-semibold text-neutral-500"
              role="img"
-             aria-label="@($"Image unavailable for {Product?.Name ?? "product"}")"
+             aria-label="@($"Image unavailable for {DisplayProductName}")"
              data-storefront-gallery-placeholder>
             Image unavailable
         </div>
@@ -98,52 +100,12 @@ else
 
 @code {
     [Parameter]
-    public GetProduct? Product { get; set; }
+    public IReadOnlyList<ProductGalleryItem> Items { get; set; } = [];
+
+    [Parameter]
+    public string? ProductName { get; set; }
 
     private const string BrokenImageFallbackScript = "this.onerror=null;this.hidden=true;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221%22 height=%221%22/%3E';if(this.nextElementSibling){this.nextElementSibling.hidden=false;}";
 
-    private IReadOnlyList<GalleryImageItem> GalleryItems => BuildGalleryItems(Product);
-
-    private static IReadOnlyList<GalleryImageItem> BuildGalleryItems(GetProduct? product)
-    {
-        if (product is null)
-        {
-            return [];
-        }
-
-        var gallery = product.MediaGallery
-            .Where(item => !string.IsNullOrWhiteSpace(item.ImageUrl))
-            .Select(item => new GalleryImageItem(
-                item.ImageUrl!,
-                string.IsNullOrWhiteSpace(item.ThumbnailUrl) ? item.ImageUrl! : item.ThumbnailUrl!,
-                ResolveAltText(item.AltText, product.Name)))
-            .ToArray();
-
-        if (gallery.Length > 0)
-        {
-            return gallery;
-        }
-
-        return string.IsNullOrWhiteSpace(product.Image)
-            ? []
-            :
-            [
-                new GalleryImageItem(
-                    product.Image!,
-                    product.Image!,
-                    ResolveAltText(null, product.Name)),
-            ];
-    }
-
-    private static string ResolveAltText(string? altText, string? productName)
-    {
-        if (!string.IsNullOrWhiteSpace(altText))
-        {
-            return altText.Trim();
-        }
-
-        return string.IsNullOrWhiteSpace(productName) ? "Product image" : productName.Trim();
-    }
-
-    private sealed record GalleryImageItem(string ImageUrl, string ThumbnailUrl, string AltText);
+    private string DisplayProductName => string.IsNullOrWhiteSpace(ProductName) ? "product" : ProductName.Trim();
 }
