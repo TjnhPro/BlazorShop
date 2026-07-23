@@ -21,8 +21,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 ReadStorefrontApiClientSources(),
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Checkout/StorefrontCheckoutShell.razor"),
                 ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Cart/StorefrontCartView.razor"),
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Account/AccountOrderList.razor"),
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Account/AccountOrderDetail.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountOrderList.razor"),
+                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountOrderDetail.razor"),
             };
 
             foreach (var source in activeStorefrontSources)

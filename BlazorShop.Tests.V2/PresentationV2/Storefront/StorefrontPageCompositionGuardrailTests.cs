@@ -40,13 +40,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [InlineData("ResetPasswordPage.razor", "@page \"/reset-password\"")]
         [InlineData("PaymentSuccessPage.razor", "@page \"/payment-success\"")]
         [InlineData("PaymentCancelPage.razor", "@page \"/payment-cancel\"")]
-        [InlineData("AccountProfilePage.razor", "@page \"/account\"")]
-        [InlineData("AccountProfilePage.razor", "@page \"/account/profile\"")]
-        [InlineData("AccountAddressesPage.razor", "@page \"/account/addresses\"")]
-        [InlineData("AccountOrdersPage.razor", "@page \"/account/orders\"")]
-        [InlineData("AccountOrderDetailPage.razor", "@page \"/account/orders/{OrderReference}\"")]
-        [InlineData("AccountOrderDetailPage.razor", "@page \"/account/orders/{OrderReference}/receipt\"")]
-        [InlineData("AccountChangePasswordPage.razor", "@page \"/account/change-password\"")]
+        [InlineData("AccountHostPage.razor", "@page \"/account\"")]
+        [InlineData("AccountHostPage.razor", "@page \"/account/{*Path}\"")]
         [InlineData("MaintenancePage.razor", "@page \"/maintenance\"")]
         public void RoutePages_KeepExpectedRouteDeclarations(string fileName, string routeDeclaration)
         {
@@ -76,13 +71,8 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                 new PageInventoryItem("Pages/Ssr/Auth/RegisterPage.razor", "/register", RenderOwnership.Ssr),
                 new PageInventoryItem("Pages/Ssr/Auth/ForgotPasswordPage.razor", "/forgot-password", RenderOwnership.Ssr),
                 new PageInventoryItem("Pages/Ssr/Auth/ResetPasswordPage.razor", "/reset-password", RenderOwnership.Ssr),
-                new PageInventoryItem("Pages/WasmHost/Account/AccountProfilePage.razor", "/account", RenderOwnership.WasmHost),
-                new PageInventoryItem("Pages/WasmHost/Account/AccountProfilePage.razor", "/account/profile", RenderOwnership.WasmHost),
-                new PageInventoryItem("Pages/WasmHost/Account/AccountAddressesPage.razor", "/account/addresses", RenderOwnership.WasmHost),
-                new PageInventoryItem("Pages/WasmHost/Account/AccountOrdersPage.razor", "/account/orders", RenderOwnership.WasmHost),
-                new PageInventoryItem("Pages/WasmHost/Account/AccountOrderDetailPage.razor", "/account/orders/{OrderReference}", RenderOwnership.WasmHost),
-                new PageInventoryItem("Pages/WasmHost/Account/AccountOrderDetailPage.razor", "/account/orders/{OrderReference}/receipt", RenderOwnership.WasmHost),
-                new PageInventoryItem("Pages/WasmHost/Account/AccountChangePasswordPage.razor", "/account/change-password", RenderOwnership.WasmHost),
+                new PageInventoryItem("Pages/WasmHost/Account/AccountHostPage.razor", "/account", RenderOwnership.WasmHost),
+                new PageInventoryItem("Pages/WasmHost/Account/AccountHostPage.razor", "/account/{*Path}", RenderOwnership.WasmHost),
                 new PageInventoryItem("Pages/Ssr/System/MaintenancePage.razor", "/maintenance", RenderOwnership.Ssr),
                 new PageInventoryItem("Pages/Ssr/System/NotFoundPage.razor", "/{*Path:nonfile}", RenderOwnership.Ssr),
             };

@@ -1,0 +1,74 @@
+@page "/account"
+@page "/account/{*Path}"
+@using Microsoft.AspNetCore.Antiforgery
+@using BlazorShop.Storefront.Components.Features.Account
+@inject IStorefrontSessionResolver SessionResolver
+@inject NavigationManager NavigationManager
+@inject IAntiforgery Antiforgery
+
+<PageTitle>Account</PageTitle>
+
+<HeadContent>
+    <meta name="robots" content="noindex,nofollow" />
+</HeadContent>
+
+@if (_authorized)
+{
+    <AccountApp
+        Path="@Path"
+        PageNumber="@Page"
+        Error="@Error"
+        Saved="@Saved"
+        AntiforgeryFieldName="@_antiforgeryFieldName"
+        AntiforgeryRequestToken="@_antiforgeryRequestToken"
+        @rendermode="InteractiveWebAssembly" />
+}
+else
+{
+    <section class="mx-auto max-w-7xl px-4 py-12 text-sm text-neutral-600 sm:px-6 lg:px-8">
+        Redirecting to sign in...
+    </section>
+}
+
+@code {
+    [Parameter]
+    public string? Path { get; set; }
+
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? Error { get; set; }
+
+    [SupplyParameterFromQuery(Name = "saved")]
+    public string? Saved { get; set; }
+
+    [SupplyParameterFromQuery(Name = "page")]
+    public int Page { get; set; } = 1;
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    private bool _authorized;
+    private string? _antiforgeryFieldName;
+    private string? _antiforgeryRequestToken;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var tokens = HttpContext is null ? null : Antiforgery.GetAndStoreTokens(HttpContext);
+        _antiforgeryFieldName = tokens?.FormFieldName;
+        _antiforgeryRequestToken = tokens?.RequestToken;
+
+        var session = await SessionResolver.GetCurrentUserAsync();
+        if (!session.IsAuthenticated || string.IsNullOrWhiteSpace(session.AccessToken))
+        {
+            NavigationManager.NavigateTo(StorefrontReturnUrl.BuildSignInUrl(CurrentReturnUrl()), replace: true);
+            return;
+        }
+
+        _authorized = true;
+    }
+
+    private string CurrentReturnUrl()
+    {
+        var relative = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        return string.IsNullOrWhiteSpace(relative) ? "/account" : $"/{relative}";
+    }
+}

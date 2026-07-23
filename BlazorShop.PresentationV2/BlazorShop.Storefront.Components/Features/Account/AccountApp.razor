@@ -1,0 +1,183 @@
+@namespace BlazorShop.Storefront.Components.Features.Account
+@using BlazorShop.Storefront.Components.Browser
+
+<PageTitle>@PageTitleText</PageTitle>
+
+<section class="mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8" data-storefront-account-app>
+    <div class="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
+        <AccountNavigation ActiveRoute="@ActiveRoute.NavRoute" />
+
+        <article class="rounded border border-neutral-200 bg-white">
+            <header class="border-b border-neutral-200 px-6 py-6">
+                <p class="text-sm font-semibold uppercase text-neutral-500">Customer account</p>
+                <h1 class="mt-2 text-3xl font-extrabold text-neutral-900">@Title</h1>
+            </header>
+
+            <div class="px-6 py-6">
+                @RenderActivePanel()
+            </div>
+        </article>
+    </div>
+</section>
+
+@code {
+    [Parameter]
+    public string? Path { get; set; }
+
+    [Parameter]
+    public int PageNumber { get; set; } = 1;
+
+    [Parameter]
+    public string? Error { get; set; }
+
+    [Parameter]
+    public string? Saved { get; set; }
+
+    [Parameter]
+    public string? AntiforgeryFieldName { get; set; }
+
+    [Parameter]
+    public string? AntiforgeryRequestToken { get; set; }
+
+    private AccountRoute ActiveRoute => ResolveRoute(Path);
+
+    private string Title => ActiveRoute.Kind switch
+    {
+        AccountRouteKind.Profile => "Profile",
+        AccountRouteKind.Addresses => "Addresses",
+        AccountRouteKind.Orders => "Orders",
+        AccountRouteKind.OrderDetail => $"{(ActiveRoute.ReceiptMode ? "Receipt" : "Order")} {ActiveRoute.OrderReference}".Trim(),
+        AccountRouteKind.ChangePassword => "Change password",
+        _ => "Account section not found"
+    };
+
+    private string PageTitleText => ActiveRoute.Kind == AccountRouteKind.Unknown
+        ? "Account section not found"
+        : $"Account {Title}".Trim();
+
+    private RenderFragment RenderActivePanel() => builder =>
+    {
+        switch (ActiveRoute.Kind)
+        {
+            case AccountRouteKind.Profile:
+                builder.OpenComponent<AccountProfileEditor>(0);
+                builder.AddAttribute(1, nameof(AccountProfileEditor.InitialError), Error);
+                builder.AddAttribute(2, nameof(AccountProfileEditor.InitialSuccess), Saved == "1" ? "Profile updated." : null);
+                builder.AddAttribute(3, nameof(AccountProfileEditor.FormAction), AccountRoutes.Profile);
+                builder.AddAttribute(4, nameof(AccountProfileEditor.AntiforgeryFieldName), AntiforgeryFieldName);
+                builder.AddAttribute(5, nameof(AccountProfileEditor.AntiforgeryRequestToken), AntiforgeryRequestToken);
+                builder.CloseComponent();
+                break;
+
+            case AccountRouteKind.Addresses:
+                builder.OpenComponent<AccountAddressBook>(10);
+                builder.AddAttribute(11, nameof(AccountAddressBook.InitialError), Error);
+                builder.AddAttribute(12, nameof(AccountAddressBook.InitialSuccess), Saved == "1" ? "Address book updated." : null);
+                builder.AddAttribute(13, nameof(AccountAddressBook.FormAction), AccountRoutes.Addresses);
+                builder.AddAttribute(14, nameof(AccountAddressBook.AntiforgeryFieldName), AntiforgeryFieldName);
+                builder.AddAttribute(15, nameof(AccountAddressBook.AntiforgeryRequestToken), AntiforgeryRequestToken);
+                builder.CloseComponent();
+                break;
+
+            case AccountRouteKind.Orders:
+                builder.OpenComponent<AccountOrderList>(20);
+                builder.AddAttribute(21, nameof(AccountOrderList.InitialError), Error);
+                builder.AddAttribute(22, nameof(AccountOrderList.PageNumber), Math.Max(1, PageNumber));
+                builder.CloseComponent();
+                break;
+
+            case AccountRouteKind.OrderDetail:
+                builder.OpenComponent<AccountOrderDetail>(30);
+                builder.AddAttribute(31, nameof(AccountOrderDetail.InitialError), Error);
+                builder.AddAttribute(32, nameof(AccountOrderDetail.OrderReference), ActiveRoute.OrderReference);
+                builder.AddAttribute(33, nameof(AccountOrderDetail.ReceiptMode), ActiveRoute.ReceiptMode);
+                builder.CloseComponent();
+                break;
+
+            case AccountRouteKind.ChangePassword:
+                builder.OpenComponent<AccountChangePasswordForm>(40);
+                builder.AddAttribute(41, nameof(AccountChangePasswordForm.InitialError), Error);
+                builder.AddAttribute(42, nameof(AccountChangePasswordForm.InitialSuccess), Saved == "1" ? "Password changed." : null);
+                builder.AddAttribute(43, nameof(AccountChangePasswordForm.FormAction), AccountRoutes.ChangePassword);
+                builder.AddAttribute(44, nameof(AccountChangePasswordForm.AntiforgeryFieldName), AntiforgeryFieldName);
+                builder.AddAttribute(45, nameof(AccountChangePasswordForm.AntiforgeryRequestToken), AntiforgeryRequestToken);
+                builder.CloseComponent();
+                break;
+
+            default:
+                builder.OpenElement(50, "div");
+                builder.AddAttribute(51, "class", "rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800");
+                builder.AddAttribute(52, "role", "alert");
+                builder.AddContent(53, "The account section could not be found.");
+                builder.CloseElement();
+                break;
+        }
+    };
+
+    private static AccountRoute ResolveRoute(string? path)
+    {
+        var normalized = Normalize(path);
+        if (normalized.Length == 0 || string.Equals(normalized, "profile", StringComparison.OrdinalIgnoreCase))
+        {
+            return new AccountRoute(AccountRouteKind.Profile, AccountRoutes.Profile, null, false);
+        }
+
+        if (string.Equals(normalized, "addresses", StringComparison.OrdinalIgnoreCase))
+        {
+            return new AccountRoute(AccountRouteKind.Addresses, AccountRoutes.Addresses, null, false);
+        }
+
+        if (string.Equals(normalized, "orders", StringComparison.OrdinalIgnoreCase))
+        {
+            return new AccountRoute(AccountRouteKind.Orders, AccountRoutes.Orders, null, false);
+        }
+
+        if (string.Equals(normalized, "change-password", StringComparison.OrdinalIgnoreCase))
+        {
+            return new AccountRoute(AccountRouteKind.ChangePassword, AccountRoutes.ChangePassword, null, false);
+        }
+
+        var segments = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (segments.Length is 2 or 3 && string.Equals(segments[0], "orders", StringComparison.OrdinalIgnoreCase))
+        {
+            var receiptMode = segments.Length == 3 && string.Equals(segments[2], "receipt", StringComparison.OrdinalIgnoreCase);
+            if (segments.Length == 2 || receiptMode)
+            {
+                var reference = Uri.UnescapeDataString(segments[1]);
+                if (!string.IsNullOrWhiteSpace(reference))
+                {
+                    return new AccountRoute(AccountRouteKind.OrderDetail, AccountRoutes.Orders, reference, receiptMode);
+                }
+            }
+        }
+
+        return new AccountRoute(AccountRouteKind.Unknown, AccountRoutes.Profile, null, false);
+    }
+
+    private static string Normalize(string? path)
+    {
+        return string.IsNullOrWhiteSpace(path)
+            ? string.Empty
+            : path.Trim().Trim('/');
+    }
+
+    private enum AccountRouteKind
+    {
+        Unknown,
+        Profile,
+        Addresses,
+        Orders,
+        OrderDetail,
+        ChangePassword
+    }
+
+    private sealed record AccountRoute(AccountRouteKind Kind, string NavRoute, string? OrderReference, bool ReceiptMode);
+
+    private static class AccountRoutes
+    {
+        public const string Profile = "/account/profile";
+        public const string Addresses = "/account/addresses";
+        public const string Orders = "/account/orders";
+        public const string ChangePassword = "/account/change-password";
+    }
+}

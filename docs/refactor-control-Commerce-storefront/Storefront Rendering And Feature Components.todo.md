@@ -11,8 +11,8 @@ Purpose: make Storefront V2 rendering ownership visible in code, reduce account 
 - [x] `BlazorShop.Storefront.Components` currently contains `Account`, `Cart`, `Checkout`, and `Browser`. The old development WASM diagnostics probe has been retired, and it does not yet have a `Features/*` convention.
 - [x] `BlazorShop.Storefront.Components` has no direct reference to `Application`, `Domain`, or `Infrastructure`.
 - [x] `BlazorShop.Storefront.WASM` references `BlazorShop.Storefront.Components` and currently provides browser bootstrapping/local API services, not a full route app.
-- [x] Account routes currently exist as several server Razor pages under `Pages/Account`, each rendering a WASM component with `InteractiveWebAssembly`.
-- [x] Account pages repeat route-shell responsibilities: noindex metadata, auth/session guard, account layout, antiforgery/bootstrap, and rendering a specific account component.
+- [x] Account routes originally existed as several server Razor pages under `Pages/Account`, each rendering a WASM component with `InteractiveWebAssembly`.
+- [x] Phase 2 consolidated repeated account route-shell responsibilities into `AccountHostPage` plus `Storefront.Components/Features/Account/AccountApp`.
 - [x] Some WASM components receive server `Initial*` data and still refetch after first browser render. This creates duplicate fetch risk.
 - [x] Catalog pages such as home, product, category, new releases, and today's deals are still SEO-sensitive SSR route pages.
 
@@ -283,44 +283,44 @@ BlazorShop.Storefront.Components/
 
 ### AccountHostPage responsibilities
 
-- [ ] Declare account routes:
-  - [ ] `@page "/account"`
-  - [ ] `@page "/account/{*Path}"`
-- [ ] Emit `noindex,nofollow`.
-- [ ] Resolve current Storefront session.
-- [ ] Redirect unauthenticated users to sign-in with a safe return URL.
-- [ ] Create/provide antiforgery token bootstrap data.
-- [ ] Provide current account path to the component.
-- [ ] Render `AccountApp` with `InteractiveWebAssembly`.
-- [ ] Avoid loading profile/address/order detail data server-side unless needed for a transition compatibility window.
+- [x] Declare account routes:
+  - [x] `@page "/account"`
+  - [x] `@page "/account/{*Path}"`
+- [x] Emit `noindex,nofollow`.
+- [x] Resolve current Storefront session.
+- [x] Redirect unauthenticated users to sign-in with a safe return URL.
+- [x] Create/provide antiforgery token bootstrap data.
+- [x] Provide current account path to the component.
+- [x] Render `AccountApp` with `InteractiveWebAssembly`.
+- [x] Avoid loading profile/address/order detail data server-side unless needed for a transition compatibility window.
 
 ### AccountApp responsibilities
 
-- [ ] Interpret account sub-paths:
-  - [ ] empty path or `profile`.
-  - [ ] `addresses`.
-  - [ ] `orders`.
-  - [ ] `orders/{orderReference}`.
-  - [ ] `change-password`.
-- [ ] Own account sub-navigation and active item state.
-- [ ] Fetch account data through current local account endpoints.
-- [ ] Show loading, empty, error, and ready states.
-- [ ] Redirect or surface sign-in-required state on 401 responses.
-- [ ] Preserve browser back/forward behavior for account sub-routes.
+- [x] Interpret account sub-paths:
+  - [x] empty path or `profile`.
+  - [x] `addresses`.
+  - [x] `orders`.
+  - [x] `orders/{orderReference}`.
+  - [x] `change-password`.
+- [x] Own account sub-navigation and active item state.
+- [x] Fetch account data through current local account endpoints.
+- [x] Show loading, empty, error, and ready states.
+- [x] Redirect or surface sign-in-required state on 401 responses.
+- [x] Preserve browser back/forward behavior for account sub-routes.
 
 ### Migration tasks
 
-- [ ] Create `AccountHostPage.razor` while keeping old account pages in place behind tests.
-- [ ] Add route resolution tests proving all old account URLs are covered by the catch-all route.
-- [ ] Move account shared layout/navigation from `AccountPageShell` into `Features/Account/AccountApp` or `AccountNavigation`.
-- [ ] Move current account components into `Features/Account` with compatibility names or small wrapper components.
-- [ ] Switch account navigation links to route through the host path.
-- [ ] Delete old account route pages only after:
-  - [ ] direct deep link tests pass.
-  - [ ] unauthenticated redirect tests pass.
-  - [ ] noindex tests pass.
-  - [ ] account WASM hydration tests pass.
-- [ ] Remove obsolete account page tests and replace them with host/app tests.
+- [x] Create `AccountHostPage.razor` while keeping old account pages in place behind tests.
+- [x] Add route resolution tests proving all old account URLs are covered by the catch-all route.
+- [x] Move account shared layout/navigation from `AccountPageShell` into `Features/Account/AccountApp` or `AccountNavigation`.
+- [x] Move current account components into `Features/Account` with compatibility names or small wrapper components.
+- [x] Switch account navigation links to route through the host path.
+- [x] Delete old account route pages only after:
+  - [x] direct deep link tests pass.
+  - [x] unauthenticated redirect tests pass.
+  - [x] noindex tests pass.
+  - [x] account WASM hydration tests pass.
+- [x] Remove obsolete account page tests and replace them with host/app tests.
 
 ### Verification
 
@@ -330,10 +330,10 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done when
 
-- [ ] Storefront has one account server host page instead of many duplicate page shells.
-- [ ] Account feature UI lives in reusable components.
-- [ ] All old account URLs continue to work.
-- [ ] No account route is indexable.
+- [x] Storefront has one account server host page instead of many duplicate page shells.
+- [x] Account feature UI lives in reusable components.
+- [x] All old account URLs continue to work.
+- [x] No account route is indexable.
 
 ## Phase 3 - Hydration And Duplicate-fetch Policy
 
@@ -621,7 +621,7 @@ Use the repository's current Playwright command/config if it differs.
 
 - [x] Commit 1: baseline inventory, route/render ownership guardrails, QA checklist updates.
 - [x] Commit 2: mechanical folder move to `Ssr`, `Hybrid`, and `WasmHost`.
-- [ ] Commit 3: account host route and account app consolidation.
+- [x] Commit 3: account host route and account app consolidation.
 - [ ] Commit 4: hydration mode and duplicate-fetch cleanup.
 - [ ] Commit 5: `Features/*` component convention and move existing components.
 - [ ] Commit 6: deals/new releases portable component extraction.

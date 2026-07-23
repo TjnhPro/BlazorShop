@@ -144,70 +144,72 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
-        public void AccountPages_HostInteractiveWasmAccountComponentsWithServerSnapshots()
+        public void AccountHostPage_HostsInteractiveWasmAccountApp()
         {
-            var profilePage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountProfilePage.razor");
-            var addressesPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountAddressesPage.razor");
-            var ordersPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountOrdersPage.razor");
-            var orderDetailPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountOrderDetailPage.razor");
-            var passwordPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountChangePasswordPage.razor");
+            var host = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
+            var app = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountApp.razor");
 
-            Assert.Contains("<AccountProfileEditor", profilePage, StringComparison.Ordinal);
-            Assert.Contains("InitialProfile=\"_profile\"", profilePage, StringComparison.Ordinal);
-            Assert.Contains("InitialError=\"@ErrorMessage\"", profilePage, StringComparison.Ordinal);
-            Assert.Contains("InitialSuccess=\"@SuccessMessage\"", profilePage, StringComparison.Ordinal);
-            Assert.Contains("<AccountAddressBook", addressesPage, StringComparison.Ordinal);
-            Assert.Contains("InitialAddresses=\"_addresses\"", addressesPage, StringComparison.Ordinal);
-            Assert.Contains("InitialError=\"@(_error ?? Error)\"", addressesPage, StringComparison.Ordinal);
-            Assert.Contains("<AccountOrderList", ordersPage, StringComparison.Ordinal);
-            Assert.Contains("InitialOrders=\"_orders\"", ordersPage, StringComparison.Ordinal);
-            Assert.Contains("InitialError=\"@_error\"", ordersPage, StringComparison.Ordinal);
-            Assert.Contains("<AccountOrderDetail", orderDetailPage, StringComparison.Ordinal);
-            Assert.Contains("InitialOrder=\"_order\"", orderDetailPage, StringComparison.Ordinal);
-            Assert.Contains("InitialError=\"@_error\"", orderDetailPage, StringComparison.Ordinal);
-            Assert.Contains("<AccountChangePasswordForm", passwordPage, StringComparison.Ordinal);
-            Assert.Contains("InitialError=\"@ErrorMessage\"", passwordPage, StringComparison.Ordinal);
-            Assert.Contains("InitialSuccess=\"@SuccessMessage\"", passwordPage, StringComparison.Ordinal);
-            Assert.Contains("@rendermode=\"InteractiveWebAssembly\"", profilePage + addressesPage + ordersPage + orderDetailPage + passwordPage, StringComparison.Ordinal);
+            Assert.Contains("@page \"/account\"", host, StringComparison.Ordinal);
+            Assert.Contains("@page \"/account/{*Path}\"", host, StringComparison.Ordinal);
+            Assert.Contains("<AccountApp", host, StringComparison.Ordinal);
+            Assert.Contains("Path=\"@Path\"", host, StringComparison.Ordinal);
+            Assert.Contains("AntiforgeryFieldName=\"@_antiforgeryFieldName\"", host, StringComparison.Ordinal);
+            Assert.Contains("@rendermode=\"InteractiveWebAssembly\"", host, StringComparison.Ordinal);
+            Assert.Contains("SessionResolver.GetCurrentUserAsync()", host, StringComparison.Ordinal);
+            Assert.Contains("StorefrontReturnUrl.BuildSignInUrl(CurrentReturnUrl())", host, StringComparison.Ordinal);
+
+            Assert.Contains("AccountProfileEditor", app, StringComparison.Ordinal);
+            Assert.Contains("AccountAddressBook", app, StringComparison.Ordinal);
+            Assert.Contains("AccountOrderList", app, StringComparison.Ordinal);
+            Assert.Contains("AccountOrderDetail", app, StringComparison.Ordinal);
+            Assert.Contains("AccountChangePasswordForm", app, StringComparison.Ordinal);
+            Assert.Contains("string.Equals(normalized, \"profile\"", app, StringComparison.Ordinal);
+            Assert.Contains("string.Equals(normalized, \"addresses\"", app, StringComparison.Ordinal);
+            Assert.Contains("string.Equals(normalized, \"orders\"", app, StringComparison.Ordinal);
+            Assert.Contains("string.Equals(normalized, \"change-password\"", app, StringComparison.Ordinal);
+            Assert.Contains("Uri.UnescapeDataString(segments[1])", app, StringComparison.Ordinal);
+            Assert.DoesNotContain("InitialProfile=\"_profile\"", host + app, StringComparison.Ordinal);
+            Assert.DoesNotContain("GetCustomerProfileAsync", host, StringComparison.Ordinal);
         }
 
         [Fact]
-        public void AccountRoutePages_UseSharedShellWhileKeepingPageOwnedGuards()
+        public void AccountHost_UsesSingleShellWhileKeepingPageOwnedGuards()
         {
-            var shell = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/AccountPageShell.razor");
-            var accountPages = new[]
-            {
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountProfilePage.razor"),
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountAddressesPage.razor"),
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountOrdersPage.razor"),
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountOrderDetailPage.razor"),
-                ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountChangePasswordPage.razor"),
-            };
+            var host = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountHostPage.razor");
+            var app = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountApp.razor");
+            var navigation = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountNavigation.razor");
 
-            Assert.Contains("aria-label=\"Account navigation\"", shell, StringComparison.Ordinal);
-            Assert.Contains("StorefrontRoutes.AccountProfile", shell, StringComparison.Ordinal);
-            Assert.Contains("StorefrontRoutes.AccountOrders", shell, StringComparison.Ordinal);
-            Assert.Contains("StorefrontRoutes.AccountAddresses", shell, StringComparison.Ordinal);
-            Assert.Contains("StorefrontRoutes.AccountChangePassword", shell, StringComparison.Ordinal);
+            Assert.Contains("<meta name=\"robots\" content=\"noindex,nofollow\" />", host, StringComparison.Ordinal);
+            Assert.Contains("Antiforgery.GetAndStoreTokens(HttpContext)", host, StringComparison.Ordinal);
+            Assert.Contains("NavigationManager.ToBaseRelativePath(NavigationManager.Uri)", host, StringComparison.Ordinal);
+            Assert.Contains("data-storefront-account-app", app, StringComparison.Ordinal);
+            Assert.Contains("aria-label=\"Account navigation\"", navigation, StringComparison.Ordinal);
+            Assert.Contains("/account/profile", navigation, StringComparison.Ordinal);
+            Assert.Contains("/account/orders", navigation, StringComparison.Ordinal);
+            Assert.Contains("/account/addresses", navigation, StringComparison.Ordinal);
+            Assert.Contains("/account/change-password", navigation, StringComparison.Ordinal);
 
-            foreach (var page in accountPages)
+            foreach (var removedPage in new[]
             {
-                Assert.Contains("<AccountPageShell", page, StringComparison.Ordinal);
-                Assert.Contains("<meta name=\"robots\" content=\"noindex,nofollow\" />", page, StringComparison.Ordinal);
-                Assert.Contains("SessionResolver.GetCurrentUserAsync()", page, StringComparison.Ordinal);
-                Assert.Contains("StorefrontReturnUrl.BuildSignInUrl", page, StringComparison.Ordinal);
-                Assert.DoesNotContain("aria-label=\"Account navigation\"", page, StringComparison.Ordinal);
+                "AccountProfilePage.razor",
+                "AccountAddressesPage.razor",
+                "AccountOrdersPage.razor",
+                "AccountOrderDetailPage.razor",
+                "AccountChangePasswordPage.razor",
+            })
+            {
+                Assert.False(File.Exists(Path.Combine(RepositoryRoot(), "BlazorShop.PresentationV2", "BlazorShop.Storefront.V2", "Pages", "WasmHost", "Account", removedPage)));
             }
         }
 
         [Fact]
         public void AccountWasmComponents_UseSameOriginLocalAccountEndpoints()
         {
-            var profileComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Account/AccountProfileEditor.razor");
-            var addressesComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Account/AccountAddressBook.razor");
-            var ordersComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Account/AccountOrderList.razor");
-            var orderDetailComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Account/AccountOrderDetail.razor");
-            var passwordComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Account/AccountChangePasswordForm.razor");
+            var profileComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountProfileEditor.razor");
+            var addressesComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountAddressBook.razor");
+            var ordersComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountOrderList.razor");
+            var orderDetailComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountOrderDetail.razor");
+            var passwordComponent = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Account/AccountChangePasswordForm.razor");
             var allComponents = profileComponent + addressesComponent + ordersComponent + orderDetailComponent + passwordComponent;
 
             Assert.Contains("<AntiforgeryToken />", profileComponent, StringComparison.Ordinal);
