@@ -1,8 +1,10 @@
 @page "/pages/{Slug}"
 @inject IStorefrontContentClient ApiClient
 @inject IStorefrontSeoComposer SeoComposer
+@inject IStorefrontStructuredDataComposer StructuredDataComposer
+@inject IStorefrontPagePresentationResolver PresentationResolver
 
-<SeoHead Metadata="_metadata" />
+<SeoHead Metadata="_metadata" StructuredData="_structuredData" />
 
 @if (_isServiceUnavailable)
 {
@@ -22,9 +24,9 @@ else if (_page is not null)
         </Breadcrumb>
 
         <ChildContent>
-            <article>
+            <article class="@_presentation.ArticleClass" data-storefront-page-template="@_presentation.TemplateKey" data-storefront-page-layout="@_presentation.LayoutKind.ToString().ToLowerInvariant()">
                 <header class="mb-8">
-                    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">Store page</p>
+                    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">@_presentation.Eyebrow</p>
                     <h1 class="mt-2 text-4xl font-extrabold tracking-tight text-neutral-900">@_page.Title</h1>
                     @if (!string.IsNullOrWhiteSpace(_page.Intro))
                     {
@@ -32,7 +34,7 @@ else if (_page is not null)
                     }
                 </header>
 
-                <div class="rounded-3xl border border-neutral-200/70 bg-white/90 p-6 shadow-lg sm:p-8">
+                <div class="@_presentation.BodyContainerClass">
                     <div class="prose max-w-none prose-neutral">
                         @((MarkupString)_page.BodyHtml)
                     </div>
@@ -45,6 +47,8 @@ else if (_page is not null)
 @code {
     private GetStorefrontPage? _page;
     private SeoMetadataDto _metadata = new();
+    private StorefrontStructuredDataDocument _structuredData = StorefrontStructuredDataDocument.Empty;
+    private StorefrontPagePresentation _presentation = StorefrontPagePresentation.Standard("standard");
     private IReadOnlyList<StorefrontBreadcrumbItem> _breadcrumbs = [];
     private bool _isServiceUnavailable;
     private bool _isNotFound;
@@ -66,6 +70,8 @@ else if (_page is not null)
             _isServiceUnavailable = true;
             _isNotFound = false;
             _breadcrumbs = [];
+            _structuredData = StorefrontStructuredDataDocument.Empty;
+            _presentation = StorefrontPagePresentation.Standard("standard");
             StorefrontResponseHeaders.ApplyServiceUnavailable(HttpContext);
             _metadata = await SeoComposer.ComposeServiceUnavailablePageAsync(
                 "Page temporarily unavailable",
@@ -80,6 +86,8 @@ else if (_page is not null)
             _isServiceUnavailable = false;
             _isNotFound = true;
             _breadcrumbs = [];
+            _structuredData = StorefrontStructuredDataDocument.Empty;
+            _presentation = StorefrontPagePresentation.Standard("standard");
             StorefrontResponseHeaders.ApplyNotFound(HttpContext);
             _metadata = await SeoComposer.ComposeNotFoundPageAsync(
                 "Page not found",
@@ -95,6 +103,24 @@ else if (_page is not null)
             new StorefrontBreadcrumbItem("Home", StorefrontRoutes.Home),
             new StorefrontBreadcrumbItem(_page.Title),
         ];
+        _presentation = PresentationResolver.Resolve(_page);
         _metadata = await SeoComposer.ComposeStorefrontPageAsync(_page);
+        _structuredData = await ComposeStructuredDataAsync(routePath, _page, _presentation);
+    }
+
+    private async Task<StorefrontStructuredDataDocument> ComposeStructuredDataAsync(
+        string routePath,
+        GetStorefrontPage page,
+        StorefrontPagePresentation presentation)
+    {
+        var description = FirstNonEmpty(_metadata.MetaDescription, page.Intro);
+        return presentation.StructuredDataKind == StorefrontPageStructuredDataKind.FaqPage
+            ? await StructuredDataComposer.ComposeFaqPageAsync(page.Title, routePath, description, presentation.FaqEntries)
+            : await StructuredDataComposer.ComposeWebPageAsync(page.Title, routePath, description);
+    }
+
+    private static string? FirstNonEmpty(params string?[] values)
+    {
+        return values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
     }
 }

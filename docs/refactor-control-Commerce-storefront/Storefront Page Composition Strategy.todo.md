@@ -237,39 +237,39 @@ StorefrontPage.razor
 
 ### Tasks
 
-- [ ] Add a Storefront-side page presentation resolver:
-  - [ ] Input: public page DTO with `Slug`, `Title`, `Intro`, `BodyHtml`, `Seo`, `PageKey`.
-  - [ ] Output: content layout kind, structured data kind, optional structured data entries.
-  - [ ] Keep it in Storefront V2, not in Domain/Infrastructure.
-- [ ] Supported MVP layout behavior:
-  - [ ] Unknown/null page key: standard content fallback.
-  - [ ] `about`: standard content.
-  - [ ] `shipping_information`: policy/help content styling.
-  - [ ] `payment_information`: policy/help content styling.
-  - [ ] `return_refund_policy`: policy/help content styling.
-  - [ ] `terms_conditions`: policy content styling.
-  - [ ] `privacy_policy`: policy content styling.
-  - [ ] `cookie_information`: policy content styling.
-  - [ ] `faq`: FAQ content styling and structured data support.
-  - [ ] `customer_service`: support content styling without contact-form behavior.
-- [ ] Decide FAQ data source for this phase:
-  - [ ] Recommended MVP: parse a controlled JSON payload only if a field already exists or can be added safely.
-  - [ ] If no structured field exists, render HTML normally and add only `WebPage` structured data, then create a follow-up ticket for structured FAQ storage.
-  - [ ] Do not scrape arbitrary Q/A pairs from `BodyHtml` with regex.
-- [ ] Wire `StorefrontPage.razor` to pass `StructuredData` into `SeoHead`.
-- [ ] Use `StorefrontStructuredDataComposer.ComposeWebPageAsync` for standard/policy/customer-service pages.
-- [ ] Use `StorefrontStructuredDataComposer.ComposeFaqPageAsync` only when structured FAQ entries are available.
-- [ ] Keep service-unavailable and not-found behavior unchanged:
-  - [ ] 503 uses `ComposeServiceUnavailablePageAsync`.
-  - [ ] 404 uses `ComposeNotFoundPageAsync`.
-  - [ ] `StorefrontResponseHeaders.ApplyServiceUnavailable` and `ApplyNotFound` remain in place.
-- [ ] Avoid adding heavy template components unless the Razor page becomes hard to read.
-- [ ] Add bUnit/static markup tests:
-  - [ ] standard page renders HTML body.
-  - [ ] policy page keeps SEO metadata.
-  - [ ] FAQ page emits FAQ JSON-LD only when structured FAQ entries exist.
-  - [ ] unknown page key falls back safely.
-  - [ ] unpublished/missing page still returns not-found behavior.
+- [x] Add a Storefront-side page presentation resolver:
+  - [x] Input: public page DTO with `Slug`, `Title`, `Intro`, `BodyHtml`, `Seo`, `PageKey`.
+  - [x] Output: content layout kind, structured data kind, optional structured data entries.
+  - [x] Keep it in Storefront V2, not in Domain/Infrastructure.
+- [x] Supported MVP layout behavior:
+  - [x] Unknown/null page key: standard content fallback.
+  - [x] `about`: standard content.
+  - [x] `shipping_information`: policy/help content styling.
+  - [x] `payment_information`: policy/help content styling.
+  - [x] `return_refund_policy`: policy/help content styling.
+  - [x] `terms_conditions`: policy content styling.
+  - [x] `privacy_policy`: policy content styling.
+  - [x] `cookie_information`: policy content styling.
+  - [x] `faq`: FAQ content styling and structured data support.
+  - [x] `customer_service`: support content styling without contact-form behavior.
+- [x] Decide FAQ data source for this phase:
+  - [x] Recommended MVP: parse a controlled JSON payload only if a field already exists or can be added safely.
+  - [x] If no structured field exists, render HTML normally and add only `WebPage` structured data, then create a follow-up ticket for structured FAQ storage.
+  - [x] Do not scrape arbitrary Q/A pairs from `BodyHtml` with regex.
+- [x] Wire `StorefrontPage.razor` to pass `StructuredData` into `SeoHead`.
+- [x] Use `StorefrontStructuredDataComposer.ComposeWebPageAsync` for standard/policy/customer-service pages.
+- [x] Use `StorefrontStructuredDataComposer.ComposeFaqPageAsync` only when structured FAQ entries are available.
+- [x] Keep service-unavailable and not-found behavior unchanged:
+  - [x] 503 uses `ComposeServiceUnavailablePageAsync`.
+  - [x] 404 uses `ComposeNotFoundPageAsync`.
+  - [x] `StorefrontResponseHeaders.ApplyServiceUnavailable` and `ApplyNotFound` remain in place.
+- [x] Avoid adding heavy template components unless the Razor page becomes hard to read.
+- [x] Add bUnit/static markup tests:
+  - [x] standard page renders HTML body.
+  - [x] policy page keeps SEO metadata.
+  - [x] FAQ page emits FAQ JSON-LD only when structured FAQ entries exist.
+  - [x] unknown page key falls back safely.
+  - [x] unpublished/missing page still returns not-found behavior.
 
 ### Files likely touched
 
@@ -287,9 +287,9 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done when
 
-- [ ] `/pages/{slug}` remains the only route renderer for content pages.
-- [ ] Known DB page keys can affect SEO/structured data without dedicated route pages.
-- [ ] FAQ structured data behavior is explicit and tested.
+- [x] `/pages/{slug}` remains the only route renderer for content pages.
+- [x] Known DB page keys can affect SEO/structured data without dedicated route pages.
+- [x] FAQ structured data behavior is explicit and tested.
 
 ## Phase 4 - Account Route Shell Deduplication
 
@@ -508,7 +508,7 @@ Use the repository's actual Playwright command/config if it differs from the gen
 - [x] Commit 1: baseline guardrails and QA checklist updates.
 - [x] Commit 2: public page contract exposes `PageKey` and tests.
 - [x] Commit 3: template catalog/rules add `faq` and `customer_service`.
-- [ ] Commit 4: StorefrontPage template-aware SEO/structured data rendering.
+- [x] Commit 4: StorefrontPage template-aware SEO/structured data rendering.
 - [ ] Commit 5: account page shell deduplication.
 - [ ] Commit 6: optional mechanical folder reorganization.
 - [ ] Commit 7: QA evidence/docs updates.

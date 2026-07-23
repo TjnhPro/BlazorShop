@@ -70,6 +70,7 @@ namespace BlazorShop.Storefront.Configuration
             services.AddScoped<IStorefrontSeoSettingsProvider, StorefrontSeoSettingsProvider>();
             services.AddScoped<IStorefrontSeoComposer, StorefrontSeoComposer>();
             services.AddScoped<IStorefrontStructuredDataComposer, StorefrontStructuredDataComposer>();
+            services.AddScoped<IStorefrontPagePresentationResolver, StorefrontPagePresentationResolver>();
             services.AddScoped<IStorefrontSitemapService, StorefrontSitemapService>();
             services.AddScoped<IStorefrontCurrentStoreProvider, StorefrontCurrentStoreProvider>();
             services.AddScoped<IStorefrontDisplayContextProvider, StorefrontDisplayContextProvider>();
