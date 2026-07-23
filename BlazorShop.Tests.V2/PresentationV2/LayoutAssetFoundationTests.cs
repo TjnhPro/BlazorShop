@@ -65,9 +65,9 @@ namespace BlazorShop.Tests.PresentationV2
         }
 
         [Theory]
-        [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Catalog/CategoryPage.razor")]
-        [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Catalog/ProductPage.razor")]
-        [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Content/StorefrontPage.razor")]
+        [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor")]
+        [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/ProductPage.razor")]
+        [InlineData("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor")]
         public void StorefrontRoutedPages_UsePageShellWhileKeepingSeoBreadcrumbAndHeading(string relativePath)
         {
             var pageMarkup = ReadRepositoryFile(relativePath);
@@ -102,8 +102,8 @@ namespace BlazorShop.Tests.PresentationV2
         [Fact]
         public void StorefrontCategoryAndSearchPages_UseCatalogFilterPanelWithoutRouteChanges()
         {
-            var categoryMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Catalog/CategoryPage.razor");
-            var searchMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Catalog/SearchPage.razor");
+            var categoryMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/CategoryPage.razor");
+            var searchMarkup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor");
 
             Assert.Contains("<CatalogFilterPanel", categoryMarkup, StringComparison.Ordinal);
             Assert.Contains("ShowPriceRange=\"true\"", categoryMarkup, StringComparison.Ordinal);

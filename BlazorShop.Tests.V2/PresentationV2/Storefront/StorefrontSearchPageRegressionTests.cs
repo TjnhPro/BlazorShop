@@ -10,7 +10,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             // Regression: CAT-002 - search category and q controls displayed literal/default values after filtered route load.
             // Found by /qa on 2026-07-18.
             // Report: .gstack/qa-reports/storefront-release-2026-07-18.md
-            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Catalog/SearchPage.razor");
+            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/SearchPage.razor");
 
             Assert.Contains("CategorySlug=\"@Category\"", markup);
             Assert.Contains("SearchTerm=\"@Q\"", markup);

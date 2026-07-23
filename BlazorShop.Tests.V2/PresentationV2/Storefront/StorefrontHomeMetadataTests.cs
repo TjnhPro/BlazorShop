@@ -7,7 +7,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void HomePage_LoadsReservedHomeMetadataSlug()
         {
-            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Catalog/Home.razor");
+            var markup = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Catalog/Home.razor");
 
             Assert.Contains("GetPublishedPageBySlugAsync(StorefrontRoutes.HomeMetadataSlug)", markup);
             Assert.Contains("SeoComposer.ComposeHomePageAsync", markup);

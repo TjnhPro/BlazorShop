@@ -6,7 +6,7 @@ Purpose: clarify which Storefront V2 pages stay as SSR route pages, which pages 
 
 ## Current Verified Evidence
 
-- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Content/StorefrontPage.razor` owns route `/pages/{Slug}` and loads a published page through `IStorefrontContentClient.GetPublishedPageBySlugAsync`.
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor` owns route `/pages/{Slug}` and loads a published page through `IStorefrontContentClient.GetPublishedPageBySlugAsync`.
 - [x] `StorefrontPage.razor` currently renders `BodyHtml` with `MarkupString` and composes SEO with `IStorefrontSeoComposer.ComposeStorefrontPageAsync`.
 - [x] `StorefrontRoutes` maps `About`, `Faq`, `Privacy`, `Terms`, and `CustomerService` to `/pages/...`; there are no dedicated `About.razor`, `FAQ.razor`, `Privacy.razor`, `Terms.razor`, or `CustomerService.razor` files under Storefront V2 `Pages`.
 - [x] `Home.razor` keeps route `/`, renders catalog/category/product content SSR, and already reads the DB page slug `home` through `StorefrontRoutes.HomeMetadataSlug`.
@@ -78,13 +78,13 @@ Goal: freeze current behavior before adding template-aware rendering.
 ### Tasks
 
 - [x] Record current Storefront V2 page inventory:
-  - [x] `Pages/Catalog/Home.razor`
-  - [x] `Pages/Catalog/CategoryPage.razor`
-  - [x] `Pages/Catalog/ProductPage.razor`
-  - [x] `Pages/Catalog/NewReleases.razor`
-  - [x] `Pages/Catalog/TodaysDeals.razor`
-  - [x] `Pages/Catalog/SearchPage.razor`
-  - [x] `Pages/Content/StorefrontPage.razor`
+  - [x] `Pages/Hybrid/Catalog/Home.razor`
+  - [x] `Pages/Hybrid/Catalog/CategoryPage.razor`
+  - [x] `Pages/Hybrid/Catalog/ProductPage.razor`
+  - [x] `Pages/Hybrid/Catalog/NewReleases.razor`
+  - [x] `Pages/Hybrid/Catalog/TodaysDeals.razor`
+  - [x] `Pages/Hybrid/Catalog/SearchPage.razor`
+  - [x] `Pages/Ssr/Content/StorefrontPage.razor`
   - [x] cart/account/checkout/auth/payment/system pages.
 - [x] Add or update architecture guardrail tests proving content pages do not reappear as dedicated Razor route files:
   - [x] No `About.razor`.
@@ -273,7 +273,7 @@ StorefrontPage.razor
 
 ### Files likely touched
 
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Content/StorefrontPage.razor`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Ssr/Content/StorefrontPage.razor`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/*StorefrontPagePresentation*`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/*Pages*`
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Seo/*`
@@ -333,11 +333,11 @@ Account pages already follow the desired SSR shell + WASM component model, but p
 ### Files likely touched
 
 - `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Components/Account/AccountPageShell.razor`
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountProfilePage.razor`
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountChangePasswordPage.razor`
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountAddressesPage.razor`
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountOrdersPage.razor`
-- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Account/AccountOrderDetailPage.razor`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountProfilePage.razor`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountChangePasswordPage.razor`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountAddressesPage.razor`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountOrdersPage.razor`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/WasmHost/Account/AccountOrderDetailPage.razor`
 - `BlazorShop.Tests.V2/PresentationV2/Storefront/*`
 
 ### Verification

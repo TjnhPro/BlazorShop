@@ -105,7 +105,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         [Fact]
         public void StorefrontV2_CartPageConsumesServerProjection()
         {
-            var cartPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Commerce/CartPage.razor.cs");
+            var cartPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor.cs");
             var support = ReadStorefrontLocalEndpointSupportSource();
 
             Assert.DoesNotContain("GetProductByIdAsync", cartPage, StringComparison.Ordinal);

@@ -1,4 +1,4 @@
-namespace BlazorShop.Storefront.Pages.Commerce
+namespace BlazorShop.Storefront.Pages.Hybrid.Commerce
 {
     using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Storefront.Components.Browser;
