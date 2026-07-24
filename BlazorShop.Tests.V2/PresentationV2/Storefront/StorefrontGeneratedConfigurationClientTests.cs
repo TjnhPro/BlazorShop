@@ -206,6 +206,30 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void ConsentAndCapabilityContracts_DoNotUseBackendDtos()
+        {
+            var source = string.Join(
+                Environment.NewLine,
+                new[]
+                {
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/ConsentContracts.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/IStorefrontConsentClient.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Consent.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontConsentEndpoints.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/ConfigurationContracts.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/GeneratedStorefrontConfigurationClient.cs",
+                }.Select(ReadRepositoryFile));
+
+            Assert.Contains("ResolveConsentVisitorKey(httpContext, createIfMissing: true)", source, StringComparison.Ordinal);
+            Assert.Contains("NewsletterEnabled", source, StringComparison.Ordinal);
+            Assert.Contains("RecommendationsEnabled", source, StringComparison.Ordinal);
+            Assert.Contains("StorefrontCaptchaConfiguration", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Application.DTOs", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Application.CommerceNode", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Web.SharedV2.Models", source, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public async Task SetCurrencyPreferenceAsync_UsesGeneratedCurrencyClient()
         {
             var handler = new RecordingHandler(request =>

@@ -563,10 +563,12 @@ Goal: remove `Application` and backend-owned business DTO dependencies from Stor
 
 ### F5.6 Consent, newsletter, contact, recommendations
 
-- [ ] Replace remaining contract usage.
-- [ ] Keep consent visitor cookie behavior server-owned.
-- [ ] Keep captcha/consent hooks safe.
-- [ ] Keep recommendations as optional capability projection.
+- [x] Replace remaining contract usage.
+- [x] Keep consent visitor cookie behavior server-owned.
+- [x] Keep captcha/consent hooks safe.
+- [x] Keep recommendations as optional capability projection.
+
+2026-07-24 evidence: Consent contracts/client/endpoints and configuration capability contracts no longer import backend/Application or Web.SharedV2 business-model DTO namespaces. The BFF still resolves and writes `bs-consent-visitor` server-side before forwarding `X-Consent-Visitor`. Generated configuration mapping keeps captcha configuration and feature flags for newsletter/recommendations as optional capability projection. `ConsentAndCapabilityContracts_DoNotUseBackendDtos` guards the F5.6 source set.
 
 ### Final F5 cleanup
 
@@ -835,7 +837,7 @@ Future `BlazorShop.Storefront.Starter` should include:
 - [x] Commit 9: F5.3 auth/customer/account migration.
 - [x] Commit 10: F5.4 cart migration.
 - [x] Commit 11: F5.5 checkout/orders/payments migration.
-- [ ] Commit 12: F5.6 consent/newsletter/contact/recommendations migration.
+- [x] Commit 12: F5.6 consent/newsletter/contact/recommendations migration.
 - [ ] Commit 13: F5 final dependency removal and Dockerfile cleanup.
 - [ ] Commit 14: F6 runtime boundary only if justified.
 - [ ] Commit 15: F7 package/isolation/Playwright gate and completion report.

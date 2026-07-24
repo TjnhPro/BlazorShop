@@ -737,6 +737,7 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Storefront public schemas and shared model migration exceptions remain explicitly guarded. 2026-07-19 Phase 9: `WebSharedV2BusinessModelFolders_AreFrozenDuringContractMigration` freezes the remaining shared business-model folders until generated-client migration removes them.
 - [x] Headless Storefront Foundation F5.4 cart/session migration remains behavior-stable. 2026-07-24: Storefront V2 build passed 0 warnings; `CartCorePhase0InventoryTests`/BFF boundary/CSRF/security/script focused run passed 26/26; cart local API, product-selection preview, and cart-token host/API subset passed 10/10.
 - [x] Headless Storefront Foundation F5.5 checkout/order/payment migration remains behavior-stable. 2026-07-24: Storefront V2 build passed 0 warnings; checkout/static/generated-client focused run passed 17/17; checkout/payment host smoke passed 6/6. Known warnings: existing MessagePack NU1902/NU1903 and Browserslist.
+- [x] Headless Storefront Foundation F5.6 consent/captcha/newsletter/recommendations migration remains behavior-stable. 2026-07-24: Storefront V2 build passed 0 warnings; generated configuration, CSRF, endpoint mapping, register-policy, and forgot-password focused run passed 12/12. Known warnings: existing MessagePack NU1902/NU1903 and Browserslist.
 
 ## V2 Production Readiness Release Gate
 

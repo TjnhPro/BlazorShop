@@ -1,6 +1,5 @@
 namespace BlazorShop.Storefront.Endpoints
 {
-    using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.Services;
     using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Storefront.Configuration;
@@ -8,7 +7,6 @@ namespace BlazorShop.Storefront.Endpoints
     using BlazorShop.Storefront.Services;
     using BlazorShop.Storefront.Services.Contracts;
     using BlazorShop.Web.SharedV2;
-    using BlazorShop.Web.SharedV2.Models;
 
     using Microsoft.AspNetCore.Antiforgery;
     using Microsoft.AspNetCore.Mvc;
