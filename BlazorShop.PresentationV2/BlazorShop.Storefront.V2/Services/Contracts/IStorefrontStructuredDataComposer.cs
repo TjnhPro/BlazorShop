@@ -1,9 +1,9 @@
 namespace BlazorShop.Storefront.Services.Contracts
 {
-    using BlazorShop.Web.SharedV2.Models.Category;
-    using BlazorShop.Web.SharedV2.Models.Product;
 
-    public interface IStorefrontStructuredDataComposer
+
+    using BlazorShop.Storefront.Models;
+public interface IStorefrontStructuredDataComposer
     {
         Task<StorefrontStructuredDataDocument> ComposeHomePageAsync(CancellationToken cancellationToken = default);
 

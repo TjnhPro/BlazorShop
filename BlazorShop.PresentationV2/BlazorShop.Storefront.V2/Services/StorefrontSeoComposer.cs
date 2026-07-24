@@ -1,24 +1,17 @@
 namespace BlazorShop.Storefront.Services
 {
-    using BlazorShop.Application.DTOs.Seo;
-    using BlazorShop.Application.Services.Contracts;
+    using BlazorShop.Storefront.Models;
     using BlazorShop.Storefront.Services.Contracts;
-    using BlazorShop.Web.SharedV2.Models.Category;
-    using BlazorShop.Web.SharedV2.Models.Pages;
-    using BlazorShop.Web.SharedV2.Models.Product;
 
     public class StorefrontSeoComposer : IStorefrontSeoComposer
     {
-        private readonly ISeoMetadataBuilder _metadataBuilder;
         private readonly IStorefrontPublicUrlResolver _publicUrlResolver;
         private readonly IStorefrontSeoSettingsProvider _settingsProvider;
 
         public StorefrontSeoComposer(
-            ISeoMetadataBuilder metadataBuilder,
             IStorefrontPublicUrlResolver publicUrlResolver,
             IStorefrontSeoSettingsProvider settingsProvider)
         {
-            _metadataBuilder = metadataBuilder;
             _publicUrlResolver = publicUrlResolver;
             _settingsProvider = settingsProvider;
         }
@@ -26,7 +19,7 @@ namespace BlazorShop.Storefront.Services
         public async Task<SeoMetadataDto> ComposeStaticPageAsync(string title, string relativePath, string fallbackMetaDescription, CancellationToken cancellationToken = default)
         {
             var settings = await GetEffectiveSettingsAsync(cancellationToken);
-            return _metadataBuilder.Build(new SeoMetadataBuildRequest
+            return BuildMetadata(new SeoMetadataBuildRequest
             {
                 PageTitle = title,
                 RelativePath = relativePath,
@@ -41,7 +34,7 @@ namespace BlazorShop.Storefront.Services
         public async Task<SeoMetadataDto> ComposeHomePageAsync(GetStorefrontPage? homePage, string fallbackTitle, string fallbackMetaDescription, CancellationToken cancellationToken = default)
         {
             var settings = await GetEffectiveSettingsAsync(cancellationToken);
-            return _metadataBuilder.Build(new SeoMetadataBuildRequest
+            return BuildMetadata(new SeoMetadataBuildRequest
             {
                 PageTitle = string.IsNullOrWhiteSpace(homePage?.Title) ? fallbackTitle : homePage.Title,
                 RelativePath = StorefrontRoutes.Home,
@@ -69,7 +62,7 @@ namespace BlazorShop.Storefront.Services
             ArgumentNullException.ThrowIfNull(category);
 
             var settings = await GetEffectiveSettingsAsync(cancellationToken);
-            return _metadataBuilder.Build(new SeoMetadataBuildRequest
+            return BuildMetadata(new SeoMetadataBuildRequest
             {
                 PageTitle = $"{category.Name} Products",
                 RelativePath = StorefrontRoutes.Category(category.Slug),
@@ -83,7 +76,7 @@ namespace BlazorShop.Storefront.Services
             ArgumentNullException.ThrowIfNull(product);
 
             var settings = await GetEffectiveSettingsAsync(cancellationToken);
-            return _metadataBuilder.Build(new SeoMetadataBuildRequest
+            return BuildMetadata(new SeoMetadataBuildRequest
             {
                 PageTitle = product.Name,
                 RelativePath = StorefrontRoutes.Product(product.Slug),
@@ -97,7 +90,7 @@ namespace BlazorShop.Storefront.Services
             ArgumentNullException.ThrowIfNull(page);
 
             var settings = await GetEffectiveSettingsAsync(cancellationToken);
-            return _metadataBuilder.Build(new SeoMetadataBuildRequest
+            return BuildMetadata(new SeoMetadataBuildRequest
             {
                 PageTitle = page.Title,
                 RelativePath = StorefrontRoutes.Page(page.Slug),
@@ -119,7 +112,7 @@ namespace BlazorShop.Storefront.Services
         public async Task<SeoMetadataDto> ComposeServiceUnavailablePageAsync(string title, string relativePath, string fallbackMetaDescription, CancellationToken cancellationToken = default)
         {
             var settings = await GetEffectiveSettingsAsync(cancellationToken);
-            return _metadataBuilder.Build(new SeoMetadataBuildRequest
+            return BuildMetadata(new SeoMetadataBuildRequest
             {
                 PageTitle = title,
                 RelativePath = relativePath,
@@ -138,7 +131,7 @@ namespace BlazorShop.Storefront.Services
         public async Task<SeoMetadataDto> ComposeNotFoundPageAsync(string title, string relativePath, string fallbackMetaDescription, CancellationToken cancellationToken = default)
         {
             var settings = await GetEffectiveSettingsAsync(cancellationToken);
-            return _metadataBuilder.Build(new SeoMetadataBuildRequest
+            return BuildMetadata(new SeoMetadataBuildRequest
             {
                 PageTitle = title,
                 RelativePath = relativePath,
@@ -180,6 +173,127 @@ namespace BlazorShop.Storefront.Services
                 RobotsIndex = product.RobotsIndex,
                 RobotsFollow = product.RobotsFollow,
             };
+        }
+
+        private static SeoMetadataDto BuildMetadata(SeoMetadataBuildRequest request)
+        {
+            ArgumentNullException.ThrowIfNull(request);
+
+            var title = AppendTitleSuffix(
+                FirstNonEmpty(request.PageSeo?.MetaTitle, request.PageTitle, request.Settings?.SiteName),
+                request.Settings?.DefaultTitleSuffix);
+            var metaDescription = FirstNonEmpty(request.PageSeo?.MetaDescription, request.Settings?.DefaultMetaDescription);
+            var canonicalUrl = request.SuppressCanonicalUrl
+                ? null
+                : ResolveCanonicalUrl(request.PageSeo?.CanonicalUrl, request.Settings?.BaseCanonicalUrl, request.RelativePath);
+            var suppressOpenGraph = request.SuppressOpenGraph;
+
+            return new SeoMetadataDto
+            {
+                Title = title,
+                MetaDescription = metaDescription,
+                CanonicalUrl = canonicalUrl,
+                OgTitle = suppressOpenGraph ? null : FirstNonEmpty(request.PageSeo?.OgTitle, title),
+                OgDescription = suppressOpenGraph ? null : FirstNonEmpty(request.PageSeo?.OgDescription, metaDescription),
+                OgImage = suppressOpenGraph ? null : ResolveContentUrl(FirstNonEmpty(request.PageSeo?.OgImage, request.Settings?.DefaultOgImage), request.Settings?.BaseCanonicalUrl),
+                SiteName = suppressOpenGraph ? null : request.Settings?.SiteName,
+                RobotsIndex = request.PageSeo?.RobotsIndex ?? true,
+                RobotsFollow = request.PageSeo?.RobotsFollow ?? true,
+            };
+        }
+
+        private static string? AppendTitleSuffix(string? title, string? suffix)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                return string.IsNullOrWhiteSpace(suffix) ? null : suffix.Trim();
+            }
+
+            if (string.IsNullOrWhiteSpace(suffix))
+            {
+                return title.Trim();
+            }
+
+            var normalizedTitle = title.Trim();
+            var normalizedSuffix = suffix.Trim();
+
+            return normalizedTitle.EndsWith(normalizedSuffix, StringComparison.OrdinalIgnoreCase)
+                ? normalizedTitle
+                : $"{normalizedTitle} {normalizedSuffix}";
+        }
+
+        private static string? FirstNonEmpty(params string?[] values)
+        {
+            return values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))?.Trim();
+        }
+
+        private static string? ResolveCanonicalUrl(string? canonicalUrl, string? baseCanonicalUrl, string? relativePath)
+        {
+            if (!string.IsNullOrWhiteSpace(canonicalUrl))
+            {
+                var resolvedCanonical = ResolveContentUrl(canonicalUrl, baseCanonicalUrl);
+                if (!string.IsNullOrWhiteSpace(resolvedCanonical))
+                {
+                    return resolvedCanonical;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(relativePath))
+            {
+                return null;
+            }
+
+            return ResolveContentUrl(relativePath, baseCanonicalUrl);
+        }
+
+        private static string? ResolveContentUrl(string? value, string? baseCanonicalUrl)
+        {
+            return TryCombineAbsoluteUrl(baseCanonicalUrl, value) ?? TryNormalizeRootRelativeUrl(value);
+        }
+
+        private static string? TryCombineAbsoluteUrl(string? baseCanonicalUrl, string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            if (Uri.TryCreate(value, UriKind.Absolute, out var absoluteValue)
+                && IsSupportedAbsoluteUri(absoluteValue))
+            {
+                return absoluteValue.ToString();
+            }
+
+            if (string.IsNullOrWhiteSpace(baseCanonicalUrl)
+                || !Uri.TryCreate(baseCanonicalUrl, UriKind.Absolute, out var baseUri)
+                || !IsSupportedAbsoluteUri(baseUri)
+                || !value.StartsWith("/", StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            return new Uri(baseUri, value).ToString();
+        }
+
+        private static string? TryNormalizeRootRelativeUrl(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            var normalized = value.Trim();
+            return normalized.StartsWith("/", StringComparison.Ordinal) &&
+                !normalized.StartsWith("//", StringComparison.Ordinal) &&
+                !normalized.Contains("\r", StringComparison.Ordinal) &&
+                !normalized.Contains("\n", StringComparison.Ordinal)
+                    ? normalized
+                    : null;
+        }
+
+        private static bool IsSupportedAbsoluteUri(Uri uri)
+        {
+            return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps;
         }
 
         private async Task<SeoSettingsDto?> GetEffectiveSettingsAsync(CancellationToken cancellationToken)
@@ -237,6 +351,21 @@ namespace BlazorShop.Storefront.Services
             }
 
             return $"{value[..maxLength].TrimEnd()}...";
+        }
+
+        private sealed class SeoMetadataBuildRequest
+        {
+            public string? PageTitle { get; set; }
+
+            public string? RelativePath { get; set; }
+
+            public bool SuppressCanonicalUrl { get; set; }
+
+            public bool SuppressOpenGraph { get; set; }
+
+            public SeoFieldsDto? PageSeo { get; set; }
+
+            public SeoSettingsDto? Settings { get; set; }
         }
     }
 }

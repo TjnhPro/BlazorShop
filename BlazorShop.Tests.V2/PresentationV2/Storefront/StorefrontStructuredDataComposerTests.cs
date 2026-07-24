@@ -4,11 +4,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
 {
     using System.Text.Json.Nodes;
 
-    using BlazorShop.Application.DTOs.Seo;
-    using BlazorShop.Web.SharedV2.Models.Product;
-
     using Xunit;
 
+    using StorefrontV2::BlazorShop.Storefront.Models;
     using StorefrontV2::BlazorShop.Storefront.Services;
     using StorefrontV2::BlazorShop.Storefront.Services.Contracts;
 

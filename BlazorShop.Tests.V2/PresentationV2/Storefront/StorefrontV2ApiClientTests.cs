@@ -8,8 +8,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     using Microsoft.Extensions.Options;
     using Xunit;
 
-    using BlazorShop.Web.SharedV2.Models.Product;
-
+    using StorefrontV2::BlazorShop.Storefront.Models;
     using StorefrontV2::BlazorShop.Storefront.Options;
     using StorefrontV2::BlazorShop.Storefront.Services;
 

@@ -2,7 +2,7 @@ namespace BlazorShop.Storefront.Services
 {
     using System.Globalization;
 
-    using BlazorShop.Web.SharedV2.Models.Product;
+    using BlazorShop.Storefront.Models;
 
     public static class StorefrontRoutes
     {

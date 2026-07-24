@@ -4,8 +4,6 @@ namespace BlazorShop.Storefront.Configuration
 
     using BlazorShop.Application.Diagnostics;
     using BlazorShop.Application.Options;
-    using BlazorShop.Application.Services;
-    using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Storefront.Options;
     using BlazorShop.Storefront.Services;
     using BlazorShop.Storefront.Services.Contracts;
@@ -19,6 +17,14 @@ namespace BlazorShop.Storefront.Configuration
     using GeneratedConfigurationClientImplementation = BlazorShop.Storefront.Client.StorefrontConfigurationClient;
     using GeneratedCurrencyClient = BlazorShop.Storefront.Client.IStorefrontCurrencyClient;
     using GeneratedCurrencyClientImplementation = BlazorShop.Storefront.Client.StorefrontCurrencyClient;
+    using GeneratedCatalogClient = BlazorShop.Storefront.Client.IStorefrontCatalogClient;
+    using GeneratedCatalogClientImplementation = BlazorShop.Storefront.Client.StorefrontCatalogClient;
+    using GeneratedNavigationClient = BlazorShop.Storefront.Client.IStorefrontNavigationClient;
+    using GeneratedNavigationClientImplementation = BlazorShop.Storefront.Client.StorefrontNavigationClient;
+    using GeneratedPagesClient = BlazorShop.Storefront.Client.IStorefrontPagesClient;
+    using GeneratedPagesClientImplementation = BlazorShop.Storefront.Client.StorefrontPagesClient;
+    using GeneratedSeoClient = BlazorShop.Storefront.Client.IStorefrontSeoClient;
+    using GeneratedSeoClientImplementation = BlazorShop.Storefront.Client.StorefrontSeoClient;
     using GeneratedStoreClient = BlazorShop.Storefront.Client.IStorefrontStoreClient;
     using GeneratedStoreClientImplementation = BlazorShop.Storefront.Client.StorefrontStoreClient;
 
@@ -70,7 +76,6 @@ namespace BlazorShop.Storefront.Configuration
             services
                 .AddRazorComponents()
                 .AddInteractiveWebAssemblyComponents();
-            services.AddSingleton<ISeoMetadataBuilder, SeoMetadataBuilder>();
             services.AddScoped<IStorefrontClientAppUrlResolver, StorefrontClientAppUrlResolver>();
             services.AddScoped<IStorefrontPublicUrlResolver, StorefrontPublicUrlResolver>();
             services.AddScoped<IStorefrontRobotsService, StorefrontRobotsService>();
@@ -104,7 +109,7 @@ namespace BlazorShop.Storefront.Configuration
                     var serviceConfiguration = serviceProvider.GetRequiredService<IConfiguration>();
                     configureHttpClient(client, serviceConfiguration);
                 });
-            services.AddHttpClient("StorefrontGeneratedConfiguration", (serviceProvider, client) =>
+            services.AddHttpClient("StorefrontGenerated", (serviceProvider, client) =>
                 {
                     var serviceConfiguration = serviceProvider.GetRequiredService<IConfiguration>();
                     client.BaseAddress = StorefrontApiEndpointResolver.ResolveCommerceNodeBaseAddress(serviceConfiguration);
@@ -113,22 +118,39 @@ namespace BlazorShop.Storefront.Configuration
             services.AddScoped<GeneratedStoreClient>(serviceProvider =>
                 new GeneratedStoreClientImplementation(
                     string.Empty,
-                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGeneratedConfiguration")));
+                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGenerated")));
             services.AddScoped<GeneratedConfigurationClient>(serviceProvider =>
                 new GeneratedConfigurationClientImplementation(
                     string.Empty,
-                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGeneratedConfiguration")));
+                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGenerated")));
             services.AddScoped<GeneratedCurrencyClient>(serviceProvider =>
                 new GeneratedCurrencyClientImplementation(
                     string.Empty,
-                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGeneratedConfiguration")));
+                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGenerated")));
+            services.AddScoped<GeneratedCatalogClient>(serviceProvider =>
+                new GeneratedCatalogClientImplementation(
+                    string.Empty,
+                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGenerated")));
+            services.AddScoped<GeneratedPagesClient>(serviceProvider =>
+                new GeneratedPagesClientImplementation(
+                    string.Empty,
+                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGenerated")));
+            services.AddScoped<GeneratedNavigationClient>(serviceProvider =>
+                new GeneratedNavigationClientImplementation(
+                    string.Empty,
+                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGenerated")));
+            services.AddScoped<GeneratedSeoClient>(serviceProvider =>
+                new GeneratedSeoClientImplementation(
+                    string.Empty,
+                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGenerated")));
             services.AddScoped<GeneratedStorefrontConfigurationClient>();
+            services.AddScoped<GeneratedStorefrontCatalogContentClient>();
             services.AddScoped<IStorefrontAddressClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
             services.AddScoped<IStorefrontCartClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
-            services.AddScoped<IStorefrontCatalogClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontCatalogClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCatalogContentClient>());
             services.AddScoped<IStorefrontCheckoutClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
             services.AddScoped<IStorefrontConsentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
-            services.AddScoped<IStorefrontContentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontContentClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontCatalogContentClient>());
             services.AddScoped<IStorefrontCustomerClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
             services.AddScoped<IStorefrontPaymentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
             services.AddScoped<IStorefrontStoreConfigurationClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontConfigurationClient>());

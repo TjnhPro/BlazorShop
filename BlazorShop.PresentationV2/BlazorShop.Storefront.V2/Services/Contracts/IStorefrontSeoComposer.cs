@@ -1,11 +1,9 @@
 namespace BlazorShop.Storefront.Services.Contracts
 {
-    using BlazorShop.Application.DTOs.Seo;
-    using BlazorShop.Web.SharedV2.Models.Category;
-    using BlazorShop.Web.SharedV2.Models.Pages;
-    using BlazorShop.Web.SharedV2.Models.Product;
 
-    public interface IStorefrontSeoComposer
+
+    using BlazorShop.Storefront.Models;
+public interface IStorefrontSeoComposer
     {
         Task<SeoMetadataDto> ComposeStaticPageAsync(string title, string relativePath, string fallbackMetaDescription, CancellationToken cancellationToken = default);
 

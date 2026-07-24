@@ -1,6 +1,6 @@
 using BlazorShop.Storefront.Components.Features.Catalog;
+using BlazorShop.Storefront.Models;
 using BlazorShop.Storefront.Services.Contracts;
-using BlazorShop.Web.SharedV2.Models.Product;
 
 namespace BlazorShop.Storefront.Services;
 

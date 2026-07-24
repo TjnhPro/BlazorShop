@@ -1,8 +1,9 @@
 namespace BlazorShop.Storefront.Services
 {
-    using BlazorShop.Application.DTOs.Seo;
 
-    public static class StorefrontIndexingPolicy
+
+    using BlazorShop.Storefront.Models;
+public static class StorefrontIndexingPolicy
     {
         public const string NoIndexNoFollow = "noindex, nofollow";
         public const string NoIndexFollow = "noindex,follow";

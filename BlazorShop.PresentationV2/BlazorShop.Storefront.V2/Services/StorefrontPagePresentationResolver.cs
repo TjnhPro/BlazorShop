@@ -1,8 +1,8 @@
 namespace BlazorShop.Storefront.Services
 {
-    using BlazorShop.Application.CommerceNode.StorefrontPages;
-    using BlazorShop.Storefront.Services.Contracts;
-    using BlazorShop.Web.SharedV2.Models.Pages;
+
+    using BlazorShop.Storefront.Models;
+using BlazorShop.Storefront.Services.Contracts;
 
     public interface IStorefrontPagePresentationResolver
     {

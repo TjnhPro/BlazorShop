@@ -1,7 +1,8 @@
 namespace BlazorShop.Storefront.Services
 {
-    using BlazorShop.Application.CommerceNode.StorefrontPages;
-    using BlazorShop.Storefront.Services.Contracts;
+
+    using BlazorShop.Storefront.Models;
+using BlazorShop.Storefront.Services.Contracts;
 
     public sealed class StorefrontPageNavigationProvider : IStorefrontPageNavigationProvider
     {

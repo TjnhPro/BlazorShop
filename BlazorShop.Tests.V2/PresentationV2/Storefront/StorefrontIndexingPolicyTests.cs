@@ -2,10 +2,9 @@ extern alias StorefrontV2;
 
 namespace BlazorShop.Tests.PresentationV2.Storefront
 {
-    using BlazorShop.Application.DTOs.Seo;
-
     using Xunit;
 
+    using StorefrontV2::BlazorShop.Storefront.Models;
     using StorefrontV2::BlazorShop.Storefront.Services;
 
     public sealed class StorefrontIndexingPolicyTests

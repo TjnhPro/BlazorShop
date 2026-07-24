@@ -1,8 +1,9 @@
 namespace BlazorShop.Storefront.Services.Contracts
 {
-    using BlazorShop.Application.CommerceNode.StorefrontPages;
 
-    public interface IStorefrontPageNavigationProvider
+
+    using BlazorShop.Storefront.Models;
+public interface IStorefrontPageNavigationProvider
     {
         Task<IReadOnlyList<StorefrontPageNavigationLinkDto>> GetLinksAsync(CancellationToken cancellationToken = default);
 

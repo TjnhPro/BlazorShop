@@ -1,11 +1,10 @@
 namespace BlazorShop.Storefront.Services
 {
-    using System.Text.Json.Nodes;
 
-    using BlazorShop.Application.DTOs.Seo;
+    using BlazorShop.Storefront.Models;
+using System.Text.Json.Nodes;
+
     using BlazorShop.Storefront.Services.Contracts;
-    using BlazorShop.Web.SharedV2.Models.Category;
-    using BlazorShop.Web.SharedV2.Models.Product;
 
     public class StorefrontStructuredDataComposer : IStorefrontStructuredDataComposer
     {

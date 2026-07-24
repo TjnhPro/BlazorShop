@@ -2,10 +2,9 @@ extern alias StorefrontV2;
 
 namespace BlazorShop.Tests.PresentationV2.Storefront
 {
-    using BlazorShop.Web.SharedV2.Models.Pages;
-
     using Xunit;
 
+    using StorefrontV2::BlazorShop.Storefront.Models;
     using StorefrontV2::BlazorShop.Storefront.Services;
 
     public sealed class StorefrontPagePresentationResolverTests

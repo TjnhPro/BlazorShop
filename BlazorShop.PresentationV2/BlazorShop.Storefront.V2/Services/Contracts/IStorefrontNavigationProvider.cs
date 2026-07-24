@@ -1,8 +1,9 @@
 namespace BlazorShop.Storefront.Services.Contracts
 {
-    using BlazorShop.Application.CommerceNode.Navigation;
 
-    public interface IStorefrontNavigationProvider
+
+    using BlazorShop.Storefront.Models;
+public interface IStorefrontNavigationProvider
     {
         Task<StoreNavigationPublicMenuDto?> GetMenuAsync(
             string systemName,

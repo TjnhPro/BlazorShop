@@ -515,18 +515,20 @@ Goal: remove `Application` and backend-owned business DTO dependencies from Stor
 
 ### F5.2 Catalog, product, search, content, navigation, SEO
 
-- [ ] Replace catalog DTOs from `Application` and `Web.SharedV2.Models.Product/Category`.
-- [ ] Replace page/content DTOs from `Application` and `Web.SharedV2.Models.Pages`.
-- [ ] Replace SEO DTOs from `Application` and `Web.SharedV2.Models.Seo`.
-- [ ] Keep product detail projection authoritative from backend:
-  - [ ] gallery.
-  - [ ] price.
-  - [ ] sellability.
-  - [ ] variants.
-  - [ ] breadcrumb.
-  - [ ] SEO.
-- [ ] Keep category/search server route query behavior.
-- [ ] Keep sitemap/robots behavior.
+- [x] Replace catalog DTOs from `Application` and `Web.SharedV2.Models.Product/Category`.
+- [x] Replace page/content DTOs from `Application` and `Web.SharedV2.Models.Pages`.
+- [x] Replace SEO DTOs from `Application` and `Web.SharedV2.Models.Seo`.
+- [x] Keep product detail projection authoritative from backend:
+  - [x] gallery.
+  - [x] price.
+  - [x] sellability.
+  - [x] variants.
+  - [x] breadcrumb.
+  - [x] SEO.
+- [x] Keep category/search server route query behavior.
+- [x] Keep sitemap/robots behavior.
+
+2026-07-24 evidence: Storefront V2 now routes catalog/content/navigation/SEO through `GeneratedStorefrontCatalogContentClient`, projects generated Storefront client DTOs into Storefront-owned presentation models under `BlazorShop.Storefront.Models`, and source guard `StorefrontV2_CatalogContentNavigationAndSeoUseStorefrontOwnedModels` blocks reintroducing Application/Web.SharedV2 catalog/content/SEO imports.
 
 ### F5.3 Auth, customer, account
 
@@ -823,7 +825,7 @@ Future `BlazorShop.Storefront.Starter` should include:
 - [x] Commit 5: F3 generated C# client project and generator tests.
 - [x] Commit 6: F4 BFF boundary cleanup and local endpoint contract split.
 - [x] Commit 7: F5.1 configuration/store bootstrap migration.
-- [ ] Commit 8: F5.2 catalog/content/navigation/SEO migration.
+- [x] Commit 8: F5.2 catalog/content/navigation/SEO migration.
 - [ ] Commit 9: F5.3 auth/customer/account migration.
 - [ ] Commit 10: F5.4 cart migration.
 - [ ] Commit 11: F5.5 checkout/orders/payments migration.

@@ -1,7 +1,8 @@
 namespace BlazorShop.Storefront.Services
 {
-    using BlazorShop.Application.DTOs.Seo;
-    using BlazorShop.Storefront.Services.Contracts;
+
+    using BlazorShop.Storefront.Models;
+using BlazorShop.Storefront.Services.Contracts;
 
     using Microsoft.Extensions.Caching.Memory;
 

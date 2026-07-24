@@ -154,6 +154,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Mutation endpoints require antiforgery token. 2026-07-17 Phase 2: `StorefrontLocalApiClient` attaches the meta-projected CSRF header for POST/PUT/DELETE and focused runtime foundation tests passed.
 - [x] No direct Commerce Node URL or credential is present in WASM static output. 2026-07-17 Phase 2: `rg` over WASM source and `bin/Debug/net10.0/wwwroot` found no `CommerceNode`, node key/secret, refresh token, access token, or scoped Commerce Node route strings.
 - [x] Headless Storefront Foundation F4 keeps protected browser flows behind the Storefront V2 BFF. 2026-07-24: local endpoint groups, capability-specific local contracts, central browser-safe error mapping, same-origin browser project guardrails, and BFF responsibility documentation are covered by `StorefrontBffBoundaryHardeningTests`; focused verification passed `228/228` with `2` skipped.
+- [x] Headless Storefront Foundation F5.2 migrates catalog/content/navigation/SEO transport and models off Application/Web.SharedV2. 2026-07-24: Storefront V2 build passed with 0 warnings; focused Storefront generated catalog/content adapter guard passed `6/6`; broader catalog/content/navigation/SEO/product gate passed `345/345` with `1` skipped. Known warnings were existing MessagePack NU1902/NU1903 and Browserslist notices.
 
 ## Runtime Smoke
 

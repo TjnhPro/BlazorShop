@@ -1,6 +1,8 @@
 namespace BlazorShop.Storefront.Services
 {
-    using System.IO;
+
+    using BlazorShop.Storefront.Models;
+using System.IO;
 
     using BlazorShop.Application.Diagnostics;
     using BlazorShop.Storefront.Services.Contracts;
@@ -80,7 +82,7 @@ namespace BlazorShop.Storefront.Services
             return newPath;
         }
 
-        private static bool TryValidateResolvedRedirect(string sourcePath, Application.DTOs.Seo.SeoRedirectResolutionDto redirect, out string? destinationPath, out RedirectBlockReason blockReason)
+        private static bool TryValidateResolvedRedirect(string sourcePath, SeoRedirectResolutionDto redirect, out string? destinationPath, out RedirectBlockReason blockReason)
         {
             destinationPath = redirect.NewPath?.Trim();
             blockReason = RedirectBlockReason.None;

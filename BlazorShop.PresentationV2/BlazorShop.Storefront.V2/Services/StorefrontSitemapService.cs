@@ -1,11 +1,12 @@
 namespace BlazorShop.Storefront.Services
 {
-    using System.Globalization;
+
+    using BlazorShop.Storefront.Models;
+using System.Globalization;
     using System.Text;
     using System.Xml;
     using System.Xml.Linq;
 
-    using BlazorShop.Web.SharedV2.Models.Discovery;
 
     using BlazorShop.Storefront.Services.Contracts;
 

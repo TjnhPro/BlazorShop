@@ -1,8 +1,9 @@
 namespace BlazorShop.Storefront.Services.Contracts
 {
-    using BlazorShop.Application.DTOs.Seo;
 
-    public interface IStorefrontSeoSettingsProvider
+
+    using BlazorShop.Storefront.Models;
+public interface IStorefrontSeoSettingsProvider
     {
         Task<SeoSettingsDto?> GetAsync(CancellationToken cancellationToken = default);
     }

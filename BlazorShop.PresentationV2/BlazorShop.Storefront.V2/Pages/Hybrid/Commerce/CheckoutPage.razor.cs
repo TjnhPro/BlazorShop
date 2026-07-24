@@ -2,9 +2,9 @@ namespace BlazorShop.Storefront.Pages.Hybrid.Commerce
 {
     using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Storefront.Components.Browser;
+    using BlazorShop.Storefront.Models;
     using BlazorShop.Storefront.Services;
     using BlazorShop.Storefront.Services.Contracts;
-    using BlazorShop.Web.SharedV2.Models.Product;
 
     using Microsoft.AspNetCore.Components;
 
