@@ -250,19 +250,19 @@ Goal: make Storefront OpenAPI safe for generated frontend clients and AI/fronten
 
 ### F2.2 Public contract ownership
 
-- [ ] Verify public Storefront schemas do not expose:
-  - [ ] Domain entities.
-  - [ ] EF models.
-  - [ ] admin DTOs.
-  - [ ] credentials/secrets.
-  - [ ] internal row IDs where public IDs are expected.
-  - [ ] server-owned mutation fields.
-- [ ] Move any Storefront public contract still owned by `Application` into Commerce Node API Storefront contracts or a dedicated generated-contract source.
-- [ ] Keep Application DTO usage behind mapping code until migration is complete.
+- [x] Verify public Storefront schemas do not expose:
+  - [x] Domain entities.
+  - [x] EF models.
+  - [x] admin DTOs.
+  - [x] credentials/secrets.
+  - [x] internal row IDs where public IDs are expected.
+  - [x] server-owned mutation fields.
+- [x] Move any Storefront public contract still owned by `Application` into Commerce Node API Storefront contracts or a dedicated generated-contract source.
+- [x] Keep Application DTO usage behind mapping code until migration is complete.
 
 ### F2.3 Error contract
 
-- [ ] Standardize expected error responses around machine-readable fields:
+- [x] Standardize expected error responses around machine-readable fields:
 
 ```json
 {
@@ -274,20 +274,20 @@ Goal: make Storefront OpenAPI safe for generated frontend clients and AI/fronten
 }
 ```
 
-- [ ] Decide whether to extend current `CommerceNodeApiResponse<T>` or use `CommerceNodeApiErrorResponse` consistently for non-2xx responses.
-- [ ] Add canonical error code registry for Storefront client flow:
-  - [ ] auth.
-  - [ ] account.
-  - [ ] cart.
-  - [ ] checkout.
-  - [ ] payment.
-  - [ ] catalog/content.
-  - [ ] store unavailable/maintenance.
-- [ ] Add tests that frontend control flow can use `code` and never parse `message`.
+- [x] Decide whether to extend current `CommerceNodeApiResponse<T>` or use `CommerceNodeApiErrorResponse` consistently for non-2xx responses.
+- [x] Add canonical error code registry for Storefront client flow:
+  - [x] auth.
+  - [x] account.
+  - [x] cart.
+  - [x] checkout.
+  - [x] payment.
+  - [x] catalog/content.
+  - [x] store unavailable/maintenance.
+- [x] Add tests that frontend control flow can use `code` and never parse `message`.
 
 ### F2.4 Capability projection
 
-- [ ] Replace or augment flat public feature flags with machine-readable capability entries:
+- [x] Replace or augment flat public feature flags with machine-readable capability entries:
 
 ```json
 {
@@ -300,35 +300,35 @@ Goal: make Storefront OpenAPI safe for generated frontend clients and AI/fronten
 }
 ```
 
-- [ ] Keep backward-compatible flat flags temporarily if Storefront V2 depends on them.
-- [ ] Add capability keys for only currently real/planned Storefront features:
-  - [ ] customer accounts.
-  - [ ] registration.
-  - [ ] cart.
-  - [ ] checkout.
-  - [ ] payments.
-  - [ ] newsletter.
-  - [ ] recommendations.
-  - [ ] contact form.
-  - [ ] reviews only if backend support is present or explicitly planned.
-- [ ] Do not expose provider secrets or internal settings in public configuration.
+- [x] Keep backward-compatible flat flags temporarily if Storefront V2 depends on them.
+- [x] Add capability keys for only currently real/planned Storefront features:
+  - [x] customer accounts.
+  - [x] registration.
+  - [x] cart.
+  - [x] checkout.
+  - [x] payments.
+  - [x] newsletter.
+  - [x] recommendations.
+  - [x] contact form.
+  - [n/a] reviews only if backend support is present or explicitly planned.
+- [x] Do not expose provider secrets or internal settings in public configuration.
 
 ### F2.5 Generator safety and compatibility
 
-- [ ] Keep stable operation IDs.
-- [ ] Keep named string enum values for client-facing filters/sorts.
-- [ ] Keep non-null collection rules.
-- [ ] Add breaking-change diff guard for:
-  - [ ] removed path.
-  - [ ] removed operation ID.
-  - [ ] removed schema.
-  - [ ] removed property.
-  - [ ] property type change.
-  - [ ] optional to required change.
-  - [ ] enum value removal.
-  - [ ] response status removal.
-  - [ ] security scheme removal/change.
-- [ ] Refresh OpenAPI snapshots only after intentional contract changes are reviewed.
+- [x] Keep stable operation IDs.
+- [x] Keep named string enum values for client-facing filters/sorts.
+- [x] Keep non-null collection rules.
+- [x] Add breaking-change diff guard for:
+  - [x] removed path.
+  - [x] removed operation ID.
+  - [x] removed schema.
+  - [x] removed property.
+  - [x] property type change.
+  - [x] optional to required change.
+  - [x] enum value removal.
+  - [x] response status removal.
+  - [x] security scheme removal/change.
+- [x] Refresh OpenAPI snapshots only after intentional contract changes are reviewed.
 
 ### Files likely touched
 
@@ -348,11 +348,11 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done when
 
-- [ ] Frontend Storefront OpenAPI has no provider callback/webhook operations.
-- [ ] Storefront public schemas are safe.
-- [ ] Error contracts expose stable `code`.
-- [ ] Capability projection is machine-readable.
-- [ ] TypeScript generation proof still passes.
+- [x] Frontend Storefront OpenAPI has no provider callback/webhook operations.
+- [x] Storefront public schemas are safe.
+- [x] Error contracts expose stable `code`.
+- [x] Capability projection is machine-readable.
+- [x] TypeScript generation proof still passes.
 
 ## F3 - Generated C# Storefront Client Foundation
 
@@ -779,13 +779,13 @@ Future `BlazorShop.Storefront.Starter` should include:
 ### Commerce Node API
 
 - [ ] Storefront API is framework-neutral.
-- [ ] Storefront client OpenAPI excludes provider webhook/callback operations.
-- [ ] Public contracts do not expose unsafe/internal schemas.
-- [ ] operation IDs are stable.
-- [ ] non-null collections and validation metadata are generator-safe.
-- [ ] machine-readable error codes exist.
-- [ ] capability projection exists.
-- [ ] breaking-change gate exists.
+- [x] Storefront client OpenAPI excludes provider webhook/callback operations.
+- [x] Public contracts do not expose unsafe/internal schemas.
+- [x] operation IDs are stable.
+- [x] non-null collections and validation metadata are generator-safe.
+- [x] machine-readable error codes exist.
+- [x] capability projection exists.
+- [x] breaking-change gate exists.
 
 ### Storefront Client
 
@@ -819,7 +819,7 @@ Future `BlazorShop.Storefront.Starter` should include:
 - [x] Commit 1: F0 architecture role/boundary lock and tests.
 - [x] Commit 2: F1 dependency audit document and migration table.
 - [x] Commit 3: F2 OpenAPI surface split and provider/webhook exclusion from frontend SDK.
-- [ ] Commit 4: F2 error contract/capability projection hardening.
+- [x] Commit 4: F2 error contract/capability projection hardening.
 - [ ] Commit 5: F3 generated C# client project and generator tests.
 - [ ] Commit 6: F4 BFF boundary cleanup and local endpoint contract split.
 - [ ] Commit 7: F5.1 configuration/store bootstrap migration.

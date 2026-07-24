@@ -95,6 +95,9 @@ Commerce Node Storefront document ownership:
 - `/swagger/storefront/swagger.json` is the frontend/client Storefront API contract and must exclude provider callback/webhook operations.
 - `/swagger/storefront-provider/swagger.json` is the provider integration contract for payment callback/webhook routes when those operations need Swagger coverage.
 - Runtime provider callback/webhook routes may stay under `api/storefront/stores/{storeKey}/payments/*`, but they are not frontend SDK operations.
+- Storefront expected errors use `CommerceNodeApiErrorResponse` with a stable machine-readable `code`; frontend clients must branch on `code`, not parse `message`.
+- Storefront public configuration exposes a machine-readable `features` capability map with `supported`, `enabled`, and optional `reason`, while flat feature flags may remain temporarily for backward compatibility.
+- Storefront OpenAPI compatibility tests must guard removed paths, operation IDs, schemas, properties, enum values, response statuses, security schemes, property type changes, and optional-to-required changes before snapshots are refreshed.
 
 ## Contract Tests
 

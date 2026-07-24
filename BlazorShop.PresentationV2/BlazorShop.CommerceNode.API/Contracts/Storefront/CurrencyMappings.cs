@@ -11,6 +11,7 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
     using BlazorShop.Application.CommerceNode.Features;
     using BlazorShop.Application.CommerceNode.Payments;
     using BlazorShop.Application.CommerceNode.ProductSelections;
+    using BlazorShop.Application.CommerceNode.SecurityPrivacy;
     using BlazorShop.Application.CommerceNode.Stores;
     using BlazorShop.Application.DTOs;
     using BlazorShop.Application.DTOs.Category;
@@ -40,9 +41,18 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
             StoreFeatureStateSnapshot featureStates,
             StorefrontConsentOptions consentOptions,
             CaptchaOptions captchaOptions,
+            StoreRegistrationRuntimeSettings registrationSettings,
             IReadOnlyList<string>? supportedCurrencyCodes = null)
         {
             var currencyCodes = NormalizeSupportedCurrencyCodes(store.DefaultCurrencyCode, supportedCurrencyCodes);
+            var featureFlags = new StorefrontFeatureFlagsResponse(
+                CustomerAccountsEnabled: featureStates.CustomerAccountsEnabled,
+                CartEnabled: true,
+                CheckoutEnabled: featureStates.CheckoutEnabled,
+                PaymentsEnabled: true,
+                NewsletterEnabled: featureStates.NewsletterEnabled,
+                RecommendationsEnabled: featureStates.RecommendationsEnabled);
+
             return new StorefrontPublicConfigurationResponse(
                 new StorefrontStoreIdentityResponse(
                     store.PublicId,
@@ -78,13 +88,8 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                 new StorefrontMaintenanceStateResponse(
                     store.MaintenanceModeEnabled,
                     store.MaintenanceMessage),
-                new StorefrontFeatureFlagsResponse(
-                    CustomerAccountsEnabled: featureStates.CustomerAccountsEnabled,
-                    CartEnabled: true,
-                    CheckoutEnabled: featureStates.CheckoutEnabled,
-                    PaymentsEnabled: true,
-                    NewsletterEnabled: featureStates.NewsletterEnabled,
-                    RecommendationsEnabled: featureStates.RecommendationsEnabled),
+                featureFlags,
+                CreateCapabilities(featureFlags, registrationSettings),
                 paymentMethods,
                 new StorefrontSeoDefaultsResponse(
                     seoDefaults.SiteName,
@@ -101,6 +106,33 @@ namespace BlazorShop.CommerceNode.API.Contracts.Storefront
                     seoDefaults.InstagramUrl,
                     seoDefaults.XUrl));
         }
+
+        private static IReadOnlyDictionary<string, StorefrontCapabilityResponse> CreateCapabilities(
+            StorefrontFeatureFlagsResponse featureFlags,
+            StoreRegistrationRuntimeSettings registrationSettings)
+        {
+            var registrationEnabled = featureFlags.CustomerAccountsEnabled && registrationSettings.RegistrationAllowed;
+            return new Dictionary<string, StorefrontCapabilityResponse>(StringComparer.Ordinal)
+            {
+                ["customerAccounts"] = SupportedCapability(featureFlags.CustomerAccountsEnabled),
+                ["registration"] = SupportedCapability(registrationEnabled),
+                ["cart"] = SupportedCapability(featureFlags.CartEnabled),
+                ["checkout"] = SupportedCapability(featureFlags.CheckoutEnabled),
+                ["payments"] = SupportedCapability(featureFlags.PaymentsEnabled),
+                ["newsletter"] = SupportedCapability(featureFlags.NewsletterEnabled),
+                ["recommendations"] = SupportedCapability(featureFlags.RecommendationsEnabled),
+                ["contactForm"] = SupportedCapability(enabled: true),
+            };
+        }
+
+        private static StorefrontCapabilityResponse SupportedCapability(bool enabled)
+        {
+            return new StorefrontCapabilityResponse(
+                Supported: true,
+                Enabled: enabled,
+                Reason: enabled ? null : "disabled");
+        }
+
         private static IReadOnlyList<string> NormalizeSupportedCurrencyCodes(
             string defaultCurrencyCode,
             IReadOnlyList<string>? supportedCurrencyCodes)

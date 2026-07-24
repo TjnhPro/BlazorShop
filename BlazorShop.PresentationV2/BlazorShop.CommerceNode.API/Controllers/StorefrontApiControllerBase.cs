@@ -44,7 +44,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
             return this.Error(
                 StatusCodes.Status400BadRequest,
-                "validation_error",
+                StorefrontErrorCodes.ValidationFailed,
                 NormalizeMessage(response.Message));
         }
 
@@ -59,7 +59,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
 
             return this.Error(
                 StatusCodes.Status400BadRequest,
-                "validation_error",
+                StorefrontErrorCodes.ValidationFailed,
                 NormalizeMessage(response.Message));
         }
 
@@ -124,10 +124,10 @@ namespace BlazorShop.CommerceNode.API.Controllers
         {
             return responseType switch
             {
-                ServiceResponseType.ValidationError => "validation_error",
-                ServiceResponseType.NotFound => "not_found",
+                ServiceResponseType.ValidationError => StorefrontErrorCodes.ValidationFailed,
+                ServiceResponseType.NotFound => StorefrontErrorCodes.ResourceNotFound,
                 ServiceResponseType.Conflict => "conflict",
-                _ => "internal_error",
+                _ => StorefrontErrorCodes.InternalError,
             };
         }
 

@@ -115,6 +115,7 @@ namespace BlazorShop.CommerceNode.API.Controllers
                 featureStates,
                 securityPrivacySettings.Consent,
                 securityPrivacySettings.Captcha,
+                securityPrivacySettings.Registration,
                 supportedCurrencyCodes);
 
             this.publicConfigurationCache.Set(storeResult.Value.StoreKey, configuration);

@@ -17,6 +17,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
     using Xunit;
 
     using CommerceNodeProgram = CommerceNodeApi::Program;
+    using StorefrontErrorCodes = CommerceNodeApi::BlazorShop.CommerceNode.API.Responses.StorefrontErrorCodes;
 
     public sealed class CommerceNodeStorefrontOpenApiContractTests : IClassFixture<WebApplicationFactory<CommerceNodeProgram>>
     {
@@ -123,6 +124,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             "StorefrontCurrencyOptionsResponse",
             "StorefrontMaintenanceStateResponse",
             "StorefrontFeatureFlagsResponse",
+            "StorefrontCapabilityResponse",
             "StorefrontSeoDefaultsResponse",
             "StorefrontCurrentStoreResponse",
             "StorefrontPaymentMethodResponse",
@@ -244,6 +246,85 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             var expected = await File.ReadAllTextAsync(GetSnapshotAbsolutePath(SwaggerSnapshotPath));
 
             Assert.Equal(NormalizeJson(expected), NormalizeJson(swagger));
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_BreakingChangeGuard_CurrentDocumentIsCompatibleWithBaseline()
+        {
+            var expected = JsonNode.Parse(await File.ReadAllTextAsync(GetSnapshotAbsolutePath(SwaggerSnapshotPath)))?.AsObject()
+                ?? throw new InvalidOperationException("Storefront Swagger snapshot was not a JSON object.");
+            var actual = await this.GetStorefrontSwaggerAsync();
+            var failures = new List<string>();
+
+            var expectedPaths = expected["paths"]?.AsObject()
+                ?? throw new InvalidOperationException("Storefront Swagger snapshot does not contain paths.");
+            var actualPaths = actual["paths"]?.AsObject()
+                ?? throw new InvalidOperationException("Storefront Swagger document does not contain paths.");
+            AddRemovedKeys(failures, "path", expectedPaths, actualPaths);
+
+            var expectedOperations = GetOperations(expected).ToDictionary(OperationKey, StringComparer.Ordinal);
+            var actualOperations = GetOperations(actual).ToDictionary(OperationKey, StringComparer.Ordinal);
+            AddRemovedKeys(failures, "operation", expectedOperations.Keys, actualOperations.Keys);
+
+            var expectedOperationIds = GetOperationIds(expected).ToArray();
+            var actualOperationIds = GetOperationIds(actual).ToArray();
+            AddRemovedKeys(failures, "operationId", expectedOperationIds, actualOperationIds);
+
+            foreach (var (operationKey, expectedOperation) in expectedOperations)
+            {
+                if (!actualOperations.TryGetValue(operationKey, out var actualOperation))
+                {
+                    continue;
+                }
+
+                AddRemovedKeys(
+                    failures,
+                    $"{operationKey} response status",
+                    expectedOperation.Value["responses"]?.AsObject().Select(response => response.Key) ?? [],
+                    actualOperation.Value["responses"]?.AsObject().Select(response => response.Key) ?? []);
+                AddRemovedKeys(
+                    failures,
+                    $"{operationKey} security scheme",
+                    GetSecuritySchemeNames(expectedOperation.Value),
+                    GetSecuritySchemeNames(actualOperation.Value));
+            }
+
+            var expectedSecuritySchemes = expected["components"]?["securitySchemes"]?.AsObject();
+            var actualSecuritySchemes = actual["components"]?["securitySchemes"]?.AsObject();
+            if (expectedSecuritySchemes is not null)
+            {
+                if (actualSecuritySchemes is null)
+                {
+                    failures.Add("security schemes were removed");
+                }
+                else
+                {
+                    AddRemovedKeys(failures, "security scheme", expectedSecuritySchemes, actualSecuritySchemes);
+                    foreach (var expectedScheme in expectedSecuritySchemes)
+                    {
+                        if (actualSecuritySchemes.TryGetPropertyValue(expectedScheme.Key, out var actualScheme) && actualScheme is not null)
+                        {
+                            CompareSchemaType(failures, $"securitySchemes.{expectedScheme.Key}", expectedScheme.Value, actualScheme);
+                        }
+                    }
+                }
+            }
+
+            var expectedSchemas = GetSchemas(expected);
+            var actualSchemas = GetSchemas(actual);
+            AddRemovedKeys(failures, "schema", expectedSchemas, actualSchemas);
+
+            foreach (var expectedSchema in expectedSchemas)
+            {
+                if (!actualSchemas.TryGetPropertyValue(expectedSchema.Key, out var actualSchema) || actualSchema is null)
+                {
+                    continue;
+                }
+
+                CompareSchemaCompatibility(failures, expectedSchema.Key, expectedSchema.Value, actualSchema);
+            }
+
+            Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures));
         }
 
         [Fact]
@@ -398,8 +479,15 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("currencyOptions", publicConfigurationProperties);
             Assert.Contains("maintenanceState", publicConfigurationProperties);
             Assert.Contains("featureFlags", publicConfigurationProperties);
+            Assert.Contains("features", publicConfigurationProperties);
             Assert.Contains("paymentMethods", publicConfigurationProperties);
             Assert.Contains("seoDefaults", publicConfigurationProperties);
+
+            var capability = schemas["StorefrontCapabilityResponse"]!.AsObject();
+            var capabilityProperties = GetPropertyNames(capability).ToArray();
+            Assert.Contains("supported", capabilityProperties);
+            Assert.Contains("enabled", capabilityProperties);
+            Assert.Contains("reason", capabilityProperties);
         }
 
         [Fact]
@@ -414,6 +502,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Null(operation["requestBody"]);
             Assert.DoesNotContain("Bearer", GetSecuritySchemeNames(operation));
             Assert.True(schemas.ContainsKey("StorefrontPublicConfigurationResponse"));
+            Assert.True(schemas.ContainsKey("StorefrontCapabilityResponse"));
             Assert.True(schemas.ContainsKey("StorefrontSeoDefaultsResponse"));
         }
 
@@ -840,6 +929,25 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             Assert.Contains("message", required, StringComparer.Ordinal);
             Assert.Contains("traceId", required, StringComparer.Ordinal);
             Assert.False(IsNullableProperty(errorSchema, "traceId"), "traceId must be required and non-nullable.");
+        }
+
+        [Fact]
+        public void StorefrontErrorCodes_CoverFrontendControlFlowCategories()
+        {
+            Assert.Contains(StorefrontErrorCodes.AuthUnauthenticated, StorefrontErrorCodes.All);
+            Assert.Contains(StorefrontErrorCodes.AccountRegistrationDisabled, StorefrontErrorCodes.All);
+            Assert.Contains(StorefrontErrorCodes.CartVersionStale, StorefrontErrorCodes.All);
+            Assert.Contains(StorefrontErrorCodes.CheckoutValidationFailed, StorefrontErrorCodes.All);
+            Assert.Contains(StorefrontErrorCodes.PaymentOperationNotSupported, StorefrontErrorCodes.All);
+            Assert.Contains(StorefrontErrorCodes.CatalogNotFound, StorefrontErrorCodes.All);
+            Assert.Contains(StorefrontErrorCodes.StoreUnavailable, StorefrontErrorCodes.All);
+
+            Assert.All(StorefrontErrorCodes.All, code =>
+            {
+                Assert.Contains('.', code);
+                Assert.DoesNotContain(' ', code);
+                Assert.Equal(code, code.ToLowerInvariant());
+            });
         }
 
         [Fact]
@@ -1730,6 +1838,151 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
 
                     break;
             }
+        }
+
+        private static string OperationKey((string Path, string Method, JsonObject Value) operation)
+        {
+            return $"{operation.Method.ToUpperInvariant()} {operation.Path}";
+        }
+
+        private static IEnumerable<string> GetOperationIds(JsonObject swagger)
+        {
+            return GetOperations(swagger)
+                .Select(operation => operation.Value["operationId"]?.GetValue<string>())
+                .Where(operationId => !string.IsNullOrWhiteSpace(operationId))
+                .Cast<string>();
+        }
+
+        private static void AddRemovedKeys(
+            ICollection<string> failures,
+            string label,
+            JsonObject expected,
+            JsonObject actual)
+        {
+            AddRemovedKeys(failures, label, expected.Select(item => item.Key), actual.Select(item => item.Key));
+        }
+
+        private static void AddRemovedKeys(
+            ICollection<string> failures,
+            string label,
+            IEnumerable<string> expected,
+            IEnumerable<string> actual)
+        {
+            var actualSet = actual.ToHashSet(StringComparer.Ordinal);
+            foreach (var removed in expected.Except(actualSet, StringComparer.Ordinal).OrderBy(value => value, StringComparer.Ordinal))
+            {
+                failures.Add($"Removed {label}: {removed}");
+            }
+        }
+
+        private static void CompareSchemaCompatibility(
+            ICollection<string> failures,
+            string schemaName,
+            JsonNode? expectedSchema,
+            JsonNode? actualSchema)
+        {
+            CompareSchemaType(failures, schemaName, expectedSchema, actualSchema);
+
+            if (expectedSchema is not JsonObject expectedObject || actualSchema is not JsonObject actualObject)
+            {
+                return;
+            }
+
+            var expectedRequired = GetRequiredProperties(expectedObject).ToHashSet(StringComparer.Ordinal);
+            var actualRequired = GetRequiredProperties(actualObject).ToHashSet(StringComparer.Ordinal);
+            foreach (var newlyRequired in actualRequired.Except(expectedRequired, StringComparer.Ordinal).OrderBy(value => value, StringComparer.Ordinal))
+            {
+                failures.Add($"{schemaName}.{newlyRequired} changed from optional to required");
+            }
+
+            var expectedProperties = expectedObject["properties"]?.AsObject();
+            var actualProperties = actualObject["properties"]?.AsObject();
+            if (expectedProperties is null)
+            {
+                return;
+            }
+
+            if (actualProperties is null)
+            {
+                failures.Add($"{schemaName} properties were removed");
+                return;
+            }
+
+            AddRemovedKeys(failures, $"{schemaName} property", expectedProperties, actualProperties);
+            foreach (var expectedProperty in expectedProperties)
+            {
+                if (actualProperties.TryGetPropertyValue(expectedProperty.Key, out var actualProperty) && actualProperty is not null)
+                {
+                    var propertyPath = $"{schemaName}.{expectedProperty.Key}";
+                    CompareSchemaType(failures, propertyPath, expectedProperty.Value, actualProperty);
+                    AddRemovedEnumValues(failures, propertyPath, expectedProperty.Value, actualProperty);
+                }
+            }
+
+            AddRemovedEnumValues(failures, schemaName, expectedSchema, actualSchema);
+        }
+
+        private static void CompareSchemaType(
+            ICollection<string> failures,
+            string path,
+            JsonNode? expected,
+            JsonNode? actual)
+        {
+            var expectedFingerprint = GetSchemaTypeFingerprint(expected);
+            var actualFingerprint = GetSchemaTypeFingerprint(actual);
+            if (!string.Equals(expectedFingerprint, actualFingerprint, StringComparison.Ordinal))
+            {
+                failures.Add($"{path} type changed from '{expectedFingerprint}' to '{actualFingerprint}'");
+            }
+        }
+
+        private static string GetSchemaTypeFingerprint(JsonNode? schema)
+        {
+            if (schema is not JsonObject schemaObject)
+            {
+                return string.Empty;
+            }
+
+            if (schemaObject.TryGetPropertyValue("$ref", out var reference) && reference is not null)
+            {
+                return reference.GetValue<string>();
+            }
+
+            var type = schemaObject["type"]?.GetValue<string>() ?? string.Empty;
+            var format = schemaObject["format"]?.GetValue<string>() ?? string.Empty;
+            var items = schemaObject["items"] is null ? string.Empty : GetSchemaTypeFingerprint(schemaObject["items"]);
+            var additionalProperties = schemaObject["additionalProperties"] is null
+                ? string.Empty
+                : GetSchemaTypeFingerprint(schemaObject["additionalProperties"]);
+
+            return string.Join("|", [type, format, items, additionalProperties]);
+        }
+
+        private static void AddRemovedEnumValues(
+            ICollection<string> failures,
+            string path,
+            JsonNode? expected,
+            JsonNode? actual)
+        {
+            var expectedValues = GetEnumValues(expected).ToArray();
+            if (expectedValues.Length == 0)
+            {
+                return;
+            }
+
+            AddRemovedKeys(failures, $"{path} enum value", expectedValues, GetEnumValues(actual));
+        }
+
+        private static IEnumerable<string> GetEnumValues(JsonNode? schema)
+        {
+            if (schema is not JsonObject schemaObject || schemaObject["enum"] is not JsonArray enumValues)
+            {
+                return [];
+            }
+
+            return enumValues
+                .Select(value => value?.ToJsonString() ?? string.Empty)
+                .Where(value => !string.IsNullOrWhiteSpace(value));
         }
 
         private static bool IsHttpMethod(string value)

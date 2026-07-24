@@ -6300,6 +6300,22 @@
         },
         "additionalProperties": false
       },
+      "StorefrontCapabilityResponse": {
+        "type": "object",
+        "properties": {
+          "supported": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "StorefrontCaptchaConfigurationResponse": {
         "type": "object",
         "properties": {
@@ -10671,6 +10687,13 @@
           },
           "featureFlags": {
             "$ref": "#/components/schemas/StorefrontFeatureFlagsResponse"
+          },
+          "features": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/StorefrontCapabilityResponse"
+            },
+            "nullable": true
           },
           "paymentMethods": {
             "type": "array",
