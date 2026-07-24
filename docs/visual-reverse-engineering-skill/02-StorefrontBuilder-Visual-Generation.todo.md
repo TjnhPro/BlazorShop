@@ -347,33 +347,33 @@ Goal: generate theme CSS and reusable style primitives.
 
 Generated surfaces:
 
-- [ ] CSS custom properties.
-- [ ] Typography rules.
-- [ ] Container rules.
-- [ ] Grid helpers.
-- [ ] Button styles.
-- [ ] Input/select styles.
-- [ ] Card styles.
-- [ ] Product image 1x1 rules.
-- [ ] Focus states.
-- [ ] Loading/empty/error states.
-- [ ] Responsive media queries.
+- [x] CSS custom properties.
+- [x] Typography rules.
+- [x] Container rules.
+- [x] Grid helpers.
+- [x] Button styles.
+- [x] Input/select styles.
+- [x] Card styles.
+- [x] Product image 1x1 rules.
+- [x] Focus states.
+- [x] Loading/empty/error states.
+- [x] Responsive media queries.
 
 Rules:
 
-- [ ] Keep CSS under generated storefront `wwwroot`.
-- [ ] Do not alter Runtime, generated client, or BFF code.
-- [ ] Do not inject arbitrary third-party scripts.
-- [ ] Use stable class naming.
+- [x] Keep CSS under generated storefront `wwwroot`.
+- [x] Do not alter Runtime, generated client, or BFF code.
+- [x] Do not inject arbitrary third-party scripts.
+- [x] Use stable class naming.
 
 Done when:
 
-- [ ] Starter pages visually adopt target tokens while preserving Starter behavior.
+- [x] Starter pages visually adopt target tokens while preserving Starter behavior.
 
 Verification:
 
-- [ ] CSS lint or static syntax validation.
-- [ ] Browser render check for home/catalog/product at desktop/tablet/mobile.
+- [x] CSS lint or static syntax validation.
+- [x] Browser render check for home/catalog/product at desktop/tablet/mobile.
 
 ## S19 - Shell, Home, Catalog, And Product Composition Generation
 

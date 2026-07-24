@@ -292,6 +292,42 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("SFB-PROJECT-005", validator, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void VisualFoundationGeneration_ProducesScopedThemeCssWithoutScriptInjection()
+        {
+            var generator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/apply-visual-foundation.mjs");
+            var validator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderCss.ps1");
+            var app = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo/Components/App.razor");
+
+            foreach (var cssSurface in new[]
+            {
+                "--sfb-color-",
+                "--sfb-font-",
+                "--sfb-text-",
+                "--sfb-space-",
+                "--sfb-container",
+                "--sfb-border-width",
+                "--sfb-radius",
+                "--sfb-shadow",
+                "--sfb-motion",
+                "--sfb-ease",
+                "button",
+                "input",
+                "starter-product-card",
+                "aspect-ratio: 1 / 1",
+                ":focus-visible",
+                "@media",
+            })
+            {
+                Assert.Contains(cssSurface, generator, StringComparison.Ordinal);
+                Assert.Contains(cssSurface, validator, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("wwwroot/css/storefront-builder.generated.css", generator, StringComparison.Ordinal);
+            Assert.Contains("css/storefront-builder.generated.css", app, StringComparison.Ordinal);
+            Assert.Contains("SFB-CSS-002", validator, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));
