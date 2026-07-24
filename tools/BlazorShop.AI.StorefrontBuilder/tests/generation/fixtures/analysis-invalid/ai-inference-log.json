@@ -1,0 +1,6 @@
+{
+  "schemaVersion": "1",
+  "artifactKind": "ai-inference-log",
+  "artifactId": "ai-inference-log.empty",
+  "inferences": []
+}

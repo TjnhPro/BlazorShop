@@ -411,30 +411,30 @@ Goal: keep AI guesses visible and reviewable.
 
 Log every inferred decision:
 
-- [ ] Token inference.
-- [ ] Component role inference.
-- [ ] Responsive behavior inference.
-- [ ] Hidden/unsupported feature inference.
-- [ ] Asset replacement inference.
-- [ ] Layout fallback inference.
+- [x] Token inference.
+- [x] Component role inference.
+- [x] Responsive behavior inference.
+- [x] Hidden/unsupported feature inference.
+- [x] Asset replacement inference.
+- [x] Layout fallback inference.
 
 Each entry must include:
 
-- [ ] Inference ID.
-- [ ] Decision.
-- [ ] Evidence IDs.
-- [ ] Confidence.
-- [ ] Alternatives considered.
-- [ ] Impact if wrong.
-- [ ] Human review status.
+- [x] Inference ID.
+- [x] Decision.
+- [x] Evidence IDs.
+- [x] Confidence.
+- [x] Alternatives considered.
+- [x] Impact if wrong.
+- [x] Human review status.
 
 Done when:
 
-- [ ] No generation plan depends on unlogged inference.
+- [x] No generation plan depends on unlogged inference.
 
 Verification:
 
-- [ ] Validator fails when a generation decision marks `source: inference` without an inference-log entry.
+- [x] Validator fails when a generation decision marks `source: inference` without an inference-log entry.
 
 ## Autoplan Decision Audit Trail
 

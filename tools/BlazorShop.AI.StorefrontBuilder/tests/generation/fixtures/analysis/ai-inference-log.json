@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1",
+  "artifactKind": "ai-inference-log",
+  "artifactId": "ai-inference-log.sample",
+  "inferences": [
+    {
+      "inferenceId": "inference.layout.hero-spacing",
+      "decision": "Infer hero vertical spacing from screenshot because computed style sample was incomplete.",
+      "evidenceIds": [ "home.desktop" ],
+      "confidence": 0.72,
+      "alternativesConsidered": [ "Use Starter default spacing", "Use screenshot measurement" ],
+      "impactIfWrong": "Home hero may feel too loose or too dense.",
+      "humanReviewStatus": "pending"
+    }
+  ]
+}

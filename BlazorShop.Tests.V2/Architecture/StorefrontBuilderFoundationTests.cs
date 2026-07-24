@@ -378,6 +378,35 @@ namespace BlazorShop.Tests.Architecture
             Assert.True(File.Exists(RepositoryPath("tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/analysis-invalid/missing-evidence-reference.json")));
         }
 
+        [Fact]
+        public void StorefrontBuilderInferenceValidator_RequiresLoggedInferenceForInferredDecisions()
+        {
+            var script = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderInference.ps1");
+
+            foreach (var expected in new[]
+            {
+                "SFB-INFERENCE-001",
+                "SFB-INFERENCE-002",
+                "SFB-INFERENCE-003",
+                "SFB-INFERENCE-004",
+                "inferenceId",
+                "decision",
+                "evidenceIds",
+                "confidence",
+                "alternativesConsidered",
+                "impactIfWrong",
+                "humanReviewStatus",
+                "source inference without a matching inference-log entry",
+            })
+            {
+                Assert.Contains(expected, script, StringComparison.Ordinal);
+            }
+
+            Assert.True(File.Exists(RepositoryPath("tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/analysis/ai-inference-log.json")));
+            Assert.True(File.Exists(RepositoryPath("tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/analysis/decision-with-inference.json")));
+            Assert.True(File.Exists(RepositoryPath("tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/analysis-invalid/decision-with-unlogged-inference.json")));
+        }
+
         private static int CountOccurrences(string source, string value)
         {
             var count = 0;
