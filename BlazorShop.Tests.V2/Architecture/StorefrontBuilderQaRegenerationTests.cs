@@ -97,7 +97,7 @@ namespace BlazorShop.Tests.Architecture
         public void VisualQaGate_CapturesCorePagesAcrossViewportsAndReportsSeverity()
         {
             var runner = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-visual-qa.mjs");
-            var report = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo/docs/storefront-analysis/visual-qa-report.md");
+            var proof = ReadRepositoryFile("scripts/qa/run-storefront-builder-generated-proof.ps1");
 
             foreach (var marker in new[]
             {
@@ -117,18 +117,18 @@ namespace BlazorShop.Tests.Architecture
             })
             {
                 Assert.Contains(marker, runner, StringComparison.Ordinal);
-                Assert.Contains(marker, report, StringComparison.Ordinal);
             }
 
-            Assert.Contains("Critical: 0", report, StringComparison.Ordinal);
-            Assert.Contains("MVP result: pass", report, StringComparison.Ordinal);
+            Assert.Contains("visual-qa-report.md", runner, StringComparison.Ordinal);
+            Assert.Contains("RunBrowserQa", proof, StringComparison.Ordinal);
+            Assert.Contains("run-visual-qa.mjs", proof, StringComparison.Ordinal);
         }
 
         [Fact]
         public void CommerceRegressionGate_CoversStarterFlowsAndRejectsDirectCommerceCalls()
         {
             var runner = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-commerce-regression.mjs");
-            var report = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo/docs/storefront-analysis/functional-commerce-report.md");
+            var proof = ReadRepositoryFile("scripts/qa/run-storefront-builder-generated-proof.ps1");
 
             foreach (var marker in new[]
             {
@@ -153,8 +153,9 @@ namespace BlazorShop.Tests.Architecture
                 Assert.Contains(marker, runner, StringComparison.Ordinal);
             }
 
-            Assert.Contains("No direct Commerce Node browser calls detected", report, StringComparison.Ordinal);
-            Assert.Contains("PayPal/Stripe production providers are outside this MVP gate", report, StringComparison.Ordinal);
+            Assert.Contains("functional-commerce-report.md", runner, StringComparison.Ordinal);
+            Assert.Contains("PayPal/Stripe production providers are outside this MVP gate", runner, StringComparison.Ordinal);
+            Assert.Contains("run-commerce-regression.mjs", proof, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -197,7 +198,7 @@ namespace BlazorShop.Tests.Architecture
         {
             var command = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/build-storefront.ps1");
             var writer = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/write-review-artifacts.mjs");
-            var summary = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo/docs/storefront-analysis/review-summary.md");
+            var proof = ReadRepositoryFile("scripts/qa/run-storefront-builder-generated-proof.ps1");
 
             foreach (var mode in new[] { "analyze-only", "plan-only", "generate", "update", "validate-only", "full" })
             {
@@ -216,8 +217,10 @@ namespace BlazorShop.Tests.Architecture
             })
             {
                 Assert.Contains(artifact, writer, StringComparison.Ordinal);
-                Assert.Contains(artifact, summary, StringComparison.Ordinal);
             }
+
+            Assert.Contains("write-review-artifacts.mjs", proof, StringComparison.Ordinal);
+            Assert.Contains("artifacts/storefront-builder/generated", command, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -279,37 +282,25 @@ namespace BlazorShop.Tests.Architecture
         [Fact]
         public void MvpPocReport_ProvesGeneratedStorefrontAndDeferredScope()
         {
-            var report = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo/docs/storefront-analysis/mvp-poc-report.md");
+            var proof = ReadRepositoryFile("scripts/qa/run-storefront-builder-generated-proof.ps1");
+            var plan = ReadRepositoryFile("docs/visual-reverse-engineering-skill/04-StorefrontBuilder-Generated-Store-Cleanup.todo.md");
 
             foreach (var marker in new[]
             {
-                "build-storefront.ps1",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo",
-                "Capture desktop/tablet/mobile",
-                "Page inventory exists",
-                "Design tokens exist",
-                "UI patterns exist",
-                "Behavior/responsive model exists",
-                "Page topology exists",
-                "Capability decisions exist",
-                "Composition manifest exists",
-                "Generation plan exists",
-                "Generated project exists",
-                "Generated CSS/components/pages exist",
-                "Asset manifest exists",
-                "Generated file manifest exists",
-                "Build passes",
-                "Dependency guard passes",
-                "Visual QA has zero Critical findings",
-                "Basic commerce regression passes",
-                "No direct browser Commerce Node calls",
-                "No protected file changes",
-                "Re-run is idempotent",
-                "Deferred Beyond MVP",
+                "Generate proof storefront",
+                "Write StorefrontBuilder artifacts",
+                "Restore generated proof",
+                "Build generated proof",
+                "Run static StorefrontBuilder validation",
+                "Run StorefrontBuilder isolation gate",
+                "RunBrowserQa",
             })
             {
-                Assert.Contains(marker, report, StringComparison.Ordinal);
+                Assert.Contains(marker, proof, StringComparison.Ordinal);
             }
+
+            Assert.Contains("StorefrontBuilder generated proof completed", proof, StringComparison.Ordinal);
+            Assert.Contains("Keep true visual generation improvements for the later StorefrontBuilder correction phases", plan, StringComparison.Ordinal);
         }
 
         private static string ReadRepositoryFile(string relativePath)

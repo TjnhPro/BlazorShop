@@ -6,6 +6,7 @@ const projectRoot = readArg("--project-root") ?? "artifacts/storefront-builder/g
 const target = readArg("--target") ?? "";
 
 const transforms = [
+  ["Components/App.razor", transformApp],
   ["Components/Layout/MainLayout.razor", transformLayout],
   ["Pages/Ssr/Home/HomePage.razor", transformHome],
   ["Pages/Hybrid/Catalog/CategoryPage.razor", transformCategory],
@@ -47,6 +48,17 @@ function transformLayout(content) {
       "</header>",
       '<nav class="sfb-mobile-nav" aria-label="Mobile navigation"><a href="/">Home</a><a href="/cart">Cart</a><a href="/account">Account</a></nav>\n</header>'
     );
+}
+
+function transformApp(content) {
+  if (content.includes("css/storefront-builder.generated.css")) {
+    return content;
+  }
+
+  return content.replace(
+    '<link rel="stylesheet" href="css/starter.css" />',
+    '<link rel="stylesheet" href="css/starter.css" />\n    <link rel="stylesheet" href="css/storefront-builder.generated.css" />'
+  );
 }
 
 function transformHome(content) {

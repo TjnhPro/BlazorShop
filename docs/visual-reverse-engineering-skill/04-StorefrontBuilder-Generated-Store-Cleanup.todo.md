@@ -168,26 +168,26 @@ Commit:
 
 Goal: make tests prove current StorefrontBuilder behavior instead of reading stale committed output.
 
-- [ ] Update `BlazorShop.Tests.V2/Architecture/StorefrontStarterFoundationBoundaryTests.cs`.
-- [ ] Update `BlazorShop.Tests.V2/Architecture/StorefrontBuilderVisualGenerationTests.cs`.
-- [ ] Update `BlazorShop.Tests.V2/Architecture/StorefrontBuilderQaRegenerationTests.cs`.
-- [ ] Replace direct reads of `BlazorShop.Storefront.Sample` with Starter/Runtime/Client contract checks or generated temp output checks.
-- [ ] Replace direct reads of `BlazorShop.Storefront.BuilderDemo` with generated temp output checks.
-- [ ] Remove assertions that docs must call `Storefront.Sample` an active deterministic project.
-- [ ] Add assertions that active docs describe generated stores as artifacts.
-- [ ] Add assertions that `BuilderDemo` and `Sample` are absent from active solution entries after removal.
-- [ ] Keep historical plan assertions scoped to historical docs only, if still needed.
-- [ ] Ensure tests do not depend on uncommitted generated artifacts.
+- [x] Update `BlazorShop.Tests.V2/Architecture/StorefrontStarterFoundationBoundaryTests.cs`.
+- [x] Update `BlazorShop.Tests.V2/Architecture/StorefrontBuilderVisualGenerationTests.cs`.
+- [x] Update `BlazorShop.Tests.V2/Architecture/StorefrontBuilderQaRegenerationTests.cs`.
+- [x] Replace direct reads of `BlazorShop.Storefront.Sample` with Starter/Runtime/Client contract checks or generated temp output checks.
+- [x] Replace direct reads of `BlazorShop.Storefront.BuilderDemo` with generated temp output checks.
+- [x] Remove assertions that docs must call `Storefront.Sample` an active deterministic project.
+- [x] Add assertions that active docs describe generated stores as artifacts.
+- [x] Add assertions that `BuilderDemo` and `Sample` are absent from active solution entries after removal.
+- [x] Keep historical plan assertions scoped to historical docs only, if still needed.
+- [x] Ensure tests do not depend on uncommitted generated artifacts.
 
 Acceptance:
 
-- [ ] Architecture tests pass without committed `Sample` or `BuilderDemo` directories.
-- [ ] Tests fail if docs reintroduce those projects as active source.
-- [ ] Tests still protect Starter/Runtime/Client boundaries.
+- [x] Architecture tests pass without committed `Sample` or `BuilderDemo` directories.
+- [x] Tests fail if docs reintroduce those projects as active source.
+- [x] Tests still protect Starter/Runtime/Client boundaries.
 
 Commit:
 
-- [ ] Commit message: `test: validate generated storefronts as artifacts`
+- [x] Commit message: `test: validate generated storefronts as artifacts`
 
 ## Phase 5 - Clean Active Documentation And Agent Guidance
 

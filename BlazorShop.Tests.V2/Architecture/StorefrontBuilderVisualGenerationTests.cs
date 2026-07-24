@@ -296,8 +296,8 @@ namespace BlazorShop.Tests.Architecture
         public void VisualFoundationGeneration_ProducesScopedThemeCssWithoutScriptInjection()
         {
             var generator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/apply-visual-foundation.mjs");
+            var composition = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/apply-composition.mjs");
             var validator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderCss.ps1");
-            var app = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo/Components/App.razor");
 
             foreach (var cssSurface in new[]
             {
@@ -324,7 +324,7 @@ namespace BlazorShop.Tests.Architecture
             }
 
             Assert.Contains("wwwroot/css/storefront-builder.generated.css", generator, StringComparison.Ordinal);
-            Assert.Contains("css/storefront-builder.generated.css", app, StringComparison.Ordinal);
+            Assert.Contains("css/storefront-builder.generated.css", composition, StringComparison.Ordinal);
             Assert.Contains("SFB-CSS-002", validator, StringComparison.Ordinal);
         }
 

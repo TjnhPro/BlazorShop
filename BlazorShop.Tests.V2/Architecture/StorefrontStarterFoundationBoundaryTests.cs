@@ -12,7 +12,6 @@ namespace BlazorShop.Tests.Architecture
         private static readonly string[] StarterProjectPaths =
         [
             "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj",
-            "BlazorShop.PresentationV2/BlazorShop.Storefront.Sample/BlazorShop.Storefront.Sample.csproj",
         ];
 
         [Fact]
@@ -22,14 +21,15 @@ namespace BlazorShop.Tests.Architecture
             var systemMap = ReadRepositoryFile("docs/architecture/01-system-map.md");
             var folderGuide = ReadRepositoryFile("docs/architecture/05-project-and-folder-guide.md");
             var contractOwnership = ReadRepositoryFile("docs/architecture/10-v2-contract-ownership.md");
+            var cleanupPlan = ReadRepositoryFile("docs/visual-reverse-engineering-skill/04-StorefrontBuilder-Generated-Store-Cleanup.todo.md");
 
             Assert.Contains("Storefront.Starter` is the neutral skeleton source", adr, StringComparison.Ordinal);
-            Assert.Contains("Storefront.Sample` is the first deterministic generated project", adr, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.GeneratedProof", cleanupPlan, StringComparison.Ordinal);
             Assert.Contains("Storefront.V2` remains the real storefront implementation and behavior reference", adr, StringComparison.Ordinal);
             Assert.Contains("manual `StorefrontApiClient` transport from Storefront V2", adr, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter", systemMap, StringComparison.Ordinal);
             Assert.Contains("Future `BlazorShop.Storefront.Starter`", folderGuide, StringComparison.Ordinal);
-            Assert.Contains("Future `BlazorShop.Storefront.Sample`", folderGuide, StringComparison.Ordinal);
+            Assert.Contains("generated storefront manifests", folderGuide, StringComparison.Ordinal);
             Assert.Contains("StorefrontStarterFoundationBoundaryTests", contractOwnership, StringComparison.Ordinal);
         }
 
@@ -79,7 +79,6 @@ namespace BlazorShop.Tests.Architecture
             var sourceRoots = new[]
             {
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Starter",
-                "BlazorShop.PresentationV2/BlazorShop.Storefront.Sample",
             };
 
             var violations = sourceRoots
@@ -548,11 +547,13 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void StorefrontSampleReleaseGateScript_CoversPackageContractSeoSecurityAndRouteSmoke()
+        public void GeneratedStorefrontReleaseGateScript_CoversPackageContractSeoSecurityAndRouteSmoke()
         {
             var script = ReadRepositoryFile("scripts/qa/run-storefront-sample-release-gate.ps1");
             var workflow = ReadRepositoryFile(".github/workflows/ci.yml");
 
+            Assert.Contains("BlazorShop.Storefront.GeneratedProof", script, StringComparison.Ordinal);
+            Assert.Contains("artifacts\\storefront-builder\\generated", script, StringComparison.Ordinal);
             Assert.Contains("dotnet pack $clientProject", script, StringComparison.Ordinal);
             Assert.Contains("dotnet pack $runtimeProject", script, StringComparison.Ordinal);
             Assert.Contains("dotnet restore $sampleProject", script, StringComparison.Ordinal);
@@ -596,23 +597,34 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
-        public void StorefrontSampleGeneration_IsDeterministicAndV2Independent()
+        public void GeneratedStorefrontGeneration_IsDeterministicAndV2Independent()
         {
             var script = ReadRepositoryFile("scripts/generate-storefront-sample.ps1");
-            var sampleProject = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Sample/BlazorShop.Storefront.Sample.csproj");
-            var readme = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Sample/README.md");
-            var appsettings = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Sample/appsettings.json");
+            var proof = ReadRepositoryFile("scripts/qa/run-storefront-builder-generated-proof.ps1");
 
             Assert.Contains("Copy-StarterTemplate", script, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.Storefront.Starter", script, StringComparison.Ordinal);
             Assert.Contains("BlazorShop.Storefront.V2", script, StringComparison.Ordinal);
             Assert.Contains("Generated\\StorefrontClient.g.cs", script, StringComparison.Ordinal);
             Assert.Contains("ProjectReference", script, StringComparison.Ordinal);
-            Assert.Contains("<PackageReference Include=\"BlazorShop.Storefront.Client\"", sampleProject, StringComparison.Ordinal);
-            Assert.Contains("<PackageReference Include=\"BlazorShop.Storefront.Runtime\"", sampleProject, StringComparison.Ordinal);
-            Assert.DoesNotContain("<ProjectReference", sampleProject, StringComparison.Ordinal);
-            Assert.Contains("Generated deterministic storefront sample", readme, StringComparison.Ordinal);
-            Assert.Contains("\"StoreKey\": \"sample\"", appsettings, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.GeneratedProof", script, StringComparison.Ordinal);
+            Assert.Contains("artifacts/storefront-builder/generated", script, StringComparison.Ordinal);
+            Assert.Contains("StorefrontBuilder generated proof workflow", proof, StringComparison.Ordinal);
+            Assert.Contains("run-storefront-builder-isolation-gate.ps1", proof, StringComparison.Ordinal);
+            Assert.Contains("validate-storefront.ps1", proof, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.PresentationV2\\$Name", script, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void GeneratedStorefrontProjects_AreNotActiveSolutionDependencies()
+        {
+            var solution = ReadRepositoryFile("BlazorShop.sln");
+            var cleanupPlan = ReadRepositoryFile("docs/visual-reverse-engineering-skill/04-StorefrontBuilder-Generated-Store-Cleanup.todo.md");
+
+            Assert.DoesNotContain("BlazorShop.PresentationV2\\BlazorShop.Storefront.Sample\\BlazorShop.Storefront.Sample.csproj", solution, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.PresentationV2\\BlazorShop.Storefront.BuilderDemo\\BlazorShop.Storefront.BuilderDemo.csproj", solution, StringComparison.Ordinal);
+            Assert.Contains("Generated output policy", cleanupPlan, StringComparison.Ordinal);
+            Assert.Contains("Generated output must not be added to `BlazorShop.sln` by default", cleanupPlan, StringComparison.Ordinal);
         }
 
         [Fact]
