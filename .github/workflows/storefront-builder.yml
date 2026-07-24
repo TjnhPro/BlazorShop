@@ -1,0 +1,65 @@
+name: StorefrontBuilder
+
+on:
+  pull_request:
+    paths:
+      - "tools/BlazorShop.AI.StorefrontBuilder/**"
+      - "BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo/**"
+      - "scripts/qa/run-storefront-builder-isolation-gate.ps1"
+      - "docs/visual-reverse-engineering-skill/**"
+      - "BlazorShop.Tests.V2/**"
+  workflow_dispatch:
+    inputs:
+      run_browser_gates:
+        description: "Run Playwright visual QA and commerce regression smoke"
+        required: false
+        default: "false"
+  schedule:
+    - cron: "17 3 * * 1"
+
+jobs:
+  fast-checks:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: tools/BlazorShop.AI.StorefrontBuilder/package-lock.json
+      - name: Install StorefrontBuilder node dependencies
+        working-directory: tools/BlazorShop.AI.StorefrontBuilder
+        run: npm ci
+      - name: Schema tests
+        run: ./tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderSchemas.ps1
+      - name: Preflight tests
+        run: ./tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderPreflight.ps1 -ReferenceUrls https://example.com -Name Demo -StoreKey sample -Mode validate-only
+      - name: Protected file guard tests
+        run: ./tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderGuard.ps1 -ProjectRoot BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo
+      - name: Generation fixture tests
+        run: dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --filter "FullyQualifiedName~StorefrontBuilder"
+      - name: Idempotency tests
+        run: ./tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderIdempotency.ps1 -ProjectRoot BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo
+      - name: Isolation gate describe mode
+        run: ./scripts/qa/run-storefront-builder-isolation-gate.ps1 -Describe
+      - name: Visual QA fixture smoke
+        if: github.event_name == 'workflow_dispatch' && inputs.run_browser_gates == 'true' || github.event_name == 'schedule'
+        run: node tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-visual-qa.mjs --base-url http://127.0.0.1:18991
+      - name: Commerce regression fixture smoke
+        if: github.event_name == 'workflow_dispatch' && inputs.run_browser_gates == 'true' || github.event_name == 'schedule'
+        run: node tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-commerce-regression.mjs --base-url http://127.0.0.1:18991
+
+  expensive-live-capture:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_browser_gates == 'true' || github.event_name == 'schedule'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Full external reference-site capture
+        run: echo "Manual/nightly only: full external reference-site capture"
+      - name: Full visual diff against live target
+        run: echo "Manual/nightly only: full visual diff against live target"
+      - name: Full payment/order browser regression
+        run: echo "Manual/nightly only: full payment/order browser regression"

@@ -325,29 +325,29 @@ Goal: add enough automated checks to keep StorefrontBuilder from regressing.
 
 CI checks:
 
-- [ ] Schema tests.
-- [ ] Preflight tests.
-- [ ] Protected file guard tests.
-- [ ] Generation fixture tests.
-- [ ] Idempotency tests.
-- [ ] Isolation gate describe mode.
-- [ ] Visual QA fixture smoke.
-- [ ] Commerce regression fixture smoke.
+- [x] Schema tests.
+- [x] Preflight tests.
+- [x] Protected file guard tests.
+- [x] Generation fixture tests.
+- [x] Idempotency tests.
+- [x] Isolation gate describe mode.
+- [x] Visual QA fixture smoke.
+- [x] Commerce regression fixture smoke.
 
 Do not run by default on every normal backend PR unless cost is acceptable:
 
-- [ ] Full external reference-site capture.
-- [ ] Full visual diff against live target.
-- [ ] Full payment/order browser regression.
+- [x] Full external reference-site capture.
+- [x] Full visual diff against live target.
+- [x] Full payment/order browser regression.
 
 Done when:
 
-- [ ] CI protects contracts and generation safety without making every backend PR slow.
+- [x] CI protects contracts and generation safety without making every backend PR slow.
 
 Verification:
 
-- [ ] Workflow includes fast checks.
-- [ ] Expensive browser checks can be run manually or nightly.
+- [x] Workflow includes fast checks.
+- [x] Expensive browser checks can be run manually or nightly.
 
 ## S29 - MVP POC Gate
 

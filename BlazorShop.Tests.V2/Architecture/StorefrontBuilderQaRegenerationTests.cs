@@ -248,6 +248,34 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("Protected Files", readme, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void CiReleaseGate_ProtectsFastChecksAndKeepsExpensiveBrowserRunsManualOrNightly()
+        {
+            var workflow = ReadRepositoryFile(".github/workflows/storefront-builder.yml");
+
+            foreach (var marker in new[]
+            {
+                "Schema tests",
+                "Preflight tests",
+                "Protected file guard tests",
+                "Generation fixture tests",
+                "Idempotency tests",
+                "Isolation gate describe mode",
+                "Visual QA fixture smoke",
+                "Commerce regression fixture smoke",
+                "workflow_dispatch",
+                "schedule",
+                "Full external reference-site capture",
+                "Full visual diff against live target",
+                "Full payment/order browser regression",
+            })
+            {
+                Assert.Contains(marker, workflow, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("run_browser_gates", workflow, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));
