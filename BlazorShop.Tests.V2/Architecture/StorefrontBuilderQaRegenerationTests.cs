@@ -192,6 +192,34 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("SFB-IDEMPOTENCY-003", validator, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void HumanReviewWorkflow_ProvidesModesAndDecisionArtifacts()
+        {
+            var command = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/build-storefront.ps1");
+            var writer = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/write-review-artifacts.mjs");
+            var summary = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo/docs/storefront-analysis/review-summary.md");
+
+            foreach (var mode in new[] { "analyze-only", "plan-only", "generate", "update", "validate-only", "full" })
+            {
+                Assert.Contains(mode, command, StringComparison.Ordinal);
+            }
+
+            foreach (var artifact in new[]
+            {
+                "Visual Decision Summary",
+                "Unsupported Feature List",
+                "Hidden Target Feature List",
+                "Starter Fallback List",
+                "Asset Replacement List",
+                "AI Inference Review List",
+                "Manual Tuning Checklist",
+            })
+            {
+                Assert.Contains(artifact, writer, StringComparison.Ordinal);
+                Assert.Contains(artifact, summary, StringComparison.Ordinal);
+            }
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));

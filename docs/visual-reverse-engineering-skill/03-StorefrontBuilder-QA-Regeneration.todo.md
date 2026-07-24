@@ -253,31 +253,31 @@ Goal: support the expected reality that generated stores are tuned before use.
 
 Review artifacts:
 
-- [ ] Visual decision summary.
-- [ ] Unsupported feature list.
-- [ ] Hidden target feature list.
-- [ ] Starter fallback list.
-- [ ] Asset replacement list.
-- [ ] AI inference review list.
-- [ ] Manual tuning checklist.
+- [x] Visual decision summary.
+- [x] Unsupported feature list.
+- [x] Hidden target feature list.
+- [x] Starter fallback list.
+- [x] Asset replacement list.
+- [x] AI inference review list.
+- [x] Manual tuning checklist.
 
 Workflow:
 
-- [ ] `analyze-only` creates artifacts only.
-- [ ] `plan-only` creates generation plan only.
-- [ ] `generate` writes generated visual output.
-- [ ] `update` safely refreshes an existing generated store.
-- [ ] `validate-only` runs guards and gates without generation.
-- [ ] `full` runs capture, plan, generate, build, visual QA, and commerce regression.
+- [x] `analyze-only` creates artifacts only.
+- [x] `plan-only` creates generation plan only.
+- [x] `generate` writes generated visual output.
+- [x] `update` safely refreshes an existing generated store.
+- [x] `validate-only` runs guards and gates without generation.
+- [x] `full` runs capture, plan, generate, build, visual QA, and commerce regression.
 
 Done when:
 
-- [ ] Human can inspect decisions before trusting generated output.
+- [x] Human can inspect decisions before trusting generated output.
 
 Verification:
 
-- [ ] `plan-only` creates no source diffs outside analysis artifacts.
-- [ ] `validate-only` creates no source diffs.
+- [x] `plan-only` creates no source diffs outside analysis artifacts.
+- [x] `validate-only` creates no source diffs.
 
 ## S27 - Skill Commands And Packaging
 

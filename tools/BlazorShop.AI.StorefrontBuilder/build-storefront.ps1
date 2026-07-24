@@ -1,0 +1,42 @@
+param(
+    [string]$Url = "https://reference.example",
+    [string]$Name = "Demo",
+    [string]$StoreKey = "sample",
+    [ValidateSet("analyze-only", "plan-only", "generate", "update", "validate-only", "full")]
+    [string]$Mode = "validate-only",
+    [switch]$Force,
+    [switch]$SkipVisualQa,
+    [switch]$SkipCommerceRegression
+)
+
+$ErrorActionPreference = "Stop"
+$projectName = if ($Name.StartsWith("BlazorShop.Storefront.", [System.StringComparison]::Ordinal)) { $Name } else { "BlazorShop.Storefront.$Name" }
+$projectRoot = "BlazorShop.PresentationV2/$projectName"
+
+Write-Host "StorefrontBuilder mode=$Mode url=$Url name=$projectName storeKey=$StoreKey"
+
+switch ($Mode) {
+    "analyze-only" {
+        node "$PSScriptRoot/scripts/generate/write-review-artifacts.mjs" --project-root $projectRoot --url $Url
+    }
+    "plan-only" {
+        node "$PSScriptRoot/scripts/generate/plan-generation-files.mjs" --project-name $projectName --dry-run
+    }
+    "generate" {
+        & "$PSScriptRoot/scripts/generate/new-storefront-project.ps1" -Name $projectName -StoreKey $StoreKey -Force:$Force
+        node "$PSScriptRoot/scripts/generate/write-review-artifacts.mjs" --project-root $projectRoot --url $Url
+    }
+    "update" {
+        & "$PSScriptRoot/regenerate-storefront.ps1" -ProjectRoot $projectRoot -Scope all
+    }
+    "validate-only" {
+        & "$PSScriptRoot/validate-storefront.ps1" -ProjectRoot $projectRoot -Name $projectName -StoreKey $StoreKey
+    }
+    "full" {
+        & "$PSScriptRoot/scripts/generate/new-storefront-project.ps1" -Name $projectName -StoreKey $StoreKey -Force:$Force
+        node "$PSScriptRoot/scripts/generate/write-review-artifacts.mjs" --project-root $projectRoot --url $Url
+        & "$PSScriptRoot/validate-storefront.ps1" -ProjectRoot $projectRoot -Name $projectName -StoreKey $StoreKey
+        if (-not $SkipVisualQa) { Write-Host "Visual QA runner: scripts/qa/run-visual-qa.mjs" }
+        if (-not $SkipCommerceRegression) { Write-Host "Commerce regression runner: scripts/qa/run-commerce-regression.mjs" }
+    }
+}
