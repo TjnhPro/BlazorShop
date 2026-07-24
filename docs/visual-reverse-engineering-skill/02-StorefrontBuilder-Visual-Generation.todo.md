@@ -169,39 +169,39 @@ Goal: model page and shell structure as generation input.
 
 Topologies:
 
-- [ ] Global shell.
-- [ ] Home page sections.
-- [ ] Catalog page regions.
-- [ ] Search result page regions if present.
-- [ ] Product detail regions.
-- [ ] Cart fallback style regions.
-- [ ] Checkout fallback style regions.
-- [ ] Account fallback style regions.
-- [ ] Content/error/system page shell.
+- [x] Global shell.
+- [x] Home page sections.
+- [x] Catalog page regions.
+- [x] Search result page regions if present.
+- [x] Product detail regions.
+- [x] Cart fallback style regions.
+- [x] Checkout fallback style regions.
+- [x] Account fallback style regions.
+- [x] Content/error/system page shell.
 
 Region metadata:
 
-- [ ] Region ID.
-- [ ] Parent region.
-- [ ] Slot ID.
-- [ ] Render owner.
-- [ ] Hydration mode.
-- [ ] Source: target, target-with-starter-binding, starter, hidden, unsupported.
-- [ ] Evidence IDs.
-- [ ] Responsive behavior.
+- [x] Region ID.
+- [x] Parent region.
+- [x] Slot ID.
+- [x] Render owner.
+- [x] Hydration mode.
+- [x] Source: target, target-with-starter-binding, starter, hidden, unsupported.
+- [x] Evidence IDs.
+- [x] Responsive behavior.
 
 Output:
 
-- [ ] `page-topology.yaml`
+- [x] `page-topology.yaml`
 
 Done when:
 
-- [ ] Composition can be generated without re-inventing page structure.
+- [x] Composition can be generated without re-inventing page structure.
 
 Verification:
 
-- [ ] Topology schema validation.
-- [ ] Required slots from Starter contract are either mapped or explicitly skipped with reason.
+- [x] Topology schema validation.
+- [x] Required slots from Starter contract are either mapped or explicitly skipped with reason.
 
 ## S14 - Lightweight Ecommerce Capability Mapping
 

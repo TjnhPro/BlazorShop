@@ -132,6 +132,39 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("direct HTTP", validator, StringComparison.OrdinalIgnoreCase);
         }
 
+        [Fact]
+        public void PageTopology_MapsRequiredPageRegionsAndStarterSlots()
+        {
+            var generator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/build-page-topology.mjs");
+            var validator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderTopology.ps1");
+
+            foreach (var topology in new[]
+            {
+                "global-shell",
+                "home-page-sections",
+                "catalog-page-regions",
+                "search-result-page-regions",
+                "product-detail-regions",
+                "cart-fallback-style-regions",
+                "checkout-fallback-style-regions",
+                "account-fallback-style-regions",
+                "content-error-system-page-shell",
+            })
+            {
+                Assert.Contains(topology, generator, StringComparison.Ordinal);
+                Assert.Contains(topology, validator, StringComparison.Ordinal);
+            }
+
+            foreach (var field in new[] { "regionId", "parentRegion", "slotId", "renderOwner", "hydrationMode", "source", "evidenceIds", "responsiveBehavior" })
+            {
+                Assert.Contains(field, generator, StringComparison.Ordinal);
+                Assert.Contains(field, validator, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("Starter generation contract", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-TOPOLOGY-004", validator, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));
