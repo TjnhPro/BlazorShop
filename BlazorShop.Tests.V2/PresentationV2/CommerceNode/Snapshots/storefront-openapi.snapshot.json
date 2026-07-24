@@ -206,7 +206,7 @@
                 "$ref": "#/components/schemas/StorefrontRegisterRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontRegisterRequest"
               }
@@ -338,7 +338,7 @@
                 "$ref": "#/components/schemas/StorefrontLoginRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontLoginRequest"
               }
@@ -451,7 +451,7 @@
         },
         "security": [
           {
-            "RefreshCookie": [ ]
+            "RefreshCookie": []
           }
         ]
       }
@@ -507,7 +507,7 @@
         },
         "security": [
           {
-            "RefreshCookie": [ ]
+            "RefreshCookie": []
           }
         ]
       }
@@ -517,7 +517,7 @@
         "tags": [
           "StorefrontScopedAuth"
         ],
-        "summary": "Change the current customer's password.",
+        "summary": "Change the current customer\u0027s password.",
         "operationId": "StorefrontAuth_ChangePassword",
         "parameters": [
           {
@@ -541,7 +541,7 @@
                 "$ref": "#/components/schemas/StorefrontChangePasswordRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontChangePasswordRequest"
               }
@@ -593,7 +593,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -627,7 +627,7 @@
                 "$ref": "#/components/schemas/StorefrontForgotPasswordRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontForgotPasswordRequest"
               }
@@ -698,7 +698,7 @@
                 "$ref": "#/components/schemas/StorefrontResetPasswordRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontResetPasswordRequest"
               }
@@ -844,7 +844,7 @@
                 "$ref": "#/components/schemas/StorefrontUpdateProfileRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontUpdateProfileRequest"
               }
@@ -896,7 +896,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -930,7 +930,7 @@
                 "$ref": "#/components/schemas/StorefrontCreateCartSessionRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCreateCartSessionRequest"
               }
@@ -1182,7 +1182,7 @@
                 "$ref": "#/components/schemas/StorefrontCartLineCreateRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCartLineCreateRequest"
               }
@@ -1289,7 +1289,7 @@
                 "$ref": "#/components/schemas/StorefrontCartLineUpdateRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCartLineUpdateRequest"
               }
@@ -1472,7 +1472,7 @@
                 "$ref": "#/components/schemas/StorefrontCartValidateRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCartValidateRequest"
               }
@@ -1570,7 +1570,7 @@
                 "$ref": "#/components/schemas/StorefrontCartRecalculateRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCartRecalculateRequest"
               }
@@ -1720,7 +1720,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -2497,7 +2497,7 @@
                 "$ref": "#/components/schemas/StorefrontProductSelectionPreviewRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontProductSelectionPreviewRequest"
               }
@@ -2626,7 +2626,7 @@
                 "$ref": "#/components/schemas/StorefrontCheckoutStartRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCheckoutStartRequest"
               }
@@ -2907,7 +2907,7 @@
                 "$ref": "#/components/schemas/StorefrontCheckoutAddressStepRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCheckoutAddressStepRequest"
               }
@@ -3014,7 +3014,7 @@
                 "$ref": "#/components/schemas/StorefrontCheckoutShippingMethodRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCheckoutShippingMethodRequest"
               }
@@ -3121,7 +3121,7 @@
                 "$ref": "#/components/schemas/StorefrontCheckoutPaymentMethodRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCheckoutPaymentMethodRequest"
               }
@@ -3228,7 +3228,7 @@
                 "$ref": "#/components/schemas/StorefrontCheckoutReviewRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCheckoutReviewRequest"
               }
@@ -3326,7 +3326,7 @@
                 "$ref": "#/components/schemas/StorefrontCheckoutPreviewRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCheckoutPreviewRequest"
               }
@@ -3417,7 +3417,7 @@
                 "$ref": "#/components/schemas/StorefrontPlaceOrderRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontPlaceOrderRequest"
               }
@@ -3654,7 +3654,7 @@
                 "$ref": "#/components/schemas/StorefrontConsentSaveRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontConsentSaveRequest"
               }
@@ -3823,7 +3823,7 @@
                 "$ref": "#/components/schemas/StorefrontContactRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontContactRequest"
               }
@@ -3914,7 +3914,7 @@
                 "$ref": "#/components/schemas/StorefrontCurrencyPreferenceRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCurrencyPreferenceRequest"
               }
@@ -4037,7 +4037,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       },
@@ -4069,7 +4069,7 @@
                 "$ref": "#/components/schemas/StorefrontCustomerAddressRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCustomerAddressRequest"
               }
@@ -4141,7 +4141,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -4184,7 +4184,7 @@
                 "$ref": "#/components/schemas/StorefrontCustomerAddressRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCustomerAddressRequest"
               }
@@ -4256,7 +4256,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       },
@@ -4329,7 +4329,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -4414,7 +4414,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -4499,7 +4499,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -4585,7 +4585,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       },
@@ -4617,7 +4617,7 @@
                 "$ref": "#/components/schemas/StorefrontCustomerProfileUpdateRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontCustomerProfileUpdateRequest"
               }
@@ -4689,7 +4689,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -4782,7 +4782,7 @@
                 "$ref": "#/components/schemas/StorefrontNewsletterSubscribeRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontNewsletterSubscribeRequest"
               }
@@ -4925,7 +4925,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -5009,7 +5009,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -5093,7 +5093,7 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
           }
         ]
       }
@@ -5127,7 +5127,7 @@
                 "$ref": "#/components/schemas/StorefrontGuestOrderLookupRequest"
               }
             },
-            "application/*+json": {
+            "application/*\u002Bjson": {
               "schema": {
                 "$ref": "#/components/schemas/StorefrontGuestOrderLookupRequest"
               }
@@ -5389,211 +5389,6 @@
           },
           "404": {
             "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/storefront/stores/{storeKey}/payments/provider-callback/{providerKey}": {
-      "post": {
-        "tags": [
-          "StorefrontScopedPayments"
-        ],
-        "summary": "Accept a Storefront payment provider callback.",
-        "operationId": "StorefrontPayments_HandleProviderCallback",
-        "parameters": [
-          {
-            "name": "providerKey",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "storeKey",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StorefrontPaymentCallbackRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StorefrontPaymentCallbackRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/StorefrontPaymentCallbackRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StorefrontPaymentWebhookAcceptedResponseCommerceNodeApiResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/storefront/stores/{storeKey}/payments/webhooks/{providerKey}": {
-      "post": {
-        "tags": [
-          "StorefrontScopedPayments"
-        ],
-        "summary": "Accept a Storefront payment provider webhook.",
-        "operationId": "StorefrontPayments_HandleWebhook",
-        "parameters": [
-          {
-            "name": "providerKey",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "X-Provider-Signature",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "storeKey",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StorefrontPaymentWebhookRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StorefrontPaymentWebhookRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/StorefrontPaymentWebhookRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StorefrontPaymentWebhookAcceptedResponseCommerceNodeApiResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CommerceNodeApiErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
             "content": {
               "application/json": {
                 "schema": {
@@ -10008,60 +9803,6 @@
         },
         "additionalProperties": false
       },
-      "StorefrontPaymentCallbackRequest": {
-        "required": [
-          "eventType",
-          "payloadJson"
-        ],
-        "type": "object",
-        "properties": {
-          "paymentAttemptId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "providerEventId": {
-            "maxLength": 256,
-            "type": "string",
-            "nullable": true
-          },
-          "eventType": {
-            "maxLength": 128,
-            "minLength": 1,
-            "type": "string"
-          },
-          "state": {
-            "maxLength": 32,
-            "type": "string",
-            "nullable": true
-          },
-          "providerReference": {
-            "maxLength": 256,
-            "type": "string",
-            "nullable": true
-          },
-          "providerSessionId": {
-            "maxLength": 256,
-            "type": "string",
-            "nullable": true
-          },
-          "failureCode": {
-            "maxLength": 128,
-            "type": "string",
-            "nullable": true
-          },
-          "failureMessage": {
-            "maxLength": 512,
-            "type": "string",
-            "nullable": true
-          },
-          "payloadJson": {
-            "minLength": 1,
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
       "StorefrontPaymentMethodResponse": {
         "type": "object",
         "properties": {
@@ -10136,91 +9877,6 @@
           "url": {
             "type": "string",
             "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "StorefrontPaymentWebhookAcceptedResponse": {
-        "type": "object",
-        "properties": {
-          "providerKey": {
-            "type": "string",
-            "nullable": true
-          },
-          "eventId": {
-            "type": "string",
-            "nullable": true
-          },
-          "duplicate": {
-            "type": "boolean"
-          },
-          "payloadHash": {
-            "type": "string",
-            "nullable": true
-          },
-          "acceptedAtUtc": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "additionalProperties": false
-      },
-      "StorefrontPaymentWebhookAcceptedResponseCommerceNodeApiResponse": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean"
-          },
-          "message": {
-            "type": "string",
-            "nullable": true
-          },
-          "data": {
-            "$ref": "#/components/schemas/StorefrontPaymentWebhookAcceptedResponse"
-          }
-        },
-        "additionalProperties": false
-      },
-      "StorefrontPaymentWebhookRequest": {
-        "required": [
-          "eventType",
-          "payloadJson"
-        ],
-        "type": "object",
-        "properties": {
-          "paymentAttemptId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "eventId": {
-            "maxLength": 256,
-            "type": "string",
-            "nullable": true
-          },
-          "eventType": {
-            "maxLength": 128,
-            "minLength": 1,
-            "type": "string"
-          },
-          "state": {
-            "maxLength": 32,
-            "type": "string",
-            "nullable": true
-          },
-          "providerReference": {
-            "maxLength": 256,
-            "type": "string",
-            "nullable": true
-          },
-          "providerSessionId": {
-            "maxLength": 256,
-            "type": "string",
-            "nullable": true
-          },
-          "payloadJson": {
-            "minLength": 1,
-            "type": "string"
           }
         },
         "additionalProperties": false

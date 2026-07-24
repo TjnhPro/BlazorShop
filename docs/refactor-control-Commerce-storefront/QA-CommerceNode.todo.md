@@ -50,6 +50,8 @@ Current route state:
 - [~] Storefront Swagger includes `api/storefront/stores/{storeKey}/*` endpoints only. 2026-07-14: document generated; detailed route membership still pending a full path audit.
 - [x] Storefront Swagger shows required `{storeKey}` path parameter. 2026-07-14: sampled scoped categories operation included required path parameter.
 - [x] Storefront Swagger does not show `X-Node-Key`, `X-Node-Secret`, or `X-Store-Key`. 2026-07-14: checked sampled scoped categories operation.
+- [x] Storefront frontend Swagger excludes provider callback/webhook operations. 2026-07-24 Headless Storefront Platform Foundation F2.1: `/swagger/storefront/swagger.json` no longer includes `StorefrontPayments_HandleProviderCallback`, `StorefrontPayments_HandleWebhook`, `/payments/provider-callback/{providerKey}`, or `/payments/webhooks/{providerKey}`; focused `CommerceNodeStorefrontOpenApiContractTests` passed 40/40.
+- [x] Storefront provider integration Swagger exposes callback/webhook operations separately. 2026-07-24 Headless Storefront Platform Foundation F2.1: `/swagger/storefront-provider/swagger.json` includes provider callback/webhook request-body, response, and `X-Provider-Signature` metadata; focused `CommerceNodeStorefrontOpenApiContractTests` passed 40/40.
 - [x] `GET /swagger/legacy-internal/swagger.json` returns 404 after removal. 2026-07-14: Legacy Internal Swagger was removed by `BlazorShop.CommerceNode.RemoveLegacyInternal.autoplan.md`.
 - [x] Legacy Internal Swagger no longer appears in Swagger UI after removal.
 - [x] Legacy Internal Swagger no longer shows `X-Store-Key` because the document was removed.

@@ -21,6 +21,7 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
     public sealed class CommerceNodeStorefrontOpenApiContractTests : IClassFixture<WebApplicationFactory<CommerceNodeProgram>>
     {
         private const string StorefrontSwaggerPath = "/swagger/storefront/swagger.json";
+        private const string StorefrontProviderSwaggerPath = "/swagger/storefront-provider/swagger.json";
         private const string PathSnapshotPath = "PresentationV2/CommerceNode/Snapshots/storefront-openapi.paths.snapshot.txt";
         private const string SwaggerSnapshotPath = "PresentationV2/CommerceNode/Snapshots/storefront-openapi.snapshot.json";
 
@@ -185,6 +186,45 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
 
             Assert.NotNull(result.Document);
             Assert.Empty(errors);
+        }
+
+        [Fact]
+        public async Task StorefrontSwagger_ExcludesProviderCallbackAndWebhookOperations()
+        {
+            var swagger = await this.GetStorefrontSwaggerAsync();
+            var operationIds = GetOperations(swagger)
+                .Select(operation => operation.Value["operationId"]?.GetValue<string>())
+                .Where(operationId => !string.IsNullOrWhiteSpace(operationId))
+                .ToArray();
+            var pathNames = swagger["paths"]?.AsObject().Select(path => path.Key).ToArray()
+                ?? throw new InvalidOperationException("Swagger document does not contain paths.");
+
+            Assert.DoesNotContain("StorefrontPayments_HandleProviderCallback", operationIds);
+            Assert.DoesNotContain("StorefrontPayments_HandleWebhook", operationIds);
+            Assert.DoesNotContain("/api/storefront/stores/{storeKey}/payments/provider-callback/{providerKey}", pathNames, StringComparer.Ordinal);
+            Assert.DoesNotContain("/api/storefront/stores/{storeKey}/payments/webhooks/{providerKey}", pathNames, StringComparer.Ordinal);
+        }
+
+        [Fact]
+        public async Task StorefrontProviderSwagger_ContainsProviderCallbackAndWebhookOperations()
+        {
+            var swagger = await this.GetStorefrontProviderSwaggerAsync();
+            var schemas = GetSchemas(swagger);
+            var callback = GetOperation(swagger, "StorefrontPayments_HandleProviderCallback");
+            var webhook = GetOperation(swagger, "StorefrontPayments_HandleWebhook");
+
+            AssertRequiredRequestBody(callback);
+            AssertRequiredRequestBody(webhook);
+            Assert.True(callback["responses"]?.AsObject().Count > 1);
+            Assert.True(webhook["responses"]?.AsObject().Count > 1);
+            Assert.True(schemas.ContainsKey("StorefrontPaymentCallbackRequest"));
+            Assert.True(schemas.ContainsKey("StorefrontPaymentWebhookRequest"));
+            Assert.True(schemas.ContainsKey("StorefrontPaymentWebhookAcceptedResponse"));
+
+            var parameters = webhook["parameters"]?.AsArray()
+                ?? throw new InvalidOperationException("Webhook operation does not contain parameters.");
+            Assert.Contains(parameters, parameter =>
+                string.Equals(parameter?["name"]?.GetValue<string>(), "X-Provider-Signature", StringComparison.Ordinal));
         }
 
         [Fact]
@@ -1392,29 +1432,11 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
             var swagger = await this.GetStorefrontSwaggerAsync();
             var schemas = GetSchemas(swagger);
             var getAttempt = GetOperation(swagger, "StorefrontPayments_GetAttempt");
-            var callback = GetOperation(swagger, "StorefrontPayments_HandleProviderCallback");
-            var webhook = GetOperation(swagger, "StorefrontPayments_HandleWebhook");
 
             Assert.False(string.IsNullOrWhiteSpace(getAttempt["summary"]?.GetValue<string>()));
             Assert.True(getAttempt["responses"]?.AsObject().Count > 1);
             Assert.Null(getAttempt["requestBody"]);
             Assert.True(schemas.ContainsKey("StorefrontPaymentAttemptResponse"));
-
-            AssertRequiredRequestBody(callback);
-            AssertRequiredRequestBody(webhook);
-            Assert.True(callback["responses"]?.AsObject().Count > 1);
-            Assert.True(webhook["responses"]?.AsObject().Count > 1);
-            Assert.True(schemas.ContainsKey("StorefrontPaymentCallbackRequest"));
-            Assert.True(schemas.ContainsKey("StorefrontPaymentWebhookRequest"));
-            Assert.True(schemas.ContainsKey("StorefrontPaymentWebhookAcceptedResponse"));
-            var webhookRequestProperties = GetPropertyNames(schemas["StorefrontPaymentWebhookRequest"]!.AsObject());
-            Assert.Contains("providerReference", webhookRequestProperties);
-            Assert.Contains("providerSessionId", webhookRequestProperties);
-
-            var parameters = webhook["parameters"]?.AsArray()
-                ?? throw new InvalidOperationException("Webhook operation does not contain parameters.");
-            Assert.Contains(parameters, parameter =>
-                string.Equals(parameter?["name"]?.GetValue<string>(), "X-Provider-Signature", StringComparison.Ordinal));
         }
 
         [Fact]
@@ -1477,8 +1499,6 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                 "StorefrontOrders_GetCurrentUserOrder",
                 "StorefrontOrders_GetCurrentUserOrderReceipt",
                 "StorefrontPayments_GetAttempt",
-                "StorefrontPayments_HandleProviderCallback",
-                "StorefrontPayments_HandleWebhook",
             };
 
             foreach (var operationId in expectedOperationIds)
@@ -1724,6 +1744,15 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
         private static string GetSnapshotAbsolutePath(string snapshotPath)
         {
             return Path.Combine(AppContext.BaseDirectory, snapshotPath);
+        }
+
+        private async Task<JsonObject> GetStorefrontProviderSwaggerAsync()
+        {
+            using var client = this.CreateSwaggerClient();
+            var content = await client.GetStringAsync(StorefrontProviderSwaggerPath);
+
+            return JsonNode.Parse(content)?.AsObject()
+                ?? throw new InvalidOperationException("Storefront Provider Swagger response was not a JSON object.");
         }
 
         private static DirectoryInfo FindRepositoryRoot()

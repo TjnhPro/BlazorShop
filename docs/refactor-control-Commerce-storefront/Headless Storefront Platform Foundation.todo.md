@@ -240,13 +240,13 @@ Goal: make Storefront OpenAPI safe for generated frontend clients and AI/fronten
 
 ### F2.1 Split frontend client API from provider/webhook API
 
-- [ ] Keep frontend/client operations in `/swagger/storefront/swagger.json`.
-- [ ] Remove provider callback/webhook operations from the frontend Storefront document.
-- [ ] Add a separate document if needed:
-  - [ ] `/swagger/storefront-provider/swagger.json`, or
-  - [ ] keep callbacks outside generated client docs and document them as provider integration APIs.
-- [ ] Add tests that `StorefrontPayments_HandleProviderCallback` and `StorefrontPayments_HandleWebhook` do not appear in the frontend client OpenAPI.
-- [ ] Keep runtime callback routes working unless a separate payment/provider plan changes them.
+- [x] Keep frontend/client operations in `/swagger/storefront/swagger.json`.
+- [x] Remove provider callback/webhook operations from the frontend Storefront document.
+- [x] Add a separate document if needed:
+  - [x] `/swagger/storefront-provider/swagger.json`, or
+  - [x] keep callbacks outside generated client docs and document them as provider integration APIs.
+- [x] Add tests that `StorefrontPayments_HandleProviderCallback` and `StorefrontPayments_HandleWebhook` do not appear in the frontend client OpenAPI.
+- [x] Keep runtime callback routes working unless a separate payment/provider plan changes them.
 
 ### F2.2 Public contract ownership
 
@@ -818,7 +818,7 @@ Future `BlazorShop.Storefront.Starter` should include:
 
 - [x] Commit 1: F0 architecture role/boundary lock and tests.
 - [x] Commit 2: F1 dependency audit document and migration table.
-- [ ] Commit 3: F2 OpenAPI surface split and provider/webhook exclusion from frontend SDK.
+- [x] Commit 3: F2 OpenAPI surface split and provider/webhook exclusion from frontend SDK.
 - [ ] Commit 4: F2 error contract/capability projection hardening.
 - [ ] Commit 5: F3 generated C# client project and generator tests.
 - [ ] Commit 6: F4 BFF boundary cleanup and local endpoint contract split.

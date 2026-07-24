@@ -31,6 +31,8 @@ namespace BlazorShop.CommerceNode.API.Swagger
 
         public const string StorefrontDocumentName = "storefront";
 
+        public const string StorefrontProviderDocumentName = "storefront-provider";
+
         public static IServiceCollection AddCommerceNodeSwagger(this IServiceCollection services)
         {
             services.AddSwaggerGen(options =>
@@ -51,6 +53,15 @@ namespace BlazorShop.CommerceNode.API.Swagger
                         Title = "Storefront API",
                         Version = "v1",
                         Description = "Storefront APIs scoped by api/storefront/stores/{storeKey}/*.",
+                    });
+
+                options.SwaggerDoc(
+                    StorefrontProviderDocumentName,
+                    new OpenApiInfo
+                    {
+                        Title = "Storefront Provider Integration API",
+                        Version = "v1",
+                        Description = "Storefront payment provider callback and webhook APIs. These routes are runtime integration endpoints and are excluded from frontend Storefront clients.",
                     });
 
                 options.DocInclusionPredicate(ShouldIncludeApiDescription);
@@ -103,6 +114,9 @@ namespace BlazorShop.CommerceNode.API.Swagger
                 options.SwaggerEndpoint(
                     $"/swagger/{StorefrontDocumentName}/swagger.json",
                     "Storefront API");
+                options.SwaggerEndpoint(
+                    $"/swagger/{StorefrontProviderDocumentName}/swagger.json",
+                    "Storefront Provider Integration API");
             });
 
             return app;
@@ -115,9 +129,17 @@ namespace BlazorShop.CommerceNode.API.Swagger
             return documentName switch
             {
                 CommerceAdminDocumentName => relativePath.StartsWith("api/commerce/", StringComparison.OrdinalIgnoreCase),
-                StorefrontDocumentName => relativePath.StartsWith("api/storefront/stores/{storekey}/", StringComparison.OrdinalIgnoreCase),
+                StorefrontDocumentName => relativePath.StartsWith("api/storefront/stores/{storekey}/", StringComparison.OrdinalIgnoreCase)
+                    && !IsStorefrontProviderIntegrationPath(relativePath),
+                StorefrontProviderDocumentName => IsStorefrontProviderIntegrationPath(relativePath),
                 _ => false,
             };
+        }
+
+        private static bool IsStorefrontProviderIntegrationPath(string relativePath)
+        {
+            return relativePath.StartsWith("api/storefront/stores/{storekey}/payments/provider-callback/", StringComparison.OrdinalIgnoreCase)
+                || relativePath.StartsWith("api/storefront/stores/{storekey}/payments/webhooks/", StringComparison.OrdinalIgnoreCase);
         }
 
         internal static string NormalizePath(string? relativePath)

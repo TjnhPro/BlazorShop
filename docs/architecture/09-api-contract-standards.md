@@ -90,6 +90,12 @@ Swagger/OpenAPI is part of the product surface. Every active API document must:
 - Validate as an OpenAPI document.
 - Be stable enough for generated clients and AI agents.
 
+Commerce Node Storefront document ownership:
+
+- `/swagger/storefront/swagger.json` is the frontend/client Storefront API contract and must exclude provider callback/webhook operations.
+- `/swagger/storefront-provider/swagger.json` is the provider integration contract for payment callback/webhook routes when those operations need Swagger coverage.
+- Runtime provider callback/webhook routes may stay under `api/storefront/stores/{storeKey}/payments/*`, but they are not frontend SDK operations.
+
 ## Contract Tests
 
 When adding or changing an API surface, add or update focused contract tests. Business logic tests are not enough.
