@@ -320,26 +320,26 @@ Goal: create or refresh `BlazorShop.Storefront.{Name}` from Starter without copy
 
 Tasks:
 
-- [ ] Extend or wrap existing deterministic sample generation pattern.
-- [ ] Accept `-Name BlazorShop.Storefront.{Name}`.
-- [ ] Accept `-StoreKey`.
-- [ ] Copy Starter template.
-- [ ] Rewrite namespace/root namespace safely.
-- [ ] Keep package references to Storefront.Client and Storefront.Runtime.
-- [ ] Keep Starter BFF/security files protected.
-- [ ] Preserve feature manifest unless generation plan changes allowed placements.
-- [ ] Create `docs/storefront-analysis`.
-- [ ] Write `metadata.yaml`.
+- [x] Extend or wrap existing deterministic sample generation pattern.
+- [x] Accept `-Name BlazorShop.Storefront.{Name}`.
+- [x] Accept `-StoreKey`.
+- [x] Copy Starter template.
+- [x] Rewrite namespace/root namespace safely.
+- [x] Keep package references to Storefront.Client and Storefront.Runtime.
+- [x] Keep Starter BFF/security files protected.
+- [x] Preserve feature manifest unless generation plan changes allowed placements.
+- [x] Create `docs/storefront-analysis`.
+- [x] Write `metadata.yaml`.
 
 Done when:
 
-- [ ] A named generated storefront builds before visual changes.
+- [x] A named generated storefront builds before visual changes.
 
 Verification:
 
-- [ ] `dotnet restore BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}/BlazorShop.Storefront.{Name}.csproj`
-- [ ] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}/BlazorShop.Storefront.{Name}.csproj --no-restore`
-- [ ] Dependency guard confirms no backend/core/API/V2 references.
+- [x] `dotnet restore BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}/BlazorShop.Storefront.{Name}.csproj`
+- [x] `dotnet build BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}/BlazorShop.Storefront.{Name}.csproj --no-restore`
+- [x] Dependency guard confirms no backend/core/API/V2 references.
 
 ## S18 - Visual Foundation Generation
 

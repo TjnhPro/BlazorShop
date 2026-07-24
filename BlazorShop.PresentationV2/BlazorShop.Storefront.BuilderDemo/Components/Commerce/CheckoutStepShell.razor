@@ -1,0 +1,26 @@
+<section class="starter-step-shell">
+    <header>
+        <span>@StepNumber</span>
+        <h2>@Title</h2>
+    </header>
+    @if (ChildContent is null)
+    {
+        <p>Checkout step content, COD payment selection, order review, and result handling will be generated for this placement.</p>
+    }
+    else
+    {
+        @ChildContent
+    }
+</section>
+
+@code {
+    [Parameter]
+    public int StepNumber { get; set; } = 1;
+
+    [Parameter]
+    public string Title { get; set; } = "Checkout step";
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}
+

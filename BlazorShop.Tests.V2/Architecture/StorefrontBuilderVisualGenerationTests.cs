@@ -261,6 +261,37 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("SFB-GENPLAN-003", validator, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void GeneratedStorefrontProjectCreation_WrapsStarterGenerationAndWritesMetadata()
+        {
+            var generator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/new-storefront-project.ps1");
+            var validator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderGeneratedProject.ps1");
+
+            foreach (var text in new[]
+            {
+                "BlazorShop.Storefront.{Name}",
+                "BlazorShop.PresentationV2",
+                "scripts\\generate-storefront-sample.ps1",
+                "StoreKey",
+                "Copy Starter",
+                "StorefrontPackageVersions.props",
+                "Features\\feature-manifest.json",
+                "docs\\storefront-analysis",
+                "metadata.yaml",
+                "BlazorShop.Storefront.Client",
+                "BlazorShop.Storefront.Runtime",
+                "Endpoints/StarterBffEndpoints.cs",
+                "Security/StarterReturnUrlValidator.cs",
+            })
+            {
+                Assert.Contains(text, generator, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("SFB-PROJECT-003", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-PROJECT-004", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-PROJECT-005", validator, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));

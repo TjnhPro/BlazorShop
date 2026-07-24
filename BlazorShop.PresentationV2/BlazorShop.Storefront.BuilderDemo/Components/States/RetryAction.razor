@@ -1,0 +1,12 @@
+<button class="starter-button" type="button" @onclick="OnRetry">
+    @Label
+</button>
+
+@code {
+    [Parameter]
+    public string Label { get; set; } = "Retry";
+
+    [Parameter]
+    public EventCallback OnRetry { get; set; }
+}
+

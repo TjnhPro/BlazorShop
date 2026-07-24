@@ -1,0 +1,20 @@
+@page "/account"
+@page "/account/{*Path}"
+
+<PageTitle>Account</PageTitle>
+<HeadContent>
+    <meta name="robots" content="noindex,nofollow" />
+</HeadContent>
+<h1>Account</h1>
+<PlaceholderState
+    Title="Account host"
+    Message="Profile, addresses, orders, and password management are browser-owned behind same-origin account APIs."
+    RenderOwner="WASM"
+    HydrationMode="StarterHydrationMode.BrowserFetch" />
+<AccountShell />
+
+@code {
+    [Parameter]
+    public string? Path { get; set; }
+}
+
