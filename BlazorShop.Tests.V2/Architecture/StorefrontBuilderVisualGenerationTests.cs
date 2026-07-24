@@ -231,6 +231,36 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("SFB-COMPOSITION-003", validator, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void GenerationOwnershipPlan_DeclaresFileActionsAndRejectsProtectedEdits()
+        {
+            var generator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/plan-generation-files.mjs");
+            var validator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderGenerationPlan.ps1");
+
+            foreach (var field in new[]
+            {
+                "filePath",
+                "ownership",
+                "action",
+                "sourceArtifactIds",
+                "expectedSlot",
+                "validationRuleIds",
+                "conflictBehavior",
+                "sourceSpecHash",
+                "generatedHash",
+            })
+            {
+                Assert.Contains(field, generator, StringComparison.Ordinal);
+                Assert.Contains(field, validator, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("--dry-run", generator, StringComparison.Ordinal);
+            Assert.Contains("generate-from-starter", generator, StringComparison.Ordinal);
+            Assert.Contains("apply-visual-files", generator, StringComparison.Ordinal);
+            Assert.Contains("ownership: protected", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-GENPLAN-003", validator, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));
