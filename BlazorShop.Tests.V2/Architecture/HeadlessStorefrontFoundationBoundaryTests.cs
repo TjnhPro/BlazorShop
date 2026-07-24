@@ -47,6 +47,19 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void StarterReadinessDecision_IsRecordedWithoutBuildingStarter()
+        {
+            var completionReport = ReadRepositoryFile("docs/refactor-control-Commerce-storefront/Headless Storefront Platform Foundation.completion.md");
+            var plan = ReadRepositoryFile("docs/refactor-control-Commerce-storefront/Headless Storefront Platform Foundation.todo.md");
+
+            Assert.Contains("Decision: ready for separate Starter planning.", completionReport, StringComparison.Ordinal);
+            Assert.Contains("Starter implementation remains out of scope for this foundation.", completionReport, StringComparison.Ordinal);
+            Assert.Contains("Do not build `BlazorShop.Storefront.Starter` in this foundation.", plan, StringComparison.Ordinal);
+            Assert.False(Directory.Exists(RepositoryPath("BlazorShop.Storefront.Starter")));
+            Assert.False(Directory.Exists(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter")));
+        }
+
+        [Fact]
         public void FutureStorefrontPlatformProjects_DoNotReferenceBackendOrStorefrontV2()
         {
             var optionalProjects = new[]

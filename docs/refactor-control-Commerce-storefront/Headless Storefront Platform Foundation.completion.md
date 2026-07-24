@@ -28,3 +28,9 @@ Known warnings remain existing MessagePack NU1902/NU1903 package advisories, the
 ## Follow-up Gate
 
 The next phase may plan `BlazorShop.Storefront.Starter`. It should start from the generated Storefront client and documented BFF/runtime boundaries, not by copying Storefront V2 internals.
+
+## Starter Readiness Decision
+
+Decision: ready for separate Starter planning.
+
+The foundation has enough contract, package, BFF, and isolation proof to begin a distinct `BlazorShop.Storefront.Starter` phase without reopening backend/client boundary decisions. Starter implementation remains out of scope for this foundation.

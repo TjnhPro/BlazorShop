@@ -34,17 +34,17 @@ Create a foundation where:
 
 ## Non-goals
 
-- [ ] Do not build `BlazorShop.Storefront.Starter` in this foundation.
-- [ ] Do not build a React/Next/Nuxt storefront in this foundation.
-- [ ] Do not build the AI generator in this foundation.
-- [ ] Do not split repositories in this foundation.
-- [ ] Do not publish public NuGet/npm SDK packages in this foundation.
-- [ ] Do not turn `Storefront.V2` into a neutral template.
-- [ ] Do not redesign Storefront V2 UI.
-- [ ] Do not move checkout business rules, payment rules, pricing, sellability, cart validation, or order placement into frontend code.
-- [ ] Do not let WASM call Commerce Node protected APIs directly.
-- [ ] Do not add handwritten duplicate API DTOs in frontend when the schema should come from OpenAPI.
-- [ ] Do not package every feature module prematurely before a generated client and decoupled V2 prove the boundary.
+- [x] Do not build `BlazorShop.Storefront.Starter` in this foundation.
+- [x] Do not build a React/Next/Nuxt storefront in this foundation.
+- [x] Do not build the AI generator in this foundation.
+- [x] Do not split repositories in this foundation.
+- [x] Do not publish public NuGet/npm SDK packages in this foundation.
+- [x] Do not turn `Storefront.V2` into a neutral template.
+- [x] Do not redesign Storefront V2 UI.
+- [x] Do not move checkout business rules, payment rules, pricing, sellability, cart validation, or order placement into frontend code.
+- [x] Do not let WASM call Commerce Node protected APIs directly.
+- [x] Do not add handwritten duplicate API DTOs in frontend when the schema should come from OpenAPI.
+- [x] Do not package every feature module prematurely before a generated client and decoupled V2 prove the boundary.
 
 ## Target Architecture
 
@@ -609,22 +609,22 @@ BlazorShop.Storefront.Runtime
 
 ### Allowed responsibilities
 
-- [ ] Store context abstraction.
-- [ ] Storefront API client registration helpers.
-- [ ] public configuration/capability reader.
-- [ ] normalized error pipeline.
-- [ ] auth/session bridge contracts.
-- [ ] BFF/browser-safe result mapping primitives.
-- [ ] neutral feature activation helpers.
+- [n/a] Store context abstraction.
+- [n/a] Storefront API client registration helpers.
+- [n/a] public configuration/capability reader.
+- [n/a] normalized error pipeline.
+- [n/a] auth/session bridge contracts.
+- [n/a] BFF/browser-safe result mapping primitives.
+- [n/a] neutral feature activation helpers.
 
 ### Not allowed
 
-- [ ] Storefront V2 layout/design.
-- [ ] V2 CSS/assets.
-- [ ] store-specific composition.
-- [ ] backend business rules.
-- [ ] provider secrets.
-- [ ] Domain/Application/Infrastructure/API project references.
+- [x] Storefront V2 layout/design.
+- [x] V2 CSS/assets.
+- [x] store-specific composition.
+- [x] backend business rules.
+- [x] provider secrets.
+- [x] Domain/Application/Infrastructure/API project references.
 
 ### Feature module boundary
 
@@ -757,38 +757,40 @@ Goal: decide whether the foundation is ready for a separate `BlazorShop.Storefro
 
 ### Starter readiness checklist
 
-- [ ] Foundation Definition of Done is complete.
-- [ ] Storefront OpenAPI is clean and frontend-safe.
-- [ ] Storefront Client can be consumed by PackageReference.
-- [ ] Storefront V2 has no backend/core project references.
-- [ ] SSR/BFF/browser boundaries are documented and tested.
-- [ ] Capability projection supports feature enablement.
-- [ ] Generated C# and TypeScript clients compile.
-- [ ] Compatibility gate catches breaking changes.
-- [ ] Isolation Playwright smoke passes.
-- [ ] Storefront V2 remains a real storefront, not a neutral template.
+- [x] Foundation Definition of Done is complete.
+- [x] Storefront OpenAPI is clean and frontend-safe.
+- [x] Storefront Client can be consumed by PackageReference.
+- [x] Storefront V2 has no backend/core project references.
+- [x] SSR/BFF/browser boundaries are documented and tested.
+- [x] Capability projection supports feature enablement.
+- [x] Generated C# and TypeScript clients compile.
+- [x] Compatibility gate catches breaking changes.
+- [x] Isolation Playwright smoke passes.
+- [x] Storefront V2 remains a real storefront, not a neutral template.
 
 ### Starter phase scope after approval
 
 Future `BlazorShop.Storefront.Starter` should include:
 
-- [ ] neutral project skeleton.
-- [ ] route map.
-- [ ] SSR/Hybrid/WASM conventions.
-- [ ] generated client usage.
-- [ ] store bootstrap.
-- [ ] layout/header/footer/menu.
-- [ ] feature module placement examples.
-- [ ] loading/skeleton/error/empty states.
-- [ ] SEO/metadata examples.
-- [ ] BFF examples for protected flows.
-- [ ] AI storefront generation guide.
-- [ ] generator manifest.
-- [ ] Starter QA checklist.
+- [n/a] neutral project skeleton.
+- [n/a] route map.
+- [n/a] SSR/Hybrid/WASM conventions.
+- [n/a] generated client usage.
+- [n/a] store bootstrap.
+- [n/a] layout/header/footer/menu.
+- [n/a] feature module placement examples.
+- [n/a] loading/skeleton/error/empty states.
+- [n/a] SEO/metadata examples.
+- [n/a] BFF examples for protected flows.
+- [n/a] AI storefront generation guide.
+- [n/a] generator manifest.
+- [n/a] Starter QA checklist.
 
 ### Done when
 
-- [ ] A separate Starter plan can begin without re-opening backend/client boundary decisions.
+- [x] A separate Starter plan can begin without re-opening backend/client boundary decisions.
+
+2026-07-24 decision: Foundation is ready for a separate `BlazorShop.Storefront.Starter` planning phase. The Starter itself remains out of scope for this foundation; the future scope list above is intentionally marked n/a here because those deliverables belong to the next approved Starter phase.
 
 ## Foundation Definition Of Done
 
@@ -847,22 +849,22 @@ Future `BlazorShop.Storefront.Starter` should include:
 - [x] Commit 13: F5 final dependency removal and Dockerfile cleanup.
 - [x] Commit 14: F6 runtime boundary only if justified.
 - [x] Commit 15: F7 package/isolation/Playwright gate and completion report.
-- [ ] Commit 16: F8 Starter readiness decision docs.
+- [x] Commit 16: F8 Starter readiness decision docs.
 
 Each commit must be buildable. Do not combine mechanical dependency removal with behavior changes unless the phase explicitly requires it.
 
 ## Risk Controls
 
-- [ ] Keep Storefront V2 routes stable.
-- [ ] Keep Commerce Node Storefront route shape stable.
-- [ ] Keep Storefront V2 UI/design unchanged unless a separate UI phase approves changes.
-- [ ] Keep checkout/order/payment server-authoritative.
-- [ ] Keep account/order authorization server-authoritative.
-- [ ] Keep browser protected flow behind BFF.
-- [ ] Keep OpenAPI snapshots and compatibility checks reviewed.
-- [ ] Keep Provider/webhook routes out of frontend SDK.
-- [ ] Keep generated code deterministic.
-- [ ] Keep no secrets/internal settings in public configuration or generated clients.
+- [x] Keep Storefront V2 routes stable.
+- [x] Keep Commerce Node Storefront route shape stable.
+- [x] Keep Storefront V2 UI/design unchanged unless a separate UI phase approves changes.
+- [x] Keep checkout/order/payment server-authoritative.
+- [x] Keep account/order authorization server-authoritative.
+- [x] Keep browser protected flow behind BFF.
+- [x] Keep OpenAPI snapshots and compatibility checks reviewed.
+- [x] Keep Provider/webhook routes out of frontend SDK.
+- [x] Keep generated code deterministic.
+- [x] Keep no secrets/internal settings in public configuration or generated clients.
 
 ## Autoplan Decision Audit Trail
 
