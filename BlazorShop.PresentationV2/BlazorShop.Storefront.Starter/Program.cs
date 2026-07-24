@@ -2,6 +2,7 @@ using BlazorShop.Storefront.Runtime;
 using BlazorShop.Storefront.Starter;
 using BlazorShop.Storefront.Starter.Components;
 using BlazorShop.Storefront.Starter.Endpoints;
+using BlazorShop.Storefront.Starter.Features;
 using BlazorShop.Storefront.Starter.Options;
 using BlazorShop.Storefront.Starter.Services;
 
@@ -23,6 +24,9 @@ builder.Services.AddStorefrontRuntime(options =>
 });
 builder.Services.AddStorefrontGeneratedClients();
 builder.Services.AddScoped<StorefrontBootstrapService>();
+builder.Services.AddSingleton(_ =>
+    StarterFeatureManifest.Load(Path.Combine(builder.Environment.ContentRootPath, "Features", "feature-manifest.json")));
+builder.Services.AddScoped<StarterFeatureActivationService>();
 
 builder.Services.AddRazorComponents();
 builder.Services.AddAntiforgery(options =>

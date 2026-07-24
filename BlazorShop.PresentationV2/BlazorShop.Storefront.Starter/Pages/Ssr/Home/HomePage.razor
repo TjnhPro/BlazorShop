@@ -1,6 +1,7 @@
 @page "/"
 @inject IOptions<StarterStorefrontOptions> StorefrontOptions
 @inject StorefrontBootstrapService BootstrapService
+@inject StarterFeatureActivationService FeatureActivationService
 
 <PageTitle>@(_snapshot?.StoreName ?? "Storefront Starter")</PageTitle>
 
@@ -47,6 +48,14 @@ else if (_snapshot is not null)
             </ul>
         }
     </section>
+
+    @if (FeatureActivationService.Evaluate("recommendations", "home", _snapshot.Features).Visible)
+    {
+        <section class="starter-section" aria-labelledby="recommendations-title">
+            <h2 id="recommendations-title">Recommended</h2>
+            <p>Recommendation placement is active for this store.</p>
+        </section>
+    }
 }
 
 @code {

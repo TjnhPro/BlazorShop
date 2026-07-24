@@ -499,33 +499,33 @@ Starter should include a simple manifest:
 
 ### Tasks
 
-- [ ] Define feature keys aligned with backend capability projection:
-  - [ ] `customerAccounts`.
-  - [ ] `registration`.
-  - [ ] `cart`.
-  - [ ] `checkout`.
-  - [ ] `payments`.
-  - [ ] `newsletter`.
-  - [ ] `recommendations`.
-  - [ ] `contactForm`.
-- [ ] Add manifest parser/validator.
-- [ ] Add capability reader that combines manifest + backend `features`.
-- [ ] Add presentation placement model:
-  - [ ] home.
-  - [ ] product detail.
-  - [ ] category.
-  - [ ] cart.
-  - [ ] checkout.
-  - [ ] account.
-- [ ] Do not package visual components as feature modules unless reused independently.
-- [ ] Keep feature UI neutral and overrideable.
-- [ ] Add tests for missing/disabled/unsupported features.
+- [x] Define feature keys aligned with backend capability projection:
+  - [x] `customerAccounts`.
+  - [x] `registration`.
+  - [x] `cart`.
+  - [x] `checkout`.
+  - [x] `payments`.
+  - [x] `newsletter`.
+  - [x] `recommendations`.
+  - [x] `contactForm`.
+- [x] Add manifest parser/validator.
+- [x] Add capability reader that combines manifest + backend `features`.
+- [x] Add presentation placement model:
+  - [x] home.
+  - [x] product detail.
+  - [x] category.
+  - [x] cart.
+  - [x] checkout.
+  - [x] account.
+- [x] Do not package visual components as feature modules unless reused independently.
+- [x] Keep feature UI neutral and overrideable.
+- [x] Add tests for missing/disabled/unsupported features.
 
 ### Done when
 
-- [ ] Starter can hide unsupported/disabled features without code edits.
-- [ ] Feature placement is explicit.
-- [ ] Capability projection drives behavior safely.
+- [x] Starter can hide unsupported/disabled features without code edits.
+- [x] Feature placement is explicit.
+- [x] Capability projection drives behavior safely.
 
 ## S7 - Neutral Layout, Loading, Error, Empty States
 
@@ -835,7 +835,7 @@ Add CI in stages:
 - [x] Commit 4: S3 SSR generated-client tracer and BFF protected-command tracer.
 - [x] Commit 5: S4 route/render skeleton.
 - [x] Commit 6: S5 generated-client policy and exception registry.
-- [ ] Commit 7: S6 feature manifest/capability activation.
+- [x] Commit 7: S6 feature manifest/capability activation.
 - [ ] Commit 8: S7 neutral layout and state components.
 - [ ] Commit 9: S8 isolation gate script.
 - [ ] Commit 10: S9 deterministic Sample generation.

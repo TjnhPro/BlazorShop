@@ -446,6 +446,45 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void StarterFeatureManifest_AlignsWithBackendCapabilitiesAndPlacementRules()
+        {
+            var manifest = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Features/feature-manifest.json");
+            var parser = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Features/StarterFeatureManifest.cs");
+            var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Program.cs");
+            var home = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Home/HomePage.razor");
+
+            foreach (var key in new[]
+            {
+                "customerAccounts",
+                "registration",
+                "cart",
+                "checkout",
+                "payments",
+                "newsletter",
+                "recommendations",
+                "contactForm",
+            })
+            {
+                Assert.Contains($"\"{key}\"", manifest, StringComparison.Ordinal);
+                Assert.Contains($"\"{key}\"", parser, StringComparison.Ordinal);
+            }
+
+            foreach (var placement in new[] { "home", "productDetail", "category", "cart", "checkout", "account" })
+            {
+                Assert.Contains($"\"{placement}\"", parser, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("JsonSerializer.Deserialize", parser, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontCapabilityReader", parser, StringComparison.Ordinal);
+            Assert.Contains("BackendSupported", parser, StringComparison.Ordinal);
+            Assert.Contains("StoreEnabled", parser, StringComparison.Ordinal);
+            Assert.Contains("PresentationPlaced", parser, StringComparison.Ordinal);
+            Assert.Contains("StarterFeatureManifest.Load", program, StringComparison.Ordinal);
+            Assert.Contains("FeatureActivationService.Evaluate", home, StringComparison.Ordinal);
+            Assert.DoesNotContain("Storefront.Features.", manifest, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void StarterDocs_SayStorefrontV2IsBehaviorReferenceOnly()
         {
             var adr = ReadRepositoryFile("docs/architecture/adr/2026-07-24-storefront-starter-foundation.md");

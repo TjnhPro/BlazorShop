@@ -14,4 +14,8 @@
     <PackageReference Include="BlazorShop.Storefront.Runtime" Version="$(StorefrontRuntimePackageVersion)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Features\feature-manifest.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
