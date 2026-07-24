@@ -1,5 +1,7 @@
 param(
     [string]$Configuration = "Release",
+    [string]$Name = "BlazorShop.Storefront.GeneratedProof",
+    [string]$ProjectRoot = "",
     [string]$StorefrontClientPackageVersion = "1.0.0-local",
     [string]$StorefrontRuntimePackageVersion = "1.0.0-local",
     [string]$SampleUrl = "http://127.0.0.1:18610",
@@ -11,12 +13,26 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
+function Resolve-RepoPath {
+    param([string]$Path)
+
+    if ([System.IO.Path]::IsPathRooted($Path)) {
+        return [System.IO.Path]::GetFullPath($Path)
+    }
+
+    return [System.IO.Path]::GetFullPath((Join-Path $repoRoot $Path))
+}
+
 $clientProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Client\BlazorShop.Storefront.Client.csproj"
 $runtimeProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj"
-$sampleRoot = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Sample"
-$sampleProject = Join-Path $sampleRoot "BlazorShop.Storefront.Sample.csproj"
+$sampleRoot = if ([string]::IsNullOrWhiteSpace($ProjectRoot)) {
+    Join-Path $repoRoot "artifacts\storefront-builder\generated\$Name"
+} else {
+    Resolve-RepoPath $ProjectRoot
+}
+$sampleProject = Join-Path $sampleRoot "$Name.csproj"
 $feedRoot = Join-Path $repoRoot "artifacts\storefront-packages"
-$publishRoot = Join-Path $repoRoot "artifacts\storefront-sample-release"
+$publishRoot = Join-Path $repoRoot "artifacts\storefront-generated-proof-release"
 $generatedClient = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Client\Generated\StorefrontClient.g.cs"
 $todoFile = Join-Path $repoRoot "docs\refactor-control-Commerce-storefront\Storefront Starter Foundation.todo.md"
 
@@ -45,14 +61,18 @@ $forbiddenBrowserPatterns = @(
 )
 
 if ($Describe) {
-    Write-Host "Storefront Sample release gate"
+    Write-Host "Generated storefront release gate"
     Write-Host "- Pack Storefront.Client and Storefront.Runtime to local feed"
-    Write-Host "- Restore/build/publish generated Storefront.Sample from package references"
+    Write-Host "- Restore/build/publish generated storefront from package references"
     Write-Host "- Verify generated client compatibility and provider callback/webhook exclusion"
-    Write-Host "- Verify Sample has no backend/core/V2/generated-source copy"
+    Write-Host "- Verify generated storefront has no backend/core/V2/generated-source copy"
     Write-Host "- Verify required storefront routes, SEO/security conventions, BFF CSRF, and browser token boundaries"
-    Write-Host "- Optionally assert live Sample route responses unless -SkipRuntime is supplied"
+    Write-Host "- Optionally assert live generated storefront route responses unless -SkipRuntime is supplied"
     exit 0
+}
+
+if (-not (Test-Path $sampleProject)) {
+    throw "Generated storefront project is missing: $sampleProject. Generate it first under the configured artifact root."
 }
 
 function Invoke-Step {
@@ -111,7 +131,7 @@ function Assert-SourceDoesNotContain {
 
     if ($violations) {
         $violations | ForEach-Object { Write-Error $_ }
-        throw "Storefront.Sample source contains forbidden pattern."
+        throw "Generated storefront source contains forbidden pattern."
     }
 }
 
@@ -161,7 +181,7 @@ function Wait-ForSample {
         if ($Process.HasExited) {
             $stdout = $Process.StandardOutput.ReadToEnd()
             $stderr = $Process.StandardError.ReadToEnd()
-            throw "Storefront.Sample exited before route smoke. stdout: $stdout stderr: $stderr"
+            throw "Generated storefront exited before route smoke. stdout: $stdout stderr: $stderr"
         }
 
         try {
@@ -173,7 +193,7 @@ function Wait-ForSample {
         }
     }
 
-    throw "Storefront.Sample did not become ready at $SampleUrl within $RuntimeTimeoutSeconds seconds."
+    throw "Generated storefront did not become ready at $SampleUrl within $RuntimeTimeoutSeconds seconds."
 }
 
 function Assert-HttpContains {
@@ -207,17 +227,17 @@ Invoke-Step "Pack Storefront.Runtime" {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
-Invoke-Step "Restore Storefront.Sample from local packages" {
+Invoke-Step "Restore generated storefront from local packages" {
     dotnet restore $sampleProject
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
-Invoke-Step "Build Storefront.Sample" {
+Invoke-Step "Build generated storefront" {
     dotnet build $sampleProject --configuration $Configuration --no-restore
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
-Invoke-Step "Publish Storefront.Sample" {
+Invoke-Step "Publish generated storefront" {
     dotnet publish $sampleProject --configuration $Configuration --no-restore --output $publishRoot
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
@@ -322,7 +342,7 @@ if ($SkipRuntime) {
     Write-Host "Runtime route smoke skipped by request."
 }
 else {
-    Invoke-Step "Run Storefront.Sample route smoke" {
+    Invoke-Step "Run generated storefront route smoke" {
         $process = Start-DotnetSample
         try {
             Wait-ForSample $process
@@ -349,4 +369,4 @@ else {
     }
 }
 
-Write-Host "Storefront Sample release gate passed."
+Write-Host "Generated storefront release gate passed."

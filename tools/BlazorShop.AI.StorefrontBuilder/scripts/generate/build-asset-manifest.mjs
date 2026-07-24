@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
-const projectRoot = readArg("--project-root") ?? "BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo";
+const projectRoot = readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof";
 const output = `${projectRoot}/docs/storefront-analysis/asset-manifest.yaml`;
 const placeholder = `${projectRoot}/wwwroot/assets/generated/asset-placeholder.svg`;
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" role="img" aria-label="Replacement asset needed"><rect width="640" height="640" fill="#d9dfd8"/><path d="M96 448l128-128 96 96 96-128 128 160H96z" fill="#0b6b57"/><circle cx="438" cy="202" r="48" fill="#c94c2f"/></svg>\n`;
@@ -14,7 +14,7 @@ writeFileSync(placeholder, svg, "utf8");
 
 const manifest = `schemaVersion: 1.0.0
 artifactKind: asset-manifest
-artifactId: asset-manifest.builder-demo
+artifactId: asset-manifest.generated-proof
 licenseNotice: "Reference-site assets are evidence only; this manifest makes no production licensing claim."
 assets:
   - assetId: placeholder-product-media

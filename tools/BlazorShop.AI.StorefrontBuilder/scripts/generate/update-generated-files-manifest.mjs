@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
-const projectRoot = readArg("--project-root") ?? "BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo";
+const projectRoot = readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof";
 const output = `${projectRoot}/docs/storefront-analysis/generated-files.yaml`;
 const report = `${projectRoot}/docs/storefront-analysis/regeneration-report.md`;
 const files = [
@@ -23,7 +23,7 @@ const timestamp = "deterministic";
 const manifest = [
   "schemaVersion: 1.0.0",
   "artifactKind: generated-files",
-  "artifactId: generated-files.builder-demo",
+  "artifactId: generated-files.generated-proof",
   "files:",
   ...files.flatMap(([filePath, ownership, sourceArtifactIds]) => {
     const content = readFileSync(`${projectRoot}/${filePath}`, "utf8");

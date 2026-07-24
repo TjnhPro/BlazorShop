@@ -112,27 +112,27 @@ Commit:
 
 Goal: remove source-path defaults that point tools at committed `BuilderDemo` or `Sample`.
 
-- [ ] Update `tools/BlazorShop.AI.StorefrontBuilder/validate-storefront.ps1`.
-- [ ] Update `tools/BlazorShop.AI.StorefrontBuilder/regenerate-storefront.ps1`.
-- [ ] Update `tools/BlazorShop.AI.StorefrontBuilder/build-storefront.ps1`.
-- [ ] Update generation scripts under `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/`.
-- [ ] Update QA scripts under `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/`.
-- [ ] Update `scripts/qa/run-storefront-builder-isolation-gate.ps1`.
-- [ ] Update `scripts/generate-storefront-sample.ps1` or retire it if the Builder flow supersedes it.
-- [ ] Update `scripts/qa/run-storefront-sample-release-gate.ps1` so it no longer requires a committed sample project.
-- [ ] Replace hardcoded defaults with explicit parameters or generated-artifact defaults.
-- [ ] Ensure validation commands fail fast with actionable messages when a project path is missing.
-- [ ] Ensure any cleanup command verifies the resolved target stays inside the generated output root.
+- [x] Update `tools/BlazorShop.AI.StorefrontBuilder/validate-storefront.ps1`.
+- [x] Update `tools/BlazorShop.AI.StorefrontBuilder/regenerate-storefront.ps1`.
+- [x] Update `tools/BlazorShop.AI.StorefrontBuilder/build-storefront.ps1`.
+- [x] Update generation scripts under `tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/`.
+- [x] Update QA scripts under `tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/`.
+- [x] Update `scripts/qa/run-storefront-builder-isolation-gate.ps1`.
+- [x] Update `scripts/generate-storefront-sample.ps1` or retire it if the Builder flow supersedes it.
+- [x] Update `scripts/qa/run-storefront-sample-release-gate.ps1` so it no longer requires a committed sample project.
+- [x] Replace hardcoded defaults with explicit parameters or generated-artifact defaults.
+- [x] Ensure validation commands fail fast with actionable messages when a project path is missing.
+- [x] Ensure any cleanup command verifies the resolved target stays inside the generated output root.
 
 Acceptance:
 
-- [ ] No StorefrontBuilder script defaults to `BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo`.
-- [ ] No starter/sample QA script requires committed `BlazorShop.Storefront.Sample`.
-- [ ] Existing Starter/Runtime/Client build behavior remains unchanged.
+- [x] No StorefrontBuilder script defaults to `BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo`.
+- [x] No starter/sample QA script requires committed `BlazorShop.Storefront.Sample`.
+- [x] Existing Starter/Runtime/Client build behavior remains unchanged.
 
 Commit:
 
-- [ ] Commit message: `chore: decouple storefront builder scripts from committed demos`
+- [x] Commit message: `chore: decouple storefront builder scripts from committed demos`
 
 ## Phase 3 - Add On-Demand Generated Proof Flow
 

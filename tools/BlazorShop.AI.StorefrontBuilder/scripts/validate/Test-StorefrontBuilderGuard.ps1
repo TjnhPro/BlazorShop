@@ -1,5 +1,6 @@
 param(
-    [string]$ProjectRoot = "BlazorShop.PresentationV2\BlazorShop.Storefront.Sample"
+    [Parameter(Mandatory = $true)]
+    [string]$ProjectRoot
 )
 
 $ErrorActionPreference = "Stop"

@@ -1,12 +1,27 @@
 param(
-    [string]$Name = "BlazorShop.Storefront.BuilderDemo",
+    [string]$Name = "BlazorShop.Storefront.GeneratedProof",
+    [string]$ProjectRoot = "",
     [string]$Configuration = "Debug",
     [switch]$Describe
 )
 
 $ErrorActionPreference = "Stop"
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
-$projectRoot = Join-Path $repoRoot "BlazorShop.PresentationV2\$Name"
+function Resolve-RepoPath {
+    param([string]$Path)
+
+    if ([System.IO.Path]::IsPathRooted($Path)) {
+        return [System.IO.Path]::GetFullPath($Path)
+    }
+
+    return [System.IO.Path]::GetFullPath((Join-Path $repoRoot $Path))
+}
+
+$projectRoot = if ([string]::IsNullOrWhiteSpace($ProjectRoot)) {
+    Join-Path $repoRoot "artifacts\storefront-builder\generated\$Name"
+} else {
+    Resolve-RepoPath $ProjectRoot
+}
 $projectFile = Join-Path $projectRoot "$Name.csproj"
 $packageRoot = Join-Path $repoRoot "artifacts\storefront-builder-packages"
 

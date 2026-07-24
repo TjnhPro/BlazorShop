@@ -5,8 +5,9 @@ import { dirname } from "node:path";
 
 const output = readArg("--output") ?? "obj/storefront-builder/generation-plan.yaml";
 const dryRun = process.argv.includes("--dry-run");
-const projectName = readArg("--project-name") ?? "BlazorShop.Storefront.Demo";
-const root = `BlazorShop.PresentationV2/${projectName}`;
+const projectName = readArg("--project-name") ?? "BlazorShop.Storefront.GeneratedProof";
+const outputRoot = readArg("--output-root") ?? "artifacts/storefront-builder/generated";
+const root = `${outputRoot.replaceAll("\\", "/").replace(/\/$/, "")}/${projectName}`;
 const specHash = sha("composition-manifest.default");
 
 const files = [

@@ -1,6 +1,7 @@
 param(
-    [string]$Name = "BlazorShop.Storefront.Sample",
+    [string]$Name = "BlazorShop.Storefront.GeneratedProof",
     [string]$StoreKey = "sample",
+    [string]$OutputRoot = "artifacts/storefront-builder/generated",
     [string]$CommerceNodeBaseUrl = "http://localhost:5180",
     [string]$PublicBaseUrl = "http://localhost:18600",
     [switch]$Force
@@ -10,9 +11,20 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Resolve-Path $PSScriptRoot\..
 $starterRoot = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Starter"
-$outputRoot = Join-Path $repoRoot "BlazorShop.PresentationV2\$Name"
-$starterProject = Join-Path $outputRoot "BlazorShop.Storefront.Starter.csproj"
-$sampleProject = Join-Path $outputRoot "$Name.csproj"
+function Resolve-RepoPath {
+    param([string]$Path)
+
+    if ([System.IO.Path]::IsPathRooted($Path)) {
+        return [System.IO.Path]::GetFullPath($Path)
+    }
+
+    return [System.IO.Path]::GetFullPath((Join-Path $repoRoot $Path))
+}
+
+$generatedRoot = Resolve-RepoPath $OutputRoot
+$projectRoot = Join-Path $generatedRoot $Name
+$starterProject = Join-Path $projectRoot "BlazorShop.Storefront.Starter.csproj"
+$generatedProject = Join-Path $projectRoot "$Name.csproj"
 
 $forbiddenPatterns = @(
     "ProjectReference",
@@ -28,27 +40,27 @@ $forbiddenPatterns = @(
 )
 
 function Assert-OutputPath {
-    $resolved = [System.IO.Path]::GetFullPath($outputRoot)
-    $expectedPrefix = [System.IO.Path]::GetFullPath((Join-Path $repoRoot "BlazorShop.PresentationV2"))
+    $resolved = [System.IO.Path]::GetFullPath($projectRoot)
+    $expectedPrefix = [System.IO.Path]::GetFullPath($generatedRoot)
     if (-not $resolved.StartsWith($expectedPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
-        throw "Refusing to generate outside BlazorShop.PresentationV2: $resolved"
+        throw "Refusing to generate outside StorefrontBuilder generated output root: $resolved"
     }
 }
 
 function Copy-StarterTemplate {
-    if (Test-Path $outputRoot) {
+    if (Test-Path $projectRoot) {
         if (-not $Force) {
-            throw "Output '$outputRoot' already exists. Re-run with -Force to replace deterministic generated output."
+            throw "Output '$projectRoot' already exists. Re-run with -Force to replace deterministic generated output."
         }
 
-        Remove-Item -LiteralPath $outputRoot -Recurse -Force
+        Remove-Item -LiteralPath $projectRoot -Recurse -Force
     }
 
-    New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
+    New-Item -ItemType Directory -Force -Path $projectRoot | Out-Null
     Get-ChildItem -LiteralPath $starterRoot -Force |
         Where-Object { $_.Name -notin @("bin", "obj") } |
         ForEach-Object {
-            Copy-Item -LiteralPath $_.FullName -Destination $outputRoot -Recurse -Force
+            Copy-Item -LiteralPath $_.FullName -Destination $projectRoot -Recurse -Force
         }
 }
 
@@ -57,7 +69,7 @@ function Rewrite-GeneratedSource {
         Rename-Item -LiteralPath $starterProject -NewName "$Name.csproj"
     }
 
-    $textFiles = Get-ChildItem -LiteralPath $outputRoot -Recurse -File |
+    $textFiles = Get-ChildItem -LiteralPath $projectRoot -Recurse -File |
         Where-Object {
             $_.Extension -in @(".cs", ".razor", ".csproj", ".props", ".json", ".md", ".config", ".css")
         }
@@ -86,15 +98,15 @@ function Rewrite-GeneratedSource {
         "dotnet restore $Name.csproj",
         "dotnet build $Name.csproj --no-restore"
     ) -join [Environment]::NewLine
-    Set-Content -LiteralPath (Join-Path $outputRoot "README.md") -Value $readmeContent -Encoding UTF8
+    Set-Content -LiteralPath (Join-Path $projectRoot "README.md") -Value $readmeContent -Encoding UTF8
 }
 
 function Assert-GeneratedOutput {
-    if (-not (Test-Path $sampleProject)) {
-        throw "Generated project file was not created: $sampleProject"
+    if (-not (Test-Path $generatedProject)) {
+        throw "Generated project file was not created: $generatedProject"
     }
 
-    $sourceFiles = Get-ChildItem -LiteralPath $outputRoot -Recurse -File |
+    $sourceFiles = Get-ChildItem -LiteralPath $projectRoot -Recurse -File |
         Where-Object { $_.FullName -notmatch "\\(bin|obj)\\" }
 
     $violations = foreach ($file in $sourceFiles) {
@@ -108,7 +120,7 @@ function Assert-GeneratedOutput {
 
     if ($violations) {
         $violations | ForEach-Object { Write-Error $_ }
-        throw "Generated Storefront.Sample contains forbidden dependency/source references."
+        throw "Generated storefront contains forbidden dependency/source references."
     }
 }
 
@@ -117,4 +129,4 @@ Copy-StarterTemplate
 Rewrite-GeneratedSource
 Assert-GeneratedOutput
 
-Write-Host "Generated $Name at $outputRoot"
+Write-Host "Generated $Name at $projectRoot"

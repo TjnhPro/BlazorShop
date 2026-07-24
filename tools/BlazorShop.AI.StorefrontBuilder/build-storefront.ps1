@@ -1,7 +1,8 @@
 param(
     [string]$Url = "https://reference.example",
-    [string]$Name = "Demo",
+    [string]$Name = "GeneratedProof",
     [string]$StoreKey = "sample",
+    [string]$OutputRoot = "artifacts/storefront-builder/generated",
     [ValidateSet("analyze-only", "plan-only", "generate", "update", "validate-only", "full")]
     [string]$Mode = "validate-only",
     [switch]$Force,
@@ -11,19 +12,19 @@ param(
 
 $ErrorActionPreference = "Stop"
 $projectName = if ($Name.StartsWith("BlazorShop.Storefront.", [System.StringComparison]::Ordinal)) { $Name } else { "BlazorShop.Storefront.$Name" }
-$projectRoot = "BlazorShop.PresentationV2/$projectName"
+$projectRoot = Join-Path $OutputRoot $projectName
 
-Write-Host "StorefrontBuilder mode=$Mode url=$Url name=$projectName storeKey=$StoreKey"
+Write-Host "StorefrontBuilder mode=$Mode url=$Url name=$projectName storeKey=$StoreKey output=$projectRoot"
 
 switch ($Mode) {
     "analyze-only" {
         node "$PSScriptRoot/scripts/generate/write-review-artifacts.mjs" --project-root $projectRoot --url $Url
     }
     "plan-only" {
-        node "$PSScriptRoot/scripts/generate/plan-generation-files.mjs" --project-name $projectName --dry-run
+        node "$PSScriptRoot/scripts/generate/plan-generation-files.mjs" --project-name $projectName --output-root $OutputRoot --dry-run
     }
     "generate" {
-        & "$PSScriptRoot/scripts/generate/new-storefront-project.ps1" -Name $projectName -StoreKey $StoreKey -Force:$Force
+        & "$PSScriptRoot/scripts/generate/new-storefront-project.ps1" -Name $projectName -StoreKey $StoreKey -OutputRoot $OutputRoot -Force:$Force
         node "$PSScriptRoot/scripts/generate/write-review-artifacts.mjs" --project-root $projectRoot --url $Url
     }
     "update" {
@@ -33,7 +34,7 @@ switch ($Mode) {
         & "$PSScriptRoot/validate-storefront.ps1" -ProjectRoot $projectRoot -Name $projectName -StoreKey $StoreKey
     }
     "full" {
-        & "$PSScriptRoot/scripts/generate/new-storefront-project.ps1" -Name $projectName -StoreKey $StoreKey -Force:$Force
+        & "$PSScriptRoot/scripts/generate/new-storefront-project.ps1" -Name $projectName -StoreKey $StoreKey -OutputRoot $OutputRoot -Force:$Force
         node "$PSScriptRoot/scripts/generate/write-review-artifacts.mjs" --project-root $projectRoot --url $Url
         & "$PSScriptRoot/validate-storefront.ps1" -ProjectRoot $projectRoot -Name $projectName -StoreKey $StoreKey
         if (-not $SkipVisualQa) { Write-Host "Visual QA runner: scripts/qa/run-visual-qa.mjs" }

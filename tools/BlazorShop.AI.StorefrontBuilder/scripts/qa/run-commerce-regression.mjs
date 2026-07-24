@@ -4,7 +4,7 @@ import { dirname } from "node:path";
 import { chromium } from "@playwright/test";
 
 const baseUrl = readArg("--base-url") ?? "http://127.0.0.1:18991";
-const projectRoot = readArg("--project-root") ?? "BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo";
+const projectRoot = readArg("--project-root") ?? "artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof";
 const reportPath = `${projectRoot}/docs/storefront-analysis/functional-commerce-report.md`;
 const directCommerceCalls = [];
 const checks = [];

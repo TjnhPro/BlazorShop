@@ -3,6 +3,7 @@ param(
     [string]$Name,
     [Parameter(Mandatory = $true)]
     [string]$StoreKey,
+    [string]$OutputRoot = "artifacts/storefront-builder/generated",
     [string]$CommerceNodeBaseUrl = "http://localhost:5180",
     [string]$PublicBaseUrl = "http://localhost:18600",
     [switch]$Force
@@ -11,8 +12,18 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..\..\..")
-$presentationRoot = Join-Path $repoRoot "BlazorShop.PresentationV2"
-$projectRoot = Join-Path $presentationRoot $Name
+function Resolve-RepoPath {
+    param([string]$Path)
+
+    if ([System.IO.Path]::IsPathRooted($Path)) {
+        return [System.IO.Path]::GetFullPath($Path)
+    }
+
+    return [System.IO.Path]::GetFullPath((Join-Path $repoRoot $Path))
+}
+
+$outputRootPath = Resolve-RepoPath $OutputRoot
+$projectRoot = Join-Path $outputRootPath $Name
 $generator = Join-Path $repoRoot "scripts\generate-storefront-sample.ps1"
 $featureManifest = Join-Path $projectRoot "Features\feature-manifest.json"
 
@@ -21,14 +32,15 @@ if ($Name -notmatch "^BlazorShop\.Storefront\.[A-Z][A-Za-z0-9]*$") {
 }
 
 $resolvedOutput = [System.IO.Path]::GetFullPath($projectRoot)
-$resolvedPresentation = [System.IO.Path]::GetFullPath($presentationRoot)
-if (-not $resolvedOutput.StartsWith($resolvedPresentation, [System.StringComparison]::OrdinalIgnoreCase)) {
-    throw "[SFB-PROJECT-002] Refusing to generate outside BlazorShop.PresentationV2: $resolvedOutput"
+$resolvedOutputRoot = [System.IO.Path]::GetFullPath($outputRootPath)
+if (-not $resolvedOutput.StartsWith($resolvedOutputRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw "[SFB-PROJECT-002] Refusing to generate outside configured StorefrontBuilder output root: $resolvedOutput"
 }
 
 $arguments = @{
     Name = $Name
     StoreKey = $StoreKey
+    OutputRoot = $OutputRoot
     CommerceNodeBaseUrl = $CommerceNodeBaseUrl
     PublicBaseUrl = $PublicBaseUrl
 }
