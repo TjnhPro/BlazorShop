@@ -138,31 +138,31 @@ Commit:
 
 Goal: replace committed proof projects with a reproducible generation command.
 
-- [ ] Add or update a single proof command, for example:
-  - [ ] `scripts/qa/run-storefront-builder-generated-proof.ps1`
-- [ ] The proof command must:
-  - [ ] Resolve repo root.
-  - [ ] Clean only the approved generated output path.
-  - [ ] Pack or restore local StorefrontBuilder dependencies as needed.
-  - [ ] Generate a storefront project from `BlazorShop.Storefront.Starter`.
-  - [ ] Use a deterministic proof project name.
-  - [ ] Restore the generated project.
-  - [ ] Build the generated project.
-  - [ ] Run static StorefrontBuilder validation.
-  - [ ] Run package/reference isolation checks.
-  - [ ] Optionally start the generated project for browser QA when requested.
-- [ ] Ensure the proof command produces review artifacts under the generated output directory.
-- [ ] Ensure generated proof artifacts are not committed.
+- [x] Add or update a single proof command, for example:
+  - [x] `scripts/qa/run-storefront-builder-generated-proof.ps1`
+- [x] The proof command must:
+  - [x] Resolve repo root.
+  - [x] Clean only the approved generated output path.
+  - [x] Pack or restore local StorefrontBuilder dependencies as needed.
+  - [x] Generate a storefront project from `BlazorShop.Storefront.Starter`.
+  - [x] Use a deterministic proof project name.
+  - [x] Restore the generated project.
+  - [x] Build the generated project.
+  - [x] Run static StorefrontBuilder validation.
+  - [x] Run package/reference isolation checks.
+  - [x] Optionally start the generated project for browser QA when requested.
+- [x] Ensure the proof command produces review artifacts under the generated output directory.
+- [x] Ensure generated proof artifacts are not committed.
 
 Acceptance:
 
-- [ ] A clean checkout can generate a proof storefront without `Sample` or `BuilderDemo` in source.
-- [ ] The generated proof command is the single documented replacement for committed generated stores.
-- [ ] The generated proof can be deleted and recreated without manual cleanup.
+- [x] A clean checkout can generate a proof storefront without `Sample` or `BuilderDemo` in source.
+- [x] The generated proof command is the single documented replacement for committed generated stores.
+- [x] The generated proof can be deleted and recreated without manual cleanup.
 
 Commit:
 
-- [ ] Commit message: `test: add generated storefront proof workflow`
+- [x] Commit message: `test: add generated storefront proof workflow`
 
 ## Phase 4 - Move Tests From Committed Projects To Generated Artifacts
 

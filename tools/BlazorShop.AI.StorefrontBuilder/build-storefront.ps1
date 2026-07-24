@@ -26,6 +26,10 @@ switch ($Mode) {
     "generate" {
         & "$PSScriptRoot/scripts/generate/new-storefront-project.ps1" -Name $projectName -StoreKey $StoreKey -OutputRoot $OutputRoot -Force:$Force
         node "$PSScriptRoot/scripts/generate/write-review-artifacts.mjs" --project-root $projectRoot --url $Url
+        node "$PSScriptRoot/scripts/generate/build-asset-manifest.mjs" --project-root $projectRoot
+        node "$PSScriptRoot/scripts/generate/apply-visual-foundation.mjs" --project-root $projectRoot
+        node "$PSScriptRoot/scripts/generate/apply-composition.mjs" --project-root $projectRoot
+        node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $projectRoot
     }
     "update" {
         & "$PSScriptRoot/regenerate-storefront.ps1" -ProjectRoot $projectRoot -Scope all
@@ -36,6 +40,10 @@ switch ($Mode) {
     "full" {
         & "$PSScriptRoot/scripts/generate/new-storefront-project.ps1" -Name $projectName -StoreKey $StoreKey -OutputRoot $OutputRoot -Force:$Force
         node "$PSScriptRoot/scripts/generate/write-review-artifacts.mjs" --project-root $projectRoot --url $Url
+        node "$PSScriptRoot/scripts/generate/build-asset-manifest.mjs" --project-root $projectRoot
+        node "$PSScriptRoot/scripts/generate/apply-visual-foundation.mjs" --project-root $projectRoot
+        node "$PSScriptRoot/scripts/generate/apply-composition.mjs" --project-root $projectRoot
+        node "$PSScriptRoot/scripts/generate/update-generated-files-manifest.mjs" --project-root $projectRoot
         & "$PSScriptRoot/validate-storefront.ps1" -ProjectRoot $projectRoot -Name $projectName -StoreKey $StoreKey
         if (-not $SkipVisualQa) { Write-Host "Visual QA runner: scripts/qa/run-visual-qa.mjs" }
         if (-not $SkipCommerceRegression) { Write-Host "Commerce regression runner: scripts/qa/run-commerce-regression.mjs" }

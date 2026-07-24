@@ -6,7 +6,17 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..\..\..")
-$resolvedProjectRoot = [System.IO.Path]::GetFullPath((Join-Path $repoRoot $ProjectRoot))
+function Resolve-RepoPath {
+    param([string]$Path)
+
+    if ([System.IO.Path]::IsPathRooted($Path)) {
+        return [System.IO.Path]::GetFullPath($Path)
+    }
+
+    return [System.IO.Path]::GetFullPath((Join-Path $repoRoot $Path))
+}
+
+$resolvedProjectRoot = Resolve-RepoPath $ProjectRoot
 
 if (-not (Test-Path $resolvedProjectRoot)) {
     throw "[SFB-GUARD-000] Project root does not exist: $resolvedProjectRoot"

@@ -2,6 +2,8 @@ param(
     [string]$Name = "BlazorShop.Storefront.GeneratedProof",
     [string]$ProjectRoot = "",
     [string]$Configuration = "Debug",
+    [string]$StorefrontClientPackageVersion = "1.0.0-local",
+    [string]$StorefrontRuntimePackageVersion = "1.0.0-local",
     [switch]$Describe
 )
 
@@ -23,7 +25,9 @@ $projectRoot = if ([string]::IsNullOrWhiteSpace($ProjectRoot)) {
     Resolve-RepoPath $ProjectRoot
 }
 $projectFile = Join-Path $projectRoot "$Name.csproj"
-$packageRoot = Join-Path $repoRoot "artifacts\storefront-builder-packages"
+$packageRoot = Join-Path $repoRoot "artifacts\storefront-packages"
+$clientProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Client\BlazorShop.Storefront.Client.csproj"
+$runtimeProject = Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj"
 
 if ($Describe) {
     Write-Host "StorefrontBuilder isolation gate:"
@@ -40,10 +44,14 @@ if (-not (Test-Path $projectFile)) {
 }
 
 New-Item -ItemType Directory -Force -Path $packageRoot | Out-Null
-dotnet restore $projectFile
+dotnet pack $clientProject --configuration $Configuration --output $packageRoot "/p:PackageVersion=$StorefrontClientPackageVersion"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+dotnet pack $runtimeProject --configuration $Configuration --output $packageRoot "/p:PackageVersion=$StorefrontRuntimePackageVersion"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+dotnet restore $projectFile --source $packageRoot --source "https://api.nuget.org/v3/index.json"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 dotnet build $projectFile --configuration $Configuration --no-restore
-dotnet pack (Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Client\BlazorShop.Storefront.Client.csproj") --configuration $Configuration --no-build --output $packageRoot
-dotnet pack (Join-Path $repoRoot "BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj") --configuration $Configuration --no-build --output $packageRoot
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 $project = Get-Content -LiteralPath $projectFile -Raw
 foreach ($package in @("BlazorShop.Storefront.Client", "BlazorShop.Storefront.Runtime")) {
