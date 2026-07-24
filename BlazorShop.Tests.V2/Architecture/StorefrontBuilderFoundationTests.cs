@@ -343,6 +343,41 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("page-inventory", script, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void StorefrontBuilderEvidenceValidator_RequiresEvidenceFoldersMetadataAndReferences()
+        {
+            var template = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/templates/evidence-layout.template.yaml");
+            var script = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderEvidence.ps1");
+
+            foreach (var folder in new[] { "home", "catalog", "product", "cart", "checkout", "account", "content", "shared" })
+            {
+                Assert.Contains(folder, template, StringComparison.Ordinal);
+                Assert.Contains(folder, script, StringComparison.Ordinal);
+            }
+
+            foreach (var field in new[]
+            {
+                "url",
+                "timestampUtc",
+                "viewport",
+                "browser",
+                "screenshotFile",
+                "domSnapshotFile",
+                "computedStyleSampleFile",
+                "assetListFile",
+                "interactionState",
+                "evidenceId",
+            })
+            {
+                Assert.Contains(field, script, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("SFB-EVIDENCE-005", script, StringComparison.Ordinal);
+            Assert.Contains("references missing evidence ID", script, StringComparison.Ordinal);
+            Assert.True(File.Exists(RepositoryPath("tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/analysis/evidence/home/home-1.evidence.json")));
+            Assert.True(File.Exists(RepositoryPath("tools/BlazorShop.AI.StorefrontBuilder/tests/generation/fixtures/analysis-invalid/missing-evidence-reference.json")));
+        }
+
         private static int CountOccurrences(string source, string value)
         {
             var count = 0;

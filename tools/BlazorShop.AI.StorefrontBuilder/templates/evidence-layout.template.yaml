@@ -1,0 +1,21 @@
+analysisRoot: docs/storefront-analysis
+evidenceRoot: docs/storefront-analysis/evidence
+requiredFolders:
+  - home
+  - catalog
+  - product
+  - cart
+  - checkout
+  - account
+  - content
+  - shared
+requiredEvidenceMetadata:
+  - url
+  - timestampUtc
+  - viewport
+  - browser
+  - screenshotFile
+  - domSnapshotFile
+  - computedStyleSampleFile
+  - assetListFile
+  - interactionState

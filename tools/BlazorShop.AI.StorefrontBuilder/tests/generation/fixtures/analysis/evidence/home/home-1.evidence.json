@@ -1,0 +1,12 @@
+{
+  "evidenceId": "home.desktop",
+  "url": "https://reference.example/",
+  "timestampUtc": "2026-07-24T00:00:00Z",
+  "viewport": { "id": "desktop-1440", "width": 1440, "height": 1000 },
+  "browser": "chromium",
+  "screenshotFile": "home.png",
+  "domSnapshotFile": "home.dom.html",
+  "computedStyleSampleFile": "home.styles.json",
+  "assetListFile": "home.assets.json",
+  "interactionState": "navigate"
+}

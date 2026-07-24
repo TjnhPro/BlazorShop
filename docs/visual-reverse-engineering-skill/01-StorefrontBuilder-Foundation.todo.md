@@ -376,34 +376,34 @@ docs/storefront-analysis/evidence/
 
 Required folders:
 
-- [ ] `home`
-- [ ] `catalog`
-- [ ] `product`
-- [ ] `cart`
-- [ ] `checkout`
-- [ ] `account`
-- [ ] `content`
-- [ ] `shared`
+- [x] `home`
+- [x] `catalog`
+- [x] `product`
+- [x] `cart`
+- [x] `checkout`
+- [x] `account`
+- [x] `content`
+- [x] `shared`
 
 Evidence metadata:
 
-- [ ] URL.
-- [ ] Timestamp.
-- [ ] Viewport.
-- [ ] Browser.
-- [ ] Screenshot file.
-- [ ] DOM snapshot file.
-- [ ] Computed-style sample file.
-- [ ] Asset list file.
-- [ ] Interaction state.
+- [x] URL.
+- [x] Timestamp.
+- [x] Viewport.
+- [x] Browser.
+- [x] Screenshot file.
+- [x] DOM snapshot file.
+- [x] Computed-style sample file.
+- [x] Asset list file.
+- [x] Interaction state.
 
 Done when:
 
-- [ ] Generated plans can reference exact evidence IDs.
+- [x] Generated plans can reference exact evidence IDs.
 
 Verification:
 
-- [ ] Artifact validator fails when referenced evidence does not exist.
+- [x] Artifact validator fails when referenced evidence does not exist.
 
 ## S9 - AI Inference Log
 
