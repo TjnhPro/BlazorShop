@@ -1,6 +1,11 @@
 @page "/product/{Slug}"
 
-<PageTitle>Product</PageTitle>
+<PageTitle>@ProductTitle</PageTitle>
+<HeadContent>
+    <meta name="description" content="@ProductDescription" />
+    <link rel="canonical" href="@CanonicalUrl" />
+    <script type="application/ld+json">@((MarkupString)ProductJsonLd)</script>
+</HeadContent>
 <h1>Product detail</h1>
 <PlaceholderState
     Title="Product detail shell"
@@ -12,4 +17,26 @@
 @code {
     [Parameter]
     public string? Slug { get; set; }
+
+    private string ProductTitle => string.IsNullOrWhiteSpace(this.Slug)
+        ? "Product"
+        : $"Product {this.Slug}";
+
+    private string ProductDescription => $"Storefront product page for {NormalizeSlug(this.Slug)}.";
+
+    private string CanonicalUrl => $"/product/{NormalizeSlug(this.Slug)}";
+
+    private string ProductJsonLd => $$"""
+        {
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": "{{ProductTitle}}",
+          "url": "{{CanonicalUrl}}"
+        }
+        """;
+
+    private static string NormalizeSlug(string? slug)
+    {
+        return string.IsNullOrWhiteSpace(slug) ? "sample-product" : slug.Trim();
+    }
 }

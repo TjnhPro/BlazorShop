@@ -46,6 +46,7 @@ app.UseHttpsRedirection();
 app.MapStaticAssets();
 app.UseAntiforgery();
 app.MapStarterBffEndpoints();
+app.MapStarterSeoEndpoints();
 
 app.MapRazorComponents<App>();
 

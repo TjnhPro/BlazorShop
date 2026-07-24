@@ -69,6 +69,10 @@ jobs:
         shell: pwsh
         run: ./scripts/qa/run-storefront-starter-isolation-gate.ps1 -Describe
 
+      - name: Validate Storefront Sample release gate script
+        shell: pwsh
+        run: ./scripts/qa/run-storefront-sample-release-gate.ps1 -Describe
+
       - name: Build Commerce Node API V2 container image
         run: docker build -f BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Dockerfile -t blazorshop-commercenode-api:v2-ci .
 

@@ -1,6 +1,10 @@
 @page "/category/{Slug}"
 
-<PageTitle>Category</PageTitle>
+<PageTitle>@CategoryTitle</PageTitle>
+<HeadContent>
+    <meta name="description" content="@CategoryDescription" />
+    <link rel="canonical" href="@CanonicalUrl" />
+</HeadContent>
 <h1>Category</h1>
 <PlaceholderState
     Title="Category shell"
@@ -11,4 +15,17 @@
 @code {
     [Parameter]
     public string? Slug { get; set; }
+
+    private string CategoryTitle => string.IsNullOrWhiteSpace(this.Slug)
+        ? "Category"
+        : $"Category {this.Slug}";
+
+    private string CategoryDescription => $"Storefront category page for {NormalizeSlug(this.Slug)}.";
+
+    private string CanonicalUrl => $"/category/{NormalizeSlug(this.Slug)}";
+
+    private static string NormalizeSlug(string? slug)
+    {
+        return string.IsNullOrWhiteSpace(slug) ? "sample-category" : slug.Trim();
+    }
 }

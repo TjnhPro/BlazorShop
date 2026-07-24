@@ -2,8 +2,22 @@
 
 <PageTitle>Sign in</PageTitle>
 <h1>Sign in</h1>
+@if (HasRejectedReturnUrl)
+{
+    <section class="starter-alert" data-error-code="security.return_url">
+        <h2>Invalid return URL</h2>
+        <p>The requested return URL was rejected.</p>
+    </section>
+}
 <PlaceholderState
     Title="Auth form shell"
     Message="Server-owned auth forms keep cookie and return-url decisions on the BFF boundary."
     RenderOwner="SSR"
     HydrationMode="StarterHydrationMode.InitialSnapshot" />
+
+@code {
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
+
+    private bool HasRejectedReturnUrl => !StarterReturnUrlValidator.IsSafeLocalReturnUrl(this.ReturnUrl);
+}

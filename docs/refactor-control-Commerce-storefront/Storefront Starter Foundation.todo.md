@@ -678,59 +678,59 @@ Goal: prove generated `Storefront.Sample` is usable as an ecommerce storefront.
 
 ### Contract QA
 
-- [ ] package restore.
-- [ ] OpenAPI compatibility.
-- [ ] no backend/core references.
-- [ ] no V2 reference.
-- [ ] no duplicated generated DTOs.
-- [ ] no provider endpoint in frontend client.
+- [x] package restore.
+- [x] OpenAPI compatibility.
+- [x] no backend/core references.
+- [x] no V2 reference.
+- [x] no duplicated generated DTOs.
+- [x] no provider endpoint in frontend client.
 
 ### Functional QA
 
-- [ ] store bootstrap.
-- [ ] home.
-- [ ] category.
-- [ ] product.
-- [ ] variant/product selection preview.
-- [ ] add to cart.
-- [ ] cart update/remove.
-- [ ] checkout COD.
-- [ ] order result.
-- [ ] login/register/logout.
-- [ ] profile/address.
-- [ ] order history/detail.
-- [ ] consent.
-- [ ] maintenance.
-- [ ] not found.
+- [x] store bootstrap.
+- [x] home.
+- [x] category.
+- [x] product.
+- [x] variant/product selection preview.
+- [x] add to cart.
+- [x] cart update/remove.
+- [x] checkout COD.
+- [x] order result.
+- [x] login/register/logout.
+- [x] profile/address.
+- [x] order history/detail.
+- [x] consent.
+- [x] maintenance.
+- [x] not found.
 
 ### Rendering/SEO QA
 
-- [ ] product title/meta/canonical.
-- [ ] category metadata.
-- [ ] JSON-LD where supported.
-- [ ] sitemap.
-- [ ] robots.
-- [ ] account noindex.
-- [ ] SSR HTML contains product/category content before WASM.
-- [ ] hybrid hydration does not duplicate initial request.
+- [x] product title/meta/canonical.
+- [x] category metadata.
+- [x] JSON-LD where supported.
+- [x] sitemap.
+- [x] robots.
+- [x] account noindex.
+- [x] SSR HTML contains product/category content before WASM.
+- [x] hybrid hydration does not duplicate initial request.
 
 ### Security QA
 
-- [ ] CSRF rejection.
-- [ ] invalid return URL rejection.
-- [ ] 401 session handling.
-- [ ] 403 policy handling.
-- [ ] 409 stale cart/checkout.
-- [ ] 422 validation.
-- [ ] no tokens in WASM output.
-- [ ] browser never calls Commerce Node protected URL directly.
+- [x] CSRF rejection.
+- [x] invalid return URL rejection.
+- [x] 401 session handling.
+- [x] 403 policy handling.
+- [x] 409 stale cart/checkout.
+- [x] 422 validation.
+- [x] no tokens in WASM output.
+- [x] browser never calls Commerce Node protected URL directly.
 
 ### Performance baseline
 
-- [ ] product page HTML response does not wait for WASM.
-- [ ] add-to-cart hydrates early enough for usability.
-- [ ] product is not fetched twice on first load.
-- [ ] account assemblies are not loaded on public pages unless required by Blazor packaging constraints.
+- [x] product page HTML response does not wait for WASM.
+- [x] add-to-cart hydrates early enough for usability.
+- [x] product is not fetched twice on first load.
+- [x] account assemblies are not loaded on public pages unless required by Blazor packaging constraints.
 
 ### Verification
 
@@ -739,10 +739,12 @@ Goal: prove generated `Storefront.Sample` is usable as an ecommerce storefront.
 .\scripts\qa\run-storefront-sample-release-gate.ps1
 ```
 
+Evidence: `Storefront Starter Foundation.sample-qa.md`.
+
 ### Done when
 
-- [ ] Generated Sample passes package, contract, functional, rendering, SEO, security, and browser QA.
-- [ ] Starter is considered usable.
+- [x] Generated Sample passes package, contract, functional, rendering, SEO, security, and browser QA.
+- [x] Starter is considered usable.
 
 ## S11 - AI Generator Planning
 
@@ -839,7 +841,7 @@ Add CI in stages:
 - [x] Commit 8: S7 neutral layout and state components.
 - [x] Commit 9: S8 isolation gate script.
 - [x] Commit 10: S9 deterministic Sample generation.
-- [ ] Commit 11: S10 Sample QA release gate evidence.
+- [x] Commit 11: S10 Sample QA release gate evidence.
 - [ ] Commit 12: S11 AI Generator planning docs.
 
 Each commit must be buildable. Keep V2 behavior changes separate from Starter scaffolding unless a shared Runtime extraction requires touching both.

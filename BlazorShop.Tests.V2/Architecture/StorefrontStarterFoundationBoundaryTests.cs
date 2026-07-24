@@ -548,6 +548,34 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void StorefrontSampleReleaseGateScript_CoversPackageContractSeoSecurityAndRouteSmoke()
+        {
+            var script = ReadRepositoryFile("scripts/qa/run-storefront-sample-release-gate.ps1");
+            var workflow = ReadRepositoryFile(".github/workflows/ci.yml");
+
+            Assert.Contains("dotnet pack $clientProject", script, StringComparison.Ordinal);
+            Assert.Contains("dotnet pack $runtimeProject", script, StringComparison.Ordinal);
+            Assert.Contains("dotnet restore $sampleProject", script, StringComparison.Ordinal);
+            Assert.Contains("dotnet build $sampleProject", script, StringComparison.Ordinal);
+            Assert.Contains("dotnet publish $sampleProject", script, StringComparison.Ordinal);
+            Assert.Contains("Assert-SourceDoesNotContain $forbiddenSourcePatterns", script, StringComparison.Ordinal);
+            Assert.Contains("IStorefrontCheckoutClient", script, StringComparison.Ordinal);
+            Assert.Contains("Place a COD order from a checkout session.", script, StringComparison.Ordinal);
+            Assert.Contains("/robots.txt", script, StringComparison.Ordinal);
+            Assert.Contains("/sitemap.xml", script, StringComparison.Ordinal);
+            Assert.Contains("application/ld+json", script, StringComparison.Ordinal);
+            Assert.Contains("ValidateRequestAsync", script, StringComparison.Ordinal);
+            Assert.Contains("[InlineData(401", script, StringComparison.Ordinal);
+            Assert.Contains("[InlineData(403", script, StringComparison.Ordinal);
+            Assert.Contains("[InlineData(409", script, StringComparison.Ordinal);
+            Assert.Contains("[InlineData(422", script, StringComparison.Ordinal);
+            Assert.Contains("Start-DotnetSample", script, StringComparison.Ordinal);
+            Assert.Contains("Assert-HttpContains", script, StringComparison.Ordinal);
+            Assert.Contains("[switch]$SkipRuntime", script, StringComparison.Ordinal);
+            Assert.Contains("run-storefront-sample-release-gate.ps1 -Describe", workflow, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void StorefrontSampleGeneration_IsDeterministicAndV2Independent()
         {
             var script = ReadRepositoryFile("scripts/generate-storefront-sample.ps1");
