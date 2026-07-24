@@ -391,6 +391,61 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void StarterClientPolicy_HasExceptionRegistryAndNoSilentManualContracts()
+        {
+            var policy = ReadRepositoryFile("docs/storefront-platform/storefront-client-adoption-policy.md");
+            var registry = ReadRepositoryFile("docs/storefront-platform/storefront-client-exception-registry.md");
+            var backlog = ReadRepositoryFile("docs/storefront-platform/storefront-v2-generated-client-backlog.md");
+
+            Assert.Contains("uses generated `BlazorShop.Storefront.Client` contracts", policy, StringComparison.Ordinal);
+            Assert.Contains("Manual `HttpClient` transport is forbidden", policy, StringComparison.Ordinal);
+            Assert.Contains("| Capability | Exception | Reason | Owner | Test | Revisit trigger |", registry, StringComparison.Ordinal);
+            Assert.Contains("| none | none | Starter currently has no manual transport exceptions.", registry, StringComparison.Ordinal);
+            Assert.Contains("address", backlog, StringComparison.Ordinal);
+            Assert.Contains("cart", backlog, StringComparison.Ordinal);
+            Assert.Contains("checkout", backlog, StringComparison.Ordinal);
+            Assert.Contains("consent", backlog, StringComparison.Ordinal);
+            Assert.Contains("customer/account", backlog, StringComparison.Ordinal);
+            Assert.Contains("payment", backlog, StringComparison.Ordinal);
+
+            var starterFiles = Directory
+                .EnumerateFiles(
+                    RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter"),
+                    "*.*",
+                    SearchOption.AllDirectories)
+                .Where(path => path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+                    || path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase))
+                .Where(path => !path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                    .Any(segment => segment.Equals("bin", StringComparison.OrdinalIgnoreCase)
+                        || segment.Equals("obj", StringComparison.OrdinalIgnoreCase)))
+                .Select(path => new
+                {
+                    RelativePath = ToRepositoryRelativePath(path),
+                    Source = File.ReadAllText(path),
+                })
+                .ToArray();
+
+            var manualTransportViolations = starterFiles
+                .Where(file => file.Source.Contains("new HttpClient", StringComparison.Ordinal)
+                    || file.Source.Contains("StorefrontApiClient", StringComparison.Ordinal)
+                    || file.Source.Contains("SendAsync(", StringComparison.Ordinal))
+                .Select(file => file.RelativePath)
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
+
+            var duplicateDtoViolations = starterFiles
+                .Where(file => file.Source.Contains("CommerceNodeApiResponse", StringComparison.Ordinal)
+                    || file.Source.Contains("StorefrontPublicConfigurationResponse", StringComparison.Ordinal)
+                    || file.Source.Contains("StorefrontCartResponse", StringComparison.Ordinal))
+                .Select(file => file.RelativePath)
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.Empty(manualTransportViolations);
+            Assert.Empty(duplicateDtoViolations);
+        }
+
+        [Fact]
         public void StarterDocs_SayStorefrontV2IsBehaviorReferenceOnly()
         {
             var adr = ReadRepositoryFile("docs/architecture/adr/2026-07-24-storefront-starter-foundation.md");

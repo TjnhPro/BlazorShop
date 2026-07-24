@@ -423,19 +423,19 @@ Goal: enforce generated client usage for Starter while allowing documented excep
 
 ### Policy
 
-- [ ] New Starter code uses generated `Storefront.Client` by default.
-- [ ] Manual `HttpClient` is forbidden unless listed in exception registry.
-- [ ] Manual request/response DTOs are forbidden when generated DTOs exist.
-- [ ] Presentation view models are allowed only when they transform API data for rendering/composition.
+- [x] New Starter code uses generated `Storefront.Client` by default.
+- [x] Manual `HttpClient` is forbidden unless listed in exception registry.
+- [x] Manual request/response DTOs are forbidden when generated DTOs exist.
+- [x] Presentation view models are allowed only when they transform API data for rendering/composition.
 
 ### Allowed exception candidates
 
-- [ ] auth flow needing `Set-Cookie`/refresh-cookie behavior.
-- [ ] streaming or file download.
-- [ ] media proxy.
-- [ ] multipart upload.
-- [ ] provider redirect callback handling.
-- [ ] generator limitation with explicit tracking issue.
+- [x] auth flow needing `Set-Cookie`/refresh-cookie behavior.
+- [x] streaming or file download.
+- [x] media proxy.
+- [x] multipart upload.
+- [x] provider redirect callback handling.
+- [x] generator limitation with explicit tracking issue.
 
 ### Exception registry fields
 
@@ -444,28 +444,28 @@ Goal: enforce generated client usage for Starter while allowing documented excep
 
 ### V2 migration backlog
 
-- [ ] Record V2 manual client capabilities:
-  - [ ] address.
-  - [ ] cart.
-  - [ ] checkout.
-  - [ ] consent.
-  - [ ] customer/account.
-  - [ ] payment.
-- [ ] Decide which V2 migrations are required before Sample QA.
-- [ ] Keep V2 migration as Track B; do not block Starter unless contract gaps break Starter.
+- [x] Record V2 manual client capabilities:
+  - [x] address.
+  - [x] cart.
+  - [x] checkout.
+  - [x] consent.
+  - [x] customer/account.
+  - [x] payment.
+- [x] Decide which V2 migrations are required before Sample QA.
+- [x] Keep V2 migration as Track B; do not block Starter unless contract gaps break Starter.
 
 ### Tests
 
-- [ ] Starter source has no `StorefrontApiClient`.
-- [ ] Starter source has no duplicated generated API contract clones.
-- [ ] Starter exceptions are listed and tested.
-- [ ] generated OpenAPI/client compatibility tests still pass.
+- [x] Starter source has no `StorefrontApiClient`.
+- [x] Starter source has no duplicated generated API contract clones.
+- [x] Starter exceptions are listed and tested.
+- [x] generated OpenAPI/client compatibility tests still pass.
 
 ### Done when
 
-- [ ] Starter cannot silently introduce a second contract system.
-- [ ] Exceptions are explicit and reviewable.
-- [ ] V2 manual-client migration backlog exists but does not block Starter MVP.
+- [x] Starter cannot silently introduce a second contract system.
+- [x] Exceptions are explicit and reviewable.
+- [x] V2 manual-client migration backlog exists but does not block Starter MVP.
 
 ## S6 - Feature Module And Capability Activation
 
@@ -834,7 +834,7 @@ Add CI in stages:
 - [x] Commit 3: S2 minimal Runtime extraction if justified by V2 + Starter duplication.
 - [x] Commit 4: S3 SSR generated-client tracer and BFF protected-command tracer.
 - [x] Commit 5: S4 route/render skeleton.
-- [ ] Commit 6: S5 generated-client policy and exception registry.
+- [x] Commit 6: S5 generated-client policy and exception registry.
 - [ ] Commit 7: S6 feature manifest/capability activation.
 - [ ] Commit 8: S7 neutral layout and state components.
 - [ ] Commit 9: S8 isolation gate script.
