@@ -2,7 +2,6 @@ namespace BlazorShop.Storefront.Endpoints
 {
     using System.Globalization;
 
-    using BlazorShop.Application.DTOs.UserIdentity;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.Services;
     using BlazorShop.Application.Services.Contracts;

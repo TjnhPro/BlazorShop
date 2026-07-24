@@ -1,6 +1,6 @@
 namespace BlazorShop.Storefront.Services.Contracts
 {
-    using BlazorShop.Application.DTOs.UserIdentity;
+    using BlazorShop.Storefront.Models;
 
     public interface IStorefrontAuthClient
     {

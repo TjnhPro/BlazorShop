@@ -532,12 +532,14 @@ Goal: remove `Application` and backend-owned business DTO dependencies from Stor
 
 ### F5.3 Auth, customer, account
 
-- [ ] Replace Application auth DTO usage in Storefront V2.
-- [ ] Keep HttpOnly refresh cookie behavior.
-- [ ] Keep account BFF same-origin endpoints.
-- [ ] Keep account pages noindex.
-- [ ] Keep forgot/reset/register disabled policy behavior.
-- [ ] Keep customer order authorization through backend.
+- [x] Replace Application auth DTO usage in Storefront V2.
+- [x] Keep HttpOnly refresh cookie behavior.
+- [x] Keep account BFF same-origin endpoints.
+- [x] Keep account pages noindex.
+- [x] Keep forgot/reset/register disabled policy behavior.
+- [x] Keep customer order authorization through backend.
+
+2026-07-24 evidence: Storefront V2 auth request models moved to `BlazorShop.Storefront.Models`; source guard `StorefrontV2_AuthDoesNotUseApplicationUserIdentityDtos` blocks `Application.DTOs.UserIdentity` from returning. `StorefrontAuthClient` remains a manual Storefront transport for auth because F5.3 must preserve `Set-Cookie` capture/copy for HttpOnly refresh-cookie behavior.
 
 ### F5.4 Cart
 
@@ -826,7 +828,7 @@ Future `BlazorShop.Storefront.Starter` should include:
 - [x] Commit 6: F4 BFF boundary cleanup and local endpoint contract split.
 - [x] Commit 7: F5.1 configuration/store bootstrap migration.
 - [x] Commit 8: F5.2 catalog/content/navigation/SEO migration.
-- [ ] Commit 9: F5.3 auth/customer/account migration.
+- [x] Commit 9: F5.3 auth/customer/account migration.
 - [ ] Commit 10: F5.4 cart migration.
 - [ ] Commit 11: F5.5 checkout/orders/payments migration.
 - [ ] Commit 12: F5.6 consent/newsletter/contact/recommendations migration.

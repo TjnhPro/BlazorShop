@@ -4,7 +4,7 @@ namespace BlazorShop.Storefront.Services
     using System.Net.Http.Json;
     using System.Text.Json;
 
-    using BlazorShop.Application.DTOs.UserIdentity;
+    using BlazorShop.Storefront.Models;
     using BlazorShop.Storefront.Services.Contracts;
 
     public sealed class StorefrontAuthClient : IStorefrontAuthClient

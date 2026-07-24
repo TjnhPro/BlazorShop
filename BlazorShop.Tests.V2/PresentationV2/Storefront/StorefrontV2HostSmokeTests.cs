@@ -9,7 +9,6 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     using System.Text.RegularExpressions;
 
     using BlazorShop.Application.DTOs;
-    using BlazorShop.Application.DTOs.UserIdentity;
 
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Mvc.Testing;
@@ -18,6 +17,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using Xunit;
 
+    using StorefrontV2::BlazorShop.Storefront.Models;
     using StorefrontV2::BlazorShop.Storefront.Services;
     using StorefrontV2::BlazorShop.Storefront.Services.Contracts;
 

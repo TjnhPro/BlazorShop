@@ -1,7 +1,6 @@
 using System.Globalization;
 
 using BlazorShop.Application.Diagnostics;
-using BlazorShop.Application.DTOs.UserIdentity;
 using BlazorShop.Application.CommerceNode.VariationTemplates;
 using BlazorShop.Application.Services;
 using BlazorShop.Application.Services.Contracts;

@@ -6,10 +6,9 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
     using System.Text;
     using System.Text.Json;
 
-    using BlazorShop.Application.DTOs.UserIdentity;
-
     using Xunit;
 
+    using StorefrontV2::BlazorShop.Storefront.Models;
     using StorefrontV2::BlazorShop.Storefront.Services;
 
     public sealed class StorefrontV2AuthClientTests
@@ -228,6 +227,14 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             Assert.Equal(["/api/storefront/stores/default/auth/change-password"], handler.RequestPaths);
         }
 
+        [Fact]
+        public void StorefrontV2_AuthDoesNotUseApplicationUserIdentityDtos()
+        {
+            var source = ReadStorefrontV2Source();
+
+            Assert.DoesNotContain("BlazorShop.Application.DTOs.UserIdentity", source, StringComparison.Ordinal);
+        }
+
         private static HttpClient CreateClient(HttpMessageHandler handler)
         {
             return new HttpClient(handler)
@@ -242,6 +249,33 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             {
                 Content = new StringContent(json, Encoding.UTF8, "application/json"),
             };
+        }
+
+        private static string ReadStorefrontV2Source()
+        {
+            var root = Path.Combine(RepositoryRoot(), "BlazorShop.PresentationV2", "BlazorShop.Storefront.V2");
+            var files = Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories)
+                .Where(path => path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+                    || path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase))
+                .Order(StringComparer.Ordinal);
+
+            return string.Join(Environment.NewLine, files.Select(File.ReadAllText));
+        }
+
+        private static string RepositoryRoot()
+        {
+            var directory = new DirectoryInfo(AppContext.BaseDirectory);
+            while (directory is not null)
+            {
+                if (File.Exists(Path.Combine(directory.FullName, "BlazorShop.sln")))
+                {
+                    return directory.FullName;
+                }
+
+                directory = directory.Parent;
+            }
+
+            throw new DirectoryNotFoundException("Could not locate BlazorShop.sln.");
         }
 
         private sealed class RecordingHandler : HttpMessageHandler

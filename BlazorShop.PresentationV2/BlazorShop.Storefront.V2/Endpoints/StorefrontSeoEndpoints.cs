@@ -1,6 +1,5 @@
 namespace BlazorShop.Storefront.Endpoints
 {
-    using BlazorShop.Application.DTOs.UserIdentity;
     using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.Diagnostics;
     using BlazorShop.Application.Services;
