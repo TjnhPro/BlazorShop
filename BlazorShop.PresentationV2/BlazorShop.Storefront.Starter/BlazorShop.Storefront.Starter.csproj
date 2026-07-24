@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="BlazorShop.Storefront.Client" Version="$(StorefrontClientPackageVersion)" />
+    <PackageReference Include="BlazorShop.Storefront.Runtime" Version="$(StorefrontRuntimePackageVersion)" />
   </ItemGroup>
 
 </Project>

@@ -183,62 +183,62 @@ Final location should match architecture docs and package strategy.
 
 ### Allowed first extraction candidates
 
-- [ ] Storefront API generated client registration helpers.
-- [ ] store context abstraction:
-  - [ ] configured store key.
-  - [ ] configured Commerce Node base URL.
-  - [ ] public URL base.
-- [ ] capability reader:
-  - [ ] `IsSupported(key)`.
-  - [ ] `IsEnabled(key)`.
-  - [ ] reason handling.
-- [ ] Commerce API error normalization:
-  - [ ] status.
-  - [ ] code.
-  - [ ] message.
-  - [ ] traceId.
-  - [ ] field errors.
-- [ ] BFF result primitives:
-  - [ ] success envelope.
-  - [ ] safe frontend error.
-  - [ ] retryable marker if needed.
-- [ ] auth/session contracts only:
-  - [ ] authenticated customer snapshot.
-  - [ ] unauthenticated result.
-  - [ ] sign-in return URL contract.
-- [ ] antiforgery conventions:
-  - [ ] header name.
-  - [ ] token projection contract.
+- [x] Storefront API generated client registration helpers.
+- [x] store context abstraction:
+  - [x] configured store key.
+  - [x] configured Commerce Node base URL.
+  - [x] public URL base.
+- [x] capability reader:
+  - [x] `IsSupported(key)`.
+  - [x] `IsEnabled(key)`.
+  - [x] reason handling.
+- [x] Commerce API error normalization:
+  - [x] status.
+  - [x] code.
+  - [x] message.
+  - [x] traceId.
+  - [x] field errors.
+- [x] BFF result primitives:
+  - [x] success envelope.
+  - [x] safe frontend error.
+  - [n/a] retryable marker if needed.
+- [n/a] auth/session contracts only:
+  - [n/a] authenticated customer snapshot.
+  - [n/a] unauthenticated result.
+  - [n/a] sign-in return URL contract.
+- [n/a] antiforgery conventions:
+  - [n/a] header name.
+  - [n/a] token projection contract.
 
 ### Not allowed in Runtime
 
-- [ ] Storefront V2 layout/design/CSS/assets.
-- [ ] V2 route composition.
-- [ ] V2 SEO composition specifics.
-- [ ] V2 media proxy if only V2 needs it.
-- [ ] cart/checkout/order business rules.
-- [ ] provider secrets.
-- [ ] backend/core/API project references.
-- [ ] `Web.SharedV2.Models` business DTOs.
+- [x] Storefront V2 layout/design/CSS/assets.
+- [x] V2 route composition.
+- [x] V2 SEO composition specifics.
+- [x] V2 media proxy if only V2 needs it.
+- [x] cart/checkout/order business rules.
+- [x] provider secrets.
+- [x] backend/core/API project references.
+- [x] `Web.SharedV2.Models` business DTOs.
 
 ### Extraction rules
 
 A class/function can move to Runtime only when:
 
-- [ ] V2 and Starter both need it.
-- [ ] it is not tied to V2 route/design.
-- [ ] it contains no backend business truth.
-- [ ] it can be tested independently.
-- [ ] it does not need editing when a generated storefront changes layout.
+- [x] V2 and Starter both need it.
+- [x] it is not tied to V2 route/design.
+- [x] it contains no backend business truth.
+- [x] it can be tested independently.
+- [x] it does not need editing when a generated storefront changes layout.
 
 ### Tasks
 
-- [ ] Create Runtime project only after S1 proves Starter package consumption.
-- [ ] Start with registration/error/capability primitives, not page code.
-- [ ] Migrate V2 to consume Runtime only where it reduces duplication.
-- [ ] Add architecture dependency tests.
-- [ ] Add package metadata if Runtime is created.
-- [ ] Add local package consumer proof for Runtime if packaged.
+- [x] Create Runtime project only after S1 proves Starter package consumption.
+- [x] Start with registration/error/capability primitives, not page code.
+- [x] Migrate V2 to consume Runtime only where it reduces duplication.
+- [x] Add architecture dependency tests.
+- [x] Add package metadata if Runtime is created.
+- [x] Add local package consumer proof for Runtime if packaged.
 
 ### Verification
 
@@ -249,9 +249,9 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done when
 
-- [ ] Runtime exists only if justified by V2 + Starter reuse.
-- [ ] Runtime has no backend/core/V2 design dependencies.
-- [ ] Starter and V2 share neutral primitives without coupling presentation.
+- [x] Runtime exists only if justified by V2 + Starter reuse.
+- [x] Runtime has no backend/core/V2 design dependencies.
+- [x] Starter and V2 share neutral primitives without coupling presentation.
 
 ## S3 - Starter SSR/BFF Contract Foundation
 
@@ -831,7 +831,7 @@ Add CI in stages:
 
 - [x] Commit 1: S0 ADR/docs/architecture tests.
 - [x] Commit 2: S1 Starter project consuming packaged `Storefront.Client`.
-- [ ] Commit 3: S2 minimal Runtime extraction if justified by V2 + Starter duplication.
+- [x] Commit 3: S2 minimal Runtime extraction if justified by V2 + Starter duplication.
 - [ ] Commit 4: S3 SSR generated-client tracer and BFF protected-command tracer.
 - [ ] Commit 5: S4 route/render skeleton.
 - [ ] Commit 6: S5 generated-client policy and exception registry.

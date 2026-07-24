@@ -19,7 +19,7 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("Storefront.{Name}` represents future independent generated storefronts", adr, StringComparison.Ordinal);
             Assert.Contains("Headless Storefront target flow", systemMap, StringComparison.Ordinal);
             Assert.Contains("### `BlazorShop.Storefront.Client`", folderGuide, StringComparison.Ordinal);
-            Assert.Contains("Optional `BlazorShop.Storefront.Runtime`", folderGuide, StringComparison.Ordinal);
+            Assert.Contains("`BlazorShop.Storefront.Runtime`", folderGuide, StringComparison.Ordinal);
         }
 
         [Fact]

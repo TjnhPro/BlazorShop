@@ -33,6 +33,7 @@
     <ProjectReference Include="..\BlazorShop.PresentationV2\BlazorShop.ControlPlane.Web\BlazorShop.ControlPlane.Web.csproj" />
     <ProjectReference Include="..\BlazorShop.PresentationV2\BlazorShop.Storefront.Client\BlazorShop.Storefront.Client.csproj" />
     <ProjectReference Include="..\BlazorShop.PresentationV2\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj" />
+    <ProjectReference Include="..\BlazorShop.PresentationV2\BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj" />
     <ProjectReference Include="..\BlazorShop.PresentationV2\BlazorShop.Storefront.V2\BlazorShop.Storefront.V2.csproj" Aliases="StorefrontV2" />
     <ProjectReference Include="..\BlazorShop.PresentationV2\BlazorShop.Storefront.WASM\BlazorShop.Storefront.WASM.csproj" />
     <ProjectReference Include="..\BlazorShop.PresentationV2\BlazorShop.Web.SharedV2\BlazorShop.Web.SharedV2.csproj" />

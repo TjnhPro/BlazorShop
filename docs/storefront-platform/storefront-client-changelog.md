@@ -5,3 +5,10 @@
 - Local/private feed package used by Storefront V2 and Storefront Starter foundation proofs.
 - Generated from the Commerce Node Storefront OpenAPI document.
 - Frontend client document excludes provider callback and webhook operations.
+
+# BlazorShop.Storefront.Runtime Changelog
+
+## 1.0.0-local
+
+- Local/private feed package with neutral Storefront runtime options, generated-client registration helpers, capability reading, and Commerce API error normalization.
+- Does not contain layout, CSS, route composition, media proxy, BFF endpoint implementations, backend business rules, or provider secrets.

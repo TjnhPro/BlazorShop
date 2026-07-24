@@ -1,4 +1,4 @@
-using BlazorShop.Storefront.Client;
+using BlazorShop.Storefront.Runtime;
 using BlazorShop.Storefront.Starter;
 using BlazorShop.Storefront.Starter.Components;
 using BlazorShop.Storefront.Starter.Options;
@@ -11,9 +11,15 @@ builder.Services
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddHttpClient(StarterStorefrontClientFactory.HttpClientName);
-builder.Services.AddScoped<StarterStorefrontClientFactory>();
-builder.Services.AddScoped(sp => sp.GetRequiredService<StarterStorefrontClientFactory>().CreateStoreClient());
+builder.Services.AddStorefrontRuntime(options =>
+{
+    var starterOptions = builder.Configuration.GetSection(StarterStorefrontOptions.SectionName).Get<StarterStorefrontOptions>()
+        ?? new StarterStorefrontOptions();
+    options.CommerceNodeBaseUrl = starterOptions.CommerceNodeBaseUrl;
+    options.StoreKey = starterOptions.StoreKey;
+    options.PublicBaseUrl = starterOptions.PublicBaseUrl;
+});
+builder.Services.AddStorefrontGeneratedClients();
 
 builder.Services.AddRazorComponents();
 
@@ -37,25 +43,4 @@ namespace BlazorShop.Storefront.Starter
 {
     public partial class Program;
 
-    public sealed class StarterStorefrontClientFactory
-    {
-        public const string HttpClientName = "CommerceNodeStorefront";
-
-        private readonly IHttpClientFactory httpClientFactory;
-        private readonly Microsoft.Extensions.Options.IOptions<StarterStorefrontOptions> options;
-
-        public StarterStorefrontClientFactory(
-            IHttpClientFactory httpClientFactory,
-            Microsoft.Extensions.Options.IOptions<StarterStorefrontOptions> options)
-        {
-            this.httpClientFactory = httpClientFactory;
-            this.options = options;
-        }
-
-        public StorefrontStoreClient CreateStoreClient()
-        {
-            var httpClient = this.httpClientFactory.CreateClient(HttpClientName);
-            return new StorefrontStoreClient(this.options.Value.CommerceNodeBaseUrl, httpClient);
-        }
-    }
 }

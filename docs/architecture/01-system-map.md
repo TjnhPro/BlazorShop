@@ -18,7 +18,7 @@
 | V2 | `BlazorShop.PresentationV2/BlazorShop.Storefront.WASM` | Active | Storefront V2 WebAssembly assembly for interactive browser components. |
 | V2 | `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2` | Active | Shared V2 browser storage, cookie storage, auth session, toast, and API helper utilities. |
 | Storefront Platform | `BlazorShop.PresentationV2/BlazorShop.Storefront.Client` | Active | Generated Storefront API transport and contracts from Commerce Node Storefront OpenAPI. No backend/core/API project references. |
-| Future Storefront Platform | `BlazorShop.Storefront.Runtime` | Optional | Neutral Storefront runtime primitives only when proven by V2 decoupling. No backend/core/API project references. |
+| Storefront Platform | `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime` | Active | Neutral Storefront runtime options, generated-client registration, capability, and error primitives shared by V2 and Starter. No backend/core/API project references. |
 | Future Storefront Implementation | `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter` | Planned | Neutral skeleton source for deterministic generated storefronts. It consumes package-based Storefront contracts and is not copied from Storefront V2. |
 | Future Storefront Implementation | `BlazorShop.PresentationV2/BlazorShop.Storefront.Sample` | Planned | First deterministic generated storefront proof produced from Starter. |
 | Tests | `BlazorShop.Tests.V2` | Active | V2 architecture, API contract, service, and smoke tests. |

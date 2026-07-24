@@ -2,6 +2,8 @@ namespace BlazorShop.Tests.Architecture
 {
     using System.Xml.Linq;
 
+    using BlazorShop.Storefront.Runtime;
+
     using Xunit;
 
     public sealed class StorefrontStarterFoundationBoundaryTests
@@ -115,10 +117,13 @@ namespace BlazorShop.Tests.Architecture
             var changelog = ReadRepositoryFile("docs/storefront-platform/storefront-client-changelog.md");
 
             Assert.Contains("<PackageReference Include=\"BlazorShop.Storefront.Client\" Version=\"$(StorefrontClientPackageVersion)\"", project, StringComparison.Ordinal);
+            Assert.Contains("<PackageReference Include=\"BlazorShop.Storefront.Runtime\" Version=\"$(StorefrontRuntimePackageVersion)\"", project, StringComparison.Ordinal);
             Assert.DoesNotContain("<ProjectReference", project, StringComparison.Ordinal);
             Assert.Contains("<StorefrontClientPackageVersion>1.0.0-local</StorefrontClientPackageVersion>", versionProps, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontRuntimePackageVersion>1.0.0-local</StorefrontRuntimePackageVersion>", versionProps, StringComparison.Ordinal);
             Assert.Contains("local-storefront-packages", nugetConfig, StringComparison.Ordinal);
             Assert.Contains("| v1 | 1.x | compatible |", compatibility, StringComparison.Ordinal);
+            Assert.Contains("| 1.x | 1.x |", compatibility, StringComparison.Ordinal);
             Assert.Contains("1.0.0-local", changelog, StringComparison.Ordinal);
         }
 
@@ -150,11 +155,61 @@ namespace BlazorShop.Tests.Architecture
 
             Assert.True(packResult.ExitCode == 0, FormatProcessFailure("Storefront client package did not pack.", packResult));
 
+            var runtimePackResult = RunProcess(
+                "dotnet",
+                [
+                    "pack",
+                    RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj"),
+                    "--no-restore",
+                    "--output",
+                    packageFeed,
+                    "/p:PackageVersion=1.0.0-local",
+                ],
+                repositoryRoot);
+
+            Assert.True(runtimePackResult.ExitCode == 0, FormatProcessFailure("Storefront runtime package did not pack.", runtimePackResult));
+
             var restoreResult = RunProcess("dotnet", ["restore", starterProject], repositoryRoot);
             Assert.True(restoreResult.ExitCode == 0, FormatProcessFailure("Starter did not restore from the local Storefront client package.", restoreResult));
 
             var buildResult = RunProcess("dotnet", ["build", starterProject, "--no-restore"], repositoryRoot);
             Assert.True(buildResult.ExitCode == 0, FormatProcessFailure("Starter did not build after package restore.", buildResult));
+        }
+
+        [Fact]
+        public void RuntimeProject_ContainsOnlyNeutralPackageDependencies()
+        {
+            var project = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj");
+            var references = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj");
+            var forbidden = references
+                .Where(IsForbiddenStarterProjectReference)
+                .OrderBy(reference => reference, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            Assert.Empty(forbidden);
+            Assert.Contains("<PackageId>BlazorShop.Storefront.Runtime</PackageId>", project, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.Client.csproj", project, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.V2", project, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void RuntimeCapabilityReader_CombinesSupportedEnabledAndReason()
+        {
+            var reader = new StorefrontCapabilityReader();
+            var capabilities = new Dictionary<string, StorefrontRuntimeCapability>(StringComparer.Ordinal)
+            {
+                ["cart"] = new(Supported: true, Enabled: true, Reason: null),
+                ["reviews"] = new(Supported: false, Enabled: false, Reason: "not_installed"),
+                ["newsletter"] = new(Supported: true, Enabled: false, Reason: "disabled"),
+            };
+
+            Assert.True(reader.IsSupported(capabilities, "cart"));
+            Assert.True(reader.IsEnabled(capabilities, "cart"));
+            Assert.True(reader.IsSupported(capabilities, "newsletter"));
+            Assert.False(reader.IsEnabled(capabilities, "newsletter"));
+            Assert.False(reader.IsSupported(capabilities, "reviews"));
+            Assert.Equal("not_installed", reader.GetReason(capabilities, "reviews"));
+            Assert.Equal("not_installed", reader.GetReason(capabilities, "missing"));
         }
 
         [Fact]

@@ -2,6 +2,7 @@ namespace BlazorShop.Storefront.Configuration
 {
     using System.Threading.RateLimiting;
     using BlazorShop.Storefront.Options;
+    using BlazorShop.Storefront.Runtime;
     using BlazorShop.Storefront.Services;
     using BlazorShop.Storefront.Services.Contracts;
     using BlazorShop.Storefront.Services.Media;
@@ -9,21 +10,6 @@ namespace BlazorShop.Storefront.Configuration
     using Microsoft.AspNetCore.RateLimiting;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Options;
-
-    using GeneratedConfigurationClient = BlazorShop.Storefront.Client.IStorefrontConfigurationClient;
-    using GeneratedConfigurationClientImplementation = BlazorShop.Storefront.Client.StorefrontConfigurationClient;
-    using GeneratedCurrencyClient = BlazorShop.Storefront.Client.IStorefrontCurrencyClient;
-    using GeneratedCurrencyClientImplementation = BlazorShop.Storefront.Client.StorefrontCurrencyClient;
-    using GeneratedCatalogClient = BlazorShop.Storefront.Client.IStorefrontCatalogClient;
-    using GeneratedCatalogClientImplementation = BlazorShop.Storefront.Client.StorefrontCatalogClient;
-    using GeneratedNavigationClient = BlazorShop.Storefront.Client.IStorefrontNavigationClient;
-    using GeneratedNavigationClientImplementation = BlazorShop.Storefront.Client.StorefrontNavigationClient;
-    using GeneratedPagesClient = BlazorShop.Storefront.Client.IStorefrontPagesClient;
-    using GeneratedPagesClientImplementation = BlazorShop.Storefront.Client.StorefrontPagesClient;
-    using GeneratedSeoClient = BlazorShop.Storefront.Client.IStorefrontSeoClient;
-    using GeneratedSeoClientImplementation = BlazorShop.Storefront.Client.StorefrontSeoClient;
-    using GeneratedStoreClient = BlazorShop.Storefront.Client.IStorefrontStoreClient;
-    using GeneratedStoreClientImplementation = BlazorShop.Storefront.Client.StorefrontStoreClient;
 
     public static class StorefrontServiceCollectionExtensions
     {
@@ -65,6 +51,11 @@ namespace BlazorShop.Storefront.Configuration
                 .ValidateOnStart();
             services.AddOptions<StorefrontRateLimitingOptions>()
                 .Bind(configuration.GetSection(StorefrontRateLimitingOptions.SectionName));
+            services.AddStorefrontRuntime(options =>
+            {
+                options.CommerceNodeBaseUrl = StorefrontApiEndpointResolver.ResolveCommerceNodeBaseAddress(configuration).ToString();
+                options.StoreKey = StorefrontApiEndpointResolver.ResolveStoreKey(configuration) ?? "default";
+            });
             if (rateLimitingOptions.Enabled)
             {
                 services.AddRateLimiter(options => configureRateLimiter(options, rateLimitingOptions));
@@ -106,40 +97,10 @@ namespace BlazorShop.Storefront.Configuration
                     var serviceConfiguration = serviceProvider.GetRequiredService<IConfiguration>();
                     configureHttpClient(client, serviceConfiguration);
                 });
-            services.AddHttpClient("StorefrontGenerated", (serviceProvider, client) =>
-                {
-                    var serviceConfiguration = serviceProvider.GetRequiredService<IConfiguration>();
-                    client.BaseAddress = StorefrontApiEndpointResolver.ResolveCommerceNodeBaseAddress(serviceConfiguration);
-                    client.Timeout = TimeSpan.FromSeconds(2);
-                });
-            services.AddScoped<GeneratedStoreClient>(serviceProvider =>
-                new GeneratedStoreClientImplementation(
-                    string.Empty,
-                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGenerated")));
-            services.AddScoped<GeneratedConfigurationClient>(serviceProvider =>
-                new GeneratedConfigurationClientImplementation(
-                    string.Empty,
-                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGenerated")));
-            services.AddScoped<GeneratedCurrencyClient>(serviceProvider =>
-                new GeneratedCurrencyClientImplementation(
-                    string.Empty,
-                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGenerated")));
-            services.AddScoped<GeneratedCatalogClient>(serviceProvider =>
-                new GeneratedCatalogClientImplementation(
-                    string.Empty,
-                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGenerated")));
-            services.AddScoped<GeneratedPagesClient>(serviceProvider =>
-                new GeneratedPagesClientImplementation(
-                    string.Empty,
-                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGenerated")));
-            services.AddScoped<GeneratedNavigationClient>(serviceProvider =>
-                new GeneratedNavigationClientImplementation(
-                    string.Empty,
-                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGenerated")));
-            services.AddScoped<GeneratedSeoClient>(serviceProvider =>
-                new GeneratedSeoClientImplementation(
-                    string.Empty,
-                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGenerated")));
+            services.AddStorefrontGeneratedClients((_, client) =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(2);
+            });
             services.AddScoped<GeneratedStorefrontConfigurationClient>();
             services.AddScoped<GeneratedStorefrontCatalogContentClient>();
             services.AddScoped<IStorefrontAddressClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());

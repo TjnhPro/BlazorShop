@@ -232,20 +232,20 @@ Do not:
 - Add Razor components, CSS, browser storage, UI state, checkout/cart business rules, or handwritten duplicate API DTO clones.
 - Reference `BlazorShop.Domain`, `BlazorShop.Application`, `BlazorShop.Infrastructure`, `BlazorShop.CommerceNode.API`, `BlazorShop.ControlPlane.API`, or `BlazorShop.Storefront.V2`.
 
-### Optional `BlazorShop.Storefront.Runtime`
+### `BlazorShop.Storefront.Runtime`
 
 Status:
 
-- Optional and only justified after Storefront V2 decoupling proves repeated neutral runtime code.
-- F6 foundation decision: not created yet. Current shared runtime candidates are still tied to Storefront V2 host/BFF responsibilities and should not be packaged prematurely.
+- Active minimal runtime package under `BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime`.
+- Created by the Storefront Starter Foundation after Starter became the second consumer of generated-client registration, capability reading, and error normalization primitives.
 
 Use for:
 
-- Store context abstractions.
+- Store context/options abstractions.
 - Storefront API client registration helpers.
 - Capability/configuration readers.
 - Normalized error mapping primitives.
-- Auth/session bridge contracts and BFF-safe result mapping primitives.
+- BFF-safe result mapping primitives.
 
 Do not:
 
