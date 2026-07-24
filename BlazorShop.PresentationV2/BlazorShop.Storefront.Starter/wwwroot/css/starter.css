@@ -52,3 +52,33 @@ a {
 .starter-config dt {
   font-weight: 700;
 }
+
+.starter-section {
+  margin-top: 2rem;
+}
+
+.starter-products {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.starter-products li,
+.starter-alert {
+  padding: 1rem;
+  background: #ffffff;
+  border: 1px solid #deded8;
+  border-radius: 8px;
+}
+
+.starter-products strong,
+.starter-products span {
+  display: block;
+}
+
+.starter-alert {
+  margin-top: 2rem;
+  border-color: #b42318;
+}

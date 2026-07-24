@@ -1,14 +1,57 @@
 @page "/"
 @inject IOptions<StarterStorefrontOptions> StorefrontOptions
+@inject StorefrontBootstrapService BootstrapService
 
 <PageTitle>Storefront Starter</PageTitle>
 
-<h1>Storefront Starter</h1>
+<h1>@(_snapshot?.StoreName ?? "Storefront Starter")</h1>
 <p>This neutral shell consumes the generated Storefront client package.</p>
 
 <dl class="starter-config">
     <dt>Store key</dt>
-    <dd>@StorefrontOptions.Value.StoreKey</dd>
+    <dd>@(_snapshot?.StoreKey ?? StorefrontOptions.Value.StoreKey)</dd>
     <dt>Commerce API</dt>
     <dd>Configured server-side</dd>
 </dl>
+
+@if (_snapshot?.Error is not null)
+{
+    <section class="starter-alert" data-error-code="@_snapshot.Error.Code">
+        <h2>Storefront unavailable</h2>
+        <p>@_snapshot.Error.Message</p>
+    </section>
+}
+else if (_snapshot is not null)
+{
+    <section class="starter-section" aria-labelledby="featured-products-title">
+        <h2 id="featured-products-title">Featured products</h2>
+        @if (_snapshot.Products.Count == 0)
+        {
+            <p>No products are available yet.</p>
+        }
+        else
+        {
+            <ul class="starter-products">
+                @foreach (var product in _snapshot.Products)
+                {
+                    <li>
+                        <strong>@product.Name</strong>
+                        @if (product.Price is not null)
+                        {
+                            <span>@product.Price.Value.ToString("0.00") @_snapshot.CurrencyCode</span>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+}
+
+@code {
+    private StarterBootstrapSnapshot? _snapshot;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _snapshot = await BootstrapService.LoadAsync(CancellationToken.None);
+    }
+}

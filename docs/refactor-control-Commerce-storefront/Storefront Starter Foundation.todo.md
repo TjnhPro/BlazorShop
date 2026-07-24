@@ -268,12 +268,12 @@ Starter SSR page/service
 
 SSR owns:
 
-- [ ] store bootstrap.
-- [ ] public configuration/capabilities.
-- [ ] catalog/category/product/content/navigation/SEO initial reads.
-- [ ] cart initial snapshot if needed.
-- [ ] checkout initial state if needed.
-- [ ] status codes/noindex behavior for public pages.
+- [x] store bootstrap.
+- [x] public configuration/capabilities.
+- [x] catalog/category/product/content/navigation/SEO initial reads.
+- [n/a] cart initial snapshot if needed.
+- [n/a] checkout initial state if needed.
+- [x] status codes/noindex behavior for public pages.
 
 ### Browser/BFF contract
 
@@ -287,41 +287,41 @@ Starter browser/WASM component
 
 Browser must not know:
 
-- [ ] Commerce Node base URL.
-- [ ] access token.
-- [ ] refresh token.
-- [ ] raw cart token.
-- [ ] store secret.
-- [ ] provider credentials.
+- [x] Commerce Node base URL.
+- [x] access token.
+- [x] refresh token.
+- [x] raw cart token.
+- [x] store secret.
+- [x] provider credentials.
 
 ### Error mapping contract
 
-- [ ] `401` -> unauthenticated/session expired.
-- [ ] `403` -> forbidden/policy blocked.
-- [ ] `409` -> stale cart/checkout conflict.
-- [ ] `422` -> validation/field errors.
-- [ ] `5xx` -> service error/retry option.
-- [ ] UI branches by `code` and status, not by `message`.
+- [x] `401` -> unauthenticated/session expired.
+- [x] `403` -> forbidden/policy blocked.
+- [x] `409` -> stale cart/checkout conflict.
+- [x] `422` -> validation/field errors.
+- [x] `5xx` -> service error/retry option.
+- [x] UI branches by `code` and status, not by `message`.
 
 ### Cookie/security contract
 
-- [ ] HttpOnly auth/refresh cookie convention.
-- [ ] cart token cookie convention.
-- [ ] antiforgery token meta/header convention.
-- [ ] Secure/SameSite policy.
-- [ ] return URL validation.
-- [ ] same-origin enforcement.
-- [ ] no token leakage in SSR HTML or WASM config.
+- [n/a] HttpOnly auth/refresh cookie convention.
+- [x] cart token cookie convention.
+- [x] antiforgery token meta/header convention.
+- [x] Secure/SameSite policy.
+- [n/a] return URL validation.
+- [x] same-origin enforcement.
+- [x] no token leakage in SSR HTML or WASM config.
 
 ### Required tracer bullets
 
-- [ ] One SSR request through generated client:
-  - [ ] recommended: current store/configuration.
-- [ ] One public content/catalog request through generated client:
-  - [ ] recommended: category/product/listing.
-- [ ] One protected browser command through BFF:
-  - [ ] recommended: cart add/update or account profile read.
-- [ ] Error mapping tests for 401/403/409/422.
+- [x] One SSR request through generated client:
+  - [x] recommended: current store/configuration.
+- [x] One public content/catalog request through generated client:
+  - [x] recommended: category/product/listing.
+- [x] One protected browser command through BFF:
+  - [x] recommended: cart add/update or account profile read.
+- [x] Error mapping tests for 401/403/409/422.
 
 ### Verification
 
@@ -331,10 +331,10 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done when
 
-- [ ] Starter has SSR generated-client path.
-- [ ] Starter has protected BFF path.
-- [ ] Browser output contains no Commerce URL/tokens.
-- [ ] BFF contains no ecommerce business logic.
+- [x] Starter has SSR generated-client path.
+- [x] Starter has protected BFF path.
+- [x] Browser output contains no Commerce URL/tokens.
+- [x] BFF contains no ecommerce business logic.
 
 ## S4 - SSR / Hybrid / WASM Skeleton
 
@@ -832,7 +832,7 @@ Add CI in stages:
 - [x] Commit 1: S0 ADR/docs/architecture tests.
 - [x] Commit 2: S1 Starter project consuming packaged `Storefront.Client`.
 - [x] Commit 3: S2 minimal Runtime extraction if justified by V2 + Starter duplication.
-- [ ] Commit 4: S3 SSR generated-client tracer and BFF protected-command tracer.
+- [x] Commit 4: S3 SSR generated-client tracer and BFF protected-command tracer.
 - [ ] Commit 5: S4 route/render skeleton.
 - [ ] Commit 6: S5 generated-client policy and exception registry.
 - [ ] Commit 7: S6 feature manifest/capability activation.

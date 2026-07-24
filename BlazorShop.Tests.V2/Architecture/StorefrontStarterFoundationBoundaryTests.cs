@@ -2,6 +2,7 @@ namespace BlazorShop.Tests.Architecture
 {
     using System.Xml.Linq;
 
+    using BlazorShop.Storefront.Client;
     using BlazorShop.Storefront.Runtime;
 
     using Xunit;
@@ -210,6 +211,103 @@ namespace BlazorShop.Tests.Architecture
             Assert.False(reader.IsSupported(capabilities, "reviews"));
             Assert.Equal("not_installed", reader.GetReason(capabilities, "reviews"));
             Assert.Equal("not_installed", reader.GetReason(capabilities, "missing"));
+        }
+
+        [Fact]
+        public void StarterSsrAndBffTracerBullets_AreImplemented()
+        {
+            var bootstrap = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Services/StorefrontBootstrapService.cs");
+            var bff = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Endpoints/StarterBffEndpoints.cs");
+            var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Program.cs");
+            var home = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Components/Pages/Home.razor");
+
+            Assert.Contains("GetCurrentAsync", bootstrap, StringComparison.Ordinal);
+            Assert.Contains("configurationClient.GetAsync", bootstrap, StringComparison.Ordinal);
+            Assert.Contains("QueryProductsAsync", bootstrap, StringComparison.Ordinal);
+            Assert.Contains("StorefrontRuntimeErrorMapper.FromApiException", bootstrap, StringComparison.Ordinal);
+            Assert.Contains("\"/api/cart/lines\"", bff, StringComparison.Ordinal);
+            Assert.Contains("ValidateRequestAsync", bff, StringComparison.Ordinal);
+            Assert.Contains("CreateSessionAsync", bff, StringComparison.Ordinal);
+            Assert.Contains("AddLineAsync", bff, StringComparison.Ordinal);
+            Assert.Contains("HttpOnly = true", bff, StringComparison.Ordinal);
+            Assert.Contains("SameSite = SameSiteMode.Lax", bff, StringComparison.Ordinal);
+            Assert.Contains("MapStarterBffEndpoints", program, StringComparison.Ordinal);
+            Assert.Contains("BootstrapService.LoadAsync", home, StringComparison.Ordinal);
+            Assert.Contains("data-error-code", home, StringComparison.Ordinal);
+        }
+
+        [Theory]
+        [InlineData(401, "auth.session_expired")]
+        [InlineData(403, "policy.forbidden")]
+        [InlineData(409, "cart.version_conflict")]
+        [InlineData(422, "validation.failed")]
+        public void RuntimeErrorMapper_PreservesStatusCodeAndMachineCode(int statusCode, string code)
+        {
+            var exception = new StorefrontApiException<CommerceNodeApiErrorResponse>(
+                "mapped",
+                statusCode,
+                "{}",
+                new Dictionary<string, IEnumerable<string>>(StringComparer.Ordinal),
+                new CommerceNodeApiErrorResponse
+                {
+                    Success = false,
+                    Code = code,
+                    Message = "Mapped failure.",
+                    TraceId = "trace-1",
+                    FieldErrors = new Dictionary<string, ICollection<string>>(StringComparer.Ordinal)
+                    {
+                        ["field"] = ["error"],
+                    },
+                },
+                innerException: null);
+
+            var mapped = StorefrontRuntimeErrorMapper.FromApiException(exception);
+
+            Assert.Equal(statusCode, mapped.Status);
+            Assert.Equal(code, mapped.Code);
+            Assert.Equal("Mapped failure.", mapped.Message);
+            Assert.Equal("trace-1", mapped.TraceId);
+            Assert.Equal(["error"], mapped.FieldErrors["field"]);
+        }
+
+        [Fact]
+        public void StarterBrowserOutput_DoesNotContainCommerceUrlOrTokens()
+        {
+            var browserRoots = new[]
+            {
+                RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Components"),
+                RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/wwwroot"),
+            };
+
+            var forbiddenTokens = new[]
+            {
+                "CommerceNodeBaseUrl",
+                "http://localhost:5180",
+                "https://localhost:5180",
+                "accessToken",
+                "refreshToken",
+                "store secret",
+                "provider credentials",
+            };
+
+            var violations = browserRoots
+                .Where(Directory.Exists)
+                .SelectMany(root => Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories))
+                .Where(path => path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase)
+                    || path.EndsWith(".css", StringComparison.OrdinalIgnoreCase)
+                    || path.EndsWith(".js", StringComparison.OrdinalIgnoreCase)
+                    || path.EndsWith(".html", StringComparison.OrdinalIgnoreCase))
+                .Select(path => new
+                {
+                    RelativePath = ToRepositoryRelativePath(path),
+                    Source = File.ReadAllText(path),
+                })
+                .Where(file => forbiddenTokens.Any(token => file.Source.Contains(token, StringComparison.OrdinalIgnoreCase)))
+                .Select(file => file.RelativePath)
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.Empty(violations);
         }
 
         [Fact]

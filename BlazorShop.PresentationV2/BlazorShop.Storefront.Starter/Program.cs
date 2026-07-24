@@ -1,7 +1,9 @@
 using BlazorShop.Storefront.Runtime;
 using BlazorShop.Storefront.Starter;
 using BlazorShop.Storefront.Starter.Components;
+using BlazorShop.Storefront.Starter.Endpoints;
 using BlazorShop.Storefront.Starter.Options;
+using BlazorShop.Storefront.Starter.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +22,13 @@ builder.Services.AddStorefrontRuntime(options =>
     options.PublicBaseUrl = starterOptions.PublicBaseUrl;
 });
 builder.Services.AddStorefrontGeneratedClients();
+builder.Services.AddScoped<StorefrontBootstrapService>();
 
 builder.Services.AddRazorComponents();
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-CSRF-TOKEN";
+});
 
 var app = builder.Build();
 
@@ -34,6 +41,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.MapStaticAssets();
 app.UseAntiforgery();
+app.MapStarterBffEndpoints();
 
 app.MapRazorComponents<App>();
 
