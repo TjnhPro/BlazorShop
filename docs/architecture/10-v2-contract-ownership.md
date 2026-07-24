@@ -1,6 +1,6 @@
 # V2 Contract Ownership
 
-This page records the current contract ownership boundary while Storefront V2 moves away from `Web.SharedV2` as a business DTO bucket.
+This page records the current contract ownership boundary after Storefront V2 moved away from `Web.SharedV2` as a business DTO bucket.
 
 ## Rules
 
@@ -11,6 +11,7 @@ This page records the current contract ownership boundary while Storefront V2 mo
 - Storefront frontend code must not add handwritten duplicate API DTO clones when the schema should come from OpenAPI-generated contracts.
 - Storefront browser/local endpoint contracts live in `BlazorShop.Storefront.V2/Services/Contracts`.
 - Storefront portable feature component models live with the component feature under `BlazorShop.Storefront.Components/Features/*` when they are presentation-only.
+- Storefront V2 source must not import `Web.SharedV2.Models` or backend/core business namespaces.
 - `Web.SharedV2` may keep browser helpers and transitional model folders during migration, but new business model folders are not allowed.
 - Generated Storefront clients should target Commerce Node Storefront OpenAPI first. Control Plane generation is a later decision.
 

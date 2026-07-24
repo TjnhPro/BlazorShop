@@ -18,7 +18,7 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("Storefront.Starter` is a future neutral skeleton", adr, StringComparison.Ordinal);
             Assert.Contains("Storefront.{Name}` represents future independent generated storefronts", adr, StringComparison.Ordinal);
             Assert.Contains("Headless Storefront target flow", systemMap, StringComparison.Ordinal);
-            Assert.Contains("Future `BlazorShop.Storefront.Client`", folderGuide, StringComparison.Ordinal);
+            Assert.Contains("### `BlazorShop.Storefront.Client`", folderGuide, StringComparison.Ordinal);
             Assert.Contains("Optional `BlazorShop.Storefront.Runtime`", folderGuide, StringComparison.Ordinal);
         }
 
@@ -74,6 +74,50 @@ namespace BlazorShop.Tests.Architecture
             }
         }
 
+        [Fact]
+        public void StorefrontV2_DoesNotReferenceBackendProjectsOrSharedBusinessModels()
+        {
+            var references = ReadProjectReferences("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/BlazorShop.Storefront.V2.csproj");
+            var forbiddenReferences = references
+                .Where(IsForbiddenStorefrontRuntimeReference)
+                .OrderBy(reference => reference, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            var dockerfile = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Dockerfile");
+            var forbiddenDockerCopies = new[]
+            {
+                "COPY BlazorShop.Application/",
+                "COPY BlazorShop.Domain/",
+                "COPY BlazorShop.Infrastructure/",
+                "COPY BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/",
+                "COPY BlazorShop.PresentationV2/BlazorShop.ControlPlane.API/",
+            }
+                .Where(copy => dockerfile.Contains(copy, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            var sourceFiles = Directory
+                .EnumerateFiles(RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.V2"), "*.*", SearchOption.AllDirectories)
+                .Where(path => path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+                    || path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase))
+                .Select(path => new
+                {
+                    RelativePath = ToRepositoryRelativePath(path),
+                    Source = File.ReadAllText(path),
+                });
+            var forbiddenSourceImports = sourceFiles
+                .Where(file => file.Source.Contains("BlazorShop.Application.", StringComparison.Ordinal)
+                    || file.Source.Contains("BlazorShop.Domain.", StringComparison.Ordinal)
+                    || file.Source.Contains("BlazorShop.Infrastructure.", StringComparison.Ordinal)
+                    || file.Source.Contains("BlazorShop.Web.SharedV2.Models", StringComparison.Ordinal))
+                .Select(file => file.RelativePath)
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.Empty(forbiddenReferences);
+            Assert.Empty(forbiddenDockerCopies);
+            Assert.Empty(forbiddenSourceImports);
+        }
+
         private static IReadOnlyList<string> ReadProjectReferences(string relativeProjectPath)
         {
             var projectPath = RepositoryPath(relativeProjectPath);
@@ -100,6 +144,17 @@ namespace BlazorShop.Tests.Architecture
                 || normalized.Contains("/BlazorShop.CommerceNode.API/", StringComparison.OrdinalIgnoreCase)
                 || normalized.Contains("/BlazorShop.ControlPlane.API/", StringComparison.OrdinalIgnoreCase)
                 || normalized.Contains("/BlazorShop.Storefront.V2/", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsForbiddenStorefrontRuntimeReference(string reference)
+        {
+            var normalized = reference.Replace('\\', '/');
+
+            return normalized.Contains("/BlazorShop.Domain/", StringComparison.OrdinalIgnoreCase)
+                || normalized.Contains("/BlazorShop.Application/", StringComparison.OrdinalIgnoreCase)
+                || normalized.Contains("/BlazorShop.Infrastructure/", StringComparison.OrdinalIgnoreCase)
+                || normalized.Contains("/BlazorShop.CommerceNode.API/", StringComparison.OrdinalIgnoreCase)
+                || normalized.Contains("/BlazorShop.ControlPlane.API/", StringComparison.OrdinalIgnoreCase);
         }
 
         private static string ReadRepositoryFile(string relativePath)

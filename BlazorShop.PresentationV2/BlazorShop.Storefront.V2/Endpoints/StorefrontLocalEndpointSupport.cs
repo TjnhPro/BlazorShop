@@ -1,17 +1,11 @@
 namespace BlazorShop.Storefront.Endpoints
 {
     using System.Globalization;
-
-    using BlazorShop.Application.CommerceNode.VariationTemplates;
-    using BlazorShop.Application.Services;
-    using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Storefront.Configuration;
     using BlazorShop.Storefront.Components.Browser;
     using BlazorShop.Storefront.Services;
     using BlazorShop.Storefront.Services.Contracts;
     using BlazorShop.Web.SharedV2;
-    using BlazorShop.Web.SharedV2.Models;
-
     using Microsoft.AspNetCore.Antiforgery;
 
     internal static partial class StorefrontLocalEndpointSupport

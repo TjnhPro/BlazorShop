@@ -4,10 +4,6 @@ namespace BlazorShop.Storefront.Services
     using System.Net;
     using System.Net.Http.Json;
     using System.Text.Json;
-
-    using BlazorShop.Application.CommerceNode.VariationTemplates;
-    using BlazorShop.Web.SharedV2.Models;
-    using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Storefront.Options;
     using BlazorShop.Storefront.Services.Contracts;
 

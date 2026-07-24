@@ -1,9 +1,6 @@
 namespace BlazorShop.Storefront.Configuration
 {
     using System.Threading.RateLimiting;
-
-    using BlazorShop.Application.Diagnostics;
-    using BlazorShop.Application.Options;
     using BlazorShop.Storefront.Options;
     using BlazorShop.Storefront.Services;
     using BlazorShop.Storefront.Services.Contracts;

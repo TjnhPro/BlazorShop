@@ -8,7 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\BlazorShop.Application\BlazorShop.Application.csproj" />
     <ProjectReference Include="..\..\BlazorShop.ServiceDefaults\BlazorShop.ServiceDefaults.csproj" />
     <ProjectReference Include="..\BlazorShop.Storefront.Client\BlazorShop.Storefront.Client.csproj" />
     <ProjectReference Include="..\BlazorShop.Storefront.Components\BlazorShop.Storefront.Components.csproj" />

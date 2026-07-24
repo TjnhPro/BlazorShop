@@ -1,6 +1,6 @@
 namespace BlazorShop.Storefront.Services
 {
-    using BlazorShop.Application.Options;
+    using BlazorShop.Storefront.Options;
     using BlazorShop.Storefront.Services.Contracts;
 
     using Microsoft.Extensions.Options;

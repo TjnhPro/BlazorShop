@@ -1,7 +1,5 @@
 namespace BlazorShop.Storefront.Endpoints
 {
-    using BlazorShop.Application.Services;
-    using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Storefront.Configuration;
     using BlazorShop.Storefront.Components.Browser;
     using BlazorShop.Storefront.Services;

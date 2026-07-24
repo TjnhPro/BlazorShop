@@ -1,9 +1,4 @@
 using System.Globalization;
-
-using BlazorShop.Application.Diagnostics;
-using BlazorShop.Application.CommerceNode.VariationTemplates;
-using BlazorShop.Application.Services;
-using BlazorShop.Application.Services.Contracts;
 using BlazorShop.Storefront.Configuration;
 using BlazorShop.Storefront.Endpoints;
 using BlazorShop.Storefront.Options;
@@ -13,8 +8,6 @@ using BlazorShop.Storefront.Services;
 using BlazorShop.Storefront.Services.Contracts;
 using BlazorShop.Storefront.WASM;
 using BlazorShop.Web.SharedV2;
-using BlazorShop.Web.SharedV2.Models;
-
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;

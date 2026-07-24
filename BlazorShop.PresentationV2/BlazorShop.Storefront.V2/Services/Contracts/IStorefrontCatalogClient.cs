@@ -6,9 +6,6 @@ using System.Globalization;
     using System.Net;
     using System.Net.Http.Json;
     using System.Text.Json;
-
-    using BlazorShop.Application.CommerceNode.VariationTemplates;
-    using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Storefront.Options;
 
     using Microsoft.Extensions.Options;

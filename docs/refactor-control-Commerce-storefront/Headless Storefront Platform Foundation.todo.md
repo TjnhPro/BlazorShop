@@ -496,14 +496,14 @@ Goal: remove `Application` and backend-owned business DTO dependencies from Stor
 
 ### Migration rules
 
-- [ ] Keep route URLs stable.
-- [ ] Keep SSR/SEO behavior stable.
-- [ ] Keep Storefront V2 visual design and composition.
-- [ ] Keep same-origin BFF for browser protected flows.
-- [ ] Replace backend DTO/service usage with generated client DTOs or Storefront-owned presentation view models.
-- [ ] Do not clone generated DTOs as handwritten API DTOs.
-- [ ] Create view models only when they are presentation/composition models.
-- [ ] Move backend/core dependency removal in small capability commits.
+- [x] Keep route URLs stable.
+- [x] Keep SSR/SEO behavior stable.
+- [x] Keep Storefront V2 visual design and composition.
+- [x] Keep same-origin BFF for browser protected flows.
+- [x] Replace backend DTO/service usage with generated client DTOs or Storefront-owned presentation view models.
+- [x] Do not clone generated DTOs as handwritten API DTOs.
+- [x] Create view models only when they are presentation/composition models.
+- [x] Move backend/core dependency removal in small capability commits.
 
 ### F5.1 Store bootstrap, configuration, maintenance, locale, currency
 
@@ -572,11 +572,13 @@ Goal: remove `Application` and backend-owned business DTO dependencies from Stor
 
 ### Final F5 cleanup
 
-- [ ] Remove `BlazorShop.Application` ProjectReference from `Storefront.V2`.
-- [ ] Remove business-model dependency on `BlazorShop.Web.SharedV2`.
-- [ ] Keep `Web.SharedV2` only if still needed for genuinely shared browser utilities and allowed by architecture docs.
-- [ ] Update Dockerfile to stop copying backend/core projects solely for Storefront V2 build if no longer needed.
-- [ ] Add source tests blocking new Application/Web.SharedV2 business DTO usages in Storefront V2.
+- [x] Remove `BlazorShop.Application` ProjectReference from `Storefront.V2`.
+- [x] Remove business-model dependency on `BlazorShop.Web.SharedV2`.
+- [x] Keep `Web.SharedV2` only if still needed for genuinely shared browser utilities and allowed by architecture docs.
+- [x] Update Dockerfile to stop copying backend/core projects solely for Storefront V2 build if no longer needed.
+- [x] Add source tests blocking new Application/Web.SharedV2 business DTO usages in Storefront V2.
+
+2026-07-24 evidence: Storefront V2 removed its `BlazorShop.Application` project reference, localized `ClientAppOptions` and `SeoRuntimeLogger`, removed `Application`/`Web.SharedV2.Models` source imports, and stopped copying Application/Domain projects in the Storefront Dockerfile. `Web.SharedV2` remains only for shared browser utility constants such as storefront cookie names and Tailwind content scanning. `HeadlessStorefrontFoundationBoundaryTests.StorefrontV2_DoesNotReferenceBackendProjectsOrSharedBusinessModels` guards the final F5 dependency boundary.
 
 ### Verification
 
@@ -587,9 +589,9 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done when
 
-- [ ] `Storefront.V2.csproj` has no `Application`, `Domain`, `Infrastructure`, `CommerceNode.API`, or `ControlPlane.API` references.
-- [ ] Storefront V2 source has no backend/core business namespace usage.
-- [ ] Storefront V2 behavior remains unchanged in focused and browser tests.
+- [x] `Storefront.V2.csproj` has no `Application`, `Domain`, `Infrastructure`, `CommerceNode.API`, or `ControlPlane.API` references.
+- [x] Storefront V2 source has no backend/core business namespace usage.
+- [x] Storefront V2 behavior remains unchanged in focused and browser tests.
 
 ## F6 - Runtime And Feature Module Boundary
 
@@ -808,8 +810,8 @@ Future `BlazorShop.Storefront.Starter` should include:
 ### Storefront V2
 
 - [ ] Still has its own design/composition/deployment.
-- [ ] Does not reference `Domain`, `Application`, `Infrastructure`, Commerce Node API, or Control Plane API.
-- [ ] Uses HTTP/OpenAPI client for Commerce Storefront API.
+- [x] Does not reference `Domain`, `Application`, `Infrastructure`, Commerce Node API, or Control Plane API.
+- [x] Uses HTTP/OpenAPI client for Commerce Storefront API.
 - [x] Protected browser flows go through same-origin BFF.
 - [ ] Does not duplicate ecommerce business rules.
 - [ ] Build/publish/run works independently.
@@ -838,7 +840,7 @@ Future `BlazorShop.Storefront.Starter` should include:
 - [x] Commit 10: F5.4 cart migration.
 - [x] Commit 11: F5.5 checkout/orders/payments migration.
 - [x] Commit 12: F5.6 consent/newsletter/contact/recommendations migration.
-- [ ] Commit 13: F5 final dependency removal and Dockerfile cleanup.
+- [x] Commit 13: F5 final dependency removal and Dockerfile cleanup.
 - [ ] Commit 14: F6 runtime boundary only if justified.
 - [ ] Commit 15: F7 package/isolation/Playwright gate and completion report.
 - [ ] Commit 16: F8 Starter readiness decision docs.

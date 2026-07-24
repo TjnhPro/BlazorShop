@@ -1,6 +1,5 @@
 namespace BlazorShop.Storefront.Configuration
 {
-    using BlazorShop.Application.Options;
     using BlazorShop.Storefront.Options;
 
     using Microsoft.Extensions.Configuration;

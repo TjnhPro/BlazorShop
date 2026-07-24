@@ -163,6 +163,8 @@ Use for:
 - Storefront login/register/logout forms.
 - SEO and public discovery documents.
 - Store key propagation to Commerce Node Storefront API.
+- Storefront-owned presentation/local endpoint contracts plus generated Storefront client adapters.
+- `Web.SharedV2` utilities only when they are genuinely shared browser/runtime helpers.
 
 Asset and layout rules:
 
@@ -178,6 +180,8 @@ Do not:
 
 - Call Control Plane.
 - Manage node credentials.
+- Reference `BlazorShop.Application`, `BlazorShop.Domain`, `BlazorShop.Infrastructure`, Commerce Node API, or Control Plane API projects.
+- Import `Web.SharedV2.Models` business contracts.
 
 ### `BlazorShop.PresentationV2/BlazorShop.Storefront.Components`
 
