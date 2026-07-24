@@ -29,37 +29,37 @@ Goal: handle assets safely while recognizing generated stores will be manually t
 
 Tasks:
 
-- [ ] Discover target image/font/icon assets.
-- [ ] Record source URL.
-- [ ] Record checksum.
-- [ ] Record content type.
-- [ ] Record detected usage.
-- [ ] Normalize filenames.
-- [ ] Deduplicate assets.
-- [ ] Copy only allowed assets.
-- [ ] Generate placeholders where asset rights are unclear.
-- [ ] Mark replacement-needed assets clearly.
-- [ ] Support later manual replacement without breaking generated manifests.
+- [x] Discover target image/font/icon assets.
+- [x] Record source URL.
+- [x] Record checksum.
+- [x] Record content type.
+- [x] Record detected usage.
+- [x] Normalize filenames.
+- [x] Deduplicate assets.
+- [x] Copy only allowed assets.
+- [x] Generate placeholders where asset rights are unclear.
+- [x] Mark replacement-needed assets clearly.
+- [x] Support later manual replacement without breaking generated manifests.
 
 Output:
 
-- [ ] `asset-manifest.yaml`
+- [x] `asset-manifest.yaml`
 
 Rules:
 
-- [ ] No production claim that reference-site assets are licensed.
-- [ ] Missing asset must not break build.
-- [ ] Manual asset replacement must not require code changes.
+- [x] No production claim that reference-site assets are licensed.
+- [x] Missing asset must not break build.
+- [x] Manual asset replacement must not require code changes.
 
 Done when:
 
-- [ ] Generated storefront can render with placeholders and a clear asset replacement list.
+- [x] Generated storefront can render with placeholders and a clear asset replacement list.
 
 Verification:
 
-- [ ] Broken asset URL check.
-- [ ] Manifest validation.
-- [ ] Browser check confirms no broken visible critical images.
+- [x] Broken asset URL check.
+- [x] Manifest validation.
+- [x] Browser check confirms no broken visible critical images.
 
 ## S21 - Static Validation Gate
 

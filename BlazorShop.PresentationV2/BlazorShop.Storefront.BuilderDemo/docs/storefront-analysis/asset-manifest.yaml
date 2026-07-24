@@ -1,0 +1,20 @@
+schemaVersion: 1.0.0
+artifactKind: asset-manifest
+artifactId: asset-manifest.builder-demo
+licenseNotice: "Reference-site assets are evidence only; this manifest makes no production licensing claim."
+assets:
+  - assetId: placeholder-product-media
+    sourceUrl: generated://storefront-builder/placeholder
+    checksum: sha256:43a4b45b3c03205c4630fc20fefe317243959754c94f16874c7c4f6155d04e77
+    contentType: image/svg+xml
+    detectedUsage: product-gallery product-card hero-fallback
+    normalizedFilename: asset-placeholder.svg
+    duplicateOf: none
+    allowedToCopy: true
+    replacementNeeded: true
+    replacementPath: wwwroot/assets/generated/asset-placeholder.svg
+replacementList:
+  - placeholder-product-media
+rules:
+  - Missing asset must not break build.
+  - Manual asset replacement must not require code changes.
