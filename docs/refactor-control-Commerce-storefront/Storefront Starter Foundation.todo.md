@@ -34,15 +34,15 @@ Create a neutral Starter that can be used by humans, deterministic scaffolding, 
 
 ## Non-goals
 
-- [ ] Do not build the AI Generator in this phase.
-- [ ] Do not build React/Next/Nuxt storefronts in this phase.
-- [ ] Do not turn Storefront V2 into a Starter.
-- [ ] Do not copy Storefront V2 page/component source as the Starter baseline.
-- [ ] Do not require Storefront V2 to finish all manual-client migration before Starter work begins.
-- [ ] Do not move pricing, sellability, variant validation, cart validation, checkout state, order placement, payment rules, or authorization into Starter.
-- [ ] Do not let browser/WASM call Commerce Node protected APIs directly.
-- [ ] Do not introduce a full marketplace/module system before the Starter and Sample prove the need.
-- [ ] Do not publish public NuGet/npm packages beyond local/private feed proof unless a separate release plan approves it.
+- [x] Do not build the AI Generator in this phase.
+- [x] Do not build React/Next/Nuxt storefronts in this phase.
+- [x] Do not turn Storefront V2 into a Starter.
+- [x] Do not copy Storefront V2 page/component source as the Starter baseline.
+- [x] Do not require Storefront V2 to finish all manual-client migration before Starter work begins.
+- [x] Do not move pricing, sellability, variant validation, cart validation, checkout state, order placement, payment rules, or authorization into Starter.
+- [x] Do not let browser/WASM call Commerce Node protected APIs directly.
+- [x] Do not introduce a full marketplace/module system before the Starter and Sample prove the need.
+- [x] Do not publish public NuGet/npm packages beyond local/private feed proof unless a separate release plan approves it.
 
 ## Roadmap
 
@@ -63,17 +63,17 @@ S11 AI Generator planning
 
 ## Cross-cutting Rules
 
-- [ ] Starter uses `PackageReference` to `BlazorShop.Storefront.Client`; it must not use `ProjectReference` to the generated client in the independent proof.
-- [ ] Starter must not reference `Storefront.V2`.
-- [ ] Starter must not reference `Domain`, `Application`, `Infrastructure`, Commerce Node API, Control Plane API, or Control Plane Web.
-- [ ] Starter must not import `Web.SharedV2.Models` business contracts.
-- [ ] Starter may use or trigger extraction of neutral `Storefront.Runtime` primitives only when they are needed by both V2 and Starter.
-- [ ] Starter must use generated client contracts by default.
-- [ ] Manual HTTP transport exceptions require documented reason, owner, test, and revisit plan.
-- [ ] Browser code must call same-origin `/api/*` only.
-- [ ] SSR/BFF code may call Commerce Node through generated Storefront client and configured base URL/store key.
-- [ ] Error UI must branch by error `code`/status, not by localized `message`.
-- [ ] Feature visibility requires installed package + backend supported + store enabled + presentation placed.
+- [x] Starter uses `PackageReference` to `BlazorShop.Storefront.Client`; it must not use `ProjectReference` to the generated client in the independent proof.
+- [x] Starter must not reference `Storefront.V2`.
+- [x] Starter must not reference `Domain`, `Application`, `Infrastructure`, Commerce Node API, Control Plane API, or Control Plane Web.
+- [x] Starter must not import `Web.SharedV2.Models` business contracts.
+- [x] Starter may use or trigger extraction of neutral `Storefront.Runtime` primitives only when they are needed by both V2 and Starter.
+- [x] Starter must use generated client contracts by default.
+- [x] Manual HTTP transport exceptions require documented reason, owner, test, and revisit plan.
+- [x] Browser code must call same-origin `/api/*` only.
+- [x] SSR/BFF code may call Commerce Node through generated Storefront client and configured base URL/store key.
+- [x] Error UI must branch by error `code`/status, not by localized `message`.
+- [x] Feature visibility requires installed package + backend supported + store enabled + presentation placed.
 
 ## S0 - Starter Architecture Lock
 
@@ -752,42 +752,42 @@ Goal: only begin AI Generator planning after a deterministic generated Sample pa
 
 ### Inputs required before AI Generator
 
-- [ ] Starter architecture docs.
-- [ ] generated Sample implementation.
-- [ ] feature map.
-- [ ] capability map.
-- [ ] route map.
-- [ ] protected file rules.
-- [ ] package/version manifest.
-- [ ] QA checklist.
-- [ ] deterministic generation workflow.
+- [x] Starter architecture docs.
+- [x] generated Sample implementation.
+- [x] feature map.
+- [x] capability map.
+- [x] route map.
+- [x] protected file rules.
+- [x] package/version manifest.
+- [x] QA checklist.
+- [x] deterministic generation workflow.
 
 ### AI allowed edit areas
 
-- [ ] design.
-- [ ] composition.
-- [ ] presentation components.
-- [ ] CSS.
-- [ ] assets.
-- [ ] store-specific public pages.
-- [ ] feature placement.
+- [x] design.
+- [x] composition.
+- [x] presentation components.
+- [x] CSS.
+- [x] assets.
+- [x] store-specific public pages.
+- [x] feature placement.
 
 ### AI protected areas
 
-- [ ] generated client.
-- [ ] Runtime security primitives.
-- [ ] auth/session.
-- [ ] BFF transport.
-- [ ] cart commands.
-- [ ] checkout commands.
-- [ ] error contract.
-- [ ] package/version manifest unless explicitly requested.
+- [x] generated client.
+- [x] Runtime security primitives.
+- [x] auth/session.
+- [x] BFF transport.
+- [x] cart commands.
+- [x] checkout commands.
+- [x] error contract.
+- [x] package/version manifest unless explicitly requested.
 
 ### Done when
 
-- [ ] AI Generator has a real Starter and Sample to learn from.
-- [ ] AI scope is constrained to storefront presentation/composition.
-- [ ] AI cannot silently break commerce/security contracts.
+- [x] AI Generator has a real Starter and Sample to learn from.
+- [x] AI scope is constrained to storefront presentation/composition.
+- [x] AI cannot silently break commerce/security contracts.
 
 ## Parallel Workstreams
 
@@ -806,28 +806,28 @@ Track B - Platform hardening
 
 Rules:
 
-- [ ] Track A uses only stable platform pieces.
-- [ ] Track B does not block Starter unless it reveals contract gaps.
-- [ ] V2 migration to generated client is valuable but not a blocker for Starter MVP.
+- [x] Track A uses only stable platform pieces.
+- [x] Track B does not block Starter unless it reveals contract gaps.
+- [x] V2 migration to generated client is valuable but not a blocker for Starter MVP.
 
 ## CI Recommendations
 
 Add CI in stages:
 
-- [ ] PR static gate:
-  - [ ] architecture tests.
-  - [ ] generated client deterministic check.
-  - [ ] Starter build.
-  - [ ] no forbidden references.
-- [ ] PR package proof:
-  - [ ] pack client/runtime.
-  - [ ] restore isolated Starter/Sample.
-  - [ ] build isolated Starter/Sample.
-- [ ] nightly/full release gate:
-  - [ ] run local dependencies.
-  - [ ] run Starter/Sample browser QA.
-  - [ ] run Playwright release gate.
-  - [ ] collect screenshots/network evidence.
+- [x] PR static gate:
+  - [x] architecture tests.
+  - [x] generated client deterministic check.
+  - [x] Starter build.
+  - [x] no forbidden references.
+- [x] PR package proof:
+  - [x] pack client/runtime.
+  - [x] restore isolated Starter/Sample.
+  - [x] build isolated Starter/Sample.
+- [x] nightly/full release gate:
+  - [x] run local dependencies.
+  - [x] run Starter/Sample browser QA.
+  - [x] run Playwright release gate.
+  - [x] collect screenshots/network evidence.
 
 ## Implementation Order And Commit Plan
 
@@ -842,20 +842,20 @@ Add CI in stages:
 - [x] Commit 9: S8 isolation gate script.
 - [x] Commit 10: S9 deterministic Sample generation.
 - [x] Commit 11: S10 Sample QA release gate evidence.
-- [ ] Commit 12: S11 AI Generator planning docs.
+- [x] Commit 12: S11 AI Generator planning docs.
 
 Each commit must be buildable. Keep V2 behavior changes separate from Starter scaffolding unless a shared Runtime extraction requires touching both.
 
 ## Risk Controls
 
-- [ ] Do not copy V2 internals.
-- [ ] Do not add backend/core references to Starter/Runtime/Sample.
-- [ ] Do not introduce a second handwritten API contract system.
-- [ ] Do not expose Commerce Node URL/tokens to browser.
-- [ ] Do not move ecommerce business truth into Starter.
-- [ ] Do not package visual components prematurely.
-- [ ] Do not let Sample QA pass without real checkout/order flow.
-- [ ] Do not begin AI Generator before deterministic Sample passes QA.
+- [x] Do not copy V2 internals.
+- [x] Do not add backend/core references to Starter/Runtime/Sample.
+- [x] Do not introduce a second handwritten API contract system.
+- [x] Do not expose Commerce Node URL/tokens to browser.
+- [x] Do not move ecommerce business truth into Starter.
+- [x] Do not package visual components prematurely.
+- [x] Do not let Sample QA pass without real checkout/order flow.
+- [x] Do not begin AI Generator before deterministic Sample passes QA.
 
 ## Autoplan Decision Audit Trail
 
@@ -883,3 +883,4 @@ The highest-value early implementation path is:
 5. S8/S9/S10 independent Sample proof and QA.
 
 S2 Runtime extraction should happen only for neutral code used by both V2 and Starter. S5 V2 generated-client adoption should be tracked, but it should not block a Starter MVP unless it reveals a real contract gap.
+

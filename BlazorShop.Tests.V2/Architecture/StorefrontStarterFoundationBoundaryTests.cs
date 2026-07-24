@@ -576,6 +576,26 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void StorefrontAiGeneratorPlan_ConstrictsAiToPresentationAndProtectsContracts()
+        {
+            var plan = ReadRepositoryFile("docs/storefront-platform/storefront-ai-generator-plan.md");
+            var todo = ReadRepositoryFile("docs/refactor-control-Commerce-storefront/Storefront Starter Foundation.todo.md");
+
+            Assert.Contains("Planning only", plan, StringComparison.Ordinal);
+            Assert.Contains("scripts/generate-storefront-sample.ps1", plan, StringComparison.Ordinal);
+            Assert.Contains("scripts/qa/run-storefront-sample-release-gate.ps1", plan, StringComparison.Ordinal);
+            Assert.Contains("Allowed AI Edit Areas", plan, StringComparison.Ordinal);
+            Assert.Contains("Protected Areas", plan, StringComparison.Ordinal);
+            Assert.Contains("generated client source and generated API DTOs", plan, StringComparison.Ordinal);
+            Assert.Contains("same-origin BFF transport", plan, StringComparison.Ordinal);
+            Assert.Contains("cart commands", plan, StringComparison.Ordinal);
+            Assert.Contains("checkout commands", plan, StringComparison.Ordinal);
+            Assert.Contains("copies Storefront V2 source", plan, StringComparison.Ordinal);
+            Assert.Contains("exposes Commerce Node base URL", plan, StringComparison.Ordinal);
+            Assert.Contains("AI Generator Planning", todo, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void StorefrontSampleGeneration_IsDeterministicAndV2Independent()
         {
             var script = ReadRepositoryFile("scripts/generate-storefront-sample.ps1");
