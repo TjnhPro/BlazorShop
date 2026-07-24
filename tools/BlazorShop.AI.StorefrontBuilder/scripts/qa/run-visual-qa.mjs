@@ -46,7 +46,7 @@ try {
 
       const screenshot = join(screenshotRoot, `${pageName}-${viewportName}.png`);
       await page.screenshot({ path: screenshot, fullPage: true });
-      captures.push({ pageName, viewportName, route, screenshot });
+      captures.push({ pageName, viewportName, route, screenshot: screenshot.replaceAll("\\", "/") });
     }
 
     await page.close();

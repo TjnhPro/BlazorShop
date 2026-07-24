@@ -52,7 +52,7 @@ files:
     generatorVersion: 1.0.0
     sourceArtifactIds: page-topology.yaml composition-manifest.yaml
     sourceSpecHash: sha256:94afe66ee72873e452500bb18e34d39e894fc1cf57a09eb8c03c56c3051d986b
-    generatedHash: sha256:2df87a6a20c1c2eab9b03a48b80f4f5e964aef151bb242e860ab626eb64c1a54
+    generatedHash: sha256:ccf2115ef1d831e75595020bca33ec9f0eaa2c764d3f9bb13ad106aa39eea267
     lastGeneratedTimestamp: deterministic
     manualEditDetected: false
     conflictStatus: none

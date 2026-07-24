@@ -1,4 +1,5 @@
 @page "/"
+@using BlazorShop.Storefront.Runtime
 @inject IOptions<StarterStorefrontOptions> StorefrontOptions
 @inject StorefrontBootstrapService BootstrapService
 @inject StarterFeatureActivationService FeatureActivationService
@@ -30,6 +31,12 @@
         <h2>Storefront unavailable</h2>
         <p>@_snapshot.Error.Message</p>
     </section>
+    <section class="starter-section sfb-featured-grid" aria-labelledby="fallback-products-title" data-hydration-mode="@StarterHydrationMode.InitialSnapshot">
+        <h2 id="fallback-products-title">Featured products</h2>
+        <div class="starter-product-grid">
+            <ProductSummaryCard Name="Sample product" Price="29.00 USD" Href="/product/sample-product" />
+        </div>
+    </section>
 }
 else if (_snapshot is not null)
 {
@@ -52,7 +59,20 @@ else if (_snapshot is not null)
 
     protected override async Task OnInitializedAsync()
     {
-        _snapshot = await BootstrapService.LoadAsync(CancellationToken.None);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+        try
+        {
+            _snapshot = await BootstrapService.LoadAsync(timeout.Token);
+        }
+        catch (Exception exception) when (exception is OperationCanceledException or HttpRequestException)
+        {
+            _snapshot = StarterBootstrapSnapshot.Failed(new StorefrontRuntimeError(
+                503,
+                "storefront.bootstrap_unavailable",
+                "Storefront data is unavailable; generated fallback content is still renderable.",
+                null,
+                new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal)));
+        }
     }
 }
 
