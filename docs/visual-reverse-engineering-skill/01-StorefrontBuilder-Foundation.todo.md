@@ -83,59 +83,59 @@ BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/starter-generation.contr
 
 Contract must include:
 
-- [ ] Contract version.
-- [ ] Starter version.
-- [ ] Target framework.
-- [ ] Package dependencies expected by generated storefronts.
-- [ ] Generated project naming convention.
-- [ ] Generated output root convention.
-- [ ] Allowed generated zones.
-- [ ] Managed zones.
-- [ ] Protected zones.
-- [ ] Asset zones.
-- [ ] Analysis artifact zone.
-- [ ] Slot IDs.
-- [ ] Route ownership map.
-- [ ] Render ownership map: SSR, Hybrid, WASM-host.
-- [ ] Hydration modes matching `StarterHydrationMode`.
-- [ ] Feature manifest location.
-- [ ] Required BFF action names.
-- [ ] Build/test commands.
-- [ ] Isolation/release gate commands.
+- [x] Contract version.
+- [x] Starter version.
+- [x] Target framework.
+- [x] Package dependencies expected by generated storefronts.
+- [x] Generated project naming convention.
+- [x] Generated output root convention.
+- [x] Allowed generated zones.
+- [x] Managed zones.
+- [x] Protected zones.
+- [x] Asset zones.
+- [x] Analysis artifact zone.
+- [x] Slot IDs.
+- [x] Route ownership map.
+- [x] Render ownership map: SSR, Hybrid, WASM-host.
+- [x] Hydration modes matching `StarterHydrationMode`.
+- [x] Feature manifest location.
+- [x] Required BFF action names.
+- [x] Build/test commands.
+- [x] Isolation/release gate commands.
 
 Minimum slots:
 
-- [ ] `layout.header`
-- [ ] `layout.footer`
-- [ ] `layout.main-navigation`
-- [ ] `layout.mobile-navigation`
-- [ ] `layout.cart-badge`
-- [ ] `layout.account-menu`
-- [ ] `home.sections`
-- [ ] `catalog.product-card`
-- [ ] `catalog.filters`
-- [ ] `catalog.sorting`
-- [ ] `catalog.pagination`
-- [ ] `product.gallery`
-- [ ] `product.information`
-- [ ] `product.purchase`
-- [ ] `cart.page`
-- [ ] `checkout.page`
-- [ ] `account.shell`
-- [ ] `system.error`
+- [x] `layout.header`
+- [x] `layout.footer`
+- [x] `layout.main-navigation`
+- [x] `layout.mobile-navigation`
+- [x] `layout.cart-badge`
+- [x] `layout.account-menu`
+- [x] `home.sections`
+- [x] `catalog.product-card`
+- [x] `catalog.filters`
+- [x] `catalog.sorting`
+- [x] `catalog.pagination`
+- [x] `product.gallery`
+- [x] `product.information`
+- [x] `product.purchase`
+- [x] `cart.page`
+- [x] `checkout.page`
+- [x] `account.shell`
+- [x] `system.error`
 
 Done when:
 
-- [ ] StorefrontBuilder can answer: "Which files may I generate?"
-- [ ] StorefrontBuilder can answer: "Which files are protected?"
-- [ ] StorefrontBuilder can answer: "Which slot owns add-to-cart presentation?"
-- [ ] StorefrontBuilder can answer: "Which route is SSR, Hybrid, or WASM-host?"
+- [x] StorefrontBuilder can answer: "Which files may I generate?"
+- [x] StorefrontBuilder can answer: "Which files are protected?"
+- [x] StorefrontBuilder can answer: "Which slot owns add-to-cart presentation?"
+- [x] StorefrontBuilder can answer: "Which route is SSR, Hybrid, or WASM-host?"
 
 Verification:
 
-- [ ] Add schema validation for `starter-generation.contract.yaml`.
-- [ ] Add test that required slot IDs exist.
-- [ ] Add test that protected zones include generated client, Runtime security, BFF security, package manifests, and generated storefront manifests.
+- [x] Add schema validation for `starter-generation.contract.yaml`.
+- [x] Add test that required slot IDs exist.
+- [x] Add test that protected zones include generated client, Runtime security, BFF security, package manifests, and generated storefront manifests.
 
 ## S2 - StorefrontBuilder Repository Or Tooling Location
 
