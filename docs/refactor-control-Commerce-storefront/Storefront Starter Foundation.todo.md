@@ -136,24 +136,24 @@ Goal: make Starter consume `BlazorShop.Storefront.Client` like an external store
 
 ### Tasks
 
-- [ ] Decide Starter project location for monorepo development:
-  - [ ] recommended: `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter`.
-  - [ ] independent proof still must build outside the monorepo.
-- [ ] Add local/private NuGet feed configuration for Starter development.
-- [ ] Add package version pin for `BlazorShop.Storefront.Client`.
-- [ ] Add `PackageReference` to `BlazorShop.Storefront.Client`.
-- [ ] Do not use `ProjectReference` to `Storefront.Client` in Starter.
-- [ ] Add package compatibility matrix:
+- [x] Decide Starter project location for monorepo development:
+  - [x] recommended: `BlazorShop.PresentationV2/BlazorShop.Storefront.Starter`.
+  - [x] independent proof still must build outside the monorepo.
+- [x] Add local/private NuGet feed configuration for Starter development.
+- [x] Add package version pin for `BlazorShop.Storefront.Client`.
+- [x] Add `PackageReference` to `BlazorShop.Storefront.Client`.
+- [x] Do not use `ProjectReference` to `Storefront.Client` in Starter.
+- [x] Add package compatibility matrix:
 
 | Storefront API | Client package | Compatibility |
 | --- | --- | --- |
 | v1 | 1.x | compatible |
 | v2 | 2.x | breaking API changes |
 
-- [ ] Add package changelog placeholder for `Storefront.Client`.
-- [ ] Add restore/build test proving Starter consumes local package.
-- [ ] Add guard that Starter does not copy `Generated/StorefrontClient.g.cs`.
-- [ ] Add guard that Starter does not define handwritten duplicate API DTOs for generated schemas.
+- [x] Add package changelog placeholder for `Storefront.Client`.
+- [x] Add restore/build test proving Starter consumes local package.
+- [x] Add guard that Starter does not copy `Generated/StorefrontClient.g.cs`.
+- [x] Add guard that Starter does not define handwritten duplicate API DTOs for generated schemas.
 
 ### Verification
 
@@ -165,9 +165,9 @@ dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.Starter\BlazorShop.
 
 ### Done when
 
-- [ ] Starter restores generated client from package.
-- [ ] Starter builds without backend source or generated source copy.
-- [ ] Package compatibility policy is documented.
+- [x] Starter restores generated client from package.
+- [x] Starter builds without backend source or generated source copy.
+- [x] Package compatibility policy is documented.
 
 ## S2 - Minimal Storefront.Runtime Extraction
 
@@ -830,7 +830,7 @@ Add CI in stages:
 ## Implementation Order And Commit Plan
 
 - [x] Commit 1: S0 ADR/docs/architecture tests.
-- [ ] Commit 2: S1 Starter project consuming packaged `Storefront.Client`.
+- [x] Commit 2: S1 Starter project consuming packaged `Storefront.Client`.
 - [ ] Commit 3: S2 minimal Runtime extraction if justified by V2 + Starter duplication.
 - [ ] Commit 4: S3 SSR generated-client tracer and BFF protected-command tracer.
 - [ ] Commit 5: S4 route/render skeleton.

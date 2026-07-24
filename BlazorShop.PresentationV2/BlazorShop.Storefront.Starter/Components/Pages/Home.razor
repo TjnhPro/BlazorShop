@@ -1,0 +1,14 @@
+@page "/"
+@inject IOptions<StarterStorefrontOptions> StorefrontOptions
+
+<PageTitle>Storefront Starter</PageTitle>
+
+<h1>Storefront Starter</h1>
+<p>This neutral shell consumes the generated Storefront client package.</p>
+
+<dl class="starter-config">
+    <dt>Store key</dt>
+    <dd>@StorefrontOptions.Value.StoreKey</dd>
+    <dt>Commerce API</dt>
+    <dd>Configured server-side</dd>
+</dl>

@@ -106,6 +106,58 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void StarterProject_ConsumesStorefrontClientAsPackage()
+        {
+            var project = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj");
+            var versionProps = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/StorefrontPackageVersions.props");
+            var nugetConfig = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/nuget.config");
+            var compatibility = ReadRepositoryFile("docs/storefront-platform/storefront-package-compatibility.md");
+            var changelog = ReadRepositoryFile("docs/storefront-platform/storefront-client-changelog.md");
+
+            Assert.Contains("<PackageReference Include=\"BlazorShop.Storefront.Client\" Version=\"$(StorefrontClientPackageVersion)\"", project, StringComparison.Ordinal);
+            Assert.DoesNotContain("<ProjectReference", project, StringComparison.Ordinal);
+            Assert.Contains("<StorefrontClientPackageVersion>1.0.0-local</StorefrontClientPackageVersion>", versionProps, StringComparison.Ordinal);
+            Assert.Contains("local-storefront-packages", nugetConfig, StringComparison.Ordinal);
+            Assert.Contains("| v1 | 1.x | compatible |", compatibility, StringComparison.Ordinal);
+            Assert.Contains("1.0.0-local", changelog, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void StarterProject_RestoresAndBuildsFromLocalStorefrontClientPackage()
+        {
+            var repositoryRoot = FindRepositoryRoot();
+            var packageFeed = RepositoryPath("artifacts/storefront-packages");
+            var starterProject = RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/BlazorShop.Storefront.Starter.csproj");
+
+            if (Directory.Exists(packageFeed))
+            {
+                Directory.Delete(packageFeed, recursive: true);
+            }
+
+            Directory.CreateDirectory(packageFeed);
+
+            var packResult = RunProcess(
+                "dotnet",
+                [
+                    "pack",
+                    RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj"),
+                    "--no-restore",
+                    "--output",
+                    packageFeed,
+                    "/p:PackageVersion=1.0.0-local",
+                ],
+                repositoryRoot);
+
+            Assert.True(packResult.ExitCode == 0, FormatProcessFailure("Storefront client package did not pack.", packResult));
+
+            var restoreResult = RunProcess("dotnet", ["restore", starterProject], repositoryRoot);
+            Assert.True(restoreResult.ExitCode == 0, FormatProcessFailure("Starter did not restore from the local Storefront client package.", restoreResult));
+
+            var buildResult = RunProcess("dotnet", ["build", starterProject, "--no-restore"], repositoryRoot);
+            Assert.True(buildResult.ExitCode == 0, FormatProcessFailure("Starter did not build after package restore.", buildResult));
+        }
+
+        [Fact]
         public void StarterDocs_SayStorefrontV2IsBehaviorReferenceOnly()
         {
             var adr = ReadRepositoryFile("docs/architecture/adr/2026-07-24-storefront-starter-foundation.md");
@@ -163,6 +215,18 @@ namespace BlazorShop.Tests.Architecture
                 .Replace(Path.AltDirectorySeparatorChar, '/');
         }
 
+        private static string FormatProcessFailure(string message, ProcessResult result)
+        {
+            return string.Join(
+                Environment.NewLine,
+                message,
+                $"Exit code: {result.ExitCode}",
+                "stdout:",
+                result.StandardOutput,
+                "stderr:",
+                result.StandardError);
+        }
+
         private static string FindRepositoryRoot()
         {
             var directory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -173,5 +237,32 @@ namespace BlazorShop.Tests.Architecture
 
             return directory?.FullName ?? throw new DirectoryNotFoundException("Could not locate repository root.");
         }
+
+        private static ProcessResult RunProcess(string fileName, IReadOnlyList<string> arguments, string workingDirectory)
+        {
+            var startInfo = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = fileName,
+                WorkingDirectory = workingDirectory,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+            };
+
+            foreach (var argument in arguments)
+            {
+                startInfo.ArgumentList.Add(argument);
+            }
+
+            using var process = System.Diagnostics.Process.Start(startInfo)
+                ?? throw new InvalidOperationException($"Failed to start process '{fileName}'.");
+            var standardOutput = process.StandardOutput.ReadToEnd();
+            var standardError = process.StandardError.ReadToEnd();
+            process.WaitForExit();
+
+            return new ProcessResult(process.ExitCode, standardOutput, standardError);
+        }
+
+        private sealed record ProcessResult(int ExitCode, string StandardOutput, string StandardError);
     }
 }

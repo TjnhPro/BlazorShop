@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <StorefrontClientPackageVersion>1.0.0-local</StorefrontClientPackageVersion>
+  </PropertyGroup>
+</Project>
