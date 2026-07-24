@@ -1,6 +1,6 @@
 # StorefrontBuilder Visual Generation.todo
 
-Status: planning
+Status: in-progress
 Scope: BlazorShop.AI.StorefrontBuilder Visual Reverse Engineering Skill MVP
 Phase group: S10-S19
 
@@ -27,41 +27,41 @@ Goal: extract a target visual foundation from evidence.
 
 Token groups:
 
-- [ ] Color palette.
-- [ ] Semantic color candidates.
-- [ ] Typography families.
-- [ ] Font sizes.
-- [ ] Font weights.
-- [ ] Line heights.
-- [ ] Spacing scale.
-- [ ] Container widths.
-- [ ] Breakpoints.
-- [ ] Border widths.
-- [ ] Border radius.
-- [ ] Shadows.
-- [ ] Motion durations.
-- [ ] Motion easing.
+- [x] Color palette.
+- [x] Semantic color candidates.
+- [x] Typography families.
+- [x] Font sizes.
+- [x] Font weights.
+- [x] Line heights.
+- [x] Spacing scale.
+- [x] Container widths.
+- [x] Breakpoints.
+- [x] Border widths.
+- [x] Border radius.
+- [x] Shadows.
+- [x] Motion durations.
+- [x] Motion easing.
 
 Rules:
 
-- [ ] Prefer computed styles over screenshot color picking when available.
-- [ ] Use screenshot sampling only when computed styles are insufficient.
-- [ ] Keep token names semantic enough for generated CSS maintenance.
-- [ ] Record confidence and evidence IDs.
-- [ ] Record AI inference entries for uncertain values.
+- [x] Prefer computed styles over screenshot color picking when available.
+- [x] Use screenshot sampling only when computed styles are insufficient.
+- [x] Keep token names semantic enough for generated CSS maintenance.
+- [x] Record confidence and evidence IDs.
+- [x] Record AI inference entries for uncertain values.
 
 Output:
 
-- [ ] `design-tokens.yaml`
+- [x] `design-tokens.yaml`
 
 Done when:
 
-- [ ] Global visual language can be generated without re-reading screenshots manually.
+- [x] Global visual language can be generated without re-reading screenshots manually.
 
 Verification:
 
-- [ ] Token schema validation.
-- [ ] Fixture extraction produces stable token output.
+- [x] Token schema validation.
+- [x] Fixture extraction produces stable token output.
 
 ## S11 - UI Pattern Inventory
 

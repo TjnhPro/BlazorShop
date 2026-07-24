@@ -1,0 +1,5 @@
+[
+  { "selector": "body", "color": "#17202a", "backgroundColor": "#ffffff", "fontFamily": "Inter, Arial, sans-serif", "fontSize": "16px", "fontWeight": "400", "lineHeight": "24px", "borderColor": "#17202a" },
+  { "selector": "h1", "color": "#17202a", "backgroundColor": "transparent", "fontFamily": "Inter, Arial, sans-serif", "fontSize": "48px", "fontWeight": "700", "lineHeight": "56px", "borderColor": "#17202a" },
+  { "selector": "button", "color": "#ffffff", "backgroundColor": "#0f766e", "fontFamily": "Inter, Arial, sans-serif", "fontSize": "15px", "fontWeight": "600", "lineHeight": "20px", "borderColor": "#0f766e" }
+]
