@@ -260,35 +260,35 @@ Goal: stop generated code from breaking the established Storefront architecture.
 
 Forbidden generated content:
 
-- [ ] `HttpClient` in generated presentation components.
-- [ ] Direct Commerce Node API URL.
-- [ ] Browser token/local-storage credential handling.
-- [ ] `ProjectReference` to backend/core/API/V2 projects.
-- [ ] `using BlazorShop.Application`.
-- [ ] `using BlazorShop.Domain`.
-- [ ] `using BlazorShop.Infrastructure`.
-- [ ] `using BlazorShop.PresentationV2.BlazorShop.CommerceNode.API`.
-- [ ] Handwritten duplicate API DTOs when generated DTO exists.
-- [ ] Pricing/sellability/cart/checkout/order/payment validation logic in presentation.
+- [x] `HttpClient` in generated presentation components.
+- [x] Direct Commerce Node API URL.
+- [x] Browser token/local-storage credential handling.
+- [x] `ProjectReference` to backend/core/API/V2 projects.
+- [x] `using BlazorShop.Application`.
+- [x] `using BlazorShop.Domain`.
+- [x] `using BlazorShop.Infrastructure`.
+- [x] `using BlazorShop.PresentationV2.BlazorShop.CommerceNode.API`.
+- [x] Handwritten duplicate API DTOs when generated DTO exists.
+- [x] Pricing/sellability/cart/checkout/order/payment validation logic in presentation.
 
 Allowed generated content:
 
-- [ ] CSS.
-- [ ] layout components.
-- [ ] presentation-only Razor components.
-- [ ] page composition.
-- [ ] store assets and manifests.
-- [ ] copy/content.
-- [ ] slot bindings declared by Starter contract.
+- [x] CSS.
+- [x] layout components.
+- [x] presentation-only Razor components.
+- [x] page composition.
+- [x] store assets and manifests.
+- [x] copy/content.
+- [x] slot bindings declared by Starter contract.
 
 Done when:
 
-- [ ] Guard can scan generated project and fail on forbidden imports, APIs, and dependencies.
+- [x] Guard can scan generated project and fail on forbidden imports, APIs, and dependencies.
 
 Verification:
 
-- [ ] Add tests with intentionally bad generated files.
-- [ ] Guard failure includes exact file path and rule ID.
+- [x] Add tests with intentionally bad generated files.
+- [x] Guard failure includes exact file path and rule ID.
 
 ## S6 - Browser Capture Adapter
 

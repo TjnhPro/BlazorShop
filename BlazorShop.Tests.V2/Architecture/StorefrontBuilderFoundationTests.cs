@@ -236,6 +236,41 @@ namespace BlazorShop.Tests.Architecture
             }
         }
 
+        [Fact]
+        public void StorefrontBuilderProtectedGuard_BlocksForbiddenGeneratedContentWithRuleIds()
+        {
+            var script = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderGuard.ps1");
+
+            foreach (var expected in new[]
+            {
+                "SFB-GUARD-001",
+                "SFB-GUARD-002",
+                "SFB-GUARD-003",
+                "SFB-GUARD-004",
+                "SFB-GUARD-005",
+                "SFB-GUARD-006",
+                "SFB-GUARD-007",
+                "Generated presentation must not use HttpClient",
+                "Browser presentation must not know Commerce Node URL",
+                "Generated storefront must not use ProjectReference",
+                "Generated source must not duplicate generated API DTO",
+                "Generated presentation must not own ecommerce business validation logic",
+            })
+            {
+                Assert.Contains(expected, script, StringComparison.Ordinal);
+            }
+
+            foreach (var badFixture in new[]
+            {
+                "tools/BlazorShop.AI.StorefrontBuilder/tests/generation/bad/ForbiddenHttpClient.razor",
+                "tools/BlazorShop.AI.StorefrontBuilder/tests/generation/bad/ForbiddenDependency.csproj",
+                "tools/BlazorShop.AI.StorefrontBuilder/tests/generation/bad/DuplicateDto.cs",
+            })
+            {
+                Assert.True(File.Exists(RepositoryPath(badFixture)), $"Missing bad guard fixture '{badFixture}'.");
+            }
+        }
+
         private static int CountOccurrences(string source, string value)
         {
             var count = 0;

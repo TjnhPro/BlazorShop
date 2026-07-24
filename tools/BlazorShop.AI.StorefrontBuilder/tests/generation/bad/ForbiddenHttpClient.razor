@@ -1,0 +1,10 @@
+@inject HttpClient Http
+
+<button @onclick="Add">Add</button>
+
+@code {
+    private Task Add()
+    {
+        return Http.PostAsync("http://localhost:5180/api/storefront/stores/sample/cart/lines", null);
+    }
+}
