@@ -97,14 +97,14 @@ Goal: prove generated storefront builds like an independent consumer.
 
 Tasks:
 
-- [ ] Restore packages from configured feed.
-- [ ] Build generated `BlazorShop.Storefront.{Name}`.
-- [ ] Pack `BlazorShop.Storefront.Client`.
-- [ ] Pack `BlazorShop.Storefront.Runtime`.
-- [ ] Build generated storefront from packages, not project references.
-- [ ] Confirm no dependency on `Storefront.V2`.
-- [ ] Confirm no dependency on backend/core/API projects.
-- [ ] Confirm package compatibility metadata is present.
+- [x] Restore packages from configured feed.
+- [x] Build generated `BlazorShop.Storefront.{Name}`.
+- [x] Pack `BlazorShop.Storefront.Client`.
+- [x] Pack `BlazorShop.Storefront.Runtime`.
+- [x] Build generated storefront from packages, not project references.
+- [x] Confirm no dependency on `Storefront.V2`.
+- [x] Confirm no dependency on backend/core/API projects.
+- [x] Confirm package compatibility metadata is present.
 
 Recommended command shape:
 
@@ -114,12 +114,12 @@ Recommended command shape:
 
 Done when:
 
-- [ ] Generated storefront can be restored and built from packages in isolation.
+- [x] Generated storefront can be restored and built from packages in isolation.
 
 Verification:
 
-- [ ] CI describe mode lists the isolation gate.
-- [ ] Local gate passes for a fixture generated storefront.
+- [x] CI describe mode lists the isolation gate.
+- [x] Local gate passes for a fixture generated storefront.
 
 ## S23 - Visual QA Gate
 

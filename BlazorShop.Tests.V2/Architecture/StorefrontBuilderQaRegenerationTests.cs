@@ -61,6 +61,38 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("SFB-STATIC-004", validator, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void BuildIsolationGate_RestoresBuildsPacksAndRejectsForbiddenReferences()
+        {
+            var gate = ReadRepositoryFile("scripts/qa/run-storefront-builder-isolation-gate.ps1");
+
+            foreach (var marker in new[]
+            {
+                "dotnet restore",
+                "dotnet build",
+                "dotnet pack",
+                "BlazorShop.Storefront.Client",
+                "BlazorShop.Storefront.Runtime",
+                "PackageReference",
+                "BlazorShop.Storefront.V2",
+                "BlazorShop.Application",
+                "BlazorShop.Domain",
+                "BlazorShop.Infrastructure",
+                "BlazorShop.CommerceNode.API",
+                "BlazorShop.ControlPlane.API",
+                "StorefrontClientPackageVersion",
+                "StorefrontRuntimePackageVersion",
+                "Describe",
+            })
+            {
+                Assert.Contains(marker, gate, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("SFB-ISOLATION-001", gate, StringComparison.Ordinal);
+            Assert.Contains("SFB-ISOLATION-002", gate, StringComparison.Ordinal);
+            Assert.Contains("SFB-ISOLATION-003", gate, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));
