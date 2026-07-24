@@ -11,7 +11,7 @@ BlazorShop V2 already has a scoped Storefront API under `api/storefront/stores/{
 
 - `BlazorShop.CommerceNode.API` is the headless ecommerce backend and Storefront API platform. It owns public Storefront HTTP contracts, ecommerce business truth, store-scoped route resolution, checkout/order/payment rules, and provider callback/webhook routes.
 - `BlazorShop.Storefront.V2` is the first real storefront consumer. It owns its design, page composition, SSR/BFF behavior, SEO composition, and same-origin browser endpoints.
-- `BlazorShop.Storefront.Client` is the future generated Storefront API client package. It will contain generated transport/contracts from the Commerce Node Storefront OpenAPI document and must not reference backend/core/API projects.
+- `BlazorShop.Storefront.Client` is the generated Storefront API client package. It contains generated transport/contracts from the Commerce Node Storefront OpenAPI document and must not reference backend/core/API projects.
 - `BlazorShop.Storefront.Runtime` is optional and may be introduced only after decoupling proves shared runtime primitives are needed. It must stay neutral and backend-independent.
 - `BlazorShop.Storefront.Starter` is a future neutral skeleton and is not part of this foundation.
 - `BlazorShop.Storefront.{Name}` represents future independent generated storefronts. They must consume the Storefront API/client boundary instead of copying Storefront V2 internals.
@@ -25,7 +25,13 @@ Final forbidden dependencies:
 - `Storefront.Runtime`, if present, must not reference `Domain`, `Application`, `Infrastructure`, `CommerceNode.API`, `ControlPlane.API`, or `Storefront.V2`.
 - `Storefront.Components` and `Storefront.WASM` must remain backend-independent.
 
-`Storefront.V2` may keep transitional `Application` and `Web.SharedV2` references only until the capability-by-capability decoupling phase removes backend-owned DTO usage.
+`Storefront.V2` must consume Commerce Node through Storefront HTTP/OpenAPI clients and Storefront-owned presentation/local endpoint contracts. It may reference `Web.SharedV2` only for genuinely shared browser utilities, not shared business model folders.
+
+## Runtime And Feature Module Boundary
+
+The F6 foundation review did not identify enough neutral duplicated runtime code to justify a `Storefront.Runtime` package. Store context resolution, HttpOnly session/cart-token handling, local BFF error normalization, antiforgery, and browser-safe endpoint responses remain Storefront V2 host responsibilities until a second storefront consumer proves a reusable abstraction.
+
+`Storefront.Features.*` projects are also deferred. Portable reusable UI remains under `BlazorShop.Storefront.Components/Features/*`, while Storefront V2 keeps route composition, layout, SEO, BFF, session, and deployment ownership.
 
 ## Storefront V2 Is Not Starter Source
 

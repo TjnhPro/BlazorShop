@@ -54,6 +54,7 @@ namespace BlazorShop.Tests.Architecture
                 "BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj",
                 "BlazorShop.PresentationV2/BlazorShop.Storefront.Client/BlazorShop.Storefront.Client.csproj",
                 "BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.Runtime/BlazorShop.Storefront.Runtime.csproj",
             };
 
             foreach (var relativeProjectPath in optionalProjects)

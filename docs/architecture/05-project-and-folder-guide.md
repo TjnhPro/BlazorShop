@@ -237,6 +237,7 @@ Do not:
 Status:
 
 - Optional and only justified after Storefront V2 decoupling proves repeated neutral runtime code.
+- F6 foundation decision: not created yet. Current shared runtime candidates are still tied to Storefront V2 host/BFF responsibilities and should not be packaged prematurely.
 
 Use for:
 
@@ -249,6 +250,17 @@ Use for:
 Do not:
 
 - Add Storefront V2 layout/design, CSS/assets, store-specific composition, backend business rules, provider secrets, or references to backend/core/API projects.
+
+### Storefront Feature Module Boundary
+
+Current ownership map:
+
+- `BlazorShop.Storefront.Client` owns generated Storefront API transport/contracts.
+- `BlazorShop.Storefront.Components/Features/*` owns portable presentation-only feature components.
+- `BlazorShop.Storefront.V2` owns route composition, SEO, BFF endpoints, session/cart-token handling, store resolution, deployment, and storefront-specific design.
+- `BlazorShop.Storefront.Runtime` and `Storefront.Features.*` projects are deferred until a second consumer or repeated neutral runtime code proves the need.
+
+Do not create feature packages just to move code out of Storefront V2. Extract only when it removes real duplication and can stay independent of Storefront V2 design, routes, BFF endpoints, and backend/core/API projects.
 
 ### Future `BlazorShop.Storefront.Starter`
 

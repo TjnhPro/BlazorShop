@@ -18,7 +18,7 @@ Purpose: make Commerce Node a framework-neutral Storefront API platform, keep St
 - [x] Storefront OpenAPI snapshot currently includes payment provider callback/webhook operations, which are not frontend client operations.
 - [x] Storefront public configuration currently exposes feature flags as flat booleans, not a richer `supported/enabled/reason` capability projection.
 - [x] Storefront V2 already has same-origin BFF/local endpoints under `/api/cart`, `/api/account`, `/api/checkout`, `/api/consent`, `/api/media`, and SEO/media helpers.
-- [x] No `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Starter`, or `BlazorShop.Storefront.Features.*` projects exist yet.
+- [x] `BlazorShop.PresentationV2/BlazorShop.Storefront.Client` now exists as the generated Storefront API client; no `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Starter`, or `BlazorShop.Storefront.Features.*` projects exist yet.
 
 ## Goal
 
@@ -642,24 +642,26 @@ installed in build
 
 ### Tasks
 
-- [ ] Identify repeated runtime code after F5 migration.
-- [ ] Create `Storefront.Runtime` only if it removes real duplication or is required for Starter readiness.
-- [ ] Add architecture tests for Runtime dependencies.
-- [ ] Document module ownership map.
-- [ ] Keep Storefront V2 design/composition in Storefront V2.
+- [x] Identify repeated runtime code after F5 migration.
+- [n/a] Create `Storefront.Runtime` only if it removes real duplication or is required for Starter readiness.
+- [x] Add architecture tests for Runtime dependencies.
+- [x] Document module ownership map.
+- [x] Keep Storefront V2 design/composition in Storefront V2.
+
+2026-07-24 evidence: F6 review found no justified `Storefront.Runtime` extraction yet. Store context resolution, HttpOnly session/cart-token handling, antiforgery, BFF error normalization, and local endpoint response mapping are still Storefront V2 host responsibilities with only one real storefront consumer. The module ownership map in `docs/architecture/05-project-and-folder-guide.md` keeps generated API transport in `Storefront.Client`, portable UI in `Storefront.Components/Features/*`, and Storefront V2 route/BFF/SEO/design/deployment ownership in Storefront V2. `HeadlessStorefrontFoundationBoundaryTests.FutureStorefrontPlatformProjects_DoNotReferenceBackendOrStorefrontV2` now guards optional Runtime project placements if they are introduced later.
 
 ### Verification
 
 ```powershell
-dotnet build BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj --no-restore
+# Runtime build is n/a because F6 intentionally did not create BlazorShop.Storefront.Runtime.
 dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~Runtime|FullyQualifiedName~Architecture"
 ```
 
 ### Done when
 
-- [ ] Runtime exists only if justified.
-- [ ] Runtime has no backend/core dependencies.
-- [ ] Starter can later reuse runtime without copying V2 design.
+- [x] Runtime exists only if justified.
+- [x] Runtime has no backend/core dependencies.
+- [x] Starter can later reuse runtime without copying V2 design.
 
 ## F7 - Compliance, Packaging, And Isolation Gate
 
@@ -841,7 +843,7 @@ Future `BlazorShop.Storefront.Starter` should include:
 - [x] Commit 11: F5.5 checkout/orders/payments migration.
 - [x] Commit 12: F5.6 consent/newsletter/contact/recommendations migration.
 - [x] Commit 13: F5 final dependency removal and Dockerfile cleanup.
-- [ ] Commit 14: F6 runtime boundary only if justified.
+- [x] Commit 14: F6 runtime boundary only if justified.
 - [ ] Commit 15: F7 package/isolation/Playwright gate and completion report.
 - [ ] Commit 16: F8 Starter readiness decision docs.
 
