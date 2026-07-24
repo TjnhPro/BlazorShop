@@ -1,6 +1,5 @@
 namespace BlazorShop.Storefront.Pages.Hybrid.Commerce
 {
-    using BlazorShop.Application.DTOs.Payment;
     using BlazorShop.Storefront.Components.Browser;
     using BlazorShop.Storefront.Models;
     using BlazorShop.Storefront.Services;
@@ -297,7 +296,7 @@ namespace BlazorShop.Storefront.Pages.Hybrid.Commerce
                 : null;
         }
 
-        private static StorefrontCheckoutPaymentMethodOptionResponse ToCheckoutPaymentOption(GetPaymentMethod method)
+        private static StorefrontCheckoutPaymentMethodOptionResponse ToCheckoutPaymentOption(StorefrontPublicPaymentMethod method)
         {
             return new StorefrontCheckoutPaymentMethodOptionResponse(
                 method.Key,
@@ -310,9 +309,9 @@ namespace BlazorShop.Storefront.Pages.Hybrid.Commerce
                 Selected: false);
         }
 
-        private static bool SupportsCurrency(GetPaymentMethod method, string currencyCode)
+        private static bool SupportsCurrency(StorefrontPublicPaymentMethod method, string currencyCode)
         {
-            var supportedCodes = method.SupportedCurrencyCodes
+            var supportedCodes = (method.SupportedCurrencyCodes ?? [])
                 .Select(NormalizeCurrencyCode)
                 .Where(code => code is not null)
                 .Select(code => code!)

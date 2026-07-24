@@ -1,18 +1,5 @@
 namespace BlazorShop.Storefront.Services
 {
-    using System.Globalization;
-    using System.Net;
-    using System.Net.Http.Json;
-    using System.Text.Json;
-
-    using BlazorShop.Application.CommerceNode.VariationTemplates;
-    using BlazorShop.Web.SharedV2.Models;
-    using BlazorShop.Application.DTOs.Payment;
-    using BlazorShop.Storefront.Options;
-
-    using Microsoft.Extensions.Options;
-
-
     public sealed record StorefrontCustomerOrderListItemResponse(
         string Reference,
         DateTime CreatedOn,
@@ -127,7 +114,7 @@ namespace BlazorShop.Storefront.Services
         string? Sku,
         string? Image,
         Guid? ProductVariantId,
-        IReadOnlyList<SelectedAttributeDto> VariantAttributes,
+        IReadOnlyList<StorefrontSelectedAttribute> VariantAttributes,
         int Quantity,
         decimal UnitPrice,
         decimal LineTotal);

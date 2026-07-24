@@ -553,11 +553,13 @@ Goal: remove `Application` and backend-owned business DTO dependencies from Stor
 
 ### F5.5 Checkout, orders, payment result
 
-- [ ] Replace checkout DTO usage.
-- [ ] Keep checkout state, validation, idempotency, and place-order backend-owned.
-- [ ] Keep COD/payment redirect/result behavior.
-- [ ] Keep order history/detail projection backend-owned.
-- [ ] Do not expose provider webhook/callback in frontend SDK.
+- [x] Replace checkout DTO usage.
+- [x] Keep checkout state, validation, idempotency, and place-order backend-owned.
+- [x] Keep COD/payment redirect/result behavior.
+- [x] Keep order history/detail projection backend-owned.
+- [x] Do not expose provider webhook/callback in frontend SDK.
+
+2026-07-24 evidence: Storefront checkout/payment/order contracts now use Storefront-owned payment method and selected-attribute shapes instead of `Application.DTOs.Payment.GetPaymentMethod` or VariationTemplate `SelectedAttributeDto`. Customer order paging resolves through Storefront-owned `PagedResult`. `CheckoutOrderPaymentContracts_DoNotUseBackendDtosOrExposeProviderCallbacks` guards against backend DTO imports and provider callback/webhook contracts in the Storefront V2 checkout/order/payment path. Host smoke covers provider redirect, completed COD/order redirect cookie cleanup, stale cart-version blocking, and payment success/cancel result rendering.
 
 ### F5.6 Consent, newsletter, contact, recommendations
 
@@ -832,7 +834,7 @@ Future `BlazorShop.Storefront.Starter` should include:
 - [x] Commit 8: F5.2 catalog/content/navigation/SEO migration.
 - [x] Commit 9: F5.3 auth/customer/account migration.
 - [x] Commit 10: F5.4 cart migration.
-- [ ] Commit 11: F5.5 checkout/orders/payments migration.
+- [x] Commit 11: F5.5 checkout/orders/payments migration.
 - [ ] Commit 12: F5.6 consent/newsletter/contact/recommendations migration.
 - [ ] Commit 13: F5 final dependency removal and Dockerfile cleanup.
 - [ ] Commit 14: F6 runtime boundary only if justified.

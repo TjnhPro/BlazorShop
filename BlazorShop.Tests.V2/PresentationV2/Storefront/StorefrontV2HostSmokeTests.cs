@@ -1226,10 +1226,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var content = await response.Content.ReadAsStringAsync();
             var tokenMatch = Regex.Match(
                 content,
-                "<input[^>]*name=\"__RequestVerificationToken\"[^>]*value=\"(?<token>[^\"]+)\"|<input[^>]*value=\"(?<token>[^\"]+)\"[^>]*name=\"__RequestVerificationToken\"",
+                "<input[^>]*name=\"__RequestVerificationToken\"[^>]*value=\"(?<token>[^\"]+)\"|<input[^>]*value=\"(?<token>[^\"]+)\"[^>]*name=\"__RequestVerificationToken\"|<meta[^>]*name=\"blazorshop-antiforgery-token\"[^>]*content=\"(?<token>[^\"]+)\"",
                 RegexOptions.IgnoreCase);
 
-            Assert.True(tokenMatch.Success, "The sign-in page should render an antiforgery token.");
+            Assert.True(
+                tokenMatch.Success,
+                $"The page should render an antiforgery token. Status: {(int)response.StatusCode}. Content: {content[..Math.Min(content.Length, 800)]}");
 
             var cookieHeader = string.Join(
                 "; ",

@@ -2,11 +2,11 @@ namespace BlazorShop.Storefront.Endpoints
 {
     using System.Globalization;
 
-    using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.Services;
     using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Storefront.Configuration;
     using BlazorShop.Storefront.Components.Browser;
+    using BlazorShop.Storefront.Models;
     using BlazorShop.Storefront.Services;
     using BlazorShop.Storefront.Services.Contracts;
     using BlazorShop.Web.SharedV2;
@@ -215,7 +215,7 @@ namespace BlazorShop.Storefront.Endpoints
         };
     }
 
-        internal static StorefrontBrowserAccountOrderList ToBrowserOrderList(PagedResult<StorefrontCustomerOrderListItemResponse> orders)
+        internal static StorefrontBrowserAccountOrderList ToBrowserOrderList(BlazorShop.Storefront.Models.PagedResult<StorefrontCustomerOrderListItemResponse> orders)
     {
         return new StorefrontBrowserAccountOrderList(
             orders.Items.Select(ToBrowserOrderListItem).ToArray(),

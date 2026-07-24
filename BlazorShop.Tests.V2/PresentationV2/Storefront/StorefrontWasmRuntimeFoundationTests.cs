@@ -321,6 +321,39 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void CheckoutOrderPaymentContracts_DoNotUseBackendDtosOrExposeProviderCallbacks()
+        {
+            var source = string.Join(
+                Environment.NewLine,
+                new[]
+                {
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/CheckoutContracts.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/PaymentContracts.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/OrderContracts.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/IStorefrontCheckoutClient.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/IStorefrontPaymentClient.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/IStorefrontCustomerClient.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Checkout.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Payment.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontApiClient.Customer.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CheckoutPage.razor.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontLocalEndpointSupport.Account.cs",
+                }.Select(ReadRepositoryFile));
+
+            Assert.Contains("StorefrontPublicPaymentMethod", source, StringComparison.Ordinal);
+            Assert.Contains("StorefrontSelectedAttribute", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("<GetPaymentMethod>", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("SelectedAttributeDto", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Application.DTOs.Payment", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Application.CommerceNode.VariationTemplates", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Web.SharedV2.Models.Payment", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontPaymentCallbackRequest", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("StorefrontPaymentWebhookRequest", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("HandleProviderCallback", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("HandleWebhook", source, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void StorefrontProgram_DelegatesLocalBrowserApiMappingToEndpointExtensions()
         {
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Program.cs");
