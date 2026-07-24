@@ -262,36 +262,42 @@ Commit:
 
 Goal: prevent future false confidence from smoke tests being described as full visual or commerce QA.
 
-- [ ] Rename or qualify visual QA report wording if it only checks rendering smoke.
-- [ ] Add CSS-applied checks to browser QA:
-  - [ ] Stylesheet requests return non-empty CSS.
-  - [ ] Browser `document.styleSheets` exposes loaded rules or a known computed style changes from browser defaults.
-  - [ ] Body font is not default `Times New Roman` unless explicitly intended.
-- [ ] Add artifact integrity checks:
-  - [ ] `generated-files.yaml` must not list missing files as generated proof.
-  - [ ] `capture-manifest.json` URL must be connected to generation inputs or reported as unused.
-  - [ ] Missing `design-tokens.yaml`, `ui-patterns.yaml`, or `composition-manifest.yaml` must be reported clearly if the flow claims visual generation.
-- [ ] Rename functional commerce checks if they only validate selectors.
-- [ ] Add real interaction assertions where feasible:
-  - [ ] Add-to-cart click produces a success state, cart count change, or expected disabled/offline explanation.
-  - [ ] Product route has expected data-backed content.
-  - [ ] Checkout/cart links resolve to expected pages or explicit placeholders.
-- [ ] Clearly separate:
-  - [ ] Scaffold smoke pass.
-  - [ ] Runtime CSS/application pass.
-  - [ ] Commerce interaction pass.
-  - [ ] Visual fidelity pass.
-- [ ] Mark visual fidelity against the input URL as not implemented until the generator actually uses captured layout/theme artifacts.
+- [x] Rename or qualify visual QA report wording if it only checks rendering smoke.
+- [x] Add CSS-applied checks to browser QA:
+  - [x] Stylesheet requests return non-empty CSS.
+  - [x] Browser `document.styleSheets` exposes loaded rules or a known computed style changes from browser defaults.
+  - [x] Body font is not default `Times New Roman` unless explicitly intended.
+- [x] Add artifact integrity checks:
+  - [x] `generated-files.yaml` must not list missing files as generated proof.
+  - [x] `capture-manifest.json` URL must be connected to generation inputs or reported as unused.
+  - [x] Missing `design-tokens.yaml`, `ui-patterns.yaml`, or `composition-manifest.yaml` must be reported clearly if the flow claims visual generation.
+- [x] Rename functional commerce checks if they only validate selectors.
+- [x] Add real interaction assertions where feasible:
+  - [x] Add-to-cart click produces a success state, cart count change, or expected disabled/offline explanation.
+  - [x] Product route has expected data-backed content.
+  - [x] Checkout/cart links resolve to expected pages or explicit placeholders.
+- [x] Clearly separate:
+  - [x] Scaffold smoke pass.
+  - [x] Runtime CSS/application pass.
+  - [x] Commerce interaction pass.
+  - [x] Visual fidelity pass.
+- [x] Mark visual fidelity against the input URL as not implemented until the generator actually uses captured layout/theme artifacts.
+
+Notes:
+
+- Browser visual QA now writes `StorefrontBuilder Visual Smoke QA Report`, fails on invalid CSS responses, no readable stylesheet rules, or default Times New Roman body font, and labels URL visual diff as `not implemented`.
+- `generated-files.yaml` source artifact IDs are validated against existing analysis artifacts; the manifest no longer claims missing design token/pattern/composition artifacts.
+- Functional commerce QA now labels add-to-cart as selector/placeholder smoke unless an enabled command produces an observable cart result.
 
 Acceptance:
 
-- [ ] QA reports cannot imply visual fidelity when only smoke checks ran.
-- [ ] A CSS-serving failure produces a failed QA result.
-- [ ] Missing visual generation artifacts produce actionable failures or explicit "not implemented" status.
+- [x] QA reports cannot imply visual fidelity when only smoke checks ran.
+- [x] A CSS-serving failure produces a failed QA result.
+- [x] Missing visual generation artifacts produce actionable failures or explicit "not implemented" status.
 
 Commit:
 
-- [ ] Commit message: `test: clarify storefront builder qa gates`
+- [x] Commit message: `test: clarify storefront builder qa gates`
 
 ## Phase 8 - Future Optional Local Runner Integration
 

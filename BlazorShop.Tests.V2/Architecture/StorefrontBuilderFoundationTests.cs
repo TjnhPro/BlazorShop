@@ -37,9 +37,10 @@ namespace BlazorShop.Tests.Architecture
 
             Assert.Contains("development-time tooling", note, StringComparison.Ordinal);
             Assert.Contains("not a production ASP.NET service", note, StringComparison.Ordinal);
-            Assert.Contains("BlazorShop.PresentationV2/BlazorShop.Storefront.{Name}", note, StringComparison.Ordinal);
+            Assert.Contains("artifacts/storefront-builder/generated/{ProjectName}", note, StringComparison.Ordinal);
+            Assert.Contains("obj/storefront-builder/generated/{ProjectName}", note, StringComparison.Ordinal);
             Assert.Contains("is a read-only template input", note, StringComparison.Ordinal);
-            Assert.Contains("generated `BlazorShop.Storefront.{Name}` project is the editable", note, StringComparison.Ordinal);
+            Assert.Contains("generated `BlazorShop.Storefront.{Name}` artifact is the editable", note, StringComparison.Ordinal);
         }
 
         [Fact]

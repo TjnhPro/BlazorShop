@@ -17,6 +17,21 @@ foreach ($field in @("filePath", "ownership", "generatorVersion", "sourceArtifac
     }
 }
 
+$analysisRoot = Split-Path -Parent $manifestPath
+foreach ($match in [regex]::Matches($manifest, "(?m)^\s+sourceArtifactIds:\s+(.+)$")) {
+    $artifactIds = $match.Groups[1].Value.Split(" ", [System.StringSplitOptions]::RemoveEmptyEntries)
+    foreach ($artifactId in $artifactIds) {
+        if ($artifactId -eq "none") {
+            continue
+        }
+
+        $artifactPath = Join-Path $analysisRoot $artifactId
+        if (-not (Test-Path $artifactPath)) {
+            throw "[SFB-IDEMPOTENCY-005] Generated file manifest references missing source artifact '$artifactId'."
+        }
+    }
+}
+
 if ($manifest.Contains("ownership: protected", [System.StringComparison]::Ordinal) -and $manifest.Contains("conflictStatus: modified", [System.StringComparison]::Ordinal)) {
     throw "[SFB-IDEMPOTENCY-002] Protected files must never be modified."
 }

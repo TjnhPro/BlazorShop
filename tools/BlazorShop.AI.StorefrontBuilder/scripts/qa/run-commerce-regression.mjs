@@ -8,6 +8,7 @@ const projectRoot = readArg("--project-root") ?? "artifacts/storefront-builder/g
 const reportPath = `${projectRoot}/docs/storefront-analysis/functional-commerce-report.md`;
 const directCommerceCalls = [];
 const checks = [];
+const notes = [];
 
 const browser = await chromium.launch();
 try {
@@ -47,8 +48,22 @@ try {
 
   const addToCart = page.locator('[data-action="cart.add-line"]').first();
   if ((await addToCart.count()) === 1) {
-    checks.push("Add-to-cart command works through same-origin BFF");
-    checks.push("Cart badge updates");
+    const disabled = await addToCart.isDisabled();
+    if (disabled) {
+      checks.push("Add-to-cart has explicit placeholder or observable result");
+      notes.push("Add-to-cart is present but disabled, so this run is selector/placeholder smoke rather than commerce command proof.");
+    } else {
+      const cartBadge = page.locator(".sfb-cart-badge span").first();
+      const beforeBadge = (await cartBadge.count()) === 1 ? await cartBadge.innerText() : "";
+      await addToCart.click();
+      await page.waitForLoadState("networkidle");
+      const afterBadge = (await cartBadge.count()) === 1 ? await cartBadge.innerText() : "";
+      const successOrBadgeChange = beforeBadge !== afterBadge || (await page.locator('[role="status"], .starter-toast-region, .starter-alert').count()) > 0;
+      if (successOrBadgeChange) {
+        checks.push("Add-to-cart has explicit placeholder or observable result");
+        checks.push("Add-to-cart command produces an observable cart result");
+      }
+    }
   }
 
   const html = await page.content();
@@ -70,8 +85,7 @@ const required = [
   "Product link navigation works",
   "Product image/gallery region renders",
   "Quantity control can change",
-  "Add-to-cart command works through same-origin BFF",
-  "Cart badge updates",
+  "Add-to-cart has explicit placeholder or observable result",
   "Cart page renders",
   "Checkout route renders",
   "Account route renders",
@@ -81,9 +95,10 @@ const required = [
 ];
 const missing = required.filter((item) => !checks.includes(item));
 const report = [
-  "# StorefrontBuilder Functional Commerce Report",
+  "# StorefrontBuilder Functional Commerce Smoke Report",
   "",
   `Base URL: ${baseUrl}`,
+  "Commerce command proof: selector/placeholder smoke unless an enabled command produces an observable cart result.",
   "",
   "## Checks",
   "",
@@ -97,6 +112,10 @@ const report = [
   "",
   "- COD order placement requires a configured test store/env.",
   "- PayPal/Stripe production providers are outside this MVP gate.",
+  "",
+  "## Notes",
+  "",
+  ...(notes.length === 0 ? ["- None."] : notes.map((note) => `- ${note}`)),
   "",
 ].join("\n");
 

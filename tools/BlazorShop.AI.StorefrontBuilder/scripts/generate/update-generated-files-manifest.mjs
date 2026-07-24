@@ -7,15 +7,15 @@ const projectRoot = readArg("--project-root") ?? "artifacts/storefront-builder/g
 const output = `${projectRoot}/docs/storefront-analysis/generated-files.yaml`;
 const report = `${projectRoot}/docs/storefront-analysis/regeneration-report.md`;
 const files = [
-  ["wwwroot/css/storefront-builder.generated.css", "generated", "design-tokens.yaml ui-patterns.yaml"],
-  ["Components/Layout/MainLayout.razor", "generated", "composition-manifest.yaml ui-patterns.yaml"],
-  ["Components/Catalog/ProductSummaryCard.razor", "generated", "ui-patterns.yaml capability-decisions.yaml"],
-  ["Components/Catalog/ProductGalleryPlaceholder.razor", "generated", "ui-patterns.yaml"],
-  ["Components/Catalog/PurchasePanelPlaceholder.razor", "generated", "behaviors.yaml capability-decisions.yaml"],
-  ["Pages/Ssr/Home/HomePage.razor", "generated", "page-topology.yaml composition-manifest.yaml"],
-  ["Pages/Hybrid/Catalog/CategoryPage.razor", "generated", "page-topology.yaml composition-manifest.yaml"],
-  ["Pages/Hybrid/Catalog/ProductPage.razor", "generated", "page-topology.yaml composition-manifest.yaml"],
-  ["Pages/Hybrid/Commerce/CartPage.razor", "managed", "design-tokens.yaml"],
+  ["wwwroot/css/storefront-builder.generated.css", "generated", "metadata.yaml asset-manifest.yaml review-summary.md"],
+  ["Components/Layout/MainLayout.razor", "generated", "metadata.yaml review-summary.md"],
+  ["Components/Catalog/ProductSummaryCard.razor", "generated", "metadata.yaml review-summary.md"],
+  ["Components/Catalog/ProductGalleryPlaceholder.razor", "generated", "metadata.yaml asset-manifest.yaml"],
+  ["Components/Catalog/PurchasePanelPlaceholder.razor", "generated", "metadata.yaml review-summary.md"],
+  ["Pages/Ssr/Home/HomePage.razor", "generated", "metadata.yaml review-summary.md"],
+  ["Pages/Hybrid/Catalog/CategoryPage.razor", "generated", "metadata.yaml review-summary.md"],
+  ["Pages/Hybrid/Catalog/ProductPage.razor", "generated", "metadata.yaml review-summary.md"],
+  ["Pages/Hybrid/Commerce/CartPage.razor", "managed", "metadata.yaml"],
 ];
 
 const sourceSpecHash = sha(files.map((file) => file.join(":")).join("|"));

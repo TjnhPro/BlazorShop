@@ -44,6 +44,7 @@ namespace BlazorShop.Tests.Architecture
                 "Test-StorefrontBuilderGeneratedProject.ps1",
                 "Test-StorefrontBuilderAssets.ps1",
                 "Test-StorefrontBuilderGuard.ps1",
+                "Test-StorefrontBuilderIdempotency.ps1",
                 "generated-files.yaml",
                 "Duplicate route",
                 "Package compatibility metadata",
@@ -114,6 +115,9 @@ namespace BlazorShop.Tests.Architecture
                 "Major",
                 "Minor",
                 "output/playwright/storefront-builder-visual-qa",
+                "StorefrontBuilder Visual Smoke QA Report",
+                "No readable stylesheet rules are applied",
+                "Visual fidelity result: not implemented",
             })
             {
                 Assert.Contains(marker, runner, StringComparison.Ordinal);
@@ -138,8 +142,8 @@ namespace BlazorShop.Tests.Architecture
                 "Product link navigation works",
                 "Product image/gallery region renders",
                 "Quantity control can change",
-                "Add-to-cart command works through same-origin BFF",
-                "Cart badge updates",
+                "Add-to-cart has explicit placeholder or observable result",
+                "Add-to-cart command produces an observable cart result",
                 "Cart page renders",
                 "Checkout route renders",
                 "Account route renders",
@@ -154,6 +158,8 @@ namespace BlazorShop.Tests.Architecture
             }
 
             Assert.Contains("functional-commerce-report.md", runner, StringComparison.Ordinal);
+            Assert.Contains("Functional Commerce Smoke Report", runner, StringComparison.Ordinal);
+            Assert.Contains("selector/placeholder smoke", runner, StringComparison.Ordinal);
             Assert.Contains("PayPal/Stripe production providers are outside this MVP gate", runner, StringComparison.Ordinal);
             Assert.Contains("run-commerce-regression.mjs", proof, StringComparison.Ordinal);
         }
@@ -191,6 +197,7 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("manualEditDetected: true", fixture, StringComparison.Ordinal);
             Assert.Contains("SFB-IDEMPOTENCY-002", validator, StringComparison.Ordinal);
             Assert.Contains("SFB-IDEMPOTENCY-003", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-IDEMPOTENCY-005", validator, StringComparison.Ordinal);
         }
 
         [Fact]
