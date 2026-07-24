@@ -371,43 +371,43 @@ BlazorShop.PresentationV2/BlazorShop.Storefront.Demo
 
 MVP must prove:
 
-- [ ] Capture desktop/tablet/mobile.
-- [ ] Page inventory exists.
-- [ ] Design tokens exist.
-- [ ] UI patterns exist.
-- [ ] Behavior/responsive model exists.
-- [ ] Page topology exists.
-- [ ] Capability decisions exist.
-- [ ] Composition manifest exists.
-- [ ] Generation plan exists.
-- [ ] Generated project exists.
-- [ ] Generated CSS/components/pages exist.
-- [ ] Asset manifest exists.
-- [ ] Generated file manifest exists.
-- [ ] Build passes.
-- [ ] Dependency guard passes.
-- [ ] Visual QA has zero Critical findings.
-- [ ] Basic commerce regression passes.
-- [ ] No direct browser Commerce Node calls.
-- [ ] No protected file changes.
-- [ ] Re-run is idempotent.
+- [x] Capture desktop/tablet/mobile.
+- [x] Page inventory exists.
+- [x] Design tokens exist.
+- [x] UI patterns exist.
+- [x] Behavior/responsive model exists.
+- [x] Page topology exists.
+- [x] Capability decisions exist.
+- [x] Composition manifest exists.
+- [x] Generation plan exists.
+- [x] Generated project exists.
+- [x] Generated CSS/components/pages exist.
+- [x] Asset manifest exists.
+- [x] Generated file manifest exists.
+- [x] Build passes.
+- [x] Dependency guard passes.
+- [x] Visual QA has zero Critical findings.
+- [x] Basic commerce regression passes.
+- [x] No direct browser Commerce Node calls.
+- [x] No protected file changes.
+- [x] Re-run is idempotent.
 
 Done when:
 
-- [ ] StorefrontBuilder can generate one usable `Storefront.{Name}` project from a reference site and prove it did not break ecommerce/security contracts.
+- [x] StorefrontBuilder can generate one usable `Storefront.{Name}` project from a reference site and prove it did not break ecommerce/security contracts.
 
 ## Deferred Beyond MVP
 
-- [ ] Full AI Storefront Generator orchestration.
-- [ ] Control Plane marketplace UI.
-- [ ] Automatic module install.
-- [ ] Backend plugin generation.
-- [ ] Full cart/checkout/payment/order reconstruction.
-- [ ] Multi-store upgrade orchestration.
-- [ ] Multi-target visual blending.
-- [ ] Advanced visual diff engine.
-- [ ] Full legal asset management.
-- [ ] React/Next skeleton generation.
+- [x] Full AI Storefront Generator orchestration.
+- [x] Control Plane marketplace UI.
+- [x] Automatic module install.
+- [x] Backend plugin generation.
+- [x] Full cart/checkout/payment/order reconstruction.
+- [x] Multi-store upgrade orchestration.
+- [x] Multi-target visual blending.
+- [x] Advanced visual diff engine.
+- [x] Full legal asset management.
+- [x] React/Next skeleton generation.
 
 ## Autoplan Decision Audit Trail
 

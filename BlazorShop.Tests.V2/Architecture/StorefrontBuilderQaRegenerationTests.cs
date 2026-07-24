@@ -276,6 +276,42 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("run_browser_gates", workflow, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void MvpPocReport_ProvesGeneratedStorefrontAndDeferredScope()
+        {
+            var report = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo/docs/storefront-analysis/mvp-poc-report.md");
+
+            foreach (var marker in new[]
+            {
+                "build-storefront.ps1",
+                "BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo",
+                "Capture desktop/tablet/mobile",
+                "Page inventory exists",
+                "Design tokens exist",
+                "UI patterns exist",
+                "Behavior/responsive model exists",
+                "Page topology exists",
+                "Capability decisions exist",
+                "Composition manifest exists",
+                "Generation plan exists",
+                "Generated project exists",
+                "Generated CSS/components/pages exist",
+                "Asset manifest exists",
+                "Generated file manifest exists",
+                "Build passes",
+                "Dependency guard passes",
+                "Visual QA has zero Critical findings",
+                "Basic commerce regression passes",
+                "No direct browser Commerce Node calls",
+                "No protected file changes",
+                "Re-run is idempotent",
+                "Deferred Beyond MVP",
+            })
+            {
+                Assert.Contains(marker, report, StringComparison.Ordinal);
+            }
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));
