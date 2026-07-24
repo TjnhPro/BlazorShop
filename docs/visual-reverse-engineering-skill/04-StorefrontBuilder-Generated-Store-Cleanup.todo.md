@@ -303,22 +303,27 @@ Commit:
 
 Goal: keep `run-v2-local.ps1` separate from this cleanup, while documenting the future path.
 
-- [ ] Do not block removal on `run-v2-local.ps1` support for generated stores.
-- [ ] Document current state: `run-v2-local.ps1` is for active Storefront V2 runtime unless explicitly extended.
-- [ ] Future extension may add a storefront selection mode:
-  - [ ] `-StorefrontProject BlazorShop.Storefront.V2`
-  - [ ] `-StorefrontProjectPath artifacts/storefront-builder/generated/...`
-  - [ ] `-StorefrontEnvPrefix` or explicit env mapping
-- [ ] Future extension must not assume `BuilderDemo` exists in source.
+- [x] Do not block removal on `run-v2-local.ps1` support for generated stores.
+- [x] Document current state: `run-v2-local.ps1` is for active Storefront V2 runtime unless explicitly extended.
+- [x] Future extension may add a storefront selection mode:
+  - [x] `-StorefrontProject BlazorShop.Storefront.V2`
+  - [x] `-StorefrontProjectPath artifacts/storefront-builder/generated/...`
+  - [x] `-StorefrontEnvPrefix` or explicit env mapping
+- [x] Future extension must not assume `BuilderDemo` exists in source.
+
+Notes:
+
+- `docs/architecture/07-deployment-and-local-run.md` now states that `run-v2-local.ps1` is for the active V2 runtime stack and does not require generated storefront source projects.
+- Generated storefront browser QA uses explicit `dotnet run --project artifacts/storefront-builder/generated/...`.
 
 Acceptance:
 
-- [ ] Local runner docs no longer mention committed `BuilderDemo` as a built-in target.
-- [ ] Generated storefront local run remains possible through explicit `dotnet run --project <generated path>`.
+- [x] Local runner docs no longer mention committed `BuilderDemo` as a built-in target.
+- [x] Generated storefront local run remains possible through explicit `dotnet run --project <generated path>`.
 
 Commit:
 
-- [ ] Fold into docs/script commit if no code changes are needed.
+- [x] Commit message: `docs: document generated storefront local run boundary`
 
 ## Phase 9 - Final Verification
 

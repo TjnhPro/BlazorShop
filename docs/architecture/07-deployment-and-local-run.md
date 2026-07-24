@@ -214,6 +214,8 @@ Public URL configuration:
 
 StorefrontBuilder is development-time tooling. It creates and validates generated storefront projects; it is not part of the production runtime topology.
 
+`run-v2-local.ps1` is for the active Storefront V2 runtime and the Control Plane/Commerce Node development stack. It does not require or assume a generated storefront project exists in source. If a future phase adds generated-store selection, it must accept an explicit generated project path and env mapping instead of relying on a committed demo project.
+
 Install Node dependencies for capture and browser QA:
 
 ```powershell
@@ -229,6 +231,12 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 .\scripts\qa\run-storefront-builder-generated-proof.ps1
 .\tools\BlazorShop.AI.StorefrontBuilder\validate-storefront.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof -StoreKey sample
 .\scripts\qa\run-storefront-builder-isolation-gate.ps1 -ProjectRoot artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof -Name BlazorShop.Storefront.GeneratedProof
+```
+
+Run a generated storefront explicitly when browser QA needs a live artifact:
+
+```powershell
+dotnet run --project artifacts/storefront-builder/generated/BlazorShop.Storefront.GeneratedProof/BlazorShop.Storefront.GeneratedProof.csproj --urls http://127.0.0.1:18991
 ```
 
 Create or update a generated storefront through the main entrypoint:
