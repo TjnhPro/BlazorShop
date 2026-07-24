@@ -1,5 +1,5 @@
-<article class="starter-product-card">
-    <div class="starter-product-media">
+<article class="starter-product-card sfb-product-card">
+    <a class="starter-product-media sfb-product-card-media" href="@Href" aria-label="@($"Open {Name}")">
         @if (!string.IsNullOrWhiteSpace(ImageUrl))
         {
             <img src="@ImageUrl" alt="" loading="lazy" />
@@ -8,13 +8,14 @@
         {
             <ProductGalleryPlaceholder Label="@Name" />
         }
-    </div>
-    <h3>@Name</h3>
+    </a>
+    <p class="sfb-product-kicker">Catalog pick</p>
+    <h3><a href="@Href">@Name</a></h3>
     @if (!string.IsNullOrWhiteSpace(Price))
     {
-        <p>@Price</p>
+        <p class="sfb-product-price">@Price</p>
     }
-    <a href="@Href">View</a>
+    <a class="sfb-secondary-link" href="@Href">View product</a>
 </article>
 
 @code {

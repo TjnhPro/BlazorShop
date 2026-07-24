@@ -1,11 +1,13 @@
 @page "/cart"
 
 <PageTitle>Cart</PageTitle>
-<h1>Cart</h1>
+<section class="sfb-fallback-page" aria-labelledby="cart-title">
+<h1 id="cart-title">Cart</h1>
 <PlaceholderState
     Title="Cart shell"
     Message="Cart browser commands call same-origin /api/cart/* BFF endpoints."
     RenderOwner="Hybrid"
     HydrationMode="StarterHydrationMode.InitialSnapshot" />
 <CartLineList />
+</section>
 

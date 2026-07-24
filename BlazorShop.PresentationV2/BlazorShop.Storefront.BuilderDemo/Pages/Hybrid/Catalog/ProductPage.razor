@@ -6,13 +6,19 @@
     <link rel="canonical" href="@CanonicalUrl" />
     <script type="application/ld+json">@((MarkupString)ProductJsonLd)</script>
 </HeadContent>
-<h1>Product detail</h1>
-<PlaceholderState
-    Title="Product detail shell"
-    Message="SSR snapshot supplies product data; browser interactivity may refresh after hydration."
-    RenderOwner="Hybrid"
-    HydrationMode="StarterHydrationMode.InitialSnapshot" />
-<ProductDetailShell ProductName="Product" />
+<section class="sfb-product-page" aria-labelledby="product-title">
+    <div>
+        <p class="sfb-eyebrow">Product</p>
+        <h1 id="product-title">@ProductTitle</h1>
+        <p>@ProductDescription</p>
+    </div>
+    <PlaceholderState
+        Title="Product detail shell"
+        Message="SSR snapshot supplies product data; browser interactivity may refresh after hydration."
+        RenderOwner="Hybrid"
+        HydrationMode="StarterHydrationMode.InitialSnapshot" />
+    <ProductDetailShell ProductName="@ProductTitle" />
+</section>
 
 @code {
     [Parameter]

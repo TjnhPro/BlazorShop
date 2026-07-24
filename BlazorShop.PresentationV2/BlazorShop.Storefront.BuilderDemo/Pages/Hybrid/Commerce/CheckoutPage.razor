@@ -1,11 +1,13 @@
 @page "/checkout"
 
 <PageTitle>Checkout</PageTitle>
-<h1>Checkout</h1>
+<section class="sfb-fallback-page" aria-labelledby="checkout-title">
+<h1 id="checkout-title">Checkout</h1>
 <PlaceholderState
     Title="Checkout shell"
     Message="Checkout state and order placement stay backend-authoritative through BFF commands."
     RenderOwner="Hybrid"
     HydrationMode="StarterHydrationMode.InitialSnapshot" />
 <CheckoutStepShell StepNumber="1" Title="Contact and shipping" />
+</section>
 

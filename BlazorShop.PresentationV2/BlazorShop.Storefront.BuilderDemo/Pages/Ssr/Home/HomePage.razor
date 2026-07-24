@@ -5,10 +5,17 @@
 
 <PageTitle>@(_snapshot?.StoreName ?? "Storefront Starter")</PageTitle>
 
-<h1>@(_snapshot?.StoreName ?? "Storefront Starter")</h1>
-<p>This neutral shell consumes the generated Storefront client package.</p>
+<section class="sfb-hero" aria-labelledby="home-title">
+    <p class="sfb-eyebrow">Generated storefront</p>
+    <h1 id="home-title">@(_snapshot?.StoreName ?? "Builder Demo")</h1>
+    <p>Target-inspired storefront composition backed by the Starter client and runtime packages.</p>
+    <div class="sfb-hero-actions">
+        <a class="starter-button" href="/search">Shop catalog</a>
+        <a class="sfb-secondary-link" href="/deals">View deals</a>
+    </div>
+</section>
 
-<dl class="starter-config">
+<dl class="starter-config sfb-store-config">
     <dt>Store key</dt>
     <dd>@(_snapshot?.StoreKey ?? StorefrontOptions.Value.StoreKey)</dd>
     <dt>Commerce API</dt>
@@ -26,14 +33,14 @@
 }
 else if (_snapshot is not null)
 {
-    <section class="starter-section" aria-labelledby="featured-products-title" data-hydration-mode="@StarterHydrationMode.InitialSnapshot">
+    <section class="starter-section sfb-featured-grid" aria-labelledby="featured-products-title" data-hydration-mode="@StarterHydrationMode.InitialSnapshot">
         <h2 id="featured-products-title">Featured products</h2>
         <ProductGrid Products="@_snapshot.Products" CurrencyCode="@_snapshot.CurrencyCode" />
     </section>
 
     @if (FeatureActivationService.Evaluate("recommendations", "home", _snapshot.Features).Visible)
     {
-        <section class="starter-section" aria-labelledby="recommendations-title">
+        <section class="starter-section sfb-content-band" aria-labelledby="recommendations-title">
             <h2 id="recommendations-title">Recommended</h2>
             <p>Recommendation placement is active for this store.</p>
         </section>

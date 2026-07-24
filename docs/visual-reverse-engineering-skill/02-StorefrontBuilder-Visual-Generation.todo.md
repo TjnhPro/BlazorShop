@@ -381,57 +381,57 @@ Goal: generate the first useful storefront presentation.
 
 Shell:
 
-- [ ] Header.
-- [ ] Footer.
-- [ ] Navigation.
-- [ ] Mobile navigation.
-- [ ] Search presentation.
-- [ ] Cart badge presentation.
-- [ ] Account menu presentation.
+- [x] Header.
+- [x] Footer.
+- [x] Navigation.
+- [x] Mobile navigation.
+- [x] Search presentation.
+- [x] Cart badge presentation.
+- [x] Account menu presentation.
 
 Home:
 
-- [ ] Target section order.
-- [ ] Static sections.
-- [ ] Content-backed sections.
-- [ ] Catalog-backed product sections.
-- [ ] Starter fallback sections for missing data.
+- [x] Target section order.
+- [x] Static sections.
+- [x] Content-backed sections.
+- [x] Catalog-backed product sections.
+- [x] Starter fallback sections for missing data.
 
 Catalog:
 
-- [ ] Category header.
-- [ ] Breadcrumb.
-- [ ] Product grid.
-- [ ] Product card.
-- [ ] Sorting presentation.
-- [ ] Filter presentation.
-- [ ] Pagination presentation.
-- [ ] Empty state.
+- [x] Category header.
+- [x] Breadcrumb.
+- [x] Product grid.
+- [x] Product card.
+- [x] Sorting presentation.
+- [x] Filter presentation.
+- [x] Pagination presentation.
+- [x] Empty state.
 
 Product:
 
-- [ ] Product gallery region.
-- [ ] Product information region.
-- [ ] Product purchase region.
-- [ ] Quantity control presentation.
-- [ ] Add-to-cart/buy presentation binding.
-- [ ] Product content/additional sections.
+- [x] Product gallery region.
+- [x] Product information region.
+- [x] Product purchase region.
+- [x] Quantity control presentation.
+- [x] Add-to-cart/buy presentation binding.
+- [x] Product content/additional sections.
 
 Rules:
 
-- [ ] Product purchase binds only through Starter slot/action contract.
-- [ ] Product gallery remains presentation and uses safe product media data.
-- [ ] Product images stay 1x1 unless Starter contract explicitly changes.
-- [ ] Cart/Checkout/Account remain Starter fallback pages themed with target tokens.
+- [x] Product purchase binds only through Starter slot/action contract.
+- [x] Product gallery remains presentation and uses safe product media data.
+- [x] Product images stay 1x1 unless Starter contract explicitly changes.
+- [x] Cart/Checkout/Account remain Starter fallback pages themed with target tokens.
 
 Done when:
 
-- [ ] Generated storefront has shell, home, catalog, product, cart fallback, checkout fallback, and account fallback.
+- [x] Generated storefront has shell, home, catalog, product, cart fallback, checkout fallback, and account fallback.
 
 Verification:
 
-- [ ] Build passes.
-- [ ] Browser can navigate generated home, catalog, product, cart, checkout, and account routes.
+- [x] Build passes.
+- [x] Browser can navigate generated home, catalog, product, cart, checkout, and account routes.
 
 ## Autoplan Decision Audit Trail
 

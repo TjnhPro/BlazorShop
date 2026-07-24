@@ -328,6 +328,40 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("SFB-CSS-002", validator, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void CompositionFiles_GenerateShellCatalogProductAndFallbackPresentation()
+        {
+            var generator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/apply-composition.mjs");
+            var validator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderCompositionFiles.ps1");
+
+            foreach (var marker in new[]
+            {
+                "shell",
+                "home",
+                "catalog",
+                "product",
+                "fallback",
+                "cart.add-line",
+            })
+            {
+                Assert.Contains(marker, generator, StringComparison.OrdinalIgnoreCase);
+            }
+
+            foreach (var rule in new[]
+            {
+                "SFB-COMPOSITION-001",
+                "SFB-COMPOSITION-004",
+                "SFB-COMPOSITION-006",
+                "SFB-COMPOSITION-007",
+                "SFB-COMPOSITION-008",
+                "SFB-COMMERCE-001",
+                "SFB-COMMERCE-002",
+            })
+            {
+                Assert.Contains(rule, validator, StringComparison.Ordinal);
+            }
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));
