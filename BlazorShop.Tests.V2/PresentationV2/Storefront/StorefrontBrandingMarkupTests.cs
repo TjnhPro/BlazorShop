@@ -197,7 +197,7 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
             var gallery = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Features/Product/ProductGallery.razor");
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
 
-            Assert.Contains("<ProductGallery Items=\"_galleryItems\" ProductName=\"_product.Name\" />", page);
+            Assert.Contains("<ProductGallery Items=\"_galleryItems\" ProductName=\"@_product.Name\" />", page);
             Assert.DoesNotContain("aspect-[4/3]", page, StringComparison.Ordinal);
             Assert.Contains("BuildGalleryItems", page, StringComparison.Ordinal);
             Assert.Contains("product.MediaGallery", page, StringComparison.Ordinal);

@@ -669,85 +669,87 @@ Goal: prove Storefront V2 can be built/run as an independent frontend consumer o
 
 ### Architecture tests
 
-- [ ] `Storefront.V2` does not reference backend/core/API projects.
-- [ ] `Storefront.Client` does not reference backend/core/API projects.
-- [ ] `Storefront.Runtime`, if present, does not reference backend/core/API projects.
-- [ ] `Storefront.Components` remains backend-independent.
-- [ ] `Storefront.WASM` remains backend-independent.
-- [ ] `Web.SharedV2/Models` business model freeze remains enforced.
+- [x] `Storefront.V2` does not reference backend/core/API projects.
+- [x] `Storefront.Client` does not reference backend/core/API projects.
+- [x] `Storefront.Runtime`, if present, does not reference backend/core/API projects.
+- [x] `Storefront.Components` remains backend-independent.
+- [x] `Storefront.WASM` remains backend-independent.
+- [x] `Web.SharedV2/Models` business model freeze remains enforced.
 
 ### Generated client tests
 
-- [ ] Storefront OpenAPI parses.
-- [ ] OpenAPI reader validation passes.
-- [ ] C# client generation runs.
-- [ ] generated C# client compiles.
-- [ ] TypeScript client generation runs.
-- [ ] generated TypeScript client compiles with `strict` and `strictNullChecks`.
-- [ ] frontend SDK excludes webhook/provider callback operations.
-- [ ] error contracts compile and expose `code`.
+- [x] Storefront OpenAPI parses.
+- [x] OpenAPI reader validation passes.
+- [x] C# client generation runs.
+- [x] generated C# client compiles.
+- [x] TypeScript client generation runs.
+- [x] generated TypeScript client compiles with `strict` and `strictNullChecks`.
+- [x] frontend SDK excludes webhook/provider callback operations.
+- [x] error contracts compile and expose `code`.
 
 ### Local package consumer proof
 
-- [ ] Pack `Storefront.Client`.
-- [ ] Pack `Storefront.Runtime` if present.
-- [ ] Create temporary consumer storefront project in `obj` or test output.
-- [ ] Restore from local NuGet feed.
-- [ ] Build consumer without backend ProjectReference.
-- [ ] Fail if consumer can compile only because backend source is available.
+- [x] Pack `Storefront.Client`.
+- [n/a] Pack `Storefront.Runtime` if present.
+- [x] Create temporary consumer storefront project in `obj` or test output.
+- [x] Restore from local NuGet feed.
+- [x] Build consumer without backend ProjectReference.
+- [x] Fail if consumer can compile only because backend source is available.
 
 ### Isolation run
 
-- [ ] Build/publish Commerce Node API.
-- [ ] Run Commerce Node API with configured store fixture.
-- [ ] Build/publish Storefront V2 separately.
-- [ ] Configure Storefront V2 with Commerce API URL and store key.
-- [ ] Run Storefront V2 without backend source references.
-- [ ] Execute API integration smoke.
-- [ ] Execute Playwright browser smoke.
+- [x] Build/publish Commerce Node API.
+- [x] Run Commerce Node API with configured store fixture.
+- [x] Build/publish Storefront V2 separately.
+- [x] Configure Storefront V2 with Commerce API URL and store key.
+- [x] Run Storefront V2 without backend source references.
+- [x] Execute API integration smoke.
+- [x] Execute Playwright browser smoke.
 
 ### Functional QA
 
-- [ ] store bootstrap.
-- [ ] maintenance state.
-- [ ] home/catalog.
-- [ ] category.
-- [ ] product.
-- [ ] search.
-- [ ] content page.
-- [ ] login/register/logout.
-- [ ] forgot/reset password.
-- [ ] profile/address.
-- [ ] guest cart.
-- [ ] customer cart.
-- [ ] cart merge.
-- [ ] checkout preview.
-- [ ] shipping/payment selection.
-- [ ] place order with COD in test store.
-- [ ] order history.
-- [ ] order detail.
-- [ ] payment result.
-- [ ] SEO metadata.
-- [ ] sitemap.
-- [ ] robots.
-- [ ] media isolation.
-- [ ] 401/403/409/422 error flows.
+- [x] store bootstrap.
+- [x] maintenance state.
+- [x] home/catalog.
+- [x] category.
+- [x] product.
+- [x] search.
+- [x] content page.
+- [x] login/register/logout.
+- [x] forgot/reset password.
+- [x] profile/address.
+- [x] guest cart.
+- [x] customer cart.
+- [x] cart merge.
+- [x] checkout preview.
+- [x] shipping/payment selection.
+- [x] place order with COD in test store.
+- [x] order history.
+- [x] order detail.
+- [x] payment result.
+- [x] SEO metadata.
+- [x] sitemap.
+- [x] robots.
+- [x] media isolation.
+- [x] 401/403/409/422 error flows.
 
 ### Deliverables
 
-- [ ] architecture test suite.
-- [ ] generated client test suite.
-- [ ] local package feed proof.
-- [ ] isolated build/run script.
-- [ ] Playwright evidence.
-- [ ] release checklist update.
-- [ ] Foundation completion report.
+- [x] architecture test suite.
+- [x] generated client test suite.
+- [x] local package feed proof.
+- [x] isolated build/run script.
+- [x] Playwright evidence.
+- [x] release checklist update.
+- [x] Foundation completion report.
 
 ### Done when
 
-- [ ] Storefront V2 builds and runs as a frontend API consumer.
-- [ ] No backend source project reference is required to build Storefront V2.
-- [ ] Playwright core journey passes.
+- [x] Storefront V2 builds and runs as a frontend API consumer.
+- [x] No backend source project reference is required to build Storefront V2.
+- [x] Playwright core journey passes.
+
+2026-07-24 evidence: F7 package/isolation gate passed. The generated client package proof restored and built an independent consumer from a local NuGet feed without project references. `scripts/qa/run-storefront-foundation-isolation-gate.ps1` packed `BlazorShop.Storefront.Client.1.0.0-local.nupkg` and published Commerce Node API and Storefront V2 separately. Local V2 production smoke passed health, Swagger, and Nginx unknown-host checks. Playwright release QA passed 13/13 after fixing the product gallery placeholder product-name binding and aligning the ignored local `.gstack` runner with the already-retired WASM probe marker.
 
 ## F8 - Starter Readiness Decision
 
@@ -792,7 +794,7 @@ Future `BlazorShop.Storefront.Starter` should include:
 
 ### Commerce Node API
 
-- [ ] Storefront API is framework-neutral.
+- [x] Storefront API is framework-neutral.
 - [x] Storefront client OpenAPI excludes provider webhook/callback operations.
 - [x] Public contracts do not expose unsafe/internal schemas.
 - [x] operation IDs are stable.
@@ -807,26 +809,26 @@ Future `BlazorShop.Storefront.Starter` should include:
 - [x] Generated TypeScript client compiles strict.
 - [x] Client has no backend/core project references.
 - [x] Generated files are deterministic and not hand-edited.
-- [ ] Local package consumer proof passes.
+- [x] Local package consumer proof passes.
 
 ### Storefront V2
 
-- [ ] Still has its own design/composition/deployment.
+- [x] Still has its own design/composition/deployment.
 - [x] Does not reference `Domain`, `Application`, `Infrastructure`, Commerce Node API, or Control Plane API.
 - [x] Uses HTTP/OpenAPI client for Commerce Storefront API.
 - [x] Protected browser flows go through same-origin BFF.
-- [ ] Does not duplicate ecommerce business rules.
-- [ ] Build/publish/run works independently.
+- [x] Does not duplicate ecommerce business rules.
+- [x] Build/publish/run works independently.
 
 ### QA
 
-- [ ] architecture tests pass.
-- [ ] OpenAPI tests pass.
-- [ ] generated client tests pass.
-- [ ] package consumer proof passes.
-- [ ] isolated runtime smoke passes.
-- [ ] Playwright core journey passes.
-- [ ] QA docs are updated with evidence.
+- [x] architecture tests pass.
+- [x] OpenAPI tests pass.
+- [x] generated client tests pass.
+- [x] package consumer proof passes.
+- [x] isolated runtime smoke passes.
+- [x] Playwright core journey passes.
+- [x] QA docs are updated with evidence.
 
 ## Implementation Order And Commit Plan
 
@@ -844,7 +846,7 @@ Future `BlazorShop.Storefront.Starter` should include:
 - [x] Commit 12: F5.6 consent/newsletter/contact/recommendations migration.
 - [x] Commit 13: F5 final dependency removal and Dockerfile cleanup.
 - [x] Commit 14: F6 runtime boundary only if justified.
-- [ ] Commit 15: F7 package/isolation/Playwright gate and completion report.
+- [x] Commit 15: F7 package/isolation/Playwright gate and completion report.
 - [ ] Commit 16: F8 Starter readiness decision docs.
 
 Each commit must be buildable. Do not combine mechanical dependency removal with behavior changes unless the phase explicitly requires it.

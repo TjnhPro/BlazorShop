@@ -12,6 +12,13 @@ Purpose: gom các testcase phù hợp và testcase còn thiếu thành checklist
 - [x] Full visible Playwright rerun passed on 2026-07-22: `13 passed (4.2m)` with `.\.gstack\playwright-qa\node_modules\.bin\playwright.cmd test --config .gstack/playwright-qa/playwright.config.js --headed --reporter=line`.
 - [x] Phase 7 hardening fixed release-suite repeatability issues found during canonicalization: missing local media fixture files are restored, public media proxy forwards the configured public host, product images fall back without broken visible images, concurrent account refresh reuses a recent refresh result, order-detail WASM receives the real route reference, checkout shell renders for browser checkout flow, and QA catalog fixture stock resets to the release baseline on Development startup.
 
+## Headless Storefront Foundation F7 Evidence - 2026-07-24
+
+- [x] Production smoke equivalent passed after `scripts/run-v2-local.ps1 -StopExisting -NoOpenBrowser`: Control Plane API `/health`, Control Plane Web `/`, Commerce Node API `/health`, Storefront V2 `/health`, Storefront Swagger, Commerce Admin Swagger, and Commerce Node Nginx unknown-host 403.
+- [x] Playwright release suite passed `13/13` with `.\.gstack\playwright-qa\node_modules\.bin\playwright.cmd test --config .gstack/playwright-qa/playwright.config.js --reporter=line`.
+- [x] Product detail missing-image placeholder regression found by CAT-006 was fixed by binding `ProductGallery ProductName` to the actual product name, so the accessible placeholder name is `Image unavailable for QA Missing Image Product`.
+- [x] The ignored local `.gstack` runner was aligned with the tracked 2026-07-23 `WasmProbe` retirement by waiting for real Storefront feature markers instead of `WASM active`.
+
 ## QA Evidence - 2026-07-18 Headed Chromium Full Release Pass
 
 Command:

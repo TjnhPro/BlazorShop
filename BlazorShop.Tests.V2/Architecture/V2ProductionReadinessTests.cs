@@ -193,6 +193,7 @@ namespace BlazorShop.Tests.Architecture
         public void Phase7_ReleaseSmokeScript_CoversProductionReadinessEndpoints()
         {
             var script = ReadRepositoryFile("scripts/qa/run-v2-production-release-smoke.ps1");
+            var isolationGate = ReadRepositoryFile("scripts/qa/run-storefront-foundation-isolation-gate.ps1");
             var workflow = ReadRepositoryFile(".github/workflows/ci.yml");
             var commerceNodeQa = ReadRepositoryFile("docs/refactor-control-Commerce-storefront/QA-CommerceNode.todo.md");
             var controlPlaneQa = ReadRepositoryFile("docs/refactor-control-Commerce-storefront/QA-ControlPlane.todo.md");
@@ -209,6 +210,11 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("CommerceNode Nginx unknown host deny", script, StringComparison.Ordinal);
             Assert.Contains("unknown.invalid", script, StringComparison.Ordinal);
             Assert.Contains("ExpectedStatus = 403", script, StringComparison.Ordinal);
+            Assert.Contains("dotnet pack $clientProject", isolationGate, StringComparison.Ordinal);
+            Assert.Contains("BlazorShop.Storefront.Client.$StorefrontClientPackageVersion.nupkg", isolationGate, StringComparison.Ordinal);
+            Assert.Contains("dotnet publish $commerceNodeProject", isolationGate, StringComparison.Ordinal);
+            Assert.Contains("dotnet publish $storefrontProject", isolationGate, StringComparison.Ordinal);
+            Assert.Contains("run-v2-production-release-smoke.ps1", isolationGate, StringComparison.Ordinal);
             Assert.Contains("run-v2-production-release-smoke.ps1 -Describe", workflow, StringComparison.Ordinal);
             Assert.Contains("## V2 Production Readiness Release Gate", commerceNodeQa, StringComparison.Ordinal);
             Assert.Contains("forged `X-Store-Host`", commerceNodeQa, StringComparison.Ordinal);

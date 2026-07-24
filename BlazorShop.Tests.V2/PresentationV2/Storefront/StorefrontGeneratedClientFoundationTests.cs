@@ -70,6 +70,116 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
                     result.StandardError));
         }
 
+        [Fact]
+        public void StorefrontClientPackage_BuildsIndependentConsumerWithoutBackendSourceReferences()
+        {
+            var repositoryRoot = FindRepositoryRoot();
+            var proofRoot = RepositoryPath("obj/storefront-client-package-consumer");
+            var feedRoot = Path.Combine(proofRoot, "feed");
+            var consumerRoot = Path.Combine(proofRoot, "consumer");
+            var packageVersion = "1.0.0-local";
+
+            if (Directory.Exists(proofRoot))
+            {
+                Directory.Delete(proofRoot, recursive: true);
+            }
+
+            Directory.CreateDirectory(feedRoot);
+            Directory.CreateDirectory(consumerRoot);
+
+            var packResult = RunProcess(
+                "dotnet",
+                [
+                    "pack",
+                    RepositoryPath(ClientProjectPath),
+                    "--no-restore",
+                    "--output",
+                    feedRoot,
+                    $"/p:PackageVersion={packageVersion}",
+                ],
+                repositoryRoot);
+
+            Assert.True(
+                packResult.ExitCode == 0,
+                string.Join(
+                    Environment.NewLine,
+                    "Storefront client package did not pack.",
+                    $"Exit code: {packResult.ExitCode}",
+                    "stdout:",
+                    packResult.StandardOutput,
+                    "stderr:",
+                    packResult.StandardError));
+
+            File.WriteAllText(
+                Path.Combine(consumerRoot, "Consumer.csproj"),
+                $$"""
+                <Project Sdk="Microsoft.NET.Sdk">
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>net10.0</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                  </PropertyGroup>
+                  <ItemGroup>
+                    <PackageReference Include="BlazorShop.Storefront.Client" Version="{{packageVersion}}" />
+                  </ItemGroup>
+                </Project>
+                """);
+            File.WriteAllText(
+                Path.Combine(consumerRoot, "Program.cs"),
+                """
+                using BlazorShop.Storefront.Client;
+
+                using var httpClient = new HttpClient();
+                var client = new StorefrontStoreClient("https://example.invalid", httpClient);
+                Console.WriteLine(client.GetType().FullName);
+                """);
+            File.WriteAllText(
+                Path.Combine(consumerRoot, "nuget.config"),
+                $$"""
+                <?xml version="1.0" encoding="utf-8"?>
+                <configuration>
+                  <packageSources>
+                    <clear />
+                    <add key="local-storefront-client" value="{{feedRoot}}" />
+                  </packageSources>
+                </configuration>
+                """);
+
+            var consumerProject = Path.Combine(consumerRoot, "Consumer.csproj");
+            var restoreResult = RunProcess("dotnet", ["restore", consumerProject], consumerRoot);
+            Assert.True(
+                restoreResult.ExitCode == 0,
+                string.Join(
+                    Environment.NewLine,
+                    "Independent Storefront client consumer did not restore from the local package feed.",
+                    $"Exit code: {restoreResult.ExitCode}",
+                    "stdout:",
+                    restoreResult.StandardOutput,
+                    "stderr:",
+                    restoreResult.StandardError));
+
+            var buildResult = RunProcess("dotnet", ["build", consumerProject, "--no-restore"], consumerRoot);
+            Assert.True(
+                buildResult.ExitCode == 0,
+                string.Join(
+                    Environment.NewLine,
+                    "Independent Storefront client consumer did not build.",
+                    $"Exit code: {buildResult.ExitCode}",
+                    "stdout:",
+                    buildResult.StandardOutput,
+                    "stderr:",
+                    buildResult.StandardError));
+
+            var consumerProjectSource = File.ReadAllText(consumerProject);
+            Assert.DoesNotContain("ProjectReference", consumerProjectSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Application", consumerProjectSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Domain", consumerProjectSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Infrastructure", consumerProjectSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.CommerceNode.API", consumerProjectSource, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.ControlPlane.API", consumerProjectSource, StringComparison.Ordinal);
+        }
+
         private static IReadOnlyList<string> ReadProjectReferences(string relativeProjectPath)
         {
             var projectPath = RepositoryPath(relativeProjectPath);
