@@ -377,6 +377,8 @@ output/
 .gstack/
 Smartstore/
 ai-website-cloner-template/
+/artifacts/storefront-builder/generated/
+/obj/storefront-builder/generated/
 
 # BlazorShop CommerceNode runtime data
 /BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/runtime/media/
