@@ -370,49 +370,49 @@ or, if the repository prefers non-presentation shared packages:
 BlazorShop.Storefront.Client
 ```
 
-Final location should be decided in F0/F1 and documented.
+Final location decided in F3: `BlazorShop.PresentationV2/BlazorShop.Storefront.Client`.
 
 ### Responsibilities
 
-- [ ] Generated request/response DTOs from Storefront OpenAPI.
-- [ ] Generated typed HTTP clients.
-- [ ] JSON serialization configuration.
-- [ ] HTTP status/error deserialization.
-- [ ] cancellation token propagation.
-- [ ] route construction including `storeKey`.
-- [ ] correlation/trace propagation hooks.
-- [ ] optional retry policy hooks as extension points.
+- [x] Generated request/response DTOs from Storefront OpenAPI.
+- [x] Generated typed HTTP clients.
+- [x] JSON serialization configuration.
+- [x] HTTP status/error deserialization.
+- [x] cancellation token propagation.
+- [x] route construction including `storeKey`.
+- [x] correlation/trace propagation hooks.
+- [x] optional retry policy hooks as extension points.
 
 ### Not allowed
 
-- [ ] Razor components.
-- [ ] CSS/layout/assets.
-- [ ] browser local storage.
-- [ ] cart UI state.
-- [ ] checkout UI state.
-- [ ] ecommerce business rules.
-- [ ] handwritten duplicate API DTOs.
-- [ ] references to `Domain`, `Application`, `Infrastructure`, `CommerceNode.API`, `ControlPlane.API`, or `Storefront.V2`.
+- [x] Razor components.
+- [x] CSS/layout/assets.
+- [x] browser local storage.
+- [x] cart UI state.
+- [x] checkout UI state.
+- [x] ecommerce business rules.
+- [x] handwritten duplicate API DTOs.
+- [x] references to `Domain`, `Application`, `Infrastructure`, `CommerceNode.API`, `ControlPlane.API`, or `Storefront.V2`.
 
 ### Tasks
 
-- [ ] Choose generator tool and pin version in repo.
-- [ ] Add checked-in generator configuration.
-- [ ] Generate C# client from `/swagger/storefront/swagger.json`.
-- [ ] Configure namespace, nullable reference types, and collection nullability.
-- [ ] Add deterministic generation script.
-- [ ] Add compile test for generated client.
-- [ ] Add source guard that generated files are not hand-edited.
-- [ ] Add a small typed facade if generated client shape is too raw:
-  - [ ] configuration.
-  - [ ] catalog.
-  - [ ] cart.
-  - [ ] checkout.
-  - [ ] customer/account.
-  - [ ] orders.
-  - [ ] payments.
-- [ ] Do not create one large handwritten client that mirrors the current `StorefrontApiClient`.
-- [ ] Keep TypeScript strict generation proof for future React/Next consumers.
+- [x] Choose generator tool and pin version in repo.
+- [x] Add checked-in generator configuration.
+- [x] Generate C# client from `/swagger/storefront/swagger.json`.
+- [x] Configure namespace, nullable reference types, and collection nullability.
+- [x] Add deterministic generation script.
+- [x] Add compile test for generated client.
+- [x] Add source guard that generated files are not hand-edited.
+- [n/a] Add a small typed facade if generated client shape is too raw:
+  - [n/a] configuration.
+  - [n/a] catalog.
+  - [n/a] cart.
+  - [n/a] checkout.
+  - [n/a] customer/account.
+  - [n/a] orders.
+  - [n/a] payments.
+- [x] Do not create one large handwritten client that mirrors the current `StorefrontApiClient`.
+- [x] Keep TypeScript strict generation proof for future React/Next consumers.
 
 ### Verification
 
@@ -423,9 +423,9 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done when
 
-- [ ] Generated C# client compiles without backend/core project references.
-- [ ] Generated TypeScript client still compiles in strict mode.
-- [ ] Storefront V2 can begin capability-by-capability migration.
+- [x] Generated C# client compiles without backend/core project references.
+- [x] Generated TypeScript client still compiles in strict mode.
+- [x] Storefront V2 can begin capability-by-capability migration.
 
 ## F4 - Browser/BFF Boundary Hardening
 
@@ -789,10 +789,10 @@ Future `BlazorShop.Storefront.Starter` should include:
 
 ### Storefront Client
 
-- [ ] Generated C# client compiles.
-- [ ] Generated TypeScript client compiles strict.
-- [ ] Client has no backend/core project references.
-- [ ] Generated files are deterministic and not hand-edited.
+- [x] Generated C# client compiles.
+- [x] Generated TypeScript client compiles strict.
+- [x] Client has no backend/core project references.
+- [x] Generated files are deterministic and not hand-edited.
 - [ ] Local package consumer proof passes.
 
 ### Storefront V2
@@ -820,7 +820,7 @@ Future `BlazorShop.Storefront.Starter` should include:
 - [x] Commit 2: F1 dependency audit document and migration table.
 - [x] Commit 3: F2 OpenAPI surface split and provider/webhook exclusion from frontend SDK.
 - [x] Commit 4: F2 error contract/capability projection hardening.
-- [ ] Commit 5: F3 generated C# client project and generator tests.
+- [x] Commit 5: F3 generated C# client project and generator tests.
 - [ ] Commit 6: F4 BFF boundary cleanup and local endpoint contract split.
 - [ ] Commit 7: F5.1 configuration/store bootstrap migration.
 - [ ] Commit 8: F5.2 catalog/content/navigation/SEO migration.

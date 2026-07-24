@@ -1076,7 +1076,8 @@ namespace BlazorShop.Tests.PresentationV2.CommerceNode
                     "target": "ES2020",
                     "module": "ES2020",
                     "lib": ["ES2020", "DOM"],
-                    "strict": false,
+                    "strict": true,
+                    "strictNullChecks": true,
                     "skipLibCheck": true,
                     "noEmit": true
                   },

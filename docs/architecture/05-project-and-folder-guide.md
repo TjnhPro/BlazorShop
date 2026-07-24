@@ -208,19 +208,20 @@ Do not:
 - Hold node credentials.
 - Duplicate server-owned Storefront API contract behavior when `Storefront.V2` already owns the server/client integration.
 
-### Future `BlazorShop.Storefront.Client`
+### `BlazorShop.Storefront.Client`
 
 Status:
 
-- Planned by the Headless Storefront Platform Foundation.
-- May live under `BlazorShop.PresentationV2/BlazorShop.Storefront.Client` or the repository root once the phase chooses the final location.
+- Active generated Storefront API client under `BlazorShop.PresentationV2/BlazorShop.Storefront.Client`.
+- Generated from the Commerce Node Storefront OpenAPI snapshot by `scripts/generate-storefront-client.ps1` using the pinned NSwag dotnet tool.
 
 Use for:
 
 - Generated request and response DTOs from Commerce Node Storefront OpenAPI.
 - Generated typed HTTP clients and transport primitives.
 - JSON serialization settings, route construction with `storeKey`, cancellation token propagation, and error deserialization.
-- Small typed facades only when the generated shape is too raw for Storefront consumers.
+- Partial hooks and injected `HttpClient` for correlation, tracing, and caller-owned retry policy wiring.
+- Small typed facades only when a generated client shape is proven too raw for Storefront consumers.
 
 Do not:
 

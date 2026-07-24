@@ -1,0 +1,53 @@
+{
+  "runtime": "Net100",
+  "documentGenerator": {
+    "fromDocument": {
+      "url": "../../BlazorShop.Tests.V2/PresentationV2/CommerceNode/Snapshots/storefront-openapi.snapshot.json",
+      "output": null,
+      "newLineBehavior": "Auto"
+    }
+  },
+  "codeGenerators": {
+    "openApiToCSharpClient": {
+      "generateClientClasses": true,
+      "generateClientInterfaces": true,
+      "injectHttpClient": true,
+      "disposeHttpClient": false,
+      "generateExceptionClasses": true,
+      "exceptionClass": "StorefrontApiException",
+      "wrapDtoExceptions": false,
+      "useBaseUrl": true,
+      "generateBaseUrlProperty": true,
+      "generateSyncMethods": false,
+      "clientClassAccessModifier": "public",
+      "typeAccessModifier": "public",
+      "generateContractsOutput": false,
+      "className": "{controller}Client",
+      "operationGenerationMode": "MultipleClientsFromOperationId",
+      "generateOptionalParameters": false,
+      "generateJsonMethods": false,
+      "parameterArrayType": "System.Collections.Generic.IEnumerable",
+      "parameterDictionaryType": "System.Collections.Generic.IDictionary",
+      "responseArrayType": "System.Collections.Generic.ICollection",
+      "responseDictionaryType": "System.Collections.Generic.IDictionary",
+      "arrayType": "System.Collections.Generic.ICollection",
+      "arrayInstanceType": "System.Collections.ObjectModel.Collection",
+      "dictionaryType": "System.Collections.Generic.IDictionary",
+      "dictionaryInstanceType": "System.Collections.Generic.Dictionary",
+      "requiredPropertiesMustBeDefined": false,
+      "dateType": "System.DateTimeOffset",
+      "dateTimeType": "System.DateTimeOffset",
+      "timeType": "System.TimeSpan",
+      "timeSpanType": "System.TimeSpan",
+      "classStyle": "Poco",
+      "jsonLibrary": "SystemTextJson",
+      "jsonLibraryVersion": "10.0",
+      "generateDataAnnotations": true,
+      "generateDefaultValues": true,
+      "generateNullableReferenceTypes": true,
+      "generateOptionalPropertiesAsNullable": true,
+      "namespace": "BlazorShop.Storefront.Client",
+      "output": "Generated/StorefrontClient.g.cs"
+    }
+  }
+}

@@ -40,7 +40,7 @@ This page records the current contract ownership boundary while Storefront V2 mo
 - Payment attempts/methods.
 - SEO, sitemap, pages, catalog, and rendering helpers.
 
-No new project is needed while these contracts are only consumed by Storefront V2. A separate contracts project should be introduced only if Storefront WASM/components need the same DTOs as a compiled dependency.
+`BlazorShop.PresentationV2/BlazorShop.Storefront.Client` is the generated Storefront HTTP client package. It is generated from the Commerce Node Storefront OpenAPI snapshot and must not reference backend/core/API projects or `Storefront.V2`. Storefront V2 migration should consume this generated client instead of adding handwritten API DTO clones.
 
 ## Portable Component Models
 
@@ -56,4 +56,5 @@ Do not add admin-owned fields, store ownership fields, credentials, tokens, pass
 - `StorefrontPageCompositionGuardrailTests.StorefrontComponentFeatures_DoNotDependOnBackendOrRouteContracts` keeps portable feature components presentation-only.
 - `StorefrontPageCompositionGuardrailTests.StorefrontComponentFeatureModels_DoNotExposeAdminOwnedFields` blocks admin-owned/server-owned fields from component-facing models.
 - `StorefrontEndpointDependencyBoundaryTests.StorefrontLocalEndpointMappings_DoNotInjectConcreteStorefrontApiClient` keeps endpoint mappings behind capability interfaces.
-- `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_CanGenerateTypeScriptClientSmoke` proves Storefront OpenAPI remains generator-safe enough for the future client cutover.
+- `CommerceNodeStorefrontOpenApiContractTests.StorefrontSwagger_GeneratesAndCompilesTypeScriptClientWithNswag` proves Storefront OpenAPI remains generator-safe enough for non-.NET clients.
+- `StorefrontGeneratedClientFoundationTests` proves the generated C# Storefront client compiles, uses generated-source guardrails, and has no backend/core project references.
