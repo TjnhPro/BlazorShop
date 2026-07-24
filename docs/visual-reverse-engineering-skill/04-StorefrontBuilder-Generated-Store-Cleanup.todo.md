@@ -236,25 +236,27 @@ Commit:
 
 Goal: physically remove stale generated projects after replacement flow and docs are ready.
 
-- [ ] Remove `BlazorShop.Storefront.Sample` from `BlazorShop.sln`.
-- [ ] Remove `BlazorShop.Storefront.BuilderDemo` from `BlazorShop.sln`.
-- [ ] Remove empty generated-store solution folders if present.
-- [ ] Delete `BlazorShop.PresentationV2/BlazorShop.Storefront.Sample`.
-- [ ] Delete `BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo`.
-- [ ] Verify `dotnet sln BlazorShop.sln list` does not include either project.
-- [ ] Verify `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, and `BlazorShop.Storefront.Starter` remain in the solution.
-- [ ] Verify no project references point to removed project paths.
-- [ ] Verify generated artifacts are absent from tracked source.
+- [x] Remove `BlazorShop.Storefront.Sample` from `BlazorShop.sln`.
+- [x] Remove `BlazorShop.Storefront.BuilderDemo` from `BlazorShop.sln`.
+- [x] Remove empty generated-store solution folders if present.
+- [x] Delete `BlazorShop.PresentationV2/BlazorShop.Storefront.Sample`.
+- [x] Delete `BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo`.
+- [x] Verify `dotnet sln BlazorShop.sln list` does not include either project.
+- [x] Verify `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, and `BlazorShop.Storefront.Starter` remain in the solution.
+- [x] Verify no project references point to removed project paths.
+- [x] Verify generated artifacts are absent from tracked source.
+
+Note: tracked source for both generated projects was removed. A leftover empty ignored `BuilderDemo/docs/storefront-analysis/capture` directory may remain locally while a GUI process holds a handle, but it is not tracked and no active source/project files remain.
 
 Acceptance:
 
-- [ ] The committed source tree no longer contains generated storefront projects.
-- [ ] The solution no longer contains generated storefront project entries.
-- [ ] The repo still builds with active platform projects.
+- [x] The committed source tree no longer contains generated storefront projects.
+- [x] The solution no longer contains generated storefront project entries.
+- [x] The repo still builds with active platform projects.
 
 Commit:
 
-- [ ] Commit message: `chore: remove committed generated storefront projects`
+- [x] Commit message: `chore: remove committed generated storefront projects`
 
 ## Phase 7 - Make QA Labels Honest
 
