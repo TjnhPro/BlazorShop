@@ -198,6 +198,39 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("SFB-CAPABILITY-005", validator, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void CompositionManifest_IncludesGenerationInputsAndPackageVersions()
+        {
+            var generator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/build-composition-manifest.mjs");
+            var validator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderComposition.ps1");
+
+            foreach (var field in new[]
+            {
+                "projectName",
+                "storeKey",
+                "sourceStarterPath",
+                "starterContractVersion",
+                "StorefrontClientPackageVersion",
+                "StorefrontRuntimePackageVersion",
+                "generatedFileRoot",
+                "assetRoot",
+                "shellComposition",
+                "pageComposition",
+                "slotBindings",
+                "featureDecisions",
+                "fallbackPages",
+                "evidenceReferences",
+                "inferenceReferences",
+            })
+            {
+                Assert.Contains(field, generator, StringComparison.Ordinal);
+                Assert.Contains(field, validator, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("SFB-COMPOSITION-002", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-COMPOSITION-003", validator, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));

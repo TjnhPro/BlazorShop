@@ -250,35 +250,35 @@ Goal: produce the main generation input from topology, tokens, patterns, and cap
 
 Manifest must include:
 
-- [ ] Project name: `BlazorShop.Storefront.{Name}`.
-- [ ] Store key.
-- [ ] Source Starter path.
-- [ ] Starter contract version.
-- [ ] Storefront.Client package version.
-- [ ] Storefront.Runtime package version.
-- [ ] Generated file root.
-- [ ] Asset root.
-- [ ] Shell composition.
-- [ ] Page composition.
-- [ ] Slot bindings.
-- [ ] Feature decisions.
-- [ ] Fallback pages.
-- [ ] Evidence references.
-- [ ] Inference references.
+- [x] Project name: `BlazorShop.Storefront.{Name}`.
+- [x] Store key.
+- [x] Source Starter path.
+- [x] Starter contract version.
+- [x] Storefront.Client package version.
+- [x] Storefront.Runtime package version.
+- [x] Generated file root.
+- [x] Asset root.
+- [x] Shell composition.
+- [x] Page composition.
+- [x] Slot bindings.
+- [x] Feature decisions.
+- [x] Fallback pages.
+- [x] Evidence references.
+- [x] Inference references.
 
 Output:
 
-- [ ] `composition-manifest.yaml`
+- [x] `composition-manifest.yaml`
 
 Done when:
 
-- [ ] The generator can run from this manifest without re-analyzing the reference site.
+- [x] The generator can run from this manifest without re-analyzing the reference site.
 
 Verification:
 
-- [ ] Manifest schema validation.
-- [ ] Missing Starter contract version fails.
-- [ ] Missing package versions fail.
+- [x] Manifest schema validation.
+- [x] Missing Starter contract version fails.
+- [x] Missing package versions fail.
 
 ## S16 - Generation Ownership Plan
 
