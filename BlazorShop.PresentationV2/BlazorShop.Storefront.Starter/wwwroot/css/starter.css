@@ -82,3 +82,11 @@ a {
   margin-top: 2rem;
   border-color: #b42318;
 }
+
+.starter-placeholder {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #ffffff;
+  border: 1px dashed #9a9a90;
+  border-radius: 8px;
+}

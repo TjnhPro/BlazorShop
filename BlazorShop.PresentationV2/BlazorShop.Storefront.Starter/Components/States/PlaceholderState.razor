@@ -1,0 +1,18 @@
+<section class="starter-placeholder" data-render-owner="@RenderOwner" data-hydration-mode="@HydrationMode">
+    <h2>@Title</h2>
+    <p>@Message</p>
+</section>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "Placeholder";
+
+    [Parameter]
+    public string Message { get; set; } = "This route is reserved for generated storefront composition.";
+
+    [Parameter]
+    public string RenderOwner { get; set; } = "SSR";
+
+    [Parameter]
+    public StarterHydrationMode HydrationMode { get; set; } = StarterHydrationMode.InitialSnapshot;
+}

@@ -367,42 +367,42 @@ BlazorShop.Storefront.Starter/
 
 ### SSR-only pages
 
-- [ ] home or landing page if using SSR-only baseline.
-- [ ] content page.
-- [ ] auth form page shell where server-owned.
-- [ ] maintenance.
-- [ ] not found.
+- [x] home or landing page if using SSR-only baseline.
+- [x] content page.
+- [x] auth form page shell where server-owned.
+- [x] maintenance.
+- [x] not found.
 
 ### Hybrid pages
 
-- [ ] product detail.
-- [ ] category.
-- [ ] search.
-- [ ] cart.
-- [ ] checkout.
-- [ ] payment result.
-- [ ] recommendations/deals placement.
+- [x] product detail.
+- [x] category.
+- [x] search.
+- [x] cart.
+- [x] checkout.
+- [x] payment result.
+- [x] recommendations/deals placement.
 
 ### WASM-hosted features
 
-- [ ] account host.
-- [ ] profile.
-- [ ] addresses.
-- [ ] orders.
-- [ ] password management.
+- [x] account host.
+- [x] profile.
+- [x] addresses.
+- [x] orders.
+- [x] password management.
 
 ### Tasks
 
-- [ ] Add route skeletons with stable render ownership.
-- [ ] Add page-level SEO/noindex conventions.
-- [ ] Add hydration mode convention:
-  - [ ] `InitialSnapshot`.
-  - [ ] `BrowserFetch`.
-  - [ ] `RefreshAfterHydration`.
-- [ ] Prevent duplicate first-load fetch when SSR snapshot is supplied.
-- [ ] Add placeholder states, not final visual polish.
-- [ ] Keep UI neutral and replaceable.
-- [ ] Avoid importing Storefront V2 components or CSS.
+- [x] Add route skeletons with stable render ownership.
+- [x] Add page-level SEO/noindex conventions.
+- [x] Add hydration mode convention:
+  - [x] `InitialSnapshot`.
+  - [x] `BrowserFetch`.
+  - [x] `RefreshAfterHydration`.
+- [x] Prevent duplicate first-load fetch when SSR snapshot is supplied.
+- [x] Add placeholder states, not final visual polish.
+- [x] Keep UI neutral and replaceable.
+- [x] Avoid importing Storefront V2 components or CSS.
 
 ### Verification
 
@@ -413,9 +413,9 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done when
 
-- [ ] Render ownership is visible from folders.
-- [ ] Routes compile and render placeholder states.
-- [ ] Data flow and hydration rules are clear.
+- [x] Render ownership is visible from folders.
+- [x] Routes compile and render placeholder states.
+- [x] Data flow and hydration rules are clear.
 
 ## S5 - Generated Client Adoption Policy And Exception Registry
 
@@ -833,7 +833,7 @@ Add CI in stages:
 - [x] Commit 2: S1 Starter project consuming packaged `Storefront.Client`.
 - [x] Commit 3: S2 minimal Runtime extraction if justified by V2 + Starter duplication.
 - [x] Commit 4: S3 SSR generated-client tracer and BFF protected-command tracer.
-- [ ] Commit 5: S4 route/render skeleton.
+- [x] Commit 5: S4 route/render skeleton.
 - [ ] Commit 6: S5 generated-client policy and exception registry.
 - [ ] Commit 7: S6 feature manifest/capability activation.
 - [ ] Commit 8: S7 neutral layout and state components.

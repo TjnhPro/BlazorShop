@@ -2,7 +2,7 @@
 @inject IOptions<StarterStorefrontOptions> StorefrontOptions
 @inject StorefrontBootstrapService BootstrapService
 
-<PageTitle>Storefront Starter</PageTitle>
+<PageTitle>@(_snapshot?.StoreName ?? "Storefront Starter")</PageTitle>
 
 <h1>@(_snapshot?.StoreName ?? "Storefront Starter")</h1>
 <p>This neutral shell consumes the generated Storefront client package.</p>
@@ -12,6 +12,8 @@
     <dd>@(_snapshot?.StoreKey ?? StorefrontOptions.Value.StoreKey)</dd>
     <dt>Commerce API</dt>
     <dd>Configured server-side</dd>
+    <dt>Render owner</dt>
+    <dd>SSR</dd>
 </dl>
 
 @if (_snapshot?.Error is not null)
@@ -23,7 +25,7 @@
 }
 else if (_snapshot is not null)
 {
-    <section class="starter-section" aria-labelledby="featured-products-title">
+    <section class="starter-section" aria-labelledby="featured-products-title" data-hydration-mode="@StarterHydrationMode.InitialSnapshot">
         <h2 id="featured-products-title">Featured products</h2>
         @if (_snapshot.Products.Count == 0)
         {

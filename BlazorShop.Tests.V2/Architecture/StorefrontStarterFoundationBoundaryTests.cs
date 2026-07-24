@@ -219,7 +219,7 @@ namespace BlazorShop.Tests.Architecture
             var bootstrap = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Services/StorefrontBootstrapService.cs");
             var bff = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Endpoints/StarterBffEndpoints.cs");
             var program = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Program.cs");
-            var home = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Components/Pages/Home.razor");
+            var home = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Home/HomePage.razor");
 
             Assert.Contains("GetCurrentAsync", bootstrap, StringComparison.Ordinal);
             Assert.Contains("configurationClient.GetAsync", bootstrap, StringComparison.Ordinal);
@@ -303,6 +303,86 @@ namespace BlazorShop.Tests.Architecture
                     Source = File.ReadAllText(path),
                 })
                 .Where(file => forbiddenTokens.Any(token => file.Source.Contains(token, StringComparison.OrdinalIgnoreCase)))
+                .Select(file => file.RelativePath)
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .ToArray();
+
+            Assert.Empty(violations);
+        }
+
+        [Fact]
+        public void StarterRouteSkeleton_RecordsRenderOwnershipAndHydrationModes()
+        {
+            var expectedRoutes = new Dictionary<string, string[]>(StringComparer.Ordinal)
+            {
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Home/HomePage.razor"] = ["@page \"/\""],
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Content/ContentPage.razor"] = ["@page \"/content/{Slug}\""],
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/Auth/AuthShellPage.razor"] = ["@page \"/signin\""],
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/System/MaintenancePage.razor"] = ["@page \"/maintenance\""],
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Ssr/System/NotFoundPage.razor"] = ["@page \"/not-found\""],
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/ProductPage.razor"] = ["@page \"/product/{Slug}\""],
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/CategoryPage.razor"] = ["@page \"/category/{Slug}\""],
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Catalog/SearchPage.razor"] = ["@page \"/search\""],
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CartPage.razor"] = ["@page \"/cart\""],
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/CheckoutPage.razor"] = ["@page \"/checkout\""],
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/PaymentResultPage.razor"] = ["@page \"/payment/result\""],
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/Hybrid/Commerce/DealsPage.razor"] = ["@page \"/deals\""],
+                ["BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/WasmHost/Account/AccountHostPage.razor"] = ["@page \"/account\"", "@page \"/account/{*Path}\""],
+            };
+
+            foreach (var (relativePath, routes) in expectedRoutes)
+            {
+                var source = ReadRepositoryFile(relativePath);
+                foreach (var route in routes)
+                {
+                    Assert.Contains(route, source, StringComparison.Ordinal);
+                }
+
+                if (relativePath.EndsWith("HomePage.razor", StringComparison.Ordinal))
+                {
+                    Assert.Contains("BootstrapService.LoadAsync", source, StringComparison.Ordinal);
+                    Assert.Contains("StarterHydrationMode.InitialSnapshot", source, StringComparison.Ordinal);
+                }
+                else
+                {
+                    Assert.Contains("PlaceholderState", source, StringComparison.Ordinal);
+                }
+            }
+
+            var hydration = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Composition/StarterHydrationMode.cs");
+            var pagesReadme = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages/README.md");
+
+            Assert.Contains("InitialSnapshot", hydration, StringComparison.Ordinal);
+            Assert.Contains("BrowserFetch", hydration, StringComparison.Ordinal);
+            Assert.Contains("RefreshAfterHydration", hydration, StringComparison.Ordinal);
+            Assert.Contains("ShouldFetchOnFirstLoad", hydration, StringComparison.Ordinal);
+            Assert.Contains("must not duplicate the first fetch", pagesReadme, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void StarterPages_DoNotImportStorefrontV2ComponentsOrCss()
+        {
+            var roots = new[]
+            {
+                RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Pages"),
+                RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Components"),
+                RepositoryPath("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/wwwroot"),
+            };
+
+            var violations = roots
+                .Where(Directory.Exists)
+                .SelectMany(root => Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories))
+                .Where(path => path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase)
+                    || path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+                    || path.EndsWith(".css", StringComparison.OrdinalIgnoreCase))
+                .Select(path => new
+                {
+                    RelativePath = ToRepositoryRelativePath(path),
+                    Source = File.ReadAllText(path),
+                })
+                .Where(file => file.Source.Contains("BlazorShop.Storefront.V2", StringComparison.Ordinal)
+                    || file.Source.Contains("BlazorShop.Storefront.Components.Features", StringComparison.Ordinal)
+                    || file.Source.Contains("storefront.css", StringComparison.OrdinalIgnoreCase))
                 .Select(file => file.RelativePath)
                 .OrderBy(path => path, StringComparer.Ordinal)
                 .ToArray();
