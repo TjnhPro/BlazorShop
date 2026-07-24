@@ -1,0 +1,10 @@
+<aside class="starter-purchase-panel">
+    <h2>@ProductName</h2>
+    <p>Purchase controls stay backed by Commerce Node validation.</p>
+    <button class="starter-button" type="button" disabled>Add to cart</button>
+</aside>
+
+@code {
+    [Parameter]
+    public string ProductName { get; set; } = "Product";
+}

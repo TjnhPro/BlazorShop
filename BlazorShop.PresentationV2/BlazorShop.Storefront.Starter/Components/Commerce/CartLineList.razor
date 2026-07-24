@@ -1,0 +1,23 @@
+@if (Lines.Count == 0)
+{
+    <EmptyState Title="Cart is empty" Message="Cart lines will render here after same-origin BFF reads." />
+}
+else
+{
+    <ul class="starter-line-list">
+        @foreach (var line in Lines)
+        {
+            <li>
+                <span>@line.Name</span>
+                <span>@line.Quantity</span>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    [Parameter]
+    public IReadOnlyList<StarterCartLine> Lines { get; set; } = [];
+
+    public sealed record StarterCartLine(string Name, int Quantity);
+}

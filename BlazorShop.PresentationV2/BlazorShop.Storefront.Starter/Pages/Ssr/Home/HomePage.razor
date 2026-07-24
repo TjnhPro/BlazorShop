@@ -28,25 +28,7 @@ else if (_snapshot is not null)
 {
     <section class="starter-section" aria-labelledby="featured-products-title" data-hydration-mode="@StarterHydrationMode.InitialSnapshot">
         <h2 id="featured-products-title">Featured products</h2>
-        @if (_snapshot.Products.Count == 0)
-        {
-            <p>No products are available yet.</p>
-        }
-        else
-        {
-            <ul class="starter-products">
-                @foreach (var product in _snapshot.Products)
-                {
-                    <li>
-                        <strong>@product.Name</strong>
-                        @if (product.Price is not null)
-                        {
-                            <span>@product.Price.Value.ToString("0.00") @_snapshot.CurrencyCode</span>
-                        }
-                    </li>
-                }
-            </ul>
-        }
+        <ProductGrid Products="@_snapshot.Products" CurrencyCode="@_snapshot.CurrencyCode" />
     </section>
 
     @if (FeatureActivationService.Evaluate("recommendations", "home", _snapshot.Features).Visible)

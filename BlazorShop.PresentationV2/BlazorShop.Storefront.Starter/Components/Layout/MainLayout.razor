@@ -4,12 +4,21 @@
     <a class="starter-brand" href="/">Storefront Starter</a>
     <nav aria-label="Main navigation">
         <a href="/">Home</a>
+        <a href="/search">Search</a>
+        <a href="/deals">Deals</a>
+        <a href="/cart" aria-label="Cart">Cart</a>
+        <a href="/account" aria-label="Account">Account</a>
     </nav>
 </header>
 
 <main class="starter-main">
+    <nav class="starter-breadcrumb" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+    </nav>
     @Body
 </main>
+
+<div class="starter-toast-region" aria-live="polite" aria-atomic="true"></div>
 
 <footer class="starter-footer">
     <span>Neutral storefront shell</span>

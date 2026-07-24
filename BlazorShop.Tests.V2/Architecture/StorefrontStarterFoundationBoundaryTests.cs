@@ -485,6 +485,49 @@ namespace BlazorShop.Tests.Architecture
         }
 
         [Fact]
+        public void StarterNeutralLayoutAndStateComponents_ArePresent()
+        {
+            var expectedComponents = new[]
+            {
+                "Components/States/LoadingState.razor",
+                "Components/States/SkeletonBlock.razor",
+                "Components/States/EmptyState.razor",
+                "Components/States/ErrorState.razor",
+                "Components/States/ValidationSummary.razor",
+                "Components/States/RetryAction.razor",
+                "Components/States/UnavailableFeatureState.razor",
+                "Components/Catalog/ProductSummaryCard.razor",
+                "Components/Catalog/ProductGrid.razor",
+                "Components/Catalog/ProductDetailShell.razor",
+                "Components/Catalog/ProductGalleryPlaceholder.razor",
+                "Components/Catalog/PurchasePanelPlaceholder.razor",
+                "Components/Commerce/CartLineList.razor",
+                "Components/Commerce/CheckoutStepShell.razor",
+                "Components/Account/AccountShell.razor",
+            };
+
+            foreach (var component in expectedComponents)
+            {
+                Assert.True(
+                    File.Exists(RepositoryPath($"BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/{component}")),
+                    $"Missing Starter component '{component}'.");
+            }
+
+            var layout = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/Components/Layout/MainLayout.razor");
+            var css = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.Starter/wwwroot/css/starter.css");
+
+            Assert.Contains("starter-header", layout, StringComparison.Ordinal);
+            Assert.Contains("starter-footer", layout, StringComparison.Ordinal);
+            Assert.Contains("starter-breadcrumb", layout, StringComparison.Ordinal);
+            Assert.Contains("starter-toast-region", layout, StringComparison.Ordinal);
+            Assert.Contains("/cart", layout, StringComparison.Ordinal);
+            Assert.Contains("/account", layout, StringComparison.Ordinal);
+            Assert.Contains("@media (max-width: 720px)", css, StringComparison.Ordinal);
+            Assert.Contains("border-radius: 8px", css, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Storefront.V2", css, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void StarterDocs_SayStorefrontV2IsBehaviorReferenceOnly()
         {
             var adr = ReadRepositoryFile("docs/architecture/adr/2026-07-24-storefront-starter-foundation.md");

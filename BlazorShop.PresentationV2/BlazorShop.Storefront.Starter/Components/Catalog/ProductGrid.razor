@@ -1,0 +1,30 @@
+@if (Products.Count == 0)
+{
+    <EmptyState Title="No products" Message="No products are available for this placement." />
+}
+else
+{
+    <div class="starter-product-grid">
+        @foreach (var product in Products)
+        {
+            <ProductSummaryCard
+                Name="@product.Name"
+                ImageUrl="@product.ImageUrl"
+                Price="@FormatPrice(product)"
+                Href="@($"/product/{product.Slug}")" />
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public IReadOnlyList<StarterProductSummary> Products { get; set; } = [];
+
+    [Parameter]
+    public string CurrencyCode { get; set; } = "USD";
+
+    private string? FormatPrice(StarterProductSummary product)
+    {
+        return product.Price is null ? null : $"{product.Price.Value:0.00} {CurrencyCode}";
+    }
+}

@@ -1,0 +1,12 @@
+<section class="starter-state" aria-busy="true" aria-live="polite">
+    <SkeletonBlock Lines="@Lines" />
+    <span>@Label</span>
+</section>
+
+@code {
+    [Parameter]
+    public string Label { get; set; } = "Loading";
+
+    [Parameter]
+    public int Lines { get; set; } = 3;
+}

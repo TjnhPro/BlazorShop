@@ -1,0 +1,23 @@
+<section class="starter-account-shell">
+    <nav aria-label="Account navigation">
+        <a href="/account/profile">Profile</a>
+        <a href="/account/addresses">Addresses</a>
+        <a href="/account/orders">Orders</a>
+        <a href="/account/password">Password</a>
+    </nav>
+    <div>
+        @if (ChildContent is null)
+        {
+            <EmptyState Title="Account" Message="Account feature content is browser-owned behind same-origin APIs." />
+        }
+        else
+        {
+            @ChildContent
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

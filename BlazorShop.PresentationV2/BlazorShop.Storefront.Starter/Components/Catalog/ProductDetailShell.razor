@@ -1,0 +1,9 @@
+<section class="starter-detail-shell">
+    <ProductGalleryPlaceholder Label="@ProductName" />
+    <PurchasePanelPlaceholder ProductName="@ProductName" />
+</section>
+
+@code {
+    [Parameter]
+    public string ProductName { get; set; } = "Product";
+}

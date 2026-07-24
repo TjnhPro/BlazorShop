@@ -533,50 +533,50 @@ Goal: make Starter usable but not visually opinionated.
 
 ### Layout baseline
 
-- [ ] neutral root layout.
-- [ ] header.
-- [ ] footer.
-- [ ] main navigation.
-- [ ] breadcrumb region.
-- [ ] cart/account entry points.
-- [ ] notification/toast region.
-- [ ] responsive baseline.
+- [x] neutral root layout.
+- [x] header.
+- [x] footer.
+- [x] main navigation.
+- [x] breadcrumb region.
+- [x] cart/account entry points.
+- [x] notification/toast region.
+- [x] responsive baseline.
 
 ### State components
 
-- [ ] `LoadingState`.
-- [ ] `SkeletonBlock`.
-- [ ] `EmptyState`.
-- [ ] `ErrorState`.
-- [ ] `ValidationSummary`.
-- [ ] `RetryAction`.
-- [ ] `UnavailableFeatureState`.
+- [x] `LoadingState`.
+- [x] `SkeletonBlock`.
+- [x] `EmptyState`.
+- [x] `ErrorState`.
+- [x] `ValidationSummary`.
+- [x] `RetryAction`.
+- [x] `UnavailableFeatureState`.
 
 ### Feature baseline views
 
-- [ ] product summary card.
-- [ ] product grid.
-- [ ] product detail shell.
-- [ ] product gallery placeholder.
-- [ ] purchase panel placeholder.
-- [ ] cart line list.
-- [ ] checkout step shell.
-- [ ] account shell.
+- [x] product summary card.
+- [x] product grid.
+- [x] product detail shell.
+- [x] product gallery placeholder.
+- [x] purchase panel placeholder.
+- [x] cart line list.
+- [x] checkout step shell.
+- [x] account shell.
 
 ### UI rules
 
-- [ ] neutral visual baseline only.
-- [ ] no strong brand identity.
-- [ ] accessible HTML semantics.
-- [ ] responsive without layout overlap.
-- [ ] easy to override CSS.
-- [ ] no V2 asset/CSS dependency.
+- [x] neutral visual baseline only.
+- [x] no strong brand identity.
+- [x] accessible HTML semantics.
+- [x] responsive without layout overlap.
+- [x] easy to override CSS.
+- [x] no V2 asset/CSS dependency.
 
 ### Done when
 
-- [ ] Starter looks usable enough for QA.
-- [ ] Store-specific design can replace layout/CSS without touching runtime/security.
-- [ ] Loading/error/empty states exist for generated storefronts.
+- [x] Starter looks usable enough for QA.
+- [x] Store-specific design can replace layout/CSS without touching runtime/security.
+- [x] Loading/error/empty states exist for generated storefronts.
 
 ## S8 - Starter Independent Build, Package, And Repository Proof
 
@@ -836,7 +836,7 @@ Add CI in stages:
 - [x] Commit 5: S4 route/render skeleton.
 - [x] Commit 6: S5 generated-client policy and exception registry.
 - [x] Commit 7: S6 feature manifest/capability activation.
-- [ ] Commit 8: S7 neutral layout and state components.
+- [x] Commit 8: S7 neutral layout and state components.
 - [ ] Commit 9: S8 isolation gate script.
 - [ ] Commit 10: S9 deterministic Sample generation.
 - [ ] Commit 11: S10 Sample QA release gate evidence.
