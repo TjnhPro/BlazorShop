@@ -2,7 +2,7 @@
 
 Date: 2026-07-24
 
-Status: Planned
+Status: Completed
 
 Skill used: autoplan
 
@@ -20,21 +20,21 @@ The main outcome is documentation and project-shape clarity. Physical removal is
 
 ## Non-Goals
 
-- [ ] Do not fix true visual reverse-engineering quality in this cleanup.
-- [ ] Do not claim BuilderDemo visual fidelity is production-ready.
-- [ ] Do not change Commerce Node API, Control Plane API, or Storefront V2 runtime behavior.
-- [ ] Do not remove `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, or `BlazorShop.Storefront.Starter`.
-- [ ] Do not make `run-v2-local.ps1` depend on committed generated storefront projects.
+- [x] Do not fix true visual reverse-engineering quality in this cleanup.
+- [x] Do not claim BuilderDemo visual fidelity is production-ready.
+- [x] Do not change Commerce Node API, Control Plane API, or Storefront V2 runtime behavior.
+- [x] Do not remove `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, or `BlazorShop.Storefront.Starter`.
+- [x] Do not make `run-v2-local.ps1` depend on committed generated storefront projects.
 
 ## Current Problems To Resolve
 
-- [ ] `BlazorShop.Storefront.Sample` and `BlazorShop.Storefront.BuilderDemo` are listed as active projects in docs.
-- [ ] The solution contains solution folders and project entries for both generated stores.
-- [ ] Multiple docs describe `Sample` and `BuilderDemo` as committed proof projects.
-- [ ] Several scripts default to `BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo`.
-- [ ] Some tests read committed generated files instead of proving generation from current StorefrontBuilder code.
-- [ ] Visual QA reports currently behave like smoke checks and do not prove visual fidelity against the input URL.
-- [ ] Functional commerce QA currently needs clearer pass criteria for actual command behavior.
+- [x] `BlazorShop.Storefront.Sample` and `BlazorShop.Storefront.BuilderDemo` are listed as active projects in docs.
+- [x] The solution contains solution folders and project entries for both generated stores.
+- [x] Multiple docs describe `Sample` and `BuilderDemo` as committed proof projects.
+- [x] Several scripts default to `BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo`.
+- [x] Some tests read committed generated files instead of proving generation from current StorefrontBuilder code.
+- [x] Visual QA reports currently behave like smoke checks and do not prove visual fidelity against the input URL.
+- [x] Functional commerce QA currently needs clearer pass criteria for actual command behavior.
 
 ## Phase 0 - Recon And Baseline
 
@@ -329,50 +329,56 @@ Commit:
 
 Goal: prove the cleanup is complete and does not leave stale active references.
 
-- [ ] Run `git status --short` and confirm only intended files changed.
-- [ ] Run `rg -n "BuilderDemo|Storefront\\.Sample|BlazorShop\\.Storefront\\.Sample|committed proof|active generated proof" README.md AGENTS.md docs scripts tools BlazorShop.Tests.V2 BlazorShop.sln`.
-- [ ] Review every remaining match and confirm it is historical, test-fixture-only, or this cleanup plan.
-- [ ] Run `dotnet restore BlazorShop.sln`.
-- [ ] Run `dotnet build BlazorShop.sln --no-restore`.
-- [ ] Run focused StorefrontBuilder tests.
-- [ ] Run the generated proof command from Phase 3.
-- [ ] Run StorefrontBuilder validation against the generated artifact.
-- [ ] Run StorefrontBuilder isolation gate against the generated artifact.
-- [ ] If browser QA changed, run the browser smoke checks against the generated artifact.
-- [ ] Confirm no generated artifact files are tracked.
+- [x] Run `git status --short` and confirm only intended files changed.
+- [x] Run `rg -n "BuilderDemo|Storefront\\.Sample|BlazorShop\\.Storefront\\.Sample|committed proof|active generated proof" README.md AGENTS.md docs scripts tools BlazorShop.Tests.V2 BlazorShop.sln`.
+- [x] Review every remaining match and confirm it is historical, test-fixture-only, or this cleanup plan.
+- [x] Run `dotnet restore BlazorShop.sln`.
+- [x] Run `dotnet build BlazorShop.sln --no-restore`.
+- [x] Run focused StorefrontBuilder tests.
+- [x] Run the generated proof command from Phase 3.
+- [x] Run StorefrontBuilder validation against the generated artifact.
+- [x] Run StorefrontBuilder isolation gate against the generated artifact.
+- [x] If browser QA changed, run the browser smoke checks against the generated artifact.
+- [x] Confirm no generated artifact files are tracked.
+
+Notes:
+
+- Remaining `BuilderDemo`/`Storefront.Sample` scan hits are limited to this cleanup plan, historical phase docs/ADR, test-fixture-only isolation output under `obj`, and tests asserting removed project paths stay absent.
+- Final browser QA found a real generated Starter static CSS serving issue with browser gzip requests. Starter now uses `UseStaticFiles()` without `MapStaticAssets()` so generated proof CSS is served with non-empty `text/css` responses and browser styles are applied.
+- Functional commerce smoke now reports a fixture gap instead of claiming product-link click proof when home/catalog do not expose a product link.
 
 Acceptance:
 
-- [ ] Build passes without committed generated stores.
-- [ ] Focused tests pass without committed generated stores.
-- [ ] Generated proof can be recreated from source.
-- [ ] Active docs no longer describe `Sample` or `BuilderDemo` as existing active projects.
+- [x] Build passes without committed generated stores.
+- [x] Focused tests pass without committed generated stores.
+- [x] Generated proof can be recreated from source.
+- [x] Active docs no longer describe `Sample` or `BuilderDemo` as existing active projects.
 
 Commit:
 
-- [ ] Commit message: `chore: verify generated storefront cleanup`
+- [x] Commit message: `chore: verify generated storefront cleanup`
 
 ## Commit Order
 
-- [ ] Phase 0/1 planning and policy.
-- [ ] Phase 2 script de-hardcoding.
-- [ ] Phase 3 generated proof workflow.
-- [ ] Phase 4 tests.
-- [ ] Phase 5 docs cleanup.
-- [ ] Phase 6 project removal.
-- [ ] Phase 7 QA label and gate cleanup.
-- [ ] Phase 9 final verification if it produces tracked changes.
+- [x] Phase 0/1 planning and policy.
+- [x] Phase 2 script de-hardcoding.
+- [x] Phase 3 generated proof workflow.
+- [x] Phase 4 tests.
+- [x] Phase 5 docs cleanup.
+- [x] Phase 6 project removal.
+- [x] Phase 7 QA label and gate cleanup.
+- [x] Phase 9 final verification if it produces tracked changes.
 
 Each phase should be committed separately. If a phase has no tracked changes, record its verification in the next commit message or final implementation notes.
 
 ## Risk Register
 
-- [ ] Removing generated projects before replacing the proof path can break existing tests and docs.
-- [ ] Leaving docs stale is worse than leaving stale source because future agents will recreate the wrong architecture.
-- [ ] Generated-on-demand tests may be slower; keep them focused and separate from cheap architecture tests.
-- [ ] Output-root cleanup is destructive; require path resolution and generated-root containment checks.
-- [ ] Historical docs may still mention `Storefront.Sample`; those mentions must be explicitly marked historical or left only in archived plans.
-- [ ] Visual QA may still be weak after cleanup; label it honestly and fail on CSS/runtime defects.
+- [x] Removing generated projects before replacing the proof path can break existing tests and docs.
+- [x] Leaving docs stale is worse than leaving stale source because future agents will recreate the wrong architecture.
+- [x] Generated-on-demand tests may be slower; keep them focused and separate from cheap architecture tests.
+- [x] Output-root cleanup is destructive; require path resolution and generated-root containment checks.
+- [x] Historical docs may still mention `Storefront.Sample`; those mentions must be explicitly marked historical or left only in archived plans.
+- [x] Visual QA may still be weak after cleanup; label it honestly and fail on CSS/runtime defects.
 
 ## Architecture Shape After Completion
 
@@ -406,8 +412,8 @@ Autoplan synthesis:
 
 Final recommendation:
 
-- [ ] Proceed with removal only after Phase 2, Phase 3, and Phase 5 have clear replacements for scripts, proof flow, and docs.
-- [ ] Treat Phase 5 documentation cleanup as the central deliverable.
-- [ ] Keep true visual generation improvements for the later StorefrontBuilder correction phases.
+- [x] Proceed with removal only after Phase 2, Phase 3, and Phase 5 have clear replacements for scripts, proof flow, and docs.
+- [x] Treat Phase 5 documentation cleanup as the central deliverable.
+- [x] Keep true visual generation improvements for the later StorefrontBuilder correction phases.
 
 NO UNRESOLVED DECISIONS

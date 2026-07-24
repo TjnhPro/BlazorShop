@@ -230,6 +230,8 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("AddLineAsync", bff, StringComparison.Ordinal);
             Assert.Contains("HttpOnly = true", bff, StringComparison.Ordinal);
             Assert.Contains("SameSite = SameSiteMode.Lax", bff, StringComparison.Ordinal);
+            Assert.Contains("UseStaticFiles", program, StringComparison.Ordinal);
+            Assert.DoesNotContain("MapStaticAssets", program, StringComparison.Ordinal);
             Assert.Contains("MapStarterBffEndpoints", program, StringComparison.Ordinal);
             Assert.Contains("BootstrapService.LoadAsync", home, StringComparison.Ordinal);
             Assert.Contains("data-error-code", home, StringComparison.Ordinal);

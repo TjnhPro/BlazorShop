@@ -28,33 +28,11 @@ const browser = await chromium.launch();
 const discrepancies = [];
 const captures = [];
 const cssResponses = [];
+const cssResponseKeys = new Set();
 
 try {
   for (const [viewportName, width, height] of viewports) {
     const page = await browser.newPage({ viewport: { width, height } });
-    page.on("response", async (response) => {
-      const url = response.url();
-      if (!url.includes(".css")) {
-        return;
-      }
-
-      try {
-        const body = await response.text();
-        cssResponses.push({
-          url,
-          status: response.status(),
-          contentType: response.headers()["content-type"] ?? "",
-          length: body.length,
-        });
-      } catch {
-        cssResponses.push({
-          url,
-          status: response.status(),
-          contentType: response.headers()["content-type"] ?? "",
-          length: -1,
-        });
-      }
-    });
 
     for (const [pageName, route] of pages) {
       const url = new URL(route, baseUrl).toString();
@@ -69,7 +47,7 @@ try {
         discrepancies.push(critical(pageName, viewportName, "Missing primary h1 content."));
       }
 
-      const cssState = await page.evaluate(() => {
+      const cssState = await page.evaluate(async () => {
         const sheets = Array.from(document.styleSheets).map((sheet) => {
           try {
             return { href: sheet.href ?? "inline", ruleCount: sheet.cssRules.length, readable: true };
@@ -79,10 +57,35 @@ try {
         });
 
         const bodyStyle = window.getComputedStyle(document.body);
+        const linkedStylesheets = Array.from(document.querySelectorAll('link[rel~="stylesheet"][href]'))
+          .map((link) => new URL(link.getAttribute("href"), document.baseURI).toString());
+        const responses = [];
+
+        for (const href of linkedStylesheets) {
+          try {
+            const response = await fetch(href, { cache: "no-store", credentials: "same-origin" });
+            const body = await response.text();
+            responses.push({
+              url: href,
+              status: response.status,
+              contentType: response.headers.get("content-type") ?? "",
+              length: body.length,
+            });
+          } catch {
+            responses.push({
+              url: href,
+              status: 0,
+              contentType: "",
+              length: -1,
+            });
+          }
+        }
+
         return {
           bodyFont: bodyStyle.fontFamily,
           bodyBackground: bodyStyle.backgroundColor,
           sheets,
+          responses,
         };
       });
 
@@ -93,6 +96,14 @@ try {
 
       if (cssState.bodyFont.toLowerCase().includes("times new roman")) {
         discrepancies.push(critical(pageName, viewportName, `Browser default body font is still active: ${cssState.bodyFont}.`));
+      }
+
+      for (const response of cssState.responses) {
+        const key = `${response.status}|${response.length}|${response.contentType}|${response.url}`;
+        if (!cssResponseKeys.has(key)) {
+          cssResponseKeys.add(key);
+          cssResponses.push(response);
+        }
       }
 
       const screenshot = join(screenshotRoot, `${pageName}-${viewportName}.png`);
