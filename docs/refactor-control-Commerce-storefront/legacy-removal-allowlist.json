@@ -1,0 +1,4 @@
+{
+  "note": "Inventory is intentionally noisy because it scans the whole repository, including historical plans and reference notes. ActiveStrict is the enforced V2 runtime guardrail.",
+  "activeStrictIgnoreFiles": []
+}

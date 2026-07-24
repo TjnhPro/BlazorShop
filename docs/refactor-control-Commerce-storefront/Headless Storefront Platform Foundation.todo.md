@@ -1,0 +1,879 @@
+# Headless Storefront Platform Foundation Todo
+
+Status: In progress
+Source: autoplan review on 2026-07-24 after investigate review of Headless Storefront Platform and Storefront.V2 decoupling
+Purpose: make Commerce Node a framework-neutral Storefront API platform, keep Storefront V2 as the first real storefront consumer, and create the client/runtime boundary needed before a future Storefront Starter or AI-generated storefront is built.
+
+## Current Verified Codebase Context
+
+- [x] `BlazorShop.CommerceNode.API` already exposes a Storefront API surface under `api/storefront/stores/{storeKey}/*`.
+- [x] Commerce Node Storefront controllers already live under capability-specific files in `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront`.
+- [x] Commerce Node already has Storefront API contracts under `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Contracts/Storefront`.
+- [x] Commerce Node Swagger already has a separate document named `storefront`.
+- [x] `CommerceNodeStorefrontOpenApiContractTests` already validates Storefront OpenAPI metadata, schemas, security metadata, snapshots, and TypeScript client generation.
+- [x] `BlazorShop.Storefront.Components` does not reference `Application`, `Domain`, `Infrastructure`, Control Plane, or Commerce Node API projects.
+- [x] `BlazorShop.Storefront.WASM` only references `BlazorShop.Storefront.Components`.
+- [x] `BlazorShop.Storefront.V2` still references `BlazorShop.Application` and `BlazorShop.Web.SharedV2`.
+- [x] `BlazorShop.Storefront.V2` source still imports Application DTOs/contracts and `Web.SharedV2.Models` in pages, services, endpoint mappings, SEO, navigation, cart, checkout, and account areas.
+- [x] Storefront OpenAPI snapshot currently includes payment provider callback/webhook operations, which are not frontend client operations.
+- [x] Storefront public configuration currently exposes feature flags as flat booleans, not a richer `supported/enabled/reason` capability projection.
+- [x] Storefront V2 already has same-origin BFF/local endpoints under `/api/cart`, `/api/account`, `/api/checkout`, `/api/consent`, `/api/media`, and SEO/media helpers.
+- [x] No `BlazorShop.Storefront.Client`, `BlazorShop.Storefront.Runtime`, `BlazorShop.Storefront.Starter`, or `BlazorShop.Storefront.Features.*` projects exist yet.
+
+## Goal
+
+Create a foundation where:
+
+- `CommerceNode.API` is the authoritative headless ecommerce backend and Storefront API platform.
+- Storefront public API contracts are framework-neutral, generator-safe, and safe for AI/frontend consumers.
+- OpenAPI is the canonical machine-readable contract.
+- Storefront V2 consumes Commerce Node through HTTP/OpenAPI clients instead of compile-time backend/core DTO dependencies.
+- Browser/WASM code continues to call same-origin BFF endpoints and never knows Commerce Node URL, node credentials, or access-token storage internals.
+- Storefront V2 remains a real storefront implementation, not a neutral Starter/template.
+- A future `BlazorShop.Storefront.Starter` can be built after the foundation without copying backend logic or Storefront V2 code.
+
+## Non-goals
+
+- [ ] Do not build `BlazorShop.Storefront.Starter` in this foundation.
+- [ ] Do not build a React/Next/Nuxt storefront in this foundation.
+- [ ] Do not build the AI generator in this foundation.
+- [ ] Do not split repositories in this foundation.
+- [ ] Do not publish public NuGet/npm SDK packages in this foundation.
+- [ ] Do not turn `Storefront.V2` into a neutral template.
+- [ ] Do not redesign Storefront V2 UI.
+- [ ] Do not move checkout business rules, payment rules, pricing, sellability, cart validation, or order placement into frontend code.
+- [ ] Do not let WASM call Commerce Node protected APIs directly.
+- [ ] Do not add handwritten duplicate API DTOs in frontend when the schema should come from OpenAPI.
+- [ ] Do not package every feature module prematurely before a generated client and decoupled V2 prove the boundary.
+
+## Target Architecture
+
+```text
+Backend
+  BlazorShop.Domain
+  BlazorShop.Application
+  BlazorShop.Infrastructure
+  BlazorShop.CommerceNode.API
+      -> Storefront Client API
+      -> Commerce Admin API
+      -> Provider Callback/Webhook API
+
+Contracts
+  Storefront OpenAPI document
+      -> generated C# client
+      -> generated TypeScript client
+
+Storefront Platform Packages
+  BlazorShop.Storefront.Client
+      -> generated transport/contracts only
+  BlazorShop.Storefront.Runtime
+      -> optional later shared runtime primitives
+
+Storefront Implementations
+  BlazorShop.Storefront.V2
+      -> real storefront consumer
+  BlazorShop.Storefront.Starter
+      -> future neutral skeleton
+  BlazorShop.Storefront.{Name}
+      -> future generated storefront
+```
+
+Forbidden final dependencies:
+
+```text
+Storefront.V2 -> Domain
+Storefront.V2 -> Application
+Storefront.V2 -> Infrastructure
+Storefront.V2 -> CommerceNode.API
+Storefront.V2 -> ControlPlane.API
+
+Storefront.Client -> Domain/Application/Infrastructure/API projects
+Storefront.Runtime -> Domain/Application/Infrastructure/API projects
+Storefront.WASM -> Commerce Node direct protected API
+```
+
+## Canonical Frontend Flow
+
+Public SSR:
+
+```text
+Storefront V2 SSR page/service
+    -> generated C# Storefront client
+        -> CommerceNode API /api/storefront/stores/{storeKey}/*
+```
+
+Protected browser/WASM:
+
+```text
+Storefront.WASM component
+    -> same-origin /api/*
+        -> Storefront V2 BFF endpoint
+            -> generated C# Storefront client
+                -> CommerceNode API /api/storefront/stores/{storeKey}/*
+```
+
+Rules:
+
+- Browser client does not know Commerce Node base URL.
+- Browser client does not hold node credentials.
+- Browser client does not hold access tokens in local storage.
+- Browser mutations use antiforgery.
+- BFF resolves current store/session/cart token and forwards safe commands.
+- BFF does not duplicate ecommerce business truth.
+
+## Phase Dependency Map
+
+```text
+F0 Role and boundary lock
+  -> F1 Current dependency audit
+      -> F2 Storefront API contract hardening
+          -> F3 Generated C# Storefront client
+              -> F4 Browser/BFF boundary hardening
+                  -> F5 Storefront V2 capability migration
+                      -> F6 Runtime/package boundary only where proven
+                          -> F7 Compliance, packaging, isolation gate
+                              -> F8 Starter readiness decision
+```
+
+## F0 - Role And Boundary Lock
+
+Goal: make the project roles explicit so later work does not accidentally turn Storefront V2 into Starter or leak backend dependencies into frontend packages.
+
+### Tasks
+
+- [x] Add an ADR under `docs/architecture/adr/` or an architecture page if ADR folder does not exist.
+- [x] Record roles:
+  - [x] `CommerceNode.API` = headless ecommerce backend + Storefront API platform.
+  - [x] `Storefront.V2` = first real storefront consumer.
+  - [x] `Storefront.Starter` = future neutral skeleton, not part of this foundation.
+  - [x] `Storefront.{Name}` = future independent generated storefront.
+- [x] Update `docs/architecture/01-system-map.md` with the target flow.
+- [x] Update `docs/architecture/05-project-and-folder-guide.md` with future `Storefront.Client` and optional `Storefront.Runtime` ownership.
+- [x] Update `docs/architecture/10-v2-contract-ownership.md` with the foundation rule:
+  - [x] Storefront public HTTP contracts are canonical at Commerce Node API boundary.
+  - [x] Generated clients are frontend-readable contracts.
+  - [x] Frontend view models are allowed, but not duplicate API DTO clones.
+- [x] Add architecture test placeholders for final dependency rules.
+- [x] Add an explicit note that V2 must not be copied as Starter source.
+
+### Files likely touched
+
+- `docs/architecture/01-system-map.md`
+- `docs/architecture/05-project-and-folder-guide.md`
+- `docs/architecture/10-v2-contract-ownership.md`
+- `docs/architecture/adr/*`
+- `BlazorShop.Tests.V2/Architecture/*`
+
+### Verification
+
+```powershell
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~Architecture"
+```
+
+### Done when
+
+- [x] Roles are documented.
+- [x] No doc calls Storefront V2 the Starter.
+- [x] Future projects have clear ownership and forbidden dependencies.
+
+## F1 - Current Dependency Audit
+
+Goal: produce a complete migration inventory before removing `Application` and `Web.SharedV2` dependencies from Storefront V2.
+
+### Audit categories
+
+Classify every usage into:
+
+```text
+A. Public API contract
+B. Generated transport
+C. Frontend orchestration
+D. Frontend presentation
+E. Backend-only business logic
+F. Shared hosting/observability
+```
+
+### Tasks
+
+- [ ] Inventory `Storefront.V2.csproj` project references:
+  - [ ] `BlazorShop.Application`
+  - [ ] `BlazorShop.Web.SharedV2`
+  - [ ] `BlazorShop.ServiceDefaults`
+  - [ ] `BlazorShop.Storefront.Components`
+  - [ ] `BlazorShop.Storefront.WASM`
+- [ ] Inventory all `using BlazorShop.Application.*` in Storefront V2.
+- [ ] Inventory all `using BlazorShop.Web.SharedV2.Models*` in Storefront V2.
+- [ ] Inventory Storefront V2 services/contracts that alias Application DTOs.
+- [ ] Inventory BFF/local endpoint request/response types currently mixed into endpoint support files.
+- [ ] Inventory current handwritten Storefront API clients:
+  - [ ] `StorefrontApiClient.*`
+  - [ ] `StorefrontApiTransport`
+  - [ ] `StorefrontApiRoutes`
+  - [ ] capability interfaces in `Services/Contracts`.
+- [ ] Inventory Razor pages/components that directly use backend DTOs.
+- [ ] Inventory SEO/navigation/sitemap contracts still coming from Application/Web.SharedV2.
+- [ ] Inventory public Storefront API contracts in Commerce Node that still use Application DTOs internally.
+- [ ] Create migration table:
+
+| Current type/service | Current owner | Used by | Problem | Replacement | Target owner | Migration phase |
+| --- | --- | --- | --- | --- | --- | --- |
+
+- [ ] Add the migration table to this plan or a sibling audit file.
+
+### Suggested commands
+
+```powershell
+rg -n "using BlazorShop\.Application|BlazorShop\.Application" BlazorShop.PresentationV2\BlazorShop.Storefront.V2
+rg -n "BlazorShop\.Web\.SharedV2|Web\.SharedV2\.Models" BlazorShop.PresentationV2\BlazorShop.Storefront.V2
+rg -n "Application|Domain|Infrastructure|CommerceNode.API|ControlPlane.API" BlazorShop.PresentationV2\BlazorShop.Storefront.Components BlazorShop.PresentationV2\BlazorShop.Storefront.WASM
+```
+
+### Done when
+
+- [ ] Every backend/core dependency in Storefront V2 has an owner and replacement plan.
+- [ ] Migration order is known per capability.
+- [ ] No code behavior has changed.
+
+## F2 - Storefront API Contract Hardening
+
+Goal: make Storefront OpenAPI safe for generated frontend clients and AI/frontend consumers.
+
+### F2.1 Split frontend client API from provider/webhook API
+
+- [ ] Keep frontend/client operations in `/swagger/storefront/swagger.json`.
+- [ ] Remove provider callback/webhook operations from the frontend Storefront document.
+- [ ] Add a separate document if needed:
+  - [ ] `/swagger/storefront-provider/swagger.json`, or
+  - [ ] keep callbacks outside generated client docs and document them as provider integration APIs.
+- [ ] Add tests that `StorefrontPayments_HandleProviderCallback` and `StorefrontPayments_HandleWebhook` do not appear in the frontend client OpenAPI.
+- [ ] Keep runtime callback routes working unless a separate payment/provider plan changes them.
+
+### F2.2 Public contract ownership
+
+- [ ] Verify public Storefront schemas do not expose:
+  - [ ] Domain entities.
+  - [ ] EF models.
+  - [ ] admin DTOs.
+  - [ ] credentials/secrets.
+  - [ ] internal row IDs where public IDs are expected.
+  - [ ] server-owned mutation fields.
+- [ ] Move any Storefront public contract still owned by `Application` into Commerce Node API Storefront contracts or a dedicated generated-contract source.
+- [ ] Keep Application DTO usage behind mapping code until migration is complete.
+
+### F2.3 Error contract
+
+- [ ] Standardize expected error responses around machine-readable fields:
+
+```json
+{
+  "success": false,
+  "code": "cart.version_conflict",
+  "message": "Cart has changed.",
+  "traceId": "...",
+  "fieldErrors": {}
+}
+```
+
+- [ ] Decide whether to extend current `CommerceNodeApiResponse<T>` or use `CommerceNodeApiErrorResponse` consistently for non-2xx responses.
+- [ ] Add canonical error code registry for Storefront client flow:
+  - [ ] auth.
+  - [ ] account.
+  - [ ] cart.
+  - [ ] checkout.
+  - [ ] payment.
+  - [ ] catalog/content.
+  - [ ] store unavailable/maintenance.
+- [ ] Add tests that frontend control flow can use `code` and never parse `message`.
+
+### F2.4 Capability projection
+
+- [ ] Replace or augment flat public feature flags with machine-readable capability entries:
+
+```json
+{
+  "features": {
+    "cart": { "supported": true, "enabled": true },
+    "checkout": { "supported": true, "enabled": true },
+    "reviews": { "supported": true, "enabled": false, "reason": "disabled" },
+    "wishlist": { "supported": false, "enabled": false, "reason": "not_installed" }
+  }
+}
+```
+
+- [ ] Keep backward-compatible flat flags temporarily if Storefront V2 depends on them.
+- [ ] Add capability keys for only currently real/planned Storefront features:
+  - [ ] customer accounts.
+  - [ ] registration.
+  - [ ] cart.
+  - [ ] checkout.
+  - [ ] payments.
+  - [ ] newsletter.
+  - [ ] recommendations.
+  - [ ] contact form.
+  - [ ] reviews only if backend support is present or explicitly planned.
+- [ ] Do not expose provider secrets or internal settings in public configuration.
+
+### F2.5 Generator safety and compatibility
+
+- [ ] Keep stable operation IDs.
+- [ ] Keep named string enum values for client-facing filters/sorts.
+- [ ] Keep non-null collection rules.
+- [ ] Add breaking-change diff guard for:
+  - [ ] removed path.
+  - [ ] removed operation ID.
+  - [ ] removed schema.
+  - [ ] removed property.
+  - [ ] property type change.
+  - [ ] optional to required change.
+  - [ ] enum value removal.
+  - [ ] response status removal.
+  - [ ] security scheme removal/change.
+- [ ] Refresh OpenAPI snapshots only after intentional contract changes are reviewed.
+
+### Files likely touched
+
+- `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Swagger/*`
+- `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Contracts/Storefront/*`
+- `BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Controllers/Storefront/*`
+- `BlazorShop.Tests.V2/PresentationV2/CommerceNode/CommerceNodeStorefrontOpenApiContractTests.cs`
+- `BlazorShop.Tests.V2/PresentationV2/CommerceNode/Snapshots/*`
+- `docs/architecture/09-api-contract-standards.md`
+- `docs/refactor-control-Commerce-storefront/QA-CommerceNode.todo.md`
+
+### Verification
+
+```powershell
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~CommerceNodeStorefrontOpenApiContractTests"
+```
+
+### Done when
+
+- [ ] Frontend Storefront OpenAPI has no provider callback/webhook operations.
+- [ ] Storefront public schemas are safe.
+- [ ] Error contracts expose stable `code`.
+- [ ] Capability projection is machine-readable.
+- [ ] TypeScript generation proof still passes.
+
+## F3 - Generated C# Storefront Client Foundation
+
+Goal: create an independent generated C# Storefront client that Storefront V2 SSR/BFF can use instead of handwritten backend DTO/service coupling.
+
+### Project
+
+```text
+BlazorShop.PresentationV2/BlazorShop.Storefront.Client
+```
+
+or, if the repository prefers non-presentation shared packages:
+
+```text
+BlazorShop.Storefront.Client
+```
+
+Final location should be decided in F0/F1 and documented.
+
+### Responsibilities
+
+- [ ] Generated request/response DTOs from Storefront OpenAPI.
+- [ ] Generated typed HTTP clients.
+- [ ] JSON serialization configuration.
+- [ ] HTTP status/error deserialization.
+- [ ] cancellation token propagation.
+- [ ] route construction including `storeKey`.
+- [ ] correlation/trace propagation hooks.
+- [ ] optional retry policy hooks as extension points.
+
+### Not allowed
+
+- [ ] Razor components.
+- [ ] CSS/layout/assets.
+- [ ] browser local storage.
+- [ ] cart UI state.
+- [ ] checkout UI state.
+- [ ] ecommerce business rules.
+- [ ] handwritten duplicate API DTOs.
+- [ ] references to `Domain`, `Application`, `Infrastructure`, `CommerceNode.API`, `ControlPlane.API`, or `Storefront.V2`.
+
+### Tasks
+
+- [ ] Choose generator tool and pin version in repo.
+- [ ] Add checked-in generator configuration.
+- [ ] Generate C# client from `/swagger/storefront/swagger.json`.
+- [ ] Configure namespace, nullable reference types, and collection nullability.
+- [ ] Add deterministic generation script.
+- [ ] Add compile test for generated client.
+- [ ] Add source guard that generated files are not hand-edited.
+- [ ] Add a small typed facade if generated client shape is too raw:
+  - [ ] configuration.
+  - [ ] catalog.
+  - [ ] cart.
+  - [ ] checkout.
+  - [ ] customer/account.
+  - [ ] orders.
+  - [ ] payments.
+- [ ] Do not create one large handwritten client that mirrors the current `StorefrontApiClient`.
+- [ ] Keep TypeScript strict generation proof for future React/Next consumers.
+
+### Verification
+
+```powershell
+dotnet build BlazorShop.Storefront.Client\BlazorShop.Storefront.Client.csproj --no-restore
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~OpenApi|FullyQualifiedName~GeneratedClient"
+```
+
+### Done when
+
+- [ ] Generated C# client compiles without backend/core project references.
+- [ ] Generated TypeScript client still compiles in strict mode.
+- [ ] Storefront V2 can begin capability-by-capability migration.
+
+## F4 - Browser/BFF Boundary Hardening
+
+Goal: preserve safe browser behavior while replacing internal transport with the generated Storefront client.
+
+### Current BFF/local endpoint groups
+
+- [ ] `/api/cart`
+- [ ] `/api/product-selection-preview`
+- [ ] `/api/account/*`
+- [ ] `/api/checkout/*`
+- [ ] `/api/consent/*`
+- [ ] `/api/media/*`
+- [ ] SEO/sitemap/robots helpers where applicable.
+
+### Tasks
+
+- [ ] Document BFF responsibilities:
+  - [ ] resolve current store.
+  - [ ] resolve HttpOnly session.
+  - [ ] attach Commerce access token server-side.
+  - [ ] attach/resolve cart token.
+  - [ ] validate antiforgery on mutations.
+  - [ ] normalize Commerce API errors.
+  - [ ] return only safe frontend responses.
+- [ ] Document BFF non-responsibilities:
+  - [ ] no price calculation.
+  - [ ] no sellability calculation.
+  - [ ] no cart validity decision.
+  - [ ] no checkout business rule.
+  - [ ] no order creation outside Commerce checkout/place-order use case.
+- [ ] Move local endpoint DTOs out of large endpoint support files into capability-specific local contract files.
+- [ ] Keep local endpoint response shapes stable for current WASM components.
+- [ ] Add central local error mapping:
+  - [ ] 401 sign-in required.
+  - [ ] 403 forbidden.
+  - [ ] 409 conflict/cart drift.
+  - [ ] 422 validation where applicable.
+  - [ ] 500 safe generic failure.
+- [ ] Add tests proving WASM/browser client code only calls same-origin `/api/*`.
+- [ ] Add tests proving local endpoints do not inject concrete backend HTTP clients directly when a capability abstraction exists.
+- [ ] After F3, migrate BFF transport from handwritten `StorefrontApiClient` to generated client capability by capability.
+
+### Files likely touched
+
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/*`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/*`
+- `BlazorShop.PresentationV2/BlazorShop.Storefront.Components/Browser/*`
+- `BlazorShop.Tests.V2/PresentationV2/Storefront/*`
+- `docs/architecture/03-runtime-boundaries.md`
+
+### Verification
+
+```powershell
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~StorefrontEndpoint|FullyQualifiedName~Bff|FullyQualifiedName~Cart|FullyQualifiedName~Checkout|FullyQualifiedName~Account"
+```
+
+### Done when
+
+- [ ] WASM does not know Commerce Node URL.
+- [ ] Protected browser flows go through BFF.
+- [ ] BFF endpoint contracts are local/frontend-safe.
+- [ ] BFF contains no duplicated ecommerce business truth.
+
+## F5 - Storefront V2 Capability-by-capability Decoupling
+
+Goal: remove `Application` and backend-owned business DTO dependencies from Storefront V2 without changing Storefront V2 design or behavior.
+
+### Migration rules
+
+- [ ] Keep route URLs stable.
+- [ ] Keep SSR/SEO behavior stable.
+- [ ] Keep Storefront V2 visual design and composition.
+- [ ] Keep same-origin BFF for browser protected flows.
+- [ ] Replace backend DTO/service usage with generated client DTOs or Storefront-owned presentation view models.
+- [ ] Do not clone generated DTOs as handwritten API DTOs.
+- [ ] Create view models only when they are presentation/composition models.
+- [ ] Move backend/core dependency removal in small capability commits.
+
+### F5.1 Store bootstrap, configuration, maintenance, locale, currency
+
+- [ ] Replace Application store/config DTO usage.
+- [ ] Replace flat feature flag consumption with capability projection where available.
+- [ ] Keep current maintenance redirect/page behavior.
+- [ ] Keep current currency/culture display behavior.
+- [ ] Update public config/client tests.
+
+### F5.2 Catalog, product, search, content, navigation, SEO
+
+- [ ] Replace catalog DTOs from `Application` and `Web.SharedV2.Models.Product/Category`.
+- [ ] Replace page/content DTOs from `Application` and `Web.SharedV2.Models.Pages`.
+- [ ] Replace SEO DTOs from `Application` and `Web.SharedV2.Models.Seo`.
+- [ ] Keep product detail projection authoritative from backend:
+  - [ ] gallery.
+  - [ ] price.
+  - [ ] sellability.
+  - [ ] variants.
+  - [ ] breadcrumb.
+  - [ ] SEO.
+- [ ] Keep category/search server route query behavior.
+- [ ] Keep sitemap/robots behavior.
+
+### F5.3 Auth, customer, account
+
+- [ ] Replace Application auth DTO usage in Storefront V2.
+- [ ] Keep HttpOnly refresh cookie behavior.
+- [ ] Keep account BFF same-origin endpoints.
+- [ ] Keep account pages noindex.
+- [ ] Keep forgot/reset/register disabled policy behavior.
+- [ ] Keep customer order authorization through backend.
+
+### F5.4 Cart
+
+- [ ] Replace cart/session DTO usage.
+- [ ] Keep guest cart/customer cart/merge behavior.
+- [ ] Keep cart token as server/BFF concern.
+- [ ] Keep add/update/remove/recalculate commands server-authoritative.
+- [ ] Keep product selection preview server-authoritative.
+
+### F5.5 Checkout, orders, payment result
+
+- [ ] Replace checkout DTO usage.
+- [ ] Keep checkout state, validation, idempotency, and place-order backend-owned.
+- [ ] Keep COD/payment redirect/result behavior.
+- [ ] Keep order history/detail projection backend-owned.
+- [ ] Do not expose provider webhook/callback in frontend SDK.
+
+### F5.6 Consent, newsletter, contact, recommendations
+
+- [ ] Replace remaining contract usage.
+- [ ] Keep consent visitor cookie behavior server-owned.
+- [ ] Keep captcha/consent hooks safe.
+- [ ] Keep recommendations as optional capability projection.
+
+### Final F5 cleanup
+
+- [ ] Remove `BlazorShop.Application` ProjectReference from `Storefront.V2`.
+- [ ] Remove business-model dependency on `BlazorShop.Web.SharedV2`.
+- [ ] Keep `Web.SharedV2` only if still needed for genuinely shared browser utilities and allowed by architecture docs.
+- [ ] Update Dockerfile to stop copying backend/core projects solely for Storefront V2 build if no longer needed.
+- [ ] Add source tests blocking new Application/Web.SharedV2 business DTO usages in Storefront V2.
+
+### Verification
+
+```powershell
+dotnet build BlazorShop.PresentationV2\BlazorShop.Storefront.V2\BlazorShop.Storefront.V2.csproj --no-restore
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~Storefront|FullyQualifiedName~Contract|FullyQualifiedName~Boundary"
+```
+
+### Done when
+
+- [ ] `Storefront.V2.csproj` has no `Application`, `Domain`, `Infrastructure`, `CommerceNode.API`, or `ControlPlane.API` references.
+- [ ] Storefront V2 source has no backend/core business namespace usage.
+- [ ] Storefront V2 behavior remains unchanged in focused and browser tests.
+
+## F6 - Runtime And Feature Module Boundary
+
+Goal: create only the shared runtime/module foundation that is proven necessary after generated client and V2 decoupling.
+
+### Design decision
+
+Do not package every feature prematurely. Start with small shared runtime primitives if V2 decoupling shows repeated code that Starter will need.
+
+### Candidate project
+
+```text
+BlazorShop.Storefront.Runtime
+```
+
+### Allowed responsibilities
+
+- [ ] Store context abstraction.
+- [ ] Storefront API client registration helpers.
+- [ ] public configuration/capability reader.
+- [ ] normalized error pipeline.
+- [ ] auth/session bridge contracts.
+- [ ] BFF/browser-safe result mapping primitives.
+- [ ] neutral feature activation helpers.
+
+### Not allowed
+
+- [ ] Storefront V2 layout/design.
+- [ ] V2 CSS/assets.
+- [ ] store-specific composition.
+- [ ] backend business rules.
+- [ ] provider secrets.
+- [ ] Domain/Application/Infrastructure/API project references.
+
+### Feature module boundary
+
+Only create `Storefront.Features.*` projects after a real repeated need exists. Until then, keep portable presentation components in `Storefront.Components/Features/*`.
+
+Feature availability rule:
+
+```text
+installed in build
++ backend capability supported
++ store feature enabled
++ presentation placed
+= visible/usable feature
+```
+
+### Tasks
+
+- [ ] Identify repeated runtime code after F5 migration.
+- [ ] Create `Storefront.Runtime` only if it removes real duplication or is required for Starter readiness.
+- [ ] Add architecture tests for Runtime dependencies.
+- [ ] Document module ownership map.
+- [ ] Keep Storefront V2 design/composition in Storefront V2.
+
+### Verification
+
+```powershell
+dotnet build BlazorShop.Storefront.Runtime\BlazorShop.Storefront.Runtime.csproj --no-restore
+dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter "FullyQualifiedName~Runtime|FullyQualifiedName~Architecture"
+```
+
+### Done when
+
+- [ ] Runtime exists only if justified.
+- [ ] Runtime has no backend/core dependencies.
+- [ ] Starter can later reuse runtime without copying V2 design.
+
+## F7 - Compliance, Packaging, And Isolation Gate
+
+Goal: prove Storefront V2 can be built/run as an independent frontend consumer of the Storefront API.
+
+### Architecture tests
+
+- [ ] `Storefront.V2` does not reference backend/core/API projects.
+- [ ] `Storefront.Client` does not reference backend/core/API projects.
+- [ ] `Storefront.Runtime`, if present, does not reference backend/core/API projects.
+- [ ] `Storefront.Components` remains backend-independent.
+- [ ] `Storefront.WASM` remains backend-independent.
+- [ ] `Web.SharedV2/Models` business model freeze remains enforced.
+
+### Generated client tests
+
+- [ ] Storefront OpenAPI parses.
+- [ ] OpenAPI reader validation passes.
+- [ ] C# client generation runs.
+- [ ] generated C# client compiles.
+- [ ] TypeScript client generation runs.
+- [ ] generated TypeScript client compiles with `strict` and `strictNullChecks`.
+- [ ] frontend SDK excludes webhook/provider callback operations.
+- [ ] error contracts compile and expose `code`.
+
+### Local package consumer proof
+
+- [ ] Pack `Storefront.Client`.
+- [ ] Pack `Storefront.Runtime` if present.
+- [ ] Create temporary consumer storefront project in `obj` or test output.
+- [ ] Restore from local NuGet feed.
+- [ ] Build consumer without backend ProjectReference.
+- [ ] Fail if consumer can compile only because backend source is available.
+
+### Isolation run
+
+- [ ] Build/publish Commerce Node API.
+- [ ] Run Commerce Node API with configured store fixture.
+- [ ] Build/publish Storefront V2 separately.
+- [ ] Configure Storefront V2 with Commerce API URL and store key.
+- [ ] Run Storefront V2 without backend source references.
+- [ ] Execute API integration smoke.
+- [ ] Execute Playwright browser smoke.
+
+### Functional QA
+
+- [ ] store bootstrap.
+- [ ] maintenance state.
+- [ ] home/catalog.
+- [ ] category.
+- [ ] product.
+- [ ] search.
+- [ ] content page.
+- [ ] login/register/logout.
+- [ ] forgot/reset password.
+- [ ] profile/address.
+- [ ] guest cart.
+- [ ] customer cart.
+- [ ] cart merge.
+- [ ] checkout preview.
+- [ ] shipping/payment selection.
+- [ ] place order with COD in test store.
+- [ ] order history.
+- [ ] order detail.
+- [ ] payment result.
+- [ ] SEO metadata.
+- [ ] sitemap.
+- [ ] robots.
+- [ ] media isolation.
+- [ ] 401/403/409/422 error flows.
+
+### Deliverables
+
+- [ ] architecture test suite.
+- [ ] generated client test suite.
+- [ ] local package feed proof.
+- [ ] isolated build/run script.
+- [ ] Playwright evidence.
+- [ ] release checklist update.
+- [ ] Foundation completion report.
+
+### Done when
+
+- [ ] Storefront V2 builds and runs as a frontend API consumer.
+- [ ] No backend source project reference is required to build Storefront V2.
+- [ ] Playwright core journey passes.
+
+## F8 - Starter Readiness Decision
+
+Goal: decide whether the foundation is ready for a separate `BlazorShop.Storefront.Starter` phase.
+
+### Starter readiness checklist
+
+- [ ] Foundation Definition of Done is complete.
+- [ ] Storefront OpenAPI is clean and frontend-safe.
+- [ ] Storefront Client can be consumed by PackageReference.
+- [ ] Storefront V2 has no backend/core project references.
+- [ ] SSR/BFF/browser boundaries are documented and tested.
+- [ ] Capability projection supports feature enablement.
+- [ ] Generated C# and TypeScript clients compile.
+- [ ] Compatibility gate catches breaking changes.
+- [ ] Isolation Playwright smoke passes.
+- [ ] Storefront V2 remains a real storefront, not a neutral template.
+
+### Starter phase scope after approval
+
+Future `BlazorShop.Storefront.Starter` should include:
+
+- [ ] neutral project skeleton.
+- [ ] route map.
+- [ ] SSR/Hybrid/WASM conventions.
+- [ ] generated client usage.
+- [ ] store bootstrap.
+- [ ] layout/header/footer/menu.
+- [ ] feature module placement examples.
+- [ ] loading/skeleton/error/empty states.
+- [ ] SEO/metadata examples.
+- [ ] BFF examples for protected flows.
+- [ ] AI storefront generation guide.
+- [ ] generator manifest.
+- [ ] Starter QA checklist.
+
+### Done when
+
+- [ ] A separate Starter plan can begin without re-opening backend/client boundary decisions.
+
+## Foundation Definition Of Done
+
+### Commerce Node API
+
+- [ ] Storefront API is framework-neutral.
+- [ ] Storefront client OpenAPI excludes provider webhook/callback operations.
+- [ ] Public contracts do not expose unsafe/internal schemas.
+- [ ] operation IDs are stable.
+- [ ] non-null collections and validation metadata are generator-safe.
+- [ ] machine-readable error codes exist.
+- [ ] capability projection exists.
+- [ ] breaking-change gate exists.
+
+### Storefront Client
+
+- [ ] Generated C# client compiles.
+- [ ] Generated TypeScript client compiles strict.
+- [ ] Client has no backend/core project references.
+- [ ] Generated files are deterministic and not hand-edited.
+- [ ] Local package consumer proof passes.
+
+### Storefront V2
+
+- [ ] Still has its own design/composition/deployment.
+- [ ] Does not reference `Domain`, `Application`, `Infrastructure`, Commerce Node API, or Control Plane API.
+- [ ] Uses HTTP/OpenAPI client for Commerce Storefront API.
+- [ ] Protected browser flows go through same-origin BFF.
+- [ ] Does not duplicate ecommerce business rules.
+- [ ] Build/publish/run works independently.
+
+### QA
+
+- [ ] architecture tests pass.
+- [ ] OpenAPI tests pass.
+- [ ] generated client tests pass.
+- [ ] package consumer proof passes.
+- [ ] isolated runtime smoke passes.
+- [ ] Playwright core journey passes.
+- [ ] QA docs are updated with evidence.
+
+## Implementation Order And Commit Plan
+
+- [ ] Commit 1: F0 architecture role/boundary lock and tests.
+- [ ] Commit 2: F1 dependency audit document and migration table.
+- [ ] Commit 3: F2 OpenAPI surface split and provider/webhook exclusion from frontend SDK.
+- [ ] Commit 4: F2 error contract/capability projection hardening.
+- [ ] Commit 5: F3 generated C# client project and generator tests.
+- [ ] Commit 6: F4 BFF boundary cleanup and local endpoint contract split.
+- [ ] Commit 7: F5.1 configuration/store bootstrap migration.
+- [ ] Commit 8: F5.2 catalog/content/navigation/SEO migration.
+- [ ] Commit 9: F5.3 auth/customer/account migration.
+- [ ] Commit 10: F5.4 cart migration.
+- [ ] Commit 11: F5.5 checkout/orders/payments migration.
+- [ ] Commit 12: F5.6 consent/newsletter/contact/recommendations migration.
+- [ ] Commit 13: F5 final dependency removal and Dockerfile cleanup.
+- [ ] Commit 14: F6 runtime boundary only if justified.
+- [ ] Commit 15: F7 package/isolation/Playwright gate and completion report.
+- [ ] Commit 16: F8 Starter readiness decision docs.
+
+Each commit must be buildable. Do not combine mechanical dependency removal with behavior changes unless the phase explicitly requires it.
+
+## Risk Controls
+
+- [ ] Keep Storefront V2 routes stable.
+- [ ] Keep Commerce Node Storefront route shape stable.
+- [ ] Keep Storefront V2 UI/design unchanged unless a separate UI phase approves changes.
+- [ ] Keep checkout/order/payment server-authoritative.
+- [ ] Keep account/order authorization server-authoritative.
+- [ ] Keep browser protected flow behind BFF.
+- [ ] Keep OpenAPI snapshots and compatibility checks reviewed.
+- [ ] Keep Provider/webhook routes out of frontend SDK.
+- [ ] Keep generated code deterministic.
+- [ ] Keep no secrets/internal settings in public configuration or generated clients.
+
+## Autoplan Decision Audit Trail
+
+| # | Phase | Decision | Classification | Principle | Rationale | Rejected |
+|---|---|---|---|---|---|---|
+| 1 | Scope | Treat Commerce Node as Storefront API platform | Auto-decided | Backend owns business truth | Current Commerce Node already owns Storefront scoped APIs and ecommerce rules. | Moving ecommerce logic into frontend skeletons. |
+| 2 | Scope | Keep Storefront V2 as real storefront, not Starter | User direction preserved | Preserve product identity | V2 has real design, deployment, QA, and consumer role. | Making V2 a neutral template. |
+| 3 | Contracts | OpenAPI is canonical frontend-readable contract | Auto-decided | Avoid guessing and duplicate DTOs | React/Next/AI generator should consume generated types, not inspect C# service code. | Sharing C# services/DTO dumps as frontend contract. |
+| 4 | OpenAPI | Remove provider callback/webhook from frontend client document | Auto-decided | Least privilege client surface | Current Storefront snapshot includes provider operations that frontend SDK should not expose. | Generating frontend clients from all Storefront-scoped routes blindly. |
+| 5 | Client | Generate C# client before decoupling V2 | Auto-decided | Migration safety | V2 needs a replacement transport before removing Application/Web.SharedV2 coupling. | Cutting project references first. |
+| 6 | Browser | Keep WASM behind same-origin BFF | Auto-decided | Security boundary | Current BFF model protects tokens, store resolution, and antiforgery. | Direct browser calls to Commerce Node protected APIs. |
+| 7 | Runtime | Defer broad `Storefront.Features.*` packaging until proven | Auto-decided | Avoid premature platform complexity | Components are already backend-independent; package modules should follow generated client and V2 decoupling. | Creating many packages before a second consumer exists. |
+| 8 | Starter | Build Starter only after Foundation gate | Auto-decided | Sequence by dependency | Starter needs clean OpenAPI, generated client, capability projection, and decoupled V2 proof. | Building Starter in parallel with contract cleanup. |
+
+## Final Recommendation
+
+Approve this foundation as a staged platform cleanup before any Starter or AI generator work.
+
+The safest MVP foundation is:
+
+1. lock roles and dependency rules;
+2. audit current Storefront V2 coupling;
+3. harden Storefront OpenAPI and remove provider/webhook operations from frontend SDK;
+4. create generated C# and strict TypeScript client proof;
+5. preserve and harden same-origin BFF;
+6. migrate Storefront V2 off backend/core references by capability;
+7. prove independent package/build/runtime isolation;
+8. only then begin `BlazorShop.Storefront.Starter`.
+
+This keeps the current storefront stable while turning the backend into a reusable ecommerce API platform for future Blazor, React, Next.js, or AI-generated storefronts.

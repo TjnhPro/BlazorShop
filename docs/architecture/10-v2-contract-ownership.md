@@ -5,6 +5,10 @@ This page records the current contract ownership boundary while Storefront V2 mo
 ## Rules
 
 - Public HTTP contracts live at the API boundary that exposes them.
+- Commerce Node Storefront public HTTP contracts are canonical at the `api/storefront/stores/{storeKey}/*` boundary.
+- Generated Storefront clients are frontend-readable contracts and should be regenerated from Commerce Node Storefront OpenAPI instead of hand-copied into frontend packages.
+- Storefront frontend view models are allowed when they are presentation or composition models.
+- Storefront frontend code must not add handwritten duplicate API DTO clones when the schema should come from OpenAPI-generated contracts.
 - Storefront browser/local endpoint contracts live in `BlazorShop.Storefront.V2/Services/Contracts`.
 - Storefront portable feature component models live with the component feature under `BlazorShop.Storefront.Components/Features/*` when they are presentation-only.
 - `Web.SharedV2` may keep browser helpers and transitional model folders during migration, but new business model folders are not allowed.

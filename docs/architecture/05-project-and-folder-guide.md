@@ -208,6 +208,58 @@ Do not:
 - Hold node credentials.
 - Duplicate server-owned Storefront API contract behavior when `Storefront.V2` already owns the server/client integration.
 
+### Future `BlazorShop.Storefront.Client`
+
+Status:
+
+- Planned by the Headless Storefront Platform Foundation.
+- May live under `BlazorShop.PresentationV2/BlazorShop.Storefront.Client` or the repository root once the phase chooses the final location.
+
+Use for:
+
+- Generated request and response DTOs from Commerce Node Storefront OpenAPI.
+- Generated typed HTTP clients and transport primitives.
+- JSON serialization settings, route construction with `storeKey`, cancellation token propagation, and error deserialization.
+- Small typed facades only when the generated shape is too raw for Storefront consumers.
+
+Do not:
+
+- Add Razor components, CSS, browser storage, UI state, checkout/cart business rules, or handwritten duplicate API DTO clones.
+- Reference `BlazorShop.Domain`, `BlazorShop.Application`, `BlazorShop.Infrastructure`, `BlazorShop.CommerceNode.API`, `BlazorShop.ControlPlane.API`, or `BlazorShop.Storefront.V2`.
+
+### Optional `BlazorShop.Storefront.Runtime`
+
+Status:
+
+- Optional and only justified after Storefront V2 decoupling proves repeated neutral runtime code.
+
+Use for:
+
+- Store context abstractions.
+- Storefront API client registration helpers.
+- Capability/configuration readers.
+- Normalized error mapping primitives.
+- Auth/session bridge contracts and BFF-safe result mapping primitives.
+
+Do not:
+
+- Add Storefront V2 layout/design, CSS/assets, store-specific composition, backend business rules, provider secrets, or references to backend/core/API projects.
+
+### Future `BlazorShop.Storefront.Starter`
+
+Status:
+
+- Deferred until the Headless Storefront Platform Foundation is complete.
+
+Use for:
+
+- A neutral storefront skeleton that demonstrates generated client/runtime usage after the foundation gate passes.
+
+Do not:
+
+- Copy Storefront V2 source as the Starter baseline.
+- Turn Storefront V2 into a neutral template.
+
 ### `BlazorShop.PresentationV2/BlazorShop.Web.SharedV2`
 
 Important folders:
