@@ -146,7 +146,7 @@ namespace BlazorShop.Storefront.Endpoints
                     cancellationToken);
                 if (!result.Success || result.Data is null)
                 {
-                    return Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+                    return LocalApiValidationError(result.Message);
                 }
             
                 var displayContext = await displayContextProvider.GetAsync(cancellationToken);
@@ -168,7 +168,7 @@ namespace BlazorShop.Storefront.Endpoints
             
                 if (request.ExpectedCheckoutVersion < 1)
                 {
-                    return Results.BadRequest(new StorefrontLocalApiErrorResponse("Review checkout before placing the order."));
+                    return LocalApiValidationError("Review checkout before placing the order.");
                 }
             
                 var result = await apiClient.PlaceOrderAsync(
@@ -185,7 +185,7 @@ namespace BlazorShop.Storefront.Endpoints
                     cancellationToken);
                 if (!result.Success || result.Data is null)
                 {
-                    return Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+                    return LocalApiValidationError(result.Message);
                 }
             
                 var nextActionUrl = result.Data.NextAction?.Url;
@@ -201,7 +201,7 @@ namespace BlazorShop.Storefront.Endpoints
             
                 if (string.IsNullOrWhiteSpace(result.Data.Reference))
                 {
-                    return Results.Json(new StorefrontLocalApiErrorResponse("Order confirmation is not available yet."), statusCode: StatusCodes.Status400BadRequest);
+                    return LocalApiValidationError("Order confirmation is not available yet.");
                 }
             
                 httpContext.Response.Cookies.Delete(StorefrontCookieNames.Cart, new CookieOptions { Path = "/" });

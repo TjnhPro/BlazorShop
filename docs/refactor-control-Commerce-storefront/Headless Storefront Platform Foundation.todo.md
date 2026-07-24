@@ -433,41 +433,41 @@ Goal: preserve safe browser behavior while replacing internal transport with the
 
 ### Current BFF/local endpoint groups
 
-- [ ] `/api/cart`
-- [ ] `/api/product-selection-preview`
-- [ ] `/api/account/*`
-- [ ] `/api/checkout/*`
-- [ ] `/api/consent/*`
-- [ ] `/api/media/*`
-- [ ] SEO/sitemap/robots helpers where applicable.
+- [x] `/api/cart`
+- [x] `/api/product-selection-preview`
+- [x] `/api/account/*`
+- [x] `/api/checkout/*`
+- [x] `/api/consent/*`
+- [x] public media helper routes: `/media/products/*` and `/media/assets/*`
+- [x] SEO/sitemap/robots helpers where applicable.
 
 ### Tasks
 
-- [ ] Document BFF responsibilities:
-  - [ ] resolve current store.
-  - [ ] resolve HttpOnly session.
-  - [ ] attach Commerce access token server-side.
-  - [ ] attach/resolve cart token.
-  - [ ] validate antiforgery on mutations.
-  - [ ] normalize Commerce API errors.
-  - [ ] return only safe frontend responses.
-- [ ] Document BFF non-responsibilities:
-  - [ ] no price calculation.
-  - [ ] no sellability calculation.
-  - [ ] no cart validity decision.
-  - [ ] no checkout business rule.
-  - [ ] no order creation outside Commerce checkout/place-order use case.
-- [ ] Move local endpoint DTOs out of large endpoint support files into capability-specific local contract files.
-- [ ] Keep local endpoint response shapes stable for current WASM components.
-- [ ] Add central local error mapping:
-  - [ ] 401 sign-in required.
-  - [ ] 403 forbidden.
-  - [ ] 409 conflict/cart drift.
-  - [ ] 422 validation where applicable.
-  - [ ] 500 safe generic failure.
-- [ ] Add tests proving WASM/browser client code only calls same-origin `/api/*`.
-- [ ] Add tests proving local endpoints do not inject concrete backend HTTP clients directly when a capability abstraction exists.
-- [ ] After F3, migrate BFF transport from handwritten `StorefrontApiClient` to generated client capability by capability.
+- [x] Document BFF responsibilities:
+  - [x] resolve current store.
+  - [x] resolve HttpOnly session.
+  - [x] attach Commerce access token server-side.
+  - [x] attach/resolve cart token.
+  - [x] validate antiforgery on mutations.
+  - [x] normalize Commerce API errors.
+  - [x] return only safe frontend responses.
+- [x] Document BFF non-responsibilities:
+  - [x] no price calculation.
+  - [x] no sellability calculation.
+  - [x] no cart validity decision.
+  - [x] no checkout business rule.
+  - [x] no order creation outside Commerce checkout/place-order use case.
+- [x] Move local endpoint DTOs out of large endpoint support files into capability-specific local contract files.
+- [x] Keep local endpoint response shapes stable for current WASM components.
+- [x] Add central local error mapping:
+  - [x] 401 sign-in required.
+  - [x] 403 forbidden.
+  - [x] 409 conflict/cart drift.
+  - [x] 422 validation where applicable.
+  - [x] 500 safe generic failure.
+- [x] Add tests proving WASM/browser client code only calls same-origin `/api/*`.
+- [x] Add tests proving local endpoints do not inject concrete backend HTTP clients directly when a capability abstraction exists.
+- [n/a] After F3, migrate BFF transport from handwritten `StorefrontApiClient` to generated client capability by capability. This is accounted for by F5.1-F5.6 capability migration commits after the BFF boundary is locked.
 
 ### Files likely touched
 
@@ -485,10 +485,10 @@ dotnet test BlazorShop.Tests.V2\BlazorShop.Tests.V2.csproj --no-restore --filter
 
 ### Done when
 
-- [ ] WASM does not know Commerce Node URL.
-- [ ] Protected browser flows go through BFF.
-- [ ] BFF endpoint contracts are local/frontend-safe.
-- [ ] BFF contains no duplicated ecommerce business truth.
+- [x] WASM does not know Commerce Node URL.
+- [x] Protected browser flows go through BFF.
+- [x] BFF endpoint contracts are local/frontend-safe.
+- [x] BFF contains no duplicated ecommerce business truth.
 
 ## F5 - Storefront V2 Capability-by-capability Decoupling
 
@@ -800,7 +800,7 @@ Future `BlazorShop.Storefront.Starter` should include:
 - [ ] Still has its own design/composition/deployment.
 - [ ] Does not reference `Domain`, `Application`, `Infrastructure`, Commerce Node API, or Control Plane API.
 - [ ] Uses HTTP/OpenAPI client for Commerce Storefront API.
-- [ ] Protected browser flows go through same-origin BFF.
+- [x] Protected browser flows go through same-origin BFF.
 - [ ] Does not duplicate ecommerce business rules.
 - [ ] Build/publish/run works independently.
 
@@ -821,7 +821,7 @@ Future `BlazorShop.Storefront.Starter` should include:
 - [x] Commit 3: F2 OpenAPI surface split and provider/webhook exclusion from frontend SDK.
 - [x] Commit 4: F2 error contract/capability projection hardening.
 - [x] Commit 5: F3 generated C# client project and generator tests.
-- [ ] Commit 6: F4 BFF boundary cleanup and local endpoint contract split.
+- [x] Commit 6: F4 BFF boundary cleanup and local endpoint contract split.
 - [ ] Commit 7: F5.1 configuration/store bootstrap migration.
 - [ ] Commit 8: F5.2 catalog/content/navigation/SEO migration.
 - [ ] Commit 9: F5.3 auth/customer/account migration.

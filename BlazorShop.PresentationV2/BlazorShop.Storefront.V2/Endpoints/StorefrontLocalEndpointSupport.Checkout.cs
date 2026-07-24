@@ -109,24 +109,24 @@ namespace BlazorShop.Storefront.Endpoints
     
         if (checkoutSessionId == Guid.Empty)
         {
-            return (null, Results.BadRequest(new StorefrontLocalApiErrorResponse("Checkout session is required.")));
+            return (null, LocalApiValidationError("Checkout session is required."));
         }
     
         var cartToken = httpContext.Request.Cookies[StorefrontCookieNames.CartToken];
         if (string.IsNullOrWhiteSpace(cartToken))
         {
-            return (null, Results.Json(new StorefrontLocalApiErrorResponse("Your cart is empty."), statusCode: StatusCodes.Status409Conflict));
+            return (null, LocalConflict("Your cart is empty."));
         }
     
         var cartResult = await apiClient.GetCartAsync(cartToken, cancellationToken);
         if (!cartResult.Success || cartResult.Data is null || cartResult.Data.Lines.Count == 0)
         {
-            return (null, Results.Json(new StorefrontLocalApiErrorResponse("Your cart is empty."), statusCode: StatusCodes.Status409Conflict));
+            return (null, LocalConflict("Your cart is empty."));
         }
     
         if (expectedCartVersion > 0 && expectedCartVersion != cartResult.Data.Version)
         {
-            return (null, Results.Json(new StorefrontLocalApiErrorResponse("Your cart changed. Review the latest cart and try checkout again."), statusCode: StatusCodes.Status409Conflict));
+            return (null, LocalConflict("Your cart changed. Review the latest cart and try checkout again."));
         }
     
         return (cartToken, null);
@@ -140,7 +140,7 @@ namespace BlazorShop.Storefront.Endpoints
     {
         if (!result.Success || result.Data is null)
         {
-            return Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+            return LocalApiValidationError(result.Message);
         }
     
         var displayContext = await displayContextProvider.GetAsync(cancellationToken);

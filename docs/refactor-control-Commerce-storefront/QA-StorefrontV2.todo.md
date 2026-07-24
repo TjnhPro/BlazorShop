@@ -153,6 +153,7 @@ dotnet run --project BlazorShop.PresentationV2/BlazorShop.CommerceNode.API/Blazo
 - [x] Checkout service decomposition release QA passes the current checkout form plus browser checkout shell layout. 2026-07-19 Phase 8: `scripts/qa/storefront-order-email-e2e.js` supported the `ShowPanel=false` checkout form. 2026-07-22 Phase 7: `CheckoutShell` renders for non-empty carts and the headed Playwright checkout COD flow passed.
 - [x] Mutation endpoints require antiforgery token. 2026-07-17 Phase 2: `StorefrontLocalApiClient` attaches the meta-projected CSRF header for POST/PUT/DELETE and focused runtime foundation tests passed.
 - [x] No direct Commerce Node URL or credential is present in WASM static output. 2026-07-17 Phase 2: `rg` over WASM source and `bin/Debug/net10.0/wwwroot` found no `CommerceNode`, node key/secret, refresh token, access token, or scoped Commerce Node route strings.
+- [x] Headless Storefront Foundation F4 keeps protected browser flows behind the Storefront V2 BFF. 2026-07-24: local endpoint groups, capability-specific local contracts, central browser-safe error mapping, same-origin browser project guardrails, and BFF responsibility documentation are covered by `StorefrontBffBoundaryHardeningTests`; focused verification passed `228/228` with `2` skipped.
 
 ## Runtime Smoke
 

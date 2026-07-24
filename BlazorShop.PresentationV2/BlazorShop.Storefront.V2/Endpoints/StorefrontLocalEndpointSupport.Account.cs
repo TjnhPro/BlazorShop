@@ -109,9 +109,7 @@ namespace BlazorShop.Storefront.Endpoints
         var session = await sessionResolver.GetCurrentUserAsync(cancellationToken);
         if (!session.IsAuthenticated || string.IsNullOrWhiteSpace(session.AccessToken))
         {
-            return (null, Results.Json(
-                new StorefrontLocalApiErrorResponse("Sign in is required."),
-                statusCode: StatusCodes.Status401Unauthorized));
+            return (null, LocalSignInRequired());
         }
     
         return (session.AccessToken, null);
@@ -143,7 +141,7 @@ namespace BlazorShop.Storefront.Endpoints
             : await apiClient.SetDefaultBillingAddressAsync(session.AccessToken!, addressId, cancellationToken);
         return result.Success && result.Data is not null
             ? Results.Ok(ToBrowserAddress(result.Data))
-            : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+            : LocalApiValidationError(result.Message);
     }
 
         internal static StorefrontBrowserCustomerProfile ToBrowserProfile(StorefrontCustomerProfileResponse profile)

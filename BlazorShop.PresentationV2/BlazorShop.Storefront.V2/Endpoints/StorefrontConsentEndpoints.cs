@@ -49,7 +49,7 @@ namespace BlazorShop.Storefront.Endpoints
                 var result = await apiClient.SaveConsentAsync(visitorKey, request, cancellationToken);
                 return result.Success
                     ? Results.Ok(result.Data)
-                    : Results.Json(new StorefrontLocalCartErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+                    : LocalCartValidationError(result.Message);
             });
             app.MapPost("/api/consent/revoke", async (
                 IStorefrontConsentClient apiClient,
@@ -67,7 +67,7 @@ namespace BlazorShop.Storefront.Endpoints
                 var result = await apiClient.RevokeConsentAsync(visitorKey, cancellationToken);
                 return result.Success
                     ? Results.Ok(result.Data)
-                    : Results.Json(new StorefrontLocalCartErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+                    : LocalCartValidationError(result.Message);
             });
 
             return app;

@@ -42,7 +42,7 @@ namespace BlazorShop.Storefront.Endpoints
             {
                 if (request.ProductId == Guid.Empty || request.Quantity < 1)
                 {
-                    return Results.BadRequest(new StorefrontLocalCartErrorResponse("Product and quantity are required."));
+                    return LocalCartValidationError("Product and quantity are required.");
                 }
             
                 var displayContext = await displayContextProvider.GetAsync(cancellationToken);
@@ -60,7 +60,7 @@ namespace BlazorShop.Storefront.Endpoints
             
                 if (!result.Success || result.Data is null)
                 {
-                    return Results.BadRequest(new StorefrontLocalCartErrorResponse(result.Message));
+                    return LocalCartValidationError(result.Message);
                 }
             
                 var preview = result.Data;
@@ -105,7 +105,7 @@ namespace BlazorShop.Storefront.Endpoints
             
                 if (request.ProductId == Guid.Empty || request.Quantity < 1)
                 {
-                    return Results.BadRequest(new StorefrontLocalCartErrorResponse("Product and quantity are required."));
+                    return LocalCartValidationError("Product and quantity are required.");
                 }
             
                 var result = await cartTokenService.AddLineAsync(
@@ -140,7 +140,7 @@ namespace BlazorShop.Storefront.Endpoints
             
                 if (request.Quantity < 1)
                 {
-                    return Results.BadRequest(new StorefrontLocalCartErrorResponse("Quantity must be at least 1."));
+                    return LocalCartValidationError("Quantity must be at least 1.");
                 }
             
                 var result = await cartTokenService.UpdateLineAsync(httpContext, lineId, request.Quantity, cancellationToken);

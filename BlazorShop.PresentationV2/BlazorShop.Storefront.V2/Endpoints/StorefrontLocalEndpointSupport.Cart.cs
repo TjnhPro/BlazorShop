@@ -28,9 +28,7 @@ namespace BlazorShop.Storefront.Endpoints
             return Results.Ok(ToLocalCartResponse(result.Cart, displayContext, priceFormatter));
         }
     
-        return Results.Json(
-            new StorefrontLocalCartErrorResponse(result.Message),
-            statusCode: StatusCodes.Status400BadRequest);
+        return LocalCartValidationError(result.Message);
     }
 
         internal static StorefrontBrowserCart ToLocalCartResponse(

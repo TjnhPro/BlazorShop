@@ -60,7 +60,7 @@ namespace BlazorShop.Storefront.Endpoints
             
                 if (string.IsNullOrWhiteSpace(request.FullName) || !IsValidEmail(request.Email))
                 {
-                    return Results.BadRequest(new StorefrontLocalApiErrorResponse("Full name and valid email are required."));
+                    return LocalApiValidationError("Full name and valid email are required.");
                 }
             
                 var result = await apiClient.UpdateCustomerProfileAsync(
@@ -69,7 +69,7 @@ namespace BlazorShop.Storefront.Endpoints
                     cancellationToken);
                 return result.Success && result.Data is not null
                     ? Results.Ok(ToBrowserProfile(result.Data))
-                    : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+                    : LocalApiValidationError(result.Message);
             });
             app.MapGet("/api/account/addresses", async (
                 IStorefrontSessionResolver sessionResolver,
@@ -112,7 +112,7 @@ namespace BlazorShop.Storefront.Endpoints
                 var result = await apiClient.CreateCustomerAddressAsync(session.AccessToken!, ToCustomerAddressRequest(request), cancellationToken);
                 return result.Success && result.Data is not null
                     ? Results.Ok(ToBrowserAddress(result.Data))
-                    : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+                    : LocalApiValidationError(result.Message);
             });
             app.MapPut("/api/account/addresses/{addressId:guid}", async (
                 Guid addressId,
@@ -138,7 +138,7 @@ namespace BlazorShop.Storefront.Endpoints
                 var result = await apiClient.UpdateCustomerAddressAsync(session.AccessToken!, addressId, ToCustomerAddressRequest(request), cancellationToken);
                 return result.Success && result.Data is not null
                     ? Results.Ok(ToBrowserAddress(result.Data))
-                    : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+                    : LocalApiValidationError(result.Message);
             });
             app.MapDelete("/api/account/addresses/{addressId:guid}", async (
                 Guid addressId,
@@ -163,7 +163,7 @@ namespace BlazorShop.Storefront.Endpoints
                 var result = await apiClient.DeleteCustomerAddressAsync(session.AccessToken!, addressId, cancellationToken);
                 return result.Success
                     ? Results.Ok(new StorefrontBrowserAccountCommandResult(true, "Address deleted."))
-                    : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+                    : LocalApiValidationError(result.Message);
             });
             app.MapPost("/api/account/addresses/{addressId:guid}/default-shipping", async (
                 Guid addressId,
@@ -271,12 +271,12 @@ namespace BlazorShop.Storefront.Endpoints
                     || string.IsNullOrWhiteSpace(request.NewPassword)
                     || string.IsNullOrWhiteSpace(request.ConfirmPassword))
                 {
-                    return Results.BadRequest(new StorefrontLocalApiErrorResponse("All password fields are required."));
+                    return LocalApiValidationError("All password fields are required.");
                 }
             
                 if (!string.Equals(request.NewPassword, request.ConfirmPassword, StringComparison.Ordinal))
                 {
-                    return Results.BadRequest(new StorefrontLocalApiErrorResponse("Passwords do not match."));
+                    return LocalApiValidationError("Passwords do not match.");
                 }
             
                 var result = await authClient.ChangePasswordAsync(
@@ -290,7 +290,7 @@ namespace BlazorShop.Storefront.Endpoints
                     cancellationToken);
                 return result.Success
                     ? Results.Ok(new StorefrontBrowserAccountCommandResult(true, "Password changed."))
-                    : Results.Json(new StorefrontLocalApiErrorResponse(result.Message), statusCode: StatusCodes.Status400BadRequest);
+                    : LocalApiValidationError(result.Message);
             });
 
             return app;

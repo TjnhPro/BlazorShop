@@ -143,6 +143,30 @@ Responsibilities:
 
 It must not call Control Plane APIs and must not use Control Plane credentials.
 
+### Browser/BFF Boundary
+
+Browser and WASM code calls same-origin Storefront V2 endpoints under `/api/*`. It must not call Commerce Node protected APIs directly, must not know the Commerce Node base URL, must not hold node credentials, and must not store Commerce access tokens in browser local storage.
+
+Storefront V2 BFF/local endpoints are responsible for:
+
+- resolving the current store;
+- resolving the HttpOnly customer session;
+- attaching Commerce access tokens server-side when a customer flow requires them;
+- attaching or resolving the cart token;
+- validating antiforgery on browser mutations;
+- normalizing Commerce API failures into local frontend-safe errors;
+- returning only local/browser-safe response shapes.
+
+Storefront V2 BFF/local endpoints are not responsible for:
+
+- price calculation;
+- sellability calculation;
+- cart validity decisions;
+- checkout business rules;
+- order creation outside Commerce checkout/place-order APIs.
+
+Local `/api/*` contracts are Storefront V2 browser contracts. They may differ from Commerce Node Storefront API DTOs when the browser needs a smaller or presentation-specific shape, but they must not duplicate ecommerce business truth.
+
 ### Storefront Store Resolution
 
 Storefront V2 still resolves store scope from configuration, not from a host-derived public API route. The accepted configuration keys are:

@@ -113,12 +113,12 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         {
             var script = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/wwwroot/js/storefrontCommerce.js");
             var cartEndpoints = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCartEndpoints.cs");
-            var support = ReadStorefrontLocalEndpointSupportSource();
+            var cartLocalContracts = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/Contracts/StorefrontCartLocalContracts.cs");
 
             Assert.Contains("CurrencyCode: (button.dataset.currencyCode", script);
             Assert.Contains("CurrencyCode: payload.CurrencyCode || null", script);
             Assert.Contains("CurrencyCode = request.CurrencyCode", cartEndpoints);
-            Assert.Contains("public string? CurrencyCode { get; set; }", support);
+            Assert.Contains("public string? CurrencyCode { get; set; }", cartLocalContracts);
         }
 
         [Fact]
