@@ -93,6 +93,37 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("SFB-ISOLATION-003", gate, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void VisualQaGate_CapturesCorePagesAcrossViewportsAndReportsSeverity()
+        {
+            var runner = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/qa/run-visual-qa.mjs");
+            var report = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.BuilderDemo/docs/storefront-analysis/visual-qa-report.md");
+
+            foreach (var marker in new[]
+            {
+                "desktop-1440",
+                "tablet-768",
+                "mobile-390",
+                "shell-home",
+                "catalog",
+                "product",
+                "cart",
+                "checkout",
+                "account",
+                "Critical",
+                "Major",
+                "Minor",
+                "output/playwright/storefront-builder-visual-qa",
+            })
+            {
+                Assert.Contains(marker, runner, StringComparison.Ordinal);
+                Assert.Contains(marker, report, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("Critical: 0", report, StringComparison.Ordinal);
+            Assert.Contains("MVP result: pass", report, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));

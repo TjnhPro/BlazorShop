@@ -127,40 +127,40 @@ Goal: compare target evidence and generated storefront without requiring impossi
 
 Pages:
 
-- [ ] Header/footer shell.
-- [ ] Home.
-- [ ] Catalog/category.
-- [ ] Product detail.
-- [ ] Cart fallback.
-- [ ] Checkout fallback.
-- [ ] Account fallback.
+- [x] Header/footer shell.
+- [x] Home.
+- [x] Catalog/category.
+- [x] Product detail.
+- [x] Cart fallback.
+- [x] Checkout fallback.
+- [x] Account fallback.
 
 Viewports:
 
-- [ ] Desktop 1440px.
-- [ ] Tablet 768px.
-- [ ] Mobile 390px.
+- [x] Desktop 1440px.
+- [x] Tablet 768px.
+- [x] Mobile 390px.
 
 Severity:
 
-- [ ] Critical: wrong section order, broken layout, hidden primary content, unusable mobile, missing major component.
-- [ ] Major: strong typography/spacing/color mismatch, incorrect product card layout, weak responsive behavior.
-- [ ] Minor: decorative mismatch, small animation/shadow/icon difference.
+- [x] Critical: wrong section order, broken layout, hidden primary content, unusable mobile, missing major component.
+- [x] Major: strong typography/spacing/color mismatch, incorrect product card layout, weak responsive behavior.
+- [x] Minor: decorative mismatch, small animation/shadow/icon difference.
 
 Done criteria:
 
-- [ ] Zero Critical discrepancies.
-- [ ] Major discrepancies are under agreed threshold.
-- [ ] Minor discrepancies are recorded but do not block MVP.
+- [x] Zero Critical discrepancies.
+- [x] Major discrepancies are under agreed threshold.
+- [x] Minor discrepancies are recorded but do not block MVP.
 
 Output:
 
-- [ ] `visual-qa-report.md`
+- [x] `visual-qa-report.md`
 
 Verification:
 
-- [ ] Playwright screenshots saved for target and generated storefront.
-- [ ] Report links each discrepancy to screenshot/evidence.
+- [x] Playwright screenshots saved for target and generated storefront.
+- [x] Report links each discrepancy to screenshot/evidence.
 
 ## S24 - Basic Commerce Regression Gate
 
