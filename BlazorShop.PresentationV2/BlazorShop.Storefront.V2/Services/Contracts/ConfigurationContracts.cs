@@ -58,6 +58,7 @@ namespace BlazorShop.Storefront.Services
         StorefrontCaptchaConfiguration Captcha,
         StorefrontMaintenanceState MaintenanceState,
         StorefrontFeatureFlags FeatureFlags,
+        IReadOnlyDictionary<string, StorefrontCapability> Features,
         IReadOnlyList<StorefrontPublicPaymentMethod> PaymentMethods,
         StorefrontSeoDefaults SeoDefaults);
 
@@ -108,4 +109,9 @@ namespace BlazorShop.Storefront.Services
         bool PaymentsEnabled,
         bool NewsletterEnabled,
         bool RecommendationsEnabled);
+
+    public sealed record StorefrontCapability(
+        bool Supported,
+        bool Enabled,
+        string? Reason);
 }

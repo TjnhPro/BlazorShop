@@ -507,11 +507,11 @@ Goal: remove `Application` and backend-owned business DTO dependencies from Stor
 
 ### F5.1 Store bootstrap, configuration, maintenance, locale, currency
 
-- [ ] Replace Application store/config DTO usage.
-- [ ] Replace flat feature flag consumption with capability projection where available.
-- [ ] Keep current maintenance redirect/page behavior.
-- [ ] Keep current currency/culture display behavior.
-- [ ] Update public config/client tests.
+- [x] Replace Application store/config DTO usage.
+- [x] Replace flat feature flag consumption with capability projection where available.
+- [x] Keep current maintenance redirect/page behavior.
+- [x] Keep current currency/culture display behavior.
+- [x] Update public config/client tests.
 
 ### F5.2 Catalog, product, search, content, navigation, SEO
 
@@ -822,7 +822,7 @@ Future `BlazorShop.Storefront.Starter` should include:
 - [x] Commit 4: F2 error contract/capability projection hardening.
 - [x] Commit 5: F3 generated C# client project and generator tests.
 - [x] Commit 6: F4 BFF boundary cleanup and local endpoint contract split.
-- [ ] Commit 7: F5.1 configuration/store bootstrap migration.
+- [x] Commit 7: F5.1 configuration/store bootstrap migration.
 - [ ] Commit 8: F5.2 catalog/content/navigation/SEO migration.
 - [ ] Commit 9: F5.3 auth/customer/account migration.
 - [ ] Commit 10: F5.4 cart migration.

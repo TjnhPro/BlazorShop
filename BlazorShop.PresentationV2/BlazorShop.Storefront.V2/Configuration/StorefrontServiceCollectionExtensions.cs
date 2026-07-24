@@ -15,6 +15,13 @@ namespace BlazorShop.Storefront.Configuration
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Options;
 
+    using GeneratedConfigurationClient = BlazorShop.Storefront.Client.IStorefrontConfigurationClient;
+    using GeneratedConfigurationClientImplementation = BlazorShop.Storefront.Client.StorefrontConfigurationClient;
+    using GeneratedCurrencyClient = BlazorShop.Storefront.Client.IStorefrontCurrencyClient;
+    using GeneratedCurrencyClientImplementation = BlazorShop.Storefront.Client.StorefrontCurrencyClient;
+    using GeneratedStoreClient = BlazorShop.Storefront.Client.IStorefrontStoreClient;
+    using GeneratedStoreClientImplementation = BlazorShop.Storefront.Client.StorefrontStoreClient;
+
     public static class StorefrontServiceCollectionExtensions
     {
         public static IServiceCollection AddStorefrontV2Services(
@@ -97,6 +104,25 @@ namespace BlazorShop.Storefront.Configuration
                     var serviceConfiguration = serviceProvider.GetRequiredService<IConfiguration>();
                     configureHttpClient(client, serviceConfiguration);
                 });
+            services.AddHttpClient("StorefrontGeneratedConfiguration", (serviceProvider, client) =>
+                {
+                    var serviceConfiguration = serviceProvider.GetRequiredService<IConfiguration>();
+                    client.BaseAddress = StorefrontApiEndpointResolver.ResolveCommerceNodeBaseAddress(serviceConfiguration);
+                    client.Timeout = TimeSpan.FromSeconds(2);
+                });
+            services.AddScoped<GeneratedStoreClient>(serviceProvider =>
+                new GeneratedStoreClientImplementation(
+                    string.Empty,
+                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGeneratedConfiguration")));
+            services.AddScoped<GeneratedConfigurationClient>(serviceProvider =>
+                new GeneratedConfigurationClientImplementation(
+                    string.Empty,
+                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGeneratedConfiguration")));
+            services.AddScoped<GeneratedCurrencyClient>(serviceProvider =>
+                new GeneratedCurrencyClientImplementation(
+                    string.Empty,
+                    serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("StorefrontGeneratedConfiguration")));
+            services.AddScoped<GeneratedStorefrontConfigurationClient>();
             services.AddScoped<IStorefrontAddressClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
             services.AddScoped<IStorefrontCartClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
             services.AddScoped<IStorefrontCatalogClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
@@ -105,7 +131,7 @@ namespace BlazorShop.Storefront.Configuration
             services.AddScoped<IStorefrontContentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
             services.AddScoped<IStorefrontCustomerClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
             services.AddScoped<IStorefrontPaymentClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
-            services.AddScoped<IStorefrontStoreConfigurationClient>(serviceProvider => serviceProvider.GetRequiredService<StorefrontApiClient>());
+            services.AddScoped<IStorefrontStoreConfigurationClient>(serviceProvider => serviceProvider.GetRequiredService<GeneratedStorefrontConfigurationClient>());
 
             return services;
         }
