@@ -285,39 +285,39 @@ Goal: expose a predictable development-time command surface.
 
 Commands:
 
-- [ ] `/analyze-storefront <url>`
-- [ ] `/map-storefront`
-- [ ] `/generate-storefront`
-- [ ] `/validate-storefront`
-- [ ] `/build-storefront <url>`
+- [x] `/analyze-storefront <url>`
+- [x] `/map-storefront`
+- [x] `/generate-storefront`
+- [x] `/validate-storefront`
+- [x] `/build-storefront <url>`
 
 Required options:
 
-- [ ] `--name`
-- [ ] `--store-key`
-- [ ] `--starter`
-- [ ] `--output-root`
-- [ ] `--mode`
-- [ ] `--force`
-- [ ] `--skip-visual-qa`
-- [ ] `--skip-commerce-regression`
+- [x] `--name`
+- [x] `--store-key`
+- [x] `--starter`
+- [x] `--output-root`
+- [x] `--mode`
+- [x] `--force`
+- [x] `--skip-visual-qa`
+- [x] `--skip-commerce-regression`
 
 Docs:
 
-- [ ] README with quick start.
-- [ ] Examples for one reference URL.
-- [ ] Examples for multiple URLs.
-- [ ] Failure troubleshooting.
-- [ ] Protected file rule explanation.
+- [x] README with quick start.
+- [x] Examples for one reference URL.
+- [x] Examples for multiple URLs.
+- [x] Failure troubleshooting.
+- [x] Protected file rule explanation.
 
 Done when:
 
-- [ ] A developer can run a full POC from docs without guessing required inputs.
+- [x] A developer can run a full POC from docs without guessing required inputs.
 
 Verification:
 
-- [ ] Command help snapshot test.
-- [ ] README command examples are tested or smoke-checked.
+- [x] Command help snapshot test.
+- [x] README command examples are tested or smoke-checked.
 
 ## S28 - CI And Release Gate Integration
 

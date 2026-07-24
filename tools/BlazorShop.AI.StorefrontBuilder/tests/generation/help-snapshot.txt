@@ -1,0 +1,13 @@
+/analyze-storefront <url>
+/map-storefront
+/generate-storefront
+/validate-storefront
+/build-storefront <url>
+--name
+--store-key
+--starter
+--output-root
+--mode
+--force
+--skip-visual-qa
+--skip-commerce-regression

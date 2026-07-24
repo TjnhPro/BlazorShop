@@ -220,6 +220,34 @@ namespace BlazorShop.Tests.Architecture
             }
         }
 
+        [Fact]
+        public void SkillPackaging_DocumentsCommandsOptionsExamplesAndProtectedRules()
+        {
+            var readme = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/README.md");
+            var skill = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/skills/storefront-builder/SKILL.md");
+            var snapshot = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/tests/generation/help-snapshot.txt");
+
+            foreach (var command in new[] { "/analyze-storefront <url>", "/map-storefront", "/generate-storefront", "/validate-storefront", "/build-storefront <url>" })
+            {
+                Assert.Contains(command, readme, StringComparison.Ordinal);
+                Assert.Contains(command, skill, StringComparison.Ordinal);
+                Assert.Contains(command, snapshot, StringComparison.Ordinal);
+            }
+
+            foreach (var option in new[] { "--name", "--store-key", "--starter", "--output-root", "--mode", "--force", "--skip-visual-qa", "--skip-commerce-regression" })
+            {
+                Assert.Contains(option, readme, StringComparison.Ordinal);
+                Assert.Contains(option, skill, StringComparison.Ordinal);
+                Assert.Contains(option, snapshot, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("Quick Start", readme, StringComparison.Ordinal);
+            Assert.Contains("Single reference URL", readme, StringComparison.Ordinal);
+            Assert.Contains("Multiple reference URLs", readme, StringComparison.Ordinal);
+            Assert.Contains("Troubleshooting", readme, StringComparison.Ordinal);
+            Assert.Contains("Protected Files", readme, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));

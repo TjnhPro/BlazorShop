@@ -14,3 +14,24 @@ Required boundaries:
 - Do not write store-specific presentation into Starter.
 - Do not edit generated client, Runtime security primitives, BFF transport, cart commands, checkout commands, or package manifests unless a human explicitly reopens those contracts.
 - Record evidence and inference artifacts under `docs/storefront-analysis` in the generated project.
+
+Command surface:
+
+- `/analyze-storefront <url>`
+- `/map-storefront`
+- `/generate-storefront`
+- `/validate-storefront`
+- `/build-storefront <url>`
+
+Required options:
+
+- `--name`
+- `--store-key`
+- `--starter`
+- `--output-root`
+- `--mode`
+- `--force`
+- `--skip-visual-qa`
+- `--skip-commerce-regression`
+
+Before trusting generated output, inspect `review-summary.md`, `asset-manifest.yaml`, `generated-files.yaml`, `visual-qa-report.md`, and `functional-commerce-report.md`.
