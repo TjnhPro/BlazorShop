@@ -209,40 +209,40 @@ Goal: map target visual features to actual Starter/backend capability.
 
 Inputs:
 
-- [ ] Starter feature manifest.
-- [ ] Backend public configuration feature map.
-- [ ] Store module manifest if available.
-- [ ] Target visual detections.
-- [ ] Starter generation contract slots.
+- [x] Starter feature manifest.
+- [x] Backend public configuration feature map.
+- [x] Store module manifest if available.
+- [x] Target visual detections.
+- [x] Starter generation contract slots.
 
 Decision values:
 
-- [ ] `target`
-- [ ] `target-with-starter-binding`
-- [ ] `starter`
-- [ ] `hidden`
-- [ ] `unsupported`
+- [x] `target`
+- [x] `target-with-starter-binding`
+- [x] `starter`
+- [x] `hidden`
+- [x] `unsupported`
 
 Examples:
 
-- [ ] Product gallery visual exists and Starter slot exists: `target-with-starter-binding`.
-- [ ] Wishlist visual exists but backend capability missing: `hidden` or `unsupported`.
-- [ ] Target checkout unavailable: `starter`.
-- [ ] Product reviews visual exists but module unavailable: `hidden`.
-- [ ] Cart badge visual exists and BFF slot exists: `target-with-starter-binding`.
+- [x] Product gallery visual exists and Starter slot exists: `target-with-starter-binding`.
+- [x] Wishlist visual exists but backend capability missing: `hidden` or `unsupported`.
+- [x] Target checkout unavailable: `starter`.
+- [x] Product reviews visual exists but module unavailable: `hidden`.
+- [x] Cart badge visual exists and BFF slot exists: `target-with-starter-binding`.
 
 Output:
 
-- [ ] `capability-decisions.yaml`
+- [x] `capability-decisions.yaml`
 
 Done when:
 
-- [ ] No target ecommerce feature is silently faked.
+- [x] No target ecommerce feature is silently faked.
 
 Verification:
 
-- [ ] Validator fails when `target-with-starter-binding` references a missing slot.
-- [ ] Validator fails when unsupported feature has no user-facing fallback decision.
+- [x] Validator fails when `target-with-starter-binding` references a missing slot.
+- [x] Validator fails when unsupported feature has no user-facing fallback decision.
 
 ## S15 - Composition Manifest
 

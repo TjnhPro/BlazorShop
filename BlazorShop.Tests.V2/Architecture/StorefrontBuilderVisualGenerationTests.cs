@@ -165,6 +165,39 @@ namespace BlazorShop.Tests.Architecture
             Assert.Contains("SFB-TOPOLOGY-004", validator, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void CapabilityMapping_BindsSupportedFeaturesAndHidesUnsupportedModules()
+        {
+            var generator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/generate/map-capabilities.mjs");
+            var validator = ReadRepositoryFile("tools/BlazorShop.AI.StorefrontBuilder/scripts/validate/Test-StorefrontBuilderCapabilities.ps1");
+
+            foreach (var input in new[]
+            {
+                "Starter feature manifest",
+                "Backend public configuration feature map",
+                "Store module manifest if available",
+                "Target visual detections",
+                "Starter generation contract slots",
+            })
+            {
+                Assert.Contains(input, generator, StringComparison.Ordinal);
+                Assert.Contains(input, validator, StringComparison.Ordinal);
+            }
+
+            foreach (var decision in new[] { "target", "target-with-starter-binding", "starter", "hidden", "unsupported" })
+            {
+                Assert.Contains(decision, generator, StringComparison.Ordinal);
+                Assert.Contains(decision, validator, StringComparison.Ordinal);
+            }
+
+            Assert.Contains("product-gallery", generator, StringComparison.Ordinal);
+            Assert.Contains("wishlist", generator, StringComparison.Ordinal);
+            Assert.Contains("product-reviews", generator, StringComparison.Ordinal);
+            Assert.Contains("cart-badge", generator, StringComparison.Ordinal);
+            Assert.Contains("SFB-CAPABILITY-004", validator, StringComparison.Ordinal);
+            Assert.Contains("SFB-CAPABILITY-005", validator, StringComparison.Ordinal);
+        }
+
         private static string ReadRepositoryFile(string relativePath)
         {
             return File.ReadAllText(RepositoryPath(relativePath));
