@@ -1,18 +1,5 @@
 namespace BlazorShop.Storefront.Services
 {
-    using System.Globalization;
-    using System.Net;
-    using System.Net.Http.Json;
-    using System.Text.Json;
-
-    using BlazorShop.Application.CommerceNode.VariationTemplates;
-    using BlazorShop.Web.SharedV2.Models;
-    using BlazorShop.Application.DTOs.Payment;
-    using BlazorShop.Storefront.Options;
-
-    using Microsoft.Extensions.Options;
-
-
     public sealed class StorefrontCreateCartSessionRequest
     {
         public string? CartToken { get; set; }
@@ -26,7 +13,7 @@ namespace BlazorShop.Storefront.Services
 
         public string? CurrencyCode { get; set; }
 
-        public IReadOnlyList<SelectedAttributeDto>? SelectedAttributes { get; set; }
+        public IReadOnlyList<StorefrontSelectedAttribute>? SelectedAttributes { get; set; }
 
         public int Quantity { get; set; } = 1;
     }
@@ -109,4 +96,21 @@ namespace BlazorShop.Storefront.Services
         string Label,
         decimal Amount,
         string CurrencyCode);
+
+    public sealed record StorefrontSelectedAttribute(
+        string Name,
+        string Value);
+
+    public sealed class StorefrontLegacyCartItem
+    {
+        public Guid ProductId { get; set; }
+
+        public Guid? ProductVariantId { get; set; }
+
+        public Guid? VariantId { get; set; }
+
+        public IReadOnlyList<StorefrontSelectedAttribute>? SelectedAttributes { get; set; }
+
+        public int Quantity { get; set; }
+    }
 }

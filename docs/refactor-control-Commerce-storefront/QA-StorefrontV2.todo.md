@@ -735,6 +735,7 @@ Use this checklist whenever Storefront V2 assets, Dockerfile, project references
 - [x] Storefront browser/network release checklist continues to reject direct calls to Commerce Admin, Control Plane, legacy API/Web, and `api/internal/*`. 2026-07-19 Phase 9: existing `Storefront Playwright E2E Release.todo.md` keeps `RUN-010` and per-route network evidence requirements; no browser route behavior changed in this phase.
 - [x] Storefront V2 host smoke is included in the active V2 test project and serialized to avoid WebApplicationFactory races. 2026-07-19 Phase 8/9: `dotnet test BlazorShop.Tests.V2/BlazorShop.Tests.V2.csproj --no-restore` passed 439/439 including `StorefrontV2HostSmokeTests`.
 - [x] Storefront public schemas and shared model migration exceptions remain explicitly guarded. 2026-07-19 Phase 9: `WebSharedV2BusinessModelFolders_AreFrozenDuringContractMigration` freezes the remaining shared business-model folders until generated-client migration removes them.
+- [x] Headless Storefront Foundation F5.4 cart/session migration remains behavior-stable. 2026-07-24: Storefront V2 build passed 0 warnings; `CartCorePhase0InventoryTests`/BFF boundary/CSRF/security/script focused run passed 26/26; cart local API, product-selection preview, and cart-token host/API subset passed 10/10.
 
 ## V2 Production Readiness Release Gate
 

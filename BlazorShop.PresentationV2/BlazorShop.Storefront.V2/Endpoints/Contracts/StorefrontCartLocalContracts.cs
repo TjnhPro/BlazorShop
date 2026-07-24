@@ -1,6 +1,6 @@
 namespace BlazorShop.Storefront.Endpoints
 {
-    using BlazorShop.Application.CommerceNode.VariationTemplates;
+    using BlazorShop.Storefront.Services;
 
     public sealed class StorefrontLocalCartLineRequest
     {
@@ -10,7 +10,7 @@ namespace BlazorShop.Storefront.Endpoints
 
         public string? CurrencyCode { get; set; }
 
-        public IReadOnlyList<SelectedAttributeDto>? SelectedAttributes { get; set; }
+        public IReadOnlyList<StorefrontSelectedAttribute>? SelectedAttributes { get; set; }
 
         public int Quantity { get; set; } = 1;
     }
@@ -21,7 +21,7 @@ namespace BlazorShop.Storefront.Endpoints
 
         public Guid? ProductVariantId { get; set; }
 
-        public IReadOnlyList<SelectedAttributeDto>? SelectedAttributes { get; set; }
+        public IReadOnlyList<StorefrontSelectedAttribute>? SelectedAttributes { get; set; }
 
         public int Quantity { get; set; } = 1;
 
@@ -35,7 +35,7 @@ namespace BlazorShop.Storefront.Endpoints
         bool IsAvailable,
         bool CanAddToCart,
         IReadOnlyList<string> ValidationMessages,
-        IReadOnlyList<SelectedAttributeDto> SelectedAttributes,
+        IReadOnlyList<StorefrontSelectedAttribute> SelectedAttributes,
         string? AttributeSignature,
         string? Sku,
         string? DisplayName,

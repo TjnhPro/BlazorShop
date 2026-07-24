@@ -2,10 +2,8 @@ namespace BlazorShop.Storefront.Services
 {
     using System.Text.Json;
 
-    using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Storefront.Services.Contracts;
     using BlazorShop.Web.SharedV2;
-    using ProcessCart = BlazorShop.Web.SharedV2.Models.Payment.ProcessCart;
 
     public sealed class StorefrontCartTokenService
     {
@@ -199,7 +197,7 @@ namespace BlazorShop.Storefront.Services
 
         private async Task<StorefrontCartImportResult> ImportLegacyCartAsync(
             string cartToken,
-            IReadOnlyList<ProcessCart> legacyItems,
+            IReadOnlyList<StorefrontLegacyCartItem> legacyItems,
             CancellationToken cancellationToken)
         {
             foreach (var item in legacyItems)
@@ -212,7 +210,7 @@ namespace BlazorShop.Storefront.Services
                         ProductVariantId = item.ProductVariantId ?? item.VariantId,
                         Quantity = Math.Max(1, item.Quantity),
                         SelectedAttributes = item.SelectedAttributes?
-                            .Select(attribute => new SelectedAttributeDto(attribute.Name, attribute.Value))
+                            .Select(attribute => new StorefrontSelectedAttribute(attribute.Name, attribute.Value))
                             .ToArray(),
                     },
                     cancellationToken);
@@ -226,7 +224,7 @@ namespace BlazorShop.Storefront.Services
             return new StorefrontCartImportResult(true);
         }
 
-        private static List<ProcessCart> ReadLegacyCart(string? rawCart)
+        private static List<StorefrontLegacyCartItem> ReadLegacyCart(string? rawCart)
         {
             if (string.IsNullOrWhiteSpace(rawCart))
             {
@@ -235,7 +233,7 @@ namespace BlazorShop.Storefront.Services
 
             try
             {
-                return JsonSerializer.Deserialize<List<ProcessCart>>(rawCart, JsonOptions)
+                return JsonSerializer.Deserialize<List<StorefrontLegacyCartItem>>(rawCart, JsonOptions)
                     ?.Where(item => item.ProductId != Guid.Empty && item.Quantity > 0)
                     .ToList()
                     ?? [];

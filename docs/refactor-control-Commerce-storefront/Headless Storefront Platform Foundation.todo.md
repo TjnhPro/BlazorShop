@@ -543,11 +543,13 @@ Goal: remove `Application` and backend-owned business DTO dependencies from Stor
 
 ### F5.4 Cart
 
-- [ ] Replace cart/session DTO usage.
-- [ ] Keep guest cart/customer cart/merge behavior.
-- [ ] Keep cart token as server/BFF concern.
-- [ ] Keep add/update/remove/recalculate commands server-authoritative.
-- [ ] Keep product selection preview server-authoritative.
+- [x] Replace cart/session DTO usage.
+- [x] Keep guest cart/customer cart/merge behavior.
+- [x] Keep cart token as server/BFF concern.
+- [x] Keep add/update/remove/recalculate commands server-authoritative.
+- [x] Keep product selection preview server-authoritative.
+
+2026-07-24 evidence: Storefront cart/session and product-selection preview request models now use Storefront-owned `StorefrontSelectedAttribute`; legacy cart cookie import reads Storefront-owned `StorefrontLegacyCartItem` instead of `Web.SharedV2.Models.Payment.ProcessCart`. `StorefrontCartTokenService` still owns the HttpOnly cart-token cookie, legacy-cart import, customer cart merge, and cart mutation forwarding. `CartCorePhase0InventoryTests.StorefrontV2_CartContractsDoNotUseBackendOrLegacyCartDtos` guards against `SelectedAttributeDto`, `ProcessCart`, and VariationTemplate imports returning to the cart/session path.
 
 ### F5.5 Checkout, orders, payment result
 
@@ -829,7 +831,7 @@ Future `BlazorShop.Storefront.Starter` should include:
 - [x] Commit 7: F5.1 configuration/store bootstrap migration.
 - [x] Commit 8: F5.2 catalog/content/navigation/SEO migration.
 - [x] Commit 9: F5.3 auth/customer/account migration.
-- [ ] Commit 10: F5.4 cart migration.
+- [x] Commit 10: F5.4 cart migration.
 - [ ] Commit 11: F5.5 checkout/orders/payments migration.
 - [ ] Commit 12: F5.6 consent/newsletter/contact/recommendations migration.
 - [ ] Commit 13: F5 final dependency removal and Dockerfile cleanup.

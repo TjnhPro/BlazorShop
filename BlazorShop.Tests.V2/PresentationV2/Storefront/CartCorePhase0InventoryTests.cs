@@ -103,6 +103,28 @@ namespace BlazorShop.Tests.PresentationV2.Storefront
         }
 
         [Fact]
+        public void StorefrontV2_CartContractsDoNotUseBackendOrLegacyCartDtos()
+        {
+            var source = string.Join(
+                Environment.NewLine,
+                new[]
+                {
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/CartContracts.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/Contracts/CatalogContracts.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/Contracts/StorefrontCartLocalContracts.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Endpoints/StorefrontCartEndpoints.cs",
+                    "BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Services/StorefrontCartTokenService.cs",
+                }.Select(ReadRepositoryFile));
+
+            Assert.Contains("StorefrontSelectedAttribute", source, StringComparison.Ordinal);
+            Assert.Contains("StorefrontLegacyCartItem", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("SelectedAttributeDto", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("ProcessCart", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Application.CommerceNode.VariationTemplates", source, StringComparison.Ordinal);
+            Assert.DoesNotContain("BlazorShop.Web.SharedV2.Models.Payment", source, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void StorefrontV2_CartPageConsumesServerProjection()
         {
             var cartPage = ReadRepositoryFile("BlazorShop.PresentationV2/BlazorShop.Storefront.V2/Pages/Hybrid/Commerce/CartPage.razor.cs");

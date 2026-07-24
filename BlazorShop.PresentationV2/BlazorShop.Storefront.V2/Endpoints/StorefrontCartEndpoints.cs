@@ -1,6 +1,5 @@
 namespace BlazorShop.Storefront.Endpoints
 {
-    using BlazorShop.Application.CommerceNode.VariationTemplates;
     using BlazorShop.Application.Services;
     using BlazorShop.Application.Services.Contracts;
     using BlazorShop.Storefront.Configuration;
@@ -8,7 +7,6 @@ namespace BlazorShop.Storefront.Endpoints
     using BlazorShop.Storefront.Services;
     using BlazorShop.Storefront.Services.Contracts;
     using BlazorShop.Web.SharedV2;
-    using BlazorShop.Web.SharedV2.Models;
 
     using Microsoft.AspNetCore.Antiforgery;
     using Microsoft.AspNetCore.Mvc;
@@ -72,7 +70,7 @@ namespace BlazorShop.Storefront.Endpoints
                     preview.CanAddToCart,
                     preview.ValidationMessages,
                     preview.SelectedAttributes
-                        .Select(attribute => new SelectedAttributeDto(attribute.Name, attribute.Value))
+                        .Select(attribute => new StorefrontSelectedAttribute(attribute.Name, attribute.Value))
                         .ToArray(),
                     preview.AttributeSignature,
                     preview.Sku,
